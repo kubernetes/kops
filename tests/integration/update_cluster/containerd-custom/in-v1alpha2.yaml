@@ -11,6 +11,11 @@ spec:
   configBase: memfs://clusters.example.com/containerd.example.com
   containerRuntime: containerd
   containerd:
+    registryMirrors:
+      docker.io:
+      - https://registry-1.docker.io
+      "*":
+      - http://HostIP2:Port2
     packages:
       urlAmd64: https://github.com/containerd/containerd/releases/download/v1.3.9/cri-containerd-cni-1.3.9-linux-amd64.tar.gz
       hashAmd64: "0000000000000000000000000000000000000000000000000000000000000000"
