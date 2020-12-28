@@ -83,6 +83,7 @@ require (
 	github.com/jpillora/backoff v0.0.0-20170918002102-8eab2debe79d
 	github.com/miekg/coredns v0.0.0-20161111164017-20e25559d5ea
 	github.com/mitchellh/mapstructure v1.1.2
+	github.com/pelletier/go-toml v1.8.1
 	github.com/pkg/sftp v1.12.0
 	github.com/prometheus/client_golang v1.7.1
 	github.com/sergi/go-diff v1.0.0

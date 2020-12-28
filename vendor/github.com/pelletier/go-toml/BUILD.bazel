@@ -6,6 +6,7 @@ go_library(
         "doc.go",
         "keysparsing.go",
         "lexer.go",
+        "localtime.go",
         "marshal.go",
         "parser.go",
         "position.go",
