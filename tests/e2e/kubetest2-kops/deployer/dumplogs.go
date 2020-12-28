@@ -28,11 +28,12 @@ func (d *deployer) DumpClusterLogs() error {
 	args := []string{
 		d.KopsBinaryPath, "toolbox", "dump",
 		"--name", d.ClusterName,
-		"--dir",
-		"--yes",
+		"--dir", d.ArtifactsDir,
+		"--private-key", d.SSHPrivateKeyPath,
 	}
 	klog.Info(strings.Join(args, " "))
 	cmd := exec.Command(args[0], args[1:]...)
+	cmd.SetEnv(d.env()...)
 	if err := runWithOutput(cmd); err != nil {
 		return err
 	}

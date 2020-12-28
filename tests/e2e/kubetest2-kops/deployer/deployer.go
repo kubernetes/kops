@@ -51,6 +51,8 @@ type deployer struct {
 	SSHPublicKeyPath  string   `flag:"ssh-public-key" desc:"The path to the public key passed to the cloud provider"`
 	SSHUser           []string `flag:"ssh-user" desc:"The SSH users to use for SSH access to instances"`
 
+	ArtifactsDir string `flag:"-"`
+
 	BuildOptions *builder.BuildOptions
 }
 
@@ -71,6 +73,12 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 		commonOptions: opts,
 		BuildOptions:  &builder.BuildOptions{},
 	}
+
+	dir, err := defaultArtifactsDir()
+	if err != nil {
+		klog.Fatalf("unable to determine artifacts directory: %v", err)
+	}
+	d.ArtifactsDir = dir
 
 	// register flags
 	fs := bindFlags(d)

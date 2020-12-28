@@ -27,6 +27,10 @@ func (d *deployer) Down() error {
 	if err := d.init(); err != nil {
 		return err
 	}
+	if err := d.DumpClusterLogs(); err != nil {
+		klog.Warningf("Dumping cluster logs at the start of Down() failed: %s", err)
+	}
+
 	args := []string{
 		d.KopsBinaryPath, "delete", "cluster",
 		"--name", d.ClusterName,
