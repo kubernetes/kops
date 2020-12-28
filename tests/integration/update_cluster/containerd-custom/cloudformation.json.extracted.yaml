@@ -139,10 +139,29 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
   containerd:
     configOverride: |
       version = 2
+
+      [plugins]
+
+        [plugins."io.containerd.grpc.v1.cri"]
+
+          [plugins."io.containerd.grpc.v1.cri".registry]
+
+            [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+
+              [plugins."io.containerd.grpc.v1.cri".registry.mirrors."*"]
+                endpoint = ["http://HostIP2:Port2"]
+
+              [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+                endpoint = ["https://registry-1.docker.io"]
     logLevel: info
     packages:
       hashAmd64: "0000000000000000000000000000000000000000000000000000000000000000"
       urlAmd64: https://github.com/containerd/containerd/releases/download/v1.3.9/cri-containerd-cni-1.3.9-linux-amd64.tar.gz
+    registryMirrors:
+      '*':
+      - http://HostIP2:Port2
+      docker.io:
+      - https://registry-1.docker.io
     version: 1.4.3
   docker:
     skipInstall: true
@@ -454,10 +473,29 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
   containerd:
     configOverride: |
       version = 2
+
+      [plugins]
+
+        [plugins."io.containerd.grpc.v1.cri"]
+
+          [plugins."io.containerd.grpc.v1.cri".registry]
+
+            [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+
+              [plugins."io.containerd.grpc.v1.cri".registry.mirrors."*"]
+                endpoint = ["http://HostIP2:Port2"]
+
+              [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+                endpoint = ["https://registry-1.docker.io"]
     logLevel: info
     packages:
       hashAmd64: "0000000000000000000000000000000000000000000000000000000000000000"
       urlAmd64: https://github.com/containerd/containerd/releases/download/v1.3.9/cri-containerd-cni-1.3.9-linux-amd64.tar.gz
+    registryMirrors:
+      '*':
+      - http://HostIP2:Port2
+      docker.io:
+      - https://registry-1.docker.io
     version: 1.4.3
   docker:
     skipInstall: true
