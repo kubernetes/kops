@@ -199,7 +199,7 @@ test-e2e:
 		--kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
 		--test=ginkgo \
 		-- \
-		--test-package-version=v1.19.0 \
+		--test-package-version=v1.19.4 \
 		--parallel 25 \
 		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort"
 
