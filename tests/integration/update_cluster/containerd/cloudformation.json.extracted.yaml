@@ -137,7 +137,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
   cloudConfig: null
   containerRuntime: containerd
   containerd:
-    configOverride: version = 2
+    configOverride: |
+      version = 2
     logLevel: info
     version: 1.4.3
   docker:
@@ -448,7 +449,8 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
   cloudConfig: null
   containerRuntime: containerd
   containerd:
-    configOverride: version = 2
+    configOverride: |
+      version = 2
     logLevel: info
     version: 1.4.3
   docker:

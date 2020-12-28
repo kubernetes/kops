@@ -409,6 +409,13 @@ spec:
                         description: UrlArm64 overrides the URL for the ARM64 package.
                         type: string
                     type: object
+                  registryMirrors:
+                    additionalProperties:
+                      items:
+                        type: string
+                      type: array
+                    description: RegistryMirrors is list of image registries
+                    type: object
                   root:
                     description: Root directory for persistent data (default "/var/lib/containerd").
                     type: string
