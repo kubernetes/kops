@@ -2757,6 +2757,7 @@ func autoConvert_v1alpha2_ContainerdConfig_To_kops_ContainerdConfig(in *Containe
 	} else {
 		out.Packages = nil
 	}
+	out.RegistryMirrors = in.RegistryMirrors
 	out.Root = in.Root
 	out.SkipInstall = in.SkipInstall
 	out.State = in.State
@@ -2782,6 +2783,7 @@ func autoConvert_kops_ContainerdConfig_To_v1alpha2_ContainerdConfig(in *kops.Con
 	} else {
 		out.Packages = nil
 	}
+	out.RegistryMirrors = in.RegistryMirrors
 	out.Root = in.Root
 	out.SkipInstall = in.SkipInstall
 	out.State = in.State

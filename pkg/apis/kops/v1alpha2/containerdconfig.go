@@ -26,6 +26,8 @@ type ContainerdConfig struct {
 	LogLevel *string `json:"logLevel,omitempty" flag:"log-level"`
 	// Packages overrides the URL and hash for the packages.
 	Packages *PackagesConfig `json:"packages,omitempty"`
+	// RegistryMirrors is list of image registries
+	RegistryMirrors map[string][]string `json:"registryMirrors,omitempty"`
 	// Root directory for persistent data (default "/var/lib/containerd").
 	Root *string `json:"root,omitempty" flag:"root"`
 	// SkipInstall prevents kOps from installing and modifying containerd in any way (default "false").
