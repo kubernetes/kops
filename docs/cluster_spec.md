@@ -967,6 +967,23 @@ tar tf cri-containerd-cni-1.4.3-linux-amd64.tar.gz
     usr/local/sbin/runc
 ```
 
+### Registry Mirrors
+{{ kops_feature_table(kops_added_default='1.19') }}
+
+If you have many instances running, each time one of them pulls an image that is not present on the host, it will fetch it from the internet. By caching these images, you can keep the traffic within your local network and avoid egress bandwidth usage.
+
+See [Image Registry](https://github.com/containerd/containerd/blob/master/docs/cri/registry.md#configure-registry-endpoint) docs for more info.
+
+```yaml
+spec:
+  containerd:
+    registryMirrors:
+      docker.io:
+      - https://registry-1.docker.io
+      "*":
+      - http://HostIP2:Port2
+```
+
 ## Docker
 
 It is possible to override Docker daemon options for all masters and nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#DockerConfig) for the full list of options.
