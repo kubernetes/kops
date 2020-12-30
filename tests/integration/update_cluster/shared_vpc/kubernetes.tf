@@ -224,11 +224,21 @@ resource "aws_iam_role_policy" "nodes-sharedvpc-example-com" {
 resource "aws_iam_role" "masters-sharedvpc-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.sharedvpc.example.com_policy")
   name               = "masters.sharedvpc.example.com"
+  tags = {
+    "KubernetesCluster"                           = "sharedvpc.example.com"
+    "Name"                                        = "masters.sharedvpc.example.com"
+    "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-sharedvpc-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.sharedvpc.example.com_policy")
   name               = "nodes.sharedvpc.example.com"
+  tags = {
+    "KubernetesCluster"                           = "sharedvpc.example.com"
+    "Name"                                        = "nodes.sharedvpc.example.com"
+    "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
+  }
 }
 
 resource "aws_key_pair" "kubernetes-sharedvpc-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {

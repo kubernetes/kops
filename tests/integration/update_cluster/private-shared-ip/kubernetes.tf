@@ -366,16 +366,31 @@ resource "aws_iam_role_policy" "nodes-private-shared-ip-example-com" {
 resource "aws_iam_role" "bastions-private-shared-ip-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.private-shared-ip.example.com_policy")
   name               = "bastions.private-shared-ip.example.com"
+  tags = {
+    "KubernetesCluster"                                   = "private-shared-ip.example.com"
+    "Name"                                                = "bastions.private-shared-ip.example.com"
+    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "masters-private-shared-ip-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.private-shared-ip.example.com_policy")
   name               = "masters.private-shared-ip.example.com"
+  tags = {
+    "KubernetesCluster"                                   = "private-shared-ip.example.com"
+    "Name"                                                = "masters.private-shared-ip.example.com"
+    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-private-shared-ip-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.private-shared-ip.example.com_policy")
   name               = "nodes.private-shared-ip.example.com"
+  tags = {
+    "KubernetesCluster"                                   = "private-shared-ip.example.com"
+    "Name"                                                = "nodes.private-shared-ip.example.com"
+    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
+  }
 }
 
 resource "aws_key_pair" "kubernetes-private-shared-ip-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {

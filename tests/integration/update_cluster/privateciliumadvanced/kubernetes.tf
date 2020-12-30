@@ -394,16 +394,31 @@ resource "aws_iam_role_policy" "nodes-privateciliumadvanced-example-com" {
 resource "aws_iam_role" "bastions-privateciliumadvanced-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privateciliumadvanced.example.com_policy")
   name               = "bastions.privateciliumadvanced.example.com"
+  tags = {
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "bastions.privateciliumadvanced.example.com"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "masters-privateciliumadvanced-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.privateciliumadvanced.example.com_policy")
   name               = "masters.privateciliumadvanced.example.com"
+  tags = {
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "masters.privateciliumadvanced.example.com"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-privateciliumadvanced-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.privateciliumadvanced.example.com_policy")
   name               = "nodes.privateciliumadvanced.example.com"
+  tags = {
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "nodes.privateciliumadvanced.example.com"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
+  }
 }
 
 resource "aws_internet_gateway" "privateciliumadvanced-example-com" {

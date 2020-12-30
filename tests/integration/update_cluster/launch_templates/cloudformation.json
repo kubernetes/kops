@@ -1282,7 +1282,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "launchtemplates.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.launchtemplates.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/launchtemplates.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     },
     "AWSIAMRolenodeslaunchtemplatesexamplecom": {
@@ -1300,7 +1314,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "launchtemplates.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.launchtemplates.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/launchtemplates.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     }
   }

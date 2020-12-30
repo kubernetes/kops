@@ -229,11 +229,21 @@ resource "aws_iam_role_policy" "nodes-minimal-example-com" {
 resource "aws_iam_role" "masters-minimal-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.minimal.example.com_policy")
   name               = "masters.minimal.example.com"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "masters.minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-minimal-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.minimal.example.com_policy")
   name               = "nodes.minimal.example.com"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "nodes.minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
 }
 
 resource "aws_internet_gateway" "minimal-example-com" {

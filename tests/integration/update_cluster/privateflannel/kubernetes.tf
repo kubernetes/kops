@@ -380,16 +380,31 @@ resource "aws_iam_role_policy" "nodes-privateflannel-example-com" {
 resource "aws_iam_role" "bastions-privateflannel-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privateflannel.example.com_policy")
   name               = "bastions.privateflannel.example.com"
+  tags = {
+    "KubernetesCluster"                                = "privateflannel.example.com"
+    "Name"                                             = "bastions.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "masters-privateflannel-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.privateflannel.example.com_policy")
   name               = "masters.privateflannel.example.com"
+  tags = {
+    "KubernetesCluster"                                = "privateflannel.example.com"
+    "Name"                                             = "masters.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-privateflannel-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.privateflannel.example.com_policy")
   name               = "nodes.privateflannel.example.com"
+  tags = {
+    "KubernetesCluster"                                = "privateflannel.example.com"
+    "Name"                                             = "nodes.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+  }
 }
 
 resource "aws_internet_gateway" "privateflannel-example-com" {
