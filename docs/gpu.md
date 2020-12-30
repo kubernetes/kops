@@ -61,6 +61,10 @@ dcgmExporter:
 gfd:
   nodeSelector:
     kops.k8s.io/instancegroup: gpu-nodes
+  tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
+    effect: NoSchedule
 
 node-feature-discovery:
   worker:
