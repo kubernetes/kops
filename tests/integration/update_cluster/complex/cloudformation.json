@@ -1577,7 +1577,29 @@
           ],
           "Version": "2012-10-17"
         },
-        "PermissionsBoundary": "arn:aws:iam:00000000000:policy/boundaries"
+        "PermissionsBoundary": "arn:aws:iam:00000000000:policy/boundaries",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "complex.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.complex.example.com"
+          },
+          {
+            "Key": "Owner",
+            "Value": "John Doe"
+          },
+          {
+            "Key": "foo/bar",
+            "Value": "fib+baz"
+          },
+          {
+            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     },
     "AWSIAMRolenodescomplexexamplecom": {
@@ -1596,7 +1618,29 @@
           ],
           "Version": "2012-10-17"
         },
-        "PermissionsBoundary": "arn:aws:iam:00000000000:policy/boundaries"
+        "PermissionsBoundary": "arn:aws:iam:00000000000:policy/boundaries",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "complex.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.complex.example.com"
+          },
+          {
+            "Key": "Owner",
+            "Value": "John Doe"
+          },
+          {
+            "Key": "foo/bar",
+            "Value": "fib+baz"
+          },
+          {
+            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     },
     "AWSRoute53RecordSetapicomplexexamplecom": {

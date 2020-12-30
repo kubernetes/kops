@@ -380,16 +380,31 @@ resource "aws_iam_role_policy" "nodes-privateweave-example-com" {
 resource "aws_iam_role" "bastions-privateweave-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privateweave.example.com_policy")
   name               = "bastions.privateweave.example.com"
+  tags = {
+    "KubernetesCluster"                              = "privateweave.example.com"
+    "Name"                                           = "bastions.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "masters-privateweave-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.privateweave.example.com_policy")
   name               = "masters.privateweave.example.com"
+  tags = {
+    "KubernetesCluster"                              = "privateweave.example.com"
+    "Name"                                           = "masters.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-privateweave-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.privateweave.example.com_policy")
   name               = "nodes.privateweave.example.com"
+  tags = {
+    "KubernetesCluster"                              = "privateweave.example.com"
+    "Name"                                           = "nodes.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
+  }
 }
 
 resource "aws_internet_gateway" "privateweave-example-com" {

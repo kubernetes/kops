@@ -293,11 +293,25 @@ resource "aws_iam_role_policy" "nodes-externalpolicies-example-com" {
 resource "aws_iam_role" "masters-externalpolicies-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.externalpolicies.example.com_policy")
   name               = "masters.externalpolicies.example.com"
+  tags = {
+    "KubernetesCluster"                                  = "externalpolicies.example.com"
+    "Name"                                               = "masters.externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
+    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-externalpolicies-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.externalpolicies.example.com_policy")
   name               = "nodes.externalpolicies.example.com"
+  tags = {
+    "KubernetesCluster"                                  = "externalpolicies.example.com"
+    "Name"                                               = "nodes.externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
+    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+  }
 }
 
 resource "aws_internet_gateway" "externalpolicies-example-com" {

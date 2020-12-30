@@ -420,11 +420,21 @@ resource "aws_iam_role_policy" "nodes-existingsg-example-com" {
 resource "aws_iam_role" "masters-existingsg-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.existingsg.example.com_policy")
   name               = "masters.existingsg.example.com"
+  tags = {
+    "KubernetesCluster"                            = "existingsg.example.com"
+    "Name"                                         = "masters.existingsg.example.com"
+    "kubernetes.io/cluster/existingsg.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-existingsg-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.existingsg.example.com_policy")
   name               = "nodes.existingsg.example.com"
+  tags = {
+    "KubernetesCluster"                            = "existingsg.example.com"
+    "Name"                                         = "nodes.existingsg.example.com"
+    "kubernetes.io/cluster/existingsg.example.com" = "owned"
+  }
 }
 
 resource "aws_internet_gateway" "existingsg-example-com" {

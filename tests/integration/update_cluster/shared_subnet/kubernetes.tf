@@ -224,11 +224,21 @@ resource "aws_iam_role_policy" "nodes-sharedsubnet-example-com" {
 resource "aws_iam_role" "masters-sharedsubnet-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.sharedsubnet.example.com_policy")
   name               = "masters.sharedsubnet.example.com"
+  tags = {
+    "KubernetesCluster"                              = "sharedsubnet.example.com"
+    "Name"                                           = "masters.sharedsubnet.example.com"
+    "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-sharedsubnet-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.sharedsubnet.example.com_policy")
   name               = "nodes.sharedsubnet.example.com"
+  tags = {
+    "KubernetesCluster"                              = "sharedsubnet.example.com"
+    "Name"                                           = "nodes.sharedsubnet.example.com"
+    "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
+  }
 }
 
 resource "aws_key_pair" "kubernetes-sharedsubnet-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {

@@ -1697,7 +1697,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "bastions.privatecalico.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     },
     "AWSIAMRolemastersprivatecalicoexamplecom": {
@@ -1715,7 +1729,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.privatecalico.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     },
     "AWSIAMRolenodesprivatecalicoexamplecom": {
@@ -1733,7 +1761,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.privatecalico.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     },
     "AWSRoute53RecordSetapiprivatecalicoexamplecom": {

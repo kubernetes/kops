@@ -391,11 +391,21 @@ resource "aws_iam_role_policy" "nodes-ha-example-com" {
 resource "aws_iam_role" "masters-ha-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.ha.example.com_policy")
   name               = "masters.ha.example.com"
+  tags = {
+    "KubernetesCluster"                    = "ha.example.com"
+    "Name"                                 = "masters.ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-ha-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.ha.example.com_policy")
   name               = "nodes.ha.example.com"
+  tags = {
+    "KubernetesCluster"                    = "ha.example.com"
+    "Name"                                 = "nodes.ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
+  }
 }
 
 resource "aws_internet_gateway" "ha-example-com" {
