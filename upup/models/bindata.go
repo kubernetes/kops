@@ -32011,7 +32011,7 @@ func cloudupResourcesAddonsNetworkingKopeIoK8s112Yaml() (*asset, error) {
 	return a, nil
 }
 
-var _cloudupResourcesAddonsNetworkingKuberouterK8s112YamlTemplate = []byte(`# Pulled and modified from https://raw.githubusercontent.com/cloudnativelabs/kube-router/v1.0.1/daemonset/kubeadm-kuberouter.yaml
+var _cloudupResourcesAddonsNetworkingKuberouterK8s112YamlTemplate = []byte(`# Pulled and modified from https://raw.githubusercontent.com/cloudnativelabs/kube-router/v1.1.1/daemonset/kubeadm-kuberouter.yaml
 
 apiVersion: v1
 kind: ConfigMap
@@ -32069,7 +32069,7 @@ spec:
       serviceAccountName: kube-router
       containers:
       - name: kube-router
-        image: docker.io/cloudnativelabs/kube-router:v1.0.1
+        image: docker.io/cloudnativelabs/kube-router:v1.1.1
         args:
         - --run-router=true
         - --run-firewall=true
@@ -32110,7 +32110,7 @@ spec:
           readOnly: false
       initContainers:
       - name: install-cni
-        image: docker.io/cloudnativelabs/kube-router:v1.0.1
+        image: docker.io/cloudnativelabs/kube-router:v1.1.1
         command:
         - /bin/sh
         - -c
@@ -32156,7 +32156,7 @@ metadata:
   namespace: kube-system
 ---
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: kube-router
   namespace: kube-system
@@ -32191,7 +32191,7 @@ rules:
       - watch
 ---
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: kube-router
 roleRef:
