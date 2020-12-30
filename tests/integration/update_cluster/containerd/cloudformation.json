@@ -1073,7 +1073,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "containerd.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.containerd.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/containerd.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     },
     "AWSIAMRolenodescontainerdexamplecom": {
@@ -1091,7 +1105,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "containerd.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.containerd.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/containerd.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     }
   }

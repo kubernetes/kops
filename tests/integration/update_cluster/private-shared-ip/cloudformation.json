@@ -1552,7 +1552,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "bastions.private-shared-ip.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     },
     "AWSIAMRolemastersprivatesharedipexamplecom": {
@@ -1570,7 +1584,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.private-shared-ip.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     },
     "AWSIAMRolenodesprivatesharedipexamplecom": {
@@ -1588,7 +1616,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.private-shared-ip.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     },
     "AWSRoute53RecordSetapiprivatesharedipexamplecom": {

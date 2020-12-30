@@ -1673,7 +1673,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "mixedinstances.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.mixedinstances.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/mixedinstances.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     },
     "AWSIAMRolenodesmixedinstancesexamplecom": {
@@ -1691,7 +1705,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "mixedinstances.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.mixedinstances.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/mixedinstances.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     }
   }

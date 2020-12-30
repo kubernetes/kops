@@ -386,16 +386,31 @@ resource "aws_iam_role_policy" "nodes-privatekopeio-example-com" {
 resource "aws_iam_role" "bastions-privatekopeio-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privatekopeio.example.com_policy")
   name               = "bastions.privatekopeio.example.com"
+  tags = {
+    "KubernetesCluster"                               = "privatekopeio.example.com"
+    "Name"                                            = "bastions.privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "masters-privatekopeio-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.privatekopeio.example.com_policy")
   name               = "masters.privatekopeio.example.com"
+  tags = {
+    "KubernetesCluster"                               = "privatekopeio.example.com"
+    "Name"                                            = "masters.privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-privatekopeio-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.privatekopeio.example.com_policy")
   name               = "nodes.privatekopeio.example.com"
+  tags = {
+    "KubernetesCluster"                               = "privatekopeio.example.com"
+    "Name"                                            = "nodes.privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+  }
 }
 
 resource "aws_internet_gateway" "privatekopeio-example-com" {

@@ -380,16 +380,31 @@ resource "aws_iam_role_policy" "nodes-privatecalico-example-com" {
 resource "aws_iam_role" "bastions-privatecalico-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privatecalico.example.com_policy")
   name               = "bastions.privatecalico.example.com"
+  tags = {
+    "KubernetesCluster"                               = "privatecalico.example.com"
+    "Name"                                            = "bastions.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "masters-privatecalico-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.privatecalico.example.com_policy")
   name               = "masters.privatecalico.example.com"
+  tags = {
+    "KubernetesCluster"                               = "privatecalico.example.com"
+    "Name"                                            = "masters.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-privatecalico-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.privatecalico.example.com_policy")
   name               = "nodes.privatecalico.example.com"
+  tags = {
+    "KubernetesCluster"                               = "privatecalico.example.com"
+    "Name"                                            = "nodes.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
 }
 
 resource "aws_internet_gateway" "privatecalico-example-com" {
