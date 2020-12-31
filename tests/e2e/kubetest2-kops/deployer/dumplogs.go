@@ -23,23 +23,25 @@ import (
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
-func (d *deployer) Down() error {
-	if err := d.init(); err != nil {
-		return err
-	}
-	if err := d.DumpClusterLogs(); err != nil {
-		klog.Warningf("Dumping cluster logs at the start of Down() failed: %s", err)
-	}
+func (d *deployer) DumpClusterLogs() error {
 
 	args := []string{
-		d.KopsBinaryPath, "delete", "cluster",
+		d.KopsBinaryPath, "toolbox", "dump",
 		"--name", d.ClusterName,
-		"--yes",
+		"--dir", d.ArtifactsDir,
+		"--private-key", d.SSHPrivateKeyPath,
 	}
 	klog.Info(strings.Join(args, " "))
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.SetEnv(d.env()...)
+	if err := runWithOutput(cmd); err != nil {
+		return err
+	}
 
+	return nil
+}
+
+func runWithOutput(cmd exec.Cmd) error {
 	exec.InheritOutput(cmd)
 	return cmd.Run()
 }
