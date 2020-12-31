@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 
 	"k8s.io/klog/v2"
 )
@@ -136,4 +137,23 @@ func stateStore(cloudProvider string) string {
 		}
 	}
 	return ss
+}
+
+// the default is $ARTIFACTS if set, otherwise ./_artifacts
+// constructed as an absolute path to help the ginkgo tester because
+// for some reason it needs an absolute path to the kubeconfig
+func defaultArtifactsDir() (string, error) {
+	if path, set := os.LookupEnv("ARTIFACTS"); set {
+		absPath, err := filepath.Abs(path)
+		if err != nil {
+			return "", fmt.Errorf("failed to convert filepath from $ARTIFACTS (%s) to absolute path: %s", path, err)
+		}
+		return absPath, nil
+	}
+
+	absPath, err := filepath.Abs("_artifacts")
+	if err != nil {
+		return "", fmt.Errorf("when constructing default artifacts dir, failed to get absolute path: %s", err)
+	}
+	return absPath, nil
 }
