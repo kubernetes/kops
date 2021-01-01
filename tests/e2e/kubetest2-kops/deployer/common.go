@@ -50,6 +50,11 @@ func (d *deployer) initialize() error {
 			return fmt.Errorf("init failed to check up flags: %v", err)
 		}
 	}
+	if d.commonOptions.ShouldUp() || d.commonOptions.ShouldTest() {
+		if d.KubernetesVersion == "" {
+			return errors.New("missing required --kubernetes-version flag")
+		}
+	}
 	return nil
 }
 

@@ -47,6 +47,7 @@ func (d *deployer) Up() error {
 		"--name", d.ClusterName,
 		"--admin-access", publicIP,
 		"--cloud", d.CloudProvider,
+		"--kubernetes-version", d.KubernetesVersion,
 		"--master-count", "1",
 		"--master-size", "c5.large",
 		"--master-volume-size", "48",
@@ -57,6 +58,7 @@ func (d *deployer) Up() error {
 		"--zones", strings.Join(zones, ","),
 		"--yes",
 	}
+
 	klog.Info(strings.Join(args, " "))
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.SetEnv(d.env()...)
