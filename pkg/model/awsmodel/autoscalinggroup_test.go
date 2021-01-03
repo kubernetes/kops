@@ -83,13 +83,13 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 }
 
 func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
-	const sgID = "sg-01234567890abcdef"
+	const sgIDAPIServer = "sg-01234567890abcdef"
 
 	cluster := buildMinimalCluster()
 	cluster.Spec.API = &kops.AccessSpec{
 		LoadBalancer: &kops.LoadBalancerAccessSpec{
 			Class:                    kops.LoadBalancerClassNetwork,
-			AdditionalSecurityGroups: []string{sgID},
+			AdditionalSecurityGroups: []string{sgIDAPIServer},
 		},
 	}
 
@@ -108,8 +108,9 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 			Name: "bastion1",
 		},
 		Spec: kops.InstanceGroupSpec{
-			Role:    kops.InstanceGroupRoleBastion,
-			Subnets: subnets,
+			Role:                     kops.InstanceGroupRoleBastion,
+			Subnets:                  subnets,
+			AdditionalSecurityGroups: []string{"sg-1234567890abcdef0"},
 		},
 	}
 	igs[roleMaster] = &kops.InstanceGroup{
@@ -117,8 +118,9 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 			Name: "master1",
 		},
 		Spec: kops.InstanceGroupSpec{
-			Role:    kops.InstanceGroupRoleMaster,
-			Subnets: subnets,
+			Role:                     kops.InstanceGroupRoleMaster,
+			Subnets:                  subnets,
+			AdditionalSecurityGroups: []string{"sg-234567890abcdef01"},
 		},
 	}
 	igs[roleNode] = &kops.InstanceGroup{
@@ -126,8 +128,9 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 			Name: "node1",
 		},
 		Spec: kops.InstanceGroupSpec{
-			Role:    kops.InstanceGroupRoleNode,
-			Subnets: subnets,
+			Role:                     kops.InstanceGroupRoleNode,
+			Subnets:                  subnets,
+			AdditionalSecurityGroups: []string{"sg-34567890abcdef012"},
 		},
 	}
 
@@ -147,13 +150,16 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 
 	b.Build(c)
 
-	hasDesignatedSecurityGroup := func(lt *awstasks.LaunchTemplate) bool {
+	hasSecurityGroup := func(lt *awstasks.LaunchTemplate, id string) bool {
 		for _, sg := range lt.SecurityGroups {
-			if sg.ID != nil && *sg.ID == sgID {
+			if sg.ID != nil && *sg.ID == id {
 				return true
 			}
 		}
 		return false
+	}
+	hasDesignatedSecurityGroup := func(lt *awstasks.LaunchTemplate) bool {
+		return hasSecurityGroup(lt, sgIDAPIServer)
 	}
 	launchTemplateForGroup := func(t *testing.T, ig *kops.InstanceGroup) *awstasks.LaunchTemplate {
 		t.Helper()
@@ -181,8 +187,14 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 	for _, test := range tests {
 		role := test.ig.Spec.Role
 		t.Run(string(role), func(t *testing.T) {
-			if want, got := test.expectHasSG, hasDesignatedSecurityGroup(launchTemplateForGroup(t, test.ig)); got != want {
+			lt := launchTemplateForGroup(t, test.ig)
+			if want, got := test.expectHasSG, hasDesignatedSecurityGroup(lt); got != want {
 				t.Errorf("%q (role %q): launch template includes API server security group: want %t, got %t", test.ig.Name, role, want, got)
+			}
+			for _, sg := range test.ig.Spec.AdditionalSecurityGroups {
+				if want, got := true, hasSecurityGroup(lt, sg); got != want {
+					t.Errorf("%q (role %q): launch template includes additional security group %q: want %t, got %t", test.ig.Name, role, sg, want, got)
+				}
 			}
 		})
 	}
