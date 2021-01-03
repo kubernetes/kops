@@ -8,8 +8,8 @@ spec:
     loadBalancer:
       type: Public
       additionalSecurityGroups:
-      - sg-exampleid3
-      - sg-exampleid4
+      - sg-exampleid5
+      - sg-exampleid6
       crossZoneLoadBalancing: true
       class: Network
       sslCertificate: arn:aws:acm:us-test-1:000000000000:certificate/123456789012-1234-1234-1234-12345678
