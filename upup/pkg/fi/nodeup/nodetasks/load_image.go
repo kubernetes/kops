@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/distributions"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -38,6 +39,7 @@ type LoadImageTask struct {
 	Name    string
 	Sources []string
 	Hash    string
+	Distro  distributions.Distribution
 	Runtime string
 }
 
@@ -150,7 +152,11 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 	case "docker":
 		args = []string{"docker", "load", "-i", tarFile}
 	case "containerd":
-		args = []string{"ctr", "--namespace", "k8s.io", "images", "import", tarFile}
+		args = []string{"ctr"}
+		if e.Distro == distributions.DistributionFlatcar {
+			args = append(args, []string{"--address", "/run/docker/libcontainerd/docker-containerd.sock"}...)
+		}
+		args = append(args, []string{"--namespace", "k8s.io", "images", "import", tarFile}...)
 	default:
 		return fmt.Errorf("unknown container runtime: %s", runtime)
 	}

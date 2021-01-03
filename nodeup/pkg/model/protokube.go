@@ -34,6 +34,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/distributions"
 	"k8s.io/kops/util/pkg/proxy"
 
 	"github.com/blang/semver/v4"
@@ -62,6 +63,7 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:    "protokube",
 			Sources: protokubeImage.Sources,
 			Hash:    protokubeImage.Hash,
+			Distro:  t.Distribution,
 			Runtime: t.Cluster.Spec.ContainerRuntime,
 		})
 	}
@@ -191,7 +193,11 @@ func (t *ProtokubeBuilder) ProtokubeContainerRemoveCommand() (string, error) {
 	if t.Cluster.Spec.ContainerRuntime == "docker" {
 		containerRemoveCommand = "-/usr/bin/docker rm protokube"
 	} else if t.Cluster.Spec.ContainerRuntime == "containerd" {
-		containerRemoveCommand = "-/usr/bin/ctr --namespace k8s.io container rm protokube"
+		if t.Distribution == distributions.DistributionFlatcar {
+			containerRemoveCommand = "-/usr/bin/ctr --address /run/docker/libcontainerd/docker-containerd.sock --namespace k8s.io container rm protokube"
+		} else {
+			containerRemoveCommand = "-/usr/bin/ctr --namespace k8s.io container rm protokube"
+		}
 	} else {
 		return "", fmt.Errorf("unable to create protokube remove command for unsupported runtime %q", t.Cluster.Spec.ContainerRuntime)
 	}
@@ -257,8 +263,12 @@ func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
 		}...)
 
 	} else if t.Cluster.Spec.ContainerRuntime == "containerd" {
+		containerRunArgs = append(containerRunArgs, []string{"/usr/bin/ctr"}...)
+		if t.Distribution == distributions.DistributionFlatcar {
+			containerRunArgs = append(containerRunArgs, []string{"--address /run/docker/libcontainerd/docker-containerd.sock"}...)
+		}
 		containerRunArgs = append(containerRunArgs, []string{
-			"/usr/bin/ctr --namespace k8s.io run",
+			"--namespace k8s.io run",
 			"--net-host",
 			"--with-ns pid:/proc/1/ns/pid",
 			"--privileged",

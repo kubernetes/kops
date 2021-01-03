@@ -262,6 +262,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		taskMap["LoadImage."+strconv.Itoa(i)] = &nodetasks.LoadImageTask{
 			Sources: image.Sources,
 			Hash:    image.Hash,
+			Distro:  distribution,
 			Runtime: c.cluster.Spec.ContainerRuntime,
 		}
 	}

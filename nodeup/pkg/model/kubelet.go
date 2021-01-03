@@ -226,7 +226,11 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		flags += " --container-runtime=remote"
 		flags += " --runtime-request-timeout=15m"
 		if b.Cluster.Spec.Containerd == nil || b.Cluster.Spec.Containerd.Address == nil {
-			flags += " --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
+			if b.Distribution == distributions.DistributionFlatcar {
+				flags += " --container-runtime-endpoint=unix:///run/docker/libcontainerd/docker-containerd.sock"
+			} else {
+				flags += " --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
+			}
 		} else {
 			flags += " --container-runtime-endpoint=unix://" + fi.StringValue(b.Cluster.Spec.Containerd.Address)
 		}

@@ -22,6 +22,7 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/distributions"
 )
 
 func TestProtokubeBuilder_Docker(t *testing.T) {
@@ -40,7 +41,18 @@ func TestProtokubeBuilder_containerd(t *testing.T) {
 	})
 }
 
+func TestProtokubeBuilder_containerd_flatcar(t *testing.T) {
+	RunGoldenTest(t, "tests/protokube/containerd-flatcar", "protokube", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+		builder := ProtokubeBuilder{NodeupModelContext: nodeupModelContext}
+		populateImage(nodeupModelContext)
+		nodeupModelContext.Distribution = distributions.DistributionFlatcar
+		return builder.Build(target)
+	})
+}
+
 func populateImage(ctx *NodeupModelContext) {
+	ctx.Architecture = architectures.ArchitectureAmd64
+	ctx.Distribution = distributions.DistributionUbuntu2004
 	if ctx.NodeupConfig == nil {
 		ctx.NodeupConfig = &nodeup.Config{}
 	}

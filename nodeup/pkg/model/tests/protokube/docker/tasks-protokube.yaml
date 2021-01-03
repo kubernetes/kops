@@ -71,6 +71,7 @@ Key:
 Name: kops
 ServerURL: https://127.0.0.1
 ---
+Distro: focal
 Hash: ""
 Name: protokube
 Runtime: docker
