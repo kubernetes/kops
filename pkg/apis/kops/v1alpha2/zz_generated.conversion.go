@@ -3213,6 +3213,7 @@ func autoConvert_v1alpha2_EtcdMemberSpec_To_kops_EtcdMemberSpec(in *EtcdMemberSp
 	out.InstanceGroup = in.InstanceGroup
 	out.VolumeType = in.VolumeType
 	out.VolumeIops = in.VolumeIops
+	out.VolumeThroughput = in.VolumeThroughput
 	out.VolumeSize = in.VolumeSize
 	out.KmsKeyId = in.KmsKeyId
 	out.EncryptedVolume = in.EncryptedVolume
@@ -3229,6 +3230,7 @@ func autoConvert_kops_EtcdMemberSpec_To_v1alpha2_EtcdMemberSpec(in *kops.EtcdMem
 	out.InstanceGroup = in.InstanceGroup
 	out.VolumeType = in.VolumeType
 	out.VolumeIops = in.VolumeIops
+	out.VolumeThroughput = in.VolumeThroughput
 	out.VolumeSize = in.VolumeSize
 	out.KmsKeyId = in.KmsKeyId
 	out.EncryptedVolume = in.EncryptedVolume
