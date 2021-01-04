@@ -97,7 +97,13 @@ func (d *deployer) env() []string {
 		"KOPS_RUN_TOO_NEW_VERSION=1",
 	}...)
 	if d.CloudProvider == "aws" {
-		vars = append(vars, fmt.Sprintf("AWS_SHARED_CREDENTIALS_FILE=%v", os.Getenv("AWS_SHARED_CREDENTIALS_FILE")))
+		// Pass through some env vars if set
+		for _, k := range []string{"AWS_PROFILE", "AWS_SHARED_CREDENTIALS_FILE"} {
+			v := os.Getenv(k)
+			if v != "" {
+				vars = append(vars, k+"="+v)
+			}
+		}
 	}
 	return vars
 }
