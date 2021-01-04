@@ -197,6 +197,7 @@ test-e2e:
 		--build --up --down \
 		--cloud-provider=aws \
 		--kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
+		--kubernetes-version=v1.19.4 \
 		--test=ginkgo \
 		-- \
 		--test-package-version=v1.19.4 \
