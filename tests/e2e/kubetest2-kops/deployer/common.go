@@ -23,6 +23,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"k8s.io/klog/v2"
 )
@@ -79,6 +80,7 @@ func (d *deployer) verifyKopsFlags() error {
 
 	switch d.CloudProvider {
 	case "aws":
+	case "gce":
 	default:
 		return errors.New("unsupported --cloud-provider value")
 	}
@@ -104,7 +106,11 @@ func (d *deployer) env() []string {
 
 // featureFlags returns the kops feature flags to set
 func (d *deployer) featureFlags() string {
-	return "+SpecOverrideFlag"
+	ff := []string{
+		"+SpecOverrideFlag",
+		"+AlphaAllowGCE",
+	}
+	return strings.Join(ff, ",")
 }
 
 // defaultClusterName returns a kops cluster name to use when ClusterName is not set
