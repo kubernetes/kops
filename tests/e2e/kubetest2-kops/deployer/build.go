@@ -44,7 +44,7 @@ func (d *deployer) verifyBuildFlags() error {
 		if goPath := os.Getenv("GOPATH"); goPath != "" {
 			d.KopsRoot = path.Join(goPath, "src", "k8s.io", "kops")
 		} else {
-			return errors.New("required kops-root when building from source")
+			return errors.New("required --kops-root when building from source")
 		}
 	}
 	if d.StageLocation != "" {
@@ -63,7 +63,7 @@ func (d *deployer) verifyBuildFlags() error {
 		return err
 	}
 	if !fi.Mode().IsDir() {
-		return errors.New("kops-root must be a directory")
+		return errors.New("--kops-root must be a directory")
 	}
 
 	d.BuildOptions.KopsRoot = d.KopsRoot

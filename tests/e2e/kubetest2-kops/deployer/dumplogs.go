@@ -17,6 +17,9 @@ limitations under the License.
 package deployer
 
 import (
+	"fmt"
+	"os"
+	"path"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -38,6 +41,36 @@ func (d *deployer) DumpClusterLogs() error {
 		return err
 	}
 
+	if err := d.dumpClusterManifest(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *deployer) dumpClusterManifest() error {
+	resourceTypes := []string{"cluster", "instancegroups"}
+	for _, rt := range resourceTypes {
+		yamlFile, err := os.Create(path.Join(d.ArtifactsDir, fmt.Sprintf("%v.yaml", rt)))
+		if err != nil {
+			panic(err)
+		}
+		defer yamlFile.Close()
+
+		args := []string{
+			d.KopsBinaryPath, "get", rt,
+			"--name", d.ClusterName,
+			"-o", "yaml",
+		}
+		klog.Info(strings.Join(args, " "))
+
+		cmd := exec.Command(args[0], args[1:]...)
+		cmd.SetStdout(yamlFile)
+		cmd.SetEnv(d.env()...)
+		if err := cmd.Run(); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
