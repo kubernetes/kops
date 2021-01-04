@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/util"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
@@ -37,11 +38,6 @@ func (d *deployer) Up() error {
 		return err
 	}
 
-	zones, err := aws.RandomZones(1)
-	if err != nil {
-		return err
-	}
-
 	args := []string{
 		d.KopsBinaryPath, "create", "cluster",
 		"--name", d.ClusterName,
@@ -49,14 +45,32 @@ func (d *deployer) Up() error {
 		"--cloud", d.CloudProvider,
 		"--kubernetes-version", d.KubernetesVersion,
 		"--master-count", "1",
-		"--master-size", "c5.large",
 		"--master-volume-size", "48",
 		"--node-count", "4",
 		"--node-volume-size", "48",
 		"--override", "cluster.spec.nodePortAccess=0.0.0.0/0",
 		"--ssh-public-key", d.SSHPublicKeyPath,
-		"--zones", strings.Join(zones, ","),
 		"--yes",
+	}
+
+	if d.CloudProvider == "aws" {
+		zones, err := aws.RandomZones(1)
+		if err != nil {
+			return err
+		}
+		args = append(args, "--zones", strings.Join(zones, ","))
+
+		args = append(args, "--master-size", "c5.large")
+	}
+
+	if d.CloudProvider == "gce" {
+		zones, err := gce.RandomZones(1)
+		if err != nil {
+			return err
+		}
+		args = append(args, "--zones", strings.Join(zones, ","))
+
+		args = append(args, "--master-size", "e2-standard-2")
 	}
 
 	klog.Info(strings.Join(args, " "))
