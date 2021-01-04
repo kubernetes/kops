@@ -633,6 +633,10 @@ spec:
                             description: VolumeSize is the underlying cloud volume size
                             format: int32
                             type: integer
+                          volumeThroughput:
+                            description: Parameter for disks that support provisioned throughput
+                            format: int32
+                            type: integer
                           volumeType:
                             description: VolumeType is the underlying cloud storage class
                             type: string

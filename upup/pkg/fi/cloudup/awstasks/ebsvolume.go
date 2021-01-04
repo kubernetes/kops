@@ -40,6 +40,7 @@ type EBSVolume struct {
 	SizeGB           *int64
 	Tags             map[string]string
 	VolumeIops       *int64
+	VolumeThroughput *int64
 	VolumeType       *string
 }
 
@@ -105,6 +106,7 @@ func (e *EBSVolume) find(cloud awsup.AWSCloud) (*EBSVolume, error) {
 		Encrypted:        v.Encrypted,
 		Name:             e.Name,
 		VolumeIops:       v.Iops,
+		VolumeThroughput: v.Throughput,
 	}
 
 	actual.Tags = mapEC2TagsToMap(v.Tags)
@@ -145,6 +147,7 @@ func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) e
 			KmsKeyId:          e.KmsKeyId,
 			Encrypted:         e.Encrypted,
 			Iops:              e.VolumeIops,
+			Throughput:        e.VolumeThroughput,
 			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeVolume, e.Tags),
 		}
 
@@ -188,6 +191,7 @@ type terraformVolume struct {
 	Size             *int64            `json:"size,omitempty" cty:"size"`
 	Type             *string           `json:"type,omitempty" cty:"type"`
 	Iops             *int64            `json:"iops,omitempty" cty:"iops"`
+	Throughput       *int64            `json:"throughput,omitempty" cty:"throughput"`
 	KmsKeyId         *string           `json:"kms_key_id,omitempty" cty:"kms_key_id"`
 	Encrypted        *bool             `json:"encrypted,omitempty" cty:"encrypted"`
 	Tags             map[string]string `json:"tags,omitempty" cty:"tags"`
@@ -199,6 +203,7 @@ func (_ *EBSVolume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes 
 		Size:             e.SizeGB,
 		Type:             e.VolumeType,
 		Iops:             e.VolumeIops,
+		Throughput:       e.VolumeThroughput,
 		KmsKeyId:         e.KmsKeyId,
 		Encrypted:        e.Encrypted,
 		Tags:             e.Tags,
@@ -216,6 +221,7 @@ type cloudformationVolume struct {
 	Size             *int64              `json:"Size,omitempty"`
 	Type             *string             `json:"VolumeType,omitempty"`
 	Iops             *int64              `json:"Iops,omitempty"`
+	Throughput       *int64              `json:"Throughput,omitempty"`
 	KmsKeyId         *string             `json:"KmsKeyId,omitempty"`
 	Encrypted        *bool               `json:"Encrypted,omitempty"`
 	Tags             []cloudformationTag `json:"Tags,omitempty"`
@@ -227,6 +233,7 @@ func (_ *EBSVolume) RenderCloudformation(t *cloudformation.CloudformationTarget,
 		Size:             e.SizeGB,
 		Type:             e.VolumeType,
 		Iops:             e.VolumeIops,
+		Throughput:       e.VolumeThroughput,
 		KmsKeyId:         e.KmsKeyId,
 		Encrypted:        e.Encrypted,
 		Tags:             buildCloudformationTags(e.Tags),

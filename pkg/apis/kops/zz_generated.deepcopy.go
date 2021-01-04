@@ -1534,6 +1534,11 @@ func (in *EtcdMemberSpec) DeepCopyInto(out *EtcdMemberSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.VolumeThroughput != nil {
+		in, out := &in.VolumeThroughput, &out.VolumeThroughput
+		*out = new(int32)
+		**out = **in
+	}
 	if in.VolumeSize != nil {
 		in, out := &in.VolumeSize, &out.VolumeSize
 		*out = new(int32)
