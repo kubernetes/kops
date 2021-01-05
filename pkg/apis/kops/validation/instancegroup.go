@@ -69,6 +69,10 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud) field.ErrorLis
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "rootVolumeIops"), g.Spec.RootVolumeIops, "RootVolumeIops must be greater than 0"))
 	}
 
+	if fi.Int32Value(g.Spec.RootVolumeThroughput) < 0 {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "rootVolumeThroughput"), g.Spec.RootVolumeThroughput, "RootVolumeThroughput must be greater than 0"))
+	}
+
 	// @check all the hooks are valid in this instancegroup
 	for i := range g.Spec.Hooks {
 		allErrs = append(allErrs, validateHookSpec(&g.Spec.Hooks[i], field.NewPath("spec", "hooks").Index(i))...)
