@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/blang/semver/v4"
-	"k8s.io/klog/v2"
+	"github.com/pelletier/go-toml"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -44,11 +44,7 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 	containerd := clusterSpec.Containerd
 
 	if clusterSpec.ContainerRuntime == "containerd" {
-		if b.IsKubernetesLT("1.18") {
-			klog.Warningf("kubernetes %s is untested with containerd", clusterSpec.KubernetesVersion)
-		}
-
-		// Set containerd based on Kubernetes version
+		// Set version based on Kubernetes version
 		if fi.StringValue(containerd.Version) == "" {
 			if b.IsKubernetesGTE("1.19") {
 				containerd.Version = fi.String("1.4.3")
@@ -56,10 +52,17 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 				containerd.Version = fi.String("1.3.9")
 			}
 		}
-
-		// Apply defaults for containerd running in container runtime mode
+		// Set default log level to INFO
 		containerd.LogLevel = fi.String("info")
-		containerd.ConfigOverride = fi.String("version = 2")
+		// Build config file for containerd running in CRI mode
+		if fi.StringValue(containerd.ConfigOverride) == "" {
+			config, _ := toml.Load("")
+			config.SetPath([]string{"version"}, int64(2))
+			for name, endpoints := range containerd.RegistryMirrors {
+				config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "registry", "mirrors", name, "endpoint"}, endpoints)
+			}
+			containerd.ConfigOverride = fi.String(config.String())
+		}
 
 	} else if clusterSpec.ContainerRuntime == "docker" {
 		// Docker version should always be available
@@ -77,10 +80,12 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 				return nil
 			}
 		}
-
-		// Apply defaults for containerd running in Docker mode
+		// Set default log level to INFO
 		containerd.LogLevel = fi.String("info")
-		containerd.ConfigOverride = fi.String("disabled_plugins = [\"cri\"]\n")
+		// Build config file for containerd running in Docker mode
+		config, _ := toml.Load("")
+		config.SetPath([]string{"disabled_plugins"}, []string{"cri"})
+		containerd.ConfigOverride = fi.String(config.String())
 
 	} else {
 		// Unknown container runtime, should not install containerd

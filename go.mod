@@ -86,6 +86,7 @@ require (
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/miekg/coredns v0.0.0-20161111164017-20e25559d5ea
 	github.com/mitchellh/mapstructure v1.1.2
+	github.com/pelletier/go-toml v1.8.1
 	github.com/pkg/sftp v0.0.0-20160930220758-4d0e916071f6
 	github.com/prometheus/client_golang v1.7.1
 	github.com/sergi/go-diff v1.0.0
