@@ -206,6 +206,9 @@ func TestValidBootDevice(t *testing.T) {
 			volumeType: "io1",
 		},
 		{
+			volumeType: "io2",
+		},
+		{
 			volumeType: "st1",
 			expected:   []string{"Unsupported value::spec.rootVolumeType"},
 		},
