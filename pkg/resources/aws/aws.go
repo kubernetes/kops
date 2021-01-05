@@ -933,7 +933,10 @@ func DeleteDhcpOptions(cloud fi.Cloud, r *resources.Resource) error {
 	}
 	_, err := c.EC2().DeleteDhcpOptions(request)
 	if err != nil {
-		if IsDependencyViolation(err) {
+		if awsup.AWSErrorCode(err) == "InvalidDhcpOptionsID.NotFound" {
+			klog.V(2).Infof("Got InvalidDhcpOptionsID.NotFound error deleting DhcpOptions %q; will treat as already-deleted", id)
+			return nil
+		} else if IsDependencyViolation(err) {
 			return err
 		}
 		return fmt.Errorf("error deleting DhcpOptions %q: %v", id, err)
