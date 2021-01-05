@@ -257,12 +257,10 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys), b.Cluster.Spec.IAM.Legacy)
 	}
 
-	if !b.UseServiceAccountIAM {
-		if b.Cluster.Spec.IAM.Legacy {
-			addLegacyDNSControllerPermissions(b, p)
-		}
-		AddDNSControllerPermissions(b, p)
+	if b.Cluster.Spec.IAM.Legacy {
+		addLegacyDNSControllerPermissions(b, p)
 	}
+	AddDNSControllerPermissions(b, p)
 
 	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {
 		addECRPermissions(p)
