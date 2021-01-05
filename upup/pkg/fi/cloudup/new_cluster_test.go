@@ -50,6 +50,10 @@ func TestRemoveSharedPrefix(t *testing.T) {
 			Output: []string{"zza", "zzb", ""},
 		},
 		{
+			Input:  []string{"us-test-1a-1", "us-test-1a-2", "us-test-1a-3"},
+			Output: []string{"etcd-1", "etcd-2", "etcd-3"},
+		},
+		{
 			Input:  []string{"us-test-1a-1", "us-test-1b-1", "us-test-1a-2", "us-test-1b-2", "us-test-1a-3"},
 			Output: []string{"a-1", "b-1", "a-2", "b-2", "a-3"},
 		},
