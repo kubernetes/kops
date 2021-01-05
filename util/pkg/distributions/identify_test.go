@@ -47,7 +47,7 @@ func TestFindDistribution(t *testing.T) {
 		{
 			rootfs:   "coreos",
 			err:      fmt.Errorf("unsupported distro: coreos-2247.7.0"),
-			expected: "",
+			expected: Distribution{},
 		},
 		{
 			rootfs:   "containeros",
@@ -57,7 +57,7 @@ func TestFindDistribution(t *testing.T) {
 		{
 			rootfs:   "debian8",
 			err:      fmt.Errorf("unsupported distro: debian-8"),
-			expected: "",
+			expected: Distribution{},
 		},
 		{
 			rootfs:   "debian9",
@@ -107,7 +107,7 @@ func TestFindDistribution(t *testing.T) {
 		{
 			rootfs:   "notfound",
 			err:      fmt.Errorf("reading /etc/os-release: open tests/notfound/etc/os-release: no such file or directory"),
-			expected: "",
+			expected: Distribution{},
 		},
 	}
 
@@ -118,7 +118,7 @@ func TestFindDistribution(t *testing.T) {
 			continue
 		}
 		if actual != test.expected {
-			t.Errorf("unexpected distribution, actual=%q, expected=%q", actual, test.expected)
+			t.Errorf("unexpected distribution, actual=%v, expected=%v", actual, test.expected)
 		}
 	}
 }
