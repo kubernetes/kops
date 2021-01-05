@@ -39,7 +39,7 @@ import (
 const (
 	DefaultEtcdVolumeSize             = 20
 	DefaultAWSEtcdVolumeType          = "gp2"
-	DefaultAWSEtcdVolumeIops          = 100
+	DefaultAWSEtcdVolumeIonIops       = 100
 	DefaultAWSEtcdVolumeGp3Iops       = 3000
 	DefaultAWSEtcdVolumeGp3Throughput = 125
 	DefaultGCEEtcdVolumeType          = "pd-ssd"
@@ -122,13 +122,9 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 	volumeIops := fi.Int32Value(m.VolumeIops)
 	volumeThroughput := fi.Int32Value(m.VolumeThroughput)
 	switch volumeType {
-	case "io1":
+	case "io1", "io2":
 		if volumeIops <= 100 {
-			volumeIops = DefaultAWSEtcdVolumeIops
-		}
-	case "io2":
-		if volumeIops < 100 {
-			volumeIops = DefaultAWSEtcdVolumeIops
+			volumeIops = DefaultAWSEtcdVolumeIonIops
 		}
 	case "gp3":
 		if volumeIops < 3000 {
@@ -171,7 +167,7 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 		Encrypted:        fi.Bool(encrypted),
 		Tags:             tags,
 	}
-	if strings.Contains(volumeType, "io") || volumeType == "gp3" {
+	if volumeType == "io1" || volumeType == "io2" || volumeType == "gp3" {
 		// https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html
 		t.VolumeIops = i64(int64(volumeIops))
 		if volumeType == "io1" {
