@@ -258,6 +258,7 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 			actual.RootVolumeSize = b.Ebs.VolumeSize
 			actual.RootVolumeType = b.Ebs.VolumeType
 			actual.RootVolumeIops = b.Ebs.Iops
+			actual.RootVolumeThroughput = b.Ebs.Throughput
 			actual.RootVolumeEncryption = b.Ebs.Encrypted
 			if b.Ebs.KmsKeyId != nil {
 				actual.RootVolumeKmsKey = b.Ebs.KmsKeyId
