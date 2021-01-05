@@ -513,8 +513,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	// In certain configurations systemd-resolved will put the loopback address 127.0.0.53 as a nameserver into /etc/resolv.conf
 	// https://github.com/coredns/coredns/blob/master/plugin/loop/README.md#troubleshooting-loops-in-kubernetes-clusters
 	if c.ResolverConfig == nil {
-		switch b.Distribution {
-		case distributions.DistributionUbuntu1804, distributions.DistributionUbuntu2004, distributions.DistributionUbuntu2010:
+		if b.Distribution.HasLoopbackEtcResolvConf() {
 			c.ResolverConfig = s("/run/systemd/resolve/resolv.conf")
 		}
 	}
