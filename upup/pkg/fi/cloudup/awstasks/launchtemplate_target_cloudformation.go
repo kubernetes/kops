@@ -86,6 +86,8 @@ type cloudformationLaunchTemplateBlockDeviceEBS struct {
 	VolumeSize *int64 `json:"VolumeSize,omitempty"`
 	// IOPS is the provisioned iops
 	IOPS *int64 `json:"Iops,omitempty"`
+	// Throughput is the gp3 volume throughput
+	Throughput *int64 `json:"Throughput,omitempty"`
 	// DeleteOnTermination indicates the volume should die with the instance
 	DeleteOnTermination *bool `json:"DeleteOnTermination,omitempty"`
 	// Encrypted indicates the device is encrypted
@@ -252,6 +254,7 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 			EBS: &cloudformationLaunchTemplateBlockDeviceEBS{
 				DeleteOnTermination: fi.Bool(true),
 				IOPS:                x.EbsVolumeIops,
+				Throughput:          x.EbsVolumeThroughput,
 				VolumeSize:          x.EbsVolumeSize,
 				VolumeType:          x.EbsVolumeType,
 				Encrypted:           x.EbsEncrypted,

@@ -36,8 +36,12 @@ import (
 const (
 	// DefaultVolumeType is the default volume type
 	DefaultVolumeType = ec2.VolumeTypeGp2
-	// DefaultVolumeIops is the default volume iops
-	DefaultVolumeIops = 100
+	// DefaultVolumeIonIops is the default volume IOPS when volume type is io1 or io2
+	DefaultVolumeIonIops = 100
+	// DefaultVolumeGp3Iops is the default volume IOPS when volume type is gp3
+	DefaultVolumeGp3Iops = 3000
+	// DefaultVolumeGp3Throughput is the default volume throughput when volume type is gp3
+	DefaultVolumeGp3Throughput = 125
 	// DefaultVolumeDeleteOnTermination is the default volume behavior after instance termination
 	DefaultVolumeDeleteOnTermination = true
 	// DefaultVolumeEncryption is the default volume encryption behavior
@@ -156,6 +160,13 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	} else {
 		lt.RootVolumeKmsKey = fi.String("")
 	}
+	if fi.StringValue(ig.Spec.RootVolumeType) == ec2.VolumeTypeGp3 {
+		if fi.Int32Value(ig.Spec.RootVolumeThroughput) < 125 {
+			lt.RootVolumeThroughput = fi.Int64(int64(DefaultVolumeGp3Throughput))
+		} else {
+			lt.RootVolumeThroughput = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeThroughput)))
+		}
+	}
 	return lt, nil
 }
 
@@ -242,9 +253,15 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		}
 	}
 
-	if volumeType == ec2.VolumeTypeIo1 {
-		if fi.Int32Value(ig.Spec.RootVolumeIops) <= 0 {
-			t.RootVolumeIops = fi.Int64(int64(DefaultVolumeIops))
+	if volumeType == ec2.VolumeTypeIo1 || volumeType == ec2.VolumeTypeIo2 {
+		if fi.Int32Value(ig.Spec.RootVolumeIops) < 100 {
+			t.RootVolumeIops = fi.Int64(int64(DefaultVolumeIonIops))
+		} else {
+			t.RootVolumeIops = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops)))
+		}
+	} else if volumeType == ec2.VolumeTypeGp3 {
+		if fi.Int32Value(ig.Spec.RootVolumeIops) < 3000 {
+			t.RootVolumeIops = fi.Int64(int64(DefaultVolumeGp3Iops))
 		} else {
 			t.RootVolumeIops = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops)))
 		}
@@ -274,9 +291,16 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		if x.Type == "" {
 			x.Type = DefaultVolumeType
 		}
-		if x.Type == ec2.VolumeTypeIo1 {
+		if x.Type == ec2.VolumeTypeIo1 || x.Type == ec2.VolumeTypeIo2 {
 			if x.Iops == nil {
-				x.Iops = fi.Int64(DefaultVolumeIops)
+				x.Iops = fi.Int64(DefaultVolumeIonIops)
+			}
+		} else if x.Type == ec2.VolumeTypeGp3 {
+			if x.Iops == nil {
+				x.Iops = fi.Int64(DefaultVolumeGp3Iops)
+			}
+			if x.Throughput == nil {
+				x.Throughput = fi.Int64(DefaultVolumeGp3Throughput)
 			}
 		} else {
 			x.Iops = nil
@@ -296,6 +320,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 			EbsKmsKey:              x.Key,
 			EbsVolumeIops:          x.Iops,
 			EbsVolumeSize:          fi.Int64(x.Size),
+			EbsVolumeThroughput:    x.Throughput,
 			EbsVolumeType:          fi.String(x.Type),
 		})
 	}
