@@ -76,7 +76,7 @@ type LaunchConfiguration struct {
 	InstanceType *string
 	// RootVolumeDeleteOnTermination states if the root volume will be deleted after instance termination
 	RootVolumeDeleteOnTermination *bool
-	// If volume type is io1, then we need to specify the number of Iops.
+	// RootVolumeIops is the provisioned IOPS when the volume type is io1, io2 or gp3
 	RootVolumeIops *int64
 	// RootVolumeOptimization enables EBS optimization for an instance
 	RootVolumeOptimization *bool

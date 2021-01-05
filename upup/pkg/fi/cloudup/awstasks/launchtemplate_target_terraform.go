@@ -84,8 +84,10 @@ type terraformLaunchTemplateBlockDeviceEBS struct {
 	VolumeType *string `json:"volume_type,omitempty" cty:"volume_type"`
 	// VolumeSize is the volume size
 	VolumeSize *int64 `json:"volume_size,omitempty" cty:"volume_size"`
-	// IOPS is the provisioned iops
+	// IOPS is the provisioned IOPS
 	IOPS *int64 `json:"iops,omitempty" cty:"iops"`
+	// Throughput is the gp3 volume throughput
+	Throughput *int64 `json:"throughput,omitempty" cty:"throughput"`
 	// DeleteOnTermination indicates the volume should die with the instance
 	DeleteOnTermination *bool `json:"delete_on_termination,omitempty" cty:"delete_on_termination"`
 	// Encrypted indicates the device should be encrypted
@@ -272,6 +274,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 					Encrypted:           x.EbsEncrypted,
 					KmsKeyID:            x.EbsKmsKey,
 					IOPS:                x.EbsVolumeIops,
+					Throughput:          x.EbsVolumeThroughput,
 					VolumeSize:          x.EbsVolumeSize,
 					VolumeType:          x.EbsVolumeType,
 				},
@@ -290,6 +293,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 					DeleteOnTermination: fi.Bool(true),
 					Encrypted:           x.EbsEncrypted,
 					IOPS:                x.EbsVolumeIops,
+					Throughput:          x.EbsVolumeThroughput,
 					KmsKeyID:            x.EbsKmsKey,
 					VolumeSize:          x.EbsVolumeSize,
 					VolumeType:          x.EbsVolumeType,

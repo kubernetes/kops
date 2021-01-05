@@ -211,7 +211,7 @@ For example, to set up a 200GB gp2 root volume, your InstanceGroup spec might lo
 metadata:
   name: nodes
 spec:
-  machineType: t2.medium
+  machineType: t3.medium
   maxSize: 2
   minSize: 2
   role: Node
@@ -219,19 +219,35 @@ spec:
   rootVolumeType: gp2
 ```
 
-For example, to set up a 200GB io1 root volume with 200 provisioned Iops, your InstanceGroup spec might look like:
+Another example would be to set up a 200GB io1 root volume with 200 provisioned Iops, which would make your InstanceGroup spec look like:
 
 ```YAML
 metadata:
   name: nodes
 spec:
-  machineType: t2.medium
+  machineType: t3.medium
   maxSize: 2
   minSize: 2
   role: Node
   rootVolumeSize: 200
   rootVolumeType: io1
   rootVolumeIops: 200
+```
+
+As of kOps 1.19 you can use gp3 volumes for better performance,which would make your InstanceGroup spec look like:
+
+```YAML
+metadata:
+  name: nodes
+spec:
+  machineType: t3.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+  rootVolumeSize: 200
+  rootVolumeType: gp3
+  rootVolumeIops: 4000
+  rootVolumeThroughput: 200
 ```
 
 ## Encrypting the root volume

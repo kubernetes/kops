@@ -54,12 +54,14 @@ type LaunchTemplate struct {
 	InstanceMonitoring *bool
 	// InstanceType is the type of instance we are using
 	InstanceType *string
-	// If volume type is io1, then we need to specify the number of Iops.
+	// RootVolumeIops is the provisioned IOPS when the volume type is io1, io2 or gp3
 	RootVolumeIops *int64
 	// RootVolumeOptimization enables EBS optimization for an instance
 	RootVolumeOptimization *bool
 	// RootVolumeSize is the size of the EBS root volume to use, in GB
 	RootVolumeSize *int64
+	// RootVolumeThroughput is the volume throughput in MBps when the volume type is gp3
+	RootVolumeThroughput *int64
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
 	RootVolumeType *string
 	// RootVolumeEncryption enables EBS root volume encryption for an instance
@@ -113,6 +115,7 @@ func (t *LaunchTemplate) buildRootDevice(cloud awsup.AWSCloud) (map[string]*Bloc
 		EbsVolumeSize:          t.RootVolumeSize,
 		EbsVolumeType:          t.RootVolumeType,
 		EbsVolumeIops:          t.RootVolumeIops,
+		EbsVolumeThroughput:    t.RootVolumeThroughput,
 		EbsEncrypted:           t.RootVolumeEncryption,
 	}
 	if aws.BoolValue(t.RootVolumeEncryption) && aws.StringValue(t.RootVolumeKmsKey) != "" {
