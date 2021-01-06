@@ -29,15 +29,19 @@ import (
 )
 
 func TestContainerdBuilder_Docker_19_03_13(t *testing.T) {
-	runContainerdBuilderTest(t, "from_docker_19.03.11")
+	runContainerdBuilderTest(t, "from_docker_19.03.11", distributions.DistributionUbuntu2004)
 }
 
 func TestContainerdBuilder_Docker_19_03_14(t *testing.T) {
-	runContainerdBuilderTest(t, "from_docker_19.03.14")
+	runContainerdBuilderTest(t, "from_docker_19.03.14", distributions.DistributionUbuntu2004)
 }
 
 func TestContainerdBuilder_Simple(t *testing.T) {
-	runContainerdBuilderTest(t, "simple")
+	runContainerdBuilderTest(t, "simple", distributions.DistributionUbuntu2004)
+}
+
+func TestContainerdBuilder_Flatcar(t *testing.T) {
+	runContainerdBuilderTest(t, "flatcar", distributions.DistributionFlatcar)
 }
 
 func TestContainerdBuilder_SkipInstall(t *testing.T) {
@@ -123,7 +127,7 @@ func TestContainerdBuilder_BuildFlags(t *testing.T) {
 	}
 }
 
-func runContainerdBuilderTest(t *testing.T, key string) {
+func runContainerdBuilderTest(t *testing.T, key string, distro distributions.Distribution) {
 	basedir := path.Join("tests/containerdbuilder/", key)
 
 	nodeUpModelContext, err := BuildNodeupModelContext(basedir)
@@ -132,7 +136,7 @@ func runContainerdBuilderTest(t *testing.T, key string) {
 		return
 	}
 
-	nodeUpModelContext.Distribution = distributions.DistributionUbuntu1604
+	nodeUpModelContext.Distribution = distro
 
 	nodeUpModelContext.Assets = fi.NewAssetStore("")
 	nodeUpModelContext.Assets.AddForTest("containerd", "usr/local/bin/containerd", "testing containerd content")
