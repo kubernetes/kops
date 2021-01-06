@@ -132,6 +132,15 @@ func (_ *EBSVolume) CheckChanges(a, e, changes *EBSVolume) error {
 		if changes.ID != nil {
 			return fi.CannotChangeField("ID")
 		}
+		if changes.AvailabilityZone != nil {
+			return fi.CannotChangeField("AvailabilityZone")
+		}
+		if changes.Encrypted != nil {
+			return fi.CannotChangeField("Encrypted")
+		}
+		if changes.KmsKeyId != nil {
+			return fi.CannotChangeField("KmsKeyId")
+		}
 	}
 	return nil
 }
@@ -163,13 +172,33 @@ func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) e
 		return fmt.Errorf("error adding AWS Tags to EBS Volume: %v", err)
 	}
 
-	if a != nil && len(a.Tags) > 0 {
-		tagsToDelete := e.getEBSVolumeTagsToDelete(a.Tags)
-		if len(tagsToDelete) > 0 {
-			return t.DeleteTags(*e.ID, tagsToDelete)
+	if a != nil {
+		if len(changes.Tags) > 0 {
+			tagsToDelete := e.getEBSVolumeTagsToDelete(a.Tags)
+			if len(tagsToDelete) > 0 {
+				return t.DeleteTags(*e.ID, tagsToDelete)
+			}
+		}
+
+		if changes.VolumeType != nil ||
+			changes.VolumeIops != nil ||
+			changes.VolumeThroughput != nil ||
+			changes.SizeGB != nil {
+
+			request := &ec2.ModifyVolumeInput{
+				VolumeId:   a.ID,
+				VolumeType: e.VolumeType,
+				Iops:       e.VolumeIops,
+				Throughput: e.VolumeThroughput,
+				Size:       e.SizeGB,
+			}
+
+			_, err := t.Cloud.EC2().ModifyVolume(request)
+			if err != nil {
+				return fmt.Errorf("error modifying volume: %v", err)
+			}
 		}
 	}
-
 	return nil
 }
 
