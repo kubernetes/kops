@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/k8sversion"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/vfs"
 
@@ -175,4 +176,9 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 
 func GCETagForRole(clusterName string, role kops.InstanceGroupRole) string {
 	return gce.SafeClusterName(clusterName) + "-" + gce.GceLabelNameRolePrefix + strings.ToLower(string(role))
+}
+
+//IsCertManagerEnabled returns true if the cluster has the capability to handle cert-manager PKI
+func IsCertManagerEnabled(cluster *kops.Cluster) bool {
+	return cluster.Spec.CertManager != nil && fi.BoolValue(cluster.Spec.CertManager.Enabled)
 }
