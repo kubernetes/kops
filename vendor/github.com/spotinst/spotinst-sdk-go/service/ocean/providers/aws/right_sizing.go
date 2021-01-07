@@ -13,12 +13,12 @@ import (
 
 // ResourceSuggestion represents a single resource suggestion.
 type ResourceSuggestion struct {
-	DeploymentName  *string `json:"deploymentName,omitempty"`
-	Namespace       *string `json:"namespace,omitempty"`
-	SuggestedCPU    *int    `json:"suggestedCPU,omitempty"`
-	RequestedCPU    *int    `json:"requestedCPU,omitempty"`
-	SuggestedMemory *int    `json:"suggestedMemory,omitempty"`
-	RequestedMemory *int    `json:"requestedMemory,omitempty"`
+	DeploymentName  *string  `json:"deploymentName,omitempty"`
+	Namespace       *string  `json:"namespace,omitempty"`
+	SuggestedCPU    *float64 `json:"suggestedCPU,omitempty"`
+	RequestedCPU    *float64 `json:"requestedCPU,omitempty"`
+	SuggestedMemory *float64 `json:"suggestedMemory,omitempty"`
+	RequestedMemory *float64 `json:"requestedMemory,omitempty"`
 }
 
 // ListResourceSuggestionsInput represents the input of `ListResourceSuggestions` function.

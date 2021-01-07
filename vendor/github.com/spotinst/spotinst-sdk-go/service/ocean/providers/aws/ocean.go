@@ -51,6 +51,7 @@ type Strategy struct {
 	FallbackToOnDemand       *bool    `json:"fallbackToOd,omitempty"`
 	DrainingTimeout          *int     `json:"drainingTimeout,omitempty"`
 	GracePeriod              *int     `json:"gracePeriod,omitempty"`
+	UtilizeCommitments       *bool    `json:"utilizeCommitments,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -119,6 +120,7 @@ type LaunchSpecification struct {
 	RootVolumeSize           *int                `json:"rootVolumeSize,omitempty"`
 	Monitoring               *bool               `json:"monitoring,omitempty"`
 	EBSOptimized             *bool               `json:"ebsOptimized,omitempty"`
+	UseAsTemplateOnly        *bool               `json:"useAsTemplateOnly,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -255,6 +257,7 @@ type RollSpec struct {
 	ID                           *string  `json:"id,omitempty"`
 	ClusterID                    *string  `json:"clusterId,omitempty"`
 	Comment                      *string  `json:"comment,omitempty"`
+	Status                       *string  `json:"status,omitempty"`
 	BatchSizePercentage          *int     `json:"batchSizePercentage,omitempty"`
 	DisableLaunchSpecAutoScaling *bool    `json:"disableLaunchSpecAutoScaling,omitempty"`
 	LaunchSpecIDs                []string `json:"launchSpecIds,omitempty"`
@@ -265,22 +268,22 @@ type RollSpec struct {
 }
 
 type RollStatus struct {
-	ID            *string   `json:"id,omitempty"`
-	ClusterID     *string   `json:"oceanId,omitempty"`
-	Comment       *string   `json:"comment,omitempty"`
-	Status        *string   `json:"status,omitempty"`
-	Progress      *Progress `json:"progress,omitempty"`
-	CurrentBatch  *int      `json:"currentBatch,omitempty"`
-	NumOfBatches  *int      `json:"numOfBatches,omitempty"`
-	LaunchSpecIDs []string  `json:"launchSpecIds,omitempty"`
-	InstanceIDs   []string  `json:"instanceIds,omitempty"`
-	CreatedAt     *string   `json:"createdAt,omitempty"`
-	UpdatedAt     *string   `json:"updatedAt,omitempty"`
+	ID            *string    `json:"id,omitempty"`
+	ClusterID     *string    `json:"oceanId,omitempty"`
+	Comment       *string    `json:"comment,omitempty"`
+	Status        *string    `json:"status,omitempty"`
+	Progress      *Progress  `json:"progress,omitempty"`
+	CurrentBatch  *int       `json:"currentBatch,omitempty"`
+	NumOfBatches  *int       `json:"numOfBatches,omitempty"`
+	LaunchSpecIDs []string   `json:"launchSpecIds,omitempty"`
+	InstanceIDs   []string   `json:"instanceIds,omitempty"`
+	CreatedAt     *time.Time `json:"createdAt,omitempty"`
+	UpdatedAt     *time.Time `json:"updatedAt,omitempty"`
 }
 
 type Progress struct {
-	Unit  *string `json:"unit,omitempty"`
-	Value *int    `json:"value,omitempty"`
+	Unit  *string  `json:"unit,omitempty"`
+	Value *float64 `json:"value,omitempty"`
 }
 
 type ListRollsInput struct {
@@ -633,12 +636,14 @@ func (s *ServiceOp) ReadRoll(ctx context.Context, input *ReadRollInput) (*ReadRo
 func (s *ServiceOp) UpdateRoll(ctx context.Context, input *UpdateRollInput) (*UpdateRollOutput, error) {
 	path, err := uritemplates.Expand("/ocean/aws/k8s/cluster/{clusterId}/roll/{rollId}", uritemplates.Values{
 		"clusterId": spotinst.StringValue(input.Roll.ClusterID),
+		"rollId":    spotinst.StringValue(input.Roll.ID),
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	// We do not need the ID anymore so let's drop it.
+	input.Roll.ID = nil
 	input.Roll.ClusterID = nil
 
 	r := client.NewRequest(http.MethodPut, path)
@@ -809,6 +814,13 @@ func (o *Strategy) SetDrainingTimeout(v *int) *Strategy {
 func (o *Strategy) SetGracePeriod(v *int) *Strategy {
 	if o.GracePeriod = v; o.GracePeriod == nil {
 		o.nullFields = append(o.nullFields, "GracePeriod")
+	}
+	return o
+}
+
+func (o *Strategy) SetUtilizeCommitments(v *bool) *Strategy {
+	if o.UtilizeCommitments = v; o.UtilizeCommitments == nil {
+		o.nullFields = append(o.nullFields, "UtilizeCommitments")
 	}
 	return o
 }
@@ -1065,6 +1077,13 @@ func (o *LaunchSpecification) SetEBSOptimized(v *bool) *LaunchSpecification {
 	return o
 }
 
+func (o *LaunchSpecification) SetUseAsTemplateOnly(v *bool) *LaunchSpecification {
+	if o.UseAsTemplateOnly = v; o.UseAsTemplateOnly == nil {
+		o.nullFields = append(o.nullFields, "UseAsTemplateOnly")
+	}
+	return o
+}
+
 // endregion
 
 // region LoadBalancer
@@ -1298,6 +1317,58 @@ func (o *Roll) SetLaunchSpecIDs(v []string) *Roll {
 }
 
 func (o *Roll) SetInstanceIDs(v []string) *Roll {
+	if o.InstanceIDs = v; o.InstanceIDs == nil {
+		o.nullFields = append(o.nullFields, "InstanceIDs")
+	}
+	return o
+}
+
+// endregion
+
+// region RollSpec
+
+func (o RollSpec) MarshalJSON() ([]byte, error) {
+	type noMethod RollSpec
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *RollSpec) SetComment(v *string) *RollSpec {
+	if o.Comment = v; o.Comment == nil {
+		o.nullFields = append(o.nullFields, "Comment")
+	}
+	return o
+}
+
+func (o *RollSpec) SetStatus(v *string) *RollSpec {
+	if o.Status = v; o.Status == nil {
+		o.nullFields = append(o.nullFields, "Status")
+	}
+	return o
+}
+
+func (o *RollSpec) SetBatchSizePercentage(v *int) *RollSpec {
+	if o.BatchSizePercentage = v; o.BatchSizePercentage == nil {
+		o.nullFields = append(o.nullFields, "BatchSizePercentage")
+	}
+	return o
+}
+
+func (o *RollSpec) SetDisableLaunchSpecAutoScaling(v *bool) *RollSpec {
+	if o.DisableLaunchSpecAutoScaling = v; o.DisableLaunchSpecAutoScaling == nil {
+		o.nullFields = append(o.nullFields, "DisableLaunchSpecAutoScaling")
+	}
+	return o
+}
+
+func (o *RollSpec) SetLaunchSpecIDs(v []string) *RollSpec {
+	if o.LaunchSpecIDs = v; o.LaunchSpecIDs == nil {
+		o.nullFields = append(o.nullFields, "LaunchSpecIDs")
+	}
+	return o
+}
+
+func (o *RollSpec) SetInstanceIDs(v []string) *RollSpec {
 	if o.InstanceIDs = v; o.InstanceIDs == nil {
 		o.nullFields = append(o.nullFields, "InstanceIDs")
 	}
