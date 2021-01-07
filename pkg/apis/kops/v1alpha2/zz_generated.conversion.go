@@ -5115,6 +5115,7 @@ func Convert_kops_LyftVPCNetworkingSpec_To_v1alpha2_LyftVPCNetworkingSpec(in *ko
 func autoConvert_v1alpha2_MetricsServerConfig_To_kops_MetricsServerConfig(in *MetricsServerConfig, out *kops.MetricsServerConfig, s conversion.Scope) error {
 	out.Enabled = in.Enabled
 	out.Image = in.Image
+	out.Insecure = in.Insecure
 	return nil
 }
 
@@ -5126,6 +5127,7 @@ func Convert_v1alpha2_MetricsServerConfig_To_kops_MetricsServerConfig(in *Metric
 func autoConvert_kops_MetricsServerConfig_To_v1alpha2_MetricsServerConfig(in *kops.MetricsServerConfig, out *MetricsServerConfig, s conversion.Scope) error {
 	out.Enabled = in.Enabled
 	out.Image = in.Image
+	out.Insecure = in.Insecure
 	return nil
 }
 
