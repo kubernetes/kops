@@ -32,10 +32,10 @@ github.com/Azure/go-autorest/autorest/azure/auth
 github.com/Azure/go-autorest/autorest/azure/cli
 # github.com/Azure/go-autorest/autorest/date v0.3.0
 github.com/Azure/go-autorest/autorest/date
-# github.com/Azure/go-autorest/autorest/to v0.2.0
+# github.com/Azure/go-autorest/autorest/to v0.4.0
 ## explicit
 github.com/Azure/go-autorest/autorest/to
-# github.com/Azure/go-autorest/autorest/validation v0.1.0
+# github.com/Azure/go-autorest/autorest/validation v0.3.0
 github.com/Azure/go-autorest/autorest/validation
 # github.com/Azure/go-autorest/logger v0.2.0
 github.com/Azure/go-autorest/logger
@@ -286,8 +286,9 @@ github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
 # github.com/google/go-querystring v1.0.0
 github.com/google/go-querystring/query
-# github.com/google/gofuzz v1.1.0
+# github.com/google/gofuzz v1.2.0
 github.com/google/gofuzz
+github.com/google/gofuzz/bytesource
 # github.com/google/uuid v1.1.2
 ## explicit
 github.com/google/uuid
@@ -402,6 +403,39 @@ github.com/inconshreveable/mousetrap
 ## explicit
 github.com/jacksontj/memberlistmesh
 github.com/jacksontj/memberlistmesh/clusterpb
+# github.com/jetstack/cert-manager v1.1.0
+## explicit
+github.com/jetstack/cert-manager/pkg/apis/acme
+github.com/jetstack/cert-manager/pkg/apis/acme/v1
+github.com/jetstack/cert-manager/pkg/apis/acme/v1alpha2
+github.com/jetstack/cert-manager/pkg/apis/acme/v1alpha3
+github.com/jetstack/cert-manager/pkg/apis/acme/v1beta1
+github.com/jetstack/cert-manager/pkg/apis/certmanager
+github.com/jetstack/cert-manager/pkg/apis/certmanager/v1
+github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2
+github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha3
+github.com/jetstack/cert-manager/pkg/apis/certmanager/v1beta1
+github.com/jetstack/cert-manager/pkg/apis/meta
+github.com/jetstack/cert-manager/pkg/apis/meta/v1
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/fake
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/scheme
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/typed/acme/v1
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/typed/acme/v1/fake
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/typed/acme/v1alpha2
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/typed/acme/v1alpha2/fake
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/typed/acme/v1alpha3
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/typed/acme/v1alpha3/fake
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/typed/acme/v1beta1
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/typed/acme/v1beta1/fake
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/typed/certmanager/v1
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/typed/certmanager/v1/fake
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/typed/certmanager/v1alpha2
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/typed/certmanager/v1alpha2/fake
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/typed/certmanager/v1alpha3
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/typed/certmanager/v1alpha3/fake
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/typed/certmanager/v1beta1
+github.com/jetstack/cert-manager/pkg/client/clientset/versioned/typed/certmanager/v1beta1/fake
 # github.com/jmespath/go-jmespath v0.4.0
 github.com/jmespath/go-jmespath
 # github.com/json-iterator/go v1.1.10
@@ -423,7 +457,7 @@ github.com/mailru/easyjson/jwriter
 github.com/mattn/go-ieproxy
 # github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369
 github.com/matttproud/golang_protobuf_extensions/pbutil
-# github.com/miekg/dns v1.1.4
+# github.com/miekg/dns v1.1.31
 github.com/miekg/dns
 # github.com/mitchellh/copystructure v1.0.0
 github.com/mitchellh/copystructure
@@ -788,7 +822,7 @@ gopkg.in/square/go-jose.v2/jwt
 gopkg.in/warnings.v0
 # gopkg.in/yaml.v2 v2.3.0
 gopkg.in/yaml.v2
-# gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+# gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c
 gopkg.in/yaml.v3
 # helm.sh/helm/v3 v3.4.2
 ## explicit
@@ -1234,7 +1268,7 @@ k8s.io/utils/net
 k8s.io/utils/nsenter
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# sigs.k8s.io/controller-runtime v0.6.1
+# sigs.k8s.io/controller-runtime v0.6.2
 ## explicit
 sigs.k8s.io/controller-runtime
 sigs.k8s.io/controller-runtime/pkg/builder
