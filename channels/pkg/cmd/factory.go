@@ -20,36 +20,45 @@ import (
 	"fmt"
 
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
+
+	certmanager "github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
 )
 
 type Factory interface {
 	KubernetesClient() (kubernetes.Interface, error)
+	CertManagerClient() (certmanager.Interface, error)
 }
 
 type DefaultFactory struct {
-	kubernetesClient kubernetes.Interface
+	kubernetesClient  kubernetes.Interface
+	certManagerClient certmanager.Interface
 }
 
 var _ Factory = &DefaultFactory{}
 
+func loadConfig() (*rest.Config, error) {
+	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+	loadingRules.DefaultClientConfig = &clientcmd.DefaultClientConfig
+
+	configOverrides := &clientcmd.ConfigOverrides{
+		ClusterDefaults: clientcmd.ClusterDefaults,
+	}
+
+	kubeConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides)
+	return kubeConfig.ClientConfig()
+
+}
+
 func (f *DefaultFactory) KubernetesClient() (kubernetes.Interface, error) {
 	if f.kubernetesClient == nil {
-		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-		loadingRules.DefaultClientConfig = &clientcmd.DefaultClientConfig
-
-		configOverrides := &clientcmd.ConfigOverrides{
-			ClusterDefaults: clientcmd.ClusterDefaults,
-		}
-
-		kubeConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides)
-		config, err := kubeConfig.ClientConfig()
+		config, err := loadConfig()
 		if err != nil {
 			return nil, fmt.Errorf("cannot load kubecfg settings: %v", err)
 		}
-
 		k8sClient, err := kubernetes.NewForConfig(config)
 		if err != nil {
 			return nil, fmt.Errorf("cannot build kube client: %v", err)
@@ -58,4 +67,20 @@ func (f *DefaultFactory) KubernetesClient() (kubernetes.Interface, error) {
 	}
 
 	return f.kubernetesClient, nil
+}
+
+func (f *DefaultFactory) CertManagerClient() (certmanager.Interface, error) {
+	if f.certManagerClient == nil {
+		config, err := loadConfig()
+		if err != nil {
+			return nil, fmt.Errorf("cannot load kubecfg settings: %v", err)
+		}
+		certManagerClient, err := certmanager.NewForConfig(config)
+		if err != nil {
+			return nil, fmt.Errorf("cannot build kube client: %v", err)
+		}
+		f.certManagerClient = certManagerClient
+	}
+
+	return f.certManagerClient, nil
 }
