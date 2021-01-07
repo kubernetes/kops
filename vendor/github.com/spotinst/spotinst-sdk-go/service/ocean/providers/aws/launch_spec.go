@@ -14,24 +14,25 @@ import (
 )
 
 type LaunchSpec struct {
-	ID                  *string               `json:"id,omitempty"`
-	Name                *string               `json:"name,omitempty"`
-	OceanID             *string               `json:"oceanId,omitempty"`
-	ImageID             *string               `json:"imageId,omitempty"`
-	UserData            *string               `json:"userData,omitempty"`
-	RootVolumeSize      *int                  `json:"rootVolumeSize,omitempty"`
-	SecurityGroupIDs    []string              `json:"securityGroupIds,omitempty"`
-	SubnetIDs           []string              `json:"subnetIds,omitempty"`
-	InstanceTypes       []string              `json:"instanceTypes,omitempty"`
-	ResourceLimits      *ResourceLimits       `json:"resourceLimits,omitempty"`
-	IAMInstanceProfile  *IAMInstanceProfile   `json:"iamInstanceProfile,omitempty"`
-	AutoScale           *AutoScale            `json:"autoScale,omitempty"`
-	ElasticIPPool       *ElasticIPPool        `json:"elasticIpPool,omitempty"`
-	BlockDeviceMappings []*BlockDeviceMapping `json:"blockDeviceMappings,omitempty"`
-	Labels              []*Label              `json:"labels,omitempty"`
-	Taints              []*Taint              `json:"taints,omitempty"`
-	Tags                []*Tag                `json:"tags,omitempty"`
-
+	ID                       *string               `json:"id,omitempty"`
+	Name                     *string               `json:"name,omitempty"`
+	OceanID                  *string               `json:"oceanId,omitempty"`
+	ImageID                  *string               `json:"imageId,omitempty"`
+	UserData                 *string               `json:"userData,omitempty"`
+	RootVolumeSize           *int                  `json:"rootVolumeSize,omitempty"`
+	SecurityGroupIDs         []string              `json:"securityGroupIds,omitempty"`
+	SubnetIDs                []string              `json:"subnetIds,omitempty"`
+	InstanceTypes            []string              `json:"instanceTypes,omitempty"`
+	Strategy                 *LaunchSpecStrategy   `json:"strategy,omitempty"`
+	ResourceLimits           *ResourceLimits       `json:"resourceLimits,omitempty"`
+	IAMInstanceProfile       *IAMInstanceProfile   `json:"iamInstanceProfile,omitempty"`
+	AutoScale                *AutoScale            `json:"autoScale,omitempty"`
+	ElasticIPPool            *ElasticIPPool        `json:"elasticIpPool,omitempty"`
+	BlockDeviceMappings      []*BlockDeviceMapping `json:"blockDeviceMappings,omitempty"`
+	Labels                   []*Label              `json:"labels,omitempty"`
+	Taints                   []*Taint              `json:"taints,omitempty"`
+	Tags                     []*Tag                `json:"tags,omitempty"`
+	AssociatePublicIPAddress *bool                 `json:"associatePublicIpAddress,omitempty"`
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
 	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
@@ -78,6 +79,7 @@ type EBS struct {
 	VolumeType          *string            `json:"volumeType,omitempty"`
 	IOPS                *int               `json:"iops,omitempty"`
 	VolumeSize          *int               `json:"volumeSize,omitempty"`
+	Throughput          *int               `json:"throughput,omitempty"`
 	DynamicVolumeSize   *DynamicVolumeSize `json:"dynamicVolumeSize,omitempty"`
 
 	forceSendFields []string
@@ -137,6 +139,13 @@ type ElasticIPPool struct {
 type TagSelector struct {
 	Key   *string `json:"tagKey,omitempty"`
 	Value *string `json:"tagValue,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type LaunchSpecStrategy struct {
+	SpotPercentage *int `json:"spotPercentage,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -468,9 +477,23 @@ func (o *LaunchSpec) SetResourceLimits(v *ResourceLimits) *LaunchSpec {
 	return o
 }
 
+func (o *LaunchSpec) SetStrategy(v *LaunchSpecStrategy) *LaunchSpec {
+	if o.Strategy = v; o.Strategy == nil {
+		o.nullFields = append(o.nullFields, "Strategy")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetAssociatePublicIPAddress(v *bool) *LaunchSpec {
+	if o.AssociatePublicIPAddress = v; o.AssociatePublicIPAddress == nil {
+		o.nullFields = append(o.nullFields, "AssociatePublicIPAddress")
+	}
+	return o
+}
+
 // endregion
 
-// region BlockDeviceMappings
+// region BlockDeviceMapping
 
 func (o BlockDeviceMapping) MarshalJSON() ([]byte, error) {
 	type noMethod BlockDeviceMapping
@@ -572,9 +595,16 @@ func (o *EBS) SetDynamicVolumeSize(v *DynamicVolumeSize) *EBS {
 	return o
 }
 
-// end region
+func (o *EBS) SetThroughput(v *int) *EBS {
+	if o.Throughput = v; o.Throughput == nil {
+		o.nullFields = append(o.nullFields, "Throughput")
+	}
+	return o
+}
 
-// region Dynamic Volume Size
+// endregion
+
+// region DynamicVolumeSize
 
 func (o DynamicVolumeSize) MarshalJSON() ([]byte, error) {
 	type noMethod DynamicVolumeSize
@@ -603,7 +633,7 @@ func (o *DynamicVolumeSize) SetSizePerResourceUnit(v *int) *DynamicVolumeSize {
 	return o
 }
 
-// end region
+// endregion
 
 // region ResourceLimits
 
@@ -677,7 +707,7 @@ func (o *Taint) SetEffect(v *string) *Taint {
 
 // endregion
 
-//region AutoScale
+// region AutoScale
 
 func (o AutoScale) MarshalJSON() ([]byte, error) {
 	type noMethod AutoScale
@@ -692,7 +722,7 @@ func (o *AutoScale) SetHeadrooms(v []*AutoScaleHeadroom) *AutoScale {
 	return o
 }
 
-//endregion
+// endregion
 
 // region AutoScaleHeadroom
 
@@ -767,6 +797,23 @@ func (o *TagSelector) SetTagKey(v *string) *TagSelector {
 func (o *TagSelector) SetTagValue(v *string) *TagSelector {
 	if o.Value = v; o.Value == nil {
 		o.nullFields = append(o.nullFields, "Value")
+	}
+	return o
+}
+
+// endregion
+
+// region Strategy
+
+func (o LaunchSpecStrategy) MarshalJSON() ([]byte, error) {
+	type noMethod LaunchSpecStrategy
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LaunchSpecStrategy) SetSpotPercentage(v *int) *LaunchSpecStrategy {
+	if o.SpotPercentage = v; o.SpotPercentage == nil {
+		o.nullFields = append(o.nullFields, "SpotPercentage")
 	}
 	return o
 }
