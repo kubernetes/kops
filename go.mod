@@ -70,7 +70,7 @@ require (
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20180422025557-ae226422660e
 	github.com/go-bindata/go-bindata/v3 v3.1.3
-	github.com/go-ini/ini v1.51.0
+	github.com/go-ini/ini v1.62.0
 	github.com/go-logr/logr v0.2.1-0.20200730175230-ee2de8da5be6
 	github.com/gogo/protobuf v1.3.1
 	github.com/google/go-cmp v0.5.2
@@ -90,7 +90,7 @@ require (
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.0
-	github.com/spotinst/spotinst-sdk-go v1.58.0
+	github.com/spotinst/spotinst-sdk-go v1.75.0
 	github.com/stretchr/testify v1.6.1
 	github.com/urfave/cli v1.22.2
 	github.com/weaveworks/mesh v0.0.0-20170419100114-1f158d31de55
