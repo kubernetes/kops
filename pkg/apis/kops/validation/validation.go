@@ -159,6 +159,11 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateNodeTerminationHandler(c, spec.NodeTerminationHandler, fieldPath.Child("nodeTerminationHandler"))...)
 	}
 
+	if spec.MetricsServer != nil {
+		allErrs = append(allErrs, validateMetricsServer(c, spec.MetricsServer, fieldPath.Child("nodeTerminationHandler"))...)
+
+	}
+
 	// IAM additional policies
 	if spec.AdditionalPolicies != nil {
 		for k, v := range *spec.AdditionalPolicies {
@@ -1272,6 +1277,15 @@ func validateClusterAutoscaler(cluster *kops.Cluster, spec *kops.ClusterAutoscal
 func validateNodeTerminationHandler(cluster *kops.Cluster, spec *kops.NodeTerminationHandlerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
 	if kops.CloudProviderID(cluster.Spec.CloudProvider) != kops.CloudProviderAWS {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "Node Termination Handler supports only AWS"))
+	}
+	return allErrs
+}
+
+func validateMetricsServer(cluster *kops.Cluster, spec *kops.MetricsServerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
+	if spec != nil && fi.BoolValue(spec.Enabled) {
+		if !fi.BoolValue(spec.Insecure) && !components.IsCertManagerEnabled(cluster) {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("insecure"), "Secure metrics server requires that cert manager is enabled"))
+		}
 	}
 	return allErrs
 }

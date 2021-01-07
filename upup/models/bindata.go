@@ -29778,6 +29778,10 @@ subjects:
 apiVersion: apiregistration.k8s.io/v1beta1
 kind: APIService
 metadata:
+{{ if not (WithDefaultBool .MetricsServer.Insecure true) }}
+  annotations:
+    cert-manager.io/inject-ca-from: kube-system/metrics-server
+{{ end }}
   name: v1beta1.metrics.k8s.io
 spec:
   service:
@@ -29785,7 +29789,6 @@ spec:
     namespace: kube-system
   group: metrics.k8s.io
   version: v1beta1
-  insecureSkipTLSVerify: true
   groupPriorityMinimum: 100
   versionPriority: 100
 ---
@@ -29815,7 +29818,11 @@ spec:
     spec:
       serviceAccountName: metrics-server
       volumes:
-      # mount in tmp so we can safely use from-scratch images and/or read-only containers
+{{ if not (WithDefaultBool .MetricsServer.Insecure true) }}
+      - name: certs
+        secret:
+          secretName: metrics-server-tls
+{{ end }}
       - name: tmp-dir
         emptyDir: {}
       containers:
@@ -29823,7 +29830,12 @@ spec:
         image: {{ or .MetricsServer.Image "k8s.gcr.io/metrics-server/metrics-server:v0.3.7" }}
         imagePullPolicy: IfNotPresent
         args:
+{{ if not (WithDefaultBool .MetricsServer.Insecure true) }}
+          - --tls-cert-file=/srv/tls.crt
+          - --tls-private-key-file=/srv/tls.key
+{{ else }}
           - --cert-dir=/tmp
+{{ end }}
           - --secure-port=4443
         {{ if not UseKopsControllerForNodeBootstrap }}
           - --kubelet-insecure-tls
@@ -29837,6 +29849,10 @@ spec:
           runAsNonRoot: true
           runAsUser: 1000
         volumeMounts:
+{{ if not (WithDefaultBool .MetricsServer.Insecure true) }}
+        - name: certs
+          mountPath: /srv
+{{ end }}
         - name: tmp-dir
           mountPath: /tmp
 ---
@@ -29898,7 +29914,27 @@ spec:
   minAvailable: 1
   selector:
     matchLabels:
-      k8s-app: metrics-server`)
+      k8s-app: metrics-server
+
+{{ if not (WithDefaultBool .MetricsServer.Insecure true) }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: metrics-server
+  namespace: kube-system
+spec:
+  secretName: metrics-server-tls
+  duration: 2160h
+  renewBefore: 360h
+  usages:
+    - server auth
+  dnsNames:
+  - metrics-server.kube-system.svc
+  issuerRef:
+    name: metrics-server.addons.k8s.io
+    kind: Issuer
+{{ end }}`)
 
 func cloudupResourcesAddonsMetricsServerAddonsK8sIoK8s111YamlTemplateBytes() ([]byte, error) {
 	return _cloudupResourcesAddonsMetricsServerAddonsK8sIoK8s111YamlTemplate, nil

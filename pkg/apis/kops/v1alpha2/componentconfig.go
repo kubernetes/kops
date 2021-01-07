@@ -890,6 +890,9 @@ type MetricsServerConfig struct {
 	// Image is the docker container used.
 	// Default: the latest supported image for the specified kubernetes version.
 	Image *string `json:"image,omitempty"`
+	// Insecure determines if API server will validate metrics server TLS cert.
+	// Default: true
+	Insecure *bool `json:"insecure,omitempty"`
 }
 
 // CertManagerConfig determines the cert manager configuration.
