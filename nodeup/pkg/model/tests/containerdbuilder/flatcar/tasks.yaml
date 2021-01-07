@@ -1,0 +1,20 @@
+contents: ""
+path: /etc/containerd/config-kops.toml
+type: file
+---
+contents: |-
+  [Service]
+  Environment=CONTAINERD_CONFIG=/etc/containerd/config-kops.toml
+  EnvironmentFile=/etc/environment
+onChangeExecute:
+- - systemctl
+  - daemon-reload
+- - systemctl
+  - restart
+  - containerd.service
+- - systemctl
+  - restart
+  - kops-configuration.service
+  - '&'
+path: /etc/systemd/system/containerd.service.d/10-kops.conf
+type: file
