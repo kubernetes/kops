@@ -51,16 +51,14 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 	switch b.Distribution {
 	case distributions.DistributionFlatcar:
 		klog.Infof("Detected Flatcar; won't install containerd")
-		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
-			return err
+		if b.Cluster.Spec.ContainerRuntime == "containerd" {
+			b.buildSystemdServiceOverrideFlatcar(c)
+			b.buildConfigFile(c)
 		}
 		return nil
-
 	case distributions.DistributionContainerOS:
 		klog.Infof("Detected ContainerOS; won't install containerd")
-		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
-			return err
-		}
+		b.buildSystemdServiceOverrideContainerOS(c)
 		return nil
 	}
 
@@ -75,19 +73,7 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Add config file
-	{
-		containerdConfigOverride := ""
-		if b.Cluster.Spec.Containerd != nil {
-			containerdConfigOverride = fi.StringValue(b.Cluster.Spec.Containerd.ConfigOverride)
-		}
-
-		t := &nodetasks.File{
-			Path:     "/etc/containerd/config-kops.toml",
-			Contents: fi.NewStringResource(containerdConfigOverride),
-			Type:     nodetasks.FileType_File,
-		}
-		c.AddTask(t)
-	}
+	b.buildConfigFile(c)
 
 	// Add binaries from assets
 	if b.Cluster.Spec.ContainerRuntime == "containerd" {
@@ -129,7 +115,7 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 	c.AddTask(b.buildSystemdService(sv))
 
-	if err := b.buildSysconfig(c); err != nil {
+	if err := b.buildSysconfigFile(c); err != nil {
 		return err
 	}
 
@@ -191,41 +177,58 @@ func (b *ContainerdBuilder) buildSystemdService(sv semver.Version) *nodetasks.Se
 	return service
 }
 
-// buildContainerOSConfigurationDropIn is responsible for configuring the containerd daemon options
-func (b *ContainerdBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderContext) error {
+// buildSystemdServiceOverrideContainerOS is responsible for overriding the containerd service for ContainerOS
+func (b *ContainerdBuilder) buildSystemdServiceOverrideContainerOS(c *fi.ModelBuilderContext) {
 	lines := []string{
 		"[Service]",
-		"EnvironmentFile=/etc/sysconfig/containerd",
 		"EnvironmentFile=/etc/environment",
 		"TasksMax=infinity",
 	}
 	contents := strings.Join(lines, "\n")
 
 	c.AddTask(&nodetasks.File{
-		AfterFiles: []string{"/etc/sysconfig/containerd"},
-		Path:       "/etc/systemd/system/containerd.service.d/10-kops.conf",
-		Contents:   fi.NewStringResource(contents),
-		Type:       nodetasks.FileType_File,
+		Path:     "/etc/systemd/system/containerd.service.d/10-kops.conf",
+		Contents: fi.NewStringResource(contents),
+		Type:     nodetasks.FileType_File,
 		OnChangeExecute: [][]string{
 			{"systemctl", "daemon-reload"},
 			{"systemctl", "restart", "containerd.service"},
 			// We need to restart kops-configuration service since nodeup needs to load images
-			// into containerd with the new config. Restart is on the background because
-			// kops-configuration is of type 'one-shot' so the restart command will wait for
-			// nodeup to finish executing
+			// into containerd with the new config. We restart in the background because
+			// kops-configuration is of type "one-shot", so the restart command will wait for
+			// nodeup to finish executing.
 			{"systemctl", "restart", "kops-configuration.service", "&"},
 		},
 	})
-
-	if err := b.buildSysconfig(c); err != nil {
-		return err
-	}
-
-	return nil
 }
 
-// buildSysconfig is responsible for extracting the containerd configuration and writing the sysconfig file
-func (b *ContainerdBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
+// buildSystemdServiceOverrideFlatcar is responsible for overriding the containerd service for Flatcar
+func (b *ContainerdBuilder) buildSystemdServiceOverrideFlatcar(c *fi.ModelBuilderContext) {
+	lines := []string{
+		"[Service]",
+		"Environment=CONTAINERD_CONFIG=/etc/containerd/config-kops.toml",
+		"EnvironmentFile=/etc/environment",
+	}
+	contents := strings.Join(lines, "\n")
+
+	c.AddTask(&nodetasks.File{
+		Path:     "/etc/systemd/system/containerd.service.d/10-kops.conf",
+		Contents: fi.NewStringResource(contents),
+		Type:     nodetasks.FileType_File,
+		OnChangeExecute: [][]string{
+			{"systemctl", "daemon-reload"},
+			{"systemctl", "restart", "containerd.service"},
+			// We need to restart kops-configuration service since nodeup needs to load images
+			// into containerd with the new config. We restart in the background because
+			// kops-configuration is of type "one-shot", so the restart command will wait for
+			// nodeup to finish executing.
+			{"systemctl", "restart", "kops-configuration.service", "&"},
+		},
+	})
+}
+
+// buildSysconfigFile is responsible for creating the containerd sysconfig file
+func (b *ContainerdBuilder) buildSysconfigFile(c *fi.ModelBuilderContext) error {
 	var containerd kops.ContainerdConfig
 	if b.Cluster.Spec.Containerd != nil {
 		containerd = *b.Cluster.Spec.Containerd
@@ -248,6 +251,20 @@ func (b *ContainerdBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
 	})
 
 	return nil
+}
+
+// buildConfigFile is responsible for creating the containerd configuration file
+func (b *ContainerdBuilder) buildConfigFile(c *fi.ModelBuilderContext) {
+	containerdConfigOverride := ""
+	if b.Cluster.Spec.Containerd != nil {
+		containerdConfigOverride = fi.StringValue(b.Cluster.Spec.Containerd.ConfigOverride)
+	}
+
+	c.AddTask(&nodetasks.File{
+		Path:     "/etc/containerd/config-kops.toml",
+		Contents: fi.NewStringResource(containerdConfigOverride),
+		Type:     nodetasks.FileType_File,
+	})
 }
 
 // skipInstall determines if kops should skip the installation and configuration of containerd
