@@ -202,6 +202,7 @@ KubeletConfig:
     kubernetes.io/role: master
     label2: value2
     labelname: labelvalue
+    node-role.kubernetes.io/control-plane: ""
     node-role.kubernetes.io/master: ""
   taints:
   - key1=value1:NoSchedule
