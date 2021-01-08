@@ -38,20 +38,6 @@ func (d *deployer) Up() error {
 		return err
 	}
 
-	zones := []string{}
-	imagesize := ""
-	volumesize := "48"
-	if d.CloudProvider == "aws" {
-		zones, err = aws.RandomZones(1)
-		if err != nil {
-			return err
-		}
-		imagesize = "c5.large"
-	} else if d.CloudProvider == "digitalocean" {
-		zones = []string{"tor1"}
-		imagesize = "s-8vcpu-16gb"
-	}
-
 	args := []string{
 		d.KopsBinaryPath, "create", "cluster",
 		"--name", d.ClusterName,
@@ -60,10 +46,8 @@ func (d *deployer) Up() error {
 		"--kubernetes-version", d.KubernetesVersion,
 		"--master-count", "1",
 		"--master-volume-size", "48",
-		"--master-size", imagesize,
-		"--master-volume-size", volumesize,
 		"--node-count", "4",
-		"--node-volume-size", volumesize,
+		"--node-volume-size", "48",
 		"--override", "cluster.spec.nodePortAccess=0.0.0.0/0",
 		"--ssh-public-key", d.SSHPublicKeyPath,
 		"--yes",
@@ -87,6 +71,12 @@ func (d *deployer) Up() error {
 		args = append(args, "--zones", strings.Join(zones, ","))
 
 		args = append(args, "--master-size", "e2-standard-2")
+	}
+
+	if d.CloudProvider == "do" {
+		zones := []string{"tor1"}
+		args = append(args, "--zones", strings.Join(zones, ","))
+		args = append(args, "--master-size", "s-8vcpu-16gb")
 	}
 
 	klog.Info(strings.Join(args, " "))
