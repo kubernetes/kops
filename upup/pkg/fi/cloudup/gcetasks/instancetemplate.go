@@ -223,8 +223,6 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 		}
 	}
 
-	klog.Infof("We should be using NVME for GCE")
-
 	var disks []*compute.AttachedDisk
 	disks = append(disks, &compute.AttachedDisk{
 		Kind: "compute#attachedDisk",
