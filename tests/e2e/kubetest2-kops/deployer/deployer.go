@@ -55,6 +55,8 @@ type deployer struct {
 
 	ArtifactsDir string `flag:"-"`
 
+	AdminAccess string `flag:"admin-access" desc:"The CIDR to restrict kubernetes API access"`
+
 	BuildOptions *builder.BuildOptions
 }
 
