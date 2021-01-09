@@ -52,6 +52,33 @@ func (b *DirectoryBuilder) Build(c *fi.ModelBuilderContext) error {
 	// We try to put things into /opt/kops
 	// On some OSes though, /opt/ is not writeable, and we can't even create the mountpoint
 	if b.Distribution == distributions.DistributionContainerOS {
+		// Ensure /var/lib/kubelet has suitable permissions (it's used for emptyDirs, in particular)
+		c.EnsureTask(&nodetasks.File{
+			Path: "/var/lib/kubelet",
+			Type: nodetasks.FileType_Directory,
+			Mode: s("0755"),
+		})
+
+		c.AddTask(&nodetasks.BindMount{
+			Source:     "/var/lib/kubelet",
+			Mountpoint: "/var/lib/kubelet",
+			Options:    []string{"exec", "suid", "dev"},
+		})
+
+		// Need exec permissions on /home/kubernetes/flexvolume, used for flexvolume drivers
+		c.EnsureTask(&nodetasks.File{
+			Path: "/home/kubernetes/flexvolume",
+			Type: nodetasks.FileType_Directory,
+			Mode: s("0755"),
+		})
+
+		c.AddTask(&nodetasks.BindMount{
+			Source:     "/home/kubernetes/flexvolume",
+			Mountpoint: "/home/kubernetes/flexvolume",
+			Options:    []string{"exec", "nosuid", "nodev"},
+		})
+
+		// Create /opt
 		src := "/mnt/stateful_partition/opt/"
 
 		c.AddTask(&nodetasks.File{
@@ -60,7 +87,7 @@ func (b *DirectoryBuilder) Build(c *fi.ModelBuilderContext) error {
 			Mode: s("0755"),
 		})
 
-		// Rebuild things we are masking
+		// Rebuild things we are masking by mounting /opt on top
 		c.AddTask(&nodetasks.File{
 			Path: filepath.Join(src, "google"),
 			Type: nodetasks.FileType_Directory,
