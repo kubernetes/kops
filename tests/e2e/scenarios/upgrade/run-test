@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+# Copyright 2020 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
+
+REPO_ROOT=$(git rev-parse --show-toplevel);
+
+KUBETEST2_COMMON_ARGS="-v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-} --kops-binary-path=${REPO_ROOT}/bazel-bin/cmd/kops/linux-amd64/kops"
+KUBETEST2_COMMON_ARGS="${KUBETEST2_COMMON_ARGS} --admin-access=${ADMIN_ACCESS:-}"
+
+export GO111MODULE=on
+go get sigs.k8s.io/kubetest2@latest
+go get sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
+
+cd ${REPO_ROOT}/tests/e2e
+go install ./kubetest2-kops
+
+kubetest2 kops ${KUBETEST2_COMMON_ARGS} --build --kops-root=${REPO_ROOT} --stage-location=${STAGE_LOCATION:-}
+
+# Always tear-down the cluster when we're done
+function finish {
+  kubetest2 kops ${KUBETEST2_COMMON_ARGS} --down || echo "kubetest2 down failed"
+}
+trap finish EXIT
+
+kubetest2 kops ${KUBETEST2_COMMON_ARGS} --up
+
+KUBECONFIG=${HOME}/.kube/config
+TEST_ARGS="--kubeconfig=${KUBECONFIG}"
+if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
+  ZONES=`kops get cluster ${CLUSTER_NAME} -ojson | jq -r .spec.subnets[].zone`
+  CLUSTER_TAG="${CLUSTER_NAME}"
+  TEST_ARGS="${TEST_ARGS} --provider=aws --cluster-tag=${CLUSTER_TAG}"
+  # For historical reasons, the flag name for e2e tests on AWS is --gce-zone
+  TEST_ARGS="${TEST_ARGS} --gce-zone=${ZONES[0]}"
+fi
+if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
+  ZONES=`kops get ig --name ${CLUSTER_NAME} -ojson | jq -r .[0].spec.zones[]`
+  GCE_PROJECT=`kops get cluster ${CLUSTER_NAME} -ojson |jq -r .spec.project`
+  TEST_ARGS="${TEST_ARGS} --provider=gce --gce-zone=${ZONES[0]} --gce-project=${GCE_PROJECT}"
+fi
+
+kubetest2 kops ${KUBETEST2_COMMON_ARGS} \
+		--cloud-provider=${CLOUD_PROVIDER} \
+		--test=ginkgo \
+		-- \
+		--test-package-version=v1.19.4 \
+		--parallel 25 \
+		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort" \
+		--test-args="${TEST_ARGS}"
+
+
+kops set cluster ${CLUSTER_NAME} cluster.spec.kubernetesVersion=1.20.0
+kops update cluster
+kops update cluster --admin --yes
+
+kops rolling-update cluster
+kops rolling-update cluster --yes
+
+kops validate cluster
