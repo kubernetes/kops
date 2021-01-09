@@ -38,10 +38,15 @@ func (d *deployer) Up() error {
 		return err
 	}
 
+	adminAccess := d.AdminAccess
+	if adminAccess == "" {
+		adminAccess = publicIP
+	}
+
 	args := []string{
 		d.KopsBinaryPath, "create", "cluster",
 		"--name", d.ClusterName,
-		"--admin-access", publicIP,
+		"--admin-access", adminAccess,
 		"--cloud", d.CloudProvider,
 		"--kubernetes-version", d.KubernetesVersion,
 		"--master-count", "1",
