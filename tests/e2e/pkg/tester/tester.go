@@ -31,14 +31,6 @@ type Tester struct {
 	Ginkgo *ginkgo.Tester
 }
 
-// Test runs the test
-func (t *Tester) Test() error {
-	if err := t.pretestSetup(); err != nil {
-		return err
-	}
-	return t.Ginkgo.Test()
-}
-
 func (t *Tester) pretestSetup() error {
 	kubectlPath, err := t.AcquireKubectl()
 	if err != nil {
@@ -50,6 +42,9 @@ func (t *Tester) pretestSetup() error {
 }
 
 func (t *Tester) Execute() error {
+	if err := t.pretestSetup(); err != nil {
+		return err
+	}
 	return t.Ginkgo.Execute()
 }
 
