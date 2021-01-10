@@ -19,6 +19,7 @@ package tester
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"k8s.io/klog/v2"
 
@@ -44,7 +45,7 @@ func (t *Tester) pretestSetup() error {
 		return fmt.Errorf("failed to get kubectl package from published releases: %s", err)
 	}
 	existingPath := os.Getenv("PATH")
-	os.Setenv("PATH", fmt.Sprintf("%v:%v", kubectlPath, existingPath))
+	os.Setenv("PATH", fmt.Sprintf("%v:%v", filepath.Dir(kubectlPath), existingPath))
 	return nil
 }
 
