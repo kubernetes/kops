@@ -25,7 +25,7 @@ gazelle_diff=$("${TOOLS_BIN}/gazelle" fix \
   -exclude=hack \
   -mode=diff \
   -proto=disable \
-  -repo_root="${KOPS_ROOT}")
+  -repo_root="${KOPS_ROOT}") || _=$?
 
 if [[ -n "${gazelle_diff}" ]]; then
   echo "${gazelle_diff}" >&2
