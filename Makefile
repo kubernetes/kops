@@ -190,7 +190,7 @@ test-e2e:
 	cd /home/prow/go/src/k8s.io/kops/tests/e2e && \
 		export GO111MODULE=on && \
 		go get sigs.k8s.io/kubetest2@latest && \
-		go get sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest && \
+		go install ./kubetest2-tester-kops && \
 		go install ./kubetest2-kops
 	kubetest2 kops \
 		-v 2 \
@@ -198,7 +198,7 @@ test-e2e:
 		--cloud-provider=aws \
 		--kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
 		--kubernetes-version=v1.19.4 \
-		--test=ginkgo \
+		--test=kops \
 		-- \
 		--test-package-version=v1.19.4 \
 		--parallel 25 \
