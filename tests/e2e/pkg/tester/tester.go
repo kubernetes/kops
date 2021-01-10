@@ -36,9 +36,11 @@ func (t *Tester) pretestSetup() error {
 	if err != nil {
 		return fmt.Errorf("failed to get kubectl package from published releases: %s", err)
 	}
+
 	existingPath := os.Getenv("PATH")
-	os.Setenv("PATH", fmt.Sprintf("%v:%v", filepath.Dir(kubectlPath), existingPath))
-	return nil
+	newPath := fmt.Sprintf("%v:%v", filepath.Dir(kubectlPath), existingPath)
+	klog.Info("Setting PATH=", newPath)
+	return os.Setenv("PATH", newPath)
 }
 
 func (t *Tester) Execute() error {
