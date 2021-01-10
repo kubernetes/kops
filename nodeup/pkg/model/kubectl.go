@@ -22,7 +22,6 @@ import (
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kops/util/pkg/distributions"
 
 	"k8s.io/klog/v2"
 )
@@ -104,20 +103,9 @@ func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
 
 // findKubeconfigUser finds the default user for whom we should create a kubeconfig
 func (b *KubectlBuilder) findKubeconfigUser() (*fi.User, *fi.Group, error) {
-	var users []string
-	switch b.Distribution {
-	case distributions.DistributionDebian9, distributions.DistributionDebian10:
-		users = []string{"admin", "root"}
-	case distributions.DistributionUbuntu1604, distributions.DistributionUbuntu1804, distributions.DistributionUbuntu2004, distributions.DistributionUbuntu2010:
-		users = []string{"ubuntu"}
-	case distributions.DistributionCentos7, distributions.DistributionCentos8:
-		users = []string{"centos"}
-	case distributions.DistributionAmazonLinux2, distributions.DistributionRhel7, distributions.DistributionRhel8:
-		users = []string{"ec2-user"}
-	case distributions.DistributionFlatcar:
-		users = []string{"core"}
-	default:
-		klog.Warningf("Unknown distro; won't write kubeconfig to homedir %s", b.Distribution)
+	users, err := b.Distribution.DefaultUsers()
+	if err != nil {
+		klog.Warningf("won't write kubeconfig to homedir for distribution %s: %v", b.Distribution, err)
 		return nil, nil, nil
 	}
 

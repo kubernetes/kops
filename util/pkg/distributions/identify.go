@@ -41,7 +41,7 @@ func FindDistribution(rootfs string) (Distribution, error) {
 			}
 		}
 	} else {
-		return "", fmt.Errorf("reading /etc/os-release: %v", err)
+		return Distribution{}, fmt.Errorf("reading /etc/os-release: %v", err)
 	}
 
 	distro := fmt.Sprintf("%s-%s", osRelease["ID"], osRelease["VERSION_ID"])
@@ -84,5 +84,5 @@ func FindDistribution(rootfs string) (Distribution, error) {
 
 	// Some distros are not supported
 	klog.V(2).Infof("Contents of /etc/os-release:\n%s", osReleaseBytes)
-	return "", fmt.Errorf("unsupported distro: %s", distro)
+	return Distribution{}, fmt.Errorf("unsupported distro: %s", distro)
 }
