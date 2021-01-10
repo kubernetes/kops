@@ -58,7 +58,6 @@ ServerGroup:
   IGName: node
   Lifecycle: Sync
   MaxSize: 1
-  Members: null
   Name: cluster-node
   Policies:
   - anti-affinity
@@ -98,7 +97,6 @@ ID: null
 IGName: node
 Lifecycle: Sync
 MaxSize: 1
-Members: null
 Name: cluster-node
 Policies:
 - anti-affinity

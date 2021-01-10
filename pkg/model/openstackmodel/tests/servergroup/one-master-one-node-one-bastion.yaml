@@ -79,7 +79,6 @@ ServerGroup:
   IGName: bastion
   Lifecycle: Sync
   MaxSize: 1
-  Members: null
   Name: cluster-bastion
   Policies:
   - anti-affinity
@@ -156,7 +155,6 @@ ServerGroup:
   IGName: master
   Lifecycle: Sync
   MaxSize: 1
-  Members: null
   Name: cluster-master
   Policies:
   - anti-affinity
@@ -220,7 +218,6 @@ ServerGroup:
   IGName: node
   Lifecycle: Sync
   MaxSize: 1
-  Members: null
   Name: cluster-node
   Policies:
   - anti-affinity
@@ -317,7 +314,6 @@ ID: null
 IGName: bastion
 Lifecycle: Sync
 MaxSize: 1
-Members: null
 Name: cluster-bastion
 Policies:
 - anti-affinity
@@ -327,7 +323,6 @@ ID: null
 IGName: master
 Lifecycle: Sync
 MaxSize: 1
-Members: null
 Name: cluster-master
 Policies:
 - anti-affinity
@@ -337,7 +332,6 @@ ID: null
 IGName: node
 Lifecycle: Sync
 MaxSize: 1
-Members: null
 Name: cluster-node
 Policies:
 - anti-affinity
