@@ -201,7 +201,7 @@ func (e *BindMount) execute(t Executor) error {
 		case "rshared":
 			makeOptions = append(makeOptions, "--make-rshared")
 
-		case "exec", "noexec", "nosuid", "nodev":
+		case "exec", "noexec", "suid", "nosuid", "dev", "nodev":
 			remountOptions = append(remountOptions, option)
 
 		default:
