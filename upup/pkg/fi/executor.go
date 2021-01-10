@@ -35,6 +35,7 @@ type taskState struct {
 	done         bool
 	key          string
 	task         Task
+	fn           func(c *Context, task Task) error
 	deadline     time.Time
 	lastError    error
 	dependencies []*taskState
@@ -50,17 +51,56 @@ func (o *RunTasksOptions) InitDefaults() {
 	o.WaitAfterAllTasksFailed = 10 * time.Second
 }
 
-// RunTasks executes all the tasks, considering their dependencies
-// It will perform some re-execution on error, retrying as long as progress is still being made
 func (e *executor) RunTasks(taskMap map[string]Task) error {
 	dependencies := FindTaskDependencies(taskMap)
 
+	if err := e.runTasks(dependencies, taskMap, func(c *Context, task Task) error {
+		return task.Run(c)
+	}); err != nil {
+		return err
+	}
+
+	if e.context.Target.ProcessDeletions() {
+		doDelete := func(c *Context, task Task) error {
+			if producesDeletions, ok := task.(ProducesDeletions); ok {
+				var deletions []Deletion
+				deletions, err := producesDeletions.FindDeletions(c)
+				if err != nil {
+					return err
+				}
+				for _, deletion := range deletions {
+					if _, ok := c.Target.(*DryRunTarget); ok {
+						err = c.Target.(*DryRunTarget).Delete(deletion)
+					} else if _, ok := c.Target.(*DryRunTarget); ok {
+						err = c.Target.(*DryRunTarget).Delete(deletion)
+					} else {
+						err = deletion.Delete(c.Target)
+					}
+					if err != nil {
+						return err
+					}
+				}
+			}
+			return nil
+		}
+		if err := e.runTasks(dependencies, taskMap, doDelete); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// runTasks executes all the tasks, considering their dependencies
+// It will perform some re-execution on error, retrying as long as progress is still being made
+func (e *executor) runTasks(dependencies map[string][]string, taskMap map[string]Task, fn func(c *Context, task Task) error) error {
 	taskStates := make(map[string]*taskState)
 
 	for k, task := range taskMap {
 		ts := &taskState{
 			key:  k,
 			task: task,
+			fn:   fn,
 		}
 		taskStates[k] = ts
 	}
@@ -176,7 +216,7 @@ func (e *executor) forkJoin(tasks []*taskState) []error {
 			results[index] = fmt.Errorf("function panic")
 			defer wg.Done()
 			klog.V(2).Infof("Executing task %q: %v\n", ts.key, ts.task)
-			results[index] = ts.task.Run(e.context)
+			results[index] = ts.fn(e.context, ts.task)
 		}(tasks[i], i)
 	}
 
