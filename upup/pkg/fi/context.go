@@ -246,7 +246,7 @@ type ExistsAndWarnIfChangesError struct {
 	msg string
 }
 
-// NewWarnIfInsufficientAccessError is a builder for ExistsAndWarnIfChangesError.
+// NewExistsAndWarnIfChangesError is a builder for ExistsAndWarnIfChangesError.
 func NewExistsAndWarnIfChangesError(message string) *ExistsAndWarnIfChangesError {
 	return &ExistsAndWarnIfChangesError{
 		msg: message,
