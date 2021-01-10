@@ -52,7 +52,7 @@ func (t *Tester) AcquireKubectl() (string, error) {
 		}
 		t.Ginkgo.TestPackageVersion = lines[0]
 
-		klog.V(1).Infof("Kubectl package version was not specified. Defaulting to latest: %s", t.Ginkgo.TestPackageVersion)
+		klog.Infof("Kubectl package version was not specified. Defaulting to latest: %s", t.Ginkgo.TestPackageVersion)
 	}
 
 	clientTar := fmt.Sprintf("kubernetes-client-%s-%s.tar.gz", runtime.GOOS, runtime.GOARCH)
@@ -135,7 +135,8 @@ func (t *Tester) ensureClientTar(downloadPath, clientTar string) error {
 		klog.Warning(err)
 	}
 
-	cmd := exec.Command("gsutil", "cp",
+	args := []string{
+		"gsutil", "cp",
 		fmt.Sprintf(
 			"gs://%s/%s/%s/%s",
 			t.Ginkgo.TestPackageBucket,
@@ -144,7 +145,10 @@ func (t *Tester) ensureClientTar(downloadPath, clientTar string) error {
 			clientTar,
 		),
 		downloadPath,
-	)
+	}
+	klog.Info(strings.Join(args, " "))
+
+	cmd := exec.Command(args[0], args[1:]...)
 	exec.InheritOutput(cmd)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to download release tar %s for release %s: %s", clientTar, t.Ginkgo.TestPackageVersion, err)
