@@ -109,8 +109,8 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 	{
 		// We always create the directory, avoids circular dependency on a bind-mount
-		c.AddTask(&nodetasks.File{
-			Path: filepath.Dir(b.KubeletKubeConfig()),
+		c.EnsureTask(&nodetasks.File{
+			Path: filepath.Dir(b.KubeletKubeConfig()), // e.g. "/var/lib/kubelet"
 			Type: nodetasks.FileType_Directory,
 			Mode: s("0755"),
 		})
