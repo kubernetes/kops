@@ -19,6 +19,7 @@ package openstacktasks
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
@@ -33,10 +34,19 @@ type ServerGroup struct {
 	Name        *string
 	ClusterName *string
 	IGName      *string
-	Members     []string
 	Policies    []string
 	MaxSize     *int32
 	Lifecycle   *fi.Lifecycle
+
+	mutex sync.Mutex
+
+	// members caches a list of member instance names.
+	// When we create new instances, we can add them to this list also.
+	members []string
+
+	// gotMemberList records if we have returned the member list to another task.
+	// If we attempt to add a member after doing so, it indicates a missing dependency.
+	gotMemberList bool
 }
 
 var _ fi.CompareWithID = &ServerGroup{}
@@ -71,10 +81,10 @@ func (s *ServerGroup) Find(context *fi.Context) (*ServerGroup, error) {
 				ClusterName: s.ClusterName,
 				IGName:      s.IGName,
 				ID:          fi.String(serverGroup.ID),
-				Members:     serverGroup.Members,
 				Lifecycle:   s.Lifecycle,
 				Policies:    serverGroup.Policies,
 				MaxSize:     fi.Int32(int32(len(serverGroup.Members))),
+				members:     serverGroup.Members,
 			}
 		}
 	}
@@ -88,7 +98,7 @@ func (s *ServerGroup) Find(context *fi.Context) (*ServerGroup, error) {
 	}
 
 	s.ID = actual.ID
-	s.Members = actual.Members
+	s.members = actual.members
 	return actual, nil
 }
 
@@ -156,4 +166,30 @@ func (_ *ServerGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, cha
 
 	klog.V(2).Infof("Openstack task ServerGroup::RenderOpenstack did nothing")
 	return nil
+}
+
+// AddNewMember is called when we created an instance in this server group.
+// It adds it to the internal cached list of members.
+// If we have already called GetMembers, this function will panic;
+// this can be avoided by use of GetDependencies() (typically by depending on Instance tasks)
+func (s *ServerGroup) AddNewMember(memberID string) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if s.gotMemberList {
+		klog.Fatalf("attempt to add member %q after member list already returned", memberID)
+	}
+
+	s.members = append(s.members, memberID)
+}
+
+// GetMembers returns the ids of servers in this group.
+// It also activates the "flag" preventning further calls to AddNewMember,
+// guaranteeing that no new members will be added.
+func (s *ServerGroup) GetMembers() []string {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	s.gotMemberList = true
+	return s.members
 }
