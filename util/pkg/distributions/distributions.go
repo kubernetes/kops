@@ -17,85 +17,90 @@ limitations under the License.
 package distributions
 
 import (
-	"k8s.io/klog/v2"
+	"fmt"
 )
 
-type Distribution string
+// Distribution represents a particular version of an operating system.
+// This enables OS-dependent logic.
+type Distribution struct {
+	// packageFormat is the packaging format used by this distro; either deb or rpm, or "" for immutable OSes
+	packageFormat string
 
-const (
-	DistributionDebian9      Distribution = "stretch"
-	DistributionDebian10     Distribution = "buster"
-	DistributionUbuntu1604   Distribution = "xenial"
-	DistributionUbuntu1804   Distribution = "bionic"
-	DistributionUbuntu2004   Distribution = "focal"
-	DistributionUbuntu2010   Distribution = "groovy"
-	DistributionAmazonLinux2 Distribution = "amazonlinux2"
-	DistributionRhel7        Distribution = "rhel7"
-	DistributionCentos7      Distribution = "centos7"
-	DistributionRhel8        Distribution = "rhel8"
-	DistributionCentos8      Distribution = "centos8"
-	DistributionFlatcar      Distribution = "flatcar"
-	DistributionContainerOS  Distribution = "containeros"
+	// project is the entity that produces the distribution e.g. "debian" or "ubuntu" or "rhel" or "centos"
+	project string
+
+	// id is the name of the actual distribution version e.g. "buster" or "xenial"
+	id string
+
+	// version is a numeric identifier for comparison purposes within a particular project
+	version float32
+}
+
+var (
+	DistributionDebian9      = Distribution{packageFormat: "deb", project: "debian", id: "stretch", version: 9}
+	DistributionDebian10     = Distribution{packageFormat: "deb", project: "debian", id: "buster", version: 10}
+	DistributionUbuntu1604   = Distribution{packageFormat: "deb", project: "ubuntu", id: "xenial", version: 16.04}
+	DistributionUbuntu1804   = Distribution{packageFormat: "deb", project: "ubuntu", id: "bionic", version: 18.04}
+	DistributionUbuntu2004   = Distribution{packageFormat: "deb", project: "ubuntu", id: "focal", version: 20.04}
+	DistributionUbuntu2010   = Distribution{packageFormat: "deb", project: "ubuntu", id: "groovy", version: 20.10}
+	DistributionAmazonLinux2 = Distribution{packageFormat: "rpm", project: "amazonlinux2", id: "amazonlinux2", version: 0}
+	DistributionRhel7        = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel7", version: 7}
+	DistributionCentos7      = Distribution{packageFormat: "rpm", project: "centos", id: "centos7", version: 7}
+	DistributionRhel8        = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel8", version: 8}
+	DistributionCentos8      = Distribution{packageFormat: "rpm", project: "centos", id: "centos8", version: 8}
+	DistributionFlatcar      = Distribution{packageFormat: "", project: "flatcar", id: "flatcar", version: 0}
+	DistributionContainerOS  = Distribution{packageFormat: "", project: "containeros", id: "containeros", version: 0}
 )
 
-func (d Distribution) IsDebianFamily() bool {
-	switch d {
-	case DistributionDebian9, DistributionDebian10:
-		return true
-	case DistributionUbuntu1604, DistributionUbuntu1804, DistributionUbuntu2004, DistributionUbuntu2010:
-		return true
-	case DistributionCentos7, DistributionRhel7, DistributionCentos8, DistributionRhel8, DistributionAmazonLinux2:
-		return false
-	case DistributionFlatcar, DistributionContainerOS:
-		return false
+// IsDebianFamily returns true if this distribution uses deb packages and generally follows debian package names
+func (d *Distribution) IsDebianFamily() bool {
+	return d.packageFormat == "deb"
+}
+
+// IsUbuntu returns true if this distribution is Ubuntu (but not debian)
+func (d *Distribution) IsUbuntu() bool {
+	return d.project == "ubuntu"
+}
+
+// IsRHELFamily returns true if this distribution uses rpm packages and generally follows rhel package names
+func (d *Distribution) IsRHELFamily() bool {
+	return d.packageFormat == "rpm"
+}
+
+// IsSystemd returns true if this distribution uses systemd
+func (d *Distribution) IsSystemd() bool {
+	return true
+}
+
+// DefaultUsers returns the name of the system users for this distribution
+func (d *Distribution) DefaultUsers() ([]string, error) {
+	switch d.project {
+	case "debian":
+		return []string{"admin", "root"}, nil
+	case "ubuntu":
+		return []string{"ubuntu"}, nil
+	case "centos":
+		return []string{"centos"}, nil
+	case "rhel", "amazonlinux2":
+		return []string{"ec2-user"}, nil
+	case "flatcar":
+		return []string{"core"}, nil
 	default:
-		klog.Fatalf("unknown distribution: %s", d)
-		return false
+		return nil, fmt.Errorf("unknown distro %v", d)
 	}
 }
 
-func (d Distribution) IsUbuntu() bool {
-	switch d {
-	case DistributionDebian9, DistributionDebian10:
-		return false
-	case DistributionUbuntu1604, DistributionUbuntu1804, DistributionUbuntu2004, DistributionUbuntu2010:
-		return true
-	case DistributionCentos7, DistributionRhel7, DistributionCentos8, DistributionRhel8, DistributionAmazonLinux2:
-		return false
-	case DistributionFlatcar, DistributionContainerOS:
-		return false
-	default:
-		klog.Fatalf("unknown distribution: %s", d)
-		return false
+// HasLoopbackEtcResolvConf is true if systemd-resolved has put the loopback address 127.0.0.53 as a nameserver in /etc/resolv.conf
+// See https://github.com/coredns/coredns/blob/master/plugin/loop/README.md#troubleshooting-loops-in-kubernetes-clusters
+func (d *Distribution) HasLoopbackEtcResolvConf() bool {
+	if d.IsUbuntu() {
+		// Ubuntu > 16.04 has it
+		return d.version > 16.04
 	}
+	return false
 }
 
-func (d Distribution) IsRHELFamily() bool {
-	switch d {
-	case DistributionCentos7, DistributionRhel7, DistributionCentos8, DistributionRhel8, DistributionAmazonLinux2:
-		return true
-	case DistributionUbuntu1604, DistributionUbuntu1804, DistributionUbuntu2004, DistributionUbuntu2010, DistributionDebian9, DistributionDebian10:
-		return false
-	case DistributionFlatcar, DistributionContainerOS:
-		return false
-	default:
-		klog.Fatalf("unknown distribution: %s", d)
-		return false
-	}
-}
-
-func (d Distribution) IsSystemd() bool {
-	switch d {
-	case DistributionUbuntu1604, DistributionUbuntu1804, DistributionUbuntu2004, DistributionUbuntu2010, DistributionDebian9, DistributionDebian10:
-		return true
-	case DistributionCentos7, DistributionRhel7, DistributionCentos8, DistributionRhel8, DistributionAmazonLinux2:
-		return true
-	case DistributionFlatcar:
-		return true
-	case DistributionContainerOS:
-		return true
-	default:
-		klog.Fatalf("unknown distribution: %s", d)
-		return false
-	}
+// Version returns the (project scoped) numeric version
+func (d *Distribution) Version() float32 {
+	return d.version
 }
