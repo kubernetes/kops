@@ -73,7 +73,6 @@ ServerGroup:
   IGName: master-a
   Lifecycle: Sync
   MaxSize: 1
-  Members: null
   Name: cluster-master-a
   Policies:
   - anti-affinity
@@ -144,7 +143,6 @@ ServerGroup:
   IGName: master-b
   Lifecycle: Sync
   MaxSize: 1
-  Members: null
   Name: cluster-master-b
   Policies:
   - anti-affinity
@@ -215,7 +213,6 @@ ServerGroup:
   IGName: master-c
   Lifecycle: Sync
   MaxSize: 1
-  Members: null
   Name: cluster-master-c
   Policies:
   - anti-affinity
@@ -279,7 +276,6 @@ ServerGroup:
   IGName: node-a
   Lifecycle: Sync
   MaxSize: 1
-  Members: null
   Name: cluster-node-a
   Policies:
   - anti-affinity
@@ -343,7 +339,6 @@ ServerGroup:
   IGName: node-b
   Lifecycle: Sync
   MaxSize: 1
-  Members: null
   Name: cluster-node-b
   Policies:
   - anti-affinity
@@ -407,7 +402,6 @@ ServerGroup:
   IGName: node-c
   Lifecycle: Sync
   MaxSize: 1
-  Members: null
   Name: cluster-node-c
   Policies:
   - anti-affinity
@@ -594,7 +588,6 @@ ID: null
 IGName: master-a
 Lifecycle: Sync
 MaxSize: 1
-Members: null
 Name: cluster-master-a
 Policies:
 - anti-affinity
@@ -604,7 +597,6 @@ ID: null
 IGName: master-b
 Lifecycle: Sync
 MaxSize: 1
-Members: null
 Name: cluster-master-b
 Policies:
 - anti-affinity
@@ -614,7 +606,6 @@ ID: null
 IGName: master-c
 Lifecycle: Sync
 MaxSize: 1
-Members: null
 Name: cluster-master-c
 Policies:
 - anti-affinity
@@ -624,7 +615,6 @@ ID: null
 IGName: node-a
 Lifecycle: Sync
 MaxSize: 1
-Members: null
 Name: cluster-node-a
 Policies:
 - anti-affinity
@@ -634,7 +624,6 @@ ID: null
 IGName: node-b
 Lifecycle: Sync
 MaxSize: 1
-Members: null
 Name: cluster-node-b
 Policies:
 - anti-affinity
@@ -644,7 +633,6 @@ ID: null
 IGName: node-c
 Lifecycle: Sync
 MaxSize: 1
-Members: null
 Name: cluster-node-c
 Policies:
 - anti-affinity
