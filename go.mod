@@ -47,8 +47,6 @@ replace k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.20.0
 // This should match hack/go.mod
 replace k8s.io/code-generator => k8s.io/code-generator v0.20.0
 
-replace github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.11.0
-
 require (
 	cloud.google.com/go v0.54.0
 	github.com/Azure/azure-pipeline-go v0.2.3
@@ -75,7 +73,7 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/google/go-cmp v0.5.2
 	github.com/google/uuid v1.1.2
-	github.com/gophercloud/gophercloud v0.11.1-0.20200518183226-7aec46f32c19
+	github.com/gophercloud/gophercloud v0.15.0
 	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/hcl/v2 v2.7.0
 	github.com/hashicorp/vault/api v1.0.4

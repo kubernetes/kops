@@ -262,7 +262,6 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 				},
 			},
 			Metadata:       e.Metadata,
-			ServiceClient:  t.Cloud.ComputeClient(),
 			SecurityGroups: e.SecurityGroups,
 		}
 		if e.UserData != nil {

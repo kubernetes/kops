@@ -55,14 +55,14 @@ func createServerGroup(c OpenstackCloud, opt servergroups.CreateOptsBuilder) (*s
 	}
 }
 
-func (c *openstackCloud) ListServerGroups() ([]servergroups.ServerGroup, error) {
-	return listServerGroups(c)
+func (c *openstackCloud) ListServerGroups(opts servergroups.ListOptsBuilder) ([]servergroups.ServerGroup, error) {
+	return listServerGroups(c, opts)
 }
-func listServerGroups(c OpenstackCloud) ([]servergroups.ServerGroup, error) {
+func listServerGroups(c OpenstackCloud, opts servergroups.ListOptsBuilder) ([]servergroups.ServerGroup, error) {
 	var sgs []servergroups.ServerGroup
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := servergroups.List(c.ComputeClient()).AllPages()
+		allPages, err := servergroups.List(c.ComputeClient(), opts).AllPages()
 		if err != nil {
 			return false, fmt.Errorf("error listing server groups: %v", err)
 		}
