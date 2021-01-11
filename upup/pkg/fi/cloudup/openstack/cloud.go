@@ -235,7 +235,7 @@ type OpenstackCloud interface {
 	CreateServerGroup(opt servergroups.CreateOptsBuilder) (*servergroups.ServerGroup, error)
 
 	// ListServerGroups will list available server groups
-	ListServerGroups() ([]servergroups.ServerGroup, error)
+	ListServerGroups(opts servergroups.ListOptsBuilder) ([]servergroups.ServerGroup, error)
 
 	// DeleteServerGroup will delete a nova server group
 	DeleteServerGroup(groupID string) error
@@ -617,7 +617,7 @@ func getCloudGroups(c OpenstackCloud, cluster *kops.Cluster, instancegroups []*k
 	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 
-	serverGrps, err := c.ListServerGroups()
+	serverGrps, err := c.ListServerGroups(servergroups.ListOpts{})
 	if err != nil {
 		return nil, fmt.Errorf("unable to list servergroups: %v", err)
 	}

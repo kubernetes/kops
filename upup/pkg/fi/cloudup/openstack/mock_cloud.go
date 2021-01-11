@@ -423,8 +423,8 @@ func (c *MockCloud) ListSecurityGroupRules(opt sgr.ListOpts) ([]sgr.SecGroupRule
 func (c *MockCloud) ListServerFloatingIPs(instanceID string) ([]*string, error) {
 	return listServerFloatingIPs(c, instanceID, true)
 }
-func (c *MockCloud) ListServerGroups() ([]servergroups.ServerGroup, error) {
-	return listServerGroups(c)
+func (c *MockCloud) ListServerGroups(opts servergroups.ListOptsBuilder) ([]servergroups.ServerGroup, error) {
+	return listServerGroups(c, opts)
 }
 func (c *MockCloud) ListSubnets(opt subnets.ListOptsBuilder) ([]subnets.Subnet, error) {
 	return listSubnets(c, opt)

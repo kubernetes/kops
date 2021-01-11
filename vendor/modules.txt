@@ -300,10 +300,9 @@ github.com/googleapis/gax-go/v2
 github.com/googleapis/gnostic/compiler
 github.com/googleapis/gnostic/extensions
 github.com/googleapis/gnostic/openapiv2
-# github.com/gophercloud/gophercloud v0.11.1-0.20200518183226-7aec46f32c19 => github.com/gophercloud/gophercloud v0.11.0
+# github.com/gophercloud/gophercloud v0.15.0
 ## explicit
 github.com/gophercloud/gophercloud
-github.com/gophercloud/gophercloud/internal
 github.com/gophercloud/gophercloud/openstack
 github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes
 github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones
@@ -1393,4 +1392,3 @@ sigs.k8s.io/yaml
 # k8s.io/cli-runtime => k8s.io/cli-runtime v0.20.0
 # k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.20.0
 # k8s.io/code-generator => k8s.io/code-generator v0.20.0
-# github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.11.0

@@ -109,7 +109,7 @@ type UpdateOpts struct {
 	AdminStateUp *bool        `json:"admin_state_up,omitempty"`
 	Distributed  *bool        `json:"distributed,omitempty"`
 	GatewayInfo  *GatewayInfo `json:"external_gateway_info,omitempty"`
-	Routes       []Route      `json:"routes"`
+	Routes       *[]Route     `json:"routes,omitempty"`
 }
 
 // ToRouterUpdateMap builds an update body based on UpdateOpts.
@@ -236,4 +236,11 @@ func RemoveInterface(c *gophercloud.ServiceClient, id string, opts RemoveInterfa
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
+}
+
+// ListL3Agents returns a list of l3-agents scheduled for a specific router.
+func ListL3Agents(c *gophercloud.ServiceClient, id string) (result pagination.Pager) {
+	return pagination.NewPager(c, listl3AgentsURL(c, id), func(r pagination.PageResult) pagination.Page {
+		return ListL3AgentsPage{pagination.SinglePageBase(r)}
+	})
 }
