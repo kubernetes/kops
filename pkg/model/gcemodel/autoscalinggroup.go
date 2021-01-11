@@ -88,9 +88,12 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				Preemptible: fi.Bool(false),
 
 				Scopes: []string{
-					"compute-rw",
-					"monitoring",
-					"logging-write",
+					// NOTE: Historically, GCE implementation has relied on scopes for the nodes' authz.
+					// See https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances
+					// For current best practices. Grant cloud-platform scope on instance and use Cloud IAM on the
+					// Service Account to grant/restrict access to googleapis.
+					"cloud-platform",
+					// We might need to do some checks to ensure the node service account has appropriate permissions?
 				},
 				Metadata: map[string]fi.Resource{
 					"startup-script": startupScript,
@@ -105,15 +108,9 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				return nil, err
 			}
 
-			storagePaths, err := iam.WriteableVFSPaths(b.Cluster, nodeRole)
+			_, err = iam.WriteableVFSPaths(b.Cluster, nodeRole)
 			if err != nil {
 				return nil, err
-			}
-			if len(storagePaths) == 0 {
-				t.Scopes = append(t.Scopes, "storage-ro")
-			} else {
-				klog.Warningf("enabling storage-rw for etcd backups")
-				t.Scopes = append(t.Scopes, "storage-rw")
 			}
 
 			if len(b.SSHPublicKeys) > 0 {
