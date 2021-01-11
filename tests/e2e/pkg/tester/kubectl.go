@@ -37,11 +37,11 @@ import (
 // AcquireKubectl obtains kubectl and places it in a temporary directory
 func (t *Tester) AcquireKubectl() (string, error) {
 	// first, get the name of the latest release (e.g. v1.20.0-alpha.0)
-	if t.Ginkgo.TestPackageVersion == "" {
+	if t.TestPackageVersion == "" {
 		cmd := exec.Command(
 			"gsutil",
 			"cat",
-			fmt.Sprintf("gs://%s/%s/latest.txt", t.Ginkgo.TestPackageBucket, t.Ginkgo.TestPackageDir),
+			fmt.Sprintf("gs://%s/%s/latest.txt", t.TestPackageBucket, t.TestPackageDir),
 		)
 		lines, err := exec.OutputLines(cmd)
 		if err != nil {
@@ -50,9 +50,9 @@ func (t *Tester) AcquireKubectl() (string, error) {
 		if len(lines) == 0 {
 			return "", fmt.Errorf("getting latest release name had no output")
 		}
-		t.Ginkgo.TestPackageVersion = lines[0]
+		t.TestPackageVersion = lines[0]
 
-		klog.Infof("Kubectl package version was not specified. Defaulting to latest: %s", t.Ginkgo.TestPackageVersion)
+		klog.Infof("Kubectl package version was not specified. Defaulting to latest: %s", t.TestPackageVersion)
 	}
 
 	clientTar := fmt.Sprintf("kubernetes-client-%s-%s.tar.gz", runtime.GOOS, runtime.GOARCH)
@@ -139,9 +139,9 @@ func (t *Tester) ensureClientTar(downloadPath, clientTar string) error {
 		"gsutil", "cp",
 		fmt.Sprintf(
 			"gs://%s/%s/%s/%s",
-			t.Ginkgo.TestPackageBucket,
-			t.Ginkgo.TestPackageDir,
-			t.Ginkgo.TestPackageVersion,
+			t.TestPackageBucket,
+			t.TestPackageDir,
+			t.TestPackageVersion,
 			clientTar,
 		),
 		downloadPath,
@@ -151,7 +151,7 @@ func (t *Tester) ensureClientTar(downloadPath, clientTar string) error {
 	cmd := exec.Command(args[0], args[1:]...)
 	exec.InheritOutput(cmd)
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to download release tar %s for release %s: %s", clientTar, t.Ginkgo.TestPackageVersion, err)
+		return fmt.Errorf("failed to download release tar %s for release %s: %s", clientTar, t.TestPackageVersion, err)
 	}
 	return nil
 }
@@ -160,15 +160,15 @@ func (t *Tester) compareSHA(downloadPath string, clientTar string) error {
 	cmd := exec.Command("gsutil", "cat",
 		fmt.Sprintf(
 			"gs://%s/%s/%s/%s",
-			t.Ginkgo.TestPackageBucket,
-			t.Ginkgo.TestPackageDir,
-			t.Ginkgo.TestPackageVersion,
+			t.TestPackageBucket,
+			t.TestPackageDir,
+			t.TestPackageVersion,
 			clientTar+".sha256",
 		),
 	)
 	expectedSHABytes, err := exec.Output(cmd)
 	if err != nil {
-		return fmt.Errorf("failed to get sha256 for release tar %s for release %s: %s", clientTar, t.Ginkgo.TestPackageVersion, err)
+		return fmt.Errorf("failed to get sha256 for release tar %s for release %s: %s", clientTar, t.TestPackageVersion, err)
 	}
 	expectedSHA := strings.TrimSuffix(string(expectedSHABytes), "\n")
 	actualSHA, err := sha256sum(downloadPath)
