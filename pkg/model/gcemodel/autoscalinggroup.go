@@ -92,7 +92,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 					// See https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances
 					// For current best practices. Grant cloud-platform scope on instance and use Cloud IAM on the
 					// Service Account to grant/restrict access to googleapis.
-					"cloud-platform",
+					"https://www.googleapis.com/auth/cloud-platform",
 					// We might need to do some checks to ensure the node service account has appropriate permissions?
 				},
 				Metadata: map[string]fi.Resource{
@@ -126,7 +126,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 			case kops.InstanceGroupRoleMaster:
 				// Grant DNS permissions
 				// TODO: migrate to IAM permissions instead of oldschool scopes?
-				t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
+				// t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
 				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleMaster))
 
 			case kops.InstanceGroupRoleNode:

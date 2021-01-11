@@ -157,13 +157,7 @@ func (_ *Instance) CheckChanges(a, e, changes *Instance) error {
 
 func init() {
 	scopeAliases = map[string]string{
-		"storage-ro":       "https://www.googleapis.com/auth/devstorage.read_only",
-		"storage-rw":       "https://www.googleapis.com/auth/devstorage.read_write",
-		"compute-ro":       "https://www.googleapis.com/auth/compute.read_only",
-		"compute-rw":       "https://www.googleapis.com/auth/compute",
-		"monitoring":       "https://www.googleapis.com/auth/monitoring",
-		"monitoring-write": "https://www.googleapis.com/auth/monitoring.write",
-		"logging-write":    "https://www.googleapis.com/auth/logging.write",
+		"cloud-platform": "https://www.googleapis.com/auth/cloud-platform",
 	}
 }
 

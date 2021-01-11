@@ -365,7 +365,7 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
   }
   service_account {
     email  = "default"
-    scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
+    scopes = ["https://www.googleapis.com/auth/cloud-platform"]
   }
   tags = ["ha-gce-example-com-k8s-io-role-master"]
 }
@@ -405,7 +405,7 @@ resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-co
   }
   service_account {
     email  = "default"
-    scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
+    scopes = ["https://www.googleapis.com/auth/cloud-platform"]
   }
   tags = ["ha-gce-example-com-k8s-io-role-master"]
 }
@@ -445,7 +445,7 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
   }
   service_account {
     email  = "default"
-    scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
+    scopes = ["https://www.googleapis.com/auth/cloud-platform"]
   }
   tags = ["ha-gce-example-com-k8s-io-role-master"]
 }
@@ -485,7 +485,7 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
   }
   service_account {
     email  = "default"
-    scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_only"]
+    scopes = ["https://www.googleapis.com/auth/cloud-platform"]
   }
   tags = ["ha-gce-example-com-k8s-io-role-node"]
 }
