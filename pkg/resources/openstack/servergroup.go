@@ -19,6 +19,7 @@ package openstack
 import (
 	"strings"
 
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -30,7 +31,7 @@ const (
 
 func (os *clusterDiscoveryOS) ListServerGroups() ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
-	servergroups, err := os.osCloud.ListServerGroups()
+	servergroups, err := os.osCloud.ListServerGroups(servergroups.ListOpts{})
 	if err != nil {
 		return resourceTrackers, err
 	}

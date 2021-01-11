@@ -2,6 +2,8 @@ package listeners
 
 import (
 	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/l7policies"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
 	"github.com/gophercloud/gophercloud/pagination"
 )
 
@@ -10,11 +12,12 @@ type Protocol string
 
 // Supported attributes for create/update operations.
 const (
-	ProtocolTCP   Protocol = "TCP"
-	ProtocolUDP   Protocol = "UDP"
-	ProtocolPROXY Protocol = "PROXY"
-	ProtocolHTTP  Protocol = "HTTP"
-	ProtocolHTTPS Protocol = "HTTPS"
+	ProtocolTCP             Protocol = "TCP"
+	ProtocolUDP             Protocol = "UDP"
+	ProtocolPROXY           Protocol = "PROXY"
+	ProtocolHTTP            Protocol = "HTTP"
+	ProtocolHTTPS           Protocol = "HTTPS"
+	ProtocolTerminatedHTTPS Protocol = "TERMINATED_HTTPS"
 )
 
 // ListOptsBuilder allows extensions to add additional parameters to the
@@ -83,9 +86,9 @@ type CreateOptsBuilder interface {
 // CreateOpts represents options for creating a listener.
 type CreateOpts struct {
 	// The load balancer on which to provision this listener.
-	LoadbalancerID string `json:"loadbalancer_id" required:"true"`
+	LoadbalancerID string `json:"loadbalancer_id,omitempty"`
 
-	// The protocol - can either be TCP, HTTP or HTTPS.
+	// The protocol - can either be TCP, HTTP, HTTPS or TERMINATED_HTTPS.
 	Protocol Protocol `json:"protocol" required:"true"`
 
 	// The port on which to listen for client traffic.
@@ -100,6 +103,13 @@ type CreateOpts struct {
 
 	// The ID of the default pool with which the Listener is associated.
 	DefaultPoolID string `json:"default_pool_id,omitempty"`
+
+	// DefaultPool an instance of pools.CreateOpts which allows a
+	// (default) pool to be created at the same time the listener is created.
+	//
+	// This is only possible to use when creating a fully populated
+	// load balancer.
+	DefaultPool *pools.CreateOpts `json:"default_pool,omitempty" xor:"LoadbalancerID"`
 
 	// Human-readable description for the Listener.
 	Description string `json:"description,omitempty"`
@@ -116,6 +126,13 @@ type CreateOpts struct {
 	// The administrative state of the Listener. A valid value is true (UP)
 	// or false (DOWN).
 	AdminStateUp *bool `json:"admin_state_up,omitempty"`
+
+	// L7Policies is a slice of l7policies.CreateOpts which allows a set
+	// of policies to be created at the same time the listener is created.
+	//
+	// This is only possible to use when creating a fully populated
+	// Loadbalancer.
+	L7Policies []l7policies.CreateOpts `json:"l7policies,omitempty" xor:"LoadbalancerID"`
 
 	// Frontend client inactivity timeout in milliseconds
 	TimeoutClientData *int `json:"timeout_client_data,omitempty"`

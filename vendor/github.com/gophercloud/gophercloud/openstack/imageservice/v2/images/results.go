@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/internal"
 	"github.com/gophercloud/gophercloud/pagination"
 )
 
@@ -132,7 +131,7 @@ func (r *Image) UnmarshalJSON(b []byte) error {
 		delete(resultMap, "size")
 		delete(resultMap, "openstack-image-import-methods")
 		delete(resultMap, "openstack-image-store-ids")
-		r.Properties = internal.RemainingKeys(Image{}, resultMap)
+		r.Properties = gophercloud.RemainingKeys(Image{}, resultMap)
 	}
 
 	if v := strings.FieldsFunc(strings.TrimSpace(s.OpenStackImageImportMethods), splitFunc); len(v) > 0 {

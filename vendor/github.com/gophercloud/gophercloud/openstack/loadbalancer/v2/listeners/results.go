@@ -37,6 +37,9 @@ type Listener struct {
 	// The UUID of default pool. Must have compatible protocol with listener.
 	DefaultPoolID string `json:"default_pool_id"`
 
+	// The default pool with which the Listener is associated.
+	DefaultPool *pools.Pool `json:"default_pool"`
+
 	// A list of load balancer IDs.
 	Loadbalancers []LoadBalancerID `json:"loadbalancers"`
 

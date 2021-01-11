@@ -228,6 +228,10 @@ type Member struct {
 
 	// An alternate protocol port used for health monitoring a backend member.
 	MonitorPort int `json:"monitor_port"`
+
+	// A list of simple strings assigned to the resource.
+	// Requires microversion 2.5 or later.
+	Tags []string `json:"tags"`
 }
 
 // MemberPage is the page returned by a pager when traversing over a
