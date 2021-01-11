@@ -9,6 +9,7 @@ Image: image-node
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: node
+  KopsName: node-1-cluster
   KopsNetwork: cluster
   KopsRole: Node
   KubernetesCluster: cluster
@@ -21,6 +22,7 @@ Metadata:
   kops.k8s.io_instancegroup: node
   some___:x: label
 Name: node-1-cluster
+NamePrefix: node
 Port:
   AdditionalSecurityGroups: null
   ID: null

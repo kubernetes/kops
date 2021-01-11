@@ -59,6 +59,7 @@ Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: master
+  KopsName: master-1-cluster
   KopsNetwork: cluster
   KopsRole: Master
   KubernetesCluster: cluster
@@ -71,6 +72,7 @@ Metadata:
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master
 Name: master-1-cluster
+NamePrefix: master
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -135,6 +137,7 @@ Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: master
+  KopsName: master-2-cluster
   KopsNetwork: cluster
   KopsRole: Master
   KubernetesCluster: cluster
@@ -147,6 +150,7 @@ Metadata:
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master
 Name: master-2-cluster
+NamePrefix: master
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -211,6 +215,7 @@ Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: master
+  KopsName: master-3-cluster
   KopsNetwork: cluster
   KopsRole: Master
   KubernetesCluster: cluster
@@ -223,6 +228,7 @@ Metadata:
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master
 Name: master-3-cluster
+NamePrefix: master
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -287,6 +293,7 @@ Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: node
+  KopsName: node-1-cluster
   KopsNetwork: cluster
   KopsRole: Node
   KubernetesCluster: cluster
@@ -298,6 +305,7 @@ Metadata:
   k8s.io_role_node: "1"
   kops.k8s.io_instancegroup: node
 Name: node-1-cluster
+NamePrefix: node
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -356,6 +364,7 @@ Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: node
+  KopsName: node-2-cluster
   KopsNetwork: cluster
   KopsRole: Node
   KubernetesCluster: cluster
@@ -367,6 +376,7 @@ Metadata:
   k8s.io_role_node: "1"
   kops.k8s.io_instancegroup: node
 Name: node-2-cluster
+NamePrefix: node
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -425,6 +435,7 @@ Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: node
+  KopsName: node-3-cluster
   KopsNetwork: cluster
   KopsRole: Node
   KubernetesCluster: cluster
@@ -436,6 +447,7 @@ Metadata:
   k8s.io_role_node: "1"
   kops.k8s.io_instancegroup: node
 Name: node-3-cluster
+NamePrefix: node
 Port:
   AdditionalSecurityGroups: null
   ID: null
