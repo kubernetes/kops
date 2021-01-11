@@ -80,6 +80,7 @@ type CreateOpts struct {
 	HistoryLocation   string `h:"X-History-Location"`
 	TempURLKey        string `h:"X-Container-Meta-Temp-URL-Key"`
 	TempURLKey2       string `h:"X-Container-Meta-Temp-URL-Key-2"`
+	StoragePolicy     string `h:"X-Storage-Policy"`
 }
 
 // ToContainerCreateMap formats a CreateOpts into a map of headers.

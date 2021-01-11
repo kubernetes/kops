@@ -31,6 +31,9 @@ type SchedulerHints struct {
 	// TargetCell specifies a cell name where the instance will be placed.
 	TargetCell string `json:"target_cell,omitempty"`
 
+	// DifferentCell specifies cells names where an instance should not be placed.
+	DifferentCell []string `json:"different_cell,omitempty"`
+
 	// BuildNearHostIP specifies a subnet of compute nodes to host the instance.
 	BuildNearHostIP string
 
@@ -122,6 +125,10 @@ func (opts SchedulerHints) ToServerSchedulerHintsCreateMap() (map[string]interfa
 
 	if opts.TargetCell != "" {
 		sh["target_cell"] = opts.TargetCell
+	}
+
+	if len(opts.DifferentCell) > 0 {
+		sh["different_cell"] = opts.DifferentCell
 	}
 
 	if opts.BuildNearHostIP != "" {

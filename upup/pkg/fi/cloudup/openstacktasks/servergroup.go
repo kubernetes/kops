@@ -62,7 +62,7 @@ func (s *ServerGroup) Find(context *fi.Context) (*ServerGroup, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	//TODO: move to cloud, add vfs backoff
 
-	page, err := servergroups.List(cloud.ComputeClient()).AllPages()
+	page, err := servergroups.List(cloud.ComputeClient(), servergroups.ListOpts{}).AllPages()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to list server groups: %v", err)
 	}

@@ -22,14 +22,9 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/kops/upup/pkg/fi"
-
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
-
-	"k8s.io/kops/util/pkg/vfs"
-
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
-
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,8 +34,10 @@ import (
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/testutils"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 func getTestSetupOS(t *testing.T) (*RollingUpdateCluster, *openstack.MockCloud) {
@@ -211,7 +208,7 @@ func getGroupsAllNeedUpdateOS(t *testing.T, c *RollingUpdateCluster) (map[string
 
 func assertGroupInstanceCountOS(t *testing.T, cloud *openstack.MockCloud, groupName string, expected int) {
 
-	groups, _ := cloud.ListServerGroups()
+	groups, _ := cloud.ListServerGroups(servergroups.ListOpts{})
 	for _, g := range groups {
 		if g.Name == groupName {
 			assert.Lenf(t, g.Members, expected, "%s instances", groupName)
