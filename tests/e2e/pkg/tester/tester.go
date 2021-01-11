@@ -21,6 +21,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/octago/sflags/gen/gpflag"
 	"k8s.io/klog/v2"
 
 	"sigs.k8s.io/kubetest2/pkg/testers/ginkgo"
@@ -28,7 +29,7 @@ import (
 
 // Tester wraps kubetest2's ginkgo tester with additional functionality
 type Tester struct {
-	Ginkgo *ginkgo.Tester
+	*ginkgo.Tester
 }
 
 func (t *Tester) pretestSetup() error {
@@ -43,22 +44,39 @@ func (t *Tester) pretestSetup() error {
 	return os.Setenv("PATH", newPath)
 }
 
-func (t *Tester) Execute() error {
+func (t *Tester) execute() error {
+	fs, err := gpflag.Parse(t)
+	if err != nil {
+		return fmt.Errorf("failed to initialize tester: %v", err)
+	}
+
+	help := fs.BoolP("help", "h", false, "")
+	if err := fs.Parse(os.Args); err != nil {
+		return fmt.Errorf("failed to parse flags: %v", err)
+	}
+
+	if *help {
+		fs.SetOutput(os.Stdout)
+		fs.PrintDefaults()
+		return nil
+	}
+
 	if err := t.pretestSetup(); err != nil {
 		return err
 	}
-	return t.Ginkgo.Execute()
+
+	return t.Execute()
 }
 
 func NewDefaultTester() *Tester {
 	return &Tester{
-		Ginkgo: ginkgo.NewDefaultTester(),
+		ginkgo.NewDefaultTester(),
 	}
 }
 
 func Main() {
 	t := NewDefaultTester()
-	if err := t.Execute(); err != nil {
+	if err := t.execute(); err != nil {
 		klog.Fatalf("failed to run ginkgo tester: %v", err)
 	}
 }
