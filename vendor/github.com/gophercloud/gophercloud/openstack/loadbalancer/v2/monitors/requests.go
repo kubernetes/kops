@@ -91,7 +91,7 @@ type CreateOptsBuilder interface {
 // operation.
 type CreateOpts struct {
 	// The Pool to Monitor.
-	PoolID string `json:"pool_id" required:"true"`
+	PoolID string `json:"pool_id,omitempty"`
 
 	// The type of probe, which is PING, TCP, HTTP, or HTTPS, that is
 	// sent by the load balancer to verify the member state.

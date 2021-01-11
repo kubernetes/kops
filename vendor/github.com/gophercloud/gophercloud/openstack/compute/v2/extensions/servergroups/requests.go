@@ -5,10 +5,34 @@ import (
 	"github.com/gophercloud/gophercloud/pagination"
 )
 
+type ListOptsBuilder interface {
+	ToServerListQuery() (string, error)
+}
+
+type ListOpts struct {
+	// AllProjects is a bool to show all projects.
+	AllProjects bool `q:"all_projects"`
+}
+
+// ToServerListQuery formats a ListOpts into a query string.
+func (opts ListOpts) ToServerListQuery() (string, error) {
+	q, err := gophercloud.BuildQueryString(opts)
+	return q.String(), err
+}
+
 // List returns a Pager that allows you to iterate over a collection of
 // ServerGroups.
-func List(client *gophercloud.ServiceClient) pagination.Pager {
-	return pagination.NewPager(client, listURL(client), func(r pagination.PageResult) pagination.Page {
+func List(client *gophercloud.ServiceClient, opts ListOptsBuilder) pagination.Pager {
+	url := listURL(client)
+	if opts != nil {
+		query, err := opts.ToServerListQuery()
+		if err != nil {
+			return pagination.Pager{Err: err}
+		}
+		url += query
+	}
+
+	return pagination.NewPager(client, url, func(r pagination.PageResult) pagination.Page {
 		return ServerGroupPage{pagination.SinglePageBase(r)}
 	})
 }
