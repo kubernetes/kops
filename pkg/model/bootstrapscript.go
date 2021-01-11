@@ -293,9 +293,6 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 			spec["kubeProxy"] = cs.KubeProxy
 			spec["kubelet"] = cs.Kubelet
 
-			if cs.NodeAuthorization != nil {
-				spec["nodeAuthorization"] = cs.NodeAuthorization
-			}
 			if cs.KubeAPIServer != nil && cs.KubeAPIServer.EnableBootstrapAuthToken != nil {
 				spec["kubeAPIServer"] = map[string]interface{}{
 					"enableBootstrapAuthToken": cs.KubeAPIServer.EnableBootstrapAuthToken,
