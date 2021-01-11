@@ -155,10 +155,10 @@ go_test(
         "toolbox_template_test.go",
     ],
     data = [
+        "test/values.yaml",
         "//channels:channeldata",  # keep
         "//tests/integration/create_cluster:exported_testdata",  # keep
         "//tests/integration/update_cluster:exported_testdata",  # keep
-        "test/values.yaml",
     ],
     embed = [":go_default_library"],
     shard_count = 10,
