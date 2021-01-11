@@ -40,6 +40,7 @@ type LaunchSpec struct {
 	Lifecycle *fi.Lifecycle
 
 	ID                 *string
+	SpotPercentage     *int64
 	UserData           fi.Resource
 	SecurityGroups     []*awstasks.SecurityGroup
 	Subnets            []*awstasks.Subnet
@@ -137,7 +138,7 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 	actual.Name = spec.Name
 	actual.Ocean = &Ocean{
 		ID:   ocean.ID,
-		Name: o.Ocean.Name,
+		Name: ocean.Name,
 	}
 
 	// Image.
@@ -270,6 +271,13 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 		}
 	}
 
+	// Strategy.
+	{
+		if strategy := spec.Strategy; strategy != nil {
+			actual.SpotPercentage = fi.Int64(int64(fi.IntValue(strategy.SpotPercentage)))
+		}
+	}
+
 	// Avoid spurious changes.
 	actual.Lifecycle = o.Lifecycle
 
@@ -312,7 +320,10 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 
 	klog.V(2).Infof("Creating Launch Spec for Ocean %q", *ocean.ID)
 
-	spec := new(aws.LaunchSpec)
+	spec := &aws.LaunchSpec{
+		Strategy: new(aws.LaunchSpecStrategy),
+	}
+
 	spec.SetName(e.Name)
 	spec.SetOceanId(ocean.ID)
 
@@ -442,7 +453,14 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 		}
 	}
 
-	// Wrap the raw object as an LaunchSpec.
+	// Strategy.
+	{
+		if e.SpotPercentage != nil {
+			spec.Strategy.SetSpotPercentage(fi.Int(int(*e.SpotPercentage)))
+		}
+	}
+
+	// Wrap the raw object as a LaunchSpec.
 	sp, err := spotinst.NewLaunchSpec(cloud.ProviderID(), spec)
 	if err != nil {
 		return err
@@ -633,6 +651,20 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 		}
 	}
 
+	// Strategy.
+	{
+		// Spot percentage.
+		if changes.SpotPercentage != nil {
+			if spec.Strategy == nil {
+				spec.Strategy = new(aws.LaunchSpecStrategy)
+			}
+
+			spec.Strategy.SetSpotPercentage(fi.Int(int(fi.Int64Value(e.SpotPercentage))))
+			changes.SpotPercentage = nil
+			changed = true
+		}
+	}
+
 	empty := &LaunchSpec{}
 	if !reflect.DeepEqual(empty, changes) {
 		klog.Warningf("Not all changes applied to Launch Spec %q: %v", *spec.ID, changes)
@@ -644,15 +676,40 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 	}
 
 	klog.V(2).Infof("Updating Launch Spec %q (config: %s)", *spec.ID, stringutil.Stringify(spec))
+	ctx := context.Background()
 
-	// Wrap the raw object as an LaunchSpec.
+	ocean, err := e.Ocean.find(cloud.Spotinst().Ocean(), *e.Ocean.Name)
+	if err != nil {
+		return err
+	}
+
+	// Reset the Spot percentage on the Cluster level.
+	if spec.Strategy != nil && spec.Strategy.SpotPercentage != nil &&
+		ocean.Strategy != nil && ocean.Strategy.SpotPercentage != nil {
+		c := &aws.Cluster{Strategy: new(aws.Strategy)}
+		c.SetId(ocean.ID)
+		c.Strategy.SetSpotPercentage(nil)
+
+		// Wrap the raw object as a Cluster.
+		o, err := spotinst.NewOcean(cloud.ProviderID(), c)
+		if err != nil {
+			return err
+		}
+
+		// Update the existing Cluster.
+		if err = cloud.Spotinst().Ocean().Update(ctx, o); err != nil {
+			return err
+		}
+	}
+
+	// Wrap the raw object as a Launch Spec.
 	sp, err := spotinst.NewLaunchSpec(cloud.ProviderID(), spec)
 	if err != nil {
 		return err
 	}
 
-	// Update an existing LaunchSpec.
-	if err := cloud.Spotinst().LaunchSpec().Update(context.Background(), sp); err != nil {
+	// Update the existing Launch Spec.
+	if err = cloud.Spotinst().LaunchSpec().Update(ctx, sp); err != nil {
 		return fmt.Errorf("spotinst: failed to update launch spec: %v", err)
 	}
 
@@ -678,6 +735,11 @@ type terraformLaunchSpec struct {
 	Labels                   []*terraformKV                 `json:"labels,omitempty" cty:"labels"`
 	Tags                     []*terraformKV                 `json:"tags,omitempty" cty:"tags"`
 	Headrooms                []*terraformAutoScalerHeadroom `json:"autoscale_headrooms,omitempty" cty:"autoscale_headrooms"`
+	Strategy                 *terraformLaunchSpecStrategy   `json:"strategy,omitempty" cty:"strategy"`
+}
+
+type terraformLaunchSpecStrategy struct {
+	SpotPercentage *int64 `json:"spot_percentage,omitempty" cty:"spot_percentage"`
 }
 
 func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LaunchSpec) error {
@@ -807,6 +869,15 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 			// Taints.
 			if len(opts.Taints) > 0 {
 				tf.Taints = opts.Taints
+			}
+		}
+	}
+
+	// Strategy.
+	{
+		if e.SpotPercentage != nil {
+			tf.Strategy = &terraformLaunchSpecStrategy{
+				SpotPercentage: e.SpotPercentage,
 			}
 		}
 	}
