@@ -856,6 +856,12 @@ type ClusterAutoscalerConfig struct {
 	// Image is the docker container used.
 	// Default: the latest supported image for the specified kubernetes version.
 	Image *string `json:"image,omitempty"`
+	// MemoryRequest of cluster autoscaler container.
+	// Default: 300Mi
+	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
+	// CPURequest of cluster autoscaler container.
+	// Default: 100m
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 }
 
 // MetricsServerConfig determines the metrics server configuration.
