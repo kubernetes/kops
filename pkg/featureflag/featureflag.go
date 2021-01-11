@@ -58,8 +58,6 @@ var (
 	EnableExternalCloudController = New("EnableExternalCloudController", Bool(false))
 	// EnableExternalDNS enables external DNS
 	EnableExternalDNS = New("EnableExternalDNS", Bool(false))
-	// EnableNodeAuthorization enables the node authorization features
-	EnableNodeAuthorization = New("EnableNodeAuthorization", Bool(false))
 	// EnableSeparateConfigBase allows a config-base that is different from the state store
 	EnableSeparateConfigBase = New("EnableSeparateConfigBase", Bool(false))
 	// ExperimentalClusterDNS allows for setting the kubelet dns flag to experimental values.

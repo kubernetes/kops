@@ -32,7 +32,6 @@ import (
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/components/etcdmanager"
-	nodeauthorizer "k8s.io/kops/pkg/model/components/node-authorizer"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/util/pkg/reflectutils"
@@ -265,7 +264,6 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 			codeModels = append(codeModels, &components.DefaultsOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.EtcdOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &etcdmanager.EtcdManagerOptionsBuilder{OptionsContext: optionsContext})
-			codeModels = append(codeModels, &nodeauthorizer.OptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.DockerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.ContainerdOptionsBuilder{OptionsContext: optionsContext})
