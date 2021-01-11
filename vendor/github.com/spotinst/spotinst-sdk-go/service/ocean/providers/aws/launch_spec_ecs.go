@@ -14,16 +14,18 @@ import (
 )
 
 type ECSLaunchSpec struct {
-	ID                 *string                `json:"id,omitempty"`
-	Name               *string                `json:"name,omitempty"`
-	OceanID            *string                `json:"oceanId,omitempty"`
-	ImageID            *string                `json:"imageId,omitempty"`
-	UserData           *string                `json:"userData,omitempty"`
-	SecurityGroupIDs   []string               `json:"securityGroupIds,omitempty"`
-	IAMInstanceProfile *ECSIAMInstanceProfile `json:"iamInstanceProfile,omitempty"`
-	Attributes         []*ECSAttribute        `json:"attributes,omitempty"`
-	AutoScale          *ECSAutoScale          `json:"autoScale,omitempty"`
-	Tags               []*Tag                 `json:"tags,omitempty"`
+	ID                  *string                  `json:"id,omitempty"`
+	Name                *string                  `json:"name,omitempty"`
+	OceanID             *string                  `json:"oceanId,omitempty"`
+	ImageID             *string                  `json:"imageId,omitempty"`
+	UserData            *string                  `json:"userData,omitempty"`
+	SecurityGroupIDs    []string                 `json:"securityGroupIds,omitempty"`
+	AutoScale           *ECSAutoScale            `json:"autoScale,omitempty"`
+	IAMInstanceProfile  *ECSIAMInstanceProfile   `json:"iamInstanceProfile,omitempty"`
+	Attributes          []*ECSAttribute          `json:"attributes,omitempty"`
+	BlockDeviceMappings []*ECSBlockDeviceMapping `json:"blockDeviceMappings,omitempty"`
+	Tags                []*Tag                   `json:"tags,omitempty"`
+	InstanceTypes       []string                 `json:"instanceTypes,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -65,6 +67,40 @@ type ECSAutoScaleHeadroom struct {
 	CPUPerUnit    *int `json:"cpuPerUnit,omitempty"`
 	MemoryPerUnit *int `json:"memoryPerUnit,omitempty"`
 	NumOfUnits    *int `json:"numOfUnits,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ECSBlockDeviceMapping struct {
+	DeviceName  *string `json:"deviceName,omitempty"`
+	NoDevice    *string `json:"noDevice,omitempty"`
+	VirtualName *string `json:"virtualName,omitempty"`
+	EBS         *ECSEBS `json:"ebs,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ECSEBS struct {
+	DeleteOnTermination *bool                 `json:"deleteOnTermination,omitempty"`
+	Encrypted           *bool                 `json:"encrypted,omitempty"`
+	KMSKeyID            *string               `json:"kmsKeyId,omitempty"`
+	SnapshotID          *string               `json:"snapshotId,omitempty"`
+	VolumeType          *string               `json:"volumeType,omitempty"`
+	IOPS                *int                  `json:"iops,omitempty"`
+	VolumeSize          *int                  `json:"volumeSize,omitempty"`
+	Throughput          *int                  `json:"throughput,omitempty"`
+	DynamicVolumeSize   *ECSDynamicVolumeSize `json:"dynamicVolumeSize,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ECSDynamicVolumeSize struct {
+	BaseSize            *int    `json:"baseSize,omitempty"`
+	SizePerResourceUnit *int    `json:"sizePerResourceUnit,omitempty"`
+	Resource            *string `json:"resource,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -340,9 +376,23 @@ func (o *ECSLaunchSpec) SetAutoScale(v *ECSAutoScale) *ECSLaunchSpec {
 	return o
 }
 
+func (o *ECSLaunchSpec) SetBlockDeviceMappings(v []*ECSBlockDeviceMapping) *ECSLaunchSpec {
+	if o.BlockDeviceMappings = v; o.BlockDeviceMappings == nil {
+		o.nullFields = append(o.nullFields, "BlockDeviceMappings")
+	}
+	return o
+}
+
 func (o *ECSLaunchSpec) SetTags(v []*Tag) *ECSLaunchSpec {
 	if o.Tags = v; o.Tags == nil {
 		o.nullFields = append(o.nullFields, "Tags")
+	}
+	return o
+}
+
+func (o *ECSLaunchSpec) SetInstanceTypes(v []string) *ECSLaunchSpec {
+	if o.InstanceTypes = v; o.InstanceTypes == nil {
+		o.nullFields = append(o.nullFields, "InstanceTypes")
 	}
 	return o
 }
@@ -373,7 +423,7 @@ func (o *ECSAttribute) SetValue(v *string) *ECSAttribute {
 
 // endregion
 
-//region AutoScale
+// region AutoScale
 
 func (o ECSAutoScale) MarshalJSON() ([]byte, error) {
 	type noMethod ECSAutoScale
@@ -415,6 +465,148 @@ func (o *ECSAutoScaleHeadroom) SetMemoryPerUnit(v *int) *ECSAutoScaleHeadroom {
 func (o *ECSAutoScaleHeadroom) SetNumOfUnits(v *int) *ECSAutoScaleHeadroom {
 	if o.NumOfUnits = v; o.NumOfUnits == nil {
 		o.nullFields = append(o.nullFields, "NumOfUnits")
+	}
+	return o
+}
+
+// endregion
+
+// region ECSBlockDeviceMapping
+
+func (o ECSBlockDeviceMapping) MarshalJSON() ([]byte, error) {
+	type noMethod ECSBlockDeviceMapping
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ECSBlockDeviceMapping) SetDeviceName(v *string) *ECSBlockDeviceMapping {
+	if o.DeviceName = v; o.DeviceName == nil {
+		o.nullFields = append(o.nullFields, "DeviceName")
+	}
+	return o
+}
+
+func (o *ECSBlockDeviceMapping) SetNoDevice(v *string) *ECSBlockDeviceMapping {
+	if o.NoDevice = v; o.NoDevice == nil {
+		o.nullFields = append(o.nullFields, "NoDevice")
+	}
+	return o
+}
+
+func (o *ECSBlockDeviceMapping) SetVirtualName(v *string) *ECSBlockDeviceMapping {
+	if o.VirtualName = v; o.VirtualName == nil {
+		o.nullFields = append(o.nullFields, "VirtualName")
+	}
+	return o
+}
+
+func (o *ECSBlockDeviceMapping) SetEBS(v *ECSEBS) *ECSBlockDeviceMapping {
+	if o.EBS = v; o.EBS == nil {
+		o.nullFields = append(o.nullFields, "EBS")
+	}
+	return o
+}
+
+// endregion
+
+// region ECSEBS
+
+func (o ECSEBS) MarshalJSON() ([]byte, error) {
+	type noMethod ECSEBS
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ECSEBS) SetEncrypted(v *bool) *ECSEBS {
+	if o.Encrypted = v; o.Encrypted == nil {
+		o.nullFields = append(o.nullFields, "Encrypted")
+	}
+	return o
+}
+
+func (o *ECSEBS) SetIOPS(v *int) *ECSEBS {
+	if o.IOPS = v; o.IOPS == nil {
+		o.nullFields = append(o.nullFields, "IOPS")
+	}
+	return o
+}
+
+func (o *ECSEBS) SetKMSKeyId(v *string) *ECSEBS {
+	if o.KMSKeyID = v; o.KMSKeyID == nil {
+		o.nullFields = append(o.nullFields, "KMSKeyID")
+	}
+	return o
+}
+
+func (o *ECSEBS) SetSnapshotId(v *string) *ECSEBS {
+	if o.SnapshotID = v; o.SnapshotID == nil {
+		o.nullFields = append(o.nullFields, "SnapshotID")
+	}
+	return o
+}
+
+func (o *ECSEBS) SetVolumeType(v *string) *ECSEBS {
+	if o.VolumeType = v; o.VolumeType == nil {
+		o.nullFields = append(o.nullFields, "VolumeType")
+	}
+	return o
+}
+
+func (o *ECSEBS) SetDeleteOnTermination(v *bool) *ECSEBS {
+	if o.DeleteOnTermination = v; o.DeleteOnTermination == nil {
+		o.nullFields = append(o.nullFields, "DeleteOnTermination")
+	}
+	return o
+}
+
+func (o *ECSEBS) SetVolumeSize(v *int) *ECSEBS {
+	if o.VolumeSize = v; o.VolumeSize == nil {
+		o.nullFields = append(o.nullFields, "VolumeSize")
+	}
+	return o
+}
+
+func (o *ECSEBS) SetDynamicVolumeSize(v *ECSDynamicVolumeSize) *ECSEBS {
+	if o.DynamicVolumeSize = v; o.DynamicVolumeSize == nil {
+		o.nullFields = append(o.nullFields, "DynamicVolumeSize")
+	}
+	return o
+}
+
+func (o *ECSEBS) SetThroughput(v *int) *ECSEBS {
+	if o.Throughput = v; o.Throughput == nil {
+		o.nullFields = append(o.nullFields, "Throughput")
+	}
+	return o
+}
+
+// endregion
+
+// region ECSDynamicVolumeSize
+
+func (o ECSDynamicVolumeSize) MarshalJSON() ([]byte, error) {
+	type noMethod ECSDynamicVolumeSize
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ECSDynamicVolumeSize) SetBaseSize(v *int) *ECSDynamicVolumeSize {
+	if o.BaseSize = v; o.BaseSize == nil {
+		o.nullFields = append(o.nullFields, "BaseSize")
+	}
+	return o
+}
+
+func (o *ECSDynamicVolumeSize) SetResource(v *string) *ECSDynamicVolumeSize {
+	if o.Resource = v; o.Resource == nil {
+		o.nullFields = append(o.nullFields, "Resource")
+	}
+	return o
+}
+
+func (o *ECSDynamicVolumeSize) SetSizePerResourceUnit(v *int) *ECSDynamicVolumeSize {
+	if o.SizePerResourceUnit = v; o.SizePerResourceUnit == nil {
+		o.nullFields = append(o.nullFields, "SizePerResourceUnit")
 	}
 	return o
 }

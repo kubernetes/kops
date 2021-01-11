@@ -427,7 +427,7 @@ type ImportOceanGKELaunchSpecOutput struct {
 
 // endregion
 
-//region AutoScale
+// region AutoScale
 
 func (o AutoScale) MarshalJSON() ([]byte, error) {
 	type noMethod AutoScale
