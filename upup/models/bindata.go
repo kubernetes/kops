@@ -27355,6 +27355,10 @@ spec:
     metadata:
       labels:
         app: cluster-autoscaler
+      annotations:
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8085"
+        prometheus.io/scrape: "true"
     spec:
       serviceAccountName: cluster-autoscaler
       tolerations:
@@ -27367,8 +27371,8 @@ spec:
           name: cluster-autoscaler
           resources:
             requests:
-              cpu: 100m
-              memory: 300Mi
+              cpu: {{ or .CPURequest "100m"}}
+              memory: {{ or .MemoryRequest "300Mi"}}
           command:
             - ./cluster-autoscaler
             - --balance-similar-node-groups={{ .BalanceSimilarNodeGroups }}
@@ -27395,7 +27399,8 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 1
-{{ end }}`)
+{{ end }}
+`)
 
 func cloudupResourcesAddonsClusterAutoscalerAddonsK8sIoK8s115YamlTemplateBytes() ([]byte, error) {
 	return _cloudupResourcesAddonsClusterAutoscalerAddonsK8sIoK8s115YamlTemplate, nil
