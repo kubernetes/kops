@@ -41,9 +41,9 @@ go_binary(
 
 load(
     "@io_bazel_rules_docker//container:container.bzl",
+    "container_bundle",
     "container_image",
     "container_push",
-    "container_bundle",
 )
 
 ARCH = [
@@ -56,11 +56,11 @@ ARCH = [
     architecture = arch,
     base = "@distroless_base_%s//image" % arch,
     cmd = ["/kops-controller"],
-    user = "10011",
     files = [
         "//cmd/kops-controller",
     ],
     stamp = True,
+    user = "10011",
 ) for arch in ARCH]
 
 [container_push(
