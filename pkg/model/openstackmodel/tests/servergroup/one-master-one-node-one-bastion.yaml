@@ -33,6 +33,7 @@ Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: bastion
+  KopsName: bastion-1-cluster
   KopsNetwork: cluster
   KopsRole: Bastion
   cluster_generation: "0"
@@ -43,6 +44,7 @@ Metadata:
   k8s.io_role_bastion: "1"
   kops.k8s.io_instancegroup: bastion
 Name: bastion-1-cluster
+NamePrefix: bastion
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -101,6 +103,7 @@ Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: master
+  KopsName: master-1-cluster
   KopsNetwork: cluster
   KopsRole: Master
   KubernetesCluster: cluster
@@ -113,6 +116,7 @@ Metadata:
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master
 Name: master-1-cluster
+NamePrefix: master
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -171,6 +175,7 @@ Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: node
+  KopsName: node-1-cluster
   KopsNetwork: cluster
   KopsRole: Node
   KubernetesCluster: cluster
@@ -182,6 +187,7 @@ Metadata:
   k8s.io_role_node: "1"
   kops.k8s.io_instancegroup: node
 Name: node-1-cluster
+NamePrefix: node
 Port:
   AdditionalSecurityGroups: null
   ID: null
