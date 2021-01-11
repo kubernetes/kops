@@ -100,6 +100,8 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		securityGroups = append(securityGroups, b.LinkToSecurityGroup(b.Cluster.Spec.MasterPublicName))
 	}
 
+	r := strings.NewReplacer("_", "-", ".", "-")
+	groupName := r.Replace(strings.ToLower(ig.Name))
 	// In the future, OpenStack will use Machine API to manage groups,
 	// for now create d.InstanceGroups.Spec.MinSize amount of servers
 	for i := int32(0); i < *ig.Spec.MinSize; i++ {
@@ -141,8 +143,14 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		}
 		c.AddTask(portTask)
 
+		metaWithName := make(map[string]string)
+		for k, v := range igMeta {
+			metaWithName[k] = v
+		}
+		metaWithName[openstack.TagKopsName] = fi.StringValue(instanceName)
 		instanceTask := &openstacktasks.Instance{
 			Name:             instanceName,
+			NamePrefix:       s(groupName),
 			Region:           fi.String(b.Cluster.Spec.Subnets[0].Region),
 			Flavor:           fi.String(ig.Spec.MachineType),
 			Image:            fi.String(ig.Spec.Image),
@@ -151,7 +159,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			Role:             fi.String(string(ig.Spec.Role)),
 			Port:             portTask,
 			UserData:         startupScript,
-			Metadata:         igMeta,
+			Metadata:         metaWithName,
 			SecurityGroups:   ig.Spec.AdditionalSecurityGroups,
 			AvailabilityZone: az,
 		}
