@@ -1,8 +1,10 @@
 ### **Node Authorization Service**
 
-:warning: The node authorization service is deprecated.
-As of Kubernetes 1.19 kOps will, on AWS, ignore the `nodeAuthorization` field of the cluster spec and
+**The node authorization service is deprecated.**
+As of kOps 1.19 with AWS and Kubernetes 1.19, the `nodeAuthorization` field of the cluster spec will be ignored  and
 worker nodes will obtain client certificates for kubelet and other purposes through kops-controller.
+
+As of kOps 1.20, setting `nodeAuthorization` is forbidden for any Kubernetes version and is replaced by the bootstrapping using kops-controller.
 
 The [node authorization service] is an experimental service which in the absence of a kops-apiserver provides the distribution of tokens to the worker nodes. Bootstrap tokens provide worker nodes a short-time credential to request access kubeconfig certificate. A gist of the flow is;
 

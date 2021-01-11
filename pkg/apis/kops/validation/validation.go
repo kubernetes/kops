@@ -148,7 +148,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	if spec.NodeAuthorization != nil {
-		allErrs = append(allErrs, validateNodeAuthorization(spec.NodeAuthorization, c, fieldPath.Child("nodeAuthorization"))...)
+		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("nodeAuthorization"), "NodeAuthorization must be empty. The functionality has been reimplemented and is enabled on kubernetes >= 1.19.0."))
 	}
 
 	if spec.ClusterAutoscaler != nil {
@@ -504,41 +504,6 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 		}
 
 	}
-	return allErrs
-}
-
-func validateNodeAuthorization(n *kops.NodeAuthorizationSpec, c *kops.Cluster, fldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-
-	// @check the feature gate is enabled for this
-	if !featureflag.EnableNodeAuthorization.Enabled() {
-		return field.ErrorList{field.Forbidden(fldPath, "node authorization is experimental feature; set `export KOPS_FEATURE_FLAGS=EnableNodeAuthorization`")}
-	}
-
-	authorizerPath := fldPath.Child("nodeAuthorizer")
-	if c.Spec.NodeAuthorization.NodeAuthorizer == nil {
-		allErrs = append(allErrs, field.Required(authorizerPath, "no node authorization policy has been set"))
-	} else {
-		if c.Spec.NodeAuthorization.NodeAuthorizer.Port < 0 || n.NodeAuthorizer.Port >= 65535 {
-			allErrs = append(allErrs, field.Invalid(authorizerPath.Child("port"), n.NodeAuthorizer.Port, "invalid port"))
-		}
-		if c.Spec.NodeAuthorization.NodeAuthorizer.Timeout != nil && n.NodeAuthorizer.Timeout.Duration <= 0 {
-			allErrs = append(allErrs, field.Invalid(authorizerPath.Child("timeout"), n.NodeAuthorizer.Timeout, "must be greater than zero"))
-		}
-		if c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL != nil && n.NodeAuthorizer.TokenTTL.Duration < 0 {
-			allErrs = append(allErrs, field.Invalid(authorizerPath.Child("tokenTTL"), n.NodeAuthorizer.TokenTTL, "must be greater than or equal to zero"))
-		}
-
-		// @question: we could probably just default these settings in the model when the node-authorizer is enabled??
-		if c.Spec.KubeAPIServer == nil {
-			allErrs = append(allErrs, field.Required(field.NewPath("spec", "kubeAPIServer"), "bootstrap token authentication is not enabled in the kube-apiserver"))
-		} else if c.Spec.KubeAPIServer.EnableBootstrapAuthToken == nil {
-			allErrs = append(allErrs, field.Required(field.NewPath("spec", "kubeAPIServer", "enableBootstrapAuthToken"), "kube-apiserver has not been configured to use bootstrap tokens"))
-		} else if !fi.BoolValue(c.Spec.KubeAPIServer.EnableBootstrapAuthToken) {
-			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "kubeAPIServer", "enableBootstrapAuthToken"), "bootstrap tokens in the kube-apiserver has been disabled"))
-		}
-	}
-
 	return allErrs
 }
 

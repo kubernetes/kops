@@ -49,7 +49,6 @@ go_library(
         "//pkg/model/components:go_default_library",
         "//pkg/model/components/etcdmanager:go_default_library",
         "//pkg/model/components/kubeapiserver:go_default_library",
-        "//pkg/model/components/node-authorizer:go_default_library",
         "//pkg/model/domodel:go_default_library",
         "//pkg/model/gcemodel:go_default_library",
         "//pkg/model/iam:go_default_library",

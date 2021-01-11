@@ -37,7 +37,6 @@
 // upup/models/cloudup/resources/addons/networking.projectcalico.org.canal/k8s-1.15.yaml.template
 // upup/models/cloudup/resources/addons/networking.projectcalico.org.canal/k8s-1.16.yaml.template
 // upup/models/cloudup/resources/addons/networking.weave/k8s-1.12.yaml.template
-// upup/models/cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.12.yaml.template
 // upup/models/cloudup/resources/addons/node-termination-handler.aws/k8s-1.11.yaml.template
 // upup/models/cloudup/resources/addons/nodelocaldns.addons.k8s.io/k8s-1.12.yaml.template
 // upup/models/cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.13.yaml.template
@@ -40356,212 +40355,6 @@ func cloudupResourcesAddonsNetworkingWeaveK8s112YamlTemplate() (*asset, error) {
 	return a, nil
 }
 
-var _cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s112YamlTemplate = []byte(`{{- $proxy := .EgressProxy -}}
-{{- $na := .NodeAuthorization.NodeAuthorizer -}}
-{{- $name := "node-authorizer" -}}
-{{- $namespace := "kube-system" -}}
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: {{ $name }}
-  namespace: {{ $namespace }}
-  labels:
-    k8s-app: {{ $name }}
-    k8s-addon: {{ $name }}.addons.k8s.io
----
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: kops:{{ $name }}:nodes-viewer
-  labels:
-    k8s-app: {{ $name }}
-    k8s-addon: {{ $name }}.addons.k8s.io
-rules:
-- apiGroups:
-  - "*"
-  resources:
-  - nodes
-  verbs:
-  - get
-  - list
----
-# permits the node access to create a CSR
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: kops:{{ $name }}:system:bootstrappers
-  labels:
-    k8s-app: {{ $name }}
-    k8s-addon: {{ $name }}.addons.k8s.io
-roleRef:
-  kind: ClusterRole
-  name: system:node-bootstrapper
-  apiGroup: rbac.authorization.k8s.io
-subjects:
-- kind: Group
-  name: system:bootstrappers
-  apiGroup: rbac.authorization.k8s.io
----
-# indicates to the controller to auto-sign the CSR for this group
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: kops:{{ $name }}:approval
-  labels:
-    k8s-app: {{ $name }}
-    k8s-addon: {{ $name }}.addons.k8s.io
-roleRef:
-  kind: ClusterRole
-  name: system:certificates.k8s.io:certificatesigningrequests:nodeclient
-  apiGroup: rbac.authorization.k8s.io
-subjects:
-- kind: Group
-  name: system:bootstrappers
-  apiGroup: rbac.authorization.k8s.io
----
-# the service permission requires to create the bootstrap tokens
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: kops:{{ $namespace }}:{{ $name }}
-  namespace: {{ $namespace }}
-  labels:
-    k8s-app: {{ $name }}
-    k8s-addon: {{ $name }}.addons.k8s.io
-rules:
-- apiGroups:
-  - "*"
-  resources:
-  - secrets
-  verbs:
-  - create
-  - list
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: kops:{{ $namespace }}:{{ $name }}
-  namespace: {{ $namespace }}
-  labels:
-    k8s-app: {{ $name }}
-    k8s-addon: {{ $name }}.addons.k8s.io
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: kops:{{ $namespace }}:{{ $name }}
-subjects:
-- kind: ServiceAccount
-  name: {{ $name }}
-  namespace: {{ $namespace }}
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: kops:{{ $name }}:nodes-viewer
-  labels:
-    k8s-app: {{ $name }}
-    k8s-addon: {{ $name }}.addons.k8s.io
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: kops:{{ $name }}:nodes-viewer
-subjects:
-- kind: ServiceAccount
-  name: {{ $name }}
-  namespace: {{ $namespace }}
----
-kind: DaemonSet
-apiVersion: apps/v1
-metadata:
-  name: {{ $name }}
-  namespace: {{ $namespace }}
-  labels:
-    k8s-app: {{ $name }}
-    k8s-addon: {{ $name }}.addons.k8s.io
-spec:
-  selector:
-    matchLabels:
-      k8s-app: {{ $name }}
-  template:
-    metadata:
-      labels:
-        k8s-app: {{ $name }}
-      annotations:
-        dns.alpha.kubernetes.io/internal: {{ $name }}-internal.{{ ClusterName }}
-        prometheus.io/port: "{{ $na.Port }}"
-        prometheus.io/scheme: "https"
-        prometheus.io/scrape: "true"
-        scheduler.alpha.kubernetes.io/critical-pod: ''
-    spec:
-      hostNetwork: true
-      nodeSelector:
-        kubernetes.io/role: master
-      priorityClassName: system-node-critical
-      serviceAccount: {{ $name }}
-      securityContext:
-        fsGroup: 1000
-      tolerations:
-        - key: "node-role.kubernetes.io/master"
-          effect: NoSchedule
-      volumes:
-        - name: config
-          hostPath:
-            path: /srv/kubernetes/node-authorizer
-            type: DirectoryOrCreate
-      containers:
-        - name: {{ $name }}
-          image: {{ $na.Image }}
-          args:
-            - server
-            - --authorization-timeout={{ $na.Timeout.Duration }}
-            - --authorizer={{ $na.Authorizer }}
-            - --cluster-name={{ ClusterName }}
-            {{- range $na.Features }}
-            - --feature={{ . }}
-            {{- end }}
-            - --listen=0.0.0.0:{{ $na.Port }}
-            - --tls-cert=/config/tls.pem
-            - --tls-client-ca=/config/ca.pem
-            - --tls-private-key=/config/tls-key.pem
-            - --token-ttl={{ $na.TokenTTL.Duration }}
-          {{- if $proxy }}
-          env:
-            - name: http_proxy
-              value: {{ $proxy.HTTPProxy.Host }}:{{ $proxy.HTTPProxy.Port }}
-            {{- if $proxy.ProxyExcludes }}
-            - name: no_proxy
-              value: {{ $proxy.ProxyExcludes }}
-            {{- end }}
-          {{- end }}
-          resources:
-            limits:
-              cpu: 100m
-              memory: 64Mi
-            requests:
-              cpu: 10m
-              memory: 10Mi
-          volumeMounts:
-            - mountPath: /config
-              readOnly: true
-              name: config
-`)
-
-func cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s112YamlTemplateBytes() ([]byte, error) {
-	return _cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s112YamlTemplate, nil
-}
-
-func cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s112YamlTemplate() (*asset, error) {
-	bytes, err := cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s112YamlTemplateBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.12.yaml.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
-	a := &asset{bytes: bytes, info: info}
-	return a, nil
-}
-
 var _cloudupResourcesAddonsNodeTerminationHandlerAwsK8s111YamlTemplate = []byte(`{{ with .NodeTerminationHandler }}
 # Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.7.0/all-resources.yaml
 ---
@@ -42656,7 +42449,6 @@ var _bindata = map[string]func() (*asset, error){
 	"cloudup/resources/addons/networking.projectcalico.org.canal/k8s-1.15.yaml.template":                  cloudupResourcesAddonsNetworkingProjectcalicoOrgCanalK8s115YamlTemplate,
 	"cloudup/resources/addons/networking.projectcalico.org.canal/k8s-1.16.yaml.template":                  cloudupResourcesAddonsNetworkingProjectcalicoOrgCanalK8s116YamlTemplate,
 	"cloudup/resources/addons/networking.weave/k8s-1.12.yaml.template":                                    cloudupResourcesAddonsNetworkingWeaveK8s112YamlTemplate,
-	"cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.12.yaml.template":                       cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s112YamlTemplate,
 	"cloudup/resources/addons/node-termination-handler.aws/k8s-1.11.yaml.template":                        cloudupResourcesAddonsNodeTerminationHandlerAwsK8s111YamlTemplate,
 	"cloudup/resources/addons/nodelocaldns.addons.k8s.io/k8s-1.12.yaml.template":                          cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplate,
 	"cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.13.yaml.template":                             cloudupResourcesAddonsOpenstackAddonsK8sIoK8s113YamlTemplate,
@@ -42800,9 +42592,6 @@ var _bintree = &bintree{nil, map[string]*bintree{
 				}},
 				"networking.weave": {nil, map[string]*bintree{
 					"k8s-1.12.yaml.template": {cloudupResourcesAddonsNetworkingWeaveK8s112YamlTemplate, map[string]*bintree{}},
-				}},
-				"node-authorizer.addons.k8s.io": {nil, map[string]*bintree{
-					"k8s-1.12.yaml.template": {cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s112YamlTemplate, map[string]*bintree{}},
 				}},
 				"node-termination-handler.aws": {nil, map[string]*bintree{
 					"k8s-1.11.yaml.template": {cloudupResourcesAddonsNodeTerminationHandlerAwsK8s111YamlTemplate, map[string]*bintree{}},
