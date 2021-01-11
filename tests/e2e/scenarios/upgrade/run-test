@@ -27,10 +27,10 @@ KUBETEST2_COMMON_ARGS="${KUBETEST2_COMMON_ARGS} --admin-access=${ADMIN_ACCESS:-}
 
 export GO111MODULE=on
 go get sigs.k8s.io/kubetest2@latest
-go get sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
 
 cd ${REPO_ROOT}/tests/e2e
 go install ./kubetest2-kops
+go install ./kubetest2-tester-kops
 
 kubetest2 kops ${KUBETEST2_COMMON_ARGS} --build --kops-root=${REPO_ROOT} --stage-location=${STAGE_LOCATION:-}
 
@@ -59,7 +59,7 @@ fi
 
 kubetest2 kops ${KUBETEST2_COMMON_ARGS} \
 		--cloud-provider=${CLOUD_PROVIDER} \
-		--test=ginkgo \
+		--test=kops \
 		-- \
 		--test-package-version=v1.19.4 \
 		--parallel 25 \
