@@ -104,6 +104,10 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		for _, scope := range serviceAccount.Scopes {
 			actual.Scopes = append(actual.Scopes, scopeToShortForm(scope))
 		}
+		// Since we're migrating from scopes to use Cloud IAM, ensure the node service account has cloud-platform
+		// Then use Cloud IAM to manage the granular permissions, ie: storageObject.admin, compute.instanceAdmin.v1, etc
+		// For now, we'll just add cloud-platform instead of superceding.
+		actual.Scopes = append(actual.Scopes, "cloud-platform")
 	}
 
 	actual.Disks = make(map[string]*Disk)
@@ -248,19 +252,10 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*s
 	}
 
 	var serviceAccounts []*compute.ServiceAccount
-	if e.ServiceAccount != nil {
-		if e.Scopes != nil {
-			var scopes []string
-			for _, s := range e.Scopes {
-				s = scopeToLongForm(s)
-				scopes = append(scopes, s)
-			}
-			serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
-				Email:  fi.StringValue(e.ServiceAccount),
-				Scopes: scopes,
-			})
-		}
-	}
+	serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
+		Email:  fi.StringValue(e.ServiceAccount),
+		Scopes: e.Scopes,
+	})
 
 	var metadataItems []*compute.MetadataItems
 	for key, r := range e.Metadata {
