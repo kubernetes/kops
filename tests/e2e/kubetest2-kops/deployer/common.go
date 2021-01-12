@@ -85,6 +85,10 @@ func (d *deployer) verifyKopsFlags() error {
 		return errors.New("unsupported --cloud-provider value")
 	}
 
+	if d.StateStore == "" {
+		d.StateStore = stateStore(d.CloudProvider)
+	}
+
 	return nil
 }
 
@@ -94,7 +98,7 @@ func (d *deployer) env() []string {
 	vars = append(vars, []string{
 		fmt.Sprintf("PATH=%v", os.Getenv("PATH")),
 		fmt.Sprintf("HOME=%v", os.Getenv("HOME")),
-		fmt.Sprintf("KOPS_STATE_STORE=%v", stateStore(d.CloudProvider)),
+		fmt.Sprintf("KOPS_STATE_STORE=%v", d.StateStore),
 		fmt.Sprintf("KOPS_FEATURE_FLAGS=%v", d.featureFlags()),
 		"KOPS_RUN_TOO_NEW_VERSION=1",
 	}...)
