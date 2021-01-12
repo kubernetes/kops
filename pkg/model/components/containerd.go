@@ -61,6 +61,7 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 			for name, endpoints := range containerd.RegistryMirrors {
 				config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "registry", "mirrors", name, "endpoint"}, endpoints)
 			}
+			config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "runtime_type"}, "io.containerd.runc.v2")
 			containerd.ConfigOverride = fi.String(config.String())
 		}
 

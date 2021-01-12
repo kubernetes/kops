@@ -949,6 +949,7 @@ spec:
 ### Configuration
 
 It is possible to override the [containerd](https://github.com/containerd/containerd/blob/master/README.md) daemon options for all the nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ContainerdConfig) for the full list of options.
+Overriding the configuration of containerd has to be done with care as the default config may change with new releases and can lead to incompatibilities.
 
 ```yaml
 spec:
@@ -1195,3 +1196,30 @@ spec:
 ```
 
 which would end up in a drop-in file on all masters and nodes of the cluster.
+
+## cgroupDriver
+
+As of Kubernetes 1.20, kOps will default the cgroup driver of the kubelet and the container runtime to use systemd as the default cgroup driver
+as opposed to cgroup fs.
+
+It is important to ensure that the kubelet and the container runtime are using the same cgroup driver. Below are examples showing
+how to set the cgroup driver for kubelet and the container runtime. 
+
+
+Setting kubelet to use cgroupfs
+```yaml
+spec:
+  kubelet:
+    cgroupDriver: cgroupfs
+```
+
+Setting Docker to use cgroupfs
+```yaml
+spec:
+  docker:
+    execOpt:
+      - native.cgroupdriver=cgroupfs
+```
+
+In the case of containerd, the cgroup-driver is dependant on the cgroup driver of kubelet. To use cgroupfs, just update the 
+cgroupDriver of kubelet to use cgroupfs.
