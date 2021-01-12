@@ -33,6 +33,8 @@ type LaunchSpec struct {
 	Taints                   []*Taint              `json:"taints,omitempty"`
 	Tags                     []*Tag                `json:"tags,omitempty"`
 	AssociatePublicIPAddress *bool                 `json:"associatePublicIpAddress,omitempty"`
+	RestrictScaleDown        *bool                 `json:"restrictScaleDown,omitempty"`
+
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
 	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
@@ -487,6 +489,13 @@ func (o *LaunchSpec) SetStrategy(v *LaunchSpecStrategy) *LaunchSpec {
 func (o *LaunchSpec) SetAssociatePublicIPAddress(v *bool) *LaunchSpec {
 	if o.AssociatePublicIPAddress = v; o.AssociatePublicIPAddress == nil {
 		o.nullFields = append(o.nullFields, "AssociatePublicIPAddress")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetRestrictScaleDown(v *bool) *LaunchSpec {
+	if o.RestrictScaleDown = v; o.RestrictScaleDown == nil {
+		o.nullFields = append(o.nullFields, "RestrictScaleDown")
 	}
 	return o
 }
