@@ -144,6 +144,13 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
 
         [plugins."io.containerd.grpc.v1.cri"]
 
+          [plugins."io.containerd.grpc.v1.cri".containerd]
+
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+
+              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+                runtime_type = "io.containerd.runc.v2"
+
           [plugins."io.containerd.grpc.v1.cri".registry]
 
             [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
@@ -478,6 +485,13 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
       [plugins]
 
         [plugins."io.containerd.grpc.v1.cri"]
+
+          [plugins."io.containerd.grpc.v1.cri".containerd]
+
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+
+              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+                runtime_type = "io.containerd.runc.v2"
 
           [plugins."io.containerd.grpc.v1.cri".registry]
 

@@ -97,6 +97,10 @@ func TestDockerBuilder_BuildFlags(t *testing.T) {
 			kops.DockerConfig{Bridge: fi.String("br0")},
 			"--bridge=br0",
 		},
+		{
+			kops.DockerConfig{ExecOpt: []string{"native.cgroupdriver=systemd"}},
+			"--exec-opt=native.cgroupdriver=systemd",
+		},
 	}
 
 	for _, g := range grid {
