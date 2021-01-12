@@ -511,11 +511,17 @@ func (b *InstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContext,
 		Ocean:   ocean, // link to Ocean
 	}
 
-	// Instance types.
+	// Instance types and strategy.
 	for k, v := range ig.ObjectMeta.Labels {
 		switch k {
 		case InstanceGroupLabelOceanInstanceTypesWhitelist, InstanceGroupLabelOceanInstanceTypes:
 			launchSpec.InstanceTypes, err = parseStringSlice(v)
+			if err != nil {
+				return err
+			}
+
+		case InstanceGroupLabelSpotPercentage:
+			launchSpec.SpotPercentage, err = parseInt(v)
 			if err != nil {
 				return err
 			}
@@ -584,17 +590,6 @@ func (b *InstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContext,
 
 		if autoScalerOpts.Labels != nil || autoScalerOpts.Taints != nil || autoScalerOpts.Headroom != nil {
 			launchSpec.AutoScalerOpts = autoScalerOpts
-		}
-	}
-
-	// Strategy.
-	for k, v := range ig.ObjectMeta.Labels {
-		switch k {
-		case InstanceGroupLabelSpotPercentage:
-			launchSpec.SpotPercentage, err = parseInt(v)
-			if err != nil {
-				return err
-			}
 		}
 	}
 
