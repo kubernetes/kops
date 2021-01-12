@@ -38,7 +38,23 @@ func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 		}
 	}
 
+	allErrs = append(allErrs, awsValidateExternalCloudControllerManager(c.Spec)...)
+
 	return allErrs
+}
+
+func awsValidateExternalCloudControllerManager(c kops.ClusterSpec) (allErrs field.ErrorList) {
+
+	if c.ExternalCloudControllerManager != nil {
+		if c.KubeControllerManager == nil || c.KubeControllerManager.ExternalCloudVolumePlugin != "aws" {
+			if c.CloudConfig == nil || c.CloudConfig.AWSEBSCSIDriver == nil || !fi.BoolValue(c.CloudConfig.AWSEBSCSIDriver.Enabled) {
+				allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "externalCloudControllerManager"),
+					"AWS external CCM cannot be used without enabling spec.cloudConfig.AWSEBSCSIDriver or setting spec.kubeControllerManaager.externalCloudVolumePlugin set to `aws`"))
+			}
+		}
+	}
+	return allErrs
+
 }
 
 func awsValidateInstanceGroup(ig *kops.InstanceGroup, cloud awsup.AWSCloud) field.ErrorList {
