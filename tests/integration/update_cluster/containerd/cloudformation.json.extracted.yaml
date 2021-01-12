@@ -139,6 +139,17 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
   containerd:
     configOverride: |
       version = 2
+
+      [plugins]
+
+        [plugins."io.containerd.grpc.v1.cri"]
+
+          [plugins."io.containerd.grpc.v1.cri".containerd]
+
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+
+              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+                runtime_type = "io.containerd.runc.v2"
     logLevel: info
     version: 1.4.3
   docker:
@@ -452,6 +463,17 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
   containerd:
     configOverride: |
       version = 2
+
+      [plugins]
+
+        [plugins."io.containerd.grpc.v1.cri"]
+
+          [plugins."io.containerd.grpc.v1.cri".containerd]
+
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+
+              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+                runtime_type = "io.containerd.runc.v2"
     logLevel: info
     version: 1.4.3
   docker:
