@@ -17,6 +17,7 @@ limitations under the License.
 package openstack
 
 import (
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	l3floatingip "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
@@ -55,14 +56,14 @@ func (os *clusterDiscoveryOS) listL3FloatingIPs(routerID string) ([]*resources.R
 	return resourceTrackers, nil
 }
 
-func (os *clusterDiscoveryOS) listFloatingIPs(instanceID string) ([]*resources.Resource, error) {
+func (os *clusterDiscoveryOS) listFloatingIPs(instance servers.Server) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
-	instance, err := os.osCloud.GetInstance(instanceID)
-	if err != nil {
-		return resourceTrackers, err
+	name := instance.Name
+	if val, ok := instance.Metadata[openstack.TagKopsName]; ok {
+		name = val
 	}
 	floatingIPs, err := os.osCloud.ListL3FloatingIPs(l3floatingip.ListOpts{
-		Description: "fip-" + instance.Name,
+		Description: "fip-" + name,
 	})
 	if err != nil {
 		return resourceTrackers, err
