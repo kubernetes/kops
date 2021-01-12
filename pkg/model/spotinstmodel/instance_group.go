@@ -118,6 +118,10 @@ const (
 	// instance group to specify the resource limits configuration used by the auto scaler.
 	InstanceGroupLabelAutoScalerResourceLimitsMaxVCPU   = "spotinst.io/autoscaler-resource-limits-max-vcpu"
 	InstanceGroupLabelAutoScalerResourceLimitsMaxMemory = "spotinst.io/autoscaler-resource-limits-max-memory"
+
+	// InstanceGroupLabelRestrictScaleDown is the metadata label used on the
+	// instance group to specify whether the scale-down activities should be restricted.
+	InstanceGroupLabelRestrictScaleDown = "spotinst.io/restrict-scale-down"
 )
 
 // InstanceGroupModelBuilder configures InstanceGroup objects
@@ -522,6 +526,12 @@ func (b *InstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContext,
 
 		case InstanceGroupLabelSpotPercentage:
 			launchSpec.SpotPercentage, err = parseInt(v)
+			if err != nil {
+				return err
+			}
+
+		case InstanceGroupLabelRestrictScaleDown:
+			launchSpec.RestrictScaleDown, err = parseBool(v)
 			if err != nil {
 				return err
 			}

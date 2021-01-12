@@ -50,6 +50,7 @@ type LaunchSpec struct {
 	Tags               map[string]string
 	RootVolumeOpts     *RootVolumeOpts
 	AutoScalerOpts     *AutoScalerOpts
+	RestrictScaleDown  *bool
 
 	Ocean *Ocean
 }
@@ -140,6 +141,7 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 		ID:   ocean.ID,
 		Name: ocean.Name,
 	}
+	actual.RestrictScaleDown = spec.RestrictScaleDown
 
 	// Image.
 	{
@@ -460,6 +462,13 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 		}
 	}
 
+	// Restrictions.
+	{
+		if fi.BoolValue(e.RestrictScaleDown) {
+			spec.SetRestrictScaleDown(e.RestrictScaleDown)
+		}
+	}
+
 	// Wrap the raw object as a LaunchSpec.
 	sp, err := spotinst.NewLaunchSpec(cloud.ProviderID(), spec)
 	if err != nil {
@@ -665,6 +674,15 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 		}
 	}
 
+	// Restrictions.
+	{
+		if changes.RestrictScaleDown != nil {
+			spec.SetRestrictScaleDown(e.RestrictScaleDown)
+			changes.RestrictScaleDown = nil
+			changed = true
+		}
+	}
+
 	empty := &LaunchSpec{}
 	if !reflect.DeepEqual(empty, changes) {
 		klog.Warningf("Not all changes applied to Launch Spec %q: %v", *spec.ID, changes)
@@ -724,6 +742,7 @@ type terraformLaunchSpec struct {
 	EBSOptimized             *bool                          `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
 	ImageID                  *string                        `json:"image_id,omitempty" cty:"image_id"`
 	AssociatePublicIPAddress *bool                          `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
+	RestrictScaleDown        *bool                          `json:"restrict_scale_down,omitempty" cty:"restrict_scale_down"`
 	RootVolumeSize           *int32                         `json:"root_volume_size,omitempty" cty:"root_volume_size"`
 	UserData                 *terraform.Literal             `json:"user_data,omitempty" cty:"user_data"`
 	IAMInstanceProfile       *terraform.Literal             `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
@@ -879,6 +898,13 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 			tf.Strategy = &terraformLaunchSpecStrategy{
 				SpotPercentage: e.SpotPercentage,
 			}
+		}
+	}
+
+	// Restrictions.
+	{
+		if fi.BoolValue(e.RestrictScaleDown) {
+			tf.RestrictScaleDown = e.RestrictScaleDown
 		}
 	}
 
