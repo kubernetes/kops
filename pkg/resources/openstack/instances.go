@@ -38,7 +38,7 @@ func (os *clusterDiscoveryOS) ListInstances() ([]*resources.Resource, error) {
 		val, ok := instance.Metadata["k8s"]
 		if ok && val == os.clusterName {
 			// Clean up any bound floating IP's
-			floatingIPs, err := os.listFloatingIPs(instance.ID)
+			floatingIPs, err := os.listFloatingIPs(instance)
 			if err != nil {
 				return resourceTrackers, err
 			}
