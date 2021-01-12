@@ -26,6 +26,43 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 )
 
+func TestAWSValidateExternalCloudConfig(t *testing.T) {
+	grid := []struct {
+		Input          kops.ClusterSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.ClusterSpec{
+				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{},
+			},
+			ExpectedErrors: []string{"Forbidden::spec.externalCloudControllerManager"},
+		},
+		{
+			Input: kops.ClusterSpec{
+				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{},
+				CloudConfig: &kops.CloudConfiguration{
+					AWSEBSCSIDriver: &kops.AWSEBSCSIDriver{
+						Enabled: fi.Bool(true),
+					},
+				},
+			},
+		},
+		{
+			Input: kops.ClusterSpec{
+				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{},
+				KubeControllerManager: &kops.KubeControllerManagerConfig{
+					ExternalCloudVolumePlugin: "aws",
+				},
+			},
+		},
+	}
+	for _, g := range grid {
+		errs := awsValidateExternalCloudControllerManager(g.Input)
+
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
+
 func TestValidateInstanceGroupSpec(t *testing.T) {
 	grid := []struct {
 		Input          kops.InstanceGroupSpec
