@@ -17,6 +17,7 @@ limitations under the License.
 package deployer
 
 import (
+	"fmt"
 	"os"
 	osexec "os/exec"
 	"strings"
@@ -42,6 +43,38 @@ func (d *deployer) Up() error {
 	if adminAccess == "" {
 		adminAccess = publicIP
 	}
+
+	zones, err := d.zones()
+	if err != nil {
+		return err
+	}
+
+	if d.TemplatePath != "" {
+		values := d.templateValues(zones, adminAccess)
+		if err := d.renderTemplate(values); err != nil {
+			return err
+		}
+		if err := d.replace(); err != nil {
+			return err
+		}
+	} else {
+		err := d.createCluster(zones, adminAccess)
+		if err != nil {
+			return err
+		}
+	}
+	isUp, err := d.IsUp()
+	if err != nil {
+		return err
+	} else if isUp {
+		klog.V(1).Infof("cluster reported as up")
+	} else {
+		klog.Errorf("cluster reported as down")
+	}
+	return nil
+}
+
+func (d *deployer) createCluster(zones []string, adminAccess string) error {
 
 	args := []string{
 		d.KopsBinaryPath, "create", "cluster",
@@ -83,20 +116,10 @@ func (d *deployer) Up() error {
 	cmd.SetEnv(d.env()...)
 
 	exec.InheritOutput(cmd)
-	err = cmd.Run()
+	err := cmd.Run()
 	if err != nil {
 		return err
 	}
-
-	isUp, err := d.IsUp()
-	if err != nil {
-		return err
-	} else if isUp {
-		klog.V(1).Infof("cluster reported as up")
-	} else {
-		klog.Errorf("cluster reported as down")
-	}
-
 	return nil
 }
 
@@ -132,4 +155,14 @@ func (d *deployer) verifyUpFlags() error {
 	}
 
 	return nil
+}
+
+func (d *deployer) zones() ([]string, error) {
+	switch d.CloudProvider {
+	case "aws":
+		return aws.RandomZones(1)
+	case "gce":
+		return gce.RandomZones(1)
+	}
+	return nil, fmt.Errorf("unsupported CloudProvider: %v", d.CloudProvider)
 }
