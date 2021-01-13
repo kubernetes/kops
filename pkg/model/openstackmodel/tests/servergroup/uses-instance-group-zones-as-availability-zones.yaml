@@ -4,6 +4,7 @@ AvailabilityZone: zone-a
 Flavor: blc.2-4
 FloatingIP: null
 ForAPIServer: false
+GroupName: node
 ID: null
 Image: image-node
 Lifecycle: null
@@ -21,7 +22,6 @@ Metadata:
   k8s.io_role_node: "1"
   kops.k8s.io_instancegroup: node
 Name: node-1-cluster
-NamePrefix: node
 Port:
   AdditionalSecurityGroups:
   - additional-sg

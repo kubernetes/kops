@@ -37,7 +37,7 @@ import (
 type Instance struct {
 	ID               *string
 	Name             *string
-	NamePrefix       *string
+	GroupName        *string
 	Port             *Port
 	Region           *string
 	Flavor           *string
@@ -120,7 +120,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	cloud := c.Cloud.(openstack.OpenstackCloud)
 	computeClient := cloud.ComputeClient()
 	serverPage, err := servers.List(computeClient, servers.ListOpts{
-		Name: fmt.Sprintf("^%s", fi.StringValue(e.NamePrefix)),
+		Name: fmt.Sprintf("^%s", fi.StringValue(e.GroupName)),
 	}).AllPages()
 	if err != nil {
 		return nil, fmt.Errorf("error listing servers: %v", err)
@@ -164,7 +164,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		Metadata:         server.Metadata,
 		Role:             fi.String(server.Metadata["KopsRole"]),
 		AvailabilityZone: e.AvailabilityZone,
-		NamePrefix:       e.NamePrefix,
+		GroupName:        e.GroupName,
 	}
 
 	ports, err := cloud.ListPorts(ports.ListOpts{
@@ -257,9 +257,9 @@ func (_ *Instance) ShouldCreate(a, e, changes *Instance) (bool, error) {
 	return false, nil
 }
 
-// makeServerName generates name for the instance
-// the instance format is [namePrefix]-[6 character hash]
-func makeServerName(e *Instance) (string, error) {
+// generateInstanceName generates name for the instance
+// the instance format is [GroupName]-[6 character hash]
+func generateInstanceName(e *Instance) (string, error) {
 	secret, err := fi.CreateSecret()
 	if err != nil {
 		return "", err
@@ -270,13 +270,13 @@ func makeServerName(e *Instance) (string, error) {
 		return "", err
 	}
 
-	return strings.ToLower(fmt.Sprintf("%s-%s", fi.StringValue(e.NamePrefix), hash[0:6])), nil
+	return strings.ToLower(fmt.Sprintf("%s-%s", fi.StringValue(e.GroupName), hash[0:6])), nil
 }
 
 func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Instance) error {
 	cloud := t.Cloud.(openstack.OpenstackCloud)
 	if a == nil {
-		serverName, err := makeServerName(e)
+		serverName, err := generateInstanceName(e)
 		if err != nil {
 			return err
 		}

@@ -28,6 +28,7 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-bastion-1-cluster
 ForAPIServer: false
+GroupName: bastion
 ID: null
 Image: image
 Lifecycle: null
@@ -44,7 +45,6 @@ Metadata:
   k8s.io_role_bastion: "1"
   kops.k8s.io_instancegroup: bastion
 Name: bastion-1-cluster
-NamePrefix: bastion
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -98,6 +98,7 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-master-1-cluster
 ForAPIServer: false
+GroupName: master
 ID: null
 Image: image
 Lifecycle: null
@@ -116,7 +117,6 @@ Metadata:
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master
 Name: master-1-cluster
-NamePrefix: master
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -170,6 +170,7 @@ AvailabilityZone: zone-1
 Flavor: blc.1-2
 FloatingIP: null
 ForAPIServer: false
+GroupName: node
 ID: null
 Image: image
 Lifecycle: null
@@ -187,7 +188,6 @@ Metadata:
   k8s.io_role_node: "1"
   kops.k8s.io_instancegroup: node
 Name: node-1-cluster
-NamePrefix: node
 Port:
   AdditionalSecurityGroups: null
   ID: null

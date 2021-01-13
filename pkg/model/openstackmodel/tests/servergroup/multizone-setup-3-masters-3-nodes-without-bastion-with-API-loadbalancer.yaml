@@ -55,6 +55,7 @@ AvailabilityZone: zone-1
 Flavor: blc.1-2
 FloatingIP: null
 ForAPIServer: false
+GroupName: master-a
 ID: null
 Image: image
 Lifecycle: null
@@ -73,7 +74,6 @@ Metadata:
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master-a
 Name: master-a-1-cluster
-NamePrefix: master-a
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -121,6 +121,7 @@ AvailabilityZone: zone-2
 Flavor: blc.1-2
 FloatingIP: null
 ForAPIServer: false
+GroupName: master-b
 ID: null
 Image: image
 Lifecycle: null
@@ -139,7 +140,6 @@ Metadata:
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master-b
 Name: master-b-1-cluster
-NamePrefix: master-b
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -187,6 +187,7 @@ AvailabilityZone: zone-3
 Flavor: blc.1-2
 FloatingIP: null
 ForAPIServer: false
+GroupName: master-c
 ID: null
 Image: image
 Lifecycle: null
@@ -205,7 +206,6 @@ Metadata:
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master-c
 Name: master-c-1-cluster
-NamePrefix: master-c
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -259,6 +259,7 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-node-a-1-cluster
 ForAPIServer: false
+GroupName: node-a
 ID: null
 Image: image
 Lifecycle: null
@@ -276,7 +277,6 @@ Metadata:
   k8s.io_role_node: "1"
   kops.k8s.io_instancegroup: node-a
 Name: node-a-1-cluster
-NamePrefix: node-a
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -330,6 +330,7 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-node-b-1-cluster
 ForAPIServer: false
+GroupName: node-b
 ID: null
 Image: image
 Lifecycle: null
@@ -347,7 +348,6 @@ Metadata:
   k8s.io_role_node: "1"
   kops.k8s.io_instancegroup: node-b
 Name: node-b-1-cluster
-NamePrefix: node-b
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -401,6 +401,7 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-node-c-1-cluster
 ForAPIServer: false
+GroupName: node-c
 ID: null
 Image: image
 Lifecycle: null
@@ -418,7 +419,6 @@ Metadata:
   k8s.io_role_node: "1"
   kops.k8s.io_instancegroup: node-c
 Name: node-c-1-cluster
-NamePrefix: node-c
 Port:
   AdditionalSecurityGroups: null
   ID: null
