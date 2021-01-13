@@ -60,6 +60,35 @@ func ParseSubnetID(s string) (*SubnetID, error) {
 	}, nil
 }
 
+// loadBalancerID contains the resource ID/names required to construct a loadbalancer ID.
+type loadBalancerID struct {
+	SubscriptionID    string
+	ResourceGroupName string
+	LoadBalancerName  string
+}
+
+// String returns the loadbalancer ID in the path format.
+func (lb *loadBalancerID) String() string {
+	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/loadbalancers/%s/backendAddressPools/LoadBalancerBackEnd",
+		lb.SubscriptionID,
+		lb.ResourceGroupName,
+		lb.LoadBalancerName,
+	)
+}
+
+// parseLoadBalancerID parses a given loadbalancer ID string and returns a loadBalancerID.
+func parseLoadBalancerID(lb string) (*loadBalancerID, error) {
+	l := strings.Split(lb, "/")
+	if len(l) != 11 {
+		return nil, fmt.Errorf("malformed format of loadbalancer ID: %s, %d", lb, len(l))
+	}
+	return &loadBalancerID{
+		SubscriptionID:    l[2],
+		ResourceGroupName: l[4],
+		LoadBalancerName:  l[8],
+	}, nil
+}
+
 //go:generate fitask -type=VMScaleSet
 
 // VMScaleSet is an Azure VM Scale Set.
@@ -73,6 +102,8 @@ type VMScaleSet struct {
 	StorageProfile *VMScaleSetStorageProfile
 	// RequirePublicIP is set to true when VMs require public IPs.
 	RequirePublicIP *bool
+	// LoadBalancer is the Load Balancer object the VMs will use.
+	LoadBalancer *LoadBalancer
 	// SKUName specifies the SKU of of the VM Scale Set
 	SKUName *string
 	// Capacity specifies the number of virtual machines the VM Scale Set.
@@ -150,15 +181,29 @@ func (s *VMScaleSet) Find(c *fi.Context) (*VMScaleSet, error) {
 		return nil, fmt.Errorf("failed to parse subnet ID %s", *ipConfig.Subnet.ID)
 	}
 
+	var loadBalancerID *loadBalancerID
+	if *ipConfig.LoadBalancerBackendAddressPools != nil {
+		for _, i := range *ipConfig.LoadBalancerBackendAddressPools {
+			if !strings.Contains(*i.ID, "api") {
+				continue
+			}
+			loadBalancerID, err = parseLoadBalancerID(*i.ID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse loadbalancer ID %s", *ipConfig.Subnet.ID)
+			}
+		}
+	}
+
 	osProfile := profile.OsProfile
 	sshKeys := *osProfile.LinuxConfiguration.SSH.PublicKeys
 	if len(sshKeys) != 1 {
 		return nil, fmt.Errorf("unexpected number of SSH keys found for VM ScaleSet %s: %d", *s.Name, len(sshKeys))
 	}
+
 	// TODO(kenji): Do not check custom data as Azure doesn't
 	// populate (https://github.com/Azure/azure-cli/issues/5866).
 	// Find a way to work around this.
-	return &VMScaleSet{
+	vmss := &VMScaleSet{
 		Name:      s.Name,
 		Lifecycle: s.Lifecycle,
 		ResourceGroup: &ResourceGroup{
@@ -181,7 +226,13 @@ func (s *VMScaleSet) Find(c *fi.Context) (*VMScaleSet, error) {
 		SSHPublicKey:       sshKeys[0].KeyData,
 		Tags:               found.Tags,
 		PrincipalID:        found.Identity.PrincipalID,
-	}, nil
+	}
+	if loadBalancerID != nil {
+		vmss.LoadBalancer = &LoadBalancer{
+			Name: to.StringPtr(loadBalancerID.LoadBalancerName),
+		}
+	}
+	return vmss, nil
 }
 
 // Run implements fi.Task.Run.
@@ -249,6 +300,11 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 		VirtualNetworkName: *e.VirtualNetwork.Name,
 		SubnetName:         *e.Subnet.Name,
 	}
+	loadBalancerID := loadBalancerID{
+		SubscriptionID:    t.Cloud.SubscriptionID(),
+		ResourceGroupName: *e.ResourceGroup.Name,
+		LoadBalancerName:  *e.LoadBalancer.Name,
+	}
 	ipConfigProperties := &compute.VirtualMachineScaleSetIPConfigurationProperties{
 		Subnet: &compute.APIEntityReference{
 			ID: to.StringPtr(subnetID.String()),
@@ -261,6 +317,13 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 			Name: to.StringPtr(name + "-publicipconfig"),
 			VirtualMachineScaleSetPublicIPAddressConfigurationProperties: &compute.VirtualMachineScaleSetPublicIPAddressConfigurationProperties{
 				PublicIPAddressVersion: compute.IPv4,
+			},
+		}
+	}
+	if e.LoadBalancer != nil {
+		ipConfigProperties.LoadBalancerBackendAddressPools = &[]compute.SubResource{
+			{
+				ID: to.StringPtr(loadBalancerID.String()),
 			},
 		}
 	}

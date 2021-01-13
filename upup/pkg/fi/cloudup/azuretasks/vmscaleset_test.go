@@ -46,6 +46,21 @@ func TestSubnetIDParse(t *testing.T) {
 	}
 }
 
+func TestLoadBalancerIDParse(t *testing.T) {
+	loadBalancerID := &loadBalancerID{
+		SubscriptionID:    "sid",
+		ResourceGroupName: "rg",
+		LoadBalancerName:  "lb",
+	}
+	actual, err := parseLoadBalancerID(loadBalancerID.String())
+	if err != nil {
+		t.Fatalf("unexpected error %s", err)
+	}
+	if !reflect.DeepEqual(actual, loadBalancerID) {
+		t.Errorf("expected %+v, but got %+v", loadBalancerID, actual)
+	}
+}
+
 func newTestVMScaleSet() *VMScaleSet {
 	return &VMScaleSet{
 		Name: to.StringPtr("vmss"),
@@ -57,6 +72,9 @@ func newTestVMScaleSet() *VMScaleSet {
 		},
 		Subnet: &Subnet{
 			Name: to.StringPtr("sub"),
+		},
+		LoadBalancer: &LoadBalancer{
+			Name: to.StringPtr("api-lb"),
 		},
 		StorageProfile:     &VMScaleSetStorageProfile{},
 		RequirePublicIP:    to.BoolPtr(true),
@@ -174,6 +192,11 @@ func TestVMScaleSetFind(t *testing.T) {
 		VirtualNetworkName: "vnet",
 		SubnetName:         "sub",
 	}
+	loadBalancerID := loadBalancerID{
+		SubscriptionID:    "subID",
+		ResourceGroupName: *rg.Name,
+		LoadBalancerName:  "api-lb",
+	}
 	ipConfigProperties := &compute.VirtualMachineScaleSetIPConfigurationProperties{
 		Subnet: &compute.APIEntityReference{
 			ID: to.StringPtr(subnetID.String()),
@@ -185,6 +208,11 @@ func TestVMScaleSetFind(t *testing.T) {
 		Name: to.StringPtr("vmss-publicipconfig"),
 		VirtualMachineScaleSetPublicIPAddressConfigurationProperties: &compute.VirtualMachineScaleSetPublicIPAddressConfigurationProperties{
 			PublicIPAddressVersion: compute.IPv4,
+		},
+	}
+	ipConfigProperties.LoadBalancerBackendAddressPools = &[]compute.SubResource{
+		{
+			ID: to.StringPtr(loadBalancerID.String()),
 		},
 	}
 	networkConfig := compute.VirtualMachineScaleSetNetworkConfiguration{
@@ -244,6 +272,9 @@ func TestVMScaleSetFind(t *testing.T) {
 		t.Errorf("unexpected Resource Group name: expected %s, but got %s", e, a)
 	}
 	if a, e := *actual.Subnet.Name, subnetID.SubnetName; a != e {
+		t.Errorf("unexpected Resource Group name: expected %s, but got %s", e, a)
+	}
+	if a, e := *actual.LoadBalancer.Name, loadBalancerID.LoadBalancerName; a != e {
 		t.Errorf("unexpected Resource Group name: expected %s, but got %s", e, a)
 	}
 	// Check other major fields.
