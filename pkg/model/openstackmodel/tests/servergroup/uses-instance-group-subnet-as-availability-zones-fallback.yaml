@@ -4,11 +4,13 @@ AvailabilityZone: subnet
 Flavor: blc.2-4
 FloatingIP: null
 ForAPIServer: false
+GroupName: node
 ID: null
 Image: image-node
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: node
+  KopsName: node-1-cluster
   KopsNetwork: cluster
   KopsRole: Node
   KubernetesCluster: cluster

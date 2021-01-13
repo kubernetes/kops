@@ -65,6 +65,7 @@ const (
 	TagClusterName           = "KubernetesCluster"
 	TagRoleMaster            = "master"
 	TagKopsNetwork           = "KopsNetwork"
+	TagKopsName              = "KopsName"
 	ResourceTypePort         = "ports"
 	ResourceTypeNetwork      = "networks"
 	ResourceTypeSubnet       = "subnets"
