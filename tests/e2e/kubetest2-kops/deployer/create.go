@@ -23,12 +23,11 @@ import (
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
-// replace performs a `kops replace` followed by `kops update cluster --yes`
+// create performs a `kops create -f` followed by `kops update cluster --yes`
 func (d *deployer) replace() error {
 	args := []string{
-		d.KopsBinaryPath, "replace",
+		d.KopsBinaryPath, "create",
 		"--filename", d.manifestPath,
-		"--force",
 		"--name", d.ClusterName,
 	}
 	klog.Info(strings.Join(args, " "))
@@ -38,22 +37,6 @@ func (d *deployer) replace() error {
 
 	exec.InheritOutput(cmd)
 	err := cmd.Run()
-	if err != nil {
-		return err
-	}
-
-	args = []string{
-		d.KopsBinaryPath, "create", "secret", "sshpublickey",
-		"admin",
-		"-i", d.SSHPublicKeyPath,
-		"--name", d.ClusterName,
-	}
-	klog.Info(strings.Join(args, " "))
-	cmd = exec.Command(args[0], args[1:]...)
-	cmd.SetEnv(d.env()...)
-
-	exec.InheritOutput(cmd)
-	err = cmd.Run()
 	if err != nil {
 		return err
 	}

@@ -63,7 +63,11 @@ func (d *deployer) renderTemplate(values map[string]interface{}) error {
 	return nil
 }
 
-func (d *deployer) templateValues(zones []string, publicIP string) map[string]interface{} {
+func (d *deployer) templateValues(zones []string, publicIP string) (map[string]interface{}, error) {
+	publicKey, err := ioutil.ReadFile(d.SSHPublicKeyPath)
+	if err != nil {
+		return nil, err
+	}
 	return map[string]interface{}{
 		"cloudProvider":     d.CloudProvider,
 		"clusterName":       d.ClusterName,
@@ -71,5 +75,6 @@ func (d *deployer) templateValues(zones []string, publicIP string) map[string]in
 		"publicIP":          publicIP,
 		"stateStore":        d.StateStore,
 		"zones":             zones,
-	}
+		"sshPublicKey":      string(publicKey),
+	}, nil
 }
