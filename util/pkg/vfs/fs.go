@@ -17,6 +17,7 @@ limitations under the License.
 package vfs
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -114,7 +115,7 @@ func (p *FSPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 // ReadFile implements Path::ReadFile
 func (p *FSPath) ReadFile() ([]byte, error) {
 	file, err := ioutil.ReadFile(p.location)
-	if err == syscall.ENOENT {
+	if errors.Is(err, syscall.ENOENT) {
 		err = os.ErrNotExist
 	}
 	return file, err
