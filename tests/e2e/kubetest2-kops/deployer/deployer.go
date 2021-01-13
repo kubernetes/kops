@@ -47,6 +47,8 @@ type deployer struct {
 	KopsBinaryPath string   `flag:"kops-binary-path" desc:"The path to kops executable used for testing"`
 	StateStore     string   `flag:"-"`
 
+	TemplatePath string `flag:"template-path" desc:"The path to the manifest template used for cluster creation"`
+
 	KubernetesVersion string `flag:"kubernetes-version" desc:"The kubernetes version to use in the cluster"`
 
 	SSHPrivateKeyPath string   `flag:"ssh-private-key" desc:"The path to the private key used for SSH access to instances"`
@@ -58,6 +60,9 @@ type deployer struct {
 	AdminAccess string `flag:"admin-access" desc:"The CIDR to restrict kubernetes API access"`
 
 	BuildOptions *builder.BuildOptions
+
+	// manifestPath is the location of the rendered manifest based on TemplatePath
+	manifestPath string
 }
 
 // assert that New implements types.NewDeployer
