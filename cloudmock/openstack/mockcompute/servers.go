@@ -153,7 +153,7 @@ func (m *MockClient) listServers(w http.ResponseWriter, vals url.Values) {
 	serverName := strings.Trim(vals.Get("name"), "^$")
 	matched := make([]servers.Server, 0)
 	for _, server := range m.servers {
-		if server.Name == serverName {
+		if strings.HasPrefix(server.Name, serverName) {
 			matched = append(matched, server)
 		}
 	}
