@@ -17,9 +17,13 @@ limitations under the License.
 package azuremodel
 
 import (
-	"errors"
+	"fmt"
 
+	"github.com/Azure/go-autorest/autorest/to"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azuretasks"
 )
 
 // APILoadBalancerModelBuilder builds a LoadBalancer for accessing the API
@@ -38,5 +42,69 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	return errors.New("using loadbalancer for API server is not yet implemented in Azure")
+	lbSpec := b.Cluster.Spec.API.LoadBalancer
+	if lbSpec == nil {
+		// Skipping API LB creation; not requested in Spec
+		return nil
+	}
+
+	switch lbSpec.Type {
+	case kops.LoadBalancerTypeInternal:
+		// OK
+	case kops.LoadBalancerTypePublic:
+		// TODO: Implement creating public ip and attach to public loadbalancer
+		return fmt.Errorf("only internal loadbalancer for API server is implemented in Azure")
+	default:
+		return fmt.Errorf("unhandled LoadBalancer type %q", lbSpec.Type)
+	}
+
+	// Create LoadBalancer for API ELB
+	lb := &azuretasks.LoadBalancer{
+		Name:          fi.String(b.NameForLoadBalancer()),
+		Lifecycle:     b.Lifecycle,
+		ResourceGroup: b.LinkToResourceGroup(),
+		Tags:          map[string]*string{},
+	}
+
+	switch lbSpec.Type {
+	case kops.LoadBalancerTypeInternal:
+		lb.External = to.BoolPtr(false)
+		subnet, err := b.subnetForLoadBalancer()
+		if err != nil {
+			return err
+		}
+		lb.Subnet = b.LinkToAzureSubnet(subnet)
+	case kops.LoadBalancerTypePublic:
+		lb.External = to.BoolPtr(true)
+	default:
+		return fmt.Errorf("unknown load balancer Type: %q", lbSpec.Type)
+	}
+
+	c.AddTask(lb)
+
+	if dns.IsGossipHostname(b.Cluster.Name) || b.UsePrivateDNS() {
+		lb.ForAPIServer = true
+	}
+
+	return nil
+}
+
+// subnetForLoadBalancer returns the subnet the loadbalancer will use.
+func (c *AzureModelContext) subnetForLoadBalancer() (*kops.ClusterSubnetSpec, error) {
+	// Get all master instance group subnets
+	for _, ig := range c.MasterInstanceGroups() {
+		subnets, err := c.GatherSubnets(ig)
+		if err != nil {
+			return nil, err
+		}
+		if len(subnets) != 1 {
+			return nil, fmt.Errorf("expected exactly one subnet for InstanceGroup %q; subnets was %s", ig.Name, ig.Spec.Subnets)
+		}
+		if subnets[0].Type != kops.SubnetTypePrivate {
+			continue
+		}
+		return subnets[0], nil
+	}
+
+	return nil, fmt.Errorf("no suitable subnets found")
 }

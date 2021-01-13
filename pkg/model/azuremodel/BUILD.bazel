@@ -14,6 +14,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/apis/kops:go_default_library",
+        "//pkg/dns:go_default_library",
         "//pkg/model:go_default_library",
         "//pkg/model/defaults:go_default_library",
         "//pkg/model/iam:go_default_library",
@@ -30,6 +31,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = [
+        "api_loadbalancer_test.go",
         "context_test.go",
         "network_test.go",
         "resourcegroup_test.go",
