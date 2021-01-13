@@ -171,6 +171,7 @@ metadata:
 | `spotinst.io/autoscaler-scale-down-evaluation-periods` | Specify the number of evaluation periods that should accumulate before a scale down action takes place. | `5` |
 | `spotinst.io/autoscaler-resource-limits-max-vcpu` | Specify the maximum number of virtual CPUs that can be allocated to the cluster. | none |
 | `spotinst.io/autoscaler-resource-limits-max-memory` | Specify the maximum amount of total physical memory (in GiB units) that can be allocated to the cluster. | none |
+| `spotinst.io/restrict-scale-down` | Specify whether the scale-down activities should be restricted. | none |
 
 ## Documentation
 
