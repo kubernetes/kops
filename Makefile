@@ -198,6 +198,7 @@ test-e2e:
 		--cloud-provider=aws \
 		--kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
 		--kubernetes-version=v1.19.4 \
+		--template-path=tests/e2e/templates/simple.yaml.tmpl \
 		--test=kops \
 		-- \
 		--test-package-version=v1.19.4 \
