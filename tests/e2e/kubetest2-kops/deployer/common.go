@@ -152,9 +152,9 @@ func stateStore(cloudProvider string) string {
 	if ss == "" {
 		switch cloudProvider {
 		case "aws":
-			ss = "s3://k8s-kops-prow/"
+			ss = "s3://k8s-kops-prow"
 		case "gce":
-			ss = "gs://k8s-kops-gce/"
+			ss = "gs://k8s-kops-gce"
 		}
 	}
 	return ss
