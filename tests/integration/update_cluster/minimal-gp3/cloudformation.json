@@ -215,10 +215,6 @@
                 "DeleteOnTermination": true,
                 "Encrypted": false
               }
-            },
-            {
-              "DeviceName": "/dev/sdc",
-              "VirtualName": "ephemeral0"
             }
           ],
           "IamInstanceProfile": {
@@ -227,7 +223,7 @@
             }
           },
           "ImageId": "ami-12345678",
-          "InstanceType": "m3.medium",
+          "InstanceType": "m5.large",
           "KeyName": "kubernetes.minimal.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
           "MetadataOptions": {
             "HttpPutResponseHopLimit": 1,
@@ -349,7 +345,7 @@
             }
           },
           "ImageId": "ami-12345678",
-          "InstanceType": "t2.medium",
+          "InstanceType": "t3.large",
           "KeyName": "kubernetes.minimal.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
           "MetadataOptions": {
             "HttpPutResponseHopLimit": 1,
@@ -775,7 +771,9 @@
       "Properties": {
         "AvailabilityZone": "us-test-1a",
         "Size": 20,
-        "VolumeType": "gp2",
+        "VolumeType": "gp3",
+        "Iops": 3000,
+        "Throughput": 125,
         "Encrypted": false,
         "Tags": [
           {
@@ -806,7 +804,9 @@
       "Properties": {
         "AvailabilityZone": "us-test-1a",
         "Size": 20,
-        "VolumeType": "gp2",
+        "VolumeType": "gp3",
+        "Iops": 5000,
+        "Throughput": 125,
         "Encrypted": false,
         "Tags": [
           {
