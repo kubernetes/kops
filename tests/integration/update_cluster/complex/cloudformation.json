@@ -1193,7 +1193,7 @@
           {
             "Type": "forward",
             "TargetGroupArn": {
-              "Ref": "AWSElasticLoadBalancingV2TargetGrouptcpcomplexexamplecomvpjolq"
+              "Ref": "AWSElasticLoadBalancingV2TargetGrouptlscomplexexamplecom5nursn"
             }
           }
         ],
@@ -1212,7 +1212,7 @@
           {
             "Type": "forward",
             "TargetGroupArn": {
-              "Ref": "AWSElasticLoadBalancingV2TargetGrouptlscomplexexamplecom5nursn"
+              "Ref": "AWSElasticLoadBalancingV2TargetGrouptcpcomplexexamplecomvpjolq"
             }
           }
         ],
