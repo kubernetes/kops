@@ -16,11 +16,10 @@ kOps versions released today contain a **critical fix** to etcd-manager: 1 year 
 
 We like to think of it as `kubectl` for clusters.
 
-`kops` helps you create, destroy, upgrade and maintain production-grade, highly
-available, Kubernetes clusters from the command line. AWS (Amazon Web Services)
-is currently officially supported, with GCE and OpenStack in beta support, and VMware vSphere
-in alpha, and other platforms planned.
+`kops` will not only help you create, destroy, upgrade and maintain production-grade, highly
+available, Kubernetes cluster, but it will also provision the necessary cloud infrastructure.
 
+AWS (Amazon Web Services) is currently officially supported, with DigitalOcean, GCE, and OpenStack in beta support, and Azure and AliCloud in alpha.
 
 ## Can I see it in action?
 
