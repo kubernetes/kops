@@ -150,7 +150,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		metaWithName[openstack.TagKopsName] = fi.StringValue(instanceName)
 		instanceTask := &openstacktasks.Instance{
 			Name:             instanceName,
-			NamePrefix:       s(groupName),
+			GroupName:        s(groupName),
 			Region:           fi.String(b.Cluster.Spec.Subnets[0].Region),
 			Flavor:           fi.String(ig.Spec.MachineType),
 			Image:            fi.String(ig.Spec.Image),

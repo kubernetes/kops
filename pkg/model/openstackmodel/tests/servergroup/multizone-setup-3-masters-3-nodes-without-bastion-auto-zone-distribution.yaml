@@ -54,6 +54,7 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-master-1-cluster
 ForAPIServer: false
+GroupName: master
 ID: null
 Image: image
 Lifecycle: null
@@ -72,7 +73,6 @@ Metadata:
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master
 Name: master-1-cluster
-NamePrefix: master
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -132,6 +132,7 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-master-2-cluster
 ForAPIServer: false
+GroupName: master
 ID: null
 Image: image
 Lifecycle: null
@@ -150,7 +151,6 @@ Metadata:
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master
 Name: master-2-cluster
-NamePrefix: master
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -210,6 +210,7 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-master-3-cluster
 ForAPIServer: false
+GroupName: master
 ID: null
 Image: image
 Lifecycle: null
@@ -228,7 +229,6 @@ Metadata:
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master
 Name: master-3-cluster
-NamePrefix: master
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -288,6 +288,7 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-node-1-cluster
 ForAPIServer: false
+GroupName: node
 ID: null
 Image: image
 Lifecycle: null
@@ -305,7 +306,6 @@ Metadata:
   k8s.io_role_node: "1"
   kops.k8s.io_instancegroup: node
 Name: node-1-cluster
-NamePrefix: node
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -359,6 +359,7 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-node-2-cluster
 ForAPIServer: false
+GroupName: node
 ID: null
 Image: image
 Lifecycle: null
@@ -376,7 +377,6 @@ Metadata:
   k8s.io_role_node: "1"
   kops.k8s.io_instancegroup: node
 Name: node-2-cluster
-NamePrefix: node
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -430,6 +430,7 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-node-3-cluster
 ForAPIServer: false
+GroupName: node
 ID: null
 Image: image
 Lifecycle: null
@@ -447,7 +448,6 @@ Metadata:
   k8s.io_role_node: "1"
   kops.k8s.io_instancegroup: node
 Name: node-3-cluster
-NamePrefix: node
 Port:
   AdditionalSecurityGroups: null
   ID: null

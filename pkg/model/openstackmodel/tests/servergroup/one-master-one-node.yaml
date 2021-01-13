@@ -26,6 +26,7 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-master-1-cluster
 ForAPIServer: false
+GroupName: master
 ID: null
 Image: image-master
 Lifecycle: null
@@ -44,7 +45,6 @@ Metadata:
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master
 Name: master-1-cluster
-NamePrefix: master
 Port:
   AdditionalSecurityGroups: null
   ID: null
@@ -104,6 +104,7 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-node-1-cluster
 ForAPIServer: false
+GroupName: node
 ID: null
 Image: image-node
 Lifecycle: null
@@ -121,7 +122,6 @@ Metadata:
   k8s.io_role_node: "1"
   kops.k8s.io_instancegroup: node
 Name: node-1-cluster
-NamePrefix: node
 Port:
   AdditionalSecurityGroups: null
   ID: null
