@@ -198,12 +198,18 @@ type terraformVolume struct {
 }
 
 func (_ *EBSVolume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EBSVolume) error {
+	// TODO: Remove when Terraform gets support for "throughput" with "aws_ebs_volume"
+	// https://github.com/hashicorp/terraform-provider-aws/pull/16517
+	throughput := e.VolumeThroughput
+	if fi.Int64Value(e.VolumeThroughput) <= 125 {
+		throughput = nil
+	}
 	tf := &terraformVolume{
 		AvailabilityZone: e.AvailabilityZone,
 		Size:             e.SizeGB,
 		Type:             e.VolumeType,
 		Iops:             e.VolumeIops,
-		Throughput:       e.VolumeThroughput,
+		Throughput:       throughput,
 		KmsKeyId:         e.KmsKeyId,
 		Encrypted:        e.Encrypted,
 		Tags:             e.Tags,
