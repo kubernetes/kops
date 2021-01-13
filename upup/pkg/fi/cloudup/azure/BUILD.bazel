@@ -7,6 +7,7 @@ go_library(
         "azure_cloud.go",
         "azure_utils.go",
         "disk.go",
+        "loadbalancer.go",
         "networkinterface.go",
         "resourcegroup.go",
         "roleassignment.go",

@@ -44,6 +44,11 @@ func newTestCluster() *kops.Cluster {
 			Name: "testcluster.test.com",
 		},
 		Spec: kops.ClusterSpec{
+			API: &kops.AccessSpec{
+				LoadBalancer: &kops.LoadBalancerAccessSpec{
+					Type: kops.LoadBalancerTypeInternal,
+				},
+			},
 			NetworkID:   "test-virtual-network",
 			NetworkCIDR: "10.0.0.0/8",
 			Subnets: []kops.ClusterSubnetSpec{
