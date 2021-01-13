@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package spotinstmodel
+package awsmodel
 
 import (
 	"fmt"
@@ -33,99 +33,99 @@ import (
 )
 
 const (
-	// InstanceGroupLabelHybrid is the metadata label used on the instance group
+	// SpotInstanceGroupLabelHybrid is the metadata label used on the instance group
 	// to specify that the Spotinst provider should be used to upon creation.
-	InstanceGroupLabelHybrid  = "spotinst.io/hybrid"
-	InstanceGroupLabelManaged = "spotinst.io/managed" // for backward compatibility
+	SpotInstanceGroupLabelHybrid  = "spotinst.io/hybrid"
+	SpotInstanceGroupLabelManaged = "spotinst.io/managed" // for backward compatibility
 
-	// InstanceGroupLabelSpotPercentage is the metadata label used on the
+	// SpotInstanceGroupLabelSpotPercentage is the metadata label used on the
 	// instance group to specify the percentage of Spot instances that
 	// should spin up from the target capacity.
-	InstanceGroupLabelSpotPercentage = "spotinst.io/spot-percentage"
+	SpotInstanceGroupLabelSpotPercentage = "spotinst.io/spot-percentage"
 
-	// InstanceGroupLabelOrientation is the metadata label used on the
+	// SpotInstanceGroupLabelOrientation is the metadata label used on the
 	// instance group to specify which orientation should be used.
-	InstanceGroupLabelOrientation = "spotinst.io/orientation"
+	SpotInstanceGroupLabelOrientation = "spotinst.io/orientation"
 
-	// InstanceGroupLabelUtilizeReservedInstances is the metadata label used
+	// SpotInstanceGroupLabelUtilizeReservedInstances is the metadata label used
 	// on the instance group to specify whether reserved instances should be
 	// utilized.
-	InstanceGroupLabelUtilizeReservedInstances = "spotinst.io/utilize-reserved-instances"
+	SpotInstanceGroupLabelUtilizeReservedInstances = "spotinst.io/utilize-reserved-instances"
 
-	// InstanceGroupLabelFallbackToOnDemand is the metadata label used on the
+	// SpotInstanceGroupLabelFallbackToOnDemand is the metadata label used on the
 	// instance group to specify whether fallback to on-demand instances should
 	// be enabled.
-	InstanceGroupLabelFallbackToOnDemand = "spotinst.io/fallback-to-ondemand"
+	SpotInstanceGroupLabelFallbackToOnDemand = "spotinst.io/fallback-to-ondemand"
 
-	// InstanceGroupLabelDrainingTimeout is the metadata label used on the
+	// SpotInstanceGroupLabelDrainingTimeout is the metadata label used on the
 	// instance group to specify a period of time, in seconds, after a node
 	// is marked for termination during which on running pods remains active.
-	InstanceGroupLabelDrainingTimeout = "spotinst.io/draining-timeout"
+	SpotInstanceGroupLabelDrainingTimeout = "spotinst.io/draining-timeout"
 
-	// InstanceGroupLabelGracePeriod is the metadata label used on the
+	// SpotInstanceGroupLabelGracePeriod is the metadata label used on the
 	// instance group to specify a period of time, in seconds, that Ocean
 	// should wait before applying instance health checks.
-	InstanceGroupLabelGracePeriod = "spotinst.io/grace-period"
+	SpotInstanceGroupLabelGracePeriod = "spotinst.io/grace-period"
 
-	// InstanceGroupLabelHealthCheckType is the metadata label used on the
+	// SpotInstanceGroupLabelHealthCheckType is the metadata label used on the
 	// instance group to specify the type of the health check that should be used.
-	InstanceGroupLabelHealthCheckType = "spotinst.io/health-check-type"
+	SpotInstanceGroupLabelHealthCheckType = "spotinst.io/health-check-type"
 
-	// InstanceGroupLabelOceanDefaultLaunchSpec is the metadata label used on the
-	// instance group to specify whether to use the InstanceGroup's spec as the default
+	// SpotInstanceGroupLabelOceanDefaultLaunchSpec is the metadata label used on the
+	// instance group to specify whether to use the SpotInstanceGroup's spec as the default
 	// Launch Spec for the Ocean cluster.
-	InstanceGroupLabelOceanDefaultLaunchSpec = "spotinst.io/ocean-default-launchspec"
+	SpotInstanceGroupLabelOceanDefaultLaunchSpec = "spotinst.io/ocean-default-launchspec"
 
-	// InstanceGroupLabelOceanInstanceTypes[White|Black]list are the metadata labels
+	// SpotInstanceGroupLabelOceanInstanceTypes[White|Black]list are the metadata labels
 	// used on the instance group to specify whether to whitelist or blacklist
 	// specific instance types.
-	InstanceGroupLabelOceanInstanceTypesWhitelist = "spotinst.io/ocean-instance-types-whitelist"
-	InstanceGroupLabelOceanInstanceTypesBlacklist = "spotinst.io/ocean-instance-types-blacklist"
-	InstanceGroupLabelOceanInstanceTypes          = "spotinst.io/ocean-instance-types" // launchspec
+	SpotInstanceGroupLabelOceanInstanceTypesWhitelist = "spotinst.io/ocean-instance-types-whitelist"
+	SpotInstanceGroupLabelOceanInstanceTypesBlacklist = "spotinst.io/ocean-instance-types-blacklist"
+	SpotInstanceGroupLabelOceanInstanceTypes          = "spotinst.io/ocean-instance-types" // launchspec
 
-	// InstanceGroupLabelAutoScalerDisabled is the metadata label used on the
+	// SpotInstanceGroupLabelAutoScalerDisabled is the metadata label used on the
 	// instance group to specify whether the auto scaler should be enabled.
-	InstanceGroupLabelAutoScalerDisabled = "spotinst.io/autoscaler-disabled"
+	SpotInstanceGroupLabelAutoScalerDisabled = "spotinst.io/autoscaler-disabled"
 
-	// InstanceGroupLabelAutoScalerDefaultNodeLabels is the metadata label used on the
+	// SpotInstanceGroupLabelAutoScalerDefaultNodeLabels is the metadata label used on the
 	// instance group to specify whether default node labels should be set for
 	// the auto scaler.
-	InstanceGroupLabelAutoScalerDefaultNodeLabels = "spotinst.io/autoscaler-default-node-labels"
+	SpotInstanceGroupLabelAutoScalerDefaultNodeLabels = "spotinst.io/autoscaler-default-node-labels"
 
-	// InstanceGroupLabelAutoScalerAuto* are the metadata labels used on the
+	// SpotInstanceGroupLabelAutoScalerAuto* are the metadata labels used on the
 	// instance group to specify whether headroom resources should be
 	// automatically configured and optimized.
-	InstanceGroupLabelAutoScalerAutoConfig             = "spotinst.io/autoscaler-auto-config"
-	InstanceGroupLabelAutoScalerAutoHeadroomPercentage = "spotinst.io/autoscaler-auto-headroom-percentage"
+	SpotInstanceGroupLabelAutoScalerAutoConfig             = "spotinst.io/autoscaler-auto-config"
+	SpotInstanceGroupLabelAutoScalerAutoHeadroomPercentage = "spotinst.io/autoscaler-auto-headroom-percentage"
 
-	// InstanceGroupLabelAutoScalerHeadroom* are the metadata labels used on the
+	// SpotInstanceGroupLabelAutoScalerHeadroom* are the metadata labels used on the
 	// instance group to specify the headroom configuration used by the auto scaler.
-	InstanceGroupLabelAutoScalerHeadroomCPUPerUnit = "spotinst.io/autoscaler-headroom-cpu-per-unit"
-	InstanceGroupLabelAutoScalerHeadroomGPUPerUnit = "spotinst.io/autoscaler-headroom-gpu-per-unit"
-	InstanceGroupLabelAutoScalerHeadroomMemPerUnit = "spotinst.io/autoscaler-headroom-mem-per-unit"
-	InstanceGroupLabelAutoScalerHeadroomNumOfUnits = "spotinst.io/autoscaler-headroom-num-of-units"
+	SpotInstanceGroupLabelAutoScalerHeadroomCPUPerUnit = "spotinst.io/autoscaler-headroom-cpu-per-unit"
+	SpotInstanceGroupLabelAutoScalerHeadroomGPUPerUnit = "spotinst.io/autoscaler-headroom-gpu-per-unit"
+	SpotInstanceGroupLabelAutoScalerHeadroomMemPerUnit = "spotinst.io/autoscaler-headroom-mem-per-unit"
+	SpotInstanceGroupLabelAutoScalerHeadroomNumOfUnits = "spotinst.io/autoscaler-headroom-num-of-units"
 
-	// InstanceGroupLabelAutoScalerCooldown is the metadata label used on the
+	// SpotInstanceGroupLabelAutoScalerCooldown is the metadata label used on the
 	// instance group to specify the cooldown period (in seconds) for scaling actions.
-	InstanceGroupLabelAutoScalerCooldown = "spotinst.io/autoscaler-cooldown"
+	SpotInstanceGroupLabelAutoScalerCooldown = "spotinst.io/autoscaler-cooldown"
 
-	// InstanceGroupLabelAutoScalerScaleDown* are the metadata labels used on the
+	// SpotInstanceGroupLabelAutoScalerScaleDown* are the metadata labels used on the
 	// instance group to specify the scale down configuration used by the auto scaler.
-	InstanceGroupLabelAutoScalerScaleDownMaxPercentage     = "spotinst.io/autoscaler-scale-down-max-percentage"
-	InstanceGroupLabelAutoScalerScaleDownEvaluationPeriods = "spotinst.io/autoscaler-scale-down-evaluation-periods"
+	SpotInstanceGroupLabelAutoScalerScaleDownMaxPercentage     = "spotinst.io/autoscaler-scale-down-max-percentage"
+	SpotInstanceGroupLabelAutoScalerScaleDownEvaluationPeriods = "spotinst.io/autoscaler-scale-down-evaluation-periods"
 
-	// InstanceGroupLabelAutoScalerResourceLimits* are the metadata labels used on the
+	// SpotInstanceGroupLabelAutoScalerResourceLimits* are the metadata labels used on the
 	// instance group to specify the resource limits configuration used by the auto scaler.
-	InstanceGroupLabelAutoScalerResourceLimitsMaxVCPU   = "spotinst.io/autoscaler-resource-limits-max-vcpu"
-	InstanceGroupLabelAutoScalerResourceLimitsMaxMemory = "spotinst.io/autoscaler-resource-limits-max-memory"
+	SpotInstanceGroupLabelAutoScalerResourceLimitsMaxVCPU   = "spotinst.io/autoscaler-resource-limits-max-vcpu"
+	SpotInstanceGroupLabelAutoScalerResourceLimitsMaxMemory = "spotinst.io/autoscaler-resource-limits-max-memory"
 
 	// InstanceGroupLabelRestrictScaleDown is the metadata label used on the
 	// instance group to specify whether the scale-down activities should be restricted.
-	InstanceGroupLabelRestrictScaleDown = "spotinst.io/restrict-scale-down"
+	SpotInstanceGroupLabelRestrictScaleDown = "spotinst.io/restrict-scale-down"
 )
 
-// InstanceGroupModelBuilder configures InstanceGroup objects
-type InstanceGroupModelBuilder struct {
+// SpotInstanceGroupModelBuilder configures SpotInstanceGroup objects
+type SpotInstanceGroupModelBuilder struct {
 	*model.KopsModelContext
 
 	BootstrapScriptBuilder *model.BootstrapScriptBuilder
@@ -133,10 +133,10 @@ type InstanceGroupModelBuilder struct {
 	SecurityLifecycle      *fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &InstanceGroupModelBuilder{}
+var _ fi.ModelBuilder = &SpotInstanceGroupModelBuilder{}
 
-func (b *InstanceGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	var nodeInstanceGroups []*kops.InstanceGroup
+func (b *SpotInstanceGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
+	var nodeSpotInstanceGroups []*kops.InstanceGroup
 	var err error
 
 	for _, ig := range b.InstanceGroups {
@@ -160,7 +160,7 @@ func (b *InstanceGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// multiple LaunchSpecs.
 		case kops.InstanceGroupRoleNode:
 			if featureflag.SpotinstOcean.Enabled() {
-				nodeInstanceGroups = append(nodeInstanceGroups, ig)
+				nodeSpotInstanceGroups = append(nodeSpotInstanceGroups, ig)
 			} else {
 				err = b.buildElastigroup(c, ig)
 			}
@@ -174,8 +174,8 @@ func (b *InstanceGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if len(nodeInstanceGroups) > 0 {
-		if err = b.buildOcean(c, nodeInstanceGroups...); err != nil {
+	if len(nodeSpotInstanceGroups) > 0 {
+		if err = b.buildOcean(c, nodeSpotInstanceGroups...); err != nil {
 			return fmt.Errorf("spotinst: error building ocean: %v", err)
 		}
 	}
@@ -183,7 +183,7 @@ func (b *InstanceGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *InstanceGroupModelBuilder) buildElastigroup(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) (err error) {
+func (b *SpotInstanceGroupModelBuilder) buildElastigroup(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) (err error) {
 	klog.V(4).Infof("Building instance group as Elastigroup: %q", b.AutoscalingGroupName(ig))
 	group := &spotinsttasks.Elastigroup{
 		Lifecycle:            b.Lifecycle,
@@ -203,34 +203,34 @@ func (b *InstanceGroupModelBuilder) buildElastigroup(c *fi.ModelBuilderContext, 
 	// Strategy.
 	for k, v := range ig.ObjectMeta.Labels {
 		switch k {
-		case InstanceGroupLabelSpotPercentage:
+		case SpotInstanceGroupLabelSpotPercentage:
 			group.SpotPercentage, err = parseFloat(v)
 			if err != nil {
 				return err
 			}
 
-		case InstanceGroupLabelOrientation:
+		case SpotInstanceGroupLabelOrientation:
 			group.Orientation = fi.String(v)
 
-		case InstanceGroupLabelUtilizeReservedInstances:
+		case SpotInstanceGroupLabelUtilizeReservedInstances:
 			group.UtilizeReservedInstances, err = parseBool(v)
 			if err != nil {
 				return err
 			}
 
-		case InstanceGroupLabelFallbackToOnDemand:
+		case SpotInstanceGroupLabelFallbackToOnDemand:
 			group.FallbackToOnDemand, err = parseBool(v)
 			if err != nil {
 				return err
 			}
 
-		case InstanceGroupLabelDrainingTimeout:
+		case SpotInstanceGroupLabelDrainingTimeout:
 			group.DrainingTimeout, err = parseInt(v)
 			if err != nil {
 				return err
 			}
 
-		case InstanceGroupLabelHealthCheckType:
+		case SpotInstanceGroupLabelHealthCheckType:
 			group.HealthCheckType = fi.String(strings.ToUpper(v))
 		}
 	}
@@ -328,7 +328,7 @@ func (b *InstanceGroupModelBuilder) buildElastigroup(c *fi.ModelBuilderContext, 
 	return nil
 }
 
-func (b *InstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ...*kops.InstanceGroup) (err error) {
+func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ...*kops.InstanceGroup) (err error) {
 	klog.V(4).Infof("Building instance group as Ocean: %q", "nodes."+b.ClusterName())
 	ocean := &spotinsttasks.Ocean{
 		Lifecycle: b.Lifecycle,
@@ -347,7 +347,7 @@ func (b *InstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ..
 		if len(igs) > 1 {
 			for _, g := range igs {
 				for k, v := range g.ObjectMeta.Labels {
-					if k == InstanceGroupLabelOceanDefaultLaunchSpec {
+					if k == SpotInstanceGroupLabelOceanDefaultLaunchSpec {
 						defaultLaunchSpec, err := parseBool(v)
 						if err != nil {
 							continue
@@ -357,7 +357,7 @@ func (b *InstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ..
 							if ig != nil {
 								return fmt.Errorf("unable to detect default launch spec: "+
 									"multiple instance groups labeled with `%s: \"true\"`",
-									InstanceGroupLabelOceanDefaultLaunchSpec)
+									SpotInstanceGroupLabelOceanDefaultLaunchSpec)
 							}
 
 							ig = g.DeepCopy()
@@ -382,37 +382,37 @@ func (b *InstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ..
 	// Strategy and instance types.
 	for k, v := range ig.ObjectMeta.Labels {
 		switch k {
-		case InstanceGroupLabelUtilizeReservedInstances:
+		case SpotInstanceGroupLabelUtilizeReservedInstances:
 			ocean.UtilizeReservedInstances, err = parseBool(v)
 			if err != nil {
 				return err
 			}
 
-		case InstanceGroupLabelFallbackToOnDemand:
+		case SpotInstanceGroupLabelFallbackToOnDemand:
 			ocean.FallbackToOnDemand, err = parseBool(v)
 			if err != nil {
 				return err
 			}
 
-		case InstanceGroupLabelGracePeriod:
+		case SpotInstanceGroupLabelGracePeriod:
 			ocean.GracePeriod, err = parseInt(v)
 			if err != nil {
 				return err
 			}
 
-		case InstanceGroupLabelDrainingTimeout:
+		case SpotInstanceGroupLabelDrainingTimeout:
 			ocean.DrainingTimeout, err = parseInt(v)
 			if err != nil {
 				return err
 			}
 
-		case InstanceGroupLabelOceanInstanceTypesWhitelist:
+		case SpotInstanceGroupLabelOceanInstanceTypesWhitelist:
 			ocean.InstanceTypesWhitelist, err = parseStringSlice(v)
 			if err != nil {
 				return err
 			}
 
-		case InstanceGroupLabelOceanInstanceTypesBlacklist:
+		case SpotInstanceGroupLabelOceanInstanceTypesBlacklist:
 			ocean.InstanceTypesBlacklist, err = parseStringSlice(v)
 			if err != nil {
 				return err
@@ -502,7 +502,8 @@ func (b *InstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ..
 	return nil
 }
 
-func (b *InstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContext,
+func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContext,
+
 	ig, igOcean *kops.InstanceGroup, ocean *spotinsttasks.Ocean) (err error) {
 
 	klog.V(4).Infof("Building instance group as LaunchSpec: %q", b.AutoscalingGroupName(ig))
@@ -515,19 +516,19 @@ func (b *InstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContext,
 	// Instance types and strategy.
 	for k, v := range ig.ObjectMeta.Labels {
 		switch k {
-		case InstanceGroupLabelOceanInstanceTypesWhitelist, InstanceGroupLabelOceanInstanceTypes:
+		case SpotInstanceGroupLabelOceanInstanceTypesWhitelist, SpotInstanceGroupLabelOceanInstanceTypes:
 			launchSpec.InstanceTypes, err = parseStringSlice(v)
 			if err != nil {
 				return err
 			}
 
-		case InstanceGroupLabelSpotPercentage:
+		case SpotInstanceGroupLabelSpotPercentage:
 			launchSpec.SpotPercentage, err = parseInt(v)
 			if err != nil {
 				return err
 			}
 
-		case InstanceGroupLabelRestrictScaleDown:
+		case SpotInstanceGroupLabelRestrictScaleDown:
 			launchSpec.RestrictScaleDown, err = parseBool(v)
 			if err != nil {
 				return err
@@ -610,7 +611,7 @@ func (b *InstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContext,
 	return nil
 }
 
-func (b *InstanceGroupModelBuilder) buildSecurityGroups(c *fi.ModelBuilderContext,
+func (b *SpotInstanceGroupModelBuilder) buildSecurityGroups(c *fi.ModelBuilderContext,
 	ig *kops.InstanceGroup) ([]*awstasks.SecurityGroup, error) {
 
 	securityGroups := []*awstasks.SecurityGroup{
@@ -633,13 +634,13 @@ func (b *InstanceGroupModelBuilder) buildSecurityGroups(c *fi.ModelBuilderContex
 	return securityGroups, nil
 }
 
-func (b *InstanceGroupModelBuilder) buildSubnets(ig *kops.InstanceGroup) ([]*awstasks.Subnet, error) {
+func (b *SpotInstanceGroupModelBuilder) buildSubnets(ig *kops.InstanceGroup) ([]*awstasks.Subnet, error) {
 	subnets, err := b.GatherSubnets(ig)
 	if err != nil {
 		return nil, err
 	}
 	if len(subnets) == 0 {
-		return nil, fmt.Errorf("could not determine any subnets for InstanceGroup %q; subnets was %s", ig.ObjectMeta.Name, ig.Spec.Subnets)
+		return nil, fmt.Errorf("could not determine any subnets for SpotInstanceGroup %q; subnets was %s", ig.ObjectMeta.Name, ig.Spec.Subnets)
 	}
 
 	out := make([]*awstasks.Subnet, len(subnets))
@@ -650,7 +651,7 @@ func (b *InstanceGroupModelBuilder) buildSubnets(ig *kops.InstanceGroup) ([]*aws
 	return out, nil
 }
 
-func (b *InstanceGroupModelBuilder) buildPublicIpOpts(ig *kops.InstanceGroup) (*bool, error) {
+func (b *SpotInstanceGroupModelBuilder) buildPublicIpOpts(ig *kops.InstanceGroup) (*bool, error) {
 	subnetMap := make(map[string]*kops.ClusterSubnetSpec)
 	for i := range b.Cluster.Spec.Subnets {
 		subnet := &b.Cluster.Spec.Subnets[i]
@@ -661,10 +662,10 @@ func (b *InstanceGroupModelBuilder) buildPublicIpOpts(ig *kops.InstanceGroup) (*
 	for _, subnetName := range ig.Spec.Subnets {
 		subnet := subnetMap[subnetName]
 		if subnet == nil {
-			return nil, fmt.Errorf("InstanceGroup %q uses subnet %q that does not exist", ig.ObjectMeta.Name, subnetName)
+			return nil, fmt.Errorf("SpotInstanceGroup %q uses subnet %q that does not exist", ig.ObjectMeta.Name, subnetName)
 		}
 		if subnetType != "" && subnetType != subnet.Type {
-			return nil, fmt.Errorf("InstanceGroup %q cannot be in subnets of different Type", ig.ObjectMeta.Name)
+			return nil, fmt.Errorf("SpotInstanceGroup %q cannot be in subnets of different Type", ig.ObjectMeta.Name)
 		}
 		subnetType = subnet.Type
 	}
@@ -680,7 +681,7 @@ func (b *InstanceGroupModelBuilder) buildPublicIpOpts(ig *kops.InstanceGroup) (*
 		associatePublicIP = false
 		if ig.Spec.AssociatePublicIP != nil {
 			if *ig.Spec.AssociatePublicIP {
-				klog.Warningf("Ignoring AssociatePublicIP=true for private InstanceGroup %q", ig.ObjectMeta.Name)
+				klog.Warningf("Ignoring AssociatePublicIP=true for private SpotInstanceGroup %q", ig.ObjectMeta.Name)
 			}
 		}
 	default:
@@ -690,7 +691,7 @@ func (b *InstanceGroupModelBuilder) buildPublicIpOpts(ig *kops.InstanceGroup) (*
 	return fi.Bool(associatePublicIP), nil
 }
 
-func (b *InstanceGroupModelBuilder) buildRootVolumeOpts(ig *kops.InstanceGroup) (*spotinsttasks.RootVolumeOpts, error) {
+func (b *SpotInstanceGroupModelBuilder) buildRootVolumeOpts(ig *kops.InstanceGroup) (*spotinsttasks.RootVolumeOpts, error) {
 	opts := &spotinsttasks.RootVolumeOpts{
 		IOPS: ig.Spec.RootVolumeIops,
 	}
@@ -727,7 +728,7 @@ func (b *InstanceGroupModelBuilder) buildRootVolumeOpts(ig *kops.InstanceGroup) 
 	return opts, nil
 }
 
-func (b *InstanceGroupModelBuilder) buildCapacity(ig *kops.InstanceGroup) (*int64, *int64) {
+func (b *SpotInstanceGroupModelBuilder) buildCapacity(ig *kops.InstanceGroup) (*int64, *int64) {
 	minSize := int32(1)
 	if ig.Spec.MinSize != nil {
 		minSize = fi.Int32Value(ig.Spec.MinSize)
@@ -745,7 +746,7 @@ func (b *InstanceGroupModelBuilder) buildCapacity(ig *kops.InstanceGroup) (*int6
 	return fi.Int64(int64(minSize)), fi.Int64(int64(maxSize))
 }
 
-func (b *InstanceGroupModelBuilder) buildTags(ig *kops.InstanceGroup) (map[string]string, error) {
+func (b *SpotInstanceGroupModelBuilder) buildTags(ig *kops.InstanceGroup) (map[string]string, error) {
 	tags, err := b.CloudTagsForInstanceGroup(ig)
 	if err != nil {
 		return nil, err
@@ -753,7 +754,7 @@ func (b *InstanceGroupModelBuilder) buildTags(ig *kops.InstanceGroup) (map[strin
 	return tags, nil
 }
 
-func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *kops.InstanceGroup) (*spotinsttasks.AutoScalerOpts, error) {
+func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *kops.InstanceGroup) (*spotinsttasks.AutoScalerOpts, error) {
 	opts := &spotinsttasks.AutoScalerOpts{
 		ClusterID: fi.String(clusterID),
 	}
@@ -774,7 +775,7 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 	var defaultNodeLabels bool
 	for k, v := range ig.ObjectMeta.Labels {
 		switch k {
-		case InstanceGroupLabelAutoScalerDisabled:
+		case SpotInstanceGroupLabelAutoScalerDisabled:
 			{
 				v, err := parseBool(v)
 				if err != nil {
@@ -783,7 +784,7 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 				opts.Enabled = fi.Bool(!fi.BoolValue(v))
 			}
 
-		case InstanceGroupLabelAutoScalerDefaultNodeLabels:
+		case SpotInstanceGroupLabelAutoScalerDefaultNodeLabels:
 			{
 				v, err := parseBool(v)
 				if err != nil {
@@ -792,7 +793,7 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 				defaultNodeLabels = fi.BoolValue(v)
 			}
 
-		case InstanceGroupLabelAutoScalerCooldown:
+		case SpotInstanceGroupLabelAutoScalerCooldown:
 			{
 				v, err := parseInt(v)
 				if err != nil {
@@ -801,7 +802,7 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 				opts.Cooldown = fi.Int(int(fi.Int64Value(v)))
 			}
 
-		case InstanceGroupLabelAutoScalerAutoConfig:
+		case SpotInstanceGroupLabelAutoScalerAutoConfig:
 			{
 				v, err := parseBool(v)
 				if err != nil {
@@ -810,7 +811,7 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 				opts.AutoConfig = v
 			}
 
-		case InstanceGroupLabelAutoScalerAutoHeadroomPercentage:
+		case SpotInstanceGroupLabelAutoScalerAutoHeadroomPercentage:
 			{
 				v, err := parseInt(v)
 				if err != nil {
@@ -819,7 +820,7 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 				opts.AutoHeadroomPercentage = fi.Int(int(fi.Int64Value(v)))
 			}
 
-		case InstanceGroupLabelAutoScalerHeadroomCPUPerUnit:
+		case SpotInstanceGroupLabelAutoScalerHeadroomCPUPerUnit:
 			{
 				v, err := parseInt(v)
 				if err != nil {
@@ -831,7 +832,7 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 				opts.Headroom.CPUPerUnit = fi.Int(int(fi.Int64Value(v)))
 			}
 
-		case InstanceGroupLabelAutoScalerHeadroomGPUPerUnit:
+		case SpotInstanceGroupLabelAutoScalerHeadroomGPUPerUnit:
 			{
 				v, err := parseInt(v)
 				if err != nil {
@@ -843,7 +844,7 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 				opts.Headroom.GPUPerUnit = fi.Int(int(fi.Int64Value(v)))
 			}
 
-		case InstanceGroupLabelAutoScalerHeadroomMemPerUnit:
+		case SpotInstanceGroupLabelAutoScalerHeadroomMemPerUnit:
 			{
 				v, err := parseInt(v)
 				if err != nil {
@@ -855,7 +856,7 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 				opts.Headroom.MemPerUnit = fi.Int(int(fi.Int64Value(v)))
 			}
 
-		case InstanceGroupLabelAutoScalerHeadroomNumOfUnits:
+		case SpotInstanceGroupLabelAutoScalerHeadroomNumOfUnits:
 			{
 				v, err := parseInt(v)
 				if err != nil {
@@ -867,7 +868,7 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 				opts.Headroom.NumOfUnits = fi.Int(int(fi.Int64Value(v)))
 			}
 
-		case InstanceGroupLabelAutoScalerScaleDownMaxPercentage:
+		case SpotInstanceGroupLabelAutoScalerScaleDownMaxPercentage:
 			{
 				v, err := parseFloat(v)
 				if err != nil {
@@ -879,7 +880,7 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 				opts.Down.MaxPercentage = v
 			}
 
-		case InstanceGroupLabelAutoScalerScaleDownEvaluationPeriods:
+		case SpotInstanceGroupLabelAutoScalerScaleDownEvaluationPeriods:
 			{
 				v, err := parseInt(v)
 				if err != nil {
@@ -891,7 +892,7 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 				opts.Down.EvaluationPeriods = fi.Int(int(fi.Int64Value(v)))
 			}
 
-		case InstanceGroupLabelAutoScalerResourceLimitsMaxVCPU:
+		case SpotInstanceGroupLabelAutoScalerResourceLimitsMaxVCPU:
 			{
 				v, err := parseInt(v)
 				if err != nil {
@@ -903,7 +904,7 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 				opts.ResourceLimits.MaxVCPU = fi.Int(int(fi.Int64Value(v)))
 			}
 
-		case InstanceGroupLabelAutoScalerResourceLimitsMaxMemory:
+		case SpotInstanceGroupLabelAutoScalerResourceLimitsMaxMemory:
 			{
 				v, err := parseInt(v)
 				if err != nil {
@@ -1044,9 +1045,9 @@ func defaultSpotPercentage(ig *kops.InstanceGroup) *float64 {
 // a metadata label `spotinst.io/hybrid` which means the Spotinst provider
 // should be used to upon creation if the `SpotinstHybrid` feature flag is on.
 func HybridInstanceGroup(ig *kops.InstanceGroup) bool {
-	v, ok := ig.ObjectMeta.Labels[InstanceGroupLabelHybrid]
+	v, ok := ig.ObjectMeta.Labels[SpotInstanceGroupLabelHybrid]
 	if !ok {
-		v = ig.ObjectMeta.Labels[InstanceGroupLabelManaged]
+		v = ig.ObjectMeta.Labels[SpotInstanceGroupLabelManaged]
 	}
 
 	hybrid, _ := strconv.ParseBool(v)
