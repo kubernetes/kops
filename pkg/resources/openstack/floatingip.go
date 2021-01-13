@@ -58,8 +58,9 @@ func (os *clusterDiscoveryOS) listL3FloatingIPs(routerID string) ([]*resources.R
 
 func (os *clusterDiscoveryOS) listFloatingIPs(instance servers.Server) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
+	// we can find real instance name from instance name in old format
+	// however, in new format the real name can be found in metadata
 	name := instance.Name
-	// this is needed for backwards compatbility issues with new and old instance name format
 	if val, ok := instance.Metadata[openstack.TagKopsName]; ok {
 		name = val
 	}
