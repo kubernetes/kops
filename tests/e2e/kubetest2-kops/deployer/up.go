@@ -50,7 +50,10 @@ func (d *deployer) Up() error {
 	}
 
 	if d.TemplatePath != "" {
-		values := d.templateValues(zones, adminAccess)
+		values, err := d.templateValues(zones, adminAccess)
+		if err != nil {
+			return err
+		}
 		if err := d.renderTemplate(values); err != nil {
 			return err
 		}

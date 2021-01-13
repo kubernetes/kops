@@ -44,6 +44,17 @@ spec:
 ---
 
 apiVersion: kops.k8s.io/v1alpha2
+kind: SSHCredential
+metadata:
+  name: admin
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+spec:
+  publicKey: {{.sshPublicKey}}
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   name: nodes-{{$zone}}
