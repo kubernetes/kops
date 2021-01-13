@@ -43,6 +43,7 @@ func (d *deployer) replace() error {
 
 	args = []string{
 		d.KopsBinaryPath, "update", "cluster", "--yes",
+		"--admin",
 		"--name", d.ClusterName,
 	}
 	klog.Info(strings.Join(args, " "))
