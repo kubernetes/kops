@@ -438,7 +438,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
 resource "aws_lb_listener" "api-complex-example-com-443" {
   certificate_arn = "arn:aws:acm:us-test-1:000000000000:certificate/123456789012-1234-1234-1234-12345678"
   default_action {
-    target_group_arn = aws_lb_target_group.tcp-complex-example-com-vpjolq.id
+    target_group_arn = aws_lb_target_group.tls-complex-example-com-5nursn.id
     type             = "forward"
   }
   load_balancer_arn = aws_lb.api-complex-example-com.id
@@ -449,7 +449,7 @@ resource "aws_lb_listener" "api-complex-example-com-443" {
 
 resource "aws_lb_listener" "api-complex-example-com-8443" {
   default_action {
-    target_group_arn = aws_lb_target_group.tls-complex-example-com-5nursn.id
+    target_group_arn = aws_lb_target_group.tcp-complex-example-com-vpjolq.id
     type             = "forward"
   }
   load_balancer_arn = aws_lb.api-complex-example-com.id
