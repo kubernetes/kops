@@ -8,11 +8,13 @@ AvailabilityZone: zone-1
 Flavor: blc.1-2
 FloatingIP: null
 ForAPIServer: false
+GroupName: bastion
 ID: null
 Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: bastion
+  KopsName: bastion-1-cluster
   KopsNetwork: cluster
   KopsRole: Bastion
   cluster_generation: "0"
@@ -70,11 +72,13 @@ AvailabilityZone: zone-1
 Flavor: blc.1-2
 FloatingIP: null
 ForAPIServer: false
+GroupName: master
 ID: null
 Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: master
+  KopsName: master-1-cluster
   KopsNetwork: cluster
   KopsRole: Master
   KubernetesCluster: cluster
@@ -140,11 +144,13 @@ AvailabilityZone: zone-1
 Flavor: blc.1-2
 FloatingIP: null
 ForAPIServer: false
+GroupName: node
 ID: null
 Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: node
+  KopsName: node-1-cluster
   KopsNetwork: cluster
   KopsRole: Node
   KubernetesCluster: cluster

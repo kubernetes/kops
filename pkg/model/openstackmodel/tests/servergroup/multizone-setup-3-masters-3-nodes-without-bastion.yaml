@@ -62,11 +62,13 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-master-a-1-cluster
 ForAPIServer: false
+GroupName: master-a
 ID: null
 Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: master-a
+  KopsName: master-a-1-cluster
   KopsNetwork: cluster
   KopsRole: Master
   KubernetesCluster: cluster
@@ -138,11 +140,13 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-master-b-1-cluster
 ForAPIServer: false
+GroupName: master-b
 ID: null
 Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: master-b
+  KopsName: master-b-1-cluster
   KopsNetwork: cluster
   KopsRole: Master
   KubernetesCluster: cluster
@@ -214,11 +218,13 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-master-c-1-cluster
 ForAPIServer: false
+GroupName: master-c
 ID: null
 Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: master-c
+  KopsName: master-c-1-cluster
   KopsNetwork: cluster
   KopsRole: Master
   KubernetesCluster: cluster
@@ -290,11 +296,13 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-node-a-1-cluster
 ForAPIServer: false
+GroupName: node-a
 ID: null
 Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: node-a
+  KopsName: node-a-1-cluster
   KopsNetwork: cluster
   KopsRole: Node
   KubernetesCluster: cluster
@@ -359,11 +367,13 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-node-b-1-cluster
 ForAPIServer: false
+GroupName: node-b
 ID: null
 Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: node-b
+  KopsName: node-b-1-cluster
   KopsNetwork: cluster
   KopsRole: Node
   KubernetesCluster: cluster
@@ -428,11 +438,13 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-node-c-1-cluster
 ForAPIServer: false
+GroupName: node-c
 ID: null
 Image: image
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: node-c
+  KopsName: node-c-1-cluster
   KopsNetwork: cluster
   KopsRole: Node
   KubernetesCluster: cluster

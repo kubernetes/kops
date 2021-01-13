@@ -26,11 +26,13 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-master-1-cluster
 ForAPIServer: false
+GroupName: master
 ID: null
 Image: image-master
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: master
+  KopsName: master-1-cluster
   KopsNetwork: cluster
   KopsRole: Master
   KubernetesCluster: cluster
@@ -102,11 +104,13 @@ FloatingIP:
   Lifecycle: Sync
   Name: fip-node-1-cluster
 ForAPIServer: false
+GroupName: node
 ID: null
 Image: image-node
 Lifecycle: null
 Metadata:
   KopsInstanceGroup: node
+  KopsName: node-1-cluster
   KopsNetwork: cluster
   KopsRole: Node
   KubernetesCluster: cluster
