@@ -53,7 +53,6 @@ import (
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/model/openstackmodel"
-	"k8s.io/kops/pkg/model/spotinstmodel"
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/pkg/wellknownports"
@@ -654,7 +653,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 
 			if featureflag.Spotinst.Enabled() {
-				l.Builders = append(l.Builders, &spotinstmodel.InstanceGroupModelBuilder{
+				l.Builders = append(l.Builders, &awsmodel.SpotInstanceGroupModelBuilder{
 					KopsModelContext:       modelContext,
 					BootstrapScriptBuilder: bootstrapScriptBuilder,
 					Lifecycle:              &clusterLifecycle,
