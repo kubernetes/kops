@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+include tests/e2e/e2e.mk
 
 # kops source root directory (without trailing /)
-KOPS_ROOT?=$(patsubst %/,%,$(abspath $(dir $(lastword $(MAKEFILE_LIST)))))
+KOPS_ROOT?=$(patsubst %/,%,$(abspath $(dir $(firstword $(MAKEFILE_LIST)))))
 DOCKER_REGISTRY?=gcr.io/must-override
 S3_BUCKET?=s3://must-override/
 UPLOAD_DEST?=$(S3_BUCKET)
@@ -184,26 +185,6 @@ test: ${BINDATA_TARGETS}  # Run tests locally
 .PHONY: test-windows
 test-windows: ${BINDATA_TARGETS}  # Run tests locally
 	go test -v $(go list ./... | grep -v /nodeup/)
-
-.PHONY: test-e2e
-test-e2e:
-	cd /home/prow/go/src/k8s.io/kops/tests/e2e && \
-		export GO111MODULE=on && \
-		go get sigs.k8s.io/kubetest2@latest && \
-		go install ./kubetest2-tester-kops && \
-		go install ./kubetest2-kops
-	kubetest2 kops \
-		-v 2 \
-		--build --up --down \
-		--cloud-provider=aws \
-		--kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
-		--kubernetes-version=v1.19.4 \
-		--template-path=tests/e2e/templates/simple.yaml.tmpl \
-		--test=kops \
-		-- \
-		--test-package-version=v1.19.4 \
-		--parallel 25 \
-		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort"
 
 .PHONY: ${DIST}/linux/amd64/nodeup
 ${DIST}/linux/amd64/nodeup: ${BINDATA_TARGETS}
