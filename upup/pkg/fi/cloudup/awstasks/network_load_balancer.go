@@ -722,14 +722,24 @@ func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 		return err
 	}
 
-	for i, listener := range e.Listeners {
+	for _, listener := range e.Listeners {
+		var listenerTG *TargetGroup
+		for _, tg := range e.TargetGroups {
+			if aws.StringValue(tg.Name) == listener.TargetGroupName {
+				listenerTG = tg
+				break
+			}
+		}
+		if listenerTG == nil {
+			return fmt.Errorf("target group not found for NLB listener %+v", e)
+		}
 		listenerTF := &terraformNetworkLoadBalancerListener{
 			LoadBalancer: e.TerraformLink(),
 			Port:         int64(listener.Port),
 			DefaultAction: []terraformNetworkLoadBalancerListenerAction{
 				{
 					Type:           elbv2.ActionTypeEnumForward,
-					TargetGroupARN: e.TargetGroups[i].TerraformLink(),
+					TargetGroupARN: listenerTG.TerraformLink(),
 				},
 			},
 		}
@@ -805,14 +815,24 @@ func (_ *NetworkLoadBalancer) RenderCloudformation(t *cloudformation.Cloudformat
 		return err
 	}
 
-	for i, listener := range e.Listeners {
+	for _, listener := range e.Listeners {
+		var listenerTG *TargetGroup
+		for _, tg := range e.TargetGroups {
+			if aws.StringValue(tg.Name) == listener.TargetGroupName {
+				listenerTG = tg
+				break
+			}
+		}
+		if listenerTG == nil {
+			return fmt.Errorf("target group not found for NLB listener %+v", e)
+		}
 		listenerCF := &cloudformationNetworkLoadBalancerListener{
 			LoadBalancerARN: e.CloudformationLink(),
 			Port:            int64(listener.Port),
 			DefaultActions: []cloudformationNetworkLoadBalancerListenerAction{
 				{
 					Type:           elbv2.ActionTypeEnumForward,
-					TargetGroupARN: e.TargetGroups[i].CloudformationLink(),
+					TargetGroupARN: listenerTG.CloudformationLink(),
 				},
 			},
 		}
