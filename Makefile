@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include tests/e2e/e2e.mk
-
 # kops source root directory (without trailing /)
 KOPS_ROOT?=$(patsubst %/,%,$(abspath $(dir $(firstword $(MAKEFILE_LIST)))))
 DOCKER_REGISTRY?=gcr.io/must-override
@@ -109,6 +107,8 @@ all-install: all kops-install channels-install
 
 .PHONY: all
 all: ${KOPS} ${PROTOKUBE} ${NODEUP} ${CHANNELS}
+
+include tests/e2e/e2e.mk
 
 .PHONY: help
 help: # Show this help
