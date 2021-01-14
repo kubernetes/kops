@@ -279,6 +279,7 @@ var zonesToCloud = map[string]kops.CloudProviderID{
 
 	"sfo1": kops.CloudProviderDO,
 	"sfo2": kops.CloudProviderDO,
+	"sfo3": kops.CloudProviderDO,
 
 	"ams2": kops.CloudProviderDO,
 	"ams3": kops.CloudProviderDO,
