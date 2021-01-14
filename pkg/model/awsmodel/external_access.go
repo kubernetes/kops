@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package model
+package awsmodel
 
 import (
 	"fmt"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
@@ -28,7 +29,7 @@ import (
 // ExternalAccessModelBuilder configures security group rules for external access
 // (SSHAccess, KubernetesAPIAccess)
 type ExternalAccessModelBuilder struct {
-	*KopsModelContext
+	*model.KopsModelContext
 	Lifecycle *fi.Lifecycle
 }
 
@@ -63,13 +64,13 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			for _, masterGroup := range masterGroups {
 				suffix := masterGroup.Suffix
 				t := &awstasks.SecurityGroupRule{
-					Name:          s(fmt.Sprintf("ssh-external-to-master-%s%s", sshAccess, suffix)),
+					Name:          fi.String(fmt.Sprintf("ssh-external-to-master-%s%s", sshAccess, suffix)),
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: masterGroup.Task,
-					Protocol:      s("tcp"),
-					FromPort:      i64(22),
-					ToPort:        i64(22),
-					CIDR:          s(sshAccess),
+					Protocol:      fi.String("tcp"),
+					FromPort:      fi.Int64(22),
+					ToPort:        fi.Int64(22),
+					CIDR:          fi.String(sshAccess),
 				}
 				b.AddDirectionalGroupRule(c, t)
 			}
@@ -77,13 +78,13 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			for _, nodeGroup := range nodeGroups {
 				suffix := nodeGroup.Suffix
 				t := &awstasks.SecurityGroupRule{
-					Name:          s(fmt.Sprintf("ssh-external-to-node-%s%s", sshAccess, suffix)),
+					Name:          fi.String(fmt.Sprintf("ssh-external-to-node-%s%s", sshAccess, suffix)),
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: nodeGroup.Task,
-					Protocol:      s("tcp"),
-					FromPort:      i64(22),
-					ToPort:        i64(22),
-					CIDR:          s(sshAccess),
+					Protocol:      fi.String("tcp"),
+					FromPort:      fi.Int64(22),
+					ToPort:        fi.Int64(22),
+					CIDR:          fi.String(sshAccess),
 				}
 				b.AddDirectionalGroupRule(c, t)
 			}
@@ -99,24 +100,24 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		for _, nodeGroup := range nodeGroups {
 			suffix := nodeGroup.Suffix
 			t1 := &awstasks.SecurityGroupRule{
-				Name:          s(fmt.Sprintf("nodeport-tcp-external-to-node-%s%s", nodePortAccess, suffix)),
+				Name:          fi.String(fmt.Sprintf("nodeport-tcp-external-to-node-%s%s", nodePortAccess, suffix)),
 				Lifecycle:     b.Lifecycle,
 				SecurityGroup: nodeGroup.Task,
-				Protocol:      s("tcp"),
-				FromPort:      i64(int64(nodePortRange.Base)),
-				ToPort:        i64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
-				CIDR:          s(nodePortAccess),
+				Protocol:      fi.String("tcp"),
+				FromPort:      fi.Int64(int64(nodePortRange.Base)),
+				ToPort:        fi.Int64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
+				CIDR:          fi.String(nodePortAccess),
 			}
 			c.AddTask(t1)
 
 			t2 := &awstasks.SecurityGroupRule{
-				Name:          s(fmt.Sprintf("nodeport-udp-external-to-node-%s%s", nodePortAccess, suffix)),
+				Name:          fi.String(fmt.Sprintf("nodeport-udp-external-to-node-%s%s", nodePortAccess, suffix)),
 				Lifecycle:     b.Lifecycle,
 				SecurityGroup: nodeGroup.Task,
-				Protocol:      s("udp"),
-				FromPort:      i64(int64(nodePortRange.Base)),
-				ToPort:        i64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
-				CIDR:          s(nodePortAccess),
+				Protocol:      fi.String("udp"),
+				FromPort:      fi.Int64(int64(nodePortRange.Base)),
+				ToPort:        fi.Int64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
+				CIDR:          fi.String(nodePortAccess),
 			}
 			c.AddTask(t2)
 		}
@@ -132,13 +133,13 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			for _, masterGroup := range masterGroups {
 				suffix := masterGroup.Suffix
 				t := &awstasks.SecurityGroupRule{
-					Name:          s(fmt.Sprintf("https-external-to-master-%s%s", apiAccess, suffix)),
+					Name:          fi.String(fmt.Sprintf("https-external-to-master-%s%s", apiAccess, suffix)),
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: masterGroup.Task,
-					Protocol:      s("tcp"),
-					FromPort:      i64(443),
-					ToPort:        i64(443),
-					CIDR:          s(apiAccess),
+					Protocol:      fi.String("tcp"),
+					FromPort:      fi.Int64(443),
+					ToPort:        fi.Int64(443),
+					CIDR:          fi.String(apiAccess),
 				}
 				b.AddDirectionalGroupRule(c, t)
 			}
