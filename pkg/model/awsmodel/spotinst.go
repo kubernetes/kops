@@ -277,7 +277,7 @@ func (b *SpotInstanceGroupModelBuilder) buildElastigroup(c *fi.ModelBuilderConte
 			lb = b.LinkToCLB("api")
 		}
 	case kops.InstanceGroupRoleBastion:
-		lb = b.LinkToCLB(model.BastionELBSecurityGroupPrefix)
+		lb = b.LinkToCLB(BastionELBSecurityGroupPrefix)
 	}
 	if lb != nil {
 		group.LoadBalancer = lb
