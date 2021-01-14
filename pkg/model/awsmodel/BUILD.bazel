@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "api_loadbalancer.go",
         "autoscalinggroup.go",
+        "bastion.go",
         "context.go",
         "oidc_provider.go",
         "spotinst.go",
