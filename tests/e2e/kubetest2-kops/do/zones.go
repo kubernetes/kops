@@ -34,7 +34,7 @@ var allZones = []string{
 var ErrNoEligibleRegion = errors.New("No eligible DO region found with enough zones")
 
 // ErrMoreThanOneZone indicates the requested number of zones was more than one
-var ErrMoreThanOneZone = errors.New("More than 1 zone is choosen. DO only works with 1 zone")
+var ErrMoreThanOneZone = errors.New("More than 1 zone is chosen. DO only works with 1 zone")
 
 // RandomZones returns a random set of availability zones within a region
 func RandomZones(count int) ([]string, error) {
