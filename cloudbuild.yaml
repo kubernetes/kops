@@ -5,7 +5,7 @@ options:
   machineType: 'N1_HIGHCPU_8'
 steps:
 # Push the images
-- name: 'gcr.io/k8s-testimages/bazelbuild:v20200824-5d057db-2.2.0'
+- name: 'gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-experimental'
   id: images
   entrypoint: make
   env:
@@ -20,7 +20,7 @@ steps:
   - dns-controller-push
   - kube-apiserver-healthcheck-push
 # Push the artifacts
-- name: 'gcr.io/k8s-testimages/bazelbuild:v20200824-5d057db-2.2.0'
+- name: 'gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-experimental'
   id: artifacts
   entrypoint: make
   env:
