@@ -473,7 +473,7 @@
         ]
       }
     },
-    "AWSEC2SecurityGroupEgressmastersdockerexamplecomegressall0to000000": {
+    "AWSEC2SecurityGroupEgressfrommastersdockerexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
@@ -485,7 +485,7 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupEgressnodesdockerexamplecomegressall0to000000": {
+    "AWSEC2SecurityGroupEgressfromnodesdockerexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
@@ -497,7 +497,31 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngresshttpsexternaltomaster00000": {
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22mastersdockerexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersdockerexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22nodesdockerexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesdockerexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp443to443mastersdockerexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -509,7 +533,7 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressmastersdockerexamplecomingressall0to0mastersdockerexamplecom": {
+    "AWSEC2SecurityGroupIngressfrommastersdockerexamplecomingressall0to0mastersdockerexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -523,7 +547,7 @@
         "IpProtocol": "-1"
       }
     },
-    "AWSEC2SecurityGroupIngressmastersdockerexamplecomingressall0to0nodesdockerexamplecom": {
+    "AWSEC2SecurityGroupIngressfrommastersdockerexamplecomingressall0to0nodesdockerexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -537,7 +561,7 @@
         "IpProtocol": "-1"
       }
     },
-    "AWSEC2SecurityGroupIngressnodesdockerexamplecomingressall0to0nodesdockerexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesdockerexamplecomingressall0to0nodesdockerexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -551,7 +575,7 @@
         "IpProtocol": "-1"
       }
     },
-    "AWSEC2SecurityGroupIngressnodesdockerexamplecomingresstcp1to2379mastersdockerexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesdockerexamplecomingresstcp1to2379mastersdockerexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -565,7 +589,7 @@
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressnodesdockerexamplecomingresstcp2382to4000mastersdockerexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesdockerexamplecomingresstcp2382to4000mastersdockerexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -579,7 +603,7 @@
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressnodesdockerexamplecomingresstcp4003to65535mastersdockerexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesdockerexamplecomingresstcp4003to65535mastersdockerexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -593,7 +617,7 @@
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressnodesdockerexamplecomingressudp1to65535mastersdockerexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesdockerexamplecomingressudp1to65535mastersdockerexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -605,30 +629,6 @@
         "FromPort": 1,
         "ToPort": 65535,
         "IpProtocol": "udp"
-      }
-    },
-    "AWSEC2SecurityGroupIngresssshexternaltomaster00000": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersdockerexamplecom"
-        },
-        "FromPort": 22,
-        "ToPort": 22,
-        "IpProtocol": "tcp",
-        "CidrIp": "0.0.0.0/0"
-      }
-    },
-    "AWSEC2SecurityGroupIngresssshexternaltonode00000": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesdockerexamplecom"
-        },
-        "FromPort": 22,
-        "ToPort": 22,
-        "IpProtocol": "tcp",
-        "CidrIp": "0.0.0.0/0"
       }
     },
     "AWSEC2SecurityGroupmastersdockerexamplecom": {

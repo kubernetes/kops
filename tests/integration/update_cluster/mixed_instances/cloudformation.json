@@ -902,7 +902,7 @@
         ]
       }
     },
-    "AWSEC2SecurityGroupEgressmastersmixedinstancesexamplecomegressall0to000000": {
+    "AWSEC2SecurityGroupEgressfrommastersmixedinstancesexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
@@ -914,7 +914,7 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupEgressnodesmixedinstancesexamplecomegressall0to000000": {
+    "AWSEC2SecurityGroupEgressfromnodesmixedinstancesexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
@@ -926,7 +926,31 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngresshttpsexternaltomaster00000": {
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22mastersmixedinstancesexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersmixedinstancesexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22nodesmixedinstancesexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesmixedinstancesexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp443to443mastersmixedinstancesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -938,7 +962,7 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressmastersmixedinstancesexamplecomingressall0to0mastersmixedinstancesexamplecom": {
+    "AWSEC2SecurityGroupIngressfrommastersmixedinstancesexamplecomingressall0to0mastersmixedinstancesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -952,7 +976,7 @@
         "IpProtocol": "-1"
       }
     },
-    "AWSEC2SecurityGroupIngressmastersmixedinstancesexamplecomingressall0to0nodesmixedinstancesexamplecom": {
+    "AWSEC2SecurityGroupIngressfrommastersmixedinstancesexamplecomingressall0to0nodesmixedinstancesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -966,7 +990,7 @@
         "IpProtocol": "-1"
       }
     },
-    "AWSEC2SecurityGroupIngressnodesmixedinstancesexamplecomingressall0to0nodesmixedinstancesexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesmixedinstancesexamplecomingressall0to0nodesmixedinstancesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -980,7 +1004,7 @@
         "IpProtocol": "-1"
       }
     },
-    "AWSEC2SecurityGroupIngressnodesmixedinstancesexamplecomingresstcp1to2379mastersmixedinstancesexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesmixedinstancesexamplecomingresstcp1to2379mastersmixedinstancesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -994,7 +1018,7 @@
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressnodesmixedinstancesexamplecomingresstcp2382to4000mastersmixedinstancesexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesmixedinstancesexamplecomingresstcp2382to4000mastersmixedinstancesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -1008,7 +1032,7 @@
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressnodesmixedinstancesexamplecomingresstcp4003to65535mastersmixedinstancesexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesmixedinstancesexamplecomingresstcp4003to65535mastersmixedinstancesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -1022,7 +1046,7 @@
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressnodesmixedinstancesexamplecomingressudp1to65535mastersmixedinstancesexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesmixedinstancesexamplecomingressudp1to65535mastersmixedinstancesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -1034,30 +1058,6 @@
         "FromPort": 1,
         "ToPort": 65535,
         "IpProtocol": "udp"
-      }
-    },
-    "AWSEC2SecurityGroupIngresssshexternaltomaster00000": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersmixedinstancesexamplecom"
-        },
-        "FromPort": 22,
-        "ToPort": 22,
-        "IpProtocol": "tcp",
-        "CidrIp": "0.0.0.0/0"
-      }
-    },
-    "AWSEC2SecurityGroupIngresssshexternaltonode00000": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesmixedinstancesexamplecom"
-        },
-        "FromPort": 22,
-        "ToPort": 22,
-        "IpProtocol": "tcp",
-        "CidrIp": "0.0.0.0/0"
       }
     },
     "AWSEC2SecurityGroupmastersmixedinstancesexamplecom": {

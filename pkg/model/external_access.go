@@ -71,7 +71,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					ToPort:        i64(22),
 					CIDR:          s(sshAccess),
 				}
-				c.AddTask(t)
+				b.AddDirectionalGroupRule(c, t)
 			}
 
 			for _, nodeGroup := range nodeGroups {
@@ -85,7 +85,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					ToPort:        i64(22),
 					CIDR:          s(sshAccess),
 				}
-				c.AddTask(t)
+				b.AddDirectionalGroupRule(c, t)
 			}
 		}
 	}
@@ -140,7 +140,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					ToPort:        i64(443),
 					CIDR:          s(apiAccess),
 				}
-				c.AddTask(t)
+				b.AddDirectionalGroupRule(c, t)
 			}
 		}
 	}
