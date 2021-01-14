@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/do"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/util"
 	"sigs.k8s.io/kubetest2/pkg/exec"
@@ -112,6 +113,15 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 		args = append(args, "--zones", strings.Join(zones, ","))
 
 		args = append(args, "--master-size", "e2-standard-2")
+	}
+
+	if d.CloudProvider == "digitalocean" {
+		zones, err := do.RandomZones(1)
+		if err != nil {
+			return err
+		}
+		args = append(args, "--zones", strings.Join(zones, ","))
+		args = append(args, "--master-size", "s-8vcpu-16gb")
 	}
 
 	klog.Info(strings.Join(args, " "))
