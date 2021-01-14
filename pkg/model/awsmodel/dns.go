@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package model
+package awsmodel
 
 import (
 	"fmt"
@@ -22,13 +22,14 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
 
 // DNSModelBuilder builds DNS related model objects
 type DNSModelBuilder struct {
-	*KopsModelContext
+	*model.KopsModelContext
 	Lifecycle *fi.Lifecycle
 }
 
@@ -41,7 +42,7 @@ func (b *DNSModelBuilder) ensureDNSZone(c *fi.ModelBuilderContext) error {
 
 	// Configuration for a DNS zone
 	dnsZone := &awstasks.DNSZone{
-		Name:      s(b.NameForDNSZone()),
+		Name:      fi.String(b.NameForDNSZone()),
 		Lifecycle: b.Lifecycle,
 	}
 
@@ -62,10 +63,10 @@ func (b *DNSModelBuilder) ensureDNSZone(c *fi.ModelBuilderContext) error {
 
 	if !strings.Contains(b.Cluster.Spec.DNSZone, ".") {
 		// Looks like a hosted zone ID
-		dnsZone.ZoneID = s(b.Cluster.Spec.DNSZone)
+		dnsZone.ZoneID = fi.String(b.Cluster.Spec.DNSZone)
 	} else {
 		// Looks like a normal DNS name
-		dnsZone.DNSName = s(b.Cluster.Spec.DNSZone)
+		dnsZone.DNSName = fi.String(b.Cluster.Spec.DNSZone)
 	}
 
 	return c.EnsureTask(dnsZone)
@@ -113,10 +114,10 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			apiDnsName := &awstasks.DNSName{
-				Name:               s(b.Cluster.Spec.MasterPublicName),
+				Name:               fi.String(b.Cluster.Spec.MasterPublicName),
 				Lifecycle:          b.Lifecycle,
 				Zone:               b.LinkToDNSZone(),
-				ResourceType:       s("A"),
+				ResourceType:       fi.String("A"),
 				TargetLoadBalancer: targetLoadBalancer,
 			}
 			c.AddTask(apiDnsName)
@@ -133,10 +134,10 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			internalApiDnsName := &awstasks.DNSName{
-				Name:               s(b.Cluster.Spec.MasterInternalName),
+				Name:               fi.String(b.Cluster.Spec.MasterInternalName),
 				Lifecycle:          b.Lifecycle,
 				Zone:               b.LinkToDNSZone(),
-				ResourceType:       s("A"),
+				ResourceType:       fi.String("A"),
 				TargetLoadBalancer: targetLoadBalancer,
 			}
 			// Using EnsureTask as MasterInternalName and MasterPublicName could be the same

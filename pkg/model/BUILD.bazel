@@ -6,8 +6,6 @@ go_library(
         "bootstrapscript.go",
         "context.go",
         "convenience.go",
-        "dns.go",
-        "external_access.go",
         "firewall.go",
         "iam.go",
         "manifests.go",
