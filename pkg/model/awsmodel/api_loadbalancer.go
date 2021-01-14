@@ -283,7 +283,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Egress:        fi.Bool(true),
 			SecurityGroup: lbSG,
 		}
-		c.AddTask(t)
+		b.AddDirectionalGroupRule(c, t)
 	}
 
 	// Allow traffic into the ELB from KubernetesAPIAccess CIDRs
@@ -298,7 +298,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				SecurityGroup: lbSG,
 				ToPort:        fi.Int64(443),
 			}
-			c.AddTask(t)
+			b.AddDirectionalGroupRule(c, t)
 
 			// Allow ICMP traffic required for PMTU discovery
 			c.AddTask(&awstasks.SecurityGroupRule{
@@ -331,7 +331,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 					SecurityGroup: masterGroup.Task,
 					ToPort:        fi.Int64(443),
 				}
-				c.AddTask(t)
+				b.AddDirectionalGroupRule(c, t)
 
 				// Allow ICMP traffic required for PMTU discovery
 				c.AddTask(&awstasks.SecurityGroupRule{
