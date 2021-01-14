@@ -537,6 +537,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				KopsModelContext: modelContext,
 				Lifecycle:        &clusterLifecycle,
 			},
+			&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
 		)
 
 		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -546,7 +547,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 
 			l.Builders = append(l.Builders,
-				&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
 				&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
 				&awsmodel.BastionModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
 				&awsmodel.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
@@ -585,7 +585,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				KopsModelContext: modelContext,
 			}
 			l.Builders = append(l.Builders,
-				&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
 				&domodel.APILoadBalancerModelBuilder{DOModelContext: doModelContext, Lifecycle: &securityLifecycle},
 				&domodel.DropletBuilder{DOModelContext: doModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: &clusterLifecycle},
 			)
@@ -601,7 +600,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 
 			l.Builders = append(l.Builders,
-				&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
 
 				&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext, Lifecycle: &securityLifecycle},
 				&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &securityLifecycle},
@@ -615,7 +613,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				KopsModelContext: modelContext,
 			}
 			l.Builders = append(l.Builders,
-				&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
 				&alimodel.APILoadBalancerModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
 				&alimodel.NetworkModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
 				&alimodel.RAMModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
@@ -630,7 +627,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				KopsModelContext: modelContext,
 			}
 			l.Builders = append(l.Builders,
-				&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
 				&azuremodel.APILoadBalancerModelBuilder{AzureModelContext: azureModelContext, Lifecycle: &clusterLifecycle},
 				&azuremodel.NetworkModelBuilder{AzureModelContext: azureModelContext, Lifecycle: &clusterLifecycle},
 				&azuremodel.ResourceGroupModelBuilder{AzureModelContext: azureModelContext, Lifecycle: &clusterLifecycle},
@@ -643,8 +639,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 
 			l.Builders = append(l.Builders,
-				&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
-				// &openstackmodel.APILBModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &clusterLifecycle},
 				&openstackmodel.NetworkModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &networkLifecycle},
 				&openstackmodel.SSHKeyModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &securityLifecycle},
 				&openstackmodel.FirewallModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &securityLifecycle},
