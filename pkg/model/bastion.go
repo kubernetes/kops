@@ -84,7 +84,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Egress:        fi.Bool(true),
 			CIDR:          s("0.0.0.0/0"),
 		}
-		c.AddTask(t)
+		b.AddDirectionalGroupRule(c, t)
 	}
 
 	// Allow incoming SSH traffic to bastions, through the ELB
@@ -99,7 +99,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			FromPort:      i64(22),
 			ToPort:        i64(22),
 		}
-		c.AddTask(t)
+		b.AddDirectionalGroupRule(c, t)
 	}
 
 	// Allow bastion nodes to SSH to masters
@@ -114,7 +114,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				FromPort:      i64(22),
 				ToPort:        i64(22),
 			}
-			c.AddTask(t)
+			b.AddDirectionalGroupRule(c, t)
 		}
 	}
 
@@ -130,7 +130,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				FromPort:      i64(22),
 				ToPort:        i64(22),
 			}
-			c.AddTask(t)
+			b.AddDirectionalGroupRule(c, t)
 		}
 	}
 
@@ -159,7 +159,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			CIDR:          s("0.0.0.0/0"),
 		}
 
-		c.AddTask(t)
+		b.AddDirectionalGroupRule(c, t)
 	}
 
 	// Allow external access to ELB
@@ -174,7 +174,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			ToPort:        i64(22),
 			CIDR:          s(sshAccess),
 		}
-		c.AddTask(t)
+		b.AddDirectionalGroupRule(c, t)
 	}
 
 	var elbSubnets []*awstasks.Subnet

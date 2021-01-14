@@ -696,7 +696,25 @@ resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = aws_route_table.existing-iam-example-com.id
 }
 
-resource "aws_security_group_rule" "https-external-to-master-0-0-0-0--0" {
+resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-masters-existing-iam-example-com" {
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 22
+  protocol          = "tcp"
+  security_group_id = aws_security_group.masters-existing-iam-example-com.id
+  to_port           = 22
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-nodes-existing-iam-example-com" {
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 22
+  protocol          = "tcp"
+  security_group_id = aws_security_group.nodes-existing-iam-example-com.id
+  to_port           = 22
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-443to443-masters-existing-iam-example-com" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 443
   protocol          = "tcp"
@@ -705,7 +723,7 @@ resource "aws_security_group_rule" "https-external-to-master-0-0-0-0--0" {
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "masters-existing-iam-example-com-egress-all-0to0-0-0-0-0--0" {
+resource "aws_security_group_rule" "from-masters-existing-iam-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -714,7 +732,7 @@ resource "aws_security_group_rule" "masters-existing-iam-example-com-egress-all-
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "masters-existing-iam-example-com-ingress-all-0to0-masters-existing-iam-example-com" {
+resource "aws_security_group_rule" "from-masters-existing-iam-example-com-ingress-all-0to0-masters-existing-iam-example-com" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = aws_security_group.masters-existing-iam-example-com.id
@@ -723,7 +741,7 @@ resource "aws_security_group_rule" "masters-existing-iam-example-com-ingress-all
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "masters-existing-iam-example-com-ingress-all-0to0-nodes-existing-iam-example-com" {
+resource "aws_security_group_rule" "from-masters-existing-iam-example-com-ingress-all-0to0-nodes-existing-iam-example-com" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = aws_security_group.nodes-existing-iam-example-com.id
@@ -732,7 +750,7 @@ resource "aws_security_group_rule" "masters-existing-iam-example-com-ingress-all
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "nodes-existing-iam-example-com-egress-all-0to0-0-0-0-0--0" {
+resource "aws_security_group_rule" "from-nodes-existing-iam-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -741,7 +759,7 @@ resource "aws_security_group_rule" "nodes-existing-iam-example-com-egress-all-0t
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "nodes-existing-iam-example-com-ingress-all-0to0-nodes-existing-iam-example-com" {
+resource "aws_security_group_rule" "from-nodes-existing-iam-example-com-ingress-all-0to0-nodes-existing-iam-example-com" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = aws_security_group.nodes-existing-iam-example-com.id
@@ -750,7 +768,7 @@ resource "aws_security_group_rule" "nodes-existing-iam-example-com-ingress-all-0
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "nodes-existing-iam-example-com-ingress-tcp-1to2379-masters-existing-iam-example-com" {
+resource "aws_security_group_rule" "from-nodes-existing-iam-example-com-ingress-tcp-1to2379-masters-existing-iam-example-com" {
   from_port                = 1
   protocol                 = "tcp"
   security_group_id        = aws_security_group.masters-existing-iam-example-com.id
@@ -759,7 +777,7 @@ resource "aws_security_group_rule" "nodes-existing-iam-example-com-ingress-tcp-1
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "nodes-existing-iam-example-com-ingress-tcp-2382to4000-masters-existing-iam-example-com" {
+resource "aws_security_group_rule" "from-nodes-existing-iam-example-com-ingress-tcp-2382to4000-masters-existing-iam-example-com" {
   from_port                = 2382
   protocol                 = "tcp"
   security_group_id        = aws_security_group.masters-existing-iam-example-com.id
@@ -768,7 +786,7 @@ resource "aws_security_group_rule" "nodes-existing-iam-example-com-ingress-tcp-2
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "nodes-existing-iam-example-com-ingress-tcp-4003to65535-masters-existing-iam-example-com" {
+resource "aws_security_group_rule" "from-nodes-existing-iam-example-com-ingress-tcp-4003to65535-masters-existing-iam-example-com" {
   from_port                = 4003
   protocol                 = "tcp"
   security_group_id        = aws_security_group.masters-existing-iam-example-com.id
@@ -777,31 +795,13 @@ resource "aws_security_group_rule" "nodes-existing-iam-example-com-ingress-tcp-4
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "nodes-existing-iam-example-com-ingress-udp-1to65535-masters-existing-iam-example-com" {
+resource "aws_security_group_rule" "from-nodes-existing-iam-example-com-ingress-udp-1to65535-masters-existing-iam-example-com" {
   from_port                = 1
   protocol                 = "udp"
   security_group_id        = aws_security_group.masters-existing-iam-example-com.id
   source_security_group_id = aws_security_group.nodes-existing-iam-example-com.id
   to_port                  = 65535
   type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "ssh-external-to-master-0-0-0-0--0" {
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 22
-  protocol          = "tcp"
-  security_group_id = aws_security_group.masters-existing-iam-example-com.id
-  to_port           = 22
-  type              = "ingress"
-}
-
-resource "aws_security_group_rule" "ssh-external-to-node-0-0-0-0--0" {
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 22
-  protocol          = "tcp"
-  security_group_id = aws_security_group.nodes-existing-iam-example-com.id
-  to_port           = 22
-  type              = "ingress"
 }
 
 resource "aws_security_group" "masters-existing-iam-example-com" {
