@@ -46,7 +46,7 @@ func BuildFlagsList(options interface{}) ([]string, error) {
 
 	walker := func(path *reflectutils.FieldPath, field *reflect.StructField, val reflect.Value) error {
 		if field == nil {
-			klog.V(8).Infof("ignoring non-field: %s", path)
+			klog.V(10).Infof("ignoring non-field: %s", path)
 			return nil
 		}
 		tag := field.Tag.Get("flag")
