@@ -2,6 +2,12 @@ contents: ""
 path: /etc/containerd/config-kops.toml
 type: file
 ---
+contents: |2
+
+  runtime-endpoint: unix:///run/containerd/containerd.sock
+path: /etc/crictl.yaml
+type: file
+---
 contents: CONTAINERD_OPTS=
 path: /etc/sysconfig/containerd
 type: file
