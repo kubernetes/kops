@@ -6,6 +6,7 @@ go_library(
         "helpers.go",
         "helpers_readwrite.go",
         "set_cluster.go",
+        "set_instancegroups.go",
         "status_discovery.go",
         "version.go",
     ],
@@ -39,7 +40,10 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = ["set_cluster_test.go"],
+    srcs = [
+        "set_cluster_test.go",
+        "set_instancegroups_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
         "//pkg/apis/kops:go_default_library",

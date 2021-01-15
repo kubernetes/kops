@@ -43,6 +43,7 @@ go_library(
         "root.go",
         "set.go",
         "set_cluster.go",
+        "set_instancegroups.go",
         "toolbox.go",
         "toolbox_convert_imported.go",
         "toolbox_dump.go",
