@@ -13,10 +13,14 @@ spec:
   - etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
+      volumeIops: 5000
+      volumeThroughput: 125
+      volumeType: gp3
     name: main
   - etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
+      volumeType: gp3
     name: events
   iam: {}
   kubelet:
@@ -51,7 +55,7 @@ metadata:
 spec:
   associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
-  machineType: t2.medium
+  machineType: t3.large
   rootVolumeType: gp3
   maxSize: 2
   minSize: 2
@@ -71,7 +75,7 @@ metadata:
 spec:
   associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
-  machineType: m3.medium
+  machineType: m5.large
   maxSize: 1
   minSize: 1
   rootVolumeType: gp3
