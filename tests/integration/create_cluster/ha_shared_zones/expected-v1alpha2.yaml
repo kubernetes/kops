@@ -48,11 +48,11 @@ spec:
     anonymousAuth: false
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: v1.15.6
+  kubernetesVersion: v1.20.0
   masterPublicName: api.ha.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    kubenet: {}
+    cni: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
@@ -81,7 +81,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: master-us-test-1a-1
 spec:
-  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-11-19
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201112.1
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -101,7 +101,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: master-us-test-1a-2
 spec:
-  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-11-19
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201112.1
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -121,7 +121,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: master-us-test-1a-3
 spec:
-  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-11-19
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201112.1
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -141,7 +141,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: master-us-test-1b-1
 spec:
-  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-11-19
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201112.1
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -161,7 +161,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: master-us-test-1b-2
 spec:
-  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-11-19
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201112.1
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -181,7 +181,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: nodes-us-test-1a
 spec:
-  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-11-19
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201112.1
   machineType: t2.medium
   maxSize: 1
   minSize: 1
@@ -201,7 +201,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: nodes-us-test-1b
 spec:
-  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-11-19
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201112.1
   machineType: t2.medium
   maxSize: 1
   minSize: 1
