@@ -2,4 +2,5 @@ ClusterName: minimal.example.com
 Zones:
 - us-test-1a
 CloudProvider: aws
+Networking: cni
 KubernetesVersion: v1.11.0

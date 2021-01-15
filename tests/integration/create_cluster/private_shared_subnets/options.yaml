@@ -2,11 +2,11 @@ ClusterName: private-subnets.example.com
 Zones:
 - us-test-1a
 CloudProvider: aws
+Networking: cni
 Topology: private
-Networking: kopeio-vxlan
 NetworkID: vpc-12345678
 SubnetIDs:
 - subnet-1
 UtilitySubnetIDs:
 - subnet-2
-KubernetesVersion: v1.15.6
+KubernetesVersion: v1.20.0
