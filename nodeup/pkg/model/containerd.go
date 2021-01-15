@@ -93,6 +93,9 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 			c.AddTask(fileTask)
 		}
+
+		// Add configuration file for easier use of crictl
+		b.addCrictlConfig(c)
 	}
 
 	var containerRuntimeVersion string
@@ -277,4 +280,17 @@ func (b *ContainerdBuilder) skipInstall() bool {
 	}
 
 	return d.SkipInstall
+}
+
+// addCritctlConfig creates /etc/crictl.yaml, which lets crictl work out-of-the-box.
+func (b *ContainerdBuilder) addCrictlConfig(c *fi.ModelBuilderContext) {
+	conf := `
+runtime-endpoint: unix:///run/containerd/containerd.sock
+`
+
+	c.AddTask(&nodetasks.File{
+		Path:     "/etc/crictl.yaml",
+		Contents: fi.NewStringResource(conf),
+		Type:     nodetasks.FileType_File,
+	})
 }
