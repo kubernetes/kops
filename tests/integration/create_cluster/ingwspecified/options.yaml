@@ -2,8 +2,8 @@ ClusterName: private.example.com
 Zones:
 - us-test-1a
 CloudProvider: aws
+Networking: cni
 Topology: private
-Networking: kopeio-vxlan
 Bastion: true
 Egress: i-09123456
-KubernetesVersion: v1.15.6
+KubernetesVersion: v1.20.0
