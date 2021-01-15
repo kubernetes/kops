@@ -3,7 +3,7 @@ Zones:
 - us-test1-a
 CloudProvider: gce
 Topology: private
-Networking: calico
+Networking: cni
 Bastion: true
 NodeSecurityGroups:
 - sg-exampleid
