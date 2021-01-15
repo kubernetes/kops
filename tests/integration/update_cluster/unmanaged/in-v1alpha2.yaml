@@ -21,13 +21,13 @@ spec:
   iam: {}
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.14.0
+  kubernetesVersion: v1.20.0
   masterInternalName: api.internal.unmanaged.example.com
   masterPublicName: api.unmanaged.example.com
   networkID: vpc-12345678
   networkCIDR: 172.20.0.0/16
   networking:
-    weave: {}
+    cni: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0

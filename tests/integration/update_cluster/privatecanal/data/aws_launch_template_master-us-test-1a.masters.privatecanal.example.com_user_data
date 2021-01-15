@@ -136,8 +136,12 @@ cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig: null
 containerRuntime: docker
 containerd:
-  skipInstall: true
+  configOverride: |
+    disabled_plugins = ["cri"]
+  logLevel: info
 docker:
+  execOpt:
+  - native.cgroupdriver=systemd
   ipMasq: false
   ipTables: false
   logDriver: json-file
@@ -146,16 +150,18 @@ docker:
   - max-size=10m
   - max-file=5
   storage: overlay2,overlay,aufs
-  version: 18.06.3
+  version: 19.03.14
 encryptionConfig: null
 etcdClusters:
   events:
-    version: 3.3.10
+    version: 3.4.13
   main:
-    version: 3.3.10
+    version: 3.4.13
 kubeAPIServer:
   allowPrivileged: true
   anonymousAuth: false
+  apiAudiences:
+  - kubernetes.svc.default
   apiServerCount: 1
   authorizationMode: AlwaysAllow
   bindAddress: 0.0.0.0
@@ -175,9 +181,7 @@ kubeAPIServer:
   - http://127.0.0.1:4001
   etcdServersOverrides:
   - /events#http://127.0.0.1:4002
-  image: k8s.gcr.io/kube-apiserver:v1.14.0
-  insecureBindAddress: 127.0.0.1
-  insecurePort: 8080
+  image: k8s.gcr.io/kube-apiserver:v1.20.0
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -192,6 +196,7 @@ kubeAPIServer:
   requestheaderUsernameHeaders:
   - X-Remote-User
   securePort: 443
+  serviceAccountIssuer: https://api.privatecanal.example.com
   serviceClusterIPRange: 100.64.0.0/13
   storageBackend: etcd3
 kubeControllerManager:
@@ -201,7 +206,7 @@ kubeControllerManager:
   clusterCIDR: 100.96.0.0/11
   clusterName: privatecanal.example.com
   configureCloudRoutes: false
-  image: k8s.gcr.io/kube-controller-manager:v1.14.0
+  image: k8s.gcr.io/kube-controller-manager:v1.20.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -210,23 +215,22 @@ kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
   hostnameOverride: '@aws'
-  image: k8s.gcr.io/kube-proxy:v1.14.0
+  image: k8s.gcr.io/kube-proxy:v1.20.0
   logLevel: 2
 kubeScheduler:
-  image: k8s.gcr.io/kube-scheduler:v1.14.0
+  image: k8s.gcr.io/kube-scheduler:v1.20.0
   leaderElection:
     leaderElect: true
   logLevel: 2
 kubelet:
   anonymousAuth: false
+  cgroupDriver: systemd
   cgroupRoot: /
   cloudProvider: aws
   clusterDNS: 100.64.0.10
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-  featureGates:
-    ExperimentalCriticalPodAnnotation: "true"
   hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
@@ -236,14 +240,13 @@ kubelet:
   podManifestPath: /etc/kubernetes/manifests
 masterKubelet:
   anonymousAuth: false
+  cgroupDriver: systemd
   cgroupRoot: /
   cloudProvider: aws
   clusterDNS: 100.64.0.10
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-  featureGates:
-    ExperimentalCriticalPodAnnotation: "true"
   hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
@@ -263,29 +266,28 @@ __EOF_IG_SPEC
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 Assets:
   amd64:
-  - c3b736fd0f003765c12d99f2c995a8369e6241f4@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubelet
-  - 7e3a3ea663153f900cbd52900a39c91fa9f334be@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl
-  - 3ca15c0a18ee830520cf3a95408be826cbd255a1535a38e0be9608b25ad8bf64@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz
-  - 346f9394393ee8db5f8bd1e229ee9d90e5b36931bdd754308b2ae68884dd6822@https://download.docker.com/linux/static/stable/x86_64/docker-18.06.3-ce.tgz
+  - ff2422571c4c1e9696e367f5f25466b96fb6e501f28aed29f414b1524a52dea0@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/amd64/kubelet
+  - a5895007f331f08d2e082eb12458764949559f30bcc5beae26c38f3e2724262c@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/amd64/kubectl
+  - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
+  - 9f1ec28e357a8f18e9561129239caf9c0807d74756e21cc63637c7fdeaafe847@https://download.docker.com/linux/static/stable/x86_64/docker-19.03.14.tgz
   arm64:
-  - df38e04576026393055ccc77c0dce73612996561@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/arm64/kubelet
-  - 01c2b6b43d36b6bfafc80a3737391c19ebfb8ad5@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/arm64/kubectl
-  - 7fec91af78e9548df306f0ec43bea527c8c10cc3a9682c33e971c8522a7fcded@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-arm64-v0.7.5.tgz
-  - defb2ccc95c0825833216c8b9e0e15baaa51bcedb3efc1f393f5352d184dead4@https://download.docker.com/linux/static/stable/aarch64/docker-18.06.3-ce.tgz
+  - 47ab6c4273fc3bb0cb8ec9517271d915890c5a6b0e54b2991e7a8fbbe77b06e4@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/arm64/kubelet
+  - 25e4465870c99167e6c466623ed8f05a1d20fbcb48cab6688109389b52d87623@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/arm64/kubectl
+  - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
+  - 8350eaa0c0965bb8eb9d45a014f4b6728c985715f56466077dfe6feb271d9518@https://download.docker.com/linux/static/stable/aarch64/docker-19.03.14.tgz
 ClusterName: privatecanal.example.com
 ConfigBase: memfs://clusters.example.com/privatecanal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
 KubeletConfig:
   anonymousAuth: false
+  cgroupDriver: systemd
   cgroupRoot: /
   cloudProvider: aws
   clusterDNS: 100.64.0.10
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-  featureGates:
-    ExperimentalCriticalPodAnnotation: "true"
   hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
@@ -318,6 +320,9 @@ protokubeImage:
     - https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/images/protokube-arm64.tar.gz
     - https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/images-protokube-arm64.tar.gz
     - https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/images/protokube-arm64.tar.gz
+staticManifests:
+- key: kube-apiserver-healthcheck
+  path: manifests/static/kube-apiserver-healthcheck.yaml
 
 __EOF_KUBE_ENV
 

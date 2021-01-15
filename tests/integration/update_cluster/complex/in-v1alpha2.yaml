@@ -43,7 +43,7 @@ spec:
     memoryLimit: 1000Mi
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.14.0
+  kubernetesVersion: v1.20.0
   masterInternalName: api.internal.complex.example.com
   masterPublicName: api.complex.example.com
   networkCIDR: 172.20.0.0/16
@@ -51,7 +51,7 @@ spec:
   - 10.1.0.0/16
   - 10.2.0.0/16
   networking:
-    kubenet: {}
+    cni: {}
   nodePortAccess:
   - 1.2.3.4/32
   - 10.20.30.0/24
