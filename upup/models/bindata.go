@@ -28220,7 +28220,7 @@ spec:
     spec:
       containers:
       - name: autoscaler
-        image: k8s.gcr.io/cpa/cluster-proportional-autoscaler:1.8.3
+        image: {{ if KubeDNS.CPAImage }}{{ KubeDNS.CPAImage }}{{ else }}k8s.gcr.io/cpa/cluster-proportional-autoscaler:1.8.3{{ end }}
         resources:
             requests:
                 cpu: "20m"
@@ -29197,7 +29197,7 @@ spec:
     spec:
       containers:
       - name: autoscaler
-        image: k8s.gcr.io/cpa/cluster-proportional-autoscaler:1.8.3
+        image: {{ if KubeDNS.CPAImage }}{{ KubeDNS.CPAImage }}{{ else }}k8s.gcr.io/cpa/cluster-proportional-autoscaler:1.8.3{{ end }}
         resources:
             requests:
                 cpu: "20m"
