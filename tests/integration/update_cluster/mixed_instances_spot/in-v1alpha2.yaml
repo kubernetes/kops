@@ -29,12 +29,12 @@ spec:
   iam: {}
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.18.9
+  kubernetesVersion: v1.20.0
   masterInternalName: api.internal.mixedinstances.example.com
   masterPublicName: api.mixedinstances.example.com
   networkCIDR: 10.0.0.0/16
   networking:
-    kubenet: {}
+    cni: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
     - 0.0.0.0/0
