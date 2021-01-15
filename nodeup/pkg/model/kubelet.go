@@ -21,8 +21,6 @@ import (
 	"path"
 	"path/filepath"
 
-	"k8s.io/kops/pkg/model/components"
-
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 
@@ -136,12 +134,10 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if components.UsesCNI(b.Cluster.Spec.Networking) {
-		c.AddTask(&nodetasks.File{
-			Path: b.CNIConfDir(),
-			Type: nodetasks.FileType_Directory,
-		})
-	}
+	c.AddTask(&nodetasks.File{
+		Path: b.CNIConfDir(),
+		Type: nodetasks.FileType_Directory,
+	})
 
 	if err := b.addContainerizedMounter(c); err != nil {
 		return err

@@ -265,6 +265,7 @@ func (b *ContainerdBuilder) buildConfigFile(c *fi.ModelBuilderContext) {
 		Contents: fi.NewStringResource(containerdConfigOverride),
 		Type:     nodetasks.FileType_File,
 	})
+
 }
 
 // skipInstall determines if kops should skip the installation and configuration of containerd

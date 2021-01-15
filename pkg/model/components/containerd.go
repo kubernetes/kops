@@ -62,6 +62,14 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 				config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "registry", "mirrors", name, "endpoint"}, endpoints)
 			}
 			config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "runtime_type"}, "io.containerd.runc.v2")
+
+			if NetworkingIsKubenetStyle(clusterSpec.Networking) {
+				// TODO: Move this section to nodeup?  Because cni.template is written there...
+				// Default: config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "cni", "bin_dir"}, "/opt/cni/bin")
+				// Default: config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "cni", "conf_dir"}, "/etc/cni/net.d")
+				config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "cni", "conf_template"}, "/etc/containerd/cni.template")
+			}
+
 			containerd.ConfigOverride = fi.String(config.String())
 		}
 

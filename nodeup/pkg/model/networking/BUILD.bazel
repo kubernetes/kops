@@ -6,6 +6,7 @@ go_library(
         "calico.go",
         "cilium.go",
         "common.go",
+        "kopeio.go",
         "kube_router.go",
         "lyft.go",
     ],

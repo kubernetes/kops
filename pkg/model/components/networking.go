@@ -43,17 +43,15 @@ func (b *NetworkingOptionsBuilder) BuildOptions(o interface{}) error {
 		return fmt.Errorf("networking not set")
 	}
 
-	if UsesCNI(networking) {
-		options.Kubelet.NetworkPluginName = "cni"
-
-		// ConfigureCBR0 flag removed from 1.5
-		options.Kubelet.ConfigureCBR0 = nil
-	}
-
-	if networking.GCE != nil {
-		// GCE IPAlias networking uses kubenet on the nodes
+	// kubenet-style network plugins with containerd still use CNI
+	if NetworkingIsKubenetStyle(networking) && !UsesContainerd(options) {
 		options.Kubelet.NetworkPluginName = "kubenet"
+	} else {
+		options.Kubelet.NetworkPluginName = "cni"
 	}
+
+	// ConfigureCBR0 flag removed from 1.5
+	options.Kubelet.ConfigureCBR0 = nil
 
 	if networking.Classic != nil {
 		return fmt.Errorf("classic networking not supported")

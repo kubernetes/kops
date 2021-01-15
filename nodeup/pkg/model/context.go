@@ -612,15 +612,15 @@ func (b *NodeupModelContext) addCNIBinAsset(c *fi.ModelBuilderContext, assetPath
 	return nil
 }
 
-// UsesCNI checks if the cluster has CNI configured
-func (c *NodeupModelContext) UsesCNI() bool {
-	networking := c.Cluster.Spec.Networking
-	if networking == nil || networking.Classic != nil {
-		return false
-	}
+// // UsesCNI checks if the cluster has CNI configured
+// func (c *NodeupModelContext) UsesCNI() bool {
+// 	networking := c.Cluster.Spec.Networking
+// 	if networking == nil || networking.Classic != nil {
+// 		return false
+// 	}
 
-	return true
-}
+// 	return true
+// }
 
 // CNIBinDir returns the path for the CNI binaries
 func (c *NodeupModelContext) CNIBinDir() string {
@@ -631,4 +631,9 @@ func (c *NodeupModelContext) CNIBinDir() string {
 // CNIConfDir returns the CNI directory
 func (c *NodeupModelContext) CNIConfDir() string {
 	return "/etc/cni/net.d/"
+}
+
+// UseContainerd returns true if we're using containerd
+func (c *NodeupModelContext) UseContainerd() bool {
+	return c.Cluster.Spec.ContainerRuntime == "containerd"
 }

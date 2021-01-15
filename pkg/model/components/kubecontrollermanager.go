@@ -131,13 +131,11 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		}
 	} else if networking.External != nil {
 		kcm.ConfigureCloudRoutes = fi.Bool(false)
-	} else if UsesCNI(networking) {
-		kcm.ConfigureCloudRoutes = fi.Bool(false)
 	} else if networking.Kopeio != nil {
 		// Kopeio is based on kubenet / external
 		kcm.ConfigureCloudRoutes = fi.Bool(false)
 	} else {
-		return fmt.Errorf("no networking mode set")
+		kcm.ConfigureCloudRoutes = fi.Bool(false)
 	}
 
 	if kcm.UseServiceAccountCredentials == nil {

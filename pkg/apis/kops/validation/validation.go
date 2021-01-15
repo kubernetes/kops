@@ -541,9 +541,9 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 	}
 
 	if v.Kopeio != nil {
-		if c.ContainerRuntime == "containerd" {
-			allErrs = append(allErrs, field.Invalid(fldPath, "kopeio", "kopeio networking is not supported with containerd"))
-		}
+		// if c.ContainerRuntime == "containerd" {
+		// 	allErrs = append(allErrs, field.Invalid(fldPath, "kopeio", "kopeio networking is not supported with containerd"))
+		// }
 		if optionTaken {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kopeio"), "only one networking option permitted"))
 		}

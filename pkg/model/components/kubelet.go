@@ -188,9 +188,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 			return fmt.Errorf("no networking mode set")
 
 		}
-		if UsesKubenet(networking) {
-			clusterSpec.Kubelet.NetworkPluginName = "kubenet"
-
+		if NetworkingIsKubenetStyle(networking) {
 			// AWS MTU is 9001
 			clusterSpec.Kubelet.NetworkPluginMTU = fi.Int32(9001)
 		}

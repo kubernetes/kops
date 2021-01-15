@@ -51,8 +51,21 @@ func (c *OptionsContext) IsKubernetesLT(version string) bool {
 	return !c.IsKubernetesGTE(version)
 }
 
-// UsesKubenet returns true if our networking is derived from kubenet
-func UsesKubenet(networking *kops.NetworkingSpec) bool {
+// UsesContainerd returns true if our networking is derived from kubenet
+func UsesContainerd(clusterSpec *kops.ClusterSpec) bool {
+	switch clusterSpec.ContainerRuntime {
+	case "docker":
+		return false
+	case "containerd":
+		return true
+	default:
+		klog.Fatalf("unknown cluster spec.containerRuntime value %q", clusterSpec.ContainerRuntime)
+		return false
+	}
+}
+
+// NetworkingIsKubenetStyle returns true if our networking is styled after kubenet.
+func NetworkingIsKubenetStyle(networking *kops.NetworkingSpec) bool {
 	if networking == nil {
 		panic("no networking mode set")
 	}
@@ -65,18 +78,11 @@ func UsesKubenet(networking *kops.NetworkingSpec) bool {
 		// external is based on kubenet
 		return true
 	} else if networking.Kopeio != nil {
-		// Kopeio is based on kubenet / external
 		return true
 	}
 
 	return false
 
-}
-
-// UsesCNI returns true if the networking provider is a CNI plugin
-func UsesCNI(networking *kops.NetworkingSpec) bool {
-	// Kubenet and CNI are the only kubelet networking plugins right now.
-	return !UsesKubenet(networking)
 }
 
 func WellKnownServiceIP(clusterSpec *kops.ClusterSpec, id int) (net.IP, error) {
