@@ -396,6 +396,79 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks:    nil,
 	},
 
+	// c5ad family
+	{
+		Name:              "c5ad.large",
+		MemoryGB:          4,
+		Cores:             2,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 10,
+		EphemeralDisks:    []int{75},
+	},
+
+	{
+		Name:              "c5ad.xlarge",
+		MemoryGB:          8,
+		Cores:             4,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    []int{150},
+	},
+
+	{
+		Name:              "c5ad.2xlarge",
+		MemoryGB:          16,
+		Cores:             8,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    []int{300},
+	},
+
+	{
+		Name:              "c5ad.4xlarge",
+		MemoryGB:          32,
+		Cores:             16,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    []int{300, 300},
+	},
+
+	{
+		Name:              "c5ad.8xlarge",
+		MemoryGB:          64,
+		Cores:             32,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    []int{600, 600},
+	},
+
+	{
+		Name:              "c5ad.12xlarge",
+		MemoryGB:          96,
+		Cores:             48,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    []int{900, 900},
+	},
+
+	{
+		Name:              "c5ad.16xlarge",
+		MemoryGB:          128,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    []int{1200, 1200},
+	},
+
+	{
+		Name:              "c5ad.24xlarge",
+		MemoryGB:          192,
+		Cores:             96,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    []int{1900, 1900},
+	},
+
 	// c5d family
 	{
 		Name:              "c5d.large",
@@ -542,6 +615,243 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks:    nil,
 	},
 
+	// c6g family
+	{
+		Name:              "c6g.medium",
+		MemoryGB:          2,
+		Cores:             1,
+		InstanceENIs:      2,
+		InstanceIPsPerENI: 4,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c6g.large",
+		MemoryGB:          4,
+		Cores:             2,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 10,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c6g.xlarge",
+		MemoryGB:          8,
+		Cores:             4,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c6g.2xlarge",
+		MemoryGB:          16,
+		Cores:             8,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c6g.4xlarge",
+		MemoryGB:          32,
+		Cores:             16,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c6g.8xlarge",
+		MemoryGB:          64,
+		Cores:             32,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c6g.12xlarge",
+		MemoryGB:          96,
+		Cores:             48,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c6g.16xlarge",
+		MemoryGB:          128,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c6g.metal",
+		MemoryGB:          128,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    nil,
+	},
+
+	// c6gd family
+	{
+		Name:              "c6gd.medium",
+		MemoryGB:          2,
+		Cores:             1,
+		InstanceENIs:      2,
+		InstanceIPsPerENI: 4,
+		EphemeralDisks:    []int{59},
+	},
+
+	{
+		Name:              "c6gd.large",
+		MemoryGB:          4,
+		Cores:             2,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 10,
+		EphemeralDisks:    []int{118},
+	},
+
+	{
+		Name:              "c6gd.xlarge",
+		MemoryGB:          8,
+		Cores:             4,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    []int{237},
+	},
+
+	{
+		Name:              "c6gd.2xlarge",
+		MemoryGB:          16,
+		Cores:             8,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    []int{474},
+	},
+
+	{
+		Name:              "c6gd.4xlarge",
+		MemoryGB:          32,
+		Cores:             16,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    []int{950},
+	},
+
+	{
+		Name:              "c6gd.8xlarge",
+		MemoryGB:          64,
+		Cores:             32,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    []int{1900},
+	},
+
+	{
+		Name:              "c6gd.12xlarge",
+		MemoryGB:          96,
+		Cores:             48,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    []int{1425, 1425},
+	},
+
+	{
+		Name:              "c6gd.16xlarge",
+		MemoryGB:          128,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    []int{1900, 1900},
+	},
+
+	{
+		Name:              "c6gd.metal",
+		MemoryGB:          128,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    []int{1900, 1900},
+	},
+
+	// c6gn family
+	{
+		Name:              "c6gn.medium",
+		MemoryGB:          2,
+		Cores:             1,
+		InstanceENIs:      2,
+		InstanceIPsPerENI: 4,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c6gn.large",
+		MemoryGB:          4,
+		Cores:             2,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 10,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c6gn.xlarge",
+		MemoryGB:          8,
+		Cores:             4,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c6gn.2xlarge",
+		MemoryGB:          16,
+		Cores:             8,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c6gn.4xlarge",
+		MemoryGB:          32,
+		Cores:             16,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c6gn.8xlarge",
+		MemoryGB:          64,
+		Cores:             32,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c6gn.12xlarge",
+		MemoryGB:          96,
+		Cores:             48,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c6gn.16xlarge",
+		MemoryGB:          128,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    nil,
+	},
+
 	// cc2 family
 	{
 		Name:              "cc2.8xlarge",
@@ -597,6 +907,98 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
 		EphemeralDisks:    []int{2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048},
+	},
+
+	// d3 family
+	{
+		Name:              "d3.xlarge",
+		MemoryGB:          32,
+		Cores:             4,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 3,
+		EphemeralDisks:    []int{1980, 1980, 1980},
+	},
+
+	{
+		Name:              "d3.2xlarge",
+		MemoryGB:          64,
+		Cores:             8,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 5,
+		EphemeralDisks:    []int{1980, 1980, 1980, 1980, 1980, 1980},
+	},
+
+	{
+		Name:              "d3.4xlarge",
+		MemoryGB:          128,
+		Cores:             16,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 10,
+		EphemeralDisks:    []int{1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980},
+	},
+
+	{
+		Name:              "d3.8xlarge",
+		MemoryGB:          256,
+		Cores:             32,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 20,
+		EphemeralDisks:    []int{1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980},
+	},
+
+	// d3en family
+	{
+		Name:              "d3en.xlarge",
+		MemoryGB:          16,
+		Cores:             4,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 3,
+		EphemeralDisks:    []int{13980, 13980},
+	},
+
+	{
+		Name:              "d3en.2xlarge",
+		MemoryGB:          32,
+		Cores:             8,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 5,
+		EphemeralDisks:    []int{13980, 13980, 13980, 13980},
+	},
+
+	{
+		Name:              "d3en.4xlarge",
+		MemoryGB:          64,
+		Cores:             16,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 10,
+		EphemeralDisks:    []int{13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980},
+	},
+
+	{
+		Name:              "d3en.6xlarge",
+		MemoryGB:          96,
+		Cores:             24,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    []int{13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980},
+	},
+
+	{
+		Name:              "d3en.8xlarge",
+		MemoryGB:          128,
+		Cores:             32,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 20,
+		EphemeralDisks:    []int{13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980},
+	},
+
+	{
+		Name:              "d3en.12xlarge",
+		MemoryGB:          192,
+		Cores:             48,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    []int{13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980, 13980},
 	},
 
 	// f1 family
@@ -690,6 +1092,37 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		GPU:               true,
 	},
 
+	// g4ad family
+	{
+		Name:              "g4ad.4xlarge",
+		MemoryGB:          64,
+		Cores:             16,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 10,
+		EphemeralDisks:    []int{600},
+		GPU:               true,
+	},
+
+	{
+		Name:              "g4ad.8xlarge",
+		MemoryGB:          128,
+		Cores:             32,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    []int{1200},
+		GPU:               true,
+	},
+
+	{
+		Name:              "g4ad.16xlarge",
+		MemoryGB:          256,
+		Cores:             64,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    []int{1200, 1200},
+		GPU:               true,
+	},
+
 	// g4dn family
 	{
 		Name:              "g4dn.xlarge",
@@ -748,6 +1181,16 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
 		EphemeralDisks:    []int{900},
+		GPU:               true,
+	},
+
+	{
+		Name:              "g4dn.metal",
+		MemoryGB:          384,
+		Cores:             96,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    []int{900, 900},
 		GPU:               true,
 	},
 
@@ -1004,7 +1447,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Name:              "inf1.24xlarge",
 		MemoryGB:          192,
 		Cores:             96,
-		InstanceENIs:      15,
+		InstanceENIs:      11,
 		InstanceIPsPerENI: 30,
 		EphemeralDisks:    nil,
 	},
@@ -1359,12 +1802,30 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	},
 
 	{
+		Name:              "m5ad.8xlarge",
+		MemoryGB:          128,
+		Cores:             32,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    []int{600, 600},
+	},
+
+	{
 		Name:              "m5ad.12xlarge",
 		MemoryGB:          192,
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
 		EphemeralDisks:    []int{900, 900},
+	},
+
+	{
+		Name:              "m5ad.16xlarge",
+		MemoryGB:          256,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    []int{600, 600, 600, 600},
 	},
 
 	{
@@ -1604,6 +2065,70 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks:    nil,
 	},
 
+	// m5zn family
+	{
+		Name:              "m5zn.large",
+		MemoryGB:          8,
+		Cores:             2,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 10,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "m5zn.xlarge",
+		MemoryGB:          16,
+		Cores:             4,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "m5zn.2xlarge",
+		MemoryGB:          32,
+		Cores:             8,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "m5zn.3xlarge",
+		MemoryGB:          48,
+		Cores:             12,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "m5zn.6xlarge",
+		MemoryGB:          96,
+		Cores:             24,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "m5zn.12xlarge",
+		MemoryGB:          192,
+		Cores:             48,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "m5zn.metal",
+		MemoryGB:          192,
+		Cores:             48,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    nil,
+	},
+
 	// m6g family
 	{
 		Name:              "m6g.medium",
@@ -1611,6 +2136,24 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:             1,
 		InstanceENIs:      0,
 		InstanceIPsPerENI: 0,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "m6g.medium",
+		MemoryGB:          4,
+		Cores:             1,
+		InstanceENIs:      2,
+		InstanceIPsPerENI: 4,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "m6g.large",
+		MemoryGB:          8,
+		Cores:             2,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 10,
 		EphemeralDisks:    nil,
 	},
 
@@ -1627,8 +2170,26 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Name:              "m6g.xlarge",
 		MemoryGB:          16,
 		Cores:             4,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "m6g.xlarge",
+		MemoryGB:          16,
+		Cores:             4,
 		InstanceENIs:      0,
 		InstanceIPsPerENI: 0,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "m6g.2xlarge",
+		MemoryGB:          32,
+		Cores:             8,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
 		EphemeralDisks:    nil,
 	},
 
@@ -1651,6 +2212,24 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	},
 
 	{
+		Name:              "m6g.4xlarge",
+		MemoryGB:          64,
+		Cores:             16,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "m6g.8xlarge",
+		MemoryGB:          128,
+		Cores:             32,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
 		Name:              "m6g.8xlarge",
 		MemoryGB:          128,
 		Cores:             32,
@@ -1669,11 +2248,130 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	},
 
 	{
+		Name:              "m6g.12xlarge",
+		MemoryGB:          192,
+		Cores:             48,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "m6g.16xlarge",
+		MemoryGB:          256,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    nil,
+	},
+
+	{
 		Name:              "m6g.16xlarge",
 		MemoryGB:          256,
 		Cores:             64,
 		InstanceENIs:      0,
 		InstanceIPsPerENI: 0,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "m6g.metal",
+		MemoryGB:          256,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    nil,
+	},
+
+	// m6gd family
+	{
+		Name:              "m6gd.medium",
+		MemoryGB:          4,
+		Cores:             1,
+		InstanceENIs:      2,
+		InstanceIPsPerENI: 4,
+		EphemeralDisks:    []int{59},
+	},
+
+	{
+		Name:              "m6gd.large",
+		MemoryGB:          8,
+		Cores:             2,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 10,
+		EphemeralDisks:    []int{118},
+	},
+
+	{
+		Name:              "m6gd.xlarge",
+		MemoryGB:          16,
+		Cores:             4,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    []int{237},
+	},
+
+	{
+		Name:              "m6gd.2xlarge",
+		MemoryGB:          32,
+		Cores:             8,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    []int{474},
+	},
+
+	{
+		Name:              "m6gd.4xlarge",
+		MemoryGB:          64,
+		Cores:             16,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    []int{950},
+	},
+
+	{
+		Name:              "m6gd.8xlarge",
+		MemoryGB:          128,
+		Cores:             32,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    []int{1900},
+	},
+
+	{
+		Name:              "m6gd.12xlarge",
+		MemoryGB:          192,
+		Cores:             48,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    []int{1425, 1425},
+	},
+
+	{
+		Name:              "m6gd.16xlarge",
+		MemoryGB:          256,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    []int{1900, 1900},
+	},
+
+	{
+		Name:              "m6gd.metal",
+		MemoryGB:          256,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    []int{1900, 1900},
+	},
+
+	// mac1 family
+	{
+		Name:              "mac1.metal",
+		MemoryGB:          32,
+		Cores:             12,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
 		EphemeralDisks:    nil,
 	},
 
@@ -1747,6 +2445,17 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
 		EphemeralDisks:    []int{900, 900},
+		GPU:               true,
+	},
+
+	// p4d family
+	{
+		Name:              "p4d.24xlarge",
+		MemoryGB:          1152,
+		Cores:             96,
+		InstanceENIs:      60,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    []int{1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000},
 		GPU:               true,
 	},
 
@@ -2044,6 +2753,15 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	},
 
 	{
+		Name:              "r5ad.8xlarge",
+		MemoryGB:          256,
+		Cores:             32,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    []int{600, 600},
+	},
+
+	{
 		Name:              "r5ad.12xlarge",
 		MemoryGB:          384,
 		Cores:             48,
@@ -2053,12 +2771,103 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	},
 
 	{
+		Name:              "r5ad.16xlarge",
+		MemoryGB:          512,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    []int{600, 600, 600, 600},
+	},
+
+	{
 		Name:              "r5ad.24xlarge",
 		MemoryGB:          768,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
 		EphemeralDisks:    []int{900, 900, 900, 900},
+	},
+
+	// r5b family
+	{
+		Name:              "r5b.large",
+		MemoryGB:          16,
+		Cores:             2,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 10,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "r5b.xlarge",
+		MemoryGB:          32,
+		Cores:             4,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "r5b.2xlarge",
+		MemoryGB:          64,
+		Cores:             8,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "r5b.4xlarge",
+		MemoryGB:          128,
+		Cores:             16,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "r5b.8xlarge",
+		MemoryGB:          256,
+		Cores:             32,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "r5b.12xlarge",
+		MemoryGB:          384,
+		Cores:             48,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "r5b.16xlarge",
+		MemoryGB:          512,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "r5b.24xlarge",
+		MemoryGB:          768,
+		Cores:             96,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "r5b.metal",
+		MemoryGB:          768,
+		Cores:             96,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    nil,
 	},
 
 	// r5d family
@@ -2289,6 +3098,170 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks:    nil,
 	},
 
+	// r6g family
+	{
+		Name:              "r6g.medium",
+		MemoryGB:          8,
+		Cores:             1,
+		InstanceENIs:      2,
+		InstanceIPsPerENI: 4,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "r6g.large",
+		MemoryGB:          16,
+		Cores:             2,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 10,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "r6g.xlarge",
+		MemoryGB:          32,
+		Cores:             4,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "r6g.2xlarge",
+		MemoryGB:          64,
+		Cores:             8,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "r6g.4xlarge",
+		MemoryGB:          128,
+		Cores:             16,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "r6g.8xlarge",
+		MemoryGB:          256,
+		Cores:             32,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "r6g.12xlarge",
+		MemoryGB:          384,
+		Cores:             48,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "r6g.16xlarge",
+		MemoryGB:          512,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "r6g.metal",
+		MemoryGB:          512,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    nil,
+	},
+
+	// r6gd family
+	{
+		Name:              "r6gd.medium",
+		MemoryGB:          8,
+		Cores:             1,
+		InstanceENIs:      2,
+		InstanceIPsPerENI: 4,
+		EphemeralDisks:    []int{59},
+	},
+
+	{
+		Name:              "r6gd.large",
+		MemoryGB:          16,
+		Cores:             2,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 10,
+		EphemeralDisks:    []int{118},
+	},
+
+	{
+		Name:              "r6gd.xlarge",
+		MemoryGB:          32,
+		Cores:             4,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    []int{237},
+	},
+
+	{
+		Name:              "r6gd.2xlarge",
+		MemoryGB:          64,
+		Cores:             8,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    []int{474},
+	},
+
+	{
+		Name:              "r6gd.4xlarge",
+		MemoryGB:          128,
+		Cores:             16,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    []int{950},
+	},
+
+	{
+		Name:              "r6gd.8xlarge",
+		MemoryGB:          256,
+		Cores:             32,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    []int{1900},
+	},
+
+	{
+		Name:              "r6gd.12xlarge",
+		MemoryGB:          384,
+		Cores:             48,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    []int{1425, 1425},
+	},
+
+	{
+		Name:              "r6gd.16xlarge",
+		MemoryGB:          512,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    []int{1900, 1900},
+	},
+
+	{
+		Name:              "r6gd.metal",
+		MemoryGB:          512,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    []int{1900, 1900},
+	},
+
 	// t1 family
 	{
 		Name:              "t1.micro",
@@ -2484,6 +3457,70 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 
 	{
 		Name:              "t3a.2xlarge",
+		MemoryGB:          32,
+		Cores:             8,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    nil,
+	},
+
+	// t4g family
+	{
+		Name:              "t4g.nano",
+		MemoryGB:          0.5,
+		Cores:             2,
+		InstanceENIs:      2,
+		InstanceIPsPerENI: 2,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "t4g.micro",
+		MemoryGB:          1,
+		Cores:             2,
+		InstanceENIs:      2,
+		InstanceIPsPerENI: 2,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "t4g.small",
+		MemoryGB:          2,
+		Cores:             2,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 4,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "t4g.medium",
+		MemoryGB:          4,
+		Cores:             2,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 6,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "t4g.large",
+		MemoryGB:          8,
+		Cores:             2,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 12,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "t4g.xlarge",
+		MemoryGB:          16,
+		Cores:             4,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "t4g.2xlarge",
 		MemoryGB:          32,
 		Cores:             8,
 		InstanceENIs:      4,
