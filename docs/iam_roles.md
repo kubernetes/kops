@@ -71,6 +71,8 @@ iam:
 
 ## Adding External Policies
 
+Since: kops version 1.18.x
+
 At times you may want to attach policies shared to you by another AWS account or that are maintained by an outside application. You can specify managed policies through the `policyOverrides` spec field.
 
 Policy Overrides are specified by their ARN on AWS and are grouped by their role type. See the example below:
