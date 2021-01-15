@@ -174,7 +174,7 @@ The command line flags prefixed with `--azure-` are for
 Azure-specific configurations.
 
 ```bash
-$ export KOPS_FEATURE_FLAGS=AlphaAllowAzure
+$ export KOPS_FEATURE_FLAGS=Azure
 
 $ kops create cluster \
   --cloud azure \
