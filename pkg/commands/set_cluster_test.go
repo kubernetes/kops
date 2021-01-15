@@ -24,6 +24,17 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
+func TestSetClusterBadInput(t *testing.T) {
+	fields := []string{
+		"bad-set-input",
+	}
+
+	err := SetClusterFields(fields, &kops.Cluster{}, []*kops.InstanceGroup{})
+	if err == nil {
+		t.Errorf("expected a field parsing error, but received none")
+	}
+}
+
 func TestSetClusterFields(t *testing.T) {
 	grid := []struct {
 		Fields []string

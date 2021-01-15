@@ -67,6 +67,38 @@ func UpdateCluster(ctx context.Context, clientset simple.Clientset, cluster *kop
 	return nil
 }
 
+// UpdateInstanceGroup writes the updated instance group to the state store after performing validation
+func UpdateInstanceGroup(ctx context.Context, clientset simple.Clientset, cluster *kops.Cluster, allInstanceGroups []*kops.InstanceGroup, instanceGroupToUpdate *kops.InstanceGroup) error {
+	cloud, err := cloudup.BuildCloud(cluster)
+	if err != nil {
+		return err
+	}
+
+	err = cloudup.PerformAssignments(cluster, cloud)
+	if err != nil {
+		return fmt.Errorf("error populating configuration: %v", err)
+	}
+
+	assetBuilder := assets.NewAssetBuilder(cluster, "")
+	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, cloud, assetBuilder)
+	if err != nil {
+		return err
+	}
+
+	err = validation.DeepValidate(fullCluster, allInstanceGroups, true, nil)
+	if err != nil {
+		return err
+	}
+
+	// Validation was successful so commit the changed instance group.
+	_, err = clientset.InstanceGroupsFor(cluster).Update(ctx, instanceGroupToUpdate, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ReadAllInstanceGroups reads all the instance groups for the cluster
 func ReadAllInstanceGroups(ctx context.Context, clientset simple.Clientset, cluster *kops.Cluster) ([]*kops.InstanceGroup, error) {
 	list, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
