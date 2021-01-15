@@ -34,7 +34,7 @@ spec:
     anonymousAuth: false
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: v1.15.6-beta.1
+  kubernetesVersion: v1.20.0
   masterPublicName: api.gce.example.com
   networking:
     kubenet: {}
@@ -62,7 +62,7 @@ metadata:
     kops.k8s.io/cluster: gce.example.com
   name: master-us-test1-a
 spec:
-  image: cos-cloud/cos-stable-65-10323-99-0
+  image: cos-cloud/cos-stable-77-12371-114-0
   machineType: n1-standard-1
   maxSize: 1
   minSize: 1
@@ -85,7 +85,7 @@ metadata:
     kops.k8s.io/cluster: gce.example.com
   name: nodes-us-test1-a
 spec:
-  image: cos-cloud/cos-stable-65-10323-99-0
+  image: cos-cloud/cos-stable-77-12371-114-0
   machineType: n1-standard-2
   maxSize: 1
   minSize: 1

@@ -561,20 +561,6 @@
         "IpProtocol": "-1"
       }
     },
-    "AWSEC2SecurityGroupIngressfromnodescontainerdexamplecomingress40to0masterscontainerdexamplecom": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscontainerdexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescontainerdexamplecom"
-        },
-        "FromPort": 0,
-        "ToPort": 65535,
-        "IpProtocol": "4"
-      }
-    },
     "AWSEC2SecurityGroupIngressfromnodescontainerdexamplecomingressall0to0nodescontainerdexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
