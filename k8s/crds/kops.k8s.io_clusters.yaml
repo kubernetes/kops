@@ -1875,6 +1875,10 @@ spec:
                     description: CoreDNSImage is used to override the default image
                       used for CoreDNS
                     type: string
+                  cpaImage:
+                    description: CPAImage is used to override the default image used
+                      for Cluster Proportional Autoscaler
+                    type: string
                   cpuRequest:
                     anyOf:
                     - type: integer
