@@ -37,7 +37,7 @@ spec:
   networkCIDR: 10.0.0.0/12
   networkID: vpc-12345678
   networking:
-    kubenet: {}
+    cni: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
