@@ -141,6 +141,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
       disabled_plugins = ["cri"]
     logLevel: info
   docker:
+    execOpt:
+    - native.cgroupdriver=systemd
     ipMasq: false
     ipTables: false
     logDriver: json-file
@@ -164,6 +166,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
   kubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false
+    apiAudiences:
+    - kubernetes.svc.default
     apiServerCount: 1
     authorizationMode: AlwaysAllow
     bindAddress: 0.0.0.0
@@ -183,7 +187,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
     - http://127.0.0.1:4001
     etcdServersOverrides:
     - /events#http://127.0.0.1:4002
-    image: k8s.gcr.io/kube-apiserver:v1.19.0
+    image: k8s.gcr.io/kube-apiserver:v1.20.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -198,6 +202,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
     requestheaderUsernameHeaders:
     - X-Remote-User
     securePort: 443
+    serviceAccountIssuer: https://api.docker.example.com
     serviceClusterIPRange: 100.64.0.0/13
     storageBackend: etcd3
   kubeControllerManager:
@@ -206,8 +211,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
     cloudProvider: aws
     clusterCIDR: 100.96.0.0/11
     clusterName: docker.example.com
-    configureCloudRoutes: true
-    image: k8s.gcr.io/kube-controller-manager:v1.19.0
+    configureCloudRoutes: false
+    image: k8s.gcr.io/kube-controller-manager:v1.20.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -216,15 +221,16 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
     hostnameOverride: '@aws'
-    image: k8s.gcr.io/kube-proxy:v1.19.0
+    image: k8s.gcr.io/kube-proxy:v1.20.0
     logLevel: 2
   kubeScheduler:
-    image: k8s.gcr.io/kube-scheduler:v1.19.0
+    image: k8s.gcr.io/kube-scheduler:v1.20.0
     leaderElection:
       leaderElect: true
     logLevel: 2
   kubelet:
     anonymousAuth: false
+    cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -234,13 +240,13 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
     hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginMTU: 9001
-    networkPluginName: kubenet
+    networkPluginName: cni
     nonMasqueradeCIDR: 100.64.0.0/10
     podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     anonymousAuth: false
+    cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -250,8 +256,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
     hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginMTU: 9001
-    networkPluginName: kubenet
+    networkPluginName: cni
     nonMasqueradeCIDR: 100.64.0.0/10
     podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
@@ -267,13 +272,13 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
   cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
   Assets:
     amd64:
-    - 3f03e5c160a8b658d30b34824a1c00abadbac96e62c4d01bf5c9271a2debc3ab@https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/amd64/kubelet
-    - 79bb0d2f05487ff533999a639c075043c70a0a1ba25c1629eb1eef6ebe3ba70f@https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/amd64/kubectl
+    - ff2422571c4c1e9696e367f5f25466b96fb6e501f28aed29f414b1524a52dea0@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/amd64/kubelet
+    - a5895007f331f08d2e082eb12458764949559f30bcc5beae26c38f3e2724262c@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/amd64/kubectl
     - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
     - 000000000000000000000000000000000000000000000000000000000000000a@https://download.docker.com/linux/static/stable/x86_64/docker-20.10.1.tgz
     arm64:
-    - d8fa5a9739ecc387dfcc55afa91ac6f4b0ccd01f1423c423dbd312d787bbb6bf@https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/arm64/kubelet
-    - d4adf1b6b97252025cb2f7febf55daa3f42dc305822e3da133f77fd33071ec2f@https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/arm64/kubectl
+    - 47ab6c4273fc3bb0cb8ec9517271d915890c5a6b0e54b2991e7a8fbbe77b06e4@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/arm64/kubelet
+    - 25e4465870c99167e6c466623ed8f05a1d20fbcb48cab6688109389b52d87623@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/arm64/kubectl
     - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
     - 000000000000000000000000000000000000000000000000000000000000000b@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.1.tgz
   ClusterName: docker.example.com
@@ -282,6 +287,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
   InstanceGroupRole: Master
   KubeletConfig:
     anonymousAuth: false
+    cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -291,8 +297,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
     hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginMTU: 9001
-    networkPluginName: kubenet
+    networkPluginName: cni
     nodeLabels:
       kubernetes.io/role: master
       node-role.kubernetes.io/control-plane: ""
@@ -472,6 +477,8 @@ Resources.AWSEC2LaunchTemplatenodesdockerexamplecom.Properties.LaunchTemplateDat
       disabled_plugins = ["cri"]
     logLevel: info
   docker:
+    execOpt:
+    - native.cgroupdriver=systemd
     ipMasq: false
     ipTables: false
     logDriver: json-file
@@ -490,10 +497,11 @@ Resources.AWSEC2LaunchTemplatenodesdockerexamplecom.Properties.LaunchTemplateDat
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
     hostnameOverride: '@aws'
-    image: k8s.gcr.io/kube-proxy:v1.19.0
+    image: k8s.gcr.io/kube-proxy:v1.20.0
     logLevel: 2
   kubelet:
     anonymousAuth: false
+    cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -503,8 +511,7 @@ Resources.AWSEC2LaunchTemplatenodesdockerexamplecom.Properties.LaunchTemplateDat
     hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginMTU: 9001
-    networkPluginName: kubenet
+    networkPluginName: cni
     nonMasqueradeCIDR: 100.64.0.0/10
     podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
@@ -519,13 +526,13 @@ Resources.AWSEC2LaunchTemplatenodesdockerexamplecom.Properties.LaunchTemplateDat
   cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
   Assets:
     amd64:
-    - 3f03e5c160a8b658d30b34824a1c00abadbac96e62c4d01bf5c9271a2debc3ab@https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/amd64/kubelet
-    - 79bb0d2f05487ff533999a639c075043c70a0a1ba25c1629eb1eef6ebe3ba70f@https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/amd64/kubectl
+    - ff2422571c4c1e9696e367f5f25466b96fb6e501f28aed29f414b1524a52dea0@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/amd64/kubelet
+    - a5895007f331f08d2e082eb12458764949559f30bcc5beae26c38f3e2724262c@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/amd64/kubectl
     - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
     - 000000000000000000000000000000000000000000000000000000000000000a@https://download.docker.com/linux/static/stable/x86_64/docker-20.10.1.tgz
     arm64:
-    - d8fa5a9739ecc387dfcc55afa91ac6f4b0ccd01f1423c423dbd312d787bbb6bf@https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/arm64/kubelet
-    - d4adf1b6b97252025cb2f7febf55daa3f42dc305822e3da133f77fd33071ec2f@https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/arm64/kubectl
+    - 47ab6c4273fc3bb0cb8ec9517271d915890c5a6b0e54b2991e7a8fbbe77b06e4@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/arm64/kubelet
+    - 25e4465870c99167e6c466623ed8f05a1d20fbcb48cab6688109389b52d87623@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/arm64/kubectl
     - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
     - 000000000000000000000000000000000000000000000000000000000000000b@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.1.tgz
   ClusterName: docker.example.com
@@ -534,6 +541,7 @@ Resources.AWSEC2LaunchTemplatenodesdockerexamplecom.Properties.LaunchTemplateDat
   InstanceGroupRole: Node
   KubeletConfig:
     anonymousAuth: false
+    cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -543,8 +551,7 @@ Resources.AWSEC2LaunchTemplatenodesdockerexamplecom.Properties.LaunchTemplateDat
     hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginMTU: 9001
-    networkPluginName: kubenet
+    networkPluginName: cni
     nodeLabels:
       kubernetes.io/role: node
       node-role.kubernetes.io/node: ""

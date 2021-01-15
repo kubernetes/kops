@@ -807,15 +807,6 @@ resource "aws_security_group_rule" "from-nodes-bastionuserdata-example-com-egres
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "from-nodes-bastionuserdata-example-com-ingress-4-0to0-masters-bastionuserdata-example-com" {
-  from_port                = 0
-  protocol                 = "4"
-  security_group_id        = aws_security_group.masters-bastionuserdata-example-com.id
-  source_security_group_id = aws_security_group.nodes-bastionuserdata-example-com.id
-  to_port                  = 65535
-  type                     = "ingress"
-}
-
 resource "aws_security_group_rule" "from-nodes-bastionuserdata-example-com-ingress-all-0to0-nodes-bastionuserdata-example-com" {
   from_port                = 0
   protocol                 = "-1"

@@ -33,12 +33,12 @@ spec:
     auditWebhookBatchThrottleQps: 3.14
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.14.0
+  kubernetesVersion: v1.20.0
   masterInternalName: api.internal.externalpolicies.example.com
   masterPublicName: api.externalpolicies.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    kubenet: {}
+    cni: {}
   nodePortAccess:
   - 1.2.3.4/32
   - 10.20.30.0/24
