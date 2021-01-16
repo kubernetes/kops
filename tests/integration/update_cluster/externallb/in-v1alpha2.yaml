@@ -85,5 +85,3 @@ spec:
   - targetGroupArn: arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-3/3
   - loadBalancerName: my-external-elb-2
   - loadBalancerName: my-external-elb-3
-
-
