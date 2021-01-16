@@ -11,7 +11,7 @@ spec:
   channel: stable
   cloudProvider: aws
   configBase: memfs://tests/overrides.example.com
-  containerRuntime: docker
+  containerRuntime: containerd
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:

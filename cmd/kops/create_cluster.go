@@ -101,7 +101,7 @@ func (o *CreateClusterOptions) InitDefaults() {
 	o.Yes = false
 	o.Target = cloudup.TargetDirect
 
-	o.ContainerRuntime = "docker"
+	o.ContainerRuntime = "containerd"
 }
 
 var (

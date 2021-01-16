@@ -18,7 +18,7 @@ spec:
     foo/bar: fib+baz
   cloudProvider: gce
   configBase: memfs://tests/private.example.com
-  containerRuntime: docker
+  containerRuntime: containerd
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
@@ -39,7 +39,7 @@ spec:
     anonymousAuth: false
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: v1.19.6
+  kubernetesVersion: v1.20.0
   masterPublicName: api.private.example.com
   networking:
     cni: {}

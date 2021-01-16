@@ -76,7 +76,7 @@ kops create cluster [flags]
       --channel string                   Channel for default versions and configuration to use (default "stable")
       --cloud string                     Cloud provider to use - gce, aws, openstack
       --cloud-labels string              A list of KV pairs used to tag all instance groups in AWS (e.g. "Owner=John Doe,Team=Some Team").
-      --container-runtime string         Container runtime to use: containerd, docker (default "docker")
+      --container-runtime string         Container runtime to use: containerd, docker (default "containerd")
       --disable-subnet-tags              Set to disable automatic subnet tagging
       --dns string                       DNS hosted zone to use: public|private. (default "Public")
       --dns-zone string                  DNS hosted zone to use (defaults to longest matching zone)

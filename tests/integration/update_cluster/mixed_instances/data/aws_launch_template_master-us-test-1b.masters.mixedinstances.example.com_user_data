@@ -134,23 +134,25 @@ ensure-install-dir
 
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig: null
-containerRuntime: docker
+containerRuntime: containerd
 containerd:
   configOverride: |
-    disabled_plugins = ["cri"]
+    version = 2
+
+    [plugins]
+
+      [plugins."io.containerd.grpc.v1.cri"]
+
+        [plugins."io.containerd.grpc.v1.cri".containerd]
+
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+              runtime_type = "io.containerd.runc.v2"
   logLevel: info
+  version: 1.4.3
 docker:
-  execOpt:
-  - native.cgroupdriver=systemd
-  ipMasq: false
-  ipTables: false
-  logDriver: json-file
-  logLevel: info
-  logOpt:
-  - max-size=10m
-  - max-file=5
-  storage: overlay2,overlay,aufs
-  version: 19.03.14
+  skipInstall: true
 encryptionConfig: null
 etcdClusters:
   events:
@@ -236,7 +238,6 @@ kubelet:
   logLevel: 2
   networkPluginName: cni
   nonMasqueradeCIDR: 100.64.0.0/10
-  podInfraContainerImage: k8s.gcr.io/pause:3.2
   podManifestPath: /etc/kubernetes/manifests
 masterKubelet:
   anonymousAuth: false
@@ -252,7 +253,6 @@ masterKubelet:
   logLevel: 2
   networkPluginName: cni
   nonMasqueradeCIDR: 100.64.0.0/10
-  podInfraContainerImage: k8s.gcr.io/pause:3.2
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
 
@@ -269,12 +269,12 @@ Assets:
   - ff2422571c4c1e9696e367f5f25466b96fb6e501f28aed29f414b1524a52dea0@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/amd64/kubelet
   - a5895007f331f08d2e082eb12458764949559f30bcc5beae26c38f3e2724262c@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/amd64/kubectl
   - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
-  - 9f1ec28e357a8f18e9561129239caf9c0807d74756e21cc63637c7fdeaafe847@https://download.docker.com/linux/static/stable/x86_64/docker-19.03.14.tgz
+  - 2697a342e3477c211ab48313e259fd7e32ad1f5ded19320e6a559f50a82bff3d@https://github.com/containerd/containerd/releases/download/v1.4.3/cri-containerd-cni-1.4.3-linux-amd64.tar.gz
   arm64:
   - 47ab6c4273fc3bb0cb8ec9517271d915890c5a6b0e54b2991e7a8fbbe77b06e4@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/arm64/kubelet
   - 25e4465870c99167e6c466623ed8f05a1d20fbcb48cab6688109389b52d87623@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/arm64/kubectl
   - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
-  - 8350eaa0c0965bb8eb9d45a014f4b6728c985715f56466077dfe6feb271d9518@https://download.docker.com/linux/static/stable/aarch64/docker-19.03.14.tgz
+  - 6e3f80e8451ecbe7b3559247721c3e226be6b228acaadee7e13683f80c20e81c@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.0.tgz
 ClusterName: mixedinstances.example.com
 ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
 InstanceGroupName: master-us-test-1b
@@ -297,7 +297,6 @@ KubeletConfig:
     node-role.kubernetes.io/control-plane: ""
     node-role.kubernetes.io/master: ""
   nonMasqueradeCIDR: 100.64.0.0/10
-  podInfraContainerImage: k8s.gcr.io/pause:3.2
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
 channels:

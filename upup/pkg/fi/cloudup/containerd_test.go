@@ -75,6 +75,20 @@ func TestContainerdVersionUrlHash(t *testing.T) {
 			hash:    "6e3f80e8451ecbe7b3559247721c3e226be6b228acaadee7e13683f80c20e81c",
 			err:     nil,
 		},
+		{
+			arch:    architectures.ArchitectureAmd64,
+			version: "1.4.3",
+			url:     "https://github.com/containerd/containerd/releases/download/v1.4.3/cri-containerd-cni-1.4.3-linux-amd64.tar.gz",
+			hash:    "2697a342e3477c211ab48313e259fd7e32ad1f5ded19320e6a559f50a82bff3d",
+			err:     nil,
+		},
+		{
+			arch:    architectures.ArchitectureArm64,
+			version: "1.4.3",
+			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-20.10.0.tgz",
+			hash:    "6e3f80e8451ecbe7b3559247721c3e226be6b228acaadee7e13683f80c20e81c",
+			err:     nil,
+		},
 	}
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("%s-%s", test.version, test.arch), func(t *testing.T) {
@@ -174,6 +188,18 @@ func TestContainerdVersionUrl(t *testing.T) {
 			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-20.10.0.tgz",
 			err:     nil,
 		},
+		{
+			arch:    architectures.ArchitectureAmd64,
+			version: "1.4.3",
+			url:     "https://github.com/containerd/containerd/releases/download/v1.4.3/cri-containerd-cni-1.4.3-linux-amd64.tar.gz",
+			err:     nil,
+		},
+		{
+			arch:    architectures.ArchitectureArm64,
+			version: "1.4.3",
+			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-20.10.0.tgz",
+			err:     nil,
+		},
 	}
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("%s-%s", test.version, test.arch), func(t *testing.T) {
@@ -254,6 +280,18 @@ func TestContainerdVersionHash(t *testing.T) {
 		{
 			arch:    architectures.ArchitectureArm64,
 			version: "1.4.1",
+			hash:    "6e3f80e8451ecbe7b3559247721c3e226be6b228acaadee7e13683f80c20e81c",
+			err:     nil,
+		},
+		{
+			arch:    architectures.ArchitectureAmd64,
+			version: "1.4.3",
+			hash:    "2697a342e3477c211ab48313e259fd7e32ad1f5ded19320e6a559f50a82bff3d",
+			err:     nil,
+		},
+		{
+			arch:    architectures.ArchitectureArm64,
+			version: "1.4.3",
 			hash:    "6e3f80e8451ecbe7b3559247721c3e226be6b228acaadee7e13683f80c20e81c",
 			err:     nil,
 		},

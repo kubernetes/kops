@@ -937,7 +937,9 @@ spec:
 ## containerRuntime
 {{ kops_feature_table(kops_added_default='1.18', k8s_min='1.11') }}
 
-Alternative [container runtimes](https://kubernetes.io/docs/setup/production-environment/container-runtimes/) can be used to run Kubernetes. Docker is still the default container runtime, but [containerd](https://kubernetes.io/blog/2018/05/24/kubernetes-containerd-integration-goes-ga/) can also be selected.
+As of Kubernetes 1.20, the default [container runtime](https://kubernetes.io/docs/setup/production-environment/container-runtimes) is containerd. Previously, the default container runtime was Docker.
+
+Docker can still be used as container runtime with Kubernetes 1.20+,  but be aware that Kubernetes is [deprecating](https://kubernetes.io/blog/2020/12/02/dont-panic-kubernetes-and-docker) support for it and will be removed in Kubernetes 1.22.
 
 ```yaml
 spec:

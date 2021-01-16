@@ -8,5 +8,6 @@ MasterZones:
 - us-test1-b
 - us-test1-c
 CloudProvider: gce
+Networking: cni
 KubernetesVersion: v1.20.0
 Project: testproject
