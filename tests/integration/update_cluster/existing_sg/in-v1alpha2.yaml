@@ -135,4 +135,3 @@ spec:
   subnets:
   - us-test-1a
   securityGroupOverride: sg-nodes
-
