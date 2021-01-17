@@ -39,7 +39,7 @@ This assumes you have already built the kOps binary from source. The exact path 
 GINKGO_PARALLEL=y kubetest --test --test_args="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort" --provider=aws --deployment=kops --cluster=my.testcluster.com --kops-state=${KOPS_STATE_STORE} --kops ${GOPATH}/bin/kops --extract=ci/latest
 ```
 
-Note the `--extract` flag is only needed on first run or whenever you want to update the kubernetes build. You can omit this flag to run against the already extacted tree on subsequent runs. Just `cd` into the `kubernetes` directory first.
+Note the `--extract` flag is only needed on first run or whenever you want to update the kubernetes build. You can omit this flag to run against the already extracted tree on subsequent runs. Just `cd` into the `kubernetes` directory first.
 
 ### Running against a new cluster
 
