@@ -1,6 +1,6 @@
 # Amazon VPC
 
-The Amazon VPC CNI uses the native AWS networking for Pods. Every pod gets an Elastic Network Interface (ENI) on the node it is running and an IP address beloning to the subnets assigned to the node.
+The Amazon VPC CNI uses the native AWS networking for Pods. Every pod gets an Elastic Network Interface (ENI) on the node it is running and an IP address belonging to the subnets assigned to the node.
 
 ## Installing
 
