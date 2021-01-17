@@ -127,7 +127,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud) field.ErrorLis
 	}
 
 	if g.Spec.CloudLabels != nil {
-		allErrs = append(allErrs, validateCloudLabels(g, field.NewPath("spec", "cloudLabels"))...)
+		allErrs = append(allErrs, validateIGCloudLabels(g, field.NewPath("spec", "cloudLabels"))...)
 	}
 
 	if cloud != nil && cloud.ProviderID() == kops.CloudProviderAWS {
@@ -275,7 +275,7 @@ func validateNodeLabels(labels map[string]string, fldPath *field.Path) (allErrs 
 	return allErrs
 }
 
-func validateCloudLabels(ig *kops.InstanceGroup, fldPath *field.Path) (allErrs field.ErrorList) {
+func validateIGCloudLabels(ig *kops.InstanceGroup, fldPath *field.Path) (allErrs field.ErrorList) {
 	labels := ig.Spec.CloudLabels
 	if labels == nil {
 		return allErrs
