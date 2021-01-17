@@ -126,12 +126,6 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	klog.V(1).Infof("Cloud Provider: %s", cloudProvider)
 	if cloudProvider == kops.CloudProviderAWS {
 		clusterSpec.Kubelet.CloudProvider = "aws"
-
-		// Use the hostname from the AWS metadata service
-		// if hostnameOverride is not set.
-		if clusterSpec.Kubelet.HostnameOverride == "" {
-			clusterSpec.Kubelet.HostnameOverride = "@aws"
-		}
 	}
 
 	if cloudProvider == kops.CloudProviderDO {
@@ -148,12 +142,6 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 		clusterSpec.CloudConfig.Multizone = fi.Bool(true)
 		clusterSpec.CloudConfig.NodeTags = fi.String(GCETagForRole(b.ClusterName, kops.InstanceGroupRoleNode))
-
-		// Use the hostname from the GCE metadata service
-		// if hostnameOverride is not set.
-		if clusterSpec.Kubelet.HostnameOverride == "" {
-			clusterSpec.Kubelet.HostnameOverride = "@gce"
-		}
 	}
 
 	if cloudProvider == kops.CloudProviderOpenstack {
@@ -162,7 +150,6 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if cloudProvider == kops.CloudProviderALI {
 		clusterSpec.Kubelet.CloudProvider = "alicloud"
-		clusterSpec.Kubelet.HostnameOverride = "@alicloud"
 	}
 
 	if cloudProvider == kops.CloudProviderAzure {
@@ -207,6 +194,9 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
 		if _, found := clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"]; !found {
 			clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"] = "true"
+		}
+		if _, found := clusterSpec.Kubelet.FeatureGates["CSIMigrationAWSComplete"]; !found {
+			clusterSpec.Kubelet.FeatureGates["CSIMigrationAWSComplete"] = "true"
 		}
 
 		if b.IsKubernetesLT("1.21.0") {

@@ -36,9 +36,6 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/utils/mount"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/blang/semver/v4"
 )
 
@@ -484,77 +481,14 @@ func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, na
 // NodeName returns the name of the local Node, as it will be created in k8s
 func (c *NodeupModelContext) NodeName() (string, error) {
 	// This mirrors nodeutil.GetHostName
-	hostnameOverride := c.Cluster.Spec.Kubelet.HostnameOverride
 
-	if c.IsMaster && c.Cluster.Spec.MasterKubelet.HostnameOverride != "" {
-		hostnameOverride = c.Cluster.Spec.MasterKubelet.HostnameOverride
-	}
-
-	nodeName, err := EvaluateHostnameOverride(hostnameOverride)
+	hostname, err := os.Hostname()
 	if err != nil {
-		return "", fmt.Errorf("error evaluating hostname: %v", err)
+		klog.Fatalf("Couldn't determine hostname: %v", err)
 	}
-
-	if nodeName == "" {
-		hostname, err := os.Hostname()
-		if err != nil {
-			klog.Fatalf("Couldn't determine hostname: %v", err)
-		}
-		nodeName = hostname
-	}
+	nodeName := hostname
 
 	return strings.ToLower(strings.TrimSpace(nodeName)), nil
-}
-
-// EvaluateHostnameOverride returns the hostname after replacing some well-known placeholders
-func EvaluateHostnameOverride(hostnameOverride string) (string, error) {
-	if hostnameOverride == "" || hostnameOverride == "@hostname" {
-		return "", nil
-	}
-	k := strings.TrimSpace(hostnameOverride)
-	k = strings.ToLower(k)
-
-	if k != "@aws" {
-		return hostnameOverride, nil
-	}
-
-	// We recognize @aws as meaning "the private DNS name from AWS", to generate this we need to get a few pieces of information
-	azBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/placement/availability-zone")
-	if err != nil {
-		return "", fmt.Errorf("error reading availability zone from AWS metadata: %v", err)
-	}
-
-	instanceIDBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/instance-id")
-	if err != nil {
-		return "", fmt.Errorf("error reading instance-id from AWS metadata: %v", err)
-	}
-	instanceID := string(instanceIDBytes)
-
-	config := aws.NewConfig()
-	config = config.WithCredentialsChainVerboseErrors(true)
-
-	s, err := session.NewSession(config)
-	if err != nil {
-		return "", fmt.Errorf("error starting new AWS session: %v", err)
-	}
-
-	svc := ec2.New(s, config.WithRegion(string(azBytes[:len(azBytes)-1])))
-
-	result, err := svc.DescribeInstances(&ec2.DescribeInstancesInput{
-		InstanceIds: []*string{&instanceID},
-	})
-	if err != nil {
-		return "", fmt.Errorf("error describing instances: %v", err)
-	}
-
-	if len(result.Reservations) != 1 {
-		return "", fmt.Errorf("too many reservations returned for the single instance-id")
-	}
-
-	if len(result.Reservations[0].Instances) != 1 {
-		return "", fmt.Errorf("too many instances returned for the single instance-id")
-	}
-	return *(result.Reservations[0].Instances[0].PrivateDnsName), nil
 }
 
 // GetCert is a helper method to retrieve a certificate from the store
