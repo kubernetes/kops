@@ -160,7 +160,7 @@ The swift store can be configured by providing your OpenStack credentials and co
 - `OS_PASSWORD`: the password for the useraccount
 - `OS_TENANT_ID`: the tenant id
 - `OS_TENANT_NAME`: the tenant name
-- `OS_PROJECT_ID`: the poject id
+- `OS_PROJECT_ID`: the project id
 - `OS_PROJECT_NAME`: the project name
 - `OS_DOMAIN_ID`: the domain ID
 - `OS_DOMAIN_NAME`: the domain name
