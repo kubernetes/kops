@@ -17,6 +17,9 @@ limitations under the License.
 package validation
 
 import (
+	"fmt"
+	"strings"
+
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -50,6 +53,8 @@ func ValidateClusterUpdate(obj *kops.Cluster, status *kops.ClusterStatus, old *k
 			}
 		}
 	}
+
+	allErrs = append(allErrs, validateClusterCloudLabels(obj, field.NewPath("spec", "cloudLabels"))...)
 
 	return allErrs
 }
@@ -115,6 +120,42 @@ func validateEtcdMemberUpdate(fp *field.Path, obj kops.EtcdMemberSpec, status *k
 
 	if fi.BoolValue(obj.EncryptedVolume) != fi.BoolValue(old.EncryptedVolume) {
 		allErrs = append(allErrs, field.Forbidden(fp.Child("encryptedVolume"), "encryptedVolume cannot be changed"))
+	}
+
+	return allErrs
+}
+
+func validateClusterCloudLabels(cluster *kops.Cluster, fldPath *field.Path) (allErrs field.ErrorList) {
+	labels := cluster.Spec.CloudLabels
+	if labels == nil {
+		return allErrs
+	}
+
+	reservedKeys := []string{
+		"Name",
+		"KubernetesCluster",
+	}
+
+	for _, reservedKey := range reservedKeys {
+		_, hasKey := labels[reservedKey]
+		if hasKey {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child(reservedKey), fmt.Sprintf("%q is a reserved label and cannot be used as a custom label", reservedKey)))
+		}
+	}
+
+	reservedPrefixes := []string{
+		"kops.k8s.io/",
+		"k8s.io/",
+		"kubernetes.io/",
+	}
+
+	for _, reservedPrefix := range reservedPrefixes {
+		for label := range labels {
+			if strings.HasPrefix(label, reservedPrefix) {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child(label), fmt.Sprintf("%q is a reserved label prefix and cannot be used as a custom label", reservedPrefix)))
+
+			}
+		}
 	}
 
 	return allErrs
