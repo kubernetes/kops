@@ -139,7 +139,7 @@ func validateClusterCloudLabels(cluster *kops.Cluster, fldPath *field.Path) (all
 	for _, reservedKey := range reservedKeys {
 		_, hasKey := labels[reservedKey]
 		if hasKey {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child(reservedKey), fmt.Sprintf("%q is a reserved label and cannot be set in the cluster spec", reservedKey)))
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child(reservedKey), fmt.Sprintf("%q is a reserved label and cannot be used as a custom label", reservedKey)))
 		}
 	}
 
@@ -152,7 +152,7 @@ func validateClusterCloudLabels(cluster *kops.Cluster, fldPath *field.Path) (all
 	for _, reservedPrefix := range reservedPrefixes {
 		for label := range labels {
 			if strings.HasPrefix(label, reservedPrefix) {
-				allErrs = append(allErrs, field.Forbidden(fldPath.Child(label), fmt.Sprintf("%q is a reserved label prefix and cannot be set in the cluster spec", reservedPrefix)))
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child(label), fmt.Sprintf("%q is a reserved label prefix and cannot be used as a custom label", reservedPrefix)))
 
 			}
 		}
