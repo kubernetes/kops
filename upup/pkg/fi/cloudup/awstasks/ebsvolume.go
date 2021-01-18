@@ -18,6 +18,7 @@ package awstasks
 
 import (
 	"fmt"
+	"os"
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -215,18 +216,43 @@ func (_ *EBSVolume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes 
 		Tags:             e.Tags,
 	}
 
-	return t.RenderResource("aws_ebs_volume", e.TerraformName(), tf)
+	tfName, _ := e.TerraformName()
+	return t.RenderResource("aws_ebs_volume", tfName, tf)
 }
 
 func (e *EBSVolume) TerraformLink() *terraform.Literal {
-	return terraform.LiteralSelfLink("aws_ebs_volume", e.TerraformName())
+	tfName, _ := e.TerraformName()
+	return terraform.LiteralSelfLink("aws_ebs_volume", tfName)
 }
 
-func (e *EBSVolume) TerraformName() string {
-	if (*e.Name)[0] >= '0' && (*e.Name)[0] <= '9' {
-		return fmt.Sprintf("ebs-%v", *e.Name)
+// TerraformName returns the terraform-safe name, along with a boolean indicating of whether name-prefixing was needed.
+func (e *EBSVolume) TerraformName() (string, bool) {
+	usedPrefix := false
+	name := fi.StringValue(e.Name)
+	if name[0] >= '0' && name[0] <= '9' {
+		usedPrefix = true
+		return fmt.Sprintf("ebs-%v", name), usedPrefix
 	}
-	return *e.Name
+	return name, usedPrefix
+}
+
+// PreRun is run before general task execution, and checks for terraform breaking changes.
+func (e *EBSVolume) PreRun(c *fi.Context) error {
+	if _, ok := c.Target.(*terraform.TerraformTarget); ok {
+		_, usedPrefix := e.TerraformName()
+		if usedPrefix {
+			if os.Getenv("KOPS_TERRAFORM_0_12_RENAMED") == "" {
+				fmt.Fprintf(os.Stderr, "Terraform 0.12 broke compatability and disallowed names that begin with a number.\n")
+				fmt.Fprintf(os.Stderr, "  To move an existing cluster to the new syntax, you must first move existing volumes to the new names.\n")
+				fmt.Fprintf(os.Stderr, "  To indicate that you have already performed the rename, pass KOPS_TERRAFORM_0_12_RENAMED=ebs environment variable.\n")
+				fmt.Fprintf(os.Stderr, "  Not doing so will result in data loss.\n")
+				fmt.Fprintf(os.Stderr, "For detailed instructions: https://github.com/kubernetes/kops/blob/master/permalinks/terraform_renamed.md\n")
+				return fmt.Errorf("must update terraform state for 0.12, and then pass KOPS_TERRAFORM_0_12_RENAMED=ebs")
+			}
+		}
+	}
+
+	return nil
 }
 
 type cloudformationVolume struct {
