@@ -17,6 +17,7 @@ limitations under the License.
 package deployer
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	osexec "os/exec"
@@ -170,7 +171,9 @@ func (d *deployer) verifyUpFlags() error {
 	if d.SSHPublicKeyPath == "" {
 		d.SSHPublicKeyPath = os.Getenv("AWS_SSH_PUBLIC_KEY_FILE")
 	}
-
+	if d.KubernetesVersion == "" {
+		return errors.New("missing required --kubernetes-version flag")
+	}
 	return nil
 }
 
