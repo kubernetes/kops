@@ -124,6 +124,10 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 		args = append(args, "--master-size", "s-8vcpu-16gb")
 	}
 
+	if d.Networking != "" {
+		args = append(args, "--networking", d.Networking)
+	}
+
 	klog.Info(strings.Join(args, " "))
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.SetEnv(d.env()...)
