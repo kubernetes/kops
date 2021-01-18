@@ -1598,8 +1598,6 @@ sigs.k8s.io/boskos v0.0.0-20200526191642-45fc818e2d00/go.mod h1:L1ubP7d1CCMSQSjK
 sigs.k8s.io/boskos v0.0.0-20200710214748-f5935686c7fc/go.mod h1:ZO5RV+VxJS9mb6DvZ1yAjywoyq/wQ8b0vDoZxcIA5kE=
 sigs.k8s.io/controller-runtime v0.5.0/go.mod h1:REiJzC7Y00U+2YkMbT8wxgrsX5USpXKGhb2sCtAXiT8=
 sigs.k8s.io/controller-runtime v0.5.4/go.mod h1:JZUwSMVbxDupo0lTJSSFP5pimEyxGynROImSsqIOx1A=
-sigs.k8s.io/kubetest2 v0.0.0-20210106183352-5a41a5dbafe5 h1:j1UdMwMRAvGvHFVoQ7TMrQbZxLnKHQLgTlKLFc6rYi4=
-sigs.k8s.io/kubetest2 v0.0.0-20210106183352-5a41a5dbafe5/go.mod h1:XT/MnLvPcrJkJo0+3DGIlXljSZxqvU7HNyXI/ny3Flg=
 sigs.k8s.io/kubetest2 v0.0.0-20210115020551-4275dd0a0d63 h1:pHCLLY0QjOp3cBTYCjCQdYfYP8lo+/eSyd3vdWkaQTE=
 sigs.k8s.io/kubetest2 v0.0.0-20210115020551-4275dd0a0d63/go.mod h1:XT/MnLvPcrJkJo0+3DGIlXljSZxqvU7HNyXI/ny3Flg=
 sigs.k8s.io/kustomize v2.0.3+incompatible/go.mod h1:MkjgH3RdOWrievjo6c9T245dYlB5QeXV4WCbnt/PEpU=
