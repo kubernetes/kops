@@ -45,6 +45,7 @@ type deployer struct {
 	CloudProvider  string   `flag:"cloud-provider" desc:"Which cloud provider to use"`
 	Env            []string `flag:"env" desc:"Additional env vars to set for kops commands in NAME=VALUE format"`
 	KopsBinaryPath string   `flag:"kops-binary-path" desc:"The path to kops executable used for testing"`
+	Networking     string   `flag:"networking" desc:"The networking mode to use"`
 	StateStore     string   `flag:"-"`
 
 	TemplatePath string `flag:"template-path" desc:"The path to the manifest template used for cluster creation"`
