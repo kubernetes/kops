@@ -42,7 +42,8 @@ trap finish EXIT
 
 kubetest2 kops ${KUBETEST2_COMMON_ARGS} \
 		--up \
-		--kubernetes-version=v1.19.7
+		--kubernetes-version=v1.19.7 \
+    --networking calico
 
 KUBECONFIG=${HOME}/.kube/config
 TEST_ARGS="--kubeconfig=${KUBECONFIG}"
