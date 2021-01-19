@@ -1,7 +1,7 @@
-# Terraform 0.12 Naming Compatability
+# Terraform 0.12 Naming Compatibility
 
 Terraform 0.12 introduced new restrictions on naming, breaking
-compatability with earlier terraform versions when resource names
+compatibility with earlier terraform versions when resource names
 start with a number.  Single-zone etcd clusters (and possibly some
 other scenarios) would generate terraform names for EBS volumes that
 start with a number, which are no longer permitted.
