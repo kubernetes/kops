@@ -27,7 +27,7 @@ import (
 	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/do"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
-	"k8s.io/kops/tests/e2e/kubetest2-kops/util"
+	"k8s.io/kops/tests/e2e/pkg/util"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
