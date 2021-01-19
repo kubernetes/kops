@@ -17898,7 +17898,7 @@ func cloudupResourcesAddonsNetworkingProjectcalicoOrgCanalK8s19YamlTemplate() (*
 	return a, nil
 }
 
-var _cloudupResourcesAddonsNetworkingWeaveK8s112YamlTemplate = []byte(`# Pulled and modified from: https://github.com/weaveworks/weave/releases/download/v2.7.0/weave-daemonset-k8s-1.11.yaml
+var _cloudupResourcesAddonsNetworkingWeaveK8s112YamlTemplate = []byte(`# Pulled and modified from: https://github.com/weaveworks/weave/releases/download/v2.8.0/weave-daemonset-k8s-1.11.yaml
 
 {{- if WeaveSecret }}
 apiVersion: v1
@@ -18042,11 +18042,32 @@ spec:
       annotations:
         prometheus.io/scrape: "true"
     spec:
+      initContainers:
+        - name: weave-init
+          image: 'weaveworks/weave-kube:{{ or .Networking.Weave.Version "2.8.0" }}'
+          command:
+            - /home/weave/init.sh
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: cni-bin
+              mountPath: /host/opt
+            - name: cni-bin2
+              mountPath: /host/home
+            - name: cni-conf
+              mountPath: /host/etc
+            - name: lib-modules
+              mountPath: /lib/modules
+            - name: xtables-lock
+              mountPath: /run/xtables.lock
+              readOnly: false
       containers:
         - name: weave
           command:
             - /home/weave/launch.sh
           env:
+            - name: INIT_CONTAINER
+              value: "true"
             - name: HOSTNAME
               valueFrom:
                 fieldRef:
@@ -18077,7 +18098,7 @@ spec:
                   name: weave-net
                   key: network-password
             {{- end }}
-          image: 'weaveworks/weave-kube:{{ or .Networking.Weave.Version "2.7.0" }}'
+          image: 'weaveworks/weave-kube:{{ or .Networking.Weave.Version "2.8.0" }}'
           ports:
             - name: metrics
               containerPort: 6782
@@ -18100,16 +18121,9 @@ spec:
           volumeMounts:
             - name: weavedb
               mountPath: /weavedb
-            - name: cni-bin
-              mountPath: /host/opt
-            - name: cni-bin2
-              mountPath: /host/home
-            - name: cni-conf
-              mountPath: /host/etc
             - name: dbus
               mountPath: /host/var/lib/dbus
-            - name: lib-modules
-              mountPath: /lib/modules
+              readOnly: true
             - name: xtables-lock
               mountPath: /run/xtables.lock
               readOnly: false
@@ -18124,7 +18138,7 @@ spec:
             - name: EXTRA_ARGS
               value: "{{ .Networking.Weave.NPCExtraArgs }}"
             {{- end }}
-          image: 'weaveworks/weave-npc:{{ or .Networking.Weave.Version "2.7.0" }}'
+          image: 'weaveworks/weave-npc:{{ or .Networking.Weave.Version "2.8.0" }}'
           ports:
             - name: metrics
               containerPort: 6781
@@ -18145,7 +18159,7 @@ spec:
               readOnly: false
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
-      hostPID: true
+      hostPID: false
       restartPolicy: Always
       securityContext:
         seLinuxOptions: {}
