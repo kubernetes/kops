@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/tests/e2e/pkg/kops"
 )
 
 func (d *deployer) init() error {
@@ -51,6 +52,14 @@ func (d *deployer) initialize() error {
 			return fmt.Errorf("init failed to check up flags: %v", err)
 		}
 	}
+	if d.KopsVersionMarker != "" {
+		binaryPath, baseURL, err := kops.DownloadKops(d.KopsVersionMarker)
+		if err != nil {
+			return fmt.Errorf("init failed to download kops from url: %v", err)
+		}
+		d.KopsBinaryPath = binaryPath
+		d.KopsBaseURL = baseURL
+	}
 	return nil
 }
 
@@ -65,11 +74,11 @@ func (d *deployer) verifyKopsFlags() error {
 		d.ClusterName = name
 	}
 
-	if d.KopsBinaryPath == "" {
+	if d.KopsBinaryPath == "" && d.KopsVersionMarker == "" {
 		if ws := os.Getenv("WORKSPACE"); ws != "" {
 			d.KopsBinaryPath = path.Join(ws, "kops")
 		} else {
-			return errors.New("missing required --kops-binary-path")
+			return errors.New("missing required --kops-binary-path when --kops-version-marker is not used")
 		}
 	}
 
@@ -106,6 +115,11 @@ func (d *deployer) env() []string {
 				vars = append(vars, k+"="+v)
 			}
 		}
+	}
+	if d.KopsBaseURL != "" {
+		vars = append(vars, fmt.Sprintf("KOPS_BASE_URL=%v", d.KopsBaseURL))
+	} else if baseURL := os.Getenv("KOPS_BASE_URL"); baseURL != "" {
+		vars = append(vars, fmt.Sprintf("KOPS_BASE_URL=%v", os.Getenv("KOPS_BASE_URL")))
 	}
 	return vars
 }
