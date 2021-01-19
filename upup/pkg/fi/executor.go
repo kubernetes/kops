@@ -55,6 +55,14 @@ func (o *RunTasksOptions) InitDefaults() {
 func (e *executor) RunTasks(taskMap map[string]Task) error {
 	dependencies := FindTaskDependencies(taskMap)
 
+	for _, task := range taskMap {
+		if taskPreRun, ok := task.(TaskPreRun); ok {
+			if err := taskPreRun.PreRun(e.context); err != nil {
+				return err
+			}
+		}
+	}
+
 	taskStates := make(map[string]*taskState)
 
 	for k, task := range taskMap {

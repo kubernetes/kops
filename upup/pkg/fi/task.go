@@ -28,6 +28,12 @@ type Task interface {
 	Run(*Context) error
 }
 
+// TaskPreRun is implemented by tasks that perform some initial validation.
+type TaskPreRun interface {
+	// PreRun will be run for all TaskPreRuns, before any Run functions are invoked.
+	PreRun(*Context) error
+}
+
 // TaskAsString renders the task for debug output
 // TODO: Use reflection to make this cleaner: don't recurse into tasks - print their names instead
 // also print resources in a cleaner way (use the resource source information?)
