@@ -1408,10 +1408,9 @@ func trimCommonPrefix(names []string) []string {
 		}
 	}
 
-	for i := range names {
-		_, err := strconv.Atoi(names[i])
-		if err == nil {
-			names[i] = "etcd-" + names[i]
+	for i, name := range names {
+		if len(name) > 0 && name[0] >= '0' && name[0] <= '9' {
+			names[i] = "etcd-" + name
 		}
 	}
 
