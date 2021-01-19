@@ -342,6 +342,20 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
+	ciliumSpec := c.Cluster.Spec.Networking.Cilium
+	if ciliumSpec != nil && ciliumSpec.EnableEncryption {
+		secret, err := secretStore.FindSecret("ciliumpassword")
+		if err != nil {
+			return fmt.Errorf("could not load the ciliumpassword secret: %w", err)
+		}
+		if secret == nil {
+			fmt.Println("")
+			fmt.Println("You have cilium encryption enabled, but no ciliumpassword secret has been set.")
+			fmt.Println("See `kops create secret ciliumpassword -h`")
+			return fmt.Errorf("could not find ciliumpassword secret")
+		}
+	}
+
 	if err := c.addFileAssets(assetBuilder); err != nil {
 		return err
 	}
