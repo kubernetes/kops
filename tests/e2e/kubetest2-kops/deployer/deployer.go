@@ -41,10 +41,14 @@ type deployer struct {
 	KopsRoot      string `flag:"kops-root" desc:"Path to root of the kops repo. Used with --build."`
 	StageLocation string `flag:"stage-location" desc:"Storage location for kops artifacts. Only gs:// paths are supported."`
 
+	KopsVersionMarker string `flag:"kops-version-marker" desc:"The URL to the kops version marker. Conflicts with --build and --kops-binary-path"`
+	KopsBaseURL       string `flag:"-"`
+
 	ClusterName    string   `flag:"cluster-name" desc:"The FQDN to use for the cluster name"`
 	CloudProvider  string   `flag:"cloud-provider" desc:"Which cloud provider to use"`
 	Env            []string `flag:"env" desc:"Additional env vars to set for kops commands in NAME=VALUE format"`
 	KopsBinaryPath string   `flag:"kops-binary-path" desc:"The path to kops executable used for testing"`
+	Networking     string   `flag:"networking" desc:"The networking mode to use"`
 	StateStore     string   `flag:"-"`
 
 	TemplatePath string `flag:"template-path" desc:"The path to the manifest template used for cluster creation"`

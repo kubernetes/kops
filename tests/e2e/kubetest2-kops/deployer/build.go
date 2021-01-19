@@ -65,6 +65,9 @@ func (d *deployer) verifyBuildFlags() error {
 	if !fi.Mode().IsDir() {
 		return errors.New("--kops-root must be a directory")
 	}
+	if d.KopsVersionMarker != "" {
+		return errors.New("cannot use --kops-version-marker with --build")
+	}
 
 	d.BuildOptions.KopsRoot = d.KopsRoot
 	d.BuildOptions.StageLocation = d.StageLocation
