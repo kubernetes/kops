@@ -22,9 +22,6 @@ echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
 
 REPO_ROOT=$(git rev-parse --show-toplevel);
 
-OLD_K8S_MARKER=stable-1.19.txt
-NEW_K8S_MARKER=stable-1.20.txt
-
 KUBETEST2_COMMON_ARGS="-v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-} --kops-binary-path=${REPO_ROOT}/bazel-bin/cmd/kops/linux-amd64/kops"
 KUBETEST2_COMMON_ARGS="${KUBETEST2_COMMON_ARGS} --admin-access=${ADMIN_ACCESS:-}"
 
@@ -45,7 +42,7 @@ trap finish EXIT
 
 kubetest2 kops ${KUBETEST2_COMMON_ARGS} \
 		--up \
-		--kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/${OLD_K8S_MARKER}
+		--kubernetes-version=v1.19.7
 
 KUBECONFIG=${HOME}/.kube/config
 TEST_ARGS="--kubeconfig=${KUBECONFIG}"
@@ -66,13 +63,13 @@ kubetest2 kops ${KUBETEST2_COMMON_ARGS} \
 		--cloud-provider=${CLOUD_PROVIDER} \
 		--test=kops \
 		-- \
-		--test-package-marker=${OLD_K8S_MARKER} \
+		--test-package-version=v1.19.7 \
 		--parallel 25 \
 		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort" \
 		--test-args="${TEST_ARGS}"
 
 
-kops set cluster ${CLUSTER_NAME} cluster.spec.kubernetesVersion=https://storage.googleapis.com/kubernetes-release/release/${NEW_K8S_MARKER}
+kops set cluster ${CLUSTER_NAME} cluster.spec.kubernetesVersion=v1.20.2
 kops update cluster
 kops update cluster --admin --yes
 
