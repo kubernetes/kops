@@ -244,7 +244,7 @@ func (e *EBSVolume) PreRun(c *fi.Context) error {
 		_, usedPrefix := e.TerraformName()
 		if usedPrefix {
 			if os.Getenv("KOPS_TERRAFORM_0_12_RENAMED") == "" {
-				fmt.Fprintf(os.Stderr, "Terraform 0.12 broke compatability and disallowed names that begin with a number.\n")
+				fmt.Fprintf(os.Stderr, "Terraform 0.12 broke compatibility and disallowed names that begin with a number.\n")
 				fmt.Fprintf(os.Stderr, "  To move an existing cluster to the new syntax, you must first move existing volumes to the new names.\n")
 				fmt.Fprintf(os.Stderr, "  To indicate that you have already performed the rename, pass KOPS_TERRAFORM_0_12_RENAMED=ebs environment variable.\n")
 				fmt.Fprintf(os.Stderr, "  Not doing so will result in data loss.\n")
