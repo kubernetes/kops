@@ -36,4 +36,4 @@ test-e2e-aws-simple-1-20: test-e2e-install
 		-- \
 		--test-package-version=v1.20.2 \
 		--parallel 25 \
-		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort"
+		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
