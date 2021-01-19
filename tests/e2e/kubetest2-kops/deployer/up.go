@@ -17,6 +17,7 @@ limitations under the License.
 package deployer
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	osexec "os/exec"
@@ -26,7 +27,7 @@ import (
 	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/do"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
-	"k8s.io/kops/tests/e2e/kubetest2-kops/util"
+	"k8s.io/kops/tests/e2e/pkg/util"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
@@ -124,6 +125,10 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 		args = append(args, "--master-size", "s-8vcpu-16gb")
 	}
 
+	if d.Networking != "" {
+		args = append(args, "--networking", d.Networking)
+	}
+
 	klog.Info(strings.Join(args, " "))
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.SetEnv(d.env()...)
@@ -166,7 +171,9 @@ func (d *deployer) verifyUpFlags() error {
 	if d.SSHPublicKeyPath == "" {
 		d.SSHPublicKeyPath = os.Getenv("AWS_SSH_PUBLIC_KEY_FILE")
 	}
-
+	if d.KubernetesVersion == "" {
+		return errors.New("missing required --kubernetes-version flag")
+	}
 	return nil
 }
 
