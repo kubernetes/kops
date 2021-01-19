@@ -32,8 +32,8 @@ func init() {
 	httpTransport.RegisterProtocol("file", http.NewFileTransport(http.Dir("/")))
 }
 
-// httpGETWithHeaders writes the response of an HTTP GET request
-func httpGETWithHeaders(url string, headers map[string]string, writer io.Writer) error {
+// HTTPGETWithHeaders writes the response of an HTTP GET request
+func HTTPGETWithHeaders(url string, headers map[string]string, writer io.Writer) error {
 	klog.Infof("curl %s", url)
 	c := &http.Client{Transport: httpTransport}
 	req, err := http.NewRequest("GET", url, nil)
