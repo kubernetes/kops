@@ -23,21 +23,17 @@ test-e2e-install:
 		go install ./kubetest2-tester-kops && \
 		go install ./kubetest2-kops
 
-# temporary until we update test-infra jobs
-.PHONY: test-e2e
-test-e2e: test-e2e-aws-simple-1-20
-
 .PHONY: test-e2e-aws-simple-1-20
 test-e2e-aws-simple-1-20: test-e2e-install
 	kubetest2 kops \
 		-v 2 \
-		--build --up --down \
+		--up --down \
 		--cloud-provider=aws \
-		--kops-binary-path=$(KOPS_ROOT)/bazel-bin/cmd/kops/$(GOOS)-$(GOARCH)/kops \
+		--kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
 		--kubernetes-version=v1.20.2 \
 		--template-path=tests/e2e/templates/simple.yaml.tmpl \
 		--test=kops \
 		-- \
 		--test-package-version=v1.20.2 \
 		--parallel 25 \
-		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort"
+		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"

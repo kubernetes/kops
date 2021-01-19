@@ -37,7 +37,7 @@ var externalIPServiceURLs = []string{
 func ExternalIPRange() (string, error) {
 	var b bytes.Buffer
 
-	err := httpGETWithHeaders(externalIPMetadataURL, map[string]string{"Metadata-Flavor": "Google"}, &b)
+	err := HTTPGETWithHeaders(externalIPMetadataURL, map[string]string{"Metadata-Flavor": "Google"}, &b)
 	if err != nil {
 		// This often fails due to workload identity
 		log.Printf("failed to get external ip from metadata service: %v", err)
@@ -50,7 +50,7 @@ func ExternalIPRange() (string, error) {
 	for attempt := 0; attempt < 5; attempt++ {
 		for _, u := range externalIPServiceURLs {
 			b.Reset()
-			err = httpGETWithHeaders(u, nil, &b)
+			err = HTTPGETWithHeaders(u, nil, &b)
 			if err != nil {
 				// The external service may well be down
 				log.Printf("failed to get external ip from %s: %v", u, err)
