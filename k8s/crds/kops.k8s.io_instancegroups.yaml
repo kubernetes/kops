@@ -312,6 +312,16 @@ spec:
                     description: configureCBR0 enables the kubelet to configure cbr0
                       based on Node.Spec.PodCIDR.
                     type: boolean
+                  containerLogMaxFiles:
+                    description: ContainerLogMaxFiles is the maximum number of container
+                      log files that can be present for a container. The number must
+                      be >= 2.
+                    format: int32
+                    type: integer
+                  containerLogMaxSize:
+                    description: ContainerLogMaxSize is the maximum size (e.g. 10Mi)
+                      of container log file before it is rotated.
+                    type: string
                   cpuCFSQuota:
                     description: CPUCFSQuota enables CPU CFS quota enforcement for
                       containers that specify CPU limits
