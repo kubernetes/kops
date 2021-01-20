@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "input.go",
+        "matcher.go",
+    ],
+    importmap = "k8s.io/kops/vendor/golang.org/x/tools/internal/lsp/fuzzy",
+    importpath = "golang.org/x/tools/internal/lsp/fuzzy",
+    visibility = ["//vendor/golang.org/x/tools:__subpackages__"],
+)

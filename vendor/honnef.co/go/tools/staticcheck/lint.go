@@ -528,8 +528,26 @@ func checkPrintfCallImpl(carg *Argument, f ir.Value, args []ir.Value) {
 			return true
 		}
 
-		if flags&isString != 0 && (code.IsType(T, "[]byte") || isStringer(T, ms) || isError(T, ms)) {
-			return true
+		if flags&isString != 0 {
+			isStringyElem := func(typ types.Type) bool {
+				if typ, ok := typ.Underlying().(*types.Basic); ok {
+					return typ.Kind() == types.Byte
+				}
+				return false
+			}
+			switch T := T.(type) {
+			case *types.Slice:
+				if isStringyElem(T.Elem()) {
+					return true
+				}
+			case *types.Array:
+				if isStringyElem(T.Elem()) {
+					return true
+				}
+			}
+			if isStringer(T, ms) || isError(T, ms) {
+				return true
+			}
 		}
 
 		if flags&isPointer != 0 && code.IsPointerLike(T) {
@@ -1086,6 +1104,12 @@ func CheckDubiousDeferInChannelRangeLoop(pass *analysis.Pass) (interface{}, erro
 }
 
 func CheckTestMainExit(pass *analysis.Pass) (interface{}, error) {
+	if code.IsGoVersion(pass, 15) {
+		// Beginning with Go 1.15, the test framework will call
+		// os.Exit for us.
+		return nil, nil
+	}
+
 	var (
 		fnmain    ast.Node
 		callsExit bool
@@ -1721,6 +1745,10 @@ func CheckUnreadVariableValues(pass *analysis.Pass) (interface{}, error) {
 					continue
 				}
 
+				if _, ok := val.(*ir.Const); ok {
+					// a zero-valued constant, for example in 'foo := []string(nil)'
+					continue
+				}
 				if !hasUse(val, nil) {
 					report.Report(pass, assign, fmt.Sprintf("this value of %s is never used", lhs))
 				}
@@ -2705,6 +2733,10 @@ func CheckSillyBitwiseOps(pass *analysis.Pass) (interface{}, error) {
 		case *ast.Ident:
 			obj, ok := pass.TypesInfo.ObjectOf(y).(*types.Const)
 			if !ok {
+				return
+			}
+			if obj.Pkg() != pass.Pkg {
+				// identifier was dot-imported
 				return
 			}
 			if v, _ := constant.Int64Val(obj.Val()); v != 0 {

@@ -271,8 +271,8 @@ func CheckStringsContains(pass *analysis.Pass) (interface{}, error) {
 
 var (
 	checkBytesCompareQ  = pattern.MustParse(`(BinaryExpr (CallExpr (Function "bytes.Compare") args) op@(Or "==" "!=") (BasicLit "INT" "0"))`)
-	checkBytesCompareRn = pattern.MustParse(`(CallExpr (SelectorExpr (Ident "bytes") (Ident "Equal")) args)`)
-	checkBytesCompareRe = pattern.MustParse(`(UnaryExpr "!" (CallExpr (SelectorExpr (Ident "bytes") (Ident "Equal")) args))`)
+	checkBytesCompareRe = pattern.MustParse(`(CallExpr (SelectorExpr (Ident "bytes") (Ident "Equal")) args)`)
+	checkBytesCompareRn = pattern.MustParse(`(UnaryExpr "!" (CallExpr (SelectorExpr (Ident "bytes") (Ident "Equal")) args))`)
 )
 
 func CheckBytesCompare(pass *analysis.Pass) (interface{}, error) {
