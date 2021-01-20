@@ -3274,6 +3274,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.ContainerLogMaxFiles != nil {
+		in, out := &in.ContainerLogMaxFiles, &out.ContainerLogMaxFiles
+		*out = new(int32)
+		**out = **in
+	}
 	return
 }
 
