@@ -34,6 +34,8 @@ var _ fi.ModelBuilder = &NetworkModelBuilder{}
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	clusterName := b.ClusterName()
 
+	osSpec := b.Cluster.Spec.CloudConfig.Openstack
+
 	netName, err := b.GetNetworkName()
 	if err != nil {
 		return err
@@ -45,11 +47,11 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Tag:       s(clusterName),
 			Lifecycle: b.Lifecycle,
 		}
-
+		if osSpec.Network != nil {
+			t.AvailabilityZoneHints = osSpec.Network.AvailabilityZoneHints
+		}
 		c.AddTask(t)
 	}
-
-	osSpec := b.Cluster.Spec.CloudConfig.Openstack
 
 	needRouter := true
 	//Do not need router if there is no external network
@@ -99,6 +101,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		t := &openstacktasks.Router{
 			Name:      s(routerName),
 			Lifecycle: b.Lifecycle,
+		}
+		if osSpec.Router != nil {
+			t.AvailabilityZoneHints = osSpec.Router.AvailabilityZoneHints
 		}
 
 		c.AddTask(t)
