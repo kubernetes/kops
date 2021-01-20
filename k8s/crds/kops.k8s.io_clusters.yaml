@@ -322,9 +322,21 @@ spec:
                           timeout:
                             type: string
                         type: object
+                      network:
+                        description: OpenstackNetwork defines the config for a network
+                        properties:
+                          availabilityZoneHints:
+                            items:
+                              type: string
+                            type: array
+                        type: object
                       router:
                         description: OpenstackRouter defines the config for a router
                         properties:
+                          availabilityZoneHints:
+                            items:
+                              type: string
+                            type: array
                           dnsServers:
                             type: string
                           externalNetwork:

@@ -39,6 +39,7 @@ Port:
   Lifecycle: Sync
   Name: port-master-a-1-cluster
   Network:
+    AvailabilityZoneHints: null
     ID: null
     Lifecycle: null
     Name: cluster
@@ -111,6 +112,7 @@ Port:
   Lifecycle: Sync
   Name: port-master-b-1-cluster
   Network:
+    AvailabilityZoneHints: null
     ID: null
     Lifecycle: null
     Name: cluster
@@ -183,6 +185,7 @@ Port:
   Lifecycle: Sync
   Name: port-master-c-1-cluster
   Network:
+    AvailabilityZoneHints: null
     ID: null
     Lifecycle: null
     Name: cluster
@@ -254,6 +257,7 @@ Port:
   Lifecycle: Sync
   Name: port-node-a-1-cluster
   Network:
+    AvailabilityZoneHints: null
     ID: null
     Lifecycle: null
     Name: cluster
@@ -319,6 +323,7 @@ Port:
   Lifecycle: Sync
   Name: port-node-b-1-cluster
   Network:
+    AvailabilityZoneHints: null
     ID: null
     Lifecycle: null
     Name: cluster
@@ -384,6 +389,7 @@ Port:
   Lifecycle: Sync
   Name: port-node-c-1-cluster
   Network:
+    AvailabilityZoneHints: null
     ID: null
     Lifecycle: null
     Name: cluster
@@ -426,6 +432,7 @@ ID: null
 Lifecycle: Sync
 Name: port-master-a-1-cluster
 Network:
+  AvailabilityZoneHints: null
   ID: null
   Lifecycle: null
   Name: cluster
@@ -458,6 +465,7 @@ ID: null
 Lifecycle: Sync
 Name: port-master-b-1-cluster
 Network:
+  AvailabilityZoneHints: null
   ID: null
   Lifecycle: null
   Name: cluster
@@ -490,6 +498,7 @@ ID: null
 Lifecycle: Sync
 Name: port-master-c-1-cluster
 Network:
+  AvailabilityZoneHints: null
   ID: null
   Lifecycle: null
   Name: cluster
@@ -522,6 +531,7 @@ ID: null
 Lifecycle: Sync
 Name: port-node-a-1-cluster
 Network:
+  AvailabilityZoneHints: null
   ID: null
   Lifecycle: null
   Name: cluster
@@ -548,6 +558,7 @@ ID: null
 Lifecycle: Sync
 Name: port-node-b-1-cluster
 Network:
+  AvailabilityZoneHints: null
   ID: null
   Lifecycle: null
   Name: cluster
@@ -574,6 +585,7 @@ ID: null
 Lifecycle: Sync
 Name: port-node-c-1-cluster
 Network:
+  AvailabilityZoneHints: null
   ID: null
   Lifecycle: null
   Name: cluster
