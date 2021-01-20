@@ -211,6 +211,10 @@ type KubeletConfigSpec struct {
 	EventQPS *int32 `json:"eventQPS,omitempty" flag:"event-qps" flag-empty:"0"`
 	// EventBurst temporarily allows event records to burst to this number, while still not exceeding EventQPS. Only used if EventQPS > 0.
 	EventBurst *int32 `json:"eventBurst,omitempty" flag:"event-burst"`
+	// ContainerLogMaxSize is the maximum size (e.g. 10Mi) of container log file before it is rotated.
+	ContainerLogMaxSize string `json:"containerLogMaxSize,omitempty" flag:"container-log-max-size"`
+	// ContainerLogMaxFiles is the maximum number of container log files that can be present for a container. The number must be >= 2.
+	ContainerLogMaxFiles *int32 `json:"containerLogMaxFiles,omitempty" flag:"container-log-max-files"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
