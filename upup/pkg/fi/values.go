@@ -30,6 +30,20 @@ func StringValue(s *string) string {
 	return *s
 }
 
+//StringSliceValue takes a slice of string pointers and returns a slice of strings
+func StringSliceValue(stringSlice []*string) []string {
+	if stringSlice == nil {
+		return nil
+	}
+	var newSlice []string
+	for _, value := range stringSlice {
+		if value != nil {
+			newSlice = append(newSlice, *value)
+		}
+	}
+	return newSlice
+}
+
 func IsNilOrEmpty(s *string) bool {
 	if s == nil {
 		return true
@@ -41,6 +55,18 @@ func IsNilOrEmpty(s *string) bool {
 // This is similar to aws.String, except that we use it for non-AWS values
 func String(s string) *string {
 	return &s
+}
+
+// StringSlice is a helper that builds a []*string from a slice of strings
+func StringSlice(stringSlice []string) []*string {
+	if stringSlice == nil {
+		return nil
+	}
+	var newSlice []*string
+	for i := range stringSlice {
+		newSlice = append(newSlice, &stringSlice[i])
+	}
+	return newSlice
 }
 
 // Float32 returns a point to a float32

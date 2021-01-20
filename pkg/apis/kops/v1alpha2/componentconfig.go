@@ -744,9 +744,15 @@ type OpenstackMonitor struct {
 
 // OpenstackRouter defines the config for a router
 type OpenstackRouter struct {
-	ExternalNetwork *string `json:"externalNetwork,omitempty"`
-	DNSServers      *string `json:"dnsServers,omitempty"`
-	ExternalSubnet  *string `json:"externalSubnet,omitempty"`
+	ExternalNetwork       *string   `json:"externalNetwork,omitempty"`
+	DNSServers            *string   `json:"dnsServers,omitempty"`
+	ExternalSubnet        *string   `json:"externalSubnet,omitempty"`
+	AvailabilityZoneHints []*string `json:"availabilityZoneHints,omitempty"`
+}
+
+// OpenstackNetwork defines the config for a network
+type OpenstackNetwork struct {
+	AvailabilityZoneHints []*string `json:"availabilityZoneHints,omitempty"`
 }
 
 // OpenstackConfiguration defines cloud config elements for the openstack cloud provider
@@ -756,6 +762,7 @@ type OpenstackConfiguration struct {
 	Router             *OpenstackRouter             `json:"router,omitempty"`
 	BlockStorage       *OpenstackBlockStorageConfig `json:"blockStorage,omitempty"`
 	InsecureSkipVerify *bool                        `json:"insecureSkipVerify,omitempty"`
+	Network            *OpenstackNetwork            `json:"network,omitempty"`
 }
 
 // AzureConfiguration defines Azure specific cluster configuration.

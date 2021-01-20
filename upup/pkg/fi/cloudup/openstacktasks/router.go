@@ -27,9 +27,10 @@ import (
 
 // +kops:fitask
 type Router struct {
-	ID        *string
-	Name      *string
-	Lifecycle *fi.Lifecycle
+	ID                    *string
+	Name                  *string
+	Lifecycle             *fi.Lifecycle
+	AvailabilityZoneHints []*string
 }
 
 var _ fi.CompareWithID = &Router{}
@@ -38,11 +39,13 @@ func (n *Router) CompareWithID() *string {
 	return n.ID
 }
 
+//NewRouterTaskFromCloud initializes and returns a new Router
 func NewRouterTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, router *routers.Router, find *Router) (*Router, error) {
 	actual := &Router{
-		ID:        fi.String(router.ID),
-		Name:      fi.String(router.Name),
-		Lifecycle: lifecycle,
+		ID:                    fi.String(router.ID),
+		Name:                  fi.String(router.Name),
+		Lifecycle:             lifecycle,
+		AvailabilityZoneHints: fi.StringSlice(router.AvailabilityZoneHints),
 	}
 	if find != nil {
 		find.ID = actual.ID
@@ -81,6 +84,9 @@ func (_ *Router) CheckChanges(a, e, changes *Router) error {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
 		}
+		if changes.AvailabilityZoneHints != nil {
+			return fi.CannotChangeField("AvailabilityZoneHints")
+		}
 	}
 	return nil
 }
@@ -90,8 +96,9 @@ func (_ *Router) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 		klog.V(2).Infof("Creating Router with name:%q", fi.StringValue(e.Name))
 
 		opt := routers.CreateOpts{
-			Name:         fi.StringValue(e.Name),
-			AdminStateUp: fi.Bool(true),
+			Name:                  fi.StringValue(e.Name),
+			AdminStateUp:          fi.Bool(true),
+			AvailabilityZoneHints: fi.StringSliceValue(e.AvailabilityZoneHints),
 		}
 		floatingNet, err := t.Cloud.GetExternalNetwork()
 		if err != nil {
