@@ -21,6 +21,7 @@ set -o pipefail
 echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
 
 REPO_ROOT=$(git rev-parse --show-toplevel);
+PATH=$REPO_ROOT/bazel-bin/cmd/kops/$(go env GOOS)-$(go env GOARCH)/kops:$PATH
 
 KUBETEST2_COMMON_ARGS="-v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-} --kops-binary-path=${REPO_ROOT}/bazel-bin/cmd/kops/linux-amd64/kops"
 KUBETEST2_COMMON_ARGS="${KUBETEST2_COMMON_ARGS} --admin-access=${ADMIN_ACCESS:-}"
