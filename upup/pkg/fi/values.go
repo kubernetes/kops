@@ -32,9 +32,6 @@ func StringValue(s *string) string {
 
 //StringSliceValue takes a slice of string pointers and returns a slice of strings
 func StringSliceValue(stringSlice []*string) []string {
-	if stringSlice == nil {
-		return nil
-	}
 	var newSlice []string
 	for _, value := range stringSlice {
 		if value != nil {
@@ -59,9 +56,6 @@ func String(s string) *string {
 
 // StringSlice is a helper that builds a []*string from a slice of strings
 func StringSlice(stringSlice []string) []*string {
-	if stringSlice == nil {
-		return nil
-	}
 	var newSlice []*string
 	for i := range stringSlice {
 		newSlice = append(newSlice, &stringSlice[i])
