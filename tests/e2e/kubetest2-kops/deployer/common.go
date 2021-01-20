@@ -60,6 +60,14 @@ func (d *deployer) initialize() error {
 		d.KopsBinaryPath = binaryPath
 		d.KopsBaseURL = baseURL
 	}
+	// These environment variables are defined by the "preset-aws-ssh" prow preset
+	// https://github.com/kubernetes/test-infra/blob/3d3b325c98b739b526ba5d93ce21c90a05e1f46d/config/prow/config.yaml#L653-L670
+	if d.SSHPrivateKeyPath == "" {
+		d.SSHPrivateKeyPath = os.Getenv("AWS_SSH_PRIVATE_KEY_FILE")
+	}
+	if d.SSHPublicKeyPath == "" {
+		d.SSHPublicKeyPath = os.Getenv("AWS_SSH_PUBLIC_KEY_FILE")
+	}
 	return nil
 }
 
