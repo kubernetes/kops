@@ -410,6 +410,10 @@ func CheckErrorStrings(pass *analysis.Pass) (interface{}, error) {
 					}
 				}
 
+				if strings.ContainsRune(word, '(') {
+					// Might be a function call
+					continue instrLoop
+				}
 				word = strings.TrimRightFunc(word, func(r rune) bool { return unicode.IsPunct(r) })
 				if objNames[fn.Package()][word] {
 					// Word is probably the name of a function or type in this package

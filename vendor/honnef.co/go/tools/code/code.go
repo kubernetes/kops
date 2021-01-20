@@ -53,6 +53,7 @@ func IsCallToAny(call *ir.CallCommon, names ...string) bool {
 	return false
 }
 
+// OPT(dh): IsType is kind of expensive; should we really use it?
 func IsType(T types.Type, name string) bool { return types.TypeString(T, nil) == name }
 
 func FilterDebug(instr []ir.Instruction) []ir.Instruction {

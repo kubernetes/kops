@@ -52,6 +52,8 @@ go_library(
         "ioctl.go",
         "pagesize_unix.go",
         "pledge_openbsd.go",
+        "ptrace_darwin.go",
+        "ptrace_ios.go",
         "race.go",
         "race0.go",
         "readdirent_getdents.go",

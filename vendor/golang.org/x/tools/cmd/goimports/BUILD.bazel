@@ -10,7 +10,11 @@ go_library(
     importmap = "k8s.io/kops/vendor/golang.org/x/tools/cmd/goimports",
     importpath = "golang.org/x/tools/cmd/goimports",
     visibility = ["//visibility:private"],
-    deps = ["//vendor/golang.org/x/tools/internal/imports:go_default_library"],
+    deps = [
+        "//vendor/golang.org/x/sys/execabs:go_default_library",
+        "//vendor/golang.org/x/tools/internal/gocommand:go_default_library",
+        "//vendor/golang.org/x/tools/internal/imports:go_default_library",
+    ],
 )
 
 go_binary(
