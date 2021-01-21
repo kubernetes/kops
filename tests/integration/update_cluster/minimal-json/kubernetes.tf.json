@@ -318,8 +318,10 @@
             "device_name": "/dev/xvda",
             "ebs": [
               {
-                "volume_type": "gp2",
+                "volume_type": "gp3",
                 "volume_size": 64,
+                "iops": 3000,
+                "throughput": 125,
                 "delete_on_termination": true,
                 "encrypted": false
               }
@@ -402,8 +404,10 @@
             "device_name": "/dev/xvda",
             "ebs": [
               {
-                "volume_type": "gp2",
+                "volume_type": "gp3",
                 "volume_size": 128,
+                "iops": 3000,
+                "throughput": 125,
                 "delete_on_termination": true,
                 "encrypted": false
               }

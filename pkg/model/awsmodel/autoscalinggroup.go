@@ -35,7 +35,9 @@ import (
 
 const (
 	// DefaultVolumeType is the default volume type
-	DefaultVolumeType = ec2.VolumeTypeGp2
+	DefaultVolumeType = ec2.VolumeTypeGp3
+	// DefaultLegacyVolumeType is the default volume type when using LaunchConfigurations
+	DefaultLegacyVolumeType = ec2.VolumeTypeGp2
 	// DefaultVolumeIonIops is the default volume IOPS when volume type is io1 or io2
 	DefaultVolumeIonIops = 100
 	// DefaultVolumeGp3Iops is the default volume IOPS when volume type is gp3
@@ -160,6 +162,9 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	} else {
 		lt.RootVolumeKmsKey = fi.String("")
 	}
+	if fi.StringValue(ig.Spec.RootVolumeType) == "" {
+		lt.RootVolumeType = fi.String(DefaultVolumeType)
+	}
 	if fi.StringValue(lt.RootVolumeType) == ec2.VolumeTypeGp3 {
 		if fi.Int32Value(ig.Spec.RootVolumeIops) < 3000 {
 			lt.RootVolumeIops = fi.Int64(int64(DefaultVolumeGp3Iops))
@@ -188,7 +193,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 
 	volumeType := fi.StringValue(ig.Spec.RootVolumeType)
 	if volumeType == "" {
-		volumeType = DefaultVolumeType
+		volumeType = DefaultLegacyVolumeType
 	}
 
 	rootVolumeDeleteOnTermination := DefaultVolumeDeleteOnTermination
