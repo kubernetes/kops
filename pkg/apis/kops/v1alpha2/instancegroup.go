@@ -190,7 +190,7 @@ type InstanceMetadataOptions struct {
 	// The larger the number, the further instance metadata requests can travel. The default value is 1.
 	HTTPPutResponseHopLimit *int64 `json:"httpPutResponseHopLimit,omitempty"`
 	// HTTPTokens is the state of token usage for the instance metadata requests.
-	// If the parameter is not specified in the request, the default state is "optional".
+	// If the parameter is not specified in the request, the default state is "required".
 	HTTPTokens *string `json:"httpTokens,omitempty"`
 }
 

@@ -318,10 +318,12 @@
             "device_name": "/dev/xvda",
             "ebs": [
               {
-                "volume_type": "gp2",
+                "volume_type": "gp3",
                 "volume_size": 64,
+                "iops": 3000,
+                "throughput": 125,
                 "delete_on_termination": true,
-                "encrypted": false
+                "encrypted": true
               }
             ]
           },
@@ -341,7 +343,7 @@
         "metadata_options": {
           "http_endpoint": "enabled",
           "http_put_response_hop_limit": 1,
-          "http_tokens": "optional"
+          "http_tokens": "required"
         },
         "network_interfaces": [
           {
@@ -402,10 +404,12 @@
             "device_name": "/dev/xvda",
             "ebs": [
               {
-                "volume_type": "gp2",
+                "volume_type": "gp3",
                 "volume_size": 128,
+                "iops": 3000,
+                "throughput": 125,
                 "delete_on_termination": true,
-                "encrypted": false
+                "encrypted": true
               }
             ]
           }
@@ -421,7 +425,7 @@
         "metadata_options": {
           "http_endpoint": "enabled",
           "http_put_response_hop_limit": 1,
-          "http_tokens": "optional"
+          "http_tokens": "required"
         },
         "network_interfaces": [
           {
