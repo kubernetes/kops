@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
 	"io"
@@ -39,7 +38,6 @@ import (
 
 	// Load DNS plugins
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
-	k8scoredns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/coredns"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
 )
 
@@ -94,7 +92,7 @@ func run() error {
 	flag.StringVar(&tlsCert, "tls-cert", tlsCert, "Path to a file containing the certificate for etcd server")
 	flag.StringVar(&tlsKey, "tls-key", tlsKey, "Path to a file containing the private key for etcd server")
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
-	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, coredns, digitalocean)")
+	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, digitalocean)")
 	flags.StringVar(&etcdBackupImage, "etcd-backup-image", "", "Set to override the image for (experimental) etcd backups")
 	flags.StringVar(&etcdBackupStore, "etcd-backup-store", "", "Set to enable (experimental) etcd backups")
 	flags.StringVar(&etcdImageSource, "etcd-image", "k8s.gcr.io/etcd:2.2.1", "Etcd Source Container Registry")
@@ -360,13 +358,6 @@ func run() error {
 		var dnsController *dns.DNSController
 		{
 			var file io.Reader
-			if dnsProviderID == k8scoredns.ProviderName {
-				var lines []string
-				lines = append(lines, "etcd-endpoints = "+dnsServer)
-				lines = append(lines, "zones = "+zones[0])
-				config := "[global]\n" + strings.Join(lines, "\n") + "\n"
-				file = bytes.NewReader([]byte(config))
-			}
 
 			dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderID, file)
 			if err != nil {
