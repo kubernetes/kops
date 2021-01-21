@@ -3,7 +3,7 @@
 The `dns-controller` executable takes the following command line options:
 
 * `--dns` - DNS provider we should use. Valid options are: `aws-route53`, 
-  `google-clouddns` or `coredns`.
+  `google-clouddns`, `gossip`, and `digitalocean`.
 * `--gossip-listen` - The address on which to listen if gossip is enabled.
 * `--gossip-seed` - If set, will enable gossip zones and seed using the 
   provided address.
