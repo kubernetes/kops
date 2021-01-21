@@ -30,10 +30,10 @@ test-e2e-aws-simple-1-20: test-e2e-install
 		--up --down \
 		--cloud-provider=aws \
 		--kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-		--kubernetes-version=v1.20.2 \
+		--kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
 		--template-path=tests/e2e/templates/simple.yaml.tmpl \
 		--test=kops \
 		-- \
-		--test-package-version=v1.20.2 \
+		--test-package-marker=stable-1.20.txt \
 		--parallel 25 \
 		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
