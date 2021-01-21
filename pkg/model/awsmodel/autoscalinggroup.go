@@ -238,7 +238,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		SecurityGroups:                []*awstasks.SecurityGroup{sgLink},
 	}
 
-	t.HTTPTokens = fi.String("optional")
+	t.HTTPTokens = fi.String(ec2.LaunchTemplateHttpTokensStateRequired)
 	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPTokens != nil {
 		t.HTTPTokens = ig.Spec.InstanceMetadata.HTTPTokens
 	}

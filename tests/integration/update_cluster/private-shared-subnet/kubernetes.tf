@@ -427,7 +427,7 @@ resource "aws_launch_template" "bastion-private-shared-subnet-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "bastion.private-shared-subnet.example.com"
   network_interfaces {
@@ -498,7 +498,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-private-shared-subnet-
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "master-us-test-1a.masters.private-shared-subnet.example.com"
   network_interfaces {
@@ -569,7 +569,7 @@ resource "aws_launch_template" "nodes-private-shared-subnet-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "nodes.private-shared-subnet.example.com"
   network_interfaces {

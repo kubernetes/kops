@@ -284,7 +284,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-sharedsubnet-example-c
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "master-us-test-1a.masters.sharedsubnet.example.com"
   network_interfaces {
@@ -355,7 +355,7 @@ resource "aws_launch_template" "nodes-sharedsubnet-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "nodes.sharedsubnet.example.com"
   network_interfaces {
