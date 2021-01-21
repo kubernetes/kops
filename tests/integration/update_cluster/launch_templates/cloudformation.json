@@ -298,7 +298,7 @@
               "VolumeType": "gp2",
               "VolumeSize": 64,
               "DeleteOnTermination": true,
-              "Encrypted": false
+              "Encrypted": true
             }
           }
         ],
@@ -328,7 +328,7 @@
               "VolumeType": "gp2",
               "VolumeSize": 64,
               "DeleteOnTermination": true,
-              "Encrypted": false
+              "Encrypted": true
             }
           }
         ],
@@ -358,7 +358,7 @@
               "VolumeType": "gp2",
               "VolumeSize": 64,
               "DeleteOnTermination": true,
-              "Encrypted": false
+              "Encrypted": true
             }
           }
         ],
@@ -388,7 +388,7 @@
               "VolumeType": "gp2",
               "VolumeSize": 128,
               "DeleteOnTermination": true,
-              "Encrypted": false
+              "Encrypted": true
             }
           }
         ],

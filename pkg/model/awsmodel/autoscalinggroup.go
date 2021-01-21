@@ -47,7 +47,7 @@ const (
 	// DefaultVolumeDeleteOnTermination is the default volume behavior after instance termination
 	DefaultVolumeDeleteOnTermination = true
 	// DefaultVolumeEncryption is the default volume encryption behavior
-	DefaultVolumeEncryption = false
+	DefaultVolumeEncryption = true
 )
 
 // AutoscalingGroupModelBuilder configures AutoscalingGroup objects
