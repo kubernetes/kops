@@ -223,10 +223,12 @@
             {
               "DeviceName": "/dev/xvda",
               "Ebs": {
-                "VolumeType": "gp2",
+                "VolumeType": "gp3",
                 "VolumeSize": 64,
+                "Iops": 3000,
+                "Throughput": 125,
                 "DeleteOnTermination": true,
-                "Encrypted": false
+                "Encrypted": true
               }
             },
             {
@@ -244,7 +246,7 @@
           "KeyName": "kubernetes.externallb.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
           "MetadataOptions": {
             "HttpPutResponseHopLimit": 1,
-            "HttpTokens": "optional"
+            "HttpTokens": "required"
           },
           "NetworkInterfaces": [
             {
@@ -347,10 +349,12 @@
             {
               "DeviceName": "/dev/xvda",
               "Ebs": {
-                "VolumeType": "gp2",
+                "VolumeType": "gp3",
                 "VolumeSize": 128,
+                "Iops": 3000,
+                "Throughput": 125,
                 "DeleteOnTermination": true,
-                "Encrypted": false
+                "Encrypted": true
               }
             }
           ],
@@ -364,7 +368,7 @@
           "KeyName": "kubernetes.externallb.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
           "MetadataOptions": {
             "HttpPutResponseHopLimit": 1,
-            "HttpTokens": "optional"
+            "HttpTokens": "required"
           },
           "NetworkInterfaces": [
             {

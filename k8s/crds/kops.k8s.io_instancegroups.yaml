@@ -239,7 +239,7 @@ spec:
                   httpTokens:
                     description: HTTPTokens is the state of token usage for the instance
                       metadata requests. If the parameter is not specified in the
-                      request, the default state is "optional".
+                      request, the default state is "required".
                     type: string
                 type: object
               instanceProtection:

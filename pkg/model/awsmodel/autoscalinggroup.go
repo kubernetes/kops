@@ -35,7 +35,9 @@ import (
 
 const (
 	// DefaultVolumeType is the default volume type
-	DefaultVolumeType = ec2.VolumeTypeGp2
+	DefaultVolumeType = ec2.VolumeTypeGp3
+	// DefaultLegacyVolumeType is the default volume type when using LaunchConfigurations
+	DefaultLegacyVolumeType = ec2.VolumeTypeGp2
 	// DefaultVolumeIonIops is the default volume IOPS when volume type is io1 or io2
 	DefaultVolumeIonIops = 100
 	// DefaultVolumeGp3Iops is the default volume IOPS when volume type is gp3
@@ -45,7 +47,7 @@ const (
 	// DefaultVolumeDeleteOnTermination is the default volume behavior after instance termination
 	DefaultVolumeDeleteOnTermination = true
 	// DefaultVolumeEncryption is the default volume encryption behavior
-	DefaultVolumeEncryption = false
+	DefaultVolumeEncryption = true
 )
 
 // AutoscalingGroupModelBuilder configures AutoscalingGroup objects
@@ -160,7 +162,15 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	} else {
 		lt.RootVolumeKmsKey = fi.String("")
 	}
-	if fi.StringValue(ig.Spec.RootVolumeType) == ec2.VolumeTypeGp3 {
+	if fi.StringValue(ig.Spec.RootVolumeType) == "" {
+		lt.RootVolumeType = fi.String(DefaultVolumeType)
+	}
+	if fi.StringValue(lt.RootVolumeType) == ec2.VolumeTypeGp3 {
+		if fi.Int32Value(ig.Spec.RootVolumeIops) < 3000 {
+			lt.RootVolumeIops = fi.Int64(int64(DefaultVolumeGp3Iops))
+		} else {
+			lt.RootVolumeIops = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops)))
+		}
 		if fi.Int32Value(ig.Spec.RootVolumeThroughput) < 125 {
 			lt.RootVolumeThroughput = fi.Int64(int64(DefaultVolumeGp3Throughput))
 		} else {
@@ -183,7 +193,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 
 	volumeType := fi.StringValue(ig.Spec.RootVolumeType)
 	if volumeType == "" {
-		volumeType = DefaultVolumeType
+		volumeType = DefaultLegacyVolumeType
 	}
 
 	rootVolumeDeleteOnTermination := DefaultVolumeDeleteOnTermination
@@ -228,7 +238,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		SecurityGroups:                []*awstasks.SecurityGroup{sgLink},
 	}
 
-	t.HTTPTokens = fi.String("optional")
+	t.HTTPTokens = fi.String(ec2.LaunchTemplateHttpTokensStateRequired)
 	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPTokens != nil {
 		t.HTTPTokens = ig.Spec.InstanceMetadata.HTTPTokens
 	}
@@ -256,12 +266,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 	if volumeType == ec2.VolumeTypeIo1 || volumeType == ec2.VolumeTypeIo2 {
 		if fi.Int32Value(ig.Spec.RootVolumeIops) < 100 {
 			t.RootVolumeIops = fi.Int64(int64(DefaultVolumeIonIops))
-		} else {
-			t.RootVolumeIops = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops)))
-		}
-	} else if volumeType == ec2.VolumeTypeGp3 {
-		if fi.Int32Value(ig.Spec.RootVolumeIops) < 3000 {
-			t.RootVolumeIops = fi.Int64(int64(DefaultVolumeGp3Iops))
 		} else {
 			t.RootVolumeIops = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops)))
 		}

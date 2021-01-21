@@ -300,9 +300,11 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
     ebs {
       delete_on_termination = true
       encrypted             = true
+      iops                  = 3000
       kms_key_id            = "arn:aws:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+      throughput            = 125
       volume_size           = 64
-      volume_type           = "gp2"
+      volume_type           = "gp3"
     }
   }
   block_device_mappings {
@@ -379,8 +381,10 @@ resource "aws_launch_template" "nodes-complex-example-com" {
     ebs {
       delete_on_termination = true
       encrypted             = true
+      iops                  = 3000
+      throughput            = 125
       volume_size           = 128
-      volume_type           = "gp2"
+      volume_type           = "gp3"
     }
   }
   block_device_mappings {
@@ -404,7 +408,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   monitoring {
     enabled = true

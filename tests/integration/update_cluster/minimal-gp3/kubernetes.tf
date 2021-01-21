@@ -277,7 +277,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
     device_name = "/dev/xvda"
     ebs {
       delete_on_termination = true
-      encrypted             = false
+      encrypted             = true
       iops                  = 4000
       throughput            = 200
       volume_size           = 64
@@ -296,7 +296,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "master-us-test-1a.masters.minimal.example.com"
   network_interfaces {
@@ -348,7 +348,7 @@ resource "aws_launch_template" "nodes-minimal-example-com" {
     device_name = "/dev/xvda"
     ebs {
       delete_on_termination = true
-      encrypted             = false
+      encrypted             = true
       iops                  = 3000
       throughput            = 125
       volume_size           = 128
@@ -367,7 +367,7 @@ resource "aws_launch_template" "nodes-minimal-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "nodes.minimal.example.com"
   network_interfaces {
