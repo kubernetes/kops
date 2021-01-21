@@ -269,6 +269,7 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 				DeleteOnTermination: fi.Bool(true),
 				IOPS:                x.EbsVolumeIops,
 				VolumeSize:          x.EbsVolumeSize,
+				Throughput:          x.EbsVolumeThroughput,
 				VolumeType:          x.EbsVolumeType,
 				Encrypted:           x.EbsEncrypted,
 				KmsKeyID:            x.EbsKmsKey,
