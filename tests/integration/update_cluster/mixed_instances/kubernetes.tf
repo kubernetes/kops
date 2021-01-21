@@ -465,9 +465,11 @@ resource "aws_launch_template" "master-us-test-1a-masters-mixedinstances-example
     device_name = "/dev/xvda"
     ebs {
       delete_on_termination = true
-      encrypted             = false
+      encrypted             = true
+      iops                  = 3000
+      throughput            = 125
       volume_size           = 64
-      volume_type           = "gp2"
+      volume_type           = "gp3"
     }
   }
   block_device_mappings {
@@ -486,7 +488,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-mixedinstances-example
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "master-us-test-1a.masters.mixedinstances.example.com"
   network_interfaces {
@@ -538,9 +540,11 @@ resource "aws_launch_template" "master-us-test-1b-masters-mixedinstances-example
     device_name = "/dev/xvda"
     ebs {
       delete_on_termination = true
-      encrypted             = false
+      encrypted             = true
+      iops                  = 3000
+      throughput            = 125
       volume_size           = 64
-      volume_type           = "gp2"
+      volume_type           = "gp3"
     }
   }
   block_device_mappings {
@@ -559,7 +563,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-mixedinstances-example
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "master-us-test-1b.masters.mixedinstances.example.com"
   network_interfaces {
@@ -611,9 +615,11 @@ resource "aws_launch_template" "master-us-test-1c-masters-mixedinstances-example
     device_name = "/dev/xvda"
     ebs {
       delete_on_termination = true
-      encrypted             = false
+      encrypted             = true
+      iops                  = 3000
+      throughput            = 125
       volume_size           = 64
-      volume_type           = "gp2"
+      volume_type           = "gp3"
     }
   }
   block_device_mappings {
@@ -632,7 +638,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-mixedinstances-example
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "master-us-test-1c.masters.mixedinstances.example.com"
   network_interfaces {
@@ -684,9 +690,11 @@ resource "aws_launch_template" "nodes-mixedinstances-example-com" {
     device_name = "/dev/xvda"
     ebs {
       delete_on_termination = true
-      encrypted             = false
+      encrypted             = true
+      iops                  = 3000
+      throughput            = 125
       volume_size           = 128
-      volume_type           = "gp2"
+      volume_type           = "gp3"
     }
   }
   iam_instance_profile {
@@ -701,7 +709,7 @@ resource "aws_launch_template" "nodes-mixedinstances-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "nodes.mixedinstances.example.com"
   network_interfaces {

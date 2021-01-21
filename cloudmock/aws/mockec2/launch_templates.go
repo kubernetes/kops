@@ -172,6 +172,7 @@ func (m *MockEC2) CreateLaunchTemplate(request *ec2.CreateLaunchTemplateInput) (
 					Iops:                x.Ebs.Iops,
 					KmsKeyId:            x.Ebs.KmsKeyId,
 					SnapshotId:          x.Ebs.SnapshotId,
+					Throughput:          x.Ebs.Throughput,
 					VolumeSize:          x.Ebs.VolumeSize,
 					VolumeType:          x.Ebs.VolumeType,
 				}
