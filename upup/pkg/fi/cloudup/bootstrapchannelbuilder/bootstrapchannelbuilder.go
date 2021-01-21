@@ -699,7 +699,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 	if b.Cluster.Spec.Networking.Weave != nil {
 		key := "networking.weave"
 		versions := map[string]string{
-			"k8s-1.12": "2.7.0-kops.1",
+			"k8s-1.12": "2.8.0-kops.1",
 		}
 
 		{
