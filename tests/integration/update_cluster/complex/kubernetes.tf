@@ -198,32 +198,32 @@ resource "aws_autoscaling_group" "nodes-complex-example-com" {
   vpc_zone_identifier = [aws_subnet.us-test-1a-complex-example-com.id]
 }
 
-resource "aws_ebs_volume" "ebs-1a-etcd-events-complex-example-com" {
+resource "aws_ebs_volume" "a-etcd-events-complex-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
   size              = 20
   tags = {
     "KubernetesCluster"                         = "complex.example.com"
-    "Name"                                      = "1a.etcd-events.complex.example.com"
+    "Name"                                      = "a.etcd-events.complex.example.com"
     "Owner"                                     = "John Doe"
     "foo/bar"                                   = "fib+baz"
-    "k8s.io/etcd/events"                        = "1a/1a"
+    "k8s.io/etcd/events"                        = "a/a"
     "k8s.io/role/master"                        = "1"
     "kubernetes.io/cluster/complex.example.com" = "owned"
   }
   type = "gp2"
 }
 
-resource "aws_ebs_volume" "ebs-1a-etcd-main-complex-example-com" {
+resource "aws_ebs_volume" "a-etcd-main-complex-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
   size              = 20
   tags = {
     "KubernetesCluster"                         = "complex.example.com"
-    "Name"                                      = "1a.etcd-main.complex.example.com"
+    "Name"                                      = "a.etcd-main.complex.example.com"
     "Owner"                                     = "John Doe"
     "foo/bar"                                   = "fib+baz"
-    "k8s.io/etcd/main"                          = "1a/1a"
+    "k8s.io/etcd/main"                          = "a/a"
     "k8s.io/role/master"                        = "1"
     "kubernetes.io/cluster/complex.example.com" = "owned"
   }
