@@ -17,14 +17,12 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/pflag"
@@ -37,7 +35,6 @@ import (
 	"k8s.io/kops/dns-controller/pkg/watchers"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
-	k8scoredns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/coredns"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
 	_ "k8s.io/kops/pkg/resources/digitalocean/dns"
 	"k8s.io/kops/pkg/wellknownports"
@@ -68,7 +65,7 @@ func main() {
 	flags.BoolVar(&watchIngress, "watch-ingress", true, "Configure hostnames found in ingress resources")
 	flags.StringSliceVar(&gossipSeeds, "gossip-seed", gossipSeeds, "If set, will enable gossip zones and seed using the provided addresses")
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
-	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, digitalocean, coredns, gossip)")
+	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, digitalocean, gossip)")
 	flag.StringVar(&gossipProtocol, "gossip-protocol", "mesh", "mesh/memberlist")
 	flags.StringVar(&gossipListen, "gossip-listen", fmt.Sprintf("0.0.0.0:%d", wellknownports.DNSControllerGossipWeaveMesh), "The address on which to listen if gossip is enabled")
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
@@ -115,13 +112,7 @@ func main() {
 	var dnsProviders []dnsprovider.Interface
 	if dnsProviderID != "gossip" {
 		var file io.Reader
-		if dnsProviderID == k8scoredns.ProviderName {
-			var lines []string
-			lines = append(lines, "etcd-endpoints = "+dnsServer)
-			lines = append(lines, "zones = "+zones[0])
-			config := "[global]\n" + strings.Join(lines, "\n") + "\n"
-			file = bytes.NewReader([]byte(config))
-		}
+
 		dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderID, file)
 		if err != nil {
 			klog.Errorf("Error initializing DNS provider %q: %v", dnsProviderID, err)
