@@ -47,6 +47,7 @@ func (m *MockEC2) CreateVolume(request *ec2.CreateVolumeInput) (*ec2.Volume, err
 		KmsKeyId:         request.KmsKeyId,
 		Size:             request.Size,
 		SnapshotId:       request.SnapshotId,
+		Throughput:       request.Throughput,
 		VolumeType:       request.VolumeType,
 	}
 
