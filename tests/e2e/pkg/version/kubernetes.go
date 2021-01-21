@@ -29,6 +29,9 @@ import (
 // ParseKubernetesVersion will parse the provided k8s version
 // Either a semver or marker URL is accepted
 func ParseKubernetesVersion(version string) (string, error) {
+	if _, err := semver.ParseTolerant(version); err == nil {
+		return version, nil
+	}
 	if _, err := url.Parse(version); err == nil {
 		var b bytes.Buffer
 		err = util.HTTPGETWithHeaders(version, nil, &b)
@@ -36,9 +39,6 @@ func ParseKubernetesVersion(version string) (string, error) {
 			return "", err
 		}
 		return strings.TrimSpace(b.String()), nil
-	}
-	if _, err := semver.ParseTolerant(version); err == nil {
-		return version, nil
 	}
 	return "", fmt.Errorf("unexpected kubernetes version: %v", version)
 }
