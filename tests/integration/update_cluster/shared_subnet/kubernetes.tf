@@ -261,7 +261,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-sharedsubnet-example-c
     device_name = "/dev/xvda"
     ebs {
       delete_on_termination = true
-      encrypted             = false
+      encrypted             = true
       iops                  = 3000
       throughput            = 125
       volume_size           = 64
@@ -336,7 +336,7 @@ resource "aws_launch_template" "nodes-sharedsubnet-example-com" {
     device_name = "/dev/xvda"
     ebs {
       delete_on_termination = true
-      encrypted             = false
+      encrypted             = true
       iops                  = 3000
       throughput            = 125
       volume_size           = 128

@@ -476,7 +476,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-existingsg-example-com
     device_name = "/dev/xvda"
     ebs {
       delete_on_termination = true
-      encrypted             = false
+      encrypted             = true
       iops                  = 3000
       throughput            = 125
       volume_size           = 64
@@ -551,7 +551,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-existingsg-example-com
     device_name = "/dev/xvda"
     ebs {
       delete_on_termination = true
-      encrypted             = false
+      encrypted             = true
       iops                  = 3000
       throughput            = 125
       volume_size           = 64
@@ -626,7 +626,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-existingsg-example-com
     device_name = "/dev/xvda"
     ebs {
       delete_on_termination = true
-      encrypted             = false
+      encrypted             = true
       iops                  = 3000
       throughput            = 125
       volume_size           = 64
@@ -701,7 +701,7 @@ resource "aws_launch_template" "nodes-existingsg-example-com" {
     device_name = "/dev/xvda"
     ebs {
       delete_on_termination = true
-      encrypted             = false
+      encrypted             = true
       iops                  = 3000
       throughput            = 125
       volume_size           = 128

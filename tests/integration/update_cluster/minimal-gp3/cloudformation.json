@@ -213,7 +213,7 @@
                 "Iops": 4000,
                 "Throughput": 200,
                 "DeleteOnTermination": true,
-                "Encrypted": false
+                "Encrypted": true
               }
             }
           ],
@@ -335,7 +335,7 @@
                 "Iops": 3000,
                 "Throughput": 125,
                 "DeleteOnTermination": true,
-                "Encrypted": false
+                "Encrypted": true
               }
             }
           ],
