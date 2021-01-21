@@ -252,8 +252,10 @@
             {
               "DeviceName": "/dev/xvda",
               "Ebs": {
-                "VolumeType": "gp2",
+                "VolumeType": "gp3",
                 "VolumeSize": 64,
+                "Iops": 3000,
+                "Throughput": 125,
                 "DeleteOnTermination": true,
                 "Encrypted": true,
                 "KmsKeyId": "arn:aws:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab"
@@ -394,8 +396,10 @@
             {
               "DeviceName": "/dev/xvda",
               "Ebs": {
-                "VolumeType": "gp2",
+                "VolumeType": "gp3",
                 "VolumeSize": 128,
+                "Iops": 3000,
+                "Throughput": 125,
                 "DeleteOnTermination": true,
                 "Encrypted": true
               }
