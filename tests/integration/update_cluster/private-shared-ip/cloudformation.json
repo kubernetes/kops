@@ -252,8 +252,10 @@
             {
               "DeviceName": "/dev/xvda",
               "Ebs": {
-                "VolumeType": "gp2",
+                "VolumeType": "gp3",
                 "VolumeSize": 32,
+                "Iops": 3000,
+                "Throughput": 125,
                 "DeleteOnTermination": true,
                 "Encrypted": false
               }
@@ -364,8 +366,10 @@
             {
               "DeviceName": "/dev/xvda",
               "Ebs": {
-                "VolumeType": "gp2",
+                "VolumeType": "gp3",
                 "VolumeSize": 64,
+                "Iops": 3000,
+                "Throughput": 125,
                 "DeleteOnTermination": true,
                 "Encrypted": false
               }
@@ -488,8 +492,10 @@
             {
               "DeviceName": "/dev/xvda",
               "Ebs": {
-                "VolumeType": "gp2",
+                "VolumeType": "gp3",
                 "VolumeSize": 128,
+                "Iops": 3000,
+                "Throughput": 125,
                 "DeleteOnTermination": true,
                 "Encrypted": false
               }

@@ -487,8 +487,10 @@ resource "aws_launch_template" "bastion-privatedns1-example-com" {
     ebs {
       delete_on_termination = true
       encrypted             = false
+      iops                  = 3000
+      throughput            = 125
       volume_size           = 32
-      volume_type           = "gp2"
+      volume_type           = "gp3"
     }
   }
   iam_instance_profile {
@@ -558,8 +560,10 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatedns1-example-co
     ebs {
       delete_on_termination = true
       encrypted             = false
+      iops                  = 3000
+      throughput            = 125
       volume_size           = 64
-      volume_type           = "gp2"
+      volume_type           = "gp3"
     }
   }
   block_device_mappings {
@@ -637,8 +641,10 @@ resource "aws_launch_template" "nodes-privatedns1-example-com" {
     ebs {
       delete_on_termination = true
       encrypted             = false
+      iops                  = 3000
+      throughput            = 125
       volume_size           = 128
-      volume_type           = "gp2"
+      volume_type           = "gp3"
     }
   }
   iam_instance_profile {
