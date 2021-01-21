@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/tests/e2e/kubetest2-kops/do"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/util"
+	"k8s.io/kops/tests/e2e/pkg/version"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
@@ -165,6 +166,13 @@ func (d *deployer) verifyUpFlags() error {
 	if d.KubernetesVersion == "" {
 		return errors.New("missing required --kubernetes-version flag")
 	}
+
+	v, err := version.ParseKubernetesVersion(d.KubernetesVersion)
+	if err != nil {
+		return err
+	}
+	d.KubernetesVersion = v
+
 	return nil
 }
 
