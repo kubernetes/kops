@@ -469,7 +469,7 @@ resource "aws_launch_template" "bastion-privateciliumadvanced-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "bastion.privateciliumadvanced.example.com"
   network_interfaces {
@@ -540,7 +540,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateciliumadvanced-
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "master-us-test-1a.masters.privateciliumadvanced.example.com"
   network_interfaces {
@@ -611,7 +611,7 @@ resource "aws_launch_template" "nodes-privateciliumadvanced-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "nodes.privateciliumadvanced.example.com"
   network_interfaces {

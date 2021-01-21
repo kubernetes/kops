@@ -455,7 +455,7 @@ resource "aws_launch_template" "bastion-privateflannel-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "bastion.privateflannel.example.com"
   network_interfaces {
@@ -526,7 +526,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateflannel-example
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "master-us-test-1a.masters.privateflannel.example.com"
   network_interfaces {
@@ -597,7 +597,7 @@ resource "aws_launch_template" "nodes-privateflannel-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "nodes.privateflannel.example.com"
   network_interfaces {

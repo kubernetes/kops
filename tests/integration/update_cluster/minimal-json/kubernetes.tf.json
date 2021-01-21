@@ -343,7 +343,7 @@
         "metadata_options": {
           "http_endpoint": "enabled",
           "http_put_response_hop_limit": 1,
-          "http_tokens": "optional"
+          "http_tokens": "required"
         },
         "network_interfaces": [
           {
@@ -425,7 +425,7 @@
         "metadata_options": {
           "http_endpoint": "enabled",
           "http_put_response_hop_limit": 1,
-          "http_tokens": "optional"
+          "http_tokens": "required"
         },
         "network_interfaces": [
           {

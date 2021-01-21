@@ -302,7 +302,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-externallb-example-com
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "master-us-test-1a.masters.externallb.example.com"
   network_interfaces {
@@ -373,7 +373,7 @@ resource "aws_launch_template" "nodes-externallb-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "nodes.externallb.example.com"
   network_interfaces {

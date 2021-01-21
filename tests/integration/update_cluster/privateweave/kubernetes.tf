@@ -455,7 +455,7 @@ resource "aws_launch_template" "bastion-privateweave-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "bastion.privateweave.example.com"
   network_interfaces {
@@ -526,7 +526,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateweave-example-c
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "master-us-test-1a.masters.privateweave.example.com"
   network_interfaces {
@@ -597,7 +597,7 @@ resource "aws_launch_template" "nodes-privateweave-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "nodes.privateweave.example.com"
   network_interfaces {

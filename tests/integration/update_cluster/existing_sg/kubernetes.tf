@@ -499,7 +499,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-existingsg-example-com
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "master-us-test-1a.masters.existingsg.example.com"
   network_interfaces {
@@ -574,7 +574,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-existingsg-example-com
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "master-us-test-1b.masters.existingsg.example.com"
   network_interfaces {
@@ -649,7 +649,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-existingsg-example-com
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "master-us-test-1c.masters.existingsg.example.com"
   network_interfaces {
@@ -720,7 +720,7 @@ resource "aws_launch_template" "nodes-existingsg-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   name = "nodes.existingsg.example.com"
   network_interfaces {
