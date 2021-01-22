@@ -23,11 +23,11 @@ import (
 	"strconv"
 	"strings"
 
-	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/reflectutils"
+	"sigs.k8s.io/yaml"
 )
 
 // BuildConfigYaml reflects the options interface and extracts the parameters for the config file
