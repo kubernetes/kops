@@ -77,6 +77,6 @@ kops update cluster
 kops update cluster --admin --yes
 
 kops rolling-update cluster
-kops rolling-update cluster --yes
+kops rolling-update cluster --yes --validation-timeout 30m
 
 kops validate cluster
