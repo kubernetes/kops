@@ -475,7 +475,7 @@ type CiliumNetworkingSpec struct {
 	// Default: false
 	EtcdManaged bool `json:"etcdManaged,omitempty"`
 	// EnableRemoteNodeIdentity enables the remote-node-identity added in Cilium 1.7.0.
-	// Default: false
+	// Default: true
 	EnableRemoteNodeIdentity *bool `json:"enableRemoteNodeIdentity,omitempty"`
 	// Hubble configures the Hubble service on the Cilium agent.
 	Hubble *HubbleSpec `json:"hubble,omitempty"`

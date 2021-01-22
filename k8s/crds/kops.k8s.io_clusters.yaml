@@ -3390,7 +3390,7 @@ spec:
                         type: boolean
                       enableRemoteNodeIdentity:
                         description: 'EnableRemoteNodeIdentity enables the remote-node-identity
-                          added in Cilium 1.7.0. Default: false'
+                          added in Cilium 1.7.0. Default: true'
                         type: boolean
                       enableTracing:
                         description: EnableTracing is not implemented and may be removed
