@@ -37929,6 +37929,12 @@ spec:
               command:
               - /usr/bin/check-status
               - -r
+          startupProbe:
+            exec:
+              command:
+                - /usr/bin/check-status
+                - -r
+            initialDelaySeconds: 10
 
 ---
 
