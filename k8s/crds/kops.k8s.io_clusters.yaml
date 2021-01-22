@@ -277,6 +277,11 @@ spec:
                     description: GCEServiceAccount specifies the service account with
                       which the GCE VM runs
                     type: string
+                  manageStorageClasses:
+                    description: ManageStorageClasses specifies whether kOps should
+                      create and maintain a set of StorageClasses, one of which it
+                      nominates as the default class for the cluster.
+                    type: boolean
                   multizone:
                     description: GCE cloud-config options
                     type: boolean
