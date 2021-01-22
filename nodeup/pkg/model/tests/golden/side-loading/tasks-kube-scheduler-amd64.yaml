@@ -56,9 +56,9 @@ type: file
 ---
 contents: |
   apiVersion: kubescheduler.config.k8s.io/v1alpha2
-  kind: KubeSchedulerConfiguration
   clientConnection:
     kubeconfig: /var/lib/kube-scheduler/kubeconfig
+  kind: KubeSchedulerConfiguration
 mode: "0400"
 path: /var/lib/kube-scheduler/config.yaml
 type: file

@@ -24,7 +24,7 @@ import (
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/tests/integration/channel/simple"
 
-	yaml "gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 )
 
 func TestRenderGeneralOK(t *testing.T) {

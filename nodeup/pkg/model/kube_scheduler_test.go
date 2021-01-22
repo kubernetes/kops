@@ -30,9 +30,9 @@ import (
 func TestParseDefault(t *testing.T) {
 	expect := []byte(
 		`apiVersion: kubescheduler.config.k8s.io/v1alpha2
-kind: KubeSchedulerConfiguration
 clientConnection:
   kubeconfig: /var/lib/kube-scheduler/kubeconfig
+kind: KubeSchedulerConfiguration
 `)
 
 	s := &kops.KubeSchedulerConfig{}
@@ -50,11 +50,11 @@ clientConnection:
 func TestParse(t *testing.T) {
 	expect := []byte(
 		`apiVersion: kubescheduler.config.k8s.io/v1alpha2
-kind: KubeSchedulerConfiguration
 clientConnection:
   burst: 100
   kubeconfig: /var/lib/kube-scheduler/kubeconfig
   qps: 3.1
+kind: KubeSchedulerConfiguration
 `)
 	qps, _ := resource.ParseQuantity("3.1")
 
