@@ -24,6 +24,6 @@ go_test(
     deps = [
         "//pkg/diff:go_default_library",
         "//tests/integration/channel/simple:go_default_library",
-        "//vendor/gopkg.in/yaml.v2:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )

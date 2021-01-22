@@ -97,7 +97,6 @@ require (
 	google.golang.org/api v0.22.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
-	gopkg.in/yaml.v2 v2.3.0
 	helm.sh/helm/v3 v3.4.2
 	honnef.co/go/tools v0.0.1-2020.1.6 // indirect
 	k8s.io/api v0.20.0

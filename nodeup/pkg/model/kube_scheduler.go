@@ -40,16 +40,16 @@ import (
 
 // ClientConnectionConfig is used by kube-scheduler to talk to the api server
 type ClientConnectionConfig struct {
-	Burst      int32    `yaml:"burst,omitempty"`
-	Kubeconfig string   `yaml:"kubeconfig"`
-	QPS        *float64 `yaml:"qps,omitempty"`
+	Burst      int32    `json:"burst,omitempty"`
+	Kubeconfig string   `json:"kubeconfig"`
+	QPS        *float64 `json:"qps,omitempty"`
 }
 
 // SchedulerConfig is used to generate the config file
 type SchedulerConfig struct {
-	APIVersion       string                 `yaml:"apiVersion"`
-	Kind             string                 `yaml:"kind"`
-	ClientConnection ClientConnectionConfig `yaml:"clientConnection,omitempty"`
+	APIVersion       string                 `json:"apiVersion"`
+	Kind             string                 `json:"kind"`
+	ClientConnection ClientConnectionConfig `json:"clientConnection,omitempty"`
 }
 
 // KubeSchedulerBuilder install kube-scheduler
