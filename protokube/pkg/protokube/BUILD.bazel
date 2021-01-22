@@ -18,7 +18,6 @@ go_library(
         "kube_context.go",
         "kube_dns.go",
         "labeler.go",
-        "models.go",
         "openstack_volume.go",
         "rbac.go",
         "tainter.go",
