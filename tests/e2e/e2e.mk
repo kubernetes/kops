@@ -15,7 +15,7 @@
 GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
 
-.PHONY: test-e2e-aws-simple
+.PHONY: test-e2e-install
 test-e2e-install:
 	cd $(KOPS_ROOT)/tests/e2e && \
 		export GO111MODULE=on && \
