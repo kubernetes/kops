@@ -83,7 +83,7 @@ Contents:
         env:
         - name: ETCD_QUOTA_BACKEND_BYTES
           value: "10737418240"
-        image: kopeio/etcd-manager:3.0.20201209
+        image: kopeio/etcd-manager:3.0.20210122
         name: etcd-manager
         resources:
           requests:
@@ -145,7 +145,7 @@ Contents:
         env:
         - name: ETCD_QUOTA_BACKEND_BYTES
           value: "10737418240"
-        image: kopeio/etcd-manager:3.0.20201209
+        image: kopeio/etcd-manager:3.0.20210122
         name: etcd-manager
         resources:
           requests:
