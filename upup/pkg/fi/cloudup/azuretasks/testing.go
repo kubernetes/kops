@@ -46,15 +46,16 @@ const (
 
 // MockAzureCloud is a mock implementation of AzureCloud.
 type MockAzureCloud struct {
-	Location              string
-	ResourceGroupsClient  *MockResourceGroupsClient
-	VirtualNetworksClient *MockVirtualNetworksClient
-	SubnetsClient         *MockSubnetsClient
-	RouteTablesClient     *MockRouteTablesClient
-	VMScaleSetsClient     *MockVMScaleSetsClient
-	VMScaleSetVMsClient   *MockVMScaleSetVMsClient
-	DisksClient           *MockDisksClient
-	RoleAssignmentsClient *MockRoleAssignmentsClient
+	Location                string
+	ResourceGroupsClient    *MockResourceGroupsClient
+	VirtualNetworksClient   *MockVirtualNetworksClient
+	SubnetsClient           *MockSubnetsClient
+	RouteTablesClient       *MockRouteTablesClient
+	VMScaleSetsClient       *MockVMScaleSetsClient
+	VMScaleSetVMsClient     *MockVMScaleSetVMsClient
+	DisksClient             *MockDisksClient
+	RoleAssignmentsClient   *MockRoleAssignmentsClient
+	NetworkInterfacesClient *MockNetworkInterfacesClient
 }
 
 var _ azure.AzureCloud = &MockAzureCloud{}
@@ -86,6 +87,9 @@ func NewMockAzureCloud(location string) *MockAzureCloud {
 		},
 		RoleAssignmentsClient: &MockRoleAssignmentsClient{
 			RAs: map[string]authz.RoleAssignment{},
+		},
+		NetworkInterfacesClient: &MockNetworkInterfacesClient{
+			NIs: map[string]network.Interface{},
 		},
 	}
 }
@@ -193,6 +197,11 @@ func (c *MockAzureCloud) Disk() azure.DisksClient {
 // RoleAssignment returns the role assignment client.
 func (c *MockAzureCloud) RoleAssignment() azure.RoleAssignmentsClient {
 	return c.RoleAssignmentsClient
+}
+
+// NetworkInterface returns the network interface client.
+func (c *MockAzureCloud) NetworkInterface() azure.NetworkInterfacesClient {
+	return c.NetworkInterfacesClient
 }
 
 // MockResourceGroupsClient is a mock implementation of resource group client.
@@ -478,4 +487,21 @@ func (c *MockRoleAssignmentsClient) Delete(ctx context.Context, scope, raName st
 	}
 	delete(c.RAs, raName)
 	return nil
+}
+
+// MockNetworkInterfacesClient is a mock implementation of network interfaces client.
+type MockNetworkInterfacesClient struct {
+	NIs map[string]network.Interface
+}
+
+var _ azure.NetworkInterfacesClient = &MockNetworkInterfacesClient{}
+
+// List returns a slice of VM Scale Set Network Interfaces.
+func (c *MockNetworkInterfacesClient) ListScaleSetsNetworkInterfaces(ctx context.Context, resourceGroupName, vmssName string) ([]network.Interface, error) {
+	// Ignore resourceGroupName and vmssName for simplicity.
+	var l []network.Interface
+	for _, ni := range c.NIs {
+		l = append(l, ni)
+	}
+	return l, nil
 }
