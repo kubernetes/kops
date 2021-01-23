@@ -17,7 +17,9 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"errors"
+	"fmt"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -52,20 +54,22 @@ type AzureCloud interface {
 	VMScaleSetVM() VMScaleSetVMsClient
 	Disk() DisksClient
 	RoleAssignment() RoleAssignmentsClient
+	NetworkInterface() NetworkInterfacesClient
 }
 
 type azureCloudImplementation struct {
-	subscriptionID        string
-	location              string
-	tags                  map[string]string
-	resourceGroupsClient  ResourceGroupsClient
-	vnetsClient           VirtualNetworksClient
-	subnetsClient         SubnetsClient
-	routeTablesClient     RouteTablesClient
-	vmscaleSetsClient     VMScaleSetsClient
-	vmscaleSetVMsClient   VMScaleSetVMsClient
-	disksClient           DisksClient
-	roleAssignmentsClient RoleAssignmentsClient
+	subscriptionID          string
+	location                string
+	tags                    map[string]string
+	resourceGroupsClient    ResourceGroupsClient
+	vnetsClient             VirtualNetworksClient
+	subnetsClient           SubnetsClient
+	routeTablesClient       RouteTablesClient
+	vmscaleSetsClient       VMScaleSetsClient
+	vmscaleSetVMsClient     VMScaleSetVMsClient
+	disksClient             DisksClient
+	roleAssignmentsClient   RoleAssignmentsClient
+	networkInterfacesClient NetworkInterfacesClient
 }
 
 var _ fi.Cloud = &azureCloudImplementation{}
@@ -78,17 +82,18 @@ func NewAzureCloud(subscriptionID, location string, tags map[string]string) (Azu
 	}
 
 	return &azureCloudImplementation{
-		subscriptionID:        subscriptionID,
-		location:              location,
-		tags:                  tags,
-		resourceGroupsClient:  newResourceGroupsClientImpl(subscriptionID, authorizer),
-		vnetsClient:           newVirtualNetworksClientImpl(subscriptionID, authorizer),
-		subnetsClient:         newSubnetsClientImpl(subscriptionID, authorizer),
-		routeTablesClient:     newRouteTablesClientImpl(subscriptionID, authorizer),
-		vmscaleSetsClient:     newVMScaleSetsClientImpl(subscriptionID, authorizer),
-		vmscaleSetVMsClient:   newVMScaleSetVMsClientImpl(subscriptionID, authorizer),
-		disksClient:           newDisksClientImpl(subscriptionID, authorizer),
-		roleAssignmentsClient: newRoleAssignmentsClientImpl(subscriptionID, authorizer),
+		subscriptionID:          subscriptionID,
+		location:                location,
+		tags:                    tags,
+		resourceGroupsClient:    newResourceGroupsClientImpl(subscriptionID, authorizer),
+		vnetsClient:             newVirtualNetworksClientImpl(subscriptionID, authorizer),
+		subnetsClient:           newSubnetsClientImpl(subscriptionID, authorizer),
+		routeTablesClient:       newRouteTablesClientImpl(subscriptionID, authorizer),
+		vmscaleSetsClient:       newVMScaleSetsClientImpl(subscriptionID, authorizer),
+		vmscaleSetVMsClient:     newVMScaleSetVMsClientImpl(subscriptionID, authorizer),
+		disksClient:             newDisksClientImpl(subscriptionID, authorizer),
+		roleAssignmentsClient:   newRoleAssignmentsClientImpl(subscriptionID, authorizer),
+		networkInterfacesClient: newNetworkInterfacesClientImpl(subscriptionID, authorizer),
 	}, nil
 }
 
@@ -128,9 +133,43 @@ func (c *azureCloudImplementation) AddClusterTags(tags map[string]*string) {
 }
 
 func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
-	// TODO(kenji): Implement this. Currently we return nil as we
-	// don't create any resources for ingress to the API server.
-	return nil, nil
+	var ingresses []kops.ApiIngressStatus
+	var rg string = cluster.AzureResourceGroupName()
+
+	// Get scale sets in cluster resource group and find masters scale set
+	scaleSets, err := c.vmscaleSetsClient.List(context.TODO(), rg)
+	if err != nil {
+		return nil, fmt.Errorf("error getting Cluster Master Scale Set for API Ingress Status: %s", err)
+	}
+	var vmssName string
+	for _, scaleSet := range scaleSets {
+		val, ok := scaleSet.Tags[TagClusterName]
+		val2, ok2 := scaleSet.Tags[TagNameRolePrefix+TagRoleMaster]
+		if ok && *val == cluster.Name && ok2 && *val2 == "1" {
+			vmssName = *scaleSet.Name
+			break
+		}
+	}
+	if vmssName == "" {
+		return nil, fmt.Errorf("error getting Master Scale Set Name for API Ingress Status")
+	}
+
+	// Get masters scale set network interfaces and append to api ingress status
+	nis, err := c.NetworkInterface().ListScaleSetsNetworkInterfaces(context.TODO(), rg, vmssName)
+	if err != nil {
+		return nil, fmt.Errorf("error getting Master Scale Set Network Interfaces for API Ingress Status: %s", err)
+	}
+	for _, ni := range nis {
+		if !*ni.Primary {
+			continue
+		}
+		for _, i := range *ni.IPConfigurations {
+			ingresses = append(ingresses, kops.ApiIngressStatus{
+				IP: *i.PrivateIPAddress,
+			})
+		}
+	}
+	return ingresses, nil
 }
 
 func (c *azureCloudImplementation) SubscriptionID() string {
@@ -167,4 +206,8 @@ func (c *azureCloudImplementation) Disk() DisksClient {
 
 func (c *azureCloudImplementation) RoleAssignment() RoleAssignmentsClient {
 	return c.roleAssignmentsClient
+}
+
+func (c *azureCloudImplementation) NetworkInterface() NetworkInterfacesClient {
+	return c.networkInterfacesClient
 }
