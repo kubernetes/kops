@@ -62,6 +62,12 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 				config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "registry", "mirrors", name, "endpoint"}, endpoints)
 			}
 			config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "runtime_type"}, "io.containerd.runc.v2")
+			if UsesKubenet(clusterSpec.Networking) {
+				// Using containerd with Kubenet requires special configuration.
+				// This is a temporary backwards-compatible solution for kubenet users and will be deprecated when Kubenet is deprecated:
+				// https://github.com/containerd/containerd/blob/master/docs/cri/config.md#cni-config-template
+				config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "cni", "conf_template"}, "/etc/containerd/config-cni.template")
+			}
 			containerd.ConfigOverride = fi.String(config.String())
 		}
 
