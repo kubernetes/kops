@@ -40,7 +40,6 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/kubemanifest"
-	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -488,9 +487,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 
 	if c.ContainerRuntime != "" {
 		cluster.Spec.ContainerRuntime = c.ContainerRuntime
-	}
-	if c.ContainerRuntime == "containerd" && components.UsesKubenet(cluster.Spec.Networking) {
-		return fmt.Errorf("--networking with CNI plugin is required for containerd")
 	}
 
 	if c.NetworkCIDR != "" {
