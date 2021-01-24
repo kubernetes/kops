@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/nodeup/pkg/model/resources"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -96,6 +97,14 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// Add configuration file for easier use of crictl
 		b.addCrictlConfig(c)
+
+		// Using containerd with Kubenet requires special configuration.
+		// This is a temporary backwards-compatible solution for kubenet users and will be deprecated when Kubenet is deprecated:
+		// https://github.com/containerd/containerd/blob/master/docs/cri/config.md#cni-config-template
+		if components.UsesKubenet(b.Cluster.Spec.Networking) {
+			b.buildCNIConfigTemplateFile(c)
+		}
+
 	}
 
 	var containerRuntimeVersion string
@@ -291,6 +300,40 @@ runtime-endpoint: unix:///run/containerd/containerd.sock
 	c.AddTask(&nodetasks.File{
 		Path:     "/etc/crictl.yaml",
 		Contents: fi.NewStringResource(conf),
+		Type:     nodetasks.FileType_File,
+	})
+}
+
+// buildCNIConfigTemplateFile is responsible for creating a special template for setups using Kubenet
+func (b *ContainerdBuilder) buildCNIConfigTemplateFile(c *fi.ModelBuilderContext) {
+	contents := `{
+    "cniVersion": "0.4.0",
+    "name": "containerd-net",
+    "plugins": [
+        {
+            "type": "bridge",
+            "bridge": "cni0",
+            "isGateway": true,
+            "ipMasq": true,
+            "promiscMode": true,
+            "ipam": {
+                "type": "host-local",
+                "ranges": [[{"subnet": "{{.PodCIDR}}"}]],
+                "routes": [{ "dst": "0.0.0.0/0" }]
+            }
+        },
+        {
+            "type": "portmap",
+            "capabilities": {"portMappings": true}
+        }
+    ]
+}
+`
+	klog.V(8).Infof("Built containerd CNI config template\n%s", contents)
+
+	c.AddTask(&nodetasks.File{
+		Path:     "/etc/containerd/config-cni.template",
+		Contents: fi.NewStringResource(contents),
 		Type:     nodetasks.FileType_File,
 	})
 }
