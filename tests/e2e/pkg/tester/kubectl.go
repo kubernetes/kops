@@ -41,7 +41,7 @@ func (t *Tester) AcquireKubectl() (string, error) {
 		cmd := exec.Command(
 			"gsutil",
 			"cat",
-			fmt.Sprintf("gs://%s/%s/latest.txt", t.TestPackageBucket, t.TestPackageDir),
+			fmt.Sprintf("gs://%s/%s/%v", t.TestPackageBucket, t.TestPackageDir, t.TestPackageMarker),
 		)
 		lines, err := exec.OutputLines(cmd)
 		if err != nil {
@@ -52,7 +52,7 @@ func (t *Tester) AcquireKubectl() (string, error) {
 		}
 		t.TestPackageVersion = lines[0]
 
-		klog.Infof("Kubectl package version was not specified. Defaulting to latest: %s", t.TestPackageVersion)
+		klog.Infof("Kubectl package version was not specified. Defaulting to version from %s: %s", t.TestPackageMarker, t.TestPackageVersion)
 	}
 
 	clientTar := fmt.Sprintf("kubernetes-client-%s-%s.tar.gz", runtime.GOOS, runtime.GOARCH)
