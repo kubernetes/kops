@@ -19,36 +19,115 @@ Lastly run `./hack/update-expected.sh` to generate the expected output.
 
 ## Kubernetes e2e testing
 
+Kubetest2 is the framework for launching and running end-to-end tests on Kubernetes, and the best approach to test your kOps cluster is to use the same Go modules to perform the e2e testing.
+
 ### Preparing the environment
 
-The easiest way to run the Kubernetes e2e tests is to install the `kubetest` binary from test-infra.
+Before running `kubetest2` you will need to install the core, and all deployers and testers Go modules. 
 
-See [e2e-tests](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-testing/e2e-tests.md) for instructions how to install and general usage of the utility.
+```shell
+make test-e2e-install
+```
 
-You can see https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/kops/ the various jobs that are periodically run against kops.
-The container arguments for each of the jobs are the ones passed to `kubetest`.
+For reference, the build target commands can be found [here](https://github.com/kubernetes/kops/tree/master/tests/e2e/e2e.mk).
 
-Following the examples below, kubetest will download artifacts such as a given Kubernetes build. Therefore you probably want to run `kubetest` from a directory dedicated for this purpose.
+See [GitHub kubetest2](https://github.com/kubernetes-sigs/kubetest2/blob/master/README.md) to gain a further understanding of the Kubernetes e2e test framework.
+
+Following the examples below, `kubetest2` will download test artifacts to `./_artifacts`.
 
 ### Running against an existing cluster
 
-You can run something like the following to have `kubetest` re-use an existing cluster.
-This assumes you have already built the kOps binary from source. The exact path to the `kops` binary used in the `--kops` flag may differ.
+You can run something like the following to have `kubetest2` re-use an existing cluster.
 
-```
-GINKGO_PARALLEL=y kubetest --test --test_args="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort" --provider=aws --deployment=kops --cluster=my.testcluster.com --kops-state=${KOPS_STATE_STORE} --kops ${GOPATH}/bin/kops --extract=ci/latest
+This assumes you have already built the kOps binary from source. The exact path to the `kops` binary used in the `--kops-binary-path` flag may differ.
+
+The environment variable `KOPS_ROOT` is the full path to your local GitHub kOps working directory.   
+
+```shell
+kubetest2 kops \
+  -v 2 \
+  --test \
+  --cloud-provider=aws \
+  --cluster-name=my.testcluster.com \
+  --kops-binary-path=${KOPS_ROOT}/bazel-bin/cmd/kops/linux-amd64/kops \
+  --kubernetes-version=v1.20.2 \
+  --test=kops \
+  -- \
+  --test-package-version=v1.20.2 \
+  --parallel 25 \
+  --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
 ```
 
-Note the `--extract` flag is only needed on first run or whenever you want to update the kubernetes build. You can omit this flag to run against the already extracted tree on subsequent runs. Just `cd` into the `kubernetes` directory first.
+It's also possible to run the Kubernetes Conformance test suite by replacing the `--skip-regex` flag with `--focus-regex='\[Conformance\]'`.
+
+See [Conformance Testing in Kubernetes](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/conformance-tests.md)
 
 ### Running against a new cluster
 
-By adding the `--up` flag, `kubetest` will spin up a new cluster. In most cases, you also need to add a few additional flags. See `kubetest --help 2>&1 | grep kops` for the full list.
+By adding the `--up` flag, `kubetest2` will spin up a new cluster. In most cases, you also need to add a few additional flags, such as `--networking`. See `kubetest2 kops --help` for the full list.
 
-```
-GINKGO_PARALLEL=y kubetest --test --test_args="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort" --provider=aws --check-version-skew=false --deployment=kops --kops-state=${KOPS_STATE_STORE} --kops ${GOPATH}/bin/kops --kops-args="--network-cidr=192.168.1.0/24" --cluster=my.testcluster.com --up --kops-ssh-key ~/.ssh/id_rsa --kops-admin-access=0.0.0.0/0
+```shell
+kubetest2 kops \
+  -v 2 \
+  --up \
+  --cloud-provider=aws \
+  --cluster-name=my.testcluster.com \
+  --kops-binary-path=${KOPS_ROOT}/bazel-bin/cmd/kops/linux-amd64/kops \
+  --kubernetes-version=v1.20.2 \
+  --networking calico \
+  --test=kops \
+  --
+  -- \
+  --test-package-version=v1.20.2 \
+  --parallel 25 \
+  --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
 ```
 
-If you want to run the tests against your development version of kOps, you need to upload the binaries and set the environment variables as described in [Adding a new feature](adding_a_feature.md).
+If you don't specify any additional flags, the kOps deployer Go module will create a kubernetes cluster using the following defaults.
+
+```shell
+kops create cluster --name my.testcluster.com --admin-access 82.20.196.118/32 --cloud aws --kubernetes-version v1.20.2 --master-count 1 --master-volume-size 48 --node-count 4 --node-volume-size 48 --override cluster.spec.nodePortAccess=0.0.0.0/0 --ssh-public-key /home/ubuntu/.ssh/id_rsa.pub --yes --zones <Random Zone> --master-size c5.large --networking calico
+```
+
+For the `--zones` flag, the kOps deployer will select a random zone based on the `--cloud-provider` flag, for `aws` the full list of AWS zones can be found [here](https://github.com/kubernetes/kops/blob/master/tests/e2e/kubetest2-kops/aws/zones.go) and for `gce` the full list of GCE zones can be found [here](https://github.com/kubernetes/kops/blob/master/tests/e2e/kubetest2-kops/gce/zones.go).
+
+Althernatively, you can generate a kOps cluster spec YAML manifest based on your own requirments using `kops create cluster my.testcluster.com ... --dry-run -oyaml > my.testcluster.com.yaml` and then run the `kubetest2` e2e tests using the `--template-path` flag to specify the full path to the YAML manifest.
+
+```shell
+kubetest2 kops \
+  -v 2 \
+  --up \
+  --cloud-provider=aws \
+  --cluster-name=my.testcluster.com \
+  --kops-binary-path=${KOPS_ROOT}/bazel-bin/cmd/kops/linux-amd64/kops \
+  --kubernetes-version=v1.20.2 \
+  --template-path=my.testcluster.com.yaml \
+  --test=kops \
+  -- \
+  --test-package-version=v1.20.2 \
+  --parallel 25 \
+  --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
+```
+
+If you encounter the following error, you will need to add your SSH public key to the kOps cluster spec YAML manifest.
+
+```shell
+SSH public key must be specified when running with AWS (create with `kops create secret --name training.kops.k8s.local sshpublickey admin -i ~/.ssh/id_rsa.pub`)
+```
+
+```yaml
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: SSHCredential
+metadata:
+  name: admin
+  labels:
+    kops.k8s.io/cluster: my.testcluster.com
+spec:
+  publicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC..."
+```
+
+If you want to run the tests against your development version of kOps, you need to upload the binaries and set the environment variables as described in [Adding a new feature](adding_a_feature.md#testing).
 
 Since we assume you are using this cluster for testing, we leave the cluster running after the tests have finished so that you can inspect the nodes if anything unexpected happens. If you do not need this, you can add the `--down` flag. Otherwise, just delete the cluster as any other cluster: `kops delete cluster my.testcluster.com --yes`
