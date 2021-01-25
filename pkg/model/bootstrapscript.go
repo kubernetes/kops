@@ -380,6 +380,12 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 		"GzipBase64": func(data string) (string, error) {
 			return gzipBase64(data)
 		},
+
+		"SetSysctls": func() string {
+			// By setting some sysctls early, we avoid broken configurations that prevent nodeup download.
+			// See https://github.com/kubernetes/kops/issues/10206 for details.
+			return "sysctl -w net.ipv4.tcp_rmem='4096 12582912 16777216' || true\n"
+		},
 	}
 
 	awsNodeUpTemplate, err := resources.AWSNodeUpTemplate(b.ig)

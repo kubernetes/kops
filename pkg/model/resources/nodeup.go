@@ -40,6 +40,8 @@ NODEUP_HASH_ARM64={{ NodeUpSourceHashArm64 }}
 
 {{ ProxyEnv }}
 
+{{ SetSysctls }}
+
 function ensure-install-dir() {
   INSTALL_DIR="/opt/kops"
   # On ContainerOS, we install under /var/lib/toolbox; /opt is ro and noexec
