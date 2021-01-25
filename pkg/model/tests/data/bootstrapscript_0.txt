@@ -29,6 +29,9 @@ systemctl daemon-reload
 systemctl daemon-reexec
 
 
+sysctl -w net.ipv4.tcp_rmem='4096 12582912 16777216' || true
+
+
 function ensure-install-dir() {
   INSTALL_DIR="/opt/kops"
   # On ContainerOS, we install under /var/lib/toolbox; /opt is ro and noexec
