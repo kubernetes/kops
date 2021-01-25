@@ -12,6 +12,9 @@ NODEUP_HASH_ARM64=dcc7f9f3c180ee76a511627e46da0ac69cdcb518cdf3be348e5ed046d491eb
 
 
 
+sysctl -w net.ipv4.tcp_rmem='4096 12582912 16777216' || true
+
+
 function ensure-install-dir() {
   INSTALL_DIR="/opt/kops"
   # On ContainerOS, we install under /var/lib/toolbox; /opt is ro and noexec
