@@ -436,7 +436,7 @@ resource "aws_launch_template" "bastion-unmanaged-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "required"
+    http_tokens                 = "optional"
   }
   name = "bastion.unmanaged.example.com"
   network_interfaces {
@@ -507,7 +507,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-unmanaged-example-com"
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "required"
+    http_tokens                 = "optional"
   }
   name = "master-us-test-1a.masters.unmanaged.example.com"
   network_interfaces {
@@ -578,7 +578,7 @@ resource "aws_launch_template" "nodes-unmanaged-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "required"
+    http_tokens                 = "optional"
   }
   name = "nodes.unmanaged.example.com"
   network_interfaces {
