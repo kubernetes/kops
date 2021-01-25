@@ -7,9 +7,9 @@
 Delete all secrets & keypairs that kOps is holding:
 
 ```shell
-kops get secrets  | grep ^Secret | awk '{print $2}' | xargs -I {} kops delete secret secret {}
+kops get secrets  | grep '^Secret' | awk '{print $2}' | xargs -I {} kops delete secret secret {}
 
-kops get secrets  | grep ^Keypair | awk '{print $2}' | xargs -I {} kops delete secret keypair {}
+kops get secrets  | grep '^Keypair' | awk '{print $2}' | xargs -I {} kops delete secret keypair {}
 ```
 
 ## Recreate all secrets
