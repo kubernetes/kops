@@ -23,6 +23,9 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom.Properties.
 
 
 
+  sysctl -w net.ipv4.tcp_rmem='4096 12582912 16777216' || true
+
+
   function ensure-install-dir() {
     INSTALL_DIR="/opt/kops"
     # On ContainerOS, we install under /var/lib/toolbox; /opt is ro and noexec
@@ -377,6 +380,9 @@ Resources.AWSEC2LaunchTemplatenodescomplexexamplecom.Properties.LaunchTemplateDa
   export AWS_REGION=us-test-1
 
 
+
+
+  sysctl -w net.ipv4.tcp_rmem='4096 12582912 16777216' || true
 
 
   function ensure-install-dir() {
