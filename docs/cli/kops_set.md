@@ -16,7 +16,7 @@ Set a configuration field.
 ```
   # Set cluster to run kubernetes version 1.17.0
   kops set cluster k8s-cluster.example.com spec.kubernetesVersion=1.17.0
-  kops set instancegroup k8s-cluster.example.com spec.maxSize=4
+  kops set instancegroup --name k8s-cluster.example.com nodes spec.maxSize=4
 ```
 
 ### Options
