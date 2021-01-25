@@ -84,6 +84,8 @@ metadata:
   name: master-us-test-1a
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
+  instanceMetadata:
+    httpTokens: required
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -104,6 +106,8 @@ metadata:
   name: master-us-test-1b
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
+  instanceMetadata:
+    httpTokens: required
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -124,6 +128,8 @@ metadata:
   name: master-us-test-1c
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
+  instanceMetadata:
+    httpTokens: required
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -144,6 +150,8 @@ metadata:
   name: nodes-us-test-1a
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
+  instanceMetadata:
+    httpTokens: required
   machineType: t2.medium
   maxSize: 1
   minSize: 1
@@ -164,6 +172,8 @@ metadata:
   name: nodes-us-test-1b
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
+  instanceMetadata:
+    httpTokens: required
   machineType: t2.medium
   maxSize: 1
   minSize: 1
@@ -184,6 +194,8 @@ metadata:
   name: nodes-us-test-1c
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
+  instanceMetadata:
+    httpTokens: required
   machineType: t2.medium
   maxSize: 1
   minSize: 1
