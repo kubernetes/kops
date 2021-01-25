@@ -33,7 +33,8 @@ var (
 
 	setExample = templates.Examples(i18n.T(`
     # Set cluster to run kubernetes version 1.17.0
-    kops set cluster k8s-cluster.example.com spec.kubernetesVersion=1.17.0
+	kops set cluster k8s-cluster.example.com spec.kubernetesVersion=1.17.0
+	kops set instancegroup --name k8s-cluster.example.com nodes spec.maxSize=4
 	`))
 )
 
@@ -47,6 +48,7 @@ func NewCmdSet(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// create subcommands
 	cmd.AddCommand(NewCmdSetCluster(f, out))
+	cmd.AddCommand(NewCmdSetInstancegroup(f, out))
 
 	return cmd
 }
