@@ -727,7 +727,7 @@ spec:
 
 Read more about cluster autoscaler in the [official documentation](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler).
 
-###  Feature Gates
+##  Feature Gates
 
 Feature gates can be configured on the kubelet.
 
@@ -756,7 +756,7 @@ spec:
 
 For more information, see the [feature gate documentation](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/)
 
-###  Compute Resources Reservation
+##  Compute Resources Reservation
 
 In a scenario where node has 32Gi of memory, 16 CPUs and 100Gi of ephemeral storage, resource reservation could be set as in the following example:
 
