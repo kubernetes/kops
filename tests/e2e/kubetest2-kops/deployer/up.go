@@ -129,6 +129,12 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 		args = append(args, "--networking", d.Networking)
 	}
 
+	if d.CreateArgs != "" {
+		// TODO: we should only set the above flags if they're not in CreateArgs
+		// allowing any flag to be overridden
+		args = append(args, strings.Split(d.CreateArgs, " ")...)
+	}
+
 	klog.Info(strings.Join(args, " "))
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.SetEnv(d.env()...)
