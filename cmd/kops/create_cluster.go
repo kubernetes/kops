@@ -167,6 +167,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	sshPublicKey := ""
 	associatePublicIP := false
+	encryptEtcdStorage := false
 
 	cmd := &cobra.Command{
 		Use:     "cluster",
@@ -178,6 +179,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 			if cmd.Flag("associate-public-ip").Changed {
 				options.AssociatePublicIP = &associatePublicIP
+			}
+
+			if cmd.Flag("encrypt-etcd-storage").Changed {
+				options.EncryptEtcdStorage = &encryptEtcdStorage
 			}
 
 			err := rootCommand.ProcessArgs(args)
@@ -244,7 +249,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", options.NetworkCIDR, "Set to override the default network CIDR")
 	cmd.Flags().BoolVar(&options.DisableSubnetTags, "disable-subnet-tags", options.DisableSubnetTags, "Set to disable automatic subnet tagging")
 
-	cmd.Flags().BoolVar(&options.EncryptEtcdStorage, "encrypt-etcd-storage", options.EncryptEtcdStorage, "Generate key in aws kms and use it for encrypt etcd volumes")
+	cmd.Flags().BoolVar(&encryptEtcdStorage, "encrypt-etcd-storage", false, "Generate key in aws kms and use it for encrypt etcd volumes")
 	cmd.Flags().StringVar(&options.EtcdStorageType, "etcd-storage-type", options.EtcdStorageType, "The default storage type for etc members")
 
 	cmd.Flags().StringVar(&options.Networking, "networking", options.Networking, "Networking mode to use.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazonvpc, cilium, cilium-etcd, cni, lyftvpc.")
