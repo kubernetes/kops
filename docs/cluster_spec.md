@@ -156,7 +156,7 @@ etcdClusters:
 ### etcd metrics
 {{ kops_feature_table(kops_added_default='1.18') }}
 
-You cam expose /metrics endpoint for the etcd instances and control their type (`basic` or `extensive`) by defining env vars:
+You can expose /metrics endpoint for the etcd instances and control their type (`basic` or `extensive`) by defining env vars:
 
 ```yaml
 etcdClusters:
