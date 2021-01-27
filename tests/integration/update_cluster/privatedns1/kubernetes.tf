@@ -294,6 +294,7 @@ resource "aws_autoscaling_group" "nodes-privatedns1-example-com" {
 resource "aws_ebs_volume" "us-test-1a-etcd-events-privatedns1-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
@@ -304,12 +305,13 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privatedns1-example-com" {
     "k8s.io/role/master"                            = "1"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
-  type = "gp2"
+  type = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-main-privatedns1-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
@@ -320,7 +322,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatedns1-example-com" {
     "k8s.io/role/master"                            = "1"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
-  type = "gp2"
+  type = "gp3"
 }
 
 resource "aws_eip" "us-test-1a-privatedns1-example-com" {
