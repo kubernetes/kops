@@ -273,7 +273,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privateweave-example-com" {
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-main-privateweave-example-com" {
@@ -288,7 +289,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privateweave-example-com" {
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_eip" "us-test-1a-privateweave-example-com" {

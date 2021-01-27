@@ -273,7 +273,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-cilium-privateciliumadvanced-example-
     "k8s.io/role/master"                                      = "1"
     "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-events-privateciliumadvanced-example-com" {
@@ -288,7 +289,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privateciliumadvanced-example-
     "k8s.io/role/master"                                      = "1"
     "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-main-privateciliumadvanced-example-com" {
@@ -303,7 +305,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privateciliumadvanced-example-co
     "k8s.io/role/master"                                      = "1"
     "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_eip" "us-test-1a-privateciliumadvanced-example-com" {

@@ -273,7 +273,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privatecalico-example-com" {
     "k8s.io/role/master"                              = "1"
     "kubernetes.io/cluster/privatecalico.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-main-privatecalico-example-com" {
@@ -288,7 +289,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatecalico-example-com" {
     "k8s.io/role/master"                              = "1"
     "kubernetes.io/cluster/privatecalico.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_eip" "us-test-1a-privatecalico-example-com" {

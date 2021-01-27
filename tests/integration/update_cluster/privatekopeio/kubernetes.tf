@@ -288,7 +288,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privatekopeio-example-com" {
     "k8s.io/role/master"                              = "1"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-main-privatekopeio-example-com" {
@@ -303,7 +304,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatekopeio-example-com" {
     "k8s.io/role/master"                              = "1"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_elb" "api-privatekopeio-example-com" {

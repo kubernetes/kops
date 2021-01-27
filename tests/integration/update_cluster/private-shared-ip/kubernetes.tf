@@ -268,7 +268,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-private-shared-ip-example-com"
     "k8s.io/role/master"                                  = "1"
     "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-main-private-shared-ip-example-com" {
@@ -283,7 +284,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-private-shared-ip-example-com" {
     "k8s.io/role/master"                                  = "1"
     "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_elb" "api-private-shared-ip-example-com" {
