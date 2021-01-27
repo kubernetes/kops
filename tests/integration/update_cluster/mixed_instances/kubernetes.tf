@@ -318,6 +318,7 @@ resource "aws_autoscaling_group" "nodes-mixedinstances-example-com" {
 resource "aws_ebs_volume" "us-test-1a-etcd-events-mixedinstances-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                                = "mixedinstances.example.com"
@@ -326,12 +327,13 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-mixedinstances-example-com" {
     "k8s.io/role/master"                               = "1"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
-  type = "gp2"
+  type = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-main-mixedinstances-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                                = "mixedinstances.example.com"
@@ -340,12 +342,13 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-mixedinstances-example-com" {
     "k8s.io/role/master"                               = "1"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
-  type = "gp2"
+  type = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1b-etcd-events-mixedinstances-example-com" {
   availability_zone = "us-test-1b"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                                = "mixedinstances.example.com"
@@ -354,12 +357,13 @@ resource "aws_ebs_volume" "us-test-1b-etcd-events-mixedinstances-example-com" {
     "k8s.io/role/master"                               = "1"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
-  type = "gp2"
+  type = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1b-etcd-main-mixedinstances-example-com" {
   availability_zone = "us-test-1b"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                                = "mixedinstances.example.com"
@@ -368,12 +372,13 @@ resource "aws_ebs_volume" "us-test-1b-etcd-main-mixedinstances-example-com" {
     "k8s.io/role/master"                               = "1"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
-  type = "gp2"
+  type = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1c-etcd-events-mixedinstances-example-com" {
   availability_zone = "us-test-1c"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                                = "mixedinstances.example.com"
@@ -382,12 +387,13 @@ resource "aws_ebs_volume" "us-test-1c-etcd-events-mixedinstances-example-com" {
     "k8s.io/role/master"                               = "1"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
-  type = "gp2"
+  type = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1c-etcd-main-mixedinstances-example-com" {
   availability_zone = "us-test-1c"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                                = "mixedinstances.example.com"
@@ -396,7 +402,7 @@ resource "aws_ebs_volume" "us-test-1c-etcd-main-mixedinstances-example-com" {
     "k8s.io/role/master"                               = "1"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
-  type = "gp2"
+  type = "gp3"
 }
 
 resource "aws_iam_instance_profile" "masters-mixedinstances-example-com" {

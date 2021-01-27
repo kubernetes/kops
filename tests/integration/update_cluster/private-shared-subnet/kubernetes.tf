@@ -254,6 +254,7 @@ resource "aws_autoscaling_group" "nodes-private-shared-subnet-example-com" {
 resource "aws_ebs_volume" "us-test-1a-etcd-events-private-shared-subnet-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                                       = "private-shared-subnet.example.com"
@@ -262,12 +263,13 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-private-shared-subnet-example-
     "k8s.io/role/master"                                      = "1"
     "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
-  type = "gp2"
+  type = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-main-private-shared-subnet-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                                       = "private-shared-subnet.example.com"
@@ -276,7 +278,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-private-shared-subnet-example-co
     "k8s.io/role/master"                                      = "1"
     "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
-  type = "gp2"
+  type = "gp3"
 }
 
 resource "aws_elb" "api-private-shared-subnet-example-com" {

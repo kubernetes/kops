@@ -300,6 +300,7 @@ resource "aws_autoscaling_group" "nodes-ha-example-com" {
 resource "aws_ebs_volume" "a-etcd-events-ha-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                    = "ha.example.com"
@@ -308,12 +309,13 @@ resource "aws_ebs_volume" "a-etcd-events-ha-example-com" {
     "k8s.io/role/master"                   = "1"
     "kubernetes.io/cluster/ha.example.com" = "owned"
   }
-  type = "gp2"
+  type = "gp3"
 }
 
 resource "aws_ebs_volume" "a-etcd-main-ha-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                    = "ha.example.com"
@@ -322,12 +324,13 @@ resource "aws_ebs_volume" "a-etcd-main-ha-example-com" {
     "k8s.io/role/master"                   = "1"
     "kubernetes.io/cluster/ha.example.com" = "owned"
   }
-  type = "gp2"
+  type = "gp3"
 }
 
 resource "aws_ebs_volume" "b-etcd-events-ha-example-com" {
   availability_zone = "us-test-1b"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                    = "ha.example.com"
@@ -336,12 +339,13 @@ resource "aws_ebs_volume" "b-etcd-events-ha-example-com" {
     "k8s.io/role/master"                   = "1"
     "kubernetes.io/cluster/ha.example.com" = "owned"
   }
-  type = "gp2"
+  type = "gp3"
 }
 
 resource "aws_ebs_volume" "b-etcd-main-ha-example-com" {
   availability_zone = "us-test-1b"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                    = "ha.example.com"
@@ -350,12 +354,13 @@ resource "aws_ebs_volume" "b-etcd-main-ha-example-com" {
     "k8s.io/role/master"                   = "1"
     "kubernetes.io/cluster/ha.example.com" = "owned"
   }
-  type = "gp2"
+  type = "gp3"
 }
 
 resource "aws_ebs_volume" "c-etcd-events-ha-example-com" {
   availability_zone = "us-test-1c"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                    = "ha.example.com"
@@ -364,12 +369,13 @@ resource "aws_ebs_volume" "c-etcd-events-ha-example-com" {
     "k8s.io/role/master"                   = "1"
     "kubernetes.io/cluster/ha.example.com" = "owned"
   }
-  type = "gp2"
+  type = "gp3"
 }
 
 resource "aws_ebs_volume" "c-etcd-main-ha-example-com" {
   availability_zone = "us-test-1c"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                    = "ha.example.com"
@@ -378,7 +384,7 @@ resource "aws_ebs_volume" "c-etcd-main-ha-example-com" {
     "k8s.io/role/master"                   = "1"
     "kubernetes.io/cluster/ha.example.com" = "owned"
   }
-  type = "gp2"
+  type = "gp3"
 }
 
 resource "aws_iam_instance_profile" "masters-ha-example-com" {
