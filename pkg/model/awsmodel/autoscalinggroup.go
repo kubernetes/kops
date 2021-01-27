@@ -450,8 +450,12 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 
 	for _, extLB := range ig.Spec.ExternalLoadBalancers {
 		if extLB.LoadBalancerName != nil {
+			loadBalancerName := fi.StringValue(extLB.LoadBalancerName)
+			if loadBalancerName != awsup.GetResourceName32(b.Cluster.Name, "api") && loadBalancerName != awsup.GetResourceName32(b.Cluster.Name, "bastion") {
+				loadBalancerName = name + "-" + loadBalancerName
+			}
 			lb := &awstasks.ClassicLoadBalancer{
-				Name:             extLB.LoadBalancerName,
+				Name:             fi.String(loadBalancerName),
 				LoadBalancerName: extLB.LoadBalancerName,
 				Shared:           fi.Bool(true),
 			}
@@ -473,6 +477,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 			c.AddTask(tg)
 		}
 	}
+	sort.Stable(awstasks.OrderLoadBalancersByName(t.LoadBalancers))
 	sort.Stable(awstasks.OrderTargetGroupsByName(t.TargetGroups))
 
 	// @step: are we using a mixed instance policy
