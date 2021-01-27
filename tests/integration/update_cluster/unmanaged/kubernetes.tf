@@ -268,7 +268,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-unmanaged-example-com" {
     "k8s.io/role/master"                          = "1"
     "kubernetes.io/cluster/unmanaged.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-main-unmanaged-example-com" {
@@ -283,7 +284,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-unmanaged-example-com" {
     "k8s.io/role/master"                          = "1"
     "kubernetes.io/cluster/unmanaged.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_elb" "api-unmanaged-example-com" {

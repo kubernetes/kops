@@ -312,7 +312,8 @@ resource "aws_ebs_volume" "a-etcd-events-existingsg-example-com" {
     "k8s.io/role/master"                           = "1"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "a-etcd-main-existingsg-example-com" {
@@ -327,7 +328,8 @@ resource "aws_ebs_volume" "a-etcd-main-existingsg-example-com" {
     "k8s.io/role/master"                           = "1"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "b-etcd-events-existingsg-example-com" {
@@ -342,7 +344,8 @@ resource "aws_ebs_volume" "b-etcd-events-existingsg-example-com" {
     "k8s.io/role/master"                           = "1"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "b-etcd-main-existingsg-example-com" {
@@ -357,7 +360,8 @@ resource "aws_ebs_volume" "b-etcd-main-existingsg-example-com" {
     "k8s.io/role/master"                           = "1"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "c-etcd-events-existingsg-example-com" {
@@ -372,7 +376,8 @@ resource "aws_ebs_volume" "c-etcd-events-existingsg-example-com" {
     "k8s.io/role/master"                           = "1"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "c-etcd-main-existingsg-example-com" {
@@ -387,7 +392,8 @@ resource "aws_ebs_volume" "c-etcd-main-existingsg-example-com" {
     "k8s.io/role/master"                           = "1"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_elb" "api-existingsg-example-com" {

@@ -327,7 +327,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-mixedinstances-example-com" {
     "k8s.io/role/master"                               = "1"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-main-mixedinstances-example-com" {
@@ -342,7 +343,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-mixedinstances-example-com" {
     "k8s.io/role/master"                               = "1"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1b-etcd-events-mixedinstances-example-com" {
@@ -357,7 +359,8 @@ resource "aws_ebs_volume" "us-test-1b-etcd-events-mixedinstances-example-com" {
     "k8s.io/role/master"                               = "1"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1b-etcd-main-mixedinstances-example-com" {
@@ -372,7 +375,8 @@ resource "aws_ebs_volume" "us-test-1b-etcd-main-mixedinstances-example-com" {
     "k8s.io/role/master"                               = "1"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1c-etcd-events-mixedinstances-example-com" {
@@ -387,7 +391,8 @@ resource "aws_ebs_volume" "us-test-1c-etcd-events-mixedinstances-example-com" {
     "k8s.io/role/master"                               = "1"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1c-etcd-main-mixedinstances-example-com" {
@@ -402,7 +407,8 @@ resource "aws_ebs_volume" "us-test-1c-etcd-main-mixedinstances-example-com" {
     "k8s.io/role/master"                               = "1"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_iam_instance_profile" "masters-mixedinstances-example-com" {

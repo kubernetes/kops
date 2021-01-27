@@ -309,7 +309,8 @@ resource "aws_ebs_volume" "a-etcd-events-ha-example-com" {
     "k8s.io/role/master"                   = "1"
     "kubernetes.io/cluster/ha.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "a-etcd-main-ha-example-com" {
@@ -324,7 +325,8 @@ resource "aws_ebs_volume" "a-etcd-main-ha-example-com" {
     "k8s.io/role/master"                   = "1"
     "kubernetes.io/cluster/ha.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "b-etcd-events-ha-example-com" {
@@ -339,7 +341,8 @@ resource "aws_ebs_volume" "b-etcd-events-ha-example-com" {
     "k8s.io/role/master"                   = "1"
     "kubernetes.io/cluster/ha.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "b-etcd-main-ha-example-com" {
@@ -354,7 +357,8 @@ resource "aws_ebs_volume" "b-etcd-main-ha-example-com" {
     "k8s.io/role/master"                   = "1"
     "kubernetes.io/cluster/ha.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "c-etcd-events-ha-example-com" {
@@ -369,7 +373,8 @@ resource "aws_ebs_volume" "c-etcd-events-ha-example-com" {
     "k8s.io/role/master"                   = "1"
     "kubernetes.io/cluster/ha.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "c-etcd-main-ha-example-com" {
@@ -384,7 +389,8 @@ resource "aws_ebs_volume" "c-etcd-main-ha-example-com" {
     "k8s.io/role/master"                   = "1"
     "kubernetes.io/cluster/ha.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_iam_instance_profile" "masters-ha-example-com" {
