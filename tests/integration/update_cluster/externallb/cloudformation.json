@@ -75,6 +75,7 @@
           }
         ],
         "LoadBalancerNames": [
+          "my-external-elb-1",
           "my-external-elb-2",
           "my-external-elb-3"
         ],

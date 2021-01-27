@@ -86,7 +86,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-externallb-example-c
     id      = aws_launch_template.master-us-test-1a-masters-externallb-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-externallb-example-com.latest_version
   }
-  load_balancers      = ["my-external-elb-2", "my-external-elb-3"]
+  load_balancers      = ["my-external-elb-1", "my-external-elb-2", "my-external-elb-3"]
   max_size            = 1
   metrics_granularity = "1Minute"
   min_size            = 1
