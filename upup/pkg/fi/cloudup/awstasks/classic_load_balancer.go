@@ -687,6 +687,15 @@ func (_ *ClassicLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Cl
 	return nil
 }
 
+// OrderLoadBalancersByName implements sort.Interface for []OrderLoadBalancersByName, based on name
+type OrderLoadBalancersByName []*ClassicLoadBalancer
+
+func (a OrderLoadBalancersByName) Len() int      { return len(a) }
+func (a OrderLoadBalancersByName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a OrderLoadBalancersByName) Less(i, j int) bool {
+	return fi.StringValue(a[i].Name) < fi.StringValue(a[j].Name)
+}
+
 type terraformLoadBalancer struct {
 	LoadBalancerName *string                          `json:"name" cty:"name"`
 	Listener         []*terraformLoadBalancerListener `json:"listener" cty:"listener"`
@@ -821,12 +830,12 @@ func (_ *ClassicLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 func (e *ClassicLoadBalancer) TerraformLink(params ...string) *terraform.Literal {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
-		if e.Name == nil {
+		if e.LoadBalancerName == nil {
 			klog.Fatalf("Name must be set, if LB is shared: %s", e)
 		}
 
-		klog.V(4).Infof("reusing existing LB with name %q", *e.Name)
-		return terraform.LiteralFromStringValue(*e.Name)
+		klog.V(4).Infof("reusing existing LB with name %q", *e.LoadBalancerName)
+		return terraform.LiteralFromStringValue(*e.LoadBalancerName)
 	}
 
 	prop := "id"
@@ -966,12 +975,12 @@ func (_ *ClassicLoadBalancer) RenderCloudformation(t *cloudformation.Cloudformat
 func (e *ClassicLoadBalancer) CloudformationLink() *cloudformation.Literal {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
-		if e.Name == nil {
+		if e.LoadBalancerName == nil {
 			klog.Fatalf("Name must be set, if LB is shared: %s", e)
 		}
 
-		klog.V(4).Infof("reusing existing LB with name %q", *e.Name)
-		return cloudformation.LiteralString(*e.Name)
+		klog.V(4).Infof("reusing existing LB with name %q", *e.LoadBalancerName)
+		return cloudformation.LiteralString(*e.LoadBalancerName)
 	}
 
 	return cloudformation.Ref("AWS::ElasticLoadBalancing::LoadBalancer", *e.Name)
