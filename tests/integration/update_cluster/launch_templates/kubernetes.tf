@@ -298,7 +298,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-launchtemplates-example-com" {
     "k8s.io/role/master"                                = "1"
     "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-main-launchtemplates-example-com" {
@@ -313,7 +314,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-launchtemplates-example-com" {
     "k8s.io/role/master"                                = "1"
     "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1b-etcd-events-launchtemplates-example-com" {
@@ -328,7 +330,8 @@ resource "aws_ebs_volume" "us-test-1b-etcd-events-launchtemplates-example-com" {
     "k8s.io/role/master"                                = "1"
     "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1b-etcd-main-launchtemplates-example-com" {
@@ -343,7 +346,8 @@ resource "aws_ebs_volume" "us-test-1b-etcd-main-launchtemplates-example-com" {
     "k8s.io/role/master"                                = "1"
     "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1c-etcd-events-launchtemplates-example-com" {
@@ -358,7 +362,8 @@ resource "aws_ebs_volume" "us-test-1c-etcd-events-launchtemplates-example-com" {
     "k8s.io/role/master"                                = "1"
     "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1c-etcd-main-launchtemplates-example-com" {
@@ -373,7 +378,8 @@ resource "aws_ebs_volume" "us-test-1c-etcd-main-launchtemplates-example-com" {
     "k8s.io/role/master"                                = "1"
     "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_iam_instance_profile" "masters-launchtemplates-example-com" {

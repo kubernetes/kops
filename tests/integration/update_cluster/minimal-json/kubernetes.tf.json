@@ -222,6 +222,7 @@
         "size": 20,
         "type": "gp3",
         "iops": 3000,
+        "throughput": 125,
         "encrypted": false,
         "tags": {
           "KubernetesCluster": "minimal-json.example.com",
@@ -236,6 +237,7 @@
         "size": 20,
         "type": "gp3",
         "iops": 3000,
+        "throughput": 125,
         "encrypted": false,
         "tags": {
           "KubernetesCluster": "minimal-json.example.com",

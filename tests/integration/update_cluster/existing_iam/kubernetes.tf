@@ -289,7 +289,8 @@ resource "aws_ebs_volume" "a-etcd-events-existing-iam-example-com" {
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "a-etcd-main-existing-iam-example-com" {
@@ -304,7 +305,8 @@ resource "aws_ebs_volume" "a-etcd-main-existing-iam-example-com" {
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "b-etcd-events-existing-iam-example-com" {
@@ -319,7 +321,8 @@ resource "aws_ebs_volume" "b-etcd-events-existing-iam-example-com" {
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "b-etcd-main-existing-iam-example-com" {
@@ -334,7 +337,8 @@ resource "aws_ebs_volume" "b-etcd-main-existing-iam-example-com" {
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "c-etcd-events-existing-iam-example-com" {
@@ -349,7 +353,8 @@ resource "aws_ebs_volume" "c-etcd-events-existing-iam-example-com" {
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "c-etcd-main-existing-iam-example-com" {
@@ -364,7 +369,8 @@ resource "aws_ebs_volume" "c-etcd-main-existing-iam-example-com" {
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_internet_gateway" "existing-iam-example-com" {

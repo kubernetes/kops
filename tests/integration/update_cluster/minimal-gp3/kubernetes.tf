@@ -193,7 +193,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-minimal-example-com" {
     "k8s.io/role/master"                        = "1"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-main-minimal-example-com" {
@@ -208,7 +209,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-minimal-example-com" {
     "k8s.io/role/master"                        = "1"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_iam_instance_profile" "masters-minimal-example-com" {

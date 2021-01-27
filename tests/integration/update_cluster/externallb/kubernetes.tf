@@ -197,7 +197,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-externallb-example-com" {
     "k8s.io/role/master"                           = "1"
     "kubernetes.io/cluster/externallb.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-main-externallb-example-com" {
@@ -212,7 +213,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-externallb-example-com" {
     "k8s.io/role/master"                           = "1"
     "kubernetes.io/cluster/externallb.example.com" = "owned"
   }
-  type = "gp3"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_iam_instance_profile" "masters-externallb-example-com" {
