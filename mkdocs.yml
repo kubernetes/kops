@@ -15,7 +15,6 @@ markdown_extensions:
       permalink: ' ¶'
 theme:
   name: material
-  custom_dir: docs/overrides
   features:
     - navigation.tabs
   icon:
