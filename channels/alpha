@@ -53,10 +53,9 @@ spec:
     - providerID: gce
       kubernetesVersion: ">=1.16.0-alpha.1"
       name: "cos-cloud/cos-stable-77-12371-114-0"
-    # Note: Updated from cos to ubuntu for parity with aws.
     - providerID: gce
       kubernetesVersion: ">=1.17.0"
-      name: "ubuntu-os-cloud/ubuntu-2004-focal-v20210108"
+      name: "ubuntu-os-cloud/ubuntu-2004-focal-v20210119a"
   cluster:
     kubernetesVersion: v1.5.8
     networking:
