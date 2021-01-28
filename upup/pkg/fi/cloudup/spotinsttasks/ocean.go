@@ -27,7 +27,6 @@ import (
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/client"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/util/stringutil"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
@@ -1041,7 +1040,6 @@ type terraformOcean struct {
 	IAMInstanceProfile       *terraform.Literal             `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
 	KeyName                  *terraform.Literal             `json:"key_name,omitempty" cty:"key_name"`
 	SecurityGroups           []*terraform.Literal           `json:"security_groups,omitempty" cty:"security_groups"`
-	Taints                   []*corev1.Taint                `json:"taints,omitempty" cty:"taints"`
 	Labels                   []*terraformKV                 `json:"labels,omitempty" cty:"labels"`
 	Headrooms                []*terraformAutoScalerHeadroom `json:"autoscale_headrooms,omitempty" cty:"autoscale_headrooms"`
 }
