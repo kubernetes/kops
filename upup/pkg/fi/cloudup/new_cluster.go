@@ -963,7 +963,7 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 		// in pkg/model/azuremodel/api_loadbalancer.go.
 		cluster.Spec.API = nil
 		return nil
-	} else if opt.APILoadBalancerType != "" {
+	} else if opt.APILoadBalancerType != "" || opt.APISSLCertificate != "" {
 		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 	} else {
 		switch cluster.Spec.Topology.Masters {
