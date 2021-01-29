@@ -280,6 +280,7 @@ resource "aws_autoscaling_group" "nodes-existing-iam-example-com" {
 resource "aws_ebs_volume" "a-etcd-events-existing-iam-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                              = "existing-iam.example.com"
@@ -288,12 +289,14 @@ resource "aws_ebs_volume" "a-etcd-events-existing-iam-example-com" {
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "a-etcd-main-existing-iam-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                              = "existing-iam.example.com"
@@ -302,12 +305,14 @@ resource "aws_ebs_volume" "a-etcd-main-existing-iam-example-com" {
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "b-etcd-events-existing-iam-example-com" {
   availability_zone = "us-test-1b"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                              = "existing-iam.example.com"
@@ -316,12 +321,14 @@ resource "aws_ebs_volume" "b-etcd-events-existing-iam-example-com" {
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "b-etcd-main-existing-iam-example-com" {
   availability_zone = "us-test-1b"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                              = "existing-iam.example.com"
@@ -330,12 +337,14 @@ resource "aws_ebs_volume" "b-etcd-main-existing-iam-example-com" {
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "c-etcd-events-existing-iam-example-com" {
   availability_zone = "us-test-1c"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                              = "existing-iam.example.com"
@@ -344,12 +353,14 @@ resource "aws_ebs_volume" "c-etcd-events-existing-iam-example-com" {
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "c-etcd-main-existing-iam-example-com" {
   availability_zone = "us-test-1c"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                              = "existing-iam.example.com"
@@ -358,7 +369,8 @@ resource "aws_ebs_volume" "c-etcd-main-existing-iam-example-com" {
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_internet_gateway" "existing-iam-example-com" {

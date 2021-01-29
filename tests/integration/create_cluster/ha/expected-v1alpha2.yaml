@@ -15,21 +15,27 @@ spec:
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
-    - instanceGroup: master-us-test-1a
+    - encryptedVolume: true
+      instanceGroup: master-us-test-1a
       name: a
-    - instanceGroup: master-us-test-1b
+    - encryptedVolume: true
+      instanceGroup: master-us-test-1b
       name: b
-    - instanceGroup: master-us-test-1c
+    - encryptedVolume: true
+      instanceGroup: master-us-test-1c
       name: c
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
     etcdMembers:
-    - instanceGroup: master-us-test-1a
+    - encryptedVolume: true
+      instanceGroup: master-us-test-1a
       name: a
-    - instanceGroup: master-us-test-1b
+    - encryptedVolume: true
+      instanceGroup: master-us-test-1b
       name: b
-    - instanceGroup: master-us-test-1c
+    - encryptedVolume: true
+      instanceGroup: master-us-test-1c
       name: c
     memoryRequest: 100Mi
     name: events
