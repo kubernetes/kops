@@ -68,6 +68,9 @@ func (d *deployer) initialize() error {
 	if d.SSHPublicKeyPath == "" {
 		d.SSHPublicKeyPath = os.Getenv("AWS_SSH_PUBLIC_KEY_FILE")
 	}
+	if d.SSHUser == "" {
+		d.SSHUser = os.Getenv("KUBE_SSH_USER")
+	}
 	return nil
 }
 
