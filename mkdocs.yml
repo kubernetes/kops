@@ -153,6 +153,7 @@ nav:
     - Ports: "contributing/ports.md"
     - Cluster Addons & Manager : "contributing/addons.md"
   - Releases:
+    - "1.19": releases/1.19-NOTES.md
     - "1.18": releases/1.18-NOTES.md
     - "1.17": releases/1.17-NOTES.md
     - "1.16": releases/1.16-NOTES.md
