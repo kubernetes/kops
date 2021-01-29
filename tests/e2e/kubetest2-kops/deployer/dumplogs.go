@@ -33,6 +33,7 @@ func (d *deployer) DumpClusterLogs() error {
 		"--name", d.ClusterName,
 		"--dir", d.ArtifactsDir,
 		"--private-key", d.SSHPrivateKeyPath,
+		"--ssh-user", d.SSHUser,
 	}
 	klog.Info(strings.Join(args, " "))
 	cmd := exec.Command(args[0], args[1:]...)
