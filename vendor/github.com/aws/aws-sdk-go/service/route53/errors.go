@@ -40,6 +40,12 @@ const (
 	// specified the type in the JSON document in the CreateTrafficPolicy or CreateTrafficPolicyVersionrequest.
 	ErrCodeConflictingTypes = "ConflictingTypes"
 
+	// ErrCodeDNSSECNotFound for service response error code
+	// "DNSSECNotFound".
+	//
+	// The hosted zone doesn't have any DNSSEC resources.
+	ErrCodeDNSSECNotFound = "DNSSECNotFound"
+
 	// ErrCodeDelegationSetAlreadyCreated for service response error code
 	// "DelegationSetAlreadyCreated".
 	//
@@ -129,6 +135,13 @@ const (
 	// The specified hosted zone is a public hosted zone, not a private hosted zone.
 	ErrCodeHostedZoneNotPrivate = "HostedZoneNotPrivate"
 
+	// ErrCodeHostedZonePartiallyDelegated for service response error code
+	// "HostedZonePartiallyDelegated".
+	//
+	// The hosted zone nameservers don't match the parent nameservers. The hosted
+	// zone and parent must have the same nameservers.
+	ErrCodeHostedZonePartiallyDelegated = "HostedZonePartiallyDelegated"
+
 	// ErrCodeIncompatibleVersion for service response error code
 	// "IncompatibleVersion".
 	//
@@ -154,7 +167,7 @@ const (
 	// ErrCodeInvalidArgument for service response error code
 	// "InvalidArgument".
 	//
-	// Parameter name is invalid.
+	// Parameter name is not valid.
 	ErrCodeInvalidArgument = "InvalidArgument"
 
 	// ErrCodeInvalidChangeBatch for service response error code
@@ -176,6 +189,26 @@ const (
 	// The input is not valid.
 	ErrCodeInvalidInput = "InvalidInput"
 
+	// ErrCodeInvalidKMSArn for service response error code
+	// "InvalidKMSArn".
+	//
+	// The KeyManagementServiceArn that you specified isn't valid to use with DNSSEC
+	// signing.
+	ErrCodeInvalidKMSArn = "InvalidKMSArn"
+
+	// ErrCodeInvalidKeySigningKeyName for service response error code
+	// "InvalidKeySigningKeyName".
+	//
+	// The key signing key (KSK) name that you specified isn't a valid name.
+	ErrCodeInvalidKeySigningKeyName = "InvalidKeySigningKeyName"
+
+	// ErrCodeInvalidKeySigningKeyStatus for service response error code
+	// "InvalidKeySigningKeyStatus".
+	//
+	// The key signing key (KSK) status isn't valid or another KSK has the status
+	// INTERNAL_FAILURE.
+	ErrCodeInvalidKeySigningKeyStatus = "InvalidKeySigningKeyStatus"
+
 	// ErrCodeInvalidPaginationToken for service response error code
 	// "InvalidPaginationToken".
 	//
@@ -183,11 +216,18 @@ const (
 	// is invalid.
 	ErrCodeInvalidPaginationToken = "InvalidPaginationToken"
 
+	// ErrCodeInvalidSigningStatus for service response error code
+	// "InvalidSigningStatus".
+	//
+	// Your hosted zone status isn't valid for this operation. In the hosted zone,
+	// change the status to enable DNSSEC or disable DNSSEC.
+	ErrCodeInvalidSigningStatus = "InvalidSigningStatus"
+
 	// ErrCodeInvalidTrafficPolicyDocument for service response error code
 	// "InvalidTrafficPolicyDocument".
 	//
 	// The format of the traffic policy document that you specified in the Document
-	// element is invalid.
+	// element is not valid.
 	ErrCodeInvalidTrafficPolicyDocument = "InvalidTrafficPolicyDocument"
 
 	// ErrCodeInvalidVPCId for service response error code
@@ -196,6 +236,33 @@ const (
 	// The VPC ID that you specified either isn't a valid ID or the current account
 	// is not authorized to access this VPC.
 	ErrCodeInvalidVPCId = "InvalidVPCId"
+
+	// ErrCodeKeySigningKeyAlreadyExists for service response error code
+	// "KeySigningKeyAlreadyExists".
+	//
+	// You've already created a key signing key (KSK) with this name or with the
+	// same customer managed key (CMK) ARN.
+	ErrCodeKeySigningKeyAlreadyExists = "KeySigningKeyAlreadyExists"
+
+	// ErrCodeKeySigningKeyInParentDSRecord for service response error code
+	// "KeySigningKeyInParentDSRecord".
+	//
+	// The key signing key (KSK) is specified in a parent DS record.
+	ErrCodeKeySigningKeyInParentDSRecord = "KeySigningKeyInParentDSRecord"
+
+	// ErrCodeKeySigningKeyInUse for service response error code
+	// "KeySigningKeyInUse".
+	//
+	// The key signing key (KSK) that you specified can't be deactivated because
+	// it's the only KSK for a currently-enabled DNSSEC. Disable DNSSEC signing,
+	// or add or enable another KSK.
+	ErrCodeKeySigningKeyInUse = "KeySigningKeyInUse"
+
+	// ErrCodeKeySigningKeyWithActiveStatusNotFound for service response error code
+	// "KeySigningKeyWithActiveStatusNotFound".
+	//
+	// A key signing key (KSK) with ACTIVE status wasn't found.
+	ErrCodeKeySigningKeyWithActiveStatusNotFound = "KeySigningKeyWithActiveStatusNotFound"
 
 	// ErrCodeLastVPCAssociation for service response error code
 	// "LastVPCAssociation".
@@ -256,6 +323,12 @@ const (
 	//
 	// No hosted zone exists with the ID that you specified.
 	ErrCodeNoSuchHostedZone = "NoSuchHostedZone"
+
+	// ErrCodeNoSuchKeySigningKey for service response error code
+	// "NoSuchKeySigningKey".
+	//
+	// The specified key signing key (KSK) doesn't exist.
+	ErrCodeNoSuchKeySigningKey = "NoSuchKeySigningKey"
 
 	// ErrCodeNoSuchQueryLoggingConfig for service response error code
 	// "NoSuchQueryLoggingConfig".
@@ -351,6 +424,13 @@ const (
 	// To request a higher limit, create a case (http://aws.amazon.com/route53-request)
 	// with the AWS Support Center.
 	ErrCodeTooManyHostedZones = "TooManyHostedZones"
+
+	// ErrCodeTooManyKeySigningKeys for service response error code
+	// "TooManyKeySigningKeys".
+	//
+	// You've reached the limit for the number of key signing keys (KSKs). Remove
+	// at least one KSK, and then try again.
+	ErrCodeTooManyKeySigningKeys = "TooManyKeySigningKeys"
 
 	// ErrCodeTooManyTrafficPolicies for service response error code
 	// "TooManyTrafficPolicies".
