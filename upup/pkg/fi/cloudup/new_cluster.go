@@ -111,7 +111,7 @@ type NewClusterOptions struct {
 	// if MasterZones is explicitly nonempty, otherwise defaults to 1.
 	MasterCount int32
 	// EncryptEtcdStorage is whether to encrypt the etcd volumes.
-	EncryptEtcdStorage bool
+	EncryptEtcdStorage *bool
 	// EtcdStorageType is the underlying cloud storage class of the etcd volumes.
 	EtcdStorageType string
 
@@ -706,8 +706,14 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 			clusters = append(clusters, "cilium")
 		}
 
+		encryptEtcdStorage := false
+		if opt.EncryptEtcdStorage != nil {
+			encryptEtcdStorage = fi.BoolValue(opt.EncryptEtcdStorage)
+		} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+			encryptEtcdStorage = true
+		}
 		for _, etcdCluster := range clusters {
-			etcd := createEtcdCluster(etcdCluster, masters, opt.EncryptEtcdStorage, opt.EtcdStorageType)
+			etcd := createEtcdCluster(etcdCluster, masters, encryptEtcdStorage, opt.EtcdStorageType)
 			cluster.Spec.EtcdClusters = append(cluster.Spec.EtcdClusters, etcd)
 		}
 	}

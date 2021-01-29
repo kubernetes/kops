@@ -184,6 +184,7 @@ resource "aws_autoscaling_group" "nodes-compress-example-com" {
 resource "aws_ebs_volume" "us-test-1a-etcd-events-compress-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                          = "compress.example.com"
@@ -192,12 +193,14 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-compress-example-com" {
     "k8s.io/role/master"                         = "1"
     "kubernetes.io/cluster/compress.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-main-compress-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                          = "compress.example.com"
@@ -206,7 +209,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-compress-example-com" {
     "k8s.io/role/master"                         = "1"
     "kubernetes.io/cluster/compress.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_iam_instance_profile" "masters-compress-example-com" {

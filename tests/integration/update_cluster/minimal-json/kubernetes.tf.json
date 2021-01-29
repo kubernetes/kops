@@ -220,7 +220,9 @@
       "us-test-1a-etcd-events-minimal-json-example-com": {
         "availability_zone": "us-test-1a",
         "size": 20,
-        "type": "gp2",
+        "type": "gp3",
+        "iops": 3000,
+        "throughput": 125,
         "encrypted": false,
         "tags": {
           "KubernetesCluster": "minimal-json.example.com",
@@ -233,7 +235,9 @@
       "us-test-1a-etcd-main-minimal-json-example-com": {
         "availability_zone": "us-test-1a",
         "size": 20,
-        "type": "gp2",
+        "type": "gp3",
+        "iops": 3000,
+        "throughput": 125,
         "encrypted": false,
         "tags": {
           "KubernetesCluster": "minimal-json.example.com",
