@@ -56,9 +56,9 @@ type deployer struct {
 
 	KubernetesVersion string `flag:"kubernetes-version" desc:"The kubernetes version to use in the cluster"`
 
-	SSHPrivateKeyPath string   `flag:"ssh-private-key" desc:"The path to the private key used for SSH access to instances"`
-	SSHPublicKeyPath  string   `flag:"ssh-public-key" desc:"The path to the public key passed to the cloud provider"`
-	SSHUser           []string `flag:"ssh-user" desc:"The SSH users to use for SSH access to instances"`
+	SSHPrivateKeyPath string `flag:"ssh-private-key" desc:"The path to the private key used for SSH access to instances"`
+	SSHPublicKeyPath  string `flag:"ssh-public-key" desc:"The path to the public key passed to the cloud provider"`
+	SSHUser           string `flag:"ssh-user" desc:"The SSH user to use for SSH access to instances"`
 
 	ArtifactsDir string `flag:"-"`
 
