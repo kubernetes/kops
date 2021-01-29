@@ -13,6 +13,102 @@ import (
 	"github.com/aws/aws-sdk-go/private/protocol/restxml"
 )
 
+const opActivateKeySigningKey = "ActivateKeySigningKey"
+
+// ActivateKeySigningKeyRequest generates a "aws/request.Request" representing the
+// client's request for the ActivateKeySigningKey operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ActivateKeySigningKey for more information on using the ActivateKeySigningKey
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the ActivateKeySigningKeyRequest method.
+//    req, resp := client.ActivateKeySigningKeyRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ActivateKeySigningKey
+func (c *Route53) ActivateKeySigningKeyRequest(input *ActivateKeySigningKeyInput) (req *request.Request, output *ActivateKeySigningKeyOutput) {
+	op := &request.Operation{
+		Name:       opActivateKeySigningKey,
+		HTTPMethod: "POST",
+		HTTPPath:   "/2013-04-01/keysigningkey/{HostedZoneId}/{Name}/activate",
+	}
+
+	if input == nil {
+		input = &ActivateKeySigningKeyInput{}
+	}
+
+	output = &ActivateKeySigningKeyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ActivateKeySigningKey API operation for Amazon Route 53.
+//
+// Activates a key signing key (KSK) so that it can be used for signing by DNSSEC.
+// This operation changes the KSK status to ACTIVE.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Route 53's
+// API operation ActivateKeySigningKey for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeConcurrentModification "ConcurrentModification"
+//   Another user submitted a request to create, update, or delete the object
+//   at the same time that you did. Retry the request.
+//
+//   * ErrCodeNoSuchKeySigningKey "NoSuchKeySigningKey"
+//   The specified key signing key (KSK) doesn't exist.
+//
+//   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
+//   The key signing key (KSK) status isn't valid or another KSK has the status
+//   INTERNAL_FAILURE.
+//
+//   * ErrCodeInvalidSigningStatus "InvalidSigningStatus"
+//   Your hosted zone status isn't valid for this operation. In the hosted zone,
+//   change the status to enable DNSSEC or disable DNSSEC.
+//
+//   * ErrCodeInvalidKMSArn "InvalidKMSArn"
+//   The KeyManagementServiceArn that you specified isn't valid to use with DNSSEC
+//   signing.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ActivateKeySigningKey
+func (c *Route53) ActivateKeySigningKey(input *ActivateKeySigningKeyInput) (*ActivateKeySigningKeyOutput, error) {
+	req, out := c.ActivateKeySigningKeyRequest(input)
+	return out, req.Send()
+}
+
+// ActivateKeySigningKeyWithContext is the same as ActivateKeySigningKey with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ActivateKeySigningKey for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53) ActivateKeySigningKeyWithContext(ctx aws.Context, input *ActivateKeySigningKeyInput, opts ...request.Option) (*ActivateKeySigningKeyOutput, error) {
+	req, out := c.ActivateKeySigningKeyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opAssociateVPCWithHostedZone = "AssociateVPCWithHostedZone"
 
 // AssociateVPCWithHostedZoneRequest generates a "aws/request.Request" representing the
@@ -744,6 +840,119 @@ func (c *Route53) CreateHostedZoneWithContext(ctx aws.Context, input *CreateHost
 	return out, req.Send()
 }
 
+const opCreateKeySigningKey = "CreateKeySigningKey"
+
+// CreateKeySigningKeyRequest generates a "aws/request.Request" representing the
+// client's request for the CreateKeySigningKey operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateKeySigningKey for more information on using the CreateKeySigningKey
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the CreateKeySigningKeyRequest method.
+//    req, resp := client.CreateKeySigningKeyRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateKeySigningKey
+func (c *Route53) CreateKeySigningKeyRequest(input *CreateKeySigningKeyInput) (req *request.Request, output *CreateKeySigningKeyOutput) {
+	op := &request.Operation{
+		Name:       opCreateKeySigningKey,
+		HTTPMethod: "POST",
+		HTTPPath:   "/2013-04-01/keysigningkey",
+	}
+
+	if input == nil {
+		input = &CreateKeySigningKeyInput{}
+	}
+
+	output = &CreateKeySigningKeyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateKeySigningKey API operation for Amazon Route 53.
+//
+// Creates a new key signing key (KSK) associated with a hosted zone. You can
+// only have two KSKs per hosted zone.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Route 53's
+// API operation CreateKeySigningKey for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//   No hosted zone exists with the ID that you specified.
+//
+//   * ErrCodeInvalidArgument "InvalidArgument"
+//   Parameter name is not valid.
+//
+//   * ErrCodeInvalidInput "InvalidInput"
+//   The input is not valid.
+//
+//   * ErrCodeInvalidKMSArn "InvalidKMSArn"
+//   The KeyManagementServiceArn that you specified isn't valid to use with DNSSEC
+//   signing.
+//
+//   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
+//   The key signing key (KSK) status isn't valid or another KSK has the status
+//   INTERNAL_FAILURE.
+//
+//   * ErrCodeInvalidSigningStatus "InvalidSigningStatus"
+//   Your hosted zone status isn't valid for this operation. In the hosted zone,
+//   change the status to enable DNSSEC or disable DNSSEC.
+//
+//   * ErrCodeInvalidKeySigningKeyName "InvalidKeySigningKeyName"
+//   The key signing key (KSK) name that you specified isn't a valid name.
+//
+//   * ErrCodeKeySigningKeyAlreadyExists "KeySigningKeyAlreadyExists"
+//   You've already created a key signing key (KSK) with this name or with the
+//   same customer managed key (CMK) ARN.
+//
+//   * ErrCodeTooManyKeySigningKeys "TooManyKeySigningKeys"
+//   You've reached the limit for the number of key signing keys (KSKs). Remove
+//   at least one KSK, and then try again.
+//
+//   * ErrCodeConcurrentModification "ConcurrentModification"
+//   Another user submitted a request to create, update, or delete the object
+//   at the same time that you did. Retry the request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateKeySigningKey
+func (c *Route53) CreateKeySigningKey(input *CreateKeySigningKeyInput) (*CreateKeySigningKeyOutput, error) {
+	req, out := c.CreateKeySigningKeyRequest(input)
+	return out, req.Send()
+}
+
+// CreateKeySigningKeyWithContext is the same as CreateKeySigningKey with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateKeySigningKey for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53) CreateKeySigningKeyWithContext(ctx aws.Context, input *CreateKeySigningKeyInput, opts ...request.Option) (*CreateKeySigningKeyOutput, error) {
+	req, out := c.CreateKeySigningKeyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateQueryLoggingConfig = "CreateQueryLoggingConfig"
 
 // CreateQueryLoggingConfigRequest generates a "aws/request.Request" representing the
@@ -1071,7 +1280,7 @@ func (c *Route53) CreateReusableDelegationSetRequest(input *CreateReusableDelega
 //   The specified HostedZone can't be found.
 //
 //   * ErrCodeInvalidArgument "InvalidArgument"
-//   Parameter name is invalid.
+//   Parameter name is not valid.
 //
 //   * ErrCodeInvalidInput "InvalidInput"
 //   The input is not valid.
@@ -1184,7 +1393,7 @@ func (c *Route53) CreateTrafficPolicyRequest(input *CreateTrafficPolicyInput) (r
 //
 //   * ErrCodeInvalidTrafficPolicyDocument "InvalidTrafficPolicyDocument"
 //   The format of the traffic policy document that you specified in the Document
-//   element is invalid.
+//   element is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateTrafficPolicy
 func (c *Route53) CreateTrafficPolicy(input *CreateTrafficPolicyInput) (*CreateTrafficPolicyOutput, error) {
@@ -1397,7 +1606,7 @@ func (c *Route53) CreateTrafficPolicyVersionRequest(input *CreateTrafficPolicyVe
 //
 //   * ErrCodeInvalidTrafficPolicyDocument "InvalidTrafficPolicyDocument"
 //   The format of the traffic policy document that you specified in the Document
-//   element is invalid.
+//   element is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateTrafficPolicyVersion
 func (c *Route53) CreateTrafficPolicyVersion(input *CreateTrafficPolicyVersionInput) (*CreateTrafficPolicyVersionOutput, error) {
@@ -1522,6 +1731,106 @@ func (c *Route53) CreateVPCAssociationAuthorization(input *CreateVPCAssociationA
 // for more information on using Contexts.
 func (c *Route53) CreateVPCAssociationAuthorizationWithContext(ctx aws.Context, input *CreateVPCAssociationAuthorizationInput, opts ...request.Option) (*CreateVPCAssociationAuthorizationOutput, error) {
 	req, out := c.CreateVPCAssociationAuthorizationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeactivateKeySigningKey = "DeactivateKeySigningKey"
+
+// DeactivateKeySigningKeyRequest generates a "aws/request.Request" representing the
+// client's request for the DeactivateKeySigningKey operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeactivateKeySigningKey for more information on using the DeactivateKeySigningKey
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DeactivateKeySigningKeyRequest method.
+//    req, resp := client.DeactivateKeySigningKeyRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeactivateKeySigningKey
+func (c *Route53) DeactivateKeySigningKeyRequest(input *DeactivateKeySigningKeyInput) (req *request.Request, output *DeactivateKeySigningKeyOutput) {
+	op := &request.Operation{
+		Name:       opDeactivateKeySigningKey,
+		HTTPMethod: "POST",
+		HTTPPath:   "/2013-04-01/keysigningkey/{HostedZoneId}/{Name}/deactivate",
+	}
+
+	if input == nil {
+		input = &DeactivateKeySigningKeyInput{}
+	}
+
+	output = &DeactivateKeySigningKeyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeactivateKeySigningKey API operation for Amazon Route 53.
+//
+// Deactivates a key signing key (KSK) so that it will not be used for signing
+// by DNSSEC. This operation changes the KSK status to INACTIVE.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Route 53's
+// API operation DeactivateKeySigningKey for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeConcurrentModification "ConcurrentModification"
+//   Another user submitted a request to create, update, or delete the object
+//   at the same time that you did. Retry the request.
+//
+//   * ErrCodeNoSuchKeySigningKey "NoSuchKeySigningKey"
+//   The specified key signing key (KSK) doesn't exist.
+//
+//   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
+//   The key signing key (KSK) status isn't valid or another KSK has the status
+//   INTERNAL_FAILURE.
+//
+//   * ErrCodeInvalidSigningStatus "InvalidSigningStatus"
+//   Your hosted zone status isn't valid for this operation. In the hosted zone,
+//   change the status to enable DNSSEC or disable DNSSEC.
+//
+//   * ErrCodeKeySigningKeyInUse "KeySigningKeyInUse"
+//   The key signing key (KSK) that you specified can't be deactivated because
+//   it's the only KSK for a currently-enabled DNSSEC. Disable DNSSEC signing,
+//   or add or enable another KSK.
+//
+//   * ErrCodeKeySigningKeyInParentDSRecord "KeySigningKeyInParentDSRecord"
+//   The key signing key (KSK) is specified in a parent DS record.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeactivateKeySigningKey
+func (c *Route53) DeactivateKeySigningKey(input *DeactivateKeySigningKeyInput) (*DeactivateKeySigningKeyOutput, error) {
+	req, out := c.DeactivateKeySigningKeyRequest(input)
+	return out, req.Send()
+}
+
+// DeactivateKeySigningKeyWithContext is the same as DeactivateKeySigningKey with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeactivateKeySigningKey for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53) DeactivateKeySigningKeyWithContext(ctx aws.Context, input *DeactivateKeySigningKeyInput, opts ...request.Option) (*DeactivateKeySigningKeyOutput, error) {
+	req, out := c.DeactivateKeySigningKeyRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1762,6 +2071,103 @@ func (c *Route53) DeleteHostedZone(input *DeleteHostedZoneInput) (*DeleteHostedZ
 // for more information on using Contexts.
 func (c *Route53) DeleteHostedZoneWithContext(ctx aws.Context, input *DeleteHostedZoneInput, opts ...request.Option) (*DeleteHostedZoneOutput, error) {
 	req, out := c.DeleteHostedZoneRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteKeySigningKey = "DeleteKeySigningKey"
+
+// DeleteKeySigningKeyRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteKeySigningKey operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteKeySigningKey for more information on using the DeleteKeySigningKey
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DeleteKeySigningKeyRequest method.
+//    req, resp := client.DeleteKeySigningKeyRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteKeySigningKey
+func (c *Route53) DeleteKeySigningKeyRequest(input *DeleteKeySigningKeyInput) (req *request.Request, output *DeleteKeySigningKeyOutput) {
+	op := &request.Operation{
+		Name:       opDeleteKeySigningKey,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/2013-04-01/keysigningkey/{HostedZoneId}/{Name}",
+	}
+
+	if input == nil {
+		input = &DeleteKeySigningKeyInput{}
+	}
+
+	output = &DeleteKeySigningKeyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteKeySigningKey API operation for Amazon Route 53.
+//
+// Deletes a key signing key (KSK). Before you can delete a KSK, you must deactivate
+// it. The KSK must be deactived before you can delete it regardless of whether
+// the hosted zone is enabled for DNSSEC signing.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Route 53's
+// API operation DeleteKeySigningKey for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeConcurrentModification "ConcurrentModification"
+//   Another user submitted a request to create, update, or delete the object
+//   at the same time that you did. Retry the request.
+//
+//   * ErrCodeNoSuchKeySigningKey "NoSuchKeySigningKey"
+//   The specified key signing key (KSK) doesn't exist.
+//
+//   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
+//   The key signing key (KSK) status isn't valid or another KSK has the status
+//   INTERNAL_FAILURE.
+//
+//   * ErrCodeInvalidSigningStatus "InvalidSigningStatus"
+//   Your hosted zone status isn't valid for this operation. In the hosted zone,
+//   change the status to enable DNSSEC or disable DNSSEC.
+//
+//   * ErrCodeInvalidKMSArn "InvalidKMSArn"
+//   The KeyManagementServiceArn that you specified isn't valid to use with DNSSEC
+//   signing.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteKeySigningKey
+func (c *Route53) DeleteKeySigningKey(input *DeleteKeySigningKeyInput) (*DeleteKeySigningKeyOutput, error) {
+	req, out := c.DeleteKeySigningKeyRequest(input)
+	return out, req.Send()
+}
+
+// DeleteKeySigningKeyWithContext is the same as DeleteKeySigningKey with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteKeySigningKey for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53) DeleteKeySigningKeyWithContext(ctx aws.Context, input *DeleteKeySigningKeyInput, opts ...request.Option) (*DeleteKeySigningKeyOutput, error) {
+	req, out := c.DeleteKeySigningKeyRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -2257,6 +2663,107 @@ func (c *Route53) DeleteVPCAssociationAuthorizationWithContext(ctx aws.Context, 
 	return out, req.Send()
 }
 
+const opDisableHostedZoneDNSSEC = "DisableHostedZoneDNSSEC"
+
+// DisableHostedZoneDNSSECRequest generates a "aws/request.Request" representing the
+// client's request for the DisableHostedZoneDNSSEC operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DisableHostedZoneDNSSEC for more information on using the DisableHostedZoneDNSSEC
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DisableHostedZoneDNSSECRequest method.
+//    req, resp := client.DisableHostedZoneDNSSECRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DisableHostedZoneDNSSEC
+func (c *Route53) DisableHostedZoneDNSSECRequest(input *DisableHostedZoneDNSSECInput) (req *request.Request, output *DisableHostedZoneDNSSECOutput) {
+	op := &request.Operation{
+		Name:       opDisableHostedZoneDNSSEC,
+		HTTPMethod: "POST",
+		HTTPPath:   "/2013-04-01/hostedzone/{Id}/disable-dnssec",
+	}
+
+	if input == nil {
+		input = &DisableHostedZoneDNSSECInput{}
+	}
+
+	output = &DisableHostedZoneDNSSECOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DisableHostedZoneDNSSEC API operation for Amazon Route 53.
+//
+// Disables DNSSEC signing in a specific hosted zone. This action does not deactivate
+// any key signing keys (KSKs) that are active in the hosted zone.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Route 53's
+// API operation DisableHostedZoneDNSSEC for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//   No hosted zone exists with the ID that you specified.
+//
+//   * ErrCodeInvalidArgument "InvalidArgument"
+//   Parameter name is not valid.
+//
+//   * ErrCodeConcurrentModification "ConcurrentModification"
+//   Another user submitted a request to create, update, or delete the object
+//   at the same time that you did. Retry the request.
+//
+//   * ErrCodeKeySigningKeyInParentDSRecord "KeySigningKeyInParentDSRecord"
+//   The key signing key (KSK) is specified in a parent DS record.
+//
+//   * ErrCodeDNSSECNotFound "DNSSECNotFound"
+//   The hosted zone doesn't have any DNSSEC resources.
+//
+//   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
+//   The key signing key (KSK) status isn't valid or another KSK has the status
+//   INTERNAL_FAILURE.
+//
+//   * ErrCodeInvalidKMSArn "InvalidKMSArn"
+//   The KeyManagementServiceArn that you specified isn't valid to use with DNSSEC
+//   signing.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DisableHostedZoneDNSSEC
+func (c *Route53) DisableHostedZoneDNSSEC(input *DisableHostedZoneDNSSECInput) (*DisableHostedZoneDNSSECOutput, error) {
+	req, out := c.DisableHostedZoneDNSSECRequest(input)
+	return out, req.Send()
+}
+
+// DisableHostedZoneDNSSECWithContext is the same as DisableHostedZoneDNSSEC with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DisableHostedZoneDNSSEC for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53) DisableHostedZoneDNSSECWithContext(ctx aws.Context, input *DisableHostedZoneDNSSECInput, opts ...request.Option) (*DisableHostedZoneDNSSECOutput, error) {
+	req, out := c.DisableHostedZoneDNSSECRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDisassociateVPCFromHostedZone = "DisassociateVPCFromHostedZone"
 
 // DisassociateVPCFromHostedZoneRequest generates a "aws/request.Request" representing the
@@ -2364,6 +2871,110 @@ func (c *Route53) DisassociateVPCFromHostedZone(input *DisassociateVPCFromHosted
 // for more information on using Contexts.
 func (c *Route53) DisassociateVPCFromHostedZoneWithContext(ctx aws.Context, input *DisassociateVPCFromHostedZoneInput, opts ...request.Option) (*DisassociateVPCFromHostedZoneOutput, error) {
 	req, out := c.DisassociateVPCFromHostedZoneRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opEnableHostedZoneDNSSEC = "EnableHostedZoneDNSSEC"
+
+// EnableHostedZoneDNSSECRequest generates a "aws/request.Request" representing the
+// client's request for the EnableHostedZoneDNSSEC operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See EnableHostedZoneDNSSEC for more information on using the EnableHostedZoneDNSSEC
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the EnableHostedZoneDNSSECRequest method.
+//    req, resp := client.EnableHostedZoneDNSSECRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/EnableHostedZoneDNSSEC
+func (c *Route53) EnableHostedZoneDNSSECRequest(input *EnableHostedZoneDNSSECInput) (req *request.Request, output *EnableHostedZoneDNSSECOutput) {
+	op := &request.Operation{
+		Name:       opEnableHostedZoneDNSSEC,
+		HTTPMethod: "POST",
+		HTTPPath:   "/2013-04-01/hostedzone/{Id}/enable-dnssec",
+	}
+
+	if input == nil {
+		input = &EnableHostedZoneDNSSECInput{}
+	}
+
+	output = &EnableHostedZoneDNSSECOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// EnableHostedZoneDNSSEC API operation for Amazon Route 53.
+//
+// Enables DNSSEC signing in a specific hosted zone.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Route 53's
+// API operation EnableHostedZoneDNSSEC for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//   No hosted zone exists with the ID that you specified.
+//
+//   * ErrCodeInvalidArgument "InvalidArgument"
+//   Parameter name is not valid.
+//
+//   * ErrCodeConcurrentModification "ConcurrentModification"
+//   Another user submitted a request to create, update, or delete the object
+//   at the same time that you did. Retry the request.
+//
+//   * ErrCodeKeySigningKeyWithActiveStatusNotFound "KeySigningKeyWithActiveStatusNotFound"
+//   A key signing key (KSK) with ACTIVE status wasn't found.
+//
+//   * ErrCodeInvalidKMSArn "InvalidKMSArn"
+//   The KeyManagementServiceArn that you specified isn't valid to use with DNSSEC
+//   signing.
+//
+//   * ErrCodeHostedZonePartiallyDelegated "HostedZonePartiallyDelegated"
+//   The hosted zone nameservers don't match the parent nameservers. The hosted
+//   zone and parent must have the same nameservers.
+//
+//   * ErrCodeDNSSECNotFound "DNSSECNotFound"
+//   The hosted zone doesn't have any DNSSEC resources.
+//
+//   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
+//   The key signing key (KSK) status isn't valid or another KSK has the status
+//   INTERNAL_FAILURE.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/EnableHostedZoneDNSSEC
+func (c *Route53) EnableHostedZoneDNSSEC(input *EnableHostedZoneDNSSECInput) (*EnableHostedZoneDNSSECOutput, error) {
+	req, out := c.EnableHostedZoneDNSSECRequest(input)
+	return out, req.Send()
+}
+
+// EnableHostedZoneDNSSECWithContext is the same as EnableHostedZoneDNSSEC with the addition of
+// the ability to pass a context and additional request options.
+//
+// See EnableHostedZoneDNSSEC for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53) EnableHostedZoneDNSSECWithContext(ctx aws.Context, input *EnableHostedZoneDNSSECInput, opts ...request.Option) (*EnableHostedZoneDNSSECOutput, error) {
+	req, out := c.EnableHostedZoneDNSSECRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -2621,6 +3232,89 @@ func (c *Route53) GetCheckerIpRanges(input *GetCheckerIpRangesInput) (*GetChecke
 // for more information on using Contexts.
 func (c *Route53) GetCheckerIpRangesWithContext(ctx aws.Context, input *GetCheckerIpRangesInput, opts ...request.Option) (*GetCheckerIpRangesOutput, error) {
 	req, out := c.GetCheckerIpRangesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetDNSSEC = "GetDNSSEC"
+
+// GetDNSSECRequest generates a "aws/request.Request" representing the
+// client's request for the GetDNSSEC operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetDNSSEC for more information on using the GetDNSSEC
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the GetDNSSECRequest method.
+//    req, resp := client.GetDNSSECRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetDNSSEC
+func (c *Route53) GetDNSSECRequest(input *GetDNSSECInput) (req *request.Request, output *GetDNSSECOutput) {
+	op := &request.Operation{
+		Name:       opGetDNSSEC,
+		HTTPMethod: "GET",
+		HTTPPath:   "/2013-04-01/hostedzone/{Id}/dnssec",
+	}
+
+	if input == nil {
+		input = &GetDNSSECInput{}
+	}
+
+	output = &GetDNSSECOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetDNSSEC API operation for Amazon Route 53.
+//
+// Returns information about DNSSEC for a specific hosted zone, including the
+// key signing keys (KSKs) and zone signing keys (ZSKs) in the hosted zone.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Route 53's
+// API operation GetDNSSEC for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//   No hosted zone exists with the ID that you specified.
+//
+//   * ErrCodeInvalidArgument "InvalidArgument"
+//   Parameter name is not valid.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetDNSSEC
+func (c *Route53) GetDNSSEC(input *GetDNSSECInput) (*GetDNSSECOutput, error) {
+	req, out := c.GetDNSSECRequest(input)
+	return out, req.Send()
+}
+
+// GetDNSSECWithContext is the same as GetDNSSEC with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetDNSSEC for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53) GetDNSSECWithContext(ctx aws.Context, input *GetDNSSECInput, opts ...request.Option) (*GetDNSSECOutput, error) {
+	req, out := c.GetDNSSECRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -6099,6 +6793,90 @@ func (s *AccountLimit) SetValue(v int64) *AccountLimit {
 	return s
 }
 
+type ActivateKeySigningKeyInput struct {
+	_ struct{} `locationName:"ActivateKeySigningKeyRequest" type:"structure"`
+
+	// A unique string used to identify a hosted zone.
+	//
+	// HostedZoneId is a required field
+	HostedZoneId *string `location:"uri" locationName:"HostedZoneId" type:"string" required:"true"`
+
+	// An alphanumeric string used to identify a key signing key (KSK).
+	//
+	// Name is a required field
+	Name *string `location:"uri" locationName:"Name" min:"3" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ActivateKeySigningKeyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ActivateKeySigningKeyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ActivateKeySigningKeyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ActivateKeySigningKeyInput"}
+	if s.HostedZoneId == nil {
+		invalidParams.Add(request.NewErrParamRequired("HostedZoneId"))
+	}
+	if s.HostedZoneId != nil && len(*s.HostedZoneId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HostedZoneId", 1))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetHostedZoneId sets the HostedZoneId field's value.
+func (s *ActivateKeySigningKeyInput) SetHostedZoneId(v string) *ActivateKeySigningKeyInput {
+	s.HostedZoneId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ActivateKeySigningKeyInput) SetName(v string) *ActivateKeySigningKeyInput {
+	s.Name = &v
+	return s
+}
+
+type ActivateKeySigningKeyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A complex type that describes change information about changes made to your
+	// hosted zone.
+	//
+	// ChangeInfo is a required field
+	ChangeInfo *ChangeInfo `type:"structure" required:"true"`
+}
+
+// String returns the string representation
+func (s ActivateKeySigningKeyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ActivateKeySigningKeyOutput) GoString() string {
+	return s.String()
+}
+
+// SetChangeInfo sets the ChangeInfo field's value.
+func (s *ActivateKeySigningKeyOutput) SetChangeInfo(v *ChangeInfo) *ActivateKeySigningKeyOutput {
+	s.ChangeInfo = v
+	return s
+}
+
 // A complex type that identifies the CloudWatch alarm that you want Amazon
 // Route 53 health checkers to use to determine whether the specified health
 // check is healthy.
@@ -7439,6 +8217,195 @@ func (s *CreateHostedZoneOutput) SetVPC(v *VPC) *CreateHostedZoneOutput {
 	return s
 }
 
+type CreateKeySigningKeyInput struct {
+	_ struct{} `locationName:"CreateKeySigningKeyRequest" type:"structure" xmlURI:"https://route53.amazonaws.com/doc/2013-04-01/"`
+
+	// A unique string that identifies the request.
+	//
+	// CallerReference is a required field
+	CallerReference *string `min:"1" type:"string" required:"true"`
+
+	// The unique string (ID) used to identify a hosted zone.
+	//
+	// HostedZoneId is a required field
+	HostedZoneId *string `type:"string" required:"true"`
+
+	// The Amazon resource name (ARN) for a customer managed key (CMK) in AWS Key
+	// Management Service (KMS). The KeyManagementServiceArn must be unique for
+	// each key signing key (KSK) in a single hosted zone. To see an example of
+	// KeyManagementServiceArn that grants the correct permissions for DNSSEC, scroll
+	// down to Example.
+	//
+	// You must configure the CMK as follows:
+	//
+	// Status
+	//
+	// Enabled
+	//
+	// Key spec
+	//
+	// ECC_NIST_P256
+	//
+	// Key usage
+	//
+	// Sign and verify
+	//
+	// Key policy
+	//
+	// The key policy must give permission for the following actions:
+	//
+	//    * DescribeKey
+	//
+	//    * GetPublicKey
+	//
+	//    * Sign
+	//
+	// The key policy must also include the Amazon Route 53 service in the principal
+	// for your account. Specify the following:
+	//
+	//    * "Service": "api-service.dnssec.route53.aws.internal"
+	//
+	// For more information about working with CMK in KMS, see AWS Key Management
+	// Service concepts (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html).
+	//
+	// KeyManagementServiceArn is a required field
+	KeyManagementServiceArn *string `type:"string" required:"true"`
+
+	// An alphanumeric string used to identify a key signing key (KSK). Name must
+	// be unique for each key signing key in the same hosted zone.
+	//
+	// Name is a required field
+	Name *string `min:"3" type:"string" required:"true"`
+
+	// A string specifying the initial status of the key signing key (KSK). You
+	// can set the value to ACTIVE or INACTIVE.
+	//
+	// Status is a required field
+	Status *string `min:"5" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateKeySigningKeyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateKeySigningKeyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateKeySigningKeyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateKeySigningKeyInput"}
+	if s.CallerReference == nil {
+		invalidParams.Add(request.NewErrParamRequired("CallerReference"))
+	}
+	if s.CallerReference != nil && len(*s.CallerReference) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CallerReference", 1))
+	}
+	if s.HostedZoneId == nil {
+		invalidParams.Add(request.NewErrParamRequired("HostedZoneId"))
+	}
+	if s.KeyManagementServiceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("KeyManagementServiceArn"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 3))
+	}
+	if s.Status == nil {
+		invalidParams.Add(request.NewErrParamRequired("Status"))
+	}
+	if s.Status != nil && len(*s.Status) < 5 {
+		invalidParams.Add(request.NewErrParamMinLen("Status", 5))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCallerReference sets the CallerReference field's value.
+func (s *CreateKeySigningKeyInput) SetCallerReference(v string) *CreateKeySigningKeyInput {
+	s.CallerReference = &v
+	return s
+}
+
+// SetHostedZoneId sets the HostedZoneId field's value.
+func (s *CreateKeySigningKeyInput) SetHostedZoneId(v string) *CreateKeySigningKeyInput {
+	s.HostedZoneId = &v
+	return s
+}
+
+// SetKeyManagementServiceArn sets the KeyManagementServiceArn field's value.
+func (s *CreateKeySigningKeyInput) SetKeyManagementServiceArn(v string) *CreateKeySigningKeyInput {
+	s.KeyManagementServiceArn = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateKeySigningKeyInput) SetName(v string) *CreateKeySigningKeyInput {
+	s.Name = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *CreateKeySigningKeyInput) SetStatus(v string) *CreateKeySigningKeyInput {
+	s.Status = &v
+	return s
+}
+
+type CreateKeySigningKeyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A complex type that describes change information about changes made to your
+	// hosted zone.
+	//
+	// ChangeInfo is a required field
+	ChangeInfo *ChangeInfo `type:"structure" required:"true"`
+
+	// The key signing key (KSK) that the request creates.
+	//
+	// KeySigningKey is a required field
+	KeySigningKey *KeySigningKey `type:"structure" required:"true"`
+
+	// The unique URL representing the new key signing key (KSK).
+	//
+	// Location is a required field
+	Location *string `location:"header" locationName:"Location" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateKeySigningKeyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateKeySigningKeyOutput) GoString() string {
+	return s.String()
+}
+
+// SetChangeInfo sets the ChangeInfo field's value.
+func (s *CreateKeySigningKeyOutput) SetChangeInfo(v *ChangeInfo) *CreateKeySigningKeyOutput {
+	s.ChangeInfo = v
+	return s
+}
+
+// SetKeySigningKey sets the KeySigningKey field's value.
+func (s *CreateKeySigningKeyOutput) SetKeySigningKey(v *KeySigningKey) *CreateKeySigningKeyOutput {
+	s.KeySigningKey = v
+	return s
+}
+
+// SetLocation sets the Location field's value.
+func (s *CreateKeySigningKeyOutput) SetLocation(v string) *CreateKeySigningKeyOutput {
+	s.Location = &v
+	return s
+}
+
 type CreateQueryLoggingConfigInput struct {
 	_ struct{} `locationName:"CreateQueryLoggingConfigRequest" type:"structure" xmlURI:"https://route53.amazonaws.com/doc/2013-04-01/"`
 
@@ -8088,6 +9055,132 @@ func (s *CreateVPCAssociationAuthorizationOutput) SetVPC(v *VPC) *CreateVPCAssoc
 	return s
 }
 
+// A string repesenting the status of DNSSEC signing.
+type DNSSECStatus struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates your hosted zone signging status: SIGNING, NOT_SIGNING, or INTERNAL_FAILURE.
+	// If the status is INTERNAL_FAILURE, see StatusMessage for information about
+	// steps that you can take to correct the problem.
+	//
+	// A status INTERNAL_FAILURE means there was an error during a request. Before
+	// you can continue to work with DNSSEC signing, including working with key
+	// signing keys (KSKs), you must correct the problem by enabling or disabling
+	// DNSSEC signing for the hosted zone.
+	ServeSignature *string `min:"1" type:"string"`
+
+	// The status message provided for the following DNSSEC signing status: INTERNAL_FAILURE.
+	// The status message includes information about what the problem might be and
+	// steps that you can take to correct the issue.
+	StatusMessage *string `type:"string"`
+}
+
+// String returns the string representation
+func (s DNSSECStatus) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DNSSECStatus) GoString() string {
+	return s.String()
+}
+
+// SetServeSignature sets the ServeSignature field's value.
+func (s *DNSSECStatus) SetServeSignature(v string) *DNSSECStatus {
+	s.ServeSignature = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *DNSSECStatus) SetStatusMessage(v string) *DNSSECStatus {
+	s.StatusMessage = &v
+	return s
+}
+
+type DeactivateKeySigningKeyInput struct {
+	_ struct{} `locationName:"DeactivateKeySigningKeyRequest" type:"structure"`
+
+	// A unique string used to identify a hosted zone.
+	//
+	// HostedZoneId is a required field
+	HostedZoneId *string `location:"uri" locationName:"HostedZoneId" type:"string" required:"true"`
+
+	// An alphanumeric string used to identify a key signing key (KSK).
+	//
+	// Name is a required field
+	Name *string `location:"uri" locationName:"Name" min:"3" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeactivateKeySigningKeyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeactivateKeySigningKeyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeactivateKeySigningKeyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeactivateKeySigningKeyInput"}
+	if s.HostedZoneId == nil {
+		invalidParams.Add(request.NewErrParamRequired("HostedZoneId"))
+	}
+	if s.HostedZoneId != nil && len(*s.HostedZoneId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HostedZoneId", 1))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetHostedZoneId sets the HostedZoneId field's value.
+func (s *DeactivateKeySigningKeyInput) SetHostedZoneId(v string) *DeactivateKeySigningKeyInput {
+	s.HostedZoneId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DeactivateKeySigningKeyInput) SetName(v string) *DeactivateKeySigningKeyInput {
+	s.Name = &v
+	return s
+}
+
+type DeactivateKeySigningKeyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A complex type that describes change information about changes made to your
+	// hosted zone.
+	//
+	// ChangeInfo is a required field
+	ChangeInfo *ChangeInfo `type:"structure" required:"true"`
+}
+
+// String returns the string representation
+func (s DeactivateKeySigningKeyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeactivateKeySigningKeyOutput) GoString() string {
+	return s.String()
+}
+
+// SetChangeInfo sets the ChangeInfo field's value.
+func (s *DeactivateKeySigningKeyOutput) SetChangeInfo(v *ChangeInfo) *DeactivateKeySigningKeyOutput {
+	s.ChangeInfo = v
+	return s
+}
+
 // A complex type that lists the name servers in a delegation set, as well as
 // the CallerReference and the ID for the delegation set.
 type DelegationSet struct {
@@ -8257,6 +9350,90 @@ func (s DeleteHostedZoneOutput) GoString() string {
 
 // SetChangeInfo sets the ChangeInfo field's value.
 func (s *DeleteHostedZoneOutput) SetChangeInfo(v *ChangeInfo) *DeleteHostedZoneOutput {
+	s.ChangeInfo = v
+	return s
+}
+
+type DeleteKeySigningKeyInput struct {
+	_ struct{} `locationName:"DeleteKeySigningKeyRequest" type:"structure"`
+
+	// A unique string used to identify a hosted zone.
+	//
+	// HostedZoneId is a required field
+	HostedZoneId *string `location:"uri" locationName:"HostedZoneId" type:"string" required:"true"`
+
+	// An alphanumeric string used to identify a key signing key (KSK).
+	//
+	// Name is a required field
+	Name *string `location:"uri" locationName:"Name" min:"3" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteKeySigningKeyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteKeySigningKeyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteKeySigningKeyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteKeySigningKeyInput"}
+	if s.HostedZoneId == nil {
+		invalidParams.Add(request.NewErrParamRequired("HostedZoneId"))
+	}
+	if s.HostedZoneId != nil && len(*s.HostedZoneId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HostedZoneId", 1))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetHostedZoneId sets the HostedZoneId field's value.
+func (s *DeleteKeySigningKeyInput) SetHostedZoneId(v string) *DeleteKeySigningKeyInput {
+	s.HostedZoneId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DeleteKeySigningKeyInput) SetName(v string) *DeleteKeySigningKeyInput {
+	s.Name = &v
+	return s
+}
+
+type DeleteKeySigningKeyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A complex type that describes change information about changes made to your
+	// hosted zone.
+	//
+	// ChangeInfo is a required field
+	ChangeInfo *ChangeInfo `type:"structure" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteKeySigningKeyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteKeySigningKeyOutput) GoString() string {
+	return s.String()
+}
+
+// SetChangeInfo sets the ChangeInfo field's value.
+func (s *DeleteKeySigningKeyOutput) SetChangeInfo(v *ChangeInfo) *DeleteKeySigningKeyOutput {
 	s.ChangeInfo = v
 	return s
 }
@@ -8630,6 +9807,73 @@ func (s *Dimension) SetValue(v string) *Dimension {
 	return s
 }
 
+type DisableHostedZoneDNSSECInput struct {
+	_ struct{} `locationName:"DisableHostedZoneDNSSECRequest" type:"structure"`
+
+	// A unique string used to identify a hosted zone.
+	//
+	// HostedZoneId is a required field
+	HostedZoneId *string `location:"uri" locationName:"Id" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DisableHostedZoneDNSSECInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DisableHostedZoneDNSSECInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DisableHostedZoneDNSSECInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DisableHostedZoneDNSSECInput"}
+	if s.HostedZoneId == nil {
+		invalidParams.Add(request.NewErrParamRequired("HostedZoneId"))
+	}
+	if s.HostedZoneId != nil && len(*s.HostedZoneId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HostedZoneId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetHostedZoneId sets the HostedZoneId field's value.
+func (s *DisableHostedZoneDNSSECInput) SetHostedZoneId(v string) *DisableHostedZoneDNSSECInput {
+	s.HostedZoneId = &v
+	return s
+}
+
+type DisableHostedZoneDNSSECOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A complex type that describes change information about changes made to your
+	// hosted zone.
+	//
+	// ChangeInfo is a required field
+	ChangeInfo *ChangeInfo `type:"structure" required:"true"`
+}
+
+// String returns the string representation
+func (s DisableHostedZoneDNSSECOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DisableHostedZoneDNSSECOutput) GoString() string {
+	return s.String()
+}
+
+// SetChangeInfo sets the ChangeInfo field's value.
+func (s *DisableHostedZoneDNSSECOutput) SetChangeInfo(v *ChangeInfo) *DisableHostedZoneDNSSECOutput {
+	s.ChangeInfo = v
+	return s
+}
+
 // A complex type that contains information about the VPC that you want to disassociate
 // from a specified private hosted zone.
 type DisassociateVPCFromHostedZoneInput struct {
@@ -8726,6 +9970,73 @@ func (s DisassociateVPCFromHostedZoneOutput) GoString() string {
 
 // SetChangeInfo sets the ChangeInfo field's value.
 func (s *DisassociateVPCFromHostedZoneOutput) SetChangeInfo(v *ChangeInfo) *DisassociateVPCFromHostedZoneOutput {
+	s.ChangeInfo = v
+	return s
+}
+
+type EnableHostedZoneDNSSECInput struct {
+	_ struct{} `locationName:"EnableHostedZoneDNSSECRequest" type:"structure"`
+
+	// A unique string used to identify a hosted zone.
+	//
+	// HostedZoneId is a required field
+	HostedZoneId *string `location:"uri" locationName:"Id" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s EnableHostedZoneDNSSECInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s EnableHostedZoneDNSSECInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EnableHostedZoneDNSSECInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EnableHostedZoneDNSSECInput"}
+	if s.HostedZoneId == nil {
+		invalidParams.Add(request.NewErrParamRequired("HostedZoneId"))
+	}
+	if s.HostedZoneId != nil && len(*s.HostedZoneId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HostedZoneId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetHostedZoneId sets the HostedZoneId field's value.
+func (s *EnableHostedZoneDNSSECInput) SetHostedZoneId(v string) *EnableHostedZoneDNSSECInput {
+	s.HostedZoneId = &v
+	return s
+}
+
+type EnableHostedZoneDNSSECOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A complex type that describes change information about changes made to your
+	// hosted zone.
+	//
+	// ChangeInfo is a required field
+	ChangeInfo *ChangeInfo `type:"structure" required:"true"`
+}
+
+// String returns the string representation
+func (s EnableHostedZoneDNSSECOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s EnableHostedZoneDNSSECOutput) GoString() string {
+	return s.String()
+}
+
+// SetChangeInfo sets the ChangeInfo field's value.
+func (s *EnableHostedZoneDNSSECOutput) SetChangeInfo(v *ChangeInfo) *EnableHostedZoneDNSSECOutput {
 	s.ChangeInfo = v
 	return s
 }
@@ -9103,6 +10414,83 @@ func (s GetCheckerIpRangesOutput) GoString() string {
 // SetCheckerIpRanges sets the CheckerIpRanges field's value.
 func (s *GetCheckerIpRangesOutput) SetCheckerIpRanges(v []*string) *GetCheckerIpRangesOutput {
 	s.CheckerIpRanges = v
+	return s
+}
+
+type GetDNSSECInput struct {
+	_ struct{} `locationName:"GetDNSSECRequest" type:"structure"`
+
+	// A unique string used to identify a hosted zone.
+	//
+	// HostedZoneId is a required field
+	HostedZoneId *string `location:"uri" locationName:"Id" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s GetDNSSECInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetDNSSECInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetDNSSECInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetDNSSECInput"}
+	if s.HostedZoneId == nil {
+		invalidParams.Add(request.NewErrParamRequired("HostedZoneId"))
+	}
+	if s.HostedZoneId != nil && len(*s.HostedZoneId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HostedZoneId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetHostedZoneId sets the HostedZoneId field's value.
+func (s *GetDNSSECInput) SetHostedZoneId(v string) *GetDNSSECInput {
+	s.HostedZoneId = &v
+	return s
+}
+
+type GetDNSSECOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The key signing keys (KSKs) in your account.
+	//
+	// KeySigningKeys is a required field
+	KeySigningKeys []*KeySigningKey `type:"list" required:"true"`
+
+	// A string repesenting the status of DNSSEC.
+	//
+	// Status is a required field
+	Status *DNSSECStatus `type:"structure" required:"true"`
+}
+
+// String returns the string representation
+func (s GetDNSSECOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetDNSSECOutput) GoString() string {
+	return s.String()
+}
+
+// SetKeySigningKeys sets the KeySigningKeys field's value.
+func (s *GetDNSSECOutput) SetKeySigningKeys(v []*KeySigningKey) *GetDNSSECOutput {
+	s.KeySigningKeys = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *GetDNSSECOutput) SetStatus(v *DNSSECStatus) *GetDNSSECOutput {
+	s.Status = v
 	return s
 }
 
@@ -10989,6 +12377,237 @@ func (s *HostedZoneSummary) SetName(v string) *HostedZoneSummary {
 // SetOwner sets the Owner field's value.
 func (s *HostedZoneSummary) SetOwner(v *HostedZoneOwner) *HostedZoneSummary {
 	s.Owner = v
+	return s
+}
+
+// A key signing key (KSK) is a complex type that represents a public/private
+// key pair. The private key is used to generate a digital signature for the
+// zone signing key (ZSK). The public key is stored in the DNS and is used to
+// authenticate the ZSK. A KSK is always associated with a hosted zone; it cannot
+// exist by itself.
+type KeySigningKey struct {
+	_ struct{} `type:"structure"`
+
+	// The date when the key signing key (KSK) was created.
+	CreatedDate *time.Time `type:"timestamp"`
+
+	// A string that represents a DNSKEY record.
+	DNSKEYRecord *string `type:"string"`
+
+	// A string that represents a delegation signer (DS) record.
+	DSRecord *string `type:"string"`
+
+	// A string used to represent the delegation signer digest algorithm. This value
+	// must follow the guidelines provided by RFC-8624 Section 3.3 (https://tools.ietf.org/html/rfc8624#section-3.3).
+	DigestAlgorithmMnemonic *string `type:"string"`
+
+	// An integer used to represent the delegation signer digest algorithm. This
+	// value must follow the guidelines provided by RFC-8624 Section 3.3 (https://tools.ietf.org/html/rfc8624#section-3.3).
+	DigestAlgorithmType *int64 `type:"integer"`
+
+	// A cryptographic digest of a DNSKEY resource record (RR). DNSKEY records are
+	// used to publish the public key that resolvers can use to verify DNSSEC signatures
+	// that are used to secure certain kinds of information provided by the DNS
+	// system.
+	DigestValue *string `type:"string"`
+
+	// An integer that specifies how the key is used. For key signing key (KSK),
+	// this value is always 257.
+	Flag *int64 `type:"integer"`
+
+	// An integer used to identify the DNSSEC record for the domain name. The process
+	// used to calculate the value is described in RFC-4034 Appendix B (https://tools.ietf.org/rfc/rfc4034.txt).
+	KeyTag *int64 `type:"integer"`
+
+	// The Amazon resource name (ARN) used to identify the customer managed key
+	// (CMK) in AWS Key Management Service (KMS). The KmsArn must be unique for
+	// each key signing key (KSK) in a single hosted zone.
+	//
+	// You must configure the CMK as follows:
+	//
+	// Status
+	//
+	// Enabled
+	//
+	// Key spec
+	//
+	// ECC_NIST_P256
+	//
+	// Key usage
+	//
+	// Sign and verify
+	//
+	// Key policy
+	//
+	// The key policy must give permission for the following actions:
+	//
+	//    * DescribeKey
+	//
+	//    * GetPublicKey
+	//
+	//    * Sign
+	//
+	// The key policy must also include the Amazon Route 53 service in the principal
+	// for your account. Specify the following:
+	//
+	//    * "Service": "api-service.dnssec.route53.aws.internal"
+	//
+	// For more information about working with the customer managed key (CMK) in
+	// KMS, see AWS Key Management Service concepts (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html).
+	KmsArn *string `type:"string"`
+
+	// The last time that the key signing key (KSK) was changed.
+	LastModifiedDate *time.Time `type:"timestamp"`
+
+	// An alphanumeric string used to identify a key signing key (KSK). Name must
+	// be unique for each key signing key in the same hosted zone.
+	Name *string `min:"3" type:"string"`
+
+	// The public key, represented as a Base64 encoding, as required by RFC-4034
+	// Page 5 (https://tools.ietf.org/rfc/rfc4034.txt).
+	PublicKey *string `type:"string"`
+
+	// A string used to represent the signing algorithm. This value must follow
+	// the guidelines provided by RFC-8624 Section 3.1 (https://tools.ietf.org/html/rfc8624#section-3.1).
+	SigningAlgorithmMnemonic *string `type:"string"`
+
+	// An integer used to represent the signing algorithm. This value must follow
+	// the guidelines provided by RFC-8624 Section 3.1 (https://tools.ietf.org/html/rfc8624#section-3.1).
+	SigningAlgorithmType *int64 `type:"integer"`
+
+	// A string that represents the current key signing key (KSK) status.
+	//
+	// Status can have one of the following values:
+	//
+	// ACTIVE
+	//
+	// The KSK is being used for signing.
+	//
+	// INACTIVE
+	//
+	// The KSK is not being used for signing.
+	//
+	// ACTION_NEEDED
+	//
+	// There is an error in the KSK that requires you to take action to resolve.
+	//
+	// INTERNAL_FAILURE
+	//
+	// There was an error during a request. Before you can continue to work with
+	// DNSSEC signing, including actions that involve this KSK, you must correct
+	// the problem. For example, you may need to activate or deactivate the KSK.
+	Status *string `min:"5" type:"string"`
+
+	// The status message provided for the following key signing key (KSK) statuses:
+	// ACTION_NEEDED or INTERNAL_FAILURE. The status message includes information
+	// about what the problem might be and steps that you can take to correct the
+	// issue.
+	StatusMessage *string `type:"string"`
+}
+
+// String returns the string representation
+func (s KeySigningKey) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s KeySigningKey) GoString() string {
+	return s.String()
+}
+
+// SetCreatedDate sets the CreatedDate field's value.
+func (s *KeySigningKey) SetCreatedDate(v time.Time) *KeySigningKey {
+	s.CreatedDate = &v
+	return s
+}
+
+// SetDNSKEYRecord sets the DNSKEYRecord field's value.
+func (s *KeySigningKey) SetDNSKEYRecord(v string) *KeySigningKey {
+	s.DNSKEYRecord = &v
+	return s
+}
+
+// SetDSRecord sets the DSRecord field's value.
+func (s *KeySigningKey) SetDSRecord(v string) *KeySigningKey {
+	s.DSRecord = &v
+	return s
+}
+
+// SetDigestAlgorithmMnemonic sets the DigestAlgorithmMnemonic field's value.
+func (s *KeySigningKey) SetDigestAlgorithmMnemonic(v string) *KeySigningKey {
+	s.DigestAlgorithmMnemonic = &v
+	return s
+}
+
+// SetDigestAlgorithmType sets the DigestAlgorithmType field's value.
+func (s *KeySigningKey) SetDigestAlgorithmType(v int64) *KeySigningKey {
+	s.DigestAlgorithmType = &v
+	return s
+}
+
+// SetDigestValue sets the DigestValue field's value.
+func (s *KeySigningKey) SetDigestValue(v string) *KeySigningKey {
+	s.DigestValue = &v
+	return s
+}
+
+// SetFlag sets the Flag field's value.
+func (s *KeySigningKey) SetFlag(v int64) *KeySigningKey {
+	s.Flag = &v
+	return s
+}
+
+// SetKeyTag sets the KeyTag field's value.
+func (s *KeySigningKey) SetKeyTag(v int64) *KeySigningKey {
+	s.KeyTag = &v
+	return s
+}
+
+// SetKmsArn sets the KmsArn field's value.
+func (s *KeySigningKey) SetKmsArn(v string) *KeySigningKey {
+	s.KmsArn = &v
+	return s
+}
+
+// SetLastModifiedDate sets the LastModifiedDate field's value.
+func (s *KeySigningKey) SetLastModifiedDate(v time.Time) *KeySigningKey {
+	s.LastModifiedDate = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *KeySigningKey) SetName(v string) *KeySigningKey {
+	s.Name = &v
+	return s
+}
+
+// SetPublicKey sets the PublicKey field's value.
+func (s *KeySigningKey) SetPublicKey(v string) *KeySigningKey {
+	s.PublicKey = &v
+	return s
+}
+
+// SetSigningAlgorithmMnemonic sets the SigningAlgorithmMnemonic field's value.
+func (s *KeySigningKey) SetSigningAlgorithmMnemonic(v string) *KeySigningKey {
+	s.SigningAlgorithmMnemonic = &v
+	return s
+}
+
+// SetSigningAlgorithmType sets the SigningAlgorithmType field's value.
+func (s *KeySigningKey) SetSigningAlgorithmType(v int64) *KeySigningKey {
+	s.SigningAlgorithmType = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *KeySigningKey) SetStatus(v string) *KeySigningKey {
+	s.Status = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *KeySigningKey) SetStatusMessage(v string) *KeySigningKey {
+	s.StatusMessage = &v
 	return s
 }
 
@@ -15797,6 +17416,9 @@ const (
 
 	// RRTypeCaa is a RRType enum value
 	RRTypeCaa = "CAA"
+
+	// RRTypeDs is a RRType enum value
+	RRTypeDs = "DS"
 )
 
 // RRType_Values returns all elements of the RRType enum
@@ -15814,6 +17436,7 @@ func RRType_Values() []string {
 		RRTypeSpf,
 		RRTypeAaaa,
 		RRTypeCaa,
+		RRTypeDs,
 	}
 }
 
