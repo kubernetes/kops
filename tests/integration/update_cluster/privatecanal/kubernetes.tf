@@ -459,7 +459,7 @@ resource "aws_launch_template" "bastion-privatecanal-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "required"
+    http_tokens                 = "optional"
   }
   name = "bastion.privatecanal.example.com"
   network_interfaces {
@@ -530,7 +530,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatecanal-example-c
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "required"
+    http_tokens                 = "optional"
   }
   name = "master-us-test-1a.masters.privatecanal.example.com"
   network_interfaces {
@@ -601,7 +601,7 @@ resource "aws_launch_template" "nodes-privatecanal-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "required"
+    http_tokens                 = "optional"
   }
   name = "nodes.privatecanal.example.com"
   network_interfaces {
