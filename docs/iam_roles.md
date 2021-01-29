@@ -81,11 +81,11 @@ Policy Overrides are specified by their ARN on AWS and are grouped by their role
 spec:
   externalPolicies:
     node:
-    - aws:arn:iam:123456789000:policy:test-policy
+    - arn:aws:iam::123456789000:policy/test-policy
     master:
-    - aws:arn:iam:123456789000:policy:test-policy
+    - arn:aws:iam::123456789000:policy/test-policy
     bastion:
-    - aws:arn:iam:123456789000:policy:test-policy
+    - arn:aws:iam::123456789000:policy/test-policy
 ```
 
 External Policy attachments are treated declaritively. Any policies declared will be attached to the role, any policies not specified will be detached _after_ new policies are attached. This does not replace or affect built in kOps policies in any way.
