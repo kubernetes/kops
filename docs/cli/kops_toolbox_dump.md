@@ -27,6 +27,7 @@ kops toolbox dump [flags]
   -h, --help                 help for dump
   -o, --output string        output format.  One of: yaml, json (default "yaml")
       --private-key string   private key to use for SSH acccess to instances (default "~/.ssh/id_rsa")
+      --ssh-user string      the remote user for SSH access to instances (default "ubuntu")
 ```
 
 ### Options inherited from parent commands
