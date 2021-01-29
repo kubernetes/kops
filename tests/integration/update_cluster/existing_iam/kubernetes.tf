@@ -420,7 +420,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-existing-iam-example-c
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "required"
+    http_tokens                 = "optional"
   }
   name = "master-us-test-1a.masters.existing-iam.example.com"
   network_interfaces {
@@ -495,7 +495,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-existing-iam-example-c
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "required"
+    http_tokens                 = "optional"
   }
   name = "master-us-test-1b.masters.existing-iam.example.com"
   network_interfaces {
@@ -570,7 +570,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-existing-iam-example-c
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "required"
+    http_tokens                 = "optional"
   }
   name = "master-us-test-1c.masters.existing-iam.example.com"
   network_interfaces {
@@ -641,7 +641,7 @@ resource "aws_launch_template" "nodes-existing-iam-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "required"
+    http_tokens                 = "optional"
   }
   name = "nodes.existing-iam.example.com"
   network_interfaces {

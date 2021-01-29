@@ -424,7 +424,7 @@
           "InstanceType": "t2.medium",
           "MetadataOptions": {
             "HttpPutResponseHopLimit": 1,
-            "HttpTokens": "required"
+            "HttpTokens": "optional"
           },
           "Monitoring": {
             "Enabled": true
