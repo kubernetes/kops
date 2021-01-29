@@ -1349,7 +1349,6 @@ type terraformElastigroup struct {
 	EphemeralBlockDevice []*terraformElastigroupBlockDevice      `json:"ephemeral_block_device,omitempty" cty:"ephemeral_block_device"`
 	Integration          *terraformElastigroupIntegration        `json:"integration_kubernetes,omitempty" cty:"integration_kubernetes"`
 	Tags                 []*terraformKV                          `json:"tags,omitempty" cty:"tags"`
-	Lifecycle            *terraformLifecycle                     `json:"lifecycle,omitempty" cty:"lifecycle"`
 
 	MinSize         *int64  `json:"min_size,omitempty" cty:"min_size"`
 	MaxSize         *int64  `json:"max_size,omitempty" cty:"max_size"`
@@ -1435,8 +1434,10 @@ type terraformKV struct {
 	Value *string `json:"value" cty:"value"`
 }
 
-type terraformLifecycle struct {
-	IgnoreChanges []string `json:"ignore_changes,omitempty" cty:"ignore_changes"`
+type terraformTaint struct {
+	Key    *string `json:"key" cty:"key"`
+	Value  *string `json:"value" cty:"value"`
+	Effect *string `json:"effect" cty:"effect"`
 }
 
 func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Elastigroup) error {
@@ -1644,16 +1645,6 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 							Key:   fi.String(k),
 							Value: fi.String(v),
 						})
-					}
-				}
-
-				// Ignore capacity changes because the auto scaler updates the
-				// desired capacity overtime.
-				if fi.BoolValue(tf.Integration.Enabled) {
-					tf.Lifecycle = &terraformLifecycle{
-						IgnoreChanges: []string{
-							"desired_capacity",
-						},
 					}
 				}
 			}
