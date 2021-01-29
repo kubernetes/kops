@@ -264,6 +264,7 @@ resource "aws_autoscaling_group" "nodes-privatecilium-example-com" {
 resource "aws_ebs_volume" "us-test-1a-etcd-events-privatecilium-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                               = "privatecilium.example.com"
@@ -272,12 +273,14 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privatecilium-example-com" {
     "k8s.io/role/master"                              = "1"
     "kubernetes.io/cluster/privatecilium.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-main-privatecilium-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                               = "privatecilium.example.com"
@@ -286,7 +289,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatecilium-example-com" {
     "k8s.io/role/master"                              = "1"
     "kubernetes.io/cluster/privatecilium.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_eip" "us-test-1a-privatecilium-example-com" {

@@ -771,7 +771,9 @@
       "Properties": {
         "AvailabilityZone": "us-test-1a",
         "Size": 20,
-        "VolumeType": "gp2",
+        "VolumeType": "gp3",
+        "Iops": 3000,
+        "Throughput": 125,
         "Encrypted": false,
         "Tags": [
           {
@@ -802,7 +804,9 @@
       "Properties": {
         "AvailabilityZone": "us-test-1a",
         "Size": 20,
-        "VolumeType": "gp2",
+        "VolumeType": "gp3",
+        "Iops": 3000,
+        "Throughput": 125,
         "Encrypted": false,
         "Tags": [
           {

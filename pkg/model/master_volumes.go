@@ -40,7 +40,7 @@ import (
 
 const (
 	DefaultEtcdVolumeSize             = 20
-	DefaultAWSEtcdVolumeType          = "gp2"
+	DefaultAWSEtcdVolumeType          = "gp3"
 	DefaultAWSEtcdVolumeIonIops       = 100
 	DefaultAWSEtcdVolumeGp3Iops       = 3000
 	DefaultAWSEtcdVolumeGp3Throughput = 125
@@ -123,6 +123,9 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 
 func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) error {
 	volumeType := fi.StringValue(m.VolumeType)
+	if volumeType == "" {
+		volumeType = DefaultAWSEtcdVolumeType
+	}
 	volumeIops := fi.Int32Value(m.VolumeIops)
 	volumeThroughput := fi.Int32Value(m.VolumeThroughput)
 	switch volumeType {
@@ -138,7 +141,7 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 			volumeThroughput = DefaultAWSEtcdVolumeGp3Throughput
 		}
 	default:
-		volumeType = DefaultAWSEtcdVolumeType
+		return fmt.Errorf("unknown volume type %q", volumeType)
 	}
 
 	// The tags are how protokube knows to mount the volume and use it for etcd

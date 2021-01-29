@@ -289,6 +289,7 @@ resource "aws_autoscaling_group" "nodes-launchtemplates-example-com" {
 resource "aws_ebs_volume" "us-test-1a-etcd-events-launchtemplates-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                                 = "launchtemplates.example.com"
@@ -297,12 +298,14 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-launchtemplates-example-com" {
     "k8s.io/role/master"                                = "1"
     "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-main-launchtemplates-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                                 = "launchtemplates.example.com"
@@ -311,12 +314,14 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-launchtemplates-example-com" {
     "k8s.io/role/master"                                = "1"
     "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1b-etcd-events-launchtemplates-example-com" {
   availability_zone = "us-test-1b"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                                 = "launchtemplates.example.com"
@@ -325,12 +330,14 @@ resource "aws_ebs_volume" "us-test-1b-etcd-events-launchtemplates-example-com" {
     "k8s.io/role/master"                                = "1"
     "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1b-etcd-main-launchtemplates-example-com" {
   availability_zone = "us-test-1b"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                                 = "launchtemplates.example.com"
@@ -339,12 +346,14 @@ resource "aws_ebs_volume" "us-test-1b-etcd-main-launchtemplates-example-com" {
     "k8s.io/role/master"                                = "1"
     "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1c-etcd-events-launchtemplates-example-com" {
   availability_zone = "us-test-1c"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                                 = "launchtemplates.example.com"
@@ -353,12 +362,14 @@ resource "aws_ebs_volume" "us-test-1c-etcd-events-launchtemplates-example-com" {
     "k8s.io/role/master"                                = "1"
     "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "us-test-1c-etcd-main-launchtemplates-example-com" {
   availability_zone = "us-test-1c"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                                 = "launchtemplates.example.com"
@@ -367,7 +378,8 @@ resource "aws_ebs_volume" "us-test-1c-etcd-main-launchtemplates-example-com" {
     "k8s.io/role/master"                                = "1"
     "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_iam_instance_profile" "masters-launchtemplates-example-com" {

@@ -206,6 +206,7 @@ resource "aws_autoscaling_group" "nodes-complex-example-com" {
 resource "aws_ebs_volume" "a-etcd-events-complex-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                         = "complex.example.com"
@@ -216,12 +217,14 @@ resource "aws_ebs_volume" "a-etcd-events-complex-example-com" {
     "k8s.io/role/master"                        = "1"
     "kubernetes.io/cluster/complex.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_ebs_volume" "a-etcd-main-complex-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
+  iops              = 3000
   size              = 20
   tags = {
     "KubernetesCluster"                         = "complex.example.com"
@@ -232,7 +235,8 @@ resource "aws_ebs_volume" "a-etcd-main-complex-example-com" {
     "k8s.io/role/master"                        = "1"
     "kubernetes.io/cluster/complex.example.com" = "owned"
   }
-  type = "gp2"
+  throughput = 125
+  type       = "gp3"
 }
 
 resource "aws_iam_instance_profile" "masters-complex-example-com" {
