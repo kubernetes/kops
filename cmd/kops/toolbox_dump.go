@@ -62,11 +62,13 @@ type ToolboxDumpOptions struct {
 
 	Dir        string
 	PrivateKey string
+	SSHUser    string
 }
 
 func (o *ToolboxDumpOptions) InitDefaults() {
 	o.Output = OutputYaml
 	o.PrivateKey = "~/.ssh/id_rsa"
+	o.SSHUser = "ubuntu"
 }
 
 func NewCmdToolboxDump(f *util.Factory, out io.Writer) *cobra.Command {
@@ -100,6 +102,7 @@ func NewCmdToolboxDump(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Dir, "dir", options.Dir, "target directory; if specified will collect logs and other information.")
 	cmd.Flags().StringVar(&options.PrivateKey, "private-key", options.PrivateKey, "private key to use for SSH acccess to instances")
+	cmd.Flags().StringVar(&options.SSHUser, "ssh-user", options.SSHUser, "the remote user for SSH access to instances")
 
 	return cmd
 }
@@ -183,10 +186,9 @@ func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options
 			}
 		}
 
-		// TODO: We need to find the correct SSH user, ideally per IP
-		sshUser := "ubuntu"
 		sshConfig := &ssh.ClientConfig{
-			User: sshUser,
+			Config: ssh.Config{},
+			User:   options.SSHUser,
 			Auth: []ssh.AuthMethod{
 				ssh.PublicKeys(signer),
 			},
