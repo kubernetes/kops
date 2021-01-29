@@ -25,7 +25,6 @@ import (
 
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/util/stringutil"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
@@ -254,22 +253,6 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 		actual.AutoScalerOpts.Labels = make(map[string]string)
 		for _, label := range spec.Labels {
 			actual.AutoScalerOpts.Labels[fi.StringValue(label.Key)] = fi.StringValue(label.Value)
-		}
-	}
-
-	// Taints.
-	if spec.Taints != nil {
-		if actual.AutoScalerOpts == nil {
-			actual.AutoScalerOpts = new(AutoScalerOpts)
-		}
-
-		actual.AutoScalerOpts.Taints = make([]*corev1.Taint, len(spec.Taints))
-		for i, taint := range spec.Taints {
-			actual.AutoScalerOpts.Taints[i] = &corev1.Taint{
-				Key:    fi.StringValue(taint.Key),
-				Value:  fi.StringValue(taint.Value),
-				Effect: corev1.TaintEffect(fi.StringValue(taint.Effect)),
-			}
 		}
 	}
 
@@ -750,7 +733,6 @@ type terraformLaunchSpec struct {
 	InstanceTypes            []string                       `json:"instance_types,omitempty" cty:"instance_types"`
 	SubnetIDs                []*terraform.Literal           `json:"subnet_ids,omitempty" cty:"subnet_ids"`
 	SecurityGroups           []*terraform.Literal           `json:"security_groups,omitempty" cty:"security_groups"`
-	Taints                   []*corev1.Taint                `json:"taints,omitempty" cty:"taints"`
 	Labels                   []*terraformKV                 `json:"labels,omitempty" cty:"labels"`
 	Tags                     []*terraformKV                 `json:"tags,omitempty" cty:"tags"`
 	Headrooms                []*terraformAutoScalerHeadroom `json:"autoscale_headrooms,omitempty" cty:"autoscale_headrooms"`
@@ -883,11 +865,6 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 						Value: fi.String(v),
 					})
 				}
-			}
-
-			// Taints.
-			if len(opts.Taints) > 0 {
-				tf.Taints = opts.Taints
 			}
 		}
 	}
