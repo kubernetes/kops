@@ -20,6 +20,7 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
+	"github.com/blang/semver/v4"
 	"k8s.io/kops"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -60,6 +61,12 @@ func (r *Templater) templateFuncsMap(tm *template.Template) template.FuncMap {
 	funcs["ChannelRecommendedKopsKubernetesVersion"] = func() string {
 		return kopsapi.RecommendedKubernetesVersion(r.channel, kops.Version).String()
 
+	}
+
+	funcs["ChannelRecommendedImage"] = func(cloud, k8sVersion string) string {
+		ver, _ := semver.ParseTolerant(k8sVersion)
+		imageSpec := r.channel.FindImage(kopsapi.CloudProviderID(cloud), ver)
+		return imageSpec.Name
 	}
 
 	return funcs
