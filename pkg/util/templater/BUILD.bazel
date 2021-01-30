@@ -13,6 +13,7 @@ go_library(
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/util:go_default_library",
         "//vendor/github.com/Masterminds/sprig/v3:go_default_library",
+        "//vendor/github.com/blang/semver/v4:go_default_library",
     ],
 )
 

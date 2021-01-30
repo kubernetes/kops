@@ -95,6 +95,11 @@ func TestRenderChannelFunctions(t *testing.T) {
 			Template: `{{ ChannelRecommendedKubernetesUpgradeVersion "1.4.2" }}`,
 			Expected: "1.4.8",
 		},
+		{
+			Context:  map[string]interface{}{},
+			Template: `{{ ChannelRecommendedImage "aws" "1.4.2" }}`,
+			Expected: "kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21",
+		},
 	}
 	makeRenderTests(t, cases)
 }
