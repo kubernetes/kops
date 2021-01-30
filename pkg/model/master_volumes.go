@@ -140,6 +140,7 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 		if volumeThroughput < 125 {
 			volumeThroughput = DefaultAWSEtcdVolumeGp3Throughput
 		}
+	case "gp2", "standard":
 	default:
 		return fmt.Errorf("unknown volume type %q", volumeType)
 	}
