@@ -61,7 +61,7 @@ func RunSetCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, out
 		return err
 	}
 
-	if err := SetClusterFields(options.Fields, cluster, instanceGroups); err != nil {
+	if err := SetClusterFields(options.Fields, cluster); err != nil {
 		return err
 	}
 
@@ -73,7 +73,7 @@ func RunSetCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, out
 }
 
 // SetClusterFields sets field values in the cluster
-func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*api.InstanceGroup) error {
+func SetClusterFields(fields []string, cluster *api.Cluster) error {
 	for _, field := range fields {
 		kv := strings.SplitN(field, "=", 2)
 		if len(kv) != 2 {
