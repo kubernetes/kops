@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/pflag"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/builder"
+	"k8s.io/kops/tests/e2e/pkg/target"
 
 	"sigs.k8s.io/kubetest2/pkg/types"
 )
@@ -59,6 +60,8 @@ type deployer struct {
 	SSHPublicKeyPath  string `flag:"ssh-public-key" desc:"The path to the public key passed to the cloud provider"`
 	SSHUser           string `flag:"ssh-user" desc:"The SSH user to use for SSH access to instances"`
 
+	TerraformVersion string `flag:"terraform-version" desc:"The version of terraform to use for applying the cluster"`
+
 	ArtifactsDir string `flag:"-"`
 
 	AdminAccess string `flag:"admin-access" desc:"The CIDR to restrict kubernetes API access"`
@@ -67,6 +70,7 @@ type deployer struct {
 
 	// manifestPath is the location of the rendered manifest based on TemplatePath
 	manifestPath string
+	terraform    *target.Terraform
 }
 
 // assert that New implements types.NewDeployer
