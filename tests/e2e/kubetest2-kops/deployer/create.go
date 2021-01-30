@@ -46,6 +46,10 @@ func (d *deployer) replace() error {
 		"--admin",
 		"--name", d.ClusterName,
 	}
+	if d.terraform != nil {
+		args = append(args, "--target", "terraform", "--out", d.terraform.Dir())
+	}
+
 	klog.Info(strings.Join(args, " "))
 
 	cmd = exec.Command(args[0], args[1:]...)
@@ -55,6 +59,11 @@ func (d *deployer) replace() error {
 	err = cmd.Run()
 	if err != nil {
 		return err
+	}
+	if d.terraform != nil {
+		if err := d.terraform.InitApply(); err != nil {
+			return err
+		}
 	}
 	return nil
 }
