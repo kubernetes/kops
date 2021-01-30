@@ -22,11 +22,14 @@ spec:
     enabled: true
     skipNodesWithLocalStorage: true
     skipNodesWithSystemPods: true
+    cpuRequest: "100m"
+    memoryRequest: "300Mi"
 ```
 
 Read more about cluster autoscaler in the [official documentation](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler).
 
-## Cert-manager
+
+#### Cert-manager
 {{ kops_feature_table(kops_added_default='1.20', k8s_min='1.16') }}
 
 Cert-manager handles x509 certificates for your cluster.
