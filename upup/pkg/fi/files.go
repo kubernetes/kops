@@ -19,8 +19,10 @@ package fi
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 
 	"k8s.io/klog/v2"
@@ -49,22 +51,48 @@ func WriteFile(destPath string, contents Resource, fileMode os.FileMode, dirMode
 func writeFileContents(destPath string, src Resource, fileMode os.FileMode) error {
 	klog.Infof("Writing file %q", destPath)
 
-	out, err := os.OpenFile(destPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, fileMode)
-	if err != nil {
-		return fmt.Errorf("error opening destination file %q: %v", destPath, err)
-	}
-	defer out.Close()
-
 	in, err := src.Open()
 	if err != nil {
 		return fmt.Errorf("error opening source resource for file %q: %v", destPath, err)
 	}
 	defer SafeClose(in)
 
-	_, err = io.Copy(out, in)
+	dir := filepath.Dir(destPath)
+
+	tempFile, err := ioutil.TempFile(dir, ".writefile")
 	if err != nil {
-		return fmt.Errorf("error writing file %q: %v", destPath, err)
+		return fmt.Errorf("error creating temp file in %q: %w", dir, err)
 	}
+
+	closeTempFile := true
+	deleteTempFile := true
+	defer func() {
+		if closeTempFile {
+			if err := tempFile.Close(); err != nil {
+				klog.Warningf("error closing tempfile %q: %v", tempFile.Name(), err)
+			}
+		}
+		if deleteTempFile {
+			if err := os.Remove(tempFile.Name()); err != nil {
+				klog.Warningf("error removing tempfile %q: %v", tempFile.Name(), err)
+			}
+		}
+	}()
+
+	if _, err := io.Copy(tempFile, in); err != nil {
+		return fmt.Errorf("error writing file %q: %v", tempFile.Name(), err)
+	}
+
+	if err := tempFile.Close(); err != nil {
+		return fmt.Errorf("error closing temp file %q: %w", tempFile.Name(), err)
+	}
+	closeTempFile = false
+
+	if err := os.Rename(tempFile.Name(), destPath); err != nil {
+		return fmt.Errorf("error renaming temp file %q -> %q: %w", tempFile.Name(), destPath, err)
+	}
+	deleteTempFile = false
+
 	return nil
 }
 
