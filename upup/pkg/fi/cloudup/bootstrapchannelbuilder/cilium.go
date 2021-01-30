@@ -27,11 +27,8 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) {
 	cilium := b.Cluster.Spec.Networking.Cilium
 	if cilium != nil {
 		ver, _ := semver.ParseTolerant(cilium.Version)
-		ver.Build = nil
-		ver.Pre = nil
-		v8, _ := semver.Parse("1.8.0")
 		key := "networking.cilium.io"
-		if ver.LT(v8) {
+		if ver.Minor < 8 {
 			version := "1.7.3-kops.1"
 
 			{
@@ -46,11 +43,26 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) {
 					Id:       id,
 				})
 			}
-		} else {
+		} else if ver.Minor == 8 {
 			version := "1.8.0-kops.1"
 			{
 				id := "k8s-1.12"
 				location := key + "/" + id + "-v1.8.yaml"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &api.AddonSpec{
+					Name:               fi.String(key),
+					Version:            fi.String(version),
+					Selector:           networkingSelector(),
+					Manifest:           fi.String(location),
+					Id:                 id,
+					NeedsRollingUpdate: "all",
+				})
+			}
+		} else if ver.Minor == 9 {
+			version := "1.9.0-kops.1"
+			{
+				id := "k8s-1.12"
+				location := key + "/" + id + "-v1.9.yaml"
 
 				addons.Spec.Addons = append(addons.Spec.Addons, &api.AddonSpec{
 					Name:               fi.String(key),
