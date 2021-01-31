@@ -64,7 +64,7 @@ See [Conformance Testing in Kubernetes](https://github.com/kubernetes/community/
 
 ### Running against a new cluster
 
-By adding the `--up` flag, `kubetest2` will spin up a new cluster. In most cases, you also need to add a few additional flags, such as `--networking`. See `kubetest2 kops --help` for the full list.
+By adding the `--up` flag, `kubetest2` will spin up a new cluster. Flags can be passed to the `kops create cluster` command via the `--create-args` flag. In most cases, you also need to add a few additional flags. See `kubetest2 kops --help` for the full list.
 
 ```shell
 kubetest2 kops \
@@ -72,9 +72,9 @@ kubetest2 kops \
   --up \
   --cloud-provider=aws \
   --cluster-name=my.testcluster.com \
+  --create-args="--networking calico" \
   --kops-binary-path=${KOPS_ROOT}/bazel-bin/cmd/kops/linux-amd64/kops \
   --kubernetes-version=v1.20.2 \
-  --networking calico \
   --test=kops \
   --
   -- \
