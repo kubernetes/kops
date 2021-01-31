@@ -93,6 +93,7 @@ metadata:
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
   instanceMetadata:
+    httpPutResponseHopLimit: 2
     httpTokens: required
   machineType: m3.medium
   maxSize: 1
@@ -115,6 +116,7 @@ metadata:
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
   instanceMetadata:
+    httpPutResponseHopLimit: 2
     httpTokens: required
   machineType: m3.medium
   maxSize: 1
@@ -137,6 +139,7 @@ metadata:
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
   instanceMetadata:
+    httpPutResponseHopLimit: 2
     httpTokens: required
   machineType: m3.medium
   maxSize: 1
@@ -159,6 +162,7 @@ metadata:
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
   instanceMetadata:
+    httpPutResponseHopLimit: 2
     httpTokens: required
   machineType: m3.medium
   maxSize: 1
@@ -181,6 +185,7 @@ metadata:
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
   instanceMetadata:
+    httpPutResponseHopLimit: 2
     httpTokens: required
   machineType: m3.medium
   maxSize: 1
