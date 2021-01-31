@@ -84,7 +84,7 @@ func SetClusterFields(fields []string, cluster *api.Cluster) error {
 		key = strings.TrimPrefix(key, "cluster.")
 
 		if err := reflectutils.SetString(cluster, key, kv[1]); err != nil {
-			return fmt.Errorf("failed to set %s=%s: %v", kv[0], kv[1], err)
+			return err
 		}
 	}
 	return nil
