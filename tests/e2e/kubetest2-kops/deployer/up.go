@@ -125,10 +125,6 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 		args = append(args, "--master-size", "s-8vcpu-16gb")
 	}
 
-	if d.Networking != "" {
-		args = append(args, "--networking", d.Networking)
-	}
-
 	if d.CreateArgs != "" {
 		// TODO: we should only set the above flags if they're not in CreateArgs
 		// allowing any flag to be overridden
