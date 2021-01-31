@@ -40542,7 +40542,7 @@ func cloudupResourcesAddonsNetworkingProjectcalicoOrgCanalK8s116YamlTemplate() (
 	return a, nil
 }
 
-var _cloudupResourcesAddonsNetworkingWeaveK8s112YamlTemplate = []byte(`# Pulled and modified from: https://github.com/weaveworks/weave/releases/download/v2.8.0/weave-daemonset-k8s-1.11.yaml
+var _cloudupResourcesAddonsNetworkingWeaveK8s112YamlTemplate = []byte(`# Pulled and modified from: https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s-1.11.yaml
 
 {{- if WeaveSecret }}
 apiVersion: v1
@@ -40688,7 +40688,7 @@ spec:
     spec:
       initContainers:
         - name: weave-init
-          image: 'weaveworks/weave-kube:{{ or .Networking.Weave.Version "2.8.0" }}'
+          image: 'weaveworks/weave-kube:{{ or .Networking.Weave.Version "2.8.1" }}'
           command:
             - /home/weave/init.sh
           securityContext:
@@ -40742,7 +40742,7 @@ spec:
                   name: weave-net
                   key: network-password
             {{- end }}
-          image: 'weaveworks/weave-kube:{{ or .Networking.Weave.Version "2.8.0" }}'
+          image: 'weaveworks/weave-kube:{{ or .Networking.Weave.Version "2.8.1" }}'
           ports:
             - name: metrics
               containerPort: 6782
@@ -40768,6 +40768,9 @@ spec:
             - name: dbus
               mountPath: /host/var/lib/dbus
               readOnly: true
+            - mountPath: /host/etc/machine-id
+              name: cni-machine-id
+              readOnly: true
             - name: xtables-lock
               mountPath: /run/xtables.lock
               readOnly: false
@@ -40782,7 +40785,7 @@ spec:
             - name: EXTRA_ARGS
               value: "{{ .Networking.Weave.NPCExtraArgs }}"
             {{- end }}
-          image: 'weaveworks/weave-npc:{{ or .Networking.Weave.Version "2.8.0" }}'
+          image: 'weaveworks/weave-npc:{{ or .Networking.Weave.Version "2.8.1" }}'
           ports:
             - name: metrics
               containerPort: 6781
@@ -40813,8 +40816,6 @@ spec:
           operator: Exists
         - effect: NoExecute
           operator: Exists
-        - key: CriticalAddonsOnly
-          operator: Exists
       volumes:
         - name: weavedb
           hostPath:
@@ -40828,6 +40829,9 @@ spec:
         - name: cni-conf
           hostPath:
             path: /etc
+        - name: cni-machine-id
+          hostPath:
+            path: /etc/machine-id
         - name: dbus
           hostPath:
             path: /var/lib/dbus
