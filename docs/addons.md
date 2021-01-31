@@ -57,6 +57,24 @@ spec:
 
 Read more about Metrics Server in the [official documentation](https://github.com/kubernetes-sigs/metrics-server).
 
+##### Secure TLS
+
+{{ kops_feature_table(kops_added_default='1.20') }}
+
+By default, API server will not verify the metrics server TLS certificate. To enable TLS verification, set the following in the cluster spec:
+
+```yaml
+spec:
+  certManager:
+    enabled: true
+  metricsServer:
+    enabled: true
+    insecure: false
+```
+
+This requires that cert-manager is installed in the cluster.
+
+
 
 #### Node local DNS cache
 {{ kops_feature_table(kops_added_default='1.18', k8s_min='1.15') }}

@@ -23,7 +23,9 @@ import (
 	"strings"
 
 	"github.com/blang/semver/v4"
+	certmanager "github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
@@ -162,6 +164,28 @@ func (c *Channel) GetInstalledVersion(ctx context.Context, k8sClient kubernetes.
 	}
 
 	return ParseChannelVersion(annotationValue)
+}
+
+func (c *Channel) IsPKIInstalled(ctx context.Context, k8sClient kubernetes.Interface, cmClient certmanager.Interface) (bool, error) {
+
+	_, err := k8sClient.CoreV1().Secrets("kube-system").Get(ctx, c.Name+"-ca", metav1.GetOptions{})
+	if errors.IsNotFound(err) {
+		return false, nil
+	}
+	if err != nil {
+		return true, err
+	}
+
+	_, err = cmClient.CertmanagerV1().Issuers("kube-system").Get(ctx, c.Name, metav1.GetOptions{})
+	if errors.IsNotFound(err) {
+		return false, nil
+	}
+	if err != nil {
+		return true, err
+	}
+
+	return true, nil
+
 }
 
 type annotationPatch struct {

@@ -17,16 +17,22 @@ limitations under the License.
 package channels
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"reflect"
 	"testing"
 
 	"github.com/blang/semver/v4"
+	fakecertmanager "github.com/jetstack/cert-manager/pkg/client/clientset/versioned/fake"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	fakekubernetes "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/kops/channels/pkg/api"
+
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
@@ -175,10 +181,10 @@ func Test_Replacement(t *testing.T) {
 
 func Test_UnparseableVersion(t *testing.T) {
 	addons := api.Addons{
-		TypeMeta: v1.TypeMeta{
+		TypeMeta: metav1.TypeMeta{
 			Kind: "Addons",
 		},
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "test",
 		},
 		Spec: api.AddonsSpec{
@@ -223,6 +229,73 @@ func Test_MergeAddons(t *testing.T) {
 			t.Errorf("Unexpected AddonMenu merge result,\nMerged:\n%s\nExpected:\n%s\n", addonMenuString(m.LeftSide), addonMenuString(m.ExpectedAfterMerge))
 		}
 	}
+}
+
+func Test_GetRequiredUpdates(t *testing.T) {
+	ctx := context.Background()
+	kubeSystem := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "kube-system",
+		},
+	}
+	fakek8s := fakekubernetes.NewSimpleClientset(kubeSystem)
+	fakecm := fakecertmanager.NewSimpleClientset()
+	addon := &Addon{
+		Name: "test",
+		Spec: &api.AddonSpec{
+			Name:     fi.String("test"),
+			NeedsPKI: true,
+		},
+	}
+	addonUpdate, err := addon.GetRequiredUpdates(ctx, fakek8s, fakecm)
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	if addonUpdate == nil {
+		t.Fatal("expected addon update, got nil")
+	}
+	if !addonUpdate.InstallPKI {
+		t.Errorf("expected addon to require install")
+	}
+}
+
+func Test_InstallPKI(t *testing.T) {
+	ctx := context.Background()
+	kubeSystem := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "kube-system",
+		},
+	}
+	fakek8s := fakekubernetes.NewSimpleClientset(kubeSystem)
+	fakecm := fakecertmanager.NewSimpleClientset()
+	addon := &Addon{
+		Name: "test",
+		Spec: &api.AddonSpec{
+			Name:     fi.String("test"),
+			NeedsPKI: true,
+		},
+	}
+	err := addon.installPKI(ctx, fakek8s, fakecm)
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	_, err = fakek8s.CoreV1().Secrets("kube-system").Get(ctx, "test-ca", metav1.GetOptions{})
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	//Two consecutive calls should work since multiple CP nodes can update at the same time
+	err = addon.installPKI(ctx, fakek8s, fakecm)
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	_, err = fakecm.CertmanagerV1().Issuers("kube-system").Get(ctx, "test", metav1.GetOptions{})
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
 }
 
 func s(v string) *string {

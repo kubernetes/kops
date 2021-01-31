@@ -12,10 +12,14 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//channels/pkg/api:go_default_library",
+        "//pkg/pki:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/blang/semver/v4:go_default_library",
+        "//vendor/github.com/jetstack/cert-manager/pkg/apis/certmanager/v1:go_default_library",
+        "//vendor/github.com/jetstack/cert-manager/pkg/client/clientset/versioned:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/validation/field:go_default_library",
@@ -26,14 +30,22 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = ["addons_test.go"],
+    srcs = [
+        "addons_test.go",
+        "channel_version_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
         "//channels/pkg/api:go_default_library",
+        "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
         "//vendor/github.com/blang/semver/v4:go_default_library",
+        "//vendor/github.com/jetstack/cert-manager/pkg/apis/certmanager/v1:go_default_library",
+        "//vendor/github.com/jetstack/cert-manager/pkg/client/clientset/versioned/fake:go_default_library",
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
         "//vendor/github.com/stretchr/testify/require:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/client-go/kubernetes/fake:go_default_library",
     ],
 )
