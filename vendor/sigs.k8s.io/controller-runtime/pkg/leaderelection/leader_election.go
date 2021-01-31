@@ -75,7 +75,7 @@ func NewResourceLock(config *rest.Config, recorderProvider recorder.Provider, op
 	id = id + "_" + string(uuid.NewUUID())
 
 	// Construct client for leader election
-	client, err := kubernetes.NewForConfig(config)
+	client, err := kubernetes.NewForConfig(rest.AddUserAgent(config, "leader-election"))
 	if err != nil {
 		return nil, err
 	}

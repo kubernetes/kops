@@ -510,6 +510,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 					Selector: map[string]string{"k8s-app": "metrics-server"},
 					Manifest: fi.String(location),
 					Id:       id,
+					NeedsPKI: !fi.BoolValue(b.Cluster.Spec.MetricsServer.Insecure),
 				})
 			}
 		}

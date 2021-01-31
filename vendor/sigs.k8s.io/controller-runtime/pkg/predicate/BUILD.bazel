@@ -10,6 +10,8 @@ go_library(
     importpath = "sigs.k8s.io/controller-runtime/pkg/predicate",
     visibility = ["//visibility:public"],
     deps = [
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/event:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/internal/log:go_default_library",
     ],

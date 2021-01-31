@@ -23,6 +23,7 @@ go_library(
         "listen_go_not111.go",
         "msg.go",
         "msg_helpers.go",
+        "msg_truncate.go",
         "nsecx.go",
         "privaterr.go",
         "reverse.go",

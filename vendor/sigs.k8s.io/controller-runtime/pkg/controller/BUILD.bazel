@@ -10,10 +10,10 @@ go_library(
     importpath = "sigs.k8s.io/controller-runtime/pkg/controller",
     visibility = ["//visibility:public"],
     deps = [
+        "//vendor/github.com/go-logr/logr:go_default_library",
         "//vendor/k8s.io/client-go/util/workqueue:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/handler:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/internal/controller:go_default_library",
-        "//vendor/sigs.k8s.io/controller-runtime/pkg/internal/log:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/manager:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/predicate:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/ratelimiter:go_default_library",
