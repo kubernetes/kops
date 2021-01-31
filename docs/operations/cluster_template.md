@@ -16,8 +16,8 @@ metadata:
   kops.k8s.io/cluster: {{ '{{.clusterName}}.{{.dnsZone}}' }}
   name: nodes
 spec:
-  image: coreos.com/CoreOS-stable-1409.6.0-hvm
-  kubernetesVersion: {{ '{{.kubernetesVersion}}' }}
+  image: {{ ChannelRecommendedImage .cloud .kubernetesVersion }}
+  kubernetesVersion: {{ '{{ ChannelRecommendedKubernetesUpgradeVersion .kubernetesVersion }}' }}
   machineType: m4.large
   maxPrice: "0.5"
   maxSize: 20
@@ -127,9 +127,13 @@ spec:
 
 This function returns the kubernetes version recommended for the running kops version.
 
-##### ChannelRecommendedKopsUpgradeVersion <kuberneteVersion>
+##### ChannelRecommendedKubernetesUpgradeVersion <kuberneteVersion>
 
-This function returns the kubernetes upgrade recommendation given that you run `<kubernetesVersion>`. Typically this is the latest minor version supported by the given channel.
+This function returns the recommended kubernetes version given that you currently run `<kubernetesVersion>`. Typically this is the latest patch version supported by the given channel.
+
+##### ChannelRecommendedImage <cloudProvider> <kuberneteVersion>
+
+This function returns the recommended image for the given cloud provider and kubernetes version.
 
 #### Sprig functions
 
