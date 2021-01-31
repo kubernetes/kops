@@ -84,51 +84,32 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 	args := []string{
 		d.KopsBinaryPath, "create", "cluster",
 		"--name", d.ClusterName,
-		"--admin-access", adminAccess,
 		"--cloud", d.CloudProvider,
 		"--kubernetes-version", d.KubernetesVersion,
-		"--master-count", "1",
-		"--master-volume-size", "48",
-		"--node-count", "4",
-		"--node-volume-size", "48",
-		"--override", "cluster.spec.nodePortAccess=0.0.0.0/0",
 		"--ssh-public-key", d.SSHPublicKeyPath,
+		"--override", "cluster.spec.nodePortAccess=0.0.0.0/0",
 		"--yes",
 	}
 
-	if d.CloudProvider == "aws" {
-		zones, err := aws.RandomZones(1)
-		if err != nil {
-			return err
-		}
-		args = append(args, "--zones", strings.Join(zones, ","))
-
-		args = append(args, "--master-size", "c5.large")
-	}
-
-	if d.CloudProvider == "gce" {
-		zones, err := gce.RandomZones(1)
-		if err != nil {
-			return err
-		}
-		args = append(args, "--zones", strings.Join(zones, ","))
-
-		args = append(args, "--master-size", "e2-standard-2")
-	}
-
-	if d.CloudProvider == "digitalocean" {
-		zones, err := do.RandomZones(1)
-		if err != nil {
-			return err
-		}
-		args = append(args, "--zones", strings.Join(zones, ","))
-		args = append(args, "--master-size", "s-8vcpu-16gb")
-	}
-
 	if d.CreateArgs != "" {
-		// TODO: we should only set the above flags if they're not in CreateArgs
-		// allowing any flag to be overridden
 		args = append(args, strings.Split(d.CreateArgs, " ")...)
+	}
+	args = appendIfUnset(args, "--admin-access", adminAccess)
+	args = appendIfUnset(args, "--master-count", "1")
+	args = appendIfUnset(args, "--master-volume-size", "48")
+	args = appendIfUnset(args, "--node-count", "4")
+	args = appendIfUnset(args, "--node-volume-size", "48")
+	args = appendIfUnset(args, "--override", adminAccess)
+	args = appendIfUnset(args, "--admin-access", adminAccess)
+	args = appendIfUnset(args, "--zones", strings.Join(zones, ","))
+
+	switch d.CloudProvider {
+	case "aws":
+		args = appendIfUnset(args, "--master-size", "c5.large")
+	case "gce":
+		args = appendIfUnset(args, "--master-size", "e2-standard-2")
+	case "digitalocean":
+		args = appendIfUnset(args, "--master-size", "s-8vcpu-16gb")
 	}
 
 	klog.Info(strings.Join(args, " "))
@@ -184,6 +165,20 @@ func (d *deployer) zones() ([]string, error) {
 		return aws.RandomZones(1)
 	case "gce":
 		return gce.RandomZones(1)
+	case "digitalocean":
+		return do.RandomZones(1)
 	}
 	return nil, fmt.Errorf("unsupported CloudProvider: %v", d.CloudProvider)
+}
+
+// appendIfUnset will append an argument and its value to args if the arg is not already present
+// This shouldn't be used for arguments that can be specified multiple times like --override
+func appendIfUnset(args []string, arg, value string) []string {
+	for _, existingArg := range args {
+		if existingArg == arg {
+			return args
+		}
+	}
+	args = append(args, arg, value)
+	return args
 }
