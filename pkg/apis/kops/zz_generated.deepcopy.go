@@ -3676,6 +3676,11 @@ func (in *MetricsServerConfig) DeepCopyInto(out *MetricsServerConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.Insecure != nil {
+		in, out := &in.Insecure, &out.Insecure
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

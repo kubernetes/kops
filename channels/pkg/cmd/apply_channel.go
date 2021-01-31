@@ -59,6 +59,11 @@ func RunApplyChannel(ctx context.Context, f Factory, out io.Writer, options *App
 		return err
 	}
 
+	cmClient, err := f.CertManagerClient()
+	if err != nil {
+		return err
+	}
+
 	kubernetesVersionInfo, err := k8sClient.Discovery().ServerVersion()
 	if err != nil {
 		return fmt.Errorf("error querying kubernetes version: %v", err)
@@ -135,7 +140,7 @@ func RunApplyChannel(ctx context.Context, f Factory, out io.Writer, options *App
 	var needUpdates []*channels.Addon
 	for _, addon := range menu.Addons {
 		// TODO: Cache lookups to prevent repeated lookups?
-		update, err := addon.GetRequiredUpdates(ctx, k8sClient)
+		update, err := addon.GetRequiredUpdates(ctx, k8sClient, cmClient)
 		if err != nil {
 			return fmt.Errorf("error checking for required update: %v", err)
 		}
@@ -173,8 +178,14 @@ func RunApplyChannel(ctx context.Context, f Factory, out io.Writer, options *App
 			}
 			return "?"
 		})
+		t.AddColumn("PKI", func(r *channels.AddonUpdate) string {
+			if r.InstallPKI {
+				return "yes"
+			}
+			return "no"
+		})
 
-		columns := []string{"NAME", "CURRENT", "UPDATE"}
+		columns := []string{"NAME", "CURRENT", "UPDATE", "PKI"}
 		err := t.Render(updates, os.Stdout, columns...)
 		if err != nil {
 			return err
@@ -187,13 +198,13 @@ func RunApplyChannel(ctx context.Context, f Factory, out io.Writer, options *App
 	}
 
 	for _, needUpdate := range needUpdates {
-		update, err := needUpdate.EnsureUpdated(ctx, k8sClient)
+		update, err := needUpdate.EnsureUpdated(ctx, k8sClient, cmClient)
 		if err != nil {
 			return fmt.Errorf("error updating %q: %v", needUpdate.Name, err)
 		}
 		// Could have been a concurrent request
 		if update != nil {
-			if update.NewVersion.Version != nil {
+			if update.NewVersion != nil && update.NewVersion.Version != nil {
 				fmt.Printf("Updated %q to %s\n", update.Name, *update.NewVersion.Version)
 			} else {
 				fmt.Printf("Updated %q\n", update.Name)
