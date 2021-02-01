@@ -145,7 +145,7 @@ func (d *deployer) featureFlags() string {
 	for _, env := range d.Env {
 		e := strings.Split(env, "=")
 		if e[0] == "KOPS_FEATURE_FLAGS" && len(e) > 1 {
-			val = fmt.Sprintf("%v,", e[1])
+			val = fmt.Sprintf("%v,%v", val, e[1])
 		}
 	}
 	return val
