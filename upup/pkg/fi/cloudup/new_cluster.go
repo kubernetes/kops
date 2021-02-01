@@ -679,7 +679,9 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 				k8sVersion, err := version.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
 				if err == nil && version.IsKubernetesGTE("1.18", *k8sVersion) {
 					if g.Spec.InstanceMetadata == nil {
-						g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{}
+						g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
+							HTTPPutResponseHopLimit: fi.Int64(2),
+						}
 					}
 					g.Spec.InstanceMetadata.HTTPTokens = fi.String(ec2.LaunchTemplateHttpTokensStateRequired)
 					if strings.Contains(g.Spec.Image, "debian-stretch") {
