@@ -784,7 +784,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		key := "networking.weave"
 		versions := map[string]string{
 			"k8s-1.9":  "2.7.0-kops.1",
-			"k8s-1.12": "2.7.0-kops.1",
+			"k8s-1.12": "2.8.1-kops.1",
 		}
 
 		{
