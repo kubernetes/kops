@@ -342,30 +342,21 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 				readyNodes = append(readyNodes, *node)
 			}
 
-			if n.Role == "master" {
+			switch n.Role {
+			case "master", "apiserver", "node":
 				if !ready {
 					v.addError(&ValidationError{
 						Kind:          "Node",
 						Name:          node.Name,
-						Message:       fmt.Sprintf("master %q is not ready", node.Name),
+						Message:       fmt.Sprintf("node %q of role %q is not ready", node.Name, n.Role),
 						InstanceGroup: cloudGroup.InstanceGroup,
 					})
 				}
 
 				v.Nodes = append(v.Nodes, n)
-			} else if n.Role == "node" {
-				if !ready {
-					v.addError(&ValidationError{
-						Kind:          "Node",
-						Name:          node.Name,
-						Message:       fmt.Sprintf("node %q is not ready", node.Name),
-						InstanceGroup: cloudGroup.InstanceGroup,
-					})
-				}
-
-				v.Nodes = append(v.Nodes, n)
-			} else {
+			default:
 				klog.Warningf("ignoring node with role %q", n.Role)
+
 			}
 		}
 	}

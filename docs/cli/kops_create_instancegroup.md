@@ -36,7 +36,7 @@ kops create instancegroup [flags]
       --edit             If true, an editor will be opened to edit default values. (default true)
   -h, --help             help for instancegroup
   -o, --output string    Output format. One of json|yaml
-      --role string      Type of instance group to create (Node,Master,Bastion) (default "Node")
+      --role string      Type of instance group to create (Master,APIServer,Node,Bastion) (default "Node")
       --subnet strings   Subnet in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.
 ```
 

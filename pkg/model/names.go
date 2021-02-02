@@ -36,7 +36,7 @@ func (b *KopsModelContext) SecurityGroupName(role kops.InstanceGroupRole) string
 		return "bastion." + b.ClusterName()
 	case kops.InstanceGroupRoleNode:
 		return "nodes." + b.ClusterName()
-	case kops.InstanceGroupRoleMaster:
+	case kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleAPIServer:
 		return "masters." + b.ClusterName()
 	default:
 		klog.Fatalf("unknown role: %v", role)
@@ -58,6 +58,8 @@ func (b *KopsModelContext) AutoscalingGroupName(ig *kops.InstanceGroup) string {
 		// though the IG name suffices for uniqueness, and with sensible naming masters
 		// should be redundant...
 		return ig.ObjectMeta.Name + ".masters." + b.ClusterName()
+	case kops.InstanceGroupRoleAPIServer:
+		return ig.ObjectMeta.Name + ".apiservers." + b.ClusterName()
 	case kops.InstanceGroupRoleNode, kops.InstanceGroupRoleBastion:
 		return ig.ObjectMeta.Name + "." + b.ClusterName()
 
@@ -136,6 +138,8 @@ func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) string {
 	switch role {
 	case kops.InstanceGroupRoleMaster:
 		return "masters." + b.ClusterName()
+	case kops.InstanceGroupRoleAPIServer:
+		return "apiservers." + b.ClusterName()
 	case kops.InstanceGroupRoleBastion:
 		return "bastions." + b.ClusterName()
 	case kops.InstanceGroupRoleNode:

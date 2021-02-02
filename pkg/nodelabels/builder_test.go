@@ -63,7 +63,8 @@ func TestBuildNodeLabels(t *testing.T) {
 			expected: map[string]string{
 				RoleLabelMaster16:       "",
 				RoleLabelControlPlane20: "",
-				RoleLabelName15:         RoleMasterLabelValue15,
+				//RoleLabelAPIServer16:    "",
+				RoleLabelName15: RoleMasterLabelValue15,
 				"node.kubernetes.io/exclude-from-external-load-balancers": "",
 				"kops.k8s.io/kops-controller-pki":                         "",
 				"controlPlane1":                                           "controlPlane1",
