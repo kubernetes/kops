@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
@@ -257,8 +258,13 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 	}
 
 	etcdInsecure := !b.UseEtcdTLS()
+	var clientHost string
 
-	clientHost := "__name__"
+	if featureflag.APIServerNodes.Enabled() {
+		clientHost = etcdCluster.Name + ".etcd." + b.ClusterName()
+	} else {
+		clientHost = "__name__"
+	}
 	clientPort := 4001
 
 	clusterName := "etcd-" + etcdCluster.Name
@@ -269,6 +275,15 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 	}
 
 	pod.Name = "etcd-manager-" + etcdCluster.Name
+
+	if pod.Annotations == nil {
+		pod.Annotations = make(map[string]string)
+	}
+
+	if featureflag.APIServerNodes.Enabled() {
+		pod.Annotations["dns.alpha.kubernetes.io/internal"] = clientHost
+	}
+
 	if pod.Labels == nil {
 		pod.Labels = make(map[string]string)
 	}
@@ -306,7 +321,6 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 		peerPort = 2382
 		grpcPort = wellknownports.EtcdCiliumGRPC
 		quarantinedClientPort = wellknownports.EtcdCiliumQuarantinedClientPort
-		clientHost = b.Cluster.Spec.MasterInternalName
 	default:
 		return nil, fmt.Errorf("unknown etcd cluster key %q", etcdCluster.Name)
 	}

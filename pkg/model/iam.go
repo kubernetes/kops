@@ -199,6 +199,8 @@ func (b *IAMModelBuilder) roleKey(role iam.Subject) (string, bool) {
 	switch role.(type) {
 	case *iam.NodeRoleMaster:
 		return strings.ToLower(string(kops.InstanceGroupRoleMaster)), false
+	case *iam.NodeRoleAPIServer:
+		return strings.ToLower(string(kops.InstanceGroupRoleAPIServer)), false
 	case *iam.NodeRoleNode:
 		return strings.ToLower(string(kops.InstanceGroupRoleNode)), false
 	case *iam.NodeRoleBastion:

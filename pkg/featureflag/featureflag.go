@@ -99,6 +99,8 @@ var (
 	Azure = New("Azure", Bool(false))
 	// KopsControllerStateStore enables fetching the kops state from kops-controller, instead of requiring access to S3/GCS/etc.
 	KopsControllerStateStore = New("KopsControllerStateStore", Bool(false))
+	// APIServerNodes enables ability to provision nodes that only run the kube-apiserver
+	APIServerNodes = New("APIServerNodes", Bool(false))
 )
 
 // FeatureFlag defines a feature flag

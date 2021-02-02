@@ -52,7 +52,7 @@ var _ fi.ModelBuilder = &KubeAPIServerBuilder{}
 
 // Build is responsible for generating the configuration for the kube-apiserver
 func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
-	if !b.IsMaster {
+	if !b.HasAPIServer {
 		return nil
 	}
 
@@ -316,19 +316,29 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		}
 	}
 
+	var mainEtcdCluster, eventsEtcdCluster string
+	if b.IsMaster {
+		mainEtcdCluster = "https://127.0.0.1:4001"
+		eventsEtcdCluster = "https://127.0.0.1:4002"
+	} else {
+		host := b.Cluster.ObjectMeta.Name
+		mainEtcdCluster = "https://main.etcd." + host + ":4001"
+		eventsEtcdCluster = "https://events.etcd." + host + ":4002"
+	}
+
 	if b.UseEtcdManager() && b.UseEtcdTLS() {
 		basedir := "/etc/kubernetes/pki/kube-apiserver"
 		kubeAPIServer.EtcdCAFile = filepath.Join(basedir, "etcd-ca.crt")
 		kubeAPIServer.EtcdCertFile = filepath.Join(basedir, "etcd-client.crt")
 		kubeAPIServer.EtcdKeyFile = filepath.Join(basedir, "etcd-client.key")
-		kubeAPIServer.EtcdServers = []string{"https://127.0.0.1:4001"}
-		kubeAPIServer.EtcdServersOverrides = []string{"/events#https://127.0.0.1:4002"}
+		kubeAPIServer.EtcdServers = []string{mainEtcdCluster}
+		kubeAPIServer.EtcdServersOverrides = []string{"/events#" + eventsEtcdCluster}
 	} else if b.UseEtcdTLS() {
 		kubeAPIServer.EtcdCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 		kubeAPIServer.EtcdCertFile = filepath.Join(b.PathSrvKubernetes(), "etcd-client.pem")
 		kubeAPIServer.EtcdKeyFile = filepath.Join(b.PathSrvKubernetes(), "etcd-client-key.pem")
-		kubeAPIServer.EtcdServers = []string{"https://127.0.0.1:4001"}
-		kubeAPIServer.EtcdServersOverrides = []string{"/events#https://127.0.0.1:4002"}
+		kubeAPIServer.EtcdServers = []string{mainEtcdCluster}
+		kubeAPIServer.EtcdServersOverrides = []string{"/events#" + eventsEtcdCluster}
 	}
 
 	// @check if we are using secure kubelet client certificates
