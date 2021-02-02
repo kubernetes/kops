@@ -44,7 +44,7 @@ trap finish EXIT
 
 kubetest2 kops ${KUBETEST2_COMMON_ARGS} \
 		--up \
-		--kubernetes-version=v1.19.7 \
+		--kubernetes-version=v1.18.15 \
     --networking calico
 
 KUBECONFIG=${HOME}/.kube/config
@@ -66,13 +66,13 @@ kubetest2 kops ${KUBETEST2_COMMON_ARGS} \
 		--cloud-provider=${CLOUD_PROVIDER} \
 		--test=kops \
 		-- \
-		--test-package-version=v1.19.7 \
+		--test-package-version=v1.18.15 \
 		--parallel 25 \
 		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler" \
 		--test-args="${TEST_ARGS}"
 
 
-kops set cluster ${CLUSTER_NAME} cluster.spec.kubernetesVersion=v1.20.2
+kops set cluster ${CLUSTER_NAME} cluster.spec.kubernetesVersion=v1.19.7
 kops update cluster
 kops update cluster --admin --yes
 
