@@ -45,7 +45,7 @@ trap finish EXIT
 kubetest2 kops ${KUBETEST2_COMMON_ARGS} \
 		--up \
 		--kubernetes-version=v1.18.15 \
-    --networking calico
+    --create-args="--networking calico"
 
 KUBECONFIG=${HOME}/.kube/config
 TEST_ARGS="--kubeconfig=${KUBECONFIG}"
