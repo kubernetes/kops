@@ -9,7 +9,4 @@ Some services, such as Istio and Envoy's Secret Discovery Service (SDS), take ad
         - api
         - istio-ca
         serviceAccountIssuer: kubernetes.default.svc
-        serviceAccountKeyFile:
-        - /srv/kubernetes/server.key
-        serviceAccountSigningKeyFile: /srv/kubernetes/server.key
 ```
