@@ -57,6 +57,9 @@ type NodeupModelContext struct {
 	// IsMaster is true if the InstanceGroup has a role of master (populated by Init)
 	IsMaster bool
 
+	// HasAPIServer is true if the InstanceGroup has a role of master or apiserver (pupulated by Init)
+	HasAPIServer bool
+
 	kubernetesVersion semver.Version
 	bootstrapCerts    map[string]*nodetasks.BootstrapCert
 }
@@ -70,10 +73,15 @@ func (c *NodeupModelContext) Init() error {
 	c.kubernetesVersion = *k8sVersion
 	c.bootstrapCerts = map[string]*nodetasks.BootstrapCert{}
 
-	if c.NodeupConfig.InstanceGroupRole == kops.InstanceGroupRoleMaster {
+	role := c.NodeupConfig.InstanceGroupRole
+
+	if role == kops.InstanceGroupRoleMaster {
 		c.IsMaster = true
 	}
 
+	if role == kops.InstanceGroupRoleMaster || role == kops.InstanceGroupRoleAPIServer {
+		c.HasAPIServer = true
+	}
 	return nil
 }
 

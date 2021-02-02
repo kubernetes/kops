@@ -317,7 +317,7 @@ func Test_ValidateNodeNotReady(t *testing.T) {
 		!assert.Equal(t, &ValidationError{
 			Kind:          "Node",
 			Name:          "node-1b",
-			Message:       "node \"node-1b\" is not ready",
+			Message:       "node \"node-1b\" of role \"node\" is not ready",
 			InstanceGroup: groups["node-1"].InstanceGroup,
 		}, v.Failures[0]) {
 		printDebug(t, v)
@@ -425,7 +425,7 @@ func Test_ValidateMasterNotReady(t *testing.T) {
 		!assert.Equal(t, &ValidationError{
 			Kind:          "Node",
 			Name:          "master-1b",
-			Message:       "master \"master-1b\" is not ready",
+			Message:       "node \"master-1b\" of role \"master\" is not ready",
 			InstanceGroup: groups["node-1"].InstanceGroup,
 		}, v.Failures[0]) {
 		printDebug(t, v)
@@ -513,7 +513,7 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 		{
 			Kind:          "Node",
 			Name:          "master-1c",
-			Message:       "master \"master-1c\" is not ready",
+			Message:       "node \"master-1c\" of role \"master\" is not ready",
 			InstanceGroup: groups["node-1"].InstanceGroup,
 		},
 	}

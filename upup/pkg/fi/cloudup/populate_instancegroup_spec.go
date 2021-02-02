@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -104,6 +105,9 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 			ig.Spec.MaxSize = fi.Int32(1)
 		}
 	} else {
+		if ig.IsAPIServerOnly() && !featureflag.APIServerNodes.Enabled() {
+			return nil, fmt.Errorf("apiserver nodes requires the APIServrNodes feature flag to be enabled")
+		}
 		if ig.Spec.MachineType == "" {
 			ig.Spec.MachineType, err = defaultMachineType(cloud, cluster, ig)
 			if err != nil {

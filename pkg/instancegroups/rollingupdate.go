@@ -98,12 +98,15 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 	results := make(map[string]error)
 
 	masterGroups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	apiServerGroups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	nodeGroups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	bastionGroups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	for k, group := range groups {
 		switch group.InstanceGroup.Spec.Role {
 		case api.InstanceGroupRoleNode:
 			nodeGroups[k] = group
+		case api.InstanceGroupRoleAPIServer:
+			apiServerGroups[k] = group
 		case api.InstanceGroupRoleMaster:
 			masterGroups[k] = group
 		case api.InstanceGroupRoleBastion:
@@ -157,6 +160,21 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 			if err != nil {
 				return fmt.Errorf("master not healthy after update, stopping rolling-update: %q", err)
 			}
+		}
+	}
+
+	// Upgrade API servers
+	{
+		for k := range apiServerGroups {
+			results[k] = fmt.Errorf("function panic apiservers")
+		}
+
+		for _, k := range sortGroups(apiServerGroups) {
+			err := c.rollingUpdateInstanceGroup(apiServerGroups[k], c.NodeInterval)
+
+			results[k] = err
+
+			// TODO: Bail on error?
 		}
 	}
 
