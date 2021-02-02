@@ -296,10 +296,9 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 			kubeAPIServer.ServiceAccountSigningKeyFile = &s
 		}
 	}
-
-	kubeAPIServer.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
-	if b.Cluster.Spec.KubeAPIServer.ClientCAFile != "" {
-		kubeAPIServer.ClientCAFile = b.Cluster.Spec.KubeAPIServer.ClientCAFile
+	// If clientCAFile is not specified, set it to the default value ${PathSrvKubernetes}/ca.crt
+	if kubeAPIServer.ClientCAFile == "" {
+		kubeAPIServer.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 	}
 	kubeAPIServer.TLSCertFile = filepath.Join(b.PathSrvKubernetes(), "server.crt")
 	kubeAPIServer.TLSPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "server.key")
