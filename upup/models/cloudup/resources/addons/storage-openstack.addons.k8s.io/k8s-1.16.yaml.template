@@ -527,7 +527,7 @@ kind: StorageClass
 metadata:
   name: default
   annotations:
-    storageclass.beta.kubernetes.io/is-default-class: "true"
+    storageclass.kubernetes.io/is-default-class: "true"
   labels:
     k8s-addon: storage-openstack.addons.k8s.io
 provisioner: cinder.csi.openstack.org
