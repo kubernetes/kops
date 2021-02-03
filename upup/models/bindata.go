@@ -43777,7 +43777,7 @@ kind: StorageClass
 metadata:
   name: gp2
   annotations:
-    storageclass.beta.kubernetes.io/is-default-class: "false"
+    storageclass.kubernetes.io/is-default-class: "false"
   labels:
     k8s-addon: storage-aws.addons.k8s.io
 provisioner: kubernetes.io/aws-ebs
@@ -43791,7 +43791,7 @@ kind: StorageClass
 metadata:
   name: kops-ssd-1-17
   annotations:
-    storageclass.beta.kubernetes.io/is-default-class: "true"
+    storageclass.kubernetes.io/is-default-class: "true"
   labels:
     k8s-addon: storage-aws.addons.k8s.io
 provisioner: kubernetes.io/aws-ebs
@@ -43877,7 +43877,7 @@ kind: StorageClass
 metadata:
   name: gp2
   annotations:
-    storageclass.beta.kubernetes.io/is-default-class: "true"
+    storageclass.kubernetes.io/is-default-class: "true"
   labels:
     k8s-addon: storage-aws.addons.k8s.io
 provisioner: kubernetes.io/aws-ebs
@@ -43905,7 +43905,7 @@ kind: StorageClass
 metadata:
   name: standard
   annotations:
-    storageclass.beta.kubernetes.io/is-default-class: "true"
+    storageclass.kubernetes.io/is-default-class: "true"
   labels:
     kubernetes.io/cluster-service: "true"
     k8s-addon: storage-gce.addons.k8s.io
@@ -44459,13 +44459,14 @@ kind: StorageClass
 metadata:
   name: default
   annotations:
-    storageclass.beta.kubernetes.io/is-default-class: "true"
+    storageclass.kubernetes.io/is-default-class: "true"
   labels:
     k8s-addon: storage-openstack.addons.k8s.io
 provisioner: cinder.csi.openstack.org
 allowVolumeExpansion: true
 volumeBindingMode: WaitForFirstConsumer
-{{ end }}`)
+{{ end }}
+`)
 
 func cloudupResourcesAddonsStorageOpenstackAddonsK8sIoK8s116YamlTemplateBytes() ([]byte, error) {
 	return _cloudupResourcesAddonsStorageOpenstackAddonsK8sIoK8s116YamlTemplate, nil
