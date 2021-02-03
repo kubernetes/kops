@@ -429,6 +429,16 @@ spec:
     serviceNodePortRange: 30000-33000
 ```
 
+### Customize client-ca file 
+
+This value is passed as `--client-ca-file` for `kube-apiserver`. (default: `/srv/kubernetes/ca.crt`)
+
+```yaml
+spec:
+  kubeAPIServer:
+    clientCAFile: /srv/kubernetes/client-ca.crt
+```
+
 ### Disable Basic Auth
 
 Support for basic authentication was removed in Kubernetes 1.19. For previous versions
