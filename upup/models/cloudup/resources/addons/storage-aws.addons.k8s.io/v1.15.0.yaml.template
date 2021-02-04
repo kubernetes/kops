@@ -1,3 +1,4 @@
+{{ if WithDefaultBool .CloudConfig.ManageStorageClasses true }}
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -39,6 +40,7 @@ parameters:
 allowVolumeExpansion: true
 volumeBindingMode: WaitForFirstConsumer
 
+{{ end }}
 ---
 
 apiVersion: rbac.authorization.k8s.io/v1
