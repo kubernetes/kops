@@ -36,7 +36,7 @@ func (c *OpenstackModelContext) createCloud() (openstack.OpenstackCloud, error) 
 	if c.cloud == nil {
 		tags := make(map[string]string)
 		tags[openstack.TagClusterName] = c.ClusterName()
-		osCloud, err := openstack.NewOpenstackCloud(tags, &c.Cluster.Spec)
+		osCloud, err := openstack.NewOpenstackCloud(tags, &c.Cluster.Spec, "cli")
 		if err != nil {
 			return nil, err
 		}
