@@ -438,6 +438,11 @@ spec:
   kubeAPIServer:
     clientCAFile: /srv/kubernetes/client-ca.crt
 ```
+There are certain cases that the user may want to use a customized client CA file other than the default one generated for Kubernetes. In that case, the user can use this flag to specify the client-ca file to use.
+
+To prepare the customized client-ca file on master nodes, the user can either use the [fileAssets](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#fileassets) feature to push an client-ca file, or embed the customized client-ca file in the master AMI.
+
+See also [Kubernetes certificates](https://kubernetes.io/docs/concepts/cluster-administration/certificates/)
 
 ### Disable Basic Auth
 
