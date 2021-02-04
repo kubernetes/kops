@@ -327,7 +327,7 @@ var _ fi.Cloud = &openstackCloud{}
 
 var openstackCloudInstances map[string]OpenstackCloud = make(map[string]OpenstackCloud)
 
-func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (OpenstackCloud, error) {
+func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent string) (OpenstackCloud, error) {
 
 	config := vfs.OpenstackConfig{}
 
@@ -350,6 +350,10 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 	if err != nil {
 		return nil, fmt.Errorf("error building openstack provider client: %v", err)
 	}
+	ua := gophercloud.UserAgent{}
+	ua.Prepend(fmt.Sprintf("kops/%s", uagent))
+	provider.UserAgent = ua
+	klog.V(4).Infof("Using user-agent %s", ua.Join())
 
 	if spec != nil && spec.CloudConfig != nil && spec.CloudConfig.Openstack != nil && spec.CloudConfig.Openstack.InsecureSkipVerify != nil {
 		tlsconfig := &tls.Config{}
