@@ -48,9 +48,9 @@
 // upup/models/cloudup/resources/addons/scheduler.addons.k8s.io/v1.7.0.yaml
 // upup/models/cloudup/resources/addons/spotinst-kubernetes-cluster-controller.addons.k8s.io/v1.14.0.yaml.template
 // upup/models/cloudup/resources/addons/spotinst-kubernetes-cluster-controller.addons.k8s.io/v1.9.0.yaml.template
-// upup/models/cloudup/resources/addons/storage-aws.addons.k8s.io/v1.15.0.yaml
-// upup/models/cloudup/resources/addons/storage-aws.addons.k8s.io/v1.7.0.yaml
-// upup/models/cloudup/resources/addons/storage-gce.addons.k8s.io/v1.7.0.yaml
+// upup/models/cloudup/resources/addons/storage-aws.addons.k8s.io/v1.15.0.yaml.template
+// upup/models/cloudup/resources/addons/storage-aws.addons.k8s.io/v1.7.0.yaml.template
+// upup/models/cloudup/resources/addons/storage-gce.addons.k8s.io/v1.7.0.yaml.template
 // upup/models/cloudup/resources/addons/storage-openstack.addons.k8s.io/k8s-1.16.yaml.template
 package models
 
@@ -43760,7 +43760,8 @@ func cloudupResourcesAddonsSpotinstKubernetesClusterControllerAddonsK8sIoV190Yam
 	return a, nil
 }
 
-var _cloudupResourcesAddonsStorageAwsAddonsK8sIoV1150Yaml = []byte(`apiVersion: storage.k8s.io/v1
+var _cloudupResourcesAddonsStorageAwsAddonsK8sIoV1150YamlTemplate = []byte(`{{ if WithDefaultBool .CloudConfig.ManageStorageClasses true }}
+apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: default
@@ -43801,6 +43802,7 @@ parameters:
 allowVolumeExpansion: true
 volumeBindingMode: WaitForFirstConsumer
 
+{{ end }}
 ---
 
 apiVersion: rbac.authorization.k8s.io/v1
@@ -43845,22 +43847,23 @@ subjects:
   namespace: kube-system
 `)
 
-func cloudupResourcesAddonsStorageAwsAddonsK8sIoV1150YamlBytes() ([]byte, error) {
-	return _cloudupResourcesAddonsStorageAwsAddonsK8sIoV1150Yaml, nil
+func cloudupResourcesAddonsStorageAwsAddonsK8sIoV1150YamlTemplateBytes() ([]byte, error) {
+	return _cloudupResourcesAddonsStorageAwsAddonsK8sIoV1150YamlTemplate, nil
 }
 
-func cloudupResourcesAddonsStorageAwsAddonsK8sIoV1150Yaml() (*asset, error) {
-	bytes, err := cloudupResourcesAddonsStorageAwsAddonsK8sIoV1150YamlBytes()
+func cloudupResourcesAddonsStorageAwsAddonsK8sIoV1150YamlTemplate() (*asset, error) {
+	bytes, err := cloudupResourcesAddonsStorageAwsAddonsK8sIoV1150YamlTemplateBytes()
 	if err != nil {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "cloudup/resources/addons/storage-aws.addons.k8s.io/v1.15.0.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	info := bindataFileInfo{name: "cloudup/resources/addons/storage-aws.addons.k8s.io/v1.15.0.yaml.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
 
-var _cloudupResourcesAddonsStorageAwsAddonsK8sIoV170Yaml = []byte(`apiVersion: storage.k8s.io/v1
+var _cloudupResourcesAddonsStorageAwsAddonsK8sIoV170YamlTemplate = []byte(`{{ if WithDefaultBool .CloudConfig.ManageStorageClasses true }}
+apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: default
@@ -43871,7 +43874,6 @@ parameters:
   type: gp2
 
 ---
-
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -43883,24 +43885,26 @@ metadata:
 provisioner: kubernetes.io/aws-ebs
 parameters:
   type: gp2
+{{ end }}
 `)
 
-func cloudupResourcesAddonsStorageAwsAddonsK8sIoV170YamlBytes() ([]byte, error) {
-	return _cloudupResourcesAddonsStorageAwsAddonsK8sIoV170Yaml, nil
+func cloudupResourcesAddonsStorageAwsAddonsK8sIoV170YamlTemplateBytes() ([]byte, error) {
+	return _cloudupResourcesAddonsStorageAwsAddonsK8sIoV170YamlTemplate, nil
 }
 
-func cloudupResourcesAddonsStorageAwsAddonsK8sIoV170Yaml() (*asset, error) {
-	bytes, err := cloudupResourcesAddonsStorageAwsAddonsK8sIoV170YamlBytes()
+func cloudupResourcesAddonsStorageAwsAddonsK8sIoV170YamlTemplate() (*asset, error) {
+	bytes, err := cloudupResourcesAddonsStorageAwsAddonsK8sIoV170YamlTemplateBytes()
 	if err != nil {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "cloudup/resources/addons/storage-aws.addons.k8s.io/v1.7.0.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	info := bindataFileInfo{name: "cloudup/resources/addons/storage-aws.addons.k8s.io/v1.7.0.yaml.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
 
-var _cloudupResourcesAddonsStorageGceAddonsK8sIoV170Yaml = []byte(`apiVersion: storage.k8s.io/v1
+var _cloudupResourcesAddonsStorageGceAddonsK8sIoV170YamlTemplate = []byte(`{{ if WithDefaultBool .CloudConfig.ManageStorageClasses true }}
+apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: standard
@@ -43913,19 +43917,20 @@ metadata:
 provisioner: kubernetes.io/gce-pd
 parameters:
   type: pd-standard
+{{ end }}
 `)
 
-func cloudupResourcesAddonsStorageGceAddonsK8sIoV170YamlBytes() ([]byte, error) {
-	return _cloudupResourcesAddonsStorageGceAddonsK8sIoV170Yaml, nil
+func cloudupResourcesAddonsStorageGceAddonsK8sIoV170YamlTemplateBytes() ([]byte, error) {
+	return _cloudupResourcesAddonsStorageGceAddonsK8sIoV170YamlTemplate, nil
 }
 
-func cloudupResourcesAddonsStorageGceAddonsK8sIoV170Yaml() (*asset, error) {
-	bytes, err := cloudupResourcesAddonsStorageGceAddonsK8sIoV170YamlBytes()
+func cloudupResourcesAddonsStorageGceAddonsK8sIoV170YamlTemplate() (*asset, error) {
+	bytes, err := cloudupResourcesAddonsStorageGceAddonsK8sIoV170YamlTemplateBytes()
 	if err != nil {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "cloudup/resources/addons/storage-gce.addons.k8s.io/v1.7.0.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	info := bindataFileInfo{name: "cloudup/resources/addons/storage-gce.addons.k8s.io/v1.7.0.yaml.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -44452,7 +44457,7 @@ spec:
   - Persistent
   - Ephemeral
 
-{{ if WithDefaultBool .CloudConfig.Openstack.BlockStorage.CreateStorageClass true }}
+{{ if and (WithDefaultBool .CloudConfig.ManageStorageClasses true) (WithDefaultBool .CloudConfig.Openstack.BlockStorage.CreateStorageClass true) }}
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -44582,9 +44587,9 @@ var _bindata = map[string]func() (*asset, error){
 	"cloudup/resources/addons/scheduler.addons.k8s.io/v1.7.0.yaml":                                        cloudupResourcesAddonsSchedulerAddonsK8sIoV170Yaml,
 	"cloudup/resources/addons/spotinst-kubernetes-cluster-controller.addons.k8s.io/v1.14.0.yaml.template": cloudupResourcesAddonsSpotinstKubernetesClusterControllerAddonsK8sIoV1140YamlTemplate,
 	"cloudup/resources/addons/spotinst-kubernetes-cluster-controller.addons.k8s.io/v1.9.0.yaml.template":  cloudupResourcesAddonsSpotinstKubernetesClusterControllerAddonsK8sIoV190YamlTemplate,
-	"cloudup/resources/addons/storage-aws.addons.k8s.io/v1.15.0.yaml":                                     cloudupResourcesAddonsStorageAwsAddonsK8sIoV1150Yaml,
-	"cloudup/resources/addons/storage-aws.addons.k8s.io/v1.7.0.yaml":                                      cloudupResourcesAddonsStorageAwsAddonsK8sIoV170Yaml,
-	"cloudup/resources/addons/storage-gce.addons.k8s.io/v1.7.0.yaml":                                      cloudupResourcesAddonsStorageGceAddonsK8sIoV170Yaml,
+	"cloudup/resources/addons/storage-aws.addons.k8s.io/v1.15.0.yaml.template":                            cloudupResourcesAddonsStorageAwsAddonsK8sIoV1150YamlTemplate,
+	"cloudup/resources/addons/storage-aws.addons.k8s.io/v1.7.0.yaml.template":                             cloudupResourcesAddonsStorageAwsAddonsK8sIoV170YamlTemplate,
+	"cloudup/resources/addons/storage-gce.addons.k8s.io/v1.7.0.yaml.template":                             cloudupResourcesAddonsStorageGceAddonsK8sIoV170YamlTemplate,
 	"cloudup/resources/addons/storage-openstack.addons.k8s.io/k8s-1.16.yaml.template":                     cloudupResourcesAddonsStorageOpenstackAddonsK8sIoK8s116YamlTemplate,
 }
 
@@ -44748,11 +44753,11 @@ var _bintree = &bintree{nil, map[string]*bintree{
 					"v1.9.0.yaml.template":  {cloudupResourcesAddonsSpotinstKubernetesClusterControllerAddonsK8sIoV190YamlTemplate, map[string]*bintree{}},
 				}},
 				"storage-aws.addons.k8s.io": {nil, map[string]*bintree{
-					"v1.15.0.yaml": {cloudupResourcesAddonsStorageAwsAddonsK8sIoV1150Yaml, map[string]*bintree{}},
-					"v1.7.0.yaml":  {cloudupResourcesAddonsStorageAwsAddonsK8sIoV170Yaml, map[string]*bintree{}},
+					"v1.15.0.yaml.template": {cloudupResourcesAddonsStorageAwsAddonsK8sIoV1150YamlTemplate, map[string]*bintree{}},
+					"v1.7.0.yaml.template":  {cloudupResourcesAddonsStorageAwsAddonsK8sIoV170YamlTemplate, map[string]*bintree{}},
 				}},
 				"storage-gce.addons.k8s.io": {nil, map[string]*bintree{
-					"v1.7.0.yaml": {cloudupResourcesAddonsStorageGceAddonsK8sIoV170Yaml, map[string]*bintree{}},
+					"v1.7.0.yaml.template": {cloudupResourcesAddonsStorageGceAddonsK8sIoV170YamlTemplate, map[string]*bintree{}},
 				}},
 				"storage-openstack.addons.k8s.io": {nil, map[string]*bintree{
 					"k8s-1.16.yaml.template": {cloudupResourcesAddonsStorageOpenstackAddonsK8sIoK8s116YamlTemplate, map[string]*bintree{}},
