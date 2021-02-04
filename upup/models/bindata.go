@@ -37485,7 +37485,7 @@ spec:
           name: calico-typha
           protocol: TCP
         {{- if .Networking.Calico.TyphaPrometheusMetricsEnabled }}
-        - containerPort: {{- or .Networking.Calico.TyphaPrometheusMetricsPort "9093" }}
+        - containerPort: {{ or .Networking.Calico.TyphaPrometheusMetricsPort "9093" }}
           name: metrics
           protocol: TCP
         {{- end }}
@@ -37829,7 +37829,7 @@ spec:
             periodSeconds: 10
           {{- if .Networking.Calico.PrometheusMetricsEnabled }}
           ports:
-          - containerPort: {{- or .Networking.Calico.PrometheusMetricsPort "9091" }}
+          - containerPort: {{ or .Networking.Calico.PrometheusMetricsPort "9091" }}
             name: metrics
             protocol: TCP
           {{- end }}
