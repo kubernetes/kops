@@ -504,7 +504,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		cluster.Spec.MasterPublicName = c.MasterPublicName
 	}
 
-	if err := commands.SetClusterFields(c.Overrides, cluster, instanceGroups); err != nil {
+	if err := commands.SetClusterFields(c.Overrides, cluster); err != nil {
 		return err
 	}
 

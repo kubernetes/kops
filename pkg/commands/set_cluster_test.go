@@ -29,7 +29,7 @@ func TestSetClusterBadInput(t *testing.T) {
 		"bad-set-input",
 	}
 
-	err := SetClusterFields(fields, &kops.Cluster{}, []*kops.InstanceGroup{})
+	err := SetClusterFields(fields, &kops.Cluster{})
 	if err == nil {
 		t.Errorf("expected a field parsing error, but received none")
 	}
@@ -310,10 +310,9 @@ func TestSetClusterFields(t *testing.T) {
 	}
 
 	for _, g := range grid {
-		var igs []*kops.InstanceGroup
 		c := g.Input
 
-		err := SetClusterFields(g.Fields, &c, igs)
+		err := SetClusterFields(g.Fields, &c)
 		if err != nil {
 			t.Errorf("unexpected error from setClusterFields %v: %v", g.Fields, err)
 			continue
@@ -362,10 +361,9 @@ func TestSetCiliumFields(t *testing.T) {
 	}
 
 	for _, g := range grid {
-		var igs []*kops.InstanceGroup
 		c := g.Input
 
-		err := SetClusterFields(g.Fields, &c, igs)
+		err := SetClusterFields(g.Fields, &c)
 		if err != nil {
 			t.Errorf("unexpected error from setClusterFields %v: %v", g.Fields, err)
 			continue
