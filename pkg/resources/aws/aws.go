@@ -1855,7 +1855,7 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*resources.Resour
 
 				remove := false
 				// TODO: Compute the actual set of names?
-				if prefix == ".api" || prefix == ".api.internal" || prefix == ".bastion" {
+				if prefix == ".api" || prefix == ".api.internal" || prefix == ".bastion" || prefix == ".kops-controller.internal" {
 					remove = true
 				} else if strings.HasPrefix(prefix, ".etcd-") {
 					remove = true
