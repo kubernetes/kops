@@ -36,7 +36,7 @@ List()
 
 The `kops` API is a definition of struct members in Go code found [here](https://github.com/kubernetes/kops/tree/master/pkg/apis/kops). The `kops` API does **NOT** match the command line interface (by design). We use the native Kubernetes API machinery to manage versioning of the `kops` API.
 
-The base level struct of the API is `api.Cluster{}` which is defined [here](https://github.com/kubernetes/kops/blob/master/pkg/apis/kops/cluster.go#L40). The top level struct contains meta information about the object such as the kind and version and the main data for the cluster itself can be found in `cluster.Spec`
+The base level struct of the API is `api.Cluster{}` which is defined [here](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#Cluster). The top level struct contains meta information about the object such as the kind and version and the main data for the cluster itself can be found in `cluster.Spec`
 
 It is important to note that the API members are a representation of a Kubernetes cluster. These values are stored in the `kops` **STATE STORE** mentioned above for later use. By design kOps does not store information about the state of the cloud in the state store, if it can infer it from looking at the actual state of the cloud.
 
@@ -50,7 +50,7 @@ In order for `kops` to create any servers, we will need to define instance group
 var instanceGroups []*kops.InstanceGroup
 ```
 
-Each instance group represents a group of instances in a cloud. Each instance group (or IG) defines values about the group of instances such as their size, volume information, etc. The definition can also be found in the `/pkg/apis/kops/instancegroup.go` file [here](https://github.com/kubernetes/kops/blob/master/pkg/apis/kops/instancegroup.go#L59).
+Each instance group represents a group of instances in a cloud. Each instance group (or IG) defines values about the group of instances such as their size, volume information, etc. The definition can also be found in the `/pkg/apis/kops/instancegroup.go` file [here](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#InstanceGroup).
 
 
 ## 4) Cloudup
@@ -59,7 +59,7 @@ Each instance group represents a group of instances in a cloud. Each instance gr
 
 After a user has built out a valid `api.Cluster{}` and valid `[]*kops.InstanceGroup` they can then begin interacting with the core logic in `kops`.
 
-A user can build a `cloudup.ApplyClusterCmd` defined [here](https://github.com/kubernetes/kops/blob/master/upup/pkg/fi/cloudup/apply_cluster.go#L54) as follows: 
+A user can build a `cloudup.ApplyClusterCmd` defined [here](https://pkg.go.dev/k8s.io/kops/upup/pkg/fi/cloudup#ApplyClusterCmd) as follows: 
 
 
 ```go
@@ -80,7 +80,7 @@ Now that the `ApplyClusterCmd` has been populated, we can attempt to run our app
 err = applyCmd.Run()
 ```
 
-This is where we enter the **core** of `kops` logic. The starting point can be found [here](https://github.com/kubernetes/kops/blob/master/upup/pkg/fi/cloudup/apply_cluster.go#L91). Based on the directives defined in the `ApplyClusterCmd` above, the apply operation will behave differently based on the input provided.
+This is where we enter the **core** of `kops` logic. The starting point can be found [here](https://pkg.go.dev/k8s.io/kops/upup/pkg/fi/cloudup#ApplyClusterCmd.Run). Based on the directives defined in the `ApplyClusterCmd` above, the apply operation will behave differently based on the input provided.
  
 #### b) Validation
  
@@ -89,7 +89,7 @@ This is where we enter the **core** of `kops` logic. The starting point can be f
  
 #### c) The Cloud
  
- The `cluster.Spec.CloudProvider` should have been populated earlier, and can be used to switch on to build our cloud as in [here](https://github.com/kubernetes/kops/blob/master/upup/pkg/fi/cloudup/utils.go#L37). If you are interested in creating a new cloud implementation the interface is defined [here](https://github.com/kubernetes/kops/blob/master/upup/pkg/fi/cloud.go#L26), with the AWS example [here](https://github.com/kubernetes/kops/blob/master/upup/pkg/fi/cloudup/awsup/aws_cloud.go#L65).
+ The `cluster.Spec.CloudProvider` should have been populated earlier, and can be used to switch on to build our cloud as in [here](https://pkg.go.dev/k8s.io/kops/upup/pkg/fi/cloudup#BuildCloud). If you are interested in creating a new cloud implementation the interface is defined [here](https://pkg.go.dev/k8s.io/kops/upup/pkg/fi#Cloud), with the AWS example [here](https://pkg.go.dev/k8s.io/kops/upup/pkg/fi/cloudup/awsup#AWSCloud).
  
  **Note** As it stands the `FindVPCInfo()` function is a defined member of the interface. This is AWS only, and will eventually be pulled out of the interface. For now please implement the function as a no-op.
  
@@ -100,15 +100,15 @@ If you plan on implementing a new cloud, one option would be to define a new mod
 
 The existing model code can be found [here](https://github.com/kubernetes/kops/tree/master/pkg/model). 
 
-Once a model builder has been defined as in [here](https://github.com/kubernetes/kops/blob/master/upup/pkg/fi/cloudup/apply_cluster.go#L373) the code will automatically be called.
+Once a model builder has been defined as in [here](https://pkg.go.dev/k8s.io/kops/upup/pkg/fi#ModelBuilderContext) the code will automatically be called.
 
-From within the builder, we notice there is concrete logic for each builder. The logic will dictate which tasks need to be called in order to apply a resource to a cloud. The tasks are added by calling the `AddTask()` function as in [here](https://github.com/kubernetes/kops/blob/master/pkg/model/network.go#L69).
+From within the builder, we notice there is concrete logic for each builder. The logic will dictate which tasks need to be called in order to apply a resource to a cloud. The tasks are added by calling the `AddTask()` function [here](https://pkg.go.dev/k8s.io/kops/upup/pkg/fi#ModelBuilderContext.AddTask).
  
 Once the model builders have been called all the tasks should have been set.
 
 #### e) Tasks
 
-A task is typically a representation of a single API call. The task interface is defined [here](https://github.com/kubernetes/kops/blob/master/upup/pkg/fi/task.go#L26).
+A task is typically a representation of a single API call. The task interface is defined [here](https://pkg.go.dev/k8s.io/kops/upup/pkg/fi#Task).
 
 **Note** for more advanced clouds like AWS, there is also `Find()` and `Render()` functions in the core logic of executing the tasks defined [here](https://github.com/kubernetes/kops/blob/master/upup/pkg/fi/executor.go).
 
