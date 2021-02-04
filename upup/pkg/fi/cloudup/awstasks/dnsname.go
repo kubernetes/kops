@@ -153,6 +153,9 @@ func FindDNSName(awsCloud awsup.AWSCloud, cluster *kops.Cluster) (string, error)
 
 func FindElasticLoadBalancerByNameTag(awsCloud awsup.AWSCloud, cluster *kops.Cluster) (DNSTarget, error) {
 	name := "api." + cluster.Name
+	if cluster.Spec.API == nil || cluster.Spec.API.LoadBalancer == nil {
+		return nil, nil
+	}
 	if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {
 		if lb, err := FindLoadBalancerByNameTag(awsCloud, name); err != nil {
 			return nil, fmt.Errorf("error looking for AWS ELB: %v", err)
