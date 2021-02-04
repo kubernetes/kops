@@ -674,23 +674,6 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 				g.Spec.Zones = []string{zone}
 			}
 
-			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS && (g.Spec.InstanceMetadata == nil || g.Spec.InstanceMetadata.HTTPTokens == nil) {
-				// Support for IMDSv2 was added in Kubernetes 1.18
-				k8sVersion, err := version.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
-				if err == nil && version.IsKubernetesGTE("1.18", *k8sVersion) {
-					if g.Spec.InstanceMetadata == nil {
-						g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-							HTTPPutResponseHopLimit: fi.Int64(2),
-						}
-					}
-					g.Spec.InstanceMetadata.HTTPTokens = fi.String(ec2.LaunchTemplateHttpTokensStateRequired)
-					if strings.Contains(g.Spec.Image, "debian-stretch") {
-						// Debian 9 (Stretch) is too old to support IMDSv2
-						g.Spec.InstanceMetadata.HTTPTokens = fi.String(ec2.LaunchTemplateHttpTokensStateOptional)
-					}
-				}
-			}
-
 			masters = append(masters, g)
 		}
 	}
@@ -803,21 +786,6 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 		g.Spec.Subnets = []string{subnet.Name}
 		if cp := api.CloudProviderID(cluster.Spec.CloudProvider); cp == api.CloudProviderGCE || cp == api.CloudProviderAzure {
 			g.Spec.Zones = []string{zone}
-		}
-
-		if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS && (g.Spec.InstanceMetadata == nil || g.Spec.InstanceMetadata.HTTPTokens == nil) {
-			// Support for IMDSv2 was added in Kubernetes 1.18
-			k8sVersion, err := version.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
-			if err == nil && version.IsKubernetesGTE("1.18", *k8sVersion) {
-				if g.Spec.InstanceMetadata == nil {
-					g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{}
-				}
-				g.Spec.InstanceMetadata.HTTPTokens = fi.String(ec2.LaunchTemplateHttpTokensStateRequired)
-				if strings.Contains(g.Spec.Image, "debian-stretch") {
-					// Debian 9 (Stretch) is too old to support IMDSv2
-					g.Spec.InstanceMetadata.HTTPTokens = fi.String(ec2.LaunchTemplateHttpTokensStateOptional)
-				}
-			}
 		}
 
 		nodes = append(nodes, g)
