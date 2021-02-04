@@ -22,6 +22,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -56,6 +57,10 @@ func newDesignate(_ io.Reader) (*Interface, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error building openstack provider client: %v", err)
 	}
+	ua := gophercloud.UserAgent{}
+	ua.Prepend("kops-designate")
+	provider.UserAgent = ua
+	klog.V(4).Infof("Using user-agent %s", ua.Join())
 
 	tlsconfig := &tls.Config{}
 	tlsconfig.InsecureSkipVerify = true
