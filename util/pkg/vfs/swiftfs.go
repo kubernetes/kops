@@ -56,7 +56,7 @@ func NewSwiftClient() (*gophercloud.ServiceClient, error) {
 		return nil, fmt.Errorf("error building openstack provider client: %v", err)
 	}
 	ua := gophercloud.UserAgent{}
-	ua.Prepend("kops-swift")
+	ua.Prepend("kops/swift")
 	pc.UserAgent = ua
 	klog.V(4).Infof("Using user-agent %s", ua.Join())
 
