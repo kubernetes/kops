@@ -31,6 +31,8 @@ func SetString(target interface{}, targetPath string, newValue string) error {
 		return fmt.Errorf("cannot parse field path %q: %w", targetPath, err)
 	}
 
+	var fieldSet = false
+
 	visitor := func(path *FieldPath, field *reflect.StructField, v reflect.Value) error {
 		if !targetFieldPath.HasPrefixMatch(path) {
 			return nil
@@ -45,6 +47,7 @@ func SetString(target interface{}, targetPath string, newValue string) error {
 				return fmt.Errorf("cannot set field %q: %v", path, err)
 			}
 
+			fieldSet = true
 			return nil
 		}
 
@@ -74,7 +77,16 @@ func SetString(target interface{}, targetPath string, newValue string) error {
 		return nil
 	}
 
-	return ReflectRecursive(targetValue, visitor, &ReflectOptions{JSONNames: true})
+	err = ReflectRecursive(targetValue, visitor, &ReflectOptions{JSONNames: true})
+	if err != nil {
+		return err
+	}
+
+	if !fieldSet {
+		return fmt.Errorf("field %s not found in %s", targetPath, BuildTypeName(reflect.TypeOf(target)))
+	}
+
+	return nil
 }
 
 func setPrimitive(v reflect.Value, newValue string) error {

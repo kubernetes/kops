@@ -101,7 +101,7 @@ func SetInstancegroupFields(fields []string, instanceGroup *api.InstanceGroup) e
 		key = strings.TrimPrefix(key, "instancegroup.")
 
 		if err := reflectutils.SetString(instanceGroup, key, kv[1]); err != nil {
-			return fmt.Errorf("failed to set %s=%s: %v", kv[0], kv[1], err)
+			return err
 		}
 	}
 
