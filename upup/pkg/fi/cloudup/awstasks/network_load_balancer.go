@@ -26,13 +26,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"k8s.io/kops/util/pkg/slice"
 )
 
 // NetworkLoadBalancer manages an NLB.  We find the existing NLB using the Name tag.
@@ -517,7 +515,16 @@ func (s *NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) e
 		}
 	} else {
 		if len(changes.Subnets) > 0 {
-			return fi.FieldIsImmutable(e.Subnets, a.Subnets, field.NewPath("Subnets"))
+			expectedSubnets := make(map[string]*string)
+			for _, s := range e.Subnets {
+				expectedSubnets[*s.ID] = nil
+			}
+
+			for _, s := range a.Subnets {
+				if _, ok := expectedSubnets[*s.ID]; !ok {
+					return fmt.Errorf("network load balancers do not support detaching subnets")
+				}
+			}
 		}
 	}
 	return nil
@@ -596,27 +603,25 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 		loadBalancerArn = fi.StringValue(lb.LoadBalancerArn)
 
 		if changes.Subnets != nil {
-			var expectedSubnets []string
-			for _, s := range e.Subnets {
-				expectedSubnets = append(expectedSubnets, fi.StringValue(s.ID))
-			}
-
-			var actualSubnets []string
+			actualSubnets := make(map[string]*string)
 			for _, s := range a.Subnets {
-				actualSubnets = append(actualSubnets, fi.StringValue(s.ID))
+				actualSubnets[*s.ID] = nil
 			}
 
-			oldSubnetIDs := slice.GetUniqueStrings(expectedSubnets, actualSubnets)
-			if len(oldSubnetIDs) > 0 {
-				return fmt.Errorf("network load balancers do not support detaching subnets")
+			var awsSubnets []*string
+			hasChanges := false
+			for _, s := range e.Subnets {
+				_, ok := actualSubnets[*s.ID]
+				if !ok {
+					hasChanges = true
+				}
+				awsSubnets = append(awsSubnets, s.ID)
 			}
 
-			newSubnetIDs := slice.GetUniqueStrings(actualSubnets, expectedSubnets)
-			if len(newSubnetIDs) > 0 {
-
+			if hasChanges {
 				request := &elbv2.SetSubnetsInput{}
 				request.SetLoadBalancerArn(loadBalancerArn)
-				request.SetSubnets(aws.StringSlice(append(actualSubnets, newSubnetIDs...)))
+				request.SetSubnets(awsSubnets)
 
 				klog.V(2).Infof("Attaching Load Balancer to new subnets")
 				if _, err := t.Cloud.ELBV2().SetSubnets(request); err != nil {
