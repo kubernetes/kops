@@ -375,6 +375,14 @@ var SupportedLoadBalancerClasses = []string{
 	string(LoadBalancerClassNetwork),
 }
 
+// LoadBalancerSubnetSpec provides configuration for subnets used for a load balancer
+type LoadBalancerSubnetSpec struct {
+	// Name specifies the name of the cluster subnet
+	Name string `json:"name,omitempty"`
+	// PrivateIPv4Address specifies the private IPv4 address to use for a NLB
+	PrivateIPv4Address *string `json:"privateIPv4Address,omitempty"`
+}
+
 // LoadBalancerAccessSpec provides configuration details related to API LoadBalancer and its access
 type LoadBalancerAccessSpec struct {
 	// LoadBalancerClass specifies the class of load balancer to create: Classic, Network.
@@ -395,6 +403,8 @@ type LoadBalancerAccessSpec struct {
 	SSLPolicy *string `json:"sslPolicy,omitempty"`
 	// CrossZoneLoadBalancing allows you to enable the cross zone load balancing
 	CrossZoneLoadBalancing *bool `json:"crossZoneLoadBalancing,omitempty"`
+	// Subnets allows you to specify the subnets that must be used for the load balancer
+	Subnets []LoadBalancerSubnetSpec `json:"subnets,omitempty"`
 }
 
 // KubeDNSConfig defines the kube dns configuration
