@@ -34979,7 +34979,7 @@ spec:
           # Uncomment these lines to enable prometheus metrics.  Since Typha is host-networked,
           # this opens a port on the host, which may need to be secured.
           - name: TYPHA_PROMETHEUSMETRICSENABLED
-            value: "{{- or .Networking.Calico.TyphaPrometheusMetricsEnabled "false" }}"
+            value: "{{- .Networking.Calico.TyphaPrometheusMetricsEnabled }}"
           - name: TYPHA_PROMETHEUSMETRICSPORT
             value: "{{- or .Networking.Calico.TyphaPrometheusMetricsPort "9093" }}"
         livenessProbe:
@@ -35206,16 +35206,16 @@ spec:
               value: "{{- or .Networking.Calico.IptablesBackend "Legacy" }}"
             # Set to enable the experimental Prometheus metrics server
             - name: FELIX_PROMETHEUSMETRICSENABLED
-              value: "{{- or .Networking.Calico.PrometheusMetricsEnabled "false" }}"
+              value: "{{- .Networking.Calico.PrometheusMetricsEnabled }}"
             # TCP port that the Prometheus metrics server should bind to
             - name: FELIX_PROMETHEUSMETRICSPORT
               value: "{{- or .Networking.Calico.PrometheusMetricsPort "9091" }}"
             # Enable Prometheus Go runtime metrics collection
             - name: FELIX_PROMETHEUSGOMETRICSENABLED
-              value: "{{- or .Networking.Calico.PrometheusGoMetricsEnabled "true" }}"
+              value: "{{- .Networking.Calico.PrometheusGoMetricsEnabled }}"
             # Enable Prometheus process metrics collection
             - name: FELIX_PROMETHEUSPROCESSMETRICSENABLED
-              value: "{{- or .Networking.Calico.PrometheusProcessMetricsEnabled "true" }}"
+              value: "{{- .Networking.Calico.PrometheusProcessMetricsEnabled }}"
           securityContext:
             privileged: true
           resources:
@@ -39143,7 +39143,7 @@ spec:
           - name: TYPHA_HEALTHENABLED
             value: "true"
           - name: TYPHA_PROMETHEUSMETRICSENABLED
-            value: "{{- or .Networking.Calico.TyphaPrometheusMetricsEnabled "false" }}"
+            value: "{{- .Networking.Calico.TyphaPrometheusMetricsEnabled }}"
           - name: TYPHA_PROMETHEUSMETRICSPORT
             value: "{{- or .Networking.Calico.TyphaPrometheusMetricsPort "9093" }}"
         livenessProbe:
@@ -39420,16 +39420,16 @@ spec:
               value: "{{- or .Networking.Calico.IptablesBackend "Auto" }}"
             # Set to enable the experimental Prometheus metrics server
             - name: FELIX_PROMETHEUSMETRICSENABLED
-              value: "{{- or .Networking.Calico.PrometheusMetricsEnabled "false" }}"
+              value: "{{- .Networking.Calico.PrometheusMetricsEnabled }}"
             # TCP port that the Prometheus metrics server should bind to
             - name: FELIX_PROMETHEUSMETRICSPORT
               value: "{{- or .Networking.Calico.PrometheusMetricsPort "9091" }}"
             # Enable Prometheus Go runtime metrics collection
             - name: FELIX_PROMETHEUSGOMETRICSENABLED
-              value: "{{- or .Networking.Calico.PrometheusGoMetricsEnabled "true" }}"
+              value: "{{- .Networking.Calico.PrometheusGoMetricsEnabled }}"
             # Enable Prometheus process metrics collection
             - name: FELIX_PROMETHEUSPROCESSMETRICSENABLED
-              value: "{{- or .Networking.Calico.PrometheusProcessMetricsEnabled "true" }}"
+              value: "{{- .Networking.Calico.PrometheusProcessMetricsEnabled }}"
             # Enable WireGuard encryption for all on-the-wire pod-to-pod traffic
             - name: FELIX_WIREGUARDENABLED
               value: "{{ .Networking.Calico.WireguardEnabled }}"
