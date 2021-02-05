@@ -65,6 +65,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Compute the subnets - only one per zone, and then break ties based on chooseBestSubnetForELB
 	var elbSubnets []*awstasks.Subnet
+	var nlbSubnetMappings []*awstasks.SubnetMapping
 	{
 		subnetsByZone := make(map[string][]*kops.ClusterSubnetSpec)
 		for i := range b.Cluster.Spec.Subnets {
@@ -91,7 +92,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		for zone, subnets := range subnetsByZone {
 			subnet := b.chooseBestSubnetForELB(zone, subnets)
 
-			elbSubnets = append(elbSubnets, b.LinkToSubnet(subnet))
+			elbSubnet := b.LinkToSubnet(subnet)
+			elbSubnets = append(elbSubnets, elbSubnet)
+			nlbSubnetMappings = append(nlbSubnetMappings, &awstasks.SubnetMapping{Subnet: elbSubnet})
 		}
 	}
 
@@ -148,7 +151,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 
 			LoadBalancerName: fi.String(loadBalancerName),
-			Subnets:          elbSubnets,
+			SubnetMappings:   nlbSubnetMappings,
 			Listeners:        nlbListeners,
 			TargetGroups:     make([]*awstasks.TargetGroup, 0),
 

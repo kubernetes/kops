@@ -51,7 +51,7 @@ type NetworkLoadBalancer struct {
 	DNSName      *string
 	HostedZoneId *string
 
-	Subnets []*Subnet
+	SubnetMappings []*SubnetMapping
 
 	Listeners []*NetworkLoadBalancerListener
 
@@ -352,7 +352,16 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 	}
 
 	for _, az := range lb.AvailabilityZones {
-		actual.Subnets = append(actual.Subnets, &Subnet{ID: az.SubnetId})
+		sm := &SubnetMapping{
+			Subnet: &Subnet{ID: az.SubnetId},
+		}
+		for _, a := range az.LoadBalancerAddresses {
+			if a.PrivateIPv4Address != nil {
+				sm.PrivateIPv4Address = a.PrivateIPv4Address
+				break
+			}
+		}
+		actual.SubnetMappings = append(actual.SubnetMappings, sm)
 	}
 
 	{
@@ -431,8 +440,8 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 	}
 
 	// Avoid spurious mismatches
-	if subnetSlicesEqualIgnoreOrder(actual.Subnets, e.Subnets) {
-		actual.Subnets = e.Subnets
+	if subnetMappingSlicesEqualIgnoreOrder(actual.SubnetMappings, e.SubnetMappings) {
+		actual.SubnetMappings = e.SubnetMappings
 	}
 	if e.DNSName == nil {
 		e.DNSName = actual.DNSName
@@ -494,7 +503,7 @@ func (e *NetworkLoadBalancer) Run(c *fi.Context) error {
 
 func (e *NetworkLoadBalancer) Normalize() {
 	// We need to sort our arrays consistently, so we don't get spurious changes
-	sort.Stable(OrderSubnetsById(e.Subnets))
+	sort.Stable(OrderSubnetMappingsByID(e.SubnetMappings))
 	sort.Stable(OrderListenersByPort(e.Listeners))
 	sort.Stable(OrderTargetGroupsByName(e.TargetGroups))
 }
@@ -504,8 +513,8 @@ func (s *NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) e
 		if fi.StringValue(e.Name) == "" {
 			return fi.RequiredField("Name")
 		}
-		if len(e.Subnets) == 0 {
-			return fi.RequiredField("Subnets")
+		if len(e.SubnetMappings) == 0 {
+			return fi.RequiredField("SubnetMappings")
 		}
 
 		if e.CrossZoneLoadBalancing != nil {
@@ -514,15 +523,19 @@ func (s *NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) e
 			}
 		}
 	} else {
-		if len(changes.Subnets) > 0 {
+		if len(changes.SubnetMappings) > 0 {
 			expectedSubnets := make(map[string]*string)
-			for _, s := range e.Subnets {
-				expectedSubnets[*s.ID] = nil
+			for _, s := range e.SubnetMappings {
+				expectedSubnets[*s.Subnet.ID] = s.PrivateIPv4Address
 			}
 
-			for _, s := range a.Subnets {
-				if _, ok := expectedSubnets[*s.ID]; !ok {
+			for _, s := range a.SubnetMappings {
+				eIP, ok := expectedSubnets[*s.Subnet.ID]
+				if !ok {
 					return fmt.Errorf("network load balancers do not support detaching subnets")
+				}
+				if fi.StringValue(eIP) != fi.StringValue(s.PrivateIPv4Address) {
+					return fmt.Errorf("network load balancers do not support modifying address settings")
 				}
 			}
 		}
@@ -555,8 +568,11 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 		request.Scheme = e.Scheme
 		request.Type = e.Type
 
-		for _, subnet := range e.Subnets {
-			request.Subnets = append(request.Subnets, subnet.ID)
+		for _, subnetMapping := range e.SubnetMappings {
+			request.SubnetMappings = append(request.SubnetMappings, &elbv2.SubnetMapping{
+				SubnetId:           subnetMapping.Subnet.ID,
+				PrivateIPv4Address: subnetMapping.PrivateIPv4Address,
+			})
 		}
 
 		{
@@ -602,26 +618,29 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 
 		loadBalancerArn = fi.StringValue(lb.LoadBalancerArn)
 
-		if changes.Subnets != nil {
+		if changes.SubnetMappings != nil {
 			actualSubnets := make(map[string]*string)
-			for _, s := range a.Subnets {
-				actualSubnets[*s.ID] = nil
+			for _, s := range a.SubnetMappings {
+				actualSubnets[*s.Subnet.ID] = s.PrivateIPv4Address
 			}
 
-			var awsSubnets []*string
+			var awsSubnetMappings []*elbv2.SubnetMapping
 			hasChanges := false
-			for _, s := range e.Subnets {
-				_, ok := actualSubnets[*s.ID]
-				if !ok {
+			for _, s := range e.SubnetMappings {
+				aIP, ok := actualSubnets[*s.Subnet.ID]
+				if !ok || fi.StringValue(s.PrivateIPv4Address) != fi.StringValue(aIP) {
 					hasChanges = true
 				}
-				awsSubnets = append(awsSubnets, s.ID)
+				awsSubnetMappings = append(awsSubnetMappings, &elbv2.SubnetMapping{
+					SubnetId:           s.Subnet.ID,
+					PrivateIPv4Address: s.PrivateIPv4Address,
+				})
 			}
 
 			if hasChanges {
 				request := &elbv2.SetSubnetsInput{}
 				request.SetLoadBalancerArn(loadBalancerArn)
-				request.SetSubnets(awsSubnets)
+				request.SetSubnetMappings(awsSubnetMappings)
 
 				klog.V(2).Infof("Attaching Load Balancer to new subnets")
 				if _, err := t.Cloud.ELBV2().SetSubnets(request); err != nil {
@@ -685,13 +704,20 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 }
 
 type terraformNetworkLoadBalancer struct {
-	Name                   string               `json:"name" cty:"name"`
-	Internal               bool                 `json:"internal" cty:"internal"`
-	Type                   string               `json:"load_balancer_type" cty:"load_balancer_type"`
-	Subnets                []*terraform.Literal `json:"subnets" cty:"subnets"`
-	CrossZoneLoadBalancing bool                 `json:"enable_cross_zone_load_balancing" cty:"enable_cross_zone_load_balancing"`
+	Name                   string                                      `json:"name" cty:"name"`
+	Internal               bool                                        `json:"internal" cty:"internal"`
+	Type                   string                                      `json:"load_balancer_type" cty:"load_balancer_type"`
+	Subnets                []*terraform.Literal                        `json:"subnets" cty:"subnets"`
+	SubnetMappings         []terraformNetworkLoadBalancerSubnetMapping `json:"subnet_mapping" cty:"subnet_mapping"`
+	CrossZoneLoadBalancing bool                                        `json:"enable_cross_zone_load_balancing" cty:"enable_cross_zone_load_balancing"`
 
 	Tags map[string]string `json:"tags" cty:"tags"`
+}
+
+type terraformNetworkLoadBalancerSubnetMapping struct {
+	Subnet             *terraform.Literal `json:"subnet_id" cty:"subnet_id"`
+	AllocationID       *string            `json:"allocation_id,omitempty" cty:"allocation_id"`
+	PrivateIPv4Address *string            `json:"private_ipv4_address,omitempty" cty:"private_ipv4_address"`
 }
 
 type terraformNetworkLoadBalancerListener struct {
@@ -718,8 +744,11 @@ func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 		CrossZoneLoadBalancing: fi.BoolValue(e.CrossZoneLoadBalancing),
 	}
 
-	for _, subnet := range e.Subnets {
-		nlbTF.Subnets = append(nlbTF.Subnets, subnet.TerraformLink())
+	for _, subnetMapping := range e.SubnetMappings {
+		nlbTF.SubnetMappings = append(nlbTF.SubnetMappings, terraformNetworkLoadBalancerSubnetMapping{
+			Subnet:             subnetMapping.Subnet.TerraformLink(),
+			PrivateIPv4Address: subnetMapping.PrivateIPv4Address,
+		})
 	}
 
 	err := t.RenderResource("aws_lb", *e.Name, nlbTF)
@@ -775,11 +804,18 @@ func (e *NetworkLoadBalancer) TerraformLink(params ...string) *terraform.Literal
 }
 
 type cloudformationNetworkLoadBalancer struct {
-	Name    string                    `json:"Name"`
-	Scheme  string                    `json:"Scheme"`
-	Subnets []*cloudformation.Literal `json:"Subnets"`
-	Type    string                    `json:"Type"`
-	Tags    []cloudformationTag       `json:"Tags"`
+	Name           string                         `json:"Name"`
+	Scheme         string                         `json:"Scheme"`
+	Subnets        []*cloudformation.Literal      `json:"Subnets"`
+	SubnetMappings []*cloudformationSubnetMapping `json:"SubnetMappings"`
+	Type           string                         `json:"Type"`
+	Tags           []cloudformationTag            `json:"Tags"`
+}
+
+type cloudformationSubnetMapping struct {
+	Subnet             *cloudformation.Literal `json:"SubnetId"`
+	AllocationId       *string                 `json:"AllocationId"`
+	PrivateIPv4Address *string                 `json:"PrivateIPv4Address"`
 }
 
 type cloudformationNetworkLoadBalancerListener struct {
@@ -807,8 +843,11 @@ func (_ *NetworkLoadBalancer) RenderCloudformation(t *cloudformation.Cloudformat
 		Type:    elbv2.LoadBalancerTypeEnumNetwork,
 		Tags:    buildCloudformationTags(e.Tags),
 	}
-	for _, subnet := range e.Subnets {
-		nlbCF.Subnets = append(nlbCF.Subnets, subnet.CloudformationLink())
+	for _, subnetMapping := range e.SubnetMappings {
+		nlbCF.SubnetMappings = append(nlbCF.SubnetMappings, &cloudformationSubnetMapping{
+			Subnet:             subnetMapping.Subnet.CloudformationLink(),
+			PrivateIPv4Address: subnetMapping.PrivateIPv4Address,
+		})
 	}
 	if e.Scheme != nil {
 		nlbCF.Scheme = *e.Scheme
