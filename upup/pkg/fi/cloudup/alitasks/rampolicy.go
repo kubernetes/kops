@@ -103,12 +103,10 @@ func (_ *RAMPolicy) RenderALI(t *aliup.ALIAPITarget, a, e, changes *RAMPolicy) e
 		return fmt.Errorf("error rendering PolicyDocument: %v", err)
 	}
 
-	policyRequest := ram.PolicyRequest{}
-
 	if a == nil {
 		klog.V(2).Infof("Creating RAMPolicy with Name:%q", fi.StringValue(e.Name))
 
-		policyRequest = ram.PolicyRequest{
+		policyRequest := ram.PolicyRequest{
 			PolicyName:     fi.StringValue(e.Name),
 			PolicyDocument: policy,
 			PolicyType:     ram.Type(fi.StringValue(e.PolicyType)),
