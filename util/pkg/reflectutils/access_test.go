@@ -202,3 +202,77 @@ func TestSet(t *testing.T) {
 		})
 	}
 }
+
+func TestSetInvalidPath(t *testing.T) {
+	grid := []struct {
+		Name          string
+		Input         string
+		Expected      string
+		Path          string
+		Value         string
+		ExpectedError string
+	}{
+		{
+			Name:          "setting with wildcard",
+			Input:         "{ 'spec': { 'containers': [ {} ] } }",
+			Expected:      "{ 'spec': { 'containers': [ { 'image': 'hello-world' } ] } }",
+			Path:          "spec.containers[*].wrongImagePathName",
+			Value:         "hello-world",
+			ExpectedError: "field spec.containers[*].wrongImagePathName not found in *fakeObject",
+		},
+		{
+			Name:          "creating missing objects",
+			Input:         "{ 'spec': { 'containers': [ {} ] } }",
+			Expected:      "{ 'spec': { 'containers': [ { 'policy': { 'name': 'allowed' } } ] } }",
+			Path:          "spec.containers[0].policy.wrongPolicyName",
+			Value:         "allowed",
+			ExpectedError: "field spec.containers[0].policy.wrongPolicyName not found in *fakeObject",
+		},
+		{
+			Name:          "set int",
+			Input:         "{ 'spec': { 'containers': [ {} ] } }",
+			Expected:      "{ 'spec': { 'containers': [ { 'int': 123 } ] } }",
+			Path:          "spec.wrongNameContainers[0].int",
+			Value:         "123",
+			ExpectedError: "field spec.wrongNameContainers[0].int not found in *fakeObject",
+		},
+		{
+			Name:          "set int32",
+			Input:         "{ 'spec': { 'containers': [ {} ] } }",
+			Expected:      "{ 'spec': { 'containers': [ { 'int32': 123 } ] } }",
+			Path:          "spec.containers[0].int32100",
+			Value:         "123",
+			ExpectedError: "field spec.containers[0].int32100 not found in *fakeObject",
+		},
+		{
+			Name:          "set int64",
+			Input:         "{ 'spec': { 'containers': [ {} ] } }",
+			Expected:      "{ 'spec': { 'containers': [ { 'int64': 123 } ] } }",
+			Path:          "wrong.path.check",
+			Value:         "123",
+			ExpectedError: "field wrong.path.check not found in *fakeObject",
+		},
+	}
+
+	for _, g := range grid {
+		g := g
+
+		t.Run(g.Name, func(t *testing.T) {
+
+			c := &fakeObject{}
+			if err := json.Unmarshal(toJSON(g.Input), c); err != nil {
+				t.Fatalf("failed to unmarshal input: %v", err)
+
+			}
+
+			err := SetString(c, g.Path, g.Value)
+			if err == nil {
+				t.Fatalf("Expected error for invalid path %s", g.Path)
+			}
+
+			if err.Error() != g.ExpectedError {
+				t.Fatalf("Expected Error: %s\n Actual Error: %s", g.ExpectedError, err.Error())
+			}
+		})
+	}
+}
