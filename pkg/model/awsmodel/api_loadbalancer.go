@@ -63,10 +63,39 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("unhandled LoadBalancer type %q", lbSpec.Type)
 	}
 
-	// Compute the subnets - only one per zone, and then break ties based on chooseBestSubnetForELB
 	var elbSubnets []*awstasks.Subnet
 	var nlbSubnetMappings []*awstasks.SubnetMapping
-	{
+	if len(lbSpec.Subnets) != 0 {
+		// Subnets have been explicitly set
+		for _, subnet := range lbSpec.Subnets {
+			found := false
+			for _, clusterSubnet := range b.Cluster.Spec.Subnets {
+				if subnet.Name == clusterSubnet.Name {
+					found = true
+					elbSubnet := b.LinkToSubnet(&clusterSubnet)
+					elbSubnets = append(elbSubnets, elbSubnet)
+					nlbSubnetMappings = append(nlbSubnetMappings, &awstasks.SubnetMapping{
+						Subnet: elbSubnet,
+					})
+					if subnet.PrivateIPv4Address != nil {
+						if subnet.PrivateIPv4Address == nil {
+							return fmt.Errorf("privateIPv4Address can't be nil")
+						}
+						if lbSpec.Class != kops.LoadBalancerClassNetwork || lbSpec.Type != kops.LoadBalancerTypeInternal {
+							return fmt.Errorf("privateIPv4Address only allowed for internal NLBs")
+						}
+
+						nlbSubnetMappings[len(nlbSubnetMappings)-1].PrivateIPv4Address = subnet.PrivateIPv4Address
+					}
+					break
+				}
+			}
+			if !found {
+				return fmt.Errorf("subnet %q not found in cluster subnets", subnet.Name)
+			}
+		}
+	} else {
+		// Compute the subnets - only one per zone, and then break ties based on chooseBestSubnetForELB
 		subnetsByZone := make(map[string][]*kops.ClusterSubnetSpec)
 		for i := range b.Cluster.Spec.Subnets {
 			subnet := &b.Cluster.Spec.Subnets[i]
