@@ -92,6 +92,16 @@ func (m *MockELBV2) CreateLoadBalancer(request *elbv2.CreateLoadBalancerInput) (
 			SubnetId: subnet,
 		})
 	}
+	for _, subnetMapping := range request.SubnetMappings {
+		var lbAddrs []*elbv2.LoadBalancerAddress
+		if subnetMapping.PrivateIPv4Address != nil {
+			lbAddrs = append(lbAddrs, &elbv2.LoadBalancerAddress{PrivateIPv4Address: subnetMapping.PrivateIPv4Address})
+		}
+		zones = append(zones, &elbv2.AvailabilityZone{
+			SubnetId:              subnetMapping.SubnetId,
+			LoadBalancerAddresses: lbAddrs,
+		})
+	}
 	lb.AvailabilityZones = zones
 
 	// This is hardcoded because AWS derives it from the subnets above

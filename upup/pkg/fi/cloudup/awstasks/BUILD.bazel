@@ -65,6 +65,7 @@ go_library(
         "sshkey_fitask.go",
         "subnet.go",
         "subnet_fitask.go",
+        "subnet_mapping.go",
         "tags.go",
         "targetgroup.go",
         "targetgroup_fitask.go",
