@@ -106,12 +106,15 @@ func (c *openstackCloud) DeleteRouterInterface(routerID string, opt routers.Remo
 }
 
 func deleteRouterInterface(c OpenstackCloud, routerID string, opt routers.RemoveInterfaceOptsBuilder) error {
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		_, err := routers.RemoveInterface(c.NetworkingClient(), routerID, opt).Extract()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting router interface: %v", err)
 		}
-		return true, nil
+		if isNotFound(err) {
+			return true, nil
+		}
+		return false, nil
 	})
 	if err != nil {
 		return err
@@ -127,12 +130,15 @@ func (c *openstackCloud) DeleteRouter(routerID string) error {
 }
 
 func deleteRouter(c OpenstackCloud, routerID string) error {
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := routers.Delete(c.NetworkingClient(), routerID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting router: %v", err)
 		}
-		return true, nil
+		if isNotFound(err) {
+			return true, nil
+		}
+		return false, nil
 	})
 	if err != nil {
 		return err

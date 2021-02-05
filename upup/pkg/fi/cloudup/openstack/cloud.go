@@ -90,6 +90,14 @@ var writeBackoff = wait.Backoff{
 	Steps:    5,
 }
 
+// deleteBackoff is the backoff strategy for openstack delete retries.
+var deleteBackoff = wait.Backoff{
+	Duration: time.Second,
+	Factor:   5,
+	Jitter:   0.1,
+	Steps:    4,
+}
+
 type OpenstackCloud interface {
 	fi.Cloud
 
