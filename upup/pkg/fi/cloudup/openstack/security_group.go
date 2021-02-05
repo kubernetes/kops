@@ -136,12 +136,15 @@ func (c *openstackCloud) DeleteSecurityGroup(sgID string) error {
 }
 
 func deleteSecurityGroup(c OpenstackCloud, sgID string) error {
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := sg.Delete(c.NetworkingClient(), sgID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting security group: %v", err)
 		}
-		return true, nil
+		if isNotFound(err) {
+			return true, nil
+		}
+		return false, nil
 	})
 	if err != nil {
 		return err
