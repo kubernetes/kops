@@ -171,7 +171,6 @@ func (_ *Subnet) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Subnet) error {
 				if err != nil {
 					return fmt.Errorf("error patching Subnet: %v", err)
 				}
-				patch = false
 				_, err = cloud.Compute().Subnetworks.Get(cloud.Project(), cloud.Region(), *e.GCEName).Do()
 				if err != nil {
 					return fmt.Errorf("error fetching subnet for patch: %v", err)
