@@ -366,7 +366,7 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster) error {
 		if cluster.Spec.NetworkID == "" && len(opt.SubnetIDs) > 0 {
 			tags := make(map[string]string)
 			tags[openstack.TagClusterName] = cluster.Name
-			osCloud, err := openstack.NewOpenstackCloud(tags, &cluster.Spec, "setupvpc")
+			osCloud, err := openstack.NewOpenstackCloud(tags, &cluster.Spec, "new-cluster-setupvpc")
 			if err != nil {
 				return fmt.Errorf("error loading cloud: %v", err)
 			}
@@ -578,7 +578,7 @@ func getAWSZoneToSubnetProviderID(VPCID string, region string, subnetIDs []strin
 
 func getOpenstackZoneToSubnetProviderID(spec *api.ClusterSpec, zones []string, subnetIDs []string, tags map[string]string) (map[string]string, error) {
 	res := make(map[string]string)
-	osCloud, err := openstack.NewOpenstackCloud(tags, spec, "zonetosubnet")
+	osCloud, err := openstack.NewOpenstackCloud(tags, spec, "new-cluster-zone-to-subnet")
 	if err != nil {
 		return res, fmt.Errorf("error loading cloud: %v", err)
 	}
