@@ -164,12 +164,15 @@ func (c *openstackCloud) DeleteServerGroup(groupID string) error {
 }
 
 func deleteServerGroup(c OpenstackCloud, groupID string) error {
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := servergroups.Delete(c.ComputeClient(), groupID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting server group: %v", err)
 		}
-		return true, nil
+		if isNotFound(err) {
+			return true, nil
+		}
+		return false, nil
 	})
 	if err != nil {
 		return err
