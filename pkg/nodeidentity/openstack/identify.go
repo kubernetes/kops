@@ -52,7 +52,7 @@ func New() (nodeidentity.LegacyIdentifier, error) {
 		return nil, err
 	}
 	ua := gophercloud.UserAgent{}
-	ua.Prepend("kops-nodeidentity")
+	ua.Prepend("kops/nodeidentity")
 	provider.UserAgent = ua
 	klog.V(4).Infof("Using user-agent %s", ua.Join())
 

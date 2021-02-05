@@ -58,7 +58,7 @@ func newDesignate(_ io.Reader) (*Interface, error) {
 		return nil, fmt.Errorf("error building openstack provider client: %v", err)
 	}
 	ua := gophercloud.UserAgent{}
-	ua.Prepend("kops-designate")
+	ua.Prepend("kops/designate")
 	provider.UserAgent = ua
 	klog.V(4).Infof("Using user-agent %s", ua.Join())
 
