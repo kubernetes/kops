@@ -433,6 +433,10 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	case kops.CloudProviderALI:
 		{
+			fmt.Println("")
+			fmt.Println("aliyun support has been deprecated due to lack of maintainers. It may be removed in a future version of kOps.")
+			fmt.Println("")
+
 			if !AlphaAllowALI.Enabled() {
 				return fmt.Errorf("aliyun support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowALI")
 			}
