@@ -878,7 +878,10 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 	}
 
-	addCiliumAddon(b, addons)
+	err := addCiliumAddon(b, addons)
+	if err != nil {
+		return nil, fmt.Errorf("failed to add cilium addon: %w", err)
+	}
 
 	authenticationSelector := map[string]string{"role.kubernetes.io/authentication": "1"}
 
