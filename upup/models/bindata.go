@@ -31524,10 +31524,6 @@ data:
   config.yaml: |
     peer-service: unix:///var/run/cilium/hubble.sock
     listen-address: :4245
-    dial-timeout: 
-    retry-timeout: 
-    sort-buffer-len-max: 
-    sort-buffer-drain-timeout: 
     disable-client-tls: true
     disable-server-tls: true
 {{ end }}
