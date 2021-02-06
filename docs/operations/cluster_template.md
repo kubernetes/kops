@@ -16,7 +16,7 @@ metadata:
   kops.k8s.io/cluster: {{ '{{.clusterName}}.{{.dnsZone}}' }}
   name: nodes
 spec:
-  image: {{ ChannelRecommendedImage .cloud .kubernetesVersion }}
+  image: {{ '{{ ChannelRecommendedImage .cloud .kubernetesVersion }}' }}
   kubernetesVersion: {{ '{{ ChannelRecommendedKubernetesUpgradeVersion .kubernetesVersion }}' }}
   machineType: m4.large
   maxPrice: "0.5"
