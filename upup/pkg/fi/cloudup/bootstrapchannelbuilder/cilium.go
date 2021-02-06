@@ -17,16 +17,22 @@ limitations under the License.
 package bootstrapchannelbuilder
 
 import (
+	"fmt"
+
 	"github.com/blang/semver/v4"
 	"k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) {
+func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) error {
 
 	cilium := b.Cluster.Spec.Networking.Cilium
 	if cilium != nil {
-		ver, _ := semver.ParseTolerant(cilium.Version)
+		ver, err := semver.ParseTolerant(cilium.Version)
+		if err != nil {
+			return fmt.Errorf("Failed to parse cilium version: %w", err)
+		}
+
 		key := "networking.cilium.io"
 		if ver.Minor < 8 {
 			version := "1.7.3-kops.1"
@@ -73,7 +79,10 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) {
 					NeedsRollingUpdate: "all",
 				})
 			}
+		} else {
+			return fmt.Errorf("unknown cilium version: %q", cilium.Version)
 		}
 	}
+	return nil
 
 }
