@@ -29,7 +29,8 @@ import (
 	"k8s.io/kops/util/pkg/hashing"
 )
 
-func WriteFile(destPath string, contents Resource, fileMode os.FileMode, dirMode os.FileMode) error {
+// WriteFile writes a file to the specified path, setting the mode, owner & group.
+func WriteFile(destPath string, contents Resource, fileMode os.FileMode, dirMode os.FileMode, owner string, group string) error {
 	err := os.MkdirAll(path.Dir(destPath), dirMode)
 	if err != nil {
 		return fmt.Errorf("error creating directories for destination file %q: %v", destPath, err)
@@ -41,6 +42,11 @@ func WriteFile(destPath string, contents Resource, fileMode os.FileMode, dirMode
 	}
 
 	_, err = EnsureFileMode(destPath, fileMode)
+	if err != nil {
+		return err
+	}
+
+	_, err = EnsureFileOwner(destPath, owner, group)
 	if err != nil {
 		return err
 	}

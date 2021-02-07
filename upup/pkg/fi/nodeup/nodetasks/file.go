@@ -234,7 +234,7 @@ func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
 		}
 	} else if e.Type == FileType_File {
 		if changes.Contents != nil {
-			err = fi.WriteFile(e.Path, e.Contents, fileMode, dirMode)
+			err = fi.WriteFile(e.Path, e.Contents, fileMode, dirMode, fi.StringValue(e.Owner), fi.StringValue(e.Group))
 			if err != nil {
 				return fmt.Errorf("error copying file %q: %v", e.Path, err)
 			}

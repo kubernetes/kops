@@ -26,6 +26,8 @@ import (
 	"k8s.io/klog/v2"
 )
 
+// EnsureFileOwner will set the owner & group for a file.
+// Empty values for owner/group will leave the owner/group unchanged.
 func EnsureFileOwner(destPath string, owner string, groupName string) (bool, error) {
 	changed := false
 	stat, err := os.Lstat(destPath)
