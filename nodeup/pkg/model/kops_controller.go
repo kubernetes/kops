@@ -46,10 +46,6 @@ func (b *KopsControllerBuilder) Build(c *fi.ModelBuilderContext) error {
 		Mode: s("0755"),
 	})
 
-	if !b.UseKopsControllerForNodeBootstrap() {
-		return nil
-	}
-
 	// We run kops-controller under an unprivileged user (wellknownusers.KopsControllerID), and then grant specific permissions
 	c.AddTask(&nodetasks.UserTask{
 		Name:  wellknownusers.KopsControllerName,
