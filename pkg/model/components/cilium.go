@@ -39,7 +39,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.Version == "" {
-		c.Version = "v1.8.4"
+		c.Version = "v1.9.4"
 	}
 
 	version, _ := semver.ParseTolerant(c.Version)

@@ -17,21 +17,24 @@ limitations under the License.
 package bootstrapchannelbuilder
 
 import (
+	"fmt"
+
 	"github.com/blang/semver/v4"
 	"k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) {
+func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) error {
 
 	cilium := b.Cluster.Spec.Networking.Cilium
 	if cilium != nil {
-		ver, _ := semver.ParseTolerant(cilium.Version)
-		ver.Build = nil
-		ver.Pre = nil
-		v8, _ := semver.Parse("1.8.0")
+		ver, err := semver.ParseTolerant(cilium.Version)
+		if err != nil {
+			return fmt.Errorf("Failed to parse cilium version: %w", err)
+		}
+
 		key := "networking.cilium.io"
-		if ver.LT(v8) {
+		if ver.Minor < 8 {
 			version := "1.7.3-kops.1"
 
 			{
@@ -46,7 +49,7 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) {
 					Id:       id,
 				})
 			}
-		} else {
+		} else if ver.Minor == 8 {
 			version := "1.8.0-kops.1"
 			{
 				id := "k8s-1.12"
@@ -61,7 +64,25 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) {
 					NeedsRollingUpdate: "all",
 				})
 			}
+		} else if ver.Minor == 9 {
+			version := "1.9.0-kops.1"
+			{
+				id := "k8s-1.12"
+				location := key + "/" + id + "-v1.9.yaml"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &api.AddonSpec{
+					Name:               fi.String(key),
+					Version:            fi.String(version),
+					Selector:           networkingSelector(),
+					Manifest:           fi.String(location),
+					Id:                 id,
+					NeedsRollingUpdate: "all",
+				})
+			}
+		} else {
+			return fmt.Errorf("unknown cilium version: %q", cilium.Version)
 		}
 	}
+	return nil
 
 }

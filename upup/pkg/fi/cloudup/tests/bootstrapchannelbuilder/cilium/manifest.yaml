@@ -69,10 +69,10 @@ spec:
       k8s-addon: storage-aws.addons.k8s.io
     version: 1.17.0
   - id: k8s-1.12
-    manifest: networking.cilium.io/k8s-1.12-v1.8.yaml
-    manifestHash: 67853b52a456f1b701ada61ecab28c8c1f615183
+    manifest: networking.cilium.io/k8s-1.12-v1.9.yaml
+    manifestHash: 2831146cb6f181255c69a09d8e97cc406304a81a
     name: networking.cilium.io
     needsRollingUpdate: all
     selector:
       role.kubernetes.io/networking: "1"
-    version: 1.8.0-kops.1
+    version: 1.9.0-kops.1
