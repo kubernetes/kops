@@ -56,7 +56,7 @@ func TestWriteFile(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		err := WriteFile(test.path, NewBytesResource(test.data), test.fileMode, test.dirMode)
+		err := WriteFile(test.path, NewBytesResource(test.data), test.fileMode, test.dirMode, "", "")
 		if err != nil {
 			t.Errorf("Error writing file {%s}, error: {%v}", test.path, err)
 			continue
