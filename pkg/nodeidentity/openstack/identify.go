@@ -26,6 +26,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/nodeidentity"
 )
 
@@ -50,6 +51,10 @@ func New() (nodeidentity.LegacyIdentifier, error) {
 	if err != nil {
 		return nil, err
 	}
+	ua := gophercloud.UserAgent{}
+	ua.Prepend("kops/nodeidentity")
+	provider.UserAgent = ua
+	klog.V(4).Infof("Using user-agent %s", ua.Join())
 
 	// node-controller should be able to renew it tokens against OpenStack API
 	env.AllowReauth = true

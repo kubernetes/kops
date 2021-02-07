@@ -100,7 +100,7 @@ func NewOpenstackVolumes() (*OpenstackVolumes, error) {
 	// Cluster name needed to bypass missing designate options
 	tags[openstack.TagClusterName] = metadata.UserMeta.ClusterName
 
-	oscloud, err := openstack.NewOpenstackCloud(tags, nil)
+	oscloud, err := openstack.NewOpenstackCloud(tags, nil, "protokube")
 	if err != nil {
 		return nil, fmt.Errorf("Failed to initialize OpenstackVolumes: %v", err)
 	}

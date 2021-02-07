@@ -55,6 +55,10 @@ func NewSwiftClient() (*gophercloud.ServiceClient, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error building openstack provider client: %v", err)
 	}
+	ua := gophercloud.UserAgent{}
+	ua.Prepend("kops/swift")
+	pc.UserAgent = ua
+	klog.V(4).Infof("Using user-agent %s", ua.Join())
 
 	tlsconfig := &tls.Config{}
 	tlsconfig.InsecureSkipVerify = true
