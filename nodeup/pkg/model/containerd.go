@@ -103,6 +103,9 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 		// https://github.com/containerd/containerd/blob/master/docs/cri/config.md#cni-config-template
 		if components.UsesKubenet(b.Cluster.Spec.Networking) {
 			b.buildCNIConfigTemplateFile(c)
+			if err := b.buildIPMasqueradeRules(c); err != nil {
+				return err
+			}
 		}
 
 	}
@@ -304,18 +307,74 @@ runtime-endpoint: unix:///run/containerd/containerd.sock
 	})
 }
 
+// buildIPMasqueradeRules creates the DNAT rules.
+// Network modes where pods don't have "real network" IPs, use NAT so that they assume the IP of the node.
+func (b *ContainerdBuilder) buildIPMasqueradeRules(c *fi.ModelBuilderContext) error {
+	// TODO: Should we just rely on running nodeup on every boot, instead of setting up a systemd unit?
+
+	// This is based on rules from gce/cos/configure-helper.sh and the old logic in kubenet_linux.go
+
+	// We stick closer to the logic in kubenet_linux, both for compatibility, and because the GCE logic
+	// skips masquerading for all private CIDR ranges, but this depends on an assumption that is likely GCE-specific.
+	// On GCE custom routes are at the network level, on AWS they are at the route-table / subnet level.
+	// We cannot generally assume that because something is in the private network space, that it can reach us.
+	// If we adopt "native" pod IPs (GCE ip-alias, AWS VPC CNI, etc) we can likely move to rules closer to the upstream ones.
+	script := `#!/bin/bash
+# Built by kOps - do not edit
+
+iptables -w -t nat -N IP-MASQ
+iptables -w -t nat -A POSTROUTING -m comment --comment "ip-masq: ensure nat POSTROUTING directs all non-LOCAL destination traffic to our custom IP-MASQ chain" -m addrtype ! --dst-type LOCAL -j IP-MASQ
+iptables -w -t nat -A IP-MASQ -d {{.NonMasqueradeCIDR}} -m comment --comment "ip-masq: pod cidr is not subject to MASQUERADE" -j RETURN
+iptables -w -t nat -A IP-MASQ -m comment --comment "ip-masq: outbound traffic is subject to MASQUERADE (must be last in chain)" -j MASQUERADE
+`
+
+	if b.Cluster.Spec.NonMasqueradeCIDR == "" {
+		// We could fall back to the pod CIDR, that is likely more correct anyway
+		return fmt.Errorf("NonMasqueradeCIDR is not set")
+	}
+
+	script = strings.ReplaceAll(script, "{{.NonMasqueradeCIDR}}", b.Cluster.Spec.NonMasqueradeCIDR)
+
+	c.AddTask(&nodetasks.File{
+		Path:     "/opt/kops/bin/cni-iptables-setup",
+		Contents: fi.NewStringResource(script),
+		Type:     nodetasks.FileType_File,
+		Mode:     s("0755"),
+	})
+
+	manifest := &systemd.Manifest{}
+	manifest.Set("Unit", "Description", "Configure iptables for kubernetes CNI")
+	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
+	manifest.Set("Unit", "Before", "network.target")
+	manifest.Set("Service", "Type", "oneshot")
+	manifest.Set("Service", "RemainAfterExit", "yes")
+	manifest.Set("Service", "ExecStart", "/opt/kops/bin/cni-iptables-setup")
+	manifest.Set("Install", "WantedBy", "basic.target")
+
+	manifestString := manifest.Render()
+	klog.V(8).Infof("Built service manifest %q\n%s", "cni-iptables-setup", manifestString)
+
+	service := &nodetasks.Service{
+		Name:       "cni-iptables-setup.service",
+		Definition: s(manifestString),
+	}
+	service.InitDefaults()
+	c.AddTask(service)
+
+	return nil
+}
+
 // buildCNIConfigTemplateFile is responsible for creating a special template for setups using Kubenet
 func (b *ContainerdBuilder) buildCNIConfigTemplateFile(c *fi.ModelBuilderContext) {
+
+	// Based on https://github.com/kubernetes/kubernetes/blob/15a8a8ec4a3275a33b7f8eb3d4d98db2abad55b7/cluster/gce/gci/configure-helper.sh#L2911-L2937
+
 	contents := `{
     "cniVersion": "0.4.0",
-    "name": "containerd-net",
+    "name": "k8s-pod-network",
     "plugins": [
         {
-            "type": "bridge",
-            "bridge": "cni0",
-            "isGateway": true,
-            "ipMasq": true,
-            "promiscMode": true,
+            "type": "ptp",
             "ipam": {
                 "type": "host-local",
                 "ranges": [[{"subnet": "{{.PodCIDR}}"}]],

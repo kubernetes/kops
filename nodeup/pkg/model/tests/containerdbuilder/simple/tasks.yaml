@@ -1,14 +1,10 @@
 contents: |
   {
       "cniVersion": "0.4.0",
-      "name": "containerd-net",
+      "name": "k8s-pod-network",
       "plugins": [
           {
-              "type": "bridge",
-              "bridge": "cni0",
-              "isGateway": true,
-              "ipMasq": true,
-              "promiscMode": true,
+              "type": "ptp",
               "ipam": {
                   "type": "host-local",
                   "ranges": [[{"subnet": "{{.PodCIDR}}"}]],
@@ -36,6 +32,18 @@ type: file
 ---
 contents: CONTAINERD_OPTS=
 path: /etc/sysconfig/containerd
+type: file
+---
+contents: |
+  #!/bin/bash
+  # Built by kOps - do not edit
+
+  iptables -w -t nat -N IP-MASQ
+  iptables -w -t nat -A POSTROUTING -m comment --comment "ip-masq: ensure nat POSTROUTING directs all non-LOCAL destination traffic to our custom IP-MASQ chain" -m addrtype ! --dst-type LOCAL -j IP-MASQ
+  iptables -w -t nat -A IP-MASQ -d 100.64.0.0/10 -m comment --comment "ip-masq: pod cidr is not subject to MASQUERADE" -j RETURN
+  iptables -w -t nat -A IP-MASQ -m comment --comment "ip-masq: outbound traffic is subject to MASQUERADE (must be last in chain)" -j MASQUERADE
+mode: "0755"
+path: /opt/kops/bin/cni-iptables-setup
 type: file
 ---
 contents:
@@ -289,6 +297,25 @@ contents: |2
      limitations under the License.
 path: /usr/share/doc/containerd/apache.txt
 type: file
+---
+Name: cni-iptables-setup.service
+definition: |
+  [Unit]
+  Description=Configure iptables for kubernetes CNI
+  Documentation=https://github.com/kubernetes/kops
+  Before=network.target
+
+  [Service]
+  Type=oneshot
+  RemainAfterExit=yes
+  ExecStart=/opt/kops/bin/cni-iptables-setup
+
+  [Install]
+  WantedBy=basic.target
+enabled: true
+manageState: true
+running: true
+smartRestart: true
 ---
 Name: containerd.service
 definition: |
