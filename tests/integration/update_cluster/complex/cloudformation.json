@@ -89,6 +89,9 @@
             ]
           }
         ],
+        "LoadBalancerNames": [
+          "my-external-lb-1"
+        ],
         "TargetGroupARNs": [
           {
             "Ref": "AWSElasticLoadBalancingV2TargetGrouptcpcomplexexamplecomvpjolq"
@@ -182,6 +185,9 @@
               "GroupTotalInstances"
             ]
           }
+        ],
+        "LoadBalancerNames": [
+          "my-external-lb-1"
         ]
       }
     },
