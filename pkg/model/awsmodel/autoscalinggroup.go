@@ -445,17 +445,13 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 
 	for _, extLB := range ig.Spec.ExternalLoadBalancers {
 		if extLB.LoadBalancerName != nil {
-			loadBalancerName := fi.StringValue(extLB.LoadBalancerName)
-			if loadBalancerName != awsup.GetResourceName32(b.Cluster.Name, "api") && loadBalancerName != awsup.GetResourceName32(b.Cluster.Name, "bastion") {
-				loadBalancerName = name + "-" + loadBalancerName
-			}
 			lb := &awstasks.ClassicLoadBalancer{
-				Name:             fi.String(loadBalancerName),
+				Name:             extLB.LoadBalancerName,
 				LoadBalancerName: extLB.LoadBalancerName,
 				Shared:           fi.Bool(true),
 			}
 			t.LoadBalancers = append(t.LoadBalancers, lb)
-			c.AddTask(lb)
+			c.EnsureTask(lb)
 		}
 
 		if extLB.TargetGroupARN != nil {
