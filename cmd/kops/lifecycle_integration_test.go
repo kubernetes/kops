@@ -17,8 +17,10 @@ limitations under the License.
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"context"
+	"fmt"
 	"os"
 	"path"
 	"reflect"
@@ -29,6 +31,8 @@ import (
 
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/commands"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -152,6 +156,12 @@ func TestLifecyclePrivateSharedIP(t *testing.T) {
 func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptions, cloud *awsup.MockAWSCloud) {
 	ctx := context.Background()
 
+	featureflag.ParseFlags("+SpecOverrideFlag")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-SpecOverrideFlag")
+	}
+	defer unsetFeatureFlags()
+
 	t := o.t
 
 	t.Logf("running lifecycle test for cluster %s", o.ClusterName)
@@ -188,43 +198,58 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 			t.Fatalf("error running %q create: %v", inputYAML, err)
 		}
 	}
+	updateEnsureNoChanges(ctx, t, factory, o.ClusterName, stdout)
 
+	// Overrides
 	{
-		options := &UpdateClusterOptions{}
-		options.InitDefaults()
-		options.RunTasksOptions.MaxTaskDuration = 10 * time.Second
-		options.Yes = true
-
-		// We don't test it here, and it adds a dependency on kubectl
-		options.CreateKubecfg = false
-
-		_, err := RunUpdateCluster(ctx, factory, o.ClusterName, &stdout, options)
+		cluster, err := GetCluster(ctx, factory, o.ClusterName)
 		if err != nil {
-			t.Fatalf("error running update cluster %q: %v", o.ClusterName, err)
+			t.Fatalf("error getting cluster: %v", err)
 		}
-	}
-
-	{
-		options := &UpdateClusterOptions{}
-		options.InitDefaults()
-		options.Target = cloudup.TargetDryRun
-		options.RunTasksOptions.MaxTaskDuration = 10 * time.Second
-
-		// We don't test it here, and it adds a dependency on kubectl
-		options.CreateKubecfg = false
-
-		results, err := RunUpdateCluster(ctx, factory, o.ClusterName, &stdout, options)
+		clientset, err := factory.Clientset()
 		if err != nil {
-			t.Fatalf("error running update cluster %q: %v", o.ClusterName, err)
+			t.Fatalf("error getting clientset: %v", err)
 		}
 
-		target := results.Target.(*fi.DryRunTarget)
-		if target.HasChanges() {
-			var b bytes.Buffer
-			if err := target.PrintReport(results.TaskMap, &b); err != nil {
-				t.Fatalf("error building report: %v", err)
+		overrides, err := loadOverrides(path.Join(o.SrcDir, "cluster.overrides.txt"))
+		if err != nil {
+			t.Fatalf("error loading overrides file: %v", err)
+		}
+		for _, overrideBatch := range overrides {
+			t.Logf("overriding cluster values %v\n", overrideBatch)
+			setClusterOptions := &commands.SetClusterOptions{
+				Fields:      overrideBatch,
+				ClusterName: o.ClusterName,
 			}
-			t.Fatalf("Target had changes after executing: %v", b.String())
+			if err := commands.RunSetCluster(ctx, factory, nil, nil, setClusterOptions); err != nil {
+				t.Fatalf("error applying overrides: %v", err)
+			}
+			updateEnsureNoChanges(ctx, t, factory, o.ClusterName, stdout)
+		}
+
+		instanceGroups, err := commands.ReadAllInstanceGroups(ctx, clientset, cluster)
+		if err != nil {
+			t.Fatalf("error reading instance groups: %v", err)
+		}
+		for _, ig := range instanceGroups {
+			overrideFile := path.Join(o.SrcDir, fmt.Sprintf("instancegroup.%v.overrides.txt", ig.Name))
+			overrides, err := loadOverrides(overrideFile)
+			if err != nil {
+				t.Fatalf("error loading overrides file: %v", err)
+			}
+
+			for _, overrideBatch := range overrides {
+				t.Logf("overriding instance group values (%v) %v\n", ig.Name, overrideBatch)
+				setIGOptions := &commands.SetInstanceGroupOptions{
+					Fields:            overrideBatch,
+					ClusterName:       o.ClusterName,
+					InstanceGroupName: ig.Name,
+				}
+				if err := commands.RunSetInstancegroup(ctx, factory, nil, nil, setIGOptions); err != nil {
+					t.Fatalf("error applying overrides: %v", err)
+				}
+				updateEnsureNoChanges(ctx, t, factory, o.ClusterName, stdout)
+			}
 		}
 	}
 
@@ -405,44 +430,7 @@ func runLifecycleTestOpenstack(o *LifecycleTestOptions) {
 		}
 	}
 
-	{
-		options := &UpdateClusterOptions{}
-		options.InitDefaults()
-		options.RunTasksOptions.MaxTaskDuration = 10 * time.Second
-		options.Yes = true
-
-		// We don't test it here, and it adds a dependency on kubectl
-		options.CreateKubecfg = false
-
-		_, err := RunUpdateCluster(ctx, factory, o.ClusterName, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running update cluster %q: %v", o.ClusterName, err)
-		}
-	}
-
-	{
-		options := &UpdateClusterOptions{}
-		options.InitDefaults()
-		options.Target = cloudup.TargetDryRun
-		options.RunTasksOptions.MaxTaskDuration = 10 * time.Second
-
-		// We don't test it here, and it adds a dependency on kubectl
-		options.CreateKubecfg = false
-
-		results, err := RunUpdateCluster(ctx, factory, o.ClusterName, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running update cluster %q: %v", o.ClusterName, err)
-		}
-
-		target := results.Target.(*fi.DryRunTarget)
-		if target.HasChanges() {
-			var b bytes.Buffer
-			if err := target.PrintReport(results.TaskMap, &b); err != nil {
-				t.Fatalf("error building report: %v", err)
-			}
-			t.Fatalf("Target had changes after executing: %v", b.String())
-		}
-	}
+	updateEnsureNoChanges(ctx, t, factory, o.ClusterName, stdout)
 
 	{
 		options := &DeleteClusterOptions{}
@@ -464,4 +452,66 @@ func runLifecycleTestOpenstack(o *LifecycleTestOptions) {
 			t.Fatalf("resources changed by cluster create / destroy: %v -> %v", beforeIds, afterIds)
 		}
 	}
+}
+
+func updateEnsureNoChanges(ctx context.Context, t *testing.T, factory *util.Factory, clusterName string, stdout bytes.Buffer) {
+	t.Helper()
+	options := &UpdateClusterOptions{}
+	options.InitDefaults()
+	options.RunTasksOptions.MaxTaskDuration = 10 * time.Second
+	options.Yes = true
+
+	// We don't test it here, and it adds a dependency on kubectl
+	options.CreateKubecfg = false
+
+	_, err := RunUpdateCluster(ctx, factory, clusterName, &stdout, options)
+	if err != nil {
+		t.Fatalf("error running update cluster %q: %v", clusterName, err)
+	}
+
+	// Now perform another dryrun update and ensure no changes are reported
+
+	options = &UpdateClusterOptions{}
+	options.InitDefaults()
+	options.Target = cloudup.TargetDryRun
+	options.RunTasksOptions.MaxTaskDuration = 10 * time.Second
+
+	// We don't test it here, and it adds a dependency on kubectl
+	options.CreateKubecfg = false
+
+	results, err := RunUpdateCluster(ctx, factory, clusterName, &stdout, options)
+	if err != nil {
+		t.Fatalf("error running update cluster %q: %v", clusterName, err)
+	}
+
+	target := results.Target.(*fi.DryRunTarget)
+	if target.HasChanges() {
+		var b bytes.Buffer
+		if err := target.PrintReport(results.TaskMap, &b); err != nil {
+			t.Fatalf("error building report: %v", err)
+		}
+		t.Fatalf("Target had changes after executing: %v", b.String())
+	}
+}
+
+// Returns a list of lists of overrides. each list of overrides will be applied in a batch
+func loadOverrides(filepath string) ([][]string, error) {
+	f, err := os.Open(filepath)
+	if os.IsNotExist(err) {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+	overrides := make([][]string, 0)
+	overrides = append(overrides, make([]string, 0))
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "---" {
+			overrides = append(overrides, make([]string, 0))
+			continue
+		}
+		overrides[len(overrides)-1] = append(overrides[len(overrides)-1], line)
+	}
+	return overrides, nil
 }

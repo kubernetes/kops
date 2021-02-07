@@ -166,6 +166,7 @@ go_test(
         "//cloudmock/aws/mockec2:go_default_library",
         "//cmd/kops/util:go_default_library",
         "//pkg/apis/kops:go_default_library",
+        "//pkg/commands:go_default_library",
         "//pkg/featureflag:go_default_library",
         "//pkg/jsonutils:go_default_library",
         "//pkg/kopscodecs:go_default_library",
