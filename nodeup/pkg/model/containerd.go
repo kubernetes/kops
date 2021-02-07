@@ -306,16 +306,15 @@ runtime-endpoint: unix:///run/containerd/containerd.sock
 
 // buildCNIConfigTemplateFile is responsible for creating a special template for setups using Kubenet
 func (b *ContainerdBuilder) buildCNIConfigTemplateFile(c *fi.ModelBuilderContext) {
+
+	// Based on https://github.com/kubernetes/kubernetes/blob/15a8a8ec4a3275a33b7f8eb3d4d98db2abad55b7/cluster/gce/gci/configure-helper.sh#L2911-L2937
+	// TODO: Should we set MTU? upstream has "mtu": 1460
 	contents := `{
-    "cniVersion": "0.4.0",
-    "name": "containerd-net",
+    "cniVersion": "0.3.1",
+    "name": "k8s-pod-network",
     "plugins": [
         {
-            "type": "bridge",
-            "bridge": "cni0",
-            "isGateway": true,
-            "ipMasq": true,
-            "promiscMode": true,
+            "type": "ptp",
             "ipam": {
                 "type": "host-local",
                 "ranges": [[{"subnet": "{{.PodCIDR}}"}]],
