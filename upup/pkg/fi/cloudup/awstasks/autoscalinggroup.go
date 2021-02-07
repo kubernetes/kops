@@ -115,12 +115,8 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 
 	actual.LoadBalancers = []*ClassicLoadBalancer{}
 	for _, lb := range g.LoadBalancerNames {
-		loadBalancerName := fi.StringValue(lb)
-		if loadBalancerName != awsup.GetResourceName32(c.Cluster.Name, "api") && loadBalancerName != awsup.GetResourceName32(c.Cluster.Name, "bastion") {
-			loadBalancerName = fi.StringValue(g.AutoScalingGroupName) + "-" + loadBalancerName
-		}
 		actual.LoadBalancers = append(actual.LoadBalancers, &ClassicLoadBalancer{
-			Name:             aws.String(loadBalancerName),
+			Name:             aws.String(*lb),
 			LoadBalancerName: aws.String(*lb),
 		})
 	}
@@ -721,7 +717,7 @@ func (e *AutoscalingGroup) AutoscalingLoadBalancers() []*string {
 	var list []*string
 
 	for _, v := range e.LoadBalancers {
-		list = append(list, v.Name)
+		list = append(list, v.LoadBalancerName)
 	}
 
 	return list
