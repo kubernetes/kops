@@ -63,6 +63,7 @@ go_library(
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/assettasks:go_default_library",
         "//upup/pkg/fi/cloudup/aliup:go_default_library",
+        "//upup/pkg/fi/cloudup/awstasks:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/cloudup/azure:go_default_library",
         "//upup/pkg/fi/cloudup/bootstrapchannelbuilder:go_default_library",

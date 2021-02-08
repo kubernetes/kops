@@ -55,6 +55,7 @@ go_library(
         "//util/pkg/architectures:go_default_library",
         "//util/pkg/mirrors:go_default_library",
         "//util/pkg/vfs:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
         "//vendor/github.com/blang/semver/v4:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/net:go_default_library",

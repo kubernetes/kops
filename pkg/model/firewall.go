@@ -19,10 +19,13 @@ package model
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
 	"k8s.io/klog/v2"
 )
@@ -36,12 +39,24 @@ const (
 // FirewallModelBuilder configures firewall network objects
 type FirewallModelBuilder struct {
 	*KopsModelContext
+	Cloud     awsup.AWSCloud
 	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &FirewallModelBuilder{}
 
 func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
+	tasks, err := b.getExistingRulesFromCloud()
+	if err != nil {
+		return err
+	}
+
+	finalRules := make(map[string]*awstasks.SecurityGroupRule)
+	for _, task := range tasks {
+		klog.V(4).Infof("found rule %q", fi.StringValue(task.Name))
+		finalRules[fi.StringValue(task.Name)] = task
+	}
+
 	nodeGroups, err := b.buildNodeRules(c)
 	if err != nil {
 		return err
@@ -58,6 +73,14 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// * If users are running an overlay, we punch a hole in it anyway
 	// b.applyNodeToMasterAllowSpecificPorts(c)
 	b.applyNodeToMasterBlockSpecificPorts(c, nodeGroups, masterGroups)
+
+	for _, task := range b.SecurityGroupRules {
+		finalRules[fi.StringValue(task.Name)] = task
+	}
+
+	for _, rule := range finalRules {
+		c.AddTask(rule)
+	}
 
 	return nil
 }
@@ -408,10 +431,11 @@ func JoinSuffixes(src SecurityGroupInfo, dest SecurityGroupInfo) string {
 func (b *KopsModelContext) AddDirectionalGroupRule(c *fi.ModelBuilderContext, t *awstasks.SecurityGroupRule) {
 
 	name := generateName(t)
+	b.SecurityGroupRules[name] = t
 	t.Name = fi.String(name)
+	t.Delete = fi.Bool(false)
 
-	klog.V(8).Infof("Adding rule %v", name)
-	c.AddTask(t)
+	klog.V(4).Infof("Adding rule %q", name)
 
 }
 
@@ -444,4 +468,103 @@ func generateName(o *awstasks.SecurityGroupRule) string {
 
 	return fmt.Sprintf("from-%s-%s-%s-%dto%d-%s", src, direction,
 		proto, fi.Int64Value(o.FromPort), fi.Int64Value(o.ToPort), dst)
+}
+
+func (b *FirewallModelBuilder) getExistingRulesFromCloud() ([]*awstasks.SecurityGroupRule, error) {
+	tasks := []*awstasks.SecurityGroupRule{}
+	sgs, err := b.getClusterSecurityGroups()
+	if err != nil {
+		return nil, err
+	}
+	for _, sg := range sgs {
+		name := fi.StringValue(sg.GroupName)
+
+		klog.V(4).Infof("found group %q with id %s", name, fi.StringValue(sg.GroupId))
+		// We assume that if the security group name ends with the cluster name it is owned by kOps.
+		// We must ignore security groups about which we don't know anything, as we cannot make tasks of them.
+		if !strings.HasSuffix(name, "."+b.ClusterName()) {
+			klog.V(4).Infof("skipping EC2 security group %q", name)
+			continue
+		}
+		for _, rule := range sg.IpPermissions {
+			ts := b.createRulesFromPermissions(sg, rule, false, sgs)
+			tasks = append(tasks, ts...)
+		}
+		for _, rule := range sg.IpPermissionsEgress {
+			ts := b.createRulesFromPermissions(sg, rule, true, sgs)
+			tasks = append(tasks, ts...)
+		}
+	}
+	return tasks, nil
+}
+
+func (b *FirewallModelBuilder) getClusterSecurityGroups() (map[string]*ec2.SecurityGroup, error) {
+	sgs := make(map[string]*ec2.SecurityGroup)
+
+	request := &ec2.DescribeSecurityGroupsInput{
+		Filters: []*ec2.Filter{
+			awsup.NewEC2Filter("tag:KubernetesCluster", b.ClusterName()),
+		},
+	}
+
+	response, err := b.Cloud.EC2().DescribeSecurityGroups(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing EC2 security groups: %w", err)
+	}
+
+	for _, sg := range response.SecurityGroups {
+		sgs[fi.StringValue(sg.GroupId)] = sg
+	}
+	return sgs, nil
+
+}
+
+func (b *FirewallModelBuilder) createRulesFromPermissions(sg *ec2.SecurityGroup, rule *ec2.IpPermission, egress bool, sgs map[string]*ec2.SecurityGroup) (tasks []*awstasks.SecurityGroupRule) {
+	for _, cidr := range rule.IpRanges {
+		// CIDRs with description starting with kubernetes.io are owned by CCM
+		if strings.HasPrefix(fi.StringValue(cidr.Description), "kubernetes.io") {
+			continue
+		}
+		rule := b.createBaseRule(sg, rule, egress)
+		rule.Egress = fi.Bool(egress)
+		rule.CIDR = cidr.CidrIp
+
+		rule.Name = fi.String(generateName(rule))
+		tasks = append(tasks, rule)
+	}
+	for _, p := range rule.UserIdGroupPairs {
+		rule := b.createBaseRule(sg, rule, egress)
+		rule.Egress = fi.Bool(egress)
+		pGroup := sgs[fi.StringValue(p.GroupId)]
+		groupName := fi.StringValue(pGroup.GroupName)
+		// We assume that if the security group name ends with the cluster name it is owned by kOps.
+		// We must ignore security groups about which we don't know anything, as we cannot make tasks of them.
+		if !strings.HasSuffix(groupName, b.ClusterName()) {
+			klog.V(4).Infof("Skipping rule; target EC2 security group %q not owned by kOps", groupName)
+			continue
+		}
+		source := &awstasks.SecurityGroup{Name: pGroup.GroupName}
+
+		rule.SourceGroup = source
+
+		rule.Name = fi.String(generateName(rule))
+		tasks = append(tasks, rule)
+	}
+	return tasks
+}
+
+func (b *FirewallModelBuilder) createBaseRule(sg *ec2.SecurityGroup, rule *ec2.IpPermission, egress bool) *awstasks.SecurityGroupRule {
+
+	task := &awstasks.SecurityGroupRule{
+		SecurityGroup: &awstasks.SecurityGroup{Name: sg.GroupName},
+		FromPort:      rule.FromPort,
+		ToPort:        rule.ToPort,
+		Protocol:      rule.IpProtocol,
+		Egress:        fi.Bool(egress),
+		Delete:        fi.Bool(true),
+	}
+	if fi.StringValue(task.Protocol) == "-1" {
+		task.Protocol = nil
+	}
+	return task
 }

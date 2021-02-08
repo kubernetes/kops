@@ -708,6 +708,15 @@ resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
   route_table_id         = aws_route_table.private-us-test-1a-privateweave-example-com.id
 }
 
+resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-icmp-3to4-api-elb-privateweave-example-com" {
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 3
+  protocol          = "icmp"
+  security_group_id = aws_security_group.api-elb-privateweave-example-com.id
+  to_port           = 4
+  type              = "ingress"
+}
+
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-elb-privateweave-example-com" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 22
@@ -733,6 +742,15 @@ resource "aws_security_group_rule" "from-api-elb-privateweave-example-com-egress
   security_group_id = aws_security_group.api-elb-privateweave-example-com.id
   to_port           = 0
   type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-api-elb-privateweave-example-com-ingress-tcp-443to443-masters-privateweave-example-com" {
+  from_port                = 443
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.masters-privateweave-example-com.id
+  source_security_group_id = aws_security_group.api-elb-privateweave-example-com.id
+  to_port                  = 443
+  type                     = "ingress"
 }
 
 resource "aws_security_group_rule" "from-bastion-elb-privateweave-example-com-egress-all-0to0-0-0-0-0--0" {
@@ -859,24 +877,6 @@ resource "aws_security_group_rule" "from-nodes-privateweave-example-com-ingress-
   source_security_group_id = aws_security_group.nodes-privateweave-example-com.id
   to_port                  = 65535
   type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "https-elb-to-master" {
-  from_port                = 443
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.masters-privateweave-example-com.id
-  source_security_group_id = aws_security_group.api-elb-privateweave-example-com.id
-  to_port                  = 443
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 3
-  protocol          = "icmp"
-  security_group_id = aws_security_group.api-elb-privateweave-example-com.id
-  to_port           = 4
-  type              = "ingress"
 }
 
 resource "aws_security_group" "api-elb-privateweave-example-com" {

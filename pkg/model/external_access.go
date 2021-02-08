@@ -107,7 +107,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				ToPort:        i64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
 				CIDR:          s(nodePortAccess),
 			}
-			c.AddTask(t1)
+			b.AddDirectionalGroupRule(c, t1)
 
 			t2 := &awstasks.SecurityGroupRule{
 				Name:          s(fmt.Sprintf("nodeport-udp-external-to-node-%s%s", nodePortAccess, suffix)),
@@ -118,7 +118,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				ToPort:        i64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
 				CIDR:          s(nodePortAccess),
 			}
-			c.AddTask(t2)
+			b.AddDirectionalGroupRule(c, t2)
 		}
 	}
 

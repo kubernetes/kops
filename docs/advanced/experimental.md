@@ -23,3 +23,4 @@ The following experimental features are currently available:
 * `+SkipEtcdVersionCheck` - Bypasses the check that etcd-manager is using a supported etcd version
 * `+TerraformJSON` - Produce kubernetes.tf.json file instead of writing HCLv2 syntax. Can be consumed by terraform 0.12+
 * `+VFSVaultSupport` - Enables setting Vault as secret/keystore
+* `+DeleteUnknownSGRules` - Makes kOps delete unknown AWS security group rules

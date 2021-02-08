@@ -47,10 +47,11 @@ type SecurityGroupRule struct {
 	SourceGroup *SecurityGroup
 
 	Egress *bool
+
+	Delete *bool
 }
 
 func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
 
 	if e.SecurityGroup == nil || e.SecurityGroup.ID == nil {
 		return nil, nil
@@ -61,6 +62,43 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 		return nil, nil
 	}
 
+	foundRule, err := e.findec2(c)
+	if err != nil {
+		return nil, err
+	}
+
+	if foundRule != nil {
+		actual := &SecurityGroupRule{
+			Name:          e.Name,
+			SecurityGroup: &SecurityGroup{ID: e.SecurityGroup.ID},
+			FromPort:      foundRule.FromPort,
+			ToPort:        foundRule.ToPort,
+			Protocol:      foundRule.IpProtocol,
+			Egress:        e.Egress,
+			Delete:        fi.Bool(false),
+		}
+
+		if aws.StringValue(actual.Protocol) == "-1" {
+			actual.Protocol = nil
+		}
+		if e.CIDR != nil {
+			actual.CIDR = e.CIDR
+		}
+		if e.SourceGroup != nil {
+			actual.SourceGroup = &SecurityGroup{ID: e.SourceGroup.ID}
+		}
+
+		// Avoid spurious changes
+		actual.Lifecycle = e.Lifecycle
+
+		return actual, nil
+	}
+
+	return nil, nil
+}
+
+func (e *SecurityGroupRule) findec2(c *fi.Context) (*ec2.IpPermission, error) {
+	cloud := c.Cloud.(awsup.AWSCloud)
 	request := &ec2.DescribeSecurityGroupsInput{
 		Filters: []*ec2.Filter{
 			awsup.NewEC2Filter("group-id", *e.SecurityGroup.ID),
@@ -82,8 +120,6 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 	sg := response.SecurityGroups[0]
 	//klog.V(2).Info("found existing security group")
 
-	var foundRule *ec2.IpPermission
-
 	ipPermissions := sg.IpPermissions
 	if fi.BoolValue(e.Egress) {
 		ipPermissions = sg.IpPermissionsEgress
@@ -91,38 +127,12 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 
 	for _, rule := range ipPermissions {
 		if e.matches(rule) {
-			foundRule = rule
-			break
+			return rule, nil
 		}
-	}
-
-	if foundRule != nil {
-		actual := &SecurityGroupRule{
-			Name:          e.Name,
-			SecurityGroup: &SecurityGroup{ID: e.SecurityGroup.ID},
-			FromPort:      foundRule.FromPort,
-			ToPort:        foundRule.ToPort,
-			Protocol:      foundRule.IpProtocol,
-			Egress:        e.Egress,
-		}
-
-		if aws.StringValue(actual.Protocol) == "-1" {
-			actual.Protocol = nil
-		}
-		if e.CIDR != nil {
-			actual.CIDR = e.CIDR
-		}
-		if e.SourceGroup != nil {
-			actual.SourceGroup = &SecurityGroup{ID: e.SourceGroup.ID}
-		}
-
-		// Avoid spurious changes
-		actual.Lifecycle = e.Lifecycle
-
-		return actual, nil
 	}
 
 	return nil, nil
+
 }
 
 func (e *SecurityGroupRule) matches(rule *ec2.IpPermission) bool {
@@ -228,37 +238,42 @@ func (e *SecurityGroupRule) Description() string {
 	return strings.Join(description, " ")
 }
 
-func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SecurityGroupRule) error {
+func (e *SecurityGroupRule) createIpPermission() *ec2.IpPermission {
+	protocol := e.Protocol
+	if protocol == nil {
+		protocol = aws.String("-1")
+	}
+
+	ipPermission := &ec2.IpPermission{
+		IpProtocol: protocol,
+		FromPort:   e.FromPort,
+		ToPort:     e.ToPort,
+	}
+
+	if e.SourceGroup != nil {
+		ipPermission.UserIdGroupPairs = []*ec2.UserIdGroupPair{
+			{
+				GroupId: e.SourceGroup.ID,
+			},
+		}
+	} else {
+		CIDR := e.CIDR
+		// Default to 0.0.0.0/0 ?
+		ipPermission.IpRanges = []*ec2.IpRange{
+			{CidrIp: CIDR},
+		}
+	}
+
+	return ipPermission
+
+}
+
+func (b *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SecurityGroupRule) error {
 	name := fi.StringValue(e.Name)
 
 	if a == nil {
-		protocol := e.Protocol
-		if protocol == nil {
-			protocol = aws.String("-1")
-		}
-
-		ipPermission := &ec2.IpPermission{
-			IpProtocol: protocol,
-			FromPort:   e.FromPort,
-			ToPort:     e.ToPort,
-		}
-
-		if e.SourceGroup != nil {
-			ipPermission.UserIdGroupPairs = []*ec2.UserIdGroupPair{
-				{
-					GroupId: e.SourceGroup.ID,
-				},
-			}
-		} else {
-			CIDR := e.CIDR
-			// Default to 0.0.0.0/0 ?
-			ipPermission.IpRanges = []*ec2.IpRange{
-				{CidrIp: CIDR},
-			}
-		}
-
+		ipPermission := b.createIpPermission()
 		description := e.Description()
-
 		if fi.BoolValue(e.Egress) {
 			request := &ec2.AuthorizeSecurityGroupEgressInput{
 				GroupId: e.SecurityGroup.ID,
@@ -393,4 +408,18 @@ func (_ *SecurityGroupRule) RenderCloudformation(t *cloudformation.Cloudformatio
 	}
 
 	return t.RenderResource(cfType, *e.Name, tf)
+}
+
+func (e *SecurityGroupRule) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
+	if !fi.BoolValue(e.Delete) {
+		return nil, nil
+	}
+
+	return []fi.Deletion{
+		&deleteSecurityGroupRule{
+			groupID:    e.SecurityGroup.ID,
+			permission: e.createIpPermission(),
+			egress:     fi.BoolValue(e.Egress),
+		},
+	}, nil
 }

@@ -694,6 +694,15 @@ resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
   route_table_id         = aws_route_table.private-us-test-1a-privatedns2-example-com.id
 }
 
+resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-icmp-3to4-api-elb-privatedns2-example-com" {
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 3
+  protocol          = "icmp"
+  security_group_id = aws_security_group.api-elb-privatedns2-example-com.id
+  to_port           = 4
+  type              = "ingress"
+}
+
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-elb-privatedns2-example-com" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 22
@@ -719,6 +728,15 @@ resource "aws_security_group_rule" "from-api-elb-privatedns2-example-com-egress-
   security_group_id = aws_security_group.api-elb-privatedns2-example-com.id
   to_port           = 0
   type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-api-elb-privatedns2-example-com-ingress-tcp-443to443-masters-privatedns2-example-com" {
+  from_port                = 443
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.masters-privatedns2-example-com.id
+  source_security_group_id = aws_security_group.api-elb-privatedns2-example-com.id
+  to_port                  = 443
+  type                     = "ingress"
 }
 
 resource "aws_security_group_rule" "from-bastion-elb-privatedns2-example-com-egress-all-0to0-0-0-0-0--0" {
@@ -845,24 +863,6 @@ resource "aws_security_group_rule" "from-nodes-privatedns2-example-com-ingress-u
   source_security_group_id = aws_security_group.nodes-privatedns2-example-com.id
   to_port                  = 65535
   type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "https-elb-to-master" {
-  from_port                = 443
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.masters-privatedns2-example-com.id
-  source_security_group_id = aws_security_group.api-elb-privatedns2-example-com.id
-  to_port                  = 443
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 3
-  protocol          = "icmp"
-  security_group_id = aws_security_group.api-elb-privatedns2-example-com.id
-  to_port           = 4
-  type              = "ingress"
 }
 
 resource "aws_security_group" "api-elb-privatedns2-example-com" {

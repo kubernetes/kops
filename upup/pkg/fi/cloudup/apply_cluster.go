@@ -57,6 +57,7 @@ import (
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/bootstrapchannelbuilder"
@@ -384,8 +385,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	modelContext := &model.KopsModelContext{
-		IAMModelContext: iam.IAMModelContext{Cluster: cluster},
-		InstanceGroups:  c.InstanceGroups,
+		IAMModelContext:    iam.IAMModelContext{Cluster: cluster},
+		InstanceGroups:     c.InstanceGroups,
+		SecurityGroupRules: make(map[string]*awstasks.SecurityGroupRule),
 	}
 
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -548,7 +550,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				&model.BastionModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
 				&model.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
 				&model.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
-				&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+				&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle, Cloud: cloud.(awsup.AWSCloud)},
 				&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
 			)
 

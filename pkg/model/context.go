@@ -45,9 +45,10 @@ const (
 // KopsModelContext is the kops model
 type KopsModelContext struct {
 	iam.IAMModelContext
-	InstanceGroups []*kops.InstanceGroup
-	Region         string
-	SSHPublicKeys  [][]byte
+	InstanceGroups     []*kops.InstanceGroup
+	SecurityGroupRules map[string]*awstasks.SecurityGroupRule
+	Region             string
+	SSHPublicKeys      [][]byte
 }
 
 // GatherSubnets maps the subnet names in an InstanceGroup to the ClusterSubnetSpec objects (which are stored on the Cluster)

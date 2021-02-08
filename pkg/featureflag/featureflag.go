@@ -99,6 +99,8 @@ var (
 	PublicJWKS = New("PublicJWKS", Bool(false))
 	// Azure toggles the Azure support.
 	Azure = New("Azure", Bool(false))
+	// DeleteUnknownSGRules will remove AWS security group rules that are unknown to kOps.
+	DeleteUnknownSGRules = New("DeleteUnknownSGRules", Bool(false))
 )
 
 // FeatureFlag defines a feature flag

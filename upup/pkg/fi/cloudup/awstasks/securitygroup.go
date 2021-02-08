@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -268,34 +269,39 @@ type deleteSecurityGroupRule struct {
 var _ fi.Deletion = &deleteSecurityGroupRule{}
 
 func (d *deleteSecurityGroupRule) Delete(t fi.Target) error {
-	klog.V(2).Infof("deleting security group permission: %v", fi.DebugAsJsonString(d.permission))
-
-	awsTarget, ok := t.(*awsup.AWSAPITarget)
-	if !ok {
-		return fmt.Errorf("unexpected target type for deletion: %T", t)
-	}
-
-	if d.egress {
-		request := &ec2.RevokeSecurityGroupEgressInput{
-			GroupId: d.groupID,
-		}
-		request.IpPermissions = []*ec2.IpPermission{d.permission}
-
-		klog.V(2).Infof("Calling EC2 RevokeSecurityGroupEgress")
-		_, err := awsTarget.Cloud.EC2().RevokeSecurityGroupEgress(request)
-		if err != nil {
-			return fmt.Errorf("error revoking SecurityGroupEgress: %v", err)
-		}
+	if !featureflag.DeleteUnknownSGRules.Enabled() {
+		klog.Warningf("found unknown security group permission: %v", fi.DebugAsJsonString(d.permission))
 	} else {
-		request := &ec2.RevokeSecurityGroupIngressInput{
-			GroupId: d.groupID,
-		}
-		request.IpPermissions = []*ec2.IpPermission{d.permission}
 
-		klog.V(2).Infof("Calling EC2 RevokeSecurityGroupIngress")
-		_, err := awsTarget.Cloud.EC2().RevokeSecurityGroupIngress(request)
-		if err != nil {
-			return fmt.Errorf("error revoking SecurityGroupIngress: %v", err)
+		klog.V(2).Infof("deleting security group permission: %v", fi.DebugAsJsonString(d.permission))
+
+		awsTarget, ok := t.(*awsup.AWSAPITarget)
+		if !ok {
+			return fmt.Errorf("unexpected target type for deletion: %T", t)
+		}
+
+		if d.egress {
+			request := &ec2.RevokeSecurityGroupEgressInput{
+				GroupId: d.groupID,
+			}
+			request.IpPermissions = []*ec2.IpPermission{d.permission}
+
+			klog.V(2).Infof("Calling EC2 RevokeSecurityGroupEgress")
+			_, err := awsTarget.Cloud.EC2().RevokeSecurityGroupEgress(request)
+			if err != nil {
+				return fmt.Errorf("error revoking security group egress: %w", err)
+			}
+		} else {
+			request := &ec2.RevokeSecurityGroupIngressInput{
+				GroupId: d.groupID,
+			}
+			request.IpPermissions = []*ec2.IpPermission{d.permission}
+
+			klog.V(2).Infof("Calling EC2 RevokeSecurityGroupIngress")
+			_, err := awsTarget.Cloud.EC2().RevokeSecurityGroupIngress(request)
+			if err != nil {
+				return fmt.Errorf("error revoking security group ingress: %w", err)
+			}
 		}
 	}
 

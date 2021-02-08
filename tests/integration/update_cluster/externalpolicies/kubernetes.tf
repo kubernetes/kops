@@ -538,6 +538,15 @@ resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = aws_route_table.externalpolicies-example-com.id
 }
 
+resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-icmp-3to4-api-elb-externalpolicies-example-com" {
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 3
+  protocol          = "icmp"
+  security_group_id = aws_security_group.api-elb-externalpolicies-example-com.id
+  to_port           = 4
+  type              = "ingress"
+}
+
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-masters-externalpolicies-example-com" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 22
@@ -565,6 +574,42 @@ resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-443to443-api-elb
   type              = "ingress"
 }
 
+resource "aws_security_group_rule" "from-1-2-3-4--32-ingress-tcp-28000to32767-nodes-externalpolicies-example-com" {
+  cidr_blocks       = ["1.2.3.4/32"]
+  from_port         = 28000
+  protocol          = "tcp"
+  security_group_id = aws_security_group.nodes-externalpolicies-example-com.id
+  to_port           = 32767
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "from-1-2-3-4--32-ingress-udp-28000to32767-nodes-externalpolicies-example-com" {
+  cidr_blocks       = ["1.2.3.4/32"]
+  from_port         = 28000
+  protocol          = "udp"
+  security_group_id = aws_security_group.nodes-externalpolicies-example-com.id
+  to_port           = 32767
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "from-10-20-30-0--24-ingress-tcp-28000to32767-nodes-externalpolicies-example-com" {
+  cidr_blocks       = ["10.20.30.0/24"]
+  from_port         = 28000
+  protocol          = "tcp"
+  security_group_id = aws_security_group.nodes-externalpolicies-example-com.id
+  to_port           = 32767
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "from-10-20-30-0--24-ingress-udp-28000to32767-nodes-externalpolicies-example-com" {
+  cidr_blocks       = ["10.20.30.0/24"]
+  from_port         = 28000
+  protocol          = "udp"
+  security_group_id = aws_security_group.nodes-externalpolicies-example-com.id
+  to_port           = 32767
+  type              = "ingress"
+}
+
 resource "aws_security_group_rule" "from-api-elb-externalpolicies-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
@@ -572,6 +617,15 @@ resource "aws_security_group_rule" "from-api-elb-externalpolicies-example-com-eg
   security_group_id = aws_security_group.api-elb-externalpolicies-example-com.id
   to_port           = 0
   type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-api-elb-externalpolicies-example-com-ingress-tcp-443to443-masters-externalpolicies-example-com" {
+  from_port                = 443
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.masters-externalpolicies-example-com.id
+  source_security_group_id = aws_security_group.api-elb-externalpolicies-example-com.id
+  to_port                  = 443
+  type                     = "ingress"
 }
 
 resource "aws_security_group_rule" "from-masters-externalpolicies-example-com-egress-all-0to0-0-0-0-0--0" {
@@ -653,60 +707,6 @@ resource "aws_security_group_rule" "from-nodes-externalpolicies-example-com-ingr
   source_security_group_id = aws_security_group.nodes-externalpolicies-example-com.id
   to_port                  = 65535
   type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "https-elb-to-master" {
-  from_port                = 443
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.masters-externalpolicies-example-com.id
-  source_security_group_id = aws_security_group.api-elb-externalpolicies-example-com.id
-  to_port                  = 443
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 3
-  protocol          = "icmp"
-  security_group_id = aws_security_group.api-elb-externalpolicies-example-com.id
-  to_port           = 4
-  type              = "ingress"
-}
-
-resource "aws_security_group_rule" "nodeport-tcp-external-to-node-1-2-3-4--32" {
-  cidr_blocks       = ["1.2.3.4/32"]
-  from_port         = 28000
-  protocol          = "tcp"
-  security_group_id = aws_security_group.nodes-externalpolicies-example-com.id
-  to_port           = 32767
-  type              = "ingress"
-}
-
-resource "aws_security_group_rule" "nodeport-tcp-external-to-node-10-20-30-0--24" {
-  cidr_blocks       = ["10.20.30.0/24"]
-  from_port         = 28000
-  protocol          = "tcp"
-  security_group_id = aws_security_group.nodes-externalpolicies-example-com.id
-  to_port           = 32767
-  type              = "ingress"
-}
-
-resource "aws_security_group_rule" "nodeport-udp-external-to-node-1-2-3-4--32" {
-  cidr_blocks       = ["1.2.3.4/32"]
-  from_port         = 28000
-  protocol          = "udp"
-  security_group_id = aws_security_group.nodes-externalpolicies-example-com.id
-  to_port           = 32767
-  type              = "ingress"
-}
-
-resource "aws_security_group_rule" "nodeport-udp-external-to-node-10-20-30-0--24" {
-  cidr_blocks       = ["10.20.30.0/24"]
-  from_port         = 28000
-  protocol          = "udp"
-  security_group_id = aws_security_group.nodes-externalpolicies-example-com.id
-  to_port           = 32767
-  type              = "ingress"
 }
 
 resource "aws_security_group" "api-elb-externalpolicies-example-com" {
