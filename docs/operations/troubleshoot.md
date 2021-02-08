@@ -35,6 +35,22 @@ If nodeup succeeds, the core kube containers should have started. Look for the A
 
 Often the issue is obvious such as passing incorrect CLI flags.
 
+### API Server hangs after etcd restore
+
+After resizing an etcd cluster or restoring backup, the kubernetes API can contain too many endpoints.
+You can confirm this by running `kubectl get endpoints -n default kubernetes`. This command should list exactly as many IPs as you have control plane nodes.
+
+[This bug](https://github.com/kubernetes/kubernetes/issues/86812) caueses old apiserver leases to get stuck. In order to recover from this you need to remove the leases from etcd directly:
+
+```
+CONTAINER=$(kubectl get pods -n kube-system | grep etcd-manager-main | head -n 1 | awk '{print $1}')
+kubectl exec -it -n kube-system $CONTAINER -- sh
+cd /opt/etcd-v3.4.13-linux-amd64/
+./etcdctl --cacert=/rootfs/etc/kubernetes/pki/kube-apiserver/etcd-ca.crt --cert=/rootfs/etc/kubernetes/pki/kube-apiserver/etcd-client.crt --key=/rootfs/etc/kubernetes/pki/kube-apiserver/etcd-client.key --endpoints=https://127.0.0.1:4001 del --prefix /registry/masterleases/
+```
+
+The remaining api servers will immediately recreate their own leases.
+
 ## etcd
 
 The API server makes use of two etcd servers, main and events.
