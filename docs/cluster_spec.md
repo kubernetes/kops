@@ -440,11 +440,11 @@ spec:
 ```
 There are certain cases that the user may want to use a customized client CA file other than the default one generated for Kubernetes. In that case, the user can use this flag to specify the client-ca file to use.
 
-To prepare the customized client-ca file on master nodes, the user can either use the [fileAssets](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#fileassets) feature to push an client-ca file, or embed the customized client-ca file in the master AMI.
+To prepare the customized client-ca file on master nodes, the user can either use the [fileAssets](https://kops.sigs.k8s.io/cluster_spec/#fileassets) feature to push an client-ca file, or embed the customized client-ca file in the master AMI.
 
-In the case that the user would use a customized client-ca file, it is common that the kubernetes CA (`/srv/kubernetes/ca/crt`) need to be appended to the end of the client-ca file. One way to append the ca.crt to the end of the customized client-ca file is to write an [kop-hook](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#hooks) to do the append logic.
+In the case that the user would use a customized client-ca file, it is common that the kubernetes CA (`/srv/kubernetes/ca/crt`) need to be appended to the end of the client-ca file. One way to append the ca.crt to the end of the customized client-ca file is to write an [kop-hook](https://kops.sigs.k8s.io/cluster_spec/#hooks) to do the append logic.
 
-Kops also has CA rotation feature, which would refresh the kubernetes cert files, including the ca.crt. If a customized client-ca file is used, when kops cert rotation happens, the user is responsible to update the ca.crt in the customized client-ca file. The refresh ca.crt logic can also be achieved by writing a kops hook.
+Kops will have [CA rotation](https://kops.sigs.k8s.io/rotate-secrets/) feature soon, which would refresh the kubernetes cert files, including the ca.crt. If a customized client-ca file is used, when kops cert rotation happens, the user is responsible to update the ca.crt in the customized client-ca file. The refresh ca.crt logic can also be achieved by writing a kops hook.
 
 See also [Kubernetes certificates](https://kubernetes.io/docs/concepts/cluster-administration/certificates/)
 
