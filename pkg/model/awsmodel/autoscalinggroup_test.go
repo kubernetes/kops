@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/upup/pkg/fi/fitasks"
 )
 
 const (
@@ -73,7 +74,17 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 		Tasks: make(map[string]fi.Task),
 	}
 
-	b.Build(c)
+	// We need the CA for the bootstrap script
+	caTask := &fitasks.Keypair{
+		Name:    fi.String(fi.CertificateIDCA),
+		Subject: "cn=kubernetes",
+		Type:    "ca",
+	}
+	c.AddTask(caTask)
+
+	if err := b.Build(c); err != nil {
+		t.Fatalf("error from Build: %v", err)
+	}
 
 	lc := c.Tasks["LaunchTemplate/nodes.testcluster.test.com"].(*awstasks.LaunchTemplate)
 
@@ -147,6 +158,14 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 	c := &fi.ModelBuilderContext{
 		Tasks: make(map[string]fi.Task),
 	}
+
+	// We need the CA for the bootstrap script
+	caTask := &fitasks.Keypair{
+		Name:    fi.String(fi.CertificateIDCA),
+		Subject: "cn=kubernetes",
+		Type:    "ca",
+	}
+	c.AddTask(caTask)
 
 	b.Build(c)
 
