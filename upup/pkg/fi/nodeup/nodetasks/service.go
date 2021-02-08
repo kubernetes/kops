@@ -278,7 +278,7 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 
 	if changes.Definition != nil {
 		servicePath := path.Join(systemdSystemPath, serviceName)
-		err := fi.WriteFile(servicePath, fi.NewStringResource(*e.Definition), 0644, 0755)
+		err := fi.WriteFile(servicePath, fi.NewStringResource(*e.Definition), 0644, 0755, "", "")
 		if err != nil {
 			return fmt.Errorf("error writing systemd service file: %v", err)
 		}

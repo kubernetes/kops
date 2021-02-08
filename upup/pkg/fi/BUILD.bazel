@@ -18,6 +18,7 @@ go_library(
         "executor.go",
         "files.go",
         "files_owner.go",
+        "files_owner_windows.go",
         "has_address.go",
         "http.go",
         "lifecycle.go",
