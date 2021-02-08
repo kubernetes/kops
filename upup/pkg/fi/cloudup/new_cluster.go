@@ -244,7 +244,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 			if allZones.Len() == 0 {
 				return nil, fmt.Errorf("must specify --zones or --cloud")
 			}
-			return nil, fmt.Errorf("unable to infer cloud provider from zones (is there a typo in --zones?)")
+			return nil, fmt.Errorf("unable to infer cloud provider from zones. pass in the cloud provider explicitly using --cloud")
 		}
 	}
 
