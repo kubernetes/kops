@@ -61,8 +61,7 @@ func newDockerAPI() (*dockerAPI, error) {
 // findImage does a `docker images` via the API, and finds the specified image
 func (d *dockerAPI) findImage(name string) (*types.ImageSummary, error) {
 	klog.V(4).Infof("docker query for image %q", name)
-	filter := filters.Args{}
-	filter.Add("reference", name)
+	filter := filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: name})
 	options := types.ImageListOptions{
 		Filters: filter,
 	}
