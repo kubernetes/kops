@@ -310,3 +310,8 @@ func (e *Keypair) CertificateSHA1Fingerprint() fi.Resource {
 	e.ensureResources()
 	return e.certificateSHA1Fingerprint
 }
+
+func (e *Keypair) Certificate() fi.Resource {
+	e.ensureResources()
+	return e.certificate
+}

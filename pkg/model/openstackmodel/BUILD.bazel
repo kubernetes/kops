@@ -39,6 +39,7 @@ go_test(
         "//pkg/model/iam:go_default_library",
         "//pkg/testutils:go_default_library",
         "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/fitasks:go_default_library",
         "//util/pkg/architectures:go_default_library",
         "//util/pkg/hashing:go_default_library",
         "//util/pkg/mirrors:go_default_library",

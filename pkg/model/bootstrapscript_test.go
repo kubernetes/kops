@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/mirrors"
@@ -62,7 +63,7 @@ type nodeupConfigBuilder struct {
 	cluster *kops.Cluster
 }
 
-func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string) (*nodeup.Config, error) {
+func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, ca fi.Resource) (*nodeup.Config, error) {
 	return nodeup.NewConfig(n.cluster, ig), nil
 }
 
@@ -129,6 +130,13 @@ func TestBootstrapUserData(t *testing.T) {
 		c := &fi.ModelBuilderContext{
 			Tasks: make(map[string]fi.Task),
 		}
+
+		caTask := &fitasks.Keypair{
+			Name:    fi.String(fi.CertificateIDCA),
+			Subject: "cn=kubernetes",
+			Type:    "ca",
+		}
+		c.AddTask(caTask)
 
 		bs := &BootstrapScriptBuilder{
 			NodeUpConfigBuilder: &nodeupConfigBuilder{cluster: cluster},

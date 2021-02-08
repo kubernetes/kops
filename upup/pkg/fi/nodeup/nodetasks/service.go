@@ -75,7 +75,7 @@ func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		switch v := v.(type) {
 		case *Package, *UpdatePackages, *UserTask, *GroupTask, *Chattr, *BindMount, *Archive:
 			deps = append(deps, v)
-		case *Service, *LoadImageTask, *IssueCert, *BootstrapClient, *KubeConfig:
+		case *Service, *LoadImageTask, *IssueCert, *BootstrapClientTask, *KubeConfig:
 			// ignore
 		case *File:
 			if len(v.BeforeServices) > 0 {

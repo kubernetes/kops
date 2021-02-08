@@ -24,10 +24,38 @@ type BootstrapRequest struct {
 	APIVersion string `json:"apiVersion"`
 	// Certs are the requested certificates and their respective public keys.
 	Certs map[string]string `json:"certs"`
+
+	// IncludeNodeConfig controls whether the cluster & instance group configuration should be returned.
+	// This allows for nodes without access to the kops state store.
+	IncludeNodeConfig bool `json:"includeNodeConfig"`
 }
 
 // BootstrapResponse is a response to a BootstrapRequest.
 type BootstrapResponse struct {
 	// Certs are the issued certificates.
 	Certs map[string]string
+
+	// NodeConfig contains the node configuration, if IncludeNodeConfig is set.
+	NodeConfig *NodeConfig `json:"nodeConfig,omitempty"`
+}
+
+// NodeConfig holds configuration needed to boot a node (without the kops state store)
+type NodeConfig struct {
+	// InstanceGroupConfig holds the configuration for the node's instance group
+	InstanceGroupConfig string `json:"instanceGroupConfig,omitempty"`
+
+	// ClusterFullConfig holds the configuration for the cluster
+	ClusterFullConfig string `json:"clusterFullConfig,omitempty"`
+
+	// Certificates holds certificates that are already issued
+	Certificates []*NodeConfigCertificate `json:"certificates,omitempty"`
+}
+
+// NodeConfigCertificate holds a certificate that the node needs to boot.
+type NodeConfigCertificate struct {
+	// Name identifies the certificate.
+	Name string `json:"name,omitempty"`
+
+	// Cert is the certificate data.
+	Cert string `json:"cert,omitempty"`
 }

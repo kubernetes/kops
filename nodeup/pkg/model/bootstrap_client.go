@@ -18,8 +18,12 @@ package model
 
 import (
 	"fmt"
+	"net"
+	"net/url"
+	"strconv"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -56,18 +60,29 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
-	bootstrapClient := &nodetasks.BootstrapClient{
+	baseURL := url.URL{
+		Scheme: "https",
+		Host:   net.JoinHostPort("kops-controller.internal."+b.Cluster.ObjectMeta.Name, strconv.Itoa(wellknownports.KopsControllerPort)),
+		Path:   "/",
+	}
+
+	bootstrapClient := &nodetasks.KopsBootstrapClient{
 		Authenticator: authenticator,
 		CA:            cert,
-		Certs:         b.bootstrapCerts,
+		BaseURL:       baseURL,
+	}
+
+	bootstrapClientTask := &nodetasks.BootstrapClientTask{
+		Client: bootstrapClient,
+		Certs:  b.bootstrapCerts,
 	}
 
 	for _, cert := range b.bootstrapCerts {
-		cert.Cert.Task = bootstrapClient
-		cert.Key.Task = bootstrapClient
+		cert.Cert.Task = bootstrapClientTask
+		cert.Key.Task = bootstrapClientTask
 	}
 
-	c.AddTask(bootstrapClient)
+	c.AddTask(bootstrapClientTask)
 	return nil
 }
 
