@@ -442,6 +442,10 @@ There are certain cases that the user may want to use a customized client CA fil
 
 To prepare the customized client-ca file on master nodes, the user can either use the [fileAssets](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#fileassets) feature to push an client-ca file, or embed the customized client-ca file in the master AMI.
 
+In the case that the user would use a customized client-ca file, it is common that the kubernetes CA (`/srv/kubernetes/ca/crt`) need to be appended to the end of the client-ca file. One way to append the ca.crt to the end of the customized client-ca file is to write an [kop-hook](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#hooks) to do the append logic.
+
+Kops also has CA rotation feature, which would refresh the kubernetes cert files, including the ca.crt. If a customized client-ca file is used, when kops cert rotation happens, the user is responsible to update the ca.crt in the customized client-ca file. The refresh ca.crt logic can also be achieved by writing a kops hook.
+
 See also [Kubernetes certificates](https://kubernetes.io/docs/concepts/cluster-administration/certificates/)
 
 ### Disable Basic Auth
