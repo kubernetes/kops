@@ -17,11 +17,14 @@ limitations under the License.
 package awsup
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"k8s.io/kops/upup/pkg/fi"
@@ -34,6 +37,24 @@ type awsAuthenticator struct {
 }
 
 var _ fi.Authenticator = &awsAuthenticator{}
+
+// RegionFromMetadata returns the current region from the aws metdata
+func RegionFromMetadata(ctx context.Context) (string, error) {
+	config := aws.NewConfig()
+	config = config.WithCredentialsChainVerboseErrors(true)
+
+	s, err := session.NewSession(config)
+	if err != nil {
+		return "", err
+	}
+	metadata := ec2metadata.New(s, config)
+
+	region, err := metadata.RegionWithContext(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to get region from ec2 metadata: %w", err)
+	}
+	return region, nil
+}
 
 func NewAWSAuthenticator(region string) (fi.Authenticator, error) {
 	config := aws.NewConfig().WithCredentialsChainVerboseErrors(true).WithRegion(region)

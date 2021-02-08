@@ -37,12 +37,13 @@ import (
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/mirrors"
 )
 
 type NodeUpConfigBuilder interface {
-	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string) (*nodeup.Config, error)
+	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, ca fi.Resource) (*nodeup.Config, error)
 }
 
 // BootstrapScriptBuilder creates the bootstrap script
@@ -58,6 +59,12 @@ type BootstrapScript struct {
 	resource fi.TaskDependentResource
 	// alternateNameTasks are tasks that contribute api-server IP addresses.
 	alternateNameTasks []fi.HasAddress
+
+	// ca holds the CA certificate
+	ca fi.Resource
+
+	// caTask holds the CA task, for dependency analysis.
+	caTask fi.Task
 }
 
 var _ fi.Task = &BootstrapScript{}
@@ -65,7 +72,7 @@ var _ fi.HasName = &BootstrapScript{}
 var _ fi.HasDependencies = &BootstrapScript{}
 
 // kubeEnv returns the nodeup config for the instance group
-func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (string, error) {
+func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context, ca fi.Resource) (string, error) {
 	var alternateNames []string
 
 	for _, hasAddress := range b.alternateNameTasks {
@@ -82,7 +89,7 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (string
 	}
 
 	sort.Strings(alternateNames)
-	config, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames)
+	config, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames, ca)
 	if err != nil {
 		return "", err
 	}
@@ -192,6 +199,12 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 // ResourceNodeUp generates and returns a nodeup (bootstrap) script from a
 // template file, substituting in specific env vars & cluster spec configuration
 func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) (fi.Resource, error) {
+	caTaskObject, found := c.Tasks["Keypair/ca"]
+	if !found {
+		return nil, fmt.Errorf("keypair/ca task not found")
+	}
+	caTask := caTaskObject.(*fitasks.Keypair)
+
 	// Bastions can have AdditionalUserData, but if there isn't any skip this part
 	if ig.IsBastion() && len(ig.Spec.AdditionalUserData) == 0 {
 		templateResource, err := NewTemplateResource("nodeup", "", nil, nil)
@@ -205,6 +218,8 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 		Name:    ig.Name,
 		ig:      ig,
 		builder: b,
+		caTask:  caTask,
+		ca:      caTask.Certificate(),
 	}
 	task.resource.Task = task
 	c.AddTask(task)
@@ -224,6 +239,8 @@ func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 			b.alternateNameTasks = append(b.alternateNameTasks, hasAddress)
 		}
 	}
+
+	deps = append(deps, b.caTask)
 
 	return deps
 }
@@ -255,7 +272,7 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 			return ""
 		},
 		"KubeEnv": func() (string, error) {
-			return b.kubeEnv(b.ig, c)
+			return b.kubeEnv(b.ig, c, b.ca)
 		},
 
 		"EnvironmentVariables": func() (string, error) {
