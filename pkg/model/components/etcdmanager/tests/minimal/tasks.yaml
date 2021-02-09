@@ -46,6 +46,7 @@ Contents: |-
 Lifecycle: null
 Location: /control/etcd-cluster-spec
 Name: etcd-cluster-spec-events
+Public: null
 ---
 Base: memfs://clusters.example.com/minimal.example.com/backups/etcd-main
 Contents: |-
@@ -55,6 +56,7 @@ Contents: |-
 Lifecycle: null
 Location: /control/etcd-cluster-spec
 Name: etcd-cluster-spec-main
+Public: null
 ---
 Base: null
 Contents: |
@@ -112,6 +114,7 @@ Contents: |
 Lifecycle: null
 Location: manifests/etcd/events.yaml
 Name: manifests-etcdmanager-events
+Public: null
 ---
 Base: null
 Contents: |
@@ -169,3 +172,4 @@ Contents: |
 Lifecycle: null
 Location: manifests/etcd/main.yaml
 Name: manifests-etcdmanager-main
+Public: null
