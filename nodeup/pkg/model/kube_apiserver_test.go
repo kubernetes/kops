@@ -131,6 +131,12 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 			},
 			"--insecure-port=0 --profiling=false --secure-port=0",
 		},
+		{
+			kops.KubeAPIServerConfig{
+				ClientCAFile: "client-ca.crt",
+			},
+			"--client-ca-file=client-ca.crt --insecure-port=0 --secure-port=0",
+		},
 	}
 
 	for _, g := range grid {

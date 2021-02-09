@@ -311,7 +311,7 @@ type KubeAPIServerConfig struct {
 	EtcdKeyFile string `json:"etcdKeyFile,omitempty" flag:"etcd-keyfile"`
 	// TODO: Remove unused BasicAuthFile
 	BasicAuthFile string `json:"basicAuthFile,omitempty" flag:"basic-auth-file"`
-	// TODO: Remove unused ClientCAFile
+	// ClientCAFile is the file used by apisever that contains the client CA
 	ClientCAFile string `json:"clientCAFile,omitempty" flag:"client-ca-file"`
 	// TODO: Remove unused TLSCertFile
 	TLSCertFile string `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
