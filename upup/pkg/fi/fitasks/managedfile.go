@@ -35,6 +35,7 @@ type ManagedFile struct {
 	Base     *string
 	Location *string
 	Contents fi.Resource
+	Public   *bool
 }
 
 func (e *ManagedFile) Find(c *fi.Context) (*ManagedFile, error) {
@@ -102,9 +103,23 @@ func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
 	}
 	p = p.Join(location)
 
-	acl, err := acls.GetACL(p, c.Cluster)
-	if err != nil {
-		return err
+	var acl vfs.ACL
+	if fi.BoolValue(e.Public) {
+		switch p.(type) {
+		case *vfs.S3Path:
+			acl = vfs.S3Acl{
+				RequestACL: fi.String("public-read"),
+			}
+		default:
+			return fmt.Errorf("the %q path does not support public ACL", p.Path())
+		}
+
+	} else {
+
+		acl, err = acls.GetACL(p, c.Cluster)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = p.WriteFile(bytes.NewReader(data), acl)
