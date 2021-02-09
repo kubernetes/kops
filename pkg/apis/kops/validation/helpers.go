@@ -49,3 +49,18 @@ func IsValidValue(fldPath *field.Path, v *string, validValues []string) field.Er
 	}
 	return allErrs
 }
+
+func ExtractDuplicationString(sliceA, sliceB []*string) []*string {
+	sliceC := append(sliceA, sliceB...)
+	sliceD := make([]*string, 0)
+
+	m := make(map[string]struct{}, 0)
+	for _, el := range sliceC {
+		if _, ok := m[*el]; ok == false {
+			m[*el] = struct{}{}
+		} else {
+			sliceD = append(sliceD, el)
+		}
+	}
+	return sliceD
+}

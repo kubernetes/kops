@@ -131,6 +131,35 @@ func awsValidateInstanceType(fieldPath *field.Path, instanceType string, cloud a
 	return allErrs
 }
 
+func awsValidateMixedInstanceTypes(fieldPath *field.Path, instanceTypes []string, cloud awsup.AWSCloud) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if instanceTypes == nil || cloud == nil {
+		return allErrs
+	}
+
+	var architectures []*string
+	for i, instanceType := range instanceTypes {
+		for _, typ := range strings.Split(instanceType, ",") {
+			info, err := cloud.DescribeInstanceType(typ)
+			if err != nil {
+				allErrs = append(allErrs, field.Invalid(fieldPath.Index(i), typ, "machine type specified is invalid"))
+			}
+			if architectures == nil {
+				architectures = info.ProcessorInfo.SupportedArchitectures
+				continue
+			}
+			duplicated := ExtractDuplicationString(architectures, info.ProcessorInfo.SupportedArchitectures)
+			if len(duplicated) == 0 {
+				allErrs = append(allErrs, field.Invalid(fieldPath.Index(i), typ, "supported architecture of machine type specified is not matched"))
+			} else {
+				architectures = duplicated
+			}
+		}
+	}
+
+	return allErrs
+}
+
 func awsValidateSpotDurationInMinute(fieldPath *field.Path, ig *kops.InstanceGroup) field.ErrorList {
 	allErrs := field.ErrorList{}
 	if ig.Spec.SpotDurationInMinutes != nil {
@@ -155,9 +184,7 @@ func awsValidateMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstances
 	var errs field.ErrorList
 
 	// @step: check the instance types are valid
-	for i, x := range spec.Instances {
-		errs = append(errs, awsValidateInstanceType(path.Child("instances").Index(i), x, cloud)...)
-	}
+	errs = append(errs, awsValidateMixedInstanceTypes(path.Child("instances"), spec.Instances, cloud)...)
 
 	if spec.OnDemandBase != nil {
 		if fi.Int64Value(spec.OnDemandBase) < 0 {
