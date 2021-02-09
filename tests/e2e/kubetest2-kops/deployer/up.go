@@ -94,7 +94,11 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 	}
 
 	if d.CreateArgs != "" {
-		args = append(args, shlex.Split(d.CreateArgs)...)
+		createArgs, err := shlex.Split(d.CreateArgs)
+		if err != nil {
+			return err
+		}
+		args = append(args, createArgs...)
 	}
 	args = appendIfUnset(args, "--admin-access", adminAccess)
 	args = appendIfUnset(args, "--master-count", "1")
