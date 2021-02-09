@@ -1269,7 +1269,8 @@ spec:
                       kubernetes API
                     type: string
                   clientCAFile:
-                    description: 'TODO: Remove unused ClientCAFile'
+                    description: ClientCAFile is the file used by apisever that contains
+                      the client CA
                     type: string
                   cloudProvider:
                     description: CloudProvider is the name of the cloudProvider we
