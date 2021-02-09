@@ -22,6 +22,8 @@ import (
 	osexec "os/exec"
 	"strings"
 
+	"github.com/google/shlex"
+
 	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/do"
@@ -92,7 +94,7 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 	}
 
 	if d.CreateArgs != "" {
-		args = append(args, strings.Split(d.CreateArgs, " ")...)
+		args = append(args, shlex.Split(d.CreateArgs)...)
 	}
 	args = appendIfUnset(args, "--admin-access", adminAccess)
 	args = appendIfUnset(args, "--master-count", "1")
