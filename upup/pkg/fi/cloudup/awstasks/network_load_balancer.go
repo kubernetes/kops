@@ -813,8 +813,8 @@ type cloudformationNetworkLoadBalancer struct {
 
 type cloudformationSubnetMapping struct {
 	Subnet             *cloudformation.Literal `json:"SubnetId"`
-	AllocationId       *string                 `json:"AllocationId"`
-	PrivateIPv4Address *string                 `json:"PrivateIPv4Address"`
+	AllocationId       *string                 `json:"AllocationId,omitempty"`
+	PrivateIPv4Address *string                 `json:"PrivateIPv4Address,omitempty"`
 }
 
 type cloudformationNetworkLoadBalancerListener struct {
