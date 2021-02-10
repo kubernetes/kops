@@ -357,8 +357,10 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 		}
 		for _, a := range az.LoadBalancerAddresses {
 			if a.PrivateIPv4Address != nil {
+				if sm.PrivateIPv4Address != nil {
+					return nil, fmt.Errorf("NLB has more then one PrivateIPv4Address, which is unexpected")
+				}
 				sm.PrivateIPv4Address = a.PrivateIPv4Address
-				break
 			}
 		}
 		actual.SubnetMappings = append(actual.SubnetMappings, sm)
