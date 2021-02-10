@@ -1259,9 +1259,7 @@
           {
             "SubnetId": {
               "Ref": "AWSEC2Subnetustest1acomplexexamplecom"
-            },
-            "AllocationId": null,
-            "PrivateIPv4Address": null
+            }
           }
         ],
         "Type": "network",
