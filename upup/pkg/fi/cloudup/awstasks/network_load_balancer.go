@@ -709,8 +709,8 @@ type terraformNetworkLoadBalancer struct {
 	Name                   string                                      `json:"name" cty:"name"`
 	Internal               bool                                        `json:"internal" cty:"internal"`
 	Type                   string                                      `json:"load_balancer_type" cty:"load_balancer_type"`
-	Subnets                []*terraform.Literal                        `json:"subnets" cty:"subnets"`
-	SubnetMappings         []terraformNetworkLoadBalancerSubnetMapping `json:"subnet_mapping" cty:"subnet_mapping"`
+	Subnets                []*terraform.Literal                        `json:"subnets,omitempty" cty:"subnets"`
+	SubnetMappings         []terraformNetworkLoadBalancerSubnetMapping `json:"subnet_mapping,omitempty" cty:"subnet_mapping"`
 	CrossZoneLoadBalancing bool                                        `json:"enable_cross_zone_load_balancing" cty:"enable_cross_zone_load_balancing"`
 
 	Tags map[string]string `json:"tags" cty:"tags"`
@@ -808,8 +808,8 @@ func (e *NetworkLoadBalancer) TerraformLink(params ...string) *terraform.Literal
 type cloudformationNetworkLoadBalancer struct {
 	Name           string                         `json:"Name"`
 	Scheme         string                         `json:"Scheme"`
-	Subnets        []*cloudformation.Literal      `json:"Subnets"`
-	SubnetMappings []*cloudformationSubnetMapping `json:"SubnetMappings"`
+	Subnets        []*cloudformation.Literal      `json:"Subnets,omitempty"`
+	SubnetMappings []*cloudformationSubnetMapping `json:"SubnetMappings,omitempty"`
 	Type           string                         `json:"Type"`
 	Tags           []cloudformationTag            `json:"Tags"`
 }
