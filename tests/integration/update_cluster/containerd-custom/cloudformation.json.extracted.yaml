@@ -316,6 +316,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
     logLevel: 2
     networkPluginName: cni
     nodeLabels:
+      kops.k8s.io/kops-controller-pki: ""
       kubernetes.io/role: master
       node-role.kubernetes.io/control-plane: ""
       node-role.kubernetes.io/master: ""
