@@ -709,8 +709,7 @@ type terraformNetworkLoadBalancer struct {
 	Name                   string                                      `json:"name" cty:"name"`
 	Internal               bool                                        `json:"internal" cty:"internal"`
 	Type                   string                                      `json:"load_balancer_type" cty:"load_balancer_type"`
-	Subnets                []*terraform.Literal                        `json:"subnets,omitempty" cty:"subnets"`
-	SubnetMappings         []terraformNetworkLoadBalancerSubnetMapping `json:"subnet_mapping,omitempty" cty:"subnet_mapping"`
+	SubnetMappings         []terraformNetworkLoadBalancerSubnetMapping `json:"subnet_mapping" cty:"subnet_mapping"`
 	CrossZoneLoadBalancing bool                                        `json:"enable_cross_zone_load_balancing" cty:"enable_cross_zone_load_balancing"`
 
 	Tags map[string]string `json:"tags" cty:"tags"`
@@ -742,7 +741,6 @@ func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 		Internal:               fi.StringValue(e.Scheme) == elbv2.LoadBalancerSchemeEnumInternal,
 		Type:                   elbv2.LoadBalancerTypeEnumNetwork,
 		Tags:                   e.Tags,
-		Subnets:                make([]*terraform.Literal, 0),
 		CrossZoneLoadBalancing: fi.BoolValue(e.CrossZoneLoadBalancing),
 	}
 
@@ -808,8 +806,7 @@ func (e *NetworkLoadBalancer) TerraformLink(params ...string) *terraform.Literal
 type cloudformationNetworkLoadBalancer struct {
 	Name           string                         `json:"Name"`
 	Scheme         string                         `json:"Scheme"`
-	Subnets        []*cloudformation.Literal      `json:"Subnets,omitempty"`
-	SubnetMappings []*cloudformationSubnetMapping `json:"SubnetMappings,omitempty"`
+	SubnetMappings []*cloudformationSubnetMapping `json:"SubnetMappings"`
 	Type           string                         `json:"Type"`
 	Tags           []cloudformationTag            `json:"Tags"`
 }
@@ -840,10 +837,9 @@ type cloudformationNetworkLoadBalancerListenerAction struct {
 
 func (_ *NetworkLoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *NetworkLoadBalancer) error {
 	nlbCF := &cloudformationNetworkLoadBalancer{
-		Name:    *e.LoadBalancerName,
-		Subnets: make([]*cloudformation.Literal, 0),
-		Type:    elbv2.LoadBalancerTypeEnumNetwork,
-		Tags:    buildCloudformationTags(e.Tags),
+		Name: *e.LoadBalancerName,
+		Type: elbv2.LoadBalancerTypeEnumNetwork,
+		Tags: buildCloudformationTags(e.Tags),
 	}
 	for _, subnetMapping := range e.SubnetMappings {
 		nlbCF.SubnetMappings = append(nlbCF.SubnetMappings, &cloudformationSubnetMapping{
