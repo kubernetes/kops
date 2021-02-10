@@ -239,3 +239,143 @@ func TestInstanceMetadataOptions(t *testing.T) {
 		testErrors(t, test.ig.ObjectMeta.Name, errs, test.expected)
 	}
 }
+
+func TestLoadBalancerSubnets(t *testing.T) {
+	cidr := "10.0.0.0/24"
+	tests := []struct {
+		lbType         *string
+		class          *string
+		clusterSubnets []string
+		lbSubnets      []kops.LoadBalancerSubnetSpec
+		expected       []string
+	}{
+		{ // valid (no privateIPv4Address)
+			clusterSubnets: []string{"a", "b", "c"},
+			lbSubnets: []kops.LoadBalancerSubnetSpec{
+				{
+					Name:               "a",
+					PrivateIPv4Address: nil,
+				},
+				{
+					Name:               "b",
+					PrivateIPv4Address: nil,
+				},
+			},
+		},
+		{ // valid (with privateIPv4Address)
+			clusterSubnets: []string{"a", "b", "c"},
+			lbSubnets: []kops.LoadBalancerSubnetSpec{
+				{
+					Name:               "a",
+					PrivateIPv4Address: fi.String("10.0.0.10"),
+				},
+				{
+					Name:               "b",
+					PrivateIPv4Address: nil,
+				},
+			},
+		},
+		{ // empty subnet name
+			clusterSubnets: []string{"a", "b", "c"},
+			lbSubnets: []kops.LoadBalancerSubnetSpec{
+				{
+					Name:               "",
+					PrivateIPv4Address: nil,
+				},
+			},
+			expected: []string{"Invalid value::spec.api.loadBalancer.subnets[0].name"},
+		},
+		{ // subnet not found
+			clusterSubnets: []string{"a", "b", "c"},
+			lbSubnets: []kops.LoadBalancerSubnetSpec{
+				{
+					Name:               "d",
+					PrivateIPv4Address: nil,
+				},
+			},
+			expected: []string{"Invalid value::spec.api.loadBalancer.subnets[0].name"},
+		},
+		{ // empty privateIPv4Address
+			clusterSubnets: []string{"a", "b", "c"},
+			lbSubnets: []kops.LoadBalancerSubnetSpec{
+				{
+					Name:               "a",
+					PrivateIPv4Address: fi.String(""),
+				},
+			},
+			expected: []string{"Invalid value::spec.api.loadBalancer.subnets[0].privateIPv4Address"},
+		},
+		{ // invalid privateIPv4Address
+			clusterSubnets: []string{"a", "b", "c"},
+			lbSubnets: []kops.LoadBalancerSubnetSpec{
+				{
+					Name:               "a",
+					PrivateIPv4Address: fi.String("invalidip"),
+				},
+			},
+			expected: []string{"Invalid value::spec.api.loadBalancer.subnets[0].privateIPv4Address"},
+		},
+		{ // privateIPv4Address not matching subnet cidr
+			clusterSubnets: []string{"a", "b", "c"},
+			lbSubnets: []kops.LoadBalancerSubnetSpec{
+				{
+					Name:               "a",
+					PrivateIPv4Address: fi.String("11.0.0.10"),
+				},
+			},
+			expected: []string{"Invalid value::spec.api.loadBalancer.subnets[0].privateIPv4Address"},
+		},
+		{ // invalid class
+			class:          fi.String(string(kops.LoadBalancerClassClassic)),
+			clusterSubnets: []string{"a", "b", "c"},
+			lbSubnets: []kops.LoadBalancerSubnetSpec{
+				{
+					Name:               "a",
+					PrivateIPv4Address: fi.String("10.0.0.10"),
+				},
+			},
+			expected: []string{"Invalid value::spec.api.loadBalancer.subnets[0].privateIPv4Address"},
+		},
+		{ // invalid type
+			lbType:         fi.String(string(kops.LoadBalancerTypePublic)),
+			clusterSubnets: []string{"a", "b", "c"},
+			lbSubnets: []kops.LoadBalancerSubnetSpec{
+				{
+					Name:               "a",
+					PrivateIPv4Address: fi.String("10.0.0.10"),
+				},
+			},
+			expected: []string{"Invalid value::spec.api.loadBalancer.subnets[0].privateIPv4Address"},
+		},
+	}
+
+	for _, test := range tests {
+		cluster := kops.Cluster{
+			Spec: kops.ClusterSpec{
+				API: &kops.AccessSpec{
+					LoadBalancer: &kops.LoadBalancerAccessSpec{
+						Class: kops.LoadBalancerClassNetwork,
+						Type:  kops.LoadBalancerTypeInternal,
+					},
+				},
+			},
+		}
+		if test.class != nil {
+			cluster.Spec.API.LoadBalancer.Class = kops.LoadBalancerClass(*test.class)
+		}
+		if test.lbType != nil {
+			cluster.Spec.API.LoadBalancer.Type = kops.LoadBalancerType(*test.lbType)
+		}
+		for _, s := range test.clusterSubnets {
+			cluster.Spec.Subnets = append(cluster.Spec.Subnets, kops.ClusterSubnetSpec{
+				Name: s,
+				CIDR: cidr,
+			})
+		}
+		for _, s := range test.lbSubnets {
+			cluster.Spec.API.LoadBalancer.Subnets = append(cluster.Spec.API.LoadBalancer.Subnets, s)
+		}
+		errs := awsValidateCluster(&cluster)
+		testErrors(t, test, errs, test.expected)
+	}
+}
