@@ -372,9 +372,7 @@ func TestLoadBalancerSubnets(t *testing.T) {
 				CIDR: cidr,
 			})
 		}
-		for _, s := range test.lbSubnets {
-			cluster.Spec.API.LoadBalancer.Subnets = append(cluster.Spec.API.LoadBalancer.Subnets, s)
-		}
+		cluster.Spec.API.LoadBalancer.Subnets = test.lbSubnets
 		errs := awsValidateCluster(&cluster)
 		testErrors(t, test, errs, test.expected)
 	}
