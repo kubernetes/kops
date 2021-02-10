@@ -61,6 +61,12 @@ spec:
     networking:
       kubenet: {}
   kubernetesVersions:
+  - range: ">=1.20.0"
+    recommendedVersion: 1.20.2
+    requiredVersion: 1.20.0
+  - range: ">=1.19.0"
+    recommendedVersion: 1.19.7
+    requiredVersion: 1.19.0
   - range: ">=1.18.0"
     recommendedVersion: 1.18.15
     requiredVersion: 1.18.0
@@ -89,6 +95,10 @@ spec:
     recommendedVersion: 1.11.10
     requiredVersion: 1.11.10
   kopsVersions:
+  - range: ">=1.20.0-alpha.1"
+    #recommendedVersion: "1.19.0-beta.3"
+    #requiredVersion: 1.19.0
+    kubernetesVersion: 1.20.2
   - range: ">=1.19.0-beta.3"
     #recommendedVersion: "1.19.0-beta.3"
     #requiredVersion: 1.19.0
