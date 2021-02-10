@@ -72,12 +72,14 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				if subnet.Name == clusterSubnet.Name {
 					elbSubnet := b.LinkToSubnet(&clusterSubnet)
 					elbSubnets = append(elbSubnets, elbSubnet)
-					nlbSubnetMappings = append(nlbSubnetMappings, &awstasks.SubnetMapping{
+
+					nlbSubnetMapping := &awstasks.SubnetMapping{
 						Subnet: elbSubnet,
-					})
-					if subnet.PrivateIPv4Address != nil {
-						nlbSubnetMappings[len(nlbSubnetMappings)-1].PrivateIPv4Address = subnet.PrivateIPv4Address
 					}
+					if subnet.PrivateIPv4Address != nil {
+						nlbSubnetMapping.PrivateIPv4Address = subnet.PrivateIPv4Address
+					}
+					nlbSubnetMappings = append(nlbSubnetMappings, nlbSubnetMapping)
 					break
 				}
 			}
