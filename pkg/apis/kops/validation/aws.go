@@ -208,7 +208,7 @@ func awsValidateLoadBalancerSubnets(fieldPath *field.Path, spec kops.ClusterSpec
 	for i, subnet := range lbSpec.Subnets {
 		var clusterSubnet *kops.ClusterSubnetSpec
 		if subnet.Name == "" {
-			allErrs = append(allErrs, field.Invalid(fieldPath.Index(i).Child("name"), subnet, "subnet name can't be empty"))
+			allErrs = append(allErrs, field.Required(fieldPath.Index(i).Child("name"), "subnet name can't be empty"))
 		} else {
 			for _, cs := range spec.Subnets {
 				if subnet.Name == cs.Name {
@@ -217,16 +217,16 @@ func awsValidateLoadBalancerSubnets(fieldPath *field.Path, spec kops.ClusterSpec
 				}
 			}
 			if clusterSubnet == nil {
-				allErrs = append(allErrs, field.Invalid(fieldPath.Index(i).Child("name"), subnet, fmt.Sprintf("subnet %q not found in cluster subnets", subnet.Name)))
+				allErrs = append(allErrs, field.NotFound(fieldPath.Index(i).Child("name"), fmt.Sprintf("subnet %q not found in cluster subnets", subnet.Name)))
 			}
 		}
 
 		if subnet.PrivateIPv4Address != nil {
 			if *subnet.PrivateIPv4Address == "" {
-				allErrs = append(allErrs, field.Invalid(fieldPath.Index(i).Child("privateIPv4Address"), subnet, "privateIPv4Address can't be empty"))
+				allErrs = append(allErrs, field.Required(fieldPath.Index(i).Child("privateIPv4Address"), "privateIPv4Address can't be empty"))
 			}
 			ip := net.ParseIP(*subnet.PrivateIPv4Address)
-			if ip == nil {
+			if ip == nil || ip.To4() == nil {
 				allErrs = append(allErrs, field.Invalid(fieldPath.Index(i).Child("privateIPv4Address"), subnet, "privateIPv4Address is not a valid IPv4 address"))
 			} else if clusterSubnet != nil {
 				_, ipNet, err := net.ParseCIDR(clusterSubnet.CIDR)
@@ -238,7 +238,7 @@ func awsValidateLoadBalancerSubnets(fieldPath *field.Path, spec kops.ClusterSpec
 
 			}
 			if lbSpec.Class != kops.LoadBalancerClassNetwork || lbSpec.Type != kops.LoadBalancerTypeInternal {
-				allErrs = append(allErrs, field.Invalid(fieldPath.Index(i).Child("privateIPv4Address"), subnet, "privateIPv4Address only allowed for internal NLBs"))
+				allErrs = append(allErrs, field.Forbidden(fieldPath.Index(i).Child("privateIPv4Address"), "privateIPv4Address only allowed for internal NLBs"))
 			}
 		}
 	}
