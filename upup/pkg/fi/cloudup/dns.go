@@ -153,7 +153,7 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 		return nil
 	}
 
-	klog.Infof("Pre-creating DNS records")
+	klog.Infof("Checking DNS records")
 
 	zone, err := findZone(cluster, cloud)
 	if err != nil {
@@ -215,6 +215,8 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 	}
 
 	if len(created) != 0 {
+		klog.Infof("Pre-creating DNS records")
+
 		err := changeset.Apply(ctx)
 		if err != nil {
 			return fmt.Errorf("error pre-creating DNS records: %v", err)
