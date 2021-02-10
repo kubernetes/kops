@@ -17,6 +17,8 @@ limitations under the License.
 package validation
 
 import (
+	"fmt"
+	"net"
 	"strconv"
 	"strings"
 
@@ -35,6 +37,7 @@ func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 		if c.Spec.API.LoadBalancer != nil {
 			allErrs = append(allErrs, awsValidateAdditionalSecurityGroups(field.NewPath("spec", "api", "loadBalancer", "additionalSecurityGroups"), c.Spec.API.LoadBalancer.AdditionalSecurityGroups)...)
 			allErrs = append(allErrs, awsValidateSSLPolicy(field.NewPath("spec", "api", "loadBalancer", "sslPolicy"), c.Spec.API.LoadBalancer)...)
+			allErrs = append(allErrs, awsValidateLoadBalancerSubnets(field.NewPath("spec", "api", "loadBalancer", "subnets"), c.Spec)...)
 		}
 	}
 
@@ -191,6 +194,52 @@ func awsValidateSSLPolicy(fieldPath *field.Path, spec *kops.LoadBalancerAccessSp
 		}
 		if spec.SSLCertificate == "" {
 			allErrs = append(allErrs, field.Forbidden(fieldPath, "sslPolicy should not be specified without SSLCertificate"))
+		}
+	}
+
+	return allErrs
+}
+
+func awsValidateLoadBalancerSubnets(fieldPath *field.Path, spec kops.ClusterSpec) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	lbSpec := spec.API.LoadBalancer
+
+	for i, subnet := range lbSpec.Subnets {
+		var clusterSubnet *kops.ClusterSubnetSpec
+		if subnet.Name == "" {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Index(i).Child("name"), subnet, "subnet name can't be empty"))
+		} else {
+			for _, cs := range spec.Subnets {
+				if subnet.Name == cs.Name {
+					clusterSubnet = &cs
+					break
+				}
+			}
+			if clusterSubnet == nil {
+				allErrs = append(allErrs, field.Invalid(fieldPath.Index(i).Child("name"), subnet, fmt.Sprintf("subnet %q not found in cluster subnets", subnet.Name)))
+			}
+		}
+
+		if subnet.PrivateIPv4Address != nil {
+			if *subnet.PrivateIPv4Address == "" {
+				allErrs = append(allErrs, field.Invalid(fieldPath.Index(i).Child("privateIPv4Address"), subnet, "privateIPv4Address can't be empty"))
+			}
+			ip := net.ParseIP(*subnet.PrivateIPv4Address)
+			if ip == nil {
+				allErrs = append(allErrs, field.Invalid(fieldPath.Index(i).Child("privateIPv4Address"), subnet, "privateIPv4Address is not a valid IPv4 address"))
+			} else if clusterSubnet != nil {
+				_, ipNet, err := net.ParseCIDR(clusterSubnet.CIDR)
+				if err == nil { // we assume that the cidr is actually valid
+					if !ipNet.Contains(ip) {
+						allErrs = append(allErrs, field.Invalid(fieldPath.Index(i).Child("privateIPv4Address"), subnet, "privateIPv4Address is not part of the subnet CIDR"))
+					}
+				}
+
+			}
+			if lbSpec.Class != kops.LoadBalancerClassNetwork || lbSpec.Type != kops.LoadBalancerTypeInternal {
+				allErrs = append(allErrs, field.Invalid(fieldPath.Index(i).Child("privateIPv4Address"), subnet, "privateIPv4Address only allowed for internal NLBs"))
+			}
 		}
 	}
 

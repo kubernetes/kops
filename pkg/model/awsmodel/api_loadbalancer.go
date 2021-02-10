@@ -68,30 +68,18 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if len(lbSpec.Subnets) != 0 {
 		// Subnets have been explicitly set
 		for _, subnet := range lbSpec.Subnets {
-			found := false
 			for _, clusterSubnet := range b.Cluster.Spec.Subnets {
 				if subnet.Name == clusterSubnet.Name {
-					found = true
 					elbSubnet := b.LinkToSubnet(&clusterSubnet)
 					elbSubnets = append(elbSubnets, elbSubnet)
 					nlbSubnetMappings = append(nlbSubnetMappings, &awstasks.SubnetMapping{
 						Subnet: elbSubnet,
 					})
 					if subnet.PrivateIPv4Address != nil {
-						if *subnet.PrivateIPv4Address == "" {
-							return fmt.Errorf("privateIPv4Address can't be empty")
-						}
-						if lbSpec.Class != kops.LoadBalancerClassNetwork || lbSpec.Type != kops.LoadBalancerTypeInternal {
-							return fmt.Errorf("privateIPv4Address only allowed for internal NLBs")
-						}
-
 						nlbSubnetMappings[len(nlbSubnetMappings)-1].PrivateIPv4Address = subnet.PrivateIPv4Address
 					}
 					break
 				}
-			}
-			if !found {
-				return fmt.Errorf("subnet %q not found in cluster subnets", subnet.Name)
 			}
 		}
 	} else {
