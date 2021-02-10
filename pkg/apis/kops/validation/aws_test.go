@@ -283,7 +283,7 @@ func TestLoadBalancerSubnets(t *testing.T) {
 					PrivateIPv4Address: nil,
 				},
 			},
-			expected: []string{"Invalid value::spec.api.loadBalancer.subnets[0].name"},
+			expected: []string{"Required value::spec.api.loadBalancer.subnets[0].name"},
 		},
 		{ // subnet not found
 			clusterSubnets: []string{"a", "b", "c"},
@@ -293,7 +293,7 @@ func TestLoadBalancerSubnets(t *testing.T) {
 					PrivateIPv4Address: nil,
 				},
 			},
-			expected: []string{"Invalid value::spec.api.loadBalancer.subnets[0].name"},
+			expected: []string{"Not found::spec.api.loadBalancer.subnets[0].name"},
 		},
 		{ // empty privateIPv4Address
 			clusterSubnets: []string{"a", "b", "c"},
@@ -303,7 +303,7 @@ func TestLoadBalancerSubnets(t *testing.T) {
 					PrivateIPv4Address: fi.String(""),
 				},
 			},
-			expected: []string{"Invalid value::spec.api.loadBalancer.subnets[0].privateIPv4Address"},
+			expected: []string{"Required value::spec.api.loadBalancer.subnets[0].privateIPv4Address"},
 		},
 		{ // invalid privateIPv4Address
 			clusterSubnets: []string{"a", "b", "c"},
@@ -334,7 +334,7 @@ func TestLoadBalancerSubnets(t *testing.T) {
 					PrivateIPv4Address: fi.String("10.0.0.10"),
 				},
 			},
-			expected: []string{"Invalid value::spec.api.loadBalancer.subnets[0].privateIPv4Address"},
+			expected: []string{"Forbidden::spec.api.loadBalancer.subnets[0].privateIPv4Address"},
 		},
 		{ // invalid type
 			lbType:         fi.String(string(kops.LoadBalancerTypePublic)),
@@ -345,7 +345,7 @@ func TestLoadBalancerSubnets(t *testing.T) {
 					PrivateIPv4Address: fi.String("10.0.0.10"),
 				},
 			},
-			expected: []string{"Invalid value::spec.api.loadBalancer.subnets[0].privateIPv4Address"},
+			expected: []string{"Forbidden::spec.api.loadBalancer.subnets[0].privateIPv4Address"},
 		},
 	}
 
