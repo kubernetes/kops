@@ -1249,8 +1249,6 @@
       "Properties": {
         "Name": "api-complex-example-com-vd3t5n",
         "Scheme": "internet-facing",
-        "Subnets": [
-        ],
         "SubnetMappings": [
           {
             "SubnetId": {
