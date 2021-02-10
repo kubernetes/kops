@@ -298,6 +298,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersmixedinstancesexamplecom.Prop
     logLevel: 2
     networkPluginName: cni
     nodeLabels:
+      kops.k8s.io/kops-controller-pki: ""
       kubernetes.io/role: master
       node-role.kubernetes.io/control-plane: ""
       node-role.kubernetes.io/master: ""
@@ -632,6 +633,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1bmastersmixedinstancesexamplecom.Prop
     logLevel: 2
     networkPluginName: cni
     nodeLabels:
+      kops.k8s.io/kops-controller-pki: ""
       kubernetes.io/role: master
       node-role.kubernetes.io/control-plane: ""
       node-role.kubernetes.io/master: ""
@@ -966,6 +968,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1cmastersmixedinstancesexamplecom.Prop
     logLevel: 2
     networkPluginName: cni
     nodeLabels:
+      kops.k8s.io/kops-controller-pki: ""
       kubernetes.io/role: master
       node-role.kubernetes.io/control-plane: ""
       node-role.kubernetes.io/master: ""
