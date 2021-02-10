@@ -44,6 +44,11 @@
             "PropagateAtLaunch": true
           },
           {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
             "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
             "Value": "master",
             "PropagateAtLaunch": true
@@ -318,6 +323,10 @@
                   "Value": "fib+baz"
                 },
                 {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+                  "Value": ""
+                },
+                {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
                   "Value": "master"
                 },
@@ -361,6 +370,10 @@
                 {
                   "Key": "foo/bar",
                   "Value": "fib+baz"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+                  "Value": ""
                 },
                 {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
