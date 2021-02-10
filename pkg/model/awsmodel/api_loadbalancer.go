@@ -78,8 +78,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 						Subnet: elbSubnet,
 					})
 					if subnet.PrivateIPv4Address != nil {
-						if subnet.PrivateIPv4Address == nil {
-							return fmt.Errorf("privateIPv4Address can't be nil")
+						if *subnet.PrivateIPv4Address == "" {
+							return fmt.Errorf("privateIPv4Address can't be empty")
 						}
 						if lbSpec.Class != kops.LoadBalancerClassNetwork || lbSpec.Type != kops.LoadBalancerTypeInternal {
 							return fmt.Errorf("privateIPv4Address only allowed for internal NLBs")
