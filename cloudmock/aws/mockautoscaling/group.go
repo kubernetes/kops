@@ -101,6 +101,67 @@ func (m *MockAutoscaling) CreateAutoScalingGroup(input *autoscaling.CreateAutoSc
 	return &autoscaling.CreateAutoScalingGroupOutput{}, nil
 }
 
+func (m *MockAutoscaling) UpdateAutoScalingGroup(request *autoscaling.UpdateAutoScalingGroupInput) (*autoscaling.UpdateAutoScalingGroupOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	klog.V(2).Infof("Mock UpdateAutoScalingGroup %v", request)
+
+	if _, ok := m.Groups[*request.AutoScalingGroupName]; !ok {
+		return nil, fmt.Errorf("Autoscaling group not found: %v", *request.AutoScalingGroupName)
+	}
+	group := m.Groups[*request.AutoScalingGroupName]
+
+	if request.AvailabilityZones != nil {
+		group.AvailabilityZones = request.AvailabilityZones
+	}
+	if request.CapacityRebalance != nil {
+		group.CapacityRebalance = request.CapacityRebalance
+	}
+	if request.DesiredCapacity != nil {
+		group.DesiredCapacity = request.DesiredCapacity
+	}
+	if request.HealthCheckGracePeriod != nil {
+		group.HealthCheckGracePeriod = request.HealthCheckGracePeriod
+	}
+	if request.HealthCheckType != nil {
+		group.HealthCheckType = request.HealthCheckType
+	}
+	if request.LaunchConfigurationName != nil {
+		group.LaunchConfigurationName = request.LaunchConfigurationName
+	}
+	if request.LaunchTemplate != nil {
+		group.LaunchTemplate = request.LaunchTemplate
+	}
+	if request.MaxInstanceLifetime != nil {
+		group.MaxInstanceLifetime = request.MaxInstanceLifetime
+	}
+	if request.MaxSize != nil {
+		group.MaxSize = request.MaxSize
+	}
+	if request.MinSize != nil {
+		group.MinSize = request.MinSize
+	}
+	if request.MixedInstancesPolicy != nil {
+		group.MixedInstancesPolicy = request.MixedInstancesPolicy
+	}
+	if request.NewInstancesProtectedFromScaleIn != nil {
+		group.NewInstancesProtectedFromScaleIn = request.NewInstancesProtectedFromScaleIn
+	}
+	if request.PlacementGroup != nil {
+		group.PlacementGroup = request.PlacementGroup
+	}
+	if request.ServiceLinkedRoleARN != nil {
+		group.ServiceLinkedRoleARN = request.ServiceLinkedRoleARN
+	}
+	if request.TerminationPolicies != nil {
+		group.TerminationPolicies = request.TerminationPolicies
+	}
+	if request.VPCZoneIdentifier != nil {
+		group.VPCZoneIdentifier = request.VPCZoneIdentifier
+	}
+	return &autoscaling.UpdateAutoScalingGroupOutput{}, nil
+}
+
 func (m *MockAutoscaling) EnableMetricsCollection(request *autoscaling.EnableMetricsCollectionInput) (*autoscaling.EnableMetricsCollectionOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
