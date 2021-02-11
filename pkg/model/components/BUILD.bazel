@@ -6,6 +6,7 @@ go_library(
         "apiserver.go",
         "calico.go",
         "cilium.go",
+        "cloudconfiguration.go",
         "clusterautoscaler.go",
         "containerd.go",
         "context.go",

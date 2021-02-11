@@ -14,6 +14,7 @@ contents: |
     - args:
       - --allocate-node-cidrs=true
       - --attach-detach-reconcile-sync-period=1m0s
+      - --cloud-config=/etc/kubernetes/cloud.config
       - --cloud-provider=aws
       - --cluster-cidr=100.96.0.0/11
       - --cluster-name=minimal.example.com
@@ -74,6 +75,9 @@ contents: |
       - mountPath: /etc/openssl
         name: etcopenssl
         readOnly: true
+      - mountPath: /etc/kubernetes/cloud.config
+        name: cloudconfig
+        readOnly: true
       - mountPath: /srv/kubernetes
         name: srvkube
         readOnly: true
@@ -118,6 +122,9 @@ contents: |
     - hostPath:
         path: /etc/openssl
       name: etcopenssl
+    - hostPath:
+        path: /etc/kubernetes/cloud.config
+      name: cloudconfig
     - hostPath:
         path: /srv/kubernetes
       name: srvkube

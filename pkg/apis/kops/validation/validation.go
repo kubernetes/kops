@@ -242,6 +242,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		}
 	}
 
+	if spec.CloudConfig != nil {
+		allErrs = append(allErrs, validateCloudConfiguration(spec.CloudConfig, fieldPath.Child("cloudConfig"))...)
+	}
+
 	return allErrs
 }
 
@@ -1298,6 +1302,17 @@ func validateAWSLoadBalancerController(cluster *kops.Cluster, spec *kops.AWSLoad
 	if spec != nil && fi.BoolValue(spec.Enabled) {
 		if !components.IsCertManagerEnabled(cluster) {
 			allErrs = append(allErrs, field.Forbidden(fldPath, "AWS Load Balancer Controller requires that cert manager is enabled"))
+		}
+	}
+	return allErrs
+}
+
+func validateCloudConfiguration(cloudConfig *kops.CloudConfiguration, fldPath *field.Path) (allErrs field.ErrorList) {
+	if cloudConfig.ManageStorageClasses != nil && cloudConfig.Openstack != nil &&
+		cloudConfig.Openstack.BlockStorage != nil && cloudConfig.Openstack.BlockStorage.CreateStorageClass != nil {
+		if *cloudConfig.Openstack.BlockStorage.CreateStorageClass != *cloudConfig.ManageStorageClasses {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("manageStorageClasses"),
+				"Management of storage classes and OpenStack block storage classes are both specified but disagree"))
 		}
 	}
 	return allErrs
