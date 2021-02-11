@@ -55,8 +55,8 @@ func (in *AWSLoadBalancerControllerConfig) DeepCopyInto(out *AWSLoadBalancerCont
 		*out = new(bool)
 		**out = **in
 	}
-	if in.Image != nil {
-		in, out := &in.Image, &out.Image
+	if in.Version != nil {
+		in, out := &in.Version, &out.Version
 		*out = new(string)
 		**out = **in
 	}
