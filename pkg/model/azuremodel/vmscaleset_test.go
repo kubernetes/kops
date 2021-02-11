@@ -176,14 +176,14 @@ func TestGetStorageProfile(t *testing.T) {
 	}
 }
 
-func TestParseImageURN(t *testing.T) {
+func TestParseImage(t *testing.T) {
 	testCases := []struct {
-		urn      string
+		image    string
 		success  bool
 		imageRef *compute.ImageReference
 	}{
 		{
-			urn:     "Canonical:UbuntuServer:18.04-LTS:latest",
+			image:   "Canonical:UbuntuServer:18.04-LTS:latest",
 			success: true,
 			imageRef: &compute.ImageReference{
 				Publisher: to.StringPtr("Canonical"),
@@ -193,17 +193,24 @@ func TestParseImageURN(t *testing.T) {
 			},
 		},
 		{
-			urn:     "invalidformat",
+			image:   "/subscriptions/<subscription id>/resourceGroups/<resource group>/providers/<provider>/images/<image>",
+			success: true,
+			imageRef: &compute.ImageReference{
+				ID: to.StringPtr("/subscriptions/<subscription id>/resourceGroups/<resource group>/providers/<provider>/images/<image>"),
+			},
+		},
+		{
+			image:   "invalidformat",
 			success: false,
 		},
 		{
-			urn:     "inv:ali:dfo:rma:t",
+			image:   "inv:ali:dfo:rma:t",
 			success: false,
 		},
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("test case %d", i), func(t *testing.T) {
-			imageRef, err := parseImageURN(tc.urn)
+			imageRef, err := parseImage(tc.image)
 			if !tc.success {
 				if err == nil {
 					t.Fatalf("unexpected success")
