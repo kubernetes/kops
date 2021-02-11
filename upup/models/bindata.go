@@ -1233,7 +1233,9 @@ func cloudupResourcesAddonsAwsEbsCsiDriverAddonsK8sIoK8s117YamlTemplate() (*asse
 	return a, nil
 }
 
-var _cloudupResourcesAddonsAwsLoadBalancerControllerAddonsK8sIoK8s19YamlTemplate = []byte(`apiVersion: apiextensions.k8s.io/v1beta1
+var _cloudupResourcesAddonsAwsLoadBalancerControllerAddonsK8sIoK8s19YamlTemplate = []byte(`# sourced from https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/main/docs/install/v2_1_2_full.yaml
+---
+apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   annotations:
@@ -1720,7 +1722,7 @@ spec:
             - --enable-wafv2=false
             - --enable-shield=false
             - --ingress-class=alb
-          image: amazon/aws-alb-ingress-controller:v2.1.0
+          image: amazon/aws-alb-ingress-controller:{{ or .AWSLoadBalancerController.Version "v2.1.2" }}
           livenessProbe:
             failureThreshold: 2
             httpGet:

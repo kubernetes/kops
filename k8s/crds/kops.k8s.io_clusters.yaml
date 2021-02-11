@@ -209,8 +209,8 @@ spec:
                     description: 'Enabled enables the loadbalancer controller. Default:
                       false'
                     type: boolean
-                  image:
-                    description: 'Image is the docker container used. Default: v2.0.0'
+                  version:
+                    description: Version is the container image tag used.
                     type: string
                 type: object
               certManager:
