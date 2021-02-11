@@ -26,6 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
 	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
@@ -254,6 +255,17 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 	})
 	mockELBV2.CreateTargetGroup(&elbv2.CreateTargetGroupInput{
 		Name: aws.String("my-external-tg-3"),
+	})
+
+	mockIAM.CreateRole(&iam.CreateRoleInput{
+		RoleName: aws.String("kops-custom-node-role"),
+	})
+	mockIAM.CreateInstanceProfile(&iam.CreateInstanceProfileInput{
+		InstanceProfileName: aws.String("kops-custom-node-role"),
+	})
+	mockIAM.AddRoleToInstanceProfile(&iam.AddRoleToInstanceProfileInput{
+		InstanceProfileName: aws.String("kops-custom-node-role"),
+		RoleName:            aws.String("kops-custom-node-role"),
 	})
 
 	return cloud
