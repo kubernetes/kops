@@ -4,7 +4,11 @@ data:
     {"cloud":"aws","configBase":"memfs://clusters.example.com/minimal.example.com"}
 kind: ConfigMap
 metadata:
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: kops-controller.addons.k8s.io
+    addon.kops.k8s.io/version: 1.21.0-alpha.1
+    app.kubernetes.io/managed-by: kops
     k8s-addon: kops-controller.addons.k8s.io
   name: kops-controller
   namespace: kube-system
@@ -14,7 +18,11 @@ metadata:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: kops-controller.addons.k8s.io
+    addon.kops.k8s.io/version: 1.21.0-alpha.1
+    app.kubernetes.io/managed-by: kops
     k8s-addon: kops-controller.addons.k8s.io
     k8s-app: kops-controller
     version: v1.21.0-alpha.1
@@ -77,7 +85,11 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: kops-controller.addons.k8s.io
+    addon.kops.k8s.io/version: 1.21.0-alpha.1
+    app.kubernetes.io/managed-by: kops
     k8s-addon: kops-controller.addons.k8s.io
   name: kops-controller
   namespace: kube-system
@@ -87,7 +99,11 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: kops-controller.addons.k8s.io
+    addon.kops.k8s.io/version: 1.21.0-alpha.1
+    app.kubernetes.io/managed-by: kops
     k8s-addon: kops-controller.addons.k8s.io
   name: kops-controller
 rules:
@@ -106,7 +122,11 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: kops-controller.addons.k8s.io
+    addon.kops.k8s.io/version: 1.21.0-alpha.1
+    app.kubernetes.io/managed-by: kops
     k8s-addon: kops-controller.addons.k8s.io
   name: kops-controller
 roleRef:
@@ -123,7 +143,11 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: kops-controller.addons.k8s.io
+    addon.kops.k8s.io/version: 1.21.0-alpha.1
+    app.kubernetes.io/managed-by: kops
     k8s-addon: kops-controller.addons.k8s.io
   name: kops-controller
   namespace: kube-system
@@ -162,7 +186,11 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: kops-controller.addons.k8s.io
+    addon.kops.k8s.io/version: 1.21.0-alpha.1
+    app.kubernetes.io/managed-by: kops
     k8s-addon: kops-controller.addons.k8s.io
   name: kops-controller
   namespace: kube-system

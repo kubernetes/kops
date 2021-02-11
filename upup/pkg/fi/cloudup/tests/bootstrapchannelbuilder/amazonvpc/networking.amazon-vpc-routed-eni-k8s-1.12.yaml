@@ -1,6 +1,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
+    addon.kops.k8s.io/version: 1.5.5-kops.1
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
   name: aws-node
 rules:
 - apiGroups:
@@ -33,6 +39,12 @@ rules:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
+    addon.kops.k8s.io/version: 1.5.5-kops.1
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
   name: aws-node
   namespace: kube-system
 
@@ -41,6 +53,12 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
+    addon.kops.k8s.io/version: 1.5.5-kops.1
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
   name: aws-node
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -56,8 +74,13 @@ subjects:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
+    addon.kops.k8s.io/version: 1.5.5-kops.1
+    app.kubernetes.io/managed-by: kops
     k8s-app: aws-node
+    role.kubernetes.io/networking: "1"
   name: aws-node
   namespace: kube-system
 spec:
@@ -146,6 +169,12 @@ spec:
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
+    addon.kops.k8s.io/version: 1.5.5-kops.1
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
   name: eniconfigs.crd.k8s.amazonaws.com
 spec:
   group: crd.k8s.amazonaws.com
