@@ -154,6 +154,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 
 	tf := &TemplateFunctions{
 		KopsModelContext: kopsModel,
+		cloud:            cloud,
 	}
 	tf.AddTo(templates.TemplateFunctions, secretStore)
 
