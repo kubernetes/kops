@@ -170,9 +170,7 @@ func getStorageProfile(spec *kops.InstanceGroupSpec) (*compute.VirtualMachineSca
 		storageAccountType = compute.StorageAccountTypesPremiumLRS
 	}
 
-	// TODO(kenji): We currently assume that spec.Image has an
-	// image URN. Be able to specify image ID as well.
-	imageReference, err := parseImageURN(spec.Image)
+	imageReference, err := parseImage(spec.Image)
 	if err != nil {
 		return nil, err
 	}
@@ -192,14 +190,17 @@ func getStorageProfile(spec *kops.InstanceGroupSpec) (*compute.VirtualMachineSca
 	}, nil
 }
 
-// parseImageURN parses an image URL and returns an ImageReference.
-func parseImageURN(urn string) (*compute.ImageReference, error) {
-	// Image URN is of the form <publisher>:<offer>:<sku>:<version>.
-	l := strings.Split(urn, ":")
-	if len(l) != 4 {
-		return nil, fmt.Errorf("malformed format of image urn: %s", urn)
+func parseImage(image string) (*compute.ImageReference, error) {
+	if strings.HasPrefix(image, "/subscriptions/") {
+		return &compute.ImageReference{
+			ID: to.StringPtr(image),
+		}, nil
 	}
 
+	l := strings.Split(image, ":")
+	if len(l) != 4 {
+		return nil, fmt.Errorf("malformed format of image urn: %s", image)
+	}
 	return &compute.ImageReference{
 		Publisher: to.StringPtr(l[0]),
 		Offer:     to.StringPtr(l[1]),
