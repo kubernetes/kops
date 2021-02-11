@@ -912,9 +912,8 @@ type AWSLoadBalancerControllerConfig struct {
 	// Enabled enables the loadbalancer controller.
 	// Default: false
 	Enabled *bool `json:"enabled,omitempty"`
-	// Image is the docker container used.
-	// Default: v2.0.0
-	Image *string `json:"image,omitempty"`
+	// Version is the container image tag used.
+	Version *string `json:"version,omitempty"`
 }
 
 // HasAdmissionController checks if a specific admission controller is enabled

@@ -560,7 +560,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 	if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
 
 		key := "aws-load-balancer-controller.addons.k8s.io"
-		version := "2.0.0"
+		version := "2.1.2"
 
 		{
 			location := key + "/k8s-1.9.yaml"
