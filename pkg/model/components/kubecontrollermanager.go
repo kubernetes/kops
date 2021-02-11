@@ -158,6 +158,9 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		if _, found := kcm.FeatureGates["CSIMigrationAWSComplete"]; !found {
 			kcm.FeatureGates["CSIMigrationAWSComplete"] = "true"
 		}
+		if _, found := kcm.FeatureGates["CSIMigrationAWS"]; !found {
+			kcm.FeatureGates["CSIMigrationAWS"] = "true"
+		}
 	}
 
 	return nil
