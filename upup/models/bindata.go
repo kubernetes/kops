@@ -129,7 +129,7 @@ var _cloudupResourcesAddonsAnonymousIssuerDiscoveryAddonsK8sIoK8s116YamlTemplate
 kind: ClusterRoleBinding
 metadata:
   labels:
-    k8s-addon: anonymous-access.addons.k8s.io
+    k8s-addon: anonymous-issuer-discovery.addons.k8s.io
   name: anonymous:service-account-issuer-discovery
   namespace: kube-system
 roleRef:
