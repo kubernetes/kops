@@ -42,6 +42,7 @@ contents: |
       - --authorization-mode=AlwaysAllow
       - --bind-address=0.0.0.0
       - --client-ca-file=/srv/kubernetes/ca.crt
+      - --cloud-config=/etc/kubernetes/cloud.config
       - --cloud-provider=aws
       - --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,NodeRestriction,ResourceQuota
       - --etcd-cafile=/etc/kubernetes/pki/kube-apiserver/etcd-ca.crt
@@ -121,6 +122,9 @@ contents: |
         readOnly: true
       - mountPath: /etc/kubernetes/pki/kube-apiserver
         name: pki
+      - mountPath: /etc/kubernetes/cloud.config
+        name: cloudconfig
+        readOnly: true
       - mountPath: /srv/kubernetes
         name: srvkube
         readOnly: true
@@ -170,6 +174,9 @@ contents: |
         path: /etc/kubernetes/pki/kube-apiserver
         type: DirectoryOrCreate
       name: pki
+    - hostPath:
+        path: /etc/kubernetes/cloud.config
+      name: cloudconfig
     - hostPath:
         path: /srv/kubernetes
       name: srvkube

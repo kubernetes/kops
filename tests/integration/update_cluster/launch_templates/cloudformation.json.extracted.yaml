@@ -137,7 +137,8 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterslaunchtemplatese
   ensure-install-dir
 
   cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
-  cloudConfig: null
+  cloudConfig:
+    manageStorageClasses: true
   containerRuntime: containerd
   containerd:
     configOverride: |
@@ -470,7 +471,8 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmasterslaunchtemplatese
   ensure-install-dir
 
   cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
-  cloudConfig: null
+  cloudConfig:
+    manageStorageClasses: true
   containerRuntime: containerd
   containerd:
     configOverride: |
@@ -803,7 +805,8 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmasterslaunchtemplatese
   ensure-install-dir
 
   cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
-  cloudConfig: null
+  cloudConfig:
+    manageStorageClasses: true
   containerRuntime: containerd
   containerd:
     configOverride: |
@@ -1136,7 +1139,8 @@ Resources.AWSAutoScalingLaunchConfigurationnodeslaunchtemplatesexamplecom.Proper
   ensure-install-dir
 
   cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
-  cloudConfig: null
+  cloudConfig:
+    manageStorageClasses: true
   containerRuntime: containerd
   containerd:
     configOverride: |
