@@ -59,6 +59,8 @@ import (
 // TemplateFunctions provides a collection of methods used throughout the templates
 type TemplateFunctions struct {
 	model.KopsModelContext
+
+	cloud fi.Cloud
 }
 
 // AddTo defines the available functions we can use in our YAML models.
@@ -444,9 +446,24 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 				if ig.Spec.Role == kops.InstanceGroupRoleNode {
 					profile, err := tf.LinkToIAMInstanceProfile(ig)
 					if err != nil {
-						return "", fmt.Errorf("getting role for ig %s: %v", ig.Name, err)
+						return "", fmt.Errorf("getting profile for ig %s: %v", ig.Name, err)
 					}
-					nodesRoles.Insert(*profile.Name)
+					// The IAM Instance Profile has not been created at this point if it is not specified.
+					// Because the IAM Instance Profile and the IAM Role are created in IAMModelBuilder tasks.
+					// Therefore, the IAM Role associated with IAM Instance Profile is acquired only when it is not specified.
+					if ig.Spec.IAM != nil && ig.Spec.IAM.Profile != nil {
+						c := tf.cloud.(awsup.AWSCloud)
+						roles, err := awsup.GetRolesInInstanceProfile(c, *profile.Name)
+						if err != nil {
+							return "", fmt.Errorf("getting role from profile %s: %v", *profile.Name, err)
+						}
+						nodesRoles.Insert(roles...)
+					} else {
+						// When the IAM Instance Profile is not specified, IAM Instance Profile is created by kOps.
+						// In this case, the IAM Instance Profile name and IAM Role name are same.
+						// So there is no problem even if IAM Instance Profile name is inserted as role name in nodesRoles.
+						nodesRoles.Insert(*profile.Name)
+					}
 				}
 			}
 			config.Server.Provider.AWS = &awsup.AWSVerifierOptions{

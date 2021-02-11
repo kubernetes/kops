@@ -1751,3 +1751,18 @@ func (c *awsCloudImplementation) AccountInfo() (string, string, error) {
 	}
 	return arn.AccountID, arn.Partition, nil
 }
+
+// GetRolesInInstanceProfile return role names which are associated with the instance profile specified by profileName.
+func GetRolesInInstanceProfile(c AWSCloud, profileName string) ([]string, error) {
+	output, err := c.IAM().GetInstanceProfile(&iam.GetInstanceProfileInput{
+		InstanceProfileName: aws.String(profileName),
+	})
+	if err != nil {
+		return nil, err
+	}
+	var roleNames []string
+	for _, role := range output.InstanceProfile.Roles {
+		roleNames = append(roleNames, *role.RoleName)
+	}
+	return roleNames, nil
+}
