@@ -499,6 +499,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	tf := &TemplateFunctions{
 		KopsModelContext: *modelContext,
+		cloud:            cloud,
 	}
 
 	{
