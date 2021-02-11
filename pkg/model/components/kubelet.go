@@ -209,6 +209,9 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+		if _, found := clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"]; !found {
+			clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"] = "true"
+		}
 		if _, found := clusterSpec.Kubelet.FeatureGates["CSIMigrationAWSComplete"]; !found {
 			clusterSpec.Kubelet.FeatureGates["CSIMigrationAWSComplete"] = "true"
 		}
