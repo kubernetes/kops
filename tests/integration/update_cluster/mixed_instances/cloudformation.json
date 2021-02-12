@@ -34,6 +34,11 @@
             "PropagateAtLaunch": true
           },
           {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
             "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
             "Value": "master",
             "PropagateAtLaunch": true
@@ -115,6 +120,11 @@
             "PropagateAtLaunch": true
           },
           {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
             "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
             "Value": "master",
             "PropagateAtLaunch": true
@@ -193,6 +203,11 @@
           {
             "Key": "Name",
             "Value": "master-us-test-1c.masters.mixedinstances.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+            "Value": "",
             "PropagateAtLaunch": true
           },
           {
@@ -439,6 +454,10 @@
                   "Value": "master-us-test-1a.masters.mixedinstances.example.com"
                 },
                 {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+                  "Value": ""
+                },
+                {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
                   "Value": "master"
                 },
@@ -474,6 +493,10 @@
                 {
                   "Key": "Name",
                   "Value": "master-us-test-1a.masters.mixedinstances.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+                  "Value": ""
                 },
                 {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
@@ -565,6 +588,10 @@
                   "Value": "master-us-test-1b.masters.mixedinstances.example.com"
                 },
                 {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+                  "Value": ""
+                },
+                {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
                   "Value": "master"
                 },
@@ -600,6 +627,10 @@
                 {
                   "Key": "Name",
                   "Value": "master-us-test-1b.masters.mixedinstances.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+                  "Value": ""
                 },
                 {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
@@ -691,6 +722,10 @@
                   "Value": "master-us-test-1c.masters.mixedinstances.example.com"
                 },
                 {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+                  "Value": ""
+                },
+                {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
                   "Value": "master"
                 },
@@ -726,6 +761,10 @@
                 {
                   "Key": "Name",
                   "Value": "master-us-test-1c.masters.mixedinstances.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+                  "Value": ""
                 },
                 {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
