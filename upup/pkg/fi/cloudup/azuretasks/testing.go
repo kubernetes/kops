@@ -56,6 +56,7 @@ type MockAzureCloud struct {
 	DisksClient             *MockDisksClient
 	RoleAssignmentsClient   *MockRoleAssignmentsClient
 	NetworkInterfacesClient *MockNetworkInterfacesClient
+	LoadBalancersClient     *MockLoadBalancersClient
 }
 
 var _ azure.AzureCloud = &MockAzureCloud{}
@@ -90,6 +91,9 @@ func NewMockAzureCloud(location string) *MockAzureCloud {
 		},
 		NetworkInterfacesClient: &MockNetworkInterfacesClient{
 			NIs: map[string]network.Interface{},
+		},
+		LoadBalancersClient: &MockLoadBalancersClient{
+			LBs: map[string]network.LoadBalancer{},
 		},
 	}
 }
@@ -202,6 +206,11 @@ func (c *MockAzureCloud) RoleAssignment() azure.RoleAssignmentsClient {
 // NetworkInterface returns the network interface client.
 func (c *MockAzureCloud) NetworkInterface() azure.NetworkInterfacesClient {
 	return c.NetworkInterfacesClient
+}
+
+// LoadBalancer returns the loadbalancer client.
+func (c *MockAzureCloud) LoadBalancer() azure.LoadBalancersClient {
+	return c.LoadBalancersClient
 }
 
 // MockResourceGroupsClient is a mock implementation of resource group client.
@@ -504,4 +513,40 @@ func (c *MockNetworkInterfacesClient) ListScaleSetsNetworkInterfaces(ctx context
 		l = append(l, ni)
 	}
 	return l, nil
+}
+
+// MockLoadBalancersClient is a mock implementation of role assignment client.
+type MockLoadBalancersClient struct {
+	LBs map[string]network.LoadBalancer
+}
+
+var _ azure.LoadBalancersClient = &MockLoadBalancersClient{}
+
+// CreateOrUpdate creates a new loadbalancer.
+func (c *MockLoadBalancersClient) CreateOrUpdate(ctx context.Context, resourceGroupName, loadBalancerName string, parameters network.LoadBalancer) error {
+	if _, ok := c.LBs[loadBalancerName]; ok {
+		return nil
+	}
+	parameters.Name = &loadBalancerName
+	c.LBs[loadBalancerName] = parameters
+	return nil
+}
+
+// List returns a slice of loadbalancer.
+func (c *MockLoadBalancersClient) List(ctx context.Context, resourceGroupName string) ([]network.LoadBalancer, error) {
+	var l []network.LoadBalancer
+	for _, lb := range c.LBs {
+		l = append(l, lb)
+	}
+	return l, nil
+}
+
+// Delete deletes a specified loadbalancer.
+func (c *MockLoadBalancersClient) Delete(ctx context.Context, scope, lbName string) error {
+	// Ignore scope for simplicity.
+	if _, ok := c.LBs[lbName]; !ok {
+		return fmt.Errorf("%s does not exist", lbName)
+	}
+	delete(c.LBs, lbName)
+	return nil
 }
