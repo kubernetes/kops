@@ -750,7 +750,6 @@ type terraformLaunchSpec struct {
 	InstanceTypes            []string                       `json:"instance_types,omitempty" cty:"instance_types"`
 	SubnetIDs                []*terraform.Literal           `json:"subnet_ids,omitempty" cty:"subnet_ids"`
 	SecurityGroups           []*terraform.Literal           `json:"security_groups,omitempty" cty:"security_groups"`
-	Taints                   []*corev1.Taint                `json:"taints,omitempty" cty:"taints"`
 	Labels                   []*terraformKV                 `json:"labels,omitempty" cty:"labels"`
 	Tags                     []*terraformKV                 `json:"tags,omitempty" cty:"tags"`
 	Headrooms                []*terraformAutoScalerHeadroom `json:"autoscale_headrooms,omitempty" cty:"autoscale_headrooms"`
@@ -883,11 +882,6 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 						Value: fi.String(v),
 					})
 				}
-			}
-
-			// Taints.
-			if len(opts.Taints) > 0 {
-				tf.Taints = opts.Taints
 			}
 		}
 	}
