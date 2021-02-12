@@ -46,6 +46,7 @@ func TestListResourcesAzure(t *testing.T) {
 		raName         = "ra"
 		irrelevantName = "irrelevant"
 		principalID    = "pid"
+		lbName         = "lb"
 	)
 	clusterTags := map[string]*string{
 		azure.TagClusterName: to.StringPtr(clusterName),
@@ -163,6 +164,15 @@ func TestListResourcesAzure(t *testing.T) {
 		Name: to.StringPtr(irrelevantName),
 	}
 
+	lbs := cloud.LoadBalancersClient.LBs
+	lbs[lbName] = network.LoadBalancer{
+		Name: to.StringPtr(lbName),
+		Tags: clusterTags,
+	}
+	lbs[irrelevantName] = network.LoadBalancer{
+		Name: to.StringPtr(irrelevantName),
+	}
+
 	// Call listResourcesAzure.
 	g := resourceGetter{
 		cloud: cloud,
@@ -252,6 +262,11 @@ func TestListResourcesAzure(t *testing.T) {
 				toKey(typeResourceGroup, rgName),
 				toKey(typeVMScaleSet, vmssName),
 			},
+		},
+		toKey(typeLoadBalancer, lbName): {
+			rtype:  typeLoadBalancer,
+			name:   lbName,
+			blocks: []string{toKey(typeResourceGroup, rgName)},
 		},
 	}
 	if !reflect.DeepEqual(a, e) {

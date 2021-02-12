@@ -66,6 +66,16 @@ func (c *AzureModelContext) NameForRouteTable() string {
 	return c.Cluster.Spec.CloudConfig.Azure.RouteTableName
 }
 
+// LinkToLoadBalancer returns the Load Balancer object for the cluster.
+func (c *AzureModelContext) LinkToLoadBalancer() *azuretasks.LoadBalancer {
+	return &azuretasks.LoadBalancer{Name: fi.String(c.NameForLoadBalancer())}
+}
+
+// NameForLoadBalancer returns the name of the Load Balancer object for the cluster.
+func (c *AzureModelContext) NameForLoadBalancer() string {
+	return "api-" + c.ClusterName()
+}
+
 // CloudTagsForInstanceGroup computes the tags to apply to instances in the specified InstanceGroup
 // Mostly copied from pkg/model/context.go, but "/" in tag keys are replaced with "_" as Azure
 // doesn't allow "/" in tag keys.

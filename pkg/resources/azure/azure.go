@@ -39,6 +39,7 @@ const (
 	typeVMScaleSet     = "VMScaleSet"
 	typeDisk           = "Disk"
 	typeRoleAssignment = "RoleAssignment"
+	typeLoadBalancer   = "LoadBalancer"
 )
 
 // ListResourcesAzure lists all resources for the cluster by quering Azure.
@@ -87,6 +88,7 @@ func (g *resourceGetter) listAll() ([]*resources.Resource, error) {
 		g.listRouteTables,
 		g.listVMScaleSetsAndRoleAssignments,
 		g.listDisks,
+		g.listLoadBalancers,
 	}
 
 	var resources []*resources.Resource
@@ -393,6 +395,38 @@ func (g *resourceGetter) deleteRoleAssignment(_ fi.Cloud, r *resources.Resource)
 		return fmt.Errorf("expected RoleAssignment, but got %T", r)
 	}
 	return g.cloud.RoleAssignment().Delete(context.TODO(), *ra.Scope, *ra.Name)
+}
+
+func (g *resourceGetter) listLoadBalancers(ctx context.Context) ([]*resources.Resource, error) {
+	loadBalancers, err := g.cloud.LoadBalancer().List(ctx, g.resourceGroupName())
+	if err != nil {
+		return nil, err
+	}
+
+	var rs []*resources.Resource
+	for i := range loadBalancers {
+		rt := &loadBalancers[i]
+		if !g.isOwnedByCluster(rt.Tags) {
+			continue
+		}
+		rs = append(rs, g.toLoadBalancerResource(rt))
+	}
+	return rs, nil
+}
+
+func (g *resourceGetter) toLoadBalancerResource(loadBalancer *network.LoadBalancer) *resources.Resource {
+	return &resources.Resource{
+		Obj:     loadBalancer,
+		Type:    typeLoadBalancer,
+		ID:      *loadBalancer.Name,
+		Name:    *loadBalancer.Name,
+		Deleter: g.deleteLoadBalancer,
+		Blocks:  []string{toKey(typeResourceGroup, g.resourceGroupName())},
+	}
+}
+
+func (g *resourceGetter) deleteLoadBalancer(_ fi.Cloud, r *resources.Resource) error {
+	return g.cloud.LoadBalancer().Delete(context.TODO(), g.resourceGroupName(), r.Name)
 }
 
 // isOwnedByCluster returns true if the resource is owned by the cluster.

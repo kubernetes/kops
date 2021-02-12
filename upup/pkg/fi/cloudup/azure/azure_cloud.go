@@ -55,6 +55,7 @@ type AzureCloud interface {
 	Disk() DisksClient
 	RoleAssignment() RoleAssignmentsClient
 	NetworkInterface() NetworkInterfacesClient
+	LoadBalancer() LoadBalancersClient
 }
 
 type azureCloudImplementation struct {
@@ -70,6 +71,7 @@ type azureCloudImplementation struct {
 	disksClient             DisksClient
 	roleAssignmentsClient   RoleAssignmentsClient
 	networkInterfacesClient NetworkInterfacesClient
+	loadBalancersClient     LoadBalancersClient
 }
 
 var _ fi.Cloud = &azureCloudImplementation{}
@@ -94,6 +96,7 @@ func NewAzureCloud(subscriptionID, location string, tags map[string]string) (Azu
 		disksClient:             newDisksClientImpl(subscriptionID, authorizer),
 		roleAssignmentsClient:   newRoleAssignmentsClientImpl(subscriptionID, authorizer),
 		networkInterfacesClient: newNetworkInterfacesClientImpl(subscriptionID, authorizer),
+		loadBalancersClient:     newLoadBalancersClientImpl(subscriptionID, authorizer),
 	}, nil
 }
 
@@ -136,39 +139,84 @@ func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([
 	var ingresses []kops.ApiIngressStatus
 	var rg string = cluster.AzureResourceGroupName()
 
-	// Get scale sets in cluster resource group and find masters scale set
-	scaleSets, err := c.vmscaleSetsClient.List(context.TODO(), rg)
-	if err != nil {
-		return nil, fmt.Errorf("error getting Cluster Master Scale Set for API Ingress Status: %s", err)
-	}
-	var vmssName string
-	for _, scaleSet := range scaleSets {
-		val, ok := scaleSet.Tags[TagClusterName]
-		val2, ok2 := scaleSet.Tags[TagNameRolePrefix+TagRoleMaster]
-		if ok && *val == cluster.Name && ok2 && *val2 == "1" {
-			vmssName = *scaleSet.Name
-			break
+	lbSpec := cluster.Spec.API.LoadBalancer
+	if lbSpec != nil {
+		// Get loadbalancers in cluster resource group
+		lbs, err := c.loadBalancersClient.List(context.TODO(), rg)
+		if err != nil {
+			return nil, fmt.Errorf("error getting Loadbalancer for API Ingress Status: %s", err)
 		}
-	}
-	if vmssName == "" {
-		return nil, fmt.Errorf("error getting Master Scale Set Name for API Ingress Status")
+
+		for _, lb := range lbs {
+			val := lb.Tags[TagClusterName]
+			if val == nil || *val != cluster.Name {
+				continue
+			}
+			if lb.LoadBalancerPropertiesFormat == nil {
+				continue
+			}
+			for _, i := range *lb.LoadBalancerPropertiesFormat.FrontendIPConfigurations {
+				if i.FrontendIPConfigurationPropertiesFormat == nil {
+					continue
+				}
+				switch lbSpec.Type {
+				case kops.LoadBalancerTypeInternal:
+					if i.FrontendIPConfigurationPropertiesFormat.PrivateIPAddress == nil {
+						continue
+					}
+					ingresses = append(ingresses, kops.ApiIngressStatus{
+						IP: *i.FrontendIPConfigurationPropertiesFormat.PrivateIPAddress,
+					})
+				case kops.LoadBalancerTypePublic:
+					if i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress == nil ||
+						i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.PublicIPAddressPropertiesFormat == nil ||
+						i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.PublicIPAddressPropertiesFormat.IPAddress == nil {
+						continue
+					}
+					ingresses = append(ingresses, kops.ApiIngressStatus{
+						IP: *i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.PublicIPAddressPropertiesFormat.IPAddress,
+					})
+				default:
+					return nil, fmt.Errorf("unknown load balancer Type: %q", lbSpec.Type)
+				}
+			}
+		}
+	} else {
+		// Get scale sets in cluster resource group and find masters scale set
+		scaleSets, err := c.vmscaleSetsClient.List(context.TODO(), rg)
+		if err != nil {
+			return nil, fmt.Errorf("error getting Cluster Master Scale Set for API Ingress Status: %s", err)
+		}
+		var vmssName string
+		for _, scaleSet := range scaleSets {
+			val, ok := scaleSet.Tags[TagClusterName]
+			val2, ok2 := scaleSet.Tags[TagNameRolePrefix+TagRoleMaster]
+			if ok && *val == cluster.Name && ok2 && *val2 == "1" {
+				vmssName = *scaleSet.Name
+				break
+			}
+		}
+		if vmssName == "" {
+			return nil, fmt.Errorf("error getting Master Scale Set Name for API Ingress Status")
+		}
+
+		// Get masters scale set network interfaces and append to api ingress status
+		nis, err := c.NetworkInterface().ListScaleSetsNetworkInterfaces(context.TODO(), rg, vmssName)
+		if err != nil {
+			return nil, fmt.Errorf("error getting Master Scale Set Network Interfaces for API Ingress Status: %s", err)
+		}
+		for _, ni := range nis {
+			if !*ni.Primary {
+				continue
+			}
+			for _, i := range *ni.IPConfigurations {
+				ingresses = append(ingresses, kops.ApiIngressStatus{
+					IP: *i.PrivateIPAddress,
+				})
+			}
+		}
 	}
 
-	// Get masters scale set network interfaces and append to api ingress status
-	nis, err := c.NetworkInterface().ListScaleSetsNetworkInterfaces(context.TODO(), rg, vmssName)
-	if err != nil {
-		return nil, fmt.Errorf("error getting Master Scale Set Network Interfaces for API Ingress Status: %s", err)
-	}
-	for _, ni := range nis {
-		if !*ni.Primary {
-			continue
-		}
-		for _, i := range *ni.IPConfigurations {
-			ingresses = append(ingresses, kops.ApiIngressStatus{
-				IP: *i.PrivateIPAddress,
-			})
-		}
-	}
 	return ingresses, nil
 }
 
@@ -210,4 +258,8 @@ func (c *azureCloudImplementation) RoleAssignment() RoleAssignmentsClient {
 
 func (c *azureCloudImplementation) NetworkInterface() NetworkInterfacesClient {
 	return c.networkInterfacesClient
+}
+
+func (c *azureCloudImplementation) LoadBalancer() LoadBalancersClient {
+	return c.loadBalancersClient
 }
