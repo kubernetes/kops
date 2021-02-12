@@ -17,10 +17,14 @@ limitations under the License.
 package tester
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"syscall"
+	"time"
 
+	ps "github.com/mitchellh/go-ps"
 	"github.com/octago/sflags/gen/gpflag"
 	"k8s.io/klog/v2"
 
@@ -30,9 +34,11 @@ import (
 // Tester wraps kubetest2's ginkgo tester with additional functionality
 type Tester struct {
 	*ginkgo.Tester
+	Timeout time.Duration `desc:"Terminate the testing after the specified amount of time."`
 }
 
 func (t *Tester) pretestSetup() error {
+	klog.Infof("Setting timeout value of %v", t.Timeout)
 	kubectlPath, err := t.AcquireKubectl()
 	if err != nil {
 		return fmt.Errorf("failed to get kubectl package from published releases: %s", err)
@@ -65,12 +71,27 @@ func (t *Tester) execute() error {
 		return err
 	}
 
-	return t.Execute()
+	execCh := make(chan error, 1)
+	go func() {
+		execCh <- t.Execute()
+	}()
+	select {
+	case err := <-execCh:
+		if err != nil {
+			return err
+		}
+	case <-time.After(t.Timeout):
+		signalChildren()
+		return errors.New("ginkgo timeout")
+	}
+	return nil
 }
 
 func NewDefaultTester() *Tester {
 	return &Tester{
-		ginkgo.NewDefaultTester(),
+		Tester: ginkgo.NewDefaultTester(),
+		// TODO: Set back to 0 before merging this PR
+		Timeout: time.Duration(5 * time.Minute),
 	}
 }
 
@@ -79,4 +100,24 @@ func Main() {
 	if err := t.execute(); err != nil {
 		klog.Fatalf("failed to run ginkgo tester: %v", err)
 	}
+}
+
+// A temporary hack to send SIGINT to the e2e.test executable to dump its stack trace
+// Only signals direct children and not descendents.
+func signalChildren() {
+	pid := os.Getpid()
+	allProcesses, err := ps.Processes()
+	if err != nil {
+		klog.Warning("Failed to list all processes: %v", err)
+		return
+	}
+	for _, p := range allProcesses {
+		if p.PPid() != pid {
+			continue
+		}
+		if err := syscall.Kill(p.Pid(), syscall.SIGINT); err != nil {
+			klog.Warningf("Failed to issue SIGINT to process %+v", p)
+		}
+	}
+	return
 }
