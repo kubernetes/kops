@@ -56,9 +56,9 @@ func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) m
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
-		nodeLabels[RoleLabelMaster16] = ""
-		nodeLabels[RoleLabelControlPlane20] = ""
-		nodeLabels[RoleLabelName15] = RoleMasterLabelValue15
+		for label, value := range BuildMandatoryControlPlaneLabels() {
+			nodeLabels[label] = value
+		}
 	} else {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
@@ -74,5 +74,15 @@ func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) m
 		nodeLabels[k] = v
 	}
 
+	return nodeLabels
+}
+
+// BuildMandatoryControlPlaneLabels returns the list of labels all CP nodes must have
+func BuildMandatoryControlPlaneLabels() map[string]string {
+	nodeLabels := make(map[string]string)
+	nodeLabels[RoleLabelMaster16] = ""
+	nodeLabels[RoleLabelControlPlane20] = ""
+	nodeLabels[RoleLabelName15] = RoleMasterLabelValue15
+	nodeLabels["kops.k8s.io/kops-controller-pki"] = ""
 	return nodeLabels
 }

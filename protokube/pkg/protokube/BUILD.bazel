@@ -31,6 +31,7 @@ go_library(
         "//dns-controller/pkg/dns:go_default_library",
         "//pkg/k8scodecs:go_default_library",
         "//pkg/kubemanifest:go_default_library",
+        "//pkg/nodelabels:go_default_library",
         "//pkg/resources/digitalocean:go_default_library",
         "//protokube/pkg/etcd:go_default_library",
         "//protokube/pkg/gossip:go_default_library",

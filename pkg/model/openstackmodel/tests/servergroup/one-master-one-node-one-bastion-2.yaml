@@ -86,6 +86,7 @@ Metadata:
   cluster_generation: "0"
   ig_generation: "0"
   k8s: cluster
+  k8s.io_cluster-autoscaler_node-template_label_kops.k8s.io_kops-controller-pki: ""
   k8s.io_cluster-autoscaler_node-template_label_kubernetes.io_role: master
   k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_control-plane: ""
   k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_master: ""

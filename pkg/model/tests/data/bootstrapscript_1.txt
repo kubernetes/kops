@@ -219,6 +219,7 @@ InstanceGroupRole: Master
 KubeletConfig:
   kubeconfigPath: /etc/kubernetes/igconfig.txt
   nodeLabels:
+    kops.k8s.io/kops-controller-pki: ""
     kubernetes.io/role: master
     label2: value2
     labelname: labelvalue

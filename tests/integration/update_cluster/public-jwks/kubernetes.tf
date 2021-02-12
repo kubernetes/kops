@@ -111,6 +111,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-example-com"
     value               = "master-us-test-1a.masters.minimal.example.com"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
     propagate_at_launch = true
     value               = "master"
@@ -347,6 +352,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
     tags = {
       "KubernetesCluster"                                                                   = "minimal.example.com"
       "Name"                                                                                = "master-us-test-1a.masters.minimal.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"       = ""
       "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                    = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane" = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"        = ""
@@ -360,6 +366,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
     tags = {
       "KubernetesCluster"                                                                   = "minimal.example.com"
       "Name"                                                                                = "master-us-test-1a.masters.minimal.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"       = ""
       "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                    = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane" = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"        = ""
@@ -371,6 +378,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
   tags = {
     "KubernetesCluster"                                                                   = "minimal.example.com"
     "Name"                                                                                = "master-us-test-1a.masters.minimal.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"       = ""
     "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                    = "master"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane" = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"        = ""
