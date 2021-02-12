@@ -39,15 +39,15 @@ func (d *deployer) DumpClusterLogs() error {
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.SetEnv(d.env()...)
 	if err := runWithOutput(cmd); err != nil {
-		return err
+		klog.Warning(err)
 	}
 
 	if err := d.dumpClusterManifest(); err != nil {
-		return err
+		klog.Warning(err)
 	}
 
 	if err := d.dumpClusterInfo(); err != nil {
-		return err
+		klog.Warning(err)
 	}
 
 	return nil
