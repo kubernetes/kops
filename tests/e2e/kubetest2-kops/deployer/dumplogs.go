@@ -46,6 +46,10 @@ func (d *deployer) DumpClusterLogs() error {
 		return err
 	}
 
+	if err := d.dumpClusterInfo(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -71,6 +75,23 @@ func (d *deployer) dumpClusterManifest() error {
 		if err := cmd.Run(); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func (d *deployer) dumpClusterInfo() error {
+	args := []string{
+		"kubectl", "cluster-info", "dump",
+		"--all-namespaces",
+		"-o", "yaml",
+		"--output-directory", path.Join(d.ArtifactsDir, "cluster-info"),
+	}
+	klog.Info(strings.Join(args, " "))
+
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.SetEnv(d.env()...)
+	if err := cmd.Run(); err != nil {
+		return err
 	}
 	return nil
 }
