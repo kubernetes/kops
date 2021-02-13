@@ -48,21 +48,49 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
+	installContainerd := true
+
 	// @check: neither flatcar nor containeros need provision containerd.service, just the containerd daemon options
 	switch b.Distribution {
 	case distributions.DistributionFlatcar:
 		klog.Infof("Detected Flatcar; won't install containerd")
+		installContainerd = false
 		if b.Cluster.Spec.ContainerRuntime == "containerd" {
 			b.buildSystemdServiceOverrideFlatcar(c)
-			b.buildConfigFile(c)
 		}
-		return nil
 	case distributions.DistributionContainerOS:
 		klog.Infof("Detected ContainerOS; won't install containerd")
+		installContainerd = false
 		b.buildSystemdServiceOverrideContainerOS(c)
-		return nil
 	}
 
+	if b.Cluster.Spec.ContainerRuntime == "containerd" {
+		// Using containerd with Kubenet requires special configuration.
+		// This is a temporary backwards-compatible solution for kubenet users and will be deprecated when Kubenet is deprecated:
+		// https://github.com/containerd/containerd/blob/master/docs/cri/config.md#cni-config-template
+		if components.UsesKubenet(b.Cluster.Spec.Networking) {
+			b.buildCNIConfigTemplateFile(c)
+			if err := b.buildIPMasqueradeRules(c); err != nil {
+				return err
+			}
+		}
+	}
+
+	// If there are containerd configuration overrides, apply them
+	b.buildOverrideConfigFile(c)
+
+	if installContainerd {
+		if err := b.installContainerd(c); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// installContainerd installs the binaries and services to run containerd.
+// We break it out because on immutable OSes we only configure containerd, we don't install it.
+func (b *ContainerdBuilder) installContainerd(c *fi.ModelBuilderContext) error {
 	// Add Apache2 license
 	{
 		t := &nodetasks.File{
@@ -72,9 +100,6 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(t)
 	}
-
-	// Add config file
-	b.buildConfigFile(c)
 
 	// Add binaries from assets
 	if b.Cluster.Spec.ContainerRuntime == "containerd" {
@@ -97,17 +122,6 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// Add configuration file for easier use of crictl
 		b.addCrictlConfig(c)
-
-		// Using containerd with Kubenet requires special configuration.
-		// This is a temporary backwards-compatible solution for kubenet users and will be deprecated when Kubenet is deprecated:
-		// https://github.com/containerd/containerd/blob/master/docs/cri/config.md#cni-config-template
-		if components.UsesKubenet(b.Cluster.Spec.Networking) {
-			b.buildCNIConfigTemplateFile(c)
-			if err := b.buildIPMasqueradeRules(c); err != nil {
-				return err
-			}
-		}
-
 	}
 
 	var containerRuntimeVersion string
@@ -154,7 +168,7 @@ func (b *ContainerdBuilder) buildSystemdService(sv semver.Version) *nodetasks.Se
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/containerd")
 	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
 	manifest.Set("Service", "ExecStartPre", "-/sbin/modprobe overlay")
-	manifest.Set("Service", "ExecStart", "/usr/bin/containerd -c /etc/containerd/config-kops.toml \"$CONTAINERD_OPTS\"")
+	manifest.Set("Service", "ExecStart", "/usr/bin/containerd -c "+b.containerdConfigFilePath()+" \"$CONTAINERD_OPTS\"")
 
 	// notify the daemon's readiness to systemd
 	if (b.Cluster.Spec.ContainerRuntime == "containerd" && sv.GTE(semver.MustParse("1.3.4"))) || sv.GTE(semver.MustParse("19.3.13")) {
@@ -192,6 +206,18 @@ func (b *ContainerdBuilder) buildSystemdService(sv semver.Version) *nodetasks.Se
 	return service
 }
 
+// containerdConfigFilePath returns the path we use for the containerd config file
+// We normally use a different path for clarity, but on some OSes we can't override the path.
+// TODO: Should we just use config.toml everywhere?
+func (b *ContainerdBuilder) containerdConfigFilePath() string {
+	switch b.Distribution {
+	case distributions.DistributionContainerOS:
+		return "/etc/containerd/config.toml"
+	default:
+		return "/etc/containerd/config-kops.toml"
+	}
+}
+
 // buildSystemdServiceOverrideContainerOS is responsible for overriding the containerd service for ContainerOS
 func (b *ContainerdBuilder) buildSystemdServiceOverrideContainerOS(c *fi.ModelBuilderContext) {
 	lines := []string{
@@ -202,9 +228,10 @@ func (b *ContainerdBuilder) buildSystemdServiceOverrideContainerOS(c *fi.ModelBu
 	contents := strings.Join(lines, "\n")
 
 	c.AddTask(&nodetasks.File{
-		Path:     "/etc/systemd/system/containerd.service.d/10-kops.conf",
-		Contents: fi.NewStringResource(contents),
-		Type:     nodetasks.FileType_File,
+		Path:       "/etc/systemd/system/containerd.service.d/10-kops.conf",
+		Contents:   fi.NewStringResource(contents),
+		Type:       nodetasks.FileType_File,
+		AfterFiles: []string{b.containerdConfigFilePath()},
 		OnChangeExecute: [][]string{
 			{"systemctl", "daemon-reload"},
 			{"systemctl", "restart", "containerd.service"},
@@ -221,15 +248,16 @@ func (b *ContainerdBuilder) buildSystemdServiceOverrideContainerOS(c *fi.ModelBu
 func (b *ContainerdBuilder) buildSystemdServiceOverrideFlatcar(c *fi.ModelBuilderContext) {
 	lines := []string{
 		"[Service]",
-		"Environment=CONTAINERD_CONFIG=/etc/containerd/config-kops.toml",
+		"Environment=CONTAINERD_CONFIG=" + b.containerdConfigFilePath(),
 		"EnvironmentFile=/etc/environment",
 	}
 	contents := strings.Join(lines, "\n")
 
 	c.AddTask(&nodetasks.File{
-		Path:     "/etc/systemd/system/containerd.service.d/10-kops.conf",
-		Contents: fi.NewStringResource(contents),
-		Type:     nodetasks.FileType_File,
+		Path:       "/etc/systemd/system/containerd.service.d/10-kops.conf",
+		Contents:   fi.NewStringResource(contents),
+		Type:       nodetasks.FileType_File,
+		AfterFiles: []string{b.containerdConfigFilePath()},
 		OnChangeExecute: [][]string{
 			{"systemctl", "daemon-reload"},
 			{"systemctl", "restart", "containerd.service"},
@@ -268,15 +296,15 @@ func (b *ContainerdBuilder) buildSysconfigFile(c *fi.ModelBuilderContext) error 
 	return nil
 }
 
-// buildConfigFile is responsible for creating the containerd configuration file
-func (b *ContainerdBuilder) buildConfigFile(c *fi.ModelBuilderContext) {
+// buildOverrideConfigFile is responsible for creating the containerd configuration file
+func (b *ContainerdBuilder) buildOverrideConfigFile(c *fi.ModelBuilderContext) {
 	containerdConfigOverride := ""
 	if b.Cluster.Spec.Containerd != nil {
 		containerdConfigOverride = fi.StringValue(b.Cluster.Spec.Containerd.ConfigOverride)
 	}
 
 	c.AddTask(&nodetasks.File{
-		Path:     "/etc/containerd/config-kops.toml",
+		Path:     b.containerdConfigFilePath(),
 		Contents: fi.NewStringResource(containerdConfigOverride),
 		Type:     nodetasks.FileType_File,
 	})
