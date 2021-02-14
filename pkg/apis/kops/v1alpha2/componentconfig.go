@@ -791,6 +791,12 @@ type AzureConfiguration struct {
 
 // CloudConfiguration defines the cloud provider configuration
 type CloudConfiguration struct {
+	// Cross-cloud provider options
+
+	// ManageStorageClasses specifies whether kOps should create and maintain a set of
+	// StorageClasses, one of which it nominates as the default class for the cluster.
+	ManageStorageClasses *bool `json:"manageStorageClasses,omitempty"`
+
 	// GCE cloud-config options
 	Multizone          *bool   `json:"multizone,omitempty"`
 	NodeTags           *string `json:"nodeTags,omitempty"`

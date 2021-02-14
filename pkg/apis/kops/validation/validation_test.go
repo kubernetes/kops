@@ -1033,3 +1033,96 @@ func Test_Validate_NodeLocalDNS(t *testing.T) {
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
+
+func Test_Validate_CloudConfiguration(t *testing.T) {
+	grid := []struct {
+		Description    string
+		Input          kops.CloudConfiguration
+		ExpectedErrors []string
+	}{
+		{
+			Description: "neither",
+			Input:       kops.CloudConfiguration{},
+		},
+		{
+			Description: "all false",
+			Input: kops.CloudConfiguration{
+				ManageStorageClasses: fi.Bool(false),
+			},
+		},
+		{
+			Description: "all true",
+			Input: kops.CloudConfiguration{
+				ManageStorageClasses: fi.Bool(true),
+			},
+		},
+		{
+			Description: "os false",
+			Input: kops.CloudConfiguration{
+				Openstack: &kops.OpenstackConfiguration{
+					BlockStorage: &kops.OpenstackBlockStorageConfig{
+						CreateStorageClass: fi.Bool(false),
+					},
+				}},
+		},
+		{
+			Description: "os false",
+			Input: kops.CloudConfiguration{
+				Openstack: &kops.OpenstackConfiguration{
+					BlockStorage: &kops.OpenstackBlockStorageConfig{
+						CreateStorageClass: fi.Bool(true),
+					},
+				}},
+		},
+		{
+			Description: "all false, os false",
+			Input: kops.CloudConfiguration{
+				ManageStorageClasses: fi.Bool(false),
+				Openstack: &kops.OpenstackConfiguration{
+					BlockStorage: &kops.OpenstackBlockStorageConfig{
+						CreateStorageClass: fi.Bool(false),
+					},
+				}},
+		},
+		{
+			Description: "all false, os true",
+			Input: kops.CloudConfiguration{
+				ManageStorageClasses: fi.Bool(false),
+				Openstack: &kops.OpenstackConfiguration{
+					BlockStorage: &kops.OpenstackBlockStorageConfig{
+						CreateStorageClass: fi.Bool(true),
+					},
+				}},
+			ExpectedErrors: []string{"Forbidden::cloudConfig.manageStorageClasses"},
+		},
+		{
+			Description: "all true, os false",
+			Input: kops.CloudConfiguration{
+				ManageStorageClasses: fi.Bool(true),
+				Openstack: &kops.OpenstackConfiguration{
+					BlockStorage: &kops.OpenstackBlockStorageConfig{
+						CreateStorageClass: fi.Bool(false),
+					},
+				}},
+			ExpectedErrors: []string{"Forbidden::cloudConfig.manageStorageClasses"},
+		},
+		{
+			Description: "all true, os true",
+			Input: kops.CloudConfiguration{
+				ManageStorageClasses: fi.Bool(true),
+				Openstack: &kops.OpenstackConfiguration{
+					BlockStorage: &kops.OpenstackBlockStorageConfig{
+						CreateStorageClass: fi.Bool(true),
+					},
+				}},
+		},
+	}
+
+	for _, g := range grid {
+		fldPath := field.NewPath("cloudConfig")
+		t.Run(g.Description, func(t *testing.T) {
+			errs := validateCloudConfiguration(&g.Input, fldPath)
+			testErrors(t, g.Input, errs, g.ExpectedErrors)
+		})
+	}
+}

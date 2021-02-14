@@ -137,7 +137,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
   ensure-install-dir
 
   cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
-  cloudConfig: null
+  cloudConfig:
+    manageStorageClasses: true
   containerRuntime: containerd
   containerd:
     configOverride: |
@@ -470,7 +471,8 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
   ensure-install-dir
 
   cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
-  cloudConfig: null
+  cloudConfig:
+    manageStorageClasses: true
   containerRuntime: containerd
   containerd:
     configOverride: |
