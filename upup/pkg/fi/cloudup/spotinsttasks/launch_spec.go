@@ -750,6 +750,7 @@ type terraformLaunchSpec struct {
 	InstanceTypes            []string                       `json:"instance_types,omitempty" cty:"instance_types"`
 	SubnetIDs                []*terraform.Literal           `json:"subnet_ids,omitempty" cty:"subnet_ids"`
 	SecurityGroups           []*terraform.Literal           `json:"security_groups,omitempty" cty:"security_groups"`
+	Taints                   []*terraformTaint              `json:"taints,omitempty" cty:"taints"`
 	Labels                   []*terraformKV                 `json:"labels,omitempty" cty:"labels"`
 	Tags                     []*terraformKV                 `json:"tags,omitempty" cty:"tags"`
 	Headrooms                []*terraformAutoScalerHeadroom `json:"autoscale_headrooms,omitempty" cty:"autoscale_headrooms"`
@@ -881,6 +882,21 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 						Key:   fi.String(k),
 						Value: fi.String(v),
 					})
+				}
+			}
+
+			// Taints.
+			if len(opts.Taints) > 0 {
+				tf.Taints = make([]*terraformTaint, len(opts.Taints))
+				for i, taint := range opts.Taints {
+					t := &terraformTaint{
+						Key:    fi.String(taint.Key),
+						Effect: fi.String(string(taint.Effect)),
+					}
+					if taint.Value != "" {
+						t.Value = fi.String(taint.Value)
+					}
+					tf.Taints[i] = t
 				}
 			}
 		}

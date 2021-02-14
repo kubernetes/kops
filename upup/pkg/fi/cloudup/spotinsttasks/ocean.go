@@ -1020,7 +1020,6 @@ type terraformOcean struct {
 	SubnetIDs              []*terraform.Literal `json:"subnet_ids,omitempty" cty:"subnet_ids"`
 	AutoScaler             *terraformAutoScaler `json:"autoscaler,omitempty" cty:"autoscaler"`
 	Tags                   []*terraformKV       `json:"tags,omitempty" cty:"tags"`
-	Lifecycle              *terraformLifecycle  `json:"lifecycle,omitempty" cty:"lifecycle"`
 
 	MinSize         *int64 `json:"min_size,omitempty" cty:"min_size"`
 	MaxSize         *int64 `json:"max_size,omitempty" cty:"max_size"`
@@ -1031,17 +1030,15 @@ type terraformOcean struct {
 	DrainingTimeout          *int64 `json:"draining_timeout,omitempty" cty:"draining_timeout"`
 	GracePeriod              *int64 `json:"grace_period,omitempty" cty:"grace_period"`
 
-	Monitoring               *bool                          `json:"monitoring,omitempty" cty:"monitoring"`
-	EBSOptimized             *bool                          `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
-	ImageID                  *string                        `json:"image_id,omitempty" cty:"image_id"`
-	AssociatePublicIPAddress *bool                          `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
-	RootVolumeSize           *int32                         `json:"root_volume_size,omitempty" cty:"root_volume_size"`
-	UserData                 *terraform.Literal             `json:"user_data,omitempty" cty:"user_data"`
-	IAMInstanceProfile       *terraform.Literal             `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
-	KeyName                  *terraform.Literal             `json:"key_name,omitempty" cty:"key_name"`
-	SecurityGroups           []*terraform.Literal           `json:"security_groups,omitempty" cty:"security_groups"`
-	Labels                   []*terraformKV                 `json:"labels,omitempty" cty:"labels"`
-	Headrooms                []*terraformAutoScalerHeadroom `json:"autoscale_headrooms,omitempty" cty:"autoscale_headrooms"`
+	Monitoring               *bool                `json:"monitoring,omitempty" cty:"monitoring"`
+	EBSOptimized             *bool                `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
+	ImageID                  *string              `json:"image_id,omitempty" cty:"image_id"`
+	AssociatePublicIPAddress *bool                `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
+	RootVolumeSize           *int32               `json:"root_volume_size,omitempty" cty:"root_volume_size"`
+	UserData                 *terraform.Literal   `json:"user_data,omitempty" cty:"user_data"`
+	IAMInstanceProfile       *terraform.Literal   `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
+	KeyName                  *terraform.Literal   `json:"key_name,omitempty" cty:"key_name"`
+	SecurityGroups           []*terraform.Literal `json:"security_groups,omitempty" cty:"security_groups"`
 }
 
 func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Ocean) error {
@@ -1199,16 +1196,6 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 					tf.AutoScaler.ResourceLimits = &terraformAutoScalerResourceLimits{
 						MaxVCPU:   limits.MaxVCPU,
 						MaxMemory: limits.MaxVCPU,
-					}
-				}
-
-				// Ignore capacity changes because the auto scaler updates the
-				// desired capacity overtime.
-				if fi.BoolValue(tf.AutoScaler.Enabled) {
-					tf.Lifecycle = &terraformLifecycle{
-						IgnoreChanges: []string{
-							"desired_capacity",
-						},
 					}
 				}
 			}
