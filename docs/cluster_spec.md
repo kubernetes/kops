@@ -101,6 +101,45 @@ spec:
       type: Public
 ```
 
+### Load Balancer Subnet configuration 
+
+**AWS only**
+
+By default, kops will try to choose one suitable subnet per availability zone and use these for the API load balancer.
+Depending on the `type`, kops will choose from either `Private` or `Public` subnets. If this default logic is not
+suitable for you (e.g. because you have a more granular separation between subnets), you can explicitly configure
+the to-be-use subnets:
+
+```yaml
+spec:
+  api:
+    loadBalancer:
+      type: Public
+      subnets:
+        - name: subnet-a
+        - name: subnet-b
+        - name: subnet-c
+````
+
+It is only allowed to add more subnets and forbidden to remove existing ones. This is due to limitations on AWS
+ELBs and NLBs.
+
+If the `type` is `Internal` and the `class` is `Network`, you can also specify a static private IPv4 address per subnet:
+```yaml
+spec:
+  api:
+    loadBalancer:
+      type: Internal
+      subnets:
+        - name: subnet-a
+          privateIPv4Address: 172.16.1.10
+```
+
+The specified IPv4 addresses must be part of the subnets CIDR. They can not be changed after initial deployment.
+
+If you made a mistake or need to change subnets for any other reason, you're currently forced to manually delete the
+underlying ELB/NLB and re-run `kops update`.
+
 ## etcdClusters
 
 ### The default etcd configuration

@@ -112,6 +112,23 @@ spec:
                         description: SSLPolicy allows you to overwrite the LB listener's
                           Security Policy
                         type: string
+                      subnets:
+                        description: Subnets allows you to specify the subnets that
+                          must be used for the load balancer
+                        items:
+                          description: LoadBalancerSubnetSpec provides configuration
+                            for subnets used for a load balancer
+                          properties:
+                            name:
+                              description: Name specifies the name of the cluster
+                                subnet
+                              type: string
+                            privateIPv4Address:
+                              description: PrivateIPv4Address specifies the private
+                                IPv4 address to use for a NLB
+                              type: string
+                          type: object
+                        type: array
                       type:
                         description: Type of load balancer to create may Public or
                           Internal.

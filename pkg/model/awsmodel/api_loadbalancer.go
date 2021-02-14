@@ -63,9 +63,29 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("unhandled LoadBalancer type %q", lbSpec.Type)
 	}
 
-	// Compute the subnets - only one per zone, and then break ties based on chooseBestSubnetForELB
 	var elbSubnets []*awstasks.Subnet
-	{
+	var nlbSubnetMappings []*awstasks.SubnetMapping
+	if len(lbSpec.Subnets) != 0 {
+		// Subnets have been explicitly set
+		for _, subnet := range lbSpec.Subnets {
+			for _, clusterSubnet := range b.Cluster.Spec.Subnets {
+				if subnet.Name == clusterSubnet.Name {
+					elbSubnet := b.LinkToSubnet(&clusterSubnet)
+					elbSubnets = append(elbSubnets, elbSubnet)
+
+					nlbSubnetMapping := &awstasks.SubnetMapping{
+						Subnet: elbSubnet,
+					}
+					if subnet.PrivateIPv4Address != nil {
+						nlbSubnetMapping.PrivateIPv4Address = subnet.PrivateIPv4Address
+					}
+					nlbSubnetMappings = append(nlbSubnetMappings, nlbSubnetMapping)
+					break
+				}
+			}
+		}
+	} else {
+		// Compute the subnets - only one per zone, and then break ties based on chooseBestSubnetForELB
 		subnetsByZone := make(map[string][]*kops.ClusterSubnetSpec)
 		for i := range b.Cluster.Spec.Subnets {
 			subnet := &b.Cluster.Spec.Subnets[i]
@@ -91,7 +111,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		for zone, subnets := range subnetsByZone {
 			subnet := b.chooseBestSubnetForELB(zone, subnets)
 
-			elbSubnets = append(elbSubnets, b.LinkToSubnet(subnet))
+			elbSubnet := b.LinkToSubnet(subnet)
+			elbSubnets = append(elbSubnets, elbSubnet)
+			nlbSubnetMappings = append(nlbSubnetMappings, &awstasks.SubnetMapping{Subnet: elbSubnet})
 		}
 	}
 
@@ -148,7 +170,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 
 			LoadBalancerName: fi.String(loadBalancerName),
-			Subnets:          elbSubnets,
+			SubnetMappings:   nlbSubnetMappings,
 			Listeners:        nlbListeners,
 			TargetGroups:     make([]*awstasks.TargetGroup, 0),
 
