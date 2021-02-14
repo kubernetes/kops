@@ -540,7 +540,9 @@ resource "aws_lb" "api-complex-example-com" {
   internal                         = false
   load_balancer_type               = "network"
   name                             = "api-complex-example-com-vd3t5n"
-  subnets                          = [aws_subnet.us-test-1a-complex-example-com.id]
+  subnet_mapping {
+    subnet_id = aws_subnet.us-test-1a-complex-example-com.id
+  }
   tags = {
     "KubernetesCluster"                         = "complex.example.com"
     "Name"                                      = "api.complex.example.com"
