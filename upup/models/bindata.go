@@ -43434,11 +43434,17 @@ rules:
 - apiGroups: [""]
   resources: ["pods"]
   verbs: ["get", "list", "patch", "update", "create", "delete"]
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["get", "list", "patch","update","create","delete"]
   # ----------------------------------------------------------------------------
   # Required by Spotinst Wave.
   # ----------------------------------------------------------------------------
 - apiGroups: ["sparkoperator.k8s.io"]
   resources: ["sparkapplications", "scheduledsparkapplications"]
+  verbs: ["get", "list"]
+- apiGroups: ["wave.spot.io"]
+  resources: ["sparkapplications", "wavecomponents", "waveenvironments"]
   verbs: ["get", "list"]
 ---
 # ------------------------------------------------------------------------------
@@ -43508,7 +43514,7 @@ spec:
       containers:
       - name: spotinst-kubernetes-cluster-controller
         imagePullPolicy: Always
-        image: spotinst/kubernetes-cluster-controller:1.0.70
+        image: spotinst/kubernetes-cluster-controller:1.0.72
         livenessProbe:
           httpGet:
             path: /healthcheck
