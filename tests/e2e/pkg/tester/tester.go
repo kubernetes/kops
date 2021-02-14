@@ -17,9 +17,12 @@ limitations under the License.
 package tester
 
 import (
+	"bytes"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/octago/sflags/gen/gpflag"
 	"k8s.io/klog/v2"
@@ -44,6 +47,32 @@ func (t *Tester) pretestSetup() error {
 	return os.Setenv("PATH", newPath)
 }
 
+// The --host argument was required in the kubernetes e2e tests, until https://github.com/kubernetes/kubernetes/pull/87030
+// We can likely drop this when we drop support / testing for k8s 1.17
+func (t *Tester) addHostArgument() error {
+	args := []string{
+		"kubectl", "config", "view", "--minify", "-o", "jsonpath='{.clusters[0].cluster.server}'",
+	}
+	c := exec.Command(args[0], args[1:]...)
+	var stdout bytes.Buffer
+	c.Stdout = &stdout
+	var stderr bytes.Buffer
+	c.Stderr = &stderr
+	if err := c.Run(); err != nil {
+		klog.Warningf("failed to run %s; stderr=%s", strings.Join(args, " "), stderr.String())
+		return fmt.Errorf("error querying current config from kubectl: %w", err)
+	}
+
+	server := strings.TrimSpace(stdout.String())
+	if server == "" {
+		return fmt.Errorf("kubeconfig did not contain server")
+	}
+
+	klog.Info("Adding --host=%s", server)
+	t.TestArgs += " --host=" + server
+	return nil
+}
+
 func (t *Tester) execute() error {
 	fs, err := gpflag.Parse(t)
 	if err != nil {
@@ -62,6 +91,10 @@ func (t *Tester) execute() error {
 	}
 
 	if err := t.pretestSetup(); err != nil {
+		return err
+	}
+
+	if err := t.addHostArgument(); err != nil {
 		return err
 	}
 
