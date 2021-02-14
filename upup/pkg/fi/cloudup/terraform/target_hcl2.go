@@ -24,6 +24,7 @@ import (
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -99,6 +100,12 @@ func (t *TerraformTarget) finishHCL2(taskMap map[string]fi.Task) error {
 			"source":  cty.StringVal("hashicorp/aws"),
 			"version": cty.StringVal(">= 2.46.0"),
 		})
+		if featureflag.Spotinst.Enabled() {
+			writeMap(requiredProvidersBody, "spotinst", map[string]cty.Value{
+				"source":  cty.StringVal("spotinst/spotinst"),
+				"version": cty.StringVal(">= 1.33.0"),
+			})
+		}
 	}
 
 	bytes := hclwrite.Format(f.Bytes())
