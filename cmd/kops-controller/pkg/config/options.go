@@ -21,6 +21,7 @@ import "k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 type Options struct {
 	Cloud                 string         `json:"cloud,omitempty"`
 	ConfigBase            string         `json:"configBase,omitempty"`
+	RegistryPath          string         `json:"registryPath,omitempty"`
 	Server                *ServerOptions `json:"server,omitempty"`
 	CacheNodeidentityInfo bool           `json:"cacheNodeidentityInfo,omitempty"`
 }
@@ -31,6 +32,9 @@ func (o *Options) PopulateDefaults() {
 type ServerOptions struct {
 	// Listen is the network endpoint (ip and port) we should listen on.
 	Listen string
+
+	// MetricsListen is the network endpoint (ip and port) for prometheus exporter.
+	MetricsListen string
 
 	// Provider is the cloud provider.
 	Provider ServerProviderOptions `json:"provider"`

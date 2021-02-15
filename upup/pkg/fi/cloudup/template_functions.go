@@ -113,6 +113,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["KopsControllerArgv"] = tf.KopsControllerArgv
 	dest["KopsControllerConfig"] = tf.KopsControllerConfig
+	dest["KopsControllerMetricsPort"] = tf.KopsControllerMetricsPort
 	dest["DnsControllerArgv"] = tf.DNSControllerArgv
 	dest["ExternalDnsArgv"] = tf.ExternalDNSArgv
 	dest["CloudControllerConfigArgv"] = tf.CloudControllerConfigArgv
@@ -417,9 +418,12 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 	cluster := tf.Cluster
 
+	kopsStateStore := strings.Replace(cluster.Spec.ConfigBase, "/"+cluster.ObjectMeta.Name, "", 1)
+
 	config := &kopscontrollerconfig.Options{
-		Cloud:      cluster.Spec.CloudProvider,
-		ConfigBase: cluster.Spec.ConfigBase,
+		Cloud:        cluster.Spec.CloudProvider,
+		ConfigBase:   cluster.Spec.ConfigBase,
+		RegistryPath: kopsStateStore,
 	}
 
 	if featureflag.CacheNodeidentityInfo.Enabled() {
@@ -443,6 +447,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		pkiDir := "/etc/kubernetes/kops-controller/pki"
 		config.Server = &kopscontrollerconfig.ServerOptions{
 			Listen:                fmt.Sprintf(":%d", wellknownports.KopsControllerPort),
+			MetricsListen:         fmt.Sprintf(":%d", wellknownports.KopsControllerMetricsPort),
 			ServerCertificatePath: path.Join(pkiDir, "kops-controller.crt"),
 			ServerKeyPath:         path.Join(pkiDir, "kops-controller.key"),
 			CABasePath:            pkiDir,
@@ -507,6 +512,11 @@ func (tf *TemplateFunctions) KopsControllerArgv() ([]string, error) {
 	argv = append(argv, "--conf=/etc/kubernetes/kops-controller/config/config.yaml")
 
 	return argv, nil
+}
+
+// KopsControllerPort returns kops-controller's server port
+func (tf *TemplateFunctions) KopsControllerMetricsPort() int {
+	return wellknownports.KopsControllerMetricsPort
 }
 
 func (tf *TemplateFunctions) ExternalDNSArgv() ([]string, error) {

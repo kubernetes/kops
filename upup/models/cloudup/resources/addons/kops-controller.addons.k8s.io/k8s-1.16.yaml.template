@@ -77,6 +77,10 @@ spec:
             memory: 50Mi
         securityContext:
           runAsNonRoot: true
+        ports:
+          - name: server
+            containerPort: {{ KopsControllerMetricsPort }}
+            protocol: TCP
       volumes:
 {{ if .UseHostCertificates }}
       - hostPath:
@@ -199,3 +203,21 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: User
   name: system:serviceaccount:kube-system:kops-controller
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    k8s-addon: kops-controller.addons.k8s.io
+  name: kops-controller
+  namespace: kube-system
+spec:
+  ports:
+    - port: {{ KopsControllerMetricsPort }}
+      targetPort: {{ KopsControllerMetricsPort }}
+      protocol: TCP
+  type: ClusterIP
+  selector:
+    k8s-app: kops-controller
