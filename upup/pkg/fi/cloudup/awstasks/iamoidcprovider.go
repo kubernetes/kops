@@ -39,6 +39,7 @@ type IAMOIDCProvider struct {
 	URL         *string
 
 	Name *string
+	Tags map[string]string
 
 	arn *string
 }
@@ -83,6 +84,7 @@ func (e *IAMOIDCProvider) Find(c *fi.Context) (*IAMOIDCProvider, error) {
 				ClientIDs:   descResp.ClientIDList,
 				Thumbprints: actualThumbprints,
 				URL:         &actualURL,
+				Tags:        mapIAMTagsToMap(descResp.Tags),
 				arn:         arn,
 			}
 
@@ -135,6 +137,7 @@ func (p *IAMOIDCProvider) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMOID
 			ClientIDList:   e.ClientIDs,
 			ThumbprintList: aws.StringSlice(thumbprints),
 			Url:            e.URL,
+			Tags:           mapToIAMTags(e.Tags),
 		}
 
 		response, err := t.Cloud.IAM().CreateOpenIDConnectProvider(request)
@@ -154,6 +157,32 @@ func (p *IAMOIDCProvider) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMOID
 			_, err := t.Cloud.IAM().UpdateOpenIDConnectProviderThumbprint(request)
 			if err != nil {
 				return fmt.Errorf("error updating IAMOIDCProvider Thumbprints: %v", err)
+			}
+		}
+		if changes.Tags != nil {
+			if len(a.Tags) > 0 {
+				existingTagKeys := make([]*string, 0)
+				for k := range a.Tags {
+					existingTagKeys = append(existingTagKeys, &k)
+				}
+				untagRequest := &iam.UntagOpenIDConnectProviderInput{
+					OpenIDConnectProviderArn: a.arn,
+					TagKeys:                  existingTagKeys,
+				}
+				_, err = t.Cloud.IAM().UntagOpenIDConnectProvider(untagRequest)
+				if err != nil {
+					return fmt.Errorf("error untagging IAMOIDCProvider: %v", err)
+				}
+			}
+			if len(e.Tags) > 0 {
+				tagRequest := &iam.TagOpenIDConnectProviderInput{
+					OpenIDConnectProviderArn: a.arn,
+					Tags:                     mapToIAMTags(e.Tags),
+				}
+				_, err = t.Cloud.IAM().TagOpenIDConnectProvider(tagRequest)
+				if err != nil {
+					return fmt.Errorf("error tagging IAMOIDCProvider: %v", err)
+				}
 			}
 		}
 	}
