@@ -35,6 +35,7 @@ type Subnet struct {
 	ResourceGroup  *ResourceGroup
 	VirtualNetwork *VirtualNetwork
 	CIDR           *string
+	Shared         *bool
 }
 
 var _ fi.Task = &Subnet{}

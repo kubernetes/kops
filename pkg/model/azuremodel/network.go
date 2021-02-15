@@ -37,6 +37,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		ResourceGroup: b.LinkToResourceGroup(),
 		CIDR:          fi.String(b.Cluster.Spec.NetworkCIDR),
 		Tags:          map[string]*string{},
+		Shared:        fi.Bool(b.Cluster.SharedVPC()),
 	}
 	c.AddTask(networkTask)
 
@@ -47,6 +48,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			ResourceGroup:  b.LinkToResourceGroup(),
 			VirtualNetwork: b.LinkToVirtualNetwork(),
 			CIDR:           fi.String(subnetSpec.CIDR),
+			Shared:         fi.Bool(b.Cluster.SharedVPC()),
 		}
 		c.AddTask(subnetTask)
 	}
@@ -56,6 +58,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		Lifecycle:     b.Lifecycle,
 		ResourceGroup: b.LinkToResourceGroup(),
 		Tags:          map[string]*string{},
+		Shared:        fi.Bool(b.Cluster.IsSharedAzureRouteTable()),
 	}
 	c.AddTask(rtTask)
 
