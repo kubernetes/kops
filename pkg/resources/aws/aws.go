@@ -1906,7 +1906,7 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 			return true
 		})
 		if err != nil {
-			if awsup.AWSErrorCode(err) == "NoSuchEntity" {
+			if awsup.AWSErrorCode(err) == iam.ErrCodeNoSuchEntityException {
 				klog.V(2).Infof("Got NoSuchEntity describing IAM RolePolicy %q; will treat as already-deleted", roleName)
 				return nil
 			}
@@ -1925,7 +1925,7 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 			return true
 		})
 		if err != nil {
-			if awsup.AWSErrorCode(err) == "NoSuchEntity" {
+			if awsup.AWSErrorCode(err) == iam.ErrCodeNoSuchEntityException {
 				klog.V(2).Infof("Got NoSuchEntity describing IAM RolePolicy %q; will treat as already-detached", roleName)
 				return nil
 			}
@@ -2150,7 +2150,7 @@ func DeleteIAMOIDCProvider(cloud fi.Cloud, r *resources.Resource) error {
 		}
 		_, err := c.IAM().DeleteOpenIDConnectProvider(request)
 		if err != nil {
-			if awsup.AWSErrorCode(err) == "NoSuchEntity" {
+			if awsup.AWSErrorCode(err) == iam.ErrCodeNoSuchEntityException {
 				klog.V(2).Infof("Got NoSuchEntity deleting IAM OIDC Provider %v; will treat as already-deleted", arn)
 				return nil
 			}
