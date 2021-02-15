@@ -69,6 +69,7 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 		Lifecycle:   b.Lifecycle,
 		URL:         fi.String(issuerURL),
 		ClientIDs:   []*string{fi.String(defaultAudience)},
+		Tags:        b.CloudTags(b.ClusterName(), false),
 		Thumbprints: thumbprints,
 	})
 
