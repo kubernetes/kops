@@ -68,7 +68,7 @@ func (t *Tester) addHostArgument() error {
 		return fmt.Errorf("kubeconfig did not contain server")
 	}
 
-	klog.Info("Adding --host=%s", server)
+	klog.Infof("Adding --host=%s", server)
 	t.TestArgs += " --host=" + server
 	return nil
 }
@@ -98,7 +98,7 @@ func (t *Tester) execute() error {
 		return err
 	}
 
-	return t.Execute()
+	return t.Test()
 }
 
 func NewDefaultTester() *Tester {
