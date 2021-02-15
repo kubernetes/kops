@@ -128,7 +128,7 @@ type InstanceGroupSpec struct {
 	AssociatePublicIP *bool `json:"associatePublicIp,omitempty"`
 	// AdditionalSecurityGroups attaches additional security groups (e.g. i-123456)
 	AdditionalSecurityGroups []string `json:"additionalSecurityGroups,omitempty"`
-	// CloudLabels indicates the labels for instances in this group, at the AWS level
+	// CloudLabels defines additional tags or labels on cloud provider resources
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
 	// NodeLabels indicates the kubernetes labels for nodes in this group
 	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
