@@ -37,6 +37,8 @@ type VirtualNetwork struct {
 	ResourceGroup *ResourceGroup
 	CIDR          *string
 	Tags          map[string]*string
+	Subnets       *[]network.Subnet
+	Shared        *bool
 }
 
 var _ fi.Task = &VirtualNetwork{}
@@ -75,8 +77,9 @@ func (n *VirtualNetwork) Find(c *fi.Context) (*VirtualNetwork, error) {
 		ResourceGroup: &ResourceGroup{
 			Name: n.ResourceGroup.Name,
 		},
-		CIDR: to.StringPtr(addrPrefixes[0]),
-		Tags: found.Tags,
+		CIDR:    to.StringPtr(addrPrefixes[0]),
+		Tags:    found.Tags,
+		Subnets: found.Subnets,
 	}, nil
 }
 
@@ -115,10 +118,7 @@ func (*VirtualNetwork) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Virtu
 		if changes.Tags == nil {
 			return nil
 		}
-		// TODO(kenji): Fix this. Update is not supported yet as updating the tag will recreate a virtual network,
-		// which causes an InUseSubnetCannotBeDeleted error.
-		klog.Infof("Skip updating a Virtual Network with name: %s", fi.StringValue(e.Name))
-		return nil
+		klog.Infof("Updating a Virtual Network with name: %s", fi.StringValue(e.Name))
 	}
 
 	vnet := network.VirtualNetwork{
@@ -127,6 +127,7 @@ func (*VirtualNetwork) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Virtu
 			AddressSpace: &network.AddressSpace{
 				AddressPrefixes: &[]string{*e.CIDR},
 			},
+			Subnets: e.Subnets,
 		},
 		Tags: e.Tags,
 	}

@@ -166,6 +166,7 @@ func (g *resourceGetter) toVirtualNetworkResource(vnet *network.VirtualNetwork) 
 		Name:    *vnet.Name,
 		Deleter: g.deleteVirtualNetwork,
 		Blocks:  []string{toKey(typeResourceGroup, g.resourceGroupName())},
+		Shared:  g.cluster.SharedVPC(),
 	}
 }
 
@@ -199,6 +200,7 @@ func (g *resourceGetter) toSubnetResource(subnet *network.Subnet, vnetName strin
 			toKey(typeVirtualNetwork, vnetName),
 			toKey(typeResourceGroup, g.resourceGroupName()),
 		},
+		Shared: g.cluster.SharedVPC(),
 	}
 }
 
@@ -231,6 +233,7 @@ func (g *resourceGetter) toRouteTableResource(rt *network.RouteTable) *resources
 		Name:    *rt.Name,
 		Deleter: g.deleteRouteTable,
 		Blocks:  []string{toKey(typeResourceGroup, g.resourceGroupName())},
+		Shared:  g.cluster.IsSharedAzureRouteTable(),
 	}
 }
 

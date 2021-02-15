@@ -215,6 +215,9 @@ func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([
 				})
 			}
 		}
+		if ingresses == nil {
+			return nil, fmt.Errorf("error getting API Ingress Status so make sure to update your kubecfg accordingly")
+		}
 	}
 
 	return ingresses, nil
