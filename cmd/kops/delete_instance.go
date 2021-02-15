@@ -237,7 +237,7 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 	}
 
 	if !options.Yes {
-		fmt.Fprintf(out, "\nMust specify --yes to delete instancegroup\n")
+		fmt.Fprintf(out, "\nMust specify --yes to delete instance\n")
 		return nil
 	}
 
