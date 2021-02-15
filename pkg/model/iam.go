@@ -230,6 +230,7 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 				Name:      s(iamName),
 				Lifecycle: b.Lifecycle,
 				Shared:    fi.Bool(shared),
+				Tags:      b.CloudTags(iamName, false),
 			}
 			c.AddTask(iamInstanceProfile)
 		}

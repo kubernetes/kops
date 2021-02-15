@@ -57,6 +57,7 @@ func (m *MockIAM) CreateInstanceProfile(request *iam.CreateInstanceProfileInput)
 		// Arn:                 request.Arn,
 		// InstanceProfileId:   request.InstanceProfileId,
 		Path: request.Path,
+		Tags: request.Tags,
 		// Roles:               request.Roles,
 	}
 
