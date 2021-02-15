@@ -541,13 +541,6 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		optionTaken = true
 	}
 
-	if v.CNI != nil {
-		if optionTaken {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("cni"), "only one networking option permitted"))
-		}
-		optionTaken = true
-	}
-
 	if v.Kopeio != nil {
 		if optionTaken {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kopeio"), "only one networking option permitted"))
