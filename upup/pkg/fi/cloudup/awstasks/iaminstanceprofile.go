@@ -52,7 +52,7 @@ func findIAMInstanceProfile(cloud awsup.AWSCloud, name string) (*iam.InstancePro
 
 	response, err := cloud.IAM().GetInstanceProfile(request)
 	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == "NoSuchEntity" {
+		if awsErr.Code() == iam.ErrCodeNoSuchEntityException {
 			return nil, nil
 		}
 	}
