@@ -32,7 +32,7 @@ func (m *MockIAM) GetRole(request *iam.GetRoleInput) (*iam.GetRoleOutput, error)
 
 	role := m.Roles[aws.StringValue(request.RoleName)]
 	if role == nil {
-		return nil, awserr.New("NoSuchEntity", "No such entity", nil)
+		return nil, awserr.New(iam.ErrCodeNoSuchEntityException, "No such entity", nil)
 	}
 	response := &iam.GetRoleOutput{
 		Role: role,

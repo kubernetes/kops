@@ -63,7 +63,7 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 
 	response, err := cloud.IAM().GetRole(request)
 	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == "NoSuchEntity" {
+		if awsErr.Code() == iam.ErrCodeNoSuchEntityException {
 			return nil, nil
 		}
 	}
