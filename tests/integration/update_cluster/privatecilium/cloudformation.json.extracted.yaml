@@ -155,6 +155,9 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
 
               [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
                 runtime_type = "io.containerd.runc.v2"
+
+                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                  SystemdCgroup = true
     logLevel: info
     version: 1.4.3
   docker:
@@ -489,6 +492,9 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumexamplecom.Properties.LaunchTemp
 
               [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
                 runtime_type = "io.containerd.runc.v2"
+
+                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                  SystemdCgroup = true
     logLevel: info
     version: 1.4.3
   docker:
