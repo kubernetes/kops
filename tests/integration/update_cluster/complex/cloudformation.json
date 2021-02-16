@@ -1272,7 +1272,8 @@
           {
             "SubnetId": {
               "Ref": "AWSEC2Subnetustest1acomplexexamplecom"
-            }
+            },
+            "AllocationId": "eipalloc-012345a678b9cdefa"
           }
         ],
         "Type": "network",
