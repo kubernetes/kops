@@ -183,7 +183,7 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 				return fmt.Errorf("volumeIops to volumeSize ratio must be lower than 50. For %s ratio is %f", *t.Name, float64(*t.VolumeIops)/float64(*t.SizeGB))
 			}
 		} else {
-			if float64(*t.VolumeIops)/float64(*t.SizeGB) > 500.0 {
+			if float64(*t.VolumeIops)/float64(*t.SizeGB) > 500.0 && (volumeType != "gp3" || *t.VolumeIops > 3000) {
 				return fmt.Errorf("volumeIops to volumeSize ratio must be lower than 500. For %s ratio is %f", *t.Name, float64(*t.VolumeIops)/float64(*t.SizeGB))
 			}
 		}
