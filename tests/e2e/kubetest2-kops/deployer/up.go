@@ -134,6 +134,7 @@ func (d *deployer) IsUp() (bool, error) {
 	args := []string{
 		d.KopsBinaryPath, "validate", "cluster",
 		"--name", d.ClusterName,
+		"--count", "10",
 		"--wait", "15m",
 	}
 	klog.Info(strings.Join(args, " "))
