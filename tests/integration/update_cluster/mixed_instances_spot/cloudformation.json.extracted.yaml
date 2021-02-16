@@ -154,6 +154,9 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersmixedinstancesexamplecom.Prop
 
               [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
                 runtime_type = "io.containerd.runc.v2"
+
+                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                  SystemdCgroup = true
     logLevel: info
     version: 1.4.3
   docker:
@@ -489,6 +492,9 @@ Resources.AWSEC2LaunchTemplatemasterustest1bmastersmixedinstancesexamplecom.Prop
 
               [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
                 runtime_type = "io.containerd.runc.v2"
+
+                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                  SystemdCgroup = true
     logLevel: info
     version: 1.4.3
   docker:
@@ -824,6 +830,9 @@ Resources.AWSEC2LaunchTemplatemasterustest1cmastersmixedinstancesexamplecom.Prop
 
               [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
                 runtime_type = "io.containerd.runc.v2"
+
+                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                  SystemdCgroup = true
     logLevel: info
     version: 1.4.3
   docker:
@@ -1159,6 +1168,9 @@ Resources.AWSEC2LaunchTemplatenodesmixedinstancesexamplecom.Properties.LaunchTem
 
               [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
                 runtime_type = "io.containerd.runc.v2"
+
+                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                  SystemdCgroup = true
     logLevel: info
     version: 1.4.3
   docker:
