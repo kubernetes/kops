@@ -62,6 +62,8 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 				config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "registry", "mirrors", name, "endpoint"}, endpoints)
 			}
 			config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "runtime_type"}, "io.containerd.runc.v2")
+			// only enable systemd cgroups for kubernetes >= 1.20
+			config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "options", "SystemdCgroup"}, b.IsKubernetesGTE("1.20"))
 			if UsesKubenet(clusterSpec.Networking) {
 				// Using containerd with Kubenet requires special configuration.
 				// This is a temporary backwards-compatible solution for kubenet users and will be deprecated when Kubenet is deprecated:
