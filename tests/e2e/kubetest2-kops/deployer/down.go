@@ -31,6 +31,12 @@ func (d *deployer) Down() error {
 		klog.Warningf("Dumping cluster logs at the start of Down() failed: %s", err)
 	}
 
+	if d.terraform != nil {
+		if err := d.terraform.Destroy(); err != nil {
+			return err
+		}
+	}
+
 	args := []string{
 		d.KopsBinaryPath, "delete", "cluster",
 		"--name", d.ClusterName,
