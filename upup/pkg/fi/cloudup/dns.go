@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 	"k8s.io/kops/pkg/apis/kops"
+	apimodel "k8s.io/kops/pkg/apis/kops/model"
 	kopsdns "k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
@@ -258,6 +259,11 @@ func buildPrecreateDNSHostnames(cluster *kops.Cluster) []string {
 			name := etcClusterName + "-" + etcdClusterMember.Name + dnsInternalSuffix
 			dnsHostnames = append(dnsHostnames, name)
 		}
+	}
+
+	if apimodel.UseKopsControllerForNodeBootstrap(cluster) {
+		name := "kops-controller.internal." + cluster.ObjectMeta.Name
+		dnsHostnames = append(dnsHostnames, name)
 	}
 
 	return dnsHostnames
