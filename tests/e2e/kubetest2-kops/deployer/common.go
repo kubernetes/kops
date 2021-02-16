@@ -27,6 +27,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/pkg/kops"
+	"k8s.io/kops/tests/e2e/pkg/target"
 )
 
 func (d *deployer) init() error {
@@ -70,6 +71,13 @@ func (d *deployer) initialize() error {
 	}
 	if d.SSHUser == "" {
 		d.SSHUser = os.Getenv("KUBE_SSH_USER")
+	}
+	if d.TerraformVersion != "" {
+		t, err := target.NewTerraform(d.TerraformVersion)
+		if err != nil {
+			return err
+		}
+		d.terraform = t
 	}
 	return nil
 }
