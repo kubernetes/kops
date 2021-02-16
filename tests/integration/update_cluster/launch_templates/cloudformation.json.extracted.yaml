@@ -154,6 +154,9 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterslaunchtemplatese
 
               [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
                 runtime_type = "io.containerd.runc.v2"
+
+                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                  SystemdCgroup = true
     logLevel: info
     version: 1.4.3
   docker:
@@ -489,6 +492,9 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmasterslaunchtemplatese
 
               [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
                 runtime_type = "io.containerd.runc.v2"
+
+                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                  SystemdCgroup = true
     logLevel: info
     version: 1.4.3
   docker:
@@ -824,6 +830,9 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmasterslaunchtemplatese
 
               [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
                 runtime_type = "io.containerd.runc.v2"
+
+                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                  SystemdCgroup = true
     logLevel: info
     version: 1.4.3
   docker:
@@ -1159,6 +1168,9 @@ Resources.AWSAutoScalingLaunchConfigurationnodeslaunchtemplatesexamplecom.Proper
 
               [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
                 runtime_type = "io.containerd.runc.v2"
+
+                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                  SystemdCgroup = true
     logLevel: info
     version: 1.4.3
   docker:
