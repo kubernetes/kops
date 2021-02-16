@@ -25,6 +25,22 @@ assets:
     githubName: nodeup-linux-arm64
   - source: linux/arm64/nodeup.sha256
     githubName: nodeup-linux-arm64.sha256
+  - source: linux/amd64/protokube
+    githubName: protokube-linux-amd64
+  - source: linux/amd64/protokube.sha256
+    githubName: protokube-linux-amd64.sha256
+  - source: linux/arm64/protokube
+    githubName: protokube-linux-arm64
+  - source: linux/arm64/protokube.sha256
+    githubName: protokube-linux-arm64.sha256
+  - source: linux/amd64/channels
+    githubName: channels-linux-amd64
+  - source: linux/amd64/channels.sha256
+    githubName: channels-linux-amd64.sha256
+  - source: linux/arm64/channels
+    githubName: channels-linux-arm64
+  - source: linux/arm64/channels.sha256
+    githubName: channels-linux-arm64.sha256
   - source: images/protokube-amd64.tar.gz
     githubName: images-protokube-amd64.tar.gz
   - source: images/protokube-amd64.tar.gz.sha256
