@@ -3696,6 +3696,11 @@ func (in *LoadBalancerSubnetSpec) DeepCopyInto(out *LoadBalancerSubnetSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.AllocationID != nil {
+		in, out := &in.AllocationID, &out.AllocationID
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 

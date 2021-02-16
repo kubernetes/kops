@@ -541,7 +541,8 @@ resource "aws_lb" "api-complex-example-com" {
   load_balancer_type               = "network"
   name                             = "api-complex-example-com-vd3t5n"
   subnet_mapping {
-    subnet_id = aws_subnet.us-test-1a-complex-example-com.id
+    allocation_id = "eipalloc-012345a678b9cdefa"
+    subnet_id     = aws_subnet.us-test-1a-complex-example-com.id
   }
   tags = {
     "KubernetesCluster"                         = "complex.example.com"
