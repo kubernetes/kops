@@ -27,13 +27,15 @@ import (
 	expirationcache "k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/nodeidentity"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 const (
 	// InstanceGroupNameTag is the key of the tag used to identify an
 	// instance group that VM ScaleSet belongs.
 	InstanceGroupNameTag = "kops.k8s.io_instancegroup"
-
+	// ClusterNodeTemplateLabel is the prefix used on node labels when copying to cloud tags.
+	ClusterNodeTemplateLabel = "k8s.io_cluster_node-template_label_"
 	// cacheTTL is the expiration time of nodeidentity.Info cache.
 	cacheTTL = 60 * time.Minute
 )
@@ -107,8 +109,8 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	}
 
 	for k, v := range vmss.Tags {
-		if strings.HasPrefix(k, InstanceGroupNameTag) {
-			info.Labels[strings.TrimPrefix(k, InstanceGroupNameTag)] = *v
+		if strings.HasPrefix(k, ClusterNodeTemplateLabel) {
+			info.Labels[strings.TrimPrefix(k, ClusterNodeTemplateLabel)] = fi.StringValue(v)
 		}
 	}
 
