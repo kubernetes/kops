@@ -629,6 +629,18 @@ bazel-crossbuild-protokube-image-linux-arm64:
 bazel-crossbuild-protokube-image: bazel-crossbuild-protokube-image-linux-amd64 bazel-crossbuild-protokube-image-linux-arm64
 	echo "Done cross-building protokube images"
 
+.PHONY: bazel-build-channels-linux-amd64
+bazel-build-channels-linux-amd64:
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //channels/...
+
+.PHONY: bazel-build-channels-linux-arm64
+bazel-build-channels-linux-arm64:
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //channels/...
+
+.PHONY: bazel-crossbuild-channels
+bazel-crossbuild-channels: bazel-build-channels-linux-amd64 bazel-build-channels-linux-arm64
+	echo "Done cross-building channels"
+
 .PHONY: bazel-push
 # Will always push a linux-based build up to the server
 bazel-push: bazel-build-nodeup-linux-amd64
@@ -752,14 +764,22 @@ bazel-version-dist-linux-arm64: bazel-build-kops-linux-arm64 bazel-build-nodeup-
 bazel-version-dist: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm64 bazel-build-kops-darwin-amd64 bazel-build-kops-windows-amd64
 	rm -rf ${BAZELUPLOAD}
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
 	cp bazel-bin/cmd/nodeup/linux-amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
-	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
 	cp bazel-bin/cmd/nodeup/linux-arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup.sha256
+	cp -fp bazel-bin/channels/cmd/channels/linux-amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels.sha256
+	cp -fp bazel-bin/channels/cmd/channels/linux-arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels.sha256
+	cp -fp bazel-bin/protokube/cmd/protokube/linux-amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube.sha256
+	cp -fp bazel-bin/protokube/cmd/protokube/linux-arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube.sha256
 	cp ${BAZELIMAGES}/protokube-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz
 	cp ${BAZELIMAGES}/protokube-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz.sha256
 	cp ${BAZELIMAGES}/protokube-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz
@@ -831,11 +851,28 @@ dev-upload-nodeup: bazel-crossbuild-nodeup
 # dev-upload-protokube uploads protokube to GCS
 .PHONY: dev-upload-protokube
 dev-upload-protokube: bazel-protokube-export # Upload kops to GCS
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
+	cp -fp bazel-bin/protokube/cmd/protokube/linux-amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube.sha256
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
+	cp -fp bazel-bin/protokube/cmd/protokube/linux-arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube.sha256
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
 	cp -fp ${BAZELIMAGES}/protokube-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz
 	cp -fp ${BAZELIMAGES}/protokube-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz.sha256
 	cp -fp ${BAZELIMAGES}/protokube-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz
 	cp -fp ${BAZELIMAGES}/protokube-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz.sha256
+	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+
+# dev-upload-channels uploads channels to GCS
+.PHONY: dev-upload-channels
+dev-upload-channels: bazel-crossbuild-channels
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
+	cp -fp bazel-bin/channels/cmd/channels/linux-amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels.sha256
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
+	cp -fp bazel-bin/channels/cmd/channels/linux-arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels.sha256
 	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload-kops-controller uploads kops-controller to GCS
@@ -875,6 +912,10 @@ dev-upload-linux-amd64: bazel-build-nodeup-linux-amd64 bazel-kops-controller-exp
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
 	cp -fp bazel-bin/cmd/nodeup/linux-amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
+	cp -fp bazel-bin/channels/cmd/channels/linux-amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels.sha256
+	cp -fp bazel-bin/protokube/cmd/protokube/linux-amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube.sha256
 	cp -fp ${BAZELIMAGES}/protokube-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz
 	cp -fp ${BAZELIMAGES}/protokube-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz.sha256
 	cp -fp ${BAZELIMAGES}/kops-controller-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz
@@ -892,6 +933,10 @@ dev-upload-linux-arm64: bazel-build-nodeup-linux-arm64 bazel-kops-controller-exp
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
 	cp -fp bazel-bin/cmd/nodeup/linux-arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup.sha256
+	cp -fp bazel-bin/channels/cmd/channels/linux-arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels.sha256
+	cp -fp bazel-bin/protokube/cmd/protokube/linux-arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube.sha256
 	cp -fp ${BAZELIMAGES}/protokube-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz
 	cp -fp ${BAZELIMAGES}/protokube-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz.sha256
 	cp -fp ${BAZELIMAGES}/kops-controller-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-arm64.tar.gz
