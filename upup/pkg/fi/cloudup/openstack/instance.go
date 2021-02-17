@@ -151,7 +151,23 @@ func (c *openstackCloud) DeleteInstanceWithID(instanceID string) error {
 }
 
 func deleteInstanceWithID(c OpenstackCloud, instanceID string) error {
-	return servers.Delete(c.ComputeClient(), instanceID).ExtractErr()
+	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
+		err := servers.Delete(c.ComputeClient(), instanceID).ExtractErr()
+		if err != nil && !isNotFound(err) {
+			return false, fmt.Errorf("error deleting instance: %s", err)
+		}
+		if isNotFound(err) {
+			return true, nil
+		}
+		return false, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
 }
 
 // DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.

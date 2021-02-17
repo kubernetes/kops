@@ -64,12 +64,15 @@ func deleteMonitor(c OpenstackCloud, monitorID string) error {
 	if c.LoadBalancerClient() == nil {
 		return fmt.Errorf("loadbalancer support not available in this deployment")
 	}
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := monitors.Delete(c.LoadBalancerClient(), monitorID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting pool: %v", err)
 		}
-		return true, nil
+		if isNotFound(err) {
+			return true, nil
+		}
+		return false, nil
 	})
 	if err != nil {
 		return err
@@ -89,12 +92,15 @@ func deletePool(c OpenstackCloud, poolID string) error {
 		return fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := v2pools.Delete(c.LoadBalancerClient(), poolID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting pool: %v", err)
 		}
-		return true, nil
+		if isNotFound(err) {
+			return true, nil
+		}
+		return false, nil
 	})
 	if err != nil {
 		return err
@@ -114,12 +120,15 @@ func deleteListener(c OpenstackCloud, listenerID string) error {
 		return fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := listeners.Delete(c.LoadBalancerClient(), listenerID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting listener: %v", err)
 		}
-		return true, nil
+		if isNotFound(err) {
+			return true, nil
+		}
+		return false, nil
 	})
 	if err != nil {
 		return err
@@ -139,12 +148,15 @@ func deleteLB(c OpenstackCloud, lbID string, opts loadbalancers.DeleteOpts) erro
 		return fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := loadbalancers.Delete(c.LoadBalancerClient(), lbID, opts).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting loadbalancer: %v", err)
 		}
-		return true, nil
+		if isNotFound(err) {
+			return true, nil
+		}
+		return false, nil
 	})
 	if err != nil {
 		return err

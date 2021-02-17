@@ -99,13 +99,15 @@ func (c *openstackCloud) DeleteFloatingIP(id string) (err error) {
 }
 
 func deleteFloatingIP(c OpenstackCloud, id string) (err error) {
-
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err = l3floatingip.Delete(c.ComputeClient(), id).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("failed to delete floating ip %s: %v", id, err)
 		}
-		return true, nil
+		if isNotFound(err) {
+			return true, nil
+		}
+		return false, nil
 	})
 	if !done && err == nil {
 		err = wait.ErrWaitTimeout
