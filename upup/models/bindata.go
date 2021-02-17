@@ -13398,6 +13398,12 @@ spec:
               command:
               - /usr/bin/check-status
               - -r
+          livenessProbe:
+            exec:
+              command:
+              - /usr/bin/check-status
+              - -r
+            failureThreshold: 10
 
 ---
 
