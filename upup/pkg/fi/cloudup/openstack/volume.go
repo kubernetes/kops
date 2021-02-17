@@ -136,12 +136,15 @@ func (c *openstackCloud) DeleteVolume(volumeID string) error {
 }
 
 func deleteVolume(c OpenstackCloud, volumeID string) error {
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := cinder.Delete(c.BlockStorageClient(), volumeID, cinder.DeleteOpts{}).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting volume: %v", err)
 		}
-		return true, nil
+		if isNotFound(err) {
+			return true, nil
+		}
+		return false, nil
 	})
 	if err != nil {
 		return err
