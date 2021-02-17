@@ -25,7 +25,7 @@ spec:
 Read more in the [official documentation](https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/).
 
 #### Cluster autoscaler
-{{ kops_feature_table(kops_added_default='1.19', k8s_min='1.15') }}
+{{ kops_feature_table(kops_added_default='1.19') }}
 
 Cluster autoscaler can be enabled to automatically adjust the size of the kubernetes cluster.
 
@@ -41,6 +41,15 @@ spec:
 
 Read more about cluster autoscaler in the [official documentation](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler).
 
+##### Disabling cluster autoscaler for a given instance group
+{{ kops_feature_table(kops_added_default='1.20') }}
+
+You can disable the autoscaler for a given instance group by adding the following to the instance group spec.
+
+```yaml
+spec:
+  autoscale: false
+```
 
 #### Cert-manager
 {{ kops_feature_table(kops_added_default='1.20', k8s_min='1.16') }}

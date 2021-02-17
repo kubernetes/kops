@@ -89,6 +89,8 @@ type InstanceGroupSpec struct {
 	MinSize *int32 `json:"minSize,omitempty"`
 	// MaxSize is the maximum size of the pool
 	MaxSize *int32 `json:"maxSize,omitempty"`
+	// Autoscale determines if autoscaling will be enabled for the group if cluster autoscaler is enabled
+	Autoscale *bool `json:"autoscale,omitempty"`
 	// MachineType is the instance class
 	MachineType string `json:"machineType,omitempty"`
 	// RootVolumeSize is the size of the EBS root volume to use, in GB
