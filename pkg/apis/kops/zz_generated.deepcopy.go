@@ -2141,6 +2141,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.Autoscale != nil {
+		in, out := &in.Autoscale, &out.Autoscale
+		*out = new(bool)
+		**out = **in
+	}
 	if in.RootVolumeSize != nil {
 		in, out := &in.RootVolumeSize, &out.RootVolumeSize
 		*out = new(int32)
