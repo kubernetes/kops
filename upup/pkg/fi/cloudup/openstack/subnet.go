@@ -106,12 +106,15 @@ func (c *openstackCloud) DeleteSubnet(subnetID string) error {
 }
 
 func deleteSubnet(c OpenstackCloud, subnetID string) error {
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := subnets.Delete(c.NetworkingClient(), subnetID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting subnet: %v", err)
 		}
-		return true, nil
+		if isNotFound(err) {
+			return true, nil
+		}
+		return false, nil
 	})
 	if err != nil {
 		return err

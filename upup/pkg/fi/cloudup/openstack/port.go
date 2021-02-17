@@ -130,12 +130,15 @@ func (c *openstackCloud) DeletePort(portID string) error {
 }
 
 func deletePort(c OpenstackCloud, portID string) error {
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := ports.Delete(c.NetworkingClient(), portID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting port: %v", err)
 		}
-		return true, nil
+		if isNotFound(err) {
+			return true, nil
+		}
+		return false, nil
 	})
 	if err != nil {
 		return err
