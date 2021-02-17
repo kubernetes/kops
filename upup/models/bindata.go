@@ -28285,7 +28285,7 @@ func cloudupResourcesAddonsCertmanagerIoK8s116YamlTemplate() (*asset, error) {
 }
 
 var _cloudupResourcesAddonsClusterAutoscalerAddonsK8sIoK8s115YamlTemplate = []byte(`{{ with .ClusterAutoscaler }}
-# Sourced from https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider/aws/examples
+# Sourced from https://github.com/kubernetes/autoscaler/blob/cluster-autoscaler-release-1.20/cluster-autoscaler/cloudprovider/aws/examples/cluster-autoscaler-multi-asg.yaml
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -28421,7 +28421,6 @@ spec:
       labels:
         app: cluster-autoscaler
       annotations:
-        prometheus.io/path: "/metrics"
         prometheus.io/port: "8085"
         prometheus.io/scrape: "true"
     spec:
@@ -28444,7 +28443,9 @@ spec:
             - --cloud-provider={{ $.CloudProvider }}
             - --expander={{ .Expander }}
             {{ range $name, $spec := GetNodeInstanceGroups }}
+            {{ if WithDefaultBool $spec.Autoscale true }}
             - --nodes={{ $spec.MinSize }}:{{ $spec.MaxSize }}:{{ $name }}.{{ ClusterName }}
+            {{ end }}
             {{ end }}
             - --scale-down-utilization-threshold={{ .ScaleDownUtilizationThreshold }}
             - --skip-nodes-with-local-storage={{ .SkipNodesWithLocalStorage }}

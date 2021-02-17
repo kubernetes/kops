@@ -87,6 +87,10 @@ spec:
                 description: AssociatePublicIP is true if we want instances to have
                   a public IP
                 type: boolean
+              autoscale:
+                description: Autoscale determines if autoscaling will be enabled for
+                  the group if cluster autoscaler is enabled
+                type: boolean
               cloudLabels:
                 additionalProperties:
                   type: string
