@@ -39542,12 +39542,12 @@ spec:
               command:
               - /usr/bin/check-status
               - -r
-          startupProbe:
+          livenessProbe:
             exec:
               command:
-                - /usr/bin/check-status
-                - -r
-            initialDelaySeconds: 10
+              - /usr/bin/check-status
+              - -r
+            failureThreshold: 10
 
 ---
 
