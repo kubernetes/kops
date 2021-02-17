@@ -907,6 +907,16 @@ func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, legac
 					},
 				},
 			},
+			&Statement{
+				Effect: StatementEffectAllow,
+				Action: stringorslice.Of(
+					"ec2:DescribeAvailabilityZones",         // aws_cloud.go
+					"ec2:DescribeLaunchTemplates",           // aws_cloud.go
+					"autoscaling:DescribeTags",              // aws_cloud.go
+					"autoscaling:DescribeAutoScalingGroups", // aws_cloud.go
+				),
+				Resource: resource,
+			},
 		)
 	}
 }

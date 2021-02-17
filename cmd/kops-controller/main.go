@@ -29,6 +29,7 @@ import (
 	"k8s.io/klog/v2/klogr"
 	"k8s.io/kops/cmd/kops-controller/controllers"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
+	"k8s.io/kops/cmd/kops-controller/pkg/metrics"
 	"k8s.io/kops/cmd/kops-controller/pkg/server"
 	"k8s.io/kops/pkg/nodeidentity"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
@@ -106,6 +107,20 @@ func main() {
 		go func() {
 			err := srv.Start()
 			setupLog.Error(err, "unable to start server")
+			os.Exit(1)
+		}()
+
+		m, err := metrics.NewServer(&opt)
+		if err != nil {
+			setupLog.Error(err, "unable to create metrics server")
+			os.Exit(1)
+		}
+		go func() {
+			if m == nil {
+				return
+			}
+			err := m.Start()
+			setupLog.Error(err, "unable to start metrics server")
 			os.Exit(1)
 		}()
 	}
