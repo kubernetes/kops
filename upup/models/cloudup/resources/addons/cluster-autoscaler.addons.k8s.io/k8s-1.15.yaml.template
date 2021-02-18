@@ -169,6 +169,7 @@ spec:
             - --v=2
           ports:
           - containerPort: 8085
+            name: http
             protocol: TCP
           livenessProbe:
             failureThreshold: 3
