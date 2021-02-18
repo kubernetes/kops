@@ -144,11 +144,11 @@ spec:
     loadBalancer:
       type: Public
       subnets:
-        - name: subnet-a
+        - name: utility-subnet-a
           allocationID: eipalloc-222ghi789
 ```
 
-The specified Allocation ID's must already be created manually or external infrastructure as code, eg Terraform.
+The specified Allocation ID's must already be created manually or external infrastructure as code, eg Terraform. You will need to place the loadBalanacer in the utility subnets for external connectivity.
 
 If you made a mistake or need to change subnets for any other reason, you're currently forced to manually delete the
 underlying ELB/NLB and re-run `kops update`.
