@@ -19,6 +19,10 @@ package validation
 import (
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"k8s.io/kops/cloudmock/aws/mockec2"
+
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
@@ -102,27 +106,38 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 		{
 			Input: kops.InstanceGroupSpec{
 				MachineType: "t2.micro",
+				Image:       "ami-073c8c0760395aab8",
 			},
 		},
 		{
 			Input: kops.InstanceGroupSpec{
 				MachineType: "t2.invalidType",
+				Image:       "ami-073c8c0760395aab8",
 			},
 			ExpectedErrors: []string{"Invalid value::test-nodes.spec.machineType"},
 		},
 		{
 			Input: kops.InstanceGroupSpec{
-				MachineType: "m5.large",
-				Image:       "k8s-1.9-debian-stretch-amd64-hvm-ebs-2018-03-11",
+				MachineType: "m4.large",
+				Image:       "ami-073c8c0760395aab8",
 			},
 			ExpectedErrors: []string{},
 		},
 		{
 			Input: kops.InstanceGroupSpec{
 				MachineType: "c5.large",
-				Image:       "k8s-1.9-debian-stretch-amd64-hvm-ebs-2018-03-11",
+				Image:       "ami-073c8c0760395aab8",
 			},
 			ExpectedErrors: []string{},
+		},
+		{
+			Input: kops.InstanceGroupSpec{
+				MachineType: "a1.large",
+				Image:       "ami-073c8c0760395aab8",
+			},
+			ExpectedErrors: []string{
+				"Invalid value::test-nodes.spec.machineType",
+			},
 		},
 		{
 			Input: kops.InstanceGroupSpec{
@@ -182,6 +197,18 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 		},
 	}
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
+	mockEC2 := &mockec2.MockEC2{}
+	cloud.MockEC2 = mockEC2
+
+	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
+		CreationDate:   aws.String("2016-10-21T20:07:19.000Z"),
+		ImageId:        aws.String("ami-073c8c0760395aab8"),
+		Name:           aws.String("focal"),
+		OwnerId:        aws.String(awsup.WellKnownAccountUbuntu),
+		RootDeviceName: aws.String("/dev/xvda"),
+		Architecture:   aws.String("x86_64"),
+	})
+
 	for _, g := range grid {
 		ig := &kops.InstanceGroup{
 			ObjectMeta: v1.ObjectMeta{
@@ -193,6 +220,82 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
+}
+
+func TestMixedInstancePolicies(t *testing.T) {
+	grid := []struct {
+		Input          kops.InstanceGroupSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.InstanceGroupSpec{
+				MachineType: "m4.large",
+				Image:       "ami-073c8c0760395aab8",
+				MixedInstancesPolicy: &kops.MixedInstancesPolicySpec{
+					Instances: []string{
+						"m4.large",
+						"t3.medium",
+						"c5.large",
+					},
+				},
+			},
+			ExpectedErrors: nil,
+		},
+		{
+			Input: kops.InstanceGroupSpec{
+				MachineType: "m4.large",
+				Image:       "ami-073c8c0760395aab8",
+				MixedInstancesPolicy: &kops.MixedInstancesPolicySpec{
+					Instances: []string{
+						"a1.large",
+						"c4.large",
+						"c5.large",
+					},
+				},
+			},
+			ExpectedErrors: []string{"Invalid value::spec.mixedInstancesPolicy.instances[0]"},
+		},
+		{
+			Input: kops.InstanceGroupSpec{
+				MachineType: "m4.large",
+				Image:       "ami-073c8c0760395aab8",
+				MixedInstancesPolicy: &kops.MixedInstancesPolicySpec{
+					Instances: []string{
+						"t3.medium",
+						"c4.large",
+						"c5.large",
+					},
+					OnDemandAboveBase: fi.Int64(231),
+				},
+			},
+			ExpectedErrors: []string{"Invalid value::spec.mixedInstancesPolicy.onDemandAboveBase"},
+		},
+	}
+	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
+	mockEC2 := &mockec2.MockEC2{}
+	cloud.MockEC2 = mockEC2
+
+	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
+		CreationDate:   aws.String("2016-10-21T20:07:19.000Z"),
+		ImageId:        aws.String("ami-073c8c0760395aab8"),
+		Name:           aws.String("focal"),
+		OwnerId:        aws.String(awsup.WellKnownAccountUbuntu),
+		RootDeviceName: aws.String("/dev/xvda"),
+		Architecture:   aws.String("x86_64"),
+	})
+
+	for _, g := range grid {
+		ig := &kops.InstanceGroup{
+			ObjectMeta: v1.ObjectMeta{
+				Name: "test-nodes",
+			},
+			Spec: g.Input,
+		}
+		errs := awsValidateInstanceGroup(ig, cloud)
+
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+
 }
 
 func TestInstanceMetadataOptions(t *testing.T) {
