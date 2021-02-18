@@ -854,8 +854,6 @@ helm.sh/helm/v3/pkg/helmpath
 helm.sh/helm/v3/pkg/helmpath/xdg
 helm.sh/helm/v3/pkg/plugin
 helm.sh/helm/v3/pkg/strvals
-# honnef.co/go/tools v0.0.1-2020.1.6
-## explicit
 # k8s.io/api v0.20.4 => k8s.io/api v0.20.4
 ## explicit
 k8s.io/api/admission/v1
