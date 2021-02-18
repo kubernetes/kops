@@ -18,7 +18,6 @@ GOARCH ?= $(shell go env GOARCH)
 .PHONY: test-e2e-install
 test-e2e-install:
 	cd $(KOPS_ROOT)/tests/e2e && \
-		export GO111MODULE=on && \
 		go install sigs.k8s.io/kubetest2 && \
 		go install ./kubetest2-tester-kops && \
 		go install ./kubetest2-kops
