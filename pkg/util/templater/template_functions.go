@@ -43,6 +43,13 @@ func (r *Templater) templateFuncsMap(tm *template.Template) template.FuncMap {
 		return content
 	}
 
+	funcs["toYaml"] = toYAML
+	funcs["fromYaml"] = fromYAML
+	funcs["fromYamlArray"] = fromYAMLArray
+	funcs["toJson"] = toJSON
+	funcs["fromJson"] = fromJSON
+	funcs["fromJsonArray"] = fromJSONArray
+
 	funcs["ChannelRecommendedKubernetesUpgradeVersion"] = func(version string) string {
 
 		parsed, err := util.ParseKubernetesVersion(version)
