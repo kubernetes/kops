@@ -19,7 +19,7 @@ GOARCH ?= $(shell go env GOARCH)
 test-e2e-install:
 	cd $(KOPS_ROOT)/tests/e2e && \
 		export GO111MODULE=on && \
-		go get sigs.k8s.io/kubetest2@latest && \
+		go install sigs.k8s.io/kubetest2 && \
 		go install ./kubetest2-tester-kops && \
 		go install ./kubetest2-kops
 
