@@ -19,7 +19,7 @@ GOARCH ?= $(shell go env GOARCH)
 test-e2e-install:
 	cd $(KOPS_ROOT)/tests/e2e && \
 		export GO111MODULE=on && \
-		go get sigs.k8s.io/kubetest2@latest && \
+		go install sigs.k8s.io/kubetest2 && \
 		go install ./kubetest2-tester-kops && \
 		go install ./kubetest2-kops
 
@@ -34,6 +34,7 @@ test-e2e-aws-simple-1-20: test-e2e-install
 		--template-path=tests/e2e/templates/simple.yaml.tmpl \
 		--test=kops \
 		-- \
+		--ginkgo-args="--debug" \
 		--test-package-marker=stable-1.20.txt \
 		--parallel 25 \
 		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
