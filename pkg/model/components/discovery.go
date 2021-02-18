@@ -17,11 +17,10 @@ limitations under the License.
 package components
 
 import (
-	"strings"
-
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/iam"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -55,20 +54,8 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 		kubeAPIServer.ServiceAccountIssuer = &serviceAccountIssuer
 	}
 
-	// We set apiserver ServiceAccountKey and ServiceAccountSigningKeyFile in nodeup
-
-	if useJWKS {
-		if kubeAPIServer.FeatureGates == nil {
-			kubeAPIServer.FeatureGates = make(map[string]string)
-		}
-		kubeAPIServer.FeatureGates["ServiceAccountIssuerDiscovery"] = "true"
-
-		if kubeAPIServer.ServiceAccountJWKSURI == nil {
-			jwksURL := *kubeAPIServer.ServiceAccountIssuer
-			jwksURL = strings.TrimSuffix(jwksURL, "/") + "/openid/v1/jwks"
-
-			kubeAPIServer.ServiceAccountJWKSURI = &jwksURL
-		}
+	if kubeAPIServer.ServiceAccountJWKSURI == nil {
+		kubeAPIServer.ServiceAccountJWKSURI = fi.String(iam.ServiceAccountIssuer(b.ClusterName, clusterSpec) + "/openid/v1/jwks")
 	}
 
 	return nil

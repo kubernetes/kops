@@ -190,8 +190,6 @@ kubeAPIServer:
   - http://127.0.0.1:4001
   etcdServersOverrides:
   - /events#http://127.0.0.1:4002
-  featureGates:
-    ServiceAccountIssuerDiscovery: "true"
   image: k8s.gcr.io/kube-apiserver:v1.20.0
   kubeletPreferredAddressTypes:
   - InternalIP

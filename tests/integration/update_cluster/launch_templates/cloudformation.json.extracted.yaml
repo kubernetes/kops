@@ -207,6 +207,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterslaunchtemplatese
     - X-Remote-User
     securePort: 443
     serviceAccountIssuer: https://api.launchtemplates.example.com
+    serviceAccountJWKSURI: https://api.launchtemplates.example.com/openid/v1/jwks
     serviceClusterIPRange: 100.64.0.0/13
     storageBackend: etcd3
   kubeControllerManager:
@@ -544,6 +545,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmasterslaunchtemplatese
     - X-Remote-User
     securePort: 443
     serviceAccountIssuer: https://api.launchtemplates.example.com
+    serviceAccountJWKSURI: https://api.launchtemplates.example.com/openid/v1/jwks
     serviceClusterIPRange: 100.64.0.0/13
     storageBackend: etcd3
   kubeControllerManager:
@@ -881,6 +883,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmasterslaunchtemplatese
     - X-Remote-User
     securePort: 443
     serviceAccountIssuer: https://api.launchtemplates.example.com
+    serviceAccountJWKSURI: https://api.launchtemplates.example.com/openid/v1/jwks
     serviceClusterIPRange: 100.64.0.0/13
     storageBackend: etcd3
   kubeControllerManager:
