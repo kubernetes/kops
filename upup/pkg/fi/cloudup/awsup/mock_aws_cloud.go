@@ -306,6 +306,23 @@ func (c *MockAWSCloud) DescribeInstanceType(instanceType string) (*ec2.InstanceT
 			},
 		}
 	}
+
+	if instanceType == "m4.large" || instanceType == "c5.large" {
+		info.ProcessorInfo = &ec2.ProcessorInfo{
+			SupportedArchitectures: []*string{
+				aws.String("x86_64"),
+			},
+		}
+	}
+
+	if instanceType == "a1.large" {
+		info.ProcessorInfo = &ec2.ProcessorInfo{
+			SupportedArchitectures: []*string{
+				aws.String("arm64"),
+			},
+		}
+	}
+
 	return info, nil
 }
 
