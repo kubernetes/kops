@@ -212,8 +212,15 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		if _, found := clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"]; !found {
 			clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"] = "true"
 		}
-		if _, found := clusterSpec.Kubelet.FeatureGates["CSIMigrationAWSComplete"]; !found {
-			clusterSpec.Kubelet.FeatureGates["CSIMigrationAWSComplete"] = "true"
+
+		if b.IsKubernetesLT("1.21.0") {
+			if _, found := clusterSpec.Kubelet.FeatureGates["CSIMigrationAWSComplete"]; !found {
+				clusterSpec.Kubelet.FeatureGates["CSIMigrationAWSComplete"] = "true"
+			}
+		} else {
+			if _, found := clusterSpec.Kubelet.FeatureGates["InTreePluginAWSUnregister"]; !found {
+				clusterSpec.Kubelet.FeatureGates["InTreePluginAWSUnregister"] = "true"
+			}
 		}
 	}
 	if _, found := clusterSpec.Kubelet.FeatureGates["ExperimentalCriticalPodAnnotation"]; !found {
