@@ -155,8 +155,8 @@ kops-gobindata: ${BINDATA_TARGETS}
 
 .PHONY: update-bindata
 update-bindata:
-	GO111MODULE=on go run github.com/go-bindata/go-bindata/v3/go-bindata -o ${BINDATA_TARGETS} -pkg models -nometadata -nocompress -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models upup/models/cloudup/...
-	cd "${KOPS_ROOT}/hack" && GO111MODULE=on go build -o "${KOPS_ROOT}/_output/bin/goimports" golang.org/x/tools/cmd/goimports
+	go run github.com/go-bindata/go-bindata/v3/go-bindata -o ${BINDATA_TARGETS} -pkg models -nometadata -nocompress -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models upup/models/cloudup/...
+	cd "${KOPS_ROOT}/hack" && go build -o "${KOPS_ROOT}/_output/bin/goimports" golang.org/x/tools/cmd/goimports
 	"${KOPS_ROOT}/_output/bin/goimports" -w -v ${BINDATA_TARGETS}
 	gofmt -w -s ${BINDATA_TARGETS}
 
@@ -382,8 +382,8 @@ gomod-prereqs:
 
 .PHONY: gomod
 gomod: gomod-prereqs
-	GO111MODULE=on go mod tidy
-	GO111MODULE=on go mod vendor
+	go mod tidy
+	go mod vendor
 	# Switch weavemesh to use peer_name_hash - bazel rule-go doesn't support build tags yet
 	rm vendor/github.com/weaveworks/mesh/peer_name_mac.go
 	sed -i -e 's/peer_name_hash/!peer_name_mac/g' vendor/github.com/weaveworks/mesh/peer_name_hash.go
@@ -391,8 +391,8 @@ gomod: gomod-prereqs
 	find vendor/ -name "BUILD" -delete
 	find vendor/ -name "BUILD.bazel" -delete
 	make gazelle
-	cd tests/e2e; GO111MODULE=on go mod tidy
-	cd hack; GO111MODULE=on go mod tidy
+	cd tests/e2e; go mod tidy
+	cd hack; go mod tidy
 
 
 .PHONY: gofmt
@@ -955,7 +955,7 @@ dev-upload: dev-upload-linux-amd64 dev-upload-linux-arm64
 
 .PHONY: crds
 crds:
-	cd "${KOPS_ROOT}/hack" && GO111MODULE=on go build -o "${KOPS_ROOT}/_output/bin/controller-gen" sigs.k8s.io/controller-tools/cmd/controller-gen
+	cd "${KOPS_ROOT}/hack" && go build -o "${KOPS_ROOT}/_output/bin/controller-gen" sigs.k8s.io/controller-tools/cmd/controller-gen
 	"${KOPS_ROOT}/_output/bin/controller-gen" crd paths=k8s.io/kops/pkg/apis/kops/v1alpha2 output:dir=k8s/crds/ crd:crdVersions=v1
 
 #------------------------------------------------------
