@@ -49,10 +49,13 @@ go_test(
     ],
     embed = [":go_default_library"],
     deps = [
+        "//cloudmock/aws/mockec2:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/nodeidentity/aws:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/intstr:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
