@@ -42477,7 +42477,7 @@ func cloudupResourcesAddonsNetworkingWeaveK8s112YamlTemplate() (*asset, error) {
 }
 
 var _cloudupResourcesAddonsNodeTerminationHandlerAwsK8s111YamlTemplate = []byte(`{{ with .NodeTerminationHandler }}
-# Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.7.0/all-resources.yaml
+# Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.12.0/all-resources.yaml
 ---
 # Source: aws-node-termination-handler/templates/serviceaccount.yaml
 apiVersion: v1
@@ -42489,7 +42489,7 @@ metadata:
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/instance: aws-node-termination-handler
     k8s-app: aws-node-termination-handler
-    app.kubernetes.io/version: "1.8.0"
+    app.kubernetes.io/version: "1.12.0"
 ---
 # Source: aws-node-termination-handler/templates/clusterrole.yaml
 kind: ClusterRole
@@ -42503,6 +42503,7 @@ rules:
     - nodes
   verbs:
     - get
+    - list
     - patch
     - update
 - apiGroups:
@@ -42554,7 +42555,7 @@ metadata:
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/instance: aws-node-termination-handler
     k8s-app: aws-node-termination-handler
-    app.kubernetes.io/version: "1.8.0"
+    app.kubernetes.io/version: "1.12.0"
 spec:
   updateStrategy:
     rollingUpdate:
@@ -42598,7 +42599,7 @@ spec:
       dnsPolicy: "ClusterFirstWithHostNet"
       containers:
         - name: aws-node-termination-handler
-          image: amazon/aws-node-termination-handler:v1.8.0
+          image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.12.0
           imagePullPolicy: IfNotPresent
           securityContext:
             readOnlyRootFilesystem: true
@@ -42641,6 +42642,8 @@ spec:
             value: "true"
           - name: ENABLE_PROMETHEUS_SERVER
             value: "{{ .EnablePrometheusMetrics }}"
+          - name: LOG_LEVEL
+            value: "info"
           resources:
             limits:
               memory: 128Mi
