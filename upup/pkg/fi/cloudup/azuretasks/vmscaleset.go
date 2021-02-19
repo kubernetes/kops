@@ -300,11 +300,6 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 		VirtualNetworkName: *e.VirtualNetwork.Name,
 		SubnetName:         *e.Subnet.Name,
 	}
-	loadBalancerID := loadBalancerID{
-		SubscriptionID:    t.Cloud.SubscriptionID(),
-		ResourceGroupName: *e.ResourceGroup.Name,
-		LoadBalancerName:  *e.LoadBalancer.Name,
-	}
 	ipConfigProperties := &compute.VirtualMachineScaleSetIPConfigurationProperties{
 		Subnet: &compute.APIEntityReference{
 			ID: to.StringPtr(subnetID.String()),
@@ -321,6 +316,11 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 		}
 	}
 	if e.LoadBalancer != nil {
+		loadBalancerID := loadBalancerID{
+			SubscriptionID:    t.Cloud.SubscriptionID(),
+			ResourceGroupName: *e.ResourceGroup.Name,
+			LoadBalancerName:  *e.LoadBalancer.Name,
+		}
 		ipConfigProperties.LoadBalancerBackendAddressPools = &[]compute.SubResource{
 			{
 				ID: to.StringPtr(loadBalancerID.String()),
