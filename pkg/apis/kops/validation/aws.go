@@ -65,7 +65,7 @@ func awsValidateInstanceGroup(ig *kops.InstanceGroup, cloud awsup.AWSCloud) fiel
 
 	allErrs = append(allErrs, awsValidateAdditionalSecurityGroups(field.NewPath("spec", "additionalSecurityGroups"), ig.Spec.AdditionalSecurityGroups)...)
 
-	allErrs = append(allErrs, awsValidateInstanceType(field.NewPath(ig.GetName(), "spec", "machineType"), ig.Spec.MachineType, cloud)...)
+	allErrs = append(allErrs, awsValidateInstanceTypeAndImage(field.NewPath(ig.GetName(), "spec", "machineType"), field.NewPath(ig.GetName(), "spec", "image"), ig.Spec.MachineType, ig.Spec.Image, cloud)...)
 
 	allErrs = append(allErrs, awsValidateSpotDurationInMinute(field.NewPath(ig.GetName(), "spec", "spotDurationInMinutes"), ig)...)
 
@@ -121,13 +121,35 @@ func awsValidateAdditionalSecurityGroups(fieldPath *field.Path, groups []string)
 	return allErrs
 }
 
-func awsValidateInstanceType(fieldPath *field.Path, instanceType string, cloud awsup.AWSCloud) field.ErrorList {
+func awsValidateInstanceTypeAndImage(instanceTypeFieldPath *field.Path, imageFieldPath *field.Path, instanceType string, image string, cloud awsup.AWSCloud) field.ErrorList {
 	allErrs := field.ErrorList{}
-	if instanceType != "" && cloud != nil {
-		for _, typ := range strings.Split(instanceType, ",") {
-			if _, err := cloud.DescribeInstanceType(typ); err != nil {
-				allErrs = append(allErrs, field.Invalid(fieldPath, typ, "machine type specified is invalid"))
+
+	if cloud != nil && instanceType != "" {
+		imageInfo, err := cloud.ResolveImage(image)
+		if err != nil {
+			return append(allErrs, field.Invalid(imageFieldPath, image,
+				fmt.Sprintf("image specified is invalid: %q", image)))
+		}
+
+		imageArch := fi.StringValue(imageInfo.Architecture)
+
+		machineInfo, err := cloud.DescribeInstanceType(instanceType)
+		if err != nil {
+			return append(allErrs, field.Invalid(instanceTypeFieldPath, instanceType,
+				fmt.Sprintf("machine type specified is invalid: %q", instanceType)))
+		}
+
+		found := false
+		if machineInfo.ProcessorInfo != nil {
+			for _, machineArch := range machineInfo.ProcessorInfo.SupportedArchitectures {
+				if imageArch == fi.StringValue(machineArch) {
+					found = true
+				}
 			}
+		}
+		if !found {
+			allErrs = append(allErrs, field.Invalid(instanceTypeFieldPath, instanceType,
+				fmt.Sprintf("machine type architecture does not match image architecture: %+v - %q", machineInfo.ProcessorInfo, imageArch)))
 		}
 	}
 
@@ -158,8 +180,8 @@ func awsValidateMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstances
 	var errs field.ErrorList
 
 	// @step: check the instance types are valid
-	for i, x := range spec.Instances {
-		errs = append(errs, awsValidateInstanceType(path.Child("instances").Index(i), x, cloud)...)
+	for i, instanceType := range spec.Instances {
+		errs = append(errs, awsValidateInstanceTypeAndImage(path.Child("instances").Index(i), path.Child("image"), instanceType, ig.Spec.Image, cloud)...)
 	}
 
 	if spec.OnDemandBase != nil {
