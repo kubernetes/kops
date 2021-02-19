@@ -173,6 +173,7 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 		Name:           aws.String("k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21"),
 		OwnerId:        aws.String(awsup.WellKnownAccountKopeio),
 		RootDeviceName: aws.String("/dev/xvda"),
+		Architecture:   aws.String("x86_64"),
 	})
 
 	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
@@ -181,6 +182,7 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 		Name:           aws.String("k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-01-09"),
 		OwnerId:        aws.String(awsup.WellKnownAccountKopeio),
 		RootDeviceName: aws.String("/dev/xvda"),
+		Architecture:   aws.String("x86_64"),
 	})
 
 	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
@@ -189,6 +191,7 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 		Name:           aws.String("k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-08-16"),
 		OwnerId:        aws.String(awsup.WellKnownAccountKopeio),
 		RootDeviceName: aws.String("/dev/xvda"),
+		Architecture:   aws.String("x86_64"),
 	})
 
 	mockEC2.CreateVpcWithId(&ec2.CreateVpcInput{
