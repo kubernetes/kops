@@ -29,12 +29,14 @@ test-e2e-aws-simple-1-20: test-e2e-install
 		-v 2 \
 		--up --down \
 		--cloud-provider=aws \
+		--create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1' --networking=calico --container-runtime=containerd" \
+		--env=KOPS_FEATURE_FLAGS= \
 		--kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-		--kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
-		--template-path=tests/e2e/templates/simple.yaml.tmpl \
+		--kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
 		--test=kops \
 		-- \
 		--ginkgo-args="--debug" \
-		--test-package-marker=stable-1.20.txt \
+		--test-args="-test.timeout=60m -num-nodes=0" \
+		--test-package-marker=stable.txt \
 		--parallel 25 \
 		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
