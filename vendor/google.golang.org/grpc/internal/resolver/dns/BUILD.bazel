@@ -10,6 +10,7 @@ go_library(
     importpath = "google.golang.org/grpc/internal/resolver/dns",
     visibility = ["//vendor/google.golang.org/grpc:__subpackages__"],
     deps = [
+        "//vendor/google.golang.org/grpc/balancer/grpclb/state:go_default_library",
         "//vendor/google.golang.org/grpc/grpclog:go_default_library",
         "//vendor/google.golang.org/grpc/internal/envconfig:go_default_library",
         "//vendor/google.golang.org/grpc/internal/grpcrand:go_default_library",
