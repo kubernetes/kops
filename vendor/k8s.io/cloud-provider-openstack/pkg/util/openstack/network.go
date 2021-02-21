@@ -19,14 +19,16 @@ package openstack
 import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
+	"k8s.io/cloud-provider-openstack/pkg/cloudprovider/providers/openstack/metrics"
 )
 
 // GetFloatingIPs returns all the filtered floating IPs
 func GetFloatingIPs(client *gophercloud.ServiceClient, opts floatingips.ListOpts) ([]floatingips.FloatingIP, error) {
 	var floatingIPList []floatingips.FloatingIP
 
+	mc := metrics.NewMetricContext("floating_ip", "list")
 	allPages, err := floatingips.List(client, opts).AllPages()
-	if err != nil {
+	if mc.ObserveRequest(err) != nil {
 		return floatingIPList, err
 	}
 	floatingIPList, err = floatingips.ExtractFloatingIPs(allPages)
