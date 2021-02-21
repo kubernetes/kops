@@ -22,6 +22,7 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/secrets"
+	"k8s.io/cloud-provider-openstack/pkg/cloudprovider/providers/openstack/metrics"
 )
 
 // EnsureSecret creates a secret if it doesn't exist.
@@ -44,8 +45,9 @@ func GetSecret(client *gophercloud.ServiceClient, name string) (*secrets.Secret,
 	listOpts := secrets.ListOpts{
 		Name: name,
 	}
+	mc := metrics.NewMetricContext("secret", "list")
 	allPages, err := secrets.List(client, listOpts).AllPages()
-	if err != nil {
+	if mc.ObserveRequest(err) != nil {
 		return nil, err
 	}
 	allSecrets, err := secrets.ExtractSecrets(allPages)
@@ -75,8 +77,9 @@ func CreateSecret(client *gophercloud.ServiceClient, name string, secretType str
 		Payload:                payload,
 		SecretType:             secrets.OpaqueSecret,
 	}
+	mc := metrics.NewMetricContext("secret", "create")
 	secret, err := secrets.Create(client, createOpts).Extract()
-	if err != nil {
+	if mc.ObserveRequest(err) != nil {
 		return "", err
 	}
 	return secret.SecretRef, nil
@@ -97,8 +100,9 @@ func DeleteSecrets(client *gophercloud.ServiceClient, partName string) error {
 	listOpts := secrets.ListOpts{
 		SecretType: secrets.OpaqueSecret,
 	}
+	mc := metrics.NewMetricContext("secret", "list")
 	allPages, err := secrets.List(client, listOpts).AllPages()
-	if err != nil {
+	if mc.ObserveRequest(err) != nil {
 		return err
 	}
 	allSecrets, err := secrets.ExtractSecrets(allPages)
@@ -112,8 +116,9 @@ func DeleteSecrets(client *gophercloud.ServiceClient, partName string) error {
 			if err != nil {
 				return err
 			}
+			mc := metrics.NewMetricContext("secret", "delete")
 			err = secrets.Delete(client, secretID).ExtractErr()
-			if err != nil {
+			if mc.ObserveRequest(err) != nil {
 				return err
 			}
 		}
