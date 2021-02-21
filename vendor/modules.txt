@@ -538,7 +538,7 @@ github.com/spf13/cast
 ## explicit
 github.com/spf13/cobra
 github.com/spf13/cobra/doc
-# github.com/spf13/jwalterweatherman v1.1.0
+# github.com/spf13/jwalterweatherman v1.0.0
 github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
 ## explicit
@@ -1207,8 +1207,9 @@ k8s.io/cloud-provider/service/helpers
 k8s.io/cloud-provider/volume
 k8s.io/cloud-provider/volume/errors
 k8s.io/cloud-provider/volume/helpers
-# k8s.io/cloud-provider-openstack v1.19.2
+# k8s.io/cloud-provider-openstack v1.20.1
 ## explicit
+k8s.io/cloud-provider-openstack/pkg/cloudprovider/providers/openstack/metrics
 k8s.io/cloud-provider-openstack/pkg/util/errors
 k8s.io/cloud-provider-openstack/pkg/util/openstack
 # k8s.io/component-base v0.20.0 => k8s.io/component-base v0.20.0
@@ -1353,4 +1354,5 @@ sigs.k8s.io/yaml
 # k8s.io/kubelet => k8s.io/kubelet v0.20.0
 # k8s.io/cli-runtime => k8s.io/cli-runtime v0.20.0
 # k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.20.0
+# k8s.io/kubernetes => k8s.io/kubernetes v0.20.0
 # k8s.io/code-generator => k8s.io/code-generator v0.20.0
