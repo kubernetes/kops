@@ -44,6 +44,8 @@ replace k8s.io/cli-runtime => k8s.io/cli-runtime v0.20.0
 
 replace k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.20.0
 
+replace k8s.io/kubernetes => k8s.io/kubernetes v0.20.0
+
 // This should match hack/go.mod
 replace k8s.io/code-generator => k8s.io/code-generator v0.20.0
 
@@ -104,7 +106,7 @@ require (
 	k8s.io/apimachinery v0.20.0
 	k8s.io/cli-runtime v0.20.0
 	k8s.io/client-go v0.20.0
-	k8s.io/cloud-provider-openstack v1.19.2
+	k8s.io/cloud-provider-openstack v1.20.1
 	k8s.io/component-base v0.20.0
 	k8s.io/gengo v0.0.0-20201113003025-83324d819ded
 	k8s.io/klog/v2 v2.4.0
