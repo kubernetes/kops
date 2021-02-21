@@ -55,12 +55,6 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.16.7"
 			case 15:
 				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.15.7"
-			case 14:
-				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.14.8"
-			case 13:
-				image = "gcr.io/google-containers/cluster-autoscaler:v1.13.9"
-			case 12:
-				image = "gcr.io/google-containers/cluster-autoscaler:v1.12.8"
 			}
 		}
 		cas.Image = fi.String(image)
