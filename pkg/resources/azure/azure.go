@@ -32,14 +32,15 @@ import (
 )
 
 const (
-	typeResourceGroup  = "ResourceGroup"
-	typeVirtualNetwork = "VirtualNetwork"
-	typeSubnet         = "Subnet"
-	typeRouteTable     = "RouteTable"
-	typeVMScaleSet     = "VMScaleSet"
-	typeDisk           = "Disk"
-	typeRoleAssignment = "RoleAssignment"
-	typeLoadBalancer   = "LoadBalancer"
+	typeResourceGroup   = "ResourceGroup"
+	typeVirtualNetwork  = "VirtualNetwork"
+	typeSubnet          = "Subnet"
+	typeRouteTable      = "RouteTable"
+	typeVMScaleSet      = "VMScaleSet"
+	typeDisk            = "Disk"
+	typeRoleAssignment  = "RoleAssignment"
+	typeLoadBalancer    = "LoadBalancer"
+	typePublicIPAddress = "PublicIPAddress"
 )
 
 // ListResourcesAzure lists all resources for the cluster by quering Azure.
@@ -89,6 +90,7 @@ func (g *resourceGetter) listAll() ([]*resources.Resource, error) {
 		g.listVMScaleSetsAndRoleAssignments,
 		g.listDisks,
 		g.listLoadBalancers,
+		g.listPublicIPAddresses,
 	}
 
 	var resources []*resources.Resource
@@ -408,11 +410,11 @@ func (g *resourceGetter) listLoadBalancers(ctx context.Context) ([]*resources.Re
 
 	var rs []*resources.Resource
 	for i := range loadBalancers {
-		rt := &loadBalancers[i]
-		if !g.isOwnedByCluster(rt.Tags) {
+		lb := &loadBalancers[i]
+		if !g.isOwnedByCluster(lb.Tags) {
 			continue
 		}
-		rs = append(rs, g.toLoadBalancerResource(rt))
+		rs = append(rs, g.toLoadBalancerResource(lb))
 	}
 	return rs, nil
 }
@@ -430,6 +432,38 @@ func (g *resourceGetter) toLoadBalancerResource(loadBalancer *network.LoadBalanc
 
 func (g *resourceGetter) deleteLoadBalancer(_ fi.Cloud, r *resources.Resource) error {
 	return g.cloud.LoadBalancer().Delete(context.TODO(), g.resourceGroupName(), r.Name)
+}
+
+func (g *resourceGetter) listPublicIPAddresses(ctx context.Context) ([]*resources.Resource, error) {
+	publicIPAddresses, err := g.cloud.PublicIPAddress().List(ctx, g.resourceGroupName())
+	if err != nil {
+		return nil, err
+	}
+
+	var rs []*resources.Resource
+	for i := range publicIPAddresses {
+		p := &publicIPAddresses[i]
+		if !g.isOwnedByCluster(p.Tags) {
+			continue
+		}
+		rs = append(rs, g.toPublicIPAddressResource(p))
+	}
+	return rs, nil
+}
+
+func (g *resourceGetter) toPublicIPAddressResource(publicIPAddress *network.PublicIPAddress) *resources.Resource {
+	return &resources.Resource{
+		Obj:     publicIPAddress,
+		Type:    typePublicIPAddress,
+		ID:      *publicIPAddress.Name,
+		Name:    *publicIPAddress.Name,
+		Deleter: g.deletePublicIPAddress,
+		Blocks:  []string{toKey(typeResourceGroup, g.resourceGroupName())},
+	}
+}
+
+func (g *resourceGetter) deletePublicIPAddress(_ fi.Cloud, r *resources.Resource) error {
+	return g.cloud.PublicIPAddress().Delete(context.TODO(), g.resourceGroupName(), r.Name)
 }
 
 // isOwnedByCluster returns true if the resource is owned by the cluster.
