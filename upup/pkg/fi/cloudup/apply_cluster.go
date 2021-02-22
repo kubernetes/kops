@@ -84,9 +84,9 @@ var (
 	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha
 	AlphaAllowALI = featureflag.New("AlphaAllowALI", featureflag.Bool(false))
 	// OldestSupportedKubernetesVersion is the oldest kubernetes version that is supported in Kops
-	OldestSupportedKubernetesVersion = "1.13.0"
+	OldestSupportedKubernetesVersion = "1.15.0"
 	// OldestRecommendedKubernetesVersion is the oldest kubernetes version that is not deprecated in Kops
-	OldestRecommendedKubernetesVersion = "1.15.0"
+	OldestRecommendedKubernetesVersion = "1.17.0"
 )
 
 type ApplyClusterCmd struct {
