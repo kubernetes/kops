@@ -9,6 +9,7 @@ go_library(
         "disk.go",
         "loadbalancer.go",
         "networkinterface.go",
+        "publicipaddress.go",
         "resourcegroup.go",
         "roleassignment.go",
         "routetable.go",
