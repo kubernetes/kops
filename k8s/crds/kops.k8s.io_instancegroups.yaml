@@ -58,7 +58,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: InstanceGroupSpec is the specification for an instanceGroup
+            description: InstanceGroupSpec is the specification for an InstanceGroup
             properties:
               additionalSecurityGroups:
                 description: AdditionalSecurityGroups attaches additional security
@@ -89,7 +89,7 @@ spec:
                 type: boolean
               autoscale:
                 description: Autoscale determines if autoscaling will be enabled for
-                  the group if cluster autoscaler is enabled
+                  this instance group if cluster autoscaler is enabled
                 type: boolean
               cloudLabels:
                 additionalProperties:
@@ -111,7 +111,7 @@ spec:
                 type: boolean
               externalLoadBalancers:
                 description: ExternalLoadBalancers define loadbalancers that should
-                  be attached to the instancegroup
+                  be attached to this instance group
                 items:
                   description: LoadBalancer defines a load balancer
                   properties:
@@ -706,11 +706,11 @@ spec:
                 additionalProperties:
                   type: string
                 description: NodeLabels indicates the kubernetes labels for nodes
-                  in this group
+                  in this instance group
                 type: object
               role:
-                description: 'Type determines the role of instances in this group:
-                  masters or nodes'
+                description: 'Type determines the role of instances in this instance
+                  group: masters or nodes'
                 type: string
               rollingUpdate:
                 description: RollingUpdate defines the rolling-update behavior
@@ -817,20 +817,21 @@ spec:
                 type: array
               taints:
                 description: Taints indicates the kubernetes taints for nodes in this
-                  group
+                  instance group
                 items:
                   type: string
                 type: array
               tenancy:
-                description: Describes the tenancy of the instance group. Can be either
-                  default or dedicated. Currently only applies to AWS.
+                description: Describes the tenancy of this instance group. Can be
+                  either default or dedicated. Currently only applies to AWS.
                 type: string
               updatePolicy:
                 description: 'UpdatePolicy determines the policy for applying upgrades
-                  automatically. Valid values:   ''automatic'' (default): apply updates
-                  automatically (apply OS security upgrades, avoiding rebooting when
-                  possible)   ''external'': do not apply updates automatically; they
-                  are applied manually or by an external system'
+                  automatically. If specified, this value overrides a value specified
+                  in the Cluster''s "spec.updatePolicy" field. Valid values:   ''automatic''
+                  (default): apply updates automatically (apply OS security upgrades,
+                  avoiding rebooting when possible)   ''external'': do not apply updates
+                  automatically; they are applied manually or by an external system'
                 type: string
               volumeMounts:
                 description: VolumeMounts a collection of volume mounts
