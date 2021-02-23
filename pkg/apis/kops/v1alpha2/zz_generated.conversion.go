@@ -5183,6 +5183,7 @@ func Convert_kops_LoadBalancerAccessSpec_To_v1alpha2_LoadBalancerAccessSpec(in *
 func autoConvert_v1alpha2_LoadBalancerSubnetSpec_To_kops_LoadBalancerSubnetSpec(in *LoadBalancerSubnetSpec, out *kops.LoadBalancerSubnetSpec, s conversion.Scope) error {
 	out.Name = in.Name
 	out.PrivateIPv4Address = in.PrivateIPv4Address
+	out.AllocationID = in.AllocationID
 	return nil
 }
 
@@ -5194,6 +5195,7 @@ func Convert_v1alpha2_LoadBalancerSubnetSpec_To_kops_LoadBalancerSubnetSpec(in *
 func autoConvert_kops_LoadBalancerSubnetSpec_To_v1alpha2_LoadBalancerSubnetSpec(in *kops.LoadBalancerSubnetSpec, out *LoadBalancerSubnetSpec, s conversion.Scope) error {
 	out.Name = in.Name
 	out.PrivateIPv4Address = in.PrivateIPv4Address
+	out.AllocationID = in.AllocationID
 	return nil
 }
 

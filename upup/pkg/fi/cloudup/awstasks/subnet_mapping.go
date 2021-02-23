@@ -26,6 +26,8 @@ type SubnetMapping struct {
 
 	// PrivateIPv4Address only valid for NLBs
 	PrivateIPv4Address *string
+	// AllocationID only valid for NLBs
+	AllocationID *string
 }
 
 // OrderSubnetsById implements sort.Interface for []Subnet, based on ID
@@ -37,7 +39,12 @@ func (a OrderSubnetMappingsByID) Less(i, j int) bool {
 	v1 := fi.StringValue(a[i].Subnet.ID)
 	v2 := fi.StringValue(a[j].Subnet.ID)
 	if v1 == v2 {
-		return fi.StringValue(a[i].PrivateIPv4Address) < fi.StringValue(a[j].PrivateIPv4Address)
+		if a[i].PrivateIPv4Address != nil && a[j].PrivateIPv4Address != nil {
+			return fi.StringValue(a[i].PrivateIPv4Address) < fi.StringValue(a[j].PrivateIPv4Address)
+		}
+		if a[i].AllocationID != nil && a[j].AllocationID != nil {
+			return fi.StringValue(a[i].AllocationID) < fi.StringValue(a[j].AllocationID)
+		}
 	}
 	return v1 < v2
 }
@@ -65,6 +72,9 @@ func subnetMappingSlicesEqualIgnoreOrder(l, r []*SubnetMapping) bool {
 			return false
 		}
 		if fi.StringValue(s.PrivateIPv4Address) != fi.StringValue(s2.PrivateIPv4Address) {
+			return false
+		}
+		if fi.StringValue(s.AllocationID) != fi.StringValue(s2.AllocationID) {
 			return false
 		}
 	}
