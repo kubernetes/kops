@@ -23,6 +23,9 @@ const (
 	// AnnotationValueManagementImported is the annotation value that indicates a cluster was imported, typically as part of an upgrade
 	AnnotationValueManagementImported = "imported"
 
-	// UpdatePolicyExternal is a value for ClusterSpec.UpdatePolicy indicating that upgrades are done externally, and we should disable automatic upgrades
+	// UpdatePolicyAutomatic is a value for ClusterSpec.UpdatePolicy and InstanceGroup.UpdatePolicy indicating that upgrades are performed automatically
+	UpdatePolicyAutomatic = "automatic"
+
+	// UpdatePolicyExternal is a value for ClusterSpec.UpdatePolicy and InstanceGroup.UpdatePolicy indicating that upgrades are done externally, and we should disable automatic upgrades
 	UpdatePolicyExternal = "external"
 )

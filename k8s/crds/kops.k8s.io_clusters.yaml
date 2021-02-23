@@ -4070,10 +4070,10 @@ spec:
                 type: object
               updatePolicy:
                 description: 'UpdatePolicy determines the policy for applying upgrades
-                  automatically. Valid values:   ''external'' do not apply updates
-                  automatically - they are applied manually or by an external system   missing:
-                  default policy (currently OS security upgrades that do not require
-                  a reboot)'
+                  automatically. Valid values:   ''automatic'' (default): apply updates
+                  automatically (apply OS security upgrades, avoiding rebooting when
+                  possible)   ''external'': do not apply updates automatically; they
+                  are applied manually or by an external system'
                 type: string
               useHostCertificates:
                 description: UseHostCertificates will mount /etc/ssl/certs to inside
