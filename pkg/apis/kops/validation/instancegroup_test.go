@@ -270,6 +270,44 @@ func TestValidNodeLabels(t *testing.T) {
 	}
 }
 
+func TestValidateIGCloudLabels(t *testing.T) {
+
+	grid := []struct {
+		label    string
+		expected []string
+	}{
+
+		{
+			label: "k8s.io/cluster-autoscaler/test.example.com",
+		},
+		{
+			label:    "KubernetesCluster",
+			expected: []string{"Forbidden::spec.cloudLabels.KubernetesCluster"},
+		},
+		{
+			label: "MyBillingLabel",
+		},
+		{
+			label: "subdomain.domain.tld/foo/bar",
+		},
+	}
+
+	for _, g := range grid {
+		ig := &kops.InstanceGroup{
+			ObjectMeta: v1.ObjectMeta{
+				Name: "some-ig",
+			},
+			Spec: kops.InstanceGroupSpec{
+				Role:        "Node",
+				CloudLabels: make(map[string]string),
+			},
+		}
+		ig.Spec.CloudLabels[g.label] = "placeholder"
+		errs := ValidateInstanceGroup(ig, nil)
+		testErrors(t, g.label, errs, g.expected)
+	}
+}
+
 func TestIGCloudLabelIsIGName(t *testing.T) {
 
 	grid := []struct {
