@@ -174,6 +174,11 @@ type InstanceGroupSpec struct {
 	CompressUserData *bool `json:"compressUserData,omitempty"`
 	// InstanceMetadata defines the EC2 instance metadata service options (AWS Only)
 	InstanceMetadata *InstanceMetadataOptions `json:"instanceMetadata,omitempty"`
+	// UpdatePolicy determines the policy for applying upgrades automatically.
+	// Valid values:
+	//   'automatic' (default): apply updates automatically (apply OS security upgrades, avoiding rebooting when possible)
+	//   'external': do not apply updates automatically; they are applied manually or by an external system
+	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 }
 
 const (
@@ -188,7 +193,7 @@ const (
 // SpotAllocationStrategies is a collection of supported strategies
 var SpotAllocationStrategies = []string{SpotAllocationStrategyLowestPrices, SpotAllocationStrategyDiversified, SpotAllocationStrategyCapacityOptimized}
 
-// InstanceMetadata defines the EC2 instance metadata service options (AWS Only)
+// InstanceMetadataOptions defines the EC2 instance metadata service options (AWS Only)
 type InstanceMetadataOptions struct {
 	// HTTPPutResponseHopLimit is the desired HTTP PUT response hop limit for instance metadata requests.
 	// The larger the number, the further instance metadata requests can travel. The default value is 1.
