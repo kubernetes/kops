@@ -2340,6 +2340,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(InstanceMetadataOptions)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.UpdatePolicy != nil {
+		in, out := &in.UpdatePolicy, &out.UpdatePolicy
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 
