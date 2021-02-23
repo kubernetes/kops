@@ -144,7 +144,8 @@ relnotes  -config .shipbot.yaml  < /tmp/prs  >> docs/releases/${DOC}-NOTES.md
 Review then send a PR with the release notes:
 
 ```
-git add -p && git commit -m "Release notes for ${VERSION}"
+git add -p docs/releases/${DOC}-NOTES.md
+git commit -m "Release notes for ${VERSION}"
 git push ${USER}
 hub pull-request
 ```
@@ -181,7 +182,7 @@ k8s-container-image-promoter --thin-manifest-dir k8s.gcr.io
 Currently we send the image and non-image artifact promotion PRs separately.
 
 ```
-git add -p
+git add -p k8s.gcr.io/images/k8s-staging-kops/images.yaml
 git commit -m "Promote kOps $VERSION images"
 git push ${USER}
 hub pull-request
@@ -275,7 +276,7 @@ wget https://artifacts.k8s.io/binaries/kops/${VERSION}/linux/amd64/kops
 mv kops ko
 chmod +x ko
 
-./ko version
+./kops version
 ```
 
 Also run through a `kops create cluster` flow, ideally verifying that
