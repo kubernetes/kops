@@ -746,6 +746,11 @@ func (c *Cluster) AzureResourceGroupName() string {
 	return c.Name
 }
 
+// IsSharedAzureRouteTable returns true if the route table is shared.
+func (c *Cluster) IsSharedAzureRouteTable() bool {
+	return c.Spec.CloudConfig.Azure.RouteTableName != ""
+}
+
 // EnvVar represents an environment variable present in a Container.
 type EnvVar struct {
 	// Name of the environment variable. Must be a C_IDENTIFIER.
