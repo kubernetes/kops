@@ -34,6 +34,7 @@ type RouteTable struct {
 	Lifecycle     *fi.Lifecycle
 	ResourceGroup *ResourceGroup
 	Tags          map[string]*string
+	Shared        *bool
 }
 
 var _ fi.Task = &RouteTable{}
