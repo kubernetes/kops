@@ -362,6 +362,12 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 				}
 				sm.PrivateIPv4Address = a.PrivateIPv4Address
 			}
+			if a.AllocationId != nil {
+				if sm.AllocationID != nil {
+					return nil, fmt.Errorf("NLB has more then one AllocationID per subnet, which is unexpected. This is a bug in kOps, please open a GitHub issue.")
+				}
+				sm.AllocationID = a.AllocationId
+			}
 		}
 		actual.SubnetMappings = append(actual.SubnetMappings, sm)
 	}
@@ -528,7 +534,13 @@ func (s *NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) e
 		if len(changes.SubnetMappings) > 0 {
 			expectedSubnets := make(map[string]*string)
 			for _, s := range e.SubnetMappings {
-				expectedSubnets[*s.Subnet.ID] = s.PrivateIPv4Address
+				//expectedSubnets[*s.Subnet.ID] = s
+				if s.AllocationID != nil {
+					expectedSubnets[*s.Subnet.ID] = s.AllocationID
+				}
+				if s.PrivateIPv4Address != nil {
+					expectedSubnets[*s.Subnet.ID] = s.PrivateIPv4Address
+				}
 			}
 
 			for _, s := range a.SubnetMappings {
@@ -536,7 +548,7 @@ func (s *NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) e
 				if !ok {
 					return fmt.Errorf("network load balancers do not support detaching subnets")
 				}
-				if fi.StringValue(eIP) != fi.StringValue(s.PrivateIPv4Address) {
+				if fi.StringValue(eIP) != fi.StringValue(s.PrivateIPv4Address) || fi.StringValue(eIP) != fi.StringValue(s.AllocationID) {
 					return fmt.Errorf("network load balancers do not support modifying address settings")
 				}
 			}
@@ -573,6 +585,7 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 		for _, subnetMapping := range e.SubnetMappings {
 			request.SubnetMappings = append(request.SubnetMappings, &elbv2.SubnetMapping{
 				SubnetId:           subnetMapping.Subnet.ID,
+				AllocationId:       subnetMapping.AllocationID,
 				PrivateIPv4Address: subnetMapping.PrivateIPv4Address,
 			})
 		}
@@ -623,18 +636,25 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 		if changes.SubnetMappings != nil {
 			actualSubnets := make(map[string]*string)
 			for _, s := range a.SubnetMappings {
-				actualSubnets[*s.Subnet.ID] = s.PrivateIPv4Address
+				//actualSubnets[*s.Subnet.ID] = s
+				if s.AllocationID != nil {
+					actualSubnets[*s.Subnet.ID] = s.AllocationID
+				}
+				if s.PrivateIPv4Address != nil {
+					actualSubnets[*s.Subnet.ID] = s.PrivateIPv4Address
+				}
 			}
 
 			var awsSubnetMappings []*elbv2.SubnetMapping
 			hasChanges := false
 			for _, s := range e.SubnetMappings {
 				aIP, ok := actualSubnets[*s.Subnet.ID]
-				if !ok || fi.StringValue(s.PrivateIPv4Address) != fi.StringValue(aIP) {
+				if !ok || (fi.StringValue(s.PrivateIPv4Address) != fi.StringValue(aIP) && fi.StringValue(s.AllocationID) != fi.StringValue(aIP)) {
 					hasChanges = true
 				}
 				awsSubnetMappings = append(awsSubnetMappings, &elbv2.SubnetMapping{
 					SubnetId:           s.Subnet.ID,
+					AllocationId:       s.AllocationID,
 					PrivateIPv4Address: s.PrivateIPv4Address,
 				})
 			}
@@ -747,6 +767,7 @@ func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 	for _, subnetMapping := range e.SubnetMappings {
 		nlbTF.SubnetMappings = append(nlbTF.SubnetMappings, terraformNetworkLoadBalancerSubnetMapping{
 			Subnet:             subnetMapping.Subnet.TerraformLink(),
+			AllocationID:       subnetMapping.AllocationID,
 			PrivateIPv4Address: subnetMapping.PrivateIPv4Address,
 		})
 	}
@@ -844,6 +865,7 @@ func (_ *NetworkLoadBalancer) RenderCloudformation(t *cloudformation.Cloudformat
 	for _, subnetMapping := range e.SubnetMappings {
 		nlbCF.SubnetMappings = append(nlbCF.SubnetMappings, &cloudformationSubnetMapping{
 			Subnet:             subnetMapping.Subnet.CloudformationLink(),
+			AllocationId:       subnetMapping.AllocationID,
 			PrivateIPv4Address: subnetMapping.PrivateIPv4Address,
 		})
 	}
