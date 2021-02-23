@@ -49,8 +49,16 @@ func (b *UpdateServiceBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 func (b *UpdateServiceBuilder) buildFlatcarSystemdService(c *fi.ModelBuilderContext) {
-	if b.Cluster.Spec.UpdatePolicy == nil || *b.Cluster.Spec.UpdatePolicy != kops.UpdatePolicyExternal {
-		klog.Infof("UpdatePolicy not set in Cluster Spec; skipping creation of %s", flatcarServiceName)
+	if b.InstanceGroup.Spec.UpdatePolicy != nil {
+		switch *b.InstanceGroup.Spec.UpdatePolicy {
+		case kops.UpdatePolicyAutomatic:
+			klog.Infof("UpdatePolicy set in InstanceGroup %q spec requests automatic updates; skipping creation of systemd unit %q", b.InstanceGroup.GetName(), flatcarServiceName)
+			return
+		case kops.UpdatePolicyExternal:
+			// Carry on with creating this systemd unit.
+		}
+	} else if fi.StringValue(b.Cluster.Spec.UpdatePolicy) != kops.UpdatePolicyExternal {
+		klog.Infof("UpdatePolicy in Cluster spec requests automatic updates; skipping creation of systemd unit %q", flatcarServiceName)
 		return
 	}
 
@@ -85,8 +93,16 @@ func (b *UpdateServiceBuilder) buildFlatcarSystemdService(c *fi.ModelBuilderCont
 }
 
 func (b *UpdateServiceBuilder) buildDebianPackage(c *fi.ModelBuilderContext) {
-	if b.Cluster.Spec.UpdatePolicy != nil && *b.Cluster.Spec.UpdatePolicy == kops.UpdatePolicyExternal {
-		klog.Infof("UpdatePolicy is External; skipping installation of %s", debianPackageName)
+	if b.InstanceGroup.Spec.UpdatePolicy != nil {
+		switch *b.InstanceGroup.Spec.UpdatePolicy {
+		case kops.UpdatePolicyAutomatic:
+			klog.Infof("UpdatePolicy set in InstanceGroup %q spec requests automatic updates; skipping installation of packagk %q", b.InstanceGroup.GetName(), debianPackageName)
+			return
+		case kops.UpdatePolicyExternal:
+			// Carry on with creating this systemd unit.
+		}
+	} else if fi.StringValue(b.Cluster.Spec.UpdatePolicy) != kops.UpdatePolicyExternal {
+		klog.Infof("UpdatePolicy in Cluster spec requests automatic updates; skipping installation of package %q", debianPackageName)
 		return
 	}
 

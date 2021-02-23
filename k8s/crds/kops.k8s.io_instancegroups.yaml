@@ -825,6 +825,13 @@ spec:
                 description: Describes the tenancy of the instance group. Can be either
                   default or dedicated. Currently only applies to AWS.
                 type: string
+              updatePolicy:
+                description: 'UpdatePolicy determines the policy for applying upgrades
+                  automatically. Valid values:   ''automatic'' (default): apply updates
+                  automatically (apply OS security upgrades, avoiding rebooting when
+                  possible)   ''external'': do not apply updates automatically; they
+                  are applied manually or by an external system'
+                type: string
               volumeMounts:
                 description: VolumeMounts a collection of volume mounts
                 items:

@@ -338,3 +338,49 @@ func TestIGCloudLabelIsIGName(t *testing.T) {
 		testErrors(t, g.label, errs, g.expected)
 	}
 }
+
+func TestIGUpdatePolicy(t *testing.T) {
+	const unsupportedValueError = "Unsupported value::spec.updatePolicy"
+	for _, test := range []struct {
+		label    string
+		policy   *string
+		expected []string
+	}{
+		{
+			label: "missing",
+		},
+		{
+			label:  "automatic",
+			policy: fi.String(kops.UpdatePolicyAutomatic),
+		},
+		{
+			label:  "external",
+			policy: fi.String(kops.UpdatePolicyExternal),
+		},
+		{
+			label:    "empty",
+			policy:   fi.String(""),
+			expected: []string{unsupportedValueError},
+		},
+		{
+			label:    "unknown",
+			policy:   fi.String("something-else"),
+			expected: []string{unsupportedValueError},
+		},
+	} {
+		ig := kops.InstanceGroup{
+			ObjectMeta: v1.ObjectMeta{
+				Name: "some-ig",
+			},
+			Spec: kops.InstanceGroupSpec{
+				Role:        "Node",
+				CloudLabels: make(map[string]string),
+			},
+		}
+		t.Run(test.label, func(t *testing.T) {
+			ig.Spec.UpdatePolicy = test.policy
+			errs := ValidateInstanceGroup(&ig, nil)
+			testErrors(t, test.label, errs, test.expected)
+		})
+	}
+}

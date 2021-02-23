@@ -132,8 +132,8 @@ type ClusterSpec struct {
 	IsolateMasters *bool `json:"isolateMasters,omitempty"`
 	// UpdatePolicy determines the policy for applying upgrades automatically.
 	// Valid values:
-	//   'external' do not apply updates automatically - they are applied manually or by an external system
-	//   missing: default policy (currently OS security upgrades that do not require a reboot)
+	//   'automatic' (default): apply updates automatically (apply OS security upgrades, avoiding rebooting when possible)
+	//   'external': do not apply updates automatically; they are applied manually or by an external system
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 	// ExternalPolicies allows the insertion of pre-existing managed policies on IG Roles
 	ExternalPolicies *map[string][]string `json:"externalPolicies,omitempty"`
