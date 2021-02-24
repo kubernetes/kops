@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "funcs.go",
+        "logging.go",
         "types.go",
         "types_linux.go",
         "types_nonlinux.go",

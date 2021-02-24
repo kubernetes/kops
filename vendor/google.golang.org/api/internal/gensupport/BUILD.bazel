@@ -10,6 +10,7 @@ go_library(
         "media.go",
         "params.go",
         "resumable.go",
+        "retryable_linux.go",
         "send.go",
         "version.go",
     ],
