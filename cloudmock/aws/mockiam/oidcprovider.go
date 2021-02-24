@@ -63,6 +63,7 @@ func (m *MockIAM) GetOpenIDConnectProviderWithContext(ctx aws.Context, request *
 	response := &iam.GetOpenIDConnectProviderOutput{
 		ClientIDList:   provider.ClientIDList,
 		CreateDate:     provider.CreateDate,
+		Tags:           provider.Tags,
 		ThumbprintList: provider.ThumbprintList,
 		Url:            provider.Url,
 	}
@@ -87,6 +88,7 @@ func (m *MockIAM) CreateOpenIDConnectProvider(request *iam.CreateOpenIDConnectPr
 
 	p := &iam.GetOpenIDConnectProviderOutput{
 		ClientIDList:   request.ClientIDList,
+		Tags:           request.Tags,
 		ThumbprintList: request.ThumbprintList,
 		Url:            request.Url,
 	}

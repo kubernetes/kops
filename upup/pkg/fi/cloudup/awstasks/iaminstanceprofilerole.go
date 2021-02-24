@@ -51,7 +51,7 @@ func (e *IAMInstanceProfileRole) Find(c *fi.Context) (*IAMInstanceProfileRole, e
 
 	response, err := cloud.IAM().GetInstanceProfile(request)
 	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == "NoSuchEntity" {
+		if awsErr.Code() == iam.ErrCodeNoSuchEntityException {
 			return nil, nil
 		}
 	}
@@ -114,6 +114,7 @@ func (_ *IAMInstanceProfileRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 type terraformIAMInstanceProfile struct {
 	Name *string            `json:"name" cty:"name"`
 	Role *terraform.Literal `json:"role" cty:"role"`
+	// TODO(rifelpet): add tags field when terraform supports it
 }
 
 func (_ *IAMInstanceProfileRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMInstanceProfileRole) error {
