@@ -56,13 +56,6 @@ func RawPatch(patchType types.PatchType, data []byte) Patch {
 	return &patch{patchType, data}
 }
 
-// ConstantPatch constructs a new Patch with the given PatchType and data.
-//
-// Deprecated: use RawPatch instead
-func ConstantPatch(patchType types.PatchType, data []byte) Patch {
-	return RawPatch(patchType, data)
-}
-
 // MergeFromWithOptimisticLock can be used if clients want to make sure a patch
 // is being applied to the latest resource version of an object.
 //

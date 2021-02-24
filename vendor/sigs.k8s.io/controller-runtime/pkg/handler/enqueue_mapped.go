@@ -17,15 +17,16 @@ limitations under the License.
 package handler
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
 )
 
-var _ EventHandler = &EnqueueRequestsFromMapFunc{}
+// MapFunc is the signature required for enqueueing requests from a generic function.
+// This type is usually used with EnqueueRequestsFromMapFunc when registering an event handler.
+type MapFunc func(client.Object) []reconcile.Request
 
 // EnqueueRequestsFromMapFunc enqueues Requests by running a transformation function that outputs a collection
 // of reconcile.Requests on each Event.  The reconcile.Requests may be for an arbitrary set of objects
@@ -37,34 +38,42 @@ var _ EventHandler = &EnqueueRequestsFromMapFunc{}
 //
 // For UpdateEvents which contain both a new and old object, the transformation function is run on both
 // objects and both sets of Requests are enqueue.
-type EnqueueRequestsFromMapFunc struct {
+func EnqueueRequestsFromMapFunc(fn MapFunc) EventHandler {
+	return &enqueueRequestsFromMapFunc{
+		toRequests: fn,
+	}
+}
+
+var _ EventHandler = &enqueueRequestsFromMapFunc{}
+
+type enqueueRequestsFromMapFunc struct {
 	// Mapper transforms the argument into a slice of keys to be reconciled
-	ToRequests Mapper
+	toRequests MapFunc
 }
 
 // Create implements EventHandler
-func (e *EnqueueRequestsFromMapFunc) Create(evt event.CreateEvent, q workqueue.RateLimitingInterface) {
-	e.mapAndEnqueue(q, MapObject{Meta: evt.Meta, Object: evt.Object})
+func (e *enqueueRequestsFromMapFunc) Create(evt event.CreateEvent, q workqueue.RateLimitingInterface) {
+	e.mapAndEnqueue(q, evt.Object)
 }
 
 // Update implements EventHandler
-func (e *EnqueueRequestsFromMapFunc) Update(evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
-	e.mapAndEnqueue(q, MapObject{Meta: evt.MetaOld, Object: evt.ObjectOld})
-	e.mapAndEnqueue(q, MapObject{Meta: evt.MetaNew, Object: evt.ObjectNew})
+func (e *enqueueRequestsFromMapFunc) Update(evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
+	e.mapAndEnqueue(q, evt.ObjectOld)
+	e.mapAndEnqueue(q, evt.ObjectNew)
 }
 
 // Delete implements EventHandler
-func (e *EnqueueRequestsFromMapFunc) Delete(evt event.DeleteEvent, q workqueue.RateLimitingInterface) {
-	e.mapAndEnqueue(q, MapObject{Meta: evt.Meta, Object: evt.Object})
+func (e *enqueueRequestsFromMapFunc) Delete(evt event.DeleteEvent, q workqueue.RateLimitingInterface) {
+	e.mapAndEnqueue(q, evt.Object)
 }
 
 // Generic implements EventHandler
-func (e *EnqueueRequestsFromMapFunc) Generic(evt event.GenericEvent, q workqueue.RateLimitingInterface) {
-	e.mapAndEnqueue(q, MapObject{Meta: evt.Meta, Object: evt.Object})
+func (e *enqueueRequestsFromMapFunc) Generic(evt event.GenericEvent, q workqueue.RateLimitingInterface) {
+	e.mapAndEnqueue(q, evt.Object)
 }
 
-func (e *EnqueueRequestsFromMapFunc) mapAndEnqueue(q workqueue.RateLimitingInterface, object MapObject) {
-	for _, req := range e.ToRequests.Map(object) {
+func (e *enqueueRequestsFromMapFunc) mapAndEnqueue(q workqueue.RateLimitingInterface, object client.Object) {
+	for _, req := range e.toRequests(object) {
 		q.Add(req)
 	}
 }
@@ -72,34 +81,9 @@ func (e *EnqueueRequestsFromMapFunc) mapAndEnqueue(q workqueue.RateLimitingInter
 // EnqueueRequestsFromMapFunc can inject fields into the mapper.
 
 // InjectFunc implements inject.Injector.
-func (e *EnqueueRequestsFromMapFunc) InjectFunc(f inject.Func) error {
+func (e *enqueueRequestsFromMapFunc) InjectFunc(f inject.Func) error {
 	if f == nil {
 		return nil
 	}
-	return f(e.ToRequests)
-}
-
-// Mapper maps an object to a collection of keys to be enqueued
-type Mapper interface {
-	// Map maps an object
-	Map(MapObject) []reconcile.Request
-}
-
-// MapObject contains information from an event to be transformed into a Request.
-type MapObject struct {
-	// Meta is the meta data for an object from an event.
-	Meta metav1.Object
-
-	// Object is the object from an event.
-	Object runtime.Object
-}
-
-var _ Mapper = ToRequestsFunc(nil)
-
-// ToRequestsFunc implements Mapper using a function.
-type ToRequestsFunc func(MapObject) []reconcile.Request
-
-// Map implements Mapper
-func (m ToRequestsFunc) Map(i MapObject) []reconcile.Request {
-	return m(i)
+	return f(e.toRequests)
 }

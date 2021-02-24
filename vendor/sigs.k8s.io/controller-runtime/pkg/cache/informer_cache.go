@@ -51,7 +51,7 @@ type informerCache struct {
 }
 
 // Get implements Reader
-func (ip *informerCache) Get(ctx context.Context, key client.ObjectKey, out runtime.Object) error {
+func (ip *informerCache) Get(ctx context.Context, key client.ObjectKey, out client.Object) error {
 	gvk, err := apiutil.GVKForObject(out, ip.Scheme)
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func (ip *informerCache) Get(ctx context.Context, key client.ObjectKey, out runt
 }
 
 // List implements Reader
-func (ip *informerCache) List(ctx context.Context, out runtime.Object, opts ...client.ListOption) error {
+func (ip *informerCache) List(ctx context.Context, out client.ObjectList, opts ...client.ListOption) error {
 
 	gvk, cacheTypeObj, err := ip.objectTypeForListObject(out)
 	if err != nil {
@@ -91,7 +91,7 @@ func (ip *informerCache) List(ctx context.Context, out runtime.Object, opts ...c
 // objectTypeForListObject tries to find the runtime.Object and associated GVK
 // for a single object corresponding to the passed-in list type. We need them
 // because they are used as cache map key.
-func (ip *informerCache) objectTypeForListObject(list runtime.Object) (*schema.GroupVersionKind, runtime.Object, error) {
+func (ip *informerCache) objectTypeForListObject(list client.ObjectList) (*schema.GroupVersionKind, runtime.Object, error) {
 	gvk, err := apiutil.GVKForObject(list, ip.Scheme)
 	if err != nil {
 		return nil, nil, err
@@ -146,7 +146,7 @@ func (ip *informerCache) GetInformerForKind(ctx context.Context, gvk schema.Grou
 }
 
 // GetInformer returns the informer for the obj
-func (ip *informerCache) GetInformer(ctx context.Context, obj runtime.Object) (Informer, error) {
+func (ip *informerCache) GetInformer(ctx context.Context, obj client.Object) (Informer, error) {
 	gvk, err := apiutil.GVKForObject(obj, ip.Scheme)
 	if err != nil {
 		return nil, err
@@ -170,7 +170,7 @@ func (ip *informerCache) NeedLeaderElection() bool {
 // to List. For one-to-one compatibility with "normal" field selectors, only return one value.
 // The values may be anything.  They will automatically be prefixed with the namespace of the
 // given object, if present.  The objects passed are guaranteed to be objects of the correct type.
-func (ip *informerCache) IndexField(ctx context.Context, obj runtime.Object, field string, extractValue client.IndexerFunc) error {
+func (ip *informerCache) IndexField(ctx context.Context, obj client.Object, field string, extractValue client.IndexerFunc) error {
 	informer, err := ip.GetInformer(ctx, obj)
 	if err != nil {
 		return err
@@ -181,7 +181,7 @@ func (ip *informerCache) IndexField(ctx context.Context, obj runtime.Object, fie
 func indexByField(indexer Informer, field string, extractor client.IndexerFunc) error {
 	indexFunc := func(objRaw interface{}) ([]string, error) {
 		// TODO(directxman12): check if this is the correct type?
-		obj, isObj := objRaw.(runtime.Object)
+		obj, isObj := objRaw.(client.Object)
 		if !isObj {
 			return nil, fmt.Errorf("object of type %T is not an Object", objRaw)
 		}

@@ -13,9 +13,11 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/go-logr/logr:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/client-go/rest:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/client:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/client/apiutil:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/controller:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/handler:go_default_library",

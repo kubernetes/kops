@@ -59,31 +59,31 @@ type EnqueueRequestForOwner struct {
 
 // Create implements EventHandler
 func (e *EnqueueRequestForOwner) Create(evt event.CreateEvent, q workqueue.RateLimitingInterface) {
-	for _, req := range e.getOwnerReconcileRequest(evt.Meta) {
+	for _, req := range e.getOwnerReconcileRequest(evt.Object) {
 		q.Add(req)
 	}
 }
 
 // Update implements EventHandler
 func (e *EnqueueRequestForOwner) Update(evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
-	for _, req := range e.getOwnerReconcileRequest(evt.MetaOld) {
+	for _, req := range e.getOwnerReconcileRequest(evt.ObjectOld) {
 		q.Add(req)
 	}
-	for _, req := range e.getOwnerReconcileRequest(evt.MetaNew) {
+	for _, req := range e.getOwnerReconcileRequest(evt.ObjectNew) {
 		q.Add(req)
 	}
 }
 
 // Delete implements EventHandler
 func (e *EnqueueRequestForOwner) Delete(evt event.DeleteEvent, q workqueue.RateLimitingInterface) {
-	for _, req := range e.getOwnerReconcileRequest(evt.Meta) {
+	for _, req := range e.getOwnerReconcileRequest(evt.Object) {
 		q.Add(req)
 	}
 }
 
 // Generic implements EventHandler
 func (e *EnqueueRequestForOwner) Generic(evt event.GenericEvent, q workqueue.RateLimitingInterface) {
-	for _, req := range e.getOwnerReconcileRequest(evt.Meta) {
+	for _, req := range e.getOwnerReconcileRequest(evt.Object) {
 		q.Add(req)
 	}
 }
