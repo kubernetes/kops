@@ -99,7 +99,7 @@ func listInstanceGroups(svc InstanceGroupService, clusterName string) ([]*resour
 
 	var resourceTrackers []*resources.Resource
 	for _, group := range groups {
-		if strings.HasSuffix(group.Name(), clusterName) &&
+		if strings.HasSuffix(group.Name(), fmt.Sprintf(".%s", clusterName)) &&
 			!strings.HasPrefix(strings.ToLower(group.Name()), "spotinst::ocean::") {
 			resource := &resources.Resource{
 				ID:      group.Id(),
