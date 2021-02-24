@@ -153,6 +153,36 @@ func IoctlWatchdogKeepalive(fd int) error {
 	return ioctl(fd, WDIOC_KEEPALIVE, 0)
 }
 
+func IoctlHIDGetDesc(fd int, value *HIDRawReportDescriptor) error {
+	err := ioctl(fd, HIDIOCGRDESC, uintptr(unsafe.Pointer(value)))
+	runtime.KeepAlive(value)
+	return err
+}
+
+func IoctlHIDGetRawInfo(fd int) (*HIDRawDevInfo, error) {
+	var value HIDRawDevInfo
+	err := ioctl(fd, HIDIOCGRAWINFO, uintptr(unsafe.Pointer(&value)))
+	return &value, err
+}
+
+func IoctlHIDGetRawName(fd int) (string, error) {
+	var value [_HIDIOCGRAWNAME_LEN]byte
+	err := ioctl(fd, _HIDIOCGRAWNAME, uintptr(unsafe.Pointer(&value[0])))
+	return ByteSliceToString(value[:]), err
+}
+
+func IoctlHIDGetRawPhys(fd int) (string, error) {
+	var value [_HIDIOCGRAWPHYS_LEN]byte
+	err := ioctl(fd, _HIDIOCGRAWPHYS, uintptr(unsafe.Pointer(&value[0])))
+	return ByteSliceToString(value[:]), err
+}
+
+func IoctlHIDGetRawUniq(fd int) (string, error) {
+	var value [_HIDIOCGRAWUNIQ_LEN]byte
+	err := ioctl(fd, _HIDIOCGRAWUNIQ, uintptr(unsafe.Pointer(&value[0])))
+	return ByteSliceToString(value[:]), err
+}
+
 //sys	Linkat(olddirfd int, oldpath string, newdirfd int, newpath string, flags int) (err error)
 
 func Link(oldpath string, newpath string) (err error) {
