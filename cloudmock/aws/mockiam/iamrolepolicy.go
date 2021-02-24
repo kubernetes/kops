@@ -53,7 +53,7 @@ func (m *MockIAM) GetRolePolicy(request *iam.GetRolePolicyInput) (*iam.GetRolePo
 		}
 		return response, nil
 	}
-	return nil, awserr.New("NoSuchEntity", "No such entity", nil)
+	return nil, awserr.New(iam.ErrCodeNoSuchEntityException, "No such entity", nil)
 }
 func (m *MockIAM) GetRolePolicyWithContext(aws.Context, *iam.GetRolePolicyInput, ...request.Option) (*iam.GetRolePolicyOutput, error) {
 	panic("Not implemented")

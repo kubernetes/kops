@@ -176,7 +176,7 @@ type ClusterSpec struct {
 	Authorization *AuthorizationSpec `json:"authorization,omitempty"`
 	// NodeAuthorization defined the custom node authorization configuration
 	NodeAuthorization *NodeAuthorizationSpec `json:"nodeAuthorization,omitempty"`
-	// Tags for AWS resources
+	// CloudLabels defines additional tags or labels on cloud provider resources
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
 	// Hooks for custom actions e.g. on first installation
 	Hooks []HookSpec `json:"hooks,omitempty"`

@@ -307,6 +307,24 @@ func matchesElbV2Tags(tags map[string]string, actual []*elbv2.Tag) bool {
 	return true
 }
 
+func matchesIAMTags(tags map[string]string, actual []*iam.Tag) bool {
+	for k, v := range tags {
+		found := false
+		for _, a := range actual {
+			if aws.StringValue(a.Key) == k {
+				if aws.StringValue(a.Value) == v {
+					found = true
+					break
+				}
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
 //type DeletableResource interface {
 //	Delete(cloud fi.Cloud) error
 //}
@@ -1906,7 +1924,7 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 			return true
 		})
 		if err != nil {
-			if awsup.AWSErrorCode(err) == "NoSuchEntity" {
+			if awsup.AWSErrorCode(err) == iam.ErrCodeNoSuchEntityException {
 				klog.V(2).Infof("Got NoSuchEntity describing IAM RolePolicy %q; will treat as already-deleted", roleName)
 				return nil
 			}
@@ -1925,7 +1943,7 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 			return true
 		})
 		if err != nil {
-			if awsup.AWSErrorCode(err) == "NoSuchEntity" {
+			if awsup.AWSErrorCode(err) == iam.ErrCodeNoSuchEntityException {
 				klog.V(2).Infof("Got NoSuchEntity describing IAM RolePolicy %q; will treat as already-detached", roleName)
 				return nil
 			}
@@ -2097,6 +2115,7 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*resources.R
 
 func ListIAMOIDCProviders(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
+	tags := c.Tags()
 
 	var providers []*string
 	{
@@ -2110,18 +2129,14 @@ func ListIAMOIDCProviders(cloud fi.Cloud, clusterName string) ([]*resources.Reso
 			descReq := &iam.GetOpenIDConnectProviderInput{
 				OpenIDConnectProviderArn: arn,
 			}
-			_, err := c.IAM().GetOpenIDConnectProvider(descReq)
+			resp, err := c.IAM().GetOpenIDConnectProvider(descReq)
 			if err != nil {
 				return nil, fmt.Errorf("error getting IAM OIDC Provider: %v", err)
 			}
-			// TODO: only delete oidc providers if they're owned by the cluster.
-			// We need to figure out how we can determine that given only a cluster name.
-			// Providers dont support tagging or naming.
-
-			// providers = append(providers, arn)
-		}
-		if err != nil {
-			return nil, fmt.Errorf("error listing IAM roles: %v", err)
+			if !matchesIAMTags(tags, resp.Tags) {
+				continue
+			}
+			providers = append(providers, arn)
 		}
 	}
 
@@ -2150,7 +2165,7 @@ func DeleteIAMOIDCProvider(cloud fi.Cloud, r *resources.Resource) error {
 		}
 		_, err := c.IAM().DeleteOpenIDConnectProvider(request)
 		if err != nil {
-			if awsup.AWSErrorCode(err) == "NoSuchEntity" {
+			if awsup.AWSErrorCode(err) == iam.ErrCodeNoSuchEntityException {
 				klog.V(2).Infof("Got NoSuchEntity deleting IAM OIDC Provider %v; will treat as already-deleted", arn)
 				return nil
 			}

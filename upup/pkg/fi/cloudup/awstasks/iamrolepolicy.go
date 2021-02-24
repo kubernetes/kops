@@ -63,7 +63,7 @@ func (e *IAMRolePolicy) Find(c *fi.Context) (*IAMRolePolicy, error) {
 
 		response, err := cloud.IAM().ListAttachedRolePolicies(request)
 		if awsErr, ok := err.(awserr.Error); ok {
-			if awsErr.Code() == "NoSuchEntity" {
+			if awsErr.Code() == iam.ErrCodeNoSuchEntityException {
 				return nil, nil
 			}
 
@@ -94,7 +94,7 @@ func (e *IAMRolePolicy) Find(c *fi.Context) (*IAMRolePolicy, error) {
 
 	response, err := cloud.IAM().GetRolePolicy(request)
 	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == "NoSuchEntity" {
+		if awsErr.Code() == iam.ErrCodeNoSuchEntityException {
 			return nil, nil
 		}
 	}
@@ -230,7 +230,7 @@ func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRoleP
 		klog.V(2).Infof("Deleting role policy %s/%s", aws.StringValue(e.Role.Name), aws.StringValue(e.Name))
 		_, err = t.Cloud.IAM().DeleteRolePolicy(request)
 		if err != nil {
-			if awsup.AWSErrorCode(err) == "NoSuchEntity" {
+			if awsup.AWSErrorCode(err) == iam.ErrCodeNoSuchEntityException {
 				// Already deleted
 				klog.V(2).Infof("Got NoSuchEntity deleting role policy %s/%s; assuming does not exist", aws.StringValue(e.Role.Name), aws.StringValue(e.Name))
 				return nil
