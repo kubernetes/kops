@@ -32,7 +32,7 @@ func (m *MockIAM) GetInstanceProfile(request *iam.GetInstanceProfileInput) (*iam
 
 	ip := m.InstanceProfiles[aws.StringValue(request.InstanceProfileName)]
 	if ip == nil {
-		return nil, awserr.New("NoSuchEntity", "No such entity", nil)
+		return nil, awserr.New(iam.ErrCodeNoSuchEntityException, "No such entity", nil)
 	}
 	response := &iam.GetInstanceProfileOutput{
 		InstanceProfile: ip,
@@ -57,6 +57,7 @@ func (m *MockIAM) CreateInstanceProfile(request *iam.CreateInstanceProfileInput)
 		// Arn:                 request.Arn,
 		// InstanceProfileId:   request.InstanceProfileId,
 		Path: request.Path,
+		Tags: request.Tags,
 		// Roles:               request.Roles,
 	}
 

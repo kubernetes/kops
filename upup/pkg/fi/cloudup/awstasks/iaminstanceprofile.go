@@ -35,6 +35,8 @@ type IAMInstanceProfile struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
 
+	Tags map[string]string
+
 	ID     *string
 	Shared *bool
 }
@@ -52,7 +54,7 @@ func findIAMInstanceProfile(cloud awsup.AWSCloud, name string) (*iam.InstancePro
 
 	response, err := cloud.IAM().GetInstanceProfile(request)
 	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == "NoSuchEntity" {
+		if awsErr.Code() == iam.ErrCodeNoSuchEntityException {
 			return nil, nil
 		}
 	}
@@ -79,6 +81,7 @@ func (e *IAMInstanceProfile) Find(c *fi.Context) (*IAMInstanceProfile, error) {
 	actual := &IAMInstanceProfile{
 		ID:   p.InstanceProfileId,
 		Name: p.InstanceProfileName,
+		Tags: mapIAMTagsToMap(p.Tags),
 	}
 
 	e.ID = actual.ID
@@ -114,6 +117,7 @@ func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAM
 
 		request := &iam.CreateInstanceProfileInput{
 			InstanceProfileName: e.Name,
+			Tags:                mapToIAMTags(e.Tags),
 		}
 
 		response, err := t.Cloud.IAM().CreateInstanceProfile(request)
@@ -123,6 +127,33 @@ func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAM
 
 		e.ID = response.InstanceProfile.InstanceProfileId
 		e.Name = response.InstanceProfile.InstanceProfileName
+	} else {
+		if changes.Tags != nil {
+			if len(a.Tags) > 0 {
+				existingTagKeys := make([]*string, 0)
+				for k := range a.Tags {
+					existingTagKeys = append(existingTagKeys, &k)
+				}
+				untagRequest := &iam.UntagInstanceProfileInput{
+					InstanceProfileName: a.Name,
+					TagKeys:             existingTagKeys,
+				}
+				_, err := t.Cloud.IAM().UntagInstanceProfile(untagRequest)
+				if err != nil {
+					return fmt.Errorf("error untagging IAMInstanceProfile: %v", err)
+				}
+			}
+			if len(e.Tags) > 0 {
+				tagRequest := &iam.TagInstanceProfileInput{
+					InstanceProfileName: a.Name,
+					Tags:                mapToIAMTags(e.Tags),
+				}
+				_, err := t.Cloud.IAM().TagInstanceProfile(tagRequest)
+				if err != nil {
+					return fmt.Errorf("error tagging IAMInstanceProfile: %v", err)
+				}
+			}
+		}
 	}
 
 	// TODO: Should we use path as our tag?
