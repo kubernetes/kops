@@ -12,7 +12,7 @@ The following addons are managed by kOps and will be upgraded following the kOps
 ### Available addons
 
 #### AWS Load Balancer Controller
-{{ kops_feature_table(kops_added_default='1.19') }}
+{{ kops_feature_table(kops_added_default='1.20') }}
 
 AWS Load Balancer Controller offers additional functionality for provisioning ELBs.
 
