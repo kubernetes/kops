@@ -69,8 +69,7 @@ type NodeReconciler struct {
 
 // +kubebuilder:rbac:groups=,resources=nodes,verbs=get;list;watch;patch
 // Reconcile is the main reconciler function that observes node changes.
-func (r *NodeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
+func (r *NodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = r.log.WithValues("nodecontroller", req.NamespacedName)
 
 	node := &corev1.Node{}

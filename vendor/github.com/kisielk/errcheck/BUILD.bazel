@@ -6,7 +6,10 @@ go_library(
     importmap = "k8s.io/kops/vendor/github.com/kisielk/errcheck",
     importpath = "github.com/kisielk/errcheck",
     visibility = ["//visibility:private"],
-    deps = ["//vendor/github.com/kisielk/errcheck/internal/errcheck:go_default_library"],
+    deps = [
+        "//vendor/github.com/kisielk/errcheck/errcheck:go_default_library",
+        "//vendor/golang.org/x/tools/go/packages:go_default_library",
+    ],
 )
 
 go_binary(
