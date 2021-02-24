@@ -12,7 +12,8 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
-        "//vendor/google.golang.org/grpc/credentials/internal:go_default_library",
+        "//vendor/google.golang.org/grpc/attributes:go_default_library",
         "//vendor/google.golang.org/grpc/internal:go_default_library",
+        "//vendor/google.golang.org/grpc/internal/credentials:go_default_library",
     ],
 )
