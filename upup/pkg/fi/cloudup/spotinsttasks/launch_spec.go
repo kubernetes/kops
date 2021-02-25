@@ -479,7 +479,7 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 				return err
 			}
 
-			if *actual.ImageID != *image.ImageId {
+			if fi.StringValue(actual.ImageID) != fi.StringValue(image.ImageId) {
 				spec.SetImageId(image.ImageId)
 			}
 
