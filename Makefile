@@ -262,6 +262,14 @@ bazel-version-ci: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm64
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
 	cp bazel-bin/cmd/nodeup/linux-arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup.sha256
+	cp -fp bazel-bin/channels/cmd/channels/linux-amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels.sha256
+	cp -fp bazel-bin/channels/cmd/channels/linux-arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels.sha256
+	cp -fp bazel-bin/protokube/cmd/protokube/linux-amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube.sha256
+	cp -fp bazel-bin/protokube/cmd/protokube/linux-arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube.sha256
 	cp ${BAZELIMAGES}/protokube-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz
 	cp ${BAZELIMAGES}/protokube-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz.sha256
 	cp ${BAZELIMAGES}/protokube-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz
