@@ -22,7 +22,7 @@ Read through the [topology page](../topology.md) to understand the options you h
 
 ## Cluster spec
 
-The `kops` command allows you to configure some aspects of your cluster, but for almost any production cluster, you want to change settings that is not accecible through CLI. The cluster spec can be exported as a yaml file and checked into version control.
+The `kops` command allows you to configure some aspects of your cluster, but for almost any production cluster, you want to change settings that is not accessible through CLI. The cluster spec can be exported as a yaml file and checked into version control.
 
 Read through the [cluster spec page](../cluster_spec.md) and familiarize yourself with the key options that kOps offers.
 
