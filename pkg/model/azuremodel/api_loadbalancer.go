@@ -48,16 +48,6 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	switch lbSpec.Type {
-	case kops.LoadBalancerTypeInternal:
-		// OK
-	case kops.LoadBalancerTypePublic:
-		// TODO: Implement creating public ip and attach to public loadbalancer
-		return fmt.Errorf("only internal loadbalancer for API server is implemented in Azure")
-	default:
-		return fmt.Errorf("unhandled LoadBalancer type %q", lbSpec.Type)
-	}
-
 	// Create LoadBalancer for API ELB
 	lb := &azuretasks.LoadBalancer{
 		Name:          fi.String(b.NameForLoadBalancer()),
@@ -76,6 +66,15 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		lb.Subnet = b.LinkToAzureSubnet(subnet)
 	case kops.LoadBalancerTypePublic:
 		lb.External = to.BoolPtr(true)
+
+		// Create Public IP Address for Public Loadbalacer
+		p := &azuretasks.PublicIPAddress{
+			Name:          fi.String(b.NameForLoadBalancer()),
+			Lifecycle:     b.Lifecycle,
+			ResourceGroup: b.LinkToResourceGroup(),
+			Tags:          map[string]*string{},
+		}
+		c.AddTask(p)
 	default:
 		return fmt.Errorf("unknown load balancer Type: %q", lbSpec.Type)
 	}

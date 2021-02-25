@@ -56,6 +56,7 @@ type AzureCloud interface {
 	RoleAssignment() RoleAssignmentsClient
 	NetworkInterface() NetworkInterfacesClient
 	LoadBalancer() LoadBalancersClient
+	PublicIPAddress() PublicIPAddressesClient
 }
 
 type azureCloudImplementation struct {
@@ -72,6 +73,7 @@ type azureCloudImplementation struct {
 	roleAssignmentsClient   RoleAssignmentsClient
 	networkInterfacesClient NetworkInterfacesClient
 	loadBalancersClient     LoadBalancersClient
+	publicIPAddressesClient PublicIPAddressesClient
 }
 
 var _ fi.Cloud = &azureCloudImplementation{}
@@ -97,6 +99,7 @@ func NewAzureCloud(subscriptionID, location string, tags map[string]string) (Azu
 		roleAssignmentsClient:   newRoleAssignmentsClientImpl(subscriptionID, authorizer),
 		networkInterfacesClient: newNetworkInterfacesClientImpl(subscriptionID, authorizer),
 		loadBalancersClient:     newLoadBalancersClientImpl(subscriptionID, authorizer),
+		publicIPAddressesClient: newPublicIPAddressesClientImpl(subscriptionID, authorizer),
 	}, nil
 }
 
@@ -265,4 +268,8 @@ func (c *azureCloudImplementation) NetworkInterface() NetworkInterfacesClient {
 
 func (c *azureCloudImplementation) LoadBalancer() LoadBalancersClient {
 	return c.loadBalancersClient
+}
+
+func (c *azureCloudImplementation) PublicIPAddress() PublicIPAddressesClient {
+	return c.publicIPAddressesClient
 }
