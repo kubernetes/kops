@@ -131,10 +131,9 @@ func (*LoadBalancer) RenderAzure(t *azure.AzureAPITarget, a, e, changes *LoadBal
 	idPrefix := fmt.Sprintf("subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network", t.Cloud.SubscriptionID(), *e.ResourceGroup.Name)
 	feConfigProperties := &network.FrontendIPConfigurationPropertiesFormat{}
 	if *e.External {
-		// TODO: Implement public load balancer
-		// feConfigProperties.PublicIPAddress = &network.PublicIPAddress{
-		// 	ID: to.StringPtr(fmt.Sprintf("/%s/publicIPAddresses/%s", idPrefix, *e.PublicIPName)),
-		// }
+		feConfigProperties.PublicIPAddress = &network.PublicIPAddress{
+			ID: to.StringPtr(fmt.Sprintf("/%s/publicIPAddresses/%s", idPrefix, *e.Name)),
+		}
 	} else {
 		feConfigProperties.PrivateIPAllocationMethod = network.Dynamic
 		feConfigProperties.Subnet = &network.Subnet{

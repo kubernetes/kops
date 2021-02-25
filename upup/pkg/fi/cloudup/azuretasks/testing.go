@@ -57,6 +57,7 @@ type MockAzureCloud struct {
 	RoleAssignmentsClient   *MockRoleAssignmentsClient
 	NetworkInterfacesClient *MockNetworkInterfacesClient
 	LoadBalancersClient     *MockLoadBalancersClient
+	PublicIPAddressesClient *MockPublicIPAddressesClient
 }
 
 var _ azure.AzureCloud = &MockAzureCloud{}
@@ -94,6 +95,9 @@ func NewMockAzureCloud(location string) *MockAzureCloud {
 		},
 		LoadBalancersClient: &MockLoadBalancersClient{
 			LBs: map[string]network.LoadBalancer{},
+		},
+		PublicIPAddressesClient: &MockPublicIPAddressesClient{
+			PubIPs: map[string]network.PublicIPAddress{},
 		},
 	}
 }
@@ -211,6 +215,11 @@ func (c *MockAzureCloud) NetworkInterface() azure.NetworkInterfacesClient {
 // LoadBalancer returns the loadbalancer client.
 func (c *MockAzureCloud) LoadBalancer() azure.LoadBalancersClient {
 	return c.LoadBalancersClient
+}
+
+// PublicIPAddress returns the public ip address client.
+func (c *MockAzureCloud) PublicIPAddress() azure.PublicIPAddressesClient {
+	return c.PublicIPAddressesClient
 }
 
 // MockResourceGroupsClient is a mock implementation of resource group client.
@@ -548,5 +557,41 @@ func (c *MockLoadBalancersClient) Delete(ctx context.Context, scope, lbName stri
 		return fmt.Errorf("%s does not exist", lbName)
 	}
 	delete(c.LBs, lbName)
+	return nil
+}
+
+// MockPublicIPAddressesClient is a mock implementation of role assignment client.
+type MockPublicIPAddressesClient struct {
+	PubIPs map[string]network.PublicIPAddress
+}
+
+var _ azure.PublicIPAddressesClient = &MockPublicIPAddressesClient{}
+
+// CreateOrUpdate creates a new public ip address.
+func (c *MockPublicIPAddressesClient) CreateOrUpdate(ctx context.Context, resourceGroupName, publicIPAddressName string, parameters network.PublicIPAddress) error {
+	if _, ok := c.PubIPs[publicIPAddressName]; ok {
+		return nil
+	}
+	parameters.Name = &publicIPAddressName
+	c.PubIPs[publicIPAddressName] = parameters
+	return nil
+}
+
+// List returns a slice of public ip address.
+func (c *MockPublicIPAddressesClient) List(ctx context.Context, resourceGroupName string) ([]network.PublicIPAddress, error) {
+	var l []network.PublicIPAddress
+	for _, lb := range c.PubIPs {
+		l = append(l, lb)
+	}
+	return l, nil
+}
+
+// Delete deletes a specified public ip address.
+func (c *MockPublicIPAddressesClient) Delete(ctx context.Context, scope, publicIPAddressName string) error {
+	// Ignore scope for simplicity.
+	if _, ok := c.PubIPs[publicIPAddressName]; !ok {
+		return fmt.Errorf("%s does not exist", publicIPAddressName)
+	}
+	delete(c.PubIPs, publicIPAddressName)
 	return nil
 }
