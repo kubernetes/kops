@@ -1,6 +1,7 @@
 # gazelle:prefix k8s.io/kops
 # gazelle:proto disable_global
 
+
 load("@bazel_gazelle//:def.bzl", "gazelle")
 
 package(default_visibility = ["//visibility:public"])

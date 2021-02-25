@@ -1,6 +1,7 @@
 // To regenerate mesh.pb.go run make protobuf
 syntax = 'proto3';
 
+
 package mesh;
 
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
