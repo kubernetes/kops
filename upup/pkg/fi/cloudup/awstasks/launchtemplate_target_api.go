@@ -135,6 +135,11 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 			SpotOptions: s,
 		}
 	}
+	if fi.StringValue(t.CPUCredits) != "" {
+		data.CreditSpecification = &ec2.CreditSpecificationRequest{
+			CpuCredits: t.CPUCredits,
+		}
+	}
 	// @step: attempt to create the launch template
 	if a == nil {
 		input := &ec2.CreateLaunchTemplateInput{
@@ -216,6 +221,11 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 	}
 	sort.Sort(OrderSecurityGroupsById(actual.SecurityGroups))
 
+	if lt.LaunchTemplateData.CreditSpecification != nil && lt.LaunchTemplateData.CreditSpecification.CpuCredits != nil {
+		actual.CPUCredits = lt.LaunchTemplateData.CreditSpecification.CpuCredits
+	} else {
+		actual.CPUCredits = aws.String("")
+	}
 	// @step: check if monitoring it enabled
 	if lt.LaunchTemplateData.Monitoring != nil {
 		actual.InstanceMonitoring = lt.LaunchTemplateData.Monitoring.Enabled

@@ -39,6 +39,8 @@ type LaunchTemplate struct {
 	AssociatePublicIP *bool
 	// BlockDeviceMappings is a block device mappings
 	BlockDeviceMappings []*BlockDeviceMapping
+	// CPUCredits is the credit option for CPU Usage on some instance types
+	CPUCredits *string
 	// HTTPPutResponseHopLimit is the desired HTTP PUT response hop limit for instance metadata requests.
 	HTTPPutResponseHopLimit *int64
 	// HTTPTokens is the state of token usage for your instance metadata requests.
