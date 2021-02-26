@@ -434,6 +434,9 @@
               }
             }
           ],
+          "CreditSpecification": {
+            "CpuCredits": "standard"
+          },
           "IamInstanceProfile": {
             "Name": {
               "Ref": "AWSIAMInstanceProfilenodescomplexexamplecom"
