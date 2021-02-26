@@ -79,6 +79,11 @@ type cloudformationLaunchTemplateMarketOptions struct {
 	SpotOptions *cloudformationLaunchTemplateMarketOptionsSpotOptions `json:"SpotOptions,omitempty"`
 }
 
+type cloudformationLaunchTemplateCreditSpecification struct {
+	// CPUCredits The credit option for CPU usage on some instance types
+	CPUCredits *string `json:"CpuCredits,omitempty"`
+}
+
 type cloudformationLaunchTemplateBlockDeviceEBS struct {
 	// VolumeType is the ebs type to use
 	VolumeType *string `json:"VolumeType,omitempty"`
@@ -122,6 +127,8 @@ type cloudformationLaunchTemplateInstanceMetadataOptions struct {
 type cloudformationLaunchTemplateData struct {
 	// BlockDeviceMappings is the device mappings
 	BlockDeviceMappings []*cloudformationLaunchTemplateBlockDevice `json:"BlockDeviceMappings,omitempty"`
+	// CreditSpecification is the credit option for CPU Usage on some instance types
+	CreditSpecification *cloudformationLaunchTemplateCreditSpecification `json:"CreditSpecification,omitempty"`
 	// EBSOptimized indicates if the root device is ebs optimized
 	EBSOptimized *bool `json:"EbsOptimized,omitempty"`
 	// IAMInstanceProfile is the IAM profile to assign to the nodes
@@ -206,6 +213,12 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 			marketSpotOptions.InstanceInterruptionBehavior = e.InstanceInterruptionBehavior
 		}
 		launchTemplateData.MarketOptions = &cloudformationLaunchTemplateMarketOptions{MarketType: fi.String("spot"), SpotOptions: &marketSpotOptions}
+	}
+
+	if fi.StringValue(e.CPUCredits) != "" {
+		launchTemplateData.CreditSpecification = &cloudformationLaunchTemplateCreditSpecification{
+			CPUCredits: e.CPUCredits,
+		}
 	}
 
 	cf := &cloudformationLaunchTemplate{
