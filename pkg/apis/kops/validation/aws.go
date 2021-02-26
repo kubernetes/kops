@@ -79,6 +79,10 @@ func awsValidateInstanceGroup(ig *kops.InstanceGroup, cloud awsup.AWSCloud) fiel
 		allErrs = append(allErrs, awsValidateInstanceMetadata(field.NewPath("spec", "instanceMetadata"), ig.Spec.InstanceMetadata)...)
 	}
 
+	if ig.Spec.CPUCredits != nil {
+		allErrs = append(allErrs, awsValidateCPUCredits(field.NewPath("spec"), &ig.Spec, cloud)...)
+	}
+
 	return allErrs
 }
 
@@ -275,5 +279,12 @@ func awsValidateLoadBalancerSubnets(fieldPath *field.Path, spec kops.ClusterSpec
 		}
 	}
 
+	return allErrs
+}
+
+func awsValidateCPUCredits(fieldPath *field.Path, spec *kops.InstanceGroupSpec, cloud awsup.AWSCloud) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	allErrs = append(allErrs, IsValidValue(fieldPath.Child("cpuCredits"), spec.CPUCredits, []string{"standard", "unlimited"})...)
 	return allErrs
 }
