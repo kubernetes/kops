@@ -177,6 +177,13 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 			lt.RootVolumeThroughput = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeThroughput)))
 		}
 	}
+
+	if ig.Spec.CPUCredits != nil {
+		lt.CPUCredits = ig.Spec.CPUCredits
+	} else {
+		lt.CPUCredits = fi.String("")
+	}
+
 	return lt, nil
 }
 
