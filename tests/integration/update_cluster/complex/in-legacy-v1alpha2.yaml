@@ -109,6 +109,7 @@ spec:
   detailedInstanceMonitoring: true
   rootVolumeDeleteOnTermination: false
   rootVolumeEncryption: true
+  cpuCredits: standard
   volumes:
   - device: /dev/xvdd
     deleteOnTermination: false
