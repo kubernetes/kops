@@ -17,6 +17,7 @@ limitations under the License.
 package azuremodel
 
 import (
+	"fmt"
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -97,8 +98,12 @@ func (c *AzureModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) ma
 	}
 
 	// Apply labels for cluster node labels.
+	i := 0
 	for k, v := range ig.Spec.NodeLabels {
-		labels[clusterNodeTemplateLabel+k] = v
+		// Store the label key in the tag value
+		// so that we don't need to espace "/" in the label key.
+		labels[fmt.Sprintf("%s%d", clusterNodeTemplateLabel, i)] = fmt.Sprintf("%s=%s", k, v)
+		i++
 	}
 
 	// Apply labels for cluster node taints.
