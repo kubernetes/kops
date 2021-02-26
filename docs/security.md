@@ -12,6 +12,7 @@ creating a new cluster, the SSH public key can be specified with the `--ssh-publ
 defaults to `~/.ssh/id_rsa.pub`.
 
 > Note: In Flatcar, SSH username will be `core`.
+> In Ubuntu, SSH username will be `ubuntu`
 
 To change the SSH public key on an existing cluster:
 
