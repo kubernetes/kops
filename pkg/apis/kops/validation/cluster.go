@@ -127,6 +127,10 @@ func validateEtcdMemberUpdate(fp *field.Path, obj kops.EtcdMemberSpec, status *k
 
 func validateClusterCloudLabels(cluster *kops.Cluster, fldPath *field.Path) (allErrs field.ErrorList) {
 	labels := cluster.Spec.CloudLabels
+	return validateCloudLabels(labels, fldPath)
+}
+
+func validateCloudLabels(labels map[string]string, fldPath *field.Path) (allErrs field.ErrorList) {
 	if labels == nil {
 		return allErrs
 	}
@@ -142,11 +146,10 @@ func validateClusterCloudLabels(cluster *kops.Cluster, fldPath *field.Path) (all
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child(reservedKey), fmt.Sprintf("%q is a reserved label and cannot be used as a custom label", reservedKey)))
 		}
 	}
-
 	reservedPrefixes := []string{
+		"kubernetes.io/cluster/",
+		"k8s.io/role/",
 		"kops.k8s.io/",
-		"k8s.io/",
-		"kubernetes.io/",
 	}
 
 	for _, reservedPrefix := range reservedPrefixes {
