@@ -35,31 +35,31 @@ type EnqueueRequestForObject struct{}
 
 // Create implements EventHandler
 func (e *EnqueueRequestForObject) Create(evt event.CreateEvent, q workqueue.RateLimitingInterface) {
-	if evt.Meta == nil {
+	if evt.Object == nil {
 		enqueueLog.Error(nil, "CreateEvent received with no metadata", "event", evt)
 		return
 	}
 	q.Add(reconcile.Request{NamespacedName: types.NamespacedName{
-		Name:      evt.Meta.GetName(),
-		Namespace: evt.Meta.GetNamespace(),
+		Name:      evt.Object.GetName(),
+		Namespace: evt.Object.GetNamespace(),
 	}})
 }
 
 // Update implements EventHandler
 func (e *EnqueueRequestForObject) Update(evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
-	if evt.MetaOld != nil {
+	if evt.ObjectOld != nil {
 		q.Add(reconcile.Request{NamespacedName: types.NamespacedName{
-			Name:      evt.MetaOld.GetName(),
-			Namespace: evt.MetaOld.GetNamespace(),
+			Name:      evt.ObjectOld.GetName(),
+			Namespace: evt.ObjectOld.GetNamespace(),
 		}})
 	} else {
 		enqueueLog.Error(nil, "UpdateEvent received with no old metadata", "event", evt)
 	}
 
-	if evt.MetaNew != nil {
+	if evt.ObjectNew != nil {
 		q.Add(reconcile.Request{NamespacedName: types.NamespacedName{
-			Name:      evt.MetaNew.GetName(),
-			Namespace: evt.MetaNew.GetNamespace(),
+			Name:      evt.ObjectNew.GetName(),
+			Namespace: evt.ObjectNew.GetNamespace(),
 		}})
 	} else {
 		enqueueLog.Error(nil, "UpdateEvent received with no new metadata", "event", evt)
@@ -68,24 +68,24 @@ func (e *EnqueueRequestForObject) Update(evt event.UpdateEvent, q workqueue.Rate
 
 // Delete implements EventHandler
 func (e *EnqueueRequestForObject) Delete(evt event.DeleteEvent, q workqueue.RateLimitingInterface) {
-	if evt.Meta == nil {
+	if evt.Object == nil {
 		enqueueLog.Error(nil, "DeleteEvent received with no metadata", "event", evt)
 		return
 	}
 	q.Add(reconcile.Request{NamespacedName: types.NamespacedName{
-		Name:      evt.Meta.GetName(),
-		Namespace: evt.Meta.GetNamespace(),
+		Name:      evt.Object.GetName(),
+		Namespace: evt.Object.GetNamespace(),
 	}})
 }
 
 // Generic implements EventHandler
 func (e *EnqueueRequestForObject) Generic(evt event.GenericEvent, q workqueue.RateLimitingInterface) {
-	if evt.Meta == nil {
+	if evt.Object == nil {
 		enqueueLog.Error(nil, "GenericEvent received with no metadata", "event", evt)
 		return
 	}
 	q.Add(reconcile.Request{NamespacedName: types.NamespacedName{
-		Name:      evt.Meta.GetName(),
-		Namespace: evt.Meta.GetNamespace(),
+		Name:      evt.Object.GetName(),
+		Namespace: evt.Object.GetNamespace(),
 	}})
 }

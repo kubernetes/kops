@@ -93,6 +93,9 @@ const (
 	F_SETOWN                         = 0x8
 	F_UNLCK                          = 0x2
 	F_WRLCK                          = 0x1
+	HIDIOCGRAWINFO                   = 0x40084803
+	HIDIOCGRDESC                     = 0x50044802
+	HIDIOCGRDESCSIZE                 = 0x40044801
 	HUPCL                            = 0x4000
 	ICANON                           = 0x100
 	IEXTEN                           = 0x400
@@ -548,6 +551,9 @@ const (
 	WORDSIZE                         = 0x40
 	XCASE                            = 0x4000
 	XTABS                            = 0xc00
+	_HIDIOCGRAWNAME                  = 0x40804804
+	_HIDIOCGRAWPHYS                  = 0x40404805
+	_HIDIOCGRAWUNIQ                  = 0x40404808
 )
 
 // Errors
