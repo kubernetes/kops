@@ -2094,7 +2094,7 @@ func ListIAMOIDCProviders(cloud fi.Cloud, clusterName string) ([]*resources.Reso
 
 func DeleteIAMOIDCProvider(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(awsup.AWSCloud)
-	arn := r.Obj.(*string)
+	arn := fi.String(r.ID)
 	{
 		klog.V(2).Infof("Deleting IAM OIDC Provider %v", arn)
 		request := &iam.DeleteOpenIDConnectProviderInput{
