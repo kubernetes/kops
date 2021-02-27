@@ -28444,7 +28444,7 @@ spec:
             - --expander={{ .Expander }}
             {{ range $name, $spec := GetNodeInstanceGroups }}
             {{ if WithDefaultBool $spec.Autoscale true }}
-            - --nodes={{ $spec.MinSize }}:{{ $spec.MaxSize }}:{{ $name }}.{{ ClusterName }}
+            - --nodes={{ $spec.MinSize }}:{{ $spec.MaxSize }}:{{ $name }}{{- if not (eq $.CloudProvider "gce") }}.{{ ClusterName }}{{ end -}}
             {{ end }}
             {{ end }}
             - --scale-down-utilization-threshold={{ .ScaleDownUtilizationThreshold }}
