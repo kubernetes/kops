@@ -97,6 +97,9 @@ const (
 	F_SETOWN                         = 0x6
 	F_UNLCK                          = 0x3
 	F_WRLCK                          = 0x2
+	HIDIOCGRAWINFO                   = 0x40084803
+	HIDIOCGRDESC                     = 0x50044802
+	HIDIOCGRDESCSIZE                 = 0x40044801
 	HUPCL                            = 0x400
 	ICANON                           = 0x2
 	IEXTEN                           = 0x8000
@@ -536,6 +539,9 @@ const (
 	WORDSIZE                         = 0x40
 	XCASE                            = 0x4
 	XTABS                            = 0x1800
+	_HIDIOCGRAWNAME                  = 0x40804804
+	_HIDIOCGRAWPHYS                  = 0x40404805
+	_HIDIOCGRAWUNIQ                  = 0x40404808
 	__TIOCFLUSH                      = 0x80047410
 )
 

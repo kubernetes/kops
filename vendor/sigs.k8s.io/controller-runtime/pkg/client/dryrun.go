@@ -19,6 +19,7 @@ package client
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -35,38 +36,48 @@ type dryRunClient struct {
 	client Client
 }
 
+// Scheme returns the scheme this client is using.
+func (c *dryRunClient) Scheme() *runtime.Scheme {
+	return c.client.Scheme()
+}
+
+// RESTMapper returns the rest mapper this client is using.
+func (c *dryRunClient) RESTMapper() meta.RESTMapper {
+	return c.client.RESTMapper()
+}
+
 // Create implements client.Client
-func (c *dryRunClient) Create(ctx context.Context, obj runtime.Object, opts ...CreateOption) error {
+func (c *dryRunClient) Create(ctx context.Context, obj Object, opts ...CreateOption) error {
 	return c.client.Create(ctx, obj, append(opts, DryRunAll)...)
 }
 
 // Update implements client.Client
-func (c *dryRunClient) Update(ctx context.Context, obj runtime.Object, opts ...UpdateOption) error {
+func (c *dryRunClient) Update(ctx context.Context, obj Object, opts ...UpdateOption) error {
 	return c.client.Update(ctx, obj, append(opts, DryRunAll)...)
 }
 
 // Delete implements client.Client
-func (c *dryRunClient) Delete(ctx context.Context, obj runtime.Object, opts ...DeleteOption) error {
+func (c *dryRunClient) Delete(ctx context.Context, obj Object, opts ...DeleteOption) error {
 	return c.client.Delete(ctx, obj, append(opts, DryRunAll)...)
 }
 
 // DeleteAllOf implements client.Client
-func (c *dryRunClient) DeleteAllOf(ctx context.Context, obj runtime.Object, opts ...DeleteAllOfOption) error {
+func (c *dryRunClient) DeleteAllOf(ctx context.Context, obj Object, opts ...DeleteAllOfOption) error {
 	return c.client.DeleteAllOf(ctx, obj, append(opts, DryRunAll)...)
 }
 
 // Patch implements client.Client
-func (c *dryRunClient) Patch(ctx context.Context, obj runtime.Object, patch Patch, opts ...PatchOption) error {
+func (c *dryRunClient) Patch(ctx context.Context, obj Object, patch Patch, opts ...PatchOption) error {
 	return c.client.Patch(ctx, obj, patch, append(opts, DryRunAll)...)
 }
 
 // Get implements client.Client
-func (c *dryRunClient) Get(ctx context.Context, key ObjectKey, obj runtime.Object) error {
+func (c *dryRunClient) Get(ctx context.Context, key ObjectKey, obj Object) error {
 	return c.client.Get(ctx, key, obj)
 }
 
 // List implements client.Client
-func (c *dryRunClient) List(ctx context.Context, obj runtime.Object, opts ...ListOption) error {
+func (c *dryRunClient) List(ctx context.Context, obj ObjectList, opts ...ListOption) error {
 	return c.client.List(ctx, obj, opts...)
 }
 
@@ -85,11 +96,11 @@ type dryRunStatusWriter struct {
 }
 
 // Update implements client.StatusWriter
-func (sw *dryRunStatusWriter) Update(ctx context.Context, obj runtime.Object, opts ...UpdateOption) error {
+func (sw *dryRunStatusWriter) Update(ctx context.Context, obj Object, opts ...UpdateOption) error {
 	return sw.client.Update(ctx, obj, append(opts, DryRunAll)...)
 }
 
 // Patch implements client.StatusWriter
-func (sw *dryRunStatusWriter) Patch(ctx context.Context, obj runtime.Object, patch Patch, opts ...PatchOption) error {
+func (sw *dryRunStatusWriter) Patch(ctx context.Context, obj Object, patch Patch, opts ...PatchOption) error {
 	return sw.client.Patch(ctx, obj, patch, append(opts, DryRunAll)...)
 }

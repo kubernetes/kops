@@ -14,6 +14,7 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/builder:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/client/config:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/config:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/controller/controllerutil:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/log:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/manager:go_default_library",

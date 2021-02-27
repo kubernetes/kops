@@ -21,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	cfg "sigs.k8s.io/controller-runtime/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -91,6 +92,11 @@ var (
 	// * $HOME/.kube/config if exists
 	GetConfig = config.GetConfig
 
+	// ConfigFile returns the cfg.File function for deferred config file loading,
+	// this is passed into Options{}.From() to populate the Options fields for
+	// the manager.
+	ConfigFile = cfg.File
+
 	// NewControllerManagedBy returns a new controller builder that will be started by the provided Manager
 	NewControllerManagedBy = builder.ControllerManagedBy
 
@@ -125,10 +131,19 @@ var (
 	// get any actual logging.
 	Log = log.Log
 
-	// LoggerFromContext returns a logger with predefined values from a context.Context.
+	// LoggerFrom returns a logger with predefined values from a context.Context.
+	// The logger, when used with controllers, can be expected to contain basic information about the object
+	// that's being reconciled like:
+	// - `reconciler group` and `reconciler kind` coming from the For(...) object passed in when building a controller.
+	// - `name` and `namespace` injected from the reconciliation request.
 	//
 	// This is meant to be used with the context supplied in a struct that satisfies the Reconciler interface.
-	LoggerFromContext = log.FromContext
+	LoggerFrom = log.FromContext
+
+	// LoggerInto takes a context and sets the logger as one of its keys.
+	//
+	// This is meant to be used in reconcilers to enrich the logger within a context with additional values.
+	LoggerInto = log.IntoContext
 
 	// SetLogger sets a concrete logging implementation for all deferred Loggers.
 	SetLogger = log.SetLogger
