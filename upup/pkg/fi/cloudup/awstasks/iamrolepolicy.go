@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"net/url"
+	"sort"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -76,6 +77,7 @@ func (e *IAMRolePolicy) Find(c *fi.Context) (*IAMRolePolicy, error) {
 				policies = append(policies, aws.StringValue(policy.PolicyArn))
 			}
 		}
+		sort.Strings(policies)
 
 		actual.ID = e.ID
 		actual.Name = e.Name
