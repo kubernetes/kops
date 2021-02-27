@@ -19,15 +19,12 @@ package awsmodel
 import (
 	"bytes"
 	"crypto"
-	"crypto/sha1"
-	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"io"
-	"net/url"
 
 	"gopkg.in/square/go-jose.v2"
 	"k8s.io/kops/pkg/featureflag"
@@ -79,12 +76,13 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("keypair/master task not found")
 	}
 
-	fingerprint, err := getFingerprint(serviceAccountIssuer)
-	if err != nil {
-		return err
-	}
+	fingerprints := getFingerprints()
 
-	thumbprints = []fi.Resource{fi.NewStringResource(fingerprint)}
+	thumbprints = []fi.Resource{}
+
+	for _, fingerprint := range fingerprints {
+		thumbprints = append(thumbprints, fi.NewStringResource(fingerprint))
+	}
 
 	skTask := signingKeyTaskObject.(*fitasks.Keypair)
 
@@ -119,7 +117,6 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 		Lifecycle:   b.Lifecycle,
 		URL:         fi.String(serviceAccountIssuer),
 		ClientIDs:   []*string{fi.String(defaultAudience)},
-		Tags:        b.CloudTags(b.ClusterName(), false),
 		Thumbprints: thumbprints,
 	})
 
@@ -196,25 +193,11 @@ func (o *OIDCKeys) Open() (io.Reader, error) {
 	return bytes.NewReader(jsonBytes), nil
 }
 
-func getFingerprint(issuer string) (string, error) {
+func getFingerprints() []string {
 
-	url, err := url.Parse(issuer)
-	if err != nil {
-		return "", err
+	return []string{
+		"9e99a48a9960b14926bb7f3b02e22da2b0ab7280",
+		"a9d53002e97e00e043244f3d170d6f4c414104fd",
 	}
-
-	hostPort := url.Host + ":443"
-
-	conn, err := tls.Dial("tcp", hostPort, &tls.Config{})
-	if err != nil {
-		return "", err
-	}
-	defer conn.Close()
-
-	certs := conn.ConnectionState().PeerCertificates
-	//CA should be the last cert
-	ca := certs[len(certs)-1]
-
-	return fmt.Sprintf("%x", sha1.Sum(ca.Raw)), nil
 
 }
