@@ -41,22 +41,37 @@ In order to match the kOps environment, create a `values.yaml` file with the fol
 operator:
   nodeSelector:
     kops.k8s.io/instancegroup: gpu-nodes
+  tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
 
 driver:
   nodeSelector:
     kops.k8s.io/instancegroup: gpu-nodes
+  tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
 
 toolkit:
   nodeSelector:
     kops.k8s.io/instancegroup: gpu-nodes
+  tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
 
 devicePlugin:
   nodeSelector:
     kops.k8s.io/instancegroup: gpu-nodes
+  tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
 
 dcgmExporter:
   nodeSelector:
     kops.k8s.io/instancegroup: gpu-nodes
+  tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
 
 gfd:
   nodeSelector:
@@ -64,12 +79,14 @@ gfd:
   tolerations:
   - key: nvidia.com/gpu
     operator: Exists
-    effect: NoSchedule
 
 node-feature-discovery:
   worker:
     nodeSelector:
       kops.k8s.io/instancegroup: gpu-nodes
+    tolerations:
+    - key: nvidia.com/gpu
+      operator: Exists
 ```
 
 Once you have installed the the _helm chart_ you should be able to see the GPU operator resources being spawned in the `gpu-operator-resources` namespace.
