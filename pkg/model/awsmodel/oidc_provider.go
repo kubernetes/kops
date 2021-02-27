@@ -60,7 +60,6 @@ const (
 )
 
 func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
-	var thumbprints []fi.Resource
 
 	if !featureflag.PublicJWKS.Enabled() {
 		return nil
@@ -78,10 +77,10 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	fingerprints := getFingerprints()
 
-	thumbprints = []fi.Resource{}
+	thumbprints := []*string{}
 
 	for _, fingerprint := range fingerprints {
-		thumbprints = append(thumbprints, fi.NewStringResource(fingerprint))
+		thumbprints = append(thumbprints, fi.String(fingerprint))
 	}
 
 	skTask := signingKeyTaskObject.(*fitasks.Keypair)
