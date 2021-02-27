@@ -3682,3 +3682,15 @@ const (
 	ETHTOOL_A_TUNNEL_INFO_UDP_PORTS           = 0x2
 	ETHTOOL_A_TUNNEL_INFO_MAX                 = 0x2
 )
+
+type (
+	HIDRawReportDescriptor struct {
+		Size  uint32
+		Value [4096]uint8
+	}
+	HIDRawDevInfo struct {
+		Bustype uint32
+		Vendor  int16
+		Product int16
+	}
+)

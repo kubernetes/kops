@@ -17,6 +17,8 @@ limitations under the License.
 package controller
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -27,6 +29,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	ctrlmetrics "sigs.k8s.io/controller-runtime/pkg/internal/controller/metrics"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
@@ -69,10 +72,19 @@ type Controller struct {
 	// Started is true if the Controller has been Started
 	Started bool
 
-	// TODO(community): Consider initializing a logger with the Controller Name as the tag
+	// ctx is the context that was passed to Start() and used when starting watches.
+	//
+	// According to the docs, contexts should not be stored in a struct: https://golang.org/pkg/context,
+	// while we usually always strive to follow best practices, we consider this a legacy case and it should
+	// undergo a major refactoring and redesign to allow for context to not be stored in a struct.
+	ctx context.Context
 
-	// watches maintains a list of sources, handlers, and predicates to start when the controller is started.
-	watches []watchDescription
+	// CacheSyncTimeout refers to the time limit set on waiting for cache to sync
+	// Defaults to 2 minutes if not set.
+	CacheSyncTimeout time.Duration
+
+	// startWatches maintains a list of sources, handlers, and predicates to start when the controller is started.
+	startWatches []watchDescription
 
 	// Log is used to log messages to users during reconciliation, or for example when a watch is started.
 	Log logr.Logger
@@ -86,8 +98,10 @@ type watchDescription struct {
 }
 
 // Reconcile implements reconcile.Reconciler
-func (c *Controller) Reconcile(r reconcile.Request) (reconcile.Result, error) {
-	return c.Do.Reconcile(r)
+func (c *Controller) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
+	log := c.Log.WithValues("name", req.Name, "namespace", req.Namespace)
+	ctx = logf.IntoContext(ctx, log)
+	return c.Do.Reconcile(ctx, req)
 }
 
 // Watch implements controller.Controller
@@ -108,20 +122,31 @@ func (c *Controller) Watch(src source.Source, evthdler handler.EventHandler, prc
 		}
 	}
 
-	c.watches = append(c.watches, watchDescription{src: src, handler: evthdler, predicates: prct})
-	if c.Started {
-		c.Log.Info("Starting EventSource", "source", src)
-		return src.Start(evthdler, c.Queue, prct...)
+	// Controller hasn't started yet, store the watches locally and return.
+	//
+	// These watches are going to be held on the controller struct until the manager or user calls Start(...).
+	if !c.Started {
+		c.startWatches = append(c.startWatches, watchDescription{src: src, handler: evthdler, predicates: prct})
+		return nil
 	}
 
-	return nil
+	c.Log.Info("Starting EventSource", "source", src)
+	return src.Start(c.ctx, evthdler, c.Queue, prct...)
 }
 
 // Start implements controller.Controller
-func (c *Controller) Start(stop <-chan struct{}) error {
+func (c *Controller) Start(ctx context.Context) error {
 	// use an IIFE to get proper lock handling
 	// but lock outside to get proper handling of the queue shutdown
 	c.mu.Lock()
+	if c.Started {
+		return errors.New("controller was started more than once. This is likely to be caused by being added to a manager multiple times")
+	}
+
+	c.initMetrics()
+
+	// Set the internal context.
+	c.ctx = ctx
 
 	c.Queue = c.MakeQueue()
 	defer c.Queue.ShutDown() // needs to be outside the iife so that we shutdown after the stop channel is closed
@@ -135,9 +160,10 @@ func (c *Controller) Start(stop <-chan struct{}) error {
 		// NB(directxman12): launch the sources *before* trying to wait for the
 		// caches to sync so that they have a chance to register their intendeded
 		// caches.
-		for _, watch := range c.watches {
+		for _, watch := range c.startWatches {
 			c.Log.Info("Starting EventSource", "source", watch.src)
-			if err := watch.src.Start(watch.handler, c.Queue, watch.predicates...); err != nil {
+
+			if err := watch.src.Start(ctx, watch.handler, c.Queue, watch.predicates...); err != nil {
 				return err
 			}
 		}
@@ -145,19 +171,36 @@ func (c *Controller) Start(stop <-chan struct{}) error {
 		// Start the SharedIndexInformer factories to begin populating the SharedIndexInformer caches
 		c.Log.Info("Starting Controller")
 
-		for _, watch := range c.watches {
+		for _, watch := range c.startWatches {
 			syncingSource, ok := watch.src.(source.SyncingSource)
 			if !ok {
 				continue
 			}
-			if err := syncingSource.WaitForSync(stop); err != nil {
-				// This code is unreachable in case of kube watches since WaitForCacheSync will never return an error
-				// Leaving it here because that could happen in the future
-				err := fmt.Errorf("failed to wait for %s caches to sync: %w", c.Name, err)
-				c.Log.Error(err, "Could not wait for Cache to sync")
+
+			if err := func() error {
+				// use a context with timeout for launching sources and syncing caches.
+				sourceStartCtx, cancel := context.WithTimeout(ctx, c.CacheSyncTimeout)
+				defer cancel()
+
+				// WaitForSync waits for a definitive timeout, and returns if there
+				// is an error or a timeout
+				if err := syncingSource.WaitForSync(sourceStartCtx); err != nil {
+					err := fmt.Errorf("failed to wait for %s caches to sync: %w", c.Name, err)
+					c.Log.Error(err, "Could not wait for Cache to sync")
+					return err
+				}
+
+				return nil
+			}(); err != nil {
 				return err
 			}
 		}
+
+		// All the watches have been started, we can reset the local slice.
+		//
+		// We should never hold watches more than necessary, each watch source can hold a backing cache,
+		// which won't be garbage collected if we hold a reference to it.
+		c.startWatches = nil
 
 		if c.JitterPeriod == 0 {
 			c.JitterPeriod = 1 * time.Second
@@ -166,8 +209,12 @@ func (c *Controller) Start(stop <-chan struct{}) error {
 		// Launch workers to process resources
 		c.Log.Info("Starting workers", "worker count", c.MaxConcurrentReconciles)
 		for i := 0; i < c.MaxConcurrentReconciles; i++ {
-			// Process work items
-			go wait.Until(c.worker, c.JitterPeriod, stop)
+			go wait.UntilWithContext(ctx, func(ctx context.Context) {
+				// Run a worker thread that just dequeues items, processes them, and marks them done.
+				// It enforces that the reconcileHandler is never invoked concurrently with the same object.
+				for c.processNextWorkItem(ctx) {
+				}
+			}, c.JitterPeriod)
 		}
 
 		c.Started = true
@@ -177,21 +224,14 @@ func (c *Controller) Start(stop <-chan struct{}) error {
 		return err
 	}
 
-	<-stop
+	<-ctx.Done()
 	c.Log.Info("Stopping workers")
 	return nil
 }
 
-// worker runs a worker thread that just dequeues items, processes them, and marks them done.
-// It enforces that the reconcileHandler is never invoked concurrently with the same object.
-func (c *Controller) worker() {
-	for c.processNextWorkItem() {
-	}
-}
-
 // processNextWorkItem will read a single work item off the workqueue and
 // attempt to process it, by calling the reconcileHandler.
-func (c *Controller) processNextWorkItem() bool {
+func (c *Controller) processNextWorkItem(ctx context.Context) bool {
 	obj, shutdown := c.Queue.Get()
 	if shutdown {
 		// Stop working
@@ -206,10 +246,31 @@ func (c *Controller) processNextWorkItem() bool {
 	// period.
 	defer c.Queue.Done(obj)
 
-	return c.reconcileHandler(obj)
+	ctrlmetrics.ActiveWorkers.WithLabelValues(c.Name).Add(1)
+	defer ctrlmetrics.ActiveWorkers.WithLabelValues(c.Name).Add(-1)
+
+	c.reconcileHandler(ctx, obj)
+	return true
 }
 
-func (c *Controller) reconcileHandler(obj interface{}) bool {
+const (
+	labelError        = "error"
+	labelRequeueAfter = "requeue_after"
+	labelRequeue      = "requeue"
+	labelSuccess      = "success"
+)
+
+func (c *Controller) initMetrics() {
+	ctrlmetrics.ActiveWorkers.WithLabelValues(c.Name).Set(0)
+	ctrlmetrics.ReconcileErrors.WithLabelValues(c.Name).Add(0)
+	ctrlmetrics.ReconcileTotal.WithLabelValues(c.Name, labelError).Add(0)
+	ctrlmetrics.ReconcileTotal.WithLabelValues(c.Name, labelRequeueAfter).Add(0)
+	ctrlmetrics.ReconcileTotal.WithLabelValues(c.Name, labelRequeue).Add(0)
+	ctrlmetrics.ReconcileTotal.WithLabelValues(c.Name, labelSuccess).Add(0)
+	ctrlmetrics.WorkerCount.WithLabelValues(c.Name).Set(float64(c.MaxConcurrentReconciles))
+}
+
+func (c *Controller) reconcileHandler(ctx context.Context, obj interface{}) {
 	// Update metrics after processing each item
 	reconcileStartTS := time.Now()
 	defer func() {
@@ -225,19 +286,20 @@ func (c *Controller) reconcileHandler(obj interface{}) bool {
 		c.Queue.Forget(obj)
 		c.Log.Error(nil, "Queue item was not a Request", "type", fmt.Sprintf("%T", obj), "value", obj)
 		// Return true, don't take a break
-		return true
+		return
 	}
 
 	log := c.Log.WithValues("name", req.Name, "namespace", req.Namespace)
+	ctx = logf.IntoContext(ctx, log)
 
 	// RunInformersAndControllers the syncHandler, passing it the namespace/Name string of the
 	// resource to be synced.
-	if result, err := c.Do.Reconcile(req); err != nil {
+	if result, err := c.Do.Reconcile(ctx, req); err != nil {
 		c.Queue.AddRateLimited(req)
-		log.Error(err, "Reconciler error")
 		ctrlmetrics.ReconcileErrors.WithLabelValues(c.Name).Inc()
-		ctrlmetrics.ReconcileTotal.WithLabelValues(c.Name, "error").Inc()
-		return false
+		ctrlmetrics.ReconcileTotal.WithLabelValues(c.Name, labelError).Inc()
+		log.Error(err, "Reconciler error")
+		return
 	} else if result.RequeueAfter > 0 {
 		// The result.RequeueAfter request will be lost, if it is returned
 		// along with a non-nil error. But this is intended as
@@ -245,24 +307,24 @@ func (c *Controller) reconcileHandler(obj interface{}) bool {
 		// to result.RequestAfter
 		c.Queue.Forget(obj)
 		c.Queue.AddAfter(req, result.RequeueAfter)
-		ctrlmetrics.ReconcileTotal.WithLabelValues(c.Name, "requeue_after").Inc()
-		return true
+		ctrlmetrics.ReconcileTotal.WithLabelValues(c.Name, labelRequeueAfter).Inc()
+		return
 	} else if result.Requeue {
 		c.Queue.AddRateLimited(req)
-		ctrlmetrics.ReconcileTotal.WithLabelValues(c.Name, "requeue").Inc()
-		return true
+		ctrlmetrics.ReconcileTotal.WithLabelValues(c.Name, labelRequeue).Inc()
+		return
 	}
 
 	// Finally, if no error occurs we Forget this item so it does not
 	// get queued again until another change happens.
 	c.Queue.Forget(obj)
 
-	// TODO(directxman12): What does 1 mean?  Do we want level constants?  Do we want levels at all?
-	log.V(1).Info("Successfully Reconciled")
+	ctrlmetrics.ReconcileTotal.WithLabelValues(c.Name, labelSuccess).Inc()
+}
 
-	ctrlmetrics.ReconcileTotal.WithLabelValues(c.Name, "success").Inc()
-	// Return true, don't take a break
-	return true
+// GetLogger returns this controller's logger.
+func (c *Controller) GetLogger() logr.Logger {
+	return c.Log
 }
 
 // InjectFunc implement SetFields.Injector

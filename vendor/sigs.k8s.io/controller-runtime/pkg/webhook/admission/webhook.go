@@ -22,8 +22,8 @@ import (
 	"net/http"
 
 	"github.com/go-logr/logr"
-	"gomodules.xyz/jsonpatch/v2"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	jsonpatch "gomodules.xyz/jsonpatch/v2"
+	admissionv1 "k8s.io/api/admission/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/json"
@@ -41,7 +41,7 @@ var (
 // name, namespace), as well as the operation in question
 // (e.g. Get, Create, etc), and the object itself.
 type Request struct {
-	admissionv1beta1.AdmissionRequest
+	admissionv1.AdmissionRequest
 }
 
 // Response is the output of an admission handler.
@@ -57,7 +57,7 @@ type Response struct {
 	Patches []jsonpatch.JsonPatchOperation
 	// AdmissionResponse is the raw admission response.
 	// The Patch field in it will be overwritten by the listed patches.
-	admissionv1beta1.AdmissionResponse
+	admissionv1.AdmissionResponse
 }
 
 // Complete populates any fields that are yet to be set in
@@ -84,7 +84,7 @@ func (r *Response) Complete(req Request) error {
 	if err != nil {
 		return err
 	}
-	patchType := admissionv1beta1.PatchTypeJSONPatch
+	patchType := admissionv1.PatchTypeJSONPatch
 	r.PatchType = &patchType
 
 	return nil
@@ -114,6 +114,11 @@ type Webhook struct {
 	// Handler actually processes an admission request returning whether it was allowed or denied,
 	// and potentially patches to apply to the handler.
 	Handler Handler
+
+	// WithContextFunc will allow you to take the http.Request.Context() and
+	// add any additional information such as passing the request path or
+	// headers thus allowing you to read them from within the handler
+	WithContextFunc func(context.Context, *http.Request) context.Context
 
 	// decoder is constructed on receiving a scheme and passed down to then handler
 	decoder *Decoder
