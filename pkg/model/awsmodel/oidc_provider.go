@@ -99,6 +99,7 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 		Location:  fi.String("oidc/keys.json"),
 		Name:      fi.String("keys.json"),
 		Base:      fi.String(b.Cluster.Spec.PublicDataStore),
+		Public:    fi.Bool(true),
 	}
 	c.AddTask(keysFile)
 
@@ -108,6 +109,7 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 		Location:  fi.String("oidc/.well-known/openid-configuration"),
 		Name:      fi.String("discovery.json"),
 		Base:      fi.String(b.Cluster.Spec.PublicDataStore),
+		Public:    fi.Bool(true),
 	}
 	c.AddTask(discoveryFile)
 
