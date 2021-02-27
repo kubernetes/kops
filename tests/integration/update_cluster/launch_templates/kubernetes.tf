@@ -128,6 +128,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-launchtemplates-exam
     value               = ""
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -183,6 +188,11 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-launchtemplates-exam
     value               = ""
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -234,6 +244,11 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-launchtemplates-exam
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers"
     propagate_at_launch = true
     value               = ""
   }
