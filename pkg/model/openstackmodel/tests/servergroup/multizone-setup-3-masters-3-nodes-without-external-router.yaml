@@ -31,6 +31,7 @@ Metadata:
   k8s.io_cluster-autoscaler_node-template_label_kubernetes.io_role: master
   k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_control-plane: ""
   k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_master: ""
+  k8s.io_cluster-autoscaler_node-template_label_node.kubernetes.io_exclude-from-external-load-balancers: ""
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master-a
 Name: master-a-1-cluster
@@ -105,6 +106,7 @@ Metadata:
   k8s.io_cluster-autoscaler_node-template_label_kubernetes.io_role: master
   k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_control-plane: ""
   k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_master: ""
+  k8s.io_cluster-autoscaler_node-template_label_node.kubernetes.io_exclude-from-external-load-balancers: ""
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master-b
 Name: master-b-1-cluster
@@ -179,6 +181,7 @@ Metadata:
   k8s.io_cluster-autoscaler_node-template_label_kubernetes.io_role: master
   k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_control-plane: ""
   k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_master: ""
+  k8s.io_cluster-autoscaler_node-template_label_node.kubernetes.io_exclude-from-external-load-balancers: ""
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master-c
 Name: master-c-1-cluster

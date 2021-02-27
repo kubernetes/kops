@@ -54,6 +54,11 @@
             "PropagateAtLaunch": true
           },
           {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
             "Key": "k8s.io/role/master",
             "Value": "1",
             "PropagateAtLaunch": true
@@ -140,6 +145,11 @@
             "PropagateAtLaunch": true
           },
           {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
             "Key": "k8s.io/role/master",
             "Value": "1",
             "PropagateAtLaunch": true
@@ -222,6 +232,11 @@
           },
           {
             "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers",
             "Value": "",
             "PropagateAtLaunch": true
           },
@@ -471,6 +486,10 @@
                   "Value": ""
                 },
                 {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers",
+                  "Value": ""
+                },
+                {
                   "Key": "k8s.io/role/master",
                   "Value": "1"
                 },
@@ -509,6 +528,10 @@
                 },
                 {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers",
                   "Value": ""
                 },
                 {
@@ -605,6 +628,10 @@
                   "Value": ""
                 },
                 {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers",
+                  "Value": ""
+                },
+                {
                   "Key": "k8s.io/role/master",
                   "Value": "1"
                 },
@@ -643,6 +670,10 @@
                 },
                 {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers",
                   "Value": ""
                 },
                 {
@@ -739,6 +770,10 @@
                   "Value": ""
                 },
                 {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers",
+                  "Value": ""
+                },
+                {
                   "Key": "k8s.io/role/master",
                   "Value": "1"
                 },
@@ -777,6 +812,10 @@
                 },
                 {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers",
                   "Value": ""
                 },
                 {
