@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -254,6 +255,7 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 				p := *(b.Cluster.Spec.ExternalPolicies)
 				externalPolicies = append(externalPolicies, p[roleKey]...)
 			}
+			sort.Strings(externalPolicies)
 
 			name := fmt.Sprintf("%s-policyoverride", roleKey)
 			t := &awstasks.IAMRolePolicy{
