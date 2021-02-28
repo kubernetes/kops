@@ -72,7 +72,7 @@ func visit(visitor Visitor, data interface{}, path []string, mutator func(interf
 		if err != nil {
 			return err
 		}
-
+	case nil:
 	case map[string]interface{}:
 		m := data
 		for k, v := range m {
