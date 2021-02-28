@@ -1,8 +1,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+  creationTimestamp: null
   labels:
-    k8s-addon: anonymous-access.addons.k8s.io
+    addon.kops.k8s.io/name: anonymous-issuer-discovery.addons.k8s.io
+    addon.kops.k8s.io/version: 1.21.0-alpha.1
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: anonymous-issuer-discovery.addons.k8s.io
   name: anonymous:service-account-issuer-discovery
   namespace: kube-system
 roleRef:

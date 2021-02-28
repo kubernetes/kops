@@ -19,6 +19,7 @@ package addonmanifests
 import (
 	"fmt"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	addonsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/assets"
@@ -37,21 +38,22 @@ func RemapAddonManifest(addon *addonsapi.AddonSpec, context *model.KopsModelCont
 			return nil, err
 		}
 
-		remapped := false
 		if name == "dns-controller.addons.k8s.io" {
 			if err := dnscontroller.Remap(context, addon, objects); err != nil {
 				return nil, err
 			}
-			remapped = true
 		}
 
-		if remapped {
-			b, err := objects.ToYAML()
-			if err != nil {
-				return nil, err
-			}
-			manifest = b
+		err = addLabels(addon, objects)
+		if err != nil {
+			return nil, fmt.Errorf("failed to annotate %q: %w", name, err)
 		}
+
+		b, err := objects.ToYAML()
+		if err != nil {
+			return nil, err
+		}
+		manifest = b
 	}
 
 	{
@@ -64,4 +66,35 @@ func RemapAddonManifest(addon *addonsapi.AddonSpec, context *model.KopsModelCont
 	}
 
 	return manifest, nil
+}
+
+func addLabels(addon *addonsapi.AddonSpec, objects kubemanifest.ObjectList) error {
+
+	for _, object := range objects {
+		meta := &metav1.ObjectMeta{}
+		err := object.Reparse(meta, "metadata")
+		if err != nil {
+			return fmt.Errorf("Failed to annotate %T", object)
+		}
+
+		if meta.Labels == nil {
+			meta.Labels = make(map[string]string)
+		}
+
+		meta.Labels["app.kubernetes.io/managed-by"] = "kops"
+		meta.Labels["addon.kops.k8s.io/name"] = *addon.Name
+		meta.Labels["addon.kops.k8s.io/version"] = *addon.Version
+
+		// ensure selector is set where applicable
+		for key, val := range addon.Selector {
+			existingVal, ok := meta.Labels[key]
+			if ok && existingVal != val {
+				return fmt.Errorf("label %q already set to %q while it should be %q", key, meta.Labels[key], val)
+			}
+
+			meta.Labels[key] = val
+		}
+		object.Set(meta, "metadata")
+	}
+	return nil
 }

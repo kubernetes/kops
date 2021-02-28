@@ -1,6 +1,12 @@
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: authentication.aws
+    addon.kops.k8s.io/version: 0.5.1-kops.1
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/authentication: "1"
   name: iamidentitymappings.iamauthenticator.k8s.aws
 spec:
   group: iamauthenticator.k8s.aws
@@ -36,6 +42,12 @@ spec:
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: authentication.aws
+    addon.kops.k8s.io/version: 0.5.1-kops.1
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/authentication: "1"
   name: aws-iam-authenticator
 rules:
 - apiGroups:
@@ -82,6 +94,12 @@ rules:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: authentication.aws
+    addon.kops.k8s.io/version: 0.5.1-kops.1
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/authentication: "1"
   name: aws-iam-authenticator
   namespace: kube-system
 
@@ -90,6 +108,12 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: authentication.aws
+    addon.kops.k8s.io/version: 0.5.1-kops.1
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/authentication: "1"
   name: aws-iam-authenticator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -107,8 +131,13 @@ kind: DaemonSet
 metadata:
   annotations:
     seccomp.security.alpha.kubernetes.io/pod: runtime/default
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: authentication.aws
+    addon.kops.k8s.io/version: 0.5.1-kops.1
+    app.kubernetes.io/managed-by: kops
     k8s-app: aws-iam-authenticator
+    role.kubernetes.io/authentication: "1"
   name: aws-iam-authenticator
   namespace: kube-system
 spec:

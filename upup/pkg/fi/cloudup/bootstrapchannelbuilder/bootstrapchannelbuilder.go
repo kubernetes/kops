@@ -528,7 +528,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 					Name:     fi.String(key),
 					Version:  fi.String(version),
-					Selector: map[string]string{"app.kubernetes.io/name": "cert-manager"},
 					Manifest: fi.String(location),
 					Id:       id,
 				})
