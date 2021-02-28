@@ -29416,7 +29416,7 @@ metadata:
   labels:
     k8s-addon: external-dns.addons.k8s.io
     k8s-app: external-dns
-    version: v0.4.4
+    version: v0.7.6
 spec:
   replicas: 1
   selector:
@@ -29427,7 +29427,7 @@ spec:
       labels:
         k8s-addon: external-dns.addons.k8s.io
         k8s-app: external-dns
-        version: v0.4.4
+        version: v0.7.6
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
@@ -29442,7 +29442,7 @@ spec:
       hostNetwork: true
       containers:
       - name: external-dns
-        image: registry.opensource.zalan.do/teapot/external-dns:v0.4.4
+        image: k8s.gcr.io/external-dns/external-dns:v0.7.6
         args:
 {{ range $arg := ExternalDnsArgv }}
         - "{{ $arg }}"
@@ -29470,18 +29470,15 @@ metadata:
     k8s-addon: external-dns.addons.k8s.io
   name: kops:external-dns
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - services
-  verbs:
-  - list
-- apiGroups:
-  - extensions
-  resources:
-  - ingresses
-  verbs:
-  - list
+- apiGroups: [""]
+  resources: ["services","endpoints","pods"]
+  verbs: ["get","watch","list"]
+- apiGroups: ["extensions","networking.k8s.io"]
+  resources: ["ingresses"]
+  verbs: ["get","watch","list"]
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["list","watch"]
 
 ---
 
