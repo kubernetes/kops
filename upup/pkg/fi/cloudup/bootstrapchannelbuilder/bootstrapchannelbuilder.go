@@ -435,7 +435,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 	if featureflag.EnableExternalDNS.Enabled() {
 		{
 			key := "external-dns.addons.k8s.io"
-			version := "0.4.5-kops.1"
+			version := "0.7.6-kops.1"
 
 			{
 				location := key + "/k8s-1.12.yaml"
