@@ -53,8 +53,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
 - apiGroups: ['extensions']
   resources: ['podsecuritypolicies']
@@ -84,8 +82,6 @@ kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -100,8 +96,6 @@ kind: ServiceAccount
 metadata:
   name: flannel
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 ---
 kind: ConfigMap
 apiVersion: v1
@@ -112,7 +106,6 @@ metadata:
     k8s-app: flannel
     tier: node
     app: flannel
-    role.kubernetes.io/networking: "1"
 data:
   cni-conf.json: |
     {
@@ -151,19 +144,16 @@ metadata:
     k8s-app: flannel
     tier: node
     app: flannel
-    role.kubernetes.io/networking: "1"
 spec:
   selector:
     matchLabels:
       tier: node
       app: flannel
-      role.kubernetes.io/networking: "1"
   template:
     metadata:
       labels:
         tier: node
         app: flannel
-        role.kubernetes.io/networking: "1"
     spec:
       affinity:
         nodeAffinity:
