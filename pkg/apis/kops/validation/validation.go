@@ -517,6 +517,12 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 			}
 		}
 
+		if k.EnableCadvisorJsonEndpoints != nil {
+			if c.IsKubernetesLT("1.18") && c.IsKubernetesGTE("1.21") {
+				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("enableCadvisorJsonEndpoints"), "enableCadvisorJsonEndpoints requires Kubernetes 1.18-1.20"))
+			}
+		}
+
 	}
 	return allErrs
 }
