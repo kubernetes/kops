@@ -4931,6 +4931,7 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.EventBurst = in.EventBurst
 	out.ContainerLogMaxSize = in.ContainerLogMaxSize
 	out.ContainerLogMaxFiles = in.ContainerLogMaxFiles
+	out.EnableCadvisorJsonEndpoints = in.EnableCadvisorJsonEndpoints
 	return nil
 }
 
@@ -5024,6 +5025,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.EventBurst = in.EventBurst
 	out.ContainerLogMaxSize = in.ContainerLogMaxSize
 	out.ContainerLogMaxFiles = in.ContainerLogMaxFiles
+	out.EnableCadvisorJsonEndpoints = in.EnableCadvisorJsonEndpoints
 	return nil
 }
 

@@ -215,6 +215,8 @@ type KubeletConfigSpec struct {
 	ContainerLogMaxSize string `json:"containerLogMaxSize,omitempty" flag:"container-log-max-size"`
 	// ContainerLogMaxFiles is the maximum number of container log files that can be present for a container. The number must be >= 2.
 	ContainerLogMaxFiles *int32 `json:"containerLogMaxFiles,omitempty" flag:"container-log-max-files"`
+	// EnableCadvisorJsonEndpoints enables cAdvisor json `/spec` and `/stats/*` endpoints. Defaults to False.
+	EnableCadvisorJsonEndpoints *bool `json:"enableCadvisorJsonEndpoints,omitempty" flag:"enable-cadvisor-json-endpoints"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
