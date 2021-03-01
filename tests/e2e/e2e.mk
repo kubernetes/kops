@@ -37,3 +37,25 @@ test-e2e-aws-simple-1-20: test-e2e-install
 		--test-package-marker=stable-1.20.txt \
 		--parallel 25 \
 		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
+
+.PHONY: test-e2e-do-simple-1-20
+test-e2e-do-simple-1-20: test-e2e-install
+	kubetest2 kops \
+		-v 6 \
+		--up --down \
+		--cloud-provider=digitalocean \
+		--cluster-name e2e-test-do.k8s.local \
+		--networking=cilium \
+		--api-loadbalancer-type=public \
+		--master-count=3 \
+		--env S3_ENDPOINT=sfo2.digitaloceanspaces.com \
+		--env JOB_NAME=pull-kops-e2e-kubernetes-do-kubetest2
+		--kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+		--kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
+		--template-path=tests/e2e/templates/simple.yaml.tmpl \
+		--test=kops \
+		-- \
+		--ginkgo-args="--debug" \
+		--test-package-marker=stable-1.20.txt \
+		--parallel 25 \
+		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
