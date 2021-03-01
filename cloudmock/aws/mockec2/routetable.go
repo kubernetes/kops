@@ -164,6 +164,7 @@ func (m *MockEC2) CreateRoute(request *ec2.CreateRouteInput) (*ec2.CreateRouteOu
 		InstanceId:                  request.InstanceId,
 		NatGatewayId:                request.NatGatewayId,
 		NetworkInterfaceId:          request.NetworkInterfaceId,
+		TransitGatewayId:            request.TransitGatewayId,
 		VpcPeeringConnectionId:      request.VpcPeeringConnectionId,
 	}
 

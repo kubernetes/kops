@@ -596,6 +596,50 @@
         ]
       }
     },
+    "AWSEC2RouteTableprivateustest1acomplexexamplecom": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCcomplexexamplecom"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "complex.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "private-us-test-1a.complex.example.com"
+          },
+          {
+            "Key": "Owner",
+            "Value": "John Doe"
+          },
+          {
+            "Key": "foo/bar",
+            "Value": "fib+baz"
+          },
+          {
+            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/kops/role",
+            "Value": "private-us-test-1a"
+          }
+        ]
+      }
+    },
+    "AWSEC2Routeprivateustest1a00000": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableprivateustest1acomplexexamplecom"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "TransitGatewayId": "tgw-123456"
+      }
+    },
     "AWSEC2SecurityGroupEgressfrommasterscomplexexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
@@ -1018,6 +1062,28 @@
         ]
       }
     },
+    "AWSEC2SubnetRouteTableAssociationprivateuseast1aprivatecomplexexamplecom": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "AWSEC2Subnetuseast1aprivatecomplexexamplecom"
+        },
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableprivateustest1acomplexexamplecom"
+        }
+      }
+    },
+    "AWSEC2SubnetRouteTableAssociationuseast1autilitycomplexexamplecom": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "AWSEC2Subnetuseast1autilitycomplexexamplecom"
+        },
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTablecomplexexamplecom"
+        }
+      }
+    },
     "AWSEC2SubnetRouteTableAssociationustest1acomplexexamplecom": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
@@ -1027,6 +1093,86 @@
         "RouteTableId": {
           "Ref": "AWSEC2RouteTablecomplexexamplecom"
         }
+      }
+    },
+    "AWSEC2Subnetuseast1aprivatecomplexexamplecom": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCcomplexexamplecom"
+        },
+        "CidrBlock": "172.20.64.0/19",
+        "AvailabilityZone": "us-test-1a",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "complex.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-east-1a-private.complex.example.com"
+          },
+          {
+            "Key": "Owner",
+            "Value": "John Doe"
+          },
+          {
+            "Key": "SubnetType",
+            "Value": "Private"
+          },
+          {
+            "Key": "foo/bar",
+            "Value": "fib+baz"
+          },
+          {
+            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/role/internal-elb",
+            "Value": "1"
+          }
+        ]
+      }
+    },
+    "AWSEC2Subnetuseast1autilitycomplexexamplecom": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCcomplexexamplecom"
+        },
+        "CidrBlock": "172.20.96.0/19",
+        "AvailabilityZone": "us-test-1a",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "complex.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-east-1a-utility.complex.example.com"
+          },
+          {
+            "Key": "Owner",
+            "Value": "John Doe"
+          },
+          {
+            "Key": "SubnetType",
+            "Value": "Utility"
+          },
+          {
+            "Key": "foo/bar",
+            "Value": "fib+baz"
+          },
+          {
+            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/role/elb",
+            "Value": "1"
+          }
+        ]
       }
     },
     "AWSEC2Subnetustest1acomplexexamplecom": {

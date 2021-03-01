@@ -37,10 +37,11 @@ type Route struct {
 	Instance   *Instance
 	CIDR       *string
 
-	// Either an InternetGateway or a NAT Gateway
+	// Exactly one of the below fields
 	// MUST be provided.
-	InternetGateway *InternetGateway
-	NatGateway      *NatGateway
+	InternetGateway  *InternetGateway
+	NatGateway       *NatGateway
+	TransitGatewayID *string
 }
 
 func (e *Route) Find(c *fi.Context) (*Route, error) {
@@ -88,12 +89,16 @@ func (e *Route) Find(c *fi.Context) (*Route, error) {
 			if r.InstanceId != nil {
 				actual.Instance = &Instance{ID: r.InstanceId}
 			}
+			if r.TransitGatewayId != nil {
+				actual.TransitGatewayID = r.TransitGatewayId
+			}
 
 			if aws.StringValue(r.State) == "blackhole" {
 				klog.V(2).Infof("found route is a blackhole route")
 				// These should be nil anyway, but just in case...
 				actual.Instance = nil
 				actual.InternetGateway = nil
+				actual.TransitGatewayID = nil
 			}
 
 			// Prevent spurious changes
@@ -130,11 +135,14 @@ func (s *Route) CheckChanges(a, e, changes *Route) error {
 		if e.NatGateway != nil {
 			targetCount++
 		}
+		if e.TransitGatewayID != nil {
+			targetCount++
+		}
 		if targetCount == 0 {
-			return fmt.Errorf("InternetGateway or Instance or NatGateway is required")
+			return fmt.Errorf("InternetGateway, Instance, NatGateway, or TransitGateway is required")
 		}
 		if targetCount != 1 {
-			return fmt.Errorf("Cannot set more than 1 InternetGateway or Instance or NatGateway")
+			return fmt.Errorf("Cannot set more than 1 InternetGateway, Instance, NatGateway, or TransitGateway")
 		}
 	}
 
@@ -155,12 +163,14 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 		request.RouteTableId = checkNotNil(e.RouteTable.ID)
 		request.DestinationCidrBlock = checkNotNil(e.CIDR)
 
-		if e.InternetGateway == nil && e.NatGateway == nil {
+		if e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil {
 			return fmt.Errorf("missing target for route")
 		} else if e.InternetGateway != nil {
 			request.GatewayId = checkNotNil(e.InternetGateway.ID)
 		} else if e.NatGateway != nil {
 			request.NatGatewayId = checkNotNil(e.NatGateway.ID)
+		} else if e.TransitGatewayID != nil {
+			request.TransitGatewayId = e.TransitGatewayID
 		}
 
 		if e.Instance != nil {
@@ -188,12 +198,14 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 		request.RouteTableId = checkNotNil(e.RouteTable.ID)
 		request.DestinationCidrBlock = checkNotNil(e.CIDR)
 
-		if e.InternetGateway == nil && e.NatGateway == nil {
+		if e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil {
 			return fmt.Errorf("missing target for route")
 		} else if e.InternetGateway != nil {
 			request.GatewayId = checkNotNil(e.InternetGateway.ID)
 		} else if e.NatGateway != nil {
 			request.NatGatewayId = checkNotNil(e.NatGateway.ID)
+		} else if e.TransitGatewayID != nil {
+			request.TransitGatewayId = e.TransitGatewayID
 		}
 
 		if e.Instance != nil {
@@ -228,6 +240,7 @@ type terraformRoute struct {
 	CIDR              *string            `json:"destination_cidr_block,omitempty" cty:"destination_cidr_block"`
 	InternetGatewayID *terraform.Literal `json:"gateway_id,omitempty" cty:"gateway_id"`
 	NATGatewayID      *terraform.Literal `json:"nat_gateway_id,omitempty" cty:"nat_gateway_id"`
+	TransitGatewayID  *string            `json:"transit_gateway_id,omitempty" cty:"transit_gateway_id"`
 	InstanceID        *terraform.Literal `json:"instance_id,omitempty" cty:"instance_id"`
 }
 
@@ -237,12 +250,14 @@ func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rou
 		RouteTableID: e.RouteTable.TerraformLink(),
 	}
 
-	if e.InternetGateway == nil && e.NatGateway == nil {
+	if e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil {
 		return fmt.Errorf("missing target for route")
 	} else if e.InternetGateway != nil {
 		tf.InternetGatewayID = e.InternetGateway.TerraformLink()
 	} else if e.NatGateway != nil {
 		tf.NATGatewayID = e.NatGateway.TerraformLink()
+	} else if e.TransitGatewayID != nil {
+		tf.TransitGatewayID = e.TransitGatewayID
 	}
 
 	if e.Instance != nil {
@@ -260,6 +275,7 @@ type cloudformationRoute struct {
 	CIDR              *string                 `json:"DestinationCidrBlock,omitempty"`
 	InternetGatewayID *cloudformation.Literal `json:"GatewayId,omitempty"`
 	NATGatewayID      *cloudformation.Literal `json:"NatGatewayId,omitempty"`
+	TransitGatewayID  *string                 `json:"TransitGatewayId,omitempty"`
 	InstanceID        *cloudformation.Literal `json:"InstanceId,omitempty"`
 }
 
@@ -269,12 +285,14 @@ func (_ *Route) RenderCloudformation(t *cloudformation.CloudformationTarget, a, 
 		RouteTableID: e.RouteTable.CloudformationLink(),
 	}
 
-	if e.InternetGateway == nil && e.NatGateway == nil {
+	if e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil {
 		return fmt.Errorf("missing target for route")
 	} else if e.InternetGateway != nil {
 		tf.InternetGatewayID = e.InternetGateway.CloudformationLink()
 	} else if e.NatGateway != nil {
 		tf.NATGatewayID = e.NatGateway.CloudformationLink()
+	} else if e.TransitGatewayID != nil {
+		tf.TransitGatewayID = e.TransitGatewayID
 	}
 
 	if e.Instance != nil {
