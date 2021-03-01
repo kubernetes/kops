@@ -303,6 +303,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		var ngw *awstasks.NatGateway
+		var tgwID *string
 		var in *awstasks.Instance
 		if egress != "" {
 			if strings.HasPrefix(egress, "nat-") {
@@ -353,7 +354,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				}
 
 				c.AddTask(in)
-
+			} else if strings.HasPrefix(egress, "tgw-") {
+				tgwID = &egress
 			} else if egress == "External" {
 				// Nothing to do here
 			} else {
@@ -439,7 +441,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Lifecycle:  b.Lifecycle,
 				CIDR:       s("0.0.0.0/0"),
 				RouteTable: rt,
-				NatGateway: ngw,
+				// Only one of these will be not nil
+				NatGateway:       ngw,
+				TransitGatewayID: tgwID,
 			}
 		}
 		c.AddTask(r)
