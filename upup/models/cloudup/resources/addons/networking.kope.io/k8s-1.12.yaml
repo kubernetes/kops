@@ -5,17 +5,14 @@ metadata:
   namespace: kube-system
   labels:
     k8s-addon: networking.kope.io
-    role.kubernetes.io/networking: "1"
 spec:
   selector:
     matchLabels:
       name: kopeio-networking-agent
-      role.kubernetes.io/networking: "1"
   template:
     metadata:
       labels:
         name: kopeio-networking-agent
-        role.kubernetes.io/networking: "1"
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
         scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
@@ -64,7 +61,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-addon: networking.kope.io
-    role.kubernetes.io/networking: "1"
 
 ---
 
