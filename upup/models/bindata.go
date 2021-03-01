@@ -43307,7 +43307,7 @@ rules:
   verbs: ["get", "list"]
 - apiGroups: ["apps"]
   resources: ["deployments", "daemonsets", "statefulsets", "replicasets"]
-  verbs: ["get","list"]
+  verbs: ["get", "list"]
 - apiGroups: ["storage.k8s.io"]
   resources: ["storageclasses"]
   verbs: ["get", "list"]
@@ -43316,7 +43316,7 @@ rules:
   verbs: ["get", "list"]
 - apiGroups: ["extensions"]
   resources: ["replicasets", "daemonsets"]
-  verbs: ["get","list"]
+  verbs: ["get", "list"]
 - apiGroups: ["policy"]
   resources: ["poddisruptionbudgets"]
   verbs: ["get", "list"]
@@ -43372,22 +43372,22 @@ rules:
 - apiGroups: ["apps"]
   resources: ["deployments"]
   resourceNames: ["spotinst-kubernetes-cluster-controller"]
-  verbs: ["patch","update"]
+  verbs: ["patch", "update"]
   # ----------------------------------------------------------------------------
   # Required by the Spotinst Apply feature.
   # ----------------------------------------------------------------------------
 - apiGroups: ["apps"]
   resources: ["deployments", "daemonsets"]
-  verbs: ["get", "list", "patch","update","create","delete"]
+  verbs: ["get", "list", "patch", "update", "create", "delete"]
 - apiGroups: ["extensions"]
   resources: ["daemonsets"]
-  verbs: ["get", "list", "patch","update","create","delete"]
+  verbs: ["get", "list", "patch", "update", "create", "delete"]
 - apiGroups: [""]
   resources: ["pods"]
   verbs: ["get", "list", "patch", "update", "create", "delete"]
 - apiGroups: ["batch"]
   resources: ["jobs"]
-  verbs: ["get", "list", "patch","update","create","delete"]
+  verbs: ["get", "list", "patch", "update", "create", "delete"]
   # ----------------------------------------------------------------------------
   # Required by Spotinst Wave.
   # ----------------------------------------------------------------------------
@@ -43465,7 +43465,7 @@ spec:
       containers:
       - name: spotinst-kubernetes-cluster-controller
         imagePullPolicy: Always
-        image: spotinst/kubernetes-cluster-controller:1.0.72
+        image: spotinst/kubernetes-cluster-controller:1.0.73
         livenessProbe:
           httpGet:
             path: /healthcheck
