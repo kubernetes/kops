@@ -27,7 +27,6 @@ import (
 	expirationcache "k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/nodeidentity"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 const (
@@ -109,9 +108,14 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	}
 
 	for k, v := range vmss.Tags {
-		if strings.HasPrefix(k, ClusterNodeTemplateLabel) {
-			info.Labels[strings.TrimPrefix(k, ClusterNodeTemplateLabel)] = fi.StringValue(v)
+		if !strings.HasPrefix(k, ClusterNodeTemplateLabel) {
+			continue
 		}
+		l := strings.SplitN(*v, "=", 2)
+		if len(l) <= 1 {
+			return nil, fmt.Errorf("malformed tag value %s", *v)
+		}
+		labels[l[0]] = l[1]
 	}
 
 	// If caching is enabled add the nodeidentity.Info to cache.
