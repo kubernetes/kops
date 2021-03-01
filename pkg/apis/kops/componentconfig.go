@@ -211,6 +211,8 @@ type KubeletConfigSpec struct {
 	EventQPS *int32 `json:"eventQPS,omitempty" flag:"event-qps" flag-empty:"0"`
 	// EventBurst temporarily allows event records to burst to this number, while still not exceeding EventQPS. Only used if EventQPS > 0.
 	EventBurst *int32 `json:"eventBurst,omitempty" flag:"event-burst"`
+	// EnableCadvisorJsonEndpoints enables cAdvisor json `/spec` and `/stats/*` endpoints. Defaults to False.
+	EnableCadvisorJsonEndpoints *bool `json:"enableCadvisorJsonEndpoints,omitempty" flag:"enable-cadvisor-json-endpoints"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy

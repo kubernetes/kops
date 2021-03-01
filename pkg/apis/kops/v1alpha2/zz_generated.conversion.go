@@ -4623,6 +4623,7 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.HousekeepingInterval = in.HousekeepingInterval
 	out.EventQPS = in.EventQPS
 	out.EventBurst = in.EventBurst
+	out.EnableCadvisorJsonEndpoints = in.EnableCadvisorJsonEndpoints
 	return nil
 }
 
@@ -4714,6 +4715,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.HousekeepingInterval = in.HousekeepingInterval
 	out.EventQPS = in.EventQPS
 	out.EventBurst = in.EventBurst
+	out.EnableCadvisorJsonEndpoints = in.EnableCadvisorJsonEndpoints
 	return nil
 }
 
