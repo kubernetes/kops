@@ -113,6 +113,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		}
 		l := strings.SplitN(*v, "=", 2)
 		if len(l) <= 1 {
+			klog.Errorf("Expected 'key=value' for the tag value, but got %s", *v)
 			continue
 		}
 		labels[l[0]] = l[1]
