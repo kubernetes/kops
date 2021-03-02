@@ -1,19 +1,22 @@
 locals {
-  cluster_name                 = "complex.example.com"
-  master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-complex-example-com.id]
-  master_security_group_ids    = [aws_security_group.masters-complex-example-com.id, "sg-exampleid5", "sg-exampleid6"]
-  masters_role_arn             = aws_iam_role.masters-complex-example-com.arn
-  masters_role_name            = aws_iam_role.masters-complex-example-com.name
-  node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-complex-example-com.id]
-  node_security_group_ids      = [aws_security_group.nodes-complex-example-com.id, "sg-exampleid3", "sg-exampleid4"]
-  node_subnet_ids              = [aws_subnet.us-test-1a-complex-example-com.id]
-  nodes_role_arn               = aws_iam_role.nodes-complex-example-com.arn
-  nodes_role_name              = aws_iam_role.nodes-complex-example-com.name
-  region                       = "us-test-1"
-  route_table_public_id        = aws_route_table.complex-example-com.id
-  subnet_us-test-1a_id         = aws_subnet.us-test-1a-complex-example-com.id
-  vpc_cidr_block               = aws_vpc.complex-example-com.cidr_block
-  vpc_id                       = aws_vpc.complex-example-com.id
+  cluster_name                      = "complex.example.com"
+  master_autoscaling_group_ids      = [aws_autoscaling_group.master-us-test-1a-masters-complex-example-com.id]
+  master_security_group_ids         = [aws_security_group.masters-complex-example-com.id, "sg-exampleid5", "sg-exampleid6"]
+  masters_role_arn                  = aws_iam_role.masters-complex-example-com.arn
+  masters_role_name                 = aws_iam_role.masters-complex-example-com.name
+  node_autoscaling_group_ids        = [aws_autoscaling_group.nodes-complex-example-com.id]
+  node_security_group_ids           = [aws_security_group.nodes-complex-example-com.id, "sg-exampleid3", "sg-exampleid4"]
+  node_subnet_ids                   = [aws_subnet.us-test-1a-complex-example-com.id]
+  nodes_role_arn                    = aws_iam_role.nodes-complex-example-com.arn
+  nodes_role_name                   = aws_iam_role.nodes-complex-example-com.name
+  region                            = "us-test-1"
+  route_table_private-us-test-1a_id = aws_route_table.private-us-test-1a-complex-example-com.id
+  route_table_public_id             = aws_route_table.complex-example-com.id
+  subnet_us-east-1a-private_id      = aws_subnet.us-east-1a-private-complex-example-com.id
+  subnet_us-east-1a-utility_id      = aws_subnet.us-east-1a-utility-complex-example-com.id
+  subnet_us-test-1a_id              = aws_subnet.us-test-1a-complex-example-com.id
+  vpc_cidr_block                    = aws_vpc.complex-example-com.cidr_block
+  vpc_id                            = aws_vpc.complex-example-com.id
 }
 
 output "cluster_name" {
@@ -60,8 +63,20 @@ output "region" {
   value = "us-test-1"
 }
 
+output "route_table_private-us-test-1a_id" {
+  value = aws_route_table.private-us-test-1a-complex-example-com.id
+}
+
 output "route_table_public_id" {
   value = aws_route_table.complex-example-com.id
+}
+
+output "subnet_us-east-1a-private_id" {
+  value = aws_subnet.us-east-1a-private-complex-example-com.id
+}
+
+output "subnet_us-east-1a-utility_id" {
+  value = aws_subnet.us-east-1a-utility-complex-example-com.id
 }
 
 output "subnet_us-test-1a_id" {
@@ -556,6 +571,16 @@ resource "aws_route53_record" "api-complex-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
+resource "aws_route_table_association" "private-us-east-1a-private-complex-example-com" {
+  route_table_id = aws_route_table.private-us-test-1a-complex-example-com.id
+  subnet_id      = aws_subnet.us-east-1a-private-complex-example-com.id
+}
+
+resource "aws_route_table_association" "us-east-1a-utility-complex-example-com" {
+  route_table_id = aws_route_table.complex-example-com.id
+  subnet_id      = aws_subnet.us-east-1a-utility-complex-example-com.id
+}
+
 resource "aws_route_table_association" "us-test-1a-complex-example-com" {
   route_table_id = aws_route_table.complex-example-com.id
   subnet_id      = aws_subnet.us-test-1a-complex-example-com.id
@@ -573,10 +598,28 @@ resource "aws_route_table" "complex-example-com" {
   vpc_id = aws_vpc.complex-example-com.id
 }
 
+resource "aws_route_table" "private-us-test-1a-complex-example-com" {
+  tags = {
+    "KubernetesCluster"                         = "complex.example.com"
+    "Name"                                      = "private-us-test-1a.complex.example.com"
+    "Owner"                                     = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
+    "kubernetes.io/kops/role"                   = "private-us-test-1a"
+  }
+  vpc_id = aws_vpc.complex-example-com.id
+}
+
 resource "aws_route" "route-0-0-0-0--0" {
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.complex-example-com.id
   route_table_id         = aws_route_table.complex-example-com.id
+}
+
+resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  route_table_id         = aws_route_table.private-us-test-1a-complex-example-com.id
+  transit_gateway_id     = "tgw-123456"
 }
 
 resource "aws_security_group_rule" "from-1-1-1-0--24-ingress-tcp-443to443-masters-complex-example-com" {
@@ -848,6 +891,36 @@ resource "aws_security_group" "nodes-complex-example-com" {
     "Owner"                                     = "John Doe"
     "foo/bar"                                   = "fib+baz"
     "kubernetes.io/cluster/complex.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.complex-example-com.id
+}
+
+resource "aws_subnet" "us-east-1a-private-complex-example-com" {
+  availability_zone = "us-test-1a"
+  cidr_block        = "172.20.64.0/19"
+  tags = {
+    "KubernetesCluster"                         = "complex.example.com"
+    "Name"                                      = "us-east-1a-private.complex.example.com"
+    "Owner"                                     = "John Doe"
+    "SubnetType"                                = "Private"
+    "foo/bar"                                   = "fib+baz"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
+    "kubernetes.io/role/internal-elb"           = "1"
+  }
+  vpc_id = aws_vpc.complex-example-com.id
+}
+
+resource "aws_subnet" "us-east-1a-utility-complex-example-com" {
+  availability_zone = "us-test-1a"
+  cidr_block        = "172.20.96.0/19"
+  tags = {
+    "KubernetesCluster"                         = "complex.example.com"
+    "Name"                                      = "us-east-1a-utility.complex.example.com"
+    "Owner"                                     = "John Doe"
+    "SubnetType"                                = "Utility"
+    "foo/bar"                                   = "fib+baz"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
+    "kubernetes.io/role/elb"                    = "1"
   }
   vpc_id = aws_vpc.complex-example-com.id
 }

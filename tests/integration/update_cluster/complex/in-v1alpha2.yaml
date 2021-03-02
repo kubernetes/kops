@@ -71,6 +71,15 @@ spec:
     name: us-test-1a
     type: Public
     zone: us-test-1a
+  - cidr: 172.20.64.0/19
+    name: us-east-1a-private
+    type: Private
+    zone: us-test-1a
+    egress: tgw-123456
+  - cidr: 172.20.96.0/19
+    name: us-east-1a-utility
+    type: Utility
+    zone: us-test-1a
 
 ---
 
