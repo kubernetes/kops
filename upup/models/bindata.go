@@ -31234,6 +31234,16 @@ rules:
   - ""
   resources:
   - pods
+  - pods/finalizers
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - delete
+- apiGroups:
+  - ""
+  resources:
   - nodes
   verbs:
   - get
@@ -31270,12 +31280,16 @@ rules:
   - cilium.io
   resources:
   - ciliumnetworkpolicies
+  - ciliumnetworkpolicies/finalizers
   - ciliumnetworkpolicies/status
   - ciliumclusterwidenetworkpolicies
+  - ciliumclusterwidenetworkpolicies/finalizers
   - ciliumclusterwidenetworkpolicies/status
   - ciliumendpoints
+  - ciliumendpoints/finalizers
   - ciliumendpoints/status
   - ciliumnodes
+  - ciliumnodes/finalizers
   - ciliumnodes/status
   - ciliumidentities
   verbs:
@@ -31327,14 +31341,19 @@ rules:
   - cilium.io
   resources:
   - ciliumnetworkpolicies
+  - ciliumnetworkpolicies/finalizers
   - ciliumnetworkpolicies/status
   - ciliumclusterwidenetworkpolicies
+  - ciliumclusterwidenetworkpolicies/finalizers
   - ciliumclusterwidenetworkpolicies/status
   - ciliumendpoints
+  - ciliumendpoints/finalizers
   - ciliumendpoints/status
   - ciliumnodes
+  - ciliumnodes/finalizers
   - ciliumnodes/status
   - ciliumidentities
+  - ciliumidentities/finalizers
   - ciliumidentities/status
   verbs:
   - '*'
