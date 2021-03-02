@@ -56,7 +56,7 @@ kops delete cluster my-cluster.example.com --yes
 * follow steps as mentioned [here](https://kops.sigs.k8s.io/operations/updates_and_upgrades/#manual-update)
 
 # to install csi driver for DO block storage
-* follow steps as mentiond [here](https://github.com/digitalocean/csi-digitalocean#installing-to-kubernetes)
+* follow steps as mentioned [here](https://github.com/digitalocean/csi-digitalocean#installing-to-kubernetes)
 
 ```
 
