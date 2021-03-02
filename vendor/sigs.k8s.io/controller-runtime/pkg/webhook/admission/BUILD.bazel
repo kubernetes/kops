@@ -19,10 +19,13 @@ go_library(
     deps = [
         "//vendor/github.com/go-logr/logr:go_default_library",
         "//vendor/gomodules.xyz/jsonpatch/v2:go_default_library",
+        "//vendor/k8s.io/api/admission/v1:go_default_library",
         "//vendor/k8s.io/api/admission/v1beta1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1/unstructured:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/json:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/runtime:go_default_library",
