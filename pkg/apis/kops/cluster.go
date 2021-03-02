@@ -532,6 +532,8 @@ type EtcdManagerSpec struct {
 	// This allows etcd setting to be overwriten. No config validation is done.
 	// A list of etcd config ENV vars can be found at https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/configuration.md
 	Env []EnvVar `json:"env,omitempty"`
+	// DiscoveryPollInterval which is used for discovering other cluster members. The default is 60 seconds.
+	DiscoveryPollInterval *string `json:"discoveryPollInterval,omitempty"`
 	// LogLevel allows the klog library verbose log level to be set for etcd-manager. The default is 6.
 	// https://github.com/google/glog#verbose-logging
 	LogLevel *int32 `json:"logLevel,omitempty"`
