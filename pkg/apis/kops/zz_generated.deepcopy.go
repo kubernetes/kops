@@ -2227,6 +2227,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(int64)
 		**out = **in
 	}
+	if in.CPUCredits != nil {
+		in, out := &in.CPUCredits, &out.CPUCredits
+		*out = new(string)
+		**out = **in
+	}
 	if in.AssociatePublicIP != nil {
 		in, out := &in.AssociatePublicIP, &out.AssociatePublicIP
 		*out = new(bool)

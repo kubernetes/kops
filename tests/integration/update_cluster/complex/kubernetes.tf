@@ -426,6 +426,9 @@ resource "aws_launch_template" "nodes-complex-example-com" {
       volume_type           = "gp2"
     }
   }
+  credit_specification {
+    cpu_credits = "standard"
+  }
   iam_instance_profile {
     name = aws_iam_instance_profile.nodes-complex-example-com.id
   }
