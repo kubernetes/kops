@@ -1689,6 +1689,9 @@ spec:
                   dockerDisableSharedPID:
                     description: DockerDisableSharedPID uses a shared PID namespace for containers in a pod.
                     type: boolean
+                  enableCadvisorJsonEndpoints:
+                    description: EnableCadvisorJsonEndpoints enables cAdvisor json `/spec` and `/stats/*` endpoints. Defaults to False.
+                    type: boolean
                   enableCustomMetrics:
                     description: Enable gathering custom metrics.
                     type: boolean
@@ -1977,6 +1980,9 @@ spec:
                     type: string
                   dockerDisableSharedPID:
                     description: DockerDisableSharedPID uses a shared PID namespace for containers in a pod.
+                    type: boolean
+                  enableCadvisorJsonEndpoints:
+                    description: EnableCadvisorJsonEndpoints enables cAdvisor json `/spec` and `/stats/*` endpoints. Defaults to False.
                     type: boolean
                   enableCustomMetrics:
                     description: Enable gathering custom metrics.
