@@ -3325,6 +3325,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.EnableCadvisorJsonEndpoints != nil {
+		in, out := &in.EnableCadvisorJsonEndpoints, &out.EnableCadvisorJsonEndpoints
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
