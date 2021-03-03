@@ -484,11 +484,7 @@ func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, na
 // NodeName returns the name of the local Node, as it will be created in k8s
 func (c *NodeupModelContext) NodeName() (string, error) {
 	// This mirrors nodeutil.GetHostName
-	hostnameOverride := c.Cluster.Spec.Kubelet.HostnameOverride
-
-	if c.IsMaster && c.Cluster.Spec.MasterKubelet.HostnameOverride != "" {
-		hostnameOverride = c.Cluster.Spec.MasterKubelet.HostnameOverride
-	}
+	hostnameOverride := string('@') + c.Cluster.Spec.CloudProvider
 
 	nodeName, err := EvaluateHostnameOverride(hostnameOverride)
 	if err != nil {
