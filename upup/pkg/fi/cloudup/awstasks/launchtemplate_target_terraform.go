@@ -105,6 +105,10 @@ type terraformLaunchTemplateBlockDevice struct {
 	EBS []*terraformLaunchTemplateBlockDeviceEBS `json:"ebs,omitempty" cty:"ebs"`
 }
 
+type terraformLaunchTemplateCreditSpecification struct {
+	CPUCredits *string `json:"cpu_credits,omitempty" cty:"cpu_credits"`
+}
+
 type terraformLaunchTemplateTagSpecification struct {
 	// ResourceType is the type of resource to tag.
 	ResourceType *string `json:"resource_type,omitempty" cty:"resource_type"`
@@ -129,6 +133,8 @@ type terraformLaunchTemplate struct {
 
 	// BlockDeviceMappings is the device mappings
 	BlockDeviceMappings []*terraformLaunchTemplateBlockDevice `json:"block_device_mappings,omitempty" cty:"block_device_mappings"`
+	// CreditSpecification is the credit option for CPU Usage on some instance types
+	CreditSpecification *terraformLaunchTemplateCreditSpecification `json:"credit_specification,omitempty" cty:"credit_specification"`
 	// EBSOptimized indicates if the root device is ebs optimized
 	EBSOptimized *bool `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
 	// IAMInstanceProfile is the IAM profile to assign to the nodes
@@ -215,6 +221,11 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 				MarketType:  fi.String("spot"),
 				SpotOptions: []*terraformLaunchTemplateMarketOptionsSpotOptions{&marketSpotOptions},
 			},
+		}
+	}
+	if fi.StringValue(e.CPUCredits) != "" {
+		tf.CreditSpecification = &terraformLaunchTemplateCreditSpecification{
+			CPUCredits: e.CPUCredits,
 		}
 	}
 	for _, x := range e.SecurityGroups {
