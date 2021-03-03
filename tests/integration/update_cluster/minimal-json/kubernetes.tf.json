@@ -133,6 +133,11 @@
             "propagate_at_launch": true
           },
           {
+            "key": "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers",
+            "value": "",
+            "propagate_at_launch": true
+          },
+          {
             "key": "k8s.io/role/master",
             "value": "1",
             "propagate_at_launch": true
@@ -370,6 +375,7 @@
           "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role": "master",
           "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane": "",
           "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master": "",
+          "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers": "",
           "k8s.io/role/master": "1",
           "kops.k8s.io/instancegroup": "master-us-test-1a",
           "kubernetes.io/cluster/minimal-json.example.com": "owned"
@@ -384,6 +390,7 @@
               "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role": "master",
               "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane": "",
               "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master": "",
+              "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers": "",
               "k8s.io/role/master": "1",
               "kops.k8s.io/instancegroup": "master-us-test-1a",
               "kubernetes.io/cluster/minimal-json.example.com": "owned"
@@ -398,6 +405,7 @@
               "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role": "master",
               "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane": "",
               "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master": "",
+              "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers": "",
               "k8s.io/role/master": "1",
               "kops.k8s.io/instancegroup": "master-us-test-1a",
               "kubernetes.io/cluster/minimal-json.example.com": "owned"
