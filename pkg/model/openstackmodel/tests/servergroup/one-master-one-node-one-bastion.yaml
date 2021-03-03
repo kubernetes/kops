@@ -116,6 +116,7 @@ Metadata:
   k8s.io_cluster-autoscaler_node-template_label_kubernetes.io_role: master
   k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_control-plane: ""
   k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_master: ""
+  k8s.io_cluster-autoscaler_node-template_label_node.kubernetes.io_exclude-from-external-load-balancers: ""
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master
 Name: master-1-cluster

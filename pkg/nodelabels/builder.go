@@ -84,5 +84,6 @@ func BuildMandatoryControlPlaneLabels() map[string]string {
 	nodeLabels[RoleLabelControlPlane20] = ""
 	nodeLabels[RoleLabelName15] = RoleMasterLabelValue15
 	nodeLabels["kops.k8s.io/kops-controller-pki"] = ""
+	nodeLabels["node.kubernetes.io/exclude-from-external-load-balancers"] = ""
 	return nodeLabels
 }
