@@ -196,6 +196,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-unmanaged-example-co
     value               = ""
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -523,41 +528,44 @@ resource "aws_launch_template" "master-us-test-1a-masters-unmanaged-example-com"
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                                                                   = "unmanaged.example.com"
-      "Name"                                                                                = "master-us-test-1a.masters.unmanaged.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"       = ""
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                    = "master"
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane" = ""
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"        = ""
-      "k8s.io/role/master"                                                                  = "1"
-      "kops.k8s.io/instancegroup"                                                           = "master-us-test-1a"
-      "kubernetes.io/cluster/unmanaged.example.com"                                         = "owned"
+      "KubernetesCluster"                                                                                     = "unmanaged.example.com"
+      "Name"                                                                                                  = "master-us-test-1a.masters.unmanaged.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
+      "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/master"                                                                                    = "1"
+      "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
+      "kubernetes.io/cluster/unmanaged.example.com"                                                           = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                                                                   = "unmanaged.example.com"
-      "Name"                                                                                = "master-us-test-1a.masters.unmanaged.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"       = ""
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                    = "master"
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane" = ""
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"        = ""
-      "k8s.io/role/master"                                                                  = "1"
-      "kops.k8s.io/instancegroup"                                                           = "master-us-test-1a"
-      "kubernetes.io/cluster/unmanaged.example.com"                                         = "owned"
+      "KubernetesCluster"                                                                                     = "unmanaged.example.com"
+      "Name"                                                                                                  = "master-us-test-1a.masters.unmanaged.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
+      "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/master"                                                                                    = "1"
+      "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
+      "kubernetes.io/cluster/unmanaged.example.com"                                                           = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                                                                   = "unmanaged.example.com"
-    "Name"                                                                                = "master-us-test-1a.masters.unmanaged.example.com"
-    "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"       = ""
-    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                    = "master"
-    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane" = ""
-    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"        = ""
-    "k8s.io/role/master"                                                                  = "1"
-    "kops.k8s.io/instancegroup"                                                           = "master-us-test-1a"
-    "kubernetes.io/cluster/unmanaged.example.com"                                         = "owned"
+    "KubernetesCluster"                                                                                     = "unmanaged.example.com"
+    "Name"                                                                                                  = "master-us-test-1a.masters.unmanaged.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
+    "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+    "k8s.io/role/master"                                                                                    = "1"
+    "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
+    "kubernetes.io/cluster/unmanaged.example.com"                                                           = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.unmanaged.example.com_user_data")
 }
