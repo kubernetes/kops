@@ -129,6 +129,8 @@ type InstanceGroupSpec struct {
 	MaxPrice *string `json:"maxPrice,omitempty"`
 	// SpotDurationInMinutes reserves a spot block for the period specified
 	SpotDurationInMinutes *int64 `json:"spotDurationInMinutes,omitempty"`
+	// CPUCredits is the credit option for CPU Usage on burstable instance types (AWS only)
+	CPUCredits *string `json:"cpuCredits,omitempty"`
 	// AssociatePublicIP is true if we want instances to have a public IP
 	AssociatePublicIP *bool `json:"associatePublicIp,omitempty"`
 	// AdditionalSecurityGroups attaches additional security groups (e.g. i-123456)
