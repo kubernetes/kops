@@ -73,7 +73,6 @@ func (t *TerraformTarget) finishJSON(taskMap map[string]fi.Task) error {
 		if v.Value != nil {
 			tfVar["value"] = v.Value
 		} else {
-			SortLiterals(v.ValueArray)
 			deduped, err := DedupLiterals(v.ValueArray)
 			if err != nil {
 				return err
@@ -94,7 +93,6 @@ func (t *TerraformTarget) finishJSON(taskMap map[string]fi.Task) error {
 		if v.Value != nil {
 			localVariables[tfName] = v.Value
 		} else {
-			SortLiterals(v.ValueArray)
 			deduped, err := DedupLiterals(v.ValueArray)
 			if err != nil {
 				return err
