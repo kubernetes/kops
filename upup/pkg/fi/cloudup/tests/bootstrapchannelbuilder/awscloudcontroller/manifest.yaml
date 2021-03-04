@@ -76,4 +76,4 @@ spec:
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
-    version: 0.8.0-kops.1
+    version: 0.8.0-kops.2
