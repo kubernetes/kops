@@ -14,6 +14,5 @@ go_library(
         "//vendor/k8s.io/client-go/kubernetes/typed/core/v1:go_default_library",
         "//vendor/k8s.io/client-go/rest:go_default_library",
         "//vendor/k8s.io/client-go/tools/record:go_default_library",
-        "//vendor/sigs.k8s.io/controller-runtime/pkg/recorder:go_default_library",
     ],
 )

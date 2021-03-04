@@ -28,6 +28,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud"
 	"github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud/meta"
+	"github.com/google/go-cmp/cmp"
 	compute "google.golang.org/api/compute/v1"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -166,6 +167,12 @@ func (g *Cloud) ensureInternalLoadBalancer(clusterName, clusterID string, svc *v
 			return nil, err
 		}
 		klog.V(2).Infof("ensureInternalLoadBalancer(%v): reserved IP %q for the forwarding rule", loadBalancerName, ipToUse)
+		defer func() {
+			// Release the address if all resources were created successfully, or if we error out.
+			if err := addrMgr.ReleaseAddress(); err != nil {
+				klog.Errorf("ensureInternalLoadBalancer: failed to release address reservation, possibly causing an orphan: %v", err)
+			}
+		}()
 	}
 
 	// Ensure firewall rules if necessary
@@ -200,7 +207,8 @@ func (g *Cloud) ensureInternalLoadBalancer(clusterName, clusterID string, svc *v
 		// Delete existing forwarding rule before making changes to the backend service. For example - changing protocol
 		// of backend service without first deleting forwarding rule will throw an error since the linked forwarding
 		// rule would show the old protocol.
-		klog.V(2).Infof("ensureInternalLoadBalancer(%v): deleting existing forwarding rule with IP address %v", loadBalancerName, existingFwdRule.IPAddress)
+		frDiff := cmp.Diff(existingFwdRule, newFwdRule)
+		klog.V(2).Infof("ensureInternalLoadBalancer(%v): forwarding rule changed - Existing - %+v\n, New - %+v\n, Diff(-existing, +new) - %s\n. Deleting existing forwarding rule.", loadBalancerName, existingFwdRule, newFwdRule, frDiff)
 		if err = ignoreNotFound(g.DeleteRegionForwardingRule(loadBalancerName, g.region)); err != nil {
 			return nil, err
 		}
@@ -214,7 +222,8 @@ func (g *Cloud) ensureInternalLoadBalancer(clusterName, clusterID string, svc *v
 	}
 
 	if fwdRuleDeleted || existingFwdRule == nil {
-		if err := g.ensureInternalForwardingRule(existingFwdRule, newFwdRule); err != nil {
+		// existing rule has been deleted, pass in nil
+		if err := g.ensureInternalForwardingRule(nil, newFwdRule); err != nil {
 			return nil, err
 		}
 	}
@@ -222,13 +231,6 @@ func (g *Cloud) ensureInternalLoadBalancer(clusterName, clusterID string, svc *v
 	// Delete the previous internal load balancer resources if necessary
 	if existingBackendService != nil {
 		g.clearPreviousInternalResources(svc, loadBalancerName, existingBackendService, backendServiceName, hcName)
-	}
-
-	if addrMgr != nil {
-		// Now that the controller knows the forwarding rule exists, we can release the address.
-		if err := addrMgr.ReleaseAddress(); err != nil {
-			klog.Errorf("ensureInternalLoadBalancer: failed to release address reservation, possibly causing an orphan: %v", err)
-		}
 	}
 
 	// Get the most recent forwarding rule for the address.
@@ -979,11 +981,20 @@ func (g *Cloud) ensureInternalForwardingRule(existingFwdRule, newFwdRule *comput
 }
 
 func forwardingRulesEqual(old, new *compute.ForwardingRule) bool {
+	// basepath could have differences like compute.googleapis.com vs www.googleapis.com, compare resourceIDs
+	oldResourceID, err := cloud.ParseResourceURL(old.BackendService)
+	if err != nil {
+		klog.Errorf("forwardingRulesEqual(): failed to parse backend resource URL from existing FR, err - %v", err)
+	}
+	newResourceID, err := cloud.ParseResourceURL(new.BackendService)
+	if err != nil {
+		klog.Errorf("forwardingRulesEqual(): failed to parse resource URL from new FR, err - %v", err)
+	}
 	return (old.IPAddress == "" || new.IPAddress == "" || old.IPAddress == new.IPAddress) &&
 		old.IPProtocol == new.IPProtocol &&
 		old.LoadBalancingScheme == new.LoadBalancingScheme &&
 		equalStringSets(old.Ports, new.Ports) &&
-		old.BackendService == new.BackendService &&
+		oldResourceID.Equal(newResourceID) &&
 		old.AllowGlobalAccess == new.AllowGlobalAccess &&
 		old.Subnetwork == new.Subnetwork
 }
