@@ -1,6 +1,6 @@
 module k8s.io/kops
 
-go 1.14
+go 1.16
 
 // Version kubernetes-1.20.4 => tag v0.20.4
 
@@ -92,7 +92,6 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	helm.sh/helm/v3 v3.4.2
-	honnef.co/go/tools v0.0.1-2020.1.6 // indirect
 	k8s.io/api v0.20.4
 	k8s.io/apiextensions-apiserver v0.20.4 // indirect
 	k8s.io/apimachinery v0.20.4
