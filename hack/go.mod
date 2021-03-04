@@ -1,6 +1,6 @@
 module k8s.io/kops/hack
 
-go 1.15
+go 1.16
 
 require (
 	github.com/bazelbuild/bazel-gazelle v0.22.3
