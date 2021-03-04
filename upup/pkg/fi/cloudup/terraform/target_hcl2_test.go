@@ -86,6 +86,27 @@ output "key1" {
 			},
 			errExpected: true,
 		},
+		{
+			name: "duplicate values",
+			values: map[string]*terraformOutputVariable{
+				"key1": {
+					Key: "key1",
+					ValueArray: []*Literal{
+						LiteralFromStringValue("value1"),
+						LiteralFromStringValue("value1"),
+						LiteralFromStringValue("value2"),
+					},
+				},
+			},
+			expected: `
+locals {
+  key1 = ["value1", "value2"]
+}
+
+output "key1" {
+  value = ["value1", "value2"]
+}`,
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
