@@ -152,9 +152,12 @@ func writeLocalsOutputs(body *hclwrite.Body, outputs map[string]*terraformOutput
 			writeLiteral(outputBody, "value", v.Value)
 			writeLiteral(localsBody, tfName, v.Value)
 		} else {
-			SortLiterals(v.ValueArray)
-			writeLiteralList(outputBody, "value", v.ValueArray)
-			writeLiteralList(localsBody, tfName, v.ValueArray)
+			deduped, err := DedupLiterals(v.ValueArray)
+			if err != nil {
+				return err
+			}
+			writeLiteralList(outputBody, "value", deduped)
+			writeLiteralList(localsBody, tfName, deduped)
 		}
 
 		if existingOutputVars[tfName] {
