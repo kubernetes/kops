@@ -38,7 +38,6 @@ go_library(
     importpath = "k8s.io/kops/nodeup/pkg/model",
     visibility = ["//visibility:public"],
     deps = [
-        "//:go_default_library",
         "//nodeup/pkg/model/resources:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/model:go_default_library",
