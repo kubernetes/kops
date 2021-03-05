@@ -1,7 +1,7 @@
 locals {
   cluster_name                 = "launchtemplates.example.com"
   master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-launchtemplates-example-com.id, aws_autoscaling_group.master-us-test-1b-masters-launchtemplates-example-com.id, aws_autoscaling_group.master-us-test-1c-masters-launchtemplates-example-com.id]
-  master_security_group_ids    = [aws_security_group.masters-launchtemplates-example-com.id, aws_security_group.masters-launchtemplates-example-com.id, aws_security_group.masters-launchtemplates-example-com.id]
+  master_security_group_ids    = [aws_security_group.masters-launchtemplates-example-com.id]
   masters_role_arn             = aws_iam_role.masters-launchtemplates-example-com.arn
   masters_role_name            = aws_iam_role.masters-launchtemplates-example-com.name
   node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-launchtemplates-example-com.id]
@@ -27,7 +27,7 @@ output "master_autoscaling_group_ids" {
 }
 
 output "master_security_group_ids" {
-  value = [aws_security_group.masters-launchtemplates-example-com.id, aws_security_group.masters-launchtemplates-example-com.id, aws_security_group.masters-launchtemplates-example-com.id]
+  value = [aws_security_group.masters-launchtemplates-example-com.id]
 }
 
 output "masters_role_arn" {
