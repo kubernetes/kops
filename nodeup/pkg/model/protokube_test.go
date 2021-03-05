@@ -19,35 +19,19 @@ package model
 import (
 	"testing"
 
-	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/architectures"
 )
 
-func TestProtokubeBuilder_Docker(t *testing.T) {
-	RunGoldenTest(t, "tests/protokube/docker", "protokube", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+func TestProtokubeBuilder(t *testing.T) {
+	RunGoldenTest(t, "tests/protokube/", "protokube", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
 		builder := ProtokubeBuilder{NodeupModelContext: nodeupModelContext}
-		populateImage(nodeupModelContext)
+		populateAssets(nodeupModelContext)
 		return builder.Build(target)
 	})
 }
 
-func TestProtokubeBuilder_containerd(t *testing.T) {
-	RunGoldenTest(t, "tests/protokube/containerd", "protokube", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
-		builder := ProtokubeBuilder{NodeupModelContext: nodeupModelContext}
-		populateImage(nodeupModelContext)
-		return builder.Build(target)
-	})
-}
-
-func populateImage(ctx *NodeupModelContext) {
-	if ctx.NodeupConfig == nil {
-		ctx.NodeupConfig = &nodeup.Config{}
-	}
-	if ctx.NodeupConfig.ProtokubeImage == nil {
-		ctx.NodeupConfig.ProtokubeImage = make(map[architectures.Architecture]*nodeup.Image)
-	}
-	ctx.NodeupConfig.ProtokubeImage[architectures.ArchitectureAmd64] = &nodeup.Image{
-		Name: "protokube image name",
-	}
+func populateAssets(ctx *NodeupModelContext) {
+	ctx.Assets = fi.NewAssetStore("")
+	ctx.Assets.AddForTest("protokube", "/opt/kops/bin/protokube", "testing protokube content")
+	ctx.Assets.AddForTest("channels", "/opt/kops/bin/channels", "testing channels content")
 }

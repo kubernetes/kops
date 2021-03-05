@@ -17,13 +17,12 @@ limitations under the License.
 package model
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
-	kopsbase "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
@@ -33,8 +32,8 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/distributions"
+
 	"k8s.io/kops/util/pkg/proxy"
 
 	"github.com/blang/semver/v4"
@@ -58,14 +57,31 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	if protokubeImage := t.NodeupConfig.ProtokubeImage[t.Architecture]; protokubeImage != nil {
-		c.AddTask(&nodetasks.LoadImageTask{
-			Name:    "protokube",
-			Sources: protokubeImage.Sources,
-			Hash:    protokubeImage.Hash,
-			Runtime: t.Cluster.Spec.ContainerRuntime,
-		})
+	protokubeBinName, protokubeBinRes, err := t.Assets.FindMatch(regexp.MustCompile("protokube$"))
+	if err != nil {
+		return err
 	}
+
+	fileTaskProtokubeBin := &nodetasks.File{
+		Path:     filepath.Join("/opt/kops/bin", protokubeBinName),
+		Contents: protokubeBinRes,
+		Type:     nodetasks.FileType_File,
+		Mode:     fi.String("0755"),
+	}
+	c.AddTask(fileTaskProtokubeBin)
+
+	channelBinName, channelBinRes, err := t.Assets.FindMatch(regexp.MustCompile("channels$"))
+	if err != nil {
+		return err
+	}
+
+	fileTaskChannel := &nodetasks.File{
+		Path:     filepath.Join("/opt/kops/bin", channelBinName),
+		Contents: channelBinRes,
+		Type:     nodetasks.FileType_File,
+		Mode:     fi.String("0755"),
+	}
+	c.AddTask(fileTaskChannel)
 
 	if t.IsMaster {
 		name := nodetasks.PKIXName{
@@ -95,6 +111,12 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 		}
 	}
+
+	envFileTask, err := t.buildProtokubeEnvironmentVariables()
+	if err != nil {
+		return err
+	}
+	c.AddTask(envFileTask)
 
 	service, err := t.buildSystemdService()
 	if err != nil {
@@ -128,27 +150,12 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 		return nil, err
 	}
 
-	protokubeContainerStopCommand, err := t.ProtokubeContainerStopCommand()
-	if err != nil {
-		return nil, err
-	}
-	protokubeContainerRemoveCommand, err := t.ProtokubeContainerRemoveCommand()
-	if err != nil {
-		return nil, err
-	}
-	protokubeContainerRunCommand, err := t.ProtokubeContainerRunCommand()
-	if err != nil {
-		return nil, err
-	}
-
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Kubernetes Protokube Service")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
 
-	// @step: let need a dependency for any volumes to be mounted first
-	manifest.Set("Service", "ExecStartPre", protokubeContainerStopCommand)
-	manifest.Set("Service", "ExecStartPre", protokubeContainerRemoveCommand)
-	manifest.Set("Service", "ExecStart", protokubeContainerRunCommand+" "+protokubeRunArgs)
+	manifest.Set("Service", "ExecStart", "/opt/kops/bin/protokube"+" "+protokubeRunArgs)
+	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/protokube")
 	manifest.Set("Service", "Restart", "always")
 	manifest.Set("Service", "RestartSec", "3s")
 	manifest.Set("Service", "StartLimitInterval", "0")
@@ -165,161 +172,6 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 	service.InitDefaults()
 
 	return service, nil
-}
-
-// ProtokubeImageName returns the docker image for protokube
-func (t *ProtokubeBuilder) ProtokubeImageName() string {
-	name := ""
-	if t.NodeupConfig.ProtokubeImage[t.Architecture] != nil && t.NodeupConfig.ProtokubeImage[t.Architecture].Name != "" {
-		name = t.NodeupConfig.ProtokubeImage[t.Architecture].Name
-	}
-	if name == "" {
-		// use current default corresponding to this version of nodeup
-		name = kopsbase.DefaultProtokubeImageName()
-	}
-	return name
-}
-
-// ProtokubeContainerStopCommand returns the command that stops the Protokube container, before being removed
-func (t *ProtokubeBuilder) ProtokubeContainerStopCommand() (string, error) {
-	var containerStopCommand string
-	if t.Cluster.Spec.ContainerRuntime == "docker" {
-		containerStopCommand = "-/usr/bin/docker stop protokube"
-	} else if t.Cluster.Spec.ContainerRuntime == "containerd" {
-		containerStopCommand = "/bin/true"
-	} else {
-		return "", fmt.Errorf("unable to create protokube stop command for unsupported runtime %q", t.Cluster.Spec.ContainerRuntime)
-	}
-	return containerStopCommand, nil
-}
-
-// ProtokubeContainerRemoveCommand returns the command that removes the Protokube container
-func (t *ProtokubeBuilder) ProtokubeContainerRemoveCommand() (string, error) {
-	var containerRemoveCommand string
-	if t.Cluster.Spec.ContainerRuntime == "docker" {
-		containerRemoveCommand = "-/usr/bin/docker rm protokube"
-	} else if t.Cluster.Spec.ContainerRuntime == "containerd" {
-		containerRemoveCommand = "-/usr/bin/ctr --namespace k8s.io container rm protokube"
-	} else {
-		return "", fmt.Errorf("unable to create protokube remove command for unsupported runtime %q", t.Cluster.Spec.ContainerRuntime)
-	}
-	return containerRemoveCommand, nil
-}
-
-// ProtokubeContainerRunCommand returns the command that runs the Protokube container
-func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
-	var containerRunArgs []string
-	if t.Cluster.Spec.ContainerRuntime == "docker" {
-		containerRunArgs = append(containerRunArgs, []string{
-			"/usr/bin/docker run",
-			"--net=host",
-			"--pid=host",   // Needed for mounting in a container (when using systemd mounting?)
-			"--privileged", // We execute in the host namespace
-			"--volume /:/rootfs",
-			"--env KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
-		}...)
-
-		// Mount bin dirs from host, required for "k8s.io/utils/mount" and "k8s.io/utils/nsenter"
-		containerRunArgs = append(containerRunArgs, []string{
-			"--volume /bin:/bin:ro",
-			"--volume /lib:/lib:ro",
-			"--volume /sbin:/sbin:ro",
-			"--volume /usr/bin:/usr/bin:ro",
-			"--volume /var/run/dbus:/var/run/dbus",
-			"--volume /run/systemd:/run/systemd",
-		}...)
-
-		if t.Architecture == architectures.ArchitectureAmd64 {
-			containerRunArgs = append(containerRunArgs, []string{
-				"--volume /lib64:/lib64:ro",
-			}...)
-		}
-
-		if fi.BoolValue(t.Cluster.Spec.UseHostCertificates) {
-			containerRunArgs = append(containerRunArgs, []string{
-				"--volume /etc/ssl/certs:/etc/ssl/certs",
-			}...)
-		}
-
-		// add kubectl only if a master
-		// path changes depending on distro, and always mount it on /opt/kops/bin
-		// kubectl is downloaded and installed by other tasks
-		if t.IsMaster {
-			containerRunArgs = append(containerRunArgs, []string{
-				"--volume " + t.KubectlPath() + ":/opt/kops/bin:ro",
-				"--env PATH=/opt/kops/bin:/usr/bin:/sbin:/bin",
-			}...)
-		}
-
-		protokubeEnvVars := t.ProtokubeEnvironmentVariables()
-		if protokubeEnvVars != "" {
-			containerRunArgs = append(containerRunArgs, []string{
-				protokubeEnvVars,
-			}...)
-		}
-
-		containerRunArgs = append(containerRunArgs, []string{
-			"--name", "protokube",
-			t.ProtokubeImageName(),
-			"/protokube",
-		}...)
-
-	} else if t.Cluster.Spec.ContainerRuntime == "containerd" {
-		containerRunArgs = append(containerRunArgs, []string{
-			"/usr/bin/ctr --namespace k8s.io run",
-			"--net-host",
-			"--with-ns pid:/proc/1/ns/pid",
-			"--privileged",
-			"--mount type=bind,src=/,dst=/rootfs,options=rbind:rslave",
-			"--env KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
-		}...)
-
-		// Mount bin dirs from host, required for "k8s.io/utils/mount" and "k8s.io/utils/nsenter"
-		containerRunArgs = append(containerRunArgs, []string{
-			"--mount type=bind,src=/bin,dst=/bin,options=rbind:ro:rprivate",
-			"--mount type=bind,src=/lib,dst=/lib,options=rbind:ro:rprivate",
-			"--mount type=bind,src=/sbin,dst=/sbin,options=rbind:ro:rprivate",
-			"--mount type=bind,src=/usr/bin,dst=/usr/bin,options=rbind:ro:rprivate",
-			"--mount type=bind,src=/var/run/dbus,dst=/var/run/dbus,options=rbind:rprivate",
-			"--mount type=bind,src=/run/systemd,dst=/run/systemd,options=rbind:rprivate",
-		}...)
-
-		if t.Architecture == architectures.ArchitectureAmd64 {
-			containerRunArgs = append(containerRunArgs, []string{
-				"--mount type=bind,src=/lib64,dst=/lib64,options=rbind:ro:rprivate",
-			}...)
-		}
-
-		if fi.BoolValue(t.Cluster.Spec.UseHostCertificates) {
-			containerRunArgs = append(containerRunArgs, []string{
-				"--mount type=bind,src=/etc/ssl/certs,dst=/etc/ssl/certs,options=rbind:ro:rprivate",
-			}...)
-		}
-
-		if t.IsMaster {
-			containerRunArgs = append(containerRunArgs, []string{
-				"--mount type=bind,src=" + t.KubectlPath() + ",dst=/opt/kops/bin,options=rbind:ro:rprivate",
-				"--env PATH=/opt/kops/bin:/usr/bin:/sbin:/bin",
-			}...)
-		}
-
-		protokubeEnvVars := t.ProtokubeEnvironmentVariables()
-		if protokubeEnvVars != "" {
-			containerRunArgs = append(containerRunArgs, []string{
-				protokubeEnvVars,
-			}...)
-		}
-
-		containerRunArgs = append(containerRunArgs, []string{
-			"docker.io/library/" + t.ProtokubeImageName(),
-			"protokube",
-			"/protokube",
-		}...)
-	} else {
-		return "", fmt.Errorf("unable to create protokube run command for unsupported runtime %q", t.Cluster.Spec.ContainerRuntime)
-	}
-
-	return strings.Join(containerRunArgs, " "), nil
 }
 
 // ProtokubeFlags are the flags for protokube
@@ -391,7 +243,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 
 	f := &ProtokubeFlags{
 		Channels:                  t.NodeupConfig.Channels,
-		Containerized:             fi.Bool(true),
+		Containerized:             fi.Bool(false),
 		EtcdLeaderElectionTimeout: s(leaderElectionTimeout),
 		EtcdHearbeatInterval:      s(heartbeatInterval),
 		LogLevel:                  fi.Int32(4),
@@ -548,49 +400,26 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 	return f, nil
 }
 
-// ProtokubeEnvironmentVariables generates the environments variables for docker
-func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
-	var buffer bytes.Buffer
+func (t *ProtokubeBuilder) buildProtokubeEnvironmentVariables() (*nodetasks.File, error) {
+	var envVars = make(map[string]string)
 
-	// TODO write out an environments file for this.  This is getting a tad long.
+	envVars["KUBECONFIG"] = "/var/lib/kops/kubeconfig"
 
 	// Pass in gossip dns connection limit
 	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
-		buffer.WriteString(" ")
-		buffer.WriteString("--env 'GOSSIP_DNS_CONN_LIMIT=")
-		buffer.WriteString(os.Getenv("GOSSIP_DNS_CONN_LIMIT"))
-		buffer.WriteString("'")
-		buffer.WriteString(" ")
+		envVars["GOSSIP_DNS_CONN_LIMIT"] = os.Getenv("GOSSIP_DNS_CONN_LIMIT")
 	}
 
 	// Pass in required credentials when using user-defined s3 endpoint
 	if os.Getenv("AWS_REGION") != "" {
-		buffer.WriteString(" ")
-		buffer.WriteString("--env 'AWS_REGION=")
-		buffer.WriteString(os.Getenv("AWS_REGION"))
-		buffer.WriteString("'")
-		buffer.WriteString(" ")
+		envVars["AWS_REGION"] = os.Getenv("AWS_REGION")
 	}
 
 	if os.Getenv("S3_ENDPOINT") != "" {
-		buffer.WriteString(" ")
-		buffer.WriteString("--env S3_ENDPOINT=")
-		buffer.WriteString("'")
-		buffer.WriteString(os.Getenv("S3_ENDPOINT"))
-		buffer.WriteString("'")
-		buffer.WriteString(" --env S3_REGION=")
-		buffer.WriteString("'")
-		buffer.WriteString(os.Getenv("S3_REGION"))
-		buffer.WriteString("'")
-		buffer.WriteString(" --env S3_ACCESS_KEY_ID=")
-		buffer.WriteString("'")
-		buffer.WriteString(os.Getenv("S3_ACCESS_KEY_ID"))
-		buffer.WriteString("'")
-		buffer.WriteString(" --env S3_SECRET_ACCESS_KEY=")
-		buffer.WriteString("'")
-		buffer.WriteString(os.Getenv("S3_SECRET_ACCESS_KEY"))
-		buffer.WriteString("'")
-		buffer.WriteString(" ")
+		envVars["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")
+		envVars["S3_REGION"] = os.Getenv("S3_REGION")
+		envVars["S3_ACCESS_KEY_ID"] = os.Getenv("S3_ACCESS_KEY_ID")
+		envVars["S3_SECRET_ACCESS_KEY"] = os.Getenv("S3_SECRET_ACCESS_KEY")
 	}
 
 	if os.Getenv("OS_AUTH_URL") != "" {
@@ -605,60 +434,41 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 			"OS_APPLICATION_CREDENTIAL_ID",
 			"OS_APPLICATION_CREDENTIAL_SECRET",
 		} {
-			buffer.WriteString(" --env '")
-			buffer.WriteString(envVar)
-			buffer.WriteString("=")
-			buffer.WriteString(os.Getenv(envVar))
-			buffer.WriteString("'")
+			envVars[envVar] = os.Getenv(envVar)
 		}
 	}
 
 	if kops.CloudProviderID(t.Cluster.Spec.CloudProvider) == kops.CloudProviderDO && os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
-		buffer.WriteString(" ")
-		buffer.WriteString("--env 'DIGITALOCEAN_ACCESS_TOKEN=")
-		buffer.WriteString(os.Getenv("DIGITALOCEAN_ACCESS_TOKEN"))
-		buffer.WriteString("'")
-		buffer.WriteString(" ")
+		envVars["DIGITALOCEAN_ACCESS_TOKEN"] = os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 	}
 
 	if os.Getenv("OSS_REGION") != "" {
-		buffer.WriteString(" ")
-		buffer.WriteString("--env 'OSS_REGION=")
-		buffer.WriteString(os.Getenv("OSS_REGION"))
-		buffer.WriteString("'")
-		buffer.WriteString(" ")
+		envVars["OSS_REGION"] = os.Getenv("OSS_REGION")
 	}
 
 	if os.Getenv("ALIYUN_ACCESS_KEY_ID") != "" {
-		buffer.WriteString(" ")
-		buffer.WriteString("--env 'ALIYUN_ACCESS_KEY_ID=")
-		buffer.WriteString(os.Getenv("ALIYUN_ACCESS_KEY_ID"))
-		buffer.WriteString("'")
-		buffer.WriteString(" --env 'ALIYUN_ACCESS_KEY_SECRET=")
-		buffer.WriteString(os.Getenv("ALIYUN_ACCESS_KEY_SECRET"))
-		buffer.WriteString("'")
-		buffer.WriteString(" ")
+		envVars["ALIYUN_ACCESS_KEY_ID"] = os.Getenv("ALIYUN_ACCESS_KEY_ID")
+		envVars["ALIYUN_ACCESS_KEY_SECRET"] = os.Getenv("ALIYUN_ACCESS_KEY_SECRET")
 	}
 
 	if os.Getenv("AZURE_STORAGE_ACCOUNT") != "" {
-		buffer.WriteString(" ")
-		buffer.WriteString("--env 'AZURE_STORAGE_ACCOUNT=")
-		buffer.WriteString(os.Getenv("AZURE_STORAGE_ACCOUNT"))
-		buffer.WriteString("'")
-		buffer.WriteString(" ")
+		envVars["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
 	}
 
-	t.writeProxyEnvVars(&buffer)
-
-	return buffer.String()
-}
-
-func (t *ProtokubeBuilder) writeProxyEnvVars(buffer *bytes.Buffer) {
 	for _, envVar := range proxy.GetProxyEnvVars(t.Cluster.Spec.EgressProxy) {
-		buffer.WriteString(" --env ")
-		buffer.WriteString(envVar.Name)
-		buffer.WriteString("=")
-		buffer.WriteString(envVar.Value)
-		buffer.WriteString(" ")
+		envVars[envVar.Name] = envVar.Value
 	}
+
+	var sysconfig = ""
+	for key, value := range envVars {
+		sysconfig += key + "=" + value + "\n"
+	}
+
+	task := &nodetasks.File{
+		Path:     "/etc/sysconfig/protokube",
+		Contents: fi.NewStringResource(sysconfig),
+		Type:     nodetasks.FileType_File,
+	}
+
+	return task, nil
 }
