@@ -40,11 +40,11 @@ var kopsBaseURL *url.URL
 // nodeUpAsset caches the nodeup download urls/hash
 var nodeUpAsset map[architectures.Architecture]*mirrors.MirroredAsset
 
-// protokubeLocation caches the protokubeLocation url
-var protokubeLocation map[architectures.Architecture]*url.URL
+// protokubeBinAsset caches the protokube binary download urls/hash
+var protokubeBinAsset map[architectures.Architecture]*mirrors.MirroredAsset
 
-// protokubeHash caches the hash for protokube
-var protokubeHash map[architectures.Architecture]*hashing.Hash
+// channelsBinAsset caches the channels binary download urls/hash
+var channelsBinAsset map[architectures.Architecture]*mirrors.MirroredAsset
 
 // BaseURL returns the base url for the distribution of kops - in particular for nodeup & docker images
 func BaseURL() (*url.URL, error) {
@@ -142,51 +142,52 @@ func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architec
 	return asset, nil
 }
 
-// TODO make this a container when hosted assets
-// TODO does this support a docker as well??
-// FIXME comments says this works with a docker already ... need to check on that
-
-// ProtokubeImageSource returns the source for the docker image for protokube.
-// Either a docker name (e.g. gcr.io/protokube:1.4), or a URL (https://...) in which case we download
-// the contents of the url and docker load it
-func ProtokubeImageSource(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
-	if protokubeLocation == nil {
-		protokubeLocation = make(map[architectures.Architecture]*url.URL)
-	}
-	if protokubeHash == nil {
-		protokubeHash = make(map[architectures.Architecture]*hashing.Hash)
-	}
-	if nodeUpAsset[arch] != nil && protokubeHash[arch] != nil {
-		// Avoid repeated logging
-		klog.V(8).Infof("Using cached protokube location for %s: %q", arch, protokubeLocation[arch])
-		return protokubeLocation[arch], protokubeHash[arch], nil
-	}
-	// Use multi-arch env var, but fall back to well known env var
-	env := os.Getenv(fmt.Sprintf("PROTOKUBE_IMAGE_%s", strings.ToUpper(string(arch))))
-	if env == "" {
-		env = os.Getenv("PROTOKUBE_IMAGE")
-	}
-	var err error
-	if env == "" {
-		protokubeLocation[arch], protokubeHash[arch], err = KopsFileURL(fmt.Sprintf("images/protokube-%s.tar.gz", arch), assetsBuilder)
-		if err != nil {
-			return nil, nil, err
-		}
-		klog.V(8).Infof("Using default protokube location: %q", protokubeLocation[arch])
-	} else {
-		protokubeImageSource, err := url.Parse(env)
-		if err != nil {
-			return nil, nil, fmt.Errorf("unable to parse env var PROTOKUBE_IMAGE(_%s) %q as a url: %v", strings.ToUpper(string(arch)), env, err)
-		}
-
-		protokubeLocation[arch], protokubeHash[arch], err = assetsBuilder.RemapFileAndSHA(protokubeImageSource)
-		if err != nil {
-			return nil, nil, err
-		}
-		klog.Warningf("Using protokube location from PROTOKUBE_IMAGE(_%s) env var: %q", strings.ToUpper(string(arch)), protokubeLocation[arch])
+// ProtokubeBinaryAsset returns the url and hash of the protokube binary. This is useful for running protokube as a
+// systemd process rather than a container.
+func ProtokubeBinaryAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
+	if protokubeBinAsset == nil {
+		protokubeBinAsset = make(map[architectures.Architecture]*mirrors.MirroredAsset)
 	}
 
-	return protokubeLocation[arch], protokubeHash[arch], nil
+	if protokubeBinAsset[arch] != nil {
+		klog.V(8).Infof("Using cached protokube binary location for %s: %v", arch, protokubeBinAsset[arch].Locations)
+		return protokubeBinAsset[arch], nil
+	}
+
+	// TODO: (bharath-123) should we allow the user to specify the binary url through an environment variable like how we do for NODEUP_URL?
+	u, hash, err := KopsFileURL(fmt.Sprintf("linux/%s/protokube", arch), assetsBuilder)
+	if err != nil {
+		return nil, err
+	}
+
+	asset := mirrors.BuildMirroredAsset(u, hash)
+
+	protokubeBinAsset[arch] = asset
+
+	return asset, nil
+}
+
+// ChannelsBinaryAsset returns the url and hash of the channels binary. Protokube requires this to run as a systemd process.
+func ChannelsBinaryAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
+	if channelsBinAsset == nil {
+		channelsBinAsset = make(map[architectures.Architecture]*mirrors.MirroredAsset)
+	}
+
+	if channelsBinAsset[arch] != nil {
+		klog.V(8).Infof("Using cached channels binary location for %s: %v", arch, channelsBinAsset[arch].Locations)
+		return channelsBinAsset[arch], nil
+	}
+
+	u, hash, err := KopsFileURL(fmt.Sprintf("linux/%s/channels", arch), assetsBuilder)
+	if err != nil {
+		return nil, err
+	}
+
+	asset := mirrors.BuildMirroredAsset(u, hash)
+
+	channelsBinAsset[arch] = asset
+
+	return asset, nil
 }
 
 // KopsFileURL returns the base url for the distribution of kops - in particular for nodeup & docker images
