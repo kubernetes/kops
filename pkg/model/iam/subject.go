@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/wellknownusers"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 // Subject represents an IAM identity, to which permissions are granted.
@@ -85,7 +86,22 @@ func ServiceAccountIssuer(clusterName string, clusterSpec *kops.ClusterSpec) str
 	if clusterSpec.KubeAPIServer != nil && clusterSpec.KubeAPIServer.ServiceAccountIssuer != nil {
 		return *clusterSpec.KubeAPIServer.ServiceAccountIssuer
 	}
-	return "https://api." + clusterName
+	if supportsPublicJWKS(clusterSpec) {
+		return "https://api." + clusterName
+	}
+	return "https://api.internal." + clusterName
+}
+
+func supportsPublicJWKS(clusterSpec *kops.ClusterSpec) bool {
+	if !fi.BoolValue(clusterSpec.KubeAPIServer.AnonymousAuth) {
+		return false
+	}
+	for _, cidr := range clusterSpec.KubernetesAPIAccess {
+		if cidr == "0.0.0.0/0" {
+			return true
+		}
+	}
+	return false
 }
 
 // AddServiceAccountRole adds the appropriate mounts / env vars to enable a pod to use a service-account role
