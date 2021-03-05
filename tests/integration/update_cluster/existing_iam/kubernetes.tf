@@ -1,7 +1,7 @@
 locals {
   cluster_name                 = "existing-iam.example.com"
   master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-existing-iam-example-com.id, aws_autoscaling_group.master-us-test-1b-masters-existing-iam-example-com.id, aws_autoscaling_group.master-us-test-1c-masters-existing-iam-example-com.id]
-  master_security_group_ids    = [aws_security_group.masters-existing-iam-example-com.id, aws_security_group.masters-existing-iam-example-com.id, aws_security_group.masters-existing-iam-example-com.id]
+  master_security_group_ids    = [aws_security_group.masters-existing-iam-example-com.id]
   node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-existing-iam-example-com.id]
   node_security_group_ids      = [aws_security_group.nodes-existing-iam-example-com.id]
   node_subnet_ids              = [aws_subnet.us-test-1a-existing-iam-example-com.id]
@@ -23,7 +23,7 @@ output "master_autoscaling_group_ids" {
 }
 
 output "master_security_group_ids" {
-  value = [aws_security_group.masters-existing-iam-example-com.id, aws_security_group.masters-existing-iam-example-com.id, aws_security_group.masters-existing-iam-example-com.id]
+  value = [aws_security_group.masters-existing-iam-example-com.id]
 }
 
 output "node_autoscaling_group_ids" {
