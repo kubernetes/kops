@@ -269,11 +269,15 @@ Assets:
   - e8913069293156ddf55f243814a22d2384fc18b165efb6200606fdeaad146605@https://storage.googleapis.com/kubernetes-release/release/v1.16.15/bin/linux/amd64/kubectl
   - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
   - 82a362af7689038c51573e0fd0554da8703f0d06f4dfe95dd5bda5acf0ae45fb@https://download.docker.com/linux/static/stable/x86_64/docker-18.09.9.tgz
+  - f90ed6dcef534e6d1ae17907dc7eb40614b8945ad4af7f0e98d2be7cde8165c6@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-amd64,https://kubeupv2.s3.amazonaws.com/kops/1.21.0-alpha.1/linux/amd64/protokube
+  - 9992e7eb2a2e93f799e5a9e98eb718637433524bc65f630357201a79f49b13d0@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-amd64,https://kubeupv2.s3.amazonaws.com/kops/1.21.0-alpha.1/linux/amd64/channels
   arm64:
   - 3d8337e2e0b613688d3828803988adeafedc9451c785478951002bf627beb36b@https://storage.googleapis.com/kubernetes-release/release/v1.16.15/bin/linux/arm64/kubelet
   - 74719f137dc6d589a3b8a667bcb0f3c57eebd8f050dd2f7ad5b59ceb892a7b99@https://storage.googleapis.com/kubernetes-release/release/v1.16.15/bin/linux/arm64/kubectl
   - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
   - c6f4cfe1bef71c339d5127c6c79169479bcb7830c6fb0185139d32ab726e038e@https://download.docker.com/linux/static/stable/aarch64/docker-18.09.9.tgz
+  - 2f599c3d54f4c4bdbcc95aaf0c7b513a845d8f9503ec5b34c9f86aa1bc34fc0c@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-arm64,https://kubeupv2.s3.amazonaws.com/kops/1.21.0-alpha.1/linux/arm64/protokube
+  - 9d842e3636a95de2315cdea2be7a282355aac0658ef0b86d5dc2449066538f13@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-arm64,https://kubeupv2.s3.amazonaws.com/kops/1.21.0-alpha.1/linux/arm64/channels
 ClusterName: privatecilium.example.com
 ConfigBase: memfs://clusters.example.com/privatecilium.example.com
 InstanceGroupName: master-us-test-1a
@@ -305,21 +309,6 @@ channels:
 etcdManifests:
 - memfs://clusters.example.com/privatecilium.example.com/manifests/etcd/main.yaml
 - memfs://clusters.example.com/privatecilium.example.com/manifests/etcd/events.yaml
-protokubeImage:
-  amd64:
-    hash: 8e62d4d1bca237b8214020c715da415bf3fccfabbb5e01b3d3712d8edb1955f3
-    name: protokube:1.21.0-alpha.1
-    sources:
-    - https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/images/protokube-amd64.tar.gz
-    - https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/images-protokube-amd64.tar.gz
-    - https://kubeupv2.s3.amazonaws.com/kops/1.21.0-alpha.1/images/protokube-amd64.tar.gz
-  arm64:
-    hash: 01e9ef8b5254ce32f8ddd23aa863d6da5b147bb84a2673cef59ca0fc73f2b9cf
-    name: protokube:1.21.0-alpha.1
-    sources:
-    - https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/images/protokube-arm64.tar.gz
-    - https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/images-protokube-arm64.tar.gz
-    - https://kubeupv2.s3.amazonaws.com/kops/1.21.0-alpha.1/images/protokube-arm64.tar.gz
 
 __EOF_KUBE_ENV
 
