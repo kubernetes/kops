@@ -46,6 +46,11 @@ func FindUrlMirrors(u string) []string {
 		githubSuffix := strings.ReplaceAll(suffix, "/", "-")
 		githubSuffix = strings.ReplaceAll(githubSuffix, "linux-amd64-nodeup", "nodeup-linux-amd64")
 		githubSuffix = strings.ReplaceAll(githubSuffix, "linux-arm64-nodeup", "nodeup-linux-arm64")
+		githubSuffix = strings.ReplaceAll(githubSuffix, "linux-amd64-protokube", "protokube-linux-amd64")
+		githubSuffix = strings.ReplaceAll(githubSuffix, "linux-arm64-protokube", "protokube-linux-arm64")
+		githubSuffix = strings.ReplaceAll(githubSuffix, "linux-amd64-channels", "channels-linux-amd64")
+		githubSuffix = strings.ReplaceAll(githubSuffix, "linux-arm64-channels", "channels-linux-arm64")
+
 		mirrors = append(mirrors, fmt.Sprintf(githubKopsMirrorBase, kops.Version)+githubSuffix)
 	}
 	// Finally append the original URL to the list of mirrored URLs.
