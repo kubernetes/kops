@@ -47,7 +47,7 @@ UPLOAD_CMD=$(KOPS_ROOT)/hack/upload ${UPLOAD_ARGS}
 
 # Unexport environment variables that can affect tests and are not used in builds
 unexport AWS_ACCESS_KEY_ID AWS_REGION AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN CNI_VERSION_URL DNS_IGNORE_NS_CHECK DNSCONTROLLER_IMAGE DO_ACCESS_TOKEN GOOGLE_APPLICATION_CREDENTIALS
-unexport KOPS_BASE_URL KOPS_CLUSTER_NAME KOPS_RUN_OBSOLETE_VERSION KOPS_STATE_STORE KOPS_STATE_S3_ACL KUBE_API_VERSIONS NODEUP_URL OPENSTACK_CREDENTIAL_FILE PROTOKUBE_IMAGE SKIP_PACKAGE_UPDATE
+unexport KOPS_BASE_URL KOPS_CLUSTER_NAME KOPS_RUN_OBSOLETE_VERSION KOPS_STATE_STORE KOPS_STATE_S3_ACL KUBE_API_VERSIONS NODEUP_URL OPENSTACK_CREDENTIAL_FILE SKIP_PACKAGE_UPDATE
 unexport SKIP_REGION_CHECK S3_ACCESS_KEY_ID S3_ENDPOINT S3_REGION S3_SECRET_ACCESS_KEY
 
 
@@ -60,8 +60,6 @@ KOPS_CI_VERSION:=$(shell grep 'KOPS_CI_VERSION\s*=' version.go | awk '{print $$3
 KOPS                 = ${LOCAL}/kops
 
 GITSHA := $(shell cd ${KOPS_ROOT}; git describe --always)
-
-PROTOKUBE_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_PROTOKUBE_TAG | awk '{print $$2}')
 
 # We lock the versions of our controllers also
 # We need to keep in sync with:
@@ -262,10 +260,14 @@ bazel-version-ci: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm64
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
 	cp bazel-bin/cmd/nodeup/linux-arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup.sha256
-	cp ${BAZELIMAGES}/protokube-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz
-	cp ${BAZELIMAGES}/protokube-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz.sha256
-	cp ${BAZELIMAGES}/protokube-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz
-	cp ${BAZELIMAGES}/protokube-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz.sha256
+	cp -fp bazel-bin/channels/cmd/channels/linux-amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels.sha256
+	cp -fp bazel-bin/channels/cmd/channels/linux-arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels.sha256
+	cp -fp bazel-bin/protokube/cmd/protokube/linux-amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube.sha256
+	cp -fp bazel-bin/protokube/cmd/protokube/linux-arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube.sha256
 	cp ${BAZELIMAGES}/kops-controller-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz
 	cp ${BAZELIMAGES}/kops-controller-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz.sha256
 	cp ${BAZELIMAGES}/kops-controller-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-arm64.tar.gz
@@ -284,12 +286,10 @@ bazel-version-ci: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm64
 # In CI testing, always upload the CI version.
 .PHONY: gcs-publish-ci
 gcs-publish-ci: VERSION := ${KOPS_CI_VERSION}+${GITSHA}
-gcs-publish-ci: PROTOKUBE_TAG := $(subst +,-,${VERSION})
 gcs-publish-ci: bazel-version-ci
 	@echo "== Uploading kops =="
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${BAZELUPLOAD}/kops/* ${GCS_LOCATION}
 	echo "VERSION: ${VERSION}"
-	echo "PROTOKUBE_TAG: ${PROTOKUBE_TAG}"
 	echo "${GCS_URL}/${VERSION}" > ${BAZELUPLOAD}/${LATEST_FILE}
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${BAZELUPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
 
@@ -617,18 +617,6 @@ bazel-build-protokube-linux-arm64:
 bazel-crossbuild-protokube: bazel-build-protokube-linux-amd64 bazel-build-protokube-linux-arm64
 	echo "Done cross-building protokube"
 
-.PHONY: bazel-crossbuild-protokube-image-linux-amd64
-bazel-crossbuild-protokube-image-linux-amd64:
-	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/cmd/protokube:image-bundle-amd64.tar
-
-.PHONY: bazel-crossbuild-protokube-image-linux-arm64
-bazel-crossbuild-protokube-image-linux-arm64:
-	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //protokube/cmd/protokube:image-bundle-arm64.tar
-
-.PHONY: bazel-crossbuild-protokube-image
-bazel-crossbuild-protokube-image: bazel-crossbuild-protokube-image-linux-amd64 bazel-crossbuild-protokube-image-linux-arm64
-	echo "Done cross-building protokube images"
-
 .PHONY: bazel-build-channels-linux-amd64
 bazel-build-channels-linux-amd64:
 	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //channels/...
@@ -679,24 +667,6 @@ push-node-authorizer:
 	bazel run ${BAZEL_CONFIG} //node-authorizer/images:node-authorizer
 	docker tag bazel/node-authorizer/images:node-authorizer ${DOCKER_REGISTRY}/node-authorizer:${DOCKER_TAG}
 	docker push ${DOCKER_REGISTRY}/node-authorizer:${DOCKER_TAG}
-
-.PHONY: bazel-protokube-export-linux-amd64
-bazel-protokube-export-linux-amd64:
-	mkdir -p ${BAZELIMAGES}
-	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/cmd/protokube:image-bundle-amd64.tar.gz.sha256
-	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle-amd64.tar.gz ${BAZELIMAGES}/protokube-amd64.tar.gz
-	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle-amd64.tar.gz.sha256 ${BAZELIMAGES}/protokube-amd64.tar.gz.sha256
-
-.PHONY: bazel-protokube-export-linux-arm64
-bazel-protokube-export-linux-arm64:
-	mkdir -p ${BAZELIMAGES}
-	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //protokube/cmd/protokube:image-bundle-arm64.tar.gz.sha256
-	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle-arm64.tar.gz ${BAZELIMAGES}/protokube-arm64.tar.gz
-	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle-arm64.tar.gz.sha256 ${BAZELIMAGES}/protokube-arm64.tar.gz.sha256
-
-.PHONY: bazel-protokube-export
-bazel-protokube-export: bazel-protokube-export-linux-amd64 bazel-protokube-export-linux-arm64
-	echo "Done exporting protokube images"
 
 .PHONY: bazel-kube-apiserver-healthcheck-export-linux-amd64
 bazel-kube-apiserver-healthcheck-export-linux-amd64:
@@ -753,11 +723,11 @@ bazel-dns-controller-export:
 	echo "Done exporting dns-controller images"
 
 .PHONY: bazel-version-dist-linux-amd64
-bazel-version-dist-linux-amd64: bazel-build-kops-linux-amd64 bazel-build-nodeup-linux-amd64 bazel-kops-controller-export-linux-amd64 bazel-kube-apiserver-healthcheck-export-linux-amd64 bazel-dns-controller-export-linux-amd64 bazel-protokube-export-linux-amd64
+bazel-version-dist-linux-amd64: bazel-build-kops-linux-amd64 bazel-build-nodeup-linux-amd64 bazel-kops-controller-export-linux-amd64 bazel-kube-apiserver-healthcheck-export-linux-amd64 bazel-dns-controller-export-linux-amd64 bazel-build-protokube-linux-amd64 bazel-build-channels-linux-amd64
 	echo "Done building dist for amd64"
 
 .PHONY: bazel-version-dist-linux-arm64
-bazel-version-dist-linux-arm64: bazel-build-kops-linux-arm64 bazel-build-nodeup-linux-arm64 bazel-kops-controller-export-linux-arm64 bazel-kube-apiserver-healthcheck-export-linux-arm64 bazel-dns-controller-export-linux-arm64 bazel-protokube-export-linux-arm64
+bazel-version-dist-linux-arm64: bazel-build-kops-linux-arm64 bazel-build-nodeup-linux-arm64 bazel-kops-controller-export-linux-arm64 bazel-kube-apiserver-healthcheck-export-linux-arm64 bazel-dns-controller-export-linux-arm64 bazel-build-protokube-linux-arm64 bazel-build-channels-linux-arm64
 	echo "Done building dist for arm64"
 
 .PHONY: bazel-version-dist
@@ -780,10 +750,6 @@ bazel-version-dist: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm6
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube.sha256
 	cp -fp bazel-bin/protokube/cmd/protokube/linux-arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube.sha256
-	cp ${BAZELIMAGES}/protokube-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz
-	cp ${BAZELIMAGES}/protokube-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz.sha256
-	cp ${BAZELIMAGES}/protokube-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz
-	cp ${BAZELIMAGES}/protokube-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz.sha256
 	cp ${BAZELIMAGES}/kops-controller-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz
 	cp ${BAZELIMAGES}/kops-controller-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz.sha256
 	cp ${BAZELIMAGES}/kops-controller-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-arm64.tar.gz
@@ -850,18 +816,13 @@ dev-upload-nodeup: bazel-crossbuild-nodeup
 
 # dev-upload-protokube uploads protokube to GCS
 .PHONY: dev-upload-protokube
-dev-upload-protokube: bazel-protokube-export # Upload kops to GCS
+dev-upload-protokube: bazel-crossbuild-protokube # Upload kops to GCS
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
 	cp -fp bazel-bin/protokube/cmd/protokube/linux-amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube.sha256
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
 	cp -fp bazel-bin/protokube/cmd/protokube/linux-arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube.sha256
-	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
-	cp -fp ${BAZELIMAGES}/protokube-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz
-	cp -fp ${BAZELIMAGES}/protokube-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz.sha256
-	cp -fp ${BAZELIMAGES}/protokube-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz
-	cp -fp ${BAZELIMAGES}/protokube-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz.sha256
 	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload-channels uploads channels to GCS
@@ -907,7 +868,7 @@ dev-upload-kube-apiserver-healthcheck: bazel-kube-apiserver-healthcheck-export #
 
 # dev-upload-linux-amd64 does a faster build and uploads to GCS / S3
 .PHONY: dev-upload-linux-amd64
-dev-upload-linux-amd64: bazel-build-nodeup-linux-amd64 bazel-kops-controller-export-linux-amd64 bazel-kube-apiserver-healthcheck-export-linux-amd64 bazel-dns-controller-export-linux-amd64 bazel-protokube-export-linux-amd64
+dev-upload-linux-amd64: bazel-build-nodeup-linux-amd64 bazel-kops-controller-export-linux-amd64 bazel-kube-apiserver-healthcheck-export-linux-amd64 bazel-dns-controller-export-linux-amd64 bazel-build-protokube-linux-amd64 bazel-build-channels-linux-amd64
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
 	cp -fp bazel-bin/cmd/nodeup/linux-amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
@@ -916,8 +877,6 @@ dev-upload-linux-amd64: bazel-build-nodeup-linux-amd64 bazel-kops-controller-exp
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels.sha256
 	cp -fp bazel-bin/protokube/cmd/protokube/linux-amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube.sha256
-	cp -fp ${BAZELIMAGES}/protokube-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz
-	cp -fp ${BAZELIMAGES}/protokube-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz.sha256
 	cp -fp ${BAZELIMAGES}/kops-controller-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz
 	cp -fp ${BAZELIMAGES}/kops-controller-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz.sha256
 	cp -fp ${BAZELIMAGES}/dns-controller-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-amd64.tar.gz
@@ -928,7 +887,7 @@ dev-upload-linux-amd64: bazel-build-nodeup-linux-amd64 bazel-kops-controller-exp
 
 # dev-upload-linux-arm64 does a faster build and uploads to GCS / S3
 .PHONY: dev-upload-linux-arm64
-dev-upload-linux-arm64: bazel-build-nodeup-linux-arm64 bazel-kops-controller-export-linux-arm64 bazel-kube-apiserver-healthcheck-export-linux-arm64 bazel-dns-controller-export-linux-arm64 bazel-protokube-export-linux-arm64
+dev-upload-linux-arm64: bazel-build-nodeup-linux-arm64 bazel-kops-controller-export-linux-arm64 bazel-kube-apiserver-healthcheck-export-linux-arm64 bazel-dns-controller-export-linux-arm64 bazel-build-protokube-linux-arm64 bazel-build-channels-linux-arm64
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
 	cp -fp bazel-bin/cmd/nodeup/linux-arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup
@@ -937,8 +896,6 @@ dev-upload-linux-arm64: bazel-build-nodeup-linux-arm64 bazel-kops-controller-exp
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels.sha256
 	cp -fp bazel-bin/protokube/cmd/protokube/linux-arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube.sha256
-	cp -fp ${BAZELIMAGES}/protokube-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz
-	cp -fp ${BAZELIMAGES}/protokube-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz.sha256
 	cp -fp ${BAZELIMAGES}/kops-controller-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-arm64.tar.gz
 	cp -fp ${BAZELIMAGES}/kops-controller-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-arm64.tar.gz.sha256
 	cp -fp ${BAZELIMAGES}/dns-controller-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-arm64.tar.gz

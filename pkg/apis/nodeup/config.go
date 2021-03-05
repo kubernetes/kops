@@ -43,8 +43,6 @@ type Config struct {
 	InstanceGroupRole kops.InstanceGroupRole
 	// ClusterName is the name of the cluster
 	ClusterName string `json:",omitempty"`
-	// ProtokubeImage is the docker image to load for protokube (bootstrapping)
-	ProtokubeImage map[architectures.Architecture]*Image `json:"protokubeImage,omitempty"`
 	// Channels is a list of channels that we should apply
 	Channels []string `json:"channels,omitempty"`
 	// ApiserverAdditionalIPs are additional IP address to put in the apiserver server cert.
