@@ -57,31 +57,33 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	protokubeBinName, protokubeBinRes, err := t.Assets.FindMatch(regexp.MustCompile("protokube$"))
-	if err != nil {
-		return err
+	{
+		name, res, err := t.Assets.FindMatch(regexp.MustCompile("protokube$"))
+		if err != nil {
+			return err
+		}
+
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join("/opt/kops/bin", name),
+			Contents: res,
+			Type:     nodetasks.FileType_File,
+			Mode:     fi.String("0755"),
+		})
 	}
 
-	fileTaskProtokubeBin := &nodetasks.File{
-		Path:     filepath.Join("/opt/kops/bin", protokubeBinName),
-		Contents: protokubeBinRes,
-		Type:     nodetasks.FileType_File,
-		Mode:     fi.String("0755"),
-	}
-	c.AddTask(fileTaskProtokubeBin)
+	{
+		name, res, err := t.Assets.FindMatch(regexp.MustCompile("channels$"))
+		if err != nil {
+			return err
+		}
 
-	channelBinName, channelBinRes, err := t.Assets.FindMatch(regexp.MustCompile("channels$"))
-	if err != nil {
-		return err
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join("/opt/kops/bin", name),
+			Contents: res,
+			Type:     nodetasks.FileType_File,
+			Mode:     fi.String("0755"),
+		})
 	}
-
-	fileTaskChannel := &nodetasks.File{
-		Path:     filepath.Join("/opt/kops/bin", channelBinName),
-		Contents: channelBinRes,
-		Type:     nodetasks.FileType_File,
-		Mode:     fi.String("0755"),
-	}
-	c.AddTask(fileTaskChannel)
 
 	if t.IsMaster {
 		name := nodetasks.PKIXName{
@@ -112,11 +114,11 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	envFileTask, err := t.buildProtokubeEnvironmentVariables()
+	envFile, err := t.buildEnvFile()
 	if err != nil {
 		return err
 	}
-	c.AddTask(envFileTask)
+	c.AddTask(envFile)
 
 	service, err := t.buildSystemdService()
 	if err != nil {
@@ -400,7 +402,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 	return f, nil
 }
 
-func (t *ProtokubeBuilder) buildProtokubeEnvironmentVariables() (*nodetasks.File, error) {
+func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 	var envVars = make(map[string]string)
 
 	envVars["KUBECONFIG"] = "/var/lib/kops/kubeconfig"

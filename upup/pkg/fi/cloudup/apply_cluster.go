@@ -1227,17 +1227,19 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 	channelsAsset := map[architectures.Architecture][]*mirrors.MirroredAsset{}
 
 	for _, arch := range architectures.GetSupported() {
-		protokubeBinAsset, err := ProtokubeBinaryAsset(assetBuilder, arch)
+		asset, err := ProtokubeAsset(assetBuilder, arch)
 		if err != nil {
 			return nil, err
 		}
-		protokubeAsset[arch] = append(protokubeAsset[arch], protokubeBinAsset)
+		protokubeAsset[arch] = append(protokubeAsset[arch], asset)
+	}
 
-		channelsBinAsset, err := ChannelsBinaryAsset(assetBuilder, arch)
+	for _, arch := range architectures.GetSupported() {
+		asset, err := ChannelsAsset(assetBuilder, arch)
 		if err != nil {
 			return nil, err
 		}
-		channelsAsset[arch] = append(channelsAsset[arch], channelsBinAsset)
+		channelsAsset[arch] = append(channelsAsset[arch], asset)
 	}
 
 	for _, role := range kops.AllInstanceGroupRoles {
