@@ -13,8 +13,6 @@ kind: ConfigMap
 metadata:
   name: cilium-config
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 data:
 {{ with .Networking.Cilium }}
 
@@ -187,23 +185,17 @@ kind: ServiceAccount
 metadata:
   name: cilium
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: cilium-operator
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: cilium
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
 - apiGroups:
   - networking.k8s.io
@@ -302,8 +294,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: cilium-operator
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
 - apiGroups:
   - ""
@@ -381,8 +371,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cilium
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -396,8 +384,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cilium-operator
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -413,7 +399,6 @@ metadata:
   labels:
     k8s-app: cilium
     kubernetes.io/cluster-service: "true"
-    role.kubernetes.io/networking: "1"
   name: cilium
   namespace: kube-system
 spec:
@@ -712,7 +697,6 @@ metadata:
   labels:
     io.cilium/app: operator
     name: cilium-operator
-    role.kubernetes.io/networking: "1"
   name: cilium-operator
   namespace: kube-system
 spec:
@@ -861,7 +845,6 @@ metadata:
   name: hubble-relay
   namespace: kube-system
   labels:
-    role.kubernetes.io/networking: "1"
     k8s-app: hubble-relay
 spec:
   type: ClusterIP
@@ -879,7 +862,6 @@ metadata:
   name: hubble-relay
   namespace: kube-system
   labels:
-    role.kubernetes.io/networking: "1"
     k8s-app: hubble-relay
 spec:
   replicas: 1

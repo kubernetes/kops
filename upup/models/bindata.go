@@ -378,7 +378,6 @@ metadata:
   name: kopeio-auth
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 
 ---
 
@@ -389,7 +388,6 @@ metadata:
   namespace: kopeio-auth
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 spec:
   selector:
     app: auth-api
@@ -406,7 +404,6 @@ metadata:
   namespace: kopeio-auth
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 spec:
   selector:
     matchLabels:
@@ -450,7 +447,6 @@ metadata:
   name: v1alpha1.auth.kope.io
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 spec:
   insecureSkipTLSVerify: true
   group: auth.kope.io
@@ -469,7 +465,6 @@ metadata:
   name: v1alpha1.config.auth.kope.io
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 spec:
   insecureSkipTLSVerify: true
   group: config.auth.kope.io
@@ -489,7 +484,6 @@ metadata:
   namespace: kopeio-auth
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 
 ---
 
@@ -500,7 +494,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -518,7 +511,6 @@ metadata:
   name: kopeio-auth:system:auth-delegator
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -537,7 +529,6 @@ metadata:
   namespace: kopeio-auth
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 rules:
 - apiGroups: ["auth.kope.io"]
   resources: ["users"]
@@ -552,7 +543,6 @@ metadata:
   namespace: kopeio-auth
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -31010,8 +31000,6 @@ kind: ConfigMap
 metadata:
   name: cilium-config
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 data:
 {{ with .Networking.Cilium }}
 
@@ -31184,23 +31172,17 @@ kind: ServiceAccount
 metadata:
   name: cilium
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: cilium-operator
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: cilium
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
 - apiGroups:
   - networking.k8s.io
@@ -31299,8 +31281,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: cilium-operator
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
 - apiGroups:
   - ""
@@ -31378,8 +31358,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cilium
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -31393,8 +31371,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cilium-operator
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -31410,7 +31386,6 @@ metadata:
   labels:
     k8s-app: cilium
     kubernetes.io/cluster-service: "true"
-    role.kubernetes.io/networking: "1"
   name: cilium
   namespace: kube-system
 spec:
@@ -31709,7 +31684,6 @@ metadata:
   labels:
     io.cilium/app: operator
     name: cilium-operator
-    role.kubernetes.io/networking: "1"
   name: cilium-operator
   namespace: kube-system
 spec:
@@ -31858,7 +31832,6 @@ metadata:
   name: hubble-relay
   namespace: kube-system
   labels:
-    role.kubernetes.io/networking: "1"
     k8s-app: hubble-relay
 spec:
   type: ClusterIP
@@ -31876,7 +31849,6 @@ metadata:
   name: hubble-relay
   namespace: kube-system
   labels:
-    role.kubernetes.io/networking: "1"
     k8s-app: hubble-relay
 spec:
   replicas: 1
@@ -31964,23 +31936,17 @@ kind: ServiceAccount
 metadata:
   name: cilium
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: cilium-operator
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 {{ if WithDefaultBool .Hubble.Enabled false }}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  labels:
-    role.kubernetes.io/networking: "1"
   name: hubble-relay
   namespace: kube-system
 {{ end }}
@@ -31990,8 +31956,6 @@ kind: ConfigMap
 metadata:
   name: cilium-config
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 data:
 
 {{- if .EtcdManaged }}
@@ -32176,8 +32140,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: cilium
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
 - apiGroups:
   - networking.k8s.io
@@ -32270,8 +32232,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: cilium-operator
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
 - apiGroups:
   - ""
@@ -32372,8 +32332,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cilium
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -32387,8 +32345,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cilium-operator
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -32437,7 +32393,6 @@ metadata:
   labels:
     k8s-app: cilium
     kubernetes.io/cluster-service: "true"
-    role.kubernetes.io/networking: "1"
   name: cilium
   namespace: kube-system
 spec:
@@ -32733,7 +32688,6 @@ metadata:
   labels:
     io.cilium/app: operator
     name: cilium-operator
-    role.kubernetes.io/networking: "1"
   name: cilium-operator
   namespace: kube-system
 spec:
@@ -32848,7 +32802,6 @@ kind: Deployment
 metadata:
   name: hubble-relay
   labels:
-    role.kubernetes.io/networking: "1"
     k8s-app: hubble-relay
   namespace: kube-system
 spec:
@@ -32951,8 +32904,6 @@ kind: ConfigMap
 metadata:
   name: cilium-config
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 data:
 {{ with .Networking.Cilium }}
 
@@ -33110,23 +33061,17 @@ kind: ServiceAccount
 metadata:
   name: cilium
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: cilium-operator
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: cilium
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
 - apiGroups:
   - networking.k8s.io
@@ -33212,8 +33157,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: cilium-operator
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
 - apiGroups:
   - ""
@@ -33278,8 +33221,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cilium
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -33293,8 +33234,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cilium-operator
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -33310,7 +33249,6 @@ metadata:
   labels:
     k8s-app: cilium
     kubernetes.io/cluster-service: "true"
-    role.kubernetes.io/networking: "1"
   name: cilium
   namespace: kube-system
 spec:
@@ -33581,7 +33519,6 @@ metadata:
   labels:
     io.cilium/app: operator
     name: cilium-operator
-    role.kubernetes.io/networking: "1"
   name: cilium-operator
   namespace: kube-system
 spec:
@@ -33832,8 +33769,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
 - apiGroups: ['extensions']
   resources: ['podsecuritypolicies']
@@ -33863,8 +33798,6 @@ kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -33879,8 +33812,6 @@ kind: ServiceAccount
 metadata:
   name: flannel
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 ---
 kind: ConfigMap
 apiVersion: v1
@@ -33891,7 +33822,6 @@ metadata:
     k8s-app: flannel
     tier: node
     app: flannel
-    role.kubernetes.io/networking: "1"
 data:
   cni-conf.json: |
     {
@@ -33930,19 +33860,16 @@ metadata:
     k8s-app: flannel
     tier: node
     app: flannel
-    role.kubernetes.io/networking: "1"
 spec:
   selector:
     matchLabels:
       tier: node
       app: flannel
-      role.kubernetes.io/networking: "1"
   template:
     metadata:
       labels:
         tier: node
         app: flannel
-        role.kubernetes.io/networking: "1"
     spec:
       affinity:
         nodeAffinity:
@@ -34044,17 +33971,14 @@ metadata:
   namespace: kube-system
   labels:
     k8s-addon: networking.kope.io
-    role.kubernetes.io/networking: "1"
 spec:
   selector:
     matchLabels:
       name: kopeio-networking-agent
-      role.kubernetes.io/networking: "1"
   template:
     metadata:
       labels:
         name: kopeio-networking-agent
-        role.kubernetes.io/networking: "1"
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
         scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
@@ -34103,7 +34027,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-addon: networking.kope.io
-    role.kubernetes.io/networking: "1"
 
 ---
 
@@ -34383,8 +34306,6 @@ apiVersion: v1
 metadata:
   name: calico-config
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 data:
   # You must set a non-zero value for Typha replicas below.
   typha_service_name: "{{- if .Networking.Calico.TyphaReplicas -}}calico-typha{{- else -}}none{{- end -}}"
@@ -34435,8 +34356,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: felixconfigurations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -34451,8 +34370,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ipamblocks.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -34468,8 +34385,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: blockaffinities.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -34485,8 +34400,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ipamhandles.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -34502,8 +34415,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ipamconfigs.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -34519,8 +34430,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: bgppeers.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -34536,8 +34445,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: bgpconfigurations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -34553,8 +34460,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ippools.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -34570,8 +34475,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: hostendpoints.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -34587,8 +34490,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: clusterinformations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -34604,8 +34505,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: globalnetworkpolicies.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -34621,8 +34520,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: globalnetworksets.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -34638,8 +34535,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: networkpolicies.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Namespaced
   group: crd.projectcalico.org
@@ -34655,8 +34550,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: networksets.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Namespaced
   group: crd.projectcalico.org
@@ -34674,8 +34567,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-kube-controllers
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
   # Nodes are watched to monitor for deletions.
   - apiGroups: [""]
@@ -34721,8 +34612,6 @@ kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-kube-controllers
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -34738,8 +34627,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-node
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
   # The CNI plugin needs to get pods, nodes, and namespaces.
   - apiGroups: [""]
@@ -34871,8 +34758,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: calico-node
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -34895,7 +34780,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   ports:
     - port: 5473
@@ -34916,7 +34800,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   # Number of Typha replicas.  To enable Typha, set this to a non-zero value *and* set the
   # typha_service_name variable in the calico-config ConfigMap above.
@@ -34933,7 +34816,6 @@ spec:
     metadata:
       labels:
         k8s-app: calico-typha
-        role.kubernetes.io/networking: "1"
       annotations:
         # This, along with the CriticalAddonsOnly toleration below, marks the pod as a critical
         # add-on, ensuring it gets priority scheduling and that its resources are reserved
@@ -35007,7 +34889,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   maxUnavailable: 1
   selector:
@@ -35026,7 +34907,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-node
-    role.kubernetes.io/networking: "1"
 spec:
   selector:
     matchLabels:
@@ -35039,7 +34919,6 @@ spec:
     metadata:
       labels:
         k8s-app: calico-node
-        role.kubernetes.io/networking: "1"
       annotations:
         # This, along with the CriticalAddonsOnly toleration below,
         # marks the pod as a critical add-on, ensuring it gets
@@ -35297,8 +35176,6 @@ kind: ServiceAccount
 metadata:
   name: calico-node
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 
 ---
 # Source: calico/templates/calico-kube-controllers.yaml
@@ -35311,7 +35188,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-kube-controllers
-    role.kubernetes.io/networking: "1"
 spec:
   # The controllers can only have a single active instance.
   replicas: 1
@@ -35326,7 +35202,6 @@ spec:
       namespace: kube-system
       labels:
         k8s-app: calico-kube-controllers
-        role.kubernetes.io/networking: "1"
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
@@ -35362,8 +35237,6 @@ kind: ServiceAccount
 metadata:
   name: calico-kube-controllers
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 
 {{ if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}
 # This manifest installs the k8s-ec2-srcdst container, which disables
@@ -35375,8 +35248,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: k8s-ec2-srcdst
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
 - apiGroups:
   - ""
@@ -35396,16 +35267,12 @@ kind: ServiceAccount
 metadata:
   name: k8s-ec2-srcdst
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 ---
 
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: k8s-ec2-srcdst
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -35424,7 +35291,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: k8s-ec2-srcdst
-    role.kubernetes.io/networking: "1"
 spec:
   replicas: 1
   selector:
@@ -35434,7 +35300,6 @@ spec:
     metadata:
       labels:
         k8s-app: k8s-ec2-srcdst
-        role.kubernetes.io/networking: "1"
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
@@ -35509,8 +35374,6 @@ apiVersion: v1
 metadata:
   name: calico-config
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 data:
   # You must set a non-zero value for Typha replicas below.
   typha_service_name: "{{- if .Networking.Calico.TyphaReplicas -}}calico-typha{{- else -}}none{{- end -}}"
@@ -35569,8 +35432,6 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: bgpconfigurations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   group: crd.projectcalico.org
   names:
@@ -35714,8 +35575,6 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: bgppeers.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   group: crd.projectcalico.org
   names:
@@ -35824,8 +35683,6 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: blockaffinities.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   group: crd.projectcalico.org
   names:
@@ -35887,8 +35744,6 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: clusterinformations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   group: crd.projectcalico.org
   names:
@@ -35953,8 +35808,6 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: felixconfigurations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   group: crd.projectcalico.org
   names:
@@ -36507,8 +36360,6 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: globalnetworkpolicies.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   group: crd.projectcalico.org
   names:
@@ -37280,8 +37131,6 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: globalnetworksets.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   group: crd.projectcalico.org
   names:
@@ -37335,8 +37184,6 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: hostendpoints.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   group: crd.projectcalico.org
   names:
@@ -37445,8 +37292,6 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: ipamblocks.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   group: crd.projectcalico.org
   names:
@@ -37528,8 +37373,6 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: ipamconfigs.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   group: crd.projectcalico.org
   names:
@@ -37586,8 +37429,6 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: ipamhandles.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   group: crd.projectcalico.org
   names:
@@ -37644,8 +37485,6 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: ippools.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   group: crd.projectcalico.org
   names:
@@ -37979,8 +37818,6 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: networkpolicies.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   group: crd.projectcalico.org
   names:
@@ -38733,8 +38570,6 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: networksets.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   group: crd.projectcalico.org
   names:
@@ -38791,8 +38626,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-kube-controllers
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
   # Nodes are watched to monitor for deletions.
   - apiGroups: [""]
@@ -38862,8 +38695,6 @@ kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-kube-controllers
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -38882,8 +38713,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-node
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
   # The CNI plugin needs to get pods, nodes, and namespaces.
   - apiGroups: [""]
@@ -39022,8 +38851,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: calico-node
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -39046,7 +38873,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   ports:
     - port: 5473
@@ -39067,7 +38893,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   # Number of Typha replicas. To enable Typha, set this to a non-zero value *and* set the
   # typha_service_name variable in the calico-config ConfigMap above.
@@ -39088,7 +38913,6 @@ spec:
     metadata:
       labels:
         k8s-app: calico-typha
-        role.kubernetes.io/networking: "1"
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: 'true'
     spec:
@@ -39174,7 +38998,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   maxUnavailable: 1
   selector:
@@ -39194,7 +39017,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-node
-    role.kubernetes.io/networking: "1"
 spec:
   selector:
     matchLabels:
@@ -39207,7 +39029,6 @@ spec:
     metadata:
       labels:
         k8s-app: calico-node
-        role.kubernetes.io/networking: "1"
     spec:
       nodeSelector:
         kubernetes.io/os: linux
@@ -39542,8 +39363,6 @@ kind: ServiceAccount
 metadata:
   name: calico-node
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 
 ---
 # Source: calico/templates/calico-kube-controllers.yaml
@@ -39555,7 +39374,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-kube-controllers
-    role.kubernetes.io/networking: "1"
 spec:
   # The controllers can only have a single active instance.
   replicas: 1
@@ -39570,7 +39388,6 @@ spec:
       namespace: kube-system
       labels:
         k8s-app: calico-kube-controllers
-        role.kubernetes.io/networking: "1"
     spec:
       nodeSelector:
         kubernetes.io/os: linux
@@ -39610,8 +39427,6 @@ kind: ServiceAccount
 metadata:
   name: calico-kube-controllers
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 
 ---
 
@@ -40289,8 +40104,6 @@ apiVersion: v1
 metadata:
   name: canal-config
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 data:
   # Typha is disabled.
   typha_service_name: "{{ if .Networking.Canal.TyphaReplicas }}calico-typha{{ else }}none{{ end }}"
@@ -40361,8 +40174,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: felixconfigurations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -40377,8 +40188,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ipamblocks.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -40394,8 +40203,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: blockaffinities.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -40411,8 +40218,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ipamhandles.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -40428,8 +40233,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ipamconfigs.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -40445,8 +40248,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: bgppeers.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -40462,8 +40263,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: bgpconfigurations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -40479,8 +40278,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ippools.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -40496,8 +40293,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: hostendpoints.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -40513,8 +40308,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: clusterinformations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -40530,8 +40323,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: globalnetworkpolicies.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -40547,8 +40338,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: globalnetworksets.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -40564,8 +40353,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: networkpolicies.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Namespaced
   group: crd.projectcalico.org
@@ -40581,8 +40368,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: networksets.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Namespaced
   group: crd.projectcalico.org
@@ -40600,8 +40385,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
   # The CNI plugin needs to get pods, nodes, and namespaces.
   - apiGroups: [""]
@@ -40705,8 +40488,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
   - apiGroups: [""]
     resources:
@@ -40730,8 +40511,6 @@ kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: canal-flannel
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -40745,8 +40524,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: canal-calico
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -40769,7 +40546,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   ports:
     - port: 5473
@@ -40790,7 +40566,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   # Number of Typha replicas.  To enable Typha, set this to a non-zero value *and* set the
   # typha_service_name variable in the canal-config ConfigMap above.
@@ -40807,7 +40582,6 @@ spec:
     metadata:
       labels:
         k8s-app: calico-typha
-        role.kubernetes.io/networking: "1"
       annotations:
         # This, along with the CriticalAddonsOnly toleration below, marks the pod as a critical
         # add-on, ensuring it gets priority scheduling and that its resources are reserved
@@ -40888,7 +40662,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   maxUnavailable: 1
   selector:
@@ -40908,7 +40681,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: canal
-    role.kubernetes.io/networking: "1"
 spec:
   selector:
     matchLabels:
@@ -40921,7 +40693,6 @@ spec:
     metadata:
       labels:
         k8s-app: canal
-        role.kubernetes.io/networking: "1"
       annotations:
         # This, along with the CriticalAddonsOnly toleration below,
         # marks the pod as a critical add-on, ensuring it gets
@@ -41187,8 +40958,6 @@ kind: ServiceAccount
 metadata:
   name: canal
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 `)
 
 func cloudupResourcesAddonsNetworkingProjectcalicoOrgCanalK8s115YamlTemplateBytes() ([]byte, error) {
@@ -41216,8 +40985,6 @@ apiVersion: v1
 metadata:
   name: canal-config
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 data:
   # Typha is disabled.
   typha_service_name: "{{ if .Networking.Canal.TyphaReplicas }}calico-typha{{ else }}none{{ end }}"
@@ -41289,8 +41056,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: bgpconfigurations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -41305,8 +41070,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: bgppeers.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -41321,8 +41084,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: blockaffinities.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -41337,8 +41098,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: clusterinformations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -41353,8 +41112,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: felixconfigurations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -41369,8 +41126,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: globalnetworkpolicies.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -41385,8 +41140,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: globalnetworksets.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -41401,8 +41154,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: hostendpoints.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -41417,8 +41168,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ipamblocks.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -41433,8 +41182,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ipamconfigs.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -41449,8 +41196,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ipamhandles.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -41465,8 +41210,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ippools.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -41481,8 +41224,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: networkpolicies.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Namespaced
   group: crd.projectcalico.org
@@ -41497,8 +41238,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: networksets.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Namespaced
   group: crd.projectcalico.org
@@ -41517,8 +41256,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
   # The CNI plugin needs to get pods, nodes, and namespaces.
   - apiGroups: [""]
@@ -41629,8 +41366,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
   - apiGroups: [""]
     resources:
@@ -41654,8 +41389,6 @@ kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: canal-flannel
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -41669,8 +41402,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: canal-calico
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -41693,7 +41424,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   ports:
     - port: 5473
@@ -41714,7 +41444,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   # Number of Typha replicas.  To enable Typha, set this to a non-zero value *and* set the
   # typha_service_name variable in the canal-config ConfigMap above.
@@ -41735,7 +41464,6 @@ spec:
     metadata:
       labels:
         k8s-app: calico-typha
-        role.kubernetes.io/networking: "1"
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: 'true'
     spec:
@@ -41811,7 +41539,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   maxUnavailable: 1
   selector:
@@ -41831,7 +41558,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: canal
-    role.kubernetes.io/networking: "1"
 spec:
   selector:
     matchLabels:
@@ -41844,7 +41570,6 @@ spec:
     metadata:
       labels:
         k8s-app: canal
-        role.kubernetes.io/networking: "1"
     spec:
       nodeSelector:
         kubernetes.io/os: linux
@@ -42103,8 +41828,6 @@ kind: ServiceAccount
 metadata:
   name: canal
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 `)
 
 func cloudupResourcesAddonsNetworkingProjectcalicoOrgCanalK8s116YamlTemplateBytes() ([]byte, error) {
@@ -42149,7 +41872,6 @@ metadata:
   name: weave-net
   labels:
     name: weave-net
-    role.kubernetes.io/networking: "1"
   namespace: kube-system
 rules:
   - apiGroups:
@@ -42192,7 +41914,6 @@ metadata:
   name: weave-net
   labels:
     name: weave-net
-    role.kubernetes.io/networking: "1"
   namespace: kube-system
 roleRef:
   kind: ClusterRole
@@ -42249,20 +41970,17 @@ metadata:
   name: weave-net
   labels:
     name: weave-net
-    role.kubernetes.io/networking: "1"
   namespace: kube-system
 spec:
   # Wait 5 seconds to let pod connect before rolling next pod
   selector:
     matchLabels:
       name: weave-net
-      role.kubernetes.io/networking: "1"
   minReadySeconds: 5
   template:
     metadata:
       labels:
         name: weave-net
-        role.kubernetes.io/networking: "1"
       annotations:
         prometheus.io/scrape: "true"
     spec:

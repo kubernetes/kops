@@ -4,7 +4,6 @@ metadata:
   name: kopeio-auth
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 
 ---
 
@@ -15,7 +14,6 @@ metadata:
   namespace: kopeio-auth
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 spec:
   selector:
     app: auth-api
@@ -32,7 +30,6 @@ metadata:
   namespace: kopeio-auth
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 spec:
   selector:
     matchLabels:
@@ -76,7 +73,6 @@ metadata:
   name: v1alpha1.auth.kope.io
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 spec:
   insecureSkipTLSVerify: true
   group: auth.kope.io
@@ -95,7 +91,6 @@ metadata:
   name: v1alpha1.config.auth.kope.io
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 spec:
   insecureSkipTLSVerify: true
   group: config.auth.kope.io
@@ -115,7 +110,6 @@ metadata:
   namespace: kopeio-auth
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 
 ---
 
@@ -126,7 +120,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -144,7 +137,6 @@ metadata:
   name: kopeio-auth:system:auth-delegator
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -163,7 +155,6 @@ metadata:
   namespace: kopeio-auth
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 rules:
 - apiGroups: ["auth.kope.io"]
   resources: ["users"]
@@ -178,7 +169,6 @@ metadata:
   namespace: kopeio-auth
   labels:
     k8s-addon: authentication.kope.io
-    role.kubernetes.io/authentication: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole

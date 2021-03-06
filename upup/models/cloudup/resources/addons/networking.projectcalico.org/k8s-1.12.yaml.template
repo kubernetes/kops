@@ -8,8 +8,6 @@ apiVersion: v1
 metadata:
   name: calico-config
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 data:
   # You must set a non-zero value for Typha replicas below.
   typha_service_name: "{{- if .Networking.Calico.TyphaReplicas -}}calico-typha{{- else -}}none{{- end -}}"
@@ -60,8 +58,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: felixconfigurations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -76,8 +72,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ipamblocks.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -93,8 +87,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: blockaffinities.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -110,8 +102,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ipamhandles.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -127,8 +117,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ipamconfigs.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -144,8 +132,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: bgppeers.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -161,8 +147,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: bgpconfigurations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -178,8 +162,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ippools.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -195,8 +177,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: hostendpoints.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -212,8 +192,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: clusterinformations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -229,8 +207,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: globalnetworkpolicies.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -246,8 +222,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: globalnetworksets.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -263,8 +237,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: networkpolicies.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Namespaced
   group: crd.projectcalico.org
@@ -280,8 +252,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: networksets.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Namespaced
   group: crd.projectcalico.org
@@ -299,8 +269,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-kube-controllers
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
   # Nodes are watched to monitor for deletions.
   - apiGroups: [""]
@@ -346,8 +314,6 @@ kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-kube-controllers
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -363,8 +329,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-node
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
   # The CNI plugin needs to get pods, nodes, and namespaces.
   - apiGroups: [""]
@@ -496,8 +460,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: calico-node
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -520,7 +482,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   ports:
     - port: 5473
@@ -541,7 +502,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   # Number of Typha replicas.  To enable Typha, set this to a non-zero value *and* set the
   # typha_service_name variable in the calico-config ConfigMap above.
@@ -558,7 +518,6 @@ spec:
     metadata:
       labels:
         k8s-app: calico-typha
-        role.kubernetes.io/networking: "1"
       annotations:
         # This, along with the CriticalAddonsOnly toleration below, marks the pod as a critical
         # add-on, ensuring it gets priority scheduling and that its resources are reserved
@@ -632,7 +591,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   maxUnavailable: 1
   selector:
@@ -651,7 +609,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-node
-    role.kubernetes.io/networking: "1"
 spec:
   selector:
     matchLabels:
@@ -664,7 +621,6 @@ spec:
     metadata:
       labels:
         k8s-app: calico-node
-        role.kubernetes.io/networking: "1"
       annotations:
         # This, along with the CriticalAddonsOnly toleration below,
         # marks the pod as a critical add-on, ensuring it gets
@@ -922,8 +878,6 @@ kind: ServiceAccount
 metadata:
   name: calico-node
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 
 ---
 # Source: calico/templates/calico-kube-controllers.yaml
@@ -936,7 +890,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-kube-controllers
-    role.kubernetes.io/networking: "1"
 spec:
   # The controllers can only have a single active instance.
   replicas: 1
@@ -951,7 +904,6 @@ spec:
       namespace: kube-system
       labels:
         k8s-app: calico-kube-controllers
-        role.kubernetes.io/networking: "1"
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
@@ -987,8 +939,6 @@ kind: ServiceAccount
 metadata:
   name: calico-kube-controllers
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 
 {{ if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}
 # This manifest installs the k8s-ec2-srcdst container, which disables
@@ -1000,8 +950,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: k8s-ec2-srcdst
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
 - apiGroups:
   - ""
@@ -1021,16 +969,12 @@ kind: ServiceAccount
 metadata:
   name: k8s-ec2-srcdst
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 ---
 
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: k8s-ec2-srcdst
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -1049,7 +993,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: k8s-ec2-srcdst
-    role.kubernetes.io/networking: "1"
 spec:
   replicas: 1
   selector:
@@ -1059,7 +1002,6 @@ spec:
     metadata:
       labels:
         k8s-app: k8s-ec2-srcdst
-        role.kubernetes.io/networking: "1"
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
