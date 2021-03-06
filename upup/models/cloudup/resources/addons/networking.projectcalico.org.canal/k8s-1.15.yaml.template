@@ -8,8 +8,6 @@ apiVersion: v1
 metadata:
   name: canal-config
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
 data:
   # Typha is disabled.
   typha_service_name: "{{ if .Networking.Canal.TyphaReplicas }}calico-typha{{ else }}none{{ end }}"
@@ -80,8 +78,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: felixconfigurations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -96,8 +92,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ipamblocks.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -113,8 +107,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: blockaffinities.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -130,8 +122,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ipamhandles.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -147,8 +137,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ipamconfigs.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -164,8 +152,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: bgppeers.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -181,8 +167,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: bgpconfigurations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -198,8 +182,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ippools.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -215,8 +197,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: hostendpoints.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -232,8 +212,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: clusterinformations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -249,8 +227,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: globalnetworkpolicies.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -266,8 +242,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: globalnetworksets.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -283,8 +257,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: networkpolicies.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Namespaced
   group: crd.projectcalico.org
@@ -300,8 +272,6 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: networksets.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   scope: Namespaced
   group: crd.projectcalico.org
@@ -319,8 +289,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
   # The CNI plugin needs to get pods, nodes, and namespaces.
   - apiGroups: [""]
@@ -424,8 +392,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
-  labels:
-    role.kubernetes.io/networking: "1"
 rules:
   - apiGroups: [""]
     resources:
@@ -449,8 +415,6 @@ kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: canal-flannel
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -464,8 +428,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: canal-calico
-  labels:
-    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -488,7 +450,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   ports:
     - port: 5473
@@ -509,7 +470,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   # Number of Typha replicas.  To enable Typha, set this to a non-zero value *and* set the
   # typha_service_name variable in the canal-config ConfigMap above.
@@ -526,7 +486,6 @@ spec:
     metadata:
       labels:
         k8s-app: calico-typha
-        role.kubernetes.io/networking: "1"
       annotations:
         # This, along with the CriticalAddonsOnly toleration below, marks the pod as a critical
         # add-on, ensuring it gets priority scheduling and that its resources are reserved
@@ -607,7 +566,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-typha
-    role.kubernetes.io/networking: "1"
 spec:
   maxUnavailable: 1
   selector:
@@ -627,7 +585,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: canal
-    role.kubernetes.io/networking: "1"
 spec:
   selector:
     matchLabels:
@@ -640,7 +597,6 @@ spec:
     metadata:
       labels:
         k8s-app: canal
-        role.kubernetes.io/networking: "1"
       annotations:
         # This, along with the CriticalAddonsOnly toleration below,
         # marks the pod as a critical add-on, ensuring it gets
@@ -906,5 +862,3 @@ kind: ServiceAccount
 metadata:
   name: canal
   namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
