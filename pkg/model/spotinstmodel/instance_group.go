@@ -360,9 +360,6 @@ func (b *InstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ..
 		klog.V(4).Infof("Detected default launch spec: %q", b.AutoscalingGroupName(ig))
 	}
 
-	// Rename the instance group to avoid duplicate tasks with same name.
-	ig.Name = fi.StringValue(ocean.Name)
-
 	// Image.
 	ocean.ImageID = fi.String(ig.Spec.Image)
 
@@ -488,8 +485,8 @@ func (b *InstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ..
 	}
 
 	// Create a Launch Spec for each instance group.
-	for _, ig := range igs {
-		if err := b.buildLaunchSpec(c, ig, ocean); err != nil {
+	for _, g := range igs {
+		if err := b.buildLaunchSpec(c, g, ig, ocean); err != nil {
 			return fmt.Errorf("error building launch spec: %v", err)
 		}
 	}
@@ -501,7 +498,7 @@ func (b *InstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ..
 }
 
 func (b *InstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContext,
-	ig *kops.InstanceGroup, ocean *spotinsttasks.Ocean) (err error) {
+	ig, igOcean *kops.InstanceGroup, ocean *spotinsttasks.Ocean) (err error) {
 
 	klog.V(4).Infof("Building instance group as LaunchSpec: %q", b.AutoscalingGroupName(ig))
 	launchSpec := &spotinsttasks.LaunchSpec{
@@ -527,9 +524,13 @@ func (b *InstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContext,
 	ocean.MaxSize = fi.Int64(fi.Int64Value(ocean.MaxSize) + fi.Int64Value(maxSize))
 
 	// User data.
-	launchSpec.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
-	if err != nil {
-		return fmt.Errorf("error building user data: %v", err)
+	if ig.Name == igOcean.Name {
+		launchSpec.UserData = ocean.UserData
+	} else {
+		launchSpec.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
+		if err != nil {
+			return fmt.Errorf("error building user data: %v", err)
+		}
 	}
 
 	// Instance profile.
