@@ -163,10 +163,12 @@ rules:
   - create
 - apiGroups:
   - ""
+  - coordination.k8s.io
   resourceNames:
   - kops-controller-leader
   resources:
   - configmaps
+  - leases
   verbs:
   - get
   - list
@@ -176,8 +178,10 @@ rules:
   - delete
 - apiGroups:
   - ""
+  - coordination.k8s.io
   resources:
   - configmaps
+  - leases
   verbs:
   - create
 
