@@ -338,6 +338,10 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 		config.LogLevel = int(*etcdCluster.Manager.LogLevel)
 	}
 
+	if etcdCluster.Manager != nil && etcdCluster.Manager.DiscoveryPollInterval != nil {
+		config.DiscoveryPollInterval = etcdCluster.Manager.DiscoveryPollInterval
+	}
+
 	{
 		scheme := "https"
 
@@ -545,16 +549,17 @@ type config struct {
 	// EtcdInsecure can be used to turn off tls for etcd itself (compare with Insecure)
 	EtcdInsecure bool `flag:"etcd-insecure"`
 
-	Address              string   `flag:"address"`
-	PeerUrls             string   `flag:"peer-urls"`
-	GrpcPort             int      `flag:"grpc-port"`
-	ClientUrls           string   `flag:"client-urls"`
-	QuarantineClientUrls string   `flag:"quarantine-client-urls"`
-	ClusterName          string   `flag:"cluster-name"`
-	BackupStore          string   `flag:"backup-store"`
-	DataDir              string   `flag:"data-dir"`
-	VolumeProvider       string   `flag:"volume-provider"`
-	VolumeTag            []string `flag:"volume-tag,repeat"`
-	VolumeNameTag        string   `flag:"volume-name-tag"`
-	DNSSuffix            string   `flag:"dns-suffix"`
+	Address               string   `flag:"address"`
+	PeerUrls              string   `flag:"peer-urls"`
+	GrpcPort              int      `flag:"grpc-port"`
+	ClientUrls            string   `flag:"client-urls"`
+	DiscoveryPollInterval *string  `flag:"discovery-poll-interval"`
+	QuarantineClientUrls  string   `flag:"quarantine-client-urls"`
+	ClusterName           string   `flag:"cluster-name"`
+	BackupStore           string   `flag:"backup-store"`
+	DataDir               string   `flag:"data-dir"`
+	VolumeProvider        string   `flag:"volume-provider"`
+	VolumeTag             []string `flag:"volume-tag,repeat"`
+	VolumeNameTag         string   `flag:"volume-name-tag"`
+	DNSSuffix             string   `flag:"dns-suffix"`
 }

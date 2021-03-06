@@ -930,6 +930,10 @@ spec:
                     manager:
                       description: Manager describes the manager configuration
                       properties:
+                        discoveryPollInterval:
+                          description: DiscoveryPollInterval which is used for discovering
+                            other cluster members. The default is 60 seconds.
+                          type: string
                         env:
                           description: Env allows users to pass in env variables to
                             the etcd-manager container. Variables starting with ETCD_
