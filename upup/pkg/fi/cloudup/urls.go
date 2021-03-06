@@ -21,7 +21,6 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"strings"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops"
@@ -37,14 +36,14 @@ const (
 
 var kopsBaseURL *url.URL
 
-// nodeUpAsset caches the nodeup download urls/hash
+// nodeUpAsset caches the nodeup binary download url/hash
 var nodeUpAsset map[architectures.Architecture]*mirrors.MirroredAsset
 
-// protokubeBinAsset caches the protokube binary download urls/hash
-var protokubeBinAsset map[architectures.Architecture]*mirrors.MirroredAsset
+// protokubeAsset caches the protokube binary download url/hash
+var protokubeAsset map[architectures.Architecture]*mirrors.MirroredAsset
 
-// channelsBinAsset caches the channels binary download urls/hash
-var channelsBinAsset map[architectures.Architecture]*mirrors.MirroredAsset
+// channelsAsset caches the channels binary download url/hash
+var channelsAsset map[architectures.Architecture]*mirrors.MirroredAsset
 
 // BaseURL returns the base url for the distribution of kops - in particular for nodeup & docker images
 func BaseURL() (*url.URL, error) {
@@ -108,86 +107,55 @@ func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architec
 		klog.V(8).Infof("Using cached nodeup location for %s: %v", arch, nodeUpAsset[arch].Locations)
 		return nodeUpAsset[arch], nil
 	}
-	// Use multi-arch env var, but fall back to well known env var
-	env := os.Getenv(fmt.Sprintf("NODEUP_URL_%s", strings.ToUpper(string(arch))))
-	if env == "" {
-		env = os.Getenv("NODEUP_URL")
+
+	u, hash, err := KopsFileURL(fmt.Sprintf("linux/%s/nodeup", arch), assetsBuilder)
+	if err != nil {
+		return nil, err
 	}
-	var err error
-	var u *url.URL
-	var hash *hashing.Hash
-	if env == "" {
-		u, hash, err = KopsFileURL(fmt.Sprintf("linux/%s/nodeup", arch), assetsBuilder)
-		if err != nil {
-			return nil, err
-		}
-		klog.V(8).Infof("Using default nodeup location for %s: %q", arch, u.String())
-	} else {
-		u, err = url.Parse(env)
-		if err != nil {
-			return nil, fmt.Errorf("unable to parse env var NODEUP_URL(_%s) %q as a url: %v", strings.ToUpper(string(arch)), env, err)
-		}
+	nodeUpAsset[arch] = mirrors.BuildMirroredAsset(u, hash)
+	klog.V(8).Infof("Using default nodeup location for %s: %q", arch, u.String())
 
-		u, hash, err = assetsBuilder.RemapFileAndSHA(u)
-		if err != nil {
-			return nil, err
-		}
-		klog.Warningf("Using nodeup location from NODEUP_URL(_%s) env var: %q", strings.ToUpper(string(arch)), u.String())
-	}
-
-	asset := mirrors.BuildMirroredAsset(u, hash)
-
-	nodeUpAsset[arch] = asset
-
-	return asset, nil
+	return nodeUpAsset[arch], nil
 }
 
-// ProtokubeBinaryAsset returns the url and hash of the protokube binary. This is useful for running protokube as a
-// systemd process rather than a container.
-func ProtokubeBinaryAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
-	if protokubeBinAsset == nil {
-		protokubeBinAsset = make(map[architectures.Architecture]*mirrors.MirroredAsset)
+// ProtokubeAsset returns the url and hash of the protokube binary
+func ProtokubeAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
+	if protokubeAsset == nil {
+		protokubeAsset = make(map[architectures.Architecture]*mirrors.MirroredAsset)
+	}
+	if protokubeAsset[arch] != nil {
+		klog.V(8).Infof("Using cached protokube binary location for %s: %v", arch, protokubeAsset[arch].Locations)
+		return protokubeAsset[arch], nil
 	}
 
-	if protokubeBinAsset[arch] != nil {
-		klog.V(8).Infof("Using cached protokube binary location for %s: %v", arch, protokubeBinAsset[arch].Locations)
-		return protokubeBinAsset[arch], nil
-	}
-
-	// TODO: (bharath-123) should we allow the user to specify the binary url through an environment variable like how we do for NODEUP_URL?
 	u, hash, err := KopsFileURL(fmt.Sprintf("linux/%s/protokube", arch), assetsBuilder)
 	if err != nil {
 		return nil, err
 	}
+	protokubeAsset[arch] = mirrors.BuildMirroredAsset(u, hash)
+	klog.V(8).Infof("Using default protokube location for %s: %q", arch, u.String())
 
-	asset := mirrors.BuildMirroredAsset(u, hash)
-
-	protokubeBinAsset[arch] = asset
-
-	return asset, nil
+	return protokubeAsset[arch], nil
 }
 
-// ChannelsBinaryAsset returns the url and hash of the channels binary. Protokube requires this to run as a systemd process.
-func ChannelsBinaryAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
-	if channelsBinAsset == nil {
-		channelsBinAsset = make(map[architectures.Architecture]*mirrors.MirroredAsset)
+// ChannelsAsset returns the url and hash of the channels binary
+func ChannelsAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
+	if channelsAsset == nil {
+		channelsAsset = make(map[architectures.Architecture]*mirrors.MirroredAsset)
 	}
-
-	if channelsBinAsset[arch] != nil {
-		klog.V(8).Infof("Using cached channels binary location for %s: %v", arch, channelsBinAsset[arch].Locations)
-		return channelsBinAsset[arch], nil
+	if channelsAsset[arch] != nil {
+		klog.V(8).Infof("Using cached channels binary location for %s: %v", arch, channelsAsset[arch].Locations)
+		return channelsAsset[arch], nil
 	}
 
 	u, hash, err := KopsFileURL(fmt.Sprintf("linux/%s/channels", arch), assetsBuilder)
 	if err != nil {
 		return nil, err
 	}
+	channelsAsset[arch] = mirrors.BuildMirroredAsset(u, hash)
+	klog.V(8).Infof("Using default channels location for %s: %q", arch, u.String())
 
-	asset := mirrors.BuildMirroredAsset(u, hash)
-
-	channelsBinAsset[arch] = asset
-
-	return asset, nil
+	return channelsAsset[arch], nil
 }
 
 // KopsFileURL returns the base url for the distribution of kops - in particular for nodeup & docker images
