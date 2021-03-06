@@ -29665,8 +29665,10 @@ rules:
   - create
 - apiGroups:
   - ""
+  - coordination.k8s.io
   resources:
   - configmaps
+  - leases
   resourceNames:
   - kops-controller-leader
   verbs:
@@ -29680,8 +29682,10 @@ rules:
 # We can't restrict creation of objects by name
 - apiGroups:
   - ""
+  - coordination.k8s.io
   resources:
   - configmaps
+  - leases
   verbs:
   - create
 
