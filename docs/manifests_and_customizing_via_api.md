@@ -35,7 +35,7 @@ At this time you must run `kops create cluster` and then export the YAML from th
 ```shell
 export NAME=k8s.example.com
 export KOPS_STATE_STORE=s3://example-state-store
- kops create cluster $NAME \
+kops create cluster $NAME \
     --zones "us-east-2a,us-east-2b,us-east-2c" \
     --master-zones "us-east-2a,us-east-2b,us-east-2c" \
     --networking weave \
@@ -237,7 +237,7 @@ metadata:
     kops.k8s.io/cluster: k8s.example.com
   name: my-crazy-big-nodes
 spec:
- nodeLabels:
+  nodeLabels:
     spot: "true"
   cloudLabels:
     team: example
