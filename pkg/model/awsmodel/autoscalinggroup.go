@@ -27,7 +27,6 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
-	"k8s.io/kops/pkg/model/spotinstmodel"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -67,7 +66,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		name := b.AutoscalingGroupName(ig)
 
 		if featureflag.SpotinstHybrid.Enabled() {
-			if spotinstmodel.HybridInstanceGroup(ig) {
+			if HybridInstanceGroup(ig) {
 				klog.V(2).Infof("Skipping instance group: %q", name)
 				continue
 			}
@@ -439,7 +438,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 	// need to create separate attachments for both managed (+Spotinst) and
 	// hybrid (+SpotinstHybrid) instance groups.
 	if !featureflag.Spotinst.Enabled() ||
-		(featureflag.SpotinstHybrid.Enabled() && !spotinstmodel.HybridInstanceGroup(ig)) {
+		(featureflag.SpotinstHybrid.Enabled() && !HybridInstanceGroup(ig)) {
 		if b.UseLoadBalancerForAPI() && ig.Spec.Role == kops.InstanceGroupRoleMaster {
 			if b.UseNetworkLoadBalancer() {
 				t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("tcp"))
