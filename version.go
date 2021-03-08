@@ -16,8 +16,6 @@ limitations under the License.
 
 package kops
 
-import "strings"
-
 // Version can be replaced by build tooling
 var Version = KOPS_RELEASE_VERSION
 
@@ -29,11 +27,3 @@ const (
 
 // GitVersion should be replaced by the makefile
 var GitVersion = ""
-
-// DefaultProtokubeImageName is the name of the protokube image, as we would pass to "docker run"
-func DefaultProtokubeImageName() string {
-	// + is valid in semver, but not in docker tags.
-	// Note that this mirrors the logic in the makefile for PROTOKUBE_TAG.
-	dockerTag := strings.Replace(Version, "+", "-", -1)
-	return "protokube:" + dockerTag
-}

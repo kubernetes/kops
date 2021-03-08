@@ -1067,14 +1067,6 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 			return err
 		}
 		c.NodeUpAssets[arch] = asset
-
-		// Explicitly add the protokube image,
-		// otherwise when the Target is DryRun this asset is not added
-		// Is there a better way to call this?
-		_, _, err = ProtokubeImageSource(assetBuilder, arch)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -1122,7 +1114,8 @@ type nodeUpConfigBuilder struct {
 	cluster        *kops.Cluster
 	etcdManifests  map[kops.InstanceGroupRole][]string
 	images         map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image
-	protokubeImage map[kops.InstanceGroupRole]map[architectures.Architecture]*nodeup.Image
+	protokubeAsset map[architectures.Architecture][]*mirrors.MirroredAsset
+	channelsAsset  map[architectures.Architecture][]*mirrors.MirroredAsset
 }
 
 func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBuilder, assets map[architectures.Architecture][]*mirrors.MirroredAsset) (model.NodeUpConfigBuilder, error) {
@@ -1139,11 +1132,26 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 		channels = append(channels, cluster.Spec.Addons[i].Manifest)
 	}
 
-	useGossip := dns.IsGossipHostname(cluster.Spec.MasterInternalName)
-
 	etcdManifests := map[kops.InstanceGroupRole][]string{}
 	images := map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image{}
-	protokubeImage := map[kops.InstanceGroupRole]map[architectures.Architecture]*nodeup.Image{}
+	protokubeAsset := map[architectures.Architecture][]*mirrors.MirroredAsset{}
+	channelsAsset := map[architectures.Architecture][]*mirrors.MirroredAsset{}
+
+	for _, arch := range architectures.GetSupported() {
+		asset, err := ProtokubeAsset(assetBuilder, arch)
+		if err != nil {
+			return nil, err
+		}
+		protokubeAsset[arch] = append(protokubeAsset[arch], asset)
+	}
+
+	for _, arch := range architectures.GetSupported() {
+		asset, err := ChannelsAsset(assetBuilder, arch)
+		if err != nil {
+			return nil, err
+		}
+		channelsAsset[arch] = append(channelsAsset[arch], asset)
+	}
 
 	for _, role := range kops.AllInstanceGroupRoles {
 		isMaster := role == kops.InstanceGroupRoleMaster
@@ -1205,25 +1213,7 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 			}
 		}
 
-		if isMaster || useGossip {
-			protokubeImage[role] = make(map[architectures.Architecture]*nodeup.Image)
-			for _, arch := range architectures.GetSupported() {
-				u, hash, err := ProtokubeImageSource(assetBuilder, arch)
-				if err != nil {
-					return nil, err
-				}
-
-				asset := mirrors.BuildMirroredAsset(u, hash)
-
-				protokubeImage[role][arch] = &nodeup.Image{
-					Name:    kopsbase.DefaultProtokubeImageName(),
-					Sources: asset.Locations,
-					Hash:    asset.Hash.Hex(),
-				}
-			}
-		}
-
-		if role == kops.InstanceGroupRoleMaster {
+		if isMaster {
 			for _, etcdCluster := range cluster.Spec.EtcdClusters {
 				if etcdCluster.Provider == kops.EtcdProviderTypeManager {
 					p := configBase.Join("manifests/etcd/" + etcdCluster.Name + ".yaml").Path()
@@ -1241,7 +1231,8 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 		cluster:        cluster,
 		etcdManifests:  etcdManifests,
 		images:         images,
-		protokubeImage: protokubeImage,
+		protokubeAsset: protokubeAsset,
+		channelsAsset:  channelsAsset,
 	}
 
 	return &configBuilder, nil
@@ -1260,6 +1251,9 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		return nil, fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
 	}
 
+	useGossip := dns.IsGossipHostname(cluster.Spec.MasterInternalName)
+	isMaster := role == kops.InstanceGroupRoleMaster
+
 	config := nodeup.NewConfig(cluster, ig)
 	config.Assets = make(map[architectures.Architecture][]string)
 	for _, arch := range architectures.GetSupported() {
@@ -1270,6 +1264,20 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	}
 	config.ClusterName = cluster.ObjectMeta.Name
 	config.InstanceGroupName = ig.ObjectMeta.Name
+
+	if isMaster || useGossip {
+		for _, arch := range architectures.GetSupported() {
+			for _, a := range n.protokubeAsset[arch] {
+				config.Assets[arch] = append(config.Assets[arch], a.CompactString())
+			}
+		}
+
+		for _, arch := range architectures.GetSupported() {
+			for _, a := range n.channelsAsset[arch] {
+				config.Assets[arch] = append(config.Assets[arch], a.CompactString())
+			}
+		}
+	}
 
 	useConfigServer := featureflag.KopsControllerStateStore.Enabled() && (role != kops.InstanceGroupRoleMaster)
 	if useConfigServer {
@@ -1296,7 +1304,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		config.ConfigBase = fi.String(n.configBase.Path())
 	}
 
-	if role == kops.InstanceGroupRoleMaster {
+	if isMaster {
 		config.ApiserverAdditionalIPs = apiserverAdditionalIPs
 	}
 
@@ -1321,7 +1329,6 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	config.Images = n.images[role]
 	config.Channels = n.channels
 	config.EtcdManifests = n.etcdManifests[role]
-	config.ProtokubeImage = n.protokubeImage[role]
 
 	return config, nil
 }

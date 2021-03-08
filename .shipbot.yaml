@@ -41,14 +41,6 @@ assets:
     githubName: channels-linux-arm64
   - source: linux/arm64/channels.sha256
     githubName: channels-linux-arm64.sha256
-  - source: images/protokube-amd64.tar.gz
-    githubName: images-protokube-amd64.tar.gz
-  - source: images/protokube-amd64.tar.gz.sha256
-    githubName: images-protokube-amd64.tar.gz.sha256
-  - source: images/protokube-arm64.tar.gz
-    githubName: images-protokube-arm64.tar.gz
-  - source: images/protokube-arm64.tar.gz.sha256
-    githubName: images-protokube-arm64.tar.gz.sha256
   - source: images/dns-controller-amd64.tar.gz
     githubName: images-dns-controller-amd64.tar.gz
   - source: images/dns-controller-amd64.tar.gz.sha256
