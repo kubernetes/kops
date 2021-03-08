@@ -60,7 +60,6 @@ type integrationTest struct {
 	expectPolicies bool
 	// expectServiceAccountRoles is true if we expect to assign per-ServiceAccount IAM roles (instead of just using the node roles)
 	expectServiceAccountRoles bool
-	launchConfiguration       bool
 	lifecycleOverrides        []string
 	sshKey                    bool
 	// caKey is true if we should use a provided ca.crt & ca.key as our CA
@@ -125,11 +124,6 @@ func (i *integrationTest) withJSONOutput() *integrationTest {
 
 func (i *integrationTest) withPrivate() *integrationTest {
 	i.private = true
-	return i
-}
-
-func (i *integrationTest) withLaunchConfiguration() *integrationTest {
-	i.launchConfiguration = true
 	return i
 }
 
@@ -347,18 +341,6 @@ func TestDockerCustom(t *testing.T) {
 	newIntegrationTest("docker.example.com", "docker-custom").runTestCloudformation(t)
 }
 
-// TestLaunchConfigurationASG tests ASGs using launch configurations instead of launch templates
-func TestLaunchConfigurationASG(t *testing.T) {
-	featureflag.ParseFlags("-EnableLaunchTemplates")
-	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("+EnableLaunchTemplates")
-	}
-	defer unsetFeatureFlags()
-
-	newIntegrationTest("launchtemplates.example.com", "launch_templates").withZones(3).withLaunchConfiguration().runTestTerraformAWS(t)
-	newIntegrationTest("launchtemplates.example.com", "launch_templates").withZones(3).withLaunchConfiguration().runTestCloudformation(t)
-}
-
 // TestPublicJWKS runs a simple configuration, but with UseServiceAccountIAM and PublicJWKS enabled
 func TestPublicJWKS(t *testing.T) {
 	featureflag.ParseFlags("+UseServiceAccountIAM,+PublicJWKS")
@@ -536,22 +518,15 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 
 	expectedFilenames := []string{}
 
-	if i.launchConfiguration {
-		expectedFilenames = append(expectedFilenames, "aws_launch_configuration_nodes."+i.clusterName+"_user_data")
-	} else {
-		expectedFilenames = append(expectedFilenames, "aws_launch_template_nodes."+i.clusterName+"_user_data")
-	}
+	expectedFilenames = append(expectedFilenames, "aws_launch_template_nodes."+i.clusterName+"_user_data")
+
 	if i.sshKey {
 		expectedFilenames = append(expectedFilenames, "aws_key_pair_kubernetes."+i.clusterName+"-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")
 	}
 
 	for j := 0; j < i.zones; j++ {
 		zone := "us-test-1" + string([]byte{byte('a') + byte(j)})
-		if featureflag.EnableLaunchTemplates.Enabled() {
-			expectedFilenames = append(expectedFilenames, "aws_launch_template_master-"+zone+".masters."+i.clusterName+"_user_data")
-		} else {
-			expectedFilenames = append(expectedFilenames, "aws_launch_configuration_master-"+zone+".masters."+i.clusterName+"_user_data")
-		}
+		expectedFilenames = append(expectedFilenames, "aws_launch_template_master-"+zone+".masters."+i.clusterName+"_user_data")
 	}
 
 	if i.expectPolicies {
@@ -611,12 +586,12 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 		}
 	} else if phase == cloudup.PhaseCluster {
 		expectedFilenames = []string{
-			"aws_launch_configuration_nodes." + i.clusterName + "_user_data",
+			"aws_launch_template_nodes." + i.clusterName + "_user_data",
 		}
 
 		for j := 0; j < i.zones; j++ {
 			zone := "us-test-1" + string([]byte{byte('a') + byte(j)})
-			s := "aws_launch_configuration_master-" + zone + ".masters." + i.clusterName + "_user_data"
+			s := "aws_launch_template_master-" + zone + ".masters." + i.clusterName + "_user_data"
 			expectedFilenames = append(expectedFilenames, s)
 		}
 	}

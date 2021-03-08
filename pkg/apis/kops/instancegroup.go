@@ -106,9 +106,7 @@ type InstanceGroupSpec struct {
 	RootVolumeThroughput *int32 `json:"rootVolumeThroughput,omitempty"`
 	// RootVolumeOptimization enables EBS optimization for an instance
 	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
-	// RootVolumeDeleteOnTermination configures root volume retention policy upon instance termination.
-	// The root volume is deleted by default. Cluster deletion does not remove retained root volumes.
-	// NOTE: This setting applies only to the Launch Configuration and does not affect Launch Templates.
+	// RootVolumeDeleteOnTermination is deprecated as of kOps 1.21 and has no effect
 	RootVolumeDeleteOnTermination *bool `json:"rootVolumeDeleteOnTermination,omitempty"`
 	// RootVolumeEncryption enables EBS root volume encryption for an instance
 	RootVolumeEncryption *bool `json:"rootVolumeEncryption,omitempty"`

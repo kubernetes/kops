@@ -72,15 +72,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 		}
 
-		// @check if his instancegroup is backed by a fleet and override with a launch template
-		task, err := func() (fi.Task, error) {
-			switch UseLaunchTemplate(ig) {
-			case true:
-				return b.buildLaunchTemplateTask(c, name, ig)
-			default:
-				return b.buildLaunchConfigurationTask(c, name, ig)
-			}
-		}()
+		task, err := b.buildLaunchTemplateTask(c, name, ig)
 		if err != nil {
 			return err
 		}
@@ -91,14 +83,8 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		if err != nil {
 			return err
 		}
-		switch UseLaunchTemplate(ig) {
-		case true:
-			tsk.LaunchTemplate = task.(*awstasks.LaunchTemplate)
-		default:
-			tsk.LaunchConfiguration = task.(*awstasks.LaunchConfiguration)
-		}
+		tsk.LaunchTemplate = task
 		c.AddTask(tsk)
-
 	}
 
 	return nil
@@ -106,7 +92,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 // buildLaunchTemplateTask is responsible for creating the template task into the aws model
 func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchTemplate, error) {
-	lc, err := b.buildLaunchConfigurationTask(c, name, ig)
+	lc, err := b.buildLaunchTemplateHelper(c, name, ig)
 	if err != nil {
 		return nil, err
 	}
@@ -116,9 +102,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		return nil, fmt.Errorf("error building cloud tags: %v", err)
 	}
 
-	// @TODO check if there any a better way of doing this .. initially I had a type LaunchTemplate which included
-	// LaunchConfiguration as an anonymous field, bit given up the task dependency walker works this caused issues, due
-	// to the creation of a implicit dependency
 	lt := &awstasks.LaunchTemplate{
 		Name:                    fi.String(name),
 		Lifecycle:               b.Lifecycle,
@@ -145,8 +128,8 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	// rather than the LaunchTemplate or else it returns this error:
 	//   You cannot use a launch template that is set to request Spot Instances (InstanceMarketOptions)
 	//   when you configure an Auto Scaling group with a mixed instances policy.
-	if ig.Spec.MixedInstancesPolicy == nil {
-		lt.SpotPrice = fi.String(lc.SpotPrice)
+	if ig.Spec.MixedInstancesPolicy == nil && ig.Spec.MaxPrice != nil {
+		lt.SpotPrice = ig.Spec.MaxPrice
 	} else {
 		lt.SpotPrice = fi.String("")
 	}
@@ -186,8 +169,8 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	return lt, nil
 }
 
-// buildLaunchConfigurationTask is responsible for building a launch configuration task into the model
-func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchConfiguration, error) {
+// buildLaunchTemplateHelper is responsible for building a launch configuration task into the model
+func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchTemplate, error) {
 	// @step: lets add the root volume settings
 	volumeSize, err := defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
 	if err != nil {
@@ -200,11 +183,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 	volumeType := fi.StringValue(ig.Spec.RootVolumeType)
 	if volumeType == "" {
 		volumeType = DefaultLegacyVolumeType
-	}
-
-	rootVolumeDeleteOnTermination := DefaultVolumeDeleteOnTermination
-	if ig.Spec.RootVolumeDeleteOnTermination != nil {
-		rootVolumeDeleteOnTermination = fi.BoolValue(ig.Spec.RootVolumeDeleteOnTermination)
 	}
 
 	rootVolumeEncryption := DefaultVolumeEncryption
@@ -229,19 +207,18 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		return nil, fmt.Errorf("unable to find IAM profile link for instance group %q: %w", ig.ObjectMeta.Name, err)
 	}
 
-	t := &awstasks.LaunchConfiguration{
-		Name:                          fi.String(name),
-		Lifecycle:                     b.Lifecycle,
-		IAMInstanceProfile:            link,
-		ImageID:                       fi.String(ig.Spec.Image),
-		InstanceMonitoring:            ig.Spec.DetailedInstanceMonitoring,
-		InstanceType:                  fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
-		RootVolumeDeleteOnTermination: fi.Bool(rootVolumeDeleteOnTermination),
-		RootVolumeOptimization:        ig.Spec.RootVolumeOptimization,
-		RootVolumeSize:                fi.Int64(int64(volumeSize)),
-		RootVolumeType:                fi.String(volumeType),
-		RootVolumeEncryption:          fi.Bool(rootVolumeEncryption),
-		SecurityGroups:                []*awstasks.SecurityGroup{sgLink},
+	t := &awstasks.LaunchTemplate{
+		Name:                   fi.String(name),
+		Lifecycle:              b.Lifecycle,
+		IAMInstanceProfile:     link,
+		ImageID:                fi.String(ig.Spec.Image),
+		InstanceMonitoring:     ig.Spec.DetailedInstanceMonitoring,
+		InstanceType:           fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
+		RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
+		RootVolumeSize:         fi.Int64(int64(volumeSize)),
+		RootVolumeType:         fi.String(volumeType),
+		RootVolumeEncryption:   fi.Bool(rootVolumeEncryption),
+		SecurityGroups:         []*awstasks.SecurityGroup{sgLink},
 	}
 
 	t.HTTPTokens = fi.String(ec2.LaunchTemplateHttpTokensStateOptional)
@@ -344,12 +321,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 	// @step: add the instancegroup userdata
 	if t.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig); err != nil {
 		return nil, err
-	}
-
-	// @step: set up instance spot pricing
-	if fi.StringValue(ig.Spec.MaxPrice) != "" {
-		spotPrice := fi.StringValue(ig.Spec.MaxPrice)
-		t.SpotPrice = spotPrice
 	}
 
 	// @step: check the subnets are ok and pull together an array for us
