@@ -21,7 +21,6 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"strings"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops"
@@ -37,14 +36,14 @@ const (
 
 var kopsBaseURL *url.URL
 
-// nodeUpAsset caches the nodeup download urls/hash
+// nodeUpAsset caches the nodeup binary download url/hash
 var nodeUpAsset map[architectures.Architecture]*mirrors.MirroredAsset
 
-// protokubeLocation caches the protokubeLocation url
-var protokubeLocation map[architectures.Architecture]*url.URL
+// protokubeAsset caches the protokube binary download url/hash
+var protokubeAsset map[architectures.Architecture]*mirrors.MirroredAsset
 
-// protokubeHash caches the hash for protokube
-var protokubeHash map[architectures.Architecture]*hashing.Hash
+// channelsAsset caches the channels binary download url/hash
+var channelsAsset map[architectures.Architecture]*mirrors.MirroredAsset
 
 // BaseURL returns the base url for the distribution of kops - in particular for nodeup & docker images
 func BaseURL() (*url.URL, error) {
@@ -108,85 +107,55 @@ func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architec
 		klog.V(8).Infof("Using cached nodeup location for %s: %v", arch, nodeUpAsset[arch].Locations)
 		return nodeUpAsset[arch], nil
 	}
-	// Use multi-arch env var, but fall back to well known env var
-	env := os.Getenv(fmt.Sprintf("NODEUP_URL_%s", strings.ToUpper(string(arch))))
-	if env == "" {
-		env = os.Getenv("NODEUP_URL")
+
+	u, hash, err := KopsFileURL(fmt.Sprintf("linux/%s/nodeup", arch), assetsBuilder)
+	if err != nil {
+		return nil, err
 	}
-	var err error
-	var u *url.URL
-	var hash *hashing.Hash
-	if env == "" {
-		u, hash, err = KopsFileURL(fmt.Sprintf("linux/%s/nodeup", arch), assetsBuilder)
-		if err != nil {
-			return nil, err
-		}
-		klog.V(8).Infof("Using default nodeup location for %s: %q", arch, u.String())
-	} else {
-		u, err = url.Parse(env)
-		if err != nil {
-			return nil, fmt.Errorf("unable to parse env var NODEUP_URL(_%s) %q as a url: %v", strings.ToUpper(string(arch)), env, err)
-		}
+	nodeUpAsset[arch] = mirrors.BuildMirroredAsset(u, hash)
+	klog.V(8).Infof("Using default nodeup location for %s: %q", arch, u.String())
 
-		u, hash, err = assetsBuilder.RemapFileAndSHA(u)
-		if err != nil {
-			return nil, err
-		}
-		klog.Warningf("Using nodeup location from NODEUP_URL(_%s) env var: %q", strings.ToUpper(string(arch)), u.String())
-	}
-
-	asset := mirrors.BuildMirroredAsset(u, hash)
-
-	nodeUpAsset[arch] = asset
-
-	return asset, nil
+	return nodeUpAsset[arch], nil
 }
 
-// TODO make this a container when hosted assets
-// TODO does this support a docker as well??
-// FIXME comments says this works with a docker already ... need to check on that
-
-// ProtokubeImageSource returns the source for the docker image for protokube.
-// Either a docker name (e.g. gcr.io/protokube:1.4), or a URL (https://...) in which case we download
-// the contents of the url and docker load it
-func ProtokubeImageSource(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
-	if protokubeLocation == nil {
-		protokubeLocation = make(map[architectures.Architecture]*url.URL)
+// ProtokubeAsset returns the url and hash of the protokube binary
+func ProtokubeAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
+	if protokubeAsset == nil {
+		protokubeAsset = make(map[architectures.Architecture]*mirrors.MirroredAsset)
 	}
-	if protokubeHash == nil {
-		protokubeHash = make(map[architectures.Architecture]*hashing.Hash)
-	}
-	if nodeUpAsset[arch] != nil && protokubeHash[arch] != nil {
-		// Avoid repeated logging
-		klog.V(8).Infof("Using cached protokube location for %s: %q", arch, protokubeLocation[arch])
-		return protokubeLocation[arch], protokubeHash[arch], nil
-	}
-	// Use multi-arch env var, but fall back to well known env var
-	env := os.Getenv(fmt.Sprintf("PROTOKUBE_IMAGE_%s", strings.ToUpper(string(arch))))
-	if env == "" {
-		env = os.Getenv("PROTOKUBE_IMAGE")
-	}
-	var err error
-	if env == "" {
-		protokubeLocation[arch], protokubeHash[arch], err = KopsFileURL(fmt.Sprintf("images/protokube-%s.tar.gz", arch), assetsBuilder)
-		if err != nil {
-			return nil, nil, err
-		}
-		klog.V(8).Infof("Using default protokube location: %q", protokubeLocation[arch])
-	} else {
-		protokubeImageSource, err := url.Parse(env)
-		if err != nil {
-			return nil, nil, fmt.Errorf("unable to parse env var PROTOKUBE_IMAGE(_%s) %q as a url: %v", strings.ToUpper(string(arch)), env, err)
-		}
-
-		protokubeLocation[arch], protokubeHash[arch], err = assetsBuilder.RemapFileAndSHA(protokubeImageSource)
-		if err != nil {
-			return nil, nil, err
-		}
-		klog.Warningf("Using protokube location from PROTOKUBE_IMAGE(_%s) env var: %q", strings.ToUpper(string(arch)), protokubeLocation[arch])
+	if protokubeAsset[arch] != nil {
+		klog.V(8).Infof("Using cached protokube binary location for %s: %v", arch, protokubeAsset[arch].Locations)
+		return protokubeAsset[arch], nil
 	}
 
-	return protokubeLocation[arch], protokubeHash[arch], nil
+	u, hash, err := KopsFileURL(fmt.Sprintf("linux/%s/protokube", arch), assetsBuilder)
+	if err != nil {
+		return nil, err
+	}
+	protokubeAsset[arch] = mirrors.BuildMirroredAsset(u, hash)
+	klog.V(8).Infof("Using default protokube location for %s: %q", arch, u.String())
+
+	return protokubeAsset[arch], nil
+}
+
+// ChannelsAsset returns the url and hash of the channels binary
+func ChannelsAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
+	if channelsAsset == nil {
+		channelsAsset = make(map[architectures.Architecture]*mirrors.MirroredAsset)
+	}
+	if channelsAsset[arch] != nil {
+		klog.V(8).Infof("Using cached channels binary location for %s: %v", arch, channelsAsset[arch].Locations)
+		return channelsAsset[arch], nil
+	}
+
+	u, hash, err := KopsFileURL(fmt.Sprintf("linux/%s/channels", arch), assetsBuilder)
+	if err != nil {
+		return nil, err
+	}
+	channelsAsset[arch] = mirrors.BuildMirroredAsset(u, hash)
+	klog.V(8).Infof("Using default channels location for %s: %q", arch, u.String())
+
+	return channelsAsset[arch], nil
 }
 
 // KopsFileURL returns the base url for the distribution of kops - in particular for nodeup & docker images
