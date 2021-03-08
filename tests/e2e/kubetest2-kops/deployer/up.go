@@ -193,7 +193,8 @@ func (d *deployer) zones() ([]string, error) {
 // This shouldn't be used for arguments that can be specified multiple times like --override
 func appendIfUnset(args []string, arg, value string) []string {
 	for _, existingArg := range args {
-		if existingArg == arg {
+		existingKey := strings.Split(existingArg, "=")
+		if existingKey[0] == arg {
 			return args
 		}
 	}
