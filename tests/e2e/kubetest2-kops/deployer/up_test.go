@@ -64,6 +64,13 @@ func TestAppendIfUnset(t *testing.T) {
 			"bar",
 			[]string{"--foo", "bar"},
 		},
+		{
+			"set with same value and equals sign",
+			[]string{"--foo=bar", "--baz=bar"},
+			"--foo",
+			"bar",
+			[]string{"--foo=bar", "--baz=bar"},
+		},
 	}
 
 	for _, tc := range cases {
