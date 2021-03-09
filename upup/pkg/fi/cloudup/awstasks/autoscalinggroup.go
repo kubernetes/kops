@@ -47,8 +47,6 @@ type AutoscalingGroup struct {
 	Granularity *string
 	// InstanceProtection makes new instances in an autoscaling group protected from scale in
 	InstanceProtection *bool
-	// LaunchConfiguration is the launch configuration for the autoscaling group
-	LaunchConfiguration *LaunchConfiguration
 	// LaunchTemplate is the launch template for the asg
 	LaunchTemplate *LaunchTemplate
 	// LoadBalancers is a list of elastic load balancer names to add to the autoscaling group
@@ -199,9 +197,6 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		}
 	}
 
-	if g.LaunchConfigurationName != nil {
-		actual.LaunchConfiguration = &LaunchConfiguration{ID: g.LaunchConfigurationName}
-	}
 	if g.LaunchTemplate != nil {
 		actual.LaunchTemplate = &LaunchTemplate{
 			Name: g.LaunchTemplate.LaunchTemplateName,
@@ -356,10 +351,8 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			request.TargetGroupARNs = append(request.TargetGroupARNs, tg.ARN)
 		}
 
-		// @check are we using a launch configuration, mixed instances policy, or launch template
-		if e.LaunchConfiguration != nil {
-			request.LaunchConfigurationName = e.LaunchConfiguration.ID
-		} else if e.UseMixedInstancesPolicy() {
+		// @check are we using mixed instances policy, or launch template
+		if e.UseMixedInstancesPolicy() {
 			request.MixedInstancesPolicy = &autoscaling.MixedInstancesPolicy{
 				InstancesDistribution: &autoscaling.InstancesDistribution{
 					OnDemandPercentageAboveBaseCapacity: e.MixedOnDemandAboveBase,
@@ -387,7 +380,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				Version:          aws.String("$Latest"),
 			}
 		} else {
-			return fmt.Errorf("could not find one of launch template, mixed instances policy, or launch configuration")
+			return fmt.Errorf("could not find one of launch template or mixed instances policy")
 		}
 
 		// @step: attempt to create the autoscaling group for us
@@ -434,10 +427,6 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			AutoScalingGroupName: e.Name,
 		}
 
-		if changes.LaunchConfiguration != nil {
-			request.LaunchConfigurationName = e.LaunchConfiguration.ID
-			changes.LaunchConfiguration = nil
-		}
 		setup := func(req *autoscaling.UpdateAutoScalingGroupInput) *autoscaling.MixedInstancesPolicy {
 			if req.MixedInstancesPolicy == nil {
 				req.MixedInstancesPolicy = &autoscaling.MixedInstancesPolicy{
@@ -912,9 +901,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	}
 	terraform.SortLiterals(tf.TargetGroupARNs)
 
-	if e.LaunchConfiguration != nil {
-		tf.LaunchConfigurationName = e.LaunchConfiguration.TerraformLink()
-	} else if e.UseMixedInstancesPolicy() {
+	if e.UseMixedInstancesPolicy() {
 		// Temporary warning until https://github.com/terraform-providers/terraform-provider-aws/issues/9750 is resolved
 		if e.MixedSpotAllocationStrategy == fi.String("capacity-optimized") {
 			fmt.Print("Terraform does not currently support a capacity optimized strategy - please see https://github.com/terraform-providers/terraform-provider-aws/issues/9750")
@@ -968,17 +955,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		}
 	}
 
-	if e.LaunchConfiguration != nil {
-		// Create TF output variable with security group ids
-		// This is in the launch configuration, but the ASG has the information about the instance group type
-		if role != "" {
-			for _, sg := range e.LaunchConfiguration.SecurityGroups {
-				if err := t.AddOutputVariableArray(role+"_security_group_ids", sg.TerraformLink()); err != nil {
-					return err
-				}
-			}
-		}
-	} else if e.LaunchTemplate != nil && role != "" {
+	if e.LaunchTemplate != nil && role != "" {
 		for _, sg := range e.LaunchTemplate.SecurityGroups {
 			if err := t.AddOutputVariableArray(role+"_security_group_ids", sg.TerraformLink()); err != nil {
 				return err
@@ -1094,9 +1071,7 @@ func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.Cloudformation
 		},
 	}
 
-	if e.LaunchConfiguration != nil {
-		cf.LaunchConfigurationName = e.LaunchConfiguration.CloudformationLink()
-	} else if e.UseMixedInstancesPolicy() {
+	if e.UseMixedInstancesPolicy() {
 		cf.MixedInstancesPolicy = &cloudformationMixedInstancesPolicy{
 			LaunchTemplate: &cloudformationAutoscalingLaunchTemplate{
 				LaunchTemplateSpecification: &cloudformationAutoscalingLaunchTemplateSpecification{

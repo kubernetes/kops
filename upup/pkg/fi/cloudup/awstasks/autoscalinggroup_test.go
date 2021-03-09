@@ -201,12 +201,12 @@ func TestAutoscalingGroupTerraformRender(t *testing.T) {
 	cases := []*renderTest{
 		{
 			Resource: &AutoscalingGroup{
-				Name:                fi.String("test"),
-				Granularity:         fi.String("5min"),
-				LaunchConfiguration: &LaunchConfiguration{Name: fi.String("test_lc")},
-				MaxSize:             fi.Int64(10),
-				Metrics:             []string{"test"},
-				MinSize:             fi.Int64(1),
+				Name:           fi.String("test"),
+				Granularity:    fi.String("5min"),
+				LaunchTemplate: &LaunchTemplate{Name: fi.String("test_lc")},
+				MaxSize:        fi.Int64(10),
+				Metrics:        []string{"test"},
+				MinSize:        fi.Int64(1),
 				Subnets: []*Subnet{
 					{
 						Name: fi.String("test-sg"),
@@ -223,12 +223,15 @@ func TestAutoscalingGroupTerraformRender(t *testing.T) {
 }
 
 resource "aws_autoscaling_group" "test" {
-  enabled_metrics      = ["test"]
-  launch_configuration = aws_launch_configuration.test_lc.id
-  max_size             = 10
-  metrics_granularity  = "5min"
-  min_size             = 1
-  name                 = "test"
+  enabled_metrics = ["test"]
+  launch_template {
+    id      = aws_launch_template.test_lc.id
+    version = aws_launch_template.test_lc.latest_version
+  }
+  max_size            = 10
+  metrics_granularity = "5min"
+  min_size            = 1
+  name                = "test"
   tag {
     key                 = "cluster"
     propagate_at_launch = true
