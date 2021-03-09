@@ -751,11 +751,8 @@ spec:
                     x-kubernetes-int-or-string: true
                 type: object
               rootVolumeDeleteOnTermination:
-                description: 'RootVolumeDeleteOnTermination configures root volume
-                  retention policy upon instance termination. The root volume is deleted
-                  by default. Cluster deletion does not remove retained root volumes.
-                  NOTE: This setting applies only to the Launch Configuration and
-                  does not affect Launch Templates.'
+                description: RootVolumeDeleteOnTermination is deprecated as of kOps
+                  1.21 and has no effect
                 type: boolean
               rootVolumeEncryption:
                 description: RootVolumeEncryption enables EBS root volume encryption
