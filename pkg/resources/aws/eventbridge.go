@@ -1,0 +1,112 @@
+/*
+Copyright 2019 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package aws
+
+import (
+	"fmt"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/eventbridge"
+	"k8s.io/klog/v2"
+
+	"k8s.io/kops/pkg/resources"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+)
+
+func DumpEventBridgeRule(op *resources.DumpOperation, r *resources.Resource) error {
+	data := make(map[string]interface{})
+	data["id"] = r.ID
+	data["name"] = r.Name
+	data["type"] = r.Type
+	data["raw"] = r.Obj
+	op.Dump.Resources = append(op.Dump.Resources, data)
+
+	return nil
+}
+
+func DeleteEventBridgeRule(cloud fi.Cloud, r *resources.Resource) error {
+	c := cloud.(awsup.AWSCloud)
+
+	targets, err := c.EventBridge().ListTargetsByRule(&eventbridge.ListTargetsByRuleInput{
+		Rule: aws.String(r.Name),
+	})
+	if err != nil {
+		return fmt.Errorf("error listing targets for EventBridge Rule %q: %v", r.Name, err)
+	}
+
+	var ids []*string
+	for _, target := range targets.Targets {
+		ids = append(ids, target.Id)
+	}
+
+	klog.V(2).Infof("Removing EventBridge Targets for Rule %q", r.Name)
+	_, err = c.EventBridge().RemoveTargets(&eventbridge.RemoveTargetsInput{
+		Ids:  ids,
+		Rule: aws.String(r.Name),
+	})
+	if err != nil {
+		return fmt.Errorf("error removing targets for EventBridge Rule %q: %v", r.Name, err)
+	}
+
+	klog.V(2).Infof("Deleting EventBridge Rule %q", r.Name)
+	request := &eventbridge.DeleteRuleInput{
+		Name: aws.String(r.Name),
+	}
+	_, err = c.EventBridge().DeleteRule(request)
+	if err != nil {
+		return fmt.Errorf("error deleting EventBridge Rule %q: %v", r.Name, err)
+	}
+	return nil
+}
+
+func ListEventBridgeRules(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	c := cloud.(awsup.AWSCloud)
+
+	klog.V(2).Infof("Listing EventBridge Rules")
+
+	// Rule names start with the cluster name so that we can search for them
+	request := &eventbridge.ListRulesInput{
+		EventBusName: nil,
+		Limit:        nil,
+		NamePrefix:   aws.String(clusterName),
+	}
+	response, err := c.EventBridge().ListRules(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing SQS queues: %v", err)
+	}
+	if response == nil || len(response.Rules) == 0 {
+		return nil, nil
+	}
+
+	var resourceTrackers []*resources.Resource
+
+	for _, rule := range response.Rules {
+		resourceTracker := &resources.Resource{
+			Name:    *rule.Name,
+			ID:      *rule.Name,
+			Type:    "eventbridge",
+			Deleter: DeleteEventBridgeRule,
+			Dumper:  DumpEventBridgeRule,
+			Obj:     rule,
+		}
+
+		resourceTrackers = append(resourceTrackers, resourceTracker)
+	}
+
+	return resourceTrackers, nil
+}

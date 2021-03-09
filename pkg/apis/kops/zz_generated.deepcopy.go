@@ -4087,6 +4087,11 @@ func (in *NodeTerminationHandlerConfig) DeepCopyInto(out *NodeTerminationHandler
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EnableSqsTerminationDraining != nil {
+		in, out := &in.EnableSqsTerminationDraining, &out.EnableSqsTerminationDraining
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
