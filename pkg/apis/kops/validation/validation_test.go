@@ -1066,7 +1066,7 @@ func Test_Validate_CloudConfiguration(t *testing.T) {
 				}},
 		},
 		{
-			Description: "os false",
+			Description: "os true",
 			Input: kops.CloudConfiguration{
 				Openstack: &kops.OpenstackConfiguration{
 					BlockStorage: &kops.OpenstackBlockStorageConfig{
