@@ -1,0 +1,278 @@
+{{ with .NodeTerminationHandler }}
+# Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.12.1/all-resources-queue-processor.yaml
+---
+# Source: aws-node-termination-handler/templates/psp.yaml
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: aws-node-termination-handler
+  labels:
+    app.kubernetes.io/name: aws-node-termination-handler
+    app.kubernetes.io/instance: aws-node-termination-handler
+    k8s-app: aws-node-termination-handler
+    app.kubernetes.io/version: "1.12.1"
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
+spec:
+  privileged: false
+  hostIPC: false
+  hostNetwork: true
+  hostPID: false
+  readOnlyRootFilesystem: false
+  allowPrivilegeEscalation: false
+  allowedCapabilities:
+    - '*'
+  fsGroup:
+    rule: RunAsAny
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  volumes:
+    - '*'
+---
+# Source: aws-node-termination-handler/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aws-node-termination-handler
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: aws-node-termination-handler
+    app.kubernetes.io/instance: aws-node-termination-handler
+    k8s-app: aws-node-termination-handler
+    app.kubernetes.io/version: "1.12.1"
+---
+# Source: aws-node-termination-handler/templates/clusterrole.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: aws-node-termination-handler
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - list
+  - apiGroups:
+      - ""
+    resources:
+      - pods/eviction
+    verbs:
+      - create
+  - apiGroups:
+      - extensions
+    resources:
+      - daemonsets
+    verbs:
+      - get
+  - apiGroups:
+      - apps
+    resources:
+      - daemonsets
+    verbs:
+      - get
+---
+# Source: aws-node-termination-handler/templates/psp.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: aws-node-termination-handler-psp
+  labels:
+    app.kubernetes.io/name: aws-node-termination-handler
+    app.kubernetes.io/instance: aws-node-termination-handler
+    k8s-app: aws-node-termination-handler
+    app.kubernetes.io/version: "1.12.1"
+rules:
+  - apiGroups: ['policy']
+    resources: ['podsecuritypolicies']
+    verbs:     ['use']
+    resourceNames:
+      - aws-node-termination-handler
+---
+# Source: aws-node-termination-handler/templates/clusterrolebinding.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: aws-node-termination-handler
+subjects:
+  - kind: ServiceAccount
+    name: aws-node-termination-handler
+    namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: aws-node-termination-handler
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: aws-node-termination-handler/templates/psp.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: aws-node-termination-handler-psp
+  labels:
+    app.kubernetes.io/name: aws-node-termination-handler
+    app.kubernetes.io/instance: aws-node-termination-handler
+    k8s-app: aws-node-termination-handler
+    app.kubernetes.io/version: "1.12.1"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: aws-node-termination-handler-psp
+subjects:
+  - kind: ServiceAccount
+    name: aws-node-termination-handler
+    namespace: kube-system
+---
+# Source: aws-node-termination-handler/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aws-node-termination-handler
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: aws-node-termination-handler
+    app.kubernetes.io/instance: aws-node-termination-handler
+    k8s-app: aws-node-termination-handler
+    app.kubernetes.io/version: "1.12.1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: aws-node-termination-handler
+      app.kubernetes.io/instance: aws-node-termination-handler
+      kubernetes.io/os: linux
+  template:
+    metadata:
+      annotations:
+      labels:
+        app.kubernetes.io/name: aws-node-termination-handler
+        app.kubernetes.io/instance: aws-node-termination-handler
+        k8s-app: aws-node-termination-handler
+        kubernetes.io/os: linux
+    spec:
+      priorityClassName: "system-node-critical"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: "kubernetes.io/os"
+                    operator: In
+                    values:
+                      - linux
+                  - key: "kubernetes.io/arch"
+                    operator: In
+                    values:
+                      - amd64
+                      - arm64
+                      - arm
+      serviceAccountName: aws-node-termination-handler
+      hostNetwork: false
+      dnsPolicy: ""
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: aws-node-termination-handler
+          image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.12.1
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: SPOT_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: DELETE_LOCAL_DATA
+              value: ""
+            - name: IGNORE_DAEMON_SETS
+              value: ""
+            - name: POD_TERMINATION_GRACE_PERIOD
+              value: ""
+            - name: INSTANCE_METADATA_URL
+              value: ""
+            - name: NODE_TERMINATION_GRACE_PERIOD
+              value: ""
+            - name: WEBHOOK_URL
+              value: ""
+            - name: WEBHOOK_HEADERS
+              value: ""
+            - name: WEBHOOK_TEMPLATE
+              value: ""
+            - name: DRY_RUN
+              value: "false"
+            - name: METADATA_TRIES
+              value: "3"
+            - name: CORDON_ONLY
+              value: "false"
+            - name: TAINT_NODE
+              value: "false"
+            - name: JSON_LOGGING
+              value: "false"
+            - name: LOG_LEVEL
+              value: "info"
+            - name: WEBHOOK_PROXY
+              value: ""
+            - name: ENABLE_PROMETHEUS_SERVER
+              value: "false"
+            - name: ENABLE_SPOT_INTERRUPTION_DRAINING
+              value: "false"
+            - name: ENABLE_SCHEDULED_EVENT_DRAINING
+              value: "false"
+            - name: ENABLE_REBALANCE_MONITORING
+              value: "false"
+            - name: ENABLE_SQS_TERMINATION_DRAINING
+              value: "true"
+            - name: QUEUE_URL
+              value: ""
+            - name: PROMETHEUS_SERVER_PORT
+              value: "9092"
+            - name: AWS_REGION
+              value: ""
+            - name: AWS_ENDPOINT
+              value: ""
+            - name: CHECK_ASG_TAG_BEFORE_DRAINING
+              value: "true"
+            - name: MANAGED_ASG_TAG
+              value: "aws-node-termination-handler/managed"
+            - name: WORKERS
+              value: "10"
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+      nodeSelector:
+        kubernetes.io/os: linux
+      tolerations:
+        - operator: Exists
+{{ end }}

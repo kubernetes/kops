@@ -5733,6 +5733,7 @@ func autoConvert_v1alpha2_NodeTerminationHandlerConfig_To_kops_NodeTerminationHa
 	out.EnableSpotInterruptionDraining = in.EnableSpotInterruptionDraining
 	out.EnableScheduledEventDraining = in.EnableScheduledEventDraining
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
+	out.EnableSqsTerminationDraining = in.EnableSqsTerminationDraining
 	return nil
 }
 
@@ -5746,6 +5747,7 @@ func autoConvert_kops_NodeTerminationHandlerConfig_To_v1alpha2_NodeTerminationHa
 	out.EnableSpotInterruptionDraining = in.EnableSpotInterruptionDraining
 	out.EnableScheduledEventDraining = in.EnableScheduledEventDraining
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
+	out.EnableSqsTerminationDraining = in.EnableSqsTerminationDraining
 	return nil
 }
 

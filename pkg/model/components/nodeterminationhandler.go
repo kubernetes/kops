@@ -45,6 +45,10 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 		nth.EnableScheduledEventDraining = fi.Bool(false)
 	}
 
+	if nth.EnableSqsTerminationDraining == nil {
+		nth.EnableSqsTerminationDraining = fi.Bool(false)
+	}
+
 	if nth.EnablePrometheusMetrics == nil {
 		nth.EnablePrometheusMetrics = fi.Bool(false)
 	}

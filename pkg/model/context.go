@@ -143,6 +143,12 @@ func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 		labels[k] = v
 	}
 
+	// Apply NTH Labels
+	nth := m.Cluster.Spec.NodeTerminationHandler
+	if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSqsTerminationDraining) {
+		labels["aws-node-termination-handler/managed"] = "true"
+	}
+
 	// Apply labels for cluster autoscaler node labels
 	for k, v := range nodelabels.BuildNodeLabels(m.Cluster, ig) {
 		labels[nodeidentityaws.ClusterAutoscalerNodeTemplateLabel+k] = v

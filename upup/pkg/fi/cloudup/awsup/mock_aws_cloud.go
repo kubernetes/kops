@@ -19,6 +19,9 @@ package awsup
 import (
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/service/eventbridge/eventbridgeiface"
+	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
@@ -80,6 +83,8 @@ type MockCloud struct {
 	MockELB            elbiface.ELBAPI
 	MockELBV2          elbv2iface.ELBV2API
 	MockSpotinst       spotinst.Cloud
+	MockSQS            sqsiface.SQSAPI
+	MockEventBridge    eventbridgeiface.EventBridgeAPI
 }
 
 func (c *MockAWSCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
@@ -259,6 +264,20 @@ func (c *MockAWSCloud) Spotinst() spotinst.Cloud {
 		klog.Fatalf("MockSpotinst not set")
 	}
 	return c.MockSpotinst
+}
+
+func (c *MockAWSCloud) SQS() sqsiface.SQSAPI {
+	if c.MockSQS == nil {
+		klog.Fatalf("MockSQS not set")
+	}
+	return c.MockSQS
+}
+
+func (c *MockAWSCloud) EventBridge() eventbridgeiface.EventBridgeAPI {
+	if c.MockEventBridge == nil {
+		klog.Fatalf("MockSQS not set")
+	}
+	return c.MockEventBridge
 }
 
 func (c *MockAWSCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {

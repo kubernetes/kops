@@ -580,6 +580,14 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				l.Builders = append(l.Builders, awsModelBuilder)
 			}
 
+			nth := c.Cluster.Spec.NodeTerminationHandler
+			if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSqsTerminationDraining) {
+				l.Builders = append(l.Builders, &awsmodel.NodeTerminationHandlerBuilder{
+					AWSModelContext: awsModelContext,
+					Lifecycle:       &clusterLifecycle,
+				})
+			}
+
 		case kops.CloudProviderDO:
 			doModelContext := &domodel.DOModelContext{
 				KopsModelContext: modelContext,
@@ -649,6 +657,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 		}
 	}
+
 	taskMap, err := l.BuildTasks(assetBuilder, &stageAssetsLifecycle, c.LifecycleOverrides)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)

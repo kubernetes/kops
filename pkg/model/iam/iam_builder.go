@@ -377,6 +377,11 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addCalicoSrcDstCheckPermissions(p)
 	}
 
+	nth := b.Cluster.Spec.NodeTerminationHandler
+	if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSqsTerminationDraining) {
+		addNodeTerminationHandlerSQSPermissions(p, resource)
+	}
+
 	return p, nil
 }
 
@@ -1140,6 +1145,23 @@ func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice,
 			Resource: stringorslice.Slice([]string{
 				strings.Join([]string{iamPrefix, ":ec2:*:*:network-interface/*"}, ""),
 			})},
+	)
+}
+
+func addNodeTerminationHandlerSQSPermissions(p *Policy, resource stringorslice.StringOrSlice) {
+	p.Statement = append(p.Statement,
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
+				"autoscaling:CompleteLifecycleAction",
+				"autoscaling:DescribeAutoScalingInstances",
+				"autoscaling:DescribeTags",
+				"ec2:DescribeInstances",
+				"sqs:DeleteMessage",
+				"sqs:ReceiveMessage",
+			}),
+			Resource: resource,
+		},
 	)
 }
 
