@@ -853,6 +853,9 @@ type NodeTerminationHandlerConfig struct {
 
 	// EnablePrometheusMetrics enables the "/metrics" endpoint.
 	EnablePrometheusMetrics *bool `json:"prometheusEnable,omitempty"`
+
+	// EnableSqsTerminationDraining enables queue-processor mode which drains nodes when an SQS termination event is received.
+	EnableSqsTerminationDraining *bool `json:"enableSqsTerminationDraining,omitempty"`
 }
 
 // ClusterAutoscalerConfig determines the cluster autoscaler configuration.

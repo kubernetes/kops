@@ -23,6 +23,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/aws/aws-sdk-go/service/eventbridge"
+	"github.com/aws/aws-sdk-go/service/eventbridge/eventbridgeiface"
+	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -114,6 +119,9 @@ type AWSCloud interface {
 	Route53() route53iface.Route53API
 	Spotinst() spotinst.Cloud
 
+	SQS() sqsiface.SQSAPI
+	EventBridge() eventbridgeiface.EventBridgeAPI
+
 	// TODO: Document and rationalize these tags/filters methods
 	AddTags(name *string, tags map[string]string)
 	BuildFilters(name *string) []*ec2.Filter
@@ -181,6 +189,8 @@ type awsCloudImplementation struct {
 	route53     *route53.Route53
 	spotinst    spotinst.Cloud
 	sts         *sts.STS
+	sqs         *sqs.SQS
+	eventbridge *eventbridge.EventBridge
 
 	region string
 
@@ -313,6 +323,22 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 				return c, err
 			}
 		}
+
+		sess, err = session.NewSession(config)
+		if err != nil {
+			return c, err
+		}
+		c.sqs = sqs.New(sess, config)
+		c.sqs.Handlers.Send.PushFront(requestLogger)
+		c.addHandlers(region, &c.sqs.Handlers)
+
+		sess, err = session.NewSession(config)
+		if err != nil {
+			return c, err
+		}
+		c.eventbridge = eventbridge.New(sess, config)
+		c.eventbridge.Handlers.Send.PushFront(requestLogger)
+		c.addHandlers(region, &c.eventbridge.Handlers)
 
 		awsCloudInstances[region] = c
 		raw = c
@@ -1606,6 +1632,14 @@ func (c *awsCloudImplementation) Route53() route53iface.Route53API {
 
 func (c *awsCloudImplementation) Spotinst() spotinst.Cloud {
 	return c.spotinst
+}
+
+func (c *awsCloudImplementation) SQS() sqsiface.SQSAPI {
+	return c.sqs
+}
+
+func (c *awsCloudImplementation) EventBridge() eventbridgeiface.EventBridgeAPI {
+	return c.eventbridge
 }
 
 func (c *awsCloudImplementation) FindVPCInfo(vpcID string) (*fi.VPCInfo, error) {

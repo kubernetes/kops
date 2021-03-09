@@ -546,6 +546,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 
 		{
 			location := key + "/k8s-1.11.yaml"
+			if fi.BoolValue(nth.EnableSqsTerminationDraining) {
+				location = key + "/queue-processor-k8s-1.11.yaml"
+			}
 			id := "k8s-1.11"
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
