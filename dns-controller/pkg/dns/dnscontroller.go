@@ -36,6 +36,7 @@ import (
 var zoneListCacheValidity = time.Minute * 15
 
 const DefaultTTL = time.Minute
+const MaxFailures = 5
 
 // DNSController applies the desired DNS state to the DNS backend
 type DNSController struct {
@@ -56,6 +57,8 @@ type DNSController struct {
 	// changeCount is a change-counter, which helps us avoid computation when nothing has changed
 	changeCount uint64
 
+	// failCount is a fail-counter for exponential backoff, reset on success
+	failCount uint64
 	// update loop frequency (seconds)
 	updateInterval time.Duration
 }
@@ -120,9 +123,18 @@ func (c *DNSController) runWatcher(stopCh <-chan struct{}) {
 		}
 
 		if err != nil {
-			klog.Warningf("Unexpected error in DNS controller, will retry: %v", err)
-			time.Sleep(2 * c.updateInterval)
+			// Increment the update failure counter
+			failures := atomic.AddUint64(&c.failCount, 1)
+			// Avoid overflowing the exponential backoff interval
+			if failures > MaxFailures {
+				failures = MaxFailures
+			}
+			backoffInterval := 1 << failures * c.updateInterval
+			klog.Warningf("Unexpected error in DNS controller, will retry in %s: %v", backoffInterval, err)
+			time.Sleep(backoffInterval)
 		} else {
+			// Reset the update failure counter
+			atomic.StoreUint64(&c.failCount, 0)
 			// Simple debouncing; DNS servers are typically pretty slow anyway
 			time.Sleep(c.updateInterval)
 		}
@@ -308,7 +320,7 @@ func (c *DNSController) runOnce() error {
 			continue
 		}
 
-		klog.V(2).Infof("applying DNS changeset for zone %s", key)
+		klog.V(2).Infof("Applying DNS changeset for zone %s", key)
 		if err := changeset.Apply(ctx); err != nil {
 			klog.Warningf("error applying DNS changeset for zone %s: %v", key, err)
 			errors = append(errors, fmt.Errorf("error applying DNS changeset for zone %s: %v", key, err))
@@ -351,7 +363,7 @@ func (c *DNSController) RemoveRecordsImmediate(records []Record) error {
 	}
 
 	for key, changeset := range op.changesets {
-		klog.V(2).Infof("applying DNS changeset for zone %s", key)
+		klog.V(2).Infof("Applying DNS changeset for zone %s", key)
 		if err := changeset.Apply(ctx); err != nil {
 			klog.Warningf("error applying DNS changeset for zone %s: %v", key, err)
 			errors = append(errors, fmt.Errorf("error applying DNS changeset for zone %s: %v", key, err))
