@@ -141,15 +141,11 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 			id := strings.TrimPrefix(k, "security-group:")
 			securityGroups.Insert(id)
 		}
-		lcs, err := FindAutoScalingLaunchConfigurations(cloud, securityGroups)
-		if err != nil {
-			return nil, err
-		}
 		lts, err := FindAutoScalingLaunchTemplates(cloud, clusterName)
 		if err != nil {
 			return nil, err
 		}
-		for _, t := range append(lcs, lts...) {
+		for _, t := range lts {
 			resourceTrackers[t.Type+":"+t.ID] = t
 		}
 	}
@@ -1234,50 +1230,6 @@ func FindAutoScalingLaunchTemplates(cloud fi.Cloud, clusterName string) ([]*reso
 	return list, nil
 }
 
-// FindAutoScalingLaunchConfigurations finds all launch configurations which has a reference to the security groups
-func FindAutoScalingLaunchConfigurations(cloud fi.Cloud, securityGroups sets.String) ([]*resources.Resource, error) {
-	c := cloud.(awsup.AWSCloud)
-
-	klog.V(2).Infof("Finding all Autoscaling LaunchConfigurations by security group")
-	var resourceTrackers []*resources.Resource
-
-	request := &autoscaling.DescribeLaunchConfigurationsInput{}
-	err := c.Autoscaling().DescribeLaunchConfigurationsPages(request, func(p *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
-		for _, t := range p.LaunchConfigurations {
-			found := false
-			for _, sg := range t.SecurityGroups {
-				if securityGroups.Has(aws.StringValue(sg)) {
-					found = true
-					break
-				}
-			}
-			if !found {
-				continue
-			}
-
-			resourceTracker := &resources.Resource{
-				Name:    aws.StringValue(t.LaunchConfigurationName),
-				ID:      aws.StringValue(t.LaunchConfigurationName),
-				Type:    TypeAutoscalingLaunchConfig,
-				Deleter: DeleteAutoscalingLaunchConfiguration,
-			}
-
-			var blocks []string
-			//blocks = append(blocks, TypeAutoscalingLaunchConfig + ":" + aws.StringValue(asg.LaunchConfigurationName))
-
-			resourceTracker.Blocks = blocks
-
-			resourceTrackers = append(resourceTrackers, resourceTracker)
-		}
-		return true
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error listing autoscaling LaunchConfigurations: %v", err)
-	}
-
-	return resourceTrackers, nil
-}
-
 func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource, clusterName string) ([]*resources.Resource, error) {
 	if len(routeTables) == 0 {
 		return nil, nil
@@ -1391,21 +1343,6 @@ func DeleteAutoScalingGroupLaunchTemplate(cloud fi.Cloud, r *resources.Resource)
 		return fmt.Errorf("error deleting ec2 LaunchTemplate %q: %v", r.ID, err)
 	}
 
-	return nil
-}
-
-func DeleteAutoscalingLaunchConfiguration(cloud fi.Cloud, r *resources.Resource) error {
-	c := cloud.(awsup.AWSCloud)
-
-	id := r.ID
-	klog.V(2).Infof("Deleting autoscaling LaunchConfiguration %q", id)
-	request := &autoscaling.DeleteLaunchConfigurationInput{
-		LaunchConfigurationName: &id,
-	}
-	_, err := c.Autoscaling().DeleteLaunchConfiguration(request)
-	if err != nil {
-		return fmt.Errorf("error deleting autoscaling LaunchConfiguration %q: %v", id, err)
-	}
 	return nil
 }
 
