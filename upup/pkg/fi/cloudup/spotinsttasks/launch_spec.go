@@ -182,9 +182,38 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 
 	// Root volume options.
 	{
-		if spec.RootVolumeSize != nil {
-			actual.RootVolumeOpts = new(RootVolumeOpts)
-			actual.RootVolumeOpts.Size = fi.Int32(int32(*spec.RootVolumeSize))
+		// Volume size.
+		{
+			if spec.RootVolumeSize != nil {
+				actual.RootVolumeOpts = new(RootVolumeOpts)
+				actual.RootVolumeOpts.Size = fi.Int64(int64(*spec.RootVolumeSize))
+			}
+		}
+
+		// Block device mappings.
+		{
+			if spec.BlockDeviceMappings != nil {
+				for _, b := range spec.BlockDeviceMappings {
+					if b.EBS == nil || b.EBS.SnapshotID != nil {
+						continue // not the root
+					}
+					if actual.RootVolumeOpts == nil {
+						actual.RootVolumeOpts = new(RootVolumeOpts)
+					}
+					if b.EBS.VolumeType != nil {
+						actual.RootVolumeOpts.Type = fi.String(strings.ToLower(fi.StringValue(b.EBS.VolumeType)))
+					}
+					if b.EBS.VolumeSize != nil {
+						actual.RootVolumeOpts.Size = fi.Int64(int64(fi.IntValue(b.EBS.VolumeSize)))
+					}
+					if b.EBS.IOPS != nil {
+						actual.RootVolumeOpts.IOPS = fi.Int64(int64(fi.IntValue(b.EBS.IOPS)))
+					}
+					if b.EBS.Throughput != nil {
+						actual.RootVolumeOpts.Throughput = fi.Int64(int64(fi.IntValue(b.EBS.Throughput)))
+					}
+				}
+			}
 		}
 	}
 
@@ -367,11 +396,15 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 	// Root volume options.
 	{
 		if opts := e.RootVolumeOpts; opts != nil {
-
-			// Volume size.
-			if opts.Size != nil {
-				spec.SetRootVolumeSize(fi.Int(int(*opts.Size)))
+			rootDevice, err := buildRootDevice(cloud, e.RootVolumeOpts, e.ImageID)
+			if err != nil {
+				return err
 			}
+
+			spec.SetRootVolumeSize(nil) // mutually exclusive
+			spec.SetBlockDeviceMappings([]*aws.BlockDeviceMapping{
+				e.convertBlockDeviceMapping(rootDevice),
+			})
 		}
 	}
 
@@ -548,14 +581,17 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 	// Root volume options.
 	{
 		if opts := changes.RootVolumeOpts; opts != nil {
-
-			// Volume size.
-			if opts.Size != nil {
-				spec.SetRootVolumeSize(fi.Int(int(*opts.Size)))
-				changed = true
+			rootDevice, err := buildRootDevice(cloud, opts, e.ImageID)
+			if err != nil {
+				return err
 			}
 
+			spec.SetRootVolumeSize(nil) // mutually exclusive
+			spec.SetBlockDeviceMappings([]*aws.BlockDeviceMapping{
+				e.convertBlockDeviceMapping(rootDevice),
+			})
 			changes.RootVolumeOpts = nil
+			changed = true
 		}
 	}
 
@@ -743,7 +779,7 @@ type terraformLaunchSpec struct {
 	ImageID                  *string                        `json:"image_id,omitempty" cty:"image_id"`
 	AssociatePublicIPAddress *bool                          `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
 	RestrictScaleDown        *bool                          `json:"restrict_scale_down,omitempty" cty:"restrict_scale_down"`
-	RootVolumeSize           *int32                         `json:"root_volume_size,omitempty" cty:"root_volume_size"`
+	RootVolumeSize           *int64                         `json:"root_volume_size,omitempty" cty:"root_volume_size"`
 	UserData                 *terraform.Literal             `json:"user_data,omitempty" cty:"user_data"`
 	IAMInstanceProfile       *terraform.Literal             `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
 	KeyName                  *terraform.Literal             `json:"key_name,omitempty" cty:"key_name"`
@@ -754,11 +790,26 @@ type terraformLaunchSpec struct {
 	Labels                   []*terraformKV                 `json:"labels,omitempty" cty:"labels"`
 	Tags                     []*terraformKV                 `json:"tags,omitempty" cty:"tags"`
 	Headrooms                []*terraformAutoScalerHeadroom `json:"autoscale_headrooms,omitempty" cty:"autoscale_headrooms"`
+	BlockDeviceMappings      []*terraformBlockDeviceMapping `json:"block_device_mappings,omitempty" cty:"block_device_mappings"`
 	Strategy                 *terraformLaunchSpecStrategy   `json:"strategy,omitempty" cty:"strategy"`
 }
 
 type terraformLaunchSpecStrategy struct {
 	SpotPercentage *int64 `json:"spot_percentage,omitempty" cty:"spot_percentage"`
+}
+
+type terraformBlockDeviceMapping struct {
+	DeviceName *string                         `json:"device_name,omitempty" cty:"device_name"`
+	EBS        *terraformBlockDeviceMappingEBS `json:"ebs,omitempty" cty:"ebs"`
+}
+
+type terraformBlockDeviceMappingEBS struct {
+	VirtualName         *string `json:"virtual_name,omitempty" cty:"virtual_name"`
+	VolumeType          *string `json:"volume_type,omitempty" cty:"volume_type"`
+	VolumeSize          *int64  `json:"volume_size,omitempty" cty:"volume_size"`
+	VolumeIOPS          *int64  `json:"iops,omitempty" cty:"iops"`
+	VolumeThroughput    *int64  `json:"throughput,omitempty" cty:"throughput"`
+	DeleteOnTermination *bool   `json:"delete_on_termination,omitempty" cty:"delete_on_termination"`
 }
 
 func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LaunchSpec) error {
@@ -840,11 +891,21 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 
 	// Root volume options.
 	if opts := e.RootVolumeOpts; opts != nil {
-
-		// Volume size.
-		if opts.Size != nil {
-			tf.RootVolumeSize = opts.Size
+		rootDevice, err := buildRootDevice(t.Cloud.(awsup.AWSCloud), e.RootVolumeOpts, e.ImageID)
+		if err != nil {
+			return err
 		}
+
+		tf.BlockDeviceMappings = append(tf.BlockDeviceMappings, &terraformBlockDeviceMapping{
+			DeviceName: rootDevice.DeviceName,
+			EBS: &terraformBlockDeviceMappingEBS{
+				VolumeType:          rootDevice.EbsVolumeType,
+				VolumeSize:          rootDevice.EbsVolumeSize,
+				VolumeIOPS:          rootDevice.EbsVolumeIops,
+				VolumeThroughput:    rootDevice.EbsVolumeThroughput,
+				DeleteOnTermination: fi.Bool(true),
+			},
+		})
 	}
 
 	// Tags.
@@ -936,4 +997,31 @@ func (o *LaunchSpec) buildTags() []*aws.Tag {
 	}
 
 	return tags
+}
+
+func (o *LaunchSpec) convertBlockDeviceMapping(in *awstasks.BlockDeviceMapping) *aws.BlockDeviceMapping {
+	out := &aws.BlockDeviceMapping{
+		DeviceName:  in.DeviceName,
+		VirtualName: in.VirtualName,
+	}
+
+	if in.EbsDeleteOnTermination != nil || in.EbsVolumeSize != nil || in.EbsVolumeType != nil {
+		out.EBS = &aws.EBS{
+			VolumeType:          in.EbsVolumeType,
+			VolumeSize:          fi.Int(int(fi.Int64Value(in.EbsVolumeSize))),
+			DeleteOnTermination: in.EbsDeleteOnTermination,
+		}
+
+		// IOPS is not valid for gp2 volumes.
+		if in.EbsVolumeIops != nil && fi.StringValue(in.EbsVolumeType) != "gp2" {
+			out.EBS.IOPS = fi.Int(int(fi.Int64Value(in.EbsVolumeIops)))
+		}
+
+		// Throughput is only valid for gp3 volumes.
+		if in.EbsVolumeThroughput != nil && fi.StringValue(in.EbsVolumeType) == "gp3" {
+			out.EBS.Throughput = fi.Int(int(fi.Int64Value(in.EbsVolumeThroughput)))
+		}
+	}
+
+	return out
 }

@@ -6,6 +6,7 @@ go_library(
         "assertion_compare.go",
         "assertion_format.go",
         "assertion_forward.go",
+        "assertion_order.go",
         "assertions.go",
         "doc.go",
         "errors.go",

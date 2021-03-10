@@ -503,9 +503,7 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, ig
 }
 
 func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContext,
-
 	ig, igOcean *kops.InstanceGroup, ocean *spotinsttasks.Ocean) (err error) {
-
 	klog.V(4).Infof("Building instance group as LaunchSpec: %q", b.AutoscalingGroupName(ig))
 	launchSpec := &spotinsttasks.LaunchSpec{
 		Name:    fi.String(b.AutoscalingGroupName(ig)),
@@ -564,8 +562,6 @@ func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContex
 	}
 	if rootVolumeOpts != nil { // remove unsupported options
 		launchSpec.RootVolumeOpts = rootVolumeOpts
-		launchSpec.RootVolumeOpts.Type = nil
-		launchSpec.RootVolumeOpts.IOPS = nil
 		launchSpec.RootVolumeOpts.Optimization = nil
 	}
 
@@ -613,7 +609,6 @@ func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContex
 
 func (b *SpotInstanceGroupModelBuilder) buildSecurityGroups(c *fi.ModelBuilderContext,
 	ig *kops.InstanceGroup) ([]*awstasks.SecurityGroup, error) {
-
 	securityGroups := []*awstasks.SecurityGroup{
 		b.LinkToSecurityGroup(ig.Spec.Role),
 	}
@@ -692,9 +687,7 @@ func (b *SpotInstanceGroupModelBuilder) buildPublicIpOpts(ig *kops.InstanceGroup
 }
 
 func (b *SpotInstanceGroupModelBuilder) buildRootVolumeOpts(ig *kops.InstanceGroup) (*spotinsttasks.RootVolumeOpts, error) {
-	opts := &spotinsttasks.RootVolumeOpts{
-		IOPS: ig.Spec.RootVolumeIops,
-	}
+	opts := new(spotinsttasks.RootVolumeOpts)
 
 	// Optimization.
 	{
@@ -713,7 +706,7 @@ func (b *SpotInstanceGroupModelBuilder) buildRootVolumeOpts(ig *kops.InstanceGro
 				return nil, err
 			}
 		}
-		opts.Size = fi.Int32(size)
+		opts.Size = fi.Int64(int64(size))
 	}
 
 	// Type.
@@ -723,6 +716,22 @@ func (b *SpotInstanceGroupModelBuilder) buildRootVolumeOpts(ig *kops.InstanceGro
 			typ = "gp2"
 		}
 		opts.Type = fi.String(typ)
+	}
+
+	// IOPS.
+	{
+		iops := fi.Int32Value(ig.Spec.RootVolumeIops)
+		if iops > 0 {
+			opts.IOPS = fi.Int64(int64(iops))
+		}
+	}
+
+	// Throughput.
+	{
+		throughput := fi.Int32Value(ig.Spec.RootVolumeThroughput)
+		if throughput > 0 {
+			opts.Throughput = fi.Int64(int64(throughput))
+		}
 	}
 
 	return opts, nil
