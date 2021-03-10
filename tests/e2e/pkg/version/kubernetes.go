@@ -32,13 +32,21 @@ func ParseKubernetesVersion(version string) (string, error) {
 	if _, err := semver.ParseTolerant(version); err == nil {
 		return version, nil
 	}
-	if _, err := url.Parse(version); err == nil {
+	if u, err := url.Parse(version); err == nil {
 		var b bytes.Buffer
 		err = util.HTTPGETWithHeaders(version, nil, &b)
 		if err != nil {
 			return "", err
 		}
-		return strings.TrimSpace(b.String()), nil
+
+		// Replace the last part of the version URL path with the contents of the URL's body
+		// Example:
+		// https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt -> v1.21.0-beta.1.112+576aa2d2470b28%0A
+		// becomes https://storage.googleapis.com/kubernetes-release-dev/ci/v1.21.0-beta.1.112+576aa2d2470b28%0A
+		pathParts := strings.Split(u.Path, "/")
+		pathParts[len(pathParts)-1] = b.String()
+		u.Path = strings.Join(pathParts, "/")
+		return strings.TrimSpace(u.String()), nil
 	}
 	return "", fmt.Errorf("unexpected kubernetes version: %v", version)
 }
