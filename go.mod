@@ -68,8 +68,8 @@ require (
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.0
-	github.com/spotinst/spotinst-sdk-go v1.76.0
-	github.com/stretchr/testify v1.6.1
+	github.com/spotinst/spotinst-sdk-go v1.80.0
+	github.com/stretchr/testify v1.7.0
 	github.com/weaveworks/mesh v0.0.0-20170419100114-1f158d31de55
 	github.com/zclconf/go-cty v1.3.1
 	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9

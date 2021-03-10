@@ -275,7 +275,7 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 		// Root volume options.
 		if lc.RootVolumeSize != nil {
 			actual.RootVolumeOpts = new(RootVolumeOpts)
-			actual.RootVolumeOpts.Size = fi.Int32(int32(*lc.RootVolumeSize))
+			actual.RootVolumeOpts.Size = fi.Int64(int64(*lc.RootVolumeSize))
 		}
 
 		// Monitoring.
@@ -1034,7 +1034,7 @@ type terraformOcean struct {
 	EBSOptimized             *bool                `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
 	ImageID                  *string              `json:"image_id,omitempty" cty:"image_id"`
 	AssociatePublicIPAddress *bool                `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
-	RootVolumeSize           *int32               `json:"root_volume_size,omitempty" cty:"root_volume_size"`
+	RootVolumeSize           *int64               `json:"root_volume_size,omitempty" cty:"root_volume_size"`
 	UserData                 *terraform.Literal   `json:"user_data,omitempty" cty:"user_data"`
 	IAMInstanceProfile       *terraform.Literal   `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
 	KeyName                  *terraform.Literal   `json:"key_name,omitempty" cty:"key_name"`

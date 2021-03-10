@@ -766,7 +766,7 @@ func (s *ServiceOp) List(ctx context.Context, input *ListGroupsInput) (*ListGrou
 }
 
 func (s *ServiceOp) Create(ctx context.Context, input *CreateGroupInput) (*CreateGroupOutput, error) {
-	r := client.NewRequest(http.MethodPost, "/compute/azure/group")
+	r := client.NewRequest(http.MethodPost, "/azure/compute/group")
 	r.Obj = input
 
 	resp, err := client.RequireOK(s.Client.Do(ctx, r))
