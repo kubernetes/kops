@@ -24,7 +24,7 @@ export KOPS_FEATURE_FLAGS="SpecOverrideFlag,${KOPS_FEATURE_FLAGS:-}"
 REPO_ROOT=$(git rev-parse --show-toplevel);
 PATH=$REPO_ROOT/bazel-bin/cmd/kops/$(go env GOOS)-$(go env GOARCH):$PATH
 
-KUBETEST2_COMMON_ARGS="-v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-} --kops-binary-path=${REPO_ROOT}/bazel-bin/cmd/kops/linux-amd64/kops"
+KUBETEST2_COMMON_ARGS="-v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-}"
 KUBETEST2_COMMON_ARGS="${KUBETEST2_COMMON_ARGS} --admin-access=${ADMIN_ACCESS:-}"
 
 export GO111MODULE=on
@@ -34,7 +34,12 @@ cd ${REPO_ROOT}/tests/e2e
 go install ./kubetest2-kops
 go install ./kubetest2-tester-kops
 
-kubetest2 kops ${KUBETEST2_COMMON_ARGS} --build --kops-root=${REPO_ROOT} --stage-location=${STAGE_LOCATION:-}
+if [[ "${JOB_TYPE}" == "periodic" ]]; then
+  KUBETEST2_COMMON_ARGS="${KUBETEST2_COMMON_ARGS} --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt"
+else
+  KUBETEST2_COMMON_ARGS="${KUBETEST2_COMMON_ARGS} --kops-binary-path=${REPO_ROOT}/bazel-bin/cmd/kops/linux-amd64/kops"
+  kubetest2 kops ${KUBETEST2_COMMON_ARGS} --build --kops-root=${REPO_ROOT} --stage-location=${STAGE_LOCATION:-}
+fi
 
 # Always tear-down the cluster when we're done
 function finish {
