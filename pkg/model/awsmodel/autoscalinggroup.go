@@ -19,7 +19,6 @@ package awsmodel
 import (
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
@@ -33,10 +32,12 @@ import (
 )
 
 const (
+	// DefaultHTTPTokens is the default state of token usage for the instance metadata requests
+	DefaultHTTPTokens = ec2.LaunchTemplateHttpTokensStateOptional
+	// DefaultHTTPPutResponseHopLimit is the default HTTP PUT response hop limit for instance metadata requests
+	DefaultHTTPPutResponseHopLimit = 1
 	// DefaultVolumeType is the default volume type
 	DefaultVolumeType = ec2.VolumeTypeGp3
-	// DefaultLegacyVolumeType is the default volume type when using LaunchConfigurations
-	DefaultLegacyVolumeType = ec2.VolumeTypeGp2
 	// DefaultVolumeIonIops is the default volume IOPS when volume type is io1 or io2
 	DefaultVolumeIonIops = 100
 	// DefaultVolumeGp3Iops is the default volume IOPS when volume type is gp3
@@ -92,144 +93,70 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 // buildLaunchTemplateTask is responsible for creating the template task into the aws model
 func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchTemplate, error) {
-	lc, err := b.buildLaunchTemplateHelper(c, name, ig)
-	if err != nil {
-		return nil, err
+	t := &awstasks.LaunchTemplate{
+		Name:      fi.String(name),
+		Lifecycle: b.Lifecycle,
+
+		CPUCredits:                   fi.String(""),
+		HTTPPutResponseHopLimit:      fi.Int64(DefaultHTTPPutResponseHopLimit),
+		HTTPTokens:                   fi.String(DefaultHTTPTokens),
+		ImageID:                      fi.String(ig.Spec.Image),
+		InstanceInterruptionBehavior: ig.Spec.InstanceInterruptionBehavior,
+		InstanceMonitoring:           ig.Spec.DetailedInstanceMonitoring,
+		InstanceType:                 fi.String(ig.Spec.MachineType),
+		RootVolumeEncryption:         fi.Bool(DefaultVolumeEncryption),
+		RootVolumeKmsKey:             fi.String(""),
+		RootVolumeOptimization:       ig.Spec.RootVolumeOptimization,
+		RootVolumeType:               fi.String(DefaultVolumeType),
+		SecurityGroups:               []*awstasks.SecurityGroup{},
+		SpotDurationInMinutes:        ig.Spec.SpotDurationInMinutes,
+		SpotPrice:                    fi.String(""),
 	}
 
-	tags, err := b.CloudTagsForInstanceGroup(ig)
-	if err != nil {
-		return nil, fmt.Errorf("error building cloud tags: %v", err)
-	}
+	// Define generic error placeholder
+	var err error
 
-	lt := &awstasks.LaunchTemplate{
-		Name:                    fi.String(name),
-		Lifecycle:               b.Lifecycle,
-		AssociatePublicIP:       lc.AssociatePublicIP,
-		BlockDeviceMappings:     lc.BlockDeviceMappings,
-		IAMInstanceProfile:      lc.IAMInstanceProfile,
-		ImageID:                 lc.ImageID,
-		InstanceMonitoring:      lc.InstanceMonitoring,
-		InstanceType:            lc.InstanceType,
-		RootVolumeOptimization:  lc.RootVolumeOptimization,
-		RootVolumeSize:          lc.RootVolumeSize,
-		RootVolumeIops:          lc.RootVolumeIops,
-		RootVolumeType:          lc.RootVolumeType,
-		RootVolumeEncryption:    lc.RootVolumeEncryption,
-		SSHKey:                  lc.SSHKey,
-		SecurityGroups:          lc.SecurityGroups,
-		Tags:                    tags,
-		Tenancy:                 lc.Tenancy,
-		UserData:                lc.UserData,
-		HTTPTokens:              lc.HTTPTokens,
-		HTTPPutResponseHopLimit: lc.HTTPPutResponseHopLimit,
-	}
-	// When using a MixedInstances ASG, AWS requires the SpotPrice be defined on the ASG
-	// rather than the LaunchTemplate or else it returns this error:
-	//   You cannot use a launch template that is set to request Spot Instances (InstanceMarketOptions)
-	//   when you configure an Auto Scaling group with a mixed instances policy.
-	if ig.Spec.MixedInstancesPolicy == nil && ig.Spec.MaxPrice != nil {
-		lt.SpotPrice = ig.Spec.MaxPrice
-	} else {
-		lt.SpotPrice = fi.String("")
-	}
-	if ig.Spec.SpotDurationInMinutes != nil {
-		lt.SpotDurationInMinutes = ig.Spec.SpotDurationInMinutes
-	}
-	if ig.Spec.InstanceInterruptionBehavior != nil {
-		lt.InstanceInterruptionBehavior = ig.Spec.InstanceInterruptionBehavior
-	}
-	if fi.BoolValue(ig.Spec.RootVolumeEncryption) && ig.Spec.RootVolumeEncryptionKey != nil {
-		lt.RootVolumeKmsKey = ig.Spec.RootVolumeEncryptionKey
-	} else {
-		lt.RootVolumeKmsKey = fi.String("")
-	}
-	if fi.StringValue(ig.Spec.RootVolumeType) == "" {
-		lt.RootVolumeType = fi.String(DefaultVolumeType)
-	}
-	if fi.StringValue(lt.RootVolumeType) == ec2.VolumeTypeGp3 {
-		if fi.Int32Value(ig.Spec.RootVolumeIops) < 3000 {
-			lt.RootVolumeIops = fi.Int64(int64(DefaultVolumeGp3Iops))
-		} else {
-			lt.RootVolumeIops = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops)))
-		}
-		if fi.Int32Value(ig.Spec.RootVolumeThroughput) < 125 {
-			lt.RootVolumeThroughput = fi.Int64(int64(DefaultVolumeGp3Throughput))
-		} else {
-			lt.RootVolumeThroughput = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeThroughput)))
-		}
-	}
-
-	if ig.Spec.CPUCredits != nil {
-		lt.CPUCredits = ig.Spec.CPUCredits
-	} else {
-		lt.CPUCredits = fi.String("")
-	}
-
-	return lt, nil
-}
-
-// buildLaunchTemplateHelper is responsible for building a launch configuration task into the model
-func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchTemplate, error) {
-	// @step: lets add the root volume settings
-	volumeSize, err := defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
-	if err != nil {
-		return nil, err
-	}
-	if fi.Int32Value(ig.Spec.RootVolumeSize) > 0 {
-		volumeSize = fi.Int32Value(ig.Spec.RootVolumeSize)
-	}
-
-	volumeType := fi.StringValue(ig.Spec.RootVolumeType)
-	if volumeType == "" {
-		volumeType = DefaultLegacyVolumeType
-	}
-
-	rootVolumeEncryption := DefaultVolumeEncryption
-	if ig.Spec.RootVolumeEncryption != nil {
-		rootVolumeEncryption = fi.BoolValue(ig.Spec.RootVolumeEncryption)
-	}
-
-	// @step: if required we add the override for the security group for this instancegroup
-	sgLink := b.LinkToSecurityGroup(ig.Spec.Role)
-	if ig.Spec.SecurityGroupOverride != nil {
-		sgName := fmt.Sprintf("%v-%v", fi.StringValue(ig.Spec.SecurityGroupOverride), ig.Spec.Role)
-		sgLink = &awstasks.SecurityGroup{
-			ID:     ig.Spec.SecurityGroupOverride,
-			Name:   &sgName,
-			Shared: fi.Bool(true),
-		}
-	}
-
-	// @step: add the iam instance profile
-	link, err := b.LinkToIAMInstanceProfile(ig)
-	if err != nil {
+	// Set the link to the IAM instance profile
+	if t.IAMInstanceProfile, err = b.LinkToIAMInstanceProfile(ig); err != nil {
 		return nil, fmt.Errorf("unable to find IAM profile link for instance group %q: %w", ig.ObjectMeta.Name, err)
 	}
 
-	t := &awstasks.LaunchTemplate{
-		Name:                   fi.String(name),
-		Lifecycle:              b.Lifecycle,
-		IAMInstanceProfile:     link,
-		ImageID:                fi.String(ig.Spec.Image),
-		InstanceMonitoring:     ig.Spec.DetailedInstanceMonitoring,
-		InstanceType:           fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
-		RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
-		RootVolumeSize:         fi.Int64(int64(volumeSize)),
-		RootVolumeType:         fi.String(volumeType),
-		RootVolumeEncryption:   fi.Bool(rootVolumeEncryption),
-		SecurityGroups:         []*awstasks.SecurityGroup{sgLink},
+	// Set the tags
+	if t.Tags, err = b.CloudTagsForInstanceGroup(ig); err != nil {
+		return nil, fmt.Errorf("error building cloud tags: %v", err)
 	}
 
-	t.HTTPTokens = fi.String(ec2.LaunchTemplateHttpTokensStateOptional)
+	// Set the user data
+	if t.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig); err != nil {
+		return nil, err
+	}
+
+	// Set the state of token usage for the instance metadata requests
 	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPTokens != nil {
 		t.HTTPTokens = ig.Spec.InstanceMetadata.HTTPTokens
 	}
-	t.HTTPPutResponseHopLimit = fi.Int64(1)
+
+	// Set the HTTP PUT response hop limit for instance metadata requests
 	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit != nil {
 		t.HTTPPutResponseHopLimit = ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit
 	}
 
+	// Set the main security group task
+	if ig.Spec.SecurityGroupOverride == nil {
+		sgTask := b.LinkToSecurityGroup(ig.Spec.Role)
+		klog.Infof("Main SG: %q", fi.StringValue(sgTask.Name))
+		t.SecurityGroups = append(t.SecurityGroups, sgTask)
+	} else {
+		sgName := fmt.Sprintf("%v-%v", fi.StringValue(ig.Spec.SecurityGroupOverride), ig.Spec.Role)
+		sgTask := &awstasks.SecurityGroup{
+			ID:     ig.Spec.SecurityGroupOverride,
+			Name:   &sgName,
+			Shared: fi.Bool(true),
+		}
+		t.SecurityGroups = append(t.SecurityGroups, sgTask)
+	}
+
+	// Add the additional NLB API security groups tasks
 	if ig.HasAPIServer() &&
 		b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
 		for _, id := range b.Cluster.Spec.API.LoadBalancer.AdditionalSecurityGroups {
@@ -246,19 +173,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 		}
 	}
 
-	if volumeType == ec2.VolumeTypeIo1 || volumeType == ec2.VolumeTypeIo2 {
-		if fi.Int32Value(ig.Spec.RootVolumeIops) < 100 {
-			t.RootVolumeIops = fi.Int64(int64(DefaultVolumeIonIops))
-		} else {
-			t.RootVolumeIops = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops)))
-		}
-	}
-
-	if ig.Spec.Tenancy != "" {
-		t.Tenancy = fi.String(ig.Spec.Tenancy)
-	}
-
-	// @step: add any additional security groups to the instancegroup
+	// Add the the additional security groups tasks
 	for _, id := range ig.Spec.AdditionalSecurityGroups {
 		sgTask := &awstasks.SecurityGroup{
 			ID:        fi.String(id),
@@ -272,38 +187,75 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 		t.SecurityGroups = append(t.SecurityGroups, sgTask)
 	}
 
-	// @step: add any additional block devices to the launch configuration
+	// Set the root volume
+	if ig.Spec.RootVolumeEncryption != nil {
+		t.RootVolumeEncryption = ig.Spec.RootVolumeEncryption
+	}
+	if fi.BoolValue(ig.Spec.RootVolumeEncryption) && ig.Spec.RootVolumeEncryptionKey != nil {
+		t.RootVolumeKmsKey = ig.Spec.RootVolumeEncryptionKey
+	}
+	if fi.Int32Value(ig.Spec.RootVolumeSize) > 0 {
+		t.RootVolumeSize = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeSize)))
+	} else {
+		defaultVolumeSize, err := defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+		if err != nil {
+			return nil, err
+		}
+		t.RootVolumeSize = fi.Int64(int64(defaultVolumeSize))
+	}
+	if ig.Spec.RootVolumeType != nil {
+		t.RootVolumeType = ig.Spec.RootVolumeType
+	}
+	switch fi.StringValue(t.RootVolumeType) {
+	case ec2.VolumeTypeGp3:
+		t.RootVolumeIops = fi.Int64(int64(DefaultVolumeGp3Iops))
+		if fi.Int32Value(ig.Spec.RootVolumeIops) > DefaultVolumeGp3Iops {
+			t.RootVolumeIops = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops)))
+		}
+		t.RootVolumeThroughput = fi.Int64(int64(DefaultVolumeGp3Throughput))
+		if fi.Int32Value(ig.Spec.RootVolumeThroughput) > DefaultVolumeGp3Throughput {
+			t.RootVolumeThroughput = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeThroughput)))
+		}
+	case ec2.VolumeTypeIo1, ec2.VolumeTypeIo2:
+		t.RootVolumeIops = fi.Int64(int64(DefaultVolumeIonIops))
+		if fi.Int32Value(ig.Spec.RootVolumeIops) > DefaultVolumeIonIops {
+			t.RootVolumeIops = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops)))
+		}
+	default:
+		t.RootVolumeIops = nil
+	}
+
+	// Add the additional volumes
 	for i := range ig.Spec.Volumes {
 		x := &ig.Spec.Volumes[i]
+		if x.DeleteOnTermination == nil {
+			x.DeleteOnTermination = fi.Bool(DefaultVolumeDeleteOnTermination)
+		}
+		if x.Encrypted == nil {
+			x.Encrypted = fi.Bool(DefaultVolumeEncryption)
+		}
 		if x.Type == "" {
 			x.Type = DefaultVolumeType
 		}
-		if x.Type == ec2.VolumeTypeIo1 || x.Type == ec2.VolumeTypeIo2 {
-			if x.Iops == nil {
+		switch x.Type {
+		case ec2.VolumeTypeIo1, ec2.VolumeTypeIo2:
+			if fi.Int64Value(x.Iops) < DefaultVolumeIonIops {
 				x.Iops = fi.Int64(DefaultVolumeIonIops)
 			}
-		} else if x.Type == ec2.VolumeTypeGp3 {
-			if x.Iops == nil {
+		case ec2.VolumeTypeGp3:
+			if fi.Int64Value(x.Iops) < DefaultVolumeGp3Iops {
 				x.Iops = fi.Int64(DefaultVolumeGp3Iops)
 			}
-			if x.Throughput == nil {
+			if fi.Int64Value(x.Throughput) < DefaultVolumeGp3Throughput {
 				x.Throughput = fi.Int64(DefaultVolumeGp3Throughput)
 			}
-		} else {
+		default:
 			x.Iops = nil
-		}
-		deleteOnTermination := DefaultVolumeDeleteOnTermination
-		if x.DeleteOnTermination != nil {
-			deleteOnTermination = fi.BoolValue(x.DeleteOnTermination)
-		}
-		encryption := DefaultVolumeEncryption
-		if x.Encrypted != nil {
-			encryption = fi.BoolValue(x.Encrypted)
 		}
 		t.BlockDeviceMappings = append(t.BlockDeviceMappings, &awstasks.BlockDeviceMapping{
 			DeviceName:             fi.String(x.Device),
-			EbsDeleteOnTermination: fi.Bool(deleteOnTermination),
-			EbsEncrypted:           fi.Bool(encryption),
+			EbsDeleteOnTermination: x.DeleteOnTermination,
+			EbsEncrypted:           x.Encrypted,
 			EbsKmsKey:              x.Key,
 			EbsVolumeIops:          x.Iops,
 			EbsVolumeSize:          fi.Int64(x.Size),
@@ -312,32 +264,41 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 		})
 	}
 
+	if ig.Spec.Tenancy != "" {
+		t.Tenancy = fi.String(ig.Spec.Tenancy)
+	}
+
 	if b.AWSModelContext.UseSSHKey() {
 		if t.SSHKey, err = b.LinkToSSHKey(); err != nil {
 			return nil, err
 		}
 	}
 
-	// @step: add the instancegroup userdata
-	if t.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig); err != nil {
-		return nil, err
-	}
-
-	// @step: check the subnets are ok and pull together an array for us
+	// Add public IP based on subnet type
 	subnets, err := b.GatherSubnets(ig)
 	if err != nil {
 		return nil, err
 	}
-
-	// @step: check if we can add an public ip to this subnet
 	switch subnets[0].Type {
+	case kops.SubnetTypePrivate:
+		t.AssociatePublicIP = fi.Bool(false)
 	case kops.SubnetTypePublic, kops.SubnetTypeUtility:
 		t.AssociatePublicIP = fi.Bool(true)
 		if ig.Spec.AssociatePublicIP != nil {
 			t.AssociatePublicIP = ig.Spec.AssociatePublicIP
 		}
-	case kops.SubnetTypePrivate:
-		t.AssociatePublicIP = fi.Bool(false)
+	}
+
+	// When using a MixedInstances ASG, AWS requires the SpotPrice be defined on the ASG
+	// rather than the LaunchTemplate or else it returns this error:
+	//   You cannot use a launch template that is set to request Spot Instances (InstanceMarketOptions)
+	//   when you configure an Auto Scaling group with a mixed instances policy.
+	if ig.Spec.MixedInstancesPolicy == nil && ig.Spec.MaxPrice != nil {
+		t.SpotPrice = ig.Spec.MaxPrice
+	}
+
+	if ig.Spec.CPUCredits != nil {
+		t.CPUCredits = ig.Spec.CPUCredits
 	}
 
 	return t, nil
@@ -457,7 +418,6 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 	// @step: are we using a mixed instance policy
 	if ig.Spec.MixedInstancesPolicy != nil {
 		spec := ig.Spec.MixedInstancesPolicy
-
 		t.MixedInstanceOverrides = spec.Instances
 		t.MixedOnDemandAboveBase = spec.OnDemandAboveBase
 		t.MixedOnDemandAllocationStrategy = spec.OnDemandAllocationStrategy
