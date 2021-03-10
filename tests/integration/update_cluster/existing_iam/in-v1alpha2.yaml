@@ -37,9 +37,6 @@ spec:
   networking:
     cni: {}
   nonMasqueradeCIDR: 100.64.0.0/10
-  roleCustomIamRoles:
-    Master: foo
-    Node: bar
   sshAccess:
   - 0.0.0.0/0
   subnets:
