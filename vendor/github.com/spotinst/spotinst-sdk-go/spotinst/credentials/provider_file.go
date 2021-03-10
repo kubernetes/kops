@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/go-ini/ini"
+	"gopkg.in/ini.v1"
 )
 
 const (

@@ -499,6 +499,7 @@ type Strategy struct {
 	RevertToSpot             *RevertToSpot    `json:"revertToSpot,omitempty"`
 	ScalingStrategy          *ScalingStrategy `json:"scalingStrategy,omitempty"`
 	UtilizeCommitments       *bool            `json:"utilizeCommitments,omitempty"`
+	MinimumInstanceLifetime  *int             `json:"minimumInstanceLifetime,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -618,6 +619,22 @@ type LaunchSpecification struct {
 	NetworkInterfaces                             []*NetworkInterface   `json:"networkInterfaces,omitempty"`
 	Tags                                          []*Tag                `json:"tags,omitempty"`
 	MetadataOptions                               *MetadataOptions      `json:"metadataOptions,omitempty"`
+	CPUOptions                                    *CPUOptions           `json:"cpuOptions,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type MetadataOptions struct {
+	HTTPTokens              *string `json:"httpTokens,omitempty"`
+	HTTPPutResponseHopLimit *int    `json:"httpPutResponseHopLimit,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type CPUOptions struct {
+	ThreadsPerCore *int `json:"threadsPerCore,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -919,14 +936,6 @@ type StopDeploymentInput struct {
 }
 
 type StopDeploymentOutput struct{}
-
-type MetadataOptions struct {
-	HTTPTokens              *string `json:"httpTokens,omitempty"`
-	HTTPPutResponseHopLimit *int    `json:"httpPutResponseHopLimit,omitempty"`
-
-	forceSendFields []string
-	nullFields      []string
-}
 
 func deploymentStatusFromJSON(in []byte) (*RollGroupStatus, error) {
 	b := new(RollGroupStatus)
@@ -3064,6 +3073,13 @@ func (o *Strategy) SetUtilizeCommitments(v *bool) *Strategy {
 	return o
 }
 
+func (o *Strategy) SetMinimumInstanceLifetime(v *int) *Strategy {
+	if o.MinimumInstanceLifetime = v; o.MinimumInstanceLifetime == nil {
+		o.nullFields = append(o.nullFields, "MinimumInstanceLifetime")
+	}
+	return o
+}
+
 // endregion
 
 // region ScalingStrategy
@@ -3543,6 +3559,13 @@ func (o *LaunchSpecification) SetTags(v []*Tag) *LaunchSpecification {
 func (o *LaunchSpecification) SetMetadataOptions(v *MetadataOptions) *LaunchSpecification {
 	if o.MetadataOptions = v; o.MetadataOptions == nil {
 		o.nullFields = append(o.nullFields, "MetadataOptions")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetCPUOptions(v *CPUOptions) *LaunchSpecification {
+	if o.CPUOptions = v; o.CPUOptions == nil {
+		o.nullFields = append(o.nullFields, "CPUOptions")
 	}
 	return o
 }
@@ -4308,6 +4331,22 @@ func (o *MetadataOptions) SetHTTPTokens(v *string) *MetadataOptions {
 func (o *MetadataOptions) SetHTTPPutResponseHopLimit(v *int) *MetadataOptions {
 	if o.HTTPPutResponseHopLimit = v; o.HTTPPutResponseHopLimit == nil {
 		o.nullFields = append(o.nullFields, "HTTPPutResponseHopLimit")
+	}
+	return o
+}
+
+// endregion
+
+// region CPUOptions
+
+func (o CPUOptions) MarshalJSON() ([]byte, error) {
+	type noMethod CPUOptions
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+func (o *CPUOptions) SetThreadsPerCore(v *int) *CPUOptions {
+	if o.ThreadsPerCore = v; o.ThreadsPerCore == nil {
+		o.nullFields = append(o.nullFields, "ThreadsPerCore")
 	}
 	return o
 }
