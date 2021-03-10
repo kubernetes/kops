@@ -26,7 +26,7 @@ test-e2e-install:
 test-e2e-aws-simple-1-20: test-e2e-install
 	kubetest2 kops \
 		-v 2 \
-		--up --down \
+		--build --up --down \
 		--cloud-provider=aws \
 		--kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
 		--kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
