@@ -42,8 +42,9 @@ type deployer struct {
 	KopsRoot      string `flag:"kops-root" desc:"Path to root of the kops repo. Used with --build."`
 	StageLocation string `flag:"stage-location" desc:"Storage location for kops artifacts. Only gs:// paths are supported."`
 
-	KopsVersionMarker string `flag:"kops-version-marker" desc:"The URL to the kops version marker. Conflicts with --build and --kops-binary-path"`
-	KopsBaseURL       string `flag:"-"`
+	KopsVersionMarker    string `flag:"kops-version-marker" desc:"The URL to the kops version marker. Conflicts with --build and --kops-binary-path"`
+	KopsBaseURL          string `flag:"-"`
+	PublishVersionMarker string `flag:"publish-version-marker" desc:"The GCS path to which the --kops-version-marker is uploaded if the tests pass"`
 
 	ClusterName    string   `flag:"cluster-name" desc:"The FQDN to use for the cluster name"`
 	CloudProvider  string   `flag:"cloud-provider" desc:"Which cloud provider to use"`
@@ -78,6 +79,7 @@ var _ types.NewDeployer = New
 
 // assert that deployer implements types.Deployer
 var _ types.Deployer = &deployer{}
+var _ types.DeployerWithPostTester = &deployer{}
 
 func (d *deployer) Provider() string {
 	return Name
