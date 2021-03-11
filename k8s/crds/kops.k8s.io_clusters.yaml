@@ -1163,6 +1163,33 @@ spec:
                     type: boolean
                   permissionsBoundary:
                     type: string
+                  serviceAccountExternalPermissions:
+                    description: ServiceAccountExternalPermissions defines the relatinship
+                      between Kubernetes ServiceAccounts and permissions with external
+                      resources.
+                    items:
+                      description: ServiceAccountExternalPermissions grants a ServiceAccount
+                        permissions to external resources.
+                      properties:
+                        aws:
+                          description: AWS grants permissions to AWS resources.
+                          properties:
+                            inlinePolicy:
+                              type: string
+                            policyARNs:
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                      required:
+                      - name
+                      - namespace
+                      type: object
+                    type: array
                 required:
                 - legacy
                 type: object

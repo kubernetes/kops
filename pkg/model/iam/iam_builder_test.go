@@ -22,9 +22,12 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/pkg/util/stringorslice"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestIAMPrefix(t *testing.T) {
@@ -225,4 +228,35 @@ func TestPolicyGeneration(t *testing.T) {
 
 		golden.AssertMatchesFile(t, actualPolicy, x.Policy)
 	}
+}
+
+func TestEmptyPolicy(t *testing.T) {
+
+	role := &GenericServiceAccount{
+		NamespacedName: types.NamespacedName{
+			Name:      "myaccount",
+			Namespace: "default",
+		},
+		Policy: nil,
+	}
+
+	cluster := testutils.BuildMinimalCluster("irsa.example.com")
+	b := &PolicyBuilder{
+		Cluster: cluster,
+		Role:    role,
+	}
+
+	pr := &PolicyResource{
+		Builder: b,
+	}
+
+	policy, err := fi.ResourceAsString(pr)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if policy != "" {
+		t.Errorf("empty policy should result in empty string, but was %q", policy)
+	}
+
 }
