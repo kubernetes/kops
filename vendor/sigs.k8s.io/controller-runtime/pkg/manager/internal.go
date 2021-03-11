@@ -38,6 +38,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/cluster"
+	"sigs.k8s.io/controller-runtime/pkg/config/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	intrec "sigs.k8s.io/controller-runtime/pkg/internal/recorder"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
@@ -107,6 +108,9 @@ type controllerManager struct {
 	startedLeader  bool
 	healthzStarted bool
 	errChan        chan error
+
+	// controllerOptions are the global controller options.
+	controllerOptions v1alpha1.ControllerConfigurationSpec
 
 	// Logger is the logger that should be used by this manager.
 	// If none is set, it defaults to log.Log global logger.
@@ -216,6 +220,7 @@ func (cm *controllerManager) Add(r Runnable) error {
 	return nil
 }
 
+// Deprecated: use the equivalent Options field to set a field. This method will be removed in v0.10.
 func (cm *controllerManager) SetFields(i interface{}) error {
 	if _, err := inject.InjectorInto(cm.SetFields, i); err != nil {
 		return err
@@ -357,6 +362,10 @@ func (cm *controllerManager) GetWebhookServer() *webhook.Server {
 
 func (cm *controllerManager) GetLogger() logr.Logger {
 	return cm.logger
+}
+
+func (cm *controllerManager) GetControllerOptions() v1alpha1.ControllerConfigurationSpec {
+	return cm.controllerOptions
 }
 
 func (cm *controllerManager) serveMetrics() {
