@@ -1,0 +1,29 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "byteio_reader.go",
+        "byteio_writer.go",
+        "doc.go",
+        "ignorefilesmatcher.go",
+        "kio.go",
+        "pkgio_reader.go",
+        "pkgio_writer.go",
+        "testing.go",
+        "tree.go",
+    ],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/kustomize/kyaml/kio",
+    importpath = "sigs.k8s.io/kustomize/kyaml/kio",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/monochromegane/go-gitignore:go_default_library",
+        "//vendor/github.com/stretchr/testify/assert:go_default_library",
+        "//vendor/github.com/xlab/treeprint:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/errors:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/ext:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/kio/kioutil:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/sets:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",
+    ],
+)

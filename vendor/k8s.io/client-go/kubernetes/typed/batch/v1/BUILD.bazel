@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "batch_client.go",
+        "cronjob.go",
         "doc.go",
         "generated_expansion.go",
         "job.go",
@@ -16,6 +17,7 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
+        "//vendor/k8s.io/client-go/applyconfigurations/batch/v1:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/scheme:go_default_library",
         "//vendor/k8s.io/client-go/rest:go_default_library",
     ],
