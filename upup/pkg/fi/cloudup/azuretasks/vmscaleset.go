@@ -182,7 +182,7 @@ func (s *VMScaleSet) Find(c *fi.Context) (*VMScaleSet, error) {
 	}
 
 	var loadBalancerID *loadBalancerID
-	if *ipConfig.LoadBalancerBackendAddressPools != nil {
+	if ipConfig.LoadBalancerBackendAddressPools != nil {
 		for _, i := range *ipConfig.LoadBalancerBackendAddressPools {
 			if !strings.Contains(*i.ID, "api") {
 				continue
