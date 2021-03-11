@@ -29,27 +29,37 @@ import (
 // DownloadKops will download the kops binary from the version marker URL
 // Returning the path to the local kops binary and the URL to use for KOPS_BASE_URL
 // Example markerURL: https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-func DownloadKops(markerURL string) (string, string, error) {
+func DownloadKops(markerURL, downloadPath string) (string, string, error) {
 	var b bytes.Buffer
 	if err := util.HTTPGETWithHeaders(markerURL, nil, &b); err != nil {
 		return "", "", err
 	}
 	kopsBaseURL := b.String()
 
-	tmp, err := ioutil.TempFile("", "kops")
-	if err != nil {
-		return "", "", err
+	var kopsFile *os.File
+	if downloadPath == "" {
+		tmp, err := ioutil.TempFile("", "kops")
+		if err != nil {
+			return "", "", err
+		}
+		kopsFile = tmp
+	} else {
+		tmp, err := os.Create(downloadPath)
+		if err != nil {
+			return "", "", err
+		}
+		kopsFile = tmp
 	}
 
 	kopsURL := fmt.Sprintf("%v/%v/%v/kops", kopsBaseURL, runtime.GOOS, runtime.GOARCH)
-	if err := util.HTTPGETWithHeaders(kopsURL, nil, tmp); err != nil {
+	if err := util.HTTPGETWithHeaders(kopsURL, nil, kopsFile); err != nil {
 		return "", "", err
 	}
-	if err := tmp.Close(); err != nil {
+	if err := kopsFile.Close(); err != nil {
 		return "", "", err
 	}
-	if err := os.Chmod(tmp.Name(), 0755); err != nil {
+	if err := os.Chmod(kopsFile.Name(), 0755); err != nil {
 		return "", "", err
 	}
-	return tmp.Name(), kopsBaseURL, nil
+	return kopsFile.Name(), kopsBaseURL, nil
 }

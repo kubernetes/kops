@@ -54,7 +54,7 @@ func (d *deployer) initialize() error {
 		}
 	}
 	if d.KopsVersionMarker != "" {
-		binaryPath, baseURL, err := kops.DownloadKops(d.KopsVersionMarker)
+		binaryPath, baseURL, err := kops.DownloadKops(d.KopsVersionMarker, d.KopsBinaryPath)
 		if err != nil {
 			return fmt.Errorf("init failed to download kops from url: %v", err)
 		}
