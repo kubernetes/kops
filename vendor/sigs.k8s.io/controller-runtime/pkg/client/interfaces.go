@@ -39,7 +39,7 @@ type Patch interface {
 	// Type is the PatchType of the patch.
 	Type() types.PatchType
 	// Data is the raw data representing the patch.
-	Data(obj runtime.Object) ([]byte, error)
+	Data(obj Object) ([]byte, error)
 }
 
 // TODO(directxman12): is there a sane way to deal with get/delete options?

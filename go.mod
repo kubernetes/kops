@@ -58,11 +58,9 @@ require (
 	github.com/gogo/protobuf v1.3.2
 	github.com/google/go-cmp v0.5.4
 	github.com/google/uuid v1.2.0
-	github.com/googleapis/gnostic v0.5.4 // indirect
 	github.com/gophercloud/gophercloud v0.15.0
 	github.com/hashicorp/hcl/v2 v2.7.0
 	github.com/hashicorp/vault/api v1.0.4
-	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
 	github.com/jetstack/cert-manager v1.1.0
 	github.com/mitchellh/mapstructure v1.1.2
@@ -89,7 +87,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	helm.sh/helm/v3 v3.4.2
 	k8s.io/api v0.21.0-beta.1
-	k8s.io/apiextensions-apiserver v0.21.0-beta.1 // indirect
 	k8s.io/apimachinery v0.21.0-beta.1
 	k8s.io/cli-runtime v0.21.0-beta.1
 	k8s.io/client-go v0.21.0-beta.1
@@ -100,6 +97,6 @@ require (
 	k8s.io/kubectl v0.21.0-beta.1
 	k8s.io/legacy-cloud-providers v0.21.0-beta.1
 	k8s.io/utils v0.0.0-20210111153108-fddb29f9d009
-	sigs.k8s.io/controller-runtime v0.8.2
+	sigs.k8s.io/controller-runtime v0.8.2-0.20210311152821-b125a18163e1
 	sigs.k8s.io/yaml v1.2.0
 )
