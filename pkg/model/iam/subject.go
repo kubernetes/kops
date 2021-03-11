@@ -77,6 +77,19 @@ func (_ *NodeRoleBastion) ServiceAccount() (types.NamespacedName, bool) {
 	return types.NamespacedName{}, false
 }
 
+type GenericServiceAccount struct {
+	NamespacedName types.NamespacedName
+	Policy         *Policy
+}
+
+func (g *GenericServiceAccount) ServiceAccount() (types.NamespacedName, bool) {
+	return g.NamespacedName, true
+}
+
+func (g *GenericServiceAccount) BuildAWSPolicy(*PolicyBuilder) (*Policy, error) {
+	return g.Policy, nil
+}
+
 // BuildNodeRoleSubject returns a Subject implementation for the specified InstanceGroupRole.
 func BuildNodeRoleSubject(igRole kops.InstanceGroupRole, enableLifecycleHookPermissions bool) (Subject, error) {
 	switch igRole {
