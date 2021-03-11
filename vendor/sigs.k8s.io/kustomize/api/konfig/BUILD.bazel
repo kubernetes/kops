@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "general.go",
+        "plugins.go",
+    ],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/kustomize/api/konfig",
+    importpath = "sigs.k8s.io/kustomize/api/konfig",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/sigs.k8s.io/kustomize/api/filesys:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/api/types:go_default_library",
+    ],
+)

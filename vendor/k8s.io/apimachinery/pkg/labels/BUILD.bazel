@@ -12,9 +12,11 @@ go_library(
     importpath = "k8s.io/apimachinery/pkg/labels",
     visibility = ["//visibility:public"],
     deps = [
+        "//vendor/github.com/google/go-cmp/cmp:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/selection:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/validation:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/validation/field:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
     ],
 )

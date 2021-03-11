@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["openapi.go"],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/kustomize/kyaml/openapi",
+    importpath = "sigs.k8s.io/kustomize/kyaml/openapi",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/go-openapi/spec:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/errors:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/openapi/kubernetesapi:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/openapi/kustomizationapi:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",
+    ],
+)

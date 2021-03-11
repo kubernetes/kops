@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "errtimeout.go",
+        "pathsplitter.go",
+        "timedcall.go",
+    ],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/kustomize/api/internal/utils",
+    importpath = "sigs.k8s.io/kustomize/api/internal/utils",
+    visibility = ["//vendor/sigs.k8s.io/kustomize/api:__subpackages__"],
+    deps = ["//vendor/github.com/pkg/errors:go_default_library"],
+)

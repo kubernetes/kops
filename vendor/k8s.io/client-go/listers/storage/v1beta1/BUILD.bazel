@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "csidriver.go",
         "csinode.go",
+        "csistoragecapacity.go",
         "expansion_generated.go",
         "storageclass.go",
         "volumeattachment.go",
