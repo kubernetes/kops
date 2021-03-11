@@ -400,6 +400,34 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		}
 	}
 
+	if c.Spec.IAMRolesForServiceAccounts != nil {
+		allErrs = append(allErrs, validateIRSA(c.Spec.IAMRolesForServiceAccounts, fieldSpec.Child("iamRolesForServiceAccounts"))...)
+	}
+	return allErrs
+}
+
+func validateIRSA(irsa *kops.IAMRolesForServiceAccountsConfig, spec *field.Path) (allErrs field.ErrorList) {
+	if !featureflag.PublicJWKS.Enabled() {
+		allErrs = append(allErrs, field.Forbidden(spec, "IAM roles for ServiceAccounts requires PublicJWKS feature flag to be enabled"))
+	}
+
+	sas := make(map[string]string)
+	for _, sa := range irsa.ServiceAccounts {
+		p := spec.Child("serviceAccounts")
+		key := fmt.Sprintf("%s/%s", sa.Namespace, sa.Name)
+		_, duplicate := sas[key]
+		if duplicate {
+			allErrs = append(allErrs, field.Duplicate(p, key))
+		}
+		sas[key] = ""
+
+		if len(sa.IAMPolicyARNs) == 0 && sa.InlinePolicy == "" {
+			allErrs = append(allErrs, field.Required(p, "inlinePolicy or iamPolicyARN must be set"))
+		}
+		if len(sa.IAMPolicyARNs) > 0 && sa.InlinePolicy != "" {
+			allErrs = append(allErrs, field.Forbidden(p, "cannot set both inlinePolicy and iamPolicyARN"))
+		}
+	}
 	return allErrs
 }
 

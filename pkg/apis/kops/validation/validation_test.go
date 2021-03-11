@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -1176,4 +1177,74 @@ func Test_Validate_CloudConfiguration(t *testing.T) {
 			testErrors(t, g.Input, errs, g.ExpectedErrors)
 		})
 	}
+}
+
+func TestValidateIRSA(t *testing.T) {
+
+	featureflag.ParseFlags("+PublicJWKS")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-PublicJWKS")
+	}
+	defer unsetFeatureFlags()
+
+	grid := []struct {
+		Description    string
+		Input          *kops.IAMRolesForServiceAccountsConfig
+		ExpectedErrors []string
+	}{
+
+		{
+			Description: "Duplicate SA",
+			Input: &kops.IAMRolesForServiceAccountsConfig{
+				ServiceAccounts: []kops.ServiceAccountMapping{
+					{
+						Name:          "MySA",
+						Namespace:     "MyNS",
+						IAMPolicyARNs: []string{"-"},
+					},
+					{
+						Name:          "MySA",
+						Namespace:     "MyNS",
+						IAMPolicyARNs: []string{"-"},
+					},
+				},
+			},
+			ExpectedErrors: []string{"Duplicate value::iamRolesForServiceAccounts.serviceAccounts"},
+		},
+		{
+			Description: "Duplicate SA",
+			Input: &kops.IAMRolesForServiceAccountsConfig{
+				ServiceAccounts: []kops.ServiceAccountMapping{
+					{
+						Name:      "MySA",
+						Namespace: "MyNS",
+					},
+				},
+			},
+			ExpectedErrors: []string{"Required value::iamRolesForServiceAccounts.serviceAccounts"},
+		},
+		{
+			Description: "Duplicate SA",
+			Input: &kops.IAMRolesForServiceAccountsConfig{
+				ServiceAccounts: []kops.ServiceAccountMapping{
+					{
+						Name:          "MySA",
+						Namespace:     "MyNS",
+						IAMPolicyARNs: []string{"-"},
+						InlinePolicy:  "-",
+					},
+				},
+			},
+			ExpectedErrors: []string{"Forbidden::iamRolesForServiceAccounts.serviceAccounts"},
+		},
+	}
+
+	for _, g := range grid {
+		fldPath := field.NewPath("iamRolesForServiceAccounts")
+		t.Run(g.Description, func(t *testing.T) {
+			errs := validateIRSA(g.Input, fldPath)
+			testErrors(t, g.Input, errs, g.ExpectedErrors)
+		})
+	}
+
 }

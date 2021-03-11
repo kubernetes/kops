@@ -1149,6 +1149,28 @@ spec:
                 required:
                 - legacy
                 type: object
+              iamRolesForServiceAccounts:
+                description: IAMRolesForServiceAccount defines the IRSA configuration.
+                properties:
+                  serviceAccounts:
+                    items:
+                      properties:
+                        iamPolicyARN:
+                          items:
+                            type: string
+                          type: array
+                        inlinePolicy:
+                          type: string
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                      required:
+                      - name
+                      - namespace
+                      type: object
+                    type: array
+                type: object
               isolateMasters:
                 description: 'IsolateMasters determines whether we should lock down
                   masters so that they are not on the pod network. true is the kube-up

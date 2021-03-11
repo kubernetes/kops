@@ -205,6 +205,21 @@ type ClusterSpec struct {
 	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
 	// ClusterAutoscaler defines the cluster autoscaler configuration.
 	ClusterAutoscaler *ClusterAutoscalerConfig `json:"clusterAutoscaler,omitempty"`
+
+	// IAMRolesForServiceAccount defines the IRSA configuration.
+	IAMRolesForServiceAccounts *IAMRolesForServiceAccountsConfig `json:"iamRolesForServiceAccounts,omitempty"`
+}
+
+// InstanceRoleForServiceAccountConfig defines the IRSA configuration.
+type IAMRolesForServiceAccountsConfig struct {
+	ServiceAccounts []ServiceAccountMapping `json:"serviceAccounts,omitempty"`
+}
+
+type ServiceAccountMapping struct {
+	Name          string   `json:"name"`
+	Namespace     string   `json:"namespace"`
+	IAMPolicyARNs []string `json:"iamPolicyARN,omitempty"`
+	InlinePolicy  string   `json:"inlinePolicy,omitempty"`
 }
 
 // NodeAuthorizationSpec is used to node authorization

@@ -405,6 +405,19 @@ func TestNTHQueueProcessor(t *testing.T) {
 	newIntegrationTest("nthsqsresources.example.com", "nth_sqs_resources").runTestCloudformation(t)
 }
 
+// TestCustomIRSA runs a simple configuration, but with some additional IAM roles for ServiceAccounts
+func TestCustomIRSA(t *testing.T) {
+	featureflag.ParseFlags("+PublicJWKS")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-PublicJWKS")
+	}
+	defer unsetFeatureFlags()
+	newIntegrationTest("minimal.example.com", "irsa").
+		withServiceAccountRole("myserviceaccount.default", false).
+		withServiceAccountRole("myotherserviceaccount.myapp", true).
+		runTestTerraformAWS(t)
+}
+
 func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
 	ctx := context.Background()
 
@@ -606,7 +619,6 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 			}...)
 		}
 	}
-
 	expectedFilenames = append(expectedFilenames, i.expectServiceAccountRolePolicies...)
 
 	i.runTest(t, h, expectedFilenames, tfFileName, tfFileName, nil)

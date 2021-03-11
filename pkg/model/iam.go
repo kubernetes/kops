@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/endpoints"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
@@ -119,26 +120,63 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
+	irsa := b.Cluster.Spec.IAMRolesForServiceAccounts
+	if irsa != nil {
+		for _, sa := range irsa.ServiceAccounts {
+			var p *iam.Policy
+			if sa.InlinePolicy != "" {
+				bp, err := b.buildPolicy(sa.InlinePolicy)
+				p = bp
+				if err != nil {
+					return fmt.Errorf("error inline policy: %w", err)
+				}
+			}
+			serviceAccount := &iam.GenericServiceAccount{
+				NamespacedName: types.NamespacedName{
+					Name:      sa.Name,
+					Namespace: sa.Namespace,
+				},
+				Policy: p,
+			}
+			iamRole, err := b.BuildServiceAccountRoleTasks(serviceAccount, c)
+			if err != nil {
+				return fmt.Errorf("error building service account role tasks: %w", err)
+			}
+			if len(sa.IAMPolicyARNs) == 0 {
+				name := "external-" + fi.StringValue(iamRole.Name)
+				externalPolicies := sa.IAMPolicyARNs
+				c.AddTask(&awstasks.IAMRolePolicy{
+					Name:             fi.String(name),
+					ExternalPolicies: &externalPolicies,
+					Managed:          true,
+					Role:             iamRole,
+					Lifecycle:        b.Lifecycle,
+				})
+			}
+		}
+
+	}
+
 	return nil
 }
 
 // BuildServiceAccountRoleTasks build tasks specifically for the ServiceAccount role.
-func (b *IAMModelBuilder) BuildServiceAccountRoleTasks(role iam.Subject, c *fi.ModelBuilderContext) error {
+func (b *IAMModelBuilder) BuildServiceAccountRoleTasks(role iam.Subject, c *fi.ModelBuilderContext) (*awstasks.IAMRole, error) {
 	iamName, err := b.IAMNameForServiceAccountRole(role)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	iamRole, err := b.buildIAMRole(role, iamName, c)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := b.buildIAMRolePolicy(role, iamName, iamRole, c); err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return iamRole, nil
 }
 
 func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName string, c *fi.ModelBuilderContext) (*awstasks.IAMRole, error) {
@@ -307,20 +345,14 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 			}
 
 			if additionalPolicy != "" {
-				p := &iam.Policy{
-					Version: iam.PolicyDefaultVersion,
-				}
-
-				statements, err := iam.ParseStatements(additionalPolicy)
+				p, err := b.buildPolicy(additionalPolicy)
 				if err != nil {
 					return fmt.Errorf("additionalPolicy %q is invalid: %v", roleKey, err)
 				}
 
-				p.Statement = append(p.Statement, statements...)
-
 				policy, err := p.AsJSON()
 				if err != nil {
-					return fmt.Errorf("error building IAM policy: %v", err)
+					return fmt.Errorf("error building IAM policy: %w", err)
 				}
 
 				t.PolicyDocument = fi.NewStringResource(policy)
@@ -333,6 +365,20 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 	}
 
 	return nil
+}
+
+func (b *IAMModelBuilder) buildPolicy(policyString string) (*iam.Policy, error) {
+	p := &iam.Policy{
+		Version: iam.PolicyDefaultVersion,
+	}
+
+	statements, err := iam.ParseStatements(policyString)
+	if err != nil {
+		return nil, err
+	}
+
+	p.Statement = append(p.Statement, statements...)
+	return p, nil
 }
 
 // IAMServiceEC2 returns the name of the IAM service for EC2 in the current region.
