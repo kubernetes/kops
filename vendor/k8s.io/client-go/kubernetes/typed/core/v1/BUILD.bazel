@@ -42,6 +42,7 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/net:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
+        "//vendor/k8s.io/client-go/applyconfigurations/core/v1:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/scheme:go_default_library",
         "//vendor/k8s.io/client-go/rest:go_default_library",
         "//vendor/k8s.io/client-go/tools/reference:go_default_library",

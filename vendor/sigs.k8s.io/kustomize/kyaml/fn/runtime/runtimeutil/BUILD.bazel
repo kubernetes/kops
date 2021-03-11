@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "functiontypes.go",
+        "runtimeutil.go",
+        "types.go",
+    ],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/kustomize/kyaml/fn/runtime/runtimeutil",
+    importpath = "sigs.k8s.io/kustomize/kyaml/fn/runtime/runtimeutil",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/sigs.k8s.io/kustomize/kyaml/comments:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/errors:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/kio:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/kio/kioutil:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",
+    ],
+)

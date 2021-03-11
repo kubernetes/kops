@@ -7,7 +7,7 @@ go_library(
     importpath = "k8s.io/client-go/informers/discovery",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/k8s.io/client-go/informers/discovery/v1alpha1:go_default_library",
+        "//vendor/k8s.io/client-go/informers/discovery/v1:go_default_library",
         "//vendor/k8s.io/client-go/informers/discovery/v1beta1:go_default_library",
         "//vendor/k8s.io/client-go/informers/internalinterfaces:go_default_library",
     ],
