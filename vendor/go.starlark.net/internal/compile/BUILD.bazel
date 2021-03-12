@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "compile.go",
+        "serial.go",
+    ],
+    importmap = "k8s.io/kops/vendor/go.starlark.net/internal/compile",
+    importpath = "go.starlark.net/internal/compile",
+    visibility = ["//vendor/go.starlark.net:__subpackages__"],
+    deps = [
+        "//vendor/go.starlark.net/resolve:go_default_library",
+        "//vendor/go.starlark.net/syntax:go_default_library",
+    ],
+)

@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "confirmeddir.go",
+        "file.go",
+        "fileinfo.go",
+        "fileondisk.go",
+        "filesystem.go",
+        "fsnode.go",
+        "fsondisk.go",
+        "util.go",
+    ],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/kustomize/api/filesys",
+    importpath = "sigs.k8s.io/kustomize/api/filesys",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/pkg/errors:go_default_library"],
+)

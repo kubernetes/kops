@@ -35,6 +35,7 @@ go_library(
         "sig0.go",
         "singleinflight.go",
         "smimea.go",
+        "svcb.go",
         "tlsa.go",
         "tsig.go",
         "types.go",

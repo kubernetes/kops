@@ -1,0 +1,23 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "context.go",
+        "doc.go",
+        "starlark.go",
+    ],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/kustomize/kyaml/fn/runtime/starlark",
+    importpath = "sigs.k8s.io/kustomize/kyaml/fn/runtime/starlark",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/go.starlark.net/starlark:go_default_library",
+        "//vendor/go.starlark.net/starlarkstruct:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/errors:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/fn/runtime/runtimeutil:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/internal/forked/github.com/qri-io/starlib/util:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/kio/filters:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/openapi:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",
+    ],
+)
