@@ -64,7 +64,7 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) error {
 					NeedsRollingUpdate: "all",
 				})
 			}
-		} else if ver.Minor == 9 {
+		} else if ver.Minor == 9 || ver.Minor == 10 {
 			version := "1.9.0-kops.1"
 			{
 				id := "k8s-1.12"
