@@ -26,6 +26,7 @@ type ECSLaunchSpec struct {
 	BlockDeviceMappings []*ECSBlockDeviceMapping `json:"blockDeviceMappings,omitempty"`
 	Tags                []*Tag                   `json:"tags,omitempty"`
 	InstanceTypes       []string                 `json:"instanceTypes,omitempty"`
+	RestrictScaleDown   *bool                    `json:"restrictScaleDown,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -393,6 +394,13 @@ func (o *ECSLaunchSpec) SetTags(v []*Tag) *ECSLaunchSpec {
 func (o *ECSLaunchSpec) SetInstanceTypes(v []string) *ECSLaunchSpec {
 	if o.InstanceTypes = v; o.InstanceTypes == nil {
 		o.nullFields = append(o.nullFields, "InstanceTypes")
+	}
+	return o
+}
+
+func (o *ECSLaunchSpec) SetRestrictScaleDown(v *bool) *ECSLaunchSpec {
+	if o.RestrictScaleDown = v; o.RestrictScaleDown == nil {
+		o.nullFields = append(o.nullFields, "RestrictScaleDown")
 	}
 	return o
 }

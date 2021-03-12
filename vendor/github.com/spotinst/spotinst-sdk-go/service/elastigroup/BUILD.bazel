@@ -9,6 +9,7 @@ go_library(
     deps = [
         "//vendor/github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/azure:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/azure/v3:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/gcp:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/client:go_default_library",
