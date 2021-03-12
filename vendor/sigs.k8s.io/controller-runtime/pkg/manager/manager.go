@@ -300,9 +300,9 @@ func New(config *rest.Config, options Options) (Manager, error) {
 	}
 
 	// Create the resource lock to enable leader election)
-	leaderConfig := config
-	if options.LeaderElectionConfig != nil {
-		leaderConfig = options.LeaderElectionConfig
+	leaderConfig := options.LeaderElectionConfig
+	if leaderConfig == nil {
+		leaderConfig = rest.CopyConfig(config)
 	}
 	resourceLock, err := options.newResourceLock(leaderConfig, recorderProvider, leaderelection.Options{
 		LeaderElection:             options.LeaderElection,

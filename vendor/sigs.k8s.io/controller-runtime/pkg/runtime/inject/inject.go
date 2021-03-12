@@ -26,16 +26,7 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	logf "sigs.k8s.io/controller-runtime/pkg/internal/log"
 )
-
-// log is specifically to add a warning message for injectors.
-var log = logf.RuntimeLog.WithName("injectors-warning")
-
-// logWarningMsg logs a warning message if inject is used
-func logWarningMsg() {
-	log.Info("Injectors are deprecated, and will be removed in v0.10.x")
-}
 
 // Cache is used by the ControllerManager to inject Cache into Sources, EventHandlers, Predicates, and
 // Reconciles
@@ -47,7 +38,6 @@ type Cache interface {
 // false if i does not implement Cache.
 func CacheInto(c cache.Cache, i interface{}) (bool, error) {
 	if s, ok := i.(Cache); ok {
-		logWarningMsg()
 		return true, s.InjectCache(c)
 	}
 	return false, nil
@@ -62,7 +52,6 @@ type APIReader interface {
 // Returns false if i does not implement APIReader
 func APIReaderInto(reader client.Reader, i interface{}) (bool, error) {
 	if s, ok := i.(APIReader); ok {
-		logWarningMsg()
 		return true, s.InjectAPIReader(reader)
 	}
 	return false, nil
@@ -78,7 +67,6 @@ type Config interface {
 // false if i does not implement Config.
 func ConfigInto(config *rest.Config, i interface{}) (bool, error) {
 	if s, ok := i.(Config); ok {
-		logWarningMsg()
 		return true, s.InjectConfig(config)
 	}
 	return false, nil
@@ -94,7 +82,6 @@ type Client interface {
 // false if i does not implement Client.
 func ClientInto(client client.Client, i interface{}) (bool, error) {
 	if s, ok := i.(Client); ok {
-		logWarningMsg()
 		return true, s.InjectClient(client)
 	}
 	return false, nil
@@ -110,7 +97,6 @@ type Scheme interface {
 // false if i does not implement Scheme.
 func SchemeInto(scheme *runtime.Scheme, i interface{}) (bool, error) {
 	if is, ok := i.(Scheme); ok {
-		logWarningMsg()
 		return true, is.InjectScheme(scheme)
 	}
 	return false, nil
@@ -126,7 +112,6 @@ type Stoppable interface {
 // Returns false if i does not implement Stoppable.
 func StopChannelInto(stop <-chan struct{}, i interface{}) (bool, error) {
 	if s, ok := i.(Stoppable); ok {
-		logWarningMsg()
 		return true, s.InjectStopChannel(stop)
 	}
 	return false, nil
@@ -141,7 +126,6 @@ type Mapper interface {
 // Returns false if i does not implement Mapper.
 func MapperInto(mapper meta.RESTMapper, i interface{}) (bool, error) {
 	if m, ok := i.(Mapper); ok {
-		logWarningMsg()
 		return true, m.InjectMapper(mapper)
 	}
 	return false, nil
@@ -159,7 +143,6 @@ type Injector interface {
 // false if i does not implement Injector.
 func InjectorInto(f Func, i interface{}) (bool, error) {
 	if ii, ok := i.(Injector); ok {
-		logWarningMsg()
 		return true, ii.InjectFunc(f)
 	}
 	return false, nil
@@ -175,7 +158,6 @@ type Logger interface {
 // returning true if a InjectLogger was called, and false otherwise.
 func LoggerInto(l logr.Logger, i interface{}) (bool, error) {
 	if injectable, wantsLogger := i.(Logger); wantsLogger {
-		logWarningMsg()
 		return true, injectable.InjectLogger(l)
 	}
 	return false, nil
