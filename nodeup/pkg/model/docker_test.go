@@ -97,6 +97,10 @@ func TestDockerBuilder_BuildFlags(t *testing.T) {
 			kops.DockerConfig{Bridge: fi.String("br0")},
 			"--bridge=br0",
 		},
+		{
+			kops.DockerConfig{InsecureRegistries: []string{"registry1", "registry2"}},
+			"--insecure-registry=registry1 --insecure-registry=registry2",
+		},
 	}
 
 	for _, g := range grid {
