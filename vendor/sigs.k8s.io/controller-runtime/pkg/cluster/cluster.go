@@ -39,6 +39,7 @@ import (
 type Cluster interface {
 	// SetFields will set any dependencies on an object for which the object has implemented the inject
 	// interface - e.g. inject.Client.
+	// Deprecated: use the equivalent Options field to set a field. This method will be removed in v0.10.
 	SetFields(interface{}) error
 
 	// GetConfig returns an initialized Config
@@ -49,7 +50,7 @@ type Cluster interface {
 
 	// GetClient returns a client configured with the Config. This client may
 	// not be a fully "direct" client -- it may read from a cache, for
-	// instance.  See Options.NewClient for more information on how the default
+	// instance.  See Options.ClientBuilder for more information on how the default
 	// implementation works.
 	GetClient() client.Client
 
@@ -108,10 +109,10 @@ type Options struct {
 	// by the manager. If not set this will use the default new cache function.
 	NewCache cache.NewCacheFunc
 
-	// ClientBuilder is the builder that creates the client to be used by the manager.
+	// NewClient is the func that creates the client to be used by the manager.
 	// If not set this will create the default DelegatingClient that will
 	// use the cache for reads and the client for writes.
-	ClientBuilder ClientBuilder
+	NewClient NewClientFunc
 
 	// ClientDisableCacheFor tells the client that, if any cache is used, to bypass it
 	// for the given objects.
@@ -173,9 +174,7 @@ func New(config *rest.Config, opts ...Option) (Cluster, error) {
 		return nil, err
 	}
 
-	writeObj, err := options.ClientBuilder.
-		WithUncached(options.ClientDisableCacheFor...).
-		Build(cache, config, clientOptions)
+	writeObj, err := options.NewClient(cache, config, clientOptions, options.ClientDisableCacheFor...)
 	if err != nil {
 		return nil, err
 	}
@@ -218,9 +217,9 @@ func setOptionsDefaults(options Options) Options {
 		}
 	}
 
-	// Allow the client builder to be mocked
-	if options.ClientBuilder == nil {
-		options.ClientBuilder = NewClientBuilder()
+	// Allow users to define how to create a new client
+	if options.NewClient == nil {
+		options.NewClient = DefaultNewClient
 	}
 
 	// Allow newCache to be mocked
@@ -251,4 +250,21 @@ func setOptionsDefaults(options Options) Options {
 	}
 
 	return options
+}
+
+// NewClientFunc allows a user to define how to create a client
+type NewClientFunc func(cache cache.Cache, config *rest.Config, options client.Options, uncachedObjects ...client.Object) (client.Client, error)
+
+// DefaultNewClient creates the default caching client
+func DefaultNewClient(cache cache.Cache, config *rest.Config, options client.Options, uncachedObjects ...client.Object) (client.Client, error) {
+	c, err := client.New(config, options)
+	if err != nil {
+		return nil, err
+	}
+
+	return client.NewDelegatingClient(client.NewDelegatingClientInput{
+		CacheReader:     cache,
+		Client:          c,
+		UncachedObjects: uncachedObjects,
+	})
 }

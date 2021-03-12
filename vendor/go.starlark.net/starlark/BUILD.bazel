@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "debug.go",
+        "empty.s",
+        "eval.go",
+        "hashtable.go",
+        "int.go",
+        "interp.go",
+        "library.go",
+        "profile.go",
+        "unpack.go",
+        "value.go",
+    ],
+    importmap = "k8s.io/kops/vendor/go.starlark.net/starlark",
+    importpath = "go.starlark.net/starlark",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/go.starlark.net/internal/compile:go_default_library",
+        "//vendor/go.starlark.net/internal/spell:go_default_library",
+        "//vendor/go.starlark.net/resolve:go_default_library",
+        "//vendor/go.starlark.net/syntax:go_default_library",
+    ],
+)

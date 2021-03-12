@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "patchstrategicmerge.go",
+    ],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/kustomize/api/filters/patchstrategicmerge",
+    importpath = "sigs.k8s.io/kustomize/api/filters/patchstrategicmerge",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/sigs.k8s.io/kustomize/api/konfig:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/kio:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/yaml/merge2:go_default_library",
+    ],
+)

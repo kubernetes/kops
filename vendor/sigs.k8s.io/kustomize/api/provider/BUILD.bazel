@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["depprovider.go"],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/kustomize/api/provider",
+    importpath = "sigs.k8s.io/kustomize/api/provider",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/sigs.k8s.io/kustomize/api/ifc:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/api/internal/conflict:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/api/internal/validate:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/api/internal/wrappy:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/api/konfig:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/api/resource:go_default_library",
+    ],
+)

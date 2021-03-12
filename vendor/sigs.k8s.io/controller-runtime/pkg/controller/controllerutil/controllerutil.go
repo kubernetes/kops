@@ -249,8 +249,8 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, f Mu
 	}
 
 	// Create patches for the object and its possible status.
-	objPatch := client.MergeFrom(obj.DeepCopyObject())
-	statusPatch := client.MergeFrom(obj.DeepCopyObject())
+	objPatch := client.MergeFrom(obj.DeepCopyObject().(client.Object))
+	statusPatch := client.MergeFrom(obj.DeepCopyObject().(client.Object))
 
 	// Create a copy of the original object as well as converting that copy to
 	// unstructured data.

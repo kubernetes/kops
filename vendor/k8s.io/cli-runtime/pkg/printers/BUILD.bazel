@@ -8,6 +8,7 @@ go_library(
         "interface.go",
         "json.go",
         "jsonpath.go",
+        "managedfields.go",
         "name.go",
         "sourcechecker.go",
         "tableprinter.go",

@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "filters.go",
+        "fmtr.go",
+        "grep.go",
+        "local.go",
+        "merge.go",
+        "merge3.go",
+        "modify.go",
+        "stripcomments.go",
+    ],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/kustomize/kyaml/kio/filters",
+    importpath = "sigs.k8s.io/kustomize/kyaml/kio/filters",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/sigs.k8s.io/kustomize/kyaml/kio:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/kio/kioutil:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/openapi:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/yaml/merge2:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/yaml/merge3:go_default_library",
+    ],
+)
