@@ -101,6 +101,10 @@ func TestDockerBuilder_BuildFlags(t *testing.T) {
 			kops.DockerConfig{ExecOpt: []string{"native.cgroupdriver=systemd"}},
 			"--exec-opt=native.cgroupdriver=systemd",
 		},
+		{
+			kops.DockerConfig{InsecureRegistries: []string{"registry1", "registry2"}},
+			"--insecure-registry=registry1 --insecure-registry=registry2",
+		},
 	}
 
 	for _, g := range grid {
