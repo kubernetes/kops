@@ -47,7 +47,7 @@ type DockerConfig struct {
 	// InsecureRegistry enable insecure registry communication @question according to dockers this a list??
 	InsecureRegistry *string `json:"insecureRegistry,omitempty" flag:"insecure-registry"`
 	// InsecureRegistries enables multiple insecure docker registry communications
-	InsecureRegistries []string `json:"insecureRegistries,omitempty" flag:"insecure-registry"`
+	InsecureRegistries []string `json:"insecureRegistries,omitempty" flag:"insecure-registry,repeat"`
 	// LiveRestore enables live restore of docker when containers are still running
 	LiveRestore *bool `json:"liveRestore,omitempty" flag:"live-restore"`
 	// LogDriver is the default driver for container logs (default "json-file")
