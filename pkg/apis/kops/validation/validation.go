@@ -702,8 +702,8 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Could not parse as semantic version"))
 		}
 
-		if !(version.Minor >= 6 && version.Minor <= 9) {
-			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only versions 1.6 through 1.9 are supported"))
+		if !(version.Minor >= 6 && version.Minor <= 10) {
+			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only versions 1.6 through 1.10 are supported"))
 		}
 
 		if version.Minor == 6 && cluster.IsKubernetesGTE("1.16") {
