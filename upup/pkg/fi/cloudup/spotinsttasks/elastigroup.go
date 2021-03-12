@@ -31,7 +31,6 @@ import (
 	"github.com/spotinst/spotinst-sdk-go/spotinst/client"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/util/stringutil"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
@@ -76,8 +75,9 @@ type Elastigroup struct {
 
 type RootVolumeOpts struct {
 	Type         *string
-	Size         *int32
-	IOPS         *int32
+	Size         *int64
+	IOPS         *int64
+	Throughput   *int64
 	Optimization *bool
 }
 
@@ -284,12 +284,18 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 						if actual.RootVolumeOpts == nil {
 							actual.RootVolumeOpts = new(RootVolumeOpts)
 						}
-						if b.EBS.IOPS != nil {
-							actual.RootVolumeOpts.IOPS = fi.Int32(int32(fi.IntValue(b.EBS.IOPS)))
+						if b.EBS.VolumeType != nil {
+							actual.RootVolumeOpts.Type = fi.String(strings.ToLower(fi.StringValue(b.EBS.VolumeType)))
 						}
-
-						actual.RootVolumeOpts.Type = fi.String(strings.ToLower(fi.StringValue(b.EBS.VolumeType)))
-						actual.RootVolumeOpts.Size = fi.Int32(int32(fi.IntValue(b.EBS.VolumeSize)))
+						if b.EBS.VolumeSize != nil {
+							actual.RootVolumeOpts.Size = fi.Int64(int64(fi.IntValue(b.EBS.VolumeSize)))
+						}
+						if b.EBS.IOPS != nil {
+							actual.RootVolumeOpts.IOPS = fi.Int64(int64(fi.IntValue(b.EBS.IOPS)))
+						}
+						if b.EBS.Throughput != nil {
+							actual.RootVolumeOpts.Throughput = fi.Int64(int64(fi.IntValue(b.EBS.Throughput)))
+						}
 					}
 				}
 			}
@@ -548,28 +554,25 @@ func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 
 			// Block device mappings.
 			{
-				rootDevices, err := e.buildRootDevice(cloud)
+				rootDevice, err := buildRootDevice(cloud, e.RootVolumeOpts, e.ImageID)
 				if err != nil {
 					return err
 				}
 
-				ephemeralDevices, err := e.buildEphemeralDevices(cloud, e.OnDemandInstanceType)
+				mappings := []*aws.BlockDeviceMapping{
+					e.convertBlockDeviceMapping(rootDevice),
+				}
+
+				ephemeralDevices, err := buildEphemeralDevices(cloud, e.OnDemandInstanceType)
 				if err != nil {
 					return err
 				}
 
-				if len(rootDevices) != 0 || len(ephemeralDevices) != 0 {
-					var mappings []*aws.BlockDeviceMapping
-					for device, bdm := range rootDevices {
-						mappings = append(mappings, e.buildBlockDeviceMapping(device, bdm))
-					}
-					for device, bdm := range ephemeralDevices {
-						mappings = append(mappings, e.buildBlockDeviceMapping(device, bdm))
-					}
-					if len(mappings) > 0 {
-						group.Compute.LaunchSpecification.SetBlockDeviceMappings(mappings)
-					}
+				for _, bdm := range ephemeralDevices {
+					mappings = append(mappings, e.convertBlockDeviceMapping(bdm))
 				}
+
+				group.Compute.LaunchSpecification.SetBlockDeviceMappings(mappings)
 			}
 
 			// Image.
@@ -1001,40 +1004,36 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 			// Root volume options.
 			{
 				if opts := changes.RootVolumeOpts; opts != nil {
-
 					// Block device mappings.
 					{
 						if opts.Type != nil || opts.Size != nil || opts.IOPS != nil {
-							rootDevices, err := e.buildRootDevice(cloud)
+							rootDevice, err := buildRootDevice(cloud, opts, e.ImageID)
 							if err != nil {
 								return err
 							}
 
-							ephemeralDevices, err := e.buildEphemeralDevices(cloud, e.OnDemandInstanceType)
+							mappings := []*aws.BlockDeviceMapping{
+								e.convertBlockDeviceMapping(rootDevice),
+							}
+
+							ephemeralDevices, err := buildEphemeralDevices(cloud, e.OnDemandInstanceType)
 							if err != nil {
 								return err
 							}
 
-							if len(rootDevices) != 0 || len(ephemeralDevices) != 0 {
-								var mappings []*aws.BlockDeviceMapping
-								for device, bdm := range rootDevices {
-									mappings = append(mappings, e.buildBlockDeviceMapping(device, bdm))
-								}
-								for device, bdm := range ephemeralDevices {
-									mappings = append(mappings, e.buildBlockDeviceMapping(device, bdm))
-								}
-								if len(mappings) > 0 {
-									if group.Compute == nil {
-										group.Compute = new(aws.Compute)
-									}
-									if group.Compute.LaunchSpecification == nil {
-										group.Compute.LaunchSpecification = new(aws.LaunchSpecification)
-									}
-
-									group.Compute.LaunchSpecification.SetBlockDeviceMappings(mappings)
-									changed = true
-								}
+							for _, bdm := range ephemeralDevices {
+								mappings = append(mappings, e.convertBlockDeviceMapping(bdm))
 							}
+
+							if group.Compute == nil {
+								group.Compute = new(aws.Compute)
+							}
+							if group.Compute.LaunchSpecification == nil {
+								group.Compute.LaunchSpecification = new(aws.LaunchSpecification)
+							}
+
+							group.Compute.LaunchSpecification.SetBlockDeviceMappings(mappings)
+							changed = true
 						}
 					}
 
@@ -1379,6 +1378,8 @@ type terraformElastigroupBlockDevice struct {
 	VirtualName         *string `json:"virtual_name,omitempty" cty:"virtual_name"`
 	VolumeType          *string `json:"volume_type,omitempty" cty:"volume_type"`
 	VolumeSize          *int64  `json:"volume_size,omitempty" cty:"volume_size"`
+	VolumeIOPS          *int64  `json:"iops,omitempty" cty:"iops"`
+	VolumeThroughput    *int64  `json:"throughput,omitempty" cty:"throughput"`
 	DeleteOnTermination *bool   `json:"delete_on_termination,omitempty" cty:"delete_on_termination"`
 }
 
@@ -1556,42 +1557,34 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 	// Root volume options.
 	{
 		if opts := e.RootVolumeOpts; opts != nil {
-
 			// Block device mappings.
 			{
-				rootDevices, err := e.buildRootDevice(t.Cloud.(awsup.AWSCloud))
+				rootDevice, err := buildRootDevice(t.Cloud.(awsup.AWSCloud), e.RootVolumeOpts, e.ImageID)
 				if err != nil {
 					return err
 				}
 
-				ephemeralDevices, err := e.buildEphemeralDevices(cloud, e.OnDemandInstanceType)
-				if err != nil {
-					return err
+				tf.RootBlockDevice = &terraformElastigroupBlockDevice{
+					DeviceName:          rootDevice.DeviceName,
+					VolumeType:          rootDevice.EbsVolumeType,
+					VolumeSize:          rootDevice.EbsVolumeSize,
+					VolumeIOPS:          rootDevice.EbsVolumeIops,
+					VolumeThroughput:    rootDevice.EbsVolumeThroughput,
+					DeleteOnTermination: fi.Bool(true),
 				}
 
-				if len(rootDevices) != 0 {
-					if len(rootDevices) != 1 {
-						return fmt.Errorf("unexpectedly found multiple root devices")
-					}
-
-					for name, bdm := range rootDevices {
-						tf.RootBlockDevice = &terraformElastigroupBlockDevice{
-							DeviceName:          fi.String(name),
-							VolumeType:          bdm.EbsVolumeType,
-							VolumeSize:          bdm.EbsVolumeSize,
-							DeleteOnTermination: fi.Bool(true),
-						}
-					}
+				ephemeralDevices, err := buildEphemeralDevices(cloud, e.OnDemandInstanceType)
+				if err != nil {
+					return err
 				}
 
 				if len(ephemeralDevices) != 0 {
-					tf.EphemeralBlockDevice = []*terraformElastigroupBlockDevice{}
-					for _, deviceName := range sets.StringKeySet(ephemeralDevices).List() {
-						bdm := ephemeralDevices[deviceName]
-						tf.EphemeralBlockDevice = append(tf.EphemeralBlockDevice, &terraformElastigroupBlockDevice{
+					tf.EphemeralBlockDevice = make([]*terraformElastigroupBlockDevice, len(ephemeralDevices))
+					for i, bdm := range ephemeralDevices {
+						tf.EphemeralBlockDevice[i] = &terraformElastigroupBlockDevice{
+							DeviceName:  bdm.DeviceName,
 							VirtualName: bdm.VirtualName,
-							DeviceName:  fi.String(deviceName),
-						})
+						}
 					}
 				}
 			}
@@ -1696,70 +1689,76 @@ func (e *Elastigroup) buildAutoScaleLabels(labelsMap map[string]string) []*aws.A
 	return labels
 }
 
-func (e *Elastigroup) buildEphemeralDevices(c awsup.AWSCloud, instanceTypeName *string) (map[string]*awstasks.BlockDeviceMapping, error) {
-	if instanceTypeName == nil {
-		return nil, fi.RequiredField("InstanceType")
-	}
-
-	instanceType, err := awsup.GetMachineTypeInfo(c, *instanceTypeName)
+func buildEphemeralDevices(cloud awsup.AWSCloud, machineType *string) ([]*awstasks.BlockDeviceMapping, error) {
+	info, err := awsup.GetMachineTypeInfo(cloud, fi.StringValue(machineType))
 	if err != nil {
 		return nil, err
 	}
 
-	blockDeviceMappings := make(map[string]*awstasks.BlockDeviceMapping)
-	for _, ed := range instanceType.EphemeralDevices() {
-		m := &awstasks.BlockDeviceMapping{
+	bdms := make([]*awstasks.BlockDeviceMapping, len(info.EphemeralDevices()))
+	for i, ed := range info.EphemeralDevices() {
+		bdms[i] = &awstasks.BlockDeviceMapping{
+			DeviceName:  fi.String(ed.DeviceName),
 			VirtualName: fi.String(ed.VirtualName),
 		}
-		blockDeviceMappings[ed.DeviceName] = m
 	}
 
-	return blockDeviceMappings, nil
+	return bdms, nil
 }
 
-func (e *Elastigroup) buildRootDevice(cloud awsup.AWSCloud) (map[string]*awstasks.BlockDeviceMapping, error) {
-	image, err := resolveImage(cloud, fi.StringValue(e.ImageID))
+func buildRootDevice(cloud awsup.AWSCloud, volumeOpts *RootVolumeOpts,
+	imageID *string) (*awstasks.BlockDeviceMapping, error) {
+
+	img, err := resolveImage(cloud, fi.StringValue(imageID))
 	if err != nil {
 		return nil, err
 	}
 
-	rootDeviceName := fi.StringValue(image.RootDeviceName)
-	blockDeviceMappings := make(map[string]*awstasks.BlockDeviceMapping)
-
-	rootDeviceMapping := &awstasks.BlockDeviceMapping{
+	bdm := &awstasks.BlockDeviceMapping{
+		DeviceName:             img.RootDeviceName,
+		EbsVolumeSize:          volumeOpts.Size,
+		EbsVolumeType:          volumeOpts.Type,
 		EbsDeleteOnTermination: fi.Bool(true),
-		EbsVolumeSize:          fi.Int64(int64(fi.Int32Value(e.RootVolumeOpts.Size))),
-		EbsVolumeType:          e.RootVolumeOpts.Type,
 	}
 
-	// The parameter IOPS is not supported for gp2 volumes.
-	if e.RootVolumeOpts.IOPS != nil && fi.StringValue(e.RootVolumeOpts.Type) != "gp2" {
-		rootDeviceMapping.EbsVolumeIops = fi.Int64(int64(fi.Int32Value(e.RootVolumeOpts.IOPS)))
+	// IOPS is not supported for gp2 volumes.
+	if volumeOpts.IOPS != nil && fi.StringValue(volumeOpts.Type) != "gp2" {
+		bdm.EbsVolumeIops = volumeOpts.IOPS
 	}
 
-	blockDeviceMappings[rootDeviceName] = rootDeviceMapping
+	// Throughput is only supported for gp3 volumes.
+	if volumeOpts.Throughput != nil && fi.StringValue(volumeOpts.Type) == "gp3" {
+		bdm.EbsVolumeThroughput = volumeOpts.Throughput
+	}
 
-	return blockDeviceMappings, nil
+	return bdm, nil
 }
 
-func (e *Elastigroup) buildBlockDeviceMapping(deviceName string, i *awstasks.BlockDeviceMapping) *aws.BlockDeviceMapping {
-	o := &aws.BlockDeviceMapping{}
-	o.DeviceName = fi.String(deviceName)
-	o.VirtualName = i.VirtualName
+func (e *Elastigroup) convertBlockDeviceMapping(in *awstasks.BlockDeviceMapping) *aws.BlockDeviceMapping {
+	out := &aws.BlockDeviceMapping{
+		DeviceName:  in.DeviceName,
+		VirtualName: in.VirtualName,
+	}
 
-	if i.EbsDeleteOnTermination != nil || i.EbsVolumeSize != nil || i.EbsVolumeType != nil {
-		o.EBS = &aws.EBS{}
-		o.EBS.DeleteOnTermination = i.EbsDeleteOnTermination
-		o.EBS.VolumeSize = fi.Int(int(fi.Int64Value(i.EbsVolumeSize)))
-		o.EBS.VolumeType = i.EbsVolumeType
+	if in.EbsDeleteOnTermination != nil || in.EbsVolumeSize != nil || in.EbsVolumeType != nil {
+		out.EBS = &aws.EBS{
+			VolumeType:          in.EbsVolumeType,
+			VolumeSize:          fi.Int(int(fi.Int64Value(in.EbsVolumeSize))),
+			DeleteOnTermination: in.EbsDeleteOnTermination,
+		}
 
-		// The parameter IOPS is not supported for gp2 volumes.
-		if i.EbsVolumeIops != nil && fi.StringValue(i.EbsVolumeType) != "gp2" {
-			o.EBS.IOPS = fi.Int(int(fi.Int64Value(i.EbsVolumeIops)))
+		// IOPS is not valid for gp2 volumes.
+		if in.EbsVolumeIops != nil && fi.StringValue(in.EbsVolumeType) != "gp2" {
+			out.EBS.IOPS = fi.Int(int(fi.Int64Value(in.EbsVolumeIops)))
+		}
+
+		// Throughput is only valid for gp3 volumes.
+		if in.EbsVolumeThroughput != nil && fi.StringValue(in.EbsVolumeType) == "gp3" {
+			out.EBS.Throughput = fi.Int(int(fi.Int64Value(in.EbsVolumeThroughput)))
 		}
 	}
 
-	return o
+	return out
 }
 
 func (e *Elastigroup) applyDefaults() {
