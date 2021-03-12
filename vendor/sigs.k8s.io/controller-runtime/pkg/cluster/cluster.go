@@ -39,6 +39,7 @@ import (
 type Cluster interface {
 	// SetFields will set any dependencies on an object for which the object has implemented the inject
 	// interface - e.g. inject.Client.
+	// Deprecated: use the equivalent Options field to set a field. This method will be removed in v0.10.
 	SetFields(interface{}) error
 
 	// GetConfig returns an initialized Config

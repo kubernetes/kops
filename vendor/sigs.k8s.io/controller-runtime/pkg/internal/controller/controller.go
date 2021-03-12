@@ -61,6 +61,7 @@ type Controller struct {
 	Queue workqueue.RateLimitingInterface
 
 	// SetFields is used to inject dependencies into other objects such as Sources, EventHandlers and Predicates
+	// Deprecated: the caller should handle injected fields itself.
 	SetFields func(i interface{}) error
 
 	// mu is used to synchronize Controller setup
