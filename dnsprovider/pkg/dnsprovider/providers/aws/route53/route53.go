@@ -63,6 +63,9 @@ func newRoute53(config io.Reader) (*Interface, error) {
 	// e.g. https://github.com/kubernetes/kops/issues/605
 	awsConfig = awsConfig.WithCredentialsChainVerboseErrors(true)
 
+	// To avoid API throttling on busier accounts
+	awsConfig = awsConfig.WithMaxRetries(5)
+
 	sess, err := session.NewSession()
 	if err != nil {
 		return nil, err
