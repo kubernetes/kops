@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"os"
 	"runtime"
+	"strings"
 
 	"k8s.io/kops/tests/e2e/pkg/util"
 )
@@ -34,7 +35,7 @@ func DownloadKops(markerURL, downloadPath string) (string, string, error) {
 	if err := util.HTTPGETWithHeaders(markerURL, nil, &b); err != nil {
 		return "", "", err
 	}
-	kopsBaseURL := b.String()
+	kopsBaseURL := strings.TrimSpace(b.String())
 
 	var kopsFile *os.File
 	if downloadPath == "" {
