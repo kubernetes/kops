@@ -105,7 +105,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	// UpdatePolicy
-	allErrs = append(allErrs, IsValidValue(fieldPath.Child("updatePolicy"), spec.UpdatePolicy, []string{kops.UpdatePolicyExternal})...)
+	allErrs = append(allErrs, IsValidValue(fieldPath.Child("updatePolicy"), spec.UpdatePolicy, []string{kops.UpdatePolicyAutomatic, kops.UpdatePolicyExternal})...)
 
 	// Hooks
 	for i := range spec.Hooks {
