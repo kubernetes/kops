@@ -82,9 +82,9 @@ var (
 	SupportedFilesystems = []string{BtfsFilesystem, Ext4Filesystem, XFSFilesystem}
 )
 
-// InstanceGroupSpec is the specification for a instanceGroup
+// InstanceGroupSpec is the specification for an InstanceGroup
 type InstanceGroupSpec struct {
-	// Type determines the role of instances in this group: masters or nodes
+	// Type determines the role of instances in this instance group: masters or nodes
 	Role InstanceGroupRole `json:"role,omitempty"`
 	// Image is the instance (ami etc) we should use
 	Image string `json:"image,omitempty"`
@@ -92,7 +92,7 @@ type InstanceGroupSpec struct {
 	MinSize *int32 `json:"minSize,omitempty"`
 	// MaxSize is the maximum size of the pool
 	MaxSize *int32 `json:"maxSize,omitempty"`
-	// Autoscale determines if autoscaling will be enabled for the group if cluster autoscaler is enabled
+	// Autoscale determines if autoscaling will be enabled for this instance group if cluster autoscaler is enabled
 	Autoscale *bool `json:"autoscale,omitempty"`
 	// MachineType is the instance class
 	MachineType string `json:"machineType,omitempty"`
@@ -112,7 +112,7 @@ type InstanceGroupSpec struct {
 	RootVolumeEncryption *bool `json:"rootVolumeEncryption,omitempty"`
 	// RootVolumeEncryptionKey provides the key identifier for root volume encryption
 	RootVolumeEncryptionKey *string `json:"rootVolumeEncryptionKey,omitempty"`
-	// Volumes is a collection of additional volumes to create for instances within this InstanceGroup
+	// Volumes is a collection of additional volumes to create for instances within this instance group
 	Volumes []VolumeSpec `json:"volumes,omitempty"`
 	// VolumeMounts a collection of volume mounts
 	VolumeMounts []VolumeMountSpec `json:"volumeMounts,omitempty"`
@@ -121,7 +121,7 @@ type InstanceGroupSpec struct {
 	// Zones is the names of the Zones where machines in this instance group should be placed
 	// This is needed for regional subnets (e.g. GCE), to restrict placement to particular zones
 	Zones []string `json:"zones,omitempty"`
-	// Hooks is a list of hooks for this instanceGroup, note: these can override the cluster wide ones if required
+	// Hooks is a list of hooks for this instance group, note: these can override the cluster wide ones if required
 	Hooks []HookSpec `json:"hooks,omitempty"`
 	// MaxPrice indicates this is a spot-pricing group, with the specified value as our max-price bid
 	MaxPrice *string `json:"maxPrice,omitempty"`
@@ -135,15 +135,15 @@ type InstanceGroupSpec struct {
 	AdditionalSecurityGroups []string `json:"additionalSecurityGroups,omitempty"`
 	// CloudLabels defines additional tags or labels on cloud provider resources
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
-	// NodeLabels indicates the kubernetes labels for nodes in this group
+	// NodeLabels indicates the kubernetes labels for nodes in this instance group
 	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
 	// FileAssets is a collection of file assets for this instance group
 	FileAssets []FileAssetSpec `json:"fileAssets,omitempty"`
-	// Describes the tenancy of the instance group. Can be either default or dedicated. Currently only applies to AWS.
+	// Describes the tenancy of this instance group. Can be either default or dedicated. Currently only applies to AWS.
 	Tenancy string `json:"tenancy,omitempty"`
 	// Kubelet overrides kubelet config from the ClusterSpec
 	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
-	// Taints indicates the kubernetes taints for nodes in this group
+	// Taints indicates the kubernetes taints for nodes in this instance group
 	Taints []string `json:"taints,omitempty"`
 	// MixedInstancesPolicy defined a optional backing of an AWS ASG by a EC2 Fleet (AWS Only)
 	MixedInstancesPolicy *MixedInstancesPolicySpec `json:"mixedInstancesPolicy,omitempty"`
@@ -151,7 +151,7 @@ type InstanceGroupSpec struct {
 	AdditionalUserData []UserData `json:"additionalUserData,omitempty"`
 	// SuspendProcesses disables the listed Scaling Policies
 	SuspendProcesses []string `json:"suspendProcesses,omitempty"`
-	// ExternalLoadBalancers define loadbalancers that should be attached to the instancegroup
+	// ExternalLoadBalancers define loadbalancers that should be attached to this instance group
 	ExternalLoadBalancers []LoadBalancer `json:"externalLoadBalancers,omitempty"`
 	// DetailedInstanceMonitoring defines if detailed-monitoring is enabled (AWS only)
 	DetailedInstanceMonitoring *bool `json:"detailedInstanceMonitoring,omitempty"`
@@ -174,6 +174,12 @@ type InstanceGroupSpec struct {
 	CompressUserData *bool `json:"compressUserData,omitempty"`
 	// InstanceMetadata defines the EC2 instance metadata service options (AWS Only)
 	InstanceMetadata *InstanceMetadataOptions `json:"instanceMetadata,omitempty"`
+	// UpdatePolicy determines the policy for applying upgrades automatically.
+	// If specified, this value overrides a value specified in the Cluster's "spec.updatePolicy" field.
+	// Valid values:
+	//   'automatic' (default): apply updates automatically (apply OS security upgrades, avoiding rebooting when possible)
+	//   'external': do not apply updates automatically; they are applied manually or by an external system
+	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 }
 
 const (
@@ -188,7 +194,7 @@ const (
 // SpotAllocationStrategies is a collection of supported strategies
 var SpotAllocationStrategies = []string{SpotAllocationStrategyLowestPrices, SpotAllocationStrategyDiversified, SpotAllocationStrategyCapacityOptimized}
 
-// InstanceMetadata defines the EC2 instance metadata service options (AWS Only)
+// InstanceMetadataOptions defines the EC2 instance metadata service options (AWS Only)
 type InstanceMetadataOptions struct {
 	// HTTPPutResponseHopLimit is the desired HTTP PUT response hop limit for instance metadata requests.
 	// The larger the number, the further instance metadata requests can travel. The default value is 1.
