@@ -17,7 +17,6 @@ limitations under the License.
 package bootstrap
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"strings"
@@ -95,43 +94,23 @@ func (i *Installation) Build(c *fi.ModelBuilderContext) {
 	c.AddTask(i.buildSystemdJob())
 }
 
-func (i *Installation) buildSystemdJob() *nodetasks.Service {
-	command := strings.Join(i.Command, " ")
-
-	serviceName := "kops-configuration.service"
-
-	manifest := &systemd.Manifest{}
-	manifest.Set("Unit", "Description", "Run kops bootstrap (nodeup)")
-	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
-
-	var buffer bytes.Buffer
+func (i *Installation) buildEnv() string {
+	var envVars = make(map[string]string)
 
 	if os.Getenv("AWS_REGION") != "" {
-		buffer.WriteString("\"AWS_REGION=")
-		buffer.WriteString(os.Getenv("AWS_REGION"))
-		buffer.WriteString("\" ")
+		envVars["AWS_REGION"] = os.Getenv("AWS_REGION")
 	}
 
 	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
-		buffer.WriteString("\"GOSSIP_DNS_CONN_LIMIT=")
-		buffer.WriteString(os.Getenv("GOSSIP_DNS_CONN_LIMIT"))
-		buffer.WriteString("\" ")
+		envVars["GOSSIP_DNS_CONN_LIMIT"] = os.Getenv("GOSSIP_DNS_CONN_LIMIT")
 	}
 
 	// Pass in required credentials when using user-defined s3 endpoint
 	if os.Getenv("S3_ENDPOINT") != "" {
-		buffer.WriteString("\"S3_ENDPOINT=")
-		buffer.WriteString(os.Getenv("S3_ENDPOINT"))
-		buffer.WriteString("\" ")
-		buffer.WriteString("\"S3_REGION=")
-		buffer.WriteString(os.Getenv("S3_REGION"))
-		buffer.WriteString("\" ")
-		buffer.WriteString("\"S3_ACCESS_KEY_ID=")
-		buffer.WriteString(os.Getenv("S3_ACCESS_KEY_ID"))
-		buffer.WriteString("\" ")
-		buffer.WriteString("\"S3_SECRET_ACCESS_KEY=")
-		buffer.WriteString(os.Getenv("S3_SECRET_ACCESS_KEY"))
-		buffer.WriteString("\" ")
+		envVars["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")
+		envVars["S3_REGION"] = os.Getenv("S3_REGION")
+		envVars["S3_ACCESS_KEY_ID"] = os.Getenv("S3_ACCESS_KEY_ID")
+		envVars["S3_SECRET_ACCESS_KEY"] = os.Getenv("S3_SECRET_ACCESS_KEY")
 	}
 
 	// Pass in required credentials when using user-defined swift endpoint
@@ -147,45 +126,45 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 			"OS_APPLICATION_CREDENTIAL_ID",
 			"OS_APPLICATION_CREDENTIAL_SECRET",
 		} {
-			buffer.WriteString("'")
-			buffer.WriteString(envVar)
-			buffer.WriteString("=")
-			buffer.WriteString(os.Getenv(envVar))
-			buffer.WriteString("' ")
+			envVars[envVar] = os.Getenv(envVar)
 		}
 	}
 
 	if os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
-		buffer.WriteString("\"DIGITALOCEAN_ACCESS_TOKEN=")
-		buffer.WriteString(os.Getenv("DIGITALOCEAN_ACCESS_TOKEN"))
-		buffer.WriteString("\" ")
+		envVars["DIGITALOCEAN_ACCESS_TOKEN"] = os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 	}
 
 	if os.Getenv("OSS_REGION") != "" {
-		buffer.WriteString("\"OSS_REGION=")
-		buffer.WriteString(os.Getenv("OSS_REGION"))
-		buffer.WriteString("\" ")
+		envVars["OSS_REGION"] = os.Getenv("OSS_REGION")
 	}
 
 	if os.Getenv("ALIYUN_ACCESS_KEY_ID") != "" {
-		buffer.WriteString("\"ALIYUN_ACCESS_KEY_ID=")
-		buffer.WriteString(os.Getenv("ALIYUN_ACCESS_KEY_ID"))
-		buffer.WriteString("\" ")
-		buffer.WriteString("\"ALIYUN_ACCESS_KEY_SECRET=")
-		buffer.WriteString(os.Getenv("ALIYUN_ACCESS_KEY_SECRET"))
-		buffer.WriteString("\" ")
+		envVars["ALIYUN_ACCESS_KEY_ID"] = os.Getenv("ALIYUN_ACCESS_KEY_ID")
+		envVars["ALIYUN_ACCESS_KEY_SECRET"] = os.Getenv("ALIYUN_ACCESS_KEY_SECRET")
 	}
 
 	if os.Getenv("AZURE_STORAGE_ACCOUNT") != "" {
-		buffer.WriteString("\"AZURE_STORAGE_ACCOUNT=")
-		buffer.WriteString(os.Getenv("AZURE_STORAGE_ACCOUNT"))
-		buffer.WriteString("\" ")
+		envVars["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
 	}
 
-	if buffer.String() != "" {
-		manifest.Set("Service", "Environment", buffer.String())
+	var sysconfig = ""
+	for key, value := range envVars {
+		sysconfig += key + "=" + value + "\n"
 	}
 
+	return sysconfig
+}
+
+func (i *Installation) buildSystemdJob() *nodetasks.Service {
+	command := strings.Join(i.Command, " ")
+
+	serviceName := "kops-configuration.service"
+
+	manifest := &systemd.Manifest{}
+	manifest.Set("Unit", "Description", "Run kops bootstrap (nodeup)")
+	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
+
+	manifest.Set("Service", "Environment", i.buildEnv())
 	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
 	manifest.Set("Service", "ExecStart", command)
 	manifest.Set("Service", "Type", "oneshot")
