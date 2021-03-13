@@ -301,6 +301,18 @@ func TestMixedInstancePolicies(t *testing.T) {
 func TestInstanceMetadataOptions(t *testing.T) {
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 
+	mockEC2 := &mockec2.MockEC2{}
+	cloud.MockEC2 = mockEC2
+
+	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
+		CreationDate:   aws.String("2016-10-21T20:07:19.000Z"),
+		ImageId:        aws.String("ami-073c8c0760395aab8"),
+		Name:           aws.String("focal"),
+		OwnerId:        aws.String(awsup.WellKnownAccountUbuntu),
+		RootDeviceName: aws.String("/dev/xvda"),
+		Architecture:   aws.String("x86_64"),
+	})
+
 	tests := []struct {
 		ig       *kops.InstanceGroup
 		expected []string
@@ -316,6 +328,7 @@ func TestInstanceMetadataOptions(t *testing.T) {
 						HTTPPutResponseHopLimit: fi.Int64(1),
 						HTTPTokens:              fi.String("abc"),
 					},
+					MachineType: "t3.medium",
 				},
 			},
 			expected: []string{"Unsupported value::spec.instanceMetadata.httpTokens"},
@@ -331,6 +344,7 @@ func TestInstanceMetadataOptions(t *testing.T) {
 						HTTPPutResponseHopLimit: fi.Int64(-1),
 						HTTPTokens:              fi.String("required"),
 					},
+					MachineType: "t3.medium",
 				},
 			},
 			expected: []string{"Invalid value::spec.instanceMetadata.httpPutResponseHopLimit"},
