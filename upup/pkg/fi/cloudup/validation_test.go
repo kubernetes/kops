@@ -112,14 +112,49 @@ func TestValidateFull_ClusterName_Required(t *testing.T) {
 
 func TestValidateFull_UpdatePolicy_Valid(t *testing.T) {
 	c := buildDefaultCluster(t)
-	c.Spec.UpdatePolicy = fi.String(api.UpdatePolicyExternal)
-	expectNoErrorFromValidate(t, c)
+	for _, test := range []struct {
+		label  string
+		policy *string
+	}{
+		{
+			label: "missing",
+		},
+		{
+			label:  "automatic",
+			policy: fi.String(api.UpdatePolicyAutomatic),
+		},
+		{
+			label:  "external",
+			policy: fi.String(api.UpdatePolicyExternal),
+		},
+	} {
+		t.Run(test.label, func(t *testing.T) {
+			c.Spec.UpdatePolicy = test.policy
+			expectNoErrorFromValidate(t, c)
+		})
+	}
 }
 
 func TestValidateFull_UpdatePolicy_Invalid(t *testing.T) {
 	c := buildDefaultCluster(t)
-	c.Spec.UpdatePolicy = fi.String("not-a-real-value")
-	expectErrorFromValidate(t, c, "spec.updatePolicy")
+	for _, test := range []struct {
+		label  string
+		policy string
+	}{
+		{
+			label:  "empty",
+			policy: "",
+		},
+		{
+			label:  "populated",
+			policy: "not-a-real-value",
+		},
+	} {
+		t.Run(test.label, func(t *testing.T) {
+			c.Spec.UpdatePolicy = &test.policy
+			expectErrorFromValidate(t, c, "spec.updatePolicy")
+		})
+	}
 }
 
 func Test_Validate_Kubenet_With_14(t *testing.T) {
