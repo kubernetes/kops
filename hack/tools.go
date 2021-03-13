@@ -17,6 +17,8 @@ limitations under the License.
 package hack
 
 import (
+	_ "github.com/bazelbuild/bazelisk"
+
 	_ "github.com/bazelbuild/bazel-gazelle/cmd/gazelle"
 
 	_ "github.com/client9/misspell/cmd/misspell"
