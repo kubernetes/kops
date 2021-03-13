@@ -153,7 +153,7 @@ func awsValidateInstanceTypeAndImage(instanceTypeFieldPath *field.Path, imageFie
 		}
 		if !found {
 			allErrs = append(allErrs, field.Invalid(instanceTypeFieldPath, instanceType,
-				fmt.Sprintf("machine type architecture does not match image architecture: %+v - %q", machineInfo.ProcessorInfo, imageArch)))
+				fmt.Sprintf("machine type architecture does not match image architecture: %s - %s", strings.Join(fi.StringSliceValue(machineInfo.ProcessorInfo.SupportedArchitectures), ","), imageArch)))
 		}
 	}
 
