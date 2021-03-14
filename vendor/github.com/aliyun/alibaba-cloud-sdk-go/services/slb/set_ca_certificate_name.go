@@ -21,7 +21,6 @@ import (
 )
 
 // SetCACertificateName invokes the slb.SetCACertificateName API synchronously
-// api document: https://help.aliyun.com/api/slb/setcacertificatename.html
 func (client *Client) SetCACertificateName(request *SetCACertificateNameRequest) (response *SetCACertificateNameResponse, err error) {
 	response = CreateSetCACertificateNameResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) SetCACertificateName(request *SetCACertificateNameRequest)
 }
 
 // SetCACertificateNameWithChan invokes the slb.SetCACertificateName API asynchronously
-// api document: https://help.aliyun.com/api/slb/setcacertificatename.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) SetCACertificateNameWithChan(request *SetCACertificateNameRequest) (<-chan *SetCACertificateNameResponse, <-chan error) {
 	responseChan := make(chan *SetCACertificateNameResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) SetCACertificateNameWithChan(request *SetCACertificateName
 }
 
 // SetCACertificateNameWithCallback invokes the slb.SetCACertificateName API asynchronously
-// api document: https://help.aliyun.com/api/slb/setcacertificatename.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) SetCACertificateNameWithCallback(request *SetCACertificateNameRequest, callback func(response *SetCACertificateNameResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -97,6 +92,7 @@ func CreateSetCACertificateNameRequest() (request *SetCACertificateNameRequest) 
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "SetCACertificateName", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

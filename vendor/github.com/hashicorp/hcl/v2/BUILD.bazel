@@ -28,7 +28,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/agext/levenshtein:go_default_library",
-        "//vendor/github.com/apparentlymart/go-textseg/v12/textseg:go_default_library",
+        "//vendor/github.com/apparentlymart/go-textseg/v13/textseg:go_default_library",
         "//vendor/github.com/mitchellh/go-wordwrap:go_default_library",
         "//vendor/github.com/zclconf/go-cty/cty:go_default_library",
         "//vendor/github.com/zclconf/go-cty/cty/convert:go_default_library",

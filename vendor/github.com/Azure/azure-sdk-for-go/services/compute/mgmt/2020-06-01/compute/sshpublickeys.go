@@ -73,6 +73,7 @@ func (client SSHPublicKeysClient) Create(ctx context.Context, resourceGroupName 
 	result, err = client.CreateResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "compute.SSHPublicKeysClient", "Create", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -150,6 +151,7 @@ func (client SSHPublicKeysClient) Delete(ctx context.Context, resourceGroupName 
 	result, err = client.DeleteResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "compute.SSHPublicKeysClient", "Delete", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -226,6 +228,7 @@ func (client SSHPublicKeysClient) GenerateKeyPair(ctx context.Context, resourceG
 	result, err = client.GenerateKeyPairResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "compute.SSHPublicKeysClient", "GenerateKeyPair", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -301,6 +304,7 @@ func (client SSHPublicKeysClient) Get(ctx context.Context, resourceGroupName str
 	result, err = client.GetResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "compute.SSHPublicKeysClient", "Get", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -377,9 +381,11 @@ func (client SSHPublicKeysClient) ListByResourceGroup(ctx context.Context, resou
 	result.spkglr, err = client.ListByResourceGroupResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "compute.SSHPublicKeysClient", "ListByResourceGroup", resp, "Failure responding to request")
+		return
 	}
 	if result.spkglr.hasNextLink() && result.spkglr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -490,9 +496,11 @@ func (client SSHPublicKeysClient) ListBySubscription(ctx context.Context) (resul
 	result.spkglr, err = client.ListBySubscriptionResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "compute.SSHPublicKeysClient", "ListBySubscription", resp, "Failure responding to request")
+		return
 	}
 	if result.spkglr.hasNextLink() && result.spkglr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -604,6 +612,7 @@ func (client SSHPublicKeysClient) Update(ctx context.Context, resourceGroupName 
 	result, err = client.UpdateResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "compute.SSHPublicKeysClient", "Update", resp, "Failure responding to request")
+		return
 	}
 
 	return

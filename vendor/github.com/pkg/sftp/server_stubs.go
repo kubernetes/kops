@@ -1,11 +1,11 @@
-// +build !cgo,!plan9 windows android
+// +build !cgo plan9 windows android
 
 package sftp
 
 import (
+	"fmt"
 	"os"
 	"time"
-	"fmt"
 )
 
 func runLs(dirname string, dirent os.FileInfo) string {

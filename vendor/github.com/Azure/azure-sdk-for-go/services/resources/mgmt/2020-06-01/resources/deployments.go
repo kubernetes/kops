@@ -72,6 +72,7 @@ func (client DeploymentsClient) CalculateTemplateHash(ctx context.Context, templ
 	result, err = client.CalculateTemplateHashResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CalculateTemplateHash", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -157,6 +158,7 @@ func (client DeploymentsClient) Cancel(ctx context.Context, resourceGroupName st
 	result, err = client.CancelResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "Cancel", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -244,6 +246,7 @@ func (client DeploymentsClient) CancelAtManagementGroupScope(ctx context.Context
 	result, err = client.CancelAtManagementGroupScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CancelAtManagementGroupScope", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -327,6 +330,7 @@ func (client DeploymentsClient) CancelAtScope(ctx context.Context, scope string,
 	result, err = client.CancelAtScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CancelAtScope", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -409,6 +413,7 @@ func (client DeploymentsClient) CancelAtSubscriptionScope(ctx context.Context, d
 	result, err = client.CancelAtSubscriptionScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CancelAtSubscriptionScope", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -491,6 +496,7 @@ func (client DeploymentsClient) CancelAtTenantScope(ctx context.Context, deploym
 	result, err = client.CancelAtTenantScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CancelAtTenantScope", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -576,6 +582,7 @@ func (client DeploymentsClient) CheckExistence(ctx context.Context, resourceGrou
 	result, err = client.CheckExistenceResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CheckExistence", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -661,6 +668,7 @@ func (client DeploymentsClient) CheckExistenceAtManagementGroupScope(ctx context
 	result, err = client.CheckExistenceAtManagementGroupScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CheckExistenceAtManagementGroupScope", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -742,6 +750,7 @@ func (client DeploymentsClient) CheckExistenceAtScope(ctx context.Context, scope
 	result, err = client.CheckExistenceAtScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CheckExistenceAtScope", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -822,6 +831,7 @@ func (client DeploymentsClient) CheckExistenceAtSubscriptionScope(ctx context.Co
 	result, err = client.CheckExistenceAtSubscriptionScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CheckExistenceAtSubscriptionScope", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -902,6 +912,7 @@ func (client DeploymentsClient) CheckExistenceAtTenantScope(ctx context.Context,
 	result, err = client.CheckExistenceAtTenantScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CheckExistenceAtTenantScope", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -954,8 +965,8 @@ func (client DeploymentsClient) CreateOrUpdate(ctx context.Context, resourceGrou
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.CreateOrUpdate")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -985,7 +996,7 @@ func (client DeploymentsClient) CreateOrUpdate(ctx context.Context, resourceGrou
 
 	result, err = client.CreateOrUpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CreateOrUpdate", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CreateOrUpdate", nil, "Failure sending request")
 		return
 	}
 
@@ -1023,7 +1034,33 @@ func (client DeploymentsClient) CreateOrUpdateSender(req *http.Request) (future 
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (de DeploymentExtended, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsCreateOrUpdateFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		de.Response.Response, err = future.GetResult(sender)
+		if de.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && de.Response.Response.StatusCode != http.StatusNoContent {
+			de, err = client.CreateOrUpdateResponder(de.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateFuture", "Result", de.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -1050,8 +1087,8 @@ func (client DeploymentsClient) CreateOrUpdateAtManagementGroupScope(ctx context
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.CreateOrUpdateAtManagementGroupScope")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -1081,7 +1118,7 @@ func (client DeploymentsClient) CreateOrUpdateAtManagementGroupScope(ctx context
 
 	result, err = client.CreateOrUpdateAtManagementGroupScopeSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CreateOrUpdateAtManagementGroupScope", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CreateOrUpdateAtManagementGroupScope", nil, "Failure sending request")
 		return
 	}
 
@@ -1118,7 +1155,33 @@ func (client DeploymentsClient) CreateOrUpdateAtManagementGroupScopeSender(req *
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (de DeploymentExtended, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateAtManagementGroupScopeFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsCreateOrUpdateAtManagementGroupScopeFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		de.Response.Response, err = future.GetResult(sender)
+		if de.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateAtManagementGroupScopeFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && de.Response.Response.StatusCode != http.StatusNoContent {
+			de, err = client.CreateOrUpdateAtManagementGroupScopeResponder(de.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateAtManagementGroupScopeFuture", "Result", de.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -1144,8 +1207,8 @@ func (client DeploymentsClient) CreateOrUpdateAtScope(ctx context.Context, scope
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.CreateOrUpdateAtScope")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -1171,7 +1234,7 @@ func (client DeploymentsClient) CreateOrUpdateAtScope(ctx context.Context, scope
 
 	result, err = client.CreateOrUpdateAtScopeSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CreateOrUpdateAtScope", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CreateOrUpdateAtScope", nil, "Failure sending request")
 		return
 	}
 
@@ -1208,7 +1271,33 @@ func (client DeploymentsClient) CreateOrUpdateAtScopeSender(req *http.Request) (
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (de DeploymentExtended, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateAtScopeFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsCreateOrUpdateAtScopeFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		de.Response.Response, err = future.GetResult(sender)
+		if de.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateAtScopeFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && de.Response.Response.StatusCode != http.StatusNoContent {
+			de, err = client.CreateOrUpdateAtScopeResponder(de.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateAtScopeFuture", "Result", de.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -1234,8 +1323,8 @@ func (client DeploymentsClient) CreateOrUpdateAtSubscriptionScope(ctx context.Co
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.CreateOrUpdateAtSubscriptionScope")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -1261,7 +1350,7 @@ func (client DeploymentsClient) CreateOrUpdateAtSubscriptionScope(ctx context.Co
 
 	result, err = client.CreateOrUpdateAtSubscriptionScopeSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CreateOrUpdateAtSubscriptionScope", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CreateOrUpdateAtSubscriptionScope", nil, "Failure sending request")
 		return
 	}
 
@@ -1298,7 +1387,33 @@ func (client DeploymentsClient) CreateOrUpdateAtSubscriptionScopeSender(req *htt
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (de DeploymentExtended, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateAtSubscriptionScopeFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsCreateOrUpdateAtSubscriptionScopeFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		de.Response.Response, err = future.GetResult(sender)
+		if de.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateAtSubscriptionScopeFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && de.Response.Response.StatusCode != http.StatusNoContent {
+			de, err = client.CreateOrUpdateAtSubscriptionScopeResponder(de.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateAtSubscriptionScopeFuture", "Result", de.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -1324,8 +1439,8 @@ func (client DeploymentsClient) CreateOrUpdateAtTenantScope(ctx context.Context,
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.CreateOrUpdateAtTenantScope")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -1352,7 +1467,7 @@ func (client DeploymentsClient) CreateOrUpdateAtTenantScope(ctx context.Context,
 
 	result, err = client.CreateOrUpdateAtTenantScopeSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CreateOrUpdateAtTenantScope", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CreateOrUpdateAtTenantScope", nil, "Failure sending request")
 		return
 	}
 
@@ -1388,7 +1503,33 @@ func (client DeploymentsClient) CreateOrUpdateAtTenantScopeSender(req *http.Requ
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (de DeploymentExtended, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateAtTenantScopeFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsCreateOrUpdateAtTenantScopeFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		de.Response.Response, err = future.GetResult(sender)
+		if de.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateAtTenantScopeFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && de.Response.Response.StatusCode != http.StatusNoContent {
+			de, err = client.CreateOrUpdateAtTenantScopeResponder(de.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateAtTenantScopeFuture", "Result", de.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -1420,8 +1561,8 @@ func (client DeploymentsClient) Delete(ctx context.Context, resourceGroupName st
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.Delete")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -1446,7 +1587,7 @@ func (client DeploymentsClient) Delete(ctx context.Context, resourceGroupName st
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "Delete", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "Delete", nil, "Failure sending request")
 		return
 	}
 
@@ -1482,7 +1623,23 @@ func (client DeploymentsClient) DeleteSender(req *http.Request) (future Deployme
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsDeleteFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsDeleteFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -1511,8 +1668,8 @@ func (client DeploymentsClient) DeleteAtManagementGroupScope(ctx context.Context
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.DeleteAtManagementGroupScope")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -1536,7 +1693,7 @@ func (client DeploymentsClient) DeleteAtManagementGroupScope(ctx context.Context
 
 	result, err = client.DeleteAtManagementGroupScopeSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "DeleteAtManagementGroupScope", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "DeleteAtManagementGroupScope", nil, "Failure sending request")
 		return
 	}
 
@@ -1571,7 +1728,23 @@ func (client DeploymentsClient) DeleteAtManagementGroupScopeSender(req *http.Req
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsDeleteAtManagementGroupScopeFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsDeleteAtManagementGroupScopeFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -1600,8 +1773,8 @@ func (client DeploymentsClient) DeleteAtScope(ctx context.Context, scope string,
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.DeleteAtScope")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -1622,7 +1795,7 @@ func (client DeploymentsClient) DeleteAtScope(ctx context.Context, scope string,
 
 	result, err = client.DeleteAtScopeSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "DeleteAtScope", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "DeleteAtScope", nil, "Failure sending request")
 		return
 	}
 
@@ -1657,7 +1830,23 @@ func (client DeploymentsClient) DeleteAtScopeSender(req *http.Request) (future D
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsDeleteAtScopeFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsDeleteAtScopeFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -1685,8 +1874,8 @@ func (client DeploymentsClient) DeleteAtSubscriptionScope(ctx context.Context, d
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.DeleteAtSubscriptionScope")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -1707,7 +1896,7 @@ func (client DeploymentsClient) DeleteAtSubscriptionScope(ctx context.Context, d
 
 	result, err = client.DeleteAtSubscriptionScopeSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "DeleteAtSubscriptionScope", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "DeleteAtSubscriptionScope", nil, "Failure sending request")
 		return
 	}
 
@@ -1742,7 +1931,23 @@ func (client DeploymentsClient) DeleteAtSubscriptionScopeSender(req *http.Reques
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsDeleteAtSubscriptionScopeFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsDeleteAtSubscriptionScopeFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -1770,8 +1975,8 @@ func (client DeploymentsClient) DeleteAtTenantScope(ctx context.Context, deploym
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.DeleteAtTenantScope")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -1792,7 +1997,7 @@ func (client DeploymentsClient) DeleteAtTenantScope(ctx context.Context, deploym
 
 	result, err = client.DeleteAtTenantScopeSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "DeleteAtTenantScope", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "DeleteAtTenantScope", nil, "Failure sending request")
 		return
 	}
 
@@ -1826,7 +2031,23 @@ func (client DeploymentsClient) DeleteAtTenantScopeSender(req *http.Request) (fu
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsDeleteAtTenantScopeFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsDeleteAtTenantScopeFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -1884,6 +2105,7 @@ func (client DeploymentsClient) ExportTemplate(ctx context.Context, resourceGrou
 	result, err = client.ExportTemplateResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ExportTemplate", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -1970,6 +2192,7 @@ func (client DeploymentsClient) ExportTemplateAtManagementGroupScope(ctx context
 	result, err = client.ExportTemplateAtManagementGroupScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ExportTemplateAtManagementGroupScope", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -2052,6 +2275,7 @@ func (client DeploymentsClient) ExportTemplateAtScope(ctx context.Context, scope
 	result, err = client.ExportTemplateAtScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ExportTemplateAtScope", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -2133,6 +2357,7 @@ func (client DeploymentsClient) ExportTemplateAtSubscriptionScope(ctx context.Co
 	result, err = client.ExportTemplateAtSubscriptionScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ExportTemplateAtSubscriptionScope", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -2214,6 +2439,7 @@ func (client DeploymentsClient) ExportTemplateAtTenantScope(ctx context.Context,
 	result, err = client.ExportTemplateAtTenantScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ExportTemplateAtTenantScope", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -2299,6 +2525,7 @@ func (client DeploymentsClient) Get(ctx context.Context, resourceGroupName strin
 	result, err = client.GetResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "Get", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -2385,6 +2612,7 @@ func (client DeploymentsClient) GetAtManagementGroupScope(ctx context.Context, g
 	result, err = client.GetAtManagementGroupScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "GetAtManagementGroupScope", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -2467,6 +2695,7 @@ func (client DeploymentsClient) GetAtScope(ctx context.Context, scope string, de
 	result, err = client.GetAtScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "GetAtScope", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -2548,6 +2777,7 @@ func (client DeploymentsClient) GetAtSubscriptionScope(ctx context.Context, depl
 	result, err = client.GetAtSubscriptionScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "GetAtSubscriptionScope", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -2629,6 +2859,7 @@ func (client DeploymentsClient) GetAtTenantScope(ctx context.Context, deployment
 	result, err = client.GetAtTenantScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "GetAtTenantScope", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -2712,9 +2943,11 @@ func (client DeploymentsClient) ListAtManagementGroupScope(ctx context.Context, 
 	result.dlr, err = client.ListAtManagementGroupScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ListAtManagementGroupScope", resp, "Failure responding to request")
+		return
 	}
 	if result.dlr.hasNextLink() && result.dlr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -2834,9 +3067,11 @@ func (client DeploymentsClient) ListAtScope(ctx context.Context, scope string, f
 	result.dlr, err = client.ListAtScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ListAtScope", resp, "Failure responding to request")
+		return
 	}
 	if result.dlr.hasNextLink() && result.dlr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -2955,9 +3190,11 @@ func (client DeploymentsClient) ListAtSubscriptionScope(ctx context.Context, fil
 	result.dlr, err = client.ListAtSubscriptionScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ListAtSubscriptionScope", resp, "Failure responding to request")
+		return
 	}
 	if result.dlr.hasNextLink() && result.dlr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -3076,9 +3313,11 @@ func (client DeploymentsClient) ListAtTenantScope(ctx context.Context, filter st
 	result.dlr, err = client.ListAtTenantScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ListAtTenantScope", resp, "Failure responding to request")
+		return
 	}
 	if result.dlr.hasNextLink() && result.dlr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -3203,9 +3442,11 @@ func (client DeploymentsClient) ListByResourceGroup(ctx context.Context, resourc
 	result.dlr, err = client.ListByResourceGroupResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ListByResourceGroup", resp, "Failure responding to request")
+		return
 	}
 	if result.dlr.hasNextLink() && result.dlr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -3304,8 +3545,8 @@ func (client DeploymentsClient) Validate(ctx context.Context, resourceGroupName 
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.Validate")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -3335,7 +3576,7 @@ func (client DeploymentsClient) Validate(ctx context.Context, resourceGroupName 
 
 	result, err = client.ValidateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "Validate", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "Validate", nil, "Failure sending request")
 		return
 	}
 
@@ -3373,7 +3614,33 @@ func (client DeploymentsClient) ValidateSender(req *http.Request) (future Deploy
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (dvr DeploymentValidateResult, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsValidateFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsValidateFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		dvr.Response.Response, err = future.GetResult(sender)
+		if dvr.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsValidateFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && dvr.Response.Response.StatusCode != http.StatusNoContent {
+			dvr, err = client.ValidateResponder(dvr.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "resources.DeploymentsValidateFuture", "Result", dvr.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -3400,8 +3667,8 @@ func (client DeploymentsClient) ValidateAtManagementGroupScope(ctx context.Conte
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.ValidateAtManagementGroupScope")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -3431,7 +3698,7 @@ func (client DeploymentsClient) ValidateAtManagementGroupScope(ctx context.Conte
 
 	result, err = client.ValidateAtManagementGroupScopeSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ValidateAtManagementGroupScope", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ValidateAtManagementGroupScope", nil, "Failure sending request")
 		return
 	}
 
@@ -3468,7 +3735,33 @@ func (client DeploymentsClient) ValidateAtManagementGroupScopeSender(req *http.R
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (dvr DeploymentValidateResult, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsValidateAtManagementGroupScopeFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsValidateAtManagementGroupScopeFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		dvr.Response.Response, err = future.GetResult(sender)
+		if dvr.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsValidateAtManagementGroupScopeFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && dvr.Response.Response.StatusCode != http.StatusNoContent {
+			dvr, err = client.ValidateAtManagementGroupScopeResponder(dvr.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "resources.DeploymentsValidateAtManagementGroupScopeFuture", "Result", dvr.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -3495,8 +3788,8 @@ func (client DeploymentsClient) ValidateAtScope(ctx context.Context, scope strin
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.ValidateAtScope")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -3522,7 +3815,7 @@ func (client DeploymentsClient) ValidateAtScope(ctx context.Context, scope strin
 
 	result, err = client.ValidateAtScopeSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ValidateAtScope", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ValidateAtScope", nil, "Failure sending request")
 		return
 	}
 
@@ -3559,7 +3852,33 @@ func (client DeploymentsClient) ValidateAtScopeSender(req *http.Request) (future
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (dvr DeploymentValidateResult, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsValidateAtScopeFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsValidateAtScopeFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		dvr.Response.Response, err = future.GetResult(sender)
+		if dvr.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsValidateAtScopeFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && dvr.Response.Response.StatusCode != http.StatusNoContent {
+			dvr, err = client.ValidateAtScopeResponder(dvr.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "resources.DeploymentsValidateAtScopeFuture", "Result", dvr.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -3585,8 +3904,8 @@ func (client DeploymentsClient) ValidateAtSubscriptionScope(ctx context.Context,
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.ValidateAtSubscriptionScope")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -3612,7 +3931,7 @@ func (client DeploymentsClient) ValidateAtSubscriptionScope(ctx context.Context,
 
 	result, err = client.ValidateAtSubscriptionScopeSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ValidateAtSubscriptionScope", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ValidateAtSubscriptionScope", nil, "Failure sending request")
 		return
 	}
 
@@ -3649,7 +3968,33 @@ func (client DeploymentsClient) ValidateAtSubscriptionScopeSender(req *http.Requ
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (dvr DeploymentValidateResult, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsValidateAtSubscriptionScopeFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsValidateAtSubscriptionScopeFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		dvr.Response.Response, err = future.GetResult(sender)
+		if dvr.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsValidateAtSubscriptionScopeFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && dvr.Response.Response.StatusCode != http.StatusNoContent {
+			dvr, err = client.ValidateAtSubscriptionScopeResponder(dvr.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "resources.DeploymentsValidateAtSubscriptionScopeFuture", "Result", dvr.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -3675,8 +4020,8 @@ func (client DeploymentsClient) ValidateAtTenantScope(ctx context.Context, deplo
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.ValidateAtTenantScope")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -3703,7 +4048,7 @@ func (client DeploymentsClient) ValidateAtTenantScope(ctx context.Context, deplo
 
 	result, err = client.ValidateAtTenantScopeSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ValidateAtTenantScope", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ValidateAtTenantScope", nil, "Failure sending request")
 		return
 	}
 
@@ -3739,7 +4084,33 @@ func (client DeploymentsClient) ValidateAtTenantScopeSender(req *http.Request) (
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (dvr DeploymentValidateResult, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsValidateAtTenantScopeFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsValidateAtTenantScopeFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		dvr.Response.Response, err = future.GetResult(sender)
+		if dvr.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsValidateAtTenantScopeFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && dvr.Response.Response.StatusCode != http.StatusNoContent {
+			dvr, err = client.ValidateAtTenantScopeResponder(dvr.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "resources.DeploymentsValidateAtTenantScopeFuture", "Result", dvr.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -3766,8 +4137,8 @@ func (client DeploymentsClient) WhatIf(ctx context.Context, resourceGroupName st
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.WhatIf")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -3794,7 +4165,7 @@ func (client DeploymentsClient) WhatIf(ctx context.Context, resourceGroupName st
 
 	result, err = client.WhatIfSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "WhatIf", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "WhatIf", nil, "Failure sending request")
 		return
 	}
 
@@ -3832,7 +4203,33 @@ func (client DeploymentsClient) WhatIfSender(req *http.Request) (future Deployme
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (wior WhatIfOperationResult, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsWhatIfFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsWhatIfFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		wior.Response.Response, err = future.GetResult(sender)
+		if wior.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsWhatIfFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && wior.Response.Response.StatusCode != http.StatusNoContent {
+			wior, err = client.WhatIfResponder(wior.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "resources.DeploymentsWhatIfFuture", "Result", wior.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -3859,8 +4256,8 @@ func (client DeploymentsClient) WhatIfAtManagementGroupScope(ctx context.Context
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.WhatIfAtManagementGroupScope")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -3887,7 +4284,7 @@ func (client DeploymentsClient) WhatIfAtManagementGroupScope(ctx context.Context
 
 	result, err = client.WhatIfAtManagementGroupScopeSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "WhatIfAtManagementGroupScope", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "WhatIfAtManagementGroupScope", nil, "Failure sending request")
 		return
 	}
 
@@ -3924,7 +4321,33 @@ func (client DeploymentsClient) WhatIfAtManagementGroupScopeSender(req *http.Req
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (wior WhatIfOperationResult, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsWhatIfAtManagementGroupScopeFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsWhatIfAtManagementGroupScopeFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		wior.Response.Response, err = future.GetResult(sender)
+		if wior.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsWhatIfAtManagementGroupScopeFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && wior.Response.Response.StatusCode != http.StatusNoContent {
+			wior, err = client.WhatIfAtManagementGroupScopeResponder(wior.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "resources.DeploymentsWhatIfAtManagementGroupScopeFuture", "Result", wior.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -3950,8 +4373,8 @@ func (client DeploymentsClient) WhatIfAtSubscriptionScope(ctx context.Context, d
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.WhatIfAtSubscriptionScope")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -3974,7 +4397,7 @@ func (client DeploymentsClient) WhatIfAtSubscriptionScope(ctx context.Context, d
 
 	result, err = client.WhatIfAtSubscriptionScopeSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "WhatIfAtSubscriptionScope", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "WhatIfAtSubscriptionScope", nil, "Failure sending request")
 		return
 	}
 
@@ -4011,7 +4434,33 @@ func (client DeploymentsClient) WhatIfAtSubscriptionScopeSender(req *http.Reques
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (wior WhatIfOperationResult, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsWhatIfAtSubscriptionScopeFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsWhatIfAtSubscriptionScopeFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		wior.Response.Response, err = future.GetResult(sender)
+		if wior.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsWhatIfAtSubscriptionScopeFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && wior.Response.Response.StatusCode != http.StatusNoContent {
+			wior, err = client.WhatIfAtSubscriptionScopeResponder(wior.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "resources.DeploymentsWhatIfAtSubscriptionScopeFuture", "Result", wior.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -4037,8 +4486,8 @@ func (client DeploymentsClient) WhatIfAtTenantScope(ctx context.Context, deploym
 		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.WhatIfAtTenantScope")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -4062,7 +4511,7 @@ func (client DeploymentsClient) WhatIfAtTenantScope(ctx context.Context, deploym
 
 	result, err = client.WhatIfAtTenantScopeSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "WhatIfAtTenantScope", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "WhatIfAtTenantScope", nil, "Failure sending request")
 		return
 	}
 
@@ -4098,7 +4547,33 @@ func (client DeploymentsClient) WhatIfAtTenantScopeSender(req *http.Request) (fu
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DeploymentsClient) (wior WhatIfOperationResult, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsWhatIfAtTenantScopeFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("resources.DeploymentsWhatIfAtTenantScopeFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		wior.Response.Response, err = future.GetResult(sender)
+		if wior.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsWhatIfAtTenantScopeFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && wior.Response.Response.StatusCode != http.StatusNoContent {
+			wior, err = client.WhatIfAtTenantScopeResponder(wior.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "resources.DeploymentsWhatIfAtTenantScopeFuture", "Result", wior.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 

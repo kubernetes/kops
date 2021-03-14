@@ -491,10 +491,12 @@ type DataDiskType struct {
 }
 
 type SystemDiskType struct {
-	Size        int
-	Category    DiskCategory //Enum cloud, ephemeral, ephemeral_ssd
-	DiskName    string
-	Description string
+	Size                 int
+	Category             DiskCategory //Enum cloud, ephemeral, ephemeral_ssd
+	DiskName             string
+	Description          string
+	PerformanceLevel     DiskPerformanceLevel
+	AutoSnapshotPolicyId string
 }
 
 type IoOptimized string

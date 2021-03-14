@@ -21,7 +21,6 @@ import (
 )
 
 // UploadCACertificate invokes the slb.UploadCACertificate API synchronously
-// api document: https://help.aliyun.com/api/slb/uploadcacertificate.html
 func (client *Client) UploadCACertificate(request *UploadCACertificateRequest) (response *UploadCACertificateResponse, err error) {
 	response = CreateUploadCACertificateResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) UploadCACertificate(request *UploadCACertificateRequest) (
 }
 
 // UploadCACertificateWithChan invokes the slb.UploadCACertificate API asynchronously
-// api document: https://help.aliyun.com/api/slb/uploadcacertificate.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) UploadCACertificateWithChan(request *UploadCACertificateRequest) (<-chan *UploadCACertificateResponse, <-chan error) {
 	responseChan := make(chan *UploadCACertificateResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) UploadCACertificateWithChan(request *UploadCACertificateRe
 }
 
 // UploadCACertificateWithCallback invokes the slb.UploadCACertificate API asynchronously
-// api document: https://help.aliyun.com/api/slb/uploadcacertificate.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) UploadCACertificateWithCallback(request *UploadCACertificateRequest, callback func(response *UploadCACertificateResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -83,6 +78,7 @@ type UploadCACertificateRequest struct {
 	CACertificate        string           `position:"Query" name:"CACertificate"`
 	ResourceOwnerAccount string           `position:"Query" name:"ResourceOwnerAccount"`
 	OwnerAccount         string           `position:"Query" name:"OwnerAccount"`
+	StandardType         string           `position:"Query" name:"StandardType"`
 	OwnerId              requests.Integer `position:"Query" name:"OwnerId"`
 }
 
@@ -107,6 +103,7 @@ func CreateUploadCACertificateRequest() (request *UploadCACertificateRequest) {
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "UploadCACertificate", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

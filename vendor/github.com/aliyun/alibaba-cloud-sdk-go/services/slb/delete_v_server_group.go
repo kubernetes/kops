@@ -21,7 +21,6 @@ import (
 )
 
 // DeleteVServerGroup invokes the slb.DeleteVServerGroup API synchronously
-// api document: https://help.aliyun.com/api/slb/deletevservergroup.html
 func (client *Client) DeleteVServerGroup(request *DeleteVServerGroupRequest) (response *DeleteVServerGroupResponse, err error) {
 	response = CreateDeleteVServerGroupResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DeleteVServerGroup(request *DeleteVServerGroupRequest) (re
 }
 
 // DeleteVServerGroupWithChan invokes the slb.DeleteVServerGroup API asynchronously
-// api document: https://help.aliyun.com/api/slb/deletevservergroup.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DeleteVServerGroupWithChan(request *DeleteVServerGroupRequest) (<-chan *DeleteVServerGroupResponse, <-chan error) {
 	responseChan := make(chan *DeleteVServerGroupResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DeleteVServerGroupWithChan(request *DeleteVServerGroupRequ
 }
 
 // DeleteVServerGroupWithCallback invokes the slb.DeleteVServerGroup API asynchronously
-// api document: https://help.aliyun.com/api/slb/deletevservergroup.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DeleteVServerGroupWithCallback(request *DeleteVServerGroupRequest, callback func(response *DeleteVServerGroupResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -97,6 +92,7 @@ func CreateDeleteVServerGroupRequest() (request *DeleteVServerGroupRequest) {
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DeleteVServerGroup", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

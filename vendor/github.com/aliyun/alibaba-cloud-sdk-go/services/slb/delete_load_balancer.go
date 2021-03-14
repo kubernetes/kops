@@ -21,7 +21,6 @@ import (
 )
 
 // DeleteLoadBalancer invokes the slb.DeleteLoadBalancer API synchronously
-// api document: https://help.aliyun.com/api/slb/deleteloadbalancer.html
 func (client *Client) DeleteLoadBalancer(request *DeleteLoadBalancerRequest) (response *DeleteLoadBalancerResponse, err error) {
 	response = CreateDeleteLoadBalancerResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DeleteLoadBalancer(request *DeleteLoadBalancerRequest) (re
 }
 
 // DeleteLoadBalancerWithChan invokes the slb.DeleteLoadBalancer API asynchronously
-// api document: https://help.aliyun.com/api/slb/deleteloadbalancer.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DeleteLoadBalancerWithChan(request *DeleteLoadBalancerRequest) (<-chan *DeleteLoadBalancerResponse, <-chan error) {
 	responseChan := make(chan *DeleteLoadBalancerResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DeleteLoadBalancerWithChan(request *DeleteLoadBalancerRequ
 }
 
 // DeleteLoadBalancerWithCallback invokes the slb.DeleteLoadBalancer API asynchronously
-// api document: https://help.aliyun.com/api/slb/deleteloadbalancer.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DeleteLoadBalancerWithCallback(request *DeleteLoadBalancerRequest, callback func(response *DeleteLoadBalancerResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -97,6 +92,7 @@ func CreateDeleteLoadBalancerRequest() (request *DeleteLoadBalancerRequest) {
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DeleteLoadBalancer", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

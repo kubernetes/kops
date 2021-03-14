@@ -21,7 +21,6 @@ import (
 )
 
 // CreateRules invokes the slb.CreateRules API synchronously
-// api document: https://help.aliyun.com/api/slb/createrules.html
 func (client *Client) CreateRules(request *CreateRulesRequest) (response *CreateRulesResponse, err error) {
 	response = CreateCreateRulesResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) CreateRules(request *CreateRulesRequest) (response *Create
 }
 
 // CreateRulesWithChan invokes the slb.CreateRules API asynchronously
-// api document: https://help.aliyun.com/api/slb/createrules.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) CreateRulesWithChan(request *CreateRulesRequest) (<-chan *CreateRulesResponse, <-chan error) {
 	responseChan := make(chan *CreateRulesResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) CreateRulesWithChan(request *CreateRulesRequest) (<-chan *
 }
 
 // CreateRulesWithCallback invokes the slb.CreateRules API asynchronously
-// api document: https://help.aliyun.com/api/slb/createrules.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) CreateRulesWithCallback(request *CreateRulesRequest, callback func(response *CreateRulesResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -101,6 +96,7 @@ func CreateCreateRulesRequest() (request *CreateRulesRequest) {
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "CreateRules", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

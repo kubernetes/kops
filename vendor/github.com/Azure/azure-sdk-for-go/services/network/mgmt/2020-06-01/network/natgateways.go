@@ -51,8 +51,8 @@ func (client NatGatewaysClient) CreateOrUpdate(ctx context.Context, resourceGrou
 		ctx = tracing.StartSpan(ctx, fqdn+"/NatGatewaysClient.CreateOrUpdate")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -65,7 +65,7 @@ func (client NatGatewaysClient) CreateOrUpdate(ctx context.Context, resourceGrou
 
 	result, err = client.CreateOrUpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.NatGatewaysClient", "CreateOrUpdate", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.NatGatewaysClient", "CreateOrUpdate", nil, "Failure sending request")
 		return
 	}
 
@@ -104,7 +104,33 @@ func (client NatGatewaysClient) CreateOrUpdateSender(req *http.Request) (future 
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client NatGatewaysClient) (ng NatGateway, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.NatGatewaysCreateOrUpdateFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.NatGatewaysCreateOrUpdateFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		ng.Response.Response, err = future.GetResult(sender)
+		if ng.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.NatGatewaysCreateOrUpdateFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && ng.Response.Response.StatusCode != http.StatusNoContent {
+			ng, err = client.CreateOrUpdateResponder(ng.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.NatGatewaysCreateOrUpdateFuture", "Result", ng.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -129,8 +155,8 @@ func (client NatGatewaysClient) Delete(ctx context.Context, resourceGroupName st
 		ctx = tracing.StartSpan(ctx, fqdn+"/NatGatewaysClient.Delete")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -143,7 +169,7 @@ func (client NatGatewaysClient) Delete(ctx context.Context, resourceGroupName st
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.NatGatewaysClient", "Delete", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.NatGatewaysClient", "Delete", nil, "Failure sending request")
 		return
 	}
 
@@ -179,7 +205,23 @@ func (client NatGatewaysClient) DeleteSender(req *http.Request) (future NatGatew
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client NatGatewaysClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.NatGatewaysDeleteFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.NatGatewaysDeleteFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -226,6 +268,7 @@ func (client NatGatewaysClient) Get(ctx context.Context, resourceGroupName strin
 	result, err = client.GetResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.NatGatewaysClient", "Get", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -304,9 +347,11 @@ func (client NatGatewaysClient) List(ctx context.Context, resourceGroupName stri
 	result.nglr, err = client.ListResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.NatGatewaysClient", "List", resp, "Failure responding to request")
+		return
 	}
 	if result.nglr.hasNextLink() && result.nglr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -416,9 +461,11 @@ func (client NatGatewaysClient) ListAll(ctx context.Context) (result NatGatewayL
 	result.nglr, err = client.ListAllResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.NatGatewaysClient", "ListAll", resp, "Failure responding to request")
+		return
 	}
 	if result.nglr.hasNextLink() && result.nglr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -530,6 +577,7 @@ func (client NatGatewaysClient) UpdateTags(ctx context.Context, resourceGroupNam
 	result, err = client.UpdateTagsResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.NatGatewaysClient", "UpdateTags", resp, "Failure responding to request")
+		return
 	}
 
 	return

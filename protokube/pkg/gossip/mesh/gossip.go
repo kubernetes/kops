@@ -87,10 +87,16 @@ func NewMeshGossiper(listen string, channelName string, nodeName string, passwor
 
 	nickname := nodeName
 	logger := &glogLogger{}
-	router := mesh.NewRouter(meshConfig, meshName, nickname, mesh.NullOverlay{}, logger)
+	router, err := mesh.NewRouter(meshConfig, meshName, nickname, mesh.NullOverlay{}, logger)
+	if err != nil {
+		return nil, fmt.Errorf("error creating new mesh router: %v", err)
+	}
 
 	peer := newPeer(meshName)
-	gossip := router.NewGossip(channelName, peer)
+	gossip, err := router.NewGossip(channelName, peer)
+	if err != nil {
+		return nil, fmt.Errorf("error creating new gossip channel: %v", err)
+	}
 	peer.register(gossip)
 
 	gossiper := &MeshGossiper{

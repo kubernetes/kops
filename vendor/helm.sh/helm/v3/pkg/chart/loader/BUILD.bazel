@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "archive.go",
+        "directory.go",
+        "load.go",
+    ],
+    importmap = "k8s.io/kops/vendor/helm.sh/helm/v3/pkg/chart/loader",
+    importpath = "helm.sh/helm/v3/pkg/chart/loader",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/pkg/errors:go_default_library",
+        "//vendor/helm.sh/helm/v3/internal/ignore:go_default_library",
+        "//vendor/helm.sh/helm/v3/internal/sympath:go_default_library",
+        "//vendor/helm.sh/helm/v3/pkg/chart:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
+    ],
+)

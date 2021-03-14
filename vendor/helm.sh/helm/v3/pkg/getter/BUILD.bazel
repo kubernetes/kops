@@ -6,6 +6,7 @@ go_library(
         "doc.go",
         "getter.go",
         "httpgetter.go",
+        "ocigetter.go",
         "plugingetter.go",
     ],
     importmap = "k8s.io/kops/vendor/helm.sh/helm/v3/pkg/getter",
@@ -13,6 +14,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/pkg/errors:go_default_library",
+        "//vendor/helm.sh/helm/v3/internal/experimental/registry:go_default_library",
         "//vendor/helm.sh/helm/v3/internal/tlsutil:go_default_library",
         "//vendor/helm.sh/helm/v3/internal/urlutil:go_default_library",
         "//vendor/helm.sh/helm/v3/internal/version:go_default_library",

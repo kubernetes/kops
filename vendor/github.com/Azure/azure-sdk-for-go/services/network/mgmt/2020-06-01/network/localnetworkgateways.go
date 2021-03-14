@@ -53,8 +53,8 @@ func (client LocalNetworkGatewaysClient) CreateOrUpdate(ctx context.Context, res
 		ctx = tracing.StartSpan(ctx, fqdn+"/LocalNetworkGatewaysClient.CreateOrUpdate")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -82,7 +82,7 @@ func (client LocalNetworkGatewaysClient) CreateOrUpdate(ctx context.Context, res
 
 	result, err = client.CreateOrUpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.LocalNetworkGatewaysClient", "CreateOrUpdate", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.LocalNetworkGatewaysClient", "CreateOrUpdate", nil, "Failure sending request")
 		return
 	}
 
@@ -121,7 +121,33 @@ func (client LocalNetworkGatewaysClient) CreateOrUpdateSender(req *http.Request)
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client LocalNetworkGatewaysClient) (lng LocalNetworkGateway, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.LocalNetworkGatewaysCreateOrUpdateFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.LocalNetworkGatewaysCreateOrUpdateFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		lng.Response.Response, err = future.GetResult(sender)
+		if lng.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.LocalNetworkGatewaysCreateOrUpdateFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && lng.Response.Response.StatusCode != http.StatusNoContent {
+			lng, err = client.CreateOrUpdateResponder(lng.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.LocalNetworkGatewaysCreateOrUpdateFuture", "Result", lng.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -146,8 +172,8 @@ func (client LocalNetworkGatewaysClient) Delete(ctx context.Context, resourceGro
 		ctx = tracing.StartSpan(ctx, fqdn+"/LocalNetworkGatewaysClient.Delete")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -166,7 +192,7 @@ func (client LocalNetworkGatewaysClient) Delete(ctx context.Context, resourceGro
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.LocalNetworkGatewaysClient", "Delete", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.LocalNetworkGatewaysClient", "Delete", nil, "Failure sending request")
 		return
 	}
 
@@ -202,7 +228,23 @@ func (client LocalNetworkGatewaysClient) DeleteSender(req *http.Request) (future
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client LocalNetworkGatewaysClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.LocalNetworkGatewaysDeleteFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.LocalNetworkGatewaysDeleteFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -254,6 +296,7 @@ func (client LocalNetworkGatewaysClient) Get(ctx context.Context, resourceGroupN
 	result, err = client.GetResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.LocalNetworkGatewaysClient", "Get", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -329,9 +372,11 @@ func (client LocalNetworkGatewaysClient) List(ctx context.Context, resourceGroup
 	result.lnglr, err = client.ListResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.LocalNetworkGatewaysClient", "List", resp, "Failure responding to request")
+		return
 	}
 	if result.lnglr.hasNextLink() && result.lnglr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -450,6 +495,7 @@ func (client LocalNetworkGatewaysClient) UpdateTags(ctx context.Context, resourc
 	result, err = client.UpdateTagsResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.LocalNetworkGatewaysClient", "UpdateTags", resp, "Failure responding to request")
+		return
 	}
 
 	return

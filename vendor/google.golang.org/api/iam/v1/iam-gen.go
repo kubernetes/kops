@@ -489,6 +489,34 @@ func (s *AuditableService) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// Aws: Represents an Amazon Web Services identity provider.
+type Aws struct {
+	// AccountId: Required. The AWS account ID.
+	AccountId string `json:"accountId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AccountId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AccountId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Aws) MarshalJSON() ([]byte, error) {
+	type NoMethod Aws
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // Binding: Associates `members` with a `role`.
 type Binding struct {
 	// Condition: The condition that is associated with this binding. If the
@@ -1060,6 +1088,125 @@ type ListServiceAccountsResponse struct {
 
 func (s *ListServiceAccountsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListServiceAccountsResponse
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ListWorkloadIdentityPoolProvidersResponse: Response message for
+// ListWorkloadIdentityPoolProviders.
+type ListWorkloadIdentityPoolProvidersResponse struct {
+	// NextPageToken: A token, which can be sent as `page_token` to retrieve
+	// the next page. If this field is omitted, there are no subsequent
+	// pages.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// WorkloadIdentityPoolProviders: A list of providers.
+	WorkloadIdentityPoolProviders []*WorkloadIdentityPoolProvider `json:"workloadIdentityPoolProviders,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NextPageToken") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ListWorkloadIdentityPoolProvidersResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod ListWorkloadIdentityPoolProvidersResponse
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ListWorkloadIdentityPoolsResponse: Response message for
+// ListWorkloadIdentityPools.
+type ListWorkloadIdentityPoolsResponse struct {
+	// NextPageToken: A token, which can be sent as `page_token` to retrieve
+	// the next page. If this field is omitted, there are no subsequent
+	// pages.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// WorkloadIdentityPools: A list of pools.
+	WorkloadIdentityPools []*WorkloadIdentityPool `json:"workloadIdentityPools,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NextPageToken") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ListWorkloadIdentityPoolsResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod ListWorkloadIdentityPoolsResponse
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Oidc: Represents an OpenId Connect 1.0 identity provider.
+type Oidc struct {
+	// AllowedAudiences: Acceptable values for the `aud` field (audience) in
+	// the OIDC token. Token exchange requests are rejected if the token
+	// audience does not match one of the configured values. Each audience
+	// may be at most 256 characters. A maximum of 10 audiences may be
+	// configured. If this list is empty, the OIDC token audience must be
+	// equal to the full canonical resource name of the
+	// WorkloadIdentityPoolProvider, with or without the HTTPS prefix. For
+	// example: ```
+	// //iam.googleapis.com/projects//locations//workloadIdentityPools//provi
+	// ders/
+	// https://iam.googleapis.com/projects//locations//workloadIdentityPools//providers/
+	// ```
+	AllowedAudiences []string `json:"allowedAudiences,omitempty"`
+
+	// IssuerUri: Required. The OIDC issuer URL.
+	IssuerUri string `json:"issuerUri,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AllowedAudiences") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AllowedAudiences") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Oidc) MarshalJSON() ([]byte, error) {
+	type NoMethod Oidc
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -2254,6 +2401,16 @@ func (s *UndeleteServiceAccountResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// UndeleteWorkloadIdentityPoolProviderRequest: Request message for
+// UndeleteWorkloadIdentityPoolProvider.
+type UndeleteWorkloadIdentityPoolProviderRequest struct {
+}
+
+// UndeleteWorkloadIdentityPoolRequest: Request message for
+// UndeleteWorkloadIdentityPool.
+type UndeleteWorkloadIdentityPoolRequest struct {
+}
+
 // UploadServiceAccountKeyRequest: The service account key upload
 // request.
 type UploadServiceAccountKeyRequest struct {
@@ -2282,6 +2439,197 @@ type UploadServiceAccountKeyRequest struct {
 
 func (s *UploadServiceAccountKeyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod UploadServiceAccountKeyRequest
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// WorkloadIdentityPool: Represents a collection of external workload
+// identities. You can define IAM policies to grant these identities
+// access to Google Cloud resources.
+type WorkloadIdentityPool struct {
+	// Description: A description of the pool. Cannot exceed 256 characters.
+	Description string `json:"description,omitempty"`
+
+	// Disabled: Whether the pool is disabled. You cannot use a disabled
+	// pool to exchange tokens, or use existing tokens to access resources.
+	// If the pool is re-enabled, existing tokens grant access again.
+	Disabled bool `json:"disabled,omitempty"`
+
+	// DisplayName: A display name for the pool. Cannot exceed 32
+	// characters.
+	DisplayName string `json:"displayName,omitempty"`
+
+	// Name: Output only. The resource name of the pool.
+	Name string `json:"name,omitempty"`
+
+	// State: Output only. The state of the pool.
+	//
+	// Possible values:
+	//   "STATE_UNSPECIFIED" - State unspecified.
+	//   "ACTIVE" - The pool is active, and may be used in Google Cloud
+	// policies.
+	//   "DELETED" - The pool is soft-deleted. Soft-deleted pools are
+	// permanently deleted after approximately 30 days. You can restore a
+	// soft-deleted pool using UndeleteWorkloadIdentityPool. You cannot
+	// reuse the ID of a soft-deleted pool until it is permanently deleted.
+	// While a pool is deleted, you cannot use it to exchange tokens, or use
+	// existing tokens to access resources. If the pool is undeleted,
+	// existing tokens grant access again.
+	State string `json:"state,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Description") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *WorkloadIdentityPool) MarshalJSON() ([]byte, error) {
+	type NoMethod WorkloadIdentityPool
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// WorkloadIdentityPoolProvider: A configuration for an external
+// identity provider.
+type WorkloadIdentityPoolProvider struct {
+	// AttributeCondition: A Common Expression Language
+	// (https://opensource.google/projects/cel) expression, in plain text,
+	// to restrict what otherwise valid authentication credentials issued by
+	// the provider should not be accepted. The expression must output a
+	// boolean representing whether to allow the federation. The following
+	// keywords may be referenced in the expressions: * `assertion`: JSON
+	// representing the authentication credential issued by the provider. *
+	// `google`: The Google attributes mapped from the assertion in the
+	// `attribute_mappings`. * `attribute`: The custom attributes mapped
+	// from the assertion in the `attribute_mappings`. The maximum length of
+	// the attribute condition expression is 4096 characters. If
+	// unspecified, all valid authentication credential are accepted. The
+	// following example shows how to only allow credentials with a mapped
+	// `google.groups` value of `admins`: ``` "'admins' in google.groups"
+	// ```
+	AttributeCondition string `json:"attributeCondition,omitempty"`
+
+	// AttributeMapping: Maps attributes from authentication credentials
+	// issued by an external identity provider to Google Cloud attributes,
+	// such as `subject` and `segment`. Each key must be a string specifying
+	// the Google Cloud IAM attribute to map to. The following keys are
+	// supported: * `google.subject`: The principal IAM is authenticating.
+	// You can reference this value in IAM bindings. This is also the
+	// subject that appears in Cloud Logging logs. Cannot exceed 127
+	// characters. * `google.groups`: Groups the external identity belongs
+	// to. You can grant groups access to resources using an IAM
+	// `principalSet` binding; access applies to all members of the group.
+	// You can also provide custom attributes by specifying
+	// `attribute.{custom_attribute}`, where `{custom_attribute}` is the
+	// name of the custom attribute to be mapped. You can define a maximum
+	// of 50 custom attributes. The maximum length of a mapped attribute key
+	// is 100 characters, and the key may only contain the characters
+	// [a-z0-9_]. You can reference these attributes in IAM policies to
+	// define fine-grained access for a workload to Google Cloud resources.
+	// For example: * `google.subject`:
+	// `principal://iam.googleapis.com/projects/{project}/locations/{location
+	// }/workloadIdentityPools/{pool}/subject/{value}` * `google.groups`:
+	// `principalSet://iam.googleapis.com/projects/{project}/locations/{locat
+	// ion}/workloadIdentityPools/{pool}/group/{value}` *
+	// `attribute.{custom_attribute}`:
+	// `principalSet://iam.googleapis.com/projects/{project}/locations/{locat
+	// ion}/workloadIdentityPools/{pool}/attribute.{custom_attribute}/{value}
+	// ` Each value must be a [Common Expression Language]
+	// (https://opensource.google/projects/cel) function that maps an
+	// identity provider credential to the normalized attribute specified by
+	// the corresponding map key. You can use the `assertion` keyword in the
+	// expression to access a JSON representation of the authentication
+	// credential issued by the provider. The maximum length of an attribute
+	// mapping expression is 2048 characters. When evaluated, the total size
+	// of all mapped attributes must not exceed 8KB. For AWS providers, if
+	// no attribute mapping is defined, the following default mapping
+	// applies: ``` { "google.subject":"assertion.arn",
+	// "attribute.aws_role": "assertion.arn.contains('assumed-role')" " ?
+	// assertion.arn.extract('{account_arn}assumed-role/')" " +
+	// 'assumed-role/'" " +
+	// assertion.arn.extract('assumed-role/{role_name}/')" " :
+	// assertion.arn", } ``` If any custom attribute mappings are defined,
+	// they must include a mapping to the `google.subject` attribute. For
+	// OIDC providers, you must supply a custom mapping, which must include
+	// the `google.subject` attribute. For example, the following maps the
+	// `sub` claim of the incoming credential to the `subject` attribute on
+	// a Google token: ``` {"google.subject": "assertion.sub"} ```
+	AttributeMapping map[string]string `json:"attributeMapping,omitempty"`
+
+	// Aws: An Amazon Web Services identity provider.
+	Aws *Aws `json:"aws,omitempty"`
+
+	// Description: A description for the provider. Cannot exceed 256
+	// characters.
+	Description string `json:"description,omitempty"`
+
+	// Disabled: Whether the provider is disabled. You cannot use a disabled
+	// provider to exchange tokens. However, existing tokens still grant
+	// access.
+	Disabled bool `json:"disabled,omitempty"`
+
+	// DisplayName: A display name for the provider. Cannot exceed 32
+	// characters.
+	DisplayName string `json:"displayName,omitempty"`
+
+	// Name: Output only. The resource name of the provider.
+	Name string `json:"name,omitempty"`
+
+	// Oidc: An OpenId Connect 1.0 identity provider.
+	Oidc *Oidc `json:"oidc,omitempty"`
+
+	// State: Output only. The state of the provider.
+	//
+	// Possible values:
+	//   "STATE_UNSPECIFIED" - State unspecified.
+	//   "ACTIVE" - The provider is active, and may be used to validate
+	// authentication credentials.
+	//   "DELETED" - The provider is soft-deleted. Soft-deleted providers
+	// are permanently deleted after approximately 30 days. You can restore
+	// a soft-deleted provider using UndeleteWorkloadIdentityPoolProvider.
+	// You cannot reuse the ID of a soft-deleted provider until it is
+	// permanently deleted.
+	State string `json:"state,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "AttributeCondition")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AttributeCondition") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *WorkloadIdentityPoolProvider) MarshalJSON() ([]byte, error) {
+	type NoMethod WorkloadIdentityPoolProvider
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -2334,7 +2682,7 @@ func (c *IamPoliciesLintPolicyCall) Header() http.Header {
 
 func (c *IamPoliciesLintPolicyCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -2462,7 +2810,7 @@ func (c *IamPoliciesQueryAuditableServicesCall) Header() http.Header {
 
 func (c *IamPoliciesQueryAuditableServicesCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -2589,7 +2937,7 @@ func (c *OrganizationsRolesCreateCall) Header() http.Header {
 
 func (c *OrganizationsRolesCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -2742,7 +3090,7 @@ func (c *OrganizationsRolesDeleteCall) Header() http.Header {
 
 func (c *OrganizationsRolesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -2889,7 +3237,7 @@ func (c *OrganizationsRolesGetCall) Header() http.Header {
 
 func (c *OrganizationsRolesGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3071,7 +3419,7 @@ func (c *OrganizationsRolesListCall) Header() http.Header {
 
 func (c *OrganizationsRolesListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3263,7 +3611,7 @@ func (c *OrganizationsRolesPatchCall) Header() http.Header {
 
 func (c *OrganizationsRolesPatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3409,7 +3757,7 @@ func (c *OrganizationsRolesUndeleteCall) Header() http.Header {
 
 func (c *OrganizationsRolesUndeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3549,7 +3897,7 @@ func (c *PermissionsQueryTestablePermissionsCall) Header() http.Header {
 
 func (c *PermissionsQueryTestablePermissionsCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3651,6 +3999,944 @@ func (c *PermissionsQueryTestablePermissionsCall) Pages(ctx context.Context, f f
 	}
 }
 
+// method id "iam.projects.locations.workloadIdentityPools.create":
+
+type ProjectsLocationsWorkloadIdentityPoolsCreateCall struct {
+	s                    *Service
+	parent               string
+	workloadidentitypool *WorkloadIdentityPool
+	urlParams_           gensupport.URLParams
+	ctx_                 context.Context
+	header_              http.Header
+}
+
+// Create: Creates a new WorkloadIdentityPool. You cannot reuse the name
+// of a deleted pool until 30 days after deletion.
+func (r *ProjectsLocationsWorkloadIdentityPoolsService) Create(parent string, workloadidentitypool *WorkloadIdentityPool) *ProjectsLocationsWorkloadIdentityPoolsCreateCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	c.workloadidentitypool = workloadidentitypool
+	return c
+}
+
+// WorkloadIdentityPoolId sets the optional parameter
+// "workloadIdentityPoolId": Required. The ID to use for the pool, which
+// becomes the final component of the resource name. This value should
+// be 4-32 characters, and may contain the characters [a-z0-9-]. The
+// prefix `gcp-` is reserved for use by Google, and may not be
+// specified.
+func (c *ProjectsLocationsWorkloadIdentityPoolsCreateCall) WorkloadIdentityPoolId(workloadIdentityPoolId string) *ProjectsLocationsWorkloadIdentityPoolsCreateCall {
+	c.urlParams_.Set("workloadIdentityPoolId", workloadIdentityPoolId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsCreateCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsCreateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsCreateCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsCreateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsCreateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workloadidentitypool)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/workloadIdentityPools")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.create" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsCreateCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Creates a new WorkloadIdentityPool. You cannot reuse the name of a deleted pool until 30 days after deletion.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools",
+	//   "httpMethod": "POST",
+	//   "id": "iam.projects.locations.workloadIdentityPools.create",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "parent": {
+	//       "description": "Required. The parent resource to create the pool in. The only supported location is `global`.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "workloadIdentityPoolId": {
+	//       "description": "Required. The ID to use for the pool, which becomes the final component of the resource name. This value should be 4-32 characters, and may contain the characters [a-z0-9-]. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
+	//       "location": "query",
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+parent}/workloadIdentityPools",
+	//   "request": {
+	//     "$ref": "WorkloadIdentityPool"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.delete":
+
+type ProjectsLocationsWorkloadIdentityPoolsDeleteCall struct {
+	s          *Service
+	name       string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
+}
+
+// Delete: Deletes a WorkloadIdentityPool. You cannot use a deleted pool
+// to exchange external credentials for Google Cloud credentials.
+// However, deletion does not revoke credentials that have already been
+// issued. Credentials issued for a deleted pool do not grant access to
+// resources. If the pool is undeleted, and the credentials are not
+// expired, they grant access again. You can undelete a pool for 30
+// days. After 30 days, deletion is permanent. You cannot update deleted
+// pools. However, you can view and list them.
+func (r *ProjectsLocationsWorkloadIdentityPoolsService) Delete(name string) *ProjectsLocationsWorkloadIdentityPoolsDeleteCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsDeleteCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.delete" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Deletes a WorkloadIdentityPool. You cannot use a deleted pool to exchange external credentials for Google Cloud credentials. However, deletion does not revoke credentials that have already been issued. Credentials issued for a deleted pool do not grant access to resources. If the pool is undeleted, and the credentials are not expired, they grant access again. You can undelete a pool for 30 days. After 30 days, deletion is permanent. You cannot update deleted pools. However, you can view and list them.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}",
+	//   "httpMethod": "DELETE",
+	//   "id": "iam.projects.locations.workloadIdentityPools.delete",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The name of the pool to delete.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.get":
+
+type ProjectsLocationsWorkloadIdentityPoolsGetCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Gets an individual WorkloadIdentityPool.
+func (r *ProjectsLocationsWorkloadIdentityPoolsService) Get(name string) *ProjectsLocationsWorkloadIdentityPoolsGetCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsWorkloadIdentityPoolsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsGetCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.get" call.
+// Exactly one of *WorkloadIdentityPool or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *WorkloadIdentityPool.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsGetCall) Do(opts ...googleapi.CallOption) (*WorkloadIdentityPool, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &WorkloadIdentityPool{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Gets an individual WorkloadIdentityPool.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}",
+	//   "httpMethod": "GET",
+	//   "id": "iam.projects.locations.workloadIdentityPools.get",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The name of the pool to retrieve.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "response": {
+	//     "$ref": "WorkloadIdentityPool"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.list":
+
+type ProjectsLocationsWorkloadIdentityPoolsListCall struct {
+	s            *Service
+	parent       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists all non-deleted WorkloadIdentityPools in a project. If
+// `show_deleted` is set to `true`, then deleted pools are also listed.
+func (r *ProjectsLocationsWorkloadIdentityPoolsService) List(parent string) *ProjectsLocationsWorkloadIdentityPoolsListCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	return c
+}
+
+// PageSize sets the optional parameter "pageSize": The maximum number
+// of pools to return. If unspecified, at most 50 pools are returned.
+// The maximum value is 1000; values above are 1000 truncated to 1000.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) PageSize(pageSize int64) *ProjectsLocationsWorkloadIdentityPoolsListCall {
+	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": A page token,
+// received from a previous `ListWorkloadIdentityPools` call. Provide
+// this to retrieve the subsequent page.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) PageToken(pageToken string) *ProjectsLocationsWorkloadIdentityPoolsListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// ShowDeleted sets the optional parameter "showDeleted": Whether to
+// return soft-deleted pools.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) ShowDeleted(showDeleted bool) *ProjectsLocationsWorkloadIdentityPoolsListCall {
+	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/workloadIdentityPools")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.list" call.
+// Exactly one of *ListWorkloadIdentityPoolsResponse or error will be
+// non-nil. Any non-2xx status code is an error. Response headers are in
+// either *ListWorkloadIdentityPoolsResponse.ServerResponse.Header or
+// (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) Do(opts ...googleapi.CallOption) (*ListWorkloadIdentityPoolsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &ListWorkloadIdentityPoolsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists all non-deleted WorkloadIdentityPools in a project. If `show_deleted` is set to `true`, then deleted pools are also listed.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools",
+	//   "httpMethod": "GET",
+	//   "id": "iam.projects.locations.workloadIdentityPools.list",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "pageSize": {
+	//       "description": "The maximum number of pools to return. If unspecified, at most 50 pools are returned. The maximum value is 1000; values above are 1000 truncated to 1000.",
+	//       "format": "int32",
+	//       "location": "query",
+	//       "type": "integer"
+	//     },
+	//     "pageToken": {
+	//       "description": "A page token, received from a previous `ListWorkloadIdentityPools` call. Provide this to retrieve the subsequent page.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "parent": {
+	//       "description": "Required. The parent resource to list pools for.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "showDeleted": {
+	//       "description": "Whether to return soft-deleted pools.",
+	//       "location": "query",
+	//       "type": "boolean"
+	//     }
+	//   },
+	//   "path": "v1/{+parent}/workloadIdentityPools",
+	//   "response": {
+	//     "$ref": "ListWorkloadIdentityPoolsResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) Pages(ctx context.Context, f func(*ListWorkloadIdentityPoolsResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.patch":
+
+type ProjectsLocationsWorkloadIdentityPoolsPatchCall struct {
+	s                    *Service
+	name                 string
+	workloadidentitypool *WorkloadIdentityPool
+	urlParams_           gensupport.URLParams
+	ctx_                 context.Context
+	header_              http.Header
+}
+
+// Patch: Updates an existing WorkloadIdentityPool.
+func (r *ProjectsLocationsWorkloadIdentityPoolsService) Patch(name string, workloadidentitypool *WorkloadIdentityPool) *ProjectsLocationsWorkloadIdentityPoolsPatchCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.workloadidentitypool = workloadidentitypool
+	return c
+}
+
+// UpdateMask sets the optional parameter "updateMask": Required. The
+// list of fields update.
+func (c *ProjectsLocationsWorkloadIdentityPoolsPatchCall) UpdateMask(updateMask string) *ProjectsLocationsWorkloadIdentityPoolsPatchCall {
+	c.urlParams_.Set("updateMask", updateMask)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsPatchCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsPatchCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsPatchCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsPatchCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsPatchCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsPatchCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workloadidentitypool)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.patch" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsPatchCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Updates an existing WorkloadIdentityPool.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}",
+	//   "httpMethod": "PATCH",
+	//   "id": "iam.projects.locations.workloadIdentityPools.patch",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Output only. The resource name of the pool.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "updateMask": {
+	//       "description": "Required. The list of fields update.",
+	//       "format": "google-fieldmask",
+	//       "location": "query",
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "request": {
+	//     "$ref": "WorkloadIdentityPool"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.undelete":
+
+type ProjectsLocationsWorkloadIdentityPoolsUndeleteCall struct {
+	s                                   *Service
+	name                                string
+	undeleteworkloadidentitypoolrequest *UndeleteWorkloadIdentityPoolRequest
+	urlParams_                          gensupport.URLParams
+	ctx_                                context.Context
+	header_                             http.Header
+}
+
+// Undelete: Undeletes a WorkloadIdentityPool, as long as it was deleted
+// fewer than 30 days ago.
+func (r *ProjectsLocationsWorkloadIdentityPoolsService) Undelete(name string, undeleteworkloadidentitypoolrequest *UndeleteWorkloadIdentityPoolRequest) *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsUndeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.undeleteworkloadidentitypoolrequest = undeleteworkloadidentitypoolrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.undeleteworkloadidentitypoolrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.undelete" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsUndeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Undeletes a WorkloadIdentityPool, as long as it was deleted fewer than 30 days ago.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:undelete",
+	//   "httpMethod": "POST",
+	//   "id": "iam.projects.locations.workloadIdentityPools.undelete",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The name of the pool to undelete.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}:undelete",
+	//   "request": {
+	//     "$ref": "UndeleteWorkloadIdentityPoolRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
 // method id "iam.projects.locations.workloadIdentityPools.operations.get":
 
 type ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall struct {
@@ -3708,7 +4994,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall) Header() http.
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3797,6 +5083,945 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsOperationsGetCall) Do(opts ...goo
 
 }
 
+// method id "iam.projects.locations.workloadIdentityPools.providers.create":
+
+type ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall struct {
+	s                            *Service
+	parent                       string
+	workloadidentitypoolprovider *WorkloadIdentityPoolProvider
+	urlParams_                   gensupport.URLParams
+	ctx_                         context.Context
+	header_                      http.Header
+}
+
+// Create: Creates a new WorkloadIdentityPoolProvider in a
+// WorkloadIdentityPool. You cannot reuse the name of a deleted provider
+// until 30 days after deletion.
+func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) Create(parent string, workloadidentitypoolprovider *WorkloadIdentityPoolProvider) *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	c.workloadidentitypoolprovider = workloadidentitypoolprovider
+	return c
+}
+
+// WorkloadIdentityPoolProviderId sets the optional parameter
+// "workloadIdentityPoolProviderId": Required. The ID for the provider,
+// which becomes the final component of the resource name. This value
+// must be 4-32 characters, and may contain the characters [a-z0-9-].
+// The prefix `gcp-` is reserved for use by Google, and may not be
+// specified.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall) WorkloadIdentityPoolProviderId(workloadIdentityPoolProviderId string) *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall {
+	c.urlParams_.Set("workloadIdentityPoolProviderId", workloadIdentityPoolProviderId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workloadidentitypoolprovider)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/providers")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.providers.create" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersCreateCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Creates a new WorkloadIdentityPoolProvider in a WorkloadIdentityPool. You cannot reuse the name of a deleted provider until 30 days after deletion.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers",
+	//   "httpMethod": "POST",
+	//   "id": "iam.projects.locations.workloadIdentityPools.providers.create",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "parent": {
+	//       "description": "Required. The pool to create this provider in.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "workloadIdentityPoolProviderId": {
+	//       "description": "Required. The ID for the provider, which becomes the final component of the resource name. This value must be 4-32 characters, and may contain the characters [a-z0-9-]. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
+	//       "location": "query",
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+parent}/providers",
+	//   "request": {
+	//     "$ref": "WorkloadIdentityPoolProvider"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.providers.delete":
+
+type ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall struct {
+	s          *Service
+	name       string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
+}
+
+// Delete: Deletes a WorkloadIdentityPoolProvider. Deleting a provider
+// does not revoke credentials that have already been issued; they
+// continue to grant access. You can undelete a provider for 30 days.
+// After 30 days, deletion is permanent. You cannot update deleted
+// providers. However, you can view and list them.
+func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) Delete(name string) *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.providers.delete" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Deletes a WorkloadIdentityPoolProvider. Deleting a provider does not revoke credentials that have already been issued; they continue to grant access. You can undelete a provider for 30 days. After 30 days, deletion is permanent. You cannot update deleted providers. However, you can view and list them.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}",
+	//   "httpMethod": "DELETE",
+	//   "id": "iam.projects.locations.workloadIdentityPools.providers.delete",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The name of the provider to delete.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.providers.get":
+
+type ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Gets an individual WorkloadIdentityPoolProvider.
+func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) Get(name string) *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.providers.get" call.
+// Exactly one of *WorkloadIdentityPoolProvider or error will be
+// non-nil. Any non-2xx status code is an error. Response headers are in
+// either *WorkloadIdentityPoolProvider.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersGetCall) Do(opts ...googleapi.CallOption) (*WorkloadIdentityPoolProvider, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &WorkloadIdentityPoolProvider{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Gets an individual WorkloadIdentityPoolProvider.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}",
+	//   "httpMethod": "GET",
+	//   "id": "iam.projects.locations.workloadIdentityPools.providers.get",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The name of the provider to retrieve.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "response": {
+	//     "$ref": "WorkloadIdentityPoolProvider"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.providers.list":
+
+type ProjectsLocationsWorkloadIdentityPoolsProvidersListCall struct {
+	s            *Service
+	parent       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists all non-deleted WorkloadIdentityPoolProviders in a
+// WorkloadIdentityPool. If `show_deleted` is set to `true`, then
+// deleted providers are also listed.
+func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) List(parent string) *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsProvidersListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	return c
+}
+
+// PageSize sets the optional parameter "pageSize": The maximum number
+// of providers to return. If unspecified, at most 50 providers are
+// returned. The maximum value is 100; values above 100 are truncated to
+// 100.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) PageSize(pageSize int64) *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall {
+	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": A page token,
+// received from a previous `ListWorkloadIdentityPoolProviders` call.
+// Provide this to retrieve the subsequent page.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) PageToken(pageToken string) *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// ShowDeleted sets the optional parameter "showDeleted": Whether to
+// return soft-deleted providers.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) ShowDeleted(showDeleted bool) *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall {
+	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/providers")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.providers.list" call.
+// Exactly one of *ListWorkloadIdentityPoolProvidersResponse or error
+// will be non-nil. Any non-2xx status code is an error. Response
+// headers are in either
+// *ListWorkloadIdentityPoolProvidersResponse.ServerResponse.Header or
+// (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) Do(opts ...googleapi.CallOption) (*ListWorkloadIdentityPoolProvidersResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &ListWorkloadIdentityPoolProvidersResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists all non-deleted WorkloadIdentityPoolProviders in a WorkloadIdentityPool. If `show_deleted` is set to `true`, then deleted providers are also listed.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers",
+	//   "httpMethod": "GET",
+	//   "id": "iam.projects.locations.workloadIdentityPools.providers.list",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "pageSize": {
+	//       "description": "The maximum number of providers to return. If unspecified, at most 50 providers are returned. The maximum value is 100; values above 100 are truncated to 100.",
+	//       "format": "int32",
+	//       "location": "query",
+	//       "type": "integer"
+	//     },
+	//     "pageToken": {
+	//       "description": "A page token, received from a previous `ListWorkloadIdentityPoolProviders` call. Provide this to retrieve the subsequent page.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "parent": {
+	//       "description": "Required. The pool to list providers for.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "showDeleted": {
+	//       "description": "Whether to return soft-deleted providers.",
+	//       "location": "query",
+	//       "type": "boolean"
+	//     }
+	//   },
+	//   "path": "v1/{+parent}/providers",
+	//   "response": {
+	//     "$ref": "ListWorkloadIdentityPoolProvidersResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersListCall) Pages(ctx context.Context, f func(*ListWorkloadIdentityPoolProvidersResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.providers.patch":
+
+type ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall struct {
+	s                            *Service
+	name                         string
+	workloadidentitypoolprovider *WorkloadIdentityPoolProvider
+	urlParams_                   gensupport.URLParams
+	ctx_                         context.Context
+	header_                      http.Header
+}
+
+// Patch: Updates an existing WorkloadIdentityPoolProvider.
+func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) Patch(name string, workloadidentitypoolprovider *WorkloadIdentityPoolProvider) *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.workloadidentitypoolprovider = workloadidentitypoolprovider
+	return c
+}
+
+// UpdateMask sets the optional parameter "updateMask": Required. The
+// list of fields to update.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall) UpdateMask(updateMask string) *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall {
+	c.urlParams_.Set("updateMask", updateMask)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.workloadidentitypoolprovider)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.providers.patch" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Updates an existing WorkloadIdentityPoolProvider.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}",
+	//   "httpMethod": "PATCH",
+	//   "id": "iam.projects.locations.workloadIdentityPools.providers.patch",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Output only. The resource name of the provider.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "updateMask": {
+	//       "description": "Required. The list of fields to update.",
+	//       "format": "google-fieldmask",
+	//       "location": "query",
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}",
+	//   "request": {
+	//     "$ref": "WorkloadIdentityPoolProvider"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "iam.projects.locations.workloadIdentityPools.providers.undelete":
+
+type ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall struct {
+	s                                           *Service
+	name                                        string
+	undeleteworkloadidentitypoolproviderrequest *UndeleteWorkloadIdentityPoolProviderRequest
+	urlParams_                                  gensupport.URLParams
+	ctx_                                        context.Context
+	header_                                     http.Header
+}
+
+// Undelete: Undeletes a WorkloadIdentityPoolProvider, as long as it was
+// deleted fewer than 30 days ago.
+func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) Undelete(name string, undeleteworkloadidentitypoolproviderrequest *UndeleteWorkloadIdentityPoolProviderRequest) *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.undeleteworkloadidentitypoolproviderrequest = undeleteworkloadidentitypoolproviderrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.undeleteworkloadidentitypoolproviderrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.providers.undelete" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersUndeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Undeletes a WorkloadIdentityPoolProvider, as long as it was deleted fewer than 30 days ago.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}:undelete",
+	//   "httpMethod": "POST",
+	//   "id": "iam.projects.locations.workloadIdentityPools.providers.undelete",
+	//   "parameterOrder": [
+	//     "name"
+	//   ],
+	//   "parameters": {
+	//     "name": {
+	//       "description": "Required. The name of the provider to undelete.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+name}:undelete",
+	//   "request": {
+	//     "$ref": "UndeleteWorkloadIdentityPoolProviderRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
 // method id "iam.projects.locations.workloadIdentityPools.providers.operations.get":
 
 type ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall struct {
@@ -3854,7 +6079,7 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall) Heade
 
 func (c *ProjectsLocationsWorkloadIdentityPoolsProvidersOperationsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3989,7 +6214,7 @@ func (c *ProjectsRolesCreateCall) Header() http.Header {
 
 func (c *ProjectsRolesCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4142,7 +6367,7 @@ func (c *ProjectsRolesDeleteCall) Header() http.Header {
 
 func (c *ProjectsRolesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4289,7 +6514,7 @@ func (c *ProjectsRolesGetCall) Header() http.Header {
 
 func (c *ProjectsRolesGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4471,7 +6696,7 @@ func (c *ProjectsRolesListCall) Header() http.Header {
 
 func (c *ProjectsRolesListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4663,7 +6888,7 @@ func (c *ProjectsRolesPatchCall) Header() http.Header {
 
 func (c *ProjectsRolesPatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4809,7 +7034,7 @@ func (c *ProjectsRolesUndeleteCall) Header() http.Header {
 
 func (c *ProjectsRolesUndeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4949,7 +7174,7 @@ func (c *ProjectsServiceAccountsCreateCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5098,7 +7323,7 @@ func (c *ProjectsServiceAccountsDeleteCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5241,7 +7466,7 @@ func (c *ProjectsServiceAccountsDisableCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsDisableCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5386,7 +7611,7 @@ func (c *ProjectsServiceAccountsEnableCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsEnableCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5535,7 +7760,7 @@ func (c *ProjectsServiceAccountsGetCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5691,7 +7916,7 @@ func (c *ProjectsServiceAccountsGetIamPolicyCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsGetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5856,7 +8081,7 @@ func (c *ProjectsServiceAccountsListCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -6023,7 +8248,7 @@ func (c *ProjectsServiceAccountsPatchCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsPatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -6174,7 +8399,7 @@ func (c *ProjectsServiceAccountsSetIamPolicyCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsSetIamPolicyCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -6321,7 +8546,7 @@ func (c *ProjectsServiceAccountsSignBlobCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsSignBlobCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -6468,7 +8693,7 @@ func (c *ProjectsServiceAccountsSignJwtCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsSignJwtCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -6609,7 +8834,7 @@ func (c *ProjectsServiceAccountsTestIamPermissionsCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsTestIamPermissionsCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -6754,7 +8979,7 @@ func (c *ProjectsServiceAccountsUndeleteCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsUndeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -6896,7 +9121,7 @@ func (c *ProjectsServiceAccountsUpdateCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -7036,7 +9261,7 @@ func (c *ProjectsServiceAccountsKeysCreateCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsKeysCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -7176,7 +9401,7 @@ func (c *ProjectsServiceAccountsKeysDeleteCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsKeysDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -7330,7 +9555,7 @@ func (c *ProjectsServiceAccountsKeysGetCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsKeysGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -7506,7 +9731,7 @@ func (c *ProjectsServiceAccountsKeysListCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsKeysListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -7658,7 +9883,7 @@ func (c *ProjectsServiceAccountsKeysUploadCall) Header() http.Header {
 
 func (c *ProjectsServiceAccountsKeysUploadCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -7807,7 +10032,7 @@ func (c *RolesGetCall) Header() http.Header {
 
 func (c *RolesGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -8014,7 +10239,7 @@ func (c *RolesListCall) Header() http.Header {
 
 func (c *RolesListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -8192,7 +10417,7 @@ func (c *RolesQueryGrantableRolesCall) Header() http.Header {
 
 func (c *RolesQueryGrantableRolesCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210211")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20210308")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}

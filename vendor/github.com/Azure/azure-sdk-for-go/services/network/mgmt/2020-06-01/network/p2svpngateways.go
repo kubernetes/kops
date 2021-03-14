@@ -51,8 +51,8 @@ func (client P2sVpnGatewaysClient) CreateOrUpdate(ctx context.Context, resourceG
 		ctx = tracing.StartSpan(ctx, fqdn+"/P2sVpnGatewaysClient.CreateOrUpdate")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -65,7 +65,7 @@ func (client P2sVpnGatewaysClient) CreateOrUpdate(ctx context.Context, resourceG
 
 	result, err = client.CreateOrUpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "CreateOrUpdate", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "CreateOrUpdate", nil, "Failure sending request")
 		return
 	}
 
@@ -104,7 +104,33 @@ func (client P2sVpnGatewaysClient) CreateOrUpdateSender(req *http.Request) (futu
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client P2sVpnGatewaysClient) (pvg P2SVpnGateway, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysCreateOrUpdateFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.P2sVpnGatewaysCreateOrUpdateFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		pvg.Response.Response, err = future.GetResult(sender)
+		if pvg.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysCreateOrUpdateFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && pvg.Response.Response.StatusCode != http.StatusNoContent {
+			pvg, err = client.CreateOrUpdateResponder(pvg.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysCreateOrUpdateFuture", "Result", pvg.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -129,8 +155,8 @@ func (client P2sVpnGatewaysClient) Delete(ctx context.Context, resourceGroupName
 		ctx = tracing.StartSpan(ctx, fqdn+"/P2sVpnGatewaysClient.Delete")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -143,7 +169,7 @@ func (client P2sVpnGatewaysClient) Delete(ctx context.Context, resourceGroupName
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "Delete", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "Delete", nil, "Failure sending request")
 		return
 	}
 
@@ -179,7 +205,23 @@ func (client P2sVpnGatewaysClient) DeleteSender(req *http.Request) (future P2sVp
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client P2sVpnGatewaysClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysDeleteFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.P2sVpnGatewaysDeleteFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -205,8 +247,8 @@ func (client P2sVpnGatewaysClient) DisconnectP2sVpnConnections(ctx context.Conte
 		ctx = tracing.StartSpan(ctx, fqdn+"/P2sVpnGatewaysClient.DisconnectP2sVpnConnections")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -219,7 +261,7 @@ func (client P2sVpnGatewaysClient) DisconnectP2sVpnConnections(ctx context.Conte
 
 	result, err = client.DisconnectP2sVpnConnectionsSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "DisconnectP2sVpnConnections", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "DisconnectP2sVpnConnections", nil, "Failure sending request")
 		return
 	}
 
@@ -257,7 +299,23 @@ func (client P2sVpnGatewaysClient) DisconnectP2sVpnConnectionsSender(req *http.R
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client P2sVpnGatewaysClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysDisconnectP2sVpnConnectionsFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.P2sVpnGatewaysDisconnectP2sVpnConnectionsFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -282,8 +340,8 @@ func (client P2sVpnGatewaysClient) GenerateVpnProfile(ctx context.Context, resou
 		ctx = tracing.StartSpan(ctx, fqdn+"/P2sVpnGatewaysClient.GenerateVpnProfile")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -296,7 +354,7 @@ func (client P2sVpnGatewaysClient) GenerateVpnProfile(ctx context.Context, resou
 
 	result, err = client.GenerateVpnProfileSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "GenerateVpnProfile", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "GenerateVpnProfile", nil, "Failure sending request")
 		return
 	}
 
@@ -334,7 +392,33 @@ func (client P2sVpnGatewaysClient) GenerateVpnProfileSender(req *http.Request) (
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client P2sVpnGatewaysClient) (vpr VpnProfileResponse, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysGenerateVpnProfileFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.P2sVpnGatewaysGenerateVpnProfileFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		vpr.Response.Response, err = future.GetResult(sender)
+		if vpr.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysGenerateVpnProfileFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && vpr.Response.Response.StatusCode != http.StatusNoContent {
+			vpr, err = client.GenerateVpnProfileResponder(vpr.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysGenerateVpnProfileFuture", "Result", vpr.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -381,6 +465,7 @@ func (client P2sVpnGatewaysClient) Get(ctx context.Context, resourceGroupName st
 	result, err = client.GetResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "Get", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -435,8 +520,8 @@ func (client P2sVpnGatewaysClient) GetP2sVpnConnectionHealth(ctx context.Context
 		ctx = tracing.StartSpan(ctx, fqdn+"/P2sVpnGatewaysClient.GetP2sVpnConnectionHealth")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -449,7 +534,7 @@ func (client P2sVpnGatewaysClient) GetP2sVpnConnectionHealth(ctx context.Context
 
 	result, err = client.GetP2sVpnConnectionHealthSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "GetP2sVpnConnectionHealth", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "GetP2sVpnConnectionHealth", nil, "Failure sending request")
 		return
 	}
 
@@ -485,7 +570,33 @@ func (client P2sVpnGatewaysClient) GetP2sVpnConnectionHealthSender(req *http.Req
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client P2sVpnGatewaysClient) (pvg P2SVpnGateway, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysGetP2sVpnConnectionHealthFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.P2sVpnGatewaysGetP2sVpnConnectionHealthFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		pvg.Response.Response, err = future.GetResult(sender)
+		if pvg.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysGetP2sVpnConnectionHealthFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && pvg.Response.Response.StatusCode != http.StatusNoContent {
+			pvg, err = client.GetP2sVpnConnectionHealthResponder(pvg.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysGetP2sVpnConnectionHealthFuture", "Result", pvg.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -512,8 +623,8 @@ func (client P2sVpnGatewaysClient) GetP2sVpnConnectionHealthDetailed(ctx context
 		ctx = tracing.StartSpan(ctx, fqdn+"/P2sVpnGatewaysClient.GetP2sVpnConnectionHealthDetailed")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -526,7 +637,7 @@ func (client P2sVpnGatewaysClient) GetP2sVpnConnectionHealthDetailed(ctx context
 
 	result, err = client.GetP2sVpnConnectionHealthDetailedSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "GetP2sVpnConnectionHealthDetailed", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "GetP2sVpnConnectionHealthDetailed", nil, "Failure sending request")
 		return
 	}
 
@@ -564,7 +675,33 @@ func (client P2sVpnGatewaysClient) GetP2sVpnConnectionHealthDetailedSender(req *
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client P2sVpnGatewaysClient) (pvch P2SVpnConnectionHealth, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysGetP2sVpnConnectionHealthDetailedFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.P2sVpnGatewaysGetP2sVpnConnectionHealthDetailedFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		pvch.Response.Response, err = future.GetResult(sender)
+		if pvch.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysGetP2sVpnConnectionHealthDetailedFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && pvch.Response.Response.StatusCode != http.StatusNoContent {
+			pvch, err = client.GetP2sVpnConnectionHealthDetailedResponder(pvch.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysGetP2sVpnConnectionHealthDetailedFuture", "Result", pvch.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -609,9 +746,11 @@ func (client P2sVpnGatewaysClient) List(ctx context.Context) (result ListP2SVpnG
 	result.lpvgr, err = client.ListResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "List", resp, "Failure responding to request")
+		return
 	}
 	if result.lpvgr.hasNextLink() && result.lpvgr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -722,9 +861,11 @@ func (client P2sVpnGatewaysClient) ListByResourceGroup(ctx context.Context, reso
 	result.lpvgr, err = client.ListByResourceGroupResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "ListByResourceGroup", resp, "Failure responding to request")
+		return
 	}
 	if result.lpvgr.hasNextLink() && result.lpvgr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -814,8 +955,8 @@ func (client P2sVpnGatewaysClient) Reset(ctx context.Context, resourceGroupName 
 		ctx = tracing.StartSpan(ctx, fqdn+"/P2sVpnGatewaysClient.Reset")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -828,7 +969,7 @@ func (client P2sVpnGatewaysClient) Reset(ctx context.Context, resourceGroupName 
 
 	result, err = client.ResetSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "Reset", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "Reset", nil, "Failure sending request")
 		return
 	}
 
@@ -864,7 +1005,33 @@ func (client P2sVpnGatewaysClient) ResetSender(req *http.Request) (future P2SVpn
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client P2sVpnGatewaysClient) (pvg P2SVpnGateway, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.P2SVpnGatewaysResetFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.P2SVpnGatewaysResetFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		pvg.Response.Response, err = future.GetResult(sender)
+		if pvg.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.P2SVpnGatewaysResetFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && pvg.Response.Response.StatusCode != http.StatusNoContent {
+			pvg, err = client.ResetResponder(pvg.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.P2SVpnGatewaysResetFuture", "Result", pvg.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -890,8 +1057,8 @@ func (client P2sVpnGatewaysClient) UpdateTags(ctx context.Context, resourceGroup
 		ctx = tracing.StartSpan(ctx, fqdn+"/P2sVpnGatewaysClient.UpdateTags")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -904,7 +1071,7 @@ func (client P2sVpnGatewaysClient) UpdateTags(ctx context.Context, resourceGroup
 
 	result, err = client.UpdateTagsSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "UpdateTags", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysClient", "UpdateTags", nil, "Failure sending request")
 		return
 	}
 
@@ -942,7 +1109,33 @@ func (client P2sVpnGatewaysClient) UpdateTagsSender(req *http.Request) (future P
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client P2sVpnGatewaysClient) (pvg P2SVpnGateway, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysUpdateTagsFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.P2sVpnGatewaysUpdateTagsFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		pvg.Response.Response, err = future.GetResult(sender)
+		if pvg.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysUpdateTagsFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && pvg.Response.Response.StatusCode != http.StatusNoContent {
+			pvg, err = client.UpdateTagsResponder(pvg.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.P2sVpnGatewaysUpdateTagsFuture", "Result", pvg.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 

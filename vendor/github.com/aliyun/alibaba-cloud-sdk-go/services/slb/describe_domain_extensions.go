@@ -21,7 +21,6 @@ import (
 )
 
 // DescribeDomainExtensions invokes the slb.DescribeDomainExtensions API synchronously
-// api document: https://help.aliyun.com/api/slb/describedomainextensions.html
 func (client *Client) DescribeDomainExtensions(request *DescribeDomainExtensionsRequest) (response *DescribeDomainExtensionsResponse, err error) {
 	response = CreateDescribeDomainExtensionsResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DescribeDomainExtensions(request *DescribeDomainExtensions
 }
 
 // DescribeDomainExtensionsWithChan invokes the slb.DescribeDomainExtensions API asynchronously
-// api document: https://help.aliyun.com/api/slb/describedomainextensions.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeDomainExtensionsWithChan(request *DescribeDomainExtensionsRequest) (<-chan *DescribeDomainExtensionsResponse, <-chan error) {
 	responseChan := make(chan *DescribeDomainExtensionsResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DescribeDomainExtensionsWithChan(request *DescribeDomainEx
 }
 
 // DescribeDomainExtensionsWithCallback invokes the slb.DescribeDomainExtensions API asynchronously
-// api document: https://help.aliyun.com/api/slb/describedomainextensions.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeDomainExtensionsWithCallback(request *DescribeDomainExtensionsRequest, callback func(response *DescribeDomainExtensionsResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -100,6 +95,7 @@ func CreateDescribeDomainExtensionsRequest() (request *DescribeDomainExtensionsR
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DescribeDomainExtensions", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

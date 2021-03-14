@@ -21,7 +21,6 @@ import (
 )
 
 // DeleteAccessControlList invokes the slb.DeleteAccessControlList API synchronously
-// api document: https://help.aliyun.com/api/slb/deleteaccesscontrollist.html
 func (client *Client) DeleteAccessControlList(request *DeleteAccessControlListRequest) (response *DeleteAccessControlListResponse, err error) {
 	response = CreateDeleteAccessControlListResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DeleteAccessControlList(request *DeleteAccessControlListRe
 }
 
 // DeleteAccessControlListWithChan invokes the slb.DeleteAccessControlList API asynchronously
-// api document: https://help.aliyun.com/api/slb/deleteaccesscontrollist.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DeleteAccessControlListWithChan(request *DeleteAccessControlListRequest) (<-chan *DeleteAccessControlListResponse, <-chan error) {
 	responseChan := make(chan *DeleteAccessControlListResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DeleteAccessControlListWithChan(request *DeleteAccessContr
 }
 
 // DeleteAccessControlListWithCallback invokes the slb.DeleteAccessControlList API asynchronously
-// api document: https://help.aliyun.com/api/slb/deleteaccesscontrollist.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DeleteAccessControlListWithCallback(request *DeleteAccessControlListRequest, callback func(response *DeleteAccessControlListResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -97,6 +92,7 @@ func CreateDeleteAccessControlListRequest() (request *DeleteAccessControlListReq
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DeleteAccessControlList", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

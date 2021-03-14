@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "draft.go",
+        "errors.go",
+        "format_checkers.go",
+        "internalLog.go",
+        "jsonContext.go",
+        "jsonLoader.go",
+        "locales.go",
+        "result.go",
+        "schema.go",
+        "schemaLoader.go",
+        "schemaPool.go",
+        "schemaReferencePool.go",
+        "schemaType.go",
+        "subSchema.go",
+        "types.go",
+        "utils.go",
+        "validation.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/xeipuuv/gojsonschema",
+    importpath = "github.com/xeipuuv/gojsonschema",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/xeipuuv/gojsonreference:go_default_library"],
+)

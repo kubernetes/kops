@@ -53,8 +53,8 @@ func (client DiskAccessesClient) CreateOrUpdate(ctx context.Context, resourceGro
 		ctx = tracing.StartSpan(ctx, fqdn+"/DiskAccessesClient.CreateOrUpdate")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -67,7 +67,7 @@ func (client DiskAccessesClient) CreateOrUpdate(ctx context.Context, resourceGro
 
 	result, err = client.CreateOrUpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.DiskAccessesClient", "CreateOrUpdate", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "compute.DiskAccessesClient", "CreateOrUpdate", nil, "Failure sending request")
 		return
 	}
 
@@ -105,7 +105,33 @@ func (client DiskAccessesClient) CreateOrUpdateSender(req *http.Request) (future
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DiskAccessesClient) (da DiskAccess, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "compute.DiskAccessesCreateOrUpdateFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("compute.DiskAccessesCreateOrUpdateFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		da.Response.Response, err = future.GetResult(sender)
+		if da.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "compute.DiskAccessesCreateOrUpdateFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && da.Response.Response.StatusCode != http.StatusNoContent {
+			da, err = client.CreateOrUpdateResponder(da.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "compute.DiskAccessesCreateOrUpdateFuture", "Result", da.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -132,8 +158,8 @@ func (client DiskAccessesClient) Delete(ctx context.Context, resourceGroupName s
 		ctx = tracing.StartSpan(ctx, fqdn+"/DiskAccessesClient.Delete")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -146,7 +172,7 @@ func (client DiskAccessesClient) Delete(ctx context.Context, resourceGroupName s
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.DiskAccessesClient", "Delete", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "compute.DiskAccessesClient", "Delete", nil, "Failure sending request")
 		return
 	}
 
@@ -182,7 +208,23 @@ func (client DiskAccessesClient) DeleteSender(req *http.Request) (future DiskAcc
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DiskAccessesClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "compute.DiskAccessesDeleteFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("compute.DiskAccessesDeleteFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -230,6 +272,7 @@ func (client DiskAccessesClient) Get(ctx context.Context, resourceGroupName stri
 	result, err = client.GetResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "compute.DiskAccessesClient", "Get", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -307,6 +350,7 @@ func (client DiskAccessesClient) GetPrivateLinkResources(ctx context.Context, re
 	result, err = client.GetPrivateLinkResourcesResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "compute.DiskAccessesClient", "GetPrivateLinkResources", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -380,9 +424,11 @@ func (client DiskAccessesClient) List(ctx context.Context) (result DiskAccessLis
 	result.dal, err = client.ListResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "compute.DiskAccessesClient", "List", resp, "Failure responding to request")
+		return
 	}
 	if result.dal.hasNextLink() && result.dal.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -493,9 +539,11 @@ func (client DiskAccessesClient) ListByResourceGroup(ctx context.Context, resour
 	result.dal, err = client.ListByResourceGroupResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "compute.DiskAccessesClient", "ListByResourceGroup", resp, "Failure responding to request")
+		return
 	}
 	if result.dal.hasNextLink() && result.dal.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -588,8 +636,8 @@ func (client DiskAccessesClient) Update(ctx context.Context, resourceGroupName s
 		ctx = tracing.StartSpan(ctx, fqdn+"/DiskAccessesClient.Update")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -602,7 +650,7 @@ func (client DiskAccessesClient) Update(ctx context.Context, resourceGroupName s
 
 	result, err = client.UpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.DiskAccessesClient", "Update", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "compute.DiskAccessesClient", "Update", nil, "Failure sending request")
 		return
 	}
 
@@ -640,7 +688,33 @@ func (client DiskAccessesClient) UpdateSender(req *http.Request) (future DiskAcc
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client DiskAccessesClient) (da DiskAccess, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "compute.DiskAccessesUpdateFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("compute.DiskAccessesUpdateFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		da.Response.Response, err = future.GetResult(sender)
+		if da.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "compute.DiskAccessesUpdateFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && da.Response.Response.StatusCode != http.StatusNoContent {
+			da, err = client.UpdateResponder(da.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "compute.DiskAccessesUpdateFuture", "Result", da.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 

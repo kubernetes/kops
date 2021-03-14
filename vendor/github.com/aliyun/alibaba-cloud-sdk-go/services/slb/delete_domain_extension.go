@@ -21,7 +21,6 @@ import (
 )
 
 // DeleteDomainExtension invokes the slb.DeleteDomainExtension API synchronously
-// api document: https://help.aliyun.com/api/slb/deletedomainextension.html
 func (client *Client) DeleteDomainExtension(request *DeleteDomainExtensionRequest) (response *DeleteDomainExtensionResponse, err error) {
 	response = CreateDeleteDomainExtensionResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DeleteDomainExtension(request *DeleteDomainExtensionReques
 }
 
 // DeleteDomainExtensionWithChan invokes the slb.DeleteDomainExtension API asynchronously
-// api document: https://help.aliyun.com/api/slb/deletedomainextension.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DeleteDomainExtensionWithChan(request *DeleteDomainExtensionRequest) (<-chan *DeleteDomainExtensionResponse, <-chan error) {
 	responseChan := make(chan *DeleteDomainExtensionResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DeleteDomainExtensionWithChan(request *DeleteDomainExtensi
 }
 
 // DeleteDomainExtensionWithCallback invokes the slb.DeleteDomainExtension API asynchronously
-// api document: https://help.aliyun.com/api/slb/deletedomainextension.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DeleteDomainExtensionWithCallback(request *DeleteDomainExtensionRequest, callback func(response *DeleteDomainExtensionResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -97,6 +92,7 @@ func CreateDeleteDomainExtensionRequest() (request *DeleteDomainExtensionRequest
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DeleteDomainExtension", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

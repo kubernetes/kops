@@ -9,14 +9,18 @@ import (
 )
 
 type CreateNetworkInterfaceArgs struct {
-	RegionId             common.Region
-	VSwitchId            string
-	PrimaryIpAddress     string // optional
-	SecurityGroupId      string
-	NetworkInterfaceName string            // optional
-	Description          string            // optional
-	ClientToken          string            // optional
-	Tag                  map[string]string // optional
+	RegionId                       common.Region
+	VSwitchId                      string
+	PrimaryIpAddress               string // optional
+	SecurityGroupId                string
+	NetworkInterfaceName           string            // optional
+	Description                    string            // optional
+	ClientToken                    string            // optional
+	Tag                            map[string]string // optional
+	ResourceGroupId                string            // optional
+	SecurityGroupIds               []string          `query:"list"` // optional
+	PrivateIpAddress               []string          `query:"list"` // optional
+	SecondaryPrivateIpAddressCount int
 }
 
 type CreateNetworkInterfaceResponse struct {
@@ -104,7 +108,7 @@ type DetachNetworkInterfaceResponse common.Response
 type ModifyNetworkInterfaceAttributeArgs struct {
 	RegionId             common.Region
 	NetworkInterfaceId   string
-	SecurityGroupId      []string
+	SecurityGroupId      []string `query:"list"`
 	NetworkInterfaceName string
 	Description          string
 }
@@ -125,7 +129,16 @@ type AssignPrivateIpAddressesArgs struct {
 	SecondaryPrivateIpAddressCount int      // optional
 }
 
-type AssignPrivateIpAddressesResponse common.Response
+type AssignPrivateIpAddressesResponse struct {
+	common.Response
+
+	AssignedPrivateIpAddressesSet struct {
+		NetworkInterfaceId string
+		PrivateIpSet       struct {
+			PrivateIpAddress []string
+		}
+	}
+}
 
 func (client *Client) CreateNetworkInterface(args *CreateNetworkInterfaceArgs) (resp *CreateNetworkInterfaceResponse, err error) {
 	resp = &CreateNetworkInterfaceResponse{}

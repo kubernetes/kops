@@ -52,8 +52,8 @@ func (client PrivateEndpointsClient) CreateOrUpdate(ctx context.Context, resourc
 		ctx = tracing.StartSpan(ctx, fqdn+"/PrivateEndpointsClient.CreateOrUpdate")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -66,7 +66,7 @@ func (client PrivateEndpointsClient) CreateOrUpdate(ctx context.Context, resourc
 
 	result, err = client.CreateOrUpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.PrivateEndpointsClient", "CreateOrUpdate", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.PrivateEndpointsClient", "CreateOrUpdate", nil, "Failure sending request")
 		return
 	}
 
@@ -105,7 +105,33 @@ func (client PrivateEndpointsClient) CreateOrUpdateSender(req *http.Request) (fu
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client PrivateEndpointsClient) (peVar PrivateEndpoint, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.PrivateEndpointsCreateOrUpdateFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.PrivateEndpointsCreateOrUpdateFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		peVar.Response.Response, err = future.GetResult(sender)
+		if peVar.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.PrivateEndpointsCreateOrUpdateFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && peVar.Response.Response.StatusCode != http.StatusNoContent {
+			peVar, err = client.CreateOrUpdateResponder(peVar.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.PrivateEndpointsCreateOrUpdateFuture", "Result", peVar.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -130,8 +156,8 @@ func (client PrivateEndpointsClient) Delete(ctx context.Context, resourceGroupNa
 		ctx = tracing.StartSpan(ctx, fqdn+"/PrivateEndpointsClient.Delete")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -144,7 +170,7 @@ func (client PrivateEndpointsClient) Delete(ctx context.Context, resourceGroupNa
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.PrivateEndpointsClient", "Delete", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.PrivateEndpointsClient", "Delete", nil, "Failure sending request")
 		return
 	}
 
@@ -180,7 +206,23 @@ func (client PrivateEndpointsClient) DeleteSender(req *http.Request) (future Pri
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client PrivateEndpointsClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.PrivateEndpointsDeleteFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.PrivateEndpointsDeleteFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -227,6 +269,7 @@ func (client PrivateEndpointsClient) Get(ctx context.Context, resourceGroupName 
 	result, err = client.GetResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.PrivateEndpointsClient", "Get", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -305,9 +348,11 @@ func (client PrivateEndpointsClient) List(ctx context.Context, resourceGroupName
 	result.pelr, err = client.ListResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.PrivateEndpointsClient", "List", resp, "Failure responding to request")
+		return
 	}
 	if result.pelr.hasNextLink() && result.pelr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -417,9 +462,11 @@ func (client PrivateEndpointsClient) ListBySubscription(ctx context.Context) (re
 	result.pelr, err = client.ListBySubscriptionResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.PrivateEndpointsClient", "ListBySubscription", resp, "Failure responding to request")
+		return
 	}
 	if result.pelr.hasNextLink() && result.pelr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return

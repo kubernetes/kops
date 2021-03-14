@@ -53,8 +53,8 @@ func (client FlowLogsClient) CreateOrUpdate(ctx context.Context, resourceGroupNa
 		ctx = tracing.StartSpan(ctx, fqdn+"/FlowLogsClient.CreateOrUpdate")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -76,7 +76,7 @@ func (client FlowLogsClient) CreateOrUpdate(ctx context.Context, resourceGroupNa
 
 	result, err = client.CreateOrUpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.FlowLogsClient", "CreateOrUpdate", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.FlowLogsClient", "CreateOrUpdate", nil, "Failure sending request")
 		return
 	}
 
@@ -116,7 +116,33 @@ func (client FlowLogsClient) CreateOrUpdateSender(req *http.Request) (future Flo
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client FlowLogsClient) (fl FlowLog, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.FlowLogsCreateOrUpdateFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.FlowLogsCreateOrUpdateFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		fl.Response.Response, err = future.GetResult(sender)
+		if fl.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.FlowLogsCreateOrUpdateFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && fl.Response.Response.StatusCode != http.StatusNoContent {
+			fl, err = client.CreateOrUpdateResponder(fl.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.FlowLogsCreateOrUpdateFuture", "Result", fl.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -142,8 +168,8 @@ func (client FlowLogsClient) Delete(ctx context.Context, resourceGroupName strin
 		ctx = tracing.StartSpan(ctx, fqdn+"/FlowLogsClient.Delete")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -156,7 +182,7 @@ func (client FlowLogsClient) Delete(ctx context.Context, resourceGroupName strin
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.FlowLogsClient", "Delete", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.FlowLogsClient", "Delete", nil, "Failure sending request")
 		return
 	}
 
@@ -193,7 +219,23 @@ func (client FlowLogsClient) DeleteSender(req *http.Request) (future FlowLogsDel
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client FlowLogsClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.FlowLogsDeleteFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.FlowLogsDeleteFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -240,6 +282,7 @@ func (client FlowLogsClient) Get(ctx context.Context, resourceGroupName string, 
 	result, err = client.GetResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.FlowLogsClient", "Get", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -317,9 +360,11 @@ func (client FlowLogsClient) List(ctx context.Context, resourceGroupName string,
 	result.fllr, err = client.ListResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.FlowLogsClient", "List", resp, "Failure responding to request")
+		return
 	}
 	if result.fllr.hasNextLink() && result.fllr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -434,6 +479,7 @@ func (client FlowLogsClient) UpdateTags(ctx context.Context, resourceGroupName s
 	result, err = client.UpdateTagsResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.FlowLogsClient", "UpdateTags", resp, "Failure responding to request")
+		return
 	}
 
 	return

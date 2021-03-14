@@ -71,7 +71,6 @@ type LocalConnection struct {
 	heartbeatTCP    *time.Ticker
 	router          *Router
 	uid             uint64
-	actionChan      chan<- connectionAction
 	errorChan       chan<- error
 	finished        <-chan struct{} // closed to signal that actorLoop has finished
 	senders         *gossipSenders
@@ -84,7 +83,6 @@ func startLocalConnection(connRemote *remoteConnection, tcpConn *net.TCPConn, ro
 	if connRemote.local != router.Ourself.Peer {
 		panic("attempt to create local connection from a peer which is not ourself")
 	}
-	actionChan := make(chan connectionAction, ChannelSize)
 	errorChan := make(chan error, 1)
 	finished := make(chan struct{})
 	conn := &LocalConnection{
@@ -93,13 +91,12 @@ func startLocalConnection(connRemote *remoteConnection, tcpConn *net.TCPConn, ro
 		tcpConn:          tcpConn,
 		trustRemote:      router.trusts(connRemote),
 		uid:              randUint64(),
-		actionChan:       actionChan,
 		errorChan:        errorChan,
 		finished:         finished,
 		logger:           logger,
 	}
 	conn.senders = newGossipSenders(conn, finished)
-	go conn.run(actionChan, errorChan, finished, acceptNewPeer)
+	go conn.run(errorChan, finished, acceptNewPeer)
 }
 
 func (conn *LocalConnection) logf(format string, args ...interface{}) {
@@ -158,18 +155,9 @@ func (conn *LocalConnection) shutdown(err error) {
 	}
 }
 
-// Send an actor request to the actorLoop, but don't block if actorLoop has
-// exited. See http://blog.golang.org/pipelines for pattern.
-func (conn *LocalConnection) sendAction(action connectionAction) {
-	select {
-	case conn.actionChan <- action:
-	case <-conn.finished:
-	}
-}
-
 // ACTOR server
 
-func (conn *LocalConnection) run(actionChan <-chan connectionAction, errorChan <-chan error, finished chan<- struct{}, acceptNewPeer bool) {
+func (conn *LocalConnection) run(errorChan <-chan error, finished chan<- struct{}, acceptNewPeer bool) {
 	var err error // important to use this var and not create another one with 'err :='
 	defer func() { conn.teardown(err) }()
 	defer close(finished)
@@ -265,7 +253,7 @@ func (conn *LocalConnection) run(actionChan <-chan connectionAction, errorChan <
 	// running AddConnection in a separate goroutine, at least not
 	// without some synchronisation. Which in turn requires the
 	// launching of the receiveTCP goroutine to precede actorLoop.
-	err = conn.actorLoop(actionChan, errorChan)
+	err = conn.actorLoop(errorChan)
 }
 
 func (conn *LocalConnection) makeFeatures() map[string]string {
@@ -354,7 +342,7 @@ func (conn *LocalConnection) registerRemote(remote *Peer, acceptNewPeer bool) er
 	return nil
 }
 
-func (conn *LocalConnection) actorLoop(actionChan <-chan connectionAction, errorChan <-chan error) (err error) {
+func (conn *LocalConnection) actorLoop(errorChan <-chan error) (err error) {
 	fwdErrorChan := conn.OverlayConn.ErrorChannel()
 	fwdEstablishedChan := conn.OverlayConn.EstablishedChannel()
 
@@ -364,8 +352,6 @@ func (conn *LocalConnection) actorLoop(actionChan <-chan connectionAction, error
 		case err = <-fwdErrorChan:
 		default:
 			select {
-			case action := <-actionChan:
-				err = action()
 			case <-conn.heartbeatTCP.C:
 				err = conn.sendSimpleProtocolMsg(ProtocolHeartbeat)
 			case <-fwdEstablishedChan:
@@ -485,10 +471,6 @@ type peerNameCollisionError struct {
 func (err *peerNameCollisionError) Error() string {
 	return fmt.Sprintf("local %q and remote %q peer names collision", err.local, err.remote)
 }
-
-// The actor closure used by LocalConnection. If an action returns an error,
-// it will terminate the actor loop, which terminates the connection in turn.
-type connectionAction func() error
 
 func mustHave(features map[string]string, keys []string) error {
 	for _, key := range keys {

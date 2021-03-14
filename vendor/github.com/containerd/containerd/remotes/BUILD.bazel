@@ -1,0 +1,22 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "handlers.go",
+        "resolver.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/containerd/containerd/remotes",
+    importpath = "github.com/containerd/containerd/remotes",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/containerd/containerd/content:go_default_library",
+        "//vendor/github.com/containerd/containerd/errdefs:go_default_library",
+        "//vendor/github.com/containerd/containerd/images:go_default_library",
+        "//vendor/github.com/containerd/containerd/log:go_default_library",
+        "//vendor/github.com/containerd/containerd/platforms:go_default_library",
+        "//vendor/github.com/opencontainers/image-spec/specs-go/v1:go_default_library",
+        "//vendor/github.com/pkg/errors:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
+)

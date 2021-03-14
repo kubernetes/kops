@@ -21,7 +21,6 @@ import (
 )
 
 // DescribeLoadBalancerTCPListenerAttribute invokes the slb.DescribeLoadBalancerTCPListenerAttribute API synchronously
-// api document: https://help.aliyun.com/api/slb/describeloadbalancertcplistenerattribute.html
 func (client *Client) DescribeLoadBalancerTCPListenerAttribute(request *DescribeLoadBalancerTCPListenerAttributeRequest) (response *DescribeLoadBalancerTCPListenerAttributeResponse, err error) {
 	response = CreateDescribeLoadBalancerTCPListenerAttributeResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DescribeLoadBalancerTCPListenerAttribute(request *Describe
 }
 
 // DescribeLoadBalancerTCPListenerAttributeWithChan invokes the slb.DescribeLoadBalancerTCPListenerAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/describeloadbalancertcplistenerattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeLoadBalancerTCPListenerAttributeWithChan(request *DescribeLoadBalancerTCPListenerAttributeRequest) (<-chan *DescribeLoadBalancerTCPListenerAttributeResponse, <-chan error) {
 	responseChan := make(chan *DescribeLoadBalancerTCPListenerAttributeResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DescribeLoadBalancerTCPListenerAttributeWithChan(request *
 }
 
 // DescribeLoadBalancerTCPListenerAttributeWithCallback invokes the slb.DescribeLoadBalancerTCPListenerAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/describeloadbalancertcplistenerattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeLoadBalancerTCPListenerAttributeWithCallback(request *DescribeLoadBalancerTCPListenerAttributeRequest, callback func(response *DescribeLoadBalancerTCPListenerAttributeResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -129,6 +124,7 @@ func CreateDescribeLoadBalancerTCPListenerAttributeRequest() (request *DescribeL
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DescribeLoadBalancerTCPListenerAttribute", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

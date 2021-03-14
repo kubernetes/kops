@@ -21,7 +21,6 @@ import (
 )
 
 // DescribeListenerAccessControlAttribute invokes the slb.DescribeListenerAccessControlAttribute API synchronously
-// api document: https://help.aliyun.com/api/slb/describelisteneraccesscontrolattribute.html
 func (client *Client) DescribeListenerAccessControlAttribute(request *DescribeListenerAccessControlAttributeRequest) (response *DescribeListenerAccessControlAttributeResponse, err error) {
 	response = CreateDescribeListenerAccessControlAttributeResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DescribeListenerAccessControlAttribute(request *DescribeLi
 }
 
 // DescribeListenerAccessControlAttributeWithChan invokes the slb.DescribeListenerAccessControlAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/describelisteneraccesscontrolattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeListenerAccessControlAttributeWithChan(request *DescribeListenerAccessControlAttributeRequest) (<-chan *DescribeListenerAccessControlAttributeResponse, <-chan error) {
 	responseChan := make(chan *DescribeListenerAccessControlAttributeResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DescribeListenerAccessControlAttributeWithChan(request *De
 }
 
 // DescribeListenerAccessControlAttributeWithCallback invokes the slb.DescribeListenerAccessControlAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/describelisteneraccesscontrolattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeListenerAccessControlAttributeWithCallback(request *DescribeListenerAccessControlAttributeRequest, callback func(response *DescribeListenerAccessControlAttributeResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -101,6 +96,7 @@ func CreateDescribeListenerAccessControlAttributeRequest() (request *DescribeLis
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DescribeListenerAccessControlAttribute", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

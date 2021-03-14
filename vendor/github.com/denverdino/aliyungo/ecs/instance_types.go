@@ -4,6 +4,7 @@ import "github.com/denverdino/aliyungo/common"
 
 type DescribeInstanceTypesArgs struct {
 	InstanceTypeFamily string
+	InstanceTypes      []string `query:"list"`
 }
 
 //

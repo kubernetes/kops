@@ -5,6 +5,13 @@ import (
 	"os"
 )
 
+// WriterAtReaderAt defines the interface to return when a file is to
+// be opened for reading and writing
+type WriterAtReaderAt interface {
+	io.WriterAt
+	io.ReaderAt
+}
+
 // Interfaces are differentiated based on required returned values.
 // All input arguments are to be pulled from Request (the only arg).
 
@@ -32,6 +39,15 @@ type FileWriter interface {
 	Filewrite(*Request) (io.WriterAt, error)
 }
 
+// OpenFileWriter is a FileWriter that implements the generic OpenFile method.
+// You need to implement this optional interface if you want to be able
+// to read and write from/to the same handle.
+// Called for Methods: Open
+type OpenFileWriter interface {
+	FileWriter
+	OpenFile(*Request) (WriterAtReaderAt, error)
+}
+
 // FileCmder should return an error
 // Note in cases of an error, the error text will be sent to the client.
 // Called for Methods: Setstat, Rename, Rmdir, Mkdir, Link, Symlink, Remove
@@ -39,11 +55,35 @@ type FileCmder interface {
 	Filecmd(*Request) error
 }
 
+// PosixRenameFileCmder is a FileCmder that implements the PosixRename method.
+// If this interface is implemented PosixRename requests will call it
+// otherwise they will be handled in the same way as Rename
+type PosixRenameFileCmder interface {
+	FileCmder
+	PosixRename(*Request) error
+}
+
+// StatVFSFileCmder is a FileCmder that implements the StatVFS method.
+// You need to implement this interface if you want to handle statvfs requests.
+// Please also be sure that the statvfs@openssh.com extension is enabled
+type StatVFSFileCmder interface {
+	FileCmder
+	StatVFS(*Request) (*StatVFS, error)
+}
+
 // FileLister should return an object that fulfils the ListerAt interface
 // Note in cases of an error, the error text will be sent to the client.
 // Called for Methods: List, Stat, Readlink
 type FileLister interface {
 	Filelist(*Request) (ListerAt, error)
+}
+
+// LstatFileLister is a FileLister that implements the Lstat method.
+// If this interface is implemented Lstat requests will call it
+// otherwise they will be handled in the same way as Stat
+type LstatFileLister interface {
+	FileLister
+	Lstat(*Request) (ListerAt, error)
 }
 
 // ListerAt does for file lists what io.ReaderAt does for files.
