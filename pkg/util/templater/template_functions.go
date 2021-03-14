@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/util/pkg/architectures"
 )
 
 // templateFuncsMap returns a map if the template functions for this template
@@ -63,9 +64,9 @@ func (r *Templater) templateFuncsMap(tm *template.Template) template.FuncMap {
 
 	}
 
-	funcs["ChannelRecommendedImage"] = func(cloud, k8sVersion string) string {
+	funcs["ChannelRecommendedImage"] = func(cloud, k8sVersion string, architecture architectures.Architecture) string {
 		ver, _ := semver.ParseTolerant(k8sVersion)
-		imageSpec := r.channel.FindImage(kopsapi.CloudProviderID(cloud), ver)
+		imageSpec := r.channel.FindImage(kopsapi.CloudProviderID(cloud), ver, architecture)
 		return imageSpec.Name
 	}
 
