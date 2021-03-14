@@ -42,6 +42,7 @@ go_library(
         "hubroutetables.go",
         "hubvirtualnetworkconnections.go",
         "inboundnatrules.go",
+        "inboundsecurityrule.go",
         "interfaceipconfigurations.go",
         "interfaceloadbalancers.go",
         "interfacesgroup.go",

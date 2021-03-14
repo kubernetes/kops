@@ -21,7 +21,6 @@ import (
 )
 
 // DescribeMasterSlaveServerGroups invokes the slb.DescribeMasterSlaveServerGroups API synchronously
-// api document: https://help.aliyun.com/api/slb/describemasterslaveservergroups.html
 func (client *Client) DescribeMasterSlaveServerGroups(request *DescribeMasterSlaveServerGroupsRequest) (response *DescribeMasterSlaveServerGroupsResponse, err error) {
 	response = CreateDescribeMasterSlaveServerGroupsResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DescribeMasterSlaveServerGroups(request *DescribeMasterSla
 }
 
 // DescribeMasterSlaveServerGroupsWithChan invokes the slb.DescribeMasterSlaveServerGroups API asynchronously
-// api document: https://help.aliyun.com/api/slb/describemasterslaveservergroups.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeMasterSlaveServerGroupsWithChan(request *DescribeMasterSlaveServerGroupsRequest) (<-chan *DescribeMasterSlaveServerGroupsResponse, <-chan error) {
 	responseChan := make(chan *DescribeMasterSlaveServerGroupsResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DescribeMasterSlaveServerGroupsWithChan(request *DescribeM
 }
 
 // DescribeMasterSlaveServerGroupsWithCallback invokes the slb.DescribeMasterSlaveServerGroups API asynchronously
-// api document: https://help.aliyun.com/api/slb/describemasterslaveservergroups.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeMasterSlaveServerGroupsWithCallback(request *DescribeMasterSlaveServerGroupsRequest, callback func(response *DescribeMasterSlaveServerGroupsResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -99,6 +94,7 @@ func CreateDescribeMasterSlaveServerGroupsRequest() (request *DescribeMasterSlav
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DescribeMasterSlaveServerGroups", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

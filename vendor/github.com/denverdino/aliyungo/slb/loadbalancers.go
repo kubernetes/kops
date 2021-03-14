@@ -40,19 +40,29 @@ const (
 	S3Large  = "slb.s3.large"
 )
 
+type ModificationProtectionType string
+
+const (
+	NonProtection     = ModificationProtectionType("NonProtection")
+	ConsoleProtection = ModificationProtectionType("ConsoleProtection")
+)
+
 type CreateLoadBalancerArgs struct {
-	RegionId           common.Region
-	LoadBalancerName   string
-	AddressType        AddressType
-	VSwitchId          string
-	InternetChargeType InternetChargeType
-	Bandwidth          int
-	ClientToken        string
-	MasterZoneId       string
-	SlaveZoneId        string
-	LoadBalancerSpec   LoadBalancerSpecType
-	AddressIPVersion   AddressIPVersionType
-	DeleteProtection   FlagType
+	RegionId                     common.Region
+	LoadBalancerName             string
+	AddressType                  AddressType
+	VSwitchId                    string
+	InternetChargeType           InternetChargeType
+	Bandwidth                    int
+	ClientToken                  string
+	MasterZoneId                 string
+	SlaveZoneId                  string
+	LoadBalancerSpec             LoadBalancerSpecType
+	AddressIPVersion             AddressIPVersionType
+	DeleteProtection             FlagType
+	ModificationProtectionStatus ModificationProtectionType
+	ModificationProtectionReason string
+	ResourceGroupId              string
 }
 
 type CreateLoadBalancerResponse struct {
@@ -215,22 +225,25 @@ type BackendServerType struct {
 }
 
 type LoadBalancerType struct {
-	LoadBalancerId     string
-	LoadBalancerName   string
-	LoadBalancerStatus string
-	Address            string
-	RegionId           common.Region
-	RegionIdAlias      string
-	AddressType        AddressType
-	VSwitchId          string
-	VpcId              string
-	NetworkType        string
-	Bandwidth          int
-	InternetChargeType InternetChargeType
-	CreateTime         string //Why not ISO 6801
-	CreateTimeStamp    util.ISO6801Time
-	DeleteProtection   FlagType
-	ListenerPorts      struct {
+	LoadBalancerId               string
+	ResourceGroupId              string
+	LoadBalancerName             string
+	LoadBalancerStatus           string
+	Address                      string
+	RegionId                     common.Region
+	RegionIdAlias                string
+	AddressType                  AddressType
+	VSwitchId                    string
+	VpcId                        string
+	NetworkType                  string
+	Bandwidth                    int
+	InternetChargeType           InternetChargeType
+	CreateTime                   string //Why not ISO 6801
+	CreateTimeStamp              util.ISO6801Time
+	DeleteProtection             FlagType
+	ModificationProtectionStatus ModificationProtectionType
+	ModificationProtectionReason string
+	ListenerPorts                struct {
 		ListenerPort []int
 	}
 	ListenerPortsAndProtocol struct {
@@ -355,5 +368,22 @@ type SetLoadBalancerDeleteProtectionResponse struct {
 func (client *Client) SetLoadBalancerDeleteProtection(args *SetLoadBalancerDeleteProtectionArgs) (err error) {
 	response := &SetLoadBalancerDeleteProtectionResponse{}
 	err = client.Invoke("SetLoadBalancerDeleteProtection", args, response)
+	return err
+}
+
+type SetLoadBalancerModificationProtectionArgs struct {
+	RegionId                     common.Region
+	LoadBalancerId               string
+	ModificationProtectionStatus ModificationProtectionType
+	ModificationProtectionReason string
+}
+
+type SetLoadBalancerModificationProtectionResponse struct {
+	common.Response
+}
+
+func (client *Client) SetLoadBalancerModificationProtection(args *SetLoadBalancerModificationProtectionArgs) (err error) {
+	response := &SetLoadBalancerModificationProtectionResponse{}
+	err = client.Invoke("SetLoadBalancerModificationProtection", args, response)
 	return err
 }

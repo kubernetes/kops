@@ -2,7 +2,6 @@ package ess
 
 import (
 	"encoding/base64"
-
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
 )
@@ -162,6 +161,86 @@ type DeactivateScalingConfigurationResponse struct {
 func (client *Client) DeactivateScalingConfiguration(args *DeactivateScalingConfigurationArgs) (resp *DeactivateScalingConfigurationResponse, err error) {
 	response := DeactivateScalingConfigurationResponse{}
 	err = client.InvokeByFlattenMethod("DeactivateScalingConfiguration", args, &response)
+
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+type ModifyScalingConfigurationRequest struct {
+	ScalingConfigurationId   string
+	IoOptimized              string
+	DataDisk                 []DataDisk
+	SpotStrategy             string
+	SpotPriceLimit           []SpotPriceLimit
+	ScalingConfigurationName string
+	InstanceName             string
+	HostName                 string
+	ImageId                  string
+	ImageName                string
+	InstanceTypes            []string
+	Cpu                      int
+	Memory                   int
+	InternetChargeType       string
+	InternetMaxBandwidthOut  int
+	SystemDisk               SystemDisk
+	LoadBalancerWeight       string
+	UserData                 string
+	KeyPairName              string
+	RamRoleName              string
+	PasswordInherit          string
+	Tags                     string
+	DeploymentSetId          string
+	SecurityGroupId          string
+	Override                 bool
+	ResourceGroupId          string
+	SecurityGroupIds         []string
+	HpcClusterId             string
+
+	InstanceDescription string
+	Ipv6AddressCount    int
+
+	CreditSpecification string
+	ImageFamily         string
+	DedicatedHostId     string
+	Affinity            string
+	Tenancy             string
+}
+
+type DataDisk struct {
+	Size                 int
+	SnapshotId           string
+	Category             string
+	Device               string
+	DeleteWithInstance   bool
+	Encrypted            bool
+	KMSKeyId             string
+	DiskName             string
+	Description          string
+	AutoSnapshotPolicyId string
+}
+
+type SpotPriceLimit struct {
+	InstanceType string
+	PriceLimit   float32
+}
+
+type SystemDisk struct {
+	Category             string
+	Size                 int
+	DiskName             string
+	Description          string
+	AutoSnapshotPolicyId string
+}
+
+type ModifyScalingConfigurationResponse struct {
+	common.Response
+}
+
+func (client *Client) ModifyScalingConfiguration(args *ModifyScalingConfigurationRequest) (resp *ModifyScalingConfigurationResponse, err error) {
+	response := ModifyScalingConfigurationResponse{}
+	err = client.InvokeByFlattenMethod("ModifyScalingConfiguration", args, &response)
 
 	if err != nil {
 		return nil, err

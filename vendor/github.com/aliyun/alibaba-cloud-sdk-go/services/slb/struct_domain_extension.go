@@ -17,7 +17,9 @@ package slb
 
 // DomainExtension is a nested struct in slb response
 type DomainExtension struct {
-	Domain              string `json:"Domain" xml:"Domain"`
-	ServerCertificateId string `json:"ServerCertificateId" xml:"ServerCertificateId"`
-	DomainExtensionId   string `json:"DomainExtensionId" xml:"DomainExtensionId"`
+	Domain              string                                       `json:"Domain" xml:"Domain"`
+	ServerCertificateId string                                       `json:"ServerCertificateId" xml:"ServerCertificateId"`
+	DomainExtensionId   string                                       `json:"DomainExtensionId" xml:"DomainExtensionId"`
+	ServerCertificates  ServerCertificatesInDescribeDomainExtensions `json:"ServerCertificates" xml:"ServerCertificates"`
+	Certificates        CertificatesInDescribeDomainExtensions       `json:"Certificates" xml:"Certificates"`
 }

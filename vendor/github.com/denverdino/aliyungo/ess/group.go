@@ -347,3 +347,45 @@ func (client *Client) WaitForScalingGroup(regionId common.Region, groupId string
 	}
 	return nil
 }
+
+type DescribeScalingActivitiesRequest struct {
+	ScalingActivityId []string
+	ScalingGroupId    string
+	StatusCode        string
+	RegionId          common.Region
+	common.Pagination
+}
+
+type DescribeScalingActivitiesResponse struct {
+	common.PaginationResult
+	common.Response
+	ScalingActivities struct {
+		ScalingActivity []ScalingActivity
+	}
+}
+
+type ScalingActivity struct {
+	AttachedCapacity      int
+	AutoCreatedCapacity   int
+	Cause                 string
+	Description           string
+	EndTime               string
+	Progress              int
+	ScalingActivityId     string
+	ScalingGroupId        string
+	ScalingInstanceNumber int
+	StartTime             string
+	StatusCode            string
+	StatusMessage         string
+	TotalCapacity         int
+}
+
+func (client *Client) DescribeScalingActivities(args *DescribeScalingActivitiesRequest) (resp *DescribeScalingActivitiesResponse, err error) {
+	response := DescribeScalingActivitiesResponse{}
+	err = client.InvokeByFlattenMethod("DescribeScalingActivities", args, &response)
+
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
+}

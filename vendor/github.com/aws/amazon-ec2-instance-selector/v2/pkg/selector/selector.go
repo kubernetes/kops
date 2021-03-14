@@ -81,7 +81,8 @@ func New(sess *session.Session) *Selector {
 // matching the criteria within Filters and returns a simple list of instance type strings
 func (itf Selector) Filter(filters Filters) ([]string, error) {
 	outputFn := InstanceTypesOutputFn(outputs.SimpleInstanceTypeOutput)
-	return itf.FilterWithOutput(filters, outputFn)
+	output, _, err := itf.FilterWithOutput(filters, outputFn)
+	return output, err
 }
 
 // FilterVerbose accepts a Filters struct which is used to select the available instance types
@@ -91,31 +92,31 @@ func (itf Selector) FilterVerbose(filters Filters) ([]*ec2.InstanceTypeInfo, err
 	if err != nil {
 		return nil, err
 	}
-	instanceTypeInfoSlice = itf.truncateResults(filters.MaxResults, instanceTypeInfoSlice)
+	instanceTypeInfoSlice, _ = itf.truncateResults(filters.MaxResults, instanceTypeInfoSlice)
 	return instanceTypeInfoSlice, nil
 }
 
 // FilterWithOutput accepts a Filters struct which is used to select the available instance types
 // matching the criteria within Filters and returns a list of strings based on the custom outputFn
-func (itf Selector) FilterWithOutput(filters Filters, outputFn InstanceTypesOutput) ([]string, error) {
+func (itf Selector) FilterWithOutput(filters Filters, outputFn InstanceTypesOutput) ([]string, int, error) {
 	instanceTypeInfoSlice, err := itf.rawFilter(filters)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	instanceTypeInfoSlice = itf.truncateResults(filters.MaxResults, instanceTypeInfoSlice)
+	instanceTypeInfoSlice, numOfItemsTruncated := itf.truncateResults(filters.MaxResults, instanceTypeInfoSlice)
 	output := outputFn.Output(instanceTypeInfoSlice)
-	return output, nil
+	return output, numOfItemsTruncated, nil
 }
 
-func (itf Selector) truncateResults(maxResults *int, instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []*ec2.InstanceTypeInfo {
+func (itf Selector) truncateResults(maxResults *int, instanceTypeInfoSlice []*ec2.InstanceTypeInfo) ([]*ec2.InstanceTypeInfo, int) {
 	if maxResults == nil {
-		return instanceTypeInfoSlice
+		return instanceTypeInfoSlice, 0
 	}
 	upperIndex := *maxResults
 	if *maxResults > len(instanceTypeInfoSlice) {
 		upperIndex = len(instanceTypeInfoSlice)
 	}
-	return instanceTypeInfoSlice[0:upperIndex]
+	return instanceTypeInfoSlice[0:upperIndex], len(instanceTypeInfoSlice) - upperIndex
 }
 
 // AggregateFilterTransform takes higher level filters which are used to affect multiple raw filters in an opinionated way.

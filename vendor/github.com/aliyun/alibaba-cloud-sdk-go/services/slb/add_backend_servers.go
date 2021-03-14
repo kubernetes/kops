@@ -21,7 +21,6 @@ import (
 )
 
 // AddBackendServers invokes the slb.AddBackendServers API synchronously
-// api document: https://help.aliyun.com/api/slb/addbackendservers.html
 func (client *Client) AddBackendServers(request *AddBackendServersRequest) (response *AddBackendServersResponse, err error) {
 	response = CreateAddBackendServersResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) AddBackendServers(request *AddBackendServersRequest) (resp
 }
 
 // AddBackendServersWithChan invokes the slb.AddBackendServers API asynchronously
-// api document: https://help.aliyun.com/api/slb/addbackendservers.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) AddBackendServersWithChan(request *AddBackendServersRequest) (<-chan *AddBackendServersResponse, <-chan error) {
 	responseChan := make(chan *AddBackendServersResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) AddBackendServersWithChan(request *AddBackendServersReques
 }
 
 // AddBackendServersWithCallback invokes the slb.AddBackendServers API asynchronously
-// api document: https://help.aliyun.com/api/slb/addbackendservers.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) AddBackendServersWithCallback(request *AddBackendServersRequest, callback func(response *AddBackendServersResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -100,6 +95,7 @@ func CreateAddBackendServersRequest() (request *AddBackendServersRequest) {
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "AddBackendServers", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

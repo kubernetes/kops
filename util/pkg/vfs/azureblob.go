@@ -117,7 +117,9 @@ func (p *AzureBlobPath) WriteTo(w io.Writer) (n int64, err error) {
 		0, /* offset */
 		azblob.CountToEnd,
 		azblob.BlobAccessConditions{},
-		false /* rangeGetContentMD5 */)
+		false, /* rangeGetContentMD5 */
+		azblob.ClientProvidedKeyOptions{},
+	)
 	if err != nil {
 		serr, ok := err.(azblob.StorageError)
 		if ok && serr.ServiceCode() == azblob.ServiceCodeBlobNotFound {
@@ -177,6 +179,9 @@ func (p *AzureBlobPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 		},
 		azblob.Metadata{},
 		azblob.BlobAccessConditions{},
+		azblob.AccessTierNone,
+		azblob.BlobTagsMap{},
+		azblob.ClientProvidedKeyOptions{},
 	)
 	return err
 }

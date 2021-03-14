@@ -21,7 +21,6 @@ import (
 )
 
 // StopLoadBalancerListener invokes the slb.StopLoadBalancerListener API synchronously
-// api document: https://help.aliyun.com/api/slb/stoploadbalancerlistener.html
 func (client *Client) StopLoadBalancerListener(request *StopLoadBalancerListenerRequest) (response *StopLoadBalancerListenerResponse, err error) {
 	response = CreateStopLoadBalancerListenerResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) StopLoadBalancerListener(request *StopLoadBalancerListener
 }
 
 // StopLoadBalancerListenerWithChan invokes the slb.StopLoadBalancerListener API asynchronously
-// api document: https://help.aliyun.com/api/slb/stoploadbalancerlistener.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) StopLoadBalancerListenerWithChan(request *StopLoadBalancerListenerRequest) (<-chan *StopLoadBalancerListenerResponse, <-chan error) {
 	responseChan := make(chan *StopLoadBalancerListenerResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) StopLoadBalancerListenerWithChan(request *StopLoadBalancer
 }
 
 // StopLoadBalancerListenerWithCallback invokes the slb.StopLoadBalancerListener API asynchronously
-// api document: https://help.aliyun.com/api/slb/stoploadbalancerlistener.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) StopLoadBalancerListenerWithCallback(request *StopLoadBalancerListenerRequest, callback func(response *StopLoadBalancerListenerResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -99,6 +94,7 @@ func CreateStopLoadBalancerListenerRequest() (request *StopLoadBalancerListenerR
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "StopLoadBalancerListener", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

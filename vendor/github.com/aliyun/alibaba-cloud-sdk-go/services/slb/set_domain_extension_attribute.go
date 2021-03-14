@@ -21,7 +21,6 @@ import (
 )
 
 // SetDomainExtensionAttribute invokes the slb.SetDomainExtensionAttribute API synchronously
-// api document: https://help.aliyun.com/api/slb/setdomainextensionattribute.html
 func (client *Client) SetDomainExtensionAttribute(request *SetDomainExtensionAttributeRequest) (response *SetDomainExtensionAttributeResponse, err error) {
 	response = CreateSetDomainExtensionAttributeResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) SetDomainExtensionAttribute(request *SetDomainExtensionAtt
 }
 
 // SetDomainExtensionAttributeWithChan invokes the slb.SetDomainExtensionAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/setdomainextensionattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) SetDomainExtensionAttributeWithChan(request *SetDomainExtensionAttributeRequest) (<-chan *SetDomainExtensionAttributeResponse, <-chan error) {
 	responseChan := make(chan *SetDomainExtensionAttributeResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) SetDomainExtensionAttributeWithChan(request *SetDomainExte
 }
 
 // SetDomainExtensionAttributeWithCallback invokes the slb.SetDomainExtensionAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/setdomainextensionattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) SetDomainExtensionAttributeWithCallback(request *SetDomainExtensionAttributeRequest, callback func(response *SetDomainExtensionAttributeResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -76,14 +71,23 @@ func (client *Client) SetDomainExtensionAttributeWithCallback(request *SetDomain
 // SetDomainExtensionAttributeRequest is the request struct for api SetDomainExtensionAttribute
 type SetDomainExtensionAttributeRequest struct {
 	*requests.RpcRequest
-	AccessKeyId          string           `position:"Query" name:"access_key_id"`
-	ResourceOwnerId      requests.Integer `position:"Query" name:"ResourceOwnerId"`
-	DomainExtensionId    string           `position:"Query" name:"DomainExtensionId"`
-	ResourceOwnerAccount string           `position:"Query" name:"ResourceOwnerAccount"`
-	OwnerAccount         string           `position:"Query" name:"OwnerAccount"`
-	OwnerId              requests.Integer `position:"Query" name:"OwnerId"`
-	ServerCertificateId  string           `position:"Query" name:"ServerCertificateId"`
-	Tags                 string           `position:"Query" name:"Tags"`
+	AccessKeyId          string                                          `position:"Query" name:"access_key_id"`
+	ResourceOwnerId      requests.Integer                                `position:"Query" name:"ResourceOwnerId"`
+	ServerCertificate    *[]SetDomainExtensionAttributeServerCertificate `position:"Query" name:"ServerCertificate"  type:"Repeated"`
+	DomainExtensionId    string                                          `position:"Query" name:"DomainExtensionId"`
+	ResourceOwnerAccount string                                          `position:"Query" name:"ResourceOwnerAccount"`
+	OwnerAccount         string                                          `position:"Query" name:"OwnerAccount"`
+	CertificateId        *[]string                                       `position:"Query" name:"CertificateId"  type:"Repeated"`
+	OwnerId              requests.Integer                                `position:"Query" name:"OwnerId"`
+	ServerCertificateId  string                                          `position:"Query" name:"ServerCertificateId"`
+	Tags                 string                                          `position:"Query" name:"Tags"`
+}
+
+// SetDomainExtensionAttributeServerCertificate is a repeated param struct in SetDomainExtensionAttributeRequest
+type SetDomainExtensionAttributeServerCertificate struct {
+	BindingType   string `name:"BindingType"`
+	CertificateId string `name:"CertificateId"`
+	StandardType  string `name:"StandardType"`
 }
 
 // SetDomainExtensionAttributeResponse is the response struct for api SetDomainExtensionAttribute
@@ -98,6 +102,7 @@ func CreateSetDomainExtensionAttributeRequest() (request *SetDomainExtensionAttr
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "SetDomainExtensionAttribute", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

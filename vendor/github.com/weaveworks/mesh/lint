@@ -4,19 +4,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [ ! $(command -v gometalinter) ]
+if [ ! $(command -v golangci-lint) ]
 then
-	go get github.com/alecthomas/gometalinter
-	gometalinter --install --vendor
+    curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(go env GOPATH)/bin v1.20.0
+    golangci-lint --version
 fi
 
-gometalinter \
-	--exclude='error return value not checked.*(Close|Log|Print).*\(errcheck\)$' \
-	--exclude='.*_test\.go:.*error return value not checked.*\(errcheck\)$' \
-	--exclude='duplicate of.*_test.go.*\(dupl\)$' \
-	--disable=aligncheck \
-	--disable=gotype \
-	--disable=gas \
-	--cyclo-over=20 \
-	--tests \
-	--deadline=10s
+golangci-lint run

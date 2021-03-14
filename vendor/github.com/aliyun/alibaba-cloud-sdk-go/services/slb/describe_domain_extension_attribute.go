@@ -21,7 +21,6 @@ import (
 )
 
 // DescribeDomainExtensionAttribute invokes the slb.DescribeDomainExtensionAttribute API synchronously
-// api document: https://help.aliyun.com/api/slb/describedomainextensionattribute.html
 func (client *Client) DescribeDomainExtensionAttribute(request *DescribeDomainExtensionAttributeRequest) (response *DescribeDomainExtensionAttributeResponse, err error) {
 	response = CreateDescribeDomainExtensionAttributeResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DescribeDomainExtensionAttribute(request *DescribeDomainEx
 }
 
 // DescribeDomainExtensionAttributeWithChan invokes the slb.DescribeDomainExtensionAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/describedomainextensionattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeDomainExtensionAttributeWithChan(request *DescribeDomainExtensionAttributeRequest) (<-chan *DescribeDomainExtensionAttributeResponse, <-chan error) {
 	responseChan := make(chan *DescribeDomainExtensionAttributeResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DescribeDomainExtensionAttributeWithChan(request *Describe
 }
 
 // DescribeDomainExtensionAttributeWithCallback invokes the slb.DescribeDomainExtensionAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/describedomainextensionattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeDomainExtensionAttributeWithCallback(request *DescribeDomainExtensionAttributeRequest, callback func(response *DescribeDomainExtensionAttributeResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -88,12 +83,14 @@ type DescribeDomainExtensionAttributeRequest struct {
 // DescribeDomainExtensionAttributeResponse is the response struct for api DescribeDomainExtensionAttribute
 type DescribeDomainExtensionAttributeResponse struct {
 	*responses.BaseResponse
-	RequestId           string `json:"RequestId" xml:"RequestId"`
-	DomainExtensionId   string `json:"DomainExtensionId" xml:"DomainExtensionId"`
-	Domain              string `json:"Domain" xml:"Domain"`
-	ServerCertificateId string `json:"ServerCertificateId" xml:"ServerCertificateId"`
-	LoadBalancerId      string `json:"LoadBalancerId" xml:"LoadBalancerId"`
-	ListenerPort        int    `json:"ListenerPort" xml:"ListenerPort"`
+	RequestId           string                                               `json:"RequestId" xml:"RequestId"`
+	DomainExtensionId   string                                               `json:"DomainExtensionId" xml:"DomainExtensionId"`
+	Domain              string                                               `json:"Domain" xml:"Domain"`
+	ServerCertificateId string                                               `json:"ServerCertificateId" xml:"ServerCertificateId"`
+	LoadBalancerId      string                                               `json:"LoadBalancerId" xml:"LoadBalancerId"`
+	ListenerPort        int                                                  `json:"ListenerPort" xml:"ListenerPort"`
+	Certificates        CertificatesInDescribeDomainExtensionAttribute       `json:"Certificates" xml:"Certificates"`
+	ServerCertificates  ServerCertificatesInDescribeDomainExtensionAttribute `json:"ServerCertificates" xml:"ServerCertificates"`
 }
 
 // CreateDescribeDomainExtensionAttributeRequest creates a request to invoke DescribeDomainExtensionAttribute API
@@ -102,6 +99,7 @@ func CreateDescribeDomainExtensionAttributeRequest() (request *DescribeDomainExt
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DescribeDomainExtensionAttribute", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

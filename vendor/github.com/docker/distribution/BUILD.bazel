@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "blobs.go",
+        "doc.go",
+        "errors.go",
+        "manifests.go",
+        "registry.go",
+        "tags.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/docker/distribution",
+    importpath = "github.com/docker/distribution",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/docker/distribution/reference:go_default_library",
+        "//vendor/github.com/opencontainers/go-digest:go_default_library",
+        "//vendor/github.com/opencontainers/image-spec/specs-go/v1:go_default_library",
+    ],
+)

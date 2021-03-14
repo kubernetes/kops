@@ -54,10 +54,10 @@ type protocolIntroConn interface {
 type protocolIntroParams struct {
 	MinVersion byte
 	MaxVersion byte
+	Outbound   bool
 	Features   map[string]string
 	Conn       protocolIntroConn
 	Password   []byte
-	Outbound   bool
 }
 
 // The results from a successful protocol intro.

@@ -28,6 +28,7 @@ go_library(
         "//vendor/github.com/huandu/xstrings:go_default_library",
         "//vendor/github.com/imdario/mergo:go_default_library",
         "//vendor/github.com/mitchellh/copystructure:go_default_library",
+        "//vendor/github.com/shopspring/decimal:go_default_library",
         "//vendor/github.com/spf13/cast:go_default_library",
         "//vendor/golang.org/x/crypto/bcrypt:go_default_library",
         "//vendor/golang.org/x/crypto/scrypt:go_default_library",

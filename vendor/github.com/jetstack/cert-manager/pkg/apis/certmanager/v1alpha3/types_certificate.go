@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Jetstack cert-manager contributors.
+Copyright 2020 The cert-manager Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -67,12 +67,12 @@ type KeyEncoding string
 
 const (
 	// PKCS1 key encoding will produce PEM files that include the type of
-	// private key as part of the PEM header, e.g. "BEGIN RSA PRIVATE KEY".
-	// If the keyAlgorithm is set to 'ECDSA', this will produce private keys
-	// that use the "BEGIN EC PRIVATE KEY" header.
+	// private key as part of the PEM header, e.g. `BEGIN RSA PRIVATE KEY`.
+	// If the keyAlgorithm is set to `ecdsa`, this will produce private keys
+	// that use the `BEGIN EC PRIVATE KEY` header.
 	PKCS1 KeyEncoding = "pkcs1"
 
-	// PKCS8 key encoding will produce PEM files with the "BEGIN PRIVATE KEY"
+	// PKCS8 key encoding will produce PEM files with the `BEGIN PRIVATE KEY`
 	// header. It encodes the keyAlgorithm of the private key as part of the
 	// DER encoded PEM block.
 	PKCS8 KeyEncoding = "pkcs8"
@@ -138,11 +138,11 @@ type CertificateSpec struct {
 	Keystores *CertificateKeystores `json:"keystores,omitempty"`
 
 	// IssuerRef is a reference to the issuer for this certificate.
-	// If the 'kind' field is not set, or set to 'Issuer', an Issuer resource
+	// If the `kind` field is not set, or set to `Issuer`, an Issuer resource
 	// with the given name in the same namespace as the Certificate will be used.
-	// If the 'kind' field is set to 'ClusterIssuer', a ClusterIssuer with the
+	// If the `kind` field is set to `ClusterIssuer`, a ClusterIssuer with the
 	// provided name will be used.
-	// The 'name' field in this stanza is required at all times.
+	// The `name` field in this stanza is required at all times.
 	IssuerRef cmmeta.ObjectReference `json:"issuerRef"`
 
 	// IsCA will mark this Certificate as valid for certificate signing.
@@ -156,30 +156,26 @@ type CertificateSpec struct {
 	Usages []KeyUsage `json:"usages,omitempty"`
 
 	// KeySize is the key bit size of the corresponding private key for this certificate.
-	// If `keyAlgorithm` is set to `RSA`, valid values are `2048`, `4096` or `8192`,
+	// If `keyAlgorithm` is set to `rsa`, valid values are `2048`, `4096` or `8192`,
 	// and will default to `2048` if not specified.
-	// If `keyAlgorithm` is set to `ECDSA`, valid values are `256`, `384` or `521`,
+	// If `keyAlgorithm` is set to `ecdsa`, valid values are `256`, `384` or `521`,
 	// and will default to `256` if not specified.
 	// No other values are allowed.
-	// +kubebuilder:validation:ExclusiveMaximum=false
-	// +kubebuilder:validation:Maximum=8192
-	// +kubebuilder:validation:ExclusiveMinimum=false
-	// +kubebuilder:validation:Minimum=0
 	// +optional
-	KeySize int `json:"keySize,omitempty"`
+	KeySize int `json:"keySize,omitempty"` // Validated by webhook. Be mindful of adding OpenAPI validation- see https://github.com/jetstack/cert-manager/issues/3644 .
 
 	// KeyAlgorithm is the private key algorithm of the corresponding private key
-	// for this certificate. If provided, allowed values are either "rsa" or "ecdsa"
+	// for this certificate. If provided, allowed values are either `rsa` or `ecdsa`
 	// If `keyAlgorithm` is specified and `keySize` is not provided,
-	// key size of 256 will be used for "ecdsa" key algorithm and
-	// key size of 2048 will be used for "rsa" key algorithm.
+	// key size of 256 will be used for `ecdsa` key algorithm and
+	// key size of 2048 will be used for `rsa` key algorithm.
 	// +optional
 	KeyAlgorithm KeyAlgorithm `json:"keyAlgorithm,omitempty"`
 
 	// KeyEncoding is the private key cryptography standards (PKCS)
 	// for this certificate's private key to be encoded in. If provided, allowed
-	// values are "pkcs1" and "pkcs8" standing for PKCS#1 and PKCS#8, respectively.
-	// If KeyEncoding is not specified, then PKCS#1 will be used by default.
+	// values are `pkcs1` and `pkcs8` standing for PKCS#1 and PKCS#8, respectively.
+	// If KeyEncoding is not specified, then `pkcs1` will be used by default.
 	// +optional
 	KeyEncoding KeyEncoding `json:"keyEncoding,omitempty"`
 
@@ -274,6 +270,9 @@ type JKSKeystore struct {
 	// Secret resource, encrypted using the password stored in
 	// `passwordSecretRef`.
 	// The keystore file will only be updated upon re-issuance.
+	// A file named `truststore.jks` will also be created in the target
+	// Secret resource, encrypted using the password stored in
+	// `passwordSecretRef` containing the issuing Certificate Authority.
 	Create bool `json:"create"`
 
 	// PasswordSecretRef is a reference to a key in a Secret resource
@@ -289,6 +288,9 @@ type PKCS12Keystore struct {
 	// Secret resource, encrypted using the password stored in
 	// `passwordSecretRef`.
 	// The keystore file will only be updated upon re-issuance.
+	// A file named `truststore.p12` will also be created in the target
+	// Secret resource, encrypted using the password stored in
+	// `passwordSecretRef` containing the issuing Certificate Authority.
 	Create bool `json:"create"`
 
 	// PasswordSecretRef is a reference to a key in a Secret resource
@@ -356,10 +358,10 @@ type CertificateStatus struct {
 
 // CertificateCondition contains condition information for an Certificate.
 type CertificateCondition struct {
-	// Type of the condition, known values are ('Ready', `Issuing`).
+	// Type of the condition, known values are (`Ready`, `Issuing`).
 	Type CertificateConditionType `json:"type"`
 
-	// Status of the condition, one of ('True', 'False', 'Unknown').
+	// Status of the condition, one of (`True`, `False`, `Unknown`).
 	Status cmmeta.ConditionStatus `json:"status"`
 
 	// LastTransitionTime is the timestamp corresponding to the last status

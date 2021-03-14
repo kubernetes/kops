@@ -53,6 +53,9 @@ type Image struct {
 	// Visibility defines who can see/use the image.
 	Visibility ImageVisibility `json:"visibility"`
 
+	// Hidden is whether the image is listed in default image list or not.
+	Hidden bool `json:"os_hidden"`
+
 	// Checksum is the checksum of the data that's associated with the image.
 	Checksum string `json:"checksum"`
 

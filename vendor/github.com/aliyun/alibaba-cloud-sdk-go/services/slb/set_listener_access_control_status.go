@@ -21,7 +21,6 @@ import (
 )
 
 // SetListenerAccessControlStatus invokes the slb.SetListenerAccessControlStatus API synchronously
-// api document: https://help.aliyun.com/api/slb/setlisteneraccesscontrolstatus.html
 func (client *Client) SetListenerAccessControlStatus(request *SetListenerAccessControlStatusRequest) (response *SetListenerAccessControlStatusResponse, err error) {
 	response = CreateSetListenerAccessControlStatusResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) SetListenerAccessControlStatus(request *SetListenerAccessC
 }
 
 // SetListenerAccessControlStatusWithChan invokes the slb.SetListenerAccessControlStatus API asynchronously
-// api document: https://help.aliyun.com/api/slb/setlisteneraccesscontrolstatus.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) SetListenerAccessControlStatusWithChan(request *SetListenerAccessControlStatusRequest) (<-chan *SetListenerAccessControlStatusResponse, <-chan error) {
 	responseChan := make(chan *SetListenerAccessControlStatusResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) SetListenerAccessControlStatusWithChan(request *SetListene
 }
 
 // SetListenerAccessControlStatusWithCallback invokes the slb.SetListenerAccessControlStatus API asynchronously
-// api document: https://help.aliyun.com/api/slb/setlisteneraccesscontrolstatus.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) SetListenerAccessControlStatusWithCallback(request *SetListenerAccessControlStatusRequest, callback func(response *SetListenerAccessControlStatusResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -100,6 +95,7 @@ func CreateSetListenerAccessControlStatusRequest() (request *SetListenerAccessCo
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "SetListenerAccessControlStatus", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 
