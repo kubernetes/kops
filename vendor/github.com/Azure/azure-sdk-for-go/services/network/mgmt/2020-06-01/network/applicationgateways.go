@@ -53,8 +53,8 @@ func (client ApplicationGatewaysClient) BackendHealth(ctx context.Context, resou
 		ctx = tracing.StartSpan(ctx, fqdn+"/ApplicationGatewaysClient.BackendHealth")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -67,7 +67,7 @@ func (client ApplicationGatewaysClient) BackendHealth(ctx context.Context, resou
 
 	result, err = client.BackendHealthSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "BackendHealth", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "BackendHealth", nil, "Failure sending request")
 		return
 	}
 
@@ -106,7 +106,33 @@ func (client ApplicationGatewaysClient) BackendHealthSender(req *http.Request) (
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client ApplicationGatewaysClient) (agbh ApplicationGatewayBackendHealth, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysBackendHealthFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.ApplicationGatewaysBackendHealthFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		agbh.Response.Response, err = future.GetResult(sender)
+		if agbh.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysBackendHealthFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && agbh.Response.Response.StatusCode != http.StatusNoContent {
+			agbh, err = client.BackendHealthResponder(agbh.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysBackendHealthFuture", "Result", agbh.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -134,8 +160,8 @@ func (client ApplicationGatewaysClient) BackendHealthOnDemand(ctx context.Contex
 		ctx = tracing.StartSpan(ctx, fqdn+"/ApplicationGatewaysClient.BackendHealthOnDemand")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -148,7 +174,7 @@ func (client ApplicationGatewaysClient) BackendHealthOnDemand(ctx context.Contex
 
 	result, err = client.BackendHealthOnDemandSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "BackendHealthOnDemand", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "BackendHealthOnDemand", nil, "Failure sending request")
 		return
 	}
 
@@ -189,7 +215,33 @@ func (client ApplicationGatewaysClient) BackendHealthOnDemandSender(req *http.Re
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client ApplicationGatewaysClient) (agbhod ApplicationGatewayBackendHealthOnDemand, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysBackendHealthOnDemandFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.ApplicationGatewaysBackendHealthOnDemandFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		agbhod.Response.Response, err = future.GetResult(sender)
+		if agbhod.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysBackendHealthOnDemandFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && agbhod.Response.Response.StatusCode != http.StatusNoContent {
+			agbhod, err = client.BackendHealthOnDemandResponder(agbhod.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysBackendHealthOnDemandFuture", "Result", agbhod.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -215,8 +267,8 @@ func (client ApplicationGatewaysClient) CreateOrUpdate(ctx context.Context, reso
 		ctx = tracing.StartSpan(ctx, fqdn+"/ApplicationGatewaysClient.CreateOrUpdate")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -257,7 +309,7 @@ func (client ApplicationGatewaysClient) CreateOrUpdate(ctx context.Context, reso
 
 	result, err = client.CreateOrUpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "CreateOrUpdate", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "CreateOrUpdate", nil, "Failure sending request")
 		return
 	}
 
@@ -296,7 +348,33 @@ func (client ApplicationGatewaysClient) CreateOrUpdateSender(req *http.Request) 
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client ApplicationGatewaysClient) (ag ApplicationGateway, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysCreateOrUpdateFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.ApplicationGatewaysCreateOrUpdateFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		ag.Response.Response, err = future.GetResult(sender)
+		if ag.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysCreateOrUpdateFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && ag.Response.Response.StatusCode != http.StatusNoContent {
+			ag, err = client.CreateOrUpdateResponder(ag.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysCreateOrUpdateFuture", "Result", ag.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -321,8 +399,8 @@ func (client ApplicationGatewaysClient) Delete(ctx context.Context, resourceGrou
 		ctx = tracing.StartSpan(ctx, fqdn+"/ApplicationGatewaysClient.Delete")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -335,7 +413,7 @@ func (client ApplicationGatewaysClient) Delete(ctx context.Context, resourceGrou
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "Delete", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "Delete", nil, "Failure sending request")
 		return
 	}
 
@@ -371,7 +449,23 @@ func (client ApplicationGatewaysClient) DeleteSender(req *http.Request) (future 
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client ApplicationGatewaysClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysDeleteFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.ApplicationGatewaysDeleteFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -417,6 +511,7 @@ func (client ApplicationGatewaysClient) Get(ctx context.Context, resourceGroupNa
 	result, err = client.GetResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "Get", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -491,6 +586,7 @@ func (client ApplicationGatewaysClient) GetSslPredefinedPolicy(ctx context.Conte
 	result, err = client.GetSslPredefinedPolicyResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "GetSslPredefinedPolicy", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -565,9 +661,11 @@ func (client ApplicationGatewaysClient) List(ctx context.Context, resourceGroupN
 	result.aglr, err = client.ListResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "List", resp, "Failure responding to request")
+		return
 	}
 	if result.aglr.hasNextLink() && result.aglr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -677,9 +775,11 @@ func (client ApplicationGatewaysClient) ListAll(ctx context.Context) (result App
 	result.aglr, err = client.ListAllResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "ListAll", resp, "Failure responding to request")
+		return
 	}
 	if result.aglr.hasNextLink() && result.aglr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -787,6 +887,7 @@ func (client ApplicationGatewaysClient) ListAvailableRequestHeaders(ctx context.
 	result, err = client.ListAvailableRequestHeadersResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "ListAvailableRequestHeaders", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -857,6 +958,7 @@ func (client ApplicationGatewaysClient) ListAvailableResponseHeaders(ctx context
 	result, err = client.ListAvailableResponseHeadersResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "ListAvailableResponseHeaders", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -927,6 +1029,7 @@ func (client ApplicationGatewaysClient) ListAvailableServerVariables(ctx context
 	result, err = client.ListAvailableServerVariablesResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "ListAvailableServerVariables", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -997,6 +1100,7 @@ func (client ApplicationGatewaysClient) ListAvailableSslOptions(ctx context.Cont
 	result, err = client.ListAvailableSslOptionsResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "ListAvailableSslOptions", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -1068,9 +1172,11 @@ func (client ApplicationGatewaysClient) ListAvailableSslPredefinedPolicies(ctx c
 	result.agaspp, err = client.ListAvailableSslPredefinedPoliciesResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "ListAvailableSslPredefinedPolicies", resp, "Failure responding to request")
+		return
 	}
 	if result.agaspp.hasNextLink() && result.agaspp.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -1178,6 +1284,7 @@ func (client ApplicationGatewaysClient) ListAvailableWafRuleSets(ctx context.Con
 	result, err = client.ListAvailableWafRuleSetsResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "ListAvailableWafRuleSets", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -1229,8 +1336,8 @@ func (client ApplicationGatewaysClient) Start(ctx context.Context, resourceGroup
 		ctx = tracing.StartSpan(ctx, fqdn+"/ApplicationGatewaysClient.Start")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -1243,7 +1350,7 @@ func (client ApplicationGatewaysClient) Start(ctx context.Context, resourceGroup
 
 	result, err = client.StartSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "Start", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "Start", nil, "Failure sending request")
 		return
 	}
 
@@ -1279,7 +1386,23 @@ func (client ApplicationGatewaysClient) StartSender(req *http.Request) (future A
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client ApplicationGatewaysClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysStartFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.ApplicationGatewaysStartFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -1303,8 +1426,8 @@ func (client ApplicationGatewaysClient) Stop(ctx context.Context, resourceGroupN
 		ctx = tracing.StartSpan(ctx, fqdn+"/ApplicationGatewaysClient.Stop")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -1317,7 +1440,7 @@ func (client ApplicationGatewaysClient) Stop(ctx context.Context, resourceGroupN
 
 	result, err = client.StopSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "Stop", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "Stop", nil, "Failure sending request")
 		return
 	}
 
@@ -1353,7 +1476,23 @@ func (client ApplicationGatewaysClient) StopSender(req *http.Request) (future Ap
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client ApplicationGatewaysClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysStopFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.ApplicationGatewaysStopFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -1400,6 +1539,7 @@ func (client ApplicationGatewaysClient) UpdateTags(ctx context.Context, resource
 	result, err = client.UpdateTagsResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.ApplicationGatewaysClient", "UpdateTags", resp, "Failure responding to request")
+		return
 	}
 
 	return

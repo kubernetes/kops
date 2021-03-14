@@ -117,7 +117,7 @@
     "changes": {
       "methods": {
         "create": {
-          "description": "Atomically update the ResourceRecordSet collection.",
+          "description": "Atomically updates the ResourceRecordSet collection.",
           "flatPath": "dns/v1/projects/{project}/managedZones/{managedZone}/changes",
           "httpMethod": "POST",
           "id": "dns.changes.create",
@@ -157,7 +157,7 @@
           ]
         },
         "get": {
-          "description": "Fetch the representation of an existing Change.",
+          "description": "Fetches the representation of an existing Change.",
           "flatPath": "dns/v1/projects/{project}/managedZones/{managedZone}/changes/{changeId}",
           "httpMethod": "GET",
           "id": "dns.changes.get",
@@ -203,7 +203,7 @@
           ]
         },
         "list": {
-          "description": "Enumerate Changes to a ResourceRecordSet collection.",
+          "description": "Enumerates Changes to a ResourceRecordSet collection.",
           "flatPath": "dns/v1/projects/{project}/managedZones/{managedZone}/changes",
           "httpMethod": "GET",
           "id": "dns.changes.list",
@@ -219,7 +219,7 @@
               "type": "string"
             },
             "maxResults": {
-              "description": "Optional. Maximum number of results to be returned. If unspecified, the server will decide how many results to return.",
+              "description": "Optional. Maximum number of results to be returned. If unspecified, the server decides how many results to return.",
               "format": "int32",
               "location": "query",
               "type": "integer"
@@ -285,7 +285,7 @@
               "type": "string"
             },
             "digestType": {
-              "description": "An optional comma-separated list of digest types to compute and display for key signing keys. If omitted, the recommended digest type will be computed and displayed.",
+              "description": "An optional comma-separated list of digest types to compute and display for key signing keys. If omitted, the recommended digest type is computed and displayed.",
               "location": "query",
               "type": "string"
             },
@@ -330,7 +330,7 @@
           ],
           "parameters": {
             "digestType": {
-              "description": "An optional comma-separated list of digest types to compute and display for key signing keys. If omitted, the recommended digest type will be computed and displayed.",
+              "description": "An optional comma-separated list of digest types to compute and display for key signing keys. If omitted, the recommended digest type is computed and displayed.",
               "location": "query",
               "type": "string"
             },
@@ -341,7 +341,7 @@
               "type": "string"
             },
             "maxResults": {
-              "description": "Optional. Maximum number of results to be returned. If unspecified, the server will decide how many results to return.",
+              "description": "Optional. Maximum number of results to be returned. If unspecified, the server decides how many results to return.",
               "format": "int32",
               "location": "query",
               "type": "integer"
@@ -374,7 +374,7 @@
     "managedZoneOperations": {
       "methods": {
         "get": {
-          "description": "Fetch the representation of an existing Operation.",
+          "description": "Fetches the representation of an existing Operation.",
           "flatPath": "dns/v1/projects/{project}/managedZones/{managedZone}/operations/{operation}",
           "httpMethod": "GET",
           "id": "dns.managedZoneOperations.get",
@@ -396,7 +396,7 @@
               "type": "string"
             },
             "operation": {
-              "description": "Identifies the operation addressed by this request.",
+              "description": "Identifies the operation addressed by this request (ID of the operation).",
               "location": "path",
               "required": true,
               "type": "string"
@@ -420,7 +420,7 @@
           ]
         },
         "list": {
-          "description": "Enumerate Operations for the given ManagedZone.",
+          "description": "Enumerates Operations for the given ManagedZone.",
           "flatPath": "dns/v1/projects/{project}/managedZones/{managedZone}/operations",
           "httpMethod": "GET",
           "id": "dns.managedZoneOperations.list",
@@ -436,7 +436,7 @@
               "type": "string"
             },
             "maxResults": {
-              "description": "Optional. Maximum number of results to be returned. If unspecified, the server will decide how many results to return.",
+              "description": "Optional. Maximum number of results to be returned. If unspecified, the server decides how many results to return.",
               "format": "int32",
               "location": "query",
               "type": "integer"
@@ -603,7 +603,7 @@
               "type": "string"
             },
             "maxResults": {
-              "description": "Optional. Maximum number of results to be returned. If unspecified, the server will decide how many results to return.",
+              "description": "Optional. Maximum number of results to be returned. If unspecified, the server decides how many results to return.",
               "format": "int32",
               "location": "query",
               "type": "integer"
@@ -716,7 +716,7 @@
     "policies": {
       "methods": {
         "create": {
-          "description": "Create a new Policy",
+          "description": "Creates a new Policy.",
           "flatPath": "dns/v1/projects/{project}/policies",
           "httpMethod": "POST",
           "id": "dns.policies.create",
@@ -749,7 +749,7 @@
           ]
         },
         "delete": {
-          "description": "Delete a previously created Policy. Will fail if the policy is still being referenced by a network.",
+          "description": "Deletes a previously created Policy. Fails if the policy is still being referenced by a network.",
           "flatPath": "dns/v1/projects/{project}/policies/{policy}",
           "httpMethod": "DELETE",
           "id": "dns.policies.delete",
@@ -783,7 +783,7 @@
           ]
         },
         "get": {
-          "description": "Fetch the representation of an existing Policy.",
+          "description": "Fetches the representation of an existing Policy.",
           "flatPath": "dns/v1/projects/{project}/policies/{policy}",
           "httpMethod": "GET",
           "id": "dns.policies.get",
@@ -822,7 +822,7 @@
           ]
         },
         "list": {
-          "description": "Enumerate all Policies associated with a project.",
+          "description": "Enumerates all Policies associated with a project.",
           "flatPath": "dns/v1/projects/{project}/policies",
           "httpMethod": "GET",
           "id": "dns.policies.list",
@@ -831,7 +831,7 @@
           ],
           "parameters": {
             "maxResults": {
-              "description": "Optional. Maximum number of results to be returned. If unspecified, the server will decide how many results to return.",
+              "description": "Optional. Maximum number of results to be returned. If unspecified, the server decides how many results to return.",
               "format": "int32",
               "location": "query",
               "type": "integer"
@@ -975,12 +975,220 @@
             "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
           ]
         }
+      },
+      "resources": {
+        "managedZones": {
+          "resources": {
+            "rrsets": {
+              "methods": {
+                "create": {
+                  "description": "Create a new ResourceRecordSet.",
+                  "flatPath": "dns/v1/projects/{project}/managedZones/{managedZone}/rrsets",
+                  "httpMethod": "POST",
+                  "id": "dns.projects.managedZones.rrsets.create",
+                  "parameterOrder": [
+                    "project",
+                    "managedZone"
+                  ],
+                  "parameters": {
+                    "clientOperationId": {
+                      "description": "For mutating operation requests only. An optional identifier specified by the client. Must be unique for operation resources in the Operations collection.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "managedZone": {
+                      "description": "Identifies the managed zone addressed by this request. Can be the managed zone name or ID.",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "project": {
+                      "description": "Identifies the project addressed by this request.",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "dns/v1/projects/{project}/managedZones/{managedZone}/rrsets",
+                  "request": {
+                    "$ref": "ResourceRecordSet"
+                  },
+                  "response": {
+                    "$ref": "ResourceRecordSet"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform",
+                    "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+                  ]
+                },
+                "delete": {
+                  "description": "Delete a previously created ResourceRecordSet.",
+                  "flatPath": "dns/v1/projects/{project}/managedZones/{managedZone}/rrsets/{name}/{type}",
+                  "httpMethod": "DELETE",
+                  "id": "dns.projects.managedZones.rrsets.delete",
+                  "parameterOrder": [
+                    "project",
+                    "managedZone",
+                    "name",
+                    "type"
+                  ],
+                  "parameters": {
+                    "clientOperationId": {
+                      "description": "For mutating operation requests only. An optional identifier specified by the client. Must be unique for operation resources in the Operations collection.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "managedZone": {
+                      "description": "Identifies the managed zone addressed by this request. Can be the managed zone name or ID.",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "Fully qualified domain name.",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "project": {
+                      "description": "Identifies the project addressed by this request.",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "type": {
+                      "description": "RRSet type.",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "dns/v1/projects/{project}/managedZones/{managedZone}/rrsets/{name}/{type}",
+                  "response": {
+                    "$ref": "ResourceRecordSetsDeleteResponse"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform",
+                    "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+                  ]
+                },
+                "get": {
+                  "description": "Fetch the representation of an existing ResourceRecordSet.",
+                  "flatPath": "dns/v1/projects/{project}/managedZones/{managedZone}/rrsets/{name}/{type}",
+                  "httpMethod": "GET",
+                  "id": "dns.projects.managedZones.rrsets.get",
+                  "parameterOrder": [
+                    "project",
+                    "managedZone",
+                    "name",
+                    "type"
+                  ],
+                  "parameters": {
+                    "clientOperationId": {
+                      "description": "For mutating operation requests only. An optional identifier specified by the client. Must be unique for operation resources in the Operations collection.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "managedZone": {
+                      "description": "Identifies the managed zone addressed by this request. Can be the managed zone name or ID.",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "Fully qualified domain name.",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "project": {
+                      "description": "Identifies the project addressed by this request.",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "type": {
+                      "description": "RRSet type.",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "dns/v1/projects/{project}/managedZones/{managedZone}/rrsets/{name}/{type}",
+                  "response": {
+                    "$ref": "ResourceRecordSet"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform",
+                    "https://www.googleapis.com/auth/cloud-platform.read-only",
+                    "https://www.googleapis.com/auth/ndev.clouddns.readonly",
+                    "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+                  ]
+                },
+                "patch": {
+                  "description": "Apply a partial update to an existing ResourceRecordSet.",
+                  "flatPath": "dns/v1/projects/{project}/managedZones/{managedZone}/rrsets/{name}/{type}",
+                  "httpMethod": "PATCH",
+                  "id": "dns.projects.managedZones.rrsets.patch",
+                  "parameterOrder": [
+                    "project",
+                    "managedZone",
+                    "name",
+                    "type"
+                  ],
+                  "parameters": {
+                    "clientOperationId": {
+                      "description": "For mutating operation requests only. An optional identifier specified by the client. Must be unique for operation resources in the Operations collection.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "managedZone": {
+                      "description": "Identifies the managed zone addressed by this request. Can be the managed zone name or ID.",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "Fully qualified domain name.",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "project": {
+                      "description": "Identifies the project addressed by this request.",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "type": {
+                      "description": "RRSet type.",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "dns/v1/projects/{project}/managedZones/{managedZone}/rrsets/{name}/{type}",
+                  "request": {
+                    "$ref": "ResourceRecordSet"
+                  },
+                  "response": {
+                    "$ref": "ResourceRecordSet"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform",
+                    "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+                  ]
+                }
+              }
+            }
+          }
+        }
       }
     },
     "resourceRecordSets": {
       "methods": {
         "list": {
-          "description": "Enumerate ResourceRecordSets that have been created but not yet deleted.",
+          "description": "Enumerates ResourceRecordSets that you have created but not yet deleted.",
           "flatPath": "dns/v1/projects/{project}/managedZones/{managedZone}/rrsets",
           "httpMethod": "GET",
           "id": "dns.resourceRecordSets.list",
@@ -996,7 +1204,7 @@
               "type": "string"
             },
             "maxResults": {
-              "description": "Optional. Maximum number of results to be returned. If unspecified, the server will decide how many results to return.",
+              "description": "Optional. Maximum number of results to be returned. If unspecified, the server decides how many results to return.",
               "format": "int32",
               "location": "query",
               "type": "integer"
@@ -1037,7 +1245,7 @@
       }
     }
   },
-  "revision": "20210204",
+  "revision": "20210303",
   "rootUrl": "https://dns.googleapis.com/",
   "schemas": {
     "Change": {
@@ -1075,7 +1283,7 @@
           "type": "string"
         },
         "status": {
-          "description": "Status of the operation (output only). A status of \"done\" means that the request to update the authoritative servers has been sent but the servers might not be updated yet.",
+          "description": "Status of the operation (output only). A status of \"done\" means that the request to update the authoritative servers has been sent, but the servers might not be updated yet.",
           "enum": [
             "pending",
             "done"
@@ -1109,7 +1317,7 @@
           "type": "string"
         },
         "nextPageToken": {
-          "description": "The presence of this field indicates that there exist more results following your last page of results in pagination order. To fetch them, make another list request using this value as your pagination token. In this way you can retrieve the complete contents of even very large collections one page at a time. However, if the contents of the collection change between the first and last paginated list request, the set of all elements returned will be an inconsistent view of the collection. There is no way to retrieve a \"snapshot\" of collections larger than the maximum page size.",
+          "description": "The presence of this field indicates that there exist more results following your last page of results in pagination order. To fetch them, make another list request using this value as your pagination token. In this way you can retrieve the complete contents of even very large collections one page at a time. However, if the contents of the collection change between the first and last paginated list request, the set of all elements returned are an inconsistent view of the collection. There is no way to retrieve a \"snapshot\" of collections larger than the maximum page size.",
           "type": "string"
         }
       },
@@ -1157,11 +1365,11 @@
           "type": "string"
         },
         "isActive": {
-          "description": "Active keys will be used to sign subsequent changes to the ManagedZone. Inactive keys will still be present as DNSKEY Resource Records for the use of resolvers validating existing signatures.",
+          "description": "Active keys are used to sign subsequent changes to the ManagedZone. Inactive keys are still present as DNSKEY Resource Records for the use of resolvers validating existing signatures.",
           "type": "boolean"
         },
         "keyLength": {
-          "description": "Length of the key in bits. Specified at creation time then immutable.",
+          "description": "Length of the key in bits. Specified at creation time, and then immutable.",
           "format": "uint32",
           "type": "integer"
         },
@@ -1179,7 +1387,7 @@
           "type": "string"
         },
         "type": {
-          "description": "One of \"KEY_SIGNING\" or \"ZONE_SIGNING\". Keys of type KEY_SIGNING have the Secure Entry Point flag set and, when active, will be used to sign only resource record sets of type DNSKEY. Otherwise, the Secure Entry Point flag will be cleared and this key will be used to sign only resource record sets of other types. Immutable after creation time.",
+          "description": "One of \"KEY_SIGNING\" or \"ZONE_SIGNING\". Keys of type KEY_SIGNING have the Secure Entry Point flag set and, when active, are used to sign only resource record sets of type DNSKEY. Otherwise, the Secure Entry Point flag is cleared, and this key is used to sign only resource record sets of other types. Immutable after creation time.",
           "enum": [
             "keySigning",
             "zoneSigning"
@@ -1245,7 +1453,7 @@
           "type": "integer"
         },
         "keyType": {
-          "description": "Specifies whether this is a key signing key (KSK) or a zone signing key (ZSK). Key signing keys have the Secure Entry Point flag set and, when active, will only be used to sign resource record sets of type DNSKEY. Zone signing keys do not have the Secure Entry Point flag set and will be used to sign all other types of resource record sets.",
+          "description": "Specifies whether this is a key signing key (KSK) or a zone signing key (ZSK). Key signing keys have the Secure Entry Point flag set and, when active, are only used to sign resource record sets of type DNSKEY. Zone signing keys do not have the Secure Entry Point flag set and are used to sign all other types of resource record sets.",
           "enum": [
             "keySigning",
             "zoneSigning"
@@ -1283,7 +1491,7 @@
           "type": "string"
         },
         "nextPageToken": {
-          "description": "The presence of this field indicates that there exist more results following your last page of results in pagination order. To fetch them, make another list request using this value as your pagination token. In this way you can retrieve the complete contents of even very large collections one page at a time. However, if the contents of the collection change between the first and last paginated list request, the set of all elements returned will be an inconsistent view of the collection. There is no way to retrieve a \"snapshot\" of collections larger than the maximum page size.",
+          "description": "The presence of this field indicates that there exist more results following your last page of results in pagination order. To fetch them, make another list request using this value as your pagination token. In this way you can retrieve the complete contents of even very large collections one page at a time. However, if the contents of the collection change between the first and last paginated list request, the set of all elements returned are an inconsistent view of the collection. There is no way to retrieve a \"snapshot\" of collections larger than the maximum page size.",
           "type": "string"
         }
       },
@@ -1334,7 +1542,7 @@
           "type": "string"
         },
         "nameServerSet": {
-          "description": "Optionally specifies the NameServerSet for this ManagedZone. A NameServerSet is a set of DNS name servers that all host the same ManagedZones. Most users will leave this field unset.",
+          "description": "Optionally specifies the NameServerSet for this ManagedZone. A NameServerSet is a set of DNS name servers that all host the same ManagedZones. Most users leave this field unset. If you need to use this field, contact your account team.",
           "type": "string"
         },
         "nameServers": {
@@ -1354,11 +1562,11 @@
         },
         "reverseLookupConfig": {
           "$ref": "ManagedZoneReverseLookupConfig",
-          "description": "The presence of this field indicates that this is a managed reverse lookup zone and Cloud DNS will resolve reverse lookup queries using automatically configured records for VPC resources. This only applies to networks listed under private_visibility_config."
+          "description": "The presence of this field indicates that this is a managed reverse lookup zone and Cloud DNS resolves reverse lookup queries using automatically configured records for VPC resources. This only applies to networks listed under private_visibility_config."
         },
         "serviceDirectoryConfig": {
           "$ref": "ManagedZoneServiceDirectoryConfig",
-          "description": "This field links to the associated service directory namespace. This field should not be set for public zones or forwarding zones."
+          "description": "This field links to the associated service directory namespace. Do not set this field for public zones or forwarding zones."
         },
         "visibility": {
           "description": "The zone's visibility: public zones are exposed to the Internet, while private zones are visible only to Virtual Private Cloud resources.",
@@ -1426,7 +1634,7 @@
           "type": "string"
         },
         "targetNameServers": {
-          "description": "List of target name servers to forward to. Cloud DNS will select the best available name server if more than one target is given.",
+          "description": "List of target name servers to forward to. Cloud DNS selects the best available name server if more than one target is given.",
           "items": {
             "$ref": "ManagedZoneForwardingConfigNameServerTarget"
           },
@@ -1439,14 +1647,14 @@
       "id": "ManagedZoneForwardingConfigNameServerTarget",
       "properties": {
         "forwardingPath": {
-          "description": "Forwarding path for this NameServerTarget. If unset or set to DEFAULT, Cloud DNS will make forwarding decision based on address ranges, i.e. RFC1918 addresses go to the VPC, non-RFC1918 addresses go to the Internet. When set to PRIVATE, Cloud DNS will always send queries through VPC for this target.",
+          "description": "Forwarding path for this NameServerTarget. If unset or set to DEFAULT, Cloud DNS makes forwarding decisions based on IP address ranges; that is, RFC1918 addresses go to the VPC network, non-RFC1918 addresses go to the internet. When set to PRIVATE, Cloud DNS always sends queries through the VPC network for this target.",
           "enum": [
             "default",
             "private"
           ],
           "enumDescriptions": [
-            "Cloud DNS will make forwarding decision based on address ranges, i.e. RFC1918 addresses forward to the target through the VPC and non-RFC1918 addresses will forward to the target through the Internet",
-            "Cloud DNS will always forward to this target through the VPC."
+            "Cloud DNS makes forwarding decisions based on address ranges; that is, RFC1918 addresses forward to the target through the VPC and non-RFC1918 addresses forward to the target through the internet",
+            "Cloud DNS always forwards to this target through the VPC."
           ],
           "type": "string"
         },
@@ -1472,7 +1680,7 @@
           "type": "string"
         },
         "nextPageToken": {
-          "description": "The presence of this field indicates that there exist more results following your last page of results in pagination order. To fetch them, make another list request using this value as your page token. In this way you can retrieve the complete contents of even very large collections one page at a time. However, if the contents of the collection change between the first and last paginated list request, the set of all elements returned will be an inconsistent view of the collection. There is no way to retrieve a consistent snapshot of a collection larger than the maximum page size.",
+          "description": "The presence of this field indicates that there exist more results following your last page of results in pagination order. To fetch them, make another list request using this value as your page token. In this way you can retrieve the complete contents of even very large collections one page at a time. However, if the contents of the collection change between the first and last paginated list request, the set of all elements returned are an inconsistent view of the collection. There is no way to retrieve a consistent snapshot of a collection larger than the maximum page size.",
           "type": "string"
         },
         "operations": {
@@ -1542,7 +1750,7 @@
           "type": "string"
         },
         "networkUrl": {
-          "description": "The fully qualified URL of the VPC network to bind to. This should be formatted like https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{network}",
+          "description": "The fully qualified URL of the VPC network to bind to. Format this URL like https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{network}",
           "type": "string"
         }
       },
@@ -1577,7 +1785,7 @@
       "id": "ManagedZoneServiceDirectoryConfigNamespace",
       "properties": {
         "deletionTime": {
-          "description": "The time that the namespace backing this zone was deleted, empty string if it still exists. This is in RFC3339 text format. Output only.",
+          "description": "The time that the namespace backing this zone was deleted; an empty string if it still exists. This is in RFC3339 text format. Output only.",
           "type": "string"
         },
         "kind": {
@@ -1610,7 +1818,7 @@
           "type": "array"
         },
         "nextPageToken": {
-          "description": "The presence of this field indicates that there exist more results following your last page of results in pagination order. To fetch them, make another list request using this value as your page token. In this way you can retrieve the complete contents of even very large collections one page at a time. However, if the contents of the collection change between the first and last paginated list request, the set of all elements returned will be an inconsistent view of the collection. There is no way to retrieve a consistent snapshot of a collection larger than the maximum page size.",
+          "description": "The presence of this field indicates that there exist more results following your last page of results in pagination order. To fetch them, make another list request using this value as your page token. In this way you can retrieve the complete contents of even very large collections one page at a time. However, if the contents of the collection change between the first and last paginated list request, the set of all elements returned are an inconsistent view of the collection. There is no way to retrieve a consistent snapshot of a collection larger than the maximum page size.",
           "type": "string"
         }
       },
@@ -1703,7 +1911,7 @@
           "type": "string"
         },
         "nextPageToken": {
-          "description": "The presence of this field indicates that there exist more results following your last page of results in pagination order. To fetch them, make another list request using this value as your page token. In this way you can retrieve the complete contents of even very large collections one page at a time. However, if the contents of the collection change between the first and last paginated list request, the set of all elements returned will be an inconsistent view of the collection. There is no way to retrieve a consistent snapshot of a collection larger than the maximum page size.",
+          "description": "The presence of this field indicates that there exist more results following your last page of results in pagination order. To fetch them, make another list request using this value as your page token. In this way you can retrieve the complete contents of even very large collections one page at a time. However, if the contents of the collection change between the first and last paginated list request, the set of all elements returned are an inconsistent view of the collection. There is no way to retrieve a consistent snapshot of a collection larger than the maximum page size.",
           "type": "string"
         },
         "policies": {
@@ -1753,7 +1961,7 @@
           "type": "string"
         },
         "enableInboundForwarding": {
-          "description": "Allows networks bound to this policy to receive DNS queries sent by VMs or applications over VPN connections. When enabled, a virtual IP address will be allocated from each of the sub-networks that are bound to this policy.",
+          "description": "Allows networks bound to this policy to receive DNS queries sent by VMs or applications over VPN connections. When enabled, a virtual IP address is allocated from each of the subnetworks that are bound to this policy.",
           "type": "boolean"
         },
         "enableLogging": {
@@ -1770,7 +1978,7 @@
           "type": "string"
         },
         "name": {
-          "description": "User assigned name for this policy.",
+          "description": "User-assigned name for this policy.",
           "type": "string"
         },
         "networks": {
@@ -1804,14 +2012,14 @@
       "id": "PolicyAlternativeNameServerConfigTargetNameServer",
       "properties": {
         "forwardingPath": {
-          "description": "Forwarding path for this TargetNameServer. If unset or set to DEFAULT, Cloud DNS will make forwarding decision based on address ranges, i.e. RFC1918 addresses go to the VPC, non-RFC1918 addresses go to the Internet. When set to PRIVATE, Cloud DNS will always send queries through VPC for this target.",
+          "description": "Forwarding path for this TargetNameServer. If unset or set to DEFAULT, Cloud DNS makes forwarding decisions based on address ranges; that is, RFC1918 addresses go to the VPC network, non-RFC1918 addresses go to the internet. When set to PRIVATE, Cloud DNS always sends queries through the VPC network for this target.",
           "enum": [
             "default",
             "private"
           ],
           "enumDescriptions": [
-            "Cloud DNS will make forwarding decision based on address ranges, i.e. RFC1918 addresses forward to the target through the VPC and non-RFC1918 addresses will forward to the target through the Internet",
-            "Cloud DNS will always forward to this target through the VPC."
+            "Cloud DNS makes forwarding decision based on IP address ranges; that is, RFC1918 addresses forward to the target through the VPC and non-RFC1918 addresses forward to the target through the internet",
+            "Cloud DNS always forwards to this target through the VPC."
           ],
           "type": "string"
         },
@@ -1948,7 +2156,7 @@
       "type": "object"
     },
     "ResourceRecordSet": {
-      "description": "A unit of data that will be returned by the DNS servers.",
+      "description": "A unit of data that is returned by the DNS servers.",
       "id": "ResourceRecordSet",
       "properties": {
         "kind": {
@@ -1985,6 +2193,11 @@
       },
       "type": "object"
     },
+    "ResourceRecordSetsDeleteResponse": {
+      "id": "ResourceRecordSetsDeleteResponse",
+      "properties": {},
+      "type": "object"
+    },
     "ResourceRecordSetsListResponse": {
       "id": "ResourceRecordSetsListResponse",
       "properties": {
@@ -1997,7 +2210,7 @@
           "type": "string"
         },
         "nextPageToken": {
-          "description": "The presence of this field indicates that there exist more results following your last page of results in pagination order. To fetch them, make another list request using this value as your pagination token. In this way you can retrieve the complete contents of even very large collections one page at a time. However, if the contents of the collection change between the first and last paginated list request, the set of all elements returned will be an inconsistent view of the collection. There is no way to retrieve a consistent snapshot of a collection larger than the maximum page size.",
+          "description": "The presence of this field indicates that there exist more results following your last page of results in pagination order. To fetch them, make another list request using this value as your pagination token. This lets you retrieve complete contents of even larger collections, one page at a time. However, if the contents of the collection change between the first and last paginated list request, the set of elements returned are an inconsistent view of the collection. You cannot retrieve a consistent snapshot of a collection larger than the maximum page size.",
           "type": "string"
         },
         "rrsets": {

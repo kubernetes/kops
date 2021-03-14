@@ -109,7 +109,7 @@ type CreateOpts struct {
 	//
 	// This is only possible to use when creating a fully populated
 	// load balancer.
-	DefaultPool *pools.CreateOpts `json:"default_pool,omitempty" xor:"LoadbalancerID"`
+	DefaultPool *pools.CreateOpts `json:"default_pool,omitempty"`
 
 	// Human-readable description for the Listener.
 	Description string `json:"description,omitempty"`
@@ -132,7 +132,7 @@ type CreateOpts struct {
 	//
 	// This is only possible to use when creating a fully populated
 	// Loadbalancer.
-	L7Policies []l7policies.CreateOpts `json:"l7policies,omitempty" xor:"LoadbalancerID"`
+	L7Policies []l7policies.CreateOpts `json:"l7policies,omitempty"`
 
 	// Frontend client inactivity timeout in milliseconds
 	TimeoutClientData *int `json:"timeout_client_data,omitempty"`

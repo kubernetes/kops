@@ -76,11 +76,14 @@ type VpcSetType struct {
 	VSwitchIds struct {
 		VSwitchId []string
 	}
-	CidrBlock      string
-	VRouterId      string
-	Description    string
-	IsDefault      bool
-	CreationTime   util.ISO6801Time
+	CidrBlock           string
+	VRouterId           string
+	Description         string
+	IsDefault           bool
+	CreationTime        util.ISO6801Time
+	SecondaryCidrBlocks struct {
+		SecondaryCidrBlock []string
+	}
 	RouterTableIds struct {
 		RouterTableIds []string
 	}

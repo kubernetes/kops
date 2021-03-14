@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Jetstack cert-manager contributors.
+Copyright 2020 The cert-manager Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ const (
 // A CertificateRequest will either succeed or fail, as denoted by its `status.state`
 // field.
 //
-// A CertificateRequest is a 'one-shot' resource, meaning it represents a single
+// A CertificateRequest is a one-shot resource, meaning it represents a single
 // point in time request for a certificate and cannot be re-used.
 // +k8s:openapi-gen=true
 type CertificateRequest struct {
@@ -77,12 +77,12 @@ type CertificateRequestSpec struct {
 	Duration *metav1.Duration `json:"duration,omitempty"`
 
 	// IssuerRef is a reference to the issuer for this CertificateRequest.  If
-	// the 'kind' field is not set, or set to 'Issuer', an Issuer resource with
+	// the `kind` field is not set, or set to `Issuer`, an Issuer resource with
 	// the given name in the same namespace as the CertificateRequest will be
-	// used.  If the 'kind' field is set to 'ClusterIssuer', a ClusterIssuer with
-	// the provided name will be used. The 'name' field in this stanza is
+	// used.  If the `kind` field is set to `ClusterIssuer`, a ClusterIssuer with
+	// the provided name will be used. The `name` field in this stanza is
 	// required at all times. The group field refers to the API group of the
-	// issuer which defaults to 'cert-manager.io' if empty.
+	// issuer which defaults to `cert-manager.io` if empty.
 	IssuerRef cmmeta.ObjectReference `json:"issuerRef"`
 
 	// The PEM-encoded x509 certificate signing request to be submitted to the
@@ -132,10 +132,10 @@ type CertificateRequestStatus struct {
 
 // CertificateRequestCondition contains condition information for a CertificateRequest.
 type CertificateRequestCondition struct {
-	// Type of the condition, known values are ('Ready', 'InvalidRequest').
+	// Type of the condition, known values are (`Ready`, `InvalidRequest`).
 	Type CertificateRequestConditionType `json:"type"`
 
-	// Status of the condition, one of ('True', 'False', 'Unknown').
+	// Status of the condition, one of (`True`, `False`, `Unknown`).
 	Status cmmeta.ConditionStatus `json:"status"`
 
 	// LastTransitionTime is the timestamp corresponding to the last status

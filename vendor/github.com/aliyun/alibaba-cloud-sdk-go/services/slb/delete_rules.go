@@ -21,7 +21,6 @@ import (
 )
 
 // DeleteRules invokes the slb.DeleteRules API synchronously
-// api document: https://help.aliyun.com/api/slb/deleterules.html
 func (client *Client) DeleteRules(request *DeleteRulesRequest) (response *DeleteRulesResponse, err error) {
 	response = CreateDeleteRulesResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DeleteRules(request *DeleteRulesRequest) (response *Delete
 }
 
 // DeleteRulesWithChan invokes the slb.DeleteRules API asynchronously
-// api document: https://help.aliyun.com/api/slb/deleterules.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DeleteRulesWithChan(request *DeleteRulesRequest) (<-chan *DeleteRulesResponse, <-chan error) {
 	responseChan := make(chan *DeleteRulesResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DeleteRulesWithChan(request *DeleteRulesRequest) (<-chan *
 }
 
 // DeleteRulesWithCallback invokes the slb.DeleteRules API asynchronously
-// api document: https://help.aliyun.com/api/slb/deleterules.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DeleteRulesWithCallback(request *DeleteRulesRequest, callback func(response *DeleteRulesResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -97,6 +92,7 @@ func CreateDeleteRulesRequest() (request *DeleteRulesRequest) {
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DeleteRules", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

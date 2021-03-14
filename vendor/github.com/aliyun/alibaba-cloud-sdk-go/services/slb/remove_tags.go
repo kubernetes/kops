@@ -21,7 +21,6 @@ import (
 )
 
 // RemoveTags invokes the slb.RemoveTags API synchronously
-// api document: https://help.aliyun.com/api/slb/removetags.html
 func (client *Client) RemoveTags(request *RemoveTagsRequest) (response *RemoveTagsResponse, err error) {
 	response = CreateRemoveTagsResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) RemoveTags(request *RemoveTagsRequest) (response *RemoveTa
 }
 
 // RemoveTagsWithChan invokes the slb.RemoveTags API asynchronously
-// api document: https://help.aliyun.com/api/slb/removetags.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) RemoveTagsWithChan(request *RemoveTagsRequest) (<-chan *RemoveTagsResponse, <-chan error) {
 	responseChan := make(chan *RemoveTagsResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) RemoveTagsWithChan(request *RemoveTagsRequest) (<-chan *Re
 }
 
 // RemoveTagsWithCallback invokes the slb.RemoveTags API asynchronously
-// api document: https://help.aliyun.com/api/slb/removetags.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) RemoveTagsWithCallback(request *RemoveTagsRequest, callback func(response *RemoveTagsResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -97,6 +92,7 @@ func CreateRemoveTagsRequest() (request *RemoveTagsRequest) {
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "RemoveTags", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

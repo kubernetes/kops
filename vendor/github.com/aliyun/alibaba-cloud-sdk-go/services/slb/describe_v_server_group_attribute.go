@@ -21,7 +21,6 @@ import (
 )
 
 // DescribeVServerGroupAttribute invokes the slb.DescribeVServerGroupAttribute API synchronously
-// api document: https://help.aliyun.com/api/slb/describevservergroupattribute.html
 func (client *Client) DescribeVServerGroupAttribute(request *DescribeVServerGroupAttributeRequest) (response *DescribeVServerGroupAttributeResponse, err error) {
 	response = CreateDescribeVServerGroupAttributeResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DescribeVServerGroupAttribute(request *DescribeVServerGrou
 }
 
 // DescribeVServerGroupAttributeWithChan invokes the slb.DescribeVServerGroupAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/describevservergroupattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeVServerGroupAttributeWithChan(request *DescribeVServerGroupAttributeRequest) (<-chan *DescribeVServerGroupAttributeResponse, <-chan error) {
 	responseChan := make(chan *DescribeVServerGroupAttributeResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DescribeVServerGroupAttributeWithChan(request *DescribeVSe
 }
 
 // DescribeVServerGroupAttributeWithCallback invokes the slb.DescribeVServerGroupAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/describevservergroupattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeVServerGroupAttributeWithCallback(request *DescribeVServerGroupAttributeRequest, callback func(response *DescribeVServerGroupAttributeResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -101,6 +96,7 @@ func CreateDescribeVServerGroupAttributeRequest() (request *DescribeVServerGroup
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DescribeVServerGroupAttribute", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

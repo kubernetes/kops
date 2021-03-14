@@ -21,7 +21,6 @@ import (
 )
 
 // RemoveVServerGroupBackendServers invokes the slb.RemoveVServerGroupBackendServers API synchronously
-// api document: https://help.aliyun.com/api/slb/removevservergroupbackendservers.html
 func (client *Client) RemoveVServerGroupBackendServers(request *RemoveVServerGroupBackendServersRequest) (response *RemoveVServerGroupBackendServersResponse, err error) {
 	response = CreateRemoveVServerGroupBackendServersResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) RemoveVServerGroupBackendServers(request *RemoveVServerGro
 }
 
 // RemoveVServerGroupBackendServersWithChan invokes the slb.RemoveVServerGroupBackendServers API asynchronously
-// api document: https://help.aliyun.com/api/slb/removevservergroupbackendservers.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) RemoveVServerGroupBackendServersWithChan(request *RemoveVServerGroupBackendServersRequest) (<-chan *RemoveVServerGroupBackendServersResponse, <-chan error) {
 	responseChan := make(chan *RemoveVServerGroupBackendServersResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) RemoveVServerGroupBackendServersWithChan(request *RemoveVS
 }
 
 // RemoveVServerGroupBackendServersWithCallback invokes the slb.RemoveVServerGroupBackendServers API asynchronously
-// api document: https://help.aliyun.com/api/slb/removevservergroupbackendservers.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) RemoveVServerGroupBackendServersWithCallback(request *RemoveVServerGroupBackendServersRequest, callback func(response *RemoveVServerGroupBackendServersResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -100,6 +95,7 @@ func CreateRemoveVServerGroupBackendServersRequest() (request *RemoveVServerGrou
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "RemoveVServerGroupBackendServers", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

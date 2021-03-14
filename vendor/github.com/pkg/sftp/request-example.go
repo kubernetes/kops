@@ -5,11 +5,10 @@ package sftp
 // works as a very simple filesystem with simple flat key-value lookup system.
 
 import (
-	"bytes"
-	"fmt"
+	"errors"
 	"io"
 	"os"
-	"path/filepath"
+	"path"
 	"sort"
 	"strings"
 	"sync"
@@ -17,56 +16,128 @@ import (
 	"time"
 )
 
+const maxSymlinkFollows = 5
+
+var errTooManySymlinks = errors.New("too many symbolic links")
+
 // InMemHandler returns a Hanlders object with the test handlers.
 func InMemHandler() Handlers {
 	root := &root{
-		files: make(map[string]*memFile),
+		rootFile: &memFile{name: "/", modtime: time.Now(), isdir: true},
+		files:    make(map[string]*memFile),
 	}
-	root.memFile = newMemFile("/", true)
 	return Handlers{root, root, root, root}
 }
 
 // Example Handlers
 func (fs *root) Fileread(r *Request) (io.ReaderAt, error) {
-	if fs.mockErr != nil {
-		return nil, fs.mockErr
+	flags := r.Pflags()
+	if !flags.Read {
+		// sanity check
+		return nil, os.ErrInvalid
 	}
-	_ = r.WithContext(r.Context()) // initialize context for deadlock testing
-	fs.filesLock.Lock()
-	defer fs.filesLock.Unlock()
-	file, err := fs.fetch(r.Filepath)
-	if err != nil {
-		return nil, err
-	}
-	if file.symlink != "" {
-		file, err = fs.fetch(file.symlink)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return file.ReaderAt()
+
+	return fs.OpenFile(r)
 }
 
 func (fs *root) Filewrite(r *Request) (io.WriterAt, error) {
+	flags := r.Pflags()
+	if !flags.Write {
+		// sanity check
+		return nil, os.ErrInvalid
+	}
+
+	return fs.OpenFile(r)
+}
+
+func (fs *root) OpenFile(r *Request) (WriterAtReaderAt, error) {
 	if fs.mockErr != nil {
 		return nil, fs.mockErr
 	}
 	_ = r.WithContext(r.Context()) // initialize context for deadlock testing
-	fs.filesLock.Lock()
-	defer fs.filesLock.Unlock()
-	file, err := fs.fetch(r.Filepath)
+
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+
+	return fs.openfile(r.Filepath, r.Flags)
+}
+
+func (fs *root) putfile(pathname string, file *memFile) error {
+	pathname, err := fs.canonName(pathname)
+	if err != nil {
+		return err
+	}
+
+	if !strings.HasPrefix(pathname, "/") {
+		return os.ErrInvalid
+	}
+
+	if _, err := fs.lfetch(pathname); err != os.ErrNotExist {
+		return os.ErrExist
+	}
+
+	file.name = pathname
+	fs.files[pathname] = file
+
+	return nil
+}
+
+func (fs *root) openfile(pathname string, flags uint32) (*memFile, error) {
+	pflags := newFileOpenFlags(flags)
+
+	file, err := fs.fetch(pathname)
 	if err == os.ErrNotExist {
-		dir, err := fs.fetch(filepath.Dir(r.Filepath))
-		if err != nil {
+		if !pflags.Creat {
+			return nil, os.ErrNotExist
+		}
+
+		var count int
+		// You can create files through dangling symlinks.
+		link, err := fs.lfetch(pathname)
+		for err == nil && link.symlink != "" {
+			if pflags.Excl {
+				// unless you also passed in O_EXCL
+				return nil, os.ErrInvalid
+			}
+
+			if count++; count > maxSymlinkFollows {
+				return nil, errTooManySymlinks
+			}
+
+			pathname = link.symlink
+			link, err = fs.lfetch(pathname)
+		}
+
+		file := &memFile{
+			modtime: time.Now(),
+		}
+
+		if err := fs.putfile(pathname, file); err != nil {
 			return nil, err
 		}
-		if !dir.isdir {
-			return nil, os.ErrInvalid
-		}
-		file = newMemFile(r.Filepath, false)
-		fs.files[r.Filepath] = file
+
+		return file, nil
 	}
-	return file.WriterAt()
+
+	if err != nil {
+		return nil, err
+	}
+
+	if pflags.Creat && pflags.Excl {
+		return nil, os.ErrExist
+	}
+
+	if file.IsDir() {
+		return nil, os.ErrInvalid
+	}
+
+	if pflags.Trunc {
+		if err := file.Truncate(0); err != nil {
+			return nil, err
+		}
+	}
+
+	return file, nil
 }
 
 func (fs *root) Filecmd(r *Request) error {
@@ -74,84 +145,211 @@ func (fs *root) Filecmd(r *Request) error {
 		return fs.mockErr
 	}
 	_ = r.WithContext(r.Context()) // initialize context for deadlock testing
-	fs.filesLock.Lock()
-	defer fs.filesLock.Unlock()
+
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+
 	switch r.Method {
 	case "Setstat":
-		file, err := fs.fetch(r.Filepath)
+		file, err := fs.openfile(r.Filepath, sshFxfWrite)
 		if err != nil {
 			return err
 		}
+
 		if r.AttrFlags().Size {
 			return file.Truncate(int64(r.Attributes().Size))
 		}
+
 		return nil
+
 	case "Rename":
-		file, err := fs.fetch(r.Filepath)
-		if err != nil {
-			return err
-		}
-		if _, ok := fs.files[r.Target]; ok {
-			return &os.LinkError{Op: "rename", Old: r.Filepath, New: r.Target,
-				Err: fmt.Errorf("dest file exists")}
-		}
-		file.name = r.Target
-		fs.files[r.Target] = file
-		delete(fs.files, r.Filepath)
-
-		if file.IsDir() {
-			for path, file := range fs.files {
-				if strings.HasPrefix(path, r.Filepath+"/") {
-					file.name = r.Target + path[len(r.Filepath):]
-					fs.files[r.Target+path[len(r.Filepath):]] = file
-					delete(fs.files, path)
-				}
-			}
-		}
-	case "Rmdir", "Remove":
-		file, err := fs.fetch(filepath.Dir(r.Filepath))
-		if err != nil {
-			return err
+		// SFTP-v2: "It is an error if there already exists a file with the name specified by newpath."
+		// This varies from the POSIX specification, which allows limited replacement of target files.
+		if fs.exists(r.Target) {
+			return os.ErrExist
 		}
 
-		if file.IsDir() {
-			for path := range fs.files {
-				if strings.HasPrefix(path, r.Filepath+"/") {
-					return &os.PathError{
-						Op:   "remove",
-						Path: r.Filepath + "/",
-						Err:  fmt.Errorf("directory is not empty"),
-					}
-				}
-			}
-		}
+		return fs.rename(r.Filepath, r.Target)
 
-		delete(fs.files, r.Filepath)
+	case "Rmdir":
+		return fs.rmdir(r.Filepath)
+
+	case "Remove":
+		// IEEE 1003.1 remove explicitly can unlink files and remove empty directories.
+		// We use instead here the semantics of unlink, which is allowed to be restricted against directories.
+		return fs.unlink(r.Filepath)
 
 	case "Mkdir":
-		_, err := fs.fetch(filepath.Dir(r.Filepath))
-		if err != nil {
-			return err
-		}
-		fs.files[r.Filepath] = newMemFile(r.Filepath, true)
+		return fs.mkdir(r.Filepath)
+
 	case "Link":
-		file, err := fs.fetch(r.Filepath)
-		if err != nil {
-			return err
-		}
-		if file.IsDir() {
-			return fmt.Errorf("hard link not allowed for directory")
-		}
-		fs.files[r.Target] = file
+		return fs.link(r.Filepath, r.Target)
+
 	case "Symlink":
-		_, err := fs.fetch(r.Filepath)
-		if err != nil {
-			return err
-		}
-		link := newMemFile(r.Target, false)
-		link.symlink = r.Filepath
-		fs.files[r.Target] = link
+		// NOTE: r.Filepath is the target, and r.Target is the linkpath.
+		return fs.symlink(r.Filepath, r.Target)
 	}
+
+	return errors.New("unsupported")
+}
+
+func (fs *root) rename(oldpath, newpath string) error {
+	file, err := fs.lfetch(oldpath)
+	if err != nil {
+		return err
+	}
+
+	newpath, err = fs.canonName(newpath)
+	if err != nil {
+		return err
+	}
+
+	if !strings.HasPrefix(newpath, "/") {
+		return os.ErrInvalid
+	}
+
+	target, err := fs.lfetch(newpath)
+	if err != os.ErrNotExist {
+		if target == file {
+			// IEEE 1003.1: if oldpath and newpath are the same directory entry,
+			// then return no error, and perform no further action.
+			return nil
+		}
+
+		switch {
+		case file.IsDir():
+			// IEEE 1003.1: if oldpath is a directory, and newpath exists,
+			// then newpath must be a directory, and empty.
+			// It is to be removed prior to rename.
+			if err := fs.rmdir(newpath); err != nil {
+				return err
+			}
+
+		case target.IsDir():
+			// IEEE 1003.1: if oldpath is not a directory, and newpath exists,
+			// then newpath may not be a directory.
+			return syscall.EISDIR
+		}
+	}
+
+	fs.files[newpath] = file
+
+	if file.IsDir() {
+		dirprefix := file.name + "/"
+
+		for name, file := range fs.files {
+			if strings.HasPrefix(name, dirprefix) {
+				newname := path.Join(newpath, strings.TrimPrefix(name, dirprefix))
+
+				fs.files[newname] = file
+				file.name = newname
+				delete(fs.files, name)
+			}
+		}
+	}
+
+	file.name = newpath
+	delete(fs.files, oldpath)
+
+	return nil
+}
+
+func (fs *root) PosixRename(r *Request) error {
+	if fs.mockErr != nil {
+		return fs.mockErr
+	}
+	_ = r.WithContext(r.Context()) // initialize context for deadlock testing
+
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+
+	return fs.rename(r.Filepath, r.Target)
+}
+
+func (fs *root) StatVFS(r *Request) (*StatVFS, error) {
+	if fs.mockErr != nil {
+		return nil, fs.mockErr
+	}
+
+	return getStatVFSForPath(r.Filepath)
+}
+
+func (fs *root) mkdir(pathname string) error {
+	dir := &memFile{
+		modtime: time.Now(),
+		isdir:   true,
+	}
+
+	return fs.putfile(pathname, dir)
+}
+
+func (fs *root) rmdir(pathname string) error {
+	// IEEE 1003.1: If pathname is a symlink, then rmdir should fail with ENOTDIR.
+	dir, err := fs.lfetch(pathname)
+	if err != nil {
+		return err
+	}
+
+	if !dir.IsDir() {
+		return syscall.ENOTDIR
+	}
+
+	// use the dir‘s internal name not the pathname we passed in.
+	// the dir.name is always the canonical name of a directory.
+	pathname = dir.name
+
+	for name := range fs.files {
+		if path.Dir(name) == pathname {
+			return errors.New("directory not empty")
+		}
+	}
+
+	delete(fs.files, pathname)
+
+	return nil
+}
+
+func (fs *root) link(oldpath, newpath string) error {
+	file, err := fs.lfetch(oldpath)
+	if err != nil {
+		return err
+	}
+
+	if file.IsDir() {
+		return errors.New("hard link not allowed for directory")
+	}
+
+	return fs.putfile(newpath, file)
+}
+
+// symlink() creates a symbolic link named `linkpath` which contains the string `target`.
+// NOTE! This would be called with `symlink(req.Filepath, req.Target)` due to different semantics.
+func (fs *root) symlink(target, linkpath string) error {
+	link := &memFile{
+		modtime: time.Now(),
+		symlink: target,
+	}
+
+	return fs.putfile(linkpath, link)
+}
+
+func (fs *root) unlink(pathname string) error {
+	// does not follow symlinks!
+	file, err := fs.lfetch(pathname)
+	if err != nil {
+		return err
+	}
+
+	if file.IsDir() {
+		// IEEE 1003.1: implementations may opt out of allowing the unlinking of directories.
+		// SFTP-v2: SSH_FXP_REMOVE may not remove directories.
+		return os.ErrInvalid
+	}
+
+	// DO NOT use the file’s internal name.
+	// because of hard-links files cannot have a single canonical name.
+	delete(fs.files, pathname)
+
 	return nil
 }
 
@@ -175,51 +373,104 @@ func (fs *root) Filelist(r *Request) (ListerAt, error) {
 		return nil, fs.mockErr
 	}
 	_ = r.WithContext(r.Context()) // initialize context for deadlock testing
-	fs.filesLock.Lock()
-	defer fs.filesLock.Unlock()
 
-	file, err := fs.fetch(r.Filepath)
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+
+	switch r.Method {
+	case "List":
+		files, err := fs.readdir(r.Filepath)
+		if err != nil {
+			return nil, err
+		}
+		return listerat(files), nil
+
+	case "Stat":
+		file, err := fs.fetch(r.Filepath)
+		if err != nil {
+			return nil, err
+		}
+		return listerat{file}, nil
+
+	case "Readlink":
+		symlink, err := fs.readlink(r.Filepath)
+		if err != nil {
+			return nil, err
+		}
+
+		// SFTP-v2: The server will respond with a SSH_FXP_NAME packet containing only
+		// one name and a dummy attributes value.
+		return listerat{
+			&memFile{
+				name: symlink,
+				err:  os.ErrNotExist, // prevent accidental use as a reader/writer.
+			},
+		}, nil
+	}
+
+	return nil, errors.New("unsupported")
+}
+
+func (fs *root) readdir(pathname string) ([]os.FileInfo, error) {
+	dir, err := fs.fetch(pathname)
 	if err != nil {
 		return nil, err
 	}
 
-	switch r.Method {
-	case "List":
-		if !file.IsDir() {
-			return nil, syscall.ENOTDIR
-		}
-		orderedNames := []string{}
-		for fn := range fs.files {
-			if filepath.Dir(fn) == r.Filepath {
-				orderedNames = append(orderedNames, fn)
-			}
-		}
-		sort.Strings(orderedNames)
-		list := make([]os.FileInfo, len(orderedNames))
-		for i, fn := range orderedNames {
-			list[i] = fs.files[fn]
-		}
-		return listerat(list), nil
-	case "Stat":
-		return listerat([]os.FileInfo{file}), nil
-	case "Readlink":
-		if file.symlink != "" {
-			file, err = fs.fetch(file.symlink)
-			if err != nil {
-				return nil, err
-			}
-		}
-		return listerat([]os.FileInfo{file}), nil
+	if !dir.IsDir() {
+		return nil, syscall.ENOTDIR
 	}
-	return nil, nil
+
+	var files []os.FileInfo
+
+	for name, file := range fs.files {
+		if path.Dir(name) == dir.name {
+			files = append(files, file)
+		}
+	}
+
+	sort.Slice(files, func(i, j int) bool { return files[i].Name() < files[j].Name() })
+
+	return files, nil
+}
+
+func (fs *root) readlink(pathname string) (string, error) {
+	file, err := fs.lfetch(pathname)
+	if err != nil {
+		return "", err
+	}
+
+	if file.symlink == "" {
+		return "", os.ErrInvalid
+	}
+
+	return file.symlink, nil
+}
+
+// implements LstatFileLister interface
+func (fs *root) Lstat(r *Request) (ListerAt, error) {
+	if fs.mockErr != nil {
+		return nil, fs.mockErr
+	}
+	_ = r.WithContext(r.Context()) // initialize context for deadlock testing
+
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+
+	file, err := fs.lfetch(r.Filepath)
+	if err != nil {
+		return nil, err
+	}
+	return listerat{file}, nil
 }
 
 // In memory file-system-y thing that the Hanlders live on
 type root struct {
-	*memFile
-	files     map[string]*memFile
-	filesLock sync.Mutex
-	mockErr   error
+	rootFile *memFile
+	mockErr  error
+
+	mu    sync.Mutex
+	files map[string]*memFile
 }
 
 // Set a mocked error that the next handler call will return.
@@ -228,50 +479,107 @@ func (fs *root) returnErr(err error) {
 	fs.mockErr = err
 }
 
-func (fs *root) fetch(path string) (*memFile, error) {
+func (fs *root) lfetch(path string) (*memFile, error) {
 	if path == "/" {
-		return fs.memFile, nil
+		return fs.rootFile, nil
 	}
-	if file, ok := fs.files[path]; ok {
-		return file, nil
+
+	file, ok := fs.files[path]
+	if file == nil {
+		if ok {
+			delete(fs.files, path)
+		}
+
+		return nil, os.ErrNotExist
 	}
-	return nil, os.ErrNotExist
+
+	return file, nil
 }
 
-// Implements os.FileInfo, Reader and Writer interfaces.
+// canonName returns the “canonical” name of a file, that is:
+// if the directory of the pathname is a symlink, it follows that symlink to the valid directory name.
+// this is relatively easy, since `dir.name` will be the only valid canonical path for a directory.
+func (fs *root) canonName(pathname string) (string, error) {
+	dirname, filename := path.Dir(pathname), path.Base(pathname)
+
+	dir, err := fs.fetch(dirname)
+	if err != nil {
+		return "", err
+	}
+
+	if !dir.IsDir() {
+		return "", syscall.ENOTDIR
+	}
+
+	return path.Join(dir.name, filename), nil
+}
+
+func (fs *root) exists(path string) bool {
+	path, err := fs.canonName(path)
+	if err != nil {
+		return false
+	}
+
+	_, err = fs.lfetch(path)
+
+	return err != os.ErrNotExist
+}
+
+func (fs *root) fetch(path string) (*memFile, error) {
+	file, err := fs.lfetch(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var count int
+	for file.symlink != "" {
+		if count++; count > maxSymlinkFollows {
+			return nil, errTooManySymlinks
+		}
+
+		file, err = fs.lfetch(file.symlink)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return file, nil
+}
+
+// Implements os.FileInfo, io.ReaderAt and io.WriterAt interfaces.
 // These are the 3 interfaces necessary for the Handlers.
 // Implements the optional interface TransferError.
 type memFile struct {
-	name          string
-	modtime       time.Time
-	symlink       string
-	isdir         bool
-	content       []byte
-	transferError error
-	contentLock   sync.RWMutex
+	name    string
+	modtime time.Time
+	symlink string
+	isdir   bool
+
+	mu      sync.RWMutex
+	content []byte
+	err     error
 }
 
-// factory to make sure modtime is set
-func newMemFile(name string, isdir bool) *memFile {
-	return &memFile{
-		name:    name,
-		modtime: time.Now(),
-		isdir:   isdir,
-	}
-}
+// These are helper functions, they must be called while holding the memFile.mu mutex
+func (f *memFile) size() int64  { return int64(len(f.content)) }
+func (f *memFile) grow(n int64) { f.content = append(f.content, make([]byte, n)...) }
 
 // Have memFile fulfill os.FileInfo interface
-func (f *memFile) Name() string { return filepath.Base(f.name) }
-func (f *memFile) Size() int64  { return int64(len(f.content)) }
+func (f *memFile) Name() string { return path.Base(f.name) }
+func (f *memFile) Size() int64 {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	return f.size()
+}
 func (f *memFile) Mode() os.FileMode {
-	ret := os.FileMode(0644)
 	if f.isdir {
-		ret = os.FileMode(0755) | os.ModeDir
+		return os.FileMode(0755) | os.ModeDir
 	}
 	if f.symlink != "" {
-		ret = os.FileMode(0777) | os.ModeSymlink
+		return os.FileMode(0777) | os.ModeSymlink
 	}
-	return ret
+	return os.FileMode(0644)
 }
 func (f *memFile) ModTime() time.Time { return f.modtime }
 func (f *memFile) IsDir() bool        { return f.isdir }
@@ -279,48 +587,71 @@ func (f *memFile) Sys() interface{} {
 	return fakeFileInfoSys()
 }
 
-// Read/Write
-func (f *memFile) ReaderAt() (io.ReaderAt, error) {
-	if f.isdir {
-		return nil, os.ErrInvalid
+func (f *memFile) ReadAt(b []byte, off int64) (int, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	if f.err != nil {
+		return 0, f.err
 	}
-	return bytes.NewReader(f.content), nil
+
+	if off < 0 {
+		return 0, errors.New("memFile.ReadAt: negative offset")
+	}
+
+	if off >= f.size() {
+		return 0, io.EOF
+	}
+
+	n := copy(b, f.content[off:])
+	if n < len(b) {
+		return n, io.EOF
+	}
+
+	return n, nil
 }
 
-func (f *memFile) WriterAt() (io.WriterAt, error) {
-	if f.isdir {
-		return nil, os.ErrInvalid
-	}
-	return f, nil
-}
-func (f *memFile) WriteAt(p []byte, off int64) (int, error) {
+func (f *memFile) WriteAt(b []byte, off int64) (int, error) {
 	// fmt.Println(string(p), off)
 	// mimic write delays, should be optional
-	time.Sleep(time.Microsecond * time.Duration(len(p)))
-	f.contentLock.Lock()
-	defer f.contentLock.Unlock()
-	plen := len(p) + int(off)
-	if plen >= len(f.content) {
-		nc := make([]byte, plen)
-		copy(nc, f.content)
-		f.content = nc
+	time.Sleep(time.Microsecond * time.Duration(len(b)))
+
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	if f.err != nil {
+		return 0, f.err
 	}
-	copy(f.content[off:], p)
-	return len(p), nil
+
+	grow := int64(len(b)) + off - f.size()
+	if grow > 0 {
+		f.grow(grow)
+	}
+
+	return copy(f.content[off:], b), nil
 }
 
 func (f *memFile) Truncate(size int64) error {
-	f.contentLock.Lock()
-	defer f.contentLock.Unlock()
-	grow := size - int64(len(f.content))
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	if f.err != nil {
+		return f.err
+	}
+
+	grow := size - f.size()
 	if grow <= 0 {
 		f.content = f.content[:size]
 	} else {
-		f.content = append(f.content, make([]byte, grow)...)
+		f.grow(grow)
 	}
+
 	return nil
 }
 
 func (f *memFile) TransferError(err error) {
-	f.transferError = err
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	f.err = err
 }

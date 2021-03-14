@@ -36,6 +36,7 @@ go_library(
         "virtualmachinescalesetrollingupgrades.go",
         "virtualmachinescalesets.go",
         "virtualmachinescalesetvmextensions.go",
+        "virtualmachinescalesetvmruncommands.go",
         "virtualmachinescalesetvms.go",
         "virtualmachinesizes.go",
     ],

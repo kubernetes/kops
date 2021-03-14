@@ -74,9 +74,11 @@ func (client VirtualHubBgpConnectionsClient) List(ctx context.Context, resourceG
 	result.lvhbcr, err = client.ListResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionsClient", "List", resp, "Failure responding to request")
+		return
 	}
 	if result.lvhbcr.hasNextLink() && result.lvhbcr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -155,5 +157,211 @@ func (client VirtualHubBgpConnectionsClient) ListComplete(ctx context.Context, r
 		}()
 	}
 	result.page, err = client.List(ctx, resourceGroupName, virtualHubName)
+	return
+}
+
+// ListAdvertisedRoutes retrieves a list of routes the virtual hub bgp connection is advertising to the specified peer.
+// Parameters:
+// resourceGroupName - the name of the resource group.
+// hubName - the name of the virtual hub.
+// connectionName - the name of the virtual hub bgp connection.
+func (client VirtualHubBgpConnectionsClient) ListAdvertisedRoutes(ctx context.Context, resourceGroupName string, hubName string, connectionName string) (result VirtualHubBgpConnectionsListAdvertisedRoutesFuture, err error) {
+	if tracing.IsEnabled() {
+		ctx = tracing.StartSpan(ctx, fqdn+"/VirtualHubBgpConnectionsClient.ListAdvertisedRoutes")
+		defer func() {
+			sc := -1
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
+			}
+			tracing.EndSpan(ctx, sc, err)
+		}()
+	}
+	req, err := client.ListAdvertisedRoutesPreparer(ctx, resourceGroupName, hubName, connectionName)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionsClient", "ListAdvertisedRoutes", nil, "Failure preparing request")
+		return
+	}
+
+	result, err = client.ListAdvertisedRoutesSender(req)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionsClient", "ListAdvertisedRoutes", nil, "Failure sending request")
+		return
+	}
+
+	return
+}
+
+// ListAdvertisedRoutesPreparer prepares the ListAdvertisedRoutes request.
+func (client VirtualHubBgpConnectionsClient) ListAdvertisedRoutesPreparer(ctx context.Context, resourceGroupName string, hubName string, connectionName string) (*http.Request, error) {
+	pathParameters := map[string]interface{}{
+		"connectionName":    autorest.Encode("path", connectionName),
+		"hubName":           autorest.Encode("path", hubName),
+		"resourceGroupName": autorest.Encode("path", resourceGroupName),
+		"subscriptionId":    autorest.Encode("path", client.SubscriptionID),
+	}
+
+	const APIVersion = "2020-06-01"
+	queryParameters := map[string]interface{}{
+		"api-version": APIVersion,
+	}
+
+	preparer := autorest.CreatePreparer(
+		autorest.AsPost(),
+		autorest.WithBaseURL(client.BaseURI),
+		autorest.WithPathParameters("/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualHubs/{hubName}/bgpConnections/{connectionName}/advertisedRoutes", pathParameters),
+		autorest.WithQueryParameters(queryParameters))
+	return preparer.Prepare((&http.Request{}).WithContext(ctx))
+}
+
+// ListAdvertisedRoutesSender sends the ListAdvertisedRoutes request. The method will close the
+// http.Response Body if it receives an error.
+func (client VirtualHubBgpConnectionsClient) ListAdvertisedRoutesSender(req *http.Request) (future VirtualHubBgpConnectionsListAdvertisedRoutesFuture, err error) {
+	var resp *http.Response
+	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
+	if err != nil {
+		return
+	}
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client VirtualHubBgpConnectionsClient) (prl PeerRouteList, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionsListAdvertisedRoutesFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.VirtualHubBgpConnectionsListAdvertisedRoutesFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		prl.Response.Response, err = future.GetResult(sender)
+		if prl.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionsListAdvertisedRoutesFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && prl.Response.Response.StatusCode != http.StatusNoContent {
+			prl, err = client.ListAdvertisedRoutesResponder(prl.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionsListAdvertisedRoutesFuture", "Result", prl.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
+	return
+}
+
+// ListAdvertisedRoutesResponder handles the response to the ListAdvertisedRoutes request. The method always
+// closes the http.Response Body.
+func (client VirtualHubBgpConnectionsClient) ListAdvertisedRoutesResponder(resp *http.Response) (result PeerRouteList, err error) {
+	err = autorest.Respond(
+		resp,
+		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted),
+		autorest.ByUnmarshallingJSON(&result),
+		autorest.ByClosing())
+	result.Response = autorest.Response{Response: resp}
+	return
+}
+
+// ListLearnedRoutes retrieves a list of routes the virtual hub bgp connection has learned.
+// Parameters:
+// resourceGroupName - the name of the resource group.
+// hubName - the name of the virtual hub.
+// connectionName - the name of the virtual hub bgp connection.
+func (client VirtualHubBgpConnectionsClient) ListLearnedRoutes(ctx context.Context, resourceGroupName string, hubName string, connectionName string) (result VirtualHubBgpConnectionsListLearnedRoutesFuture, err error) {
+	if tracing.IsEnabled() {
+		ctx = tracing.StartSpan(ctx, fqdn+"/VirtualHubBgpConnectionsClient.ListLearnedRoutes")
+		defer func() {
+			sc := -1
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
+			}
+			tracing.EndSpan(ctx, sc, err)
+		}()
+	}
+	req, err := client.ListLearnedRoutesPreparer(ctx, resourceGroupName, hubName, connectionName)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionsClient", "ListLearnedRoutes", nil, "Failure preparing request")
+		return
+	}
+
+	result, err = client.ListLearnedRoutesSender(req)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionsClient", "ListLearnedRoutes", nil, "Failure sending request")
+		return
+	}
+
+	return
+}
+
+// ListLearnedRoutesPreparer prepares the ListLearnedRoutes request.
+func (client VirtualHubBgpConnectionsClient) ListLearnedRoutesPreparer(ctx context.Context, resourceGroupName string, hubName string, connectionName string) (*http.Request, error) {
+	pathParameters := map[string]interface{}{
+		"connectionName":    autorest.Encode("path", connectionName),
+		"hubName":           autorest.Encode("path", hubName),
+		"resourceGroupName": autorest.Encode("path", resourceGroupName),
+		"subscriptionId":    autorest.Encode("path", client.SubscriptionID),
+	}
+
+	const APIVersion = "2020-06-01"
+	queryParameters := map[string]interface{}{
+		"api-version": APIVersion,
+	}
+
+	preparer := autorest.CreatePreparer(
+		autorest.AsPost(),
+		autorest.WithBaseURL(client.BaseURI),
+		autorest.WithPathParameters("/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualHubs/{hubName}/bgpConnections/{connectionName}/learnedRoutes", pathParameters),
+		autorest.WithQueryParameters(queryParameters))
+	return preparer.Prepare((&http.Request{}).WithContext(ctx))
+}
+
+// ListLearnedRoutesSender sends the ListLearnedRoutes request. The method will close the
+// http.Response Body if it receives an error.
+func (client VirtualHubBgpConnectionsClient) ListLearnedRoutesSender(req *http.Request) (future VirtualHubBgpConnectionsListLearnedRoutesFuture, err error) {
+	var resp *http.Response
+	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
+	if err != nil {
+		return
+	}
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client VirtualHubBgpConnectionsClient) (prl PeerRouteList, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionsListLearnedRoutesFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.VirtualHubBgpConnectionsListLearnedRoutesFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		prl.Response.Response, err = future.GetResult(sender)
+		if prl.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionsListLearnedRoutesFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && prl.Response.Response.StatusCode != http.StatusNoContent {
+			prl, err = client.ListLearnedRoutesResponder(prl.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionsListLearnedRoutesFuture", "Result", prl.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
+	return
+}
+
+// ListLearnedRoutesResponder handles the response to the ListLearnedRoutes request. The method always
+// closes the http.Response Body.
+func (client VirtualHubBgpConnectionsClient) ListLearnedRoutesResponder(resp *http.Response) (result PeerRouteList, err error) {
+	err = autorest.Respond(
+		resp,
+		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted),
+		autorest.ByUnmarshallingJSON(&result),
+		autorest.ByClosing())
+	result.Response = autorest.Response{Response: resp}
 	return
 }

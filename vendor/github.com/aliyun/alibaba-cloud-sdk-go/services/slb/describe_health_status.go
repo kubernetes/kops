@@ -21,7 +21,6 @@ import (
 )
 
 // DescribeHealthStatus invokes the slb.DescribeHealthStatus API synchronously
-// api document: https://help.aliyun.com/api/slb/describehealthstatus.html
 func (client *Client) DescribeHealthStatus(request *DescribeHealthStatusRequest) (response *DescribeHealthStatusResponse, err error) {
 	response = CreateDescribeHealthStatusResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DescribeHealthStatus(request *DescribeHealthStatusRequest)
 }
 
 // DescribeHealthStatusWithChan invokes the slb.DescribeHealthStatus API asynchronously
-// api document: https://help.aliyun.com/api/slb/describehealthstatus.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeHealthStatusWithChan(request *DescribeHealthStatusRequest) (<-chan *DescribeHealthStatusResponse, <-chan error) {
 	responseChan := make(chan *DescribeHealthStatusResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DescribeHealthStatusWithChan(request *DescribeHealthStatus
 }
 
 // DescribeHealthStatusWithCallback invokes the slb.DescribeHealthStatus API asynchronously
-// api document: https://help.aliyun.com/api/slb/describehealthstatus.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeHealthStatusWithCallback(request *DescribeHealthStatusRequest, callback func(response *DescribeHealthStatusResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -100,6 +95,7 @@ func CreateDescribeHealthStatusRequest() (request *DescribeHealthStatusRequest) 
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DescribeHealthStatus", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

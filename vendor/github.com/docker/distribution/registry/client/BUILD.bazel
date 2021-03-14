@@ -1,0 +1,24 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "blob_writer.go",
+        "errors.go",
+        "repository.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/docker/distribution/registry/client",
+    importpath = "github.com/docker/distribution/registry/client",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/docker/distribution:go_default_library",
+        "//vendor/github.com/docker/distribution/reference:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/api/errcode:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/api/v2:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/client/auth/challenge:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/client/transport:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/storage/cache:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/storage/cache/memory:go_default_library",
+        "//vendor/github.com/opencontainers/go-digest:go_default_library",
+    ],
+)

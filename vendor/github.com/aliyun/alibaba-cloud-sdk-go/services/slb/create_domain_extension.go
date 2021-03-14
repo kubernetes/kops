@@ -21,7 +21,6 @@ import (
 )
 
 // CreateDomainExtension invokes the slb.CreateDomainExtension API synchronously
-// api document: https://help.aliyun.com/api/slb/createdomainextension.html
 func (client *Client) CreateDomainExtension(request *CreateDomainExtensionRequest) (response *CreateDomainExtensionResponse, err error) {
 	response = CreateCreateDomainExtensionResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) CreateDomainExtension(request *CreateDomainExtensionReques
 }
 
 // CreateDomainExtensionWithChan invokes the slb.CreateDomainExtension API asynchronously
-// api document: https://help.aliyun.com/api/slb/createdomainextension.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) CreateDomainExtensionWithChan(request *CreateDomainExtensionRequest) (<-chan *CreateDomainExtensionResponse, <-chan error) {
 	responseChan := make(chan *CreateDomainExtensionResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) CreateDomainExtensionWithChan(request *CreateDomainExtensi
 }
 
 // CreateDomainExtensionWithCallback invokes the slb.CreateDomainExtension API asynchronously
-// api document: https://help.aliyun.com/api/slb/createdomainextension.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) CreateDomainExtensionWithCallback(request *CreateDomainExtensionRequest, callback func(response *CreateDomainExtensionResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -76,16 +71,25 @@ func (client *Client) CreateDomainExtensionWithCallback(request *CreateDomainExt
 // CreateDomainExtensionRequest is the request struct for api CreateDomainExtension
 type CreateDomainExtensionRequest struct {
 	*requests.RpcRequest
-	AccessKeyId          string           `position:"Query" name:"access_key_id"`
-	ResourceOwnerId      requests.Integer `position:"Query" name:"ResourceOwnerId"`
-	ListenerPort         requests.Integer `position:"Query" name:"ListenerPort"`
-	ResourceOwnerAccount string           `position:"Query" name:"ResourceOwnerAccount"`
-	OwnerAccount         string           `position:"Query" name:"OwnerAccount"`
-	OwnerId              requests.Integer `position:"Query" name:"OwnerId"`
-	ServerCertificateId  string           `position:"Query" name:"ServerCertificateId"`
-	Tags                 string           `position:"Query" name:"Tags"`
-	LoadBalancerId       string           `position:"Query" name:"LoadBalancerId"`
-	Domain               string           `position:"Query" name:"Domain"`
+	AccessKeyId          string                                    `position:"Query" name:"access_key_id"`
+	ResourceOwnerId      requests.Integer                          `position:"Query" name:"ResourceOwnerId"`
+	ServerCertificate    *[]CreateDomainExtensionServerCertificate `position:"Query" name:"ServerCertificate"  type:"Repeated"`
+	ListenerPort         requests.Integer                          `position:"Query" name:"ListenerPort"`
+	ResourceOwnerAccount string                                    `position:"Query" name:"ResourceOwnerAccount"`
+	OwnerAccount         string                                    `position:"Query" name:"OwnerAccount"`
+	CertificateId        *[]string                                 `position:"Query" name:"CertificateId"  type:"Repeated"`
+	OwnerId              requests.Integer                          `position:"Query" name:"OwnerId"`
+	ServerCertificateId  string                                    `position:"Query" name:"ServerCertificateId"`
+	Tags                 string                                    `position:"Query" name:"Tags"`
+	LoadBalancerId       string                                    `position:"Query" name:"LoadBalancerId"`
+	Domain               string                                    `position:"Query" name:"Domain"`
+}
+
+// CreateDomainExtensionServerCertificate is a repeated param struct in CreateDomainExtensionRequest
+type CreateDomainExtensionServerCertificate struct {
+	BindingType   string `name:"BindingType"`
+	CertificateId string `name:"CertificateId"`
+	StandardType  string `name:"StandardType"`
 }
 
 // CreateDomainExtensionResponse is the response struct for api CreateDomainExtension
@@ -102,6 +106,7 @@ func CreateCreateDomainExtensionRequest() (request *CreateDomainExtensionRequest
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "CreateDomainExtension", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

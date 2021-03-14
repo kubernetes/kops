@@ -30,7 +30,7 @@ func newTokenBucket(capacity int64, tokenInterval time.Duration) *tokenBucket {
 // Not safe for concurrent use by multiple goroutines.
 func (tb *tokenBucket) wait() {
 	// If earliest unspent token is in the future, sleep until then
-	time.Sleep(tb.earliestUnspentToken.Sub(time.Now()))
+	time.Sleep(time.Until(tb.earliestUnspentToken))
 
 	// Alternatively, enforce bucket capacity if necessary
 	capacityToken := tb.capacityToken()

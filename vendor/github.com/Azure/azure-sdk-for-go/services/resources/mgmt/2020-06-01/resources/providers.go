@@ -21,6 +21,7 @@ import (
 	"context"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/Azure/go-autorest/autorest/validation"
 	"github.com/Azure/go-autorest/tracing"
 	"net/http"
 )
@@ -73,6 +74,7 @@ func (client ProvidersClient) Get(ctx context.Context, resourceProviderNamespace
 	result, err = client.GetResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.ProvidersClient", "Get", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -151,6 +153,7 @@ func (client ProvidersClient) GetAtTenantScope(ctx context.Context, resourceProv
 	result, err = client.GetAtTenantScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.ProvidersClient", "GetAtTenantScope", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -230,9 +233,11 @@ func (client ProvidersClient) List(ctx context.Context, top *int32, expand strin
 	result.plr, err = client.ListResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.ProvidersClient", "List", resp, "Failure responding to request")
+		return
 	}
 	if result.plr.hasNextLink() && result.plr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -352,9 +357,11 @@ func (client ProvidersClient) ListAtTenantScope(ctx context.Context, top *int32,
 	result.plr, err = client.ListAtTenantScopeResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.ProvidersClient", "ListAtTenantScope", resp, "Failure responding to request")
+		return
 	}
 	if result.plr.hasNextLink() && result.plr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return
@@ -466,6 +473,7 @@ func (client ProvidersClient) Register(ctx context.Context, resourceProviderName
 	result, err = client.RegisterResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.ProvidersClient", "Register", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -509,6 +517,87 @@ func (client ProvidersClient) RegisterResponder(resp *http.Response) (result Pro
 	return
 }
 
+// RegisterAtManagementGroupScope registers a management group with a resource provider.
+// Parameters:
+// resourceProviderNamespace - the namespace of the resource provider to register.
+// groupID - the management group ID.
+func (client ProvidersClient) RegisterAtManagementGroupScope(ctx context.Context, resourceProviderNamespace string, groupID string) (result autorest.Response, err error) {
+	if tracing.IsEnabled() {
+		ctx = tracing.StartSpan(ctx, fqdn+"/ProvidersClient.RegisterAtManagementGroupScope")
+		defer func() {
+			sc := -1
+			if result.Response != nil {
+				sc = result.Response.StatusCode
+			}
+			tracing.EndSpan(ctx, sc, err)
+		}()
+	}
+	if err := validation.Validate([]validation.Validation{
+		{TargetValue: groupID,
+			Constraints: []validation.Constraint{{Target: "groupID", Name: validation.MaxLength, Rule: 90, Chain: nil},
+				{Target: "groupID", Name: validation.MinLength, Rule: 1, Chain: nil}}}}); err != nil {
+		return result, validation.NewError("resources.ProvidersClient", "RegisterAtManagementGroupScope", err.Error())
+	}
+
+	req, err := client.RegisterAtManagementGroupScopePreparer(ctx, resourceProviderNamespace, groupID)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "resources.ProvidersClient", "RegisterAtManagementGroupScope", nil, "Failure preparing request")
+		return
+	}
+
+	resp, err := client.RegisterAtManagementGroupScopeSender(req)
+	if err != nil {
+		result.Response = resp
+		err = autorest.NewErrorWithError(err, "resources.ProvidersClient", "RegisterAtManagementGroupScope", resp, "Failure sending request")
+		return
+	}
+
+	result, err = client.RegisterAtManagementGroupScopeResponder(resp)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "resources.ProvidersClient", "RegisterAtManagementGroupScope", resp, "Failure responding to request")
+		return
+	}
+
+	return
+}
+
+// RegisterAtManagementGroupScopePreparer prepares the RegisterAtManagementGroupScope request.
+func (client ProvidersClient) RegisterAtManagementGroupScopePreparer(ctx context.Context, resourceProviderNamespace string, groupID string) (*http.Request, error) {
+	pathParameters := map[string]interface{}{
+		"groupId":                   autorest.Encode("path", groupID),
+		"resourceProviderNamespace": autorest.Encode("path", resourceProviderNamespace),
+	}
+
+	const APIVersion = "2020-06-01"
+	queryParameters := map[string]interface{}{
+		"api-version": APIVersion,
+	}
+
+	preparer := autorest.CreatePreparer(
+		autorest.AsPost(),
+		autorest.WithBaseURL(client.BaseURI),
+		autorest.WithPathParameters("/providers/Microsoft.Management/managementGroups/{groupId}/providers/{resourceProviderNamespace}/register", pathParameters),
+		autorest.WithQueryParameters(queryParameters))
+	return preparer.Prepare((&http.Request{}).WithContext(ctx))
+}
+
+// RegisterAtManagementGroupScopeSender sends the RegisterAtManagementGroupScope request. The method will close the
+// http.Response Body if it receives an error.
+func (client ProvidersClient) RegisterAtManagementGroupScopeSender(req *http.Request) (*http.Response, error) {
+	return client.Send(req, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+}
+
+// RegisterAtManagementGroupScopeResponder handles the response to the RegisterAtManagementGroupScope request. The method always
+// closes the http.Response Body.
+func (client ProvidersClient) RegisterAtManagementGroupScopeResponder(resp *http.Response) (result autorest.Response, err error) {
+	err = autorest.Respond(
+		resp,
+		azure.WithErrorUnlessStatusCode(http.StatusOK),
+		autorest.ByClosing())
+	result.Response = resp
+	return
+}
+
 // Unregister unregisters a subscription from a resource provider.
 // Parameters:
 // resourceProviderNamespace - the namespace of the resource provider to unregister.
@@ -539,6 +628,7 @@ func (client ProvidersClient) Unregister(ctx context.Context, resourceProviderNa
 	result, err = client.UnregisterResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.ProvidersClient", "Unregister", resp, "Failure responding to request")
+		return
 	}
 
 	return

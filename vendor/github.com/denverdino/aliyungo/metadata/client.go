@@ -14,8 +14,9 @@ import (
 	"encoding/json"
 	"reflect"
 
-	"github.com/denverdino/aliyungo/util"
 	"os"
+
+	"github.com/denverdino/aliyungo/util"
 )
 
 const (
@@ -351,7 +352,7 @@ func (vpc *MetaDataRequest) Do(api interface{}) (err error) {
 func (vpc *MetaDataRequest) Decode(data string, api interface{}) error {
 	if data == "" {
 		url, _ := vpc.Url()
-		return errors.New(fmt.Sprintf("metadata: alivpc decode data must not be nil. url=[%s]\n", url))
+		return fmt.Errorf("metadata: alivpc decode data must not be nil. url=[%s]\n", url)
 	}
 	switch api.(type) {
 	case *ResultList:
@@ -360,7 +361,7 @@ func (vpc *MetaDataRequest) Decode(data string, api interface{}) error {
 	case *RoleAuth:
 		return json.Unmarshal([]byte(data), api)
 	default:
-		return errors.New(fmt.Sprintf("metadata: unknow type to decode, type=%s\n", reflect.TypeOf(api)))
+		return fmt.Errorf("metadata: unknow type to decode, type=%s\n", reflect.TypeOf(api))
 	}
 }
 
