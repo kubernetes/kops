@@ -97,8 +97,13 @@ func TestRenderChannelFunctions(t *testing.T) {
 		},
 		{
 			Context:  map[string]interface{}{},
-			Template: `{{ ChannelRecommendedImage "aws" "1.4.2" }}`,
-			Expected: "kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21",
+			Template: `{{ ChannelRecommendedImage "aws" "1.19.2" "amd64" }}`,
+			Expected: "099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1",
+		},
+		{
+			Context:  map[string]interface{}{},
+			Template: `{{ ChannelRecommendedImage "aws" "1.19.2" "arm64" }}`,
+			Expected: "099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210119.1",
 		},
 	}
 	makeRenderTests(t, cases)
