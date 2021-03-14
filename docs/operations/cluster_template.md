@@ -16,7 +16,7 @@ metadata:
   kops.k8s.io/cluster: {{ '{{.clusterName}}.{{.dnsZone}}' }}
   name: nodes
 spec:
-  image: {{ '{{ ChannelRecommendedImage .cloud .kubernetesVersion }}' }}
+  image: {{ '{{ ChannelRecommendedImage .cloud .kubernetesVersion .architecture }}' }}
   kubernetesVersion: {{ '{{ ChannelRecommendedKubernetesUpgradeVersion .kubernetesVersion }}' }}
   machineType: m4.large
   maxPrice: "0.5"
@@ -131,7 +131,7 @@ This function returns the kubernetes version recommended for the running kops ve
 
 This function returns the recommended kubernetes version given that you currently run `<kubernetesVersion>`. Typically this is the latest patch version supported by the given channel.
 
-##### ChannelRecommendedImage <cloudProvider> <kuberneteVersion>
+##### ChannelRecommendedImage <cloudProvider> <kuberneteVersion> <architecture>
 
 This function returns the recommended image for the given cloud provider and kubernetes version.
 

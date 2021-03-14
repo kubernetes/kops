@@ -24,6 +24,7 @@ import (
 	"github.com/blang/semver/v4"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/tests/integration/channel/simple"
+	"k8s.io/kops/util/pkg/architectures"
 )
 
 // TestKopsUpgrades tests the version logic for kops versions
@@ -221,21 +222,35 @@ func TestFindImage(t *testing.T) {
 
 	grid := []struct {
 		KubernetesVersion string
+		Architecture      string
 		ExpectedImage     string
 	}{
 		{
-			KubernetesVersion: "1.4.4",
-			ExpectedImage:     "kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21",
+			KubernetesVersion: "1.1.0",
+			Architecture:      "amd64",
+			ExpectedImage:     "kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2021-02-05",
 		},
 		{
-			KubernetesVersion: "1.5.1",
-			ExpectedImage:     "kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-01-09",
+			KubernetesVersion: "1.17.2",
+			Architecture:      "amd64",
+			ExpectedImage:     "kope.io/k8s-1.17-debian-stretch-amd64-hvm-ebs-2021-02-05",
+		},
+		{
+			KubernetesVersion: "1.19.1",
+			Architecture:      "amd64",
+			ExpectedImage:     "099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1",
+		},
+		{
+			KubernetesVersion: "1.19.1",
+			Architecture:      "arm64",
+			ExpectedImage:     "099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210119.1",
 		},
 	}
 	for _, g := range grid {
 		kubernetesVersion := semver.MustParse(g.KubernetesVersion)
+		architecture := architectures.Architecture(g.Architecture)
 
-		image := channel.FindImage(kops.CloudProviderAWS, kubernetesVersion)
+		image := channel.FindImage(kops.CloudProviderAWS, kubernetesVersion, architecture)
 		name := ""
 		if image != nil {
 			name = image.Name
