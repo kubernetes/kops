@@ -217,8 +217,9 @@ func RunValidateCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command
 				return result, nil
 			}
 		} else {
-			if options.wait > 0 && consecutive == 0 {
+			if options.wait > 0 {
 				klog.Warningf("(will retry): cluster not yet healthy")
+				consecutive = 0
 				time.Sleep(pollInterval)
 				continue
 			} else {
