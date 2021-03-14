@@ -25,6 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -77,6 +78,8 @@ type ChannelImageSpec struct {
 	Labels map[string]string `json:"labels,omitempty"`
 
 	ProviderID string `json:"providerID,omitempty"`
+
+	ArchitectureID string `json:"architectureID,omitempty"`
 
 	Name string `json:"name,omitempty"`
 
@@ -259,11 +262,14 @@ const (
 )
 
 // FindImage returns the image for the cloudprovider, or nil if none found
-func (c *Channel) FindImage(provider CloudProviderID, kubernetesVersion semver.Version) *ChannelImageSpec {
+func (c *Channel) FindImage(provider CloudProviderID, kubernetesVersion semver.Version, architecture architectures.Architecture) *ChannelImageSpec {
 	var matches []*ChannelImageSpec
 
 	for _, image := range c.Spec.Images {
 		if image.ProviderID != string(provider) {
+			continue
+		}
+		if image.ArchitectureID != "" && image.ArchitectureID != string(architecture) {
 			continue
 		}
 		if image.KubernetesVersion != "" {
@@ -327,7 +333,7 @@ func RecommendedKubernetesVersion(c *Channel, kopsVersionString string) *semver.
 // Returns true if the given image name has the stable or alpha channel images prefix. Otherwise false.
 func (c *Channel) HasUpstreamImagePrefix(image string) bool {
 	return strings.HasPrefix(image, "kope.io/k8s-") ||
-		strings.HasPrefix(image, "099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-") ||
+		strings.HasPrefix(image, "099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-") ||
 		strings.HasPrefix(image, "cos-cloud/cos-stable-") ||
 		strings.HasPrefix(image, "ubuntu-os-cloud/ubuntu-")
 }

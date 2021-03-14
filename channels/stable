@@ -3,72 +3,94 @@ spec:
     # We put the "legacy" version first, for kops versions that don't support versions ( < 1.5.0 )
     - name: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
       providerID: aws
+      architectureID: amd64
       kubernetesVersion: ">=1.4.0 <1.5.0"
     - name: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2018-08-17
       providerID: aws
+      architectureID: amd64
       kubernetesVersion: ">=1.5.0 <1.6.0"
     - name: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2018-08-17
       providerID: aws
+      architectureID: amd64
       kubernetesVersion: ">=1.6.0 <1.7.0"
     - name: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2018-08-17
       providerID: aws
+      architectureID: amd64
       kubernetesVersion: ">=1.7.0 <1.8.0"
     - name: kope.io/k8s-1.8-debian-stretch-amd64-hvm-ebs-2018-08-17
       providerID: aws
+      architectureID: amd64
       kubernetesVersion: ">=1.8.0 <1.9.0"
     - name: kope.io/k8s-1.9-debian-stretch-amd64-hvm-ebs-2018-08-17
       providerID: aws
+      architectureID: amd64
       kubernetesVersion: ">=1.9.0 <1.10.0"
     - name: kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-08-17
       providerID: aws
+      architectureID: amd64
       kubernetesVersion: ">=1.10.0 <1.11.0"
     # Stretch is the default for 1.11 (for nvme)
     - name: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2021-02-05
       providerID: aws
+      architectureID: amd64
       kubernetesVersion: ">=1.11.0 <1.12.0"
     - name: kope.io/k8s-1.12-debian-stretch-amd64-hvm-ebs-2021-02-05
       providerID: aws
+      architectureID: amd64
       kubernetesVersion: ">=1.12.0 <1.13.0"
     - name: kope.io/k8s-1.13-debian-stretch-amd64-hvm-ebs-2021-02-05
       providerID: aws
+      architectureID: amd64
       kubernetesVersion: ">=1.13.0 <1.14.0"
     - name: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2021-02-05
       providerID: aws
+      architectureID: amd64
       kubernetesVersion: ">=1.14.0 <1.15.0"
     - name: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2021-02-05
       providerID: aws
+      architectureID: amd64
       kubernetesVersion: ">=1.15.0 <1.16.0"
     - name: kope.io/k8s-1.16-debian-stretch-amd64-hvm-ebs-2021-02-05
       providerID: aws
+      architectureID: amd64
       kubernetesVersion: ">=1.16.0 <1.17.0"
     - name: kope.io/k8s-1.17-debian-stretch-amd64-hvm-ebs-2021-02-05
       providerID: aws
+      architectureID: amd64
       kubernetesVersion: ">=1.17.0 <1.18.0"
     - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
       providerID: aws
+      architectureID: amd64
       kubernetesVersion: ">=1.18.0"
-    - providerID: gce
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210119.1
+      providerID: aws
+      architectureID: arm64
+      kubernetesVersion: ">=1.20.0"
+    - name: "cos-cloud/cos-stable-65-10323-99-0"
+      providerID: gce
+      architectureID: amd64
       kubernetesVersion: "<1.16.0-alpha.1"
-      name: "cos-cloud/cos-stable-65-10323-99-0"
-    - providerID: gce
+    - name: "cos-cloud/cos-stable-77-12371-114-0"
+      providerID: gce
+      architectureID: amd64
       kubernetesVersion: ">=1.16.0-alpha.1"
-      name: "cos-cloud/cos-stable-77-12371-114-0"
-    - providerID: gce
+    - name: "ubuntu-os-cloud/ubuntu-2004-focal-v20210119a"
+      providerID: gce
+      architectureID: amd64
       kubernetesVersion: ">=1.17.0"
-      name: "ubuntu-os-cloud/ubuntu-2004-focal-v20210119a"
   cluster:
     kubernetesVersion: v1.5.8
     networking:
       kubenet: {}
   kubernetesVersions:
   - range: ">=1.20.0"
-    recommendedVersion: 1.20.2
+    recommendedVersion: 1.20.4
     requiredVersion: 1.20.0
   - range: ">=1.19.0"
-    recommendedVersion: 1.19.7
+    recommendedVersion: 1.19.8
     requiredVersion: 1.19.0
   - range: ">=1.18.0"
-    recommendedVersion: 1.18.15
+    recommendedVersion: 1.18.16
     requiredVersion: 1.18.0
   - range: ">=1.17.0"
     recommendedVersion: 1.17.17
@@ -97,16 +119,16 @@ spec:
   kopsVersions:
   - range: ">=1.20.0-alpha.1"
     #recommendedVersion: "1.19.0-beta.3"
-    #requiredVersion: 1.19.0
-    kubernetesVersion: 1.20.2
+    #requiredVersion: 1.20.0
+    kubernetesVersion: 1.20.4
   - range: ">=1.19.0-beta.3"
     #recommendedVersion: "1.19.0-beta.3"
     #requiredVersion: 1.19.0
-    kubernetesVersion: 1.19.7
+    kubernetesVersion: 1.19.8
   - range: ">=1.18.0-alpha.1"
     recommendedVersion: "1.18.2"
     #requiredVersion: 1.18.0
-    kubernetesVersion: 1.18.15
+    kubernetesVersion: 1.18.16
   - range: ">=1.17.0-alpha.1"
     recommendedVersion: "1.18.2"
     #requiredVersion: 1.17.0
