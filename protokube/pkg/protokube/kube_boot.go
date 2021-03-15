@@ -135,10 +135,6 @@ func (k *KubeBoot) syncOnce(ctx context.Context) error {
 				}
 			}
 		}
-	} else if k.ManageEtcd {
-		klog.V(4).Infof("Not in role master; won't scan for volumes")
-	} else {
-		klog.V(4).Infof("protokube management of etcd not enabled; won't scan for volumes")
 	}
 
 	if k.Master {
