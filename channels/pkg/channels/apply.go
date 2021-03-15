@@ -69,7 +69,7 @@ func execKubectl(args ...string) (string, error) {
 	if err != nil {
 		klog.Infof("error running %s", human)
 		klog.Info(string(output))
-		return string(output), fmt.Errorf("error running kubectl")
+		return string(output), fmt.Errorf("error running kubectl: %v", err)
 	}
 
 	return string(output), err
