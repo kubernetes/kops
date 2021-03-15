@@ -55,8 +55,8 @@ func (client VirtualHubBgpConnectionClient) CreateOrUpdate(ctx context.Context, 
 		ctx = tracing.StartSpan(ctx, fqdn+"/VirtualHubBgpConnectionClient.CreateOrUpdate")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -80,7 +80,7 @@ func (client VirtualHubBgpConnectionClient) CreateOrUpdate(ctx context.Context, 
 
 	result, err = client.CreateOrUpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionClient", "CreateOrUpdate", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionClient", "CreateOrUpdate", nil, "Failure sending request")
 		return
 	}
 
@@ -121,7 +121,33 @@ func (client VirtualHubBgpConnectionClient) CreateOrUpdateSender(req *http.Reque
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client VirtualHubBgpConnectionClient) (bc BgpConnection, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionCreateOrUpdateFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.VirtualHubBgpConnectionCreateOrUpdateFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		bc.Response.Response, err = future.GetResult(sender)
+		if bc.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionCreateOrUpdateFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && bc.Response.Response.StatusCode != http.StatusNoContent {
+			bc, err = client.CreateOrUpdateResponder(bc.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionCreateOrUpdateFuture", "Result", bc.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -147,8 +173,8 @@ func (client VirtualHubBgpConnectionClient) Delete(ctx context.Context, resource
 		ctx = tracing.StartSpan(ctx, fqdn+"/VirtualHubBgpConnectionClient.Delete")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -161,7 +187,7 @@ func (client VirtualHubBgpConnectionClient) Delete(ctx context.Context, resource
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionClient", "Delete", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionClient", "Delete", nil, "Failure sending request")
 		return
 	}
 
@@ -198,7 +224,23 @@ func (client VirtualHubBgpConnectionClient) DeleteSender(req *http.Request) (fut
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client VirtualHubBgpConnectionClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionDeleteFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.VirtualHubBgpConnectionDeleteFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -245,6 +287,7 @@ func (client VirtualHubBgpConnectionClient) Get(ctx context.Context, resourceGro
 	result, err = client.GetResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.VirtualHubBgpConnectionClient", "Get", resp, "Failure responding to request")
+		return
 	}
 
 	return

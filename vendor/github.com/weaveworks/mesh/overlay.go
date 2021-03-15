@@ -108,7 +108,11 @@ func (NullOverlay) Diagnostics() interface{} { return nil }
 func (NullOverlay) Confirm() {}
 
 // EstablishedChannel implements OverlayConnection.
-func (NullOverlay) EstablishedChannel() <-chan struct{} { return nil }
+func (NullOverlay) EstablishedChannel() <-chan struct{} {
+	c := make(chan struct{})
+	close(c)
+	return c
+}
 
 // ErrorChannel implements OverlayConnection.
 func (NullOverlay) ErrorChannel() <-chan error { return nil }

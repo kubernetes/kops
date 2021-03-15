@@ -78,7 +78,7 @@ func (client *Client) NewInit4RegionalDomain(endpoint, version, accessKeyId, acc
 	client.serviceCode = serviceCode
 	client.regionID = regionID
 
-	client.setEndpoint4RegionalDomain(client.regionID,client.serviceCode,client.AccessKeyId,client.AccessKeySecret,client.securityToken)
+	client.setEndpoint4RegionalDomain(client.regionID, client.serviceCode, client.AccessKeyId, client.AccessKeySecret, client.securityToken)
 }
 
 // Intialize client object when all properties are ready
@@ -114,10 +114,9 @@ func (client *Client) InitClient4RegionalDomain() *Client {
 		client.httpClient = &http.Client{Transport: t}
 	}
 	//set endpoint
-	client.setEndpoint4RegionalDomain(client.regionID,client.serviceCode,client.AccessKeyId,client.AccessKeySecret,client.securityToken)
+	client.setEndpoint4RegionalDomain(client.regionID, client.serviceCode, client.AccessKeyId, client.AccessKeySecret, client.securityToken)
 	return client
 }
-
 
 func (client *Client) NewInitForAssumeRole(endpoint, version, accessKeyId, accessKeySecret, serviceCode string, regionID Region, securityToken string) {
 	client.NewInit(endpoint, version, accessKeyId, accessKeySecret, serviceCode, regionID)
@@ -142,11 +141,23 @@ func (client *Client) setEndpointByLocation(region Region, serviceCode, accessKe
 	}
 }
 
-//only for HangZhou Regional Domain, ecs.cn-hangzhou.aliyuncs.com
+// Get openapi endpoint accessed by ecs instance.
+// For some UnitRegions, the endpoint pattern is https://[product].[regionid].aliyuncs.com
+// For some CentralRegions, the endpoint pattern is  https://[product].vpc-proxy.aliyuncs.com
+// The other region, the endpoint pattern is https://[product]-vpc.[regionid].aliyuncs.com
 func (client *Client) setEndpoint4RegionalDomain(region Region, serviceCode, accessKeyId, accessKeySecret, securityToken string) {
-	for _,service := range RegionalDomainServices{
-		if _,ok := UnitRegions[region];ok && service ==  serviceCode  {
-			client.endpoint = fmt.Sprintf("https://%s.%s.aliyuncs.com",serviceCode,region)
+	if endpoint, ok := CentralDomainServices[serviceCode]; ok {
+		client.endpoint = fmt.Sprintf("https://%s", endpoint)
+		return
+	}
+	for _, service := range RegionalDomainServices {
+		if service == serviceCode {
+			if ep, ok := UnitRegions[region]; ok {
+				client.endpoint = fmt.Sprintf("https://%s.%s.aliyuncs.com", serviceCode, ep)
+				return
+			}
+
+			client.endpoint = fmt.Sprintf("https://%s%s.%s.aliyuncs.com", serviceCode, "-vpc", region)
 			return
 		}
 	}
@@ -253,6 +264,10 @@ func (client *Client) SetEndpoint(endpoint string) {
 	client.endpoint = endpoint
 }
 
+func (client *Client) GetEndpoint() string {
+	return client.endpoint
+}
+
 // SetEndpoint sets custom version
 func (client *Client) SetVersion(version string) {
 	client.version = version
@@ -302,10 +317,22 @@ func (client *Client) SetSecurityToken(securityToken string) {
 	client.securityToken = securityToken
 }
 
+// SetTransport sets transport to the http client
+func (client *Client) SetTransport(transport http.RoundTripper) {
+	if client.httpClient == nil {
+		client.httpClient = &http.Client{}
+	}
+	client.httpClient.Transport = transport
+}
+
 func (client *Client) initEndpoint() error {
 	// if set any value to "CUSTOMIZED_ENDPOINT" could skip location service.
 	// example: export CUSTOMIZED_ENDPOINT=true
 	if os.Getenv("CUSTOMIZED_ENDPOINT") != "" {
+		return nil
+	}
+
+	if client.endpoint != "" {
 		return nil
 	}
 
@@ -375,12 +402,19 @@ func (client *Client) Invoke(action string, args interface{}, response interface
 	if client.debug {
 		var prettyJSON bytes.Buffer
 		err = json.Indent(&prettyJSON, body, "", "    ")
-		log.Println(string(prettyJSON.Bytes()))
+		if err != nil {
+			log.Printf("Failed in json.Indent: %v\n", err)
+		} else {
+			log.Printf("JSON body: %s\n", prettyJSON.String())
+		}
 	}
 
 	if statusCode >= 400 && statusCode <= 599 {
 		errorResponse := ErrorResponse{}
 		err = json.Unmarshal(body, &errorResponse)
+		if err != nil {
+			log.Printf("Failed in json.Unmarshal: %v\n", err)
+		}
 		ecsError := &Error{
 			ErrorResponse: errorResponse,
 			StatusCode:    statusCode,
@@ -454,12 +488,18 @@ func (client *Client) InvokeByFlattenMethod(action string, args interface{}, res
 	if client.debug {
 		var prettyJSON bytes.Buffer
 		err = json.Indent(&prettyJSON, body, "", "    ")
-		log.Println(string(prettyJSON.Bytes()))
+		if err != nil {
+			log.Printf("Failed in json.Indent: %v\n", err)
+		}
+		log.Println(prettyJSON.String())
 	}
 
 	if statusCode >= 400 && statusCode <= 599 {
 		errorResponse := ErrorResponse{}
 		err = json.Unmarshal(body, &errorResponse)
+		if err != nil {
+			log.Printf("Failed in json.Unmarshal: %v\n", err)
+		}
 		ecsError := &Error{
 			ErrorResponse: errorResponse,
 			StatusCode:    statusCode,
@@ -543,7 +583,7 @@ func (client *Client) InvokeByAnyMethod(method, action, path string, args interf
 	if client.debug {
 		var prettyJSON bytes.Buffer
 		err = json.Indent(&prettyJSON, body, "", "    ")
-		log.Println(string(prettyJSON.Bytes()))
+		log.Println(prettyJSON.String())
 	}
 
 	if statusCode >= 400 && statusCode <= 599 {

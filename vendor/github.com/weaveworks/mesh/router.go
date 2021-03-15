@@ -17,14 +17,15 @@ var (
 	// ChannelSize is the buffer size used by so-called actor goroutines
 	// throughout mesh.
 	ChannelSize = 16
+
+	defaultGossipInterval = 30 * time.Second
 )
 
 const (
 	tcpHeartbeat     = 30 * time.Second
-	gossipInterval   = 30 * time.Second
 	maxDuration      = time.Duration(math.MaxInt64)
-	acceptMaxTokens  = 100
-	acceptTokenDelay = 100 * time.Millisecond // [2]
+	acceptMaxTokens  = 20
+	acceptTokenDelay = 50 * time.Millisecond
 )
 
 // Config defines dimensions of configuration for the router.
@@ -32,11 +33,12 @@ const (
 type Config struct {
 	Host               string
 	Port               int
-	ProtocolMinVersion byte
 	Password           []byte
 	ConnLimit          int
+	ProtocolMinVersion byte
 	PeerDiscovery      bool
 	TrustedSubnets     []*net.IPNet
+	GossipInterval     *time.Duration
 }
 
 // Router manages communication between this peer and the rest of the mesh.
@@ -56,7 +58,7 @@ type Router struct {
 }
 
 // NewRouter returns a new router. It must be started.
-func NewRouter(config Config, name PeerName, nickName string, overlay Overlay, logger Logger) *Router {
+func NewRouter(config Config, name PeerName, nickName string, overlay Overlay, logger Logger) (*Router, error) {
 	router := &Router{Config: config, gossipChannels: make(gossipChannels)}
 
 	if overlay == nil {
@@ -72,10 +74,13 @@ func NewRouter(config Config, name PeerName, nickName string, overlay Overlay, l
 	router.Routes = newRoutes(router.Ourself, router.Peers)
 	router.ConnectionMaker = newConnectionMaker(router.Ourself, router.Peers, net.JoinHostPort(router.Host, "0"), router.Port, router.PeerDiscovery, logger)
 	router.logger = logger
-	router.topologyGossip = router.NewGossip("topology", router)
+	gossip, err := router.NewGossip("topology", router)
+	if err != nil {
+		return nil, err
+	}
+	router.topologyGossip = gossip
 	router.acceptLimiter = newTokenBucket(acceptMaxTokens, acceptTokenDelay)
-
-	return router
+	return router, nil
 }
 
 // Start listening for TCP connections. This is separate from NewRouter so
@@ -96,11 +101,11 @@ func (router *Router) usingPassword() bool {
 }
 
 func (router *Router) listenTCP() {
-	localAddr, err := net.ResolveTCPAddr("tcp4", net.JoinHostPort(router.Host, fmt.Sprint(router.Port)))
+	localAddr, err := net.ResolveTCPAddr("tcp", net.JoinHostPort(router.Host, fmt.Sprint(router.Port)))
 	if err != nil {
 		panic(err)
 	}
-	ln, err := net.ListenTCP("tcp4", localAddr)
+	ln, err := net.ListenTCP("tcp", localAddr)
 	if err != nil {
 		panic(err)
 	}
@@ -128,15 +133,15 @@ func (router *Router) acceptTCP(tcpConn *net.TCPConn) {
 // NewGossip returns a usable GossipChannel from the router.
 //
 // TODO(pb): rename?
-func (router *Router) NewGossip(channelName string, g Gossiper) Gossip {
+func (router *Router) NewGossip(channelName string, g Gossiper) (Gossip, error) {
 	channel := newGossipChannel(channelName, router.Ourself, router.Routes, g, router.logger)
 	router.gossipLock.Lock()
 	defer router.gossipLock.Unlock()
 	if _, found := router.gossipChannels[channelName]; found {
-		panic(fmt.Sprintf("[gossip] duplicate channel %s", channelName))
+		return nil, fmt.Errorf("[gossip] duplicate channel %s", channelName)
 	}
 	router.gossipChannels[channelName] = channel
-	return channel
+	return channel, nil
 }
 
 func (router *Router) gossipChannel(channelName string) *gossipChannel {
@@ -151,7 +156,7 @@ func (router *Router) gossipChannel(channelName string) *gossipChannel {
 	if channel, found = router.gossipChannels[channelName]; found {
 		return channel
 	}
-	channel = newGossipChannel(channelName, router.Ourself, router.Routes, &surrogateGossiper{}, router.logger)
+	channel = newGossipChannel(channelName, router.Ourself, router.Routes, &surrogateGossiper{router: router}, router.logger)
 	channel.logf("created surrogate channel")
 	router.gossipChannels[channelName] = channel
 	return channel
@@ -165,6 +170,14 @@ func (router *Router) gossipChannelSet() map[*gossipChannel]struct{} {
 		channels[channel] = struct{}{}
 	}
 	return channels
+}
+
+func (router *Router) gossipInterval() time.Duration {
+	if router.Config.GossipInterval != nil {
+		return *router.Config.GossipInterval
+	} else {
+		return defaultGossipInterval
+	}
 }
 
 func (router *Router) handleGossip(tag protocolTag, payload []byte) error {
@@ -218,12 +231,9 @@ func (router *Router) sendPendingGossip() bool {
 
 // BroadcastTopologyUpdate is invoked whenever there is a change to the mesh
 // topology, and broadcasts the new set of peers to the mesh.
-func (router *Router) broadcastTopologyUpdate(update []*Peer) {
-	names := make(peerNameSet)
-	for _, p := range update {
-		names[p.Name] = struct{}{}
-	}
-	router.topologyGossip.GossipBroadcast(&topologyGossipData{peers: router.Peers, update: names})
+func (router *Router) broadcastTopologyUpdate(update peerNameSet) {
+	gossipData := &topologyGossipData{peers: router.Peers, update: update}
+	router.topologyGossip.GossipNeighbourSubset(gossipData)
 }
 
 // OnGossipUnicast implements Gossiper, but always returns an error, as a
@@ -271,7 +281,7 @@ func (router *Router) applyTopologyUpdate(update []byte) (peerNameSet, peerNameS
 }
 
 func (router *Router) trusts(remote *remoteConnection) bool {
-	if tcpAddr, err := net.ResolveTCPAddr("tcp4", remote.remoteTCPAddr); err == nil {
+	if tcpAddr, err := net.ResolveTCPAddr("tcp", remote.remoteTCPAddr); err == nil {
 		for _, trustedSubnet := range router.TrustedSubnets {
 			if trustedSubnet.Contains(tcpAddr.IP) {
 				return true

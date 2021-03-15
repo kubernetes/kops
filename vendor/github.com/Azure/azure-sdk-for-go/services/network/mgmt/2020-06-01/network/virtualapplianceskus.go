@@ -72,6 +72,7 @@ func (client VirtualApplianceSkusClient) Get(ctx context.Context, skuName string
 	result, err = client.GetResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.VirtualApplianceSkusClient", "Get", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -144,9 +145,11 @@ func (client VirtualApplianceSkusClient) List(ctx context.Context) (result Virtu
 	result.vaslr, err = client.ListResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.VirtualApplianceSkusClient", "List", resp, "Failure responding to request")
+		return
 	}
 	if result.vaslr.hasNextLink() && result.vaslr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return

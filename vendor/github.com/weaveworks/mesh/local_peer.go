@@ -8,13 +8,20 @@ import (
 	"time"
 )
 
+const (
+	deferTopologyUpdateDuration = 1 * time.Second
+)
+
 // localPeer is the only "active" peer in the mesh. It extends Peer with
 // additional behaviors, mostly to retrieve and manage connection state.
 type localPeer struct {
 	sync.RWMutex
 	*Peer
-	router     *Router
-	actionChan chan<- localPeerAction
+	router                *Router
+	actionChan            chan<- localPeerAction
+	topologyUpdates       peerNameSet
+	timer                 *time.Timer
+	pendingTopologyUpdate bool
 }
 
 // The actor closure used by localPeer.
@@ -23,11 +30,15 @@ type localPeerAction func()
 // newLocalPeer returns a usable LocalPeer.
 func newLocalPeer(name PeerName, nickName string, router *Router) *localPeer {
 	actionChan := make(chan localPeerAction, ChannelSize)
+	topologyUpdates := make(peerNameSet)
 	peer := &localPeer{
-		Peer:       newPeer(name, nickName, randomPeerUID(), 0, randomPeerShortID()),
-		router:     router,
-		actionChan: actionChan,
+		Peer:            newPeer(name, nickName, randomPeerUID(), 0, randomPeerShortID()),
+		router:          router,
+		actionChan:      actionChan,
+		topologyUpdates: topologyUpdates,
+		timer:           time.NewTimer(deferTopologyUpdateDuration),
 	}
+	peer.timer.Stop()
 	go peer.actorLoop(actionChan)
 	return peer
 }
@@ -82,15 +93,15 @@ func (peer *localPeer) createConnection(localAddr string, peerAddr string, accep
 	if err := peer.checkConnectionLimit(); err != nil {
 		return err
 	}
-	localTCPAddr, err := net.ResolveTCPAddr("tcp4", localAddr)
+	localTCPAddr, err := net.ResolveTCPAddr("tcp", localAddr)
 	if err != nil {
 		return err
 	}
-	remoteTCPAddr, err := net.ResolveTCPAddr("tcp4", peerAddr)
+	remoteTCPAddr, err := net.ResolveTCPAddr("tcp", peerAddr)
 	if err != nil {
 		return err
 	}
-	tcpConn, err := net.DialTCP("tcp4", localTCPAddr, remoteTCPAddr)
+	tcpConn, err := net.DialTCP("tcp", localTCPAddr, remoteTCPAddr)
 	if err != nil {
 		return err
 	}
@@ -136,6 +147,10 @@ func (peer *localPeer) encode(enc *gob.Encoder) {
 // ACTOR server
 
 func (peer *localPeer) actorLoop(actionChan <-chan localPeerAction) {
+	gossipInterval := defaultGossipInterval
+	if peer.router != nil {
+		gossipInterval = peer.router.gossipInterval()
+	}
 	gossipTimer := time.Tick(gossipInterval)
 	for {
 		select {
@@ -143,8 +158,20 @@ func (peer *localPeer) actorLoop(actionChan <-chan localPeerAction) {
 			action()
 		case <-gossipTimer:
 			peer.router.sendAllGossip()
+		case <-peer.timer.C:
+			peer.broadcastPendingTopologyUpdates()
 		}
 	}
+}
+
+func (peer *localPeer) broadcastPendingTopologyUpdates() {
+	peer.Lock()
+	gossipData := peer.topologyUpdates
+	peer.topologyUpdates = make(peerNameSet)
+	peer.pendingTopologyUpdate = false
+	peer.Unlock()
+	gossipData[peer.Peer.Name] = struct{}{}
+	peer.router.broadcastTopologyUpdate(gossipData)
 }
 
 func (peer *localPeer) handleAddConnection(conn ourConnection, isRestartedPeer bool) error {
@@ -190,7 +217,6 @@ func (peer *localPeer) handleAddConnection(conn ourConnection, isRestartedPeer b
 		conn.logf("connection added (new peer)")
 		peer.router.sendAllGossipDown(conn)
 	}
-
 	peer.router.Routes.recalculate()
 	peer.broadcastPeerUpdate(conn.Remote())
 
@@ -240,7 +266,15 @@ func (peer *localPeer) broadcastPeerUpdate(peers ...*Peer) {
 	// context of a test, but that will involve significant
 	// reworking of tests.
 	if peer.router != nil {
-		peer.router.broadcastTopologyUpdate(append(peers, peer.Peer))
+		peer.Lock()
+		defer peer.Unlock()
+		if !peer.pendingTopologyUpdate {
+			peer.timer.Reset(deferTopologyUpdateDuration)
+			peer.pendingTopologyUpdate = true
+		}
+		for _, p := range peers {
+			peer.topologyUpdates[p.Name] = struct{}{}
+		}
 	}
 }
 

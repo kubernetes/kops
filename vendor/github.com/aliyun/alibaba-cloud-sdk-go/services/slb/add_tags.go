@@ -21,7 +21,6 @@ import (
 )
 
 // AddTags invokes the slb.AddTags API synchronously
-// api document: https://help.aliyun.com/api/slb/addtags.html
 func (client *Client) AddTags(request *AddTagsRequest) (response *AddTagsResponse, err error) {
 	response = CreateAddTagsResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) AddTags(request *AddTagsRequest) (response *AddTagsRespons
 }
 
 // AddTagsWithChan invokes the slb.AddTags API asynchronously
-// api document: https://help.aliyun.com/api/slb/addtags.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) AddTagsWithChan(request *AddTagsRequest) (<-chan *AddTagsResponse, <-chan error) {
 	responseChan := make(chan *AddTagsResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) AddTagsWithChan(request *AddTagsRequest) (<-chan *AddTagsR
 }
 
 // AddTagsWithCallback invokes the slb.AddTags API asynchronously
-// api document: https://help.aliyun.com/api/slb/addtags.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) AddTagsWithCallback(request *AddTagsRequest, callback func(response *AddTagsResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -97,6 +92,7 @@ func CreateAddTagsRequest() (request *AddTagsRequest) {
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "AddTags", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

@@ -52,8 +52,8 @@ func (client VpnServerConfigurationsAssociatedWithVirtualWanClient) List(ctx con
 		ctx = tracing.StartSpan(ctx, fqdn+"/VpnServerConfigurationsAssociatedWithVirtualWanClient.List")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -66,7 +66,7 @@ func (client VpnServerConfigurationsAssociatedWithVirtualWanClient) List(ctx con
 
 	result, err = client.ListSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.VpnServerConfigurationsAssociatedWithVirtualWanClient", "List", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.VpnServerConfigurationsAssociatedWithVirtualWanClient", "List", nil, "Failure sending request")
 		return
 	}
 
@@ -102,7 +102,33 @@ func (client VpnServerConfigurationsAssociatedWithVirtualWanClient) ListSender(r
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client VpnServerConfigurationsAssociatedWithVirtualWanClient) (vscr VpnServerConfigurationsResponse, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.VpnServerConfigurationsAssociatedWithVirtualWanListFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.VpnServerConfigurationsAssociatedWithVirtualWanListFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		vscr.Response.Response, err = future.GetResult(sender)
+		if vscr.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.VpnServerConfigurationsAssociatedWithVirtualWanListFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && vscr.Response.Response.StatusCode != http.StatusNoContent {
+			vscr, err = client.ListResponder(vscr.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.VpnServerConfigurationsAssociatedWithVirtualWanListFuture", "Result", vscr.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 

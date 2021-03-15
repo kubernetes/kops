@@ -153,7 +153,7 @@ type TCPListenerType struct {
 	BackendServerPort         int
 	Bandwidth                 int
 	Scheduler                 SchedulerType
-	PersistenceTimeout        int
+	PersistenceTimeout        *int
 	HealthCheck               FlagType
 	HealthCheckType           HealthCheckType
 	HealthCheckDomain         string
@@ -189,7 +189,7 @@ type UDPListenerType struct {
 	BackendServerPort         int
 	Bandwidth                 int
 	Scheduler                 SchedulerType
-	PersistenceTimeout        int
+	PersistenceTimeout        *int
 	HealthCheck               FlagType
 	HealthCheckConnectPort    int
 	HealthyThreshold          int

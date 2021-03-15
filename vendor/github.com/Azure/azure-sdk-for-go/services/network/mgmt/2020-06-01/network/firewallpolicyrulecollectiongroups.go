@@ -55,8 +55,8 @@ func (client FirewallPolicyRuleCollectionGroupsClient) CreateOrUpdate(ctx contex
 		ctx = tracing.StartSpan(ctx, fqdn+"/FirewallPolicyRuleCollectionGroupsClient.CreateOrUpdate")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -80,7 +80,7 @@ func (client FirewallPolicyRuleCollectionGroupsClient) CreateOrUpdate(ctx contex
 
 	result, err = client.CreateOrUpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.FirewallPolicyRuleCollectionGroupsClient", "CreateOrUpdate", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.FirewallPolicyRuleCollectionGroupsClient", "CreateOrUpdate", nil, "Failure sending request")
 		return
 	}
 
@@ -121,7 +121,33 @@ func (client FirewallPolicyRuleCollectionGroupsClient) CreateOrUpdateSender(req 
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client FirewallPolicyRuleCollectionGroupsClient) (fprcg FirewallPolicyRuleCollectionGroup, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.FirewallPolicyRuleCollectionGroupsCreateOrUpdateFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.FirewallPolicyRuleCollectionGroupsCreateOrUpdateFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		fprcg.Response.Response, err = future.GetResult(sender)
+		if fprcg.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.FirewallPolicyRuleCollectionGroupsCreateOrUpdateFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && fprcg.Response.Response.StatusCode != http.StatusNoContent {
+			fprcg, err = client.CreateOrUpdateResponder(fprcg.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.FirewallPolicyRuleCollectionGroupsCreateOrUpdateFuture", "Result", fprcg.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -147,8 +173,8 @@ func (client FirewallPolicyRuleCollectionGroupsClient) Delete(ctx context.Contex
 		ctx = tracing.StartSpan(ctx, fqdn+"/FirewallPolicyRuleCollectionGroupsClient.Delete")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -161,7 +187,7 @@ func (client FirewallPolicyRuleCollectionGroupsClient) Delete(ctx context.Contex
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.FirewallPolicyRuleCollectionGroupsClient", "Delete", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.FirewallPolicyRuleCollectionGroupsClient", "Delete", nil, "Failure sending request")
 		return
 	}
 
@@ -198,7 +224,23 @@ func (client FirewallPolicyRuleCollectionGroupsClient) DeleteSender(req *http.Re
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client FirewallPolicyRuleCollectionGroupsClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.FirewallPolicyRuleCollectionGroupsDeleteFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.FirewallPolicyRuleCollectionGroupsDeleteFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -245,6 +287,7 @@ func (client FirewallPolicyRuleCollectionGroupsClient) Get(ctx context.Context, 
 	result, err = client.GetResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.FirewallPolicyRuleCollectionGroupsClient", "Get", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -322,9 +365,11 @@ func (client FirewallPolicyRuleCollectionGroupsClient) List(ctx context.Context,
 	result.fprcglr, err = client.ListResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.FirewallPolicyRuleCollectionGroupsClient", "List", resp, "Failure responding to request")
+		return
 	}
 	if result.fprcglr.hasNextLink() && result.fprcglr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return

@@ -2459,7 +2459,7 @@
       }
     }
   },
-  "revision": "20210119",
+  "revision": "20210216",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2543,6 +2543,17 @@
         "description": {
           "description": "[Output only] This field is set when upgrades are about to commence with the description of the upgrade.",
           "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Autopilot": {
+      "description": "Autopilot is the configuration for Autopilot settings on the cluster. It is the official product name of what is previously known as AutoGKE",
+      "id": "Autopilot",
+      "properties": {
+        "enabled": {
+          "description": "Enable Autopilot",
+          "type": "boolean"
         }
       },
       "type": "object"
@@ -2701,6 +2712,10 @@
         "authenticatorGroupsConfig": {
           "$ref": "AuthenticatorGroupsConfig",
           "description": "Configuration controlling RBAC group membership information."
+        },
+        "autopilot": {
+          "$ref": "Autopilot",
+          "description": "Autopilot configuration for the cluster. It has the same semantics as AutoGKE and overrides the setting in autogke."
         },
         "autoscaling": {
           "$ref": "ClusterAutoscaling",
@@ -3507,6 +3522,20 @@
       },
       "type": "object"
     },
+    "LinuxNodeConfig": {
+      "description": "Parameters that can be configured on Linux nodes.",
+      "id": "LinuxNodeConfig",
+      "properties": {
+        "sysctls": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "The Linux kernel parameters to be applied to the nodes and all pods running on the nodes. The following parameters are supported. net.core.netdev_max_backlog net.core.rmem_max net.core.wmem_default net.core.wmem_max net.core.optmem_max net.core.somaxconn net.ipv4.tcp_rmem net.ipv4.tcp_wmem net.ipv4.tcp_tw_reuse",
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
     "ListClustersResponse": {
       "description": "ListClustersResponse is the result of ListClustersRequest.",
       "id": "ListClustersResponse",
@@ -3805,12 +3834,20 @@
           "description": "The image type to use for this node. Note that for a given image type, the latest version of it will be used.",
           "type": "string"
         },
+        "kubeletConfig": {
+          "$ref": "NodeKubeletConfig",
+          "description": "Node kubelet configs."
+        },
         "labels": {
           "additionalProperties": {
             "type": "string"
           },
           "description": "The map of Kubernetes labels (key/value pairs) to be applied to each node. These will added in addition to any default label(s) that Kubernetes may apply to the node. In case of conflict in label keys, the applied set may differ depending on the Kubernetes version -- it's best to assume the behavior is undefined and conflicts should be avoided. For more information, including usage and the valid values, see: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/",
           "type": "object"
+        },
+        "linuxNodeConfig": {
+          "$ref": "LinuxNodeConfig",
+          "description": "Parameters that can be configured on Linux nodes."
         },
         "localSsdCount": {
           "description": "The number of local SSD disks to be attached to the node. The limit for this value is dependent upon the maximum number of disks available on a machine per zone. See: https://cloud.google.com/compute/docs/disks/local-ssd for more information.",
@@ -3880,6 +3917,25 @@
         "workloadMetadataConfig": {
           "$ref": "WorkloadMetadataConfig",
           "description": "The workload metadata configuration for this node."
+        }
+      },
+      "type": "object"
+    },
+    "NodeKubeletConfig": {
+      "description": "Node kubelet configs.",
+      "id": "NodeKubeletConfig",
+      "properties": {
+        "cpuCfsQuota": {
+          "description": "Enable CPU CFS quota enforcement for containers that specify CPU limits. This option is enabled by default which makes kubelet use CFS quota (https://www.kernel.org/doc/Documentation/scheduler/sched-bwc.txt) to enforce container CPU limits. Otherwise, CPU limits will not be enforced at all. Disable this option to mitigate CPU throttling problems while still having your pods to be in Guaranteed QoS class by specifying the CPU limits. The default value is 'true' if unspecified.",
+          "type": "boolean"
+        },
+        "cpuCfsQuotaPeriod": {
+          "description": "Set the CPU CFS quota period value 'cpu.cfs_period_us'. The string must be a sequence of decimal numbers, each with optional fraction and a unit suffix, such as \"300ms\". Valid time units are \"ns\", \"us\" (or \"µs\"), \"ms\", \"s\", \"m\", \"h\". The value must be a positive duration.",
+          "type": "string"
+        },
+        "cpuManagerPolicy": {
+          "description": "Control the CPU management policy on the node. See https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/ The following values are allowed. - \"none\": the default, which represents the existing scheduling behavior. - \"static\": allows pods with certain resource characteristics to be granted increased CPU affinity and exclusivity on the node. The default value is 'none' if unspecified.",
+          "type": "string"
         }
       },
       "type": "object"
@@ -5057,6 +5113,14 @@
         "imageType": {
           "description": "Required. The desired image type for the node pool.",
           "type": "string"
+        },
+        "kubeletConfig": {
+          "$ref": "NodeKubeletConfig",
+          "description": "Node kubelet configs."
+        },
+        "linuxNodeConfig": {
+          "$ref": "LinuxNodeConfig",
+          "description": "Parameters that can be configured on Linux nodes."
         },
         "locations": {
           "description": "The desired list of Google Compute Engine [zones](https://cloud.google.com/compute/docs/zones#available) in which the node pool's nodes should be located. Changing the locations for a node pool will result in nodes being either created or removed from the node pool, depending on whether locations are being added or removed.",

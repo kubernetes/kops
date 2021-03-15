@@ -53,8 +53,8 @@ func (client PrivateDNSZoneGroupsClient) CreateOrUpdate(ctx context.Context, res
 		ctx = tracing.StartSpan(ctx, fqdn+"/PrivateDNSZoneGroupsClient.CreateOrUpdate")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -67,7 +67,7 @@ func (client PrivateDNSZoneGroupsClient) CreateOrUpdate(ctx context.Context, res
 
 	result, err = client.CreateOrUpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.PrivateDNSZoneGroupsClient", "CreateOrUpdate", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.PrivateDNSZoneGroupsClient", "CreateOrUpdate", nil, "Failure sending request")
 		return
 	}
 
@@ -107,7 +107,33 @@ func (client PrivateDNSZoneGroupsClient) CreateOrUpdateSender(req *http.Request)
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client PrivateDNSZoneGroupsClient) (pdzg PrivateDNSZoneGroup, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.PrivateDNSZoneGroupsCreateOrUpdateFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.PrivateDNSZoneGroupsCreateOrUpdateFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		pdzg.Response.Response, err = future.GetResult(sender)
+		if pdzg.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.PrivateDNSZoneGroupsCreateOrUpdateFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && pdzg.Response.Response.StatusCode != http.StatusNoContent {
+			pdzg, err = client.CreateOrUpdateResponder(pdzg.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.PrivateDNSZoneGroupsCreateOrUpdateFuture", "Result", pdzg.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -133,8 +159,8 @@ func (client PrivateDNSZoneGroupsClient) Delete(ctx context.Context, resourceGro
 		ctx = tracing.StartSpan(ctx, fqdn+"/PrivateDNSZoneGroupsClient.Delete")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -147,7 +173,7 @@ func (client PrivateDNSZoneGroupsClient) Delete(ctx context.Context, resourceGro
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.PrivateDNSZoneGroupsClient", "Delete", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.PrivateDNSZoneGroupsClient", "Delete", nil, "Failure sending request")
 		return
 	}
 
@@ -184,7 +210,23 @@ func (client PrivateDNSZoneGroupsClient) DeleteSender(req *http.Request) (future
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client PrivateDNSZoneGroupsClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.PrivateDNSZoneGroupsDeleteFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.PrivateDNSZoneGroupsDeleteFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -231,6 +273,7 @@ func (client PrivateDNSZoneGroupsClient) Get(ctx context.Context, resourceGroupN
 	result, err = client.GetResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.PrivateDNSZoneGroupsClient", "Get", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -308,9 +351,11 @@ func (client PrivateDNSZoneGroupsClient) List(ctx context.Context, privateEndpoi
 	result.pdzglr, err = client.ListResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.PrivateDNSZoneGroupsClient", "List", resp, "Failure responding to request")
+		return
 	}
 	if result.pdzglr.hasNextLink() && result.pdzglr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return

@@ -21,7 +21,6 @@ import (
 )
 
 // AddAccessControlListEntry invokes the slb.AddAccessControlListEntry API synchronously
-// api document: https://help.aliyun.com/api/slb/addaccesscontrollistentry.html
 func (client *Client) AddAccessControlListEntry(request *AddAccessControlListEntryRequest) (response *AddAccessControlListEntryResponse, err error) {
 	response = CreateAddAccessControlListEntryResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) AddAccessControlListEntry(request *AddAccessControlListEnt
 }
 
 // AddAccessControlListEntryWithChan invokes the slb.AddAccessControlListEntry API asynchronously
-// api document: https://help.aliyun.com/api/slb/addaccesscontrollistentry.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) AddAccessControlListEntryWithChan(request *AddAccessControlListEntryRequest) (<-chan *AddAccessControlListEntryResponse, <-chan error) {
 	responseChan := make(chan *AddAccessControlListEntryResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) AddAccessControlListEntryWithChan(request *AddAccessContro
 }
 
 // AddAccessControlListEntryWithCallback invokes the slb.AddAccessControlListEntry API asynchronously
-// api document: https://help.aliyun.com/api/slb/addaccesscontrollistentry.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) AddAccessControlListEntryWithCallback(request *AddAccessControlListEntryRequest, callback func(response *AddAccessControlListEntryResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -98,6 +93,7 @@ func CreateAddAccessControlListEntryRequest() (request *AddAccessControlListEntr
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "AddAccessControlListEntry", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

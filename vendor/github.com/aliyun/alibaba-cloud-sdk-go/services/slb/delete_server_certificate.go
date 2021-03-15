@@ -21,7 +21,6 @@ import (
 )
 
 // DeleteServerCertificate invokes the slb.DeleteServerCertificate API synchronously
-// api document: https://help.aliyun.com/api/slb/deleteservercertificate.html
 func (client *Client) DeleteServerCertificate(request *DeleteServerCertificateRequest) (response *DeleteServerCertificateResponse, err error) {
 	response = CreateDeleteServerCertificateResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DeleteServerCertificate(request *DeleteServerCertificateRe
 }
 
 // DeleteServerCertificateWithChan invokes the slb.DeleteServerCertificate API asynchronously
-// api document: https://help.aliyun.com/api/slb/deleteservercertificate.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DeleteServerCertificateWithChan(request *DeleteServerCertificateRequest) (<-chan *DeleteServerCertificateResponse, <-chan error) {
 	responseChan := make(chan *DeleteServerCertificateResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DeleteServerCertificateWithChan(request *DeleteServerCerti
 }
 
 // DeleteServerCertificateWithCallback invokes the slb.DeleteServerCertificate API asynchronously
-// api document: https://help.aliyun.com/api/slb/deleteservercertificate.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DeleteServerCertificateWithCallback(request *DeleteServerCertificateRequest, callback func(response *DeleteServerCertificateResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -97,6 +92,7 @@ func CreateDeleteServerCertificateRequest() (request *DeleteServerCertificateReq
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DeleteServerCertificate", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

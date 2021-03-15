@@ -21,7 +21,6 @@ import (
 )
 
 // DescribeVServerGroups invokes the slb.DescribeVServerGroups API synchronously
-// api document: https://help.aliyun.com/api/slb/describevservergroups.html
 func (client *Client) DescribeVServerGroups(request *DescribeVServerGroupsRequest) (response *DescribeVServerGroupsResponse, err error) {
 	response = CreateDescribeVServerGroupsResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DescribeVServerGroups(request *DescribeVServerGroupsReques
 }
 
 // DescribeVServerGroupsWithChan invokes the slb.DescribeVServerGroups API asynchronously
-// api document: https://help.aliyun.com/api/slb/describevservergroups.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeVServerGroupsWithChan(request *DescribeVServerGroupsRequest) (<-chan *DescribeVServerGroupsResponse, <-chan error) {
 	responseChan := make(chan *DescribeVServerGroupsResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DescribeVServerGroupsWithChan(request *DescribeVServerGrou
 }
 
 // DescribeVServerGroupsWithCallback invokes the slb.DescribeVServerGroups API asynchronously
-// api document: https://help.aliyun.com/api/slb/describevservergroups.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeVServerGroupsWithCallback(request *DescribeVServerGroupsRequest, callback func(response *DescribeVServerGroupsResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -100,6 +95,7 @@ func CreateDescribeVServerGroupsRequest() (request *DescribeVServerGroupsRequest
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DescribeVServerGroups", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

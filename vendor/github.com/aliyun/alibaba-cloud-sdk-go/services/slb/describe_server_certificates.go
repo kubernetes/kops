@@ -21,7 +21,6 @@ import (
 )
 
 // DescribeServerCertificates invokes the slb.DescribeServerCertificates API synchronously
-// api document: https://help.aliyun.com/api/slb/describeservercertificates.html
 func (client *Client) DescribeServerCertificates(request *DescribeServerCertificatesRequest) (response *DescribeServerCertificatesResponse, err error) {
 	response = CreateDescribeServerCertificatesResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DescribeServerCertificates(request *DescribeServerCertific
 }
 
 // DescribeServerCertificatesWithChan invokes the slb.DescribeServerCertificates API asynchronously
-// api document: https://help.aliyun.com/api/slb/describeservercertificates.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeServerCertificatesWithChan(request *DescribeServerCertificatesRequest) (<-chan *DescribeServerCertificatesResponse, <-chan error) {
 	responseChan := make(chan *DescribeServerCertificatesResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DescribeServerCertificatesWithChan(request *DescribeServer
 }
 
 // DescribeServerCertificatesWithCallback invokes the slb.DescribeServerCertificates API asynchronously
-// api document: https://help.aliyun.com/api/slb/describeservercertificates.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeServerCertificatesWithCallback(request *DescribeServerCertificatesRequest, callback func(response *DescribeServerCertificatesResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -96,8 +91,8 @@ type DescribeServerCertificatesTag struct {
 // DescribeServerCertificatesResponse is the response struct for api DescribeServerCertificates
 type DescribeServerCertificatesResponse struct {
 	*responses.BaseResponse
-	RequestId          string             `json:"RequestId" xml:"RequestId"`
-	ServerCertificates ServerCertificates `json:"ServerCertificates" xml:"ServerCertificates"`
+	RequestId          string                                         `json:"RequestId" xml:"RequestId"`
+	ServerCertificates ServerCertificatesInDescribeServerCertificates `json:"ServerCertificates" xml:"ServerCertificates"`
 }
 
 // CreateDescribeServerCertificatesRequest creates a request to invoke DescribeServerCertificates API
@@ -106,6 +101,7 @@ func CreateDescribeServerCertificatesRequest() (request *DescribeServerCertifica
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DescribeServerCertificates", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

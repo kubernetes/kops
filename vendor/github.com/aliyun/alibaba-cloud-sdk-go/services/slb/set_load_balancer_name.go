@@ -21,7 +21,6 @@ import (
 )
 
 // SetLoadBalancerName invokes the slb.SetLoadBalancerName API synchronously
-// api document: https://help.aliyun.com/api/slb/setloadbalancername.html
 func (client *Client) SetLoadBalancerName(request *SetLoadBalancerNameRequest) (response *SetLoadBalancerNameResponse, err error) {
 	response = CreateSetLoadBalancerNameResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) SetLoadBalancerName(request *SetLoadBalancerNameRequest) (
 }
 
 // SetLoadBalancerNameWithChan invokes the slb.SetLoadBalancerName API asynchronously
-// api document: https://help.aliyun.com/api/slb/setloadbalancername.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) SetLoadBalancerNameWithChan(request *SetLoadBalancerNameRequest) (<-chan *SetLoadBalancerNameResponse, <-chan error) {
 	responseChan := make(chan *SetLoadBalancerNameResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) SetLoadBalancerNameWithChan(request *SetLoadBalancerNameRe
 }
 
 // SetLoadBalancerNameWithCallback invokes the slb.SetLoadBalancerName API asynchronously
-// api document: https://help.aliyun.com/api/slb/setloadbalancername.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) SetLoadBalancerNameWithCallback(request *SetLoadBalancerNameRequest, callback func(response *SetLoadBalancerNameResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -98,6 +93,7 @@ func CreateSetLoadBalancerNameRequest() (request *SetLoadBalancerNameRequest) {
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "SetLoadBalancerName", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

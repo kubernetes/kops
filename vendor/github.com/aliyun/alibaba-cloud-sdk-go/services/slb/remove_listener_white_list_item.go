@@ -21,7 +21,6 @@ import (
 )
 
 // RemoveListenerWhiteListItem invokes the slb.RemoveListenerWhiteListItem API synchronously
-// api document: https://help.aliyun.com/api/slb/removelistenerwhitelistitem.html
 func (client *Client) RemoveListenerWhiteListItem(request *RemoveListenerWhiteListItemRequest) (response *RemoveListenerWhiteListItemResponse, err error) {
 	response = CreateRemoveListenerWhiteListItemResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) RemoveListenerWhiteListItem(request *RemoveListenerWhiteLi
 }
 
 // RemoveListenerWhiteListItemWithChan invokes the slb.RemoveListenerWhiteListItem API asynchronously
-// api document: https://help.aliyun.com/api/slb/removelistenerwhitelistitem.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) RemoveListenerWhiteListItemWithChan(request *RemoveListenerWhiteListItemRequest) (<-chan *RemoveListenerWhiteListItemResponse, <-chan error) {
 	responseChan := make(chan *RemoveListenerWhiteListItemResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) RemoveListenerWhiteListItemWithChan(request *RemoveListene
 }
 
 // RemoveListenerWhiteListItemWithCallback invokes the slb.RemoveListenerWhiteListItem API asynchronously
-// api document: https://help.aliyun.com/api/slb/removelistenerwhitelistitem.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) RemoveListenerWhiteListItemWithCallback(request *RemoveListenerWhiteListItemRequest, callback func(response *RemoveListenerWhiteListItemResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -100,6 +95,7 @@ func CreateRemoveListenerWhiteListItemRequest() (request *RemoveListenerWhiteLis
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "RemoveListenerWhiteListItem", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

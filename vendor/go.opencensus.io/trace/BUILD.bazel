@@ -14,6 +14,7 @@ go_library(
         "spanstore.go",
         "status_codes.go",
         "trace.go",
+        "trace_api.go",
         "trace_go11.go",
         "trace_nongo11.go",
     ],

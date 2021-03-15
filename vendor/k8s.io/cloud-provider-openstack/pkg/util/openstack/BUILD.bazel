@@ -14,6 +14,7 @@ go_library(
         "//vendor/github.com/gophercloud/gophercloud:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/keymanager/v1/secrets:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/apiversions:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/l7policies:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools:go_default_library",

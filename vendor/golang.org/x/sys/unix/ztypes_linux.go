@@ -3709,3 +3709,8 @@ type (
 		Product int16
 	}
 )
+
+const (
+	CLOSE_RANGE_UNSHARE = 0x2
+	CLOSE_RANGE_CLOEXEC = 0x4
+)
