@@ -23,9 +23,8 @@ import (
 
 	"github.com/blang/semver/v4"
 	"github.com/spf13/cobra"
-	"k8s.io/klog/v2"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 	"k8s.io/kops"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -174,28 +173,32 @@ func (c *UpgradeClusterCmd) Run(ctx context.Context, args []string) error {
 
 	// Prompt to upgrade image
 	if proposedKubernetesVersion != nil {
-		image := channel.FindImage(cloud.ProviderID(), *proposedKubernetesVersion)
-
-		if image == nil {
-			klog.Warningf("No matching images specified in channel; cannot prompt for upgrade")
-		} else {
-			for _, ig := range instanceGroups {
-				if channel.HasUpstreamImagePrefix(ig.Spec.Image) {
-					if ig.Spec.Image != image.Name {
-						target := ig
-						actions = append(actions, &upgradeAction{
-							Item:     "InstanceGroup/" + target.ObjectMeta.Name,
-							Property: "Image",
-							Old:      target.Spec.Image,
-							New:      image.Name,
-							apply: func() {
-								target.Spec.Image = image.Name
-							},
-						})
-					}
-				} else {
-					klog.Infof("Custom image (%s) has been provided for Instance Group %q; not updating image", ig.Spec.Image, ig.GetName())
+		for _, ig := range instanceGroups {
+			architecture, err := cloudup.MachineArchitecture(cloud, ig.Spec.MachineType)
+			if err != nil {
+				klog.Warningf("Error finding architecture for machine type %q: %v", ig.Spec.MachineType, err)
+				continue
+			}
+			image := channel.FindImage(cloud.ProviderID(), *proposedKubernetesVersion, architecture)
+			if image == nil {
+				klog.Warningf("No matching images specified in channel; cannot prompt for upgrade")
+				continue
+			}
+			if channel.HasUpstreamImagePrefix(ig.Spec.Image) {
+				if ig.Spec.Image != image.Name {
+					target := ig
+					actions = append(actions, &upgradeAction{
+						Item:     "InstanceGroup/" + target.ObjectMeta.Name,
+						Property: "Image",
+						Old:      target.Spec.Image,
+						New:      image.Name,
+						apply: func() {
+							target.Spec.Image = image.Name
+						},
+					})
 				}
+			} else {
+				klog.Infof("Custom image (%s) has been provided for Instance Group %q; not updating image", ig.Spec.Image, ig.GetName())
 			}
 		}
 	}

@@ -19,6 +19,7 @@ package cloudup
 import (
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/blang/semver/v4"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -27,6 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/reflectutils"
 )
 
@@ -117,7 +119,11 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	}
 
 	if ig.Spec.Image == "" {
-		ig.Spec.Image = defaultImage(cluster, channel)
+		architecture, err := MachineArchitecture(cloud, ig.Spec.MachineType)
+		if err != nil {
+			return nil, fmt.Errorf("unable to determine machine architecture for InstanceGroup %q: %v", ig.ObjectMeta.Name, err)
+		}
+		ig.Spec.Image = defaultImage(cluster, channel, architecture)
 		if ig.Spec.Image == "" {
 			return nil, fmt.Errorf("unable to determine default image for InstanceGroup %s", ig.ObjectMeta.Name)
 		}
@@ -225,7 +231,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 }
 
 // defaultImage returns the default Image, based on the cloudprovider
-func defaultImage(cluster *kops.Cluster, channel *kops.Channel) string {
+func defaultImage(cluster *kops.Cluster, channel *kops.Channel, architecture architectures.Architecture) string {
 	if channel != nil {
 		var kubernetesVersion *semver.Version
 		if cluster.Spec.KubernetesVersion != "" {
@@ -236,7 +242,7 @@ func defaultImage(cluster *kops.Cluster, channel *kops.Channel) string {
 			}
 		}
 		if kubernetesVersion != nil {
-			image := channel.FindImage(kops.CloudProviderID(cluster.Spec.CloudProvider), *kubernetesVersion)
+			image := channel.FindImage(kops.CloudProviderID(cluster.Spec.CloudProvider), *kubernetesVersion, architecture)
 			if image != nil {
 				return image.Name
 			}
@@ -253,4 +259,29 @@ func defaultImage(cluster *kops.Cluster, channel *kops.Channel) string {
 	}
 	klog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.CloudProvider)
 	return ""
+}
+
+func MachineArchitecture(cloud fi.Cloud, machineType string) (architectures.Architecture, error) {
+	switch cloud.ProviderID() {
+	case kops.CloudProviderAWS:
+		info, err := cloud.(awsup.AWSCloud).DescribeInstanceType(machineType)
+		if err != nil {
+			return "", fmt.Errorf("error finding instance info for instance type %q: %v", machineType, err)
+		}
+		if info.ProcessorInfo == nil || len(info.ProcessorInfo.SupportedArchitectures) == 0 {
+			return "", fmt.Errorf("error finding architecture info for instance type %q", machineType)
+		}
+		arch := fi.StringValue(info.ProcessorInfo.SupportedArchitectures[0])
+		switch arch {
+		case ec2.ArchitectureTypeX8664:
+			return architectures.ArchitectureAmd64, nil
+		case ec2.ArchitectureTypeArm64:
+			return architectures.ArchitectureArm64, nil
+		default:
+			return "", fmt.Errorf("unsupported architecture for instance type %q: %s", machineType, arch)
+		}
+	default:
+		// No other clouds are known to support any other architectures at this time
+		return architectures.ArchitectureAmd64, nil
+	}
 }
