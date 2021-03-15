@@ -21,7 +21,6 @@ import (
 )
 
 // DescribeMasterSlaveServerGroupAttribute invokes the slb.DescribeMasterSlaveServerGroupAttribute API synchronously
-// api document: https://help.aliyun.com/api/slb/describemasterslaveservergroupattribute.html
 func (client *Client) DescribeMasterSlaveServerGroupAttribute(request *DescribeMasterSlaveServerGroupAttributeRequest) (response *DescribeMasterSlaveServerGroupAttributeResponse, err error) {
 	response = CreateDescribeMasterSlaveServerGroupAttributeResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DescribeMasterSlaveServerGroupAttribute(request *DescribeM
 }
 
 // DescribeMasterSlaveServerGroupAttributeWithChan invokes the slb.DescribeMasterSlaveServerGroupAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/describemasterslaveservergroupattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeMasterSlaveServerGroupAttributeWithChan(request *DescribeMasterSlaveServerGroupAttributeRequest) (<-chan *DescribeMasterSlaveServerGroupAttributeResponse, <-chan error) {
 	responseChan := make(chan *DescribeMasterSlaveServerGroupAttributeResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DescribeMasterSlaveServerGroupAttributeWithChan(request *D
 }
 
 // DescribeMasterSlaveServerGroupAttributeWithCallback invokes the slb.DescribeMasterSlaveServerGroupAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/describemasterslaveservergroupattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeMasterSlaveServerGroupAttributeWithCallback(request *DescribeMasterSlaveServerGroupAttributeRequest, callback func(response *DescribeMasterSlaveServerGroupAttributeResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -101,6 +96,7 @@ func CreateDescribeMasterSlaveServerGroupAttributeRequest() (request *DescribeMa
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DescribeMasterSlaveServerGroupAttribute", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

@@ -93,7 +93,13 @@ type DescribeVServerGroupsResponse struct {
 		Rules     string
 	}
 }
-type DescribeVServerGroupAttributeResponse CreateVServerGroupResponse
+type DescribeVServerGroupAttributeResponse struct {
+	common.Response
+	VServerGroupId   string
+	VServerGroupName string
+	LoadBalancerId   string
+	BackendServers   VBackendServers
+}
 
 func (client *Client) CreateVServerGroup(args *CreateVServerGroupArgs) (response *CreateVServerGroupResponse, err error) {
 	response = &CreateVServerGroupResponse{}

@@ -21,7 +21,6 @@ import (
 )
 
 // SetRule invokes the slb.SetRule API synchronously
-// api document: https://help.aliyun.com/api/slb/setrule.html
 func (client *Client) SetRule(request *SetRuleRequest) (response *SetRuleResponse, err error) {
 	response = CreateSetRuleResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) SetRule(request *SetRuleRequest) (response *SetRuleRespons
 }
 
 // SetRuleWithChan invokes the slb.SetRule API asynchronously
-// api document: https://help.aliyun.com/api/slb/setrule.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) SetRuleWithChan(request *SetRuleRequest) (<-chan *SetRuleResponse, <-chan error) {
 	responseChan := make(chan *SetRuleResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) SetRuleWithChan(request *SetRuleRequest) (<-chan *SetRuleR
 }
 
 // SetRuleWithCallback invokes the slb.SetRule API asynchronously
-// api document: https://help.aliyun.com/api/slb/setrule.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) SetRuleWithCallback(request *SetRuleRequest, callback func(response *SetRuleResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -114,6 +109,7 @@ func CreateSetRuleRequest() (request *SetRuleRequest) {
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "SetRule", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Jetstack cert-manager contributors.
+Copyright 2020 The cert-manager Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,6 +29,15 @@ const (
 
 	// Annotation key for certificate common name.
 	CommonNameAnnotationKey = "cert-manager.io/common-name"
+
+	// Duration key for certificate duration.
+	DurationAnnotationKey = "cert-manager.io/duration"
+
+	// Annotation key for certificate renewBefore.
+	RenewBeforeAnnotationKey = "cert-manager.io/renew-before"
+
+	// Annotation key for certificate key usages.
+	UsagesAnnotationKey = "cert-manager.io/usages"
 
 	// Annotation key the 'name' of the Issuer resource.
 	IssuerNameAnnotationKey = "cert-manager.io/issuer-name"

@@ -135,6 +135,23 @@ func PossibleDeploymentModeValues() []DeploymentMode {
 	return []DeploymentMode{Complete, Incremental}
 }
 
+// ExpressionEvaluationOptionsScopeType enumerates the values for expression evaluation options scope type.
+type ExpressionEvaluationOptionsScopeType string
+
+const (
+	// ExpressionEvaluationOptionsScopeTypeInner ...
+	ExpressionEvaluationOptionsScopeTypeInner ExpressionEvaluationOptionsScopeType = "Inner"
+	// ExpressionEvaluationOptionsScopeTypeNotSpecified ...
+	ExpressionEvaluationOptionsScopeTypeNotSpecified ExpressionEvaluationOptionsScopeType = "NotSpecified"
+	// ExpressionEvaluationOptionsScopeTypeOuter ...
+	ExpressionEvaluationOptionsScopeTypeOuter ExpressionEvaluationOptionsScopeType = "Outer"
+)
+
+// PossibleExpressionEvaluationOptionsScopeTypeValues returns an array of possible values for the ExpressionEvaluationOptionsScopeType const type.
+func PossibleExpressionEvaluationOptionsScopeTypeValues() []ExpressionEvaluationOptionsScopeType {
+	return []ExpressionEvaluationOptionsScopeType{ExpressionEvaluationOptionsScopeTypeInner, ExpressionEvaluationOptionsScopeTypeNotSpecified, ExpressionEvaluationOptionsScopeTypeOuter}
+}
+
 // OnErrorDeploymentType enumerates the values for on error deployment type.
 type OnErrorDeploymentType string
 

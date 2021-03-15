@@ -21,7 +21,6 @@ import (
 )
 
 // DescribeRuleAttribute invokes the slb.DescribeRuleAttribute API synchronously
-// api document: https://help.aliyun.com/api/slb/describeruleattribute.html
 func (client *Client) DescribeRuleAttribute(request *DescribeRuleAttributeRequest) (response *DescribeRuleAttributeResponse, err error) {
 	response = CreateDescribeRuleAttributeResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DescribeRuleAttribute(request *DescribeRuleAttributeReques
 }
 
 // DescribeRuleAttributeWithChan invokes the slb.DescribeRuleAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/describeruleattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeRuleAttributeWithChan(request *DescribeRuleAttributeRequest) (<-chan *DescribeRuleAttributeResponse, <-chan error) {
 	responseChan := make(chan *DescribeRuleAttributeResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DescribeRuleAttributeWithChan(request *DescribeRuleAttribu
 }
 
 // DescribeRuleAttributeWithCallback invokes the slb.DescribeRuleAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/describeruleattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeRuleAttributeWithCallback(request *DescribeRuleAttributeRequest, callback func(response *DescribeRuleAttributeResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -119,6 +114,7 @@ func CreateDescribeRuleAttributeRequest() (request *DescribeRuleAttributeRequest
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DescribeRuleAttribute", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

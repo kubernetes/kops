@@ -37,6 +37,7 @@ type Client struct {
 	Internal        bool
 	Secure          bool
 	ConnectTimeout  time.Duration
+	Transport       http.RoundTripper
 
 	endpoint string
 	debug    bool
@@ -1188,6 +1189,9 @@ func (client *Client) run(req *request, resp interface{}) (*http.Response, error
 			Proxy: http.ProxyFromEnvironment,
 		},
 		Timeout: req.timeout,
+	}
+	if client.Transport != nil {
+		c.Transport = client.Transport
 	}
 
 	return client.doHttpRequest(c, hreq, resp)

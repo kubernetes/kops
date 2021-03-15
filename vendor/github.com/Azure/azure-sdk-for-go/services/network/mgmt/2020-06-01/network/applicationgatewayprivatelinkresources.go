@@ -75,9 +75,11 @@ func (client ApplicationGatewayPrivateLinkResourcesClient) List(ctx context.Cont
 	result.agplrlr, err = client.ListResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.ApplicationGatewayPrivateLinkResourcesClient", "List", resp, "Failure responding to request")
+		return
 	}
 	if result.agplrlr.hasNextLink() && result.agplrlr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return

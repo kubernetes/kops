@@ -30,7 +30,7 @@ type Status struct {
 func NewStatus(router *Router) *Status {
 	return &Status{
 		Protocol:           Protocol,
-		ProtocolMinVersion: ProtocolMinVersion,
+		ProtocolMinVersion: int(router.ProtocolMinVersion),
 		ProtocolMaxVersion: ProtocolMaxVersion,
 		Encryption:         router.usingPassword(),
 		PeerDiscovery:      router.PeerDiscovery,
@@ -158,7 +158,7 @@ type LocalConnectionStatus struct {
 // makeLocalConnectionStatusSlice takes a snapshot of the active local
 // connections in the ConnectionMaker.
 func makeLocalConnectionStatusSlice(cm *connectionMaker) []LocalConnectionStatus {
-	resultChan := make(chan []LocalConnectionStatus, 0)
+	resultChan := make(chan []LocalConnectionStatus)
 	cm.actionChan <- func() bool {
 		var slice []LocalConnectionStatus
 		for conn := range cm.connections {
@@ -176,6 +176,9 @@ func makeLocalConnectionStatusSlice(cm *connectionMaker) []LocalConnectionStatus
 			if lc.router.usingPassword() {
 				if lc.untrusted() {
 					info = fmt.Sprintf("%-11v %v", "encrypted", info)
+					if attrs != nil {
+						attrs["encrypted"] = true
+					}
 				} else {
 					info = fmt.Sprintf("%-11v %v", "unencrypted", info)
 				}

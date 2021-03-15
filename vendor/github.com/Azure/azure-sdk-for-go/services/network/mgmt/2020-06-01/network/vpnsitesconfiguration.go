@@ -53,8 +53,8 @@ func (client VpnSitesConfigurationClient) Download(ctx context.Context, resource
 		ctx = tracing.StartSpan(ctx, fqdn+"/VpnSitesConfigurationClient.Download")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -73,7 +73,7 @@ func (client VpnSitesConfigurationClient) Download(ctx context.Context, resource
 
 	result, err = client.DownloadSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.VpnSitesConfigurationClient", "Download", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.VpnSitesConfigurationClient", "Download", nil, "Failure sending request")
 		return
 	}
 
@@ -111,7 +111,23 @@ func (client VpnSitesConfigurationClient) DownloadSender(req *http.Request) (fut
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client VpnSitesConfigurationClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.VpnSitesConfigurationDownloadFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.VpnSitesConfigurationDownloadFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 

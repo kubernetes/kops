@@ -260,3 +260,15 @@ func TableOutputWide(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
 	w.Flush()
 	return []string{buf.String()}
 }
+
+// OneLineOutput is an output function which prints the instance type names on a single line separated by commas
+func OneLineOutput(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
+	instanceTypeNames := []string{}
+	for _, instanceType := range instanceTypeInfoSlice {
+		instanceTypeNames = append(instanceTypeNames, *instanceType.InstanceType)
+	}
+	if len(instanceTypeNames) == 0 {
+		return []string{}
+	}
+	return []string{strings.Join(instanceTypeNames, ",")}
+}

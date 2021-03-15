@@ -21,7 +21,6 @@ import (
 )
 
 // CreateMasterSlaveServerGroup invokes the slb.CreateMasterSlaveServerGroup API synchronously
-// api document: https://help.aliyun.com/api/slb/createmasterslaveservergroup.html
 func (client *Client) CreateMasterSlaveServerGroup(request *CreateMasterSlaveServerGroupRequest) (response *CreateMasterSlaveServerGroupResponse, err error) {
 	response = CreateCreateMasterSlaveServerGroupResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) CreateMasterSlaveServerGroup(request *CreateMasterSlaveSer
 }
 
 // CreateMasterSlaveServerGroupWithChan invokes the slb.CreateMasterSlaveServerGroup API asynchronously
-// api document: https://help.aliyun.com/api/slb/createmasterslaveservergroup.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) CreateMasterSlaveServerGroupWithChan(request *CreateMasterSlaveServerGroupRequest) (<-chan *CreateMasterSlaveServerGroupResponse, <-chan error) {
 	responseChan := make(chan *CreateMasterSlaveServerGroupResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) CreateMasterSlaveServerGroupWithChan(request *CreateMaster
 }
 
 // CreateMasterSlaveServerGroupWithCallback invokes the slb.CreateMasterSlaveServerGroup API asynchronously
-// api document: https://help.aliyun.com/api/slb/createmasterslaveservergroup.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) CreateMasterSlaveServerGroupWithCallback(request *CreateMasterSlaveServerGroupRequest, callback func(response *CreateMasterSlaveServerGroupResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -101,6 +96,7 @@ func CreateCreateMasterSlaveServerGroupRequest() (request *CreateMasterSlaveServ
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "CreateMasterSlaveServerGroup", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

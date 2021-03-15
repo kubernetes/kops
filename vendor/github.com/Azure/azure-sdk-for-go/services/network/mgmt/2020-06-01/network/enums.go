@@ -1272,6 +1272,21 @@ func PossibleIkeIntegrityValues() []IkeIntegrity {
 	return []IkeIntegrity{IkeIntegrityGCMAES128, IkeIntegrityGCMAES256, IkeIntegrityMD5, IkeIntegritySHA1, IkeIntegritySHA256, IkeIntegritySHA384}
 }
 
+// InboundSecurityRulesProtocol enumerates the values for inbound security rules protocol.
+type InboundSecurityRulesProtocol string
+
+const (
+	// InboundSecurityRulesProtocolTCP ...
+	InboundSecurityRulesProtocolTCP InboundSecurityRulesProtocol = "TCP"
+	// InboundSecurityRulesProtocolUDP ...
+	InboundSecurityRulesProtocolUDP InboundSecurityRulesProtocol = "UDP"
+)
+
+// PossibleInboundSecurityRulesProtocolValues returns an array of possible values for the InboundSecurityRulesProtocol const type.
+func PossibleInboundSecurityRulesProtocolValues() []InboundSecurityRulesProtocol {
+	return []InboundSecurityRulesProtocol{InboundSecurityRulesProtocolTCP, InboundSecurityRulesProtocolUDP}
+}
+
 // IPAllocationMethod enumerates the values for ip allocation method.
 type IPAllocationMethod string
 

@@ -21,7 +21,6 @@ import (
 )
 
 // DescribeAccessControlLists invokes the slb.DescribeAccessControlLists API synchronously
-// api document: https://help.aliyun.com/api/slb/describeaccesscontrollists.html
 func (client *Client) DescribeAccessControlLists(request *DescribeAccessControlListsRequest) (response *DescribeAccessControlListsResponse, err error) {
 	response = CreateDescribeAccessControlListsResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DescribeAccessControlLists(request *DescribeAccessControlL
 }
 
 // DescribeAccessControlListsWithChan invokes the slb.DescribeAccessControlLists API asynchronously
-// api document: https://help.aliyun.com/api/slb/describeaccesscontrollists.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeAccessControlListsWithChan(request *DescribeAccessControlListsRequest) (<-chan *DescribeAccessControlListsResponse, <-chan error) {
 	responseChan := make(chan *DescribeAccessControlListsResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DescribeAccessControlListsWithChan(request *DescribeAccess
 }
 
 // DescribeAccessControlListsWithCallback invokes the slb.DescribeAccessControlLists API asynchronously
-// api document: https://help.aliyun.com/api/slb/describeaccesscontrollists.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeAccessControlListsWithCallback(request *DescribeAccessControlListsRequest, callback func(response *DescribeAccessControlListsResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -113,6 +108,7 @@ func CreateDescribeAccessControlListsRequest() (request *DescribeAccessControlLi
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DescribeAccessControlLists", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

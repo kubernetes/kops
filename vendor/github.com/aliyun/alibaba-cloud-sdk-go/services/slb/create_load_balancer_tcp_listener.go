@@ -21,7 +21,6 @@ import (
 )
 
 // CreateLoadBalancerTCPListener invokes the slb.CreateLoadBalancerTCPListener API synchronously
-// api document: https://help.aliyun.com/api/slb/createloadbalancertcplistener.html
 func (client *Client) CreateLoadBalancerTCPListener(request *CreateLoadBalancerTCPListenerRequest) (response *CreateLoadBalancerTCPListenerResponse, err error) {
 	response = CreateCreateLoadBalancerTCPListenerResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) CreateLoadBalancerTCPListener(request *CreateLoadBalancerT
 }
 
 // CreateLoadBalancerTCPListenerWithChan invokes the slb.CreateLoadBalancerTCPListener API asynchronously
-// api document: https://help.aliyun.com/api/slb/createloadbalancertcplistener.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) CreateLoadBalancerTCPListenerWithChan(request *CreateLoadBalancerTCPListenerRequest) (<-chan *CreateLoadBalancerTCPListenerResponse, <-chan error) {
 	responseChan := make(chan *CreateLoadBalancerTCPListenerResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) CreateLoadBalancerTCPListenerWithChan(request *CreateLoadB
 }
 
 // CreateLoadBalancerTCPListenerWithCallback invokes the slb.CreateLoadBalancerTCPListener API asynchronously
-// api document: https://help.aliyun.com/api/slb/createloadbalancertcplistener.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) CreateLoadBalancerTCPListenerWithCallback(request *CreateLoadBalancerTCPListenerRequest, callback func(response *CreateLoadBalancerTCPListenerResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -130,6 +125,7 @@ func CreateCreateLoadBalancerTCPListenerRequest() (request *CreateLoadBalancerTC
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "CreateLoadBalancerTCPListener", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

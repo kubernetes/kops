@@ -22,6 +22,9 @@ type Gossip interface {
 	//
 	// TODO(pb): rename to Broadcast?
 	GossipBroadcast(update GossipData)
+
+	// GossipNeighbourSubset emits a message to subset of neighbour peers in the mesh.
+	GossipNeighbourSubset(update GossipData)
 }
 
 // Gossiper is the receiving interface.

@@ -52,8 +52,8 @@ func (client HubRouteTablesClient) CreateOrUpdate(ctx context.Context, resourceG
 		ctx = tracing.StartSpan(ctx, fqdn+"/HubRouteTablesClient.CreateOrUpdate")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -66,7 +66,7 @@ func (client HubRouteTablesClient) CreateOrUpdate(ctx context.Context, resourceG
 
 	result, err = client.CreateOrUpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.HubRouteTablesClient", "CreateOrUpdate", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.HubRouteTablesClient", "CreateOrUpdate", nil, "Failure sending request")
 		return
 	}
 
@@ -107,7 +107,33 @@ func (client HubRouteTablesClient) CreateOrUpdateSender(req *http.Request) (futu
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client HubRouteTablesClient) (hrt HubRouteTable, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.HubRouteTablesCreateOrUpdateFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.HubRouteTablesCreateOrUpdateFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		hrt.Response.Response, err = future.GetResult(sender)
+		if hrt.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.HubRouteTablesCreateOrUpdateFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && hrt.Response.Response.StatusCode != http.StatusNoContent {
+			hrt, err = client.CreateOrUpdateResponder(hrt.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.HubRouteTablesCreateOrUpdateFuture", "Result", hrt.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -133,8 +159,8 @@ func (client HubRouteTablesClient) Delete(ctx context.Context, resourceGroupName
 		ctx = tracing.StartSpan(ctx, fqdn+"/HubRouteTablesClient.Delete")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -147,7 +173,7 @@ func (client HubRouteTablesClient) Delete(ctx context.Context, resourceGroupName
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.HubRouteTablesClient", "Delete", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.HubRouteTablesClient", "Delete", nil, "Failure sending request")
 		return
 	}
 
@@ -184,7 +210,23 @@ func (client HubRouteTablesClient) DeleteSender(req *http.Request) (future HubRo
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client HubRouteTablesClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.HubRouteTablesDeleteFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.HubRouteTablesDeleteFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -231,6 +273,7 @@ func (client HubRouteTablesClient) Get(ctx context.Context, resourceGroupName st
 	result, err = client.GetResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.HubRouteTablesClient", "Get", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -308,9 +351,11 @@ func (client HubRouteTablesClient) List(ctx context.Context, resourceGroupName s
 	result.lhrtr, err = client.ListResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.HubRouteTablesClient", "List", resp, "Failure responding to request")
+		return
 	}
 	if result.lhrtr.hasNextLink() && result.lhrtr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return

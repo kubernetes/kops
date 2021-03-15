@@ -21,7 +21,6 @@ import (
 )
 
 // DescribeTags invokes the slb.DescribeTags API synchronously
-// api document: https://help.aliyun.com/api/slb/describetags.html
 func (client *Client) DescribeTags(request *DescribeTagsRequest) (response *DescribeTagsResponse, err error) {
 	response = CreateDescribeTagsResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DescribeTags(request *DescribeTagsRequest) (response *Desc
 }
 
 // DescribeTagsWithChan invokes the slb.DescribeTags API asynchronously
-// api document: https://help.aliyun.com/api/slb/describetags.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeTagsWithChan(request *DescribeTagsRequest) (<-chan *DescribeTagsResponse, <-chan error) {
 	responseChan := make(chan *DescribeTagsResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DescribeTagsWithChan(request *DescribeTagsRequest) (<-chan
 }
 
 // DescribeTagsWithCallback invokes the slb.DescribeTags API asynchronously
-// api document: https://help.aliyun.com/api/slb/describetags.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeTagsWithCallback(request *DescribeTagsRequest, callback func(response *DescribeTagsResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -104,6 +99,7 @@ func CreateDescribeTagsRequest() (request *DescribeTagsRequest) {
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DescribeTags", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

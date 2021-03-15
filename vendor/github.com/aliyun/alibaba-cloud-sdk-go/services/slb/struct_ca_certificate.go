@@ -17,15 +17,18 @@ package slb
 
 // CACertificate is a nested struct in slb response
 type CACertificate struct {
-	RegionId          string                       `json:"RegionId" xml:"RegionId"`
-	CACertificateId   string                       `json:"CACertificateId" xml:"CACertificateId"`
-	CACertificateName string                       `json:"CACertificateName" xml:"CACertificateName"`
-	Fingerprint       string                       `json:"Fingerprint" xml:"Fingerprint"`
-	ResourceGroupId   string                       `json:"ResourceGroupId" xml:"ResourceGroupId"`
-	CreateTime        string                       `json:"CreateTime" xml:"CreateTime"`
-	CreateTimeStamp   int64                        `json:"CreateTimeStamp" xml:"CreateTimeStamp"`
-	ExpireTime        string                       `json:"ExpireTime" xml:"ExpireTime"`
-	ExpireTimeStamp   int64                        `json:"ExpireTimeStamp" xml:"ExpireTimeStamp"`
-	CommonName        string                       `json:"CommonName" xml:"CommonName"`
-	Tags              TagsInDescribeCACertificates `json:"Tags" xml:"Tags"`
+	RegionId            string                       `json:"RegionId" xml:"RegionId"`
+	CACertificateId     string                       `json:"CACertificateId" xml:"CACertificateId"`
+	CACertificateName   string                       `json:"CACertificateName" xml:"CACertificateName"`
+	Fingerprint         string                       `json:"Fingerprint" xml:"Fingerprint"`
+	ResourceGroupId     string                       `json:"ResourceGroupId" xml:"ResourceGroupId"`
+	CreateTime          string                       `json:"CreateTime" xml:"CreateTime"`
+	CreateTimeStamp     int64                        `json:"CreateTimeStamp" xml:"CreateTimeStamp"`
+	ExpireTime          string                       `json:"ExpireTime" xml:"ExpireTime"`
+	ExpireTimeStamp     int64                        `json:"ExpireTimeStamp" xml:"ExpireTimeStamp"`
+	CommonName          string                       `json:"CommonName" xml:"CommonName"`
+	EncryptionAlgorithm string                       `json:"EncryptionAlgorithm" xml:"EncryptionAlgorithm"`
+	EncryptionKeyLength int                          `json:"EncryptionKeyLength" xml:"EncryptionKeyLength"`
+	StandardType        string                       `json:"StandardType" xml:"StandardType"`
+	Tags                TagsInDescribeCACertificates `json:"Tags" xml:"Tags"`
 }
