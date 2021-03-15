@@ -461,6 +461,11 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 		envVars[envVar.Name] = envVar.Value
 	}
 
+	switch t.Distribution {
+	case distributions.DistributionFlatcar:
+		envVars["PATH"] = fmt.Sprintf("/opt/kops/bin:%v", os.Getenv("PATH"))
+	}
+
 	var sysconfig = ""
 	for key, value := range envVars {
 		sysconfig += key + "=" + value + "\n"
