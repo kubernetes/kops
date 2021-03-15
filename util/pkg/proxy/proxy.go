@@ -27,7 +27,6 @@ import (
 
 func GetProxyEnvVars(proxies *kops.EgressProxySpec) []v1.EnvVar {
 	if proxies == nil {
-		klog.V(8).Info("proxies is == nil, returning empty list")
 		return []v1.EnvVar{}
 	}
 
