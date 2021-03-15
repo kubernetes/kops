@@ -380,6 +380,194 @@
         "locations": {
           "resources": {
             "workloadIdentityPools": {
+              "methods": {
+                "create": {
+                  "description": "Creates a new WorkloadIdentityPool. You cannot reuse the name of a deleted pool until 30 days after deletion.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools",
+                  "httpMethod": "POST",
+                  "id": "iam.projects.locations.workloadIdentityPools.create",
+                  "parameterOrder": [
+                    "parent"
+                  ],
+                  "parameters": {
+                    "parent": {
+                      "description": "Required. The parent resource to create the pool in. The only supported location is `global`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "workloadIdentityPoolId": {
+                      "description": "Required. The ID to use for the pool, which becomes the final component of the resource name. This value should be 4-32 characters, and may contain the characters [a-z0-9-]. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+parent}/workloadIdentityPools",
+                  "request": {
+                    "$ref": "WorkloadIdentityPool"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "delete": {
+                  "description": "Deletes a WorkloadIdentityPool. You cannot use a deleted pool to exchange external credentials for Google Cloud credentials. However, deletion does not revoke credentials that have already been issued. Credentials issued for a deleted pool do not grant access to resources. If the pool is undeleted, and the credentials are not expired, they grant access again. You can undelete a pool for 30 days. After 30 days, deletion is permanent. You cannot update deleted pools. However, you can view and list them.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}",
+                  "httpMethod": "DELETE",
+                  "id": "iam.projects.locations.workloadIdentityPools.delete",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. The name of the pool to delete.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}",
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "get": {
+                  "description": "Gets an individual WorkloadIdentityPool.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}",
+                  "httpMethod": "GET",
+                  "id": "iam.projects.locations.workloadIdentityPools.get",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. The name of the pool to retrieve.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}",
+                  "response": {
+                    "$ref": "WorkloadIdentityPool"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "list": {
+                  "description": "Lists all non-deleted WorkloadIdentityPools in a project. If `show_deleted` is set to `true`, then deleted pools are also listed.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools",
+                  "httpMethod": "GET",
+                  "id": "iam.projects.locations.workloadIdentityPools.list",
+                  "parameterOrder": [
+                    "parent"
+                  ],
+                  "parameters": {
+                    "pageSize": {
+                      "description": "The maximum number of pools to return. If unspecified, at most 50 pools are returned. The maximum value is 1000; values above are 1000 truncated to 1000.",
+                      "format": "int32",
+                      "location": "query",
+                      "type": "integer"
+                    },
+                    "pageToken": {
+                      "description": "A page token, received from a previous `ListWorkloadIdentityPools` call. Provide this to retrieve the subsequent page.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "Required. The parent resource to list pools for.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "showDeleted": {
+                      "description": "Whether to return soft-deleted pools.",
+                      "location": "query",
+                      "type": "boolean"
+                    }
+                  },
+                  "path": "v1/{+parent}/workloadIdentityPools",
+                  "response": {
+                    "$ref": "ListWorkloadIdentityPoolsResponse"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "patch": {
+                  "description": "Updates an existing WorkloadIdentityPool.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}",
+                  "httpMethod": "PATCH",
+                  "id": "iam.projects.locations.workloadIdentityPools.patch",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Output only. The resource name of the pool.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "updateMask": {
+                      "description": "Required. The list of fields update.",
+                      "format": "google-fieldmask",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}",
+                  "request": {
+                    "$ref": "WorkloadIdentityPool"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "undelete": {
+                  "description": "Undeletes a WorkloadIdentityPool, as long as it was deleted fewer than 30 days ago.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:undelete",
+                  "httpMethod": "POST",
+                  "id": "iam.projects.locations.workloadIdentityPools.undelete",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. The name of the pool to undelete.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}:undelete",
+                  "request": {
+                    "$ref": "UndeleteWorkloadIdentityPoolRequest"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                }
+              },
               "resources": {
                 "operations": {
                   "methods": {
@@ -411,6 +599,194 @@
                   }
                 },
                 "providers": {
+                  "methods": {
+                    "create": {
+                      "description": "Creates a new WorkloadIdentityPoolProvider in a WorkloadIdentityPool. You cannot reuse the name of a deleted provider until 30 days after deletion.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers",
+                      "httpMethod": "POST",
+                      "id": "iam.projects.locations.workloadIdentityPools.providers.create",
+                      "parameterOrder": [
+                        "parent"
+                      ],
+                      "parameters": {
+                        "parent": {
+                          "description": "Required. The pool to create this provider in.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        },
+                        "workloadIdentityPoolProviderId": {
+                          "description": "Required. The ID for the provider, which becomes the final component of the resource name. This value must be 4-32 characters, and may contain the characters [a-z0-9-]. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
+                          "location": "query",
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+parent}/providers",
+                      "request": {
+                        "$ref": "WorkloadIdentityPoolProvider"
+                      },
+                      "response": {
+                        "$ref": "Operation"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "delete": {
+                      "description": "Deletes a WorkloadIdentityPoolProvider. Deleting a provider does not revoke credentials that have already been issued; they continue to grant access. You can undelete a provider for 30 days. After 30 days, deletion is permanent. You cannot update deleted providers. However, you can view and list them.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}",
+                      "httpMethod": "DELETE",
+                      "id": "iam.projects.locations.workloadIdentityPools.providers.delete",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name of the provider to delete.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}",
+                      "response": {
+                        "$ref": "Operation"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "get": {
+                      "description": "Gets an individual WorkloadIdentityPoolProvider.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}",
+                      "httpMethod": "GET",
+                      "id": "iam.projects.locations.workloadIdentityPools.providers.get",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name of the provider to retrieve.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}",
+                      "response": {
+                        "$ref": "WorkloadIdentityPoolProvider"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "list": {
+                      "description": "Lists all non-deleted WorkloadIdentityPoolProviders in a WorkloadIdentityPool. If `show_deleted` is set to `true`, then deleted providers are also listed.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers",
+                      "httpMethod": "GET",
+                      "id": "iam.projects.locations.workloadIdentityPools.providers.list",
+                      "parameterOrder": [
+                        "parent"
+                      ],
+                      "parameters": {
+                        "pageSize": {
+                          "description": "The maximum number of providers to return. If unspecified, at most 50 providers are returned. The maximum value is 100; values above 100 are truncated to 100.",
+                          "format": "int32",
+                          "location": "query",
+                          "type": "integer"
+                        },
+                        "pageToken": {
+                          "description": "A page token, received from a previous `ListWorkloadIdentityPoolProviders` call. Provide this to retrieve the subsequent page.",
+                          "location": "query",
+                          "type": "string"
+                        },
+                        "parent": {
+                          "description": "Required. The pool to list providers for.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        },
+                        "showDeleted": {
+                          "description": "Whether to return soft-deleted providers.",
+                          "location": "query",
+                          "type": "boolean"
+                        }
+                      },
+                      "path": "v1/{+parent}/providers",
+                      "response": {
+                        "$ref": "ListWorkloadIdentityPoolProvidersResponse"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "patch": {
+                      "description": "Updates an existing WorkloadIdentityPoolProvider.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}",
+                      "httpMethod": "PATCH",
+                      "id": "iam.projects.locations.workloadIdentityPools.providers.patch",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Output only. The resource name of the provider.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        },
+                        "updateMask": {
+                          "description": "Required. The list of fields to update.",
+                          "format": "google-fieldmask",
+                          "location": "query",
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}",
+                      "request": {
+                        "$ref": "WorkloadIdentityPoolProvider"
+                      },
+                      "response": {
+                        "$ref": "Operation"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "undelete": {
+                      "description": "Undeletes a WorkloadIdentityPoolProvider, as long as it was deleted fewer than 30 days ago.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/providers/{providersId}:undelete",
+                      "httpMethod": "POST",
+                      "id": "iam.projects.locations.workloadIdentityPools.providers.undelete",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name of the provider to undelete.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}:undelete",
+                      "request": {
+                        "$ref": "UndeleteWorkloadIdentityPoolProviderRequest"
+                      },
+                      "response": {
+                        "$ref": "Operation"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    }
+                  },
                   "resources": {
                     "operations": {
                       "methods": {
@@ -1320,7 +1696,7 @@
       }
     }
   },
-  "revision": "20201112",
+  "revision": "20210211",
   "rootUrl": "https://iam.googleapis.com/",
   "schemas": {
     "AdminAuditData": {
@@ -1399,6 +1775,17 @@
       "properties": {
         "name": {
           "description": "Public name of the service. For example, the service name for Cloud IAM is 'iam.googleapis.com'.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Aws": {
+      "description": "Represents an Amazon Web Services identity provider.",
+      "id": "Aws",
+      "properties": {
+        "accountId": {
+          "description": "Required. The AWS account ID.",
           "type": "string"
         }
       },
@@ -1695,6 +2082,60 @@
         },
         "nextPageToken": {
           "description": "To retrieve the next page of results, set ListServiceAccountsRequest.page_token to this value.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ListWorkloadIdentityPoolProvidersResponse": {
+      "description": "Response message for ListWorkloadIdentityPoolProviders.",
+      "id": "ListWorkloadIdentityPoolProvidersResponse",
+      "properties": {
+        "nextPageToken": {
+          "description": "A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
+          "type": "string"
+        },
+        "workloadIdentityPoolProviders": {
+          "description": "A list of providers.",
+          "items": {
+            "$ref": "WorkloadIdentityPoolProvider"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ListWorkloadIdentityPoolsResponse": {
+      "description": "Response message for ListWorkloadIdentityPools.",
+      "id": "ListWorkloadIdentityPoolsResponse",
+      "properties": {
+        "nextPageToken": {
+          "description": "A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
+          "type": "string"
+        },
+        "workloadIdentityPools": {
+          "description": "A list of pools.",
+          "items": {
+            "$ref": "WorkloadIdentityPool"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "Oidc": {
+      "description": "Represents an OpenId Connect 1.0 identity provider.",
+      "id": "Oidc",
+      "properties": {
+        "allowedAudiences": {
+          "description": "Acceptable values for the `aud` field (audience) in the OIDC token. Token exchange requests are rejected if the token audience does not match one of the configured values. Each audience may be at most 256 characters. A maximum of 10 audiences may be configured. If this list is empty, the OIDC token audience must be equal to the full canonical resource name of the WorkloadIdentityPoolProvider, with or without the HTTPS prefix. For example: ``` //iam.googleapis.com/projects//locations//workloadIdentityPools//providers/ https://iam.googleapis.com/projects//locations//workloadIdentityPools//providers/ ```",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "issuerUri": {
+          "description": "Required. The OIDC issuer URL.",
           "type": "string"
         }
       },
@@ -2331,6 +2772,18 @@
       },
       "type": "object"
     },
+    "UndeleteWorkloadIdentityPoolProviderRequest": {
+      "description": "Request message for UndeleteWorkloadIdentityPoolProvider.",
+      "id": "UndeleteWorkloadIdentityPoolProviderRequest",
+      "properties": {},
+      "type": "object"
+    },
+    "UndeleteWorkloadIdentityPoolRequest": {
+      "description": "Request message for UndeleteWorkloadIdentityPool.",
+      "id": "UndeleteWorkloadIdentityPoolRequest",
+      "properties": {},
+      "type": "object"
+    },
     "UploadServiceAccountKeyRequest": {
       "description": "The service account key upload request.",
       "id": "UploadServiceAccountKeyRequest",
@@ -2338,6 +2791,103 @@
         "publicKeyData": {
           "description": "A field that allows clients to upload their own public key. If set, use this public key data to create a service account key for given service account. Please note, the expected format for this field is X509_PEM.",
           "format": "byte",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "WorkloadIdentityPool": {
+      "description": "Represents a collection of external workload identities. You can define IAM policies to grant these identities access to Google Cloud resources.",
+      "id": "WorkloadIdentityPool",
+      "properties": {
+        "description": {
+          "description": "A description of the pool. Cannot exceed 256 characters.",
+          "type": "string"
+        },
+        "disabled": {
+          "description": "Whether the pool is disabled. You cannot use a disabled pool to exchange tokens, or use existing tokens to access resources. If the pool is re-enabled, existing tokens grant access again.",
+          "type": "boolean"
+        },
+        "displayName": {
+          "description": "A display name for the pool. Cannot exceed 32 characters.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Output only. The resource name of the pool.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "state": {
+          "description": "Output only. The state of the pool.",
+          "enum": [
+            "STATE_UNSPECIFIED",
+            "ACTIVE",
+            "DELETED"
+          ],
+          "enumDescriptions": [
+            "State unspecified.",
+            "The pool is active, and may be used in Google Cloud policies.",
+            "The pool is soft-deleted. Soft-deleted pools are permanently deleted after approximately 30 days. You can restore a soft-deleted pool using UndeleteWorkloadIdentityPool. You cannot reuse the ID of a soft-deleted pool until it is permanently deleted. While a pool is deleted, you cannot use it to exchange tokens, or use existing tokens to access resources. If the pool is undeleted, existing tokens grant access again."
+          ],
+          "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "WorkloadIdentityPoolProvider": {
+      "description": "A configuration for an external identity provider.",
+      "id": "WorkloadIdentityPoolProvider",
+      "properties": {
+        "attributeCondition": {
+          "description": "[A Common Expression Language](https://opensource.google/projects/cel) expression, in plain text, to restrict what otherwise valid authentication credentials issued by the provider should not be accepted. The expression must output a boolean representing whether to allow the federation. The following keywords may be referenced in the expressions: * `assertion`: JSON representing the authentication credential issued by the provider. * `google`: The Google attributes mapped from the assertion in the `attribute_mappings`. * `attribute`: The custom attributes mapped from the assertion in the `attribute_mappings`. The maximum length of the attribute condition expression is 4096 characters. If unspecified, all valid authentication credential are accepted. The following example shows how to only allow credentials with a mapped `google.groups` value of `admins`: ``` \"'admins' in google.groups\" ```",
+          "type": "string"
+        },
+        "attributeMapping": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Maps attributes from authentication credentials issued by an external identity provider to Google Cloud attributes, such as `subject` and `segment`. Each key must be a string specifying the Google Cloud IAM attribute to map to. The following keys are supported: * `google.subject`: The principal IAM is authenticating. You can reference this value in IAM bindings. This is also the subject that appears in Cloud Logging logs. Cannot exceed 127 characters. * `google.groups`: Groups the external identity belongs to. You can grant groups access to resources using an IAM `principalSet` binding; access applies to all members of the group. You can also provide custom attributes by specifying `attribute.{custom_attribute}`, where `{custom_attribute}` is the name of the custom attribute to be mapped. You can define a maximum of 50 custom attributes. The maximum length of a mapped attribute key is 100 characters, and the key may only contain the characters [a-z0-9_]. You can reference these attributes in IAM policies to define fine-grained access for a workload to Google Cloud resources. For example: * `google.subject`: `principal://iam.googleapis.com/projects/{project}/locations/{location}/workloadIdentityPools/{pool}/subject/{value}` * `google.groups`: `principalSet://iam.googleapis.com/projects/{project}/locations/{location}/workloadIdentityPools/{pool}/group/{value}` * `attribute.{custom_attribute}`: `principalSet://iam.googleapis.com/projects/{project}/locations/{location}/workloadIdentityPools/{pool}/attribute.{custom_attribute}/{value}` Each value must be a [Common Expression Language] (https://opensource.google/projects/cel) function that maps an identity provider credential to the normalized attribute specified by the corresponding map key. You can use the `assertion` keyword in the expression to access a JSON representation of the authentication credential issued by the provider. The maximum length of an attribute mapping expression is 2048 characters. When evaluated, the total size of all mapped attributes must not exceed 8KB. For AWS providers, if no attribute mapping is defined, the following default mapping applies: ``` { \"google.subject\":\"assertion.arn\", \"attribute.aws_role\": \"assertion.arn.contains('assumed-role')\" \" ? assertion.arn.extract('{account_arn}assumed-role/')\" \" + 'assumed-role/'\" \" + assertion.arn.extract('assumed-role/{role_name}/')\" \" : assertion.arn\", } ``` If any custom attribute mappings are defined, they must include a mapping to the `google.subject` attribute. For OIDC providers, you must supply a custom mapping, which must include the `google.subject` attribute. For example, the following maps the `sub` claim of the incoming credential to the `subject` attribute on a Google token: ``` {\"google.subject\": \"assertion.sub\"} ```",
+          "type": "object"
+        },
+        "aws": {
+          "$ref": "Aws",
+          "description": "An Amazon Web Services identity provider."
+        },
+        "description": {
+          "description": "A description for the provider. Cannot exceed 256 characters.",
+          "type": "string"
+        },
+        "disabled": {
+          "description": "Whether the provider is disabled. You cannot use a disabled provider to exchange tokens. However, existing tokens still grant access.",
+          "type": "boolean"
+        },
+        "displayName": {
+          "description": "A display name for the provider. Cannot exceed 32 characters.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Output only. The resource name of the provider.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "oidc": {
+          "$ref": "Oidc",
+          "description": "An OpenId Connect 1.0 identity provider."
+        },
+        "state": {
+          "description": "Output only. The state of the provider.",
+          "enum": [
+            "STATE_UNSPECIFIED",
+            "ACTIVE",
+            "DELETED"
+          ],
+          "enumDescriptions": [
+            "State unspecified.",
+            "The provider is active, and may be used to validate authentication credentials.",
+            "The provider is soft-deleted. Soft-deleted providers are permanently deleted after approximately 30 days. You can restore a soft-deleted provider using UndeleteWorkloadIdentityPoolProvider. You cannot reuse the ID of a soft-deleted provider until it is permanently deleted."
+          ],
+          "readOnly": true,
           "type": "string"
         }
       },

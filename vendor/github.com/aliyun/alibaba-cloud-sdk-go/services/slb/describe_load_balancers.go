@@ -21,7 +21,6 @@ import (
 )
 
 // DescribeLoadBalancers invokes the slb.DescribeLoadBalancers API synchronously
-// api document: https://help.aliyun.com/api/slb/describeloadbalancers.html
 func (client *Client) DescribeLoadBalancers(request *DescribeLoadBalancersRequest) (response *DescribeLoadBalancersResponse, err error) {
 	response = CreateDescribeLoadBalancersResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DescribeLoadBalancers(request *DescribeLoadBalancersReques
 }
 
 // DescribeLoadBalancersWithChan invokes the slb.DescribeLoadBalancers API asynchronously
-// api document: https://help.aliyun.com/api/slb/describeloadbalancers.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeLoadBalancersWithChan(request *DescribeLoadBalancersRequest) (<-chan *DescribeLoadBalancersResponse, <-chan error) {
 	responseChan := make(chan *DescribeLoadBalancersResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DescribeLoadBalancersWithChan(request *DescribeLoadBalance
 }
 
 // DescribeLoadBalancersWithCallback invokes the slb.DescribeLoadBalancers API asynchronously
-// api document: https://help.aliyun.com/api/slb/describeloadbalancers.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeLoadBalancersWithCallback(request *DescribeLoadBalancersRequest, callback func(response *DescribeLoadBalancersResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -76,31 +71,32 @@ func (client *Client) DescribeLoadBalancersWithCallback(request *DescribeLoadBal
 // DescribeLoadBalancersRequest is the request struct for api DescribeLoadBalancers
 type DescribeLoadBalancersRequest struct {
 	*requests.RpcRequest
-	AccessKeyId           string                      `position:"Query" name:"access_key_id"`
 	ResourceOwnerId       requests.Integer            `position:"Query" name:"ResourceOwnerId"`
-	SupportPrivateLink    requests.Boolean            `position:"Query" name:"SupportPrivateLink"`
 	NetworkType           string                      `position:"Query" name:"NetworkType"`
 	AddressIPVersion      string                      `position:"Query" name:"AddressIPVersion"`
 	MasterZoneId          string                      `position:"Query" name:"MasterZoneId"`
-	PageNumber            requests.Integer            `position:"Query" name:"PageNumber"`
 	ResourceGroupId       string                      `position:"Query" name:"ResourceGroupId"`
 	LoadBalancerName      string                      `position:"Query" name:"LoadBalancerName"`
-	PageSize              requests.Integer            `position:"Query" name:"PageSize"`
-	AddressType           string                      `position:"Query" name:"AddressType"`
 	SlaveZoneId           string                      `position:"Query" name:"SlaveZoneId"`
 	Tag                   *[]DescribeLoadBalancersTag `position:"Query" name:"Tag"  type:"Repeated"`
-	Fuzzy                 string                      `position:"Query" name:"Fuzzy"`
-	Address               string                      `position:"Query" name:"Address"`
-	ResourceOwnerAccount  string                      `position:"Query" name:"ResourceOwnerAccount"`
-	OwnerAccount          string                      `position:"Query" name:"OwnerAccount"`
 	OwnerId               requests.Integer            `position:"Query" name:"OwnerId"`
 	ServerId              string                      `position:"Query" name:"ServerId"`
-	LoadBalancerStatus    string                      `position:"Query" name:"LoadBalancerStatus"`
 	Tags                  string                      `position:"Query" name:"Tags"`
 	ServerIntranetAddress string                      `position:"Query" name:"ServerIntranetAddress"`
 	VSwitchId             string                      `position:"Query" name:"VSwitchId"`
 	LoadBalancerId        string                      `position:"Query" name:"LoadBalancerId"`
 	InternetChargeType    string                      `position:"Query" name:"InternetChargeType"`
+	AccessKeyId           string                      `position:"Query" name:"access_key_id"`
+	SupportPrivateLink    requests.Boolean            `position:"Query" name:"SupportPrivateLink"`
+	PageNumber            requests.Integer            `position:"Query" name:"PageNumber"`
+	PageSize              requests.Integer            `position:"Query" name:"PageSize"`
+	AddressType           string                      `position:"Query" name:"AddressType"`
+	Fuzzy                 string                      `position:"Query" name:"Fuzzy"`
+	BusinessStatus        string                      `position:"Query" name:"BusinessStatus"`
+	Address               string                      `position:"Query" name:"Address"`
+	ResourceOwnerAccount  string                      `position:"Query" name:"ResourceOwnerAccount"`
+	OwnerAccount          string                      `position:"Query" name:"OwnerAccount"`
+	LoadBalancerStatus    string                      `position:"Query" name:"LoadBalancerStatus"`
 	VpcId                 string                      `position:"Query" name:"VpcId"`
 	PayType               string                      `position:"Query" name:"PayType"`
 }
@@ -127,6 +123,7 @@ func CreateDescribeLoadBalancersRequest() (request *DescribeLoadBalancersRequest
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DescribeLoadBalancers", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

@@ -21,7 +21,6 @@ import (
 )
 
 // DescribeLoadBalancerAttribute invokes the slb.DescribeLoadBalancerAttribute API synchronously
-// api document: https://help.aliyun.com/api/slb/describeloadbalancerattribute.html
 func (client *Client) DescribeLoadBalancerAttribute(request *DescribeLoadBalancerAttributeRequest) (response *DescribeLoadBalancerAttributeResponse, err error) {
 	response = CreateDescribeLoadBalancerAttributeResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DescribeLoadBalancerAttribute(request *DescribeLoadBalance
 }
 
 // DescribeLoadBalancerAttributeWithChan invokes the slb.DescribeLoadBalancerAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/describeloadbalancerattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeLoadBalancerAttributeWithChan(request *DescribeLoadBalancerAttributeRequest) (<-chan *DescribeLoadBalancerAttributeResponse, <-chan error) {
 	responseChan := make(chan *DescribeLoadBalancerAttributeResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DescribeLoadBalancerAttributeWithChan(request *DescribeLoa
 }
 
 // DescribeLoadBalancerAttributeWithCallback invokes the slb.DescribeLoadBalancerAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/describeloadbalancerattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeLoadBalancerAttributeWithCallback(request *DescribeLoadBalancerAttributeRequest, callback func(response *DescribeLoadBalancerAttributeResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -130,7 +125,11 @@ type DescribeLoadBalancerAttributeResponse struct {
 	TunnelType                     string                                        `json:"TunnelType" xml:"TunnelType"`
 	CloudInstanceUid               int64                                         `json:"CloudInstanceUid" xml:"CloudInstanceUid"`
 	SupportPrivateLink             bool                                          `json:"SupportPrivateLink" xml:"SupportPrivateLink"`
+	BusinessStatus                 string                                        `json:"BusinessStatus" xml:"BusinessStatus"`
+	ModificationProtectionStatus   string                                        `json:"ModificationProtectionStatus" xml:"ModificationProtectionStatus"`
+	ModificationProtectionReason   string                                        `json:"ModificationProtectionReason" xml:"ModificationProtectionReason"`
 	ListenerPorts                  ListenerPorts                                 `json:"ListenerPorts" xml:"ListenerPorts"`
+	Labels                         Labels                                        `json:"Labels" xml:"Labels"`
 	ListenerPortsAndProtocal       ListenerPortsAndProtocal                      `json:"ListenerPortsAndProtocal" xml:"ListenerPortsAndProtocal"`
 	ListenerPortsAndProtocol       ListenerPortsAndProtocol                      `json:"ListenerPortsAndProtocol" xml:"ListenerPortsAndProtocol"`
 	BackendServers                 BackendServersInDescribeLoadBalancerAttribute `json:"BackendServers" xml:"BackendServers"`
@@ -142,6 +141,7 @@ func CreateDescribeLoadBalancerAttributeRequest() (request *DescribeLoadBalancer
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DescribeLoadBalancerAttribute", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

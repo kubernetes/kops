@@ -106,6 +106,12 @@ func (opts DownloadOpts) ToObjectDownloadParams() (map[string]string, string, er
 	if err != nil {
 		return nil, q.String(), err
 	}
+	if !opts.IfModifiedSince.IsZero() {
+		h["If-Modified-Since"] = opts.IfModifiedSince.Format(time.RFC1123)
+	}
+	if !opts.IfUnmodifiedSince.IsZero() {
+		h["If-Unmodified-Since"] = opts.IfUnmodifiedSince.Format(time.RFC1123)
+	}
 	return h, q.String(), nil
 }
 

@@ -114,7 +114,6 @@ func (s *packetManager) close() {
 // maximizing throughput of file transfers.
 func (s *packetManager) workerChan(runWorker func(chan orderedRequest),
 ) chan orderedRequest {
-
 	// multiple workers for faster read/writes
 	rwChan := make(chan orderedRequest, SftpServerWorkerCount)
 	for i := 0; i < SftpServerWorkerCount; i++ {

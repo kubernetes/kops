@@ -21,7 +21,6 @@ import (
 )
 
 // SetAccessControlListAttribute invokes the slb.SetAccessControlListAttribute API synchronously
-// api document: https://help.aliyun.com/api/slb/setaccesscontrollistattribute.html
 func (client *Client) SetAccessControlListAttribute(request *SetAccessControlListAttributeRequest) (response *SetAccessControlListAttributeResponse, err error) {
 	response = CreateSetAccessControlListAttributeResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) SetAccessControlListAttribute(request *SetAccessControlLis
 }
 
 // SetAccessControlListAttributeWithChan invokes the slb.SetAccessControlListAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/setaccesscontrollistattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) SetAccessControlListAttributeWithChan(request *SetAccessControlListAttributeRequest) (<-chan *SetAccessControlListAttributeResponse, <-chan error) {
 	responseChan := make(chan *SetAccessControlListAttributeResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) SetAccessControlListAttributeWithChan(request *SetAccessCo
 }
 
 // SetAccessControlListAttributeWithCallback invokes the slb.SetAccessControlListAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/setaccesscontrollistattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) SetAccessControlListAttributeWithCallback(request *SetAccessControlListAttributeRequest, callback func(response *SetAccessControlListAttributeResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -99,6 +94,7 @@ func CreateSetAccessControlListAttributeRequest() (request *SetAccessControlList
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "SetAccessControlListAttribute", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

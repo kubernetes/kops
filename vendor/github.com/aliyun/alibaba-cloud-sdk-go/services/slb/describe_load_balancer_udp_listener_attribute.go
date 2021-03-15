@@ -21,7 +21,6 @@ import (
 )
 
 // DescribeLoadBalancerUDPListenerAttribute invokes the slb.DescribeLoadBalancerUDPListenerAttribute API synchronously
-// api document: https://help.aliyun.com/api/slb/describeloadbalancerudplistenerattribute.html
 func (client *Client) DescribeLoadBalancerUDPListenerAttribute(request *DescribeLoadBalancerUDPListenerAttributeRequest) (response *DescribeLoadBalancerUDPListenerAttributeResponse, err error) {
 	response = CreateDescribeLoadBalancerUDPListenerAttributeResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) DescribeLoadBalancerUDPListenerAttribute(request *Describe
 }
 
 // DescribeLoadBalancerUDPListenerAttributeWithChan invokes the slb.DescribeLoadBalancerUDPListenerAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/describeloadbalancerudplistenerattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeLoadBalancerUDPListenerAttributeWithChan(request *DescribeLoadBalancerUDPListenerAttributeRequest) (<-chan *DescribeLoadBalancerUDPListenerAttributeResponse, <-chan error) {
 	responseChan := make(chan *DescribeLoadBalancerUDPListenerAttributeResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) DescribeLoadBalancerUDPListenerAttributeWithChan(request *
 }
 
 // DescribeLoadBalancerUDPListenerAttributeWithCallback invokes the slb.DescribeLoadBalancerUDPListenerAttribute API asynchronously
-// api document: https://help.aliyun.com/api/slb/describeloadbalancerudplistenerattribute.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) DescribeLoadBalancerUDPListenerAttributeWithCallback(request *DescribeLoadBalancerUDPListenerAttributeRequest, callback func(response *DescribeLoadBalancerUDPListenerAttributeResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -124,6 +119,7 @@ func CreateDescribeLoadBalancerUDPListenerAttributeRequest() (request *DescribeL
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "DescribeLoadBalancerUDPListenerAttribute", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

@@ -6,7 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/apparentlymart/go-textseg/textseg"
+	"github.com/apparentlymart/go-textseg/v13/textseg"
+
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/function"
 	"github.com/zclconf/go-cty/cty/gocty"
@@ -143,6 +144,11 @@ var SubstrFunc = function.New(&function.Spec{
 			}
 
 			offset += totalLen
+		} else if length == 0 {
+			// Short circuit here, after error checks, because if a
+			// string of length 0 has been requested it will always
+			// be the empty string
+			return cty.StringVal(""), nil
 		}
 
 		sub := in

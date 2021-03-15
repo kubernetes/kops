@@ -54,8 +54,8 @@ func (client ServiceEndpointPolicyDefinitionsClient) CreateOrUpdate(ctx context.
 		ctx = tracing.StartSpan(ctx, fqdn+"/ServiceEndpointPolicyDefinitionsClient.CreateOrUpdate")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -68,7 +68,7 @@ func (client ServiceEndpointPolicyDefinitionsClient) CreateOrUpdate(ctx context.
 
 	result, err = client.CreateOrUpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.ServiceEndpointPolicyDefinitionsClient", "CreateOrUpdate", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.ServiceEndpointPolicyDefinitionsClient", "CreateOrUpdate", nil, "Failure sending request")
 		return
 	}
 
@@ -108,7 +108,33 @@ func (client ServiceEndpointPolicyDefinitionsClient) CreateOrUpdateSender(req *h
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client ServiceEndpointPolicyDefinitionsClient) (sepd ServiceEndpointPolicyDefinition, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.ServiceEndpointPolicyDefinitionsCreateOrUpdateFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.ServiceEndpointPolicyDefinitionsCreateOrUpdateFuture")
+			return
+		}
+		sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+		sepd.Response.Response, err = future.GetResult(sender)
+		if sepd.Response.Response == nil && err == nil {
+			err = autorest.NewErrorWithError(err, "network.ServiceEndpointPolicyDefinitionsCreateOrUpdateFuture", "Result", nil, "received nil response and error")
+		}
+		if err == nil && sepd.Response.Response.StatusCode != http.StatusNoContent {
+			sepd, err = client.CreateOrUpdateResponder(sepd.Response.Response)
+			if err != nil {
+				err = autorest.NewErrorWithError(err, "network.ServiceEndpointPolicyDefinitionsCreateOrUpdateFuture", "Result", sepd.Response.Response, "Failure responding to request")
+			}
+		}
+		return
+	}
 	return
 }
 
@@ -134,8 +160,8 @@ func (client ServiceEndpointPolicyDefinitionsClient) Delete(ctx context.Context,
 		ctx = tracing.StartSpan(ctx, fqdn+"/ServiceEndpointPolicyDefinitionsClient.Delete")
 		defer func() {
 			sc := -1
-			if result.Response() != nil {
-				sc = result.Response().StatusCode
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
 			}
 			tracing.EndSpan(ctx, sc, err)
 		}()
@@ -148,7 +174,7 @@ func (client ServiceEndpointPolicyDefinitionsClient) Delete(ctx context.Context,
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.ServiceEndpointPolicyDefinitionsClient", "Delete", result.Response(), "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.ServiceEndpointPolicyDefinitionsClient", "Delete", nil, "Failure sending request")
 		return
 	}
 
@@ -185,7 +211,23 @@ func (client ServiceEndpointPolicyDefinitionsClient) DeleteSender(req *http.Requ
 	if err != nil {
 		return
 	}
-	future.Future, err = azure.NewFutureFromResponse(resp)
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = func(client ServiceEndpointPolicyDefinitionsClient) (ar autorest.Response, err error) {
+		var done bool
+		done, err = future.DoneWithContext(context.Background(), client)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "network.ServiceEndpointPolicyDefinitionsDeleteFuture", "Result", future.Response(), "Polling failure")
+			return
+		}
+		if !done {
+			err = azure.NewAsyncOpIncompleteError("network.ServiceEndpointPolicyDefinitionsDeleteFuture")
+			return
+		}
+		ar.Response = future.Response()
+		return
+	}
 	return
 }
 
@@ -232,6 +274,7 @@ func (client ServiceEndpointPolicyDefinitionsClient) Get(ctx context.Context, re
 	result, err = client.GetResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.ServiceEndpointPolicyDefinitionsClient", "Get", resp, "Failure responding to request")
+		return
 	}
 
 	return
@@ -309,9 +352,11 @@ func (client ServiceEndpointPolicyDefinitionsClient) ListByResourceGroup(ctx con
 	result.sepdlr, err = client.ListByResourceGroupResponder(resp)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.ServiceEndpointPolicyDefinitionsClient", "ListByResourceGroup", resp, "Failure responding to request")
+		return
 	}
 	if result.sepdlr.hasNextLink() && result.sepdlr.IsEmpty() {
 		err = result.NextWithContext(ctx)
+		return
 	}
 
 	return

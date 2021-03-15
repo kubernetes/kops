@@ -1,0 +1,10 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["prometheus.go"],
+    importmap = "k8s.io/kops/vendor/github.com/docker/distribution/metrics",
+    importpath = "github.com/docker/distribution/metrics",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/docker/go-metrics:go_default_library"],
+)

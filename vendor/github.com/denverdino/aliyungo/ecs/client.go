@@ -67,13 +67,12 @@ func NewECSClientWithSecurityToken(accessKeyId string, accessKeySecret string, s
 //only for Hangzhou Regional Domain
 func NewECSClientWithSecurityToken4RegionalDomain(accessKeyId string, accessKeySecret string, securityToken string, regionID common.Region) *Client {
 	endpoint := os.Getenv("ECS_ENDPOINT")
-	if endpoint == "" {
-		endpoint = ECSDefaultEndpoint
+	if endpoint != "" {
+		return NewECSClientWithSecurityToken(accessKeyId, accessKeySecret, securityToken, regionID)
 	}
 
 	return NewECSClientWithEndpointAndSecurityToken4RegionalDomain(endpoint, accessKeyId, accessKeySecret, securityToken, regionID)
 }
-
 
 func NewECSClientWithEndpoint(endpoint string, accessKeyId string, accessKeySecret string, regionID common.Region) *Client {
 	return NewECSClientWithEndpointAndSecurityToken(endpoint, accessKeyId, accessKeySecret, "", regionID)
@@ -91,7 +90,6 @@ func NewECSClientWithEndpointAndSecurityToken(endpoint string, accessKeyId strin
 		InitClient()
 	return client
 }
-
 
 func NewECSClientWithEndpointAndSecurityToken4RegionalDomain(endpoint string, accessKeyId string, accessKeySecret string, securityToken string, regionID common.Region) *Client {
 	client := &Client{}
@@ -125,8 +123,8 @@ func NewVPCClientWithSecurityToken(accessKeyId string, accessKeySecret string, s
 //Only for Hangzhou
 func NewVPCClientWithSecurityToken4RegionalDomain(accessKeyId string, accessKeySecret string, securityToken string, regionID common.Region) *Client {
 	endpoint := os.Getenv("VPC_ENDPOINT")
-	if endpoint == "" {
-		endpoint = VPCDefaultEndpoint
+	if endpoint != "" {
+		return NewVPCClientWithEndpointAndSecurityToken(endpoint, accessKeyId, accessKeySecret, securityToken, regionID)
 	}
 
 	return NewVPCClientWithEndpointAndSecurityToken4RegionalDomain(endpoint, accessKeyId, accessKeySecret, securityToken, regionID)

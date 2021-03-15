@@ -14,6 +14,7 @@ go_library(
         "nat_gateway.go",
         "networks.go",
         "regions.go",
+        "route_entry.go",
         "route_tables.go",
         "router_interface.go",
         "security_groups.go",

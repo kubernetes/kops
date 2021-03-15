@@ -11,6 +11,7 @@ import (
 type surrogateGossiper struct {
 	sync.Mutex
 	prevUpdates []prevUpdate
+	router      *Router
 }
 
 type prevUpdate struct {
@@ -56,6 +57,10 @@ func (s *surrogateGossiper) OnGossip(update []byte) (GossipData, error) {
 	// (this time limit is arbitrary; surrogateGossiper should pass on new gossip immediately
 	// so there should be no reason for a duplicate to show up after a long time)
 	updateTime := now()
+	gossipInterval := defaultGossipInterval
+	if s.router != nil {
+		gossipInterval = s.router.gossipInterval()
+	}
 	deleteBefore := updateTime.Add(-gossipInterval)
 	keepFrom := len(s.prevUpdates)
 	for i, p := range s.prevUpdates {

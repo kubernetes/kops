@@ -72,7 +72,7 @@ type CreateOpts struct {
 	//
 	// This is only possible to use when creating a fully populated
 	// Loadbalancer.
-	Rules []CreateRuleOpts `json:"rules,omitempty" xor:"ListenerID"`
+	Rules []CreateRuleOpts `json:"rules,omitempty"`
 }
 
 // ToL7PolicyCreateMap builds a request body from CreateOpts.

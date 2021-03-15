@@ -21,7 +21,6 @@ import (
 )
 
 // UploadServerCertificate invokes the slb.UploadServerCertificate API synchronously
-// api document: https://help.aliyun.com/api/slb/uploadservercertificate.html
 func (client *Client) UploadServerCertificate(request *UploadServerCertificateRequest) (response *UploadServerCertificateResponse, err error) {
 	response = CreateUploadServerCertificateResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) UploadServerCertificate(request *UploadServerCertificateRe
 }
 
 // UploadServerCertificateWithChan invokes the slb.UploadServerCertificate API asynchronously
-// api document: https://help.aliyun.com/api/slb/uploadservercertificate.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) UploadServerCertificateWithChan(request *UploadServerCertificateRequest) (<-chan *UploadServerCertificateResponse, <-chan error) {
 	responseChan := make(chan *UploadServerCertificateResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) UploadServerCertificateWithChan(request *UploadServerCerti
 }
 
 // UploadServerCertificateWithCallback invokes the slb.UploadServerCertificate API asynchronously
-// api document: https://help.aliyun.com/api/slb/uploadservercertificate.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) UploadServerCertificateWithCallback(request *UploadServerCertificateRequest, callback func(response *UploadServerCertificateResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -85,6 +80,7 @@ type UploadServerCertificateRequest struct {
 	ResourceGroupId             string           `position:"Query" name:"ResourceGroupId"`
 	ResourceOwnerAccount        string           `position:"Query" name:"ResourceOwnerAccount"`
 	OwnerAccount                string           `position:"Query" name:"OwnerAccount"`
+	StandardType                string           `position:"Query" name:"StandardType"`
 	OwnerId                     requests.Integer `position:"Query" name:"OwnerId"`
 	Tags                        string           `position:"Query" name:"Tags"`
 	AliCloudCertificateRegionId string           `position:"Query" name:"AliCloudCertificateRegionId"`
@@ -118,6 +114,7 @@ func CreateUploadServerCertificateRequest() (request *UploadServerCertificateReq
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "UploadServerCertificate", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

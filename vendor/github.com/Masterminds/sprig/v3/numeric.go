@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cast"
+	"github.com/shopspring/decimal"
 )
 
 // toFloat64 converts 64-bit floats
@@ -34,6 +35,15 @@ func max(a interface{}, i ...interface{}) int64 {
 	return aa
 }
 
+func maxf(a interface{}, i ...interface{}) float64 {
+	aa := toFloat64(a)
+	for _, b := range i {
+		bb := toFloat64(b)
+		aa = math.Max(aa, bb)
+	}
+	return aa
+}
+
 func min(a interface{}, i ...interface{}) int64 {
 	aa := toInt64(a)
 	for _, b := range i {
@@ -41,6 +51,15 @@ func min(a interface{}, i ...interface{}) int64 {
 		if bb < aa {
 			aa = bb
 		}
+	}
+	return aa
+}
+
+func minf(a interface{}, i ...interface{}) float64 {
+	aa := toFloat64(a)
+	for _, b := range i {
+		bb := toFloat64(b)
+		aa = math.Min(aa, bb)
 	}
 	return aa
 }
@@ -152,4 +171,16 @@ func seq(params ...int) string {
 
 func intArrayToString(slice []int, delimeter string) string {
 	return strings.Trim(strings.Join(strings.Fields(fmt.Sprint(slice)), delimeter), "[]")
+}
+
+// performs a float and subsequent decimal.Decimal conversion on inputs,
+// and iterates through a and b executing the mathmetical operation f
+func execDecimalOp(a interface{}, b []interface{}, f func(d1, d2 decimal.Decimal) decimal.Decimal) float64 {
+	prt := decimal.NewFromFloat(toFloat64(a))
+	for _, x := range b {
+		dx := decimal.NewFromFloat(toFloat64(x))
+		prt = f(prt, dx)
+	}
+	rslt, _ := prt.Float64()
+	return rslt
 }

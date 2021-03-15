@@ -21,7 +21,6 @@ import (
 )
 
 // ModifyLoadBalancerPayType invokes the slb.ModifyLoadBalancerPayType API synchronously
-// api document: https://help.aliyun.com/api/slb/modifyloadbalancerpaytype.html
 func (client *Client) ModifyLoadBalancerPayType(request *ModifyLoadBalancerPayTypeRequest) (response *ModifyLoadBalancerPayTypeResponse, err error) {
 	response = CreateModifyLoadBalancerPayTypeResponse()
 	err = client.DoAction(request, response)
@@ -29,8 +28,6 @@ func (client *Client) ModifyLoadBalancerPayType(request *ModifyLoadBalancerPayTy
 }
 
 // ModifyLoadBalancerPayTypeWithChan invokes the slb.ModifyLoadBalancerPayType API asynchronously
-// api document: https://help.aliyun.com/api/slb/modifyloadbalancerpaytype.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) ModifyLoadBalancerPayTypeWithChan(request *ModifyLoadBalancerPayTypeRequest) (<-chan *ModifyLoadBalancerPayTypeResponse, <-chan error) {
 	responseChan := make(chan *ModifyLoadBalancerPayTypeResponse, 1)
 	errChan := make(chan error, 1)
@@ -53,8 +50,6 @@ func (client *Client) ModifyLoadBalancerPayTypeWithChan(request *ModifyLoadBalan
 }
 
 // ModifyLoadBalancerPayTypeWithCallback invokes the slb.ModifyLoadBalancerPayType API asynchronously
-// api document: https://help.aliyun.com/api/slb/modifyloadbalancerpaytype.html
-// asynchronous document: https://help.aliyun.com/document_detail/66220.html
 func (client *Client) ModifyLoadBalancerPayTypeWithCallback(request *ModifyLoadBalancerPayTypeRequest, callback func(response *ModifyLoadBalancerPayTypeResponse, err error)) <-chan int {
 	result := make(chan int, 1)
 	err := client.AddAsyncTask(func() {
@@ -102,6 +97,7 @@ func CreateModifyLoadBalancerPayTypeRequest() (request *ModifyLoadBalancerPayTyp
 		RpcRequest: &requests.RpcRequest{},
 	}
 	request.InitWithApiInfo("Slb", "2014-05-15", "ModifyLoadBalancerPayType", "slb", "openAPI")
+	request.Method = requests.POST
 	return
 }
 

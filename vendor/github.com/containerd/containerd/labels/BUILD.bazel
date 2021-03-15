@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["validate.go"],
+    importmap = "k8s.io/kops/vendor/github.com/containerd/containerd/labels",
+    importpath = "github.com/containerd/containerd/labels",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/containerd/containerd/errdefs:go_default_library",
+        "//vendor/github.com/pkg/errors:go_default_library",
+    ],
+)
