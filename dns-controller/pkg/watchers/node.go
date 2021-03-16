@@ -33,6 +33,8 @@ import (
 )
 
 // NodeController watches for nodes
+//
+// Unlike other watchers, NodeController only creates alias records referenced by records from other controllers
 type NodeController struct {
 	util.Stoppable
 	client kubernetes.Interface
