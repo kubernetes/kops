@@ -18,6 +18,8 @@ package testutils
 
 import (
 	"io/ioutil"
+	"k8s.io/kops/cloudmock/aws/mockeventbridge"
+	"k8s.io/kops/cloudmock/aws/mocksqs"
 	"os"
 	"path"
 	"path/filepath"
@@ -140,6 +142,10 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 	cloud.MockIAM = mockIAM
 	mockAutoscaling := &mockautoscaling.MockAutoscaling{}
 	cloud.MockAutoscaling = mockAutoscaling
+	mockSQS := &mocksqs.MockSQS{}
+	cloud.MockSQS = mockSQS
+	mockEventBridge := &mockeventbridge.MockEventBridge{}
+	cloud.MockEventBridge = mockEventBridge
 
 	mockRoute53.MockCreateZone(&route53.HostedZone{
 		Id:   aws.String("/hostedzone/Z1AFAKE1ZON3YO"),

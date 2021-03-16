@@ -67,3 +67,8 @@ func (m *MockAutoscaling) AttachLoadBalancerTargetGroups(request *autoscaling.At
 	asg.TargetGroupARNs = request.TargetGroupARNs
 	return &autoscaling.AttachLoadBalancerTargetGroupsOutput{}, nil
 }
+
+// todo put somewhere else?
+func (m *MockAutoscaling) PutLifecycleHook(input *autoscaling.PutLifecycleHookInput) (*autoscaling.PutLifecycleHookOutput, error) {
+	panic("Not implemented")
+}
