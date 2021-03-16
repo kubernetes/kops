@@ -275,7 +275,7 @@ func (c *MockAWSCloud) SQS() sqsiface.SQSAPI {
 
 func (c *MockAWSCloud) EventBridge() eventbridgeiface.EventBridgeAPI {
 	if c.MockEventBridge == nil {
-		klog.Fatalf("MockSQS not set")
+		klog.Fatalf("MockEventBridgess not set")
 	}
 	return c.MockEventBridge
 }
