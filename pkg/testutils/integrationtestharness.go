@@ -18,12 +18,13 @@ package testutils
 
 import (
 	"io/ioutil"
-	"k8s.io/kops/cloudmock/aws/mockeventbridge"
-	"k8s.io/kops/cloudmock/aws/mocksqs"
 	"os"
 	"path"
 	"path/filepath"
 	"testing"
+
+	"k8s.io/kops/cloudmock/aws/mockeventbridge"
+	"k8s.io/kops/cloudmock/aws/mocksqs"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"

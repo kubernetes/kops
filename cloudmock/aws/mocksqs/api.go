@@ -17,15 +17,16 @@ limitations under the License.
 package mocksqs
 
 import (
+	"sync"
+
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
-	"sync"
 )
 
 type MockSQS struct {
 	sqsiface.SQSAPI
 
-	mutex                sync.Mutex
+	mutex     sync.Mutex
 	QueueUrls []*string
 }
 
@@ -47,6 +48,6 @@ func (c *MockSQS) ListQueueTags(*sqs.ListQueueTagsInput) (*sqs.ListQueueTagsOutp
 	panic("Not implemented")
 }
 
-func (c *MockSQS) CreateQueue(*sqs.CreateQueueInput) (*sqs.CreateQueueOutput,error) {
+func (c *MockSQS) CreateQueue(*sqs.CreateQueueInput) (*sqs.CreateQueueOutput, error) {
 	panic("Not implemented")
 }
