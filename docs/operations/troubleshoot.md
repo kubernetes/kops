@@ -67,11 +67,11 @@ It is worth mentioning that failing DNS is often a *symptom* of a broken pod net
 
 # CNI
 
-## missing files in `/opt/bin/cni`
+## missing files in `/opt/cni/bin`
 
 ### empty directory
 
-If the CNI directory is completely empty it may be a symptom of nodeup not working properly. See more on troubleshooting nodeup above. In most cases, nodeup will write the most common CNI plugins to that directory so it should rarely be completely empty.
+If the CNI bin directory is completely empty it may be a symptom of nodeup not working properly. See more on troubleshooting nodeup above. In most cases, nodeup will write the most common CNI plugins to that directory so it should rarely be completely empty.
 
 ### CNI plugin file missing
 
