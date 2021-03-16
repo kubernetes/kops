@@ -17,15 +17,16 @@ limitations under the License.
 package mockeventbridge
 
 import (
+	"sync"
+
 	"github.com/aws/aws-sdk-go/service/eventbridge"
 	"github.com/aws/aws-sdk-go/service/eventbridge/eventbridgeiface"
-	"sync"
 )
 
 type MockEventBridge struct {
 	eventbridgeiface.EventBridgeAPI
 
-	mutex                sync.Mutex
+	mutex sync.Mutex
 	Rules []*eventbridge.Rule
 }
 
@@ -45,7 +46,7 @@ func (c *MockEventBridge) DeleteRule(*eventbridge.DeleteRuleInput) (*eventbridge
 
 func (c *MockEventBridge) ListRules(*eventbridge.ListRulesInput) (*eventbridge.ListRulesOutput, error) {
 	response := &eventbridge.ListRulesOutput{
-		Rules:     c.Rules,
+		Rules: c.Rules,
 	}
 
 	return response, nil
