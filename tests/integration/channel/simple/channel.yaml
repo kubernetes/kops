@@ -1,12 +1,41 @@
 spec:
   images:
-    # We put the "legacy" version first, for kops versions that don't support versions ( < 1.5.0 )
-    - name: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
-      providerID: aws
-      kubernetesVersion: ">=1.4.0 <1.5.0"
-    - name: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-01-09
-      providerID: aws
-      kubernetesVersion: ">=1.5.0"
+  - name: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2021-02-05
+    providerID: aws
+    architectureID: amd64
+    kubernetesVersion: "<1.12.0"
+  - name: kope.io/k8s-1.12-debian-stretch-amd64-hvm-ebs-2021-02-05
+    providerID: aws
+    architectureID: amd64
+    kubernetesVersion: ">=1.12.0 <1.13.0"
+  - name: kope.io/k8s-1.13-debian-stretch-amd64-hvm-ebs-2021-02-05
+    providerID: aws
+    architectureID: amd64
+    kubernetesVersion: ">=1.13.0 <1.14.0"
+  - name: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2021-02-05
+    providerID: aws
+    architectureID: amd64
+    kubernetesVersion: ">=1.14.0 <1.15.0"
+  - name: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2021-02-05
+    providerID: aws
+    architectureID: amd64
+    kubernetesVersion: ">=1.15.0 <1.16.0"
+  - name: kope.io/k8s-1.16-debian-stretch-amd64-hvm-ebs-2021-02-05
+    providerID: aws
+    architectureID: amd64
+    kubernetesVersion: ">=1.16.0 <1.17.0"
+  - name: kope.io/k8s-1.17-debian-stretch-amd64-hvm-ebs-2021-02-05
+    providerID: aws
+    architectureID: amd64
+    kubernetesVersion: ">=1.17.0 <1.18.0"
+  - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1
+    providerID: aws
+    architectureID: amd64
+    kubernetesVersion: ">=1.18.0"
+  - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210119.1
+    providerID: aws
+    architectureID: arm64
+    kubernetesVersion: ">=1.18.0"
   cluster:
     kubernetesVersion: v1.4.7
     networking:
