@@ -8,9 +8,8 @@ vendored dependencies.
 The following software must be installed prior to running the
 update commands:
 
-* [bazel](https://github.com/bazelbuild/bazel)
+* [bazelisk](https://github.com/bazelbuild/bazelisk)
 * [go mod](https://github.com/golang/go/wiki/Modules)
-* [hg](https://www.mercurial-scm.org/wiki/Download)
 
 ## Adding a dependency to the vendor directory
 
