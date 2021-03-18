@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright 2019 The Kubernetes Authors.
+# Copyright 2021 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,14 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+set -o errexit
+set -o nounset
+set -o pipefail
 
-cd "${KOPS_ROOT}" || exit 1
-
-bad_files=$(git ls-files "*.go" | grep -v vendor | xargs bazelisk run //:gofmt -- -s -w -l)
-if [[ -n "${bad_files}" ]]; then
-  echo "FAIL: 'make gofmt' needs to be run on the following files: "
-  echo "${bad_files}"
-  echo "FAIL: please execute make gofmt"
-  exit 1
+if ! command -v bazelisk &> /dev/null; then
+  . "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+  cd "${KOPS_ROOT}/hack" || exit 1
+  go install github.com/bazelbuild/bazelisk
 fi
