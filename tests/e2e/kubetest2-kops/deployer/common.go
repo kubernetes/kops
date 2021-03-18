@@ -61,13 +61,25 @@ func (d *deployer) initialize() error {
 		d.KopsBinaryPath = binaryPath
 		d.KopsBaseURL = baseURL
 	}
-	// These environment variables are defined by the "preset-aws-ssh" prow preset
-	// https://github.com/kubernetes/test-infra/blob/3d3b325c98b739b526ba5d93ce21c90a05e1f46d/config/prow/config.yaml#L653-L670
-	if d.SSHPrivateKeyPath == "" {
-		d.SSHPrivateKeyPath = os.Getenv("AWS_SSH_PRIVATE_KEY_FILE")
-	}
-	if d.SSHPublicKeyPath == "" {
-		d.SSHPublicKeyPath = os.Getenv("AWS_SSH_PUBLIC_KEY_FILE")
+	switch d.CloudProvider {
+	case "aws":
+		// These environment variables are defined by the "preset-aws-ssh" prow preset
+		// https://github.com/kubernetes/test-infra/blob/3d3b325c98b739b526ba5d93ce21c90a05e1f46d/config/prow/config.yaml#L653-L670
+		if d.SSHPrivateKeyPath == "" {
+			d.SSHPrivateKeyPath = os.Getenv("AWS_SSH_PRIVATE_KEY_FILE")
+		}
+		if d.SSHPublicKeyPath == "" {
+			d.SSHPublicKeyPath = os.Getenv("AWS_SSH_PUBLIC_KEY_FILE")
+		}
+	case "gce":
+		// These environment variables are defined by the "preset-k8s-ssh" prow preset
+		// https://github.com/kubernetes/test-infra/blob/432c6e7dca38f0785901a6159275524cec369c4a/config/prow/config.yaml#L639-L656
+		if d.SSHPrivateKeyPath == "" {
+			d.SSHPrivateKeyPath = os.Getenv("JENKINS_GCE_SSH_PRIVATE_KEY_FILE")
+		}
+		if d.SSHPublicKeyPath == "" {
+			d.SSHPublicKeyPath = os.Getenv("JENKINS_GCE_SSH_PUBLIC_KEY_FILE")
+		}
 	}
 	if d.SSHUser == "" {
 		d.SSHUser = os.Getenv("KUBE_SSH_USER")
