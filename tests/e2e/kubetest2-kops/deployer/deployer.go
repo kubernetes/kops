@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/tests/e2e/kubetest2-kops/builder"
 	"k8s.io/kops/tests/e2e/pkg/target"
 
+	"sigs.k8s.io/boskos/client"
 	"sigs.k8s.io/kubetest2/pkg/types"
 )
 
@@ -48,6 +49,7 @@ type deployer struct {
 
 	ClusterName    string   `flag:"cluster-name" desc:"The FQDN to use for the cluster name"`
 	CloudProvider  string   `flag:"cloud-provider" desc:"Which cloud provider to use"`
+	GCPProject     string   `flag:"gcp-project" desc:"Which GCP Project to use when --cloud-provider=gce"`
 	Env            []string `flag:"env" desc:"Additional env vars to set for kops commands in NAME=VALUE format"`
 	CreateArgs     string   `flag:"create-args" desc:"Extra space-separated arguments passed to 'kops create cluster'"`
 	KopsBinaryPath string   `flag:"kops-binary-path" desc:"The path to kops executable used for testing"`
@@ -72,6 +74,14 @@ type deployer struct {
 	// manifestPath is the location of the rendered manifest based on TemplatePath
 	manifestPath string
 	terraform    *target.Terraform
+
+	// boskos struct field will be non-nil when the deployer is
+	// using boskos to acquire a GCP project
+	boskos *client.Client
+
+	// this channel serves as a signal channel for the hearbeat goroutine
+	// so that it can be explicitly closed
+	boskosHeartbeatClose chan struct{}
 }
 
 // assert that New implements types.NewDeployer
