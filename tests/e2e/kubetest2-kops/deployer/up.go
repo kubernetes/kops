@@ -114,6 +114,9 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 		args = appendIfUnset(args, "--master-size", "c5.large")
 	case "gce":
 		args = appendIfUnset(args, "--master-size", "e2-standard-2")
+		if d.GCPProject != "" {
+			args = appendIfUnset(args, "--project", d.GCPProject)
+		}
 	case "digitalocean":
 		args = appendIfUnset(args, "--master-size", "s-8vcpu-16gb")
 	}
