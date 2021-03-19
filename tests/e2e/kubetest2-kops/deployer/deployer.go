@@ -99,8 +99,9 @@ func (d *deployer) Provider() string {
 func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 	// create a deployer object and set fields that are not flag controlled
 	d := &deployer{
-		commonOptions: opts,
-		BuildOptions:  &builder.BuildOptions{},
+		commonOptions:        opts,
+		BuildOptions:         &builder.BuildOptions{},
+		boskosHeartbeatClose: make(chan struct{}),
 	}
 
 	dir, err := defaultArtifactsDir()
