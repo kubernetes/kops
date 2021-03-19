@@ -55,8 +55,8 @@ github.com/bazelbuild/bazelisk v1.7.5 h1:WAUQghzJdzpB5Dr3eBwoywsY9uWSBVSV6MAmDo1
 github.com/bazelbuild/bazelisk v1.7.5/go.mod h1:z1OyA/qel4OHS8Ym1Tz4XUB6I9c+GJIR+4ch+8XJ6yk=
 github.com/bazelbuild/buildtools v0.0.0-20200718160251-b1667ff58f71 h1:Et1IIXrXwhpDvR5wH9REPEZ0sUtzUoJSq19nfmBqzBY=
 github.com/bazelbuild/buildtools v0.0.0-20200718160251-b1667ff58f71/go.mod h1:5JP0TXzWDHXv8qvxRC4InIazwdyDseBDbzESUMKk1yU=
-github.com/bazelbuild/rules_go v0.0.0-20190719190356-6dae44dc5cab h1:wzbawlkLtl2ze9w/312NHZ84c7kpUCtlkD8HgFY27sw=
 github.com/bazelbuild/rules_go v0.0.0-20190719190356-6dae44dc5cab/go.mod h1:MC23Dc/wkXEyk3Wpq6lCqz0ZAYOZDw2DR5y3N1q2i7M=
+github.com/bazelbuild/rules_go v0.24.7 h1:WQ4iSdQ423T9prTfDgXp0S6f/ig9H0N/bin/SvDZFJg=
 github.com/bazelbuild/rules_go v0.24.7/go.mod h1:MC23Dc/wkXEyk3Wpq6lCqz0ZAYOZDw2DR5y3N1q2i7M=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=

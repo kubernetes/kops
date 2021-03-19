@@ -107,7 +107,7 @@ func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
 	if fi.BoolValue(e.Public) {
 		switch p.(type) {
 		case *vfs.S3Path:
-			acl = vfs.S3Acl{
+			acl = &vfs.S3Acl{
 				RequestACL: fi.String("public-read"),
 			}
 		default:

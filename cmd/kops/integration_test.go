@@ -94,21 +94,8 @@ func (i *integrationTest) withoutSSHKey() *integrationTest {
 	return i
 }
 
-// withCAKey indicates that we should use a fixed ca.crt & ca.key from the source directory as our CA.
-// This is needed when the CA is exposed, for example when using AWS WebIdentity federation.
-func (i *integrationTest) withCAKey() *integrationTest {
-	i.caKey = true
-	return i
-}
-
 func (i *integrationTest) withoutPolicies() *integrationTest {
 	i.expectPolicies = false
-	return i
-}
-
-// withServiceAccountRoles indicates we expect to assign per-ServiceAccount IAM roles (instead of just using the node roles)
-func (i *integrationTest) withServiceAccountRoles() *integrationTest {
-	i.expectServiceAccountRoles = true
 	return i
 }
 
@@ -339,18 +326,6 @@ func TestContainerdCustom(t *testing.T) {
 // TestDockerCustom runs the test on a custom Docker URL configuration
 func TestDockerCustom(t *testing.T) {
 	newIntegrationTest("docker.example.com", "docker-custom").runTestCloudformation(t)
-}
-
-// TestPublicJWKS runs a simple configuration, but with UseServiceAccountIAM and PublicJWKS enabled
-func TestPublicJWKS(t *testing.T) {
-	featureflag.ParseFlags("+UseServiceAccountIAM,+PublicJWKS")
-	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-UseServiceAccountIAM,-PublicJWKS")
-	}
-	defer unsetFeatureFlags()
-
-	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
-	newIntegrationTest("minimal.example.com", "public-jwks").withCAKey().withServiceAccountRoles().runTestTerraformAWS(t)
 }
 
 func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
