@@ -89,7 +89,7 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 		SigningKey: skTask,
 	}
 
-	discovery, err := buildDicoveryJSON(serviceAccountIssuer)
+	discovery, err := buildDiscoveryJSON(serviceAccountIssuer)
 	if err != nil {
 		return err
 	}
@@ -118,13 +118,14 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 		Lifecycle:   b.Lifecycle,
 		URL:         fi.String(serviceAccountIssuer),
 		ClientIDs:   []*string{fi.String(defaultAudience)},
+		Tags:        b.CloudTags(b.ClusterName(), false),
 		Thumbprints: thumbprints,
 	})
 
 	return nil
 }
 
-func buildDicoveryJSON(issuerURL string) ([]byte, error) {
+func buildDiscoveryJSON(issuerURL string) ([]byte, error) {
 	d := oidcDiscovery{
 		Issuer:                fmt.Sprintf("%v/", issuerURL),
 		JWKSURI:               fmt.Sprintf("%v/keys.json", issuerURL),
