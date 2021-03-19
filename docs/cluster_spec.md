@@ -600,6 +600,8 @@ spec:
     cpuCFSQuotaPeriod: "100ms"
 ```
 
+This change requires `CustomCPUCFSQuotaPeriod` [feature gate](#feature-gates).
+
 ### Enable Custom metrics support
 To use custom metrics in kubernetes as per [custom metrics doc](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-custom-metrics)
 we have to set the flag `--enable-custom-metrics` to `true` on all the kubelets. We can specify that in the `kubelet` spec in our cluster.yml.
