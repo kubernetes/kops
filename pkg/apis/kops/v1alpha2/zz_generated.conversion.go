@@ -2157,6 +2157,7 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	out.SecretStore = in.SecretStore
 	out.KeyStore = in.KeyStore
 	out.ConfigStore = in.ConfigStore
+	out.PublicDataStore = in.PublicDataStore
 	out.DNSZone = in.DNSZone
 	if in.DNSControllerGossipConfig != nil {
 		in, out := &in.DNSControllerGossipConfig, &out.DNSControllerGossipConfig
@@ -2524,6 +2525,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 	out.SecretStore = in.SecretStore
 	out.KeyStore = in.KeyStore
 	out.ConfigStore = in.ConfigStore
+	out.PublicDataStore = in.PublicDataStore
 	out.DNSZone = in.DNSZone
 	if in.DNSControllerGossipConfig != nil {
 		in, out := &in.DNSControllerGossipConfig, &out.DNSControllerGossipConfig

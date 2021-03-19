@@ -930,6 +930,7 @@ gopkg.in/inf.v0
 # gopkg.in/ini.v1 v1.62.0
 gopkg.in/ini.v1
 # gopkg.in/square/go-jose.v2 v2.3.1
+## explicit
 gopkg.in/square/go-jose.v2
 gopkg.in/square/go-jose.v2/cipher
 gopkg.in/square/go-jose.v2/json

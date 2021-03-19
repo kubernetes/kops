@@ -1298,6 +1298,7 @@ func validateMetricsServer(cluster *kops.Cluster, spec *kops.MetricsServerConfig
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("insecure"), "Secure metrics server requires that cert manager is enabled"))
 		}
 	}
+
 	return allErrs
 }
 

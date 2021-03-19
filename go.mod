@@ -81,6 +81,7 @@ require (
 	google.golang.org/api v0.41.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
+	gopkg.in/square/go-jose.v2 v2.3.1
 	helm.sh/helm/v3 v3.5.1
 	k8s.io/api v0.21.0-beta.1
 	k8s.io/apimachinery v0.21.0-beta.1
