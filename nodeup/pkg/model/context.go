@@ -398,7 +398,7 @@ func (c *NodeupModelContext) UseSecureKubelet() bool {
 func (c *NodeupModelContext) KubectlPath() string {
 	kubeletCommand := "/usr/local/bin"
 	if c.Distribution == distributions.DistributionFlatcar {
-		kubeletCommand = "/opt/bin"
+		kubeletCommand = "/opt/kops/bin"
 	}
 	if c.Distribution == distributions.DistributionContainerOS {
 		kubeletCommand = "/home/kubernetes/bin"
