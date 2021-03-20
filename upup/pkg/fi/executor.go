@@ -134,7 +134,7 @@ func (e *executor) RunTasks(taskMap map[string]Task) error {
 
 				remaining := time.Second * time.Duration(int(time.Until(ts.deadline).Seconds()))
 				if _, ok := err.(*TryAgainLaterError); ok {
-					klog.Infof("Task %q not ready: %v", ts.key, err)
+					klog.V(2).Infof("Task %q not ready: %v", ts.key, err)
 				} else {
 					klog.Warningf("error running task %q (%v remaining to succeed): %v", ts.key, remaining, err)
 				}
