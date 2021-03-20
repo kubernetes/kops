@@ -328,6 +328,17 @@ func TestDockerCustom(t *testing.T) {
 	newIntegrationTest("docker.example.com", "docker-custom").runTestCloudformation(t)
 }
 
+// TestAPIServerNodes runs a simple configuration with dedicated apiserver nodes
+func TestAPIServerNodes(t *testing.T) {
+	featureflag.ParseFlags("+APIServerNodes")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-APIServerNodes")
+	}
+	defer unsetFeatureFlags()
+
+	newIntegrationTest("minimal.example.com", "apiservernodes").runTestCloudformation(t)
+}
+
 func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
 	ctx := context.Background()
 

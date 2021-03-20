@@ -23,7 +23,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
-// ParseInstanceGroupRole converts a string to an InstanceGroupRole
+// ParseInstanceGroupRole converts a string to an InstanceGroupRole.
+//
+// If lenient is set to true, the function will match pluralised words too.
+// It will return the instance group role and true if a match was found.
 func ParseInstanceGroupRole(input string, lenient bool) (InstanceGroupRole, bool) {
 	findRole := strings.ToLower(input)
 	if lenient {

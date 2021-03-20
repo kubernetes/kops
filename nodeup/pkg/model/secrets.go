@@ -69,8 +69,8 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	// if we are not a master we can stop here
-	if !b.IsMaster {
+	// If we do not run the Kubernetes API server we can stop here.
+	if !b.HasAPIServer {
 		return nil
 	}
 

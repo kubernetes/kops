@@ -48,6 +48,15 @@ func (_ *NodeRoleMaster) ServiceAccount() (types.NamespacedName, bool) {
 	return types.NamespacedName{}, false
 }
 
+// NodeRoleAPIServer represents the role of API server-only nodes, and implements Subject.
+type NodeRoleAPIServer struct {
+}
+
+// ServiceAccount implements Subject.
+func (_ *NodeRoleAPIServer) ServiceAccount() (types.NamespacedName, bool) {
+	return types.NamespacedName{}, false
+}
+
 // NodeRoleNode represents the role of normal ("worker") nodes, and implements Subject.
 type NodeRoleNode struct {
 }
@@ -71,13 +80,12 @@ func BuildNodeRoleSubject(igRole kops.InstanceGroupRole) (Subject, error) {
 	switch igRole {
 	case kops.InstanceGroupRoleMaster:
 		return &NodeRoleMaster{}, nil
-
+	case kops.InstanceGroupRoleAPIServer:
+		return &NodeRoleAPIServer{}, nil
 	case kops.InstanceGroupRoleNode:
 		return &NodeRoleNode{}, nil
-
 	case kops.InstanceGroupRoleBastion:
 		return &NodeRoleBastion{}, nil
-
 	default:
 		return nil, fmt.Errorf("unknown instancegroup role %q", igRole)
 	}

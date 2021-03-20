@@ -18,7 +18,6 @@ package kops
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/klog/v2"
 )
 
 const (
@@ -59,12 +58,15 @@ const (
 	InstanceGroupRoleNode InstanceGroupRole = "Node"
 	// InstanceGroupRoleBastion is a bastion role
 	InstanceGroupRoleBastion InstanceGroupRole = "Bastion"
+	// InstanceGroupRoleAPIServer is an API server role
+	InstanceGroupRoleAPIServer InstanceGroupRole = "APIServer"
 )
 
 // AllInstanceGroupRoles is a slice of all valid InstanceGroupRole values
 var AllInstanceGroupRoles = []InstanceGroupRole{
-	InstanceGroupRoleNode,
 	InstanceGroupRoleMaster,
+	InstanceGroupRoleAPIServer,
+	InstanceGroupRoleNode,
 	InstanceGroupRoleBastion,
 }
 
@@ -286,27 +288,32 @@ func (g *InstanceGroup) IsMaster() bool {
 	switch g.Spec.Role {
 	case InstanceGroupRoleMaster:
 		return true
-	case InstanceGroupRoleNode:
-		return false
-	case InstanceGroupRoleBastion:
-		return false
 	default:
-		klog.Fatalf("Role not set in group %v", g)
 		return false
 	}
+}
+
+// IsAPIServerOnly checks if instanceGroup runs only the API Server
+func (g *InstanceGroup) IsAPIServerOnly() bool {
+	switch g.Spec.Role {
+	case InstanceGroupRoleAPIServer:
+		return true
+	default:
+		return false
+	}
+}
+
+// hasAPIServer checks if instanceGroup runs an API Server
+func (g *InstanceGroup) HasAPIServer() bool {
+	return g.IsMaster() || g.IsAPIServerOnly()
 }
 
 // IsBastion checks if instanceGroup is a bastion
 func (g *InstanceGroup) IsBastion() bool {
 	switch g.Spec.Role {
-	case InstanceGroupRoleMaster:
-		return false
-	case InstanceGroupRoleNode:
-		return false
 	case InstanceGroupRoleBastion:
 		return true
 	default:
-		klog.Fatalf("Role not set in group %v", g)
 		return false
 	}
 }

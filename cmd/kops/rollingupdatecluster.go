@@ -177,6 +177,11 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Example: rollingupdateExample,
 	}
 
+	allRoles := make([]string, 0, len(kopsapi.AllInstanceGroupRoles))
+	for _, r := range kopsapi.AllInstanceGroupRoles {
+		allRoles = append(allRoles, string(r))
+	}
+
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Perform rolling update immediately, without --yes rolling-update executes a dry-run")
 	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force rolling update, even if no changes")
 	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform rolling update without confirming progress with k8s")
@@ -189,7 +194,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().DurationVar(&options.PostDrainDelay, "post-drain-delay", options.PostDrainDelay, "Time to wait after draining each node")
 	cmd.Flags().BoolVarP(&options.Interactive, "interactive", "i", options.Interactive, "Prompt to continue after each instance is updated")
 	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "List of instance groups to update (defaults to all if not specified)")
-	cmd.Flags().StringSliceVar(&options.InstanceGroupRoles, "instance-group-roles", options.InstanceGroupRoles, "If specified, only instance groups of the specified role will be updated (e.g. Master,Node,Bastion)")
+	cmd.Flags().StringSliceVar(&options.InstanceGroupRoles, "instance-group-roles", options.InstanceGroupRoles, "If specified, only instance groups of the specified role will be updated ("+strings.Join(allRoles, ",")+")")
 
 	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "The rolling-update will fail if draining a node fails.")
 	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "The rolling-update will fail if the cluster fails to validate.")
@@ -302,11 +307,14 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 	if len(options.InstanceGroupRoles) != 0 {
 		var filtered []*kopsapi.InstanceGroup
 
-		for _, ig := range instanceGroups {
-			for _, role := range options.InstanceGroupRoles {
-				if ig.Spec.Role == kopsapi.InstanceGroupRole(strings.Title(strings.ToLower(role))) {
+		for _, role := range options.InstanceGroupRoles {
+			s, f := kopsapi.ParseInstanceGroupRole(role, true)
+			if !f {
+				return fmt.Errorf("invalid instance group role %q", role)
+			}
+			for _, ig := range instanceGroups {
+				if ig.Spec.Role == s {
 					filtered = append(filtered, ig)
-					continue
 				}
 			}
 		}
