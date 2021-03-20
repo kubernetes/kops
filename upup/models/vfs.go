@@ -17,16 +17,20 @@ limitations under the License.
 package models
 
 import (
+	"embed"
 	"errors"
 	"io"
+	"io/fs"
 	"os"
 	"path"
-	"strings"
 
 	"k8s.io/kops/util/pkg/vfs"
 )
 
 var ReadOnlyError = errors.New("AssetPath is read-only")
+
+//go:embed cloudup
+var content embed.FS
 
 type AssetPath struct {
 	location string
@@ -68,28 +72,24 @@ func (p *AssetPath) WriteTo(out io.Writer) (int64, error) {
 
 // ReadFile implements Path::ReadFile
 func (p *AssetPath) ReadFile() ([]byte, error) {
-	data, err := Asset(p.location)
-	if err != nil {
-		// Yuk
-		if strings.Contains(err.Error(), "not found") {
-			return nil, os.ErrNotExist
-		}
+	data, err := content.ReadFile(p.location)
+	if _, ok := err.(*fs.PathError); ok {
+		return nil, os.ErrNotExist
 	}
 	return data, err
 }
 
 func (p *AssetPath) ReadDir() ([]vfs.Path, error) {
-	files, err := AssetDir(p.location)
+	files, err := content.ReadDir(p.location)
 	if err != nil {
-		// Yuk
-		if strings.Contains(err.Error(), "not found") {
+		if _, ok := err.(*fs.PathError); ok {
 			return nil, os.ErrNotExist
 		}
 		return nil, err
 	}
 	var paths []vfs.Path
 	for _, f := range files {
-		paths = append(paths, NewAssetPath(path.Join(p.location, f)))
+		paths = append(paths, NewAssetPath(path.Join(p.location, f.Name())))
 	}
 	return paths, nil
 }
@@ -104,25 +104,23 @@ func (p *AssetPath) ReadTree() ([]vfs.Path, error) {
 }
 
 func readTree(base string, dest *[]vfs.Path) error {
-	files, err := AssetDir(base)
+	files, err := content.ReadDir(base)
 	if err != nil {
-		// Yuk
-		if strings.Contains(err.Error(), "not found") {
+		if _, ok := err.(*fs.PathError); ok {
 			return os.ErrNotExist
 		}
 		return err
 	}
 	for _, f := range files {
-		p := path.Join(base, f)
-		*dest = append(*dest, NewAssetPath(p))
-
-		// We always assume a directory, but ignore if not found
-		// This is because go-bindata doesn't support FileInfo on directories :-(
-		{
-			err = readTree(p, dest)
-			if err != nil && !os.IsNotExist(err) {
+		p := path.Join(base, f.Name())
+		if f.IsDir() {
+			childFiles, err := NewAssetPath(p).ReadTree()
+			if err != nil {
 				return err
 			}
+			*dest = append(*dest, childFiles...)
+		} else {
+			*dest = append(*dest, NewAssetPath(p))
 		}
 	}
 	return nil
