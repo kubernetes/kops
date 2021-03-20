@@ -371,6 +371,20 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("keyStore"), "Vault keystore is only available on AWS"))
 		}
 	}
+
+	publicDataStore := c.Spec.PublicDataStore
+	if publicDataStore != "" {
+		if !strings.HasPrefix(publicDataStore, "s3://") {
+			allErrs = append(allErrs, field.Invalid(fieldSpec.Child("publicDataStore"), publicDataStore, "S3 is the only supported VFS for publicStore"))
+		}
+	}
+
+	if featureflag.PublicJWKS.Enabled() {
+		if publicDataStore == "" {
+			allErrs = append(allErrs, field.Invalid(fieldSpec.Child("publicDataStore"), publicDataStore, "Public JWKS requires publicStore to be configured"))
+		}
+	}
+
 	return allErrs
 }
 
