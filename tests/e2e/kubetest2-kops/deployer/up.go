@@ -21,6 +21,7 @@ import (
 	"fmt"
 	osexec "os/exec"
 	"strings"
+	"time"
 
 	"github.com/google/shlex"
 
@@ -145,11 +146,17 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 }
 
 func (d *deployer) IsUp() (bool, error) {
+	wait := "15m"
+	if d.TerraformVersion != "" {
+		// `--target terraform` doesn't precreate the API DNS records,
+		// so kops is more likely to hit negative TTLs during validation
+		wait = "20m"
+	}
 	args := []string{
 		d.KopsBinaryPath, "validate", "cluster",
 		"--name", d.ClusterName,
 		"--count", "10",
-		"--wait", "15m",
+		"--wait", wait,
 	}
 	klog.Info(strings.Join(args, " "))
 
@@ -161,6 +168,10 @@ func (d *deployer) IsUp() (bool, error) {
 	// `kops validate cluster` exits 2 if validation failed
 	if exitErr, ok := err.(*osexec.ExitError); ok && exitErr.ExitCode() == 2 {
 		return false, nil
+	}
+	if err == nil && d.TerraformVersion != "" && d.commonOptions.ShouldTest() {
+		klog.Info("Waiting 5 minutes for DNS TTLs before starting tests")
+		time.Sleep(5 * time.Minute)
 	}
 	return err == nil, err
 }
