@@ -30,6 +30,7 @@ spec:
   networking:
     kubenet: {}
   nonMasqueradeCIDR: 100.64.0.0/10
+  publicDataStore: memfs://discovery.example.com/minimal.example.com
   sshAccess:
     - 0.0.0.0/0
   topology:

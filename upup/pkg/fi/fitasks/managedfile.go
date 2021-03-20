@@ -105,11 +105,16 @@ func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
 
 	var acl vfs.ACL
 	if fi.BoolValue(e.Public) {
-		switch p.(type) {
+		switch p := p.(type) {
 		case *vfs.S3Path:
 			acl = &vfs.S3Acl{
 				RequestACL: fi.String("public-read"),
 			}
+		case *vfs.MemFSPath:
+			if !p.IsClusterReadable() {
+				return fmt.Errorf("the %q path is intended for use in tests", p.Path())
+			}
+			acl = nil
 		default:
 			return fmt.Errorf("the %q path does not support public ACL", p.Path())
 		}
