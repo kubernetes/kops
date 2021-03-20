@@ -230,7 +230,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 		t.HTTPPutResponseHopLimit = ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit
 	}
 
-	if ig.Spec.Role == kops.InstanceGroupRoleMaster &&
+	if ig.HasAPIServer() &&
 		b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
 		for _, id := range b.Cluster.Spec.API.LoadBalancer.AdditionalSecurityGroups {
 			sgTask := &awstasks.SecurityGroup{
@@ -410,7 +410,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 	// hybrid (+SpotinstHybrid) instance groups.
 	if !featureflag.Spotinst.Enabled() ||
 		(featureflag.SpotinstHybrid.Enabled() && !HybridInstanceGroup(ig)) {
-		if b.UseLoadBalancerForAPI() && ig.Spec.Role == kops.InstanceGroupRoleMaster {
+		if b.UseLoadBalancerForAPI() && ig.HasAPIServer() {
 			if b.UseNetworkLoadBalancer() {
 				t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("tcp"))
 				if b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {

@@ -18,17 +18,20 @@ package nodelabels
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 const (
-	RoleLabelName15        = "kubernetes.io/role"
-	RoleLabelName16        = "kubernetes.io/role"
-	RoleMasterLabelValue15 = "master"
-	RoleNodeLabelValue15   = "node"
+	RoleLabelName15           = "kubernetes.io/role"
+	RoleLabelName16           = "kubernetes.io/role"
+	RoleMasterLabelValue15    = "master"
+	RoleAPIServerLabelValue15 = "api-server"
+	RoleNodeLabelValue15      = "node"
 
-	RoleLabelMaster16 = "node-role.kubernetes.io/master"
-	RoleLabelNode16   = "node-role.kubernetes.io/node"
+	RoleLabelMaster16    = "node-role.kubernetes.io/master"
+	RoleLabelAPIServer16 = "node-role.kubernetes.io/api-server"
+	RoleLabelNode16      = "node-role.kubernetes.io/node"
 
 	RoleLabelControlPlane20 = "node-role.kubernetes.io/control-plane"
 )
@@ -37,6 +40,8 @@ const (
 // This moved from the kubelet to a central controller in kubernetes 1.16
 func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) map[string]string {
 	isControlPlane := instanceGroup.Spec.Role == kops.InstanceGroupRoleMaster
+
+	isAPIServer := instanceGroup.Spec.Role == kops.InstanceGroupRoleAPIServer
 
 	// Merge KubeletConfig for NodeLabels
 	c := &kops.KubeletConfigSpec{}
@@ -52,6 +57,22 @@ func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) m
 
 	nodeLabels := c.NodeLabels
 
+	if isAPIServer || isControlPlane {
+		if nodeLabels == nil {
+			nodeLabels = make(map[string]string)
+		}
+		if featureflag.APIServerNodes.Enabled() {
+			nodeLabels[RoleLabelAPIServer16] = ""
+		}
+		nodeLabels[RoleLabelName15] = RoleAPIServerLabelValue15
+	} else {
+		if nodeLabels == nil {
+			nodeLabels = make(map[string]string)
+		}
+		nodeLabels[RoleLabelNode16] = ""
+		nodeLabels[RoleLabelName15] = RoleNodeLabelValue15
+	}
+
 	if isControlPlane {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
@@ -59,12 +80,6 @@ func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) m
 		for label, value := range BuildMandatoryControlPlaneLabels() {
 			nodeLabels[label] = value
 		}
-	} else {
-		if nodeLabels == nil {
-			nodeLabels = make(map[string]string)
-		}
-		nodeLabels[RoleLabelNode16] = ""
-		nodeLabels[RoleLabelName15] = RoleNodeLabelValue15
 	}
 
 	for k, v := range instanceGroup.Spec.NodeLabels {

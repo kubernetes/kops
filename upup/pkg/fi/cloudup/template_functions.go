@@ -452,7 +452,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		case kops.CloudProviderAWS:
 			nodesRoles := sets.String{}
 			for _, ig := range tf.InstanceGroups {
-				if ig.Spec.Role == kops.InstanceGroupRoleNode {
+				if ig.Spec.Role == kops.InstanceGroupRoleNode || ig.Spec.Role == kops.InstanceGroupRoleAPIServer {
 					profile, err := tf.LinkToIAMInstanceProfile(ig)
 					if err != nil {
 						return "", fmt.Errorf("getting profile for ig %s: %v", ig.Name, err)

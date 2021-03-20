@@ -236,6 +236,54 @@ func (b *PolicyBuilder) BuildAWSPolicy() (*Policy, error) {
 }
 
 // BuildAWSPolicy generates a custom policy for a Kubernetes master.
+func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
+	resource := createResource(b)
+
+	p := &Policy{
+		Version: PolicyDefaultVersion,
+	}
+
+	addMasterEC2Policies(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+	addCertIAMPolicies(p, resource)
+
+	var err error
+	if p, err = b.AddS3Permissions(p); err != nil {
+		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
+	}
+
+	if b.KMSKeys != nil && len(b.KMSKeys) != 0 {
+		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys), b.Cluster.Spec.IAM.Legacy)
+	}
+
+	if b.Cluster.Spec.IAM.Legacy {
+		addLegacyDNSControllerPermissions(b, p)
+	}
+	AddDNSControllerPermissions(b, p)
+
+	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {
+		addECRPermissions(p)
+	}
+
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
+		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName(), b.IAMPrefix())
+	}
+
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
+		addLyftVPCPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+	}
+
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.Ipam == kops.CiliumIpamEni {
+		addCiliumEniPermissions(p, resource, b.Cluster.Spec.IAM.Legacy)
+	}
+
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && (b.Cluster.Spec.Networking.Calico.CrossSubnet || b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "") {
+		addCalicoSrcDstCheckPermissions(p)
+	}
+
+	return p, nil
+}
+
+// BuildAWSPolicy generates a custom policy for a Kubernetes master.
 func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	resource := createResource(b)
 
@@ -546,7 +594,7 @@ func ReadableStatePaths(cluster *kops.Cluster, role Subject) ([]string, error) {
 	var paths []string
 
 	switch role.(type) {
-	case *NodeRoleMaster:
+	case *NodeRoleMaster, *NodeRoleAPIServer:
 		paths = append(paths, "/*")
 
 	case *NodeRoleNode:
