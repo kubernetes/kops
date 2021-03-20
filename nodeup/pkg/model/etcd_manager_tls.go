@@ -32,17 +32,26 @@ var _ fi.ModelBuilder = &EtcdManagerTLSBuilder{}
 
 // Build is responsible for TLS configuration for etcd-manager
 func (b *EtcdManagerTLSBuilder) Build(ctx *fi.ModelBuilderContext) error {
-	if !b.IsMaster || !b.UseEtcdManager() {
+	if !b.HasAPIServer || !b.UseEtcdManager() {
 		return nil
+	}
+
+	// We also dynamically generate the client keypair for apiserver
+	if err := b.buildKubeAPIServerKeypair(ctx); err != nil {
+		return err
 	}
 
 	for _, k := range []string{"main", "events"} {
 		d := "/etc/kubernetes/pki/etcd-manager-" + k
 
 		keys := make(map[string]string)
-		keys["etcd-manager-ca"] = "etcd-manager-ca-" + k
-		keys["etcd-peers-ca"] = "etcd-peers-ca-" + k
-		// Because API server can only have a single client-cert, we need to share a client CA
+
+		// Only nodes running etcd need the peers CA
+		if b.IsMaster {
+			keys["etcd-manager-ca"] = "etcd-manager-ca-" + k
+			keys["etcd-peers-ca"] = "etcd-peers-ca-" + k
+		}
+		// Because API server can only have a single client certificate for etcd, we need to share a client CA
 		keys["etcd-clients-ca"] = "etcd-clients-ca"
 
 		for fileName, keystoreName := range keys {
@@ -63,10 +72,6 @@ func (b *EtcdManagerTLSBuilder) Build(ctx *fi.ModelBuilderContext) error {
 		}
 	}
 
-	// We also dynamically generate the client keypair for apiserver
-	if err := b.buildKubeAPIServerKeypair(ctx); err != nil {
-		return err
-	}
 	return nil
 }
 

@@ -421,6 +421,7 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.ModelBuilderContext) erro
 // buildKubeletConfigSpec returns the kubeletconfig for the specified instanceGroup
 func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, error) {
 	isMaster := b.IsMaster
+	isAPIServer := b.InstanceGroup.Spec.Role == kops.InstanceGroupRoleAPIServer
 
 	// Merge KubeletConfig for NodeLabels
 	c := b.NodeupConfig.KubeletConfig
@@ -489,6 +490,10 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		if len(c.Taints) == 0 && isMaster {
 			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
 			c.Taints = append(c.Taints, nodelabels.RoleLabelMaster16+"=:"+string(v1.TaintEffectNoSchedule))
+		}
+		if len(c.Taints) == 0 && isAPIServer {
+			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
+			c.Taints = append(c.Taints, nodelabels.RoleLabelAPIServer16+"=:"+string(v1.TaintEffectNoSchedule))
 		}
 
 		// Enable scheduling since it can be controlled via taints.

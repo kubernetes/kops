@@ -25,8 +25,14 @@ func GetNodeRole(node *v1.Node) string {
 	if _, ok := node.Labels["node-role.kubernetes.io/master"]; ok {
 		return "master"
 	}
+	if _, ok := node.Labels["node-role.kubernetes.io/control-plane"]; ok {
+		return "control-plane"
+	}
 	if _, ok := node.Labels["node-role.kubernetes.io/node"]; ok {
 		return "node"
+	}
+	if _, ok := node.Labels["node-role.kubernetes.io/api-server"]; ok {
+		return "apiserver"
 	}
 	// Older label
 	return node.Labels["kubernetes.io/role"]
