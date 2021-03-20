@@ -18,6 +18,7 @@ package iam
 
 import (
 	"fmt"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -108,6 +109,12 @@ func ServiceAccountIssuer(clusterSpec *kops.ClusterSpec) (string, error) {
 				return "", err
 			}
 			return baseURL + "/oidc", nil
+		case *vfs.MemFSPath:
+			if !base.IsClusterReadable() {
+				// If this _is_ a test, we should call MarkClusterReadable
+				return "", fmt.Errorf("cluster.spec.publicDataStore=%q is only supported in tests", clusterSpec.PublicDataStore)
+			}
+			return strings.Replace(base.Path(), "memfs://", "https://", 1) + "/oidc", nil
 		default:
 			return "", fmt.Errorf("cluster.spec.publicDataStore=%q is of unexpected type %T", clusterSpec.PublicDataStore, base)
 		}
