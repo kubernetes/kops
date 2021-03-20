@@ -47,9 +47,6 @@ go_library(
         "@io_bazel_rules_go//go/platform:linux": [
             "//vendor/golang.org/x/sys/unix:go_default_library",
         ],
-        "@io_bazel_rules_go//go/platform:nacl": [
-            "//vendor/golang.org/x/sys/unix:go_default_library",
-        ],
         "@io_bazel_rules_go//go/platform:netbsd": [
             "//vendor/golang.org/x/sys/unix:go_default_library",
         ],
