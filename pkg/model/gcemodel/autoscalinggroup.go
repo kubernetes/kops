@@ -131,9 +131,12 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				// TODO: migrate to IAM permissions instead of oldschool scopes?
 				t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
 				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleMaster))
-
+				t.PublicIP = fi.Bool(b.Cluster.Spec.Topology.Masters == kops.TopologyPublic)
 			case kops.InstanceGroupRoleNode:
 				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleNode))
+				t.PublicIP = fi.Bool(b.Cluster.Spec.Topology.Nodes == kops.TopologyPublic)
+			case kops.InstanceGroupRoleBastion:
+				t.PublicIP = fi.Bool(true)
 			}
 
 			if gce.UsesIPAliases(b.Cluster) {

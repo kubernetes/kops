@@ -2,17 +2,16 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
-  name: minimal-gce.example.com
+  name: private-gce.example.com
 spec:
   api:
-    dns: {}
     loadBalancer:
-      type: Public
+      type: Internal
   authorization:
     alwaysAllow: {}
   channel: stable
   cloudProvider: gce
-  configBase: memfs://tests/minimal-gce.example.com
+  configBase: memfs://tests/private-gce.example.com
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-us-test1-a
@@ -29,10 +28,10 @@ spec:
     anonymousAuth: false
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: v1.20.0
-  masterPublicName: api.minimal-gce.example.com
+  kubernetesVersion: v1.14.0
+  masterPublicName: api.private-gce.example.com
   networking:
-    cni: {}
+    kubenet: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   project: testproject
   sshAccess:
@@ -40,12 +39,15 @@ spec:
   subnets:
   - name: us-test1
     region: us-test1
-    type: Public
+    type: Private
+  - name: utility-us-test1
+    region: us-test1
+    type: Utility
   topology:
     dns:
       type: Public
-    masters: public
-    nodes: public
+    masters: private
+    nodes: private
 
 ---
 
@@ -54,7 +56,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
-    kops.k8s.io/cluster: minimal-gce.example.com
+    kops.k8s.io/cluster: private-gce.example.com
   name: master-us-test1-a
 spec:
   image: cos-cloud/cos-stable-57-9202-64-0
@@ -74,7 +76,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
-    kops.k8s.io/cluster: minimal-gce.example.com
+    kops.k8s.io/cluster: private-gce.example.com
   name: nodes
 spec:
   image: cos-cloud/cos-stable-57-9202-64-0

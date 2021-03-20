@@ -146,3 +146,10 @@ func (c *mockGCECloud) ServiceAccount() (string, error) {
 func (c *mockGCECloud) Labels() map[string]string {
 	return c.labels
 }
+
+func (c *mockGCECloud) GetAddress(name string) (*compute.Address, error) {
+	return &compute.Address{
+		Name:    name,
+		Address: "192.0.2.1",
+	}, nil
+}
