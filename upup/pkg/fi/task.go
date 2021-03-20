@@ -98,18 +98,18 @@ func (c *ModelBuilderContext) setLifecycleOverride(task Task) Task {
 	// TODO(@chrislovecnm) - wonder if we should update the nodeup tasks to have lifecycle
 	// TODO - so that we can return an error here, rather than just returning.
 	// certain tasks have not implemented HasLifecycle interface
-	hl, ok := task.(HasLifecycle)
-	if !ok {
-		klog.V(8).Infof("task %T does not implement HasLifecycle", task)
-		return task
-	}
-
 	typeName := TypeNameForTask(task)
 	klog.V(8).Infof("testing task %q", typeName)
 
 	// typeName can be values like "InternetGateway"
 	value, ok := c.LifecycleOverrides[typeName]
 	if ok {
+		hl, okHL := task.(HasLifecycle)
+		if !okHL {
+			klog.Warningf("task %T does not implement HasLifecycle", task)
+			return task
+		}
+
 		klog.Warningf("overriding task %s, lifecycle %s", task, value)
 		hl.SetLifecycle(value)
 	}
