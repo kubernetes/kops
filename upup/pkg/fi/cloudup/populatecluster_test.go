@@ -392,11 +392,16 @@ func TestPopulateCluster_DockerVersion(t *testing.T) {
 			KubernetesVersion: "1.17.0",
 			DockerVersion:     "19.03.15",
 		},
+		{
+			KubernetesVersion: "1.21.0",
+			DockerVersion:     "20.10.5",
+		},
 	}
 
 	for _, test := range grid {
 		_, c := buildMinimalCluster()
 		c.Spec.KubernetesVersion = test.KubernetesVersion
+		c.Spec.ContainerRuntime = "docker"
 
 		full, err := build(c)
 		if err != nil {
