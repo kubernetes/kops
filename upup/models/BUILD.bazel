@@ -8,27 +8,9 @@ go_library(
     ],
     importpath = "k8s.io/kops/upup/models",
     visibility = ["//visibility:public"],
-    deps = ["//util/pkg/vfs:go_default_library"],
-)
-
-genrule(
-    name = "bindata",
-    srcs = glob(
-        [
-            "cloudup/**",
-            "nodeup/**",
-        ],
-    ),
-    outs = ["bindata.go"],
-    cmd = """
-$(location //vendor/github.com/go-bindata/go-bindata/v3/go-bindata:go-bindata) \
-  -o "$(OUTS)" -pkg models \
-  -nometadata \
-  -nocompress \
-  -prefix $$(pwd) \
-  -prefix upup/models $(SRCS)
-""",
-    tools = [
-        "//vendor/github.com/go-bindata/go-bindata/v3/go-bindata",
+    deps = [
+        "//util/pkg/vfs:go_default_library",
+        "//vendor/embed:go_default_library",
+        "//vendor/io/fs:go_default_library",
     ],
 )
