@@ -176,7 +176,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
       - http://HostIP2:Port2
       docker.io:
       - https://registry-1.docker.io
-    version: 1.4.3
+    version: 1.4.4
   docker:
     skipInstall: true
   encryptionConfig: null
@@ -523,7 +523,7 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
       - http://HostIP2:Port2
       docker.io:
       - https://registry-1.docker.io
-    version: 1.4.3
+    version: 1.4.4
   docker:
     skipInstall: true
   kubeProxy:
