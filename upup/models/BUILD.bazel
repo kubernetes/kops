@@ -2,10 +2,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "bindata.go",
-        "vfs.go",
-    ],
+    srcs = ["vfs.go"],
     importpath = "k8s.io/kops/upup/models",
     visibility = ["//visibility:public"],
     deps = [
