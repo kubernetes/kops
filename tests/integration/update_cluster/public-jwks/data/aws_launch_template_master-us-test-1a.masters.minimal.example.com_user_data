@@ -168,7 +168,7 @@ etcdClusters:
     version: 3.4.13
 kubeAPIServer:
   allowPrivileged: true
-  anonymousAuth: true
+  anonymousAuth: false
   apiAudiences:
   - kubernetes.svc.default
   apiServerCount: 1
@@ -190,6 +190,8 @@ kubeAPIServer:
   - http://127.0.0.1:4001
   etcdServersOverrides:
   - /events#http://127.0.0.1:4002
+  featureGates:
+    ServiceAccountIssuerDiscovery: "true"
   image: k8s.gcr.io/kube-apiserver:v1.20.0
   kubeletPreferredAddressTypes:
   - InternalIP
@@ -205,8 +207,8 @@ kubeAPIServer:
   requestheaderUsernameHeaders:
   - X-Remote-User
   securePort: 443
-  serviceAccountIssuer: https://api.minimal.example.com
-  serviceAccountJWKSURI: https://api.minimal.example.com/openid/v1/jwks
+  serviceAccountIssuer: https://discovery.example.com/minimal.example.com/oidc
+  serviceAccountJWKSURI: https://discovery.example.com/minimal.example.com/oidc/keys.json
   serviceClusterIPRange: 100.64.0.0/13
   storageBackend: etcd3
 kubeControllerManager:
