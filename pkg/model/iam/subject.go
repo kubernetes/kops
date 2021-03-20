@@ -86,15 +86,23 @@ func BuildNodeRoleSubject(igRole kops.InstanceGroupRole) (Subject, error) {
 // ServiceAccountIssuer determines the issuer in the ServiceAccount JWTs
 func ServiceAccountIssuer(clusterSpec *kops.ClusterSpec) (string, error) {
 	if featureflag.PublicJWKS.Enabled() {
+		if clusterSpec.PublicDataStore == "" {
+			return "", fmt.Errorf("cluster.spec.publicDataStore is required with PublicJWKS feature flag")
+		}
 		base, err := vfs.Context.BuildVfsPath(clusterSpec.PublicDataStore)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("error parsing cluster.spec.publicDataStore=%q: %w", clusterSpec.PublicDataStore, err)
 		}
-		baseURL, err := base.(*vfs.S3Path).GetHTTPsUrl()
-		if err != nil {
-			return "", err
+		switch base := base.(type) {
+		case *vfs.S3Path:
+			baseURL, err := base.GetHTTPsUrl()
+			if err != nil {
+				return "", err
+			}
+			return baseURL + "/oidc", nil
+		default:
+			return "", fmt.Errorf("cluster.spec.publicDataStore=%q is of unexpected type %T", clusterSpec.PublicDataStore, base)
 		}
-		return baseURL + "/oidc", nil
 	} else {
 		if supportsPublicJWKS(clusterSpec) {
 			return "https://" + clusterSpec.MasterPublicName, nil
