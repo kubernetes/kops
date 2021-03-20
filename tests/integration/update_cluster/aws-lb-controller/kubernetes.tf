@@ -1,25 +1,35 @@
 locals {
-  cluster_name                         = "minimal.example.com"
-  kube-system-dns-controller_role_arn  = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.arn
-  kube-system-dns-controller_role_name = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.name
-  master_autoscaling_group_ids         = [aws_autoscaling_group.master-us-test-1a-masters-minimal-example-com.id]
-  master_security_group_ids            = [aws_security_group.masters-minimal-example-com.id]
-  masters_role_arn                     = aws_iam_role.masters-minimal-example-com.arn
-  masters_role_name                    = aws_iam_role.masters-minimal-example-com.name
-  node_autoscaling_group_ids           = [aws_autoscaling_group.nodes-minimal-example-com.id]
-  node_security_group_ids              = [aws_security_group.nodes-minimal-example-com.id]
-  node_subnet_ids                      = [aws_subnet.us-test-1a-minimal-example-com.id]
-  nodes_role_arn                       = aws_iam_role.nodes-minimal-example-com.arn
-  nodes_role_name                      = aws_iam_role.nodes-minimal-example-com.name
-  region                               = "us-test-1"
-  route_table_public_id                = aws_route_table.minimal-example-com.id
-  subnet_us-test-1a_id                 = aws_subnet.us-test-1a-minimal-example-com.id
-  vpc_cidr_block                       = aws_vpc.minimal-example-com.cidr_block
-  vpc_id                               = aws_vpc.minimal-example-com.id
+  cluster_name                                       = "minimal.example.com"
+  kube-system-aws-load-balancer-controller_role_arn  = aws_iam_role.aws-load-balancer-controller-kube-system-sa-minimal-example-com.arn
+  kube-system-aws-load-balancer-controller_role_name = aws_iam_role.aws-load-balancer-controller-kube-system-sa-minimal-example-com.name
+  kube-system-dns-controller_role_arn                = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.arn
+  kube-system-dns-controller_role_name               = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.name
+  master_autoscaling_group_ids                       = [aws_autoscaling_group.master-us-test-1a-masters-minimal-example-com.id]
+  master_security_group_ids                          = [aws_security_group.masters-minimal-example-com.id]
+  masters_role_arn                                   = aws_iam_role.masters-minimal-example-com.arn
+  masters_role_name                                  = aws_iam_role.masters-minimal-example-com.name
+  node_autoscaling_group_ids                         = [aws_autoscaling_group.nodes-minimal-example-com.id]
+  node_security_group_ids                            = [aws_security_group.nodes-minimal-example-com.id]
+  node_subnet_ids                                    = [aws_subnet.us-test-1a-minimal-example-com.id]
+  nodes_role_arn                                     = aws_iam_role.nodes-minimal-example-com.arn
+  nodes_role_name                                    = aws_iam_role.nodes-minimal-example-com.name
+  region                                             = "us-test-1"
+  route_table_public_id                              = aws_route_table.minimal-example-com.id
+  subnet_us-test-1a_id                               = aws_subnet.us-test-1a-minimal-example-com.id
+  vpc_cidr_block                                     = aws_vpc.minimal-example-com.cidr_block
+  vpc_id                                             = aws_vpc.minimal-example-com.id
 }
 
 output "cluster_name" {
   value = "minimal.example.com"
+}
+
+output "kube-system-aws-load-balancer-controller_role_arn" {
+  value = aws_iam_role.aws-load-balancer-controller-kube-system-sa-minimal-example-com.arn
+}
+
+output "kube-system-aws-load-balancer-controller_role_name" {
+  value = aws_iam_role.aws-load-balancer-controller-kube-system-sa-minimal-example-com.name
 }
 
 output "kube-system-dns-controller_role_arn" {
@@ -264,6 +274,12 @@ resource "aws_iam_openid_connect_provider" "minimal-example-com" {
   url             = "https://discovery.example.com/minimal.example.com/oidc"
 }
 
+resource "aws_iam_role_policy" "aws-load-balancer-controller-kube-system-sa-minimal-example-com" {
+  name   = "aws-load-balancer-controller.kube-system.sa.minimal.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_aws-load-balancer-controller.kube-system.sa.minimal.example.com_policy")
+  role   = aws_iam_role.aws-load-balancer-controller-kube-system-sa-minimal-example-com.name
+}
+
 resource "aws_iam_role_policy" "dns-controller-kube-system-sa-minimal-example-com" {
   name   = "dns-controller.kube-system.sa.minimal.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_dns-controller.kube-system.sa.minimal.example.com_policy")
@@ -280,6 +296,16 @@ resource "aws_iam_role_policy" "nodes-minimal-example-com" {
   name   = "nodes.minimal.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_nodes.minimal.example.com_policy")
   role   = aws_iam_role.nodes-minimal-example-com.name
+}
+
+resource "aws_iam_role" "aws-load-balancer-controller-kube-system-sa-minimal-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_aws-load-balancer-controller.kube-system.sa.minimal.example.com_policy")
+  name               = "aws-load-balancer-controller.kube-system.sa.minimal.example.com"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "aws-load-balancer-controller.kube-system.sa.minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "dns-controller-kube-system-sa-minimal-example-com" {
