@@ -4509,7 +4509,7 @@ var _cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s116YamlTemplate = []by
         - "name": "{{ .Name }}"
           "value": "{{ .Value }}"
         {{- end }}
-        "image": "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.7.9" }}"
+        "image": "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.7.10" }}"
         "imagePullPolicy": "Always"
         "livenessProbe":
           "exec":
@@ -4552,7 +4552,7 @@ var _cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s116YamlTemplate = []by
       - "env":
         - "name": "DISABLE_TCP_EARLY_DEMUX"
           "value": "false"
-        "image": "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.7.9"
+        "image": "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.7.10"
         "imagePullPolicy": "Always"
         "name": "aws-vpc-cni-init"
         "securityContext":
