@@ -24,7 +24,6 @@ import (
 
 const (
 	RoleLabelName15           = "kubernetes.io/role"
-	RoleLabelName16           = "kubernetes.io/role"
 	RoleMasterLabelValue15    = "master"
 	RoleAPIServerLabelValue15 = "api-server"
 	RoleNodeLabelValue15      = "node"
