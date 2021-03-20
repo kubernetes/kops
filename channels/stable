@@ -73,11 +73,11 @@ spec:
     - name: "cos-cloud/cos-stable-77-12371-114-0"
       providerID: gce
       architectureID: amd64
-      kubernetesVersion: ">=1.16.0-alpha.1"
+      kubernetesVersion: ">=1.16.0 <1.18.0"
     - name: "ubuntu-os-cloud/ubuntu-2004-focal-v20210119a"
       providerID: gce
       architectureID: amd64
-      kubernetesVersion: ">=1.17.0"
+      kubernetesVersion: ">=1.18.0"
   cluster:
     kubernetesVersion: v1.5.8
     networking:
