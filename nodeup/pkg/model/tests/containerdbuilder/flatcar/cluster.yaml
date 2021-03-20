@@ -10,7 +10,7 @@ spec:
   configBase: memfs://clusters.example.com/minimal.example.com
   containerRuntime: containerd
   containerd:
-    version: 1.4.3
+    version: 1.4.4
   etcdClusters:
     - etcdMembers:
         - instanceGroup: master-us-test-1a
