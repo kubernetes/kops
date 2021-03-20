@@ -36,8 +36,8 @@ func applyChannel(channel string) error {
 }
 
 func execChannels(args ...string) (string, error) {
-	kubectlPath := "/opt/kops/bin/channels"
-	cmd := exec.Command(kubectlPath, args...)
+	channelsPath := "/opt/kops/bin/channels"
+	cmd := exec.Command(channelsPath, args...)
 	env := os.Environ()
 	cmd.Env = env
 
