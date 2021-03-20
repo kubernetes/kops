@@ -513,14 +513,18 @@ spec:
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: cert
               readOnly: true
+      {{ if not UseServiceAccountIAM }}
       nodeSelector:
         node-role.kubernetes.io/master: ""
+      {{ end }}
       securityContext:
         fsGroup: 1337
       serviceAccountName: aws-load-balancer-controller
       terminationGracePeriodSeconds: 10
+      {{ if not UseServiceAccountIAM }}
       tolerations:
         - operator: Exists
+      {{ end }}
       volumes:
         - name: cert
           secret:
