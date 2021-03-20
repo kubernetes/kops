@@ -51,7 +51,6 @@ require (
 	github.com/denverdino/aliyungo v0.0.0-20210222084345-ddfe3452f5e8
 	github.com/digitalocean/godo v1.58.0
 	github.com/docker/docker v20.10.5+incompatible
-	github.com/go-bindata/go-bindata/v3 v3.1.3
 	github.com/go-ini/ini v1.62.0
 	github.com/go-logr/logr v0.4.0
 	github.com/gogo/protobuf v1.3.2

@@ -25,9 +25,6 @@ cd "${KOPS_ROOT}"
 # Accept an optional argument overriding the package to update
 PKG="${1:-./...}"
 
-# Update gobindata to reflect any yaml changes
-make kops-gobindata
-
 # Don't override variables that are commonly used in dev, but shouldn't be in our tests
 unset KOPS_BASE_URL DNSCONTROLLER_IMAGE KOPSCONTROLLER_IMAGE KUBE_APISERVER_HEALTHCHECK_IMAGE KOPS_FEATURE_FLAGS
 unset AWS_ACCESS_KEY_ID AWS_REGION AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN CNI_VERSION_URL DNS_IGNORE_NS_CHECK DO_ACCESS_TOKEN GOOGLE_APPLICATION_CREDENTIALS
