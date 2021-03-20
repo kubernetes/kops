@@ -192,6 +192,18 @@ func (m *Object) Set(newValue interface{}, fieldPath ...string) error {
 		}
 	}
 
+	// remarshal newValue so that it becomes a map. This allows us to do further amendments
+	b, err := yaml.Marshal(newValue)
+	if err != nil {
+		return fmt.Errorf("error marshaling %s to yaml: %v", humanFields, err)
+	}
+
+	newValue = make(map[string]interface{})
+	err = yaml.Unmarshal(b, &newValue)
+	if err != nil {
+		return fmt.Errorf("error parsing yaml: %v", err)
+	}
+
 	current[fieldPath[len(fieldPath)-1]] = newValue
 
 	return nil
