@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/util/subnet"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 // legacy contains validation functions that don't match the apimachinery style
@@ -374,8 +375,22 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 
 	publicDataStore := c.Spec.PublicDataStore
 	if publicDataStore != "" {
-		if !strings.HasPrefix(publicDataStore, "s3://") {
-			allErrs = append(allErrs, field.Invalid(fieldSpec.Child("publicDataStore"), publicDataStore, "S3 is the only supported VFS for publicStore"))
+		base, err := vfs.Context.BuildVfsPath(publicDataStore)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(fieldSpec.Child("publicDataStore"), publicDataStore, "not a valid VFS path"))
+		} else {
+			switch base := base.(type) {
+			case *vfs.S3Path:
+				// OK
+			case *vfs.MemFSPath:
+				// memfs is ok for tests; not OK otherwise
+				if !base.IsClusterReadable() {
+					// (If this _is_ a test, we should call MarkClusterReadable)
+					allErrs = append(allErrs, field.Invalid(fieldSpec.Child("publicDataStore"), publicDataStore, "S3 is the only supported VFS for publicStore"))
+				}
+			default:
+				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("publicDataStore"), publicDataStore, "S3 is the only supported VFS for publicStore"))
+			}
 		}
 	}
 
