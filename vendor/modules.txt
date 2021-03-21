@@ -328,7 +328,8 @@ github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 github.com/gogo/protobuf/sortkeys
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 github.com/golang/groupcache/lru
-# github.com/golang/protobuf v1.4.3
+# github.com/golang/protobuf v1.5.1
+## explicit
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
@@ -718,7 +719,8 @@ golang.org/x/crypto/salsa20/salsa
 golang.org/x/crypto/scrypt
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/mod v0.4.1
+# golang.org/x/mod v0.4.2
+## explicit
 golang.org/x/mod/module
 golang.org/x/mod/semver
 # golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
@@ -739,7 +741,7 @@ golang.org/x/net/ipv4
 golang.org/x/net/ipv6
 golang.org/x/net/proxy
 golang.org/x/net/trace
-# golang.org/x/oauth2 v0.0.0-20210311163135-5366d9dc1934
+# golang.org/x/oauth2 v0.0.0-20210313182246-cd4f82c27b84
 ## explicit
 golang.org/x/oauth2
 golang.org/x/oauth2/google
@@ -750,7 +752,7 @@ golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.0.0-20210313110737-8e9fff1a3a18
+# golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4
 ## explicit
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
@@ -791,7 +793,7 @@ golang.org/x/xerrors
 golang.org/x/xerrors/internal
 # gomodules.xyz/jsonpatch/v2 v2.1.0
 gomodules.xyz/jsonpatch/v2
-# google.golang.org/api v0.41.0
+# google.golang.org/api v0.42.0
 ## explicit
 google.golang.org/api/compute/v0.alpha
 google.golang.org/api/compute/v0.beta
@@ -825,7 +827,7 @@ google.golang.org/appengine/internal/modules
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-# google.golang.org/genproto v0.0.0-20210310155132-4ce2db91004e
+# google.golang.org/genproto v0.0.0-20210312152112-fc591d9ea70f
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.36.0
 google.golang.org/grpc
@@ -872,7 +874,7 @@ google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
-# google.golang.org/protobuf v1.25.0
+# google.golang.org/protobuf v1.26.0
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire
 google.golang.org/protobuf/internal/descfmt
@@ -883,22 +885,23 @@ google.golang.org/protobuf/internal/encoding/messageset
 google.golang.org/protobuf/internal/encoding/tag
 google.golang.org/protobuf/internal/encoding/text
 google.golang.org/protobuf/internal/errors
-google.golang.org/protobuf/internal/fieldsort
 google.golang.org/protobuf/internal/filedesc
 google.golang.org/protobuf/internal/filetype
 google.golang.org/protobuf/internal/flags
 google.golang.org/protobuf/internal/genid
 google.golang.org/protobuf/internal/impl
-google.golang.org/protobuf/internal/mapsort
+google.golang.org/protobuf/internal/order
 google.golang.org/protobuf/internal/pragma
 google.golang.org/protobuf/internal/set
 google.golang.org/protobuf/internal/strs
 google.golang.org/protobuf/internal/version
 google.golang.org/protobuf/proto
+google.golang.org/protobuf/reflect/protodesc
 google.golang.org/protobuf/reflect/protoreflect
 google.golang.org/protobuf/reflect/protoregistry
 google.golang.org/protobuf/runtime/protoiface
 google.golang.org/protobuf/runtime/protoimpl
+google.golang.org/protobuf/types/descriptorpb
 google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/timestamppb

@@ -2459,7 +2459,7 @@
       }
     }
   },
-  "revision": "20210216",
+  "revision": "20210226",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2548,7 +2548,7 @@
       "type": "object"
     },
     "Autopilot": {
-      "description": "Autopilot is the configuration for Autopilot settings on the cluster. It is the official product name of what is previously known as AutoGKE",
+      "description": "Autopilot is the configuration for Autopilot settings on the cluster.",
       "id": "Autopilot",
       "properties": {
         "enabled": {
@@ -2715,7 +2715,7 @@
         },
         "autopilot": {
           "$ref": "Autopilot",
-          "description": "Autopilot configuration for the cluster. It has the same semantics as AutoGKE and overrides the setting in autogke."
+          "description": "Autopilot configuration for the cluster."
         },
         "autoscaling": {
           "$ref": "ClusterAutoscaling",

@@ -6,6 +6,7 @@ go_library(
         "methods.go",
         "proto.go",
         "source.go",
+        "source_gen.go",
         "type.go",
         "value.go",
         "value_union.go",

@@ -17,7 +17,7 @@ go_library(
         "//vendor/google.golang.org/protobuf/internal/errors:go_default_library",
         "//vendor/google.golang.org/protobuf/internal/flags:go_default_library",
         "//vendor/google.golang.org/protobuf/internal/genid:go_default_library",
-        "//vendor/google.golang.org/protobuf/internal/mapsort:go_default_library",
+        "//vendor/google.golang.org/protobuf/internal/order:go_default_library",
         "//vendor/google.golang.org/protobuf/internal/pragma:go_default_library",
         "//vendor/google.golang.org/protobuf/internal/set:go_default_library",
         "//vendor/google.golang.org/protobuf/internal/strs:go_default_library",

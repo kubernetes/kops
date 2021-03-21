@@ -19,6 +19,7 @@ go_library(
         "//vendor/google.golang.org/protobuf/internal/descfmt:go_default_library",
         "//vendor/google.golang.org/protobuf/internal/descopts:go_default_library",
         "//vendor/google.golang.org/protobuf/internal/encoding/defval:go_default_library",
+        "//vendor/google.golang.org/protobuf/internal/encoding/messageset:go_default_library",
         "//vendor/google.golang.org/protobuf/internal/errors:go_default_library",
         "//vendor/google.golang.org/protobuf/internal/genid:go_default_library",
         "//vendor/google.golang.org/protobuf/internal/pragma:go_default_library",
