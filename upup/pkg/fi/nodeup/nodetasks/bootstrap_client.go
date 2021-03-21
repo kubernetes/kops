@@ -27,13 +27,16 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"path"
+	"time"
 
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 )
 
 type BootstrapClientTask struct {
@@ -146,12 +149,26 @@ func (b *KopsBootstrapClient) QueryBootstrap(ctx context.Context, req *nodeup.Bo
 		certPool.AppendCertsFromPEM(b.CA)
 
 		b.httpClient = &http.Client{
+			Timeout: time.Duration(15) * time.Second,
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
 					RootCAs:    certPool,
 					MinVersion: tls.VersionTLS12,
 				},
 			},
+		}
+	}
+
+	if ips, err := net.LookupIP(b.BaseURL.Hostname()); err != nil {
+		if dnsErr, ok := err.(*net.DNSError); ok && dnsErr.IsNotFound {
+			return nil, fi.NewTryAgainLaterError(fmt.Sprintf("kops-controller DNS not setup yet (not found: %v)", dnsErr))
+		}
+		return nil, err
+	} else {
+		for _, ip := range ips {
+			if ip.String() == cloudup.PlaceholderIP {
+				return nil, fi.NewTryAgainLaterError(fmt.Sprintf("kops-controller DNS not setup yet (placeholder IP found: %v)", ips))
+			}
 		}
 	}
 
