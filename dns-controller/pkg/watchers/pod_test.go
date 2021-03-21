@@ -21,6 +21,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
@@ -81,13 +82,13 @@ func TestPodController(t *testing.T) {
 
 	c.Stop()
 
-	records, ok := scope.records["kube-system/somepod"]
-	if !ok {
-		t.Fatal("no records for pod generated")
+	want := map[string][]dns.Record{
+		"kube-system/somepod": {
+			{RecordType: "_alias", FQDN: "a.foo.com.", Value: "node/my-node/external"},
+			{RecordType: "A", FQDN: "internal.a.foo.com.", Value: "10.0.0.1"},
+		},
 	}
-
-	if len(records) != 2 {
-		t.Fatalf("unexpected number of records")
+	if diff := cmp.Diff(scope.records, want); diff != "" {
+		t.Fatalf("generated records did not match expected; diff=%s", diff)
 	}
-
 }
