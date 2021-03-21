@@ -47,7 +47,7 @@ If _either_ of the two annotations are set on a `LoadBalancer` service, it will 
 dns-controller can optionally watch `Ingress` resources. To enable this, you need to add the following to the cluster spec:
 ```
 spec:
-  external-dns:
+  externalDns:
     watchIngress: true
 ```
 
