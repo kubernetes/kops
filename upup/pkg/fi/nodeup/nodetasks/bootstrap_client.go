@@ -30,11 +30,13 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 )
 
 type BootstrapClient struct {
@@ -135,12 +137,28 @@ func (b *BootstrapClient) queryBootstrap(c *fi.Context, req *nodeup.BootstrapReq
 		certPool.AppendCertsFromPEM(b.CA)
 
 		b.client = &http.Client{
+			Timeout: time.Duration(15) * time.Second,
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
 					RootCAs:    certPool,
 					MinVersion: tls.VersionTLS12,
 				},
 			},
+		}
+	}
+
+	hostname := "kops-controller.internal." + c.Cluster.ObjectMeta.Name
+
+	if ips, err := net.LookupIP(hostname); err != nil {
+		if dnsErr, ok := err.(*net.DNSError); ok && dnsErr.IsNotFound {
+			return nil, fi.NewTryAgainLaterError(fmt.Sprintf("kops-controller DNS not setup yet (not found: %v)", dnsErr))
+		}
+		return nil, err
+	} else {
+		for _, ip := range ips {
+			if ip.String() == cloudup.PlaceholderIP {
+				return nil, fi.NewTryAgainLaterError(fmt.Sprintf("kops-controller DNS not setup yet (placeholder IP found: %v)", ips))
+			}
 		}
 	}
 
@@ -151,7 +169,7 @@ func (b *BootstrapClient) queryBootstrap(c *fi.Context, req *nodeup.BootstrapReq
 
 	bootstrapUrl := url.URL{
 		Scheme: "https",
-		Host:   net.JoinHostPort("kops-controller.internal."+c.Cluster.ObjectMeta.Name, strconv.Itoa(wellknownports.KopsControllerPort)),
+		Host:   net.JoinHostPort(hostname, strconv.Itoa(wellknownports.KopsControllerPort)),
 		Path:   "/bootstrap",
 	}
 	httpReq, err := http.NewRequest("POST", bootstrapUrl.String(), bytes.NewReader(reqBytes))

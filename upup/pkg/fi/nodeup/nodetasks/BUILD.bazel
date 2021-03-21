@@ -28,6 +28,7 @@ go_library(
         "//pkg/pki:go_default_library",
         "//pkg/wellknownports:go_default_library",
         "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup:go_default_library",
         "//upup/pkg/fi/nodeup/cloudinit:go_default_library",
         "//upup/pkg/fi/nodeup/local:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
