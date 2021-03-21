@@ -104,7 +104,7 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := s.verifier.VerifyToken(r.Header.Get("Authorization"), body)
+	id, err := s.verifier.VerifyToken(r.Context(), r.Header.Get("Authorization"), body)
 	if err != nil {
 		klog.Infof("bootstrap %s verify err: %v", r.RemoteAddr, err)
 		w.WriteHeader(http.StatusForbidden)

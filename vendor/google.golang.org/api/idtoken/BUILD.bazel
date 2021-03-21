@@ -1,0 +1,24 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "cache.go",
+        "compute.go",
+        "doc.go",
+        "idtoken.go",
+        "validate.go",
+    ],
+    importmap = "k8s.io/kops/vendor/google.golang.org/api/idtoken",
+    importpath = "google.golang.org/api/idtoken",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/cloud.google.com/go/compute/metadata:go_default_library",
+        "//vendor/golang.org/x/oauth2:go_default_library",
+        "//vendor/golang.org/x/oauth2/google:go_default_library",
+        "//vendor/google.golang.org/api/internal:go_default_library",
+        "//vendor/google.golang.org/api/option:go_default_library",
+        "//vendor/google.golang.org/api/option/internaloption:go_default_library",
+        "//vendor/google.golang.org/api/transport/http:go_default_library",
+    ],
+)

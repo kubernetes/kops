@@ -94,6 +94,12 @@ func main() {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
 			}
+		} else if opt.Server.Provider.GCE != nil {
+			verifier, err = nodeidentitygce.NewVerifier(opt.Server.Provider.GCE)
+			if err != nil {
+				setupLog.Error(err, "unable to create verifier")
+				os.Exit(1)
+			}
 		} else {
 			klog.Fatalf("server cloud provider config not provided")
 		}
@@ -158,7 +164,7 @@ func addNodeController(mgr manager.Manager, opt *config.Options) error {
 		}
 
 	case "gce":
-		legacyIdentifier, err = nodeidentitygce.New()
+		legacyIdentifier, err = nodeidentitygce.NewLegacyIdentifier()
 		if err != nil {
 			return fmt.Errorf("error building identifier: %v", err)
 		}

@@ -95,7 +95,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				Metadata: map[string]fi.Resource{
 					"startup-script": startupScript,
 					//"config": resources/config.yaml $nodeset.Name
-					"cluster-name": fi.NewStringResource(b.ClusterName()),
+					nodeidentitygce.MetadataKeyClusterName:       fi.NewStringResource(b.ClusterName()),
 					nodeidentitygce.MetadataKeyInstanceGroupName: fi.NewStringResource(ig.Name),
 				},
 			}
