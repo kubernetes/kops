@@ -29,7 +29,7 @@
   "description": "Creates and runs virtual machines on Google Cloud Platform.",
   "discoveryVersion": "v1",
   "documentationLink": "https://developers.google.com/compute/docs/reference/latest/",
-  "etag": "\"-2NioU2H8y8siEzrBOV_qzRI6kQ/YSkt319eSyXwlSCsFJXzWYNomfs\"",
+  "etag": "\"uWj2hSb4GVjzdDlAnRd2gbM1ZQ8/jHiC35wfwurRz_CsQFfDnnAl-Zs\"",
   "icons": {
     "x16": "https://www.google.com/images/icons/product/compute_engine-16.png",
     "x32": "https://www.google.com/images/icons/product/compute_engine-32.png"
@@ -1705,7 +1705,7 @@
           ]
         },
         "setSecurityPolicy": {
-          "description": "Sets the security policy for the specified backend service.",
+          "description": "Sets the Google Cloud Armor security policy for the specified backend service. For more information, see Google Cloud Armor Overview",
           "httpMethod": "POST",
           "id": "compute.backendServices.setSecurityPolicy",
           "parameterOrder": [
@@ -30328,7 +30328,7 @@
       }
     }
   },
-  "revision": "20210209",
+  "revision": "20210301",
   "rootUrl": "https://compute.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -30875,12 +30875,12 @@
           "type": "string"
         },
         "prefixLength": {
-          "description": "The prefix length if the resource reprensents an IP range.",
+          "description": "The prefix length if the resource represents an IP range.",
           "format": "int32",
           "type": "integer"
         },
         "purpose": {
-          "description": "The purpose of this resource, which can be one of the following values:  \n- `GCE_ENDPOINT` for addresses that are used by VM instances, alias IP ranges, internal load balancers, and similar resources. \n- `DNS_RESOLVER` for a DNS resolver address in a subnetwork \n- `VPC_PEERING` for addresses that are reserved for VPC peer networks. \n- `NAT_AUTO` for addresses that are external IP addresses automatically reserved for Cloud NAT. \n- `IPSEC_INTERCONNECT` for addresses created from a private IP range that are reserved for a VLAN attachment in an IPsec encrypted Interconnect configuration. These addresses are regional resources.",
+          "description": "The purpose of this resource, which can be one of the following values:  \n- `GCE_ENDPOINT` for addresses that are used by VM instances, alias IP ranges, internal load balancers, and similar resources. \n- `DNS_RESOLVER` for a DNS resolver address in a subnetwork \n- `VPC_PEERING` for addresses that are reserved for VPC peer networks. \n- `NAT_AUTO` for addresses that are external IP addresses automatically reserved for Cloud NAT. \n- `IPSEC_INTERCONNECT` for addresses created from a private IP range that are reserved for a VLAN attachment in an IPsec-encrypted Cloud Interconnect configuration. These addresses are regional resources.",
           "enum": [
             "DNS_RESOLVER",
             "GCE_ENDPOINT",
@@ -32893,6 +32893,9 @@
             ""
           ],
           "type": "string"
+        },
+        "subsetting": {
+          "$ref": "Subsetting"
         },
         "timeoutSec": {
           "description": "The backend service timeout has a different meaning depending on the type of load balancer. For more information see,  Backend service settings The default is 30 seconds. The full range of timeout values allowed is 1 - 2,147,483,647 seconds.",
@@ -36833,7 +36836,7 @@
       "id": "ForwardingRule",
       "properties": {
         "IPAddress": {
-          "description": "IP address that this forwarding rule serves. When a client sends traffic to this IP address, the forwarding rule directs the traffic to the target that you specify in the forwarding rule.\n\nIf you don't specify a reserved IP address, an ephemeral IP address is assigned. Methods for specifying an IP address:\n\n* IPv4 dotted decimal, as in `100.1.2.3` * Full URL, as in https://www.googleapis.com/compute/v1/projects/project_id/regions/region/addresses/address-name * Partial URL or by name, as in:  \n- projects/project_id/regions/region/addresses/address-name \n- regions/region/addresses/address-name \n- global/addresses/address-name \n- address-name  \n\nThe loadBalancingScheme and the forwarding rule's target determine the type of IP address that you can use. For detailed information, refer to [IP address specifications](/load-balancing/docs/forwarding-rule-concepts#ip_address_specifications).\n\nMust be set to `0.0.0.0` when the target is targetGrpcProxy that has validateForProxyless field set to true.",
+          "description": "IP address that this forwarding rule serves. When a client sends traffic to this IP address, the forwarding rule directs the traffic to the target that you specify in the forwarding rule.\n\nIf you don't specify a reserved IP address, an ephemeral IP address is assigned. Methods for specifying an IP address:\n\n* IPv4 dotted decimal, as in `100.1.2.3` * Full URL, as in https://www.googleapis.com/compute/v1/projects/project_id/regions/region/addresses/address-name * Partial URL or by name, as in:  \n- projects/project_id/regions/region/addresses/address-name \n- regions/region/addresses/address-name \n- global/addresses/address-name \n- address-name  \n\nThe loadBalancingScheme and the forwarding rule's target determine the type of IP address that you can use. For detailed information, refer to [IP address specifications](/load-balancing/docs/forwarding-rule-concepts#ip_address_specifications).\n\nMust be set to `0.0.0.0` when the target is targetGrpcProxy that has validateForProxyless field set to true.\n\nFor Private Service Connect forwarding rules that forward traffic to Google APIs, IP address must be provided.",
           "type": "string"
         },
         "IPProtocol": {
@@ -36952,7 +36955,7 @@
           "type": "string"
         },
         "network": {
-          "description": "This field is not used for external load balancing.\n\nFor Internal TCP/UDP Load Balancing, this field identifies the network that the load balanced IP should belong to for this Forwarding Rule. If this field is not specified, the default network will be used.",
+          "description": "This field is not used for external load balancing.\n\nFor Internal TCP/UDP Load Balancing, this field identifies the network that the load balanced IP should belong to for this Forwarding Rule. If this field is not specified, the default network will be used.\n\nFor Private Service Connect forwarding rules that forward traffic to Google APIs, a network must be provided.",
           "type": "string"
         },
         "networkTier": {
@@ -37012,7 +37015,6 @@
           "type": "string"
         },
         "target": {
-          "description": "The URL of the target resource to receive the matched traffic. For regional forwarding rules, this target must be in the same region as the forwarding rule. For global forwarding rules, this target must be a global load balancing resource. The forwarded traffic must be of a type appropriate to the target object. For more information, see the \"Target\" column in [Port specifications](/load-balancing/docs/forwarding-rule-concepts#ip_address_specifications).",
           "type": "string"
         }
       },
@@ -39782,6 +39784,20 @@
         "networkPerformanceConfig": {
           "$ref": "NetworkPerformanceConfig"
         },
+        "postKeyRevocationActionType": {
+          "description": "PostKeyRevocationActionType of the instance.",
+          "enum": [
+            "NOOP",
+            "POST_KEY_REVOCATION_ACTION_TYPE_UNSPECIFIED",
+            "SHUTDOWN"
+          ],
+          "enumDescriptions": [
+            "",
+            "",
+            ""
+          ],
+          "type": "string"
+        },
         "privateIpv6GoogleAccess": {
           "description": "The private IPv6 google access type for the VM. If not specified, use  INHERIT_FROM_SUBNETWORK as default.",
           "enum": [
@@ -39846,7 +39862,7 @@
         },
         "sourceMachineImageEncryptionKey": {
           "$ref": "CustomerEncryptionKey",
-          "description": "Source GMI encryption key when creating an instance from GMI."
+          "description": "Source machine image encryption key when creating an instance from a machine image."
         },
         "startRestricted": {
           "description": "[Output Only] Whether a VM has been restricted for start because Compute Engine has detected suspicious activity.",
@@ -46155,7 +46171,7 @@
           "type": "array"
         },
         "fingerprint": {
-          "description": "Fingerprint hash of contents stored in this network interface. This field will be ignored when inserting an Instance or adding a NetworkInterface. An up-to-date fingerprint must be provided in order to update the NetworkInterface, otherwise the request will fail with error 412 conditionNotMet.",
+          "description": "Fingerprint hash of contents stored in this network interface. This field will be ignored when inserting an Instance or adding a NetworkInterface. An up-to-date fingerprint must be provided in order to update the NetworkInterface. The request will fail with error 400 Bad Request if the fingerprint is not provided, or 412 Precondition Failed if the fingerprint is out of date.",
           "format": "byte",
           "type": "string"
         },
@@ -57852,6 +57868,24 @@
       },
       "type": "object"
     },
+    "Subsetting": {
+      "description": "Subsetting options to make L4 ILB support any number of backend instances",
+      "id": "Subsetting",
+      "properties": {
+        "policy": {
+          "enum": [
+            "CONSISTENT_HASH_SUBSETTING",
+            "NONE"
+          ],
+          "enumDescriptions": [
+            "",
+            ""
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "TCPHealthCheck": {
       "id": "TCPHealthCheck",
       "properties": {
@@ -58639,6 +58673,11 @@
         },
         "description": {
           "description": "An optional description of this resource. Provide this property when you create the resource.",
+          "type": "string"
+        },
+        "fingerprint": {
+          "description": "Fingerprint of this resource. A hash of the contents stored in this object. This field is used in optimistic locking. This field will be ignored when inserting a TargetHttpsProxy. An up-to-date fingerprint must be provided in order to patch the TargetHttpsProxy; otherwise, the request will fail with error 412 conditionNotMet. To see the latest fingerprint, make a get() request to retrieve the TargetHttpsProxy.",
+          "format": "byte",
           "type": "string"
         },
         "httpFilters": {
