@@ -29,6 +29,8 @@ go_library(
 go_binary(
     name = "protokube",
     out = select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": "darwin-amd64/channels",
+        "@io_bazel_rules_go//go/platform:darwin_arm64": "darwin-arm64/channels",
         "@io_bazel_rules_go//go/platform:linux_amd64": "linux-amd64/protokube",
         "@io_bazel_rules_go//go/platform:linux_arm64": "linux-arm64/protokube",
     }),
