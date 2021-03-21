@@ -24,7 +24,6 @@ GOPATH_1ST:=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
 BUILD=$(KOPS_ROOT)/.build
 LOCAL=$(BUILD)/local
-BINDATA_TARGETS=upup/models/bindata.go
 ARTIFACTS?=$(BUILD)/artifacts
 DIST=$(BUILD)/dist
 IMAGES=$(DIST)/images
@@ -92,7 +91,7 @@ ifdef DEBUGGABLE
 endif
 
 .PHONY: kops-install # Install kops to local $GOPATH/bin
-kops-install: ${BINDATA_TARGETS}
+kops-install:
 	go install ${GCFLAGS} ${EXTRA_BUILDFLAGS} ${LDFLAGS}"-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/
 
 .PHONY: channels-install # Install channels to local $GOPATH/bin
@@ -146,25 +145,11 @@ clean:
 kops: ${KOPS}
 
 .PHONY: ${KOPS}
-${KOPS}: ${BINDATA_TARGETS}
+${KOPS}:
 	go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} ${LDFLAGS}"-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/cmd/kops/
 
-.PHONY: kops-gobindata
-kops-gobindata: ${BINDATA_TARGETS}
-
-.PHONY: update-bindata
-update-bindata:
-	go run github.com/go-bindata/go-bindata/v3/go-bindata -o ${BINDATA_TARGETS} -pkg models -nometadata -nocompress -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models upup/models/cloudup/...
-	cd "${KOPS_ROOT}/hack" && go build -o "${KOPS_ROOT}/_output/bin/goimports" golang.org/x/tools/cmd/goimports
-	"${KOPS_ROOT}/_output/bin/goimports" -w -v ${BINDATA_TARGETS}
-	gofmt -w -s ${BINDATA_TARGETS}
-
-UPUP_MODELS_BINDATA_SOURCES:=$(shell find upup/models/cloudup)
-upup/models/bindata.go: ${UPUP_MODELS_BINDATA_SOURCES}
-	make update-bindata
-
 .PHONY: codegen
-codegen: kops-gobindata
+codegen:
 	go install k8s.io/kops/upup/tools/generators/...
 	${GOPATH_1ST}/bin/fitask --input-dirs k8s.io/kops/upup/pkg/fi/... \
 	    --go-header-file "hack/boilerplate/boilerplate.generatego.txt"
@@ -178,20 +163,20 @@ hooks: # Install Git hooks
 	cp hack/pre-commit.sh .git/hooks/pre-commit
 
 .PHONY: test
-test: ${BINDATA_TARGETS}  # Run tests locally
+test:
 	go test -v ./...
 
 .PHONY: test-windows
-test-windows: ${BINDATA_TARGETS}  # Run tests locally
+test-windows:
 	go test -v $(go list ./... | grep -v /nodeup/)
 
 .PHONY: ${DIST}/linux/amd64/nodeup
-${DIST}/linux/amd64/nodeup: ${BINDATA_TARGETS}
+${DIST}/linux/amd64/nodeup:
 	mkdir -p ${DIST}
 	GOOS=linux GOARCH=amd64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
 
 .PHONY: ${DIST}/linux/arm64/nodeup
-${DIST}/linux/arm64/nodeup: ${BINDATA_TARGETS}
+${DIST}/linux/arm64/nodeup:
 	mkdir -p ${DIST}
 	GOOS=linux GOARCH=arm64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
 
@@ -205,22 +190,22 @@ crossbuild-nodeup-arm64: ${DIST}/linux/arm64/nodeup
 crossbuild-nodeup: crossbuild-nodeup-amd64 crossbuild-nodeup-arm64
 
 .PHONY: ${DIST}/darwin/amd64/kops
-${DIST}/darwin/amd64/kops: ${BINDATA_TARGETS}
+${DIST}/darwin/amd64/kops:
 	mkdir -p ${DIST}
 	GOOS=darwin GOARCH=amd64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 
 .PHONY: ${DIST}/linux/amd64/kops
-${DIST}/linux/amd64/kops: ${BINDATA_TARGETS}
+${DIST}/linux/amd64/kops:
 	mkdir -p ${DIST}
 	GOOS=linux GOARCH=amd64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 
 .PHONY: ${DIST}/linux/arm64/kops
-${DIST}/linux/arm64/kops: ${BINDATA_TARGETS}
+${DIST}/linux/arm64/kops:
 	mkdir -p ${DIST}
 	GOOS=linux GOARCH=arm64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 
 .PHONY: ${DIST}/windows/amd64/kops.exe
-${DIST}/windows/amd64/kops.exe: ${BINDATA_TARGETS}
+${DIST}/windows/amd64/kops.exe:
 	mkdir -p ${DIST}
 	GOOS=windows GOARCH=amd64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 
@@ -354,7 +339,7 @@ protokube: ${PROTOKUBE}
 nodeup: ${NODEUP}
 
 .PHONY: ${NODEUP}
-${NODEUP}: ${BINDATA_TARGETS}
+${NODEUP}:
 	go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" -o $@ k8s.io/kops/cmd/nodeup
 
 .PHONY: bazel-crossbuild-dns-controller
@@ -409,7 +394,7 @@ verify-goimports:
 	hack/verify-goimports.sh
 
 .PHONY: govet
-govet: ${BINDATA_TARGETS}
+govet:
 	go vet ./...
 
 # --------------------------------------------------
@@ -453,7 +438,7 @@ verify-bazel:
 	hack/verify-bazel.sh
 
 .PHONY: verify-staticcheck
-verify-staticcheck: ${BINDATA_TARGETS}
+verify-staticcheck:
 	hack/verify-staticcheck.sh
 
 .PHONY: verify-shellcheck
@@ -468,10 +453,6 @@ verify-terraform:
 verify-cloudformation:
 	hack/verify-cloudformation.sh
 
-.PHONY: verify-bindata
-verify-bindata:
-	hack/verify-bindata.sh
-
 .PHONY: verify-hashes
 verify-hashes:
 	hack/verify-hashes.sh
@@ -479,14 +460,13 @@ verify-hashes:
 # ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
 .PHONY: ci
-ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-staticcheck verify-terraform verify-bindata nodeup examples test | verify-gendocs verify-apimachinery
+ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-staticcheck verify-terraform nodeup examples test | verify-gendocs verify-apimachinery
 	echo "Done!"
 
 # we skip tasks that rely on bazel and are covered by other jobs
 # verify-gofmt: uses bazel, covered by pull-kops-verify
-# govet needs to be after verify-goimports because it generates bindata.go
 .PHONY: quick-ci
-quick-ci: verify-crds verify-goimports govet verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-bindata | verify-gendocs verify-apimachinery
+quick-ci: verify-crds verify-goimports govet verify-boilerplate verify-bazel verify-misspelling verify-shellcheck | verify-gendocs verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
