@@ -538,7 +538,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 	}
 
 	nth := b.Cluster.Spec.NodeTerminationHandler
-
 	if nth != nil && fi.BoolValue(nth.Enabled) {
 
 		key := "node-termination-handler.aws"

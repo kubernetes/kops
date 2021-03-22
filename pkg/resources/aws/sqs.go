@@ -59,10 +59,10 @@ func ListSQSQueues(cloud fi.Cloud, clusterName string) ([]*resources.Resource, e
 	c := cloud.(awsup.AWSCloud)
 
 	klog.V(2).Infof("Listing SQS queues")
-	queueName := model.QueueNamePrefix(clusterName)
+	queuePrefix := model.QueueNamePrefix(clusterName)
 
 	request := &sqs.ListQueuesInput{
-		QueueNamePrefix: &queueName,
+		QueueNamePrefix: &queuePrefix,
 	}
 	response, err := c.SQS().ListQueues(request)
 	if err != nil {
@@ -74,14 +74,14 @@ func ListSQSQueues(cloud fi.Cloud, clusterName string) ([]*resources.Resource, e
 
 	var resourceTrackers []*resources.Resource
 
-	for _, queue := range response.QueueUrls {
+	for _, queueUrl := range response.QueueUrls {
 		resourceTracker := &resources.Resource{
-			Name:    queueName,
-			ID:      *queue,
+			Name:    *queueUrl,
+			ID:      *queueUrl,
 			Type:    "sqs",
 			Deleter: DeleteSQSQueue,
 			Dumper:  DumpSQSQueue,
-			Obj:     queue,
+			Obj:     queueUrl,
 		}
 
 		resourceTrackers = append(resourceTrackers, resourceTracker)

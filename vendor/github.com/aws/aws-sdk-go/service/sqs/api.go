@@ -86,7 +86,7 @@ func (c *SQS) AddPermissionRequest(input *AddPermissionInput) (req *request.Requ
 // &AttributeName.2=second
 //
 // Cross-account permissions don't apply to this action. For more information,
-// see Grant Cross-Account Permissions to a Role and a User Name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
+// see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
 // in the Amazon Simple Queue Service Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -449,7 +449,7 @@ func (c *SQS) CreateQueueRequest(input *CreateQueueInput) (req *request.Request,
 // &AttributeName.2=second
 //
 // Cross-account permissions don't apply to this action. For more information,
-// see Grant Cross-Account Permissions to a Role and a User Name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
+// see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
 // in the Amazon Simple Queue Service Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -754,7 +754,7 @@ func (c *SQS) DeleteQueueRequest(input *DeleteQueueInput) (req *request.Request,
 // a queue with the same name.
 //
 // Cross-account permissions don't apply to this action. For more information,
-// see Grant Cross-Account Permissions to a Role and a User Name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
+// see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
 // in the Amazon Simple Queue Service Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -1152,7 +1152,7 @@ func (c *SQS) ListQueueTagsRequest(input *ListQueueTagsInput) (req *request.Requ
 // in the Amazon Simple Queue Service Developer Guide.
 //
 // Cross-account permissions don't apply to this action. For more information,
-// see Grant Cross-Account Permissions to a Role and a User Name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
+// see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
 // in the Amazon Simple Queue Service Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -1246,7 +1246,7 @@ func (c *SQS) ListQueuesRequest(input *ListQueuesInput) (req *request.Request, o
 // request to listQueues to receive the next page of results.
 //
 // Cross-account permissions don't apply to this action. For more information,
-// see Grant Cross-Account Permissions to a Role and a User Name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
+// see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
 // in the Amazon Simple Queue Service Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -1605,7 +1605,7 @@ func (c *SQS) RemovePermissionRequest(input *RemovePermissionInput) (req *reques
 //    * Only the owner of a queue can remove permissions from it.
 //
 //    * Cross-account permissions don't apply to this action. For more information,
-//    see Grant Cross-Account Permissions to a Role and a User Name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
+//    see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
 //    in the Amazon Simple Queue Service Developer Guide.
 //
 //    * To remove the ability to change queue permissions, you must deny permission
@@ -1909,7 +1909,7 @@ func (c *SQS) SetQueueAttributesRequest(input *SetQueueAttributesInput) (req *re
 //    can handle new attributes gracefully.
 //
 //    * Cross-account permissions don't apply to this action. For more information,
-//    see Grant Cross-Account Permissions to a Role and a User Name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
+//    see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
 //    in the Amazon Simple Queue Service Developer Guide.
 //
 //    * To remove the ability to change queue permissions, you must deny permission
@@ -2014,7 +2014,7 @@ func (c *SQS) TagQueueRequest(input *TagQueueInput) (req *request.Request, outpu
 // in the Amazon Simple Queue Service Developer Guide.
 //
 // Cross-account permissions don't apply to this action. For more information,
-// see Grant Cross-Account Permissions to a Role and a User Name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
+// see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
 // in the Amazon Simple Queue Service Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -2095,7 +2095,7 @@ func (c *SQS) UntagQueueRequest(input *UntagQueueInput) (req *request.Request, o
 // in the Amazon Simple Queue Service Developer Guide.
 //
 // Cross-account permissions don't apply to this action. For more information,
-// see Grant Cross-Account Permissions to a Role and a User Name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
+// see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
 // in the Amazon Simple Queue Service Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -2655,22 +2655,22 @@ type CreateQueueInput struct {
 	//
 	// The following attributes apply only to FIFO (first-in-first-out) queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html):
 	//
-	//    * FifoQueue – Designates a queue as FIFO. Valid values: true, false.
-	//    If you don't specify the FifoQueue attribute, Amazon SQS creates a standard
-	//    queue. You can provide this attribute only during queue creation. You
-	//    can't change it for an existing queue. When you set this attribute, you
-	//    must also provide the MessageGroupId for your messages explicitly. For
-	//    more information, see FIFO Queue Logic (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-understanding-logic)
+	//    * FifoQueue – Designates a queue as FIFO. Valid values are true and
+	//    false. If you don't specify the FifoQueue attribute, Amazon SQS creates
+	//    a standard queue. You can provide this attribute only during queue creation.
+	//    You can't change it for an existing queue. When you set this attribute,
+	//    you must also provide the MessageGroupId for your messages explicitly.
+	//    For more information, see FIFO Queue Logic (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-understanding-logic)
 	//    in the Amazon Simple Queue Service Developer Guide.
 	//
 	//    * ContentBasedDeduplication – Enables content-based deduplication. Valid
-	//    values: true, false. For more information, see Exactly-Once Processing
+	//    values are true and false. For more information, see Exactly-Once Processing
 	//    (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-exactly-once-processing)
-	//    in the Amazon Simple Queue Service Developer Guide. Every message must
-	//    have a unique MessageDeduplicationId, You may provide a MessageDeduplicationId
-	//    explicitly. If you aren't able to provide a MessageDeduplicationId and
-	//    you enable ContentBasedDeduplication for your queue, Amazon SQS uses a
-	//    SHA-256 hash to generate the MessageDeduplicationId using the body of
+	//    in the Amazon Simple Queue Service Developer Guide. Note the following:
+	//    Every message must have a unique MessageDeduplicationId. You may provide
+	//    a MessageDeduplicationId explicitly. If you aren't able to provide a MessageDeduplicationId
+	//    and you enable ContentBasedDeduplication for your queue, Amazon SQS uses
+	//    a SHA-256 hash to generate the MessageDeduplicationId using the body of
 	//    the message (but not the attributes of the message). If you don't provide
 	//    a MessageDeduplicationId and the queue doesn't have ContentBasedDeduplication
 	//    set, the action fails with an error. If the queue has ContentBasedDeduplication
@@ -2681,6 +2681,49 @@ type CreateQueueInput struct {
 	//    and then another message with a MessageDeduplicationId that is the same
 	//    as the one generated for the first MessageDeduplicationId, the two messages
 	//    are treated as duplicates and only one copy of the message is delivered.
+	//
+	// Preview: High throughput for FIFO queues
+	//
+	// High throughput for Amazon SQS FIFO queues is in preview release and is subject
+	// to change. This feature provides a high number of transactions per second
+	// (TPS) for messages in FIFO queues. For information on throughput quotas,
+	// see Quotas related to messages (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html)
+	// in the Amazon Simple Queue Service Developer Guide.
+	//
+	// This preview includes two new attributes:
+	//
+	//    * DeduplicationScope – Specifies whether message deduplication occurs
+	//    at the message group or queue level. Valid values are messageGroup and
+	//    queue.
+	//
+	//    * FifoThroughputLimit – Specifies whether the FIFO queue throughput
+	//    quota applies to the entire queue or per message group. Valid values are
+	//    perQueue and perMessageGroupId. The perMessageGroupId value is allowed
+	//    only when the value for DeduplicationScope is messageGroup.
+	//
+	// To enable high throughput for FIFO queues, do the following:
+	//
+	//    * Set DeduplicationScope to messageGroup.
+	//
+	//    * Set FifoThroughputLimit to perMessageGroupId.
+	//
+	// If you set these attributes to anything other than the values shown for enabling
+	// high throughput, standard throughput is in effect and deduplication occurs
+	// as specified.
+	//
+	// This preview is available in the following AWS Regions:
+	//
+	//    * US East (Ohio); us-east-2
+	//
+	//    * US East (N. Virginia); us-east-1
+	//
+	//    * US West (Oregon); us-west-2
+	//
+	//    * Europe (Ireland); eu-west-1
+	//
+	// For more information about high throughput for FIFO queues, see Preview:
+	// High throughput for FIFO queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/high-throughput-fifo.html)
+	// in the Amazon Simple Queue Service Developer Guide.
 	Attributes map[string]*string `locationName:"Attribute" locationNameKey:"Name" locationNameValue:"Value" type:"map" flattened:"true"`
 
 	// The name of the new queue. The following limits apply to this name:
@@ -2720,7 +2763,7 @@ type CreateQueueInput struct {
 	// and sqs:TagQueue permissions.
 	//
 	// Cross-account permissions don't apply to this action. For more information,
-	// see Grant Cross-Account Permissions to a Role and a User Name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
+	// see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
 	// in the Amazon Simple Queue Service Developer Guide.
 	Tags map[string]*string `locationName:"Tag" locationNameKey:"Key" locationNameValue:"Value" type:"map" flattened:"true"`
 }
@@ -3182,8 +3225,8 @@ type GetQueueAttributesInput struct {
 	//
 	// The following attributes apply only to FIFO (first-in-first-out) queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html):
 	//
-	//    * FifoQueue – Returns whether the queue is FIFO. For more information,
-	//    see FIFO Queue Logic (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-understanding-logic)
+	//    * FifoQueue – Returns information about whether the queue is FIFO. For
+	//    more information, see FIFO Queue Logic (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-understanding-logic)
 	//    in the Amazon Simple Queue Service Developer Guide. To determine whether
 	//    a queue is FIFO (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html),
 	//    you can check whether QueueName ends with the .fifo suffix.
@@ -3192,6 +3235,49 @@ type GetQueueAttributesInput struct {
 	//    is enabled for the queue. For more information, see Exactly-Once Processing
 	//    (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-exactly-once-processing)
 	//    in the Amazon Simple Queue Service Developer Guide.
+	//
+	// Preview: High throughput for FIFO queues
+	//
+	// High throughput for Amazon SQS FIFO queues is in preview release and is subject
+	// to change. This feature provides a high number of transactions per second
+	// (TPS) for messages in FIFO queues. For information on throughput quotas,
+	// see Quotas related to messages (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html)
+	// in the Amazon Simple Queue Service Developer Guide.
+	//
+	// This preview includes two new attributes:
+	//
+	//    * DeduplicationScope – Specifies whether message deduplication occurs
+	//    at the message group or queue level. Valid values are messageGroup and
+	//    queue.
+	//
+	//    * FifoThroughputLimit – Specifies whether the FIFO queue throughput
+	//    quota applies to the entire queue or per message group. Valid values are
+	//    perQueue and perMessageGroupId. The perMessageGroupId value is allowed
+	//    only when the value for DeduplicationScope is messageGroup.
+	//
+	// To enable high throughput for FIFO queues, do the following:
+	//
+	//    * Set DeduplicationScope to messageGroup.
+	//
+	//    * Set FifoThroughputLimit to perMessageGroupId.
+	//
+	// If you set these attributes to anything other than the values shown for enabling
+	// high throughput, standard throughput is in effect and deduplication occurs
+	// as specified.
+	//
+	// This preview is available in the following AWS Regions:
+	//
+	//    * US East (Ohio); us-east-2
+	//
+	//    * US East (N. Virginia); us-east-1
+	//
+	//    * US West (Oregon); us-west-2
+	//
+	//    * Europe (Ireland); eu-west-1
+	//
+	// For more information about high throughput for FIFO queues, see Preview:
+	// High throughput for FIFO queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/high-throughput-fifo.html)
+	// in the Amazon Simple Queue Service Developer Guide.
 	AttributeNames []*string `locationNameList:"AttributeName" type:"list" flattened:"true"`
 
 	// The URL of the Amazon SQS queue whose attribute information is retrieved.
@@ -4962,11 +5048,11 @@ type SetQueueAttributesInput struct {
 	//
 	//    * ContentBasedDeduplication – Enables content-based deduplication. For
 	//    more information, see Exactly-Once Processing (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-exactly-once-processing)
-	//    in the Amazon Simple Queue Service Developer Guide. Every message must
-	//    have a unique MessageDeduplicationId, You may provide a MessageDeduplicationId
-	//    explicitly. If you aren't able to provide a MessageDeduplicationId and
-	//    you enable ContentBasedDeduplication for your queue, Amazon SQS uses a
-	//    SHA-256 hash to generate the MessageDeduplicationId using the body of
+	//    in the Amazon Simple Queue Service Developer Guide. Note the following:
+	//    Every message must have a unique MessageDeduplicationId. You may provide
+	//    a MessageDeduplicationId explicitly. If you aren't able to provide a MessageDeduplicationId
+	//    and you enable ContentBasedDeduplication for your queue, Amazon SQS uses
+	//    a SHA-256 hash to generate the MessageDeduplicationId using the body of
 	//    the message (but not the attributes of the message). If you don't provide
 	//    a MessageDeduplicationId and the queue doesn't have ContentBasedDeduplication
 	//    set, the action fails with an error. If the queue has ContentBasedDeduplication
@@ -4977,6 +5063,49 @@ type SetQueueAttributesInput struct {
 	//    and then another message with a MessageDeduplicationId that is the same
 	//    as the one generated for the first MessageDeduplicationId, the two messages
 	//    are treated as duplicates and only one copy of the message is delivered.
+	//
+	// Preview: High throughput for FIFO queues
+	//
+	// High throughput for Amazon SQS FIFO queues is in preview release and is subject
+	// to change. This feature provides a high number of transactions per second
+	// (TPS) for messages in FIFO queues. For information on throughput quotas,
+	// see Quotas related to messages (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html)
+	// in the Amazon Simple Queue Service Developer Guide.
+	//
+	// This preview includes two new attributes:
+	//
+	//    * DeduplicationScope – Specifies whether message deduplication occurs
+	//    at the message group or queue level. Valid values are messageGroup and
+	//    queue.
+	//
+	//    * FifoThroughputLimit – Specifies whether the FIFO queue throughput
+	//    quota applies to the entire queue or per message group. Valid values are
+	//    perQueue and perMessageGroupId. The perMessageGroupId value is allowed
+	//    only when the value for DeduplicationScope is messageGroup.
+	//
+	// To enable high throughput for FIFO queues, do the following:
+	//
+	//    * Set DeduplicationScope to messageGroup.
+	//
+	//    * Set FifoThroughputLimit to perMessageGroupId.
+	//
+	// If you set these attributes to anything other than the values shown for enabling
+	// high throughput, standard throughput is in effect and deduplication occurs
+	// as specified.
+	//
+	// This preview is available in the following AWS Regions:
+	//
+	//    * US East (Ohio); us-east-2
+	//
+	//    * US East (N. Virginia); us-east-1
+	//
+	//    * US West (Oregon); us-west-2
+	//
+	//    * Europe (Ireland); eu-west-1
+	//
+	// For more information about high throughput for FIFO queues, see Preview:
+	// High throughput for FIFO queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/high-throughput-fifo.html)
+	// in the Amazon Simple Queue Service Developer Guide.
 	//
 	// Attributes is a required field
 	Attributes map[string]*string `locationName:"Attribute" locationNameKey:"Name" locationNameValue:"Value" type:"map" flattened:"true" required:"true"`
@@ -5279,6 +5408,12 @@ const (
 
 	// QueueAttributeNameKmsDataKeyReusePeriodSeconds is a QueueAttributeName enum value
 	QueueAttributeNameKmsDataKeyReusePeriodSeconds = "KmsDataKeyReusePeriodSeconds"
+
+	// QueueAttributeNameDeduplicationScope is a QueueAttributeName enum value
+	QueueAttributeNameDeduplicationScope = "DeduplicationScope"
+
+	// QueueAttributeNameFifoThroughputLimit is a QueueAttributeName enum value
+	QueueAttributeNameFifoThroughputLimit = "FifoThroughputLimit"
 )
 
 // QueueAttributeName_Values returns all elements of the QueueAttributeName enum
@@ -5302,5 +5437,7 @@ func QueueAttributeName_Values() []string {
 		QueueAttributeNameContentBasedDeduplication,
 		QueueAttributeNameKmsMasterKeyId,
 		QueueAttributeNameKmsDataKeyReusePeriodSeconds,
+		QueueAttributeNameDeduplicationScope,
+		QueueAttributeNameFifoThroughputLimit,
 	}
 }
