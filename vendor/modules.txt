@@ -166,12 +166,16 @@ github.com/aws/aws-sdk-go/service/elb
 github.com/aws/aws-sdk-go/service/elb/elbiface
 github.com/aws/aws-sdk-go/service/elbv2
 github.com/aws/aws-sdk-go/service/elbv2/elbv2iface
+github.com/aws/aws-sdk-go/service/eventbridge
+github.com/aws/aws-sdk-go/service/eventbridge/eventbridgeiface
 github.com/aws/aws-sdk-go/service/iam
 github.com/aws/aws-sdk-go/service/iam/iamiface
 github.com/aws/aws-sdk-go/service/kms
 github.com/aws/aws-sdk-go/service/route53
 github.com/aws/aws-sdk-go/service/route53/route53iface
 github.com/aws/aws-sdk-go/service/s3
+github.com/aws/aws-sdk-go/service/sqs
+github.com/aws/aws-sdk-go/service/sqs/sqsiface
 github.com/aws/aws-sdk-go/service/sso
 github.com/aws/aws-sdk-go/service/sso/ssoiface
 github.com/aws/aws-sdk-go/service/sts
