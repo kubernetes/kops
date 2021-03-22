@@ -202,6 +202,22 @@ func EC2TagSpecification(resourceType string, tags map[string]string) []*ec2.Tag
 	return []*ec2.TagSpecification{specification}
 }
 
+// ELBv2Tags converts a map of tags to ELBv2 Tags
+func ELBv2Tags(tags map[string]string) []*elbv2.Tag {
+	if len(tags) == 0 {
+		return nil
+	}
+	elbv2Tags := make([]*elbv2.Tag, 0)
+	for k, v := range tags {
+		elbv2Tags = append(elbv2Tags, &elbv2.Tag{
+			Key:   aws.String(k),
+			Value: aws.String(v),
+		})
+	}
+
+	return elbv2Tags
+}
+
 // GetResourceName32 will attempt to calculate a meaningful name for a resource given a prefix
 // Will never return a string longer than 32 chars
 func GetResourceName32(cluster string, prefix string) string {
