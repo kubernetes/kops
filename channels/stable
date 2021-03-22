@@ -74,7 +74,7 @@ spec:
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.16.0 <1.18.0"
-    - name: "ubuntu-os-cloud/ubuntu-2004-focal-v20210119a"
+    - name: "ubuntu-os-cloud/ubuntu-2004-focal-v20210315"
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.18.0"
@@ -84,13 +84,13 @@ spec:
       kubenet: {}
   kubernetesVersions:
   - range: ">=1.20.0"
-    recommendedVersion: 1.20.4
+    recommendedVersion: 1.20.5
     requiredVersion: 1.20.0
   - range: ">=1.19.0"
-    recommendedVersion: 1.19.8
+    recommendedVersion: 1.19.9
     requiredVersion: 1.19.0
   - range: ">=1.18.0"
-    recommendedVersion: 1.18.16
+    recommendedVersion: 1.18.17
     requiredVersion: 1.18.0
   - range: ">=1.17.0"
     recommendedVersion: 1.17.17
@@ -120,15 +120,15 @@ spec:
   - range: ">=1.20.0-alpha.1"
     #recommendedVersion: "1.19.0-beta.3"
     #requiredVersion: 1.20.0
-    kubernetesVersion: 1.20.4
+    kubernetesVersion: 1.20.5
   - range: ">=1.19.0-beta.3"
     #recommendedVersion: "1.19.0-beta.3"
     #requiredVersion: 1.19.0
-    kubernetesVersion: 1.19.8
+    kubernetesVersion: 1.19.9
   - range: ">=1.18.0-alpha.1"
     recommendedVersion: "1.18.2"
     #requiredVersion: 1.18.0
-    kubernetesVersion: 1.18.16
+    kubernetesVersion: 1.18.17
   - range: ">=1.17.0-alpha.1"
     recommendedVersion: "1.18.2"
     #requiredVersion: 1.17.0
