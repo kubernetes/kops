@@ -76,6 +76,7 @@ nav:
     - Working with Instance Groups: "tutorial/working-with-instancegroups.md"
     - Using Manifests and Customizing: "manifests_and_customizing_via_api.md"
     - High Availability: "operations/high_availability.md"
+    - Scaling: "operations/scaling.md"
     - Instancegroup images: "operations/images.md"
     - Cluster configuration management: "changing_configuration.md"
     - Cluster Templating: "operations/cluster_template.md"
