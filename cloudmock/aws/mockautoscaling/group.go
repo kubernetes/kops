@@ -336,3 +336,7 @@ func (m *MockAutoscaling) DeleteAutoScalingGroupRequest(*autoscaling.DeleteAutoS
 	klog.Fatalf("Not implemented")
 	return nil, nil
 }
+
+func (m *MockAutoscaling) PutLifecycleHook(input *autoscaling.PutLifecycleHookInput) (*autoscaling.PutLifecycleHookOutput, error) {
+	panic("Not implemented")
+}

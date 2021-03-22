@@ -155,7 +155,6 @@ spec:
       kubernetes.io/os: linux
   template:
     metadata:
-      annotations:
       labels:
         app.kubernetes.io/name: aws-node-termination-handler
         app.kubernetes.io/instance: aws-node-termination-handler
@@ -251,7 +250,7 @@ spec:
             - name: ENABLE_SQS_TERMINATION_DRAINING
               value: "true"
             - name: QUEUE_URL
-              value: ""
+              value: "{{ DefaultQueueName }}"
             - name: PROMETHEUS_SERVER_PORT
               value: "9092"
             - name: AWS_REGION

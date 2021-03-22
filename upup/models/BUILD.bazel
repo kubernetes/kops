@@ -55,6 +55,7 @@ go_library(
         "cloudup/resources/addons/storage-aws.addons.k8s.io/v1.7.0.yaml.template",
         "cloudup/resources/addons/storage-gce.addons.k8s.io/v1.7.0.yaml.template",
         "cloudup/resources/addons/storage-openstack.addons.k8s.io/k8s-1.16.yaml.template",
+        "cloudup/resources/addons/node-termination-handler.aws/queue-processor-k8s-1.11.yaml.template",
     ],
     importpath = "k8s.io/kops/upup/models",
     visibility = ["//visibility:public"],
