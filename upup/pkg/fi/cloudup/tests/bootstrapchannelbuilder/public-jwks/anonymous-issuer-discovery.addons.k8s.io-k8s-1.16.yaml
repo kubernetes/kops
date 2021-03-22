@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: anonymous-issuer-discovery.addons.k8s.io
-    addon.kops.k8s.io/version: 1.21.0-alpha.1
+    addon.kops.k8s.io/version: 1.21.0-alpha.2
     app.kubernetes.io/managed-by: kops
     k8s-addon: anonymous-issuer-discovery.addons.k8s.io
   name: anonymous:service-account-issuer-discovery
