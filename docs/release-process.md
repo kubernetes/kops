@@ -164,6 +164,8 @@ Create container promotion PR:
 ```
 cd ${GOPATH}/src/k8s.io/k8s.io
 
+git checkout main
+git pull
 git checkout -b kops_images_${VERSION}
 
 cd k8s.gcr.io/images/k8s-staging-kops
@@ -185,7 +187,7 @@ Currently we send the image and non-image artifact promotion PRs separately.
 git add -p k8s.gcr.io/images/k8s-staging-kops/images.yaml
 git commit -m "Promote kOps $VERSION images"
 git push ${USER}
-hub pull-request
+hub pull-request -b main
 ```
 
 
@@ -194,7 +196,8 @@ Create binary promotion PR:
 ```
 cd ${GOPATH}/src/k8s.io/k8s.io
 
-git checkout master
+git checkout main
+git pull
 git checkout -b kops_artifacts_${VERSION}
 
 mkdir -p ./k8s-staging-kops/kops/releases/${VERSION}/
@@ -209,7 +212,7 @@ Verify, then send a PR:
 git add artifacts/manifests/k8s-staging-kops/${VERSION}.yaml
 git commit -m "Promote kOps $VERSION binary artifacts"
 git push ${USER}
-hub pull-request
+hub pull-request -b main
 ```
 
 
