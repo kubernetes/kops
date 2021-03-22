@@ -23,11 +23,19 @@ type BootstrapRequest struct {
 	// APIVersion defines the versioned schema of this representation of a request.
 	APIVersion string `json:"apiVersion"`
 	// Certs are the requested certificates and their respective public keys.
+	// @deprecated:ShouldIssueWithCSRs - use CertificateSigningRequests which is more extensible and secure
 	Certs map[string]string `json:"certs"`
+
+	// CertificateSigningRequests are requests for private keys to be signed.
+	CertificateSigningRequests map[string]*CertificateSigningRequest `json:"csrs"`
 
 	// IncludeNodeConfig controls whether the cluster & instance group configuration should be returned.
 	// This allows for nodes without access to the kops state store.
 	IncludeNodeConfig bool `json:"includeNodeConfig"`
+}
+
+type CertificateSigningRequest struct {
+	PEMData string `json:"pemData"`
 }
 
 // BootstrapResponse is a response to a BootstrapRequest.

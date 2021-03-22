@@ -17,6 +17,7 @@ limitations under the License.
 package server
 
 import (
+	"crypto"
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -33,6 +34,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/deprecations"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
@@ -150,11 +152,29 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 	hash := fnv.New32()
 	_, _ = hash.Write([]byte(r.RemoteAddr))
 	validHours := (455 * 24) + (hash.Sum32() % (30 * 24))
+	validity := time.Hour * time.Duration(validHours)
 
-	for name, pubKey := range req.Certs {
-		cert, err := s.issueCert(name, pubKey, id, validHours)
+	for name, csr := range req.CertificateSigningRequests {
+		cert, err := s.issueCSR(name, csr, id, validity)
 		if err != nil {
-			klog.Infof("bootstrap %s cert %q issue err: %v", r.RemoteAddr, name, err)
+			klog.Infof("bootstrap %s cert %q issueCSR failed: %v", r.RemoteAddr, name, err)
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = w.Write([]byte(fmt.Sprintf("failed to issue %q: %v", name, err)))
+			return
+		}
+		resp.Certs[name] = cert
+	}
+
+	// @deprecated:ShouldIssueWithCSRs
+	for name, pubKey := range req.Certs {
+		if _, done := resp.Certs[name]; done {
+			continue
+		}
+		deprecations.ShouldIssueWithCSRs.Use()
+
+		cert, err := s.issueCert(name, pubKey, id, validity)
+		if err != nil {
+			klog.Infof("bootstrap %s cert %q issueCert failed: %v", r.RemoteAddr, name, err)
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(fmt.Sprintf("failed to issue %q: %v", name, err)))
 			return
@@ -167,25 +187,17 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 	klog.Infof("bootstrap %s %s success", r.RemoteAddr, id.NodeName)
 }
 
-func (s *Server) issueCert(name string, pubKey string, id *fi.VerifyResult, validHours uint32) (string, error) {
-	block, _ := pem.Decode([]byte(pubKey))
-	if block.Type != "RSA PUBLIC KEY" {
-		return "", fmt.Errorf("unexpected key type %q", block.Type)
-	}
-	key, err := x509.ParsePKIXPublicKey(block.Bytes)
-	if err != nil {
-		return "", fmt.Errorf("parsing key: %v", err)
-	}
-
+// @deprecated:ShouldIssueWithCSRs
+func (s *Server) issueWellKnownCertificate(name string, publicKey crypto.PublicKey, id *fi.VerifyResult, validity time.Duration) (*pki.Certificate, error) {
 	issueReq := &pki.IssueCertRequest{
 		Signer:    fi.CertificateIDCA,
 		Type:      "client",
-		PublicKey: key,
-		Validity:  time.Hour * time.Duration(validHours),
+		PublicKey: publicKey,
+		Validity:  validity,
 	}
 
 	if !s.certNames.Has(name) {
-		return "", fmt.Errorf("key name not enabled")
+		return nil, fmt.Errorf("key name %q not enabled", name)
 	}
 	switch name {
 	case "etcd-client-cilium":
@@ -213,14 +225,64 @@ func (s *Server) issueCert(name string, pubKey string, id *fi.VerifyResult, vali
 			CommonName: rbac.KubeRouter,
 		}
 	default:
-		return "", fmt.Errorf("unexpected key name")
+		return nil, fmt.Errorf("unexpected key name %q", name)
 	}
 
 	cert, _, _, err := pki.IssueCert(issueReq, s.keystore)
 	if err != nil {
-		return "", fmt.Errorf("issuing certificate: %v", err)
+		return nil, fmt.Errorf("error issuing certificate: %w", err)
 	}
 
+	return cert, nil
+}
+
+// deprecated:ShouldIssueWithCSRs
+func (s *Server) issueCert(name string, pubKey string, id *fi.VerifyResult, validity time.Duration) (string, error) {
+	block, _ := pem.Decode([]byte(pubKey))
+	if block.Type != "RSA PUBLIC KEY" {
+		return "", fmt.Errorf("unexpected key type %q", block.Type)
+	}
+	key, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return "", fmt.Errorf("error parsing public key: %w", err)
+	}
+
+	publicKey, ok := key.(crypto.PublicKey)
+	if !ok {
+		return "", fmt.Errorf("unexpected type for PublicKey: %T", key)
+	}
+
+	cert, err := s.issueWellKnownCertificate(name, publicKey, id, validity)
+	if err != nil {
+		return "", err
+	}
+	return cert.AsString()
+}
+
+func (s *Server) issueCSR(name string, request *nodeup.CertificateSigningRequest, id *fi.VerifyResult, validity time.Duration) (string, error) {
+	block, _ := pem.Decode([]byte(request.PEMData))
+	if block.Type != "CERTIFICATE REQUEST" {
+		return "", fmt.Errorf("unexpected PEM block type %q", block.Type)
+	}
+	csr, err := x509.ParseCertificateRequest(block.Bytes)
+	if err != nil {
+		return "", fmt.Errorf("error parsing CSR: %w", err)
+	}
+
+	// Ensure that the CSR is correctly signed, indicating that the caller controls the public key.
+	if err := csr.CheckSignature(); err != nil {
+		return "", fmt.Errorf("error validating CSR: %w", err)
+	}
+
+	publicKey, ok := csr.PublicKey.(crypto.PublicKey)
+	if !ok {
+		return "", fmt.Errorf("unexpected type for PublicKey: %T", csr.PublicKey)
+	}
+
+	cert, err := s.issueWellKnownCertificate(name, publicKey, id, validity)
+	if err != nil {
+		return "", err
+	}
 	return cert.AsString()
 }
 

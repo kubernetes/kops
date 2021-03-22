@@ -20,6 +20,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	cryptorand "crypto/rand"
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
@@ -32,6 +33,7 @@ import (
 	"path"
 
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/deprecations"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -79,8 +81,9 @@ func (b *BootstrapClientTask) Run(c *fi.Context) error {
 	ctx := context.TODO()
 
 	req := nodeup.BootstrapRequest{
-		APIVersion: nodeup.BootstrapAPIVersion,
-		Certs:      map[string]string{},
+		APIVersion:                 nodeup.BootstrapAPIVersion,
+		Certs:                      map[string]string{},
+		CertificateSigningRequests: make(map[string]*nodeup.CertificateSigningRequest),
 	}
 
 	if b.keys == nil {
@@ -100,12 +103,29 @@ func (b *BootstrapClientTask) Run(c *fi.Context) error {
 			b.keys[name] = key
 		}
 
-		pkData, err := x509.MarshalPKIXPublicKey(key.Key.(*rsa.PrivateKey).Public())
-		if err != nil {
-			return fmt.Errorf("marshalling public key: %v", err)
+		rsaKey := key.Key.(*rsa.PrivateKey)
+
+		if deprecations.ShouldIssueWithCSRs.IsEnabled() {
+			pkData, err := x509.MarshalPKIXPublicKey(rsaKey.Public())
+			if err != nil {
+				return fmt.Errorf("error marshalling public key: %w", err)
+			}
+
+			req.Certs[name] = string(pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: pkData}))
 		}
-		// TODO perhaps send a CSR instead to prove we own the private key?
-		req.Certs[name] = string(pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: pkData}))
+
+		csrTemplate := &x509.CertificateRequest{
+			SignatureAlgorithm: x509.SHA512WithRSA,
+		}
+
+		csrCertificate, err := x509.CreateCertificateRequest(cryptorand.Reader, csrTemplate, rsaKey)
+		if err != nil {
+			return fmt.Errorf("error building certificate request: %w", err)
+		}
+
+		req.CertificateSigningRequests[name] = &nodeup.CertificateSigningRequest{
+			PEMData: string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csrCertificate})),
+		}
 	}
 
 	resp, err := b.Client.QueryBootstrap(ctx, &req)
