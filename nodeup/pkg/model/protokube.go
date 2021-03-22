@@ -126,13 +126,6 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 	c.AddTask(service)
 
-	// DBUS is needed for the /var/run/dbus mount on kope.io images (based on Debian 9),
-	// at least until we can move to etcd-manager or start protokube as a service
-	// See https://github.com/kubernetes/kops/issues/10122#issuecomment-752969613
-	if t.Distribution == distributions.DistributionDebian9 {
-		c.AddTask(&nodetasks.Package{Name: "dbus"})
-	}
-
 	return nil
 }
 
