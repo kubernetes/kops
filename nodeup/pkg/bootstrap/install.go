@@ -90,11 +90,13 @@ func (i *Installation) Run() error {
 
 	return nil
 }
+
 func (i *Installation) Build(c *fi.ModelBuilderContext) {
+	c.AddTask(i.buildEnvFile())
 	c.AddTask(i.buildSystemdJob())
 }
 
-func (i *Installation) buildEnv() string {
+func (i *Installation) buildEnvFile() *nodetasks.File {
 	var envVars = make(map[string]string)
 
 	if os.Getenv("AWS_REGION") != "" {
@@ -152,7 +154,13 @@ func (i *Installation) buildEnv() string {
 		sysconfig += key + "=" + value + "\n"
 	}
 
-	return sysconfig
+	task := &nodetasks.File{
+		Path:     "/etc/sysconfig/kops-configuration",
+		Contents: fi.NewStringResource(sysconfig),
+		Type:     nodetasks.FileType_File,
+	}
+
+	return task
 }
 
 func (i *Installation) buildSystemdJob() *nodetasks.Service {
@@ -161,10 +169,10 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 	serviceName := "kops-configuration.service"
 
 	manifest := &systemd.Manifest{}
-	manifest.Set("Unit", "Description", "Run kops bootstrap (nodeup)")
+	manifest.Set("Unit", "Description", "Run kOps bootstrap (nodeup)")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
 
-	manifest.Set("Service", "Environment", i.buildEnv())
+	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/kops-configuration")
 	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
 	manifest.Set("Service", "ExecStart", command)
 	manifest.Set("Service", "Type", "oneshot")
