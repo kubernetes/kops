@@ -58,6 +58,7 @@ func TestElasticIPCreate(t *testing.T) {
 		eip1 := &ElasticIP{
 			Name:        s("eip1"),
 			TagOnSubnet: subnet1,
+			Tags:        map[string]string{"Name": "eip1"},
 		}
 
 		return map[string]fi.Task{
@@ -97,6 +98,12 @@ func TestElasticIPCreate(t *testing.T) {
 			AllocationId: eip1.ID,
 			Domain:       s("vpc"),
 			PublicIp:     s("192.0.2.1"),
+			Tags: []*ec2.Tag{
+				{
+					Key:   s("Name"),
+					Value: s("eip1"),
+				},
+			},
 		}
 		actual := c.Addresses[*eip1.ID]
 		if !reflect.DeepEqual(actual, expected) {
