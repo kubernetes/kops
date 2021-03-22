@@ -227,7 +227,9 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 	if a == nil {
 		klog.V(2).Infof("Creating ElasticIP for VPC")
 
-		request := &ec2.AllocateAddressInput{}
+		request := &ec2.AllocateAddressInput{
+			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeElasticIp, e.Tags),
+		}
 		request.Domain = aws.String(ec2.DomainTypeVpc)
 
 		response, err := t.Cloud.EC2().AllocateAddress(request)
@@ -242,10 +244,9 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 	} else {
 		publicIp = a.PublicIP
 		eipId = a.ID
-	}
-
-	if err := t.AddAWSTags(*e.ID, e.Tags); err != nil {
-		return err
+		if err := t.AddAWSTags(*e.ID, e.Tags); err != nil {
+			return err
+		}
 	}
 
 	// Tag the associated subnet
