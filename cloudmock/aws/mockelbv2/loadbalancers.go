@@ -122,9 +122,16 @@ func (m *MockELBV2) CreateLoadBalancer(request *elbv2.CreateLoadBalancerInput) (
 	if m.LBAttributes == nil {
 		m.LBAttributes = make(map[string][]*elbv2.LoadBalancerAttribute)
 	}
+	if m.Tags == nil {
+		m.Tags = make(map[string]*elbv2.TagDescription)
+	}
 
 	m.LoadBalancers[arn] = &loadBalancer{description: lb}
 	m.LBAttributes[arn] = make([]*elbv2.LoadBalancerAttribute, 0)
+	m.Tags[arn] = &elbv2.TagDescription{
+		ResourceArn: aws.String(arn),
+		Tags:        request.Tags,
+	}
 
 	return &elbv2.CreateLoadBalancerOutput{LoadBalancers: []*elbv2.LoadBalancer{&lb}}, nil
 }

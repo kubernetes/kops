@@ -109,8 +109,15 @@ func (m *MockELBV2) CreateTargetGroup(request *elbv2.CreateTargetGroupInput) (*e
 	if m.TargetGroups == nil {
 		m.TargetGroups = make(map[string]*targetGroup)
 	}
+	if m.Tags == nil {
+		m.Tags = make(map[string]*elbv2.TagDescription)
+	}
 
 	m.TargetGroups[arn] = &targetGroup{description: tg}
+	m.Tags[arn] = &elbv2.TagDescription{
+		ResourceArn: aws.String(arn),
+		Tags:        request.Tags,
+	}
 	return &elbv2.CreateTargetGroupOutput{TargetGroups: []*elbv2.TargetGroup{&tg}}, nil
 }
 

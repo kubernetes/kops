@@ -50,10 +50,12 @@ func (m *MockEC2) AllocateAddressWithId(request *ec2.AllocateAddressInput, id st
 		binary.BigEndian.PutUint32(publicIP, v)
 	}
 
+	tags := tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeElasticIp)
 	address := &ec2.Address{
 		AllocationId: s(id),
 		Domain:       s("vpc"),
 		PublicIp:     s(publicIP.String()),
+		Tags:         tags,
 	}
 	if request.Address != nil {
 		address.PublicIp = request.Address
@@ -63,6 +65,8 @@ func (m *MockEC2) AllocateAddressWithId(request *ec2.AllocateAddressInput, id st
 		m.Addresses = make(map[string]*ec2.Address)
 	}
 	m.Addresses[id] = address
+	m.addTags(id, tags...)
+
 	response := &ec2.AllocateAddressOutput{
 		AllocationId: address.AllocationId,
 		Domain:       address.Domain,
