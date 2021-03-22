@@ -581,6 +581,7 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 		request.Name = e.LoadBalancerName
 		request.Scheme = e.Scheme
 		request.Type = e.Type
+		request.Tags = awsup.ELBv2Tags(e.Tags)
 
 		for _, subnetMapping := range e.SubnetMappings {
 			request.SubnetMappings = append(request.SubnetMappings, &elbv2.SubnetMapping{
@@ -708,14 +709,13 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 				}
 			}
 		}
-	}
+		if err := t.AddELBV2Tags(loadBalancerArn, e.Tags); err != nil {
+			return err
+		}
 
-	if err := t.AddELBV2Tags(loadBalancerArn, e.Tags); err != nil {
-		return err
-	}
-
-	if err := t.RemoveELBV2Tags(loadBalancerArn, e.Tags); err != nil {
-		return err
+		if err := t.RemoveELBV2Tags(loadBalancerArn, e.Tags); err != nil {
+			return err
+		}
 	}
 
 	if err := e.modifyLoadBalancerAttributes(t, a, e, changes, loadBalancerArn); err != nil {
