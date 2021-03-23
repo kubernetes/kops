@@ -71,7 +71,9 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		if ig.IsMaster() {
 			masterIndexCount++
-			clusterTagIndex := do.TagKubernetesClusterIndex + ":" + strconv.Itoa(masterIndexCount)
+			// create tag based on etcd name. etcd name is now prefixed with etcd-
+			// Ref: https://github.com/kubernetes/kops/commit/31f8cbd571964f19d3c31024ddba918998d29929
+			clusterTagIndex := do.TagKubernetesClusterIndex + ":" + "etcd-" + strconv.Itoa(masterIndexCount)
 			droplet.Tags = append(droplet.Tags, clusterTagIndex)
 			droplet.Tags = append(droplet.Tags, clusterMasterTag)
 			droplet.Tags = append(droplet.Tags, digitalocean.TagKubernetesInstanceGroup+":"+ig.Name)
