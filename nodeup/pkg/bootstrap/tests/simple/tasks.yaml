@@ -1,0 +1,23 @@
+contents: |
+  AWS_REGION=us-test1
+path: /etc/sysconfig/kops-configuration
+type: file
+---
+Name: kops-configuration.service
+definition: |
+  [Unit]
+  Description=Run kOps bootstrap (nodeup)
+  Documentation=https://github.com/kubernetes/kops
+
+  [Service]
+  EnvironmentFile=/etc/sysconfig/kops-configuration
+  EnvironmentFile=/etc/environment
+  ExecStart=/opt/kops/bin/nodeup --conf=/opt/kops/conf/kube_env.yaml --v=8
+  Type=oneshot
+
+  [Install]
+  WantedBy=multi-user.target
+enabled: true
+manageState: true
+running: true
+smartRestart: true
