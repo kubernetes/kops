@@ -916,7 +916,7 @@
       "Type": "AWS::Events::Rule",
       "Properties": {
         "Name": "queueprocessor.example.com-ASGLifecycle",
-        "EventPattern": "{"source": ["aws.ec2"],"detail-type": ["EC2 Instance Rebalance Recommendation"]}",
+        "EventPattern": "{"source":["aws.autoscaling"],"detail-type":["EC2 Instance-terminate Lifecycle Action"]}",
         "Targets": [
           {
             "Id": "1",
@@ -942,7 +942,7 @@
       "Type": "AWS::Events::Rule",
       "Properties": {
         "Name": "queueprocessor.example.com-SpotInterruption",
-        "EventPattern": "{"source": ["aws.ec2"],"detail-type": ["EC2 Instance Rebalance Recommendation"]}",
+        "EventPattern": "{"source": ["aws.ec2"],"detail-type": ["EC2 Spot Instance Interruption Warning"]}",
         "Targets": [
           {
             "Id": "1",

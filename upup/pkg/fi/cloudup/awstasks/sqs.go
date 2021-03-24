@@ -75,6 +75,9 @@ func (q *SQS) Find(c *fi.Context) (*SQS, error) {
 	tags, err := cloud.SQS().ListQueueTags(&sqs.ListQueueTagsInput{
 		QueueUrl: q.URL,
 	})
+	if err != nil {
+		return nil, fmt.Errorf("error listing SQS queue tags: %v", err)
+	}
 
 	actual := &SQS{
 		Name:      q.Name,

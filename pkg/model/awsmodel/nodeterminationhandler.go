@@ -148,13 +148,14 @@ func (b *NodeTerminationHandlerBuilder) buildEventBridgeRules(c *fi.ModelBuilder
 	for _, event := range events {
 		// build rule
 		ruleName := aws.String(clusterName + "-" + event.name)
+		pattern := event.pattern
 
 		ruleTask := &awstasks.EventBridgeRule{
 			Name:      ruleName,
 			Lifecycle: b.Lifecycle,
 			Tags:      b.CloudTags(*ruleName, false),
 
-			EventPattern: &event.pattern,
+			EventPattern: &pattern,
 			TargetArn:    &targetArn,
 		}
 

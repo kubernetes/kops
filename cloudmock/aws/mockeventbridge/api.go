@@ -17,8 +17,6 @@ limitations under the License.
 package mockeventbridge
 
 import (
-	"sync"
-
 	"github.com/aws/aws-sdk-go/service/eventbridge"
 	"github.com/aws/aws-sdk-go/service/eventbridge/eventbridgeiface"
 )
@@ -26,7 +24,6 @@ import (
 type MockEventBridge struct {
 	eventbridgeiface.EventBridgeAPI
 
-	mutex sync.Mutex
 	Rules []*eventbridge.Rule
 }
 
