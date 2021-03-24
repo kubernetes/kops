@@ -23,7 +23,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -84,7 +83,7 @@ func (t *Tester) extractBinaries(downloadPath string) (string, error) {
 	}
 	tarReader := tar.NewReader(gzf)
 
-	kubectlDir, err := ioutil.TempDir("", "kubectl")
+	kubectlDir, err := os.MkdirTemp("", "kubectl")
 	if err != nil {
 		return "", err
 	}
