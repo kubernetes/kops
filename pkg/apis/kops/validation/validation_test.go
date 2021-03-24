@@ -169,6 +169,7 @@ func TestValidateKubeAPIServer(t *testing.T) {
 
 	grid := []struct {
 		Input          kops.KubeAPIServerConfig
+		Cluster        *kops.Cluster
 		ExpectedErrors []string
 		ExpectedDetail string
 	}{
@@ -207,14 +208,64 @@ func TestValidateKubeAPIServer(t *testing.T) {
 			},
 			ExpectedDetail: "Authorization mode Webhook requires authorizationWebhookConfigFile to be specified",
 		},
+		{
+			Input: kops.KubeAPIServerConfig{
+				AuthorizationMode: fi.String("RBAC"),
+			},
+			Cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					Authorization: &kops.AuthorizationSpec{
+						RBAC: &kops.RBACAuthorizationSpec{},
+					},
+					KubernetesVersion: "1.19.0",
+					CloudProvider:     "aws",
+				},
+			},
+			ExpectedErrors: []string{
+				"Required value::KubeAPIServer.authorizationMode",
+			},
+		},
+		{
+			Input: kops.KubeAPIServerConfig{
+				AuthorizationMode: fi.String("RBAC,Node"),
+			},
+			Cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					Authorization: &kops.AuthorizationSpec{
+						RBAC: &kops.RBACAuthorizationSpec{},
+					},
+					KubernetesVersion: "1.19.0",
+					CloudProvider:     "aws",
+				},
+			},
+		},
+		{
+			Input: kops.KubeAPIServerConfig{
+				AuthorizationMode: fi.String("RBAC,Node,Bogus"),
+			},
+			Cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					Authorization: &kops.AuthorizationSpec{
+						RBAC: &kops.RBACAuthorizationSpec{},
+					},
+					KubernetesVersion: "1.19.0",
+					CloudProvider:     "aws",
+				},
+			},
+			ExpectedErrors: []string{
+				"Unsupported value::KubeAPIServer.authorizationMode",
+			},
+		},
 	}
 	for _, g := range grid {
-		cluster := &kops.Cluster{
-			Spec: kops.ClusterSpec{
-				KubernetesVersion: "1.16.0",
-			},
+		if g.Cluster == nil {
+			g.Cluster = &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "1.16.0",
+				},
+			}
 		}
-		errs := validateKubeAPIServer(&g.Input, cluster, field.NewPath("KubeAPIServer"))
+		errs := validateKubeAPIServer(&g.Input, g.Cluster, field.NewPath("KubeAPIServer"))
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 
