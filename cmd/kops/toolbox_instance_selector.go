@@ -500,12 +500,6 @@ func decorateWithMixedInstancesPolicy(instanceGroup *kops.InstanceGroup, usageCl
 		return nil, fmt.Errorf("error node usage class not supported")
 	}
 
-	generatedWithLabelKey := "kops.k8s.io/instance-selector"
-	if ig.Spec.CloudLabels == nil {
-		ig.Spec.CloudLabels = make(map[string]string)
-	}
-	ig.Spec.CloudLabels[generatedWithLabelKey] = "1"
-
 	return ig, nil
 }
 
