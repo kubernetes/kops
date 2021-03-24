@@ -55,8 +55,6 @@ type KubeletConfigSpec struct {
 	PodInfraContainerImage string `json:"podInfraContainerImage,omitempty" flag:"pod-infra-container-image"`
 	// SeccompProfileRoot is the directory path for seccomp profiles.
 	SeccompProfileRoot *string `json:"seccompProfileRoot,omitempty" flag:"seccomp-profile-root"`
-	// AllowPrivileged enables containers to request privileged mode (defaults to false)
-	AllowPrivileged *bool `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
 	// EnableDebuggingHandlers enables server endpoints for log collection and local running of containers and commands
 	EnableDebuggingHandlers *bool `json:"enableDebuggingHandlers,omitempty" flag:"enable-debugging-handlers"`
 	// RegisterNode enables automatic registration with the apiserver.

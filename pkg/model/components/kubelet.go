@@ -59,18 +59,6 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec.Kubelet.ClusterDomain = clusterSpec.ClusterDNSDomain
 	clusterSpec.Kubelet.NonMasqueradeCIDR = clusterSpec.NonMasqueradeCIDR
 
-	// AllowPrivileged is deprecated and removed in v1.14.
-	// See https://github.com/kubernetes/kubernetes/pull/71835
-	if clusterSpec.Kubelet.AllowPrivileged != nil {
-		// If it is explicitly set to false, return an error, because this
-		// behavior is no longer supported in v1.14 (the default was true, prior).
-		if !*clusterSpec.Kubelet.AllowPrivileged {
-			klog.Warningf("Kubelet's --allow-privileged flag is no longer supported in v1.14.")
-		}
-		// Explicitly set it to nil, so it won't be passed on the command line.
-		clusterSpec.Kubelet.AllowPrivileged = nil
-	}
-
 	if clusterSpec.Kubelet.ClusterDNS == "" {
 		if clusterSpec.KubeDNS != nil && clusterSpec.KubeDNS.NodeLocalDNS != nil && fi.BoolValue(clusterSpec.KubeDNS.NodeLocalDNS.Enabled) {
 			clusterSpec.Kubelet.ClusterDNS = clusterSpec.KubeDNS.NodeLocalDNS.LocalIP

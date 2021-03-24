@@ -2233,10 +2233,6 @@ spec:
               kubelet:
                 description: KubeletConfigSpec defines the kubelet configuration
                 properties:
-                  allowPrivileged:
-                    description: AllowPrivileged enables containers to request privileged
-                      mode (defaults to false)
-                    type: boolean
                   allowedUnsafeSysctls:
                     description: AllowedUnsafeSysctls are passed to the kubelet config
                       to whitelist allowable sysctls
@@ -2639,10 +2635,6 @@ spec:
               masterKubelet:
                 description: KubeletConfigSpec defines the kubelet configuration
                 properties:
-                  allowPrivileged:
-                    description: AllowPrivileged enables containers to request privileged
-                      mode (defaults to false)
-                    type: boolean
                   allowedUnsafeSysctls:
                     description: AllowedUnsafeSysctls are passed to the kubelet config
                       to whitelist allowable sysctls

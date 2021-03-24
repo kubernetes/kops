@@ -3117,11 +3117,6 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.AllowPrivileged != nil {
-		in, out := &in.AllowPrivileged, &out.AllowPrivileged
-		*out = new(bool)
-		**out = **in
-	}
 	if in.EnableDebuggingHandlers != nil {
 		in, out := &in.EnableDebuggingHandlers, &out.EnableDebuggingHandlers
 		*out = new(bool)

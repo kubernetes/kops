@@ -4871,7 +4871,6 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.HostnameOverride = in.HostnameOverride
 	out.PodInfraContainerImage = in.PodInfraContainerImage
 	out.SeccompProfileRoot = in.SeccompProfileRoot
-	out.AllowPrivileged = in.AllowPrivileged
 	out.EnableDebuggingHandlers = in.EnableDebuggingHandlers
 	out.RegisterNode = in.RegisterNode
 	out.NodeStatusUpdateFrequency = in.NodeStatusUpdateFrequency
@@ -4965,7 +4964,6 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.HostnameOverride = in.HostnameOverride
 	out.PodInfraContainerImage = in.PodInfraContainerImage
 	out.SeccompProfileRoot = in.SeccompProfileRoot
-	out.AllowPrivileged = in.AllowPrivileged
 	out.EnableDebuggingHandlers = in.EnableDebuggingHandlers
 	out.RegisterNode = in.RegisterNode
 	out.NodeStatusUpdateFrequency = in.NodeStatusUpdateFrequency
