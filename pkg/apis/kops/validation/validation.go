@@ -454,12 +454,33 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath
 		}
 	}
 
-	if v.AuthorizationMode != nil && strings.Contains(*v.AuthorizationMode, "Webhook") {
-		if v.AuthorizationWebhookConfigFile == nil {
-			allErrs = append(allErrs, field.Required(fldPath.Child("authorizationWebhookConfigFile"), "Authorization mode Webhook requires authorizationWebhookConfigFile to be specified"))
+	if v.AuthorizationMode != nil {
+		if strings.Contains(*v.AuthorizationMode, "Webhook") {
+			if v.AuthorizationWebhookConfigFile == nil {
+				allErrs = append(allErrs, field.Required(fldPath.Child("authorizationWebhookConfigFile"), "Authorization mode Webhook requires authorizationWebhookConfigFile to be specified"))
+			}
+		}
+
+		if c.Spec.Authorization != nil && c.Spec.Authorization.RBAC != nil {
+
+			var hasNode, hasRBAC bool
+			for _, mode := range strings.Split(*v.AuthorizationMode, ",") {
+				switch mode {
+				case "Node":
+					hasNode = true
+				case "RBAC":
+					hasRBAC = true
+				default:
+					allErrs = append(allErrs, IsValidValue(fldPath.Child("authorizationMode"), &mode, []string{"ABAC", "Webhook", "Node", "RBAC", "AlwaysAllow", "AlwaysDeny"})...)
+				}
+			}
+			if kops.CloudProviderID(c.Spec.CloudProvider) == kops.CloudProviderAWS && c.IsKubernetesGTE("1.19") {
+				if !hasNode || !hasRBAC {
+					allErrs = append(allErrs, field.Required(fldPath.Child("authorizationMode"), "As of kubernetes 1.19 on AWS, authorizationMode must include RBAC and Node"))
+				}
+			}
 		}
 	}
-
 	return allErrs
 }
 
