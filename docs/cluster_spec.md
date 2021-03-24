@@ -1003,7 +1003,7 @@ Overriding the configuration of containerd has to be done with care as the defau
 ```yaml
 spec:
   containerd:
-    version: 1.4.3
+    version: 1.4.4
     logLevel: info
     configOverride: ""
 ```
@@ -1016,14 +1016,14 @@ kOps uses the `.tar.gz` packages for installing containerd on any supported OS. 
 spec:
   containerd:
     packages:
-      urlAmd64: https://github.com/containerd/containerd/releases/download/v1.4.3/cri-containerd-cni-1.4.3-linux-amd64.tar.gz
-      hashAmd64: 2697a342e3477c211ab48313e259fd7e32ad1f5ded19320e6a559f50a82bff3d
+      urlAmd64: https://github.com/containerd/containerd/releases/download/v1.4.4/cri-containerd-cni-1.4.4-linux-amd64.tar.gz
+      hashAmd64: 96641849cb78a0a119223a427dfdc1ade88412ef791a14193212c8c8e29d447b
 ```
 
 The format of the custom package must be identical to the official packages:
 
 ```bash
-tar tf cri-containerd-cni-1.4.3-linux-amd64.tar.gz
+tar tf cri-containerd-cni-1.4.4-linux-amd64.tar.gz
     usr/local/bin/containerd
     usr/local/bin/containerd-shim
     usr/local/bin/containerd-shim-runc-v1
@@ -1252,7 +1252,7 @@ As of Kubernetes 1.20, kOps will default the cgroup driver of the kubelet and th
 as opposed to cgroup fs.
 
 It is important to ensure that the kubelet and the container runtime are using the same cgroup driver. Below are examples showing
-how to set the cgroup driver for kubelet and the container runtime. 
+how to set the cgroup driver for kubelet and the container runtime.
 
 
 Setting kubelet to use cgroupfs
@@ -1270,5 +1270,5 @@ spec:
       - native.cgroupdriver=cgroupfs
 ```
 
-In the case of containerd, the cgroup-driver is dependant on the cgroup driver of kubelet. To use cgroupfs, just update the 
+In the case of containerd, the cgroup-driver is dependant on the cgroup driver of kubelet. To use cgroupfs, just update the
 cgroupDriver of kubelet to use cgroupfs.
