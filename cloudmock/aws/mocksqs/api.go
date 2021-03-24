@@ -17,8 +17,6 @@ limitations under the License.
 package mocksqs
 
 import (
-	"sync"
-
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 )
@@ -26,7 +24,6 @@ import (
 type MockSQS struct {
 	sqsiface.SQSAPI
 
-	mutex     sync.Mutex
 	QueueUrls []*string
 }
 
