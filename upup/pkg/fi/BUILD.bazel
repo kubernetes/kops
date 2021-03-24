@@ -69,6 +69,7 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = [
+        "cloud_test.go",
         "dryruntarget_test.go",
         "files_test.go",
         "vfs_castore_test.go",
