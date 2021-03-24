@@ -21,6 +21,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
@@ -315,16 +316,16 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 }
 
 // IAMServiceEC2 returns the name of the IAM service for EC2 in the current region.
-// It is ec2.amazonaws.com everywhere but in cn-north / cn-northwest, where it is ec2.amazonaws.com.cn
+// It is ec2.amazonaws.com in the default aws partition, but different in other isolated/custom partitions
 func IAMServiceEC2(region string) string {
-	switch region {
-	case "cn-north-1":
-		return "ec2.amazonaws.com.cn"
-	case "cn-northwest-1":
-		return "ec2.amazonaws.com.cn"
-	default:
-		return "ec2.amazonaws.com"
+	partitions := endpoints.DefaultPartitions()
+	for _, p := range partitions {
+		if _, ok := p.Regions()[region]; ok {
+			ep := "ec2." + p.DNSSuffix()
+			return ep
+		}
 	}
+	return "ec2.amazonaws.com"
 }
 
 // buildAWSIAMRolePolicy produces the AWS IAM role policy for the given role.

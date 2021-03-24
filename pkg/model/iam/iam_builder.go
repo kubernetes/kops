@@ -33,6 +33,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -346,20 +347,16 @@ func (r *NodeRoleBastion) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 }
 
 // IAMPrefix returns the prefix for AWS ARNs in the current region, for use with IAM
-// it is arn:aws everywhere but in cn-north and us-gov-west-1
+// it is arn:aws in the default aws partition but different in other isolated or non-standard partitions
 func (b *PolicyBuilder) IAMPrefix() string {
-	switch b.Region {
-	case "cn-north-1":
-		return "arn:aws-cn"
-	case "cn-northwest-1":
-		return "arn:aws-cn"
-	case "us-gov-east-1":
-		return "arn:aws-us-gov"
-	case "us-gov-west-1":
-		return "arn:aws-us-gov"
-	default:
-		return "arn:aws"
+	partitions := endpoints.DefaultPartitions()
+	for _, p := range partitions {
+		if _, ok := p.Regions()[b.Region]; ok {
+			arn := "arn:" + p.ID()
+			return arn
+		}
 	}
+	return "arn:aws"
 }
 
 // AddS3Permissions builds an IAM Policy, with statements granting tailored

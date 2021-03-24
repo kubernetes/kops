@@ -52,6 +52,7 @@ go_library(
         "//upup/pkg/fi/utils:go_default_library",
         "//util/pkg/architectures:go_default_library",
         "//util/pkg/vfs:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/endpoints:go_default_library",
         "//vendor/github.com/blang/semver/v4:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
@@ -69,6 +70,7 @@ go_test(
     srcs = [
         "bootstrapscript_test.go",
         "firewall_test.go",
+        "iam_test.go",
     ],
     data = glob(["tests/**"]),  #keep
     embed = [":go_default_library"],
