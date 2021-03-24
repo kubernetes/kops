@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -43,7 +43,7 @@ func (d *deployer) PostTest(testErr error) error {
 	if err := util.HTTPGETWithHeaders(d.KopsVersionMarker, nil, &b); err != nil {
 		return err
 	}
-	tempSrc, err := ioutil.TempFile("", "kops-version-marker")
+	tempSrc, err := os.CreateTemp("", "kops-version-marker")
 	if err != nil {
 		return err
 	}
