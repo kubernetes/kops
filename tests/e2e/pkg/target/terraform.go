@@ -19,7 +19,7 @@ package target
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -48,7 +48,7 @@ func NewTerraform(version string) (*Terraform, error) {
 	if err != nil {
 		return nil, err
 	}
-	tfDir, err := ioutil.TempDir("", "kops-terraform")
+	tfDir, err := os.MkdirTemp("", "kops-terraform")
 	if err != nil {
 		return nil, err
 	}
