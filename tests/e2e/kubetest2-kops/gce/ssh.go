@@ -27,7 +27,7 @@ import (
 )
 
 func SetupSSH(project string) (string, string, error) {
-	dir, err := os.MkdirTemp("kops", "ssh")
+	dir, err := os.MkdirTemp("", "kops-ssh")
 	if err != nil {
 		return "", "", err
 	}
