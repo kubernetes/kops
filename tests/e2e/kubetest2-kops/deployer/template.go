@@ -17,7 +17,7 @@ limitations under the License.
 package deployer
 
 import (
-	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 
@@ -29,7 +29,7 @@ import (
 // renderTemplate will render the manifest template with the provided values,
 // setting the deployer's manifestPath
 func (d *deployer) renderTemplate(values map[string]interface{}) error {
-	dir, err := ioutil.TempDir("", "kops-template")
+	dir, err := os.MkdirTemp("", "kops-template")
 	if err != nil {
 		return err
 	}
@@ -39,7 +39,10 @@ func (d *deployer) renderTemplate(values map[string]interface{}) error {
 		return err
 	}
 	valuesPath := path.Join(dir, "values.yaml")
-	ioutil.WriteFile(valuesPath, valuesBytes, 0644)
+	err = os.WriteFile(valuesPath, valuesBytes, 0644)
+	if err != nil {
+		return err
+	}
 
 	manifestPath := path.Join(dir, "manifest.yaml")
 	d.manifestPath = manifestPath
@@ -64,7 +67,7 @@ func (d *deployer) renderTemplate(values map[string]interface{}) error {
 }
 
 func (d *deployer) templateValues(zones []string, publicIP string) (map[string]interface{}, error) {
-	publicKey, err := ioutil.ReadFile(d.SSHPublicKeyPath)
+	publicKey, err := os.ReadFile(d.SSHPublicKeyPath)
 	if err != nil {
 		return nil, err
 	}
