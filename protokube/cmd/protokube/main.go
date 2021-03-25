@@ -128,13 +128,12 @@ func run() error {
 			os.Exit(1)
 		}
 		volumes = awsVolumes
+		internalIP = awsVolumes.InternalIP()
 
 		if clusterID == "" {
 			clusterID = awsVolumes.ClusterID()
 		}
-		if internalIP == nil {
-			internalIP = awsVolumes.InternalIP()
-		}
+
 	} else if cloud == "digitalocean" {
 		doVolumes, err := protokube.NewDOVolumes()
 		if err != nil {
@@ -142,19 +141,16 @@ func run() error {
 			os.Exit(1)
 		}
 		volumes = doVolumes
+		internalIP, err = protokube.GetDropletInternalIP()
+		if err != nil {
+			klog.Errorf("Error getting droplet internal IP: %s", err)
+			os.Exit(1)
+		}
 
 		if clusterID == "" {
 			clusterID, err = protokube.GetClusterID()
 			if err != nil {
 				klog.Errorf("Error getting clusterid: %s", err)
-				os.Exit(1)
-			}
-		}
-
-		if internalIP == nil {
-			internalIP, err = protokube.GetDropletInternalIP()
-			if err != nil {
-				klog.Errorf("Error getting droplet internal IP: %s", err)
 				os.Exit(1)
 			}
 		}
@@ -166,13 +162,10 @@ func run() error {
 		}
 
 		volumes = gceVolumes
+		internalIP = gceVolumes.InternalIP()
 
 		if clusterID == "" {
 			clusterID = gceVolumes.ClusterID()
-		}
-
-		if internalIP == nil {
-			internalIP = gceVolumes.InternalIP()
 		}
 	} else if cloud == "openstack" {
 		klog.Info("Initializing openstack volumes")
@@ -182,9 +175,7 @@ func run() error {
 			os.Exit(1)
 		}
 		volumes = osVolumes
-		if internalIP == nil {
-			internalIP = osVolumes.InternalIP()
-		}
+		internalIP = osVolumes.InternalIP()
 
 		if clusterID == "" {
 			clusterID = osVolumes.ClusterID()
@@ -197,12 +188,10 @@ func run() error {
 			os.Exit(1)
 		}
 		volumes = aliVolumes
+		internalIP = aliVolumes.InternalIP()
 
 		if clusterID == "" {
 			clusterID = aliVolumes.ClusterID()
-		}
-		if internalIP == nil {
-			internalIP = aliVolumes.InternalIP()
 		}
 	} else if cloud == "azure" {
 		klog.Info("Initializing Azure volumes")
@@ -212,12 +201,10 @@ func run() error {
 			os.Exit(1)
 		}
 		volumes = azureVolumes
+		internalIP = azureVolumes.InternalIP()
 
 		if clusterID == "" {
 			clusterID = azureVolumes.ClusterID()
-		}
-		if internalIP == nil {
-			internalIP = azureVolumes.InternalIP()
 		}
 	} else {
 		klog.Errorf("Unknown cloud %q", cloud)
