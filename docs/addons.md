@@ -33,8 +33,14 @@ Cluster autoscaler can be enabled to automatically adjust the size of the kubern
 spec:
   clusterAutoscaler:
     enabled: true
+    expander: least-waste
+    balanceSimilarNodeGroups: false
+    scaleDownUtilizationThreshold: 0.5
     skipNodesWithLocalStorage: true
     skipNodesWithSystemPods: true
+    newPodScaleUpDelay: 0s
+    scaleDownDelayAfterAdd: 10m0s
+    image: <the latest supported image for the specified kubernetes version>
     cpuRequest: "100m"
     memoryRequest: "300Mi"
 ```
