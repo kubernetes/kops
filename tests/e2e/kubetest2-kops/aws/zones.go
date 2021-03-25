@@ -30,9 +30,9 @@ var allZones = []string{
 	//"ap-northeast-2b" - AZ does not exist, so we're breaking the 3 AZs per region target here
 	"ap-northeast-2c",
 	"ap-northeast-2d",
-	"ap-northeast-3a",
-	"ap-northeast-3b",
-	"ap-northeast-3c",
+	//"ap-northeast-3a", - Disabled until etcd-manager supports the region and the AMIs used in testing are present
+	//"ap-northeast-3b",
+	//"ap-northeast-3c",
 	"ap-south-1a",
 	"ap-south-1b",
 	"ap-south-1c",
