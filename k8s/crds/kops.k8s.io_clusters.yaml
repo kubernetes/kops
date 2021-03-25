@@ -555,6 +555,10 @@ spec:
                       ignore unschedulable pods until they are a certain "age", regardless
                       of the scan-interval Default: 0s'
                     type: string
+                  scaleDownDelayAfterAdd:
+                    description: 'ScaleDownDelayAfterAdd determines the time after
+                      scale up that scale down evaluation resumes Default: 10m0s'
+                    type: string
                   scaleDownUtilizationThreshold:
                     description: 'ScaleDownUtilizationThreshold determines the utilization
                       threshold for node scale-down. Default: 0.5'

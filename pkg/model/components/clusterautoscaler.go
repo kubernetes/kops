@@ -85,6 +85,9 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 	if cas.NewPodScaleUpDelay == nil {
 		cas.NewPodScaleUpDelay = fi.String("0s")
 	}
+	if cas.ScaleDownDelayAfterAdd == nil {
+		cas.ScaleDownDelayAfterAdd = fi.String("10m0s")
+	}
 
 	return nil
 }

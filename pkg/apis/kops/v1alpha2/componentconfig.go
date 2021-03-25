@@ -879,6 +879,9 @@ type ClusterAutoscalerConfig struct {
 	// NewPodScaleUpDelay causes cluster autoscaler to ignore unschedulable pods until they are a certain "age", regardless of the scan-interval
 	// Default: 0s
 	NewPodScaleUpDelay *string `json:"newPodScaleUpDelay,omitempty"`
+	// ScaleDownDelayAfterAdd determines the time after scale up that scale down evaluation resumes
+	// Default: 10m0s
+	ScaleDownDelayAfterAdd *string `json:"scaleDownDelayAfterAdd,omitempty"`
 	// Image is the docker container used.
 	// Default: the latest supported image for the specified kubernetes version.
 	Image *string `json:"image,omitempty"`
