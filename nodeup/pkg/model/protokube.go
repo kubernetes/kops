@@ -147,7 +147,7 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Kubernetes Protokube Service")
-	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
+	manifest.Set("Unit", "Documentation", "https://kops.sigs.k8s.io")
 
 	manifest.Set("Service", "ExecStart", "/opt/kops/bin/protokube"+" "+protokubeRunArgs)
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/protokube")
