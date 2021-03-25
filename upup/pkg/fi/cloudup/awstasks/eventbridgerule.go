@@ -17,12 +17,12 @@ limitations under the License.
 package awstasks
 
 import (
+	"encoding/json"
 	"fmt"
-
-	"k8s.io/apimachinery/pkg/util/validation/field"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/eventbridge"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -149,11 +149,22 @@ type cloudformationTarget struct {
 
 type cloudformationEventBridgeRule struct {
 	Name         *string                `json:"Name"`
-	EventPattern *string                `json:"EventPattern"`
+	EventPattern map[string]interface{} `json:"EventPattern"`
 	Targets      []cloudformationTarget `json:"Targets"`
 }
 
 func (_ *EventBridgeRule) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *EventBridgeRule) error {
+	// convert event pattern string into a json struct
+	jsonString, err := fi.ResourceAsBytes(fi.NewStringResource(*e.EventPattern))
+	if err != nil {
+		return err
+	}
+	data := make(map[string]interface{})
+	err = json.Unmarshal(jsonString, &data)
+	if err != nil {
+		return fmt.Errorf("error parsing SQS PolicyDocument: %v", err)
+	}
+
 	target := &cloudformationTarget{
 		Id:  s("1"),
 		Arn: e.TargetArn,
@@ -161,7 +172,7 @@ func (_ *EventBridgeRule) RenderCloudformation(t *cloudformation.CloudformationT
 
 	cf := &cloudformationEventBridgeRule{
 		Name:         e.Name,
-		EventPattern: e.EventPattern,
+		EventPattern: data,
 		Targets:      []cloudformationTarget{*target},
 	}
 
