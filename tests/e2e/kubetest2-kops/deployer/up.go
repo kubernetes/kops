@@ -118,6 +118,7 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 		if d.GCPProject != "" {
 			args = appendIfUnset(args, "--project", d.GCPProject)
 		}
+		args = appendIfUnset(args, "--vpc", strings.Split(d.ClusterName, ".")[0])
 	case "digitalocean":
 		args = appendIfUnset(args, "--master-size", "s-8vcpu-16gb")
 	}
