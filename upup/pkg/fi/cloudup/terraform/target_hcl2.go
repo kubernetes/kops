@@ -98,7 +98,7 @@ func (t *TerraformTarget) finishHCL2(taskMap map[string]fi.Task) error {
 	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
 		writeMap(requiredProvidersBody, "aws", map[string]cty.Value{
 			"source":  cty.StringVal("hashicorp/aws"),
-			"version": cty.StringVal(">= 2.46.0"),
+			"version": cty.StringVal(">= 3.34.0"),
 		})
 		if featureflag.Spotinst.Enabled() {
 			writeMap(requiredProvidersBody, "spotinst", map[string]cty.Value{

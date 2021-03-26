@@ -187,6 +187,7 @@ type terraformIAMOIDCProvider struct {
 	ThumbprintList []*string `json:"thumbprint_list" cty:"thumbprint_list"`
 
 	AssumeRolePolicy *terraform.Literal `json:"assume_role_policy" cty:"assume_role_policy"`
+	Tags             map[string]string  `json:"tags,omitempty" cty:"tags"`
 }
 
 func (p *IAMOIDCProvider) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMOIDCProvider) error {
@@ -195,6 +196,7 @@ func (p *IAMOIDCProvider) RenderTerraform(t *terraform.TerraformTarget, a, e, ch
 		URL:            e.URL,
 		ClientIDList:   e.ClientIDs,
 		ThumbprintList: e.Thumbprints,
+		Tags:           e.Tags,
 	}
 
 	return t.RenderResource("aws_iam_openid_connect_provider", *e.Name, tf)
