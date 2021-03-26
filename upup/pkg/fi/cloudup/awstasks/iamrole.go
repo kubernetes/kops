@@ -247,9 +247,7 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 			}
 		}
 	}
-
-	// TODO: Should we use path as our tag?
-	return nil // No tags in IAM
+	return nil
 }
 
 type terraformIAMRole struct {

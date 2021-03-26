@@ -106,21 +106,20 @@ func (_ *IAMInstanceProfileRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 			return fmt.Errorf("error creating IAMInstanceProfileRole: %v", err)
 		}
 	}
-
-	// TODO: Should we use path as our tag?
-	return nil // No tags in IAM
+	return nil
 }
 
 type terraformIAMInstanceProfile struct {
 	Name *string            `json:"name" cty:"name"`
 	Role *terraform.Literal `json:"role" cty:"role"`
-	// TODO(rifelpet): add tags field when terraform supports it
+	Tags map[string]string  `json:"tags,omitempty" cty:"tags"`
 }
 
 func (_ *IAMInstanceProfileRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMInstanceProfileRole) error {
 	tf := &terraformIAMInstanceProfile{
 		Name: e.InstanceProfile.Name,
 		Role: e.Role.TerraformLink(),
+		Tags: e.InstanceProfile.Tags,
 	}
 
 	return t.RenderResource("aws_iam_instance_profile", *e.InstanceProfile.Name, tf)
@@ -129,6 +128,7 @@ func (_ *IAMInstanceProfileRole) RenderTerraform(t *terraform.TerraformTarget, a
 type cloudformationIAMInstanceProfile struct {
 	InstanceProfileName *string                   `json:"InstanceProfileName"`
 	Roles               []*cloudformation.Literal `json:"Roles"`
+	// TODO: Add tags when Cloudformation supports them
 }
 
 func (_ *IAMInstanceProfileRole) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *IAMInstanceProfileRole) error {

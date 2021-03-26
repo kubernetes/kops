@@ -230,11 +230,21 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-externallb-example-com" {
 resource "aws_iam_instance_profile" "masters-externallb-example-com" {
   name = "masters.externallb.example.com"
   role = aws_iam_role.masters-externallb-example-com.name
+  tags = {
+    "KubernetesCluster"                            = "externallb.example.com"
+    "Name"                                         = "masters.externallb.example.com"
+    "kubernetes.io/cluster/externallb.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-externallb-example-com" {
   name = "nodes.externallb.example.com"
   role = aws_iam_role.nodes-externallb-example-com.name
+  tags = {
+    "KubernetesCluster"                            = "externallb.example.com"
+    "Name"                                         = "nodes.externallb.example.com"
+    "kubernetes.io/cluster/externallb.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "masters-externallb-example-com" {
@@ -632,7 +642,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }
