@@ -145,7 +145,7 @@ spec:
       type: Public
       subnets:
         - name: utility-subnet-a
-          allocationID: eipalloc-222ghi789
+          allocationId: eipalloc-222ghi789
 ```
 
 The specified Allocation ID's must already be created manually or external infrastructure as code, eg Terraform. You will need to place the loadBalanacer in the utility subnets for external connectivity.
