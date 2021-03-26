@@ -123,16 +123,16 @@ Note: The NS values here are for the **SUBDOMAIN**
         "TTL": 300,
         "ResourceRecords": [
           {
-            "Value": "ns-1.awsdns-1.co.uk"
+            "Value": "ns-1.<example-aws-dns>-1.co.uk"
           },
           {
-            "Value": "ns-2.awsdns-2.org"
+            "Value": "ns-2.<example-aws-dns>-2.org"
           },
           {
-            "Value": "ns-3.awsdns-3.com"
+            "Value": "ns-3.<example-aws-dns>-3.com"
           },
           {
-            "Value": "ns-4.awsdns-4.net"
+            "Value": "ns-4.<example-aws-dns>-4.net"
           }
         ]
       }
@@ -213,10 +213,10 @@ Should return something similar to:
 
 ```
 ;; ANSWER SECTION:
-subdomain.example.com.        172800  IN  NS  ns-1.awsdns-1.net.
-subdomain.example.com.        172800  IN  NS  ns-2.awsdns-2.org.
-subdomain.example.com.        172800  IN  NS  ns-3.awsdns-3.com.
-subdomain.example.com.        172800  IN  NS  ns-4.awsdns-4.co.uk.
+subdomain.example.com.        172800  IN  NS  ns-1.<example-aws-dns>-1.net.
+subdomain.example.com.        172800  IN  NS  ns-2.<example-aws-dns>-2.org.
+subdomain.example.com.        172800  IN  NS  ns-3.<example-aws-dns>-3.com.
+subdomain.example.com.        172800  IN  NS  ns-4.<example-aws-dns>-4.co.uk.
 ```
 
 This is a critical component when setting up clusters. If you are experiencing
