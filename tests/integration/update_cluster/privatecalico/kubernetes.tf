@@ -366,16 +366,31 @@ resource "aws_elb" "bastion-privatecalico-example-com" {
 resource "aws_iam_instance_profile" "bastions-privatecalico-example-com" {
   name = "bastions.privatecalico.example.com"
   role = aws_iam_role.bastions-privatecalico-example-com.name
+  tags = {
+    "KubernetesCluster"                               = "privatecalico.example.com"
+    "Name"                                            = "bastions.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "masters-privatecalico-example-com" {
   name = "masters.privatecalico.example.com"
   role = aws_iam_role.masters-privatecalico-example-com.name
+  tags = {
+    "KubernetesCluster"                               = "privatecalico.example.com"
+    "Name"                                            = "masters.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-privatecalico-example-com" {
   name = "nodes.privatecalico.example.com"
   role = aws_iam_role.nodes-privatecalico-example-com.name
+  tags = {
+    "KubernetesCluster"                               = "privatecalico.example.com"
+    "Name"                                            = "nodes.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "bastions-privatecalico-example-com" {
@@ -1016,7 +1031,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }

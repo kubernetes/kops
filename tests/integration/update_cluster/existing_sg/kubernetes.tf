@@ -455,11 +455,21 @@ resource "aws_elb" "api-existingsg-example-com" {
 resource "aws_iam_instance_profile" "masters-existingsg-example-com" {
   name = "masters.existingsg.example.com"
   role = aws_iam_role.masters-existingsg-example-com.name
+  tags = {
+    "KubernetesCluster"                            = "existingsg.example.com"
+    "Name"                                         = "masters.existingsg.example.com"
+    "kubernetes.io/cluster/existingsg.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-existingsg-example-com" {
   name = "nodes.existingsg.example.com"
   role = aws_iam_role.nodes-existingsg-example-com.name
+  tags = {
+    "KubernetesCluster"                            = "existingsg.example.com"
+    "Name"                                         = "nodes.existingsg.example.com"
+    "kubernetes.io/cluster/existingsg.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "masters-existingsg-example-com" {
@@ -1298,7 +1308,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }

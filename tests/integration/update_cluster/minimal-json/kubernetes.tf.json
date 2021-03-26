@@ -261,11 +261,21 @@
     "aws_iam_instance_profile": {
       "masters-minimal-json-example-com": {
         "name": "masters.minimal-json.example.com",
-        "role": "${aws_iam_role.masters-minimal-json-example-com.name}"
+        "role": "${aws_iam_role.masters-minimal-json-example-com.name}",
+        "tags": {
+          "KubernetesCluster": "minimal-json.example.com",
+          "Name": "masters.minimal-json.example.com",
+          "kubernetes.io/cluster/minimal-json.example.com": "owned"
+        }
       },
       "nodes-minimal-json-example-com": {
         "name": "nodes.minimal-json.example.com",
-        "role": "${aws_iam_role.nodes-minimal-json-example-com.name}"
+        "role": "${aws_iam_role.nodes-minimal-json-example-com.name}",
+        "tags": {
+          "KubernetesCluster": "minimal-json.example.com",
+          "Name": "nodes.minimal-json.example.com",
+          "kubernetes.io/cluster/minimal-json.example.com": "owned"
+        }
       }
     },
     "aws_iam_role": {

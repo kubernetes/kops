@@ -382,16 +382,31 @@ resource "aws_elb" "bastion-privateciliumadvanced-example-com" {
 resource "aws_iam_instance_profile" "bastions-privateciliumadvanced-example-com" {
   name = "bastions.privateciliumadvanced.example.com"
   role = aws_iam_role.bastions-privateciliumadvanced-example-com.name
+  tags = {
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "bastions.privateciliumadvanced.example.com"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "masters-privateciliumadvanced-example-com" {
   name = "masters.privateciliumadvanced.example.com"
   role = aws_iam_role.masters-privateciliumadvanced-example-com.name
+  tags = {
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "masters.privateciliumadvanced.example.com"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-privateciliumadvanced-example-com" {
   name = "nodes.privateciliumadvanced.example.com"
   role = aws_iam_role.nodes-privateciliumadvanced-example-com.name
+  tags = {
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "nodes.privateciliumadvanced.example.com"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "bastions-privateciliumadvanced-example-com" {
@@ -1023,7 +1038,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }
