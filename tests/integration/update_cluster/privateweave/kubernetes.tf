@@ -366,16 +366,31 @@ resource "aws_elb" "bastion-privateweave-example-com" {
 resource "aws_iam_instance_profile" "bastions-privateweave-example-com" {
   name = "bastions.privateweave.example.com"
   role = aws_iam_role.bastions-privateweave-example-com.name
+  tags = {
+    "KubernetesCluster"                              = "privateweave.example.com"
+    "Name"                                           = "bastions.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "masters-privateweave-example-com" {
   name = "masters.privateweave.example.com"
   role = aws_iam_role.masters-privateweave-example-com.name
+  tags = {
+    "KubernetesCluster"                              = "privateweave.example.com"
+    "Name"                                           = "masters.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-privateweave-example-com" {
   name = "nodes.privateweave.example.com"
   role = aws_iam_role.nodes-privateweave-example-com.name
+  tags = {
+    "KubernetesCluster"                              = "privateweave.example.com"
+    "Name"                                           = "nodes.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "bastions-privateweave-example-com" {
@@ -1007,7 +1022,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }

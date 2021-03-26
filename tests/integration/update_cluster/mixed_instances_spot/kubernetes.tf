@@ -444,11 +444,21 @@ resource "aws_ebs_volume" "us-test-1c-etcd-main-mixedinstances-example-com" {
 resource "aws_iam_instance_profile" "masters-mixedinstances-example-com" {
   name = "masters.mixedinstances.example.com"
   role = aws_iam_role.masters-mixedinstances-example-com.name
+  tags = {
+    "KubernetesCluster"                                = "mixedinstances.example.com"
+    "Name"                                             = "masters.mixedinstances.example.com"
+    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-mixedinstances-example-com" {
   name = "nodes.mixedinstances.example.com"
   role = aws_iam_role.nodes-mixedinstances-example-com.name
+  tags = {
+    "KubernetesCluster"                                = "mixedinstances.example.com"
+    "Name"                                             = "nodes.mixedinstances.example.com"
+    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "masters-mixedinstances-example-com" {
@@ -1044,7 +1054,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }
