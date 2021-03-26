@@ -221,11 +221,21 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-sharedsubnet-example-com" {
 resource "aws_iam_instance_profile" "masters-sharedsubnet-example-com" {
   name = "masters.sharedsubnet.example.com"
   role = aws_iam_role.masters-sharedsubnet-example-com.name
+  tags = {
+    "KubernetesCluster"                              = "sharedsubnet.example.com"
+    "Name"                                           = "masters.sharedsubnet.example.com"
+    "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-sharedsubnet-example-com" {
   name = "nodes.sharedsubnet.example.com"
   role = aws_iam_role.nodes-sharedsubnet-example-com.name
+  tags = {
+    "KubernetesCluster"                              = "sharedsubnet.example.com"
+    "Name"                                           = "nodes.sharedsubnet.example.com"
+    "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "masters-sharedsubnet-example-com" {
@@ -554,7 +564,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }

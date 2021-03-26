@@ -366,16 +366,31 @@ resource "aws_elb" "bastion-privatecilium-example-com" {
 resource "aws_iam_instance_profile" "bastions-privatecilium-example-com" {
   name = "bastions.privatecilium.example.com"
   role = aws_iam_role.bastions-privatecilium-example-com.name
+  tags = {
+    "KubernetesCluster"                               = "privatecilium.example.com"
+    "Name"                                            = "bastions.privatecilium.example.com"
+    "kubernetes.io/cluster/privatecilium.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "masters-privatecilium-example-com" {
   name = "masters.privatecilium.example.com"
   role = aws_iam_role.masters-privatecilium-example-com.name
+  tags = {
+    "KubernetesCluster"                               = "privatecilium.example.com"
+    "Name"                                            = "masters.privatecilium.example.com"
+    "kubernetes.io/cluster/privatecilium.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-privatecilium-example-com" {
   name = "nodes.privatecilium.example.com"
   role = aws_iam_role.nodes-privatecilium-example-com.name
+  tags = {
+    "KubernetesCluster"                               = "privatecilium.example.com"
+    "Name"                                            = "nodes.privatecilium.example.com"
+    "kubernetes.io/cluster/privatecilium.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "bastions-privatecilium-example-com" {
@@ -1007,7 +1022,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }

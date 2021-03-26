@@ -366,16 +366,31 @@ resource "aws_elb" "bastion-bastionuserdata-example-com" {
 resource "aws_iam_instance_profile" "bastions-bastionuserdata-example-com" {
   name = "bastions.bastionuserdata.example.com"
   role = aws_iam_role.bastions-bastionuserdata-example-com.name
+  tags = {
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "bastions.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "masters-bastionuserdata-example-com" {
   name = "masters.bastionuserdata.example.com"
   role = aws_iam_role.masters-bastionuserdata-example-com.name
+  tags = {
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "masters.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-bastionuserdata-example-com" {
   name = "nodes.bastionuserdata.example.com"
   role = aws_iam_role.nodes-bastionuserdata-example-com.name
+  tags = {
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "nodes.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "bastions-bastionuserdata-example-com" {
@@ -1008,7 +1023,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }

@@ -352,16 +352,31 @@ resource "aws_elb" "bastion-private-shared-ip-example-com" {
 resource "aws_iam_instance_profile" "bastions-private-shared-ip-example-com" {
   name = "bastions.private-shared-ip.example.com"
   role = aws_iam_role.bastions-private-shared-ip-example-com.name
+  tags = {
+    "KubernetesCluster"                                   = "private-shared-ip.example.com"
+    "Name"                                                = "bastions.private-shared-ip.example.com"
+    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "masters-private-shared-ip-example-com" {
   name = "masters.private-shared-ip.example.com"
   role = aws_iam_role.masters-private-shared-ip-example-com.name
+  tags = {
+    "KubernetesCluster"                                   = "private-shared-ip.example.com"
+    "Name"                                                = "masters.private-shared-ip.example.com"
+    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-private-shared-ip-example-com" {
   name = "nodes.private-shared-ip.example.com"
   role = aws_iam_role.nodes-private-shared-ip-example-com.name
+  tags = {
+    "KubernetesCluster"                                   = "private-shared-ip.example.com"
+    "Name"                                                = "nodes.private-shared-ip.example.com"
+    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "bastions-private-shared-ip-example-com" {
@@ -958,7 +973,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }

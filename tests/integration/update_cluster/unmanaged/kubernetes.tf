@@ -352,16 +352,31 @@ resource "aws_elb" "bastion-unmanaged-example-com" {
 resource "aws_iam_instance_profile" "bastions-unmanaged-example-com" {
   name = "bastions.unmanaged.example.com"
   role = aws_iam_role.bastions-unmanaged-example-com.name
+  tags = {
+    "KubernetesCluster"                           = "unmanaged.example.com"
+    "Name"                                        = "bastions.unmanaged.example.com"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "masters-unmanaged-example-com" {
   name = "masters.unmanaged.example.com"
   role = aws_iam_role.masters-unmanaged-example-com.name
+  tags = {
+    "KubernetesCluster"                           = "unmanaged.example.com"
+    "Name"                                        = "masters.unmanaged.example.com"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-unmanaged-example-com" {
   name = "nodes.unmanaged.example.com"
   role = aws_iam_role.nodes-unmanaged-example-com.name
+  tags = {
+    "KubernetesCluster"                           = "unmanaged.example.com"
+    "Name"                                        = "nodes.unmanaged.example.com"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "bastions-unmanaged-example-com" {
@@ -932,7 +947,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }
