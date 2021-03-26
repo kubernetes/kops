@@ -366,16 +366,31 @@ resource "aws_elb" "bastion-privatecanal-example-com" {
 resource "aws_iam_instance_profile" "bastions-privatecanal-example-com" {
   name = "bastions.privatecanal.example.com"
   role = aws_iam_role.bastions-privatecanal-example-com.name
+  tags = {
+    "KubernetesCluster"                              = "privatecanal.example.com"
+    "Name"                                           = "bastions.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "masters-privatecanal-example-com" {
   name = "masters.privatecanal.example.com"
   role = aws_iam_role.masters-privatecanal-example-com.name
+  tags = {
+    "KubernetesCluster"                              = "privatecanal.example.com"
+    "Name"                                           = "masters.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-privatecanal-example-com" {
   name = "nodes.privatecanal.example.com"
   role = aws_iam_role.nodes-privatecanal-example-com.name
+  tags = {
+    "KubernetesCluster"                              = "privatecanal.example.com"
+    "Name"                                           = "nodes.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "bastions-privatecanal-example-com" {
@@ -1007,7 +1022,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }

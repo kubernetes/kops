@@ -269,11 +269,25 @@ resource "aws_ebs_volume" "a-etcd-main-complex-example-com" {
 resource "aws_iam_instance_profile" "masters-complex-example-com" {
   name = "masters.complex.example.com"
   role = aws_iam_role.masters-complex-example-com.name
+  tags = {
+    "KubernetesCluster"                         = "complex.example.com"
+    "Name"                                      = "masters.complex.example.com"
+    "Owner"                                     = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-complex-example-com" {
   name = "nodes.complex.example.com"
   role = aws_iam_role.nodes-complex-example-com.name
+  tags = {
+    "KubernetesCluster"                         = "complex.example.com"
+    "Name"                                      = "nodes.complex.example.com"
+    "Owner"                                     = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "masters-complex-example-com" {
@@ -1004,7 +1018,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }

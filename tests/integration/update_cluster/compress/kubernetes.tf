@@ -226,11 +226,21 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-compress-example-com" {
 resource "aws_iam_instance_profile" "masters-compress-example-com" {
   name = "masters.compress.example.com"
   role = aws_iam_role.masters-compress-example-com.name
+  tags = {
+    "KubernetesCluster"                          = "compress.example.com"
+    "Name"                                       = "masters.compress.example.com"
+    "kubernetes.io/cluster/compress.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-compress-example-com" {
   name = "nodes.compress.example.com"
   role = aws_iam_role.nodes-compress-example-com.name
+  tags = {
+    "KubernetesCluster"                          = "compress.example.com"
+    "Name"                                       = "nodes.compress.example.com"
+    "kubernetes.io/cluster/compress.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "masters-compress-example-com" {
@@ -616,7 +626,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }

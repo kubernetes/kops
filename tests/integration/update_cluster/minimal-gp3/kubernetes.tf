@@ -226,11 +226,21 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-minimal-example-com" {
 resource "aws_iam_instance_profile" "masters-minimal-example-com" {
   name = "masters.minimal.example.com"
   role = aws_iam_role.masters-minimal-example-com.name
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "masters.minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-minimal-example-com" {
   name = "nodes.minimal.example.com"
   role = aws_iam_role.nodes-minimal-example-com.name
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "nodes.minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "masters-minimal-example-com" {
@@ -624,7 +634,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }

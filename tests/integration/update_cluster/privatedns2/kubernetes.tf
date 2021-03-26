@@ -361,16 +361,31 @@ resource "aws_elb" "bastion-privatedns2-example-com" {
 resource "aws_iam_instance_profile" "bastions-privatedns2-example-com" {
   name = "bastions.privatedns2.example.com"
   role = aws_iam_role.bastions-privatedns2-example-com.name
+  tags = {
+    "KubernetesCluster"                             = "privatedns2.example.com"
+    "Name"                                          = "bastions.privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "masters-privatedns2-example-com" {
   name = "masters.privatedns2.example.com"
   role = aws_iam_role.masters-privatedns2-example-com.name
+  tags = {
+    "KubernetesCluster"                             = "privatedns2.example.com"
+    "Name"                                          = "masters.privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-privatedns2-example-com" {
   name = "nodes.privatedns2.example.com"
   role = aws_iam_role.nodes-privatedns2-example-com.name
+  tags = {
+    "KubernetesCluster"                             = "privatedns2.example.com"
+    "Name"                                          = "nodes.privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "bastions-privatedns2-example-com" {
@@ -967,7 +982,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }

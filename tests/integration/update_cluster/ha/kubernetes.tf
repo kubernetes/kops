@@ -426,11 +426,21 @@ resource "aws_ebs_volume" "c-etcd-main-ha-example-com" {
 resource "aws_iam_instance_profile" "masters-ha-example-com" {
   name = "masters.ha.example.com"
   role = aws_iam_role.masters-ha-example-com.name
+  tags = {
+    "KubernetesCluster"                    = "ha.example.com"
+    "Name"                                 = "masters.ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-ha-example-com" {
   name = "nodes.ha.example.com"
   role = aws_iam_role.nodes-ha-example-com.name
+  tags = {
+    "KubernetesCluster"                    = "ha.example.com"
+    "Name"                                 = "nodes.ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "masters-ha-example-com" {
@@ -1026,7 +1036,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }
