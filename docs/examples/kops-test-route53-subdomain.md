@@ -42,14 +42,14 @@ We can also check that our domain is reachable from the Internet using "dig". Yo
 ```bash
 dig +short example.org soa
 
-ns-656.awsdns-18.net. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400
+ns-656.<example-aws-dns>-18.net. <example-aws-dns>-hostmaster.amazon.com. 1 7200 900 1209600 86400
 
 dig +short example.org ns
 
-ns-1056.awsdns-04.org.
-ns-656.awsdns-18.net.
-ns-9.awsdns-01.com.
-ns-1642.awsdns-13.co.uk.
+ns-1056.<example-aws-dns>-04.org.
+ns-656.<example-aws-dns>-18.net.
+ns-9.<example-aws-dns>-01.com.
+ns-1642.<example-aws-dns>-13.co.uk.
 ```
 
 If both the "soa" and "ns" queries anwers OK, and with the data pointing to amazon, we are set and we can continue. Please always check that your Route53 hosted DNS zone is working before doing anything else.
@@ -69,10 +69,10 @@ create-hosted-zone \
 jq .DelegationSet.NameServers
 
 [
-  "ns-1383.awsdns-44.org",
-  "ns-829.awsdns-39.net",
-  "ns-346.awsdns-43.com",
-  "ns-1973.awsdns-54.co.uk"
+  "ns-1383.<example-aws-dns>-44.org",
+  "ns-829.<example-aws-dns>-39.net",
+  "ns-346.<example-aws-dns>-43.com",
+  "ns-1973.<example-aws-dns>-54.co.uk"
 ]
 ```
 
@@ -80,10 +80,10 @@ Note that the last command (`aws route53 create-hosted-zone`) will output your n
 
 ```bash
 [
-  "ns-1383.awsdns-44.org",
-  "ns-829.awsdns-39.net",
-  "ns-346.awsdns-43.com",
-  "ns-1973.awsdns-54.co.uk"
+  "ns-1383.<example-aws-dns>-44.org",
+  "ns-829.<example-aws-dns>-39.net",
+  "ns-346.<example-aws-dns>-43.com",
+  "ns-1973.<example-aws-dns>-54.co.uk"
 ]
 ```
 
@@ -121,16 +121,16 @@ cat<<EOF >~/kopsclustertest.example.org.json
         "TTL": 300,
         "ResourceRecords": [
           {
-            "Value": "ns-1383.awsdns-44.org"
+            "Value": "ns-1383.<example-aws-dns>-44.org"
           },
           {
-            "Value": "ns-829.awsdns-39.net"
+            "Value": "ns-829.<example-aws-dns>-39.net"
           },
           {
-            "Value": "ns-346.awsdns-43.com"
+            "Value": "ns-346.<example-aws-dns>-43.com"
           },
           {
-            "Value": "ns-1973.awsdns-54.co.uk"
+            "Value": "ns-1973.<example-aws-dns>-54.co.uk"
           }
         ]
       }
@@ -190,10 +190,10 @@ The last command will output the following info:
 ||+---------------------------------------------------------------------------------+||
 |||                                      Value                                      |||
 ||+---------------------------------------------------------------------------------+||
-|||  ns-1383.awsdns-44.org.                                                         |||
-|||  ns-829.awsdns-39.net.                                                          |||
-|||  ns-346.awsdns-43.com.                                                          |||
-|||  ns-1973.awsdns-54.co.uk.                                                       |||
+|||  ns-1383.<example-aws-dns>-44.org.                                                         |||
+|||  ns-829.<example-aws-dns>-39.net.                                                          |||
+|||  ns-346.<example-aws-dns>-43.com.                                                          |||
+|||  ns-1973.<example-aws-dns>-54.co.uk.                                                       |||
 ||+---------------------------------------------------------------------------------+||
 ||                                ResourceRecordSets                                 ||
 |+-------------------------------------------------------+------------+--------------+|
@@ -205,7 +205,7 @@ The last command will output the following info:
 ||+---------------------------------------------------------------------------------+||
 |||                                      Value                                      |||
 ||+---------------------------------------------------------------------------------+||
-|||  ns-1383.awsdns-44.org. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400  |||
+|||  ns-1383.<example-aws-dns>-44.org. <example-aws-dns>-hostmaster.amazon.com. 1 7200 900 1209600 86400  |||
 ||+---------------------------------------------------------------------------------+||
 ```
 
@@ -214,14 +214,14 @@ Also, do a "dig" test in order to check the zone availability on the Internet:
 ```bash
 dig +short kopsclustertest.example.org soa
 
-ns-1383.awsdns-44.org. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400
+ns-1383.<example-aws-dns>-44.org. <example-aws-dns>-hostmaster.amazon.com. 1 7200 900 1209600 86400
 
 dig +short kopsclustertest.example.org ns
 
-ns-1383.awsdns-44.org.
-ns-829.awsdns-39.net.
-ns-1973.awsdns-54.co.uk.
-ns-346.awsdns-43.com.
+ns-1383.<example-aws-dns>-44.org.
+ns-829.<example-aws-dns>-39.net.
+ns-1973.<example-aws-dns>-54.co.uk.
+ns-346.<example-aws-dns>-43.com.
 ```
 
 If both your SOA and NS records are there, then your subdomain is ready to be used by KOPS.
@@ -411,10 +411,10 @@ The output:
 ||+---------------------------------------------------------------------------------+||
 |||                                      Value                                      |||
 ||+---------------------------------------------------------------------------------+||
-|||  ns-1383.awsdns-44.org.                                                         |||
-|||  ns-829.awsdns-39.net.                                                          |||
-|||  ns-346.awsdns-43.com.                                                          |||
-|||  ns-1973.awsdns-54.co.uk.                                                       |||
+|||  ns-1383.<example-aws-dns>-44.org.                                                         |||
+|||  ns-829.<example-aws-dns>-39.net.                                                          |||
+|||  ns-346.<example-aws-dns>-43.com.                                                          |||
+|||  ns-1973.<example-aws-dns>-54.co.uk.                                                       |||
 ||+---------------------------------------------------------------------------------+||
 ||                                ResourceRecordSets                                 ||
 |+-------------------------------------------------------+------------+--------------+|
@@ -426,7 +426,7 @@ The output:
 ||+---------------------------------------------------------------------------------+||
 |||                                      Value                                      |||
 ||+---------------------------------------------------------------------------------+||
-|||  ns-1383.awsdns-44.org. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400  |||
+|||  ns-1383.<example-aws-dns>-44.org. <example-aws-dns>-hostmaster.amazon.com. 1 7200 900 1209600 86400  |||
 ||+---------------------------------------------------------------------------------+||
 ||                                ResourceRecordSets                                 ||
 |+--------------------------------------------------------------+---------+----------+|
@@ -545,16 +545,16 @@ Output:
   "Type": "NS",
   "ResourceRecords": [
     {
-      "Value": "ns-1383.awsdns-44.org."
+      "Value": "ns-1383.<example-aws-dns>-44.org."
     },
     {
-      "Value": "ns-829.awsdns-39.net."
+      "Value": "ns-829.<example-aws-dns>-39.net."
     },
     {
-      "Value": "ns-346.awsdns-43.com."
+      "Value": "ns-346.<example-aws-dns>-43.com."
     },
     {
-      "Value": "ns-1973.awsdns-54.co.uk."
+      "Value": "ns-1973.<example-aws-dns>-54.co.uk."
     }
   ]
 }
@@ -564,7 +564,7 @@ Output:
   "Type": "SOA",
   "ResourceRecords": [
     {
-      "Value": "ns-1383.awsdns-44.org. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400"
+      "Value": "ns-1383.<example-aws-dns>-44.org. <example-aws-dns>-hostmaster.amazon.com. 1 7200 900 1209600 86400"
     }
   ]
 }
@@ -829,10 +829,10 @@ The output:
 ||+---------------------------------------------------------------------------------+||
 |||                                      Value                                      |||
 ||+---------------------------------------------------------------------------------+||
-|||  ns-1383.awsdns-44.org.                                                         |||
-|||  ns-829.awsdns-39.net.                                                          |||
-|||  ns-346.awsdns-43.com.                                                          |||
-|||  ns-1973.awsdns-54.co.uk.                                                       |||
+|||  ns-1383.<example-aws-dns>-44.org.                                                         |||
+|||  ns-829.<example-aws-dns>-39.net.                                                          |||
+|||  ns-346.<example-aws-dns>-43.com.                                                          |||
+|||  ns-1973.<example-aws-dns>-54.co.uk.                                                       |||
 ||+---------------------------------------------------------------------------------+||
 ||                                ResourceRecordSets                                 ||
 |+-------------------------------------------------------+------------+--------------+|
@@ -844,7 +844,7 @@ The output:
 ||+---------------------------------------------------------------------------------+||
 |||                                      Value                                      |||
 ||+---------------------------------------------------------------------------------+||
-|||  ns-1383.awsdns-44.org. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400  |||
+|||  ns-1383.<example-aws-dns>-44.org. <example-aws-dns>-hostmaster.amazon.com. 1 7200 900 1209600 86400  |||
 ||+---------------------------------------------------------------------------------+||
 ```
 
