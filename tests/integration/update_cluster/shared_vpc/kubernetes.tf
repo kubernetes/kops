@@ -221,11 +221,21 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-sharedvpc-example-com" {
 resource "aws_iam_instance_profile" "masters-sharedvpc-example-com" {
   name = "masters.sharedvpc.example.com"
   role = aws_iam_role.masters-sharedvpc-example-com.name
+  tags = {
+    "KubernetesCluster"                           = "sharedvpc.example.com"
+    "Name"                                        = "masters.sharedvpc.example.com"
+    "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-sharedvpc-example-com" {
   name = "nodes.sharedvpc.example.com"
   role = aws_iam_role.nodes-sharedvpc-example-com.name
+  tags = {
+    "KubernetesCluster"                           = "sharedvpc.example.com"
+    "Name"                                        = "nodes.sharedvpc.example.com"
+    "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "masters-sharedvpc-example-com" {
@@ -588,7 +598,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }
