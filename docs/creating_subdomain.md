@@ -22,10 +22,10 @@ Fill up the box `Domain Name:` with your subdomain : k8s.example.com
 `Route 53` should generate your NS server like below in subdomain management console:
 
 ```
-ns-613.awsdns-13.net.
-ns-75.awsdns-04.com.
-ns-1022.awsdns-35.co.uk.
-ns-1149.awsdns-27.org.
+ns-613.<example-aws-dns>-13.net.
+ns-75.<example-aws-dns>-04.com.
+ns-1022.<example-aws-dns>-35.co.uk.
+ns-1149.<example-aws-dns>-27.org.
 ```
 
 Take note on these records.
@@ -40,11 +40,10 @@ After done, the result should like this from cli:
 
 ```
 ;; ANSWER SECTION:
-k8s.example.com.		172800	IN	NS	ns-613.awsdns-13.net.
-k8s.example.com.		172800	IN	NS	ns-75.awsdns-04.org.
-k8s.example.com.		172800	IN	NS	ns-1022.awsdns-35.com.
-k8s.example.com.		172800	IN	NS	ns-1149.awsdns-27.co.uk.
+k8s.example.com.		172800	IN	NS	ns-613.<example-aws-dns>-13.net.
+k8s.example.com.		172800	IN	NS	ns-75.<example-aws-dns>-04.org.
+k8s.example.com.		172800	IN	NS	ns-1022.<example-aws-dns>-35.com.
+k8s.example.com.		172800	IN	NS	ns-1149.<example-aws-dns>-27.co.uk.
 ```
 
 Wait until the NS replication is ok
-
