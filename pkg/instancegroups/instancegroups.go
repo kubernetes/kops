@@ -571,6 +571,7 @@ func (c *RollingUpdateCluster) drainNode(u *cloudinstances.CloudInstance) error 
 	}
 
 	helper := &drain.Helper{
+		Ctx:                 c.Ctx,
 		Client:              c.K8sClient,
 		Force:               true,
 		GracePeriodSeconds:  -1,
