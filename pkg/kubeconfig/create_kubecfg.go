@@ -23,6 +23,7 @@ import (
 	"sort"
 	"time"
 
+	"k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -34,7 +35,8 @@ import (
 
 const DefaultKubecfgAdminLifetime = 18 * time.Hour
 
-func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, status kops.StatusStore, admin time.Duration, configUser string, internal bool, kopsStateStore string, useKopsAuthenticationPlugin bool) (*KubeconfigBuilder, error) {
+// BuildKubecfg creates the kubeconfig data, ready for writing to ~/.kube/config
+func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, status kops.StatusStore, admin time.Duration, configUserKey string, internal bool, kopsStateStore string, useKopsAuthenticationPlugin bool) (*Config, error) {
 	clusterName := cluster.ObjectMeta.Name
 
 	var master string
@@ -97,15 +99,28 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 		}
 	}
 
-	b := NewKubeconfigBuilder()
-
 	// Use the secondary load balancer port if a certificate is on the primary listener
 	if admin != 0 && cluster.Spec.API != nil && cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.SSLCertificate != "" && cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
 		server = server + ":8443"
 	}
 
-	b.Context = clusterName
-	b.Server = server
+	b := &Config{
+		Contexts:  map[string]*api.Context{},
+		Clusters:  map[string]*api.Cluster{},
+		AuthInfos: map[string]*api.AuthInfo{},
+	}
+
+	contextName := clusterName
+	b.CurrentContext = contextName
+
+	context := &api.Context{
+		Cluster: contextName,
+	}
+	b.Contexts[contextName] = context
+
+	b.Clusters[contextName] = &api.Cluster{
+		Server: server,
+	}
 
 	// add the CA Cert to the kubeconfig only if we didn't specify a certificate for the LB
 	//  or if we're using admin credentials and the secondary port
@@ -115,91 +130,97 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 			return nil, fmt.Errorf("error fetching CA keypair: %v", err)
 		}
 		if cert != nil {
-			b.CACert, err = cert.AsBytes()
+			certBytes, err := cert.AsBytes()
 			if err != nil {
 				return nil, err
 			}
+			b.Clusters[context.Cluster].CertificateAuthorityData = certBytes
 		} else {
 			return nil, fmt.Errorf("cannot find CA certificate")
 		}
 	}
 
-	if admin != 0 {
-		cn := "kubecfg"
-		user, err := user.Current()
-		if err != nil || user == nil {
-			klog.Infof("unable to get user: %v", err)
-		} else {
-			cn += "-" + user.Name
+	if configUserKey == "" {
+		authInfo := &api.AuthInfo{}
+
+		if admin != 0 {
+			cn := "kubecfg"
+			user, err := user.Current()
+			if err != nil || user == nil {
+				klog.Infof("unable to get user: %v", err)
+			} else {
+				cn += "-" + user.Name
+			}
+
+			req := pki.IssueCertRequest{
+				Signer: fi.CertificateIDCA,
+				Type:   "client",
+				Subject: pkix.Name{
+					CommonName:   cn,
+					Organization: []string{rbac.SystemPrivilegedGroup},
+				},
+				Validity: admin,
+			}
+			cert, privateKey, _, err := pki.IssueCert(&req, keyStore)
+			if err != nil {
+				return nil, err
+			}
+			authInfo.ClientCertificateData, err = cert.AsBytes()
+			if err != nil {
+				return nil, err
+			}
+			authInfo.ClientKeyData, err = privateKey.AsBytes()
+			if err != nil {
+				return nil, err
+			}
 		}
 
-		req := pki.IssueCertRequest{
-			Signer: fi.CertificateIDCA,
-			Type:   "client",
-			Subject: pkix.Name{
-				CommonName:   cn,
-				Organization: []string{rbac.SystemPrivilegedGroup},
-			},
-			Validity: admin,
+		if useKopsAuthenticationPlugin {
+			cmd := []string{
+				"kops",
+				"helpers",
+				"kubectl-auth",
+				"--cluster=" + clusterName,
+				"--state=" + kopsStateStore,
+			}
+			authInfo.Exec = &api.ExecConfig{
+				APIVersion: "client.authentication.k8s.io/v1beta1",
+				Command:    cmd[0],
+				Args:       cmd[1:],
+			}
 		}
-		cert, privateKey, _, err := pki.IssueCert(&req, keyStore)
-		if err != nil {
-			return nil, err
-		}
-		b.ClientCert, err = cert.AsBytes()
-		if err != nil {
-			return nil, err
-		}
-		b.ClientKey, err = privateKey.AsBytes()
-		if err != nil {
-			return nil, err
-		}
-	}
 
-	if useKopsAuthenticationPlugin {
-		b.AuthenticationExec = []string{
-			"kops",
-			"helpers",
-			"kubectl-auth",
-			"--cluster=" + clusterName,
-			"--state=" + kopsStateStore,
+		k8sVersion, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+		if err != nil || k8sVersion == nil {
+			klog.Warningf("unable to parse KubernetesVersion %q", cluster.Spec.KubernetesVersion)
+			k8sVersion, _ = util.ParseKubernetesVersion("1.0.0")
 		}
-	}
 
-	b.Server = server
-
-	k8sVersion, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
-	if err != nil || k8sVersion == nil {
-		klog.Warningf("unable to parse KubernetesVersion %q", cluster.Spec.KubernetesVersion)
-		k8sVersion, _ = util.ParseKubernetesVersion("1.0.0")
-	}
-
-	basicAuthEnabled := false
-	if !util.IsKubernetesGTE("1.18", *k8sVersion) {
-		if cluster.Spec.KubeAPIServer == nil || cluster.Spec.KubeAPIServer.DisableBasicAuth == nil || !*cluster.Spec.KubeAPIServer.DisableBasicAuth {
-			basicAuthEnabled = true
+		basicAuthEnabled := false
+		if !util.IsKubernetesGTE("1.18", *k8sVersion) {
+			if cluster.Spec.KubeAPIServer == nil || cluster.Spec.KubeAPIServer.DisableBasicAuth == nil || !*cluster.Spec.KubeAPIServer.DisableBasicAuth {
+				basicAuthEnabled = true
+			}
+		} else if !util.IsKubernetesGTE("1.19", *k8sVersion) {
+			if cluster.Spec.KubeAPIServer != nil && cluster.Spec.KubeAPIServer.DisableBasicAuth != nil && !*cluster.Spec.KubeAPIServer.DisableBasicAuth {
+				basicAuthEnabled = true
+			}
 		}
-	} else if !util.IsKubernetesGTE("1.19", *k8sVersion) {
-		if cluster.Spec.KubeAPIServer != nil && cluster.Spec.KubeAPIServer.DisableBasicAuth != nil && !*cluster.Spec.KubeAPIServer.DisableBasicAuth {
-			basicAuthEnabled = true
-		}
-	}
 
-	if basicAuthEnabled && secretStore != nil {
-		secret, err := secretStore.FindSecret("kube")
-		if err != nil {
-			return nil, err
+		if basicAuthEnabled && secretStore != nil {
+			secret, err := secretStore.FindSecret("kube")
+			if err != nil {
+				return nil, err
+			}
+			if secret != nil {
+				authInfo.Username = "admin"
+				authInfo.Password = string(secret.Data)
+			}
 		}
-		if secret != nil {
-			b.KubeUser = "admin"
-			b.KubePassword = string(secret.Data)
-		}
-	}
-
-	if configUser == "" {
-		b.User = cluster.ObjectMeta.Name
+		b.AuthInfos[contextName] = authInfo
+		context.AuthInfo = contextName
 	} else {
-		b.User = configUser
+		context.AuthInfo = configUserKey
 	}
 
 	return b, nil

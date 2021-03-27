@@ -204,10 +204,8 @@ func RunDeleteCluster(ctx context.Context, f *util.Factory, out io.Writer, optio
 		}
 	}
 
-	b := kubeconfig.NewKubeconfigBuilder()
-	b.Context = clusterName
-	err = b.DeleteKubeConfig(clientcmd.NewDefaultPathOptions())
-	if err != nil {
+	context := clusterName
+	if err := kubeconfig.DeleteClusterConfig(clientcmd.NewDefaultPathOptions(), context); err != nil {
 		klog.Warningf("error removing kube config: %v", err)
 	}
 
