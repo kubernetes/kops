@@ -1155,6 +1155,7 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 	for _, role := range kops.AllInstanceGroupRoles {
 		isMaster := role == kops.InstanceGroupRoleMaster
+		isAPIServer := role == kops.InstanceGroupRoleAPIServer
 
 		images[role] = make(map[architectures.Architecture][]*nodeup.Image)
 		if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
@@ -1162,6 +1163,9 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 			components := []string{"kube-proxy"}
 			if isMaster {
 				components = append(components, "kube-apiserver", "kube-controller-manager", "kube-scheduler")
+			}
+			if isAPIServer {
+				components = append(components, "kube-apiserver")
 			}
 
 			for _, arch := range architectures.GetSupported() {
@@ -1192,6 +1196,29 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 		if os.Getenv("KOPS_BASE_URL") != "" && isMaster {
 			for _, arch := range architectures.GetSupported() {
 				for _, name := range []string{"kops-controller", "dns-controller", "kube-apiserver-healthcheck"} {
+					baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
+					if err != nil {
+						return nil, err
+					}
+
+					baseURL.Path = path.Join(baseURL.Path, "/images/"+name+"-"+string(arch)+".tar.gz")
+
+					u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+					if err != nil {
+						return nil, err
+					}
+
+					image := &nodeup.Image{
+						Sources: []string{u.String()},
+						Hash:    hash.Hex(),
+					}
+					images[role][arch] = append(images[role][arch], image)
+				}
+			}
+		}
+		if os.Getenv("KOPS_BASE_URL") != "" && isAPIServer {
+			for _, arch := range architectures.GetSupported() {
+				for _, name := range []string{"kube-apiserver-healthcheck"} {
 					baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
 					if err != nil {
 						return nil, err
