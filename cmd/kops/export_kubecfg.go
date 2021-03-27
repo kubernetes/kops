@@ -86,7 +86,7 @@ func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.all, "all", options.all, "export all clusters from the kOps state store")
 	cmd.Flags().DurationVar(&options.admin, "admin", options.admin, "export a cluster admin user credential with the given lifetime and add it to the cluster context")
 	cmd.Flags().Lookup("admin").NoOptDefVal = kubeconfig.DefaultKubecfgAdminLifetime.String()
-	cmd.Flags().StringVar(&options.user, "user", options.user, "add an existing user to the cluster context")
+	cmd.Flags().StringVar(&options.user, "user", options.user, "re-use an existing user in kubeconfig.  Value must specify an existing user block in your kubeconfig file.")
 	cmd.Flags().BoolVar(&options.internal, "internal", options.internal, "use the cluster's internal DNS name")
 	cmd.Flags().BoolVar(&options.UseKopsAuthenticationPlugin, "auth-plugin", options.UseKopsAuthenticationPlugin, "use the kOps authentication plugin")
 
