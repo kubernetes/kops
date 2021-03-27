@@ -246,7 +246,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons
 
 ### Custom addons
 
-The docs about the [addon management](development/addons.md#addon-management) describe in more detail how to define a addon resource with regards to versioning.
+The docs about the [addon management](contributing/addons.md#addon-management) describe in more detail how to define a addon resource with regards to versioning.
 Here is a minimal example of an addon manifest that would install two different addons.
 
 ```yaml
