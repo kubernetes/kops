@@ -35,7 +35,7 @@ kops export kubecfg CLUSTERNAME [flags]
   -h, --help                       help for kubecfg
       --internal                   use the cluster's internal DNS name
       --kubeconfig string          the location of the kubeconfig file to create.
-      --user string                add an existing user to the cluster context
+      --user string                re-use an existing user in kubeconfig.  Value must specify an existing user block in your kubeconfig file.
 ```
 
 ### Options inherited from parent commands
