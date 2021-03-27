@@ -110,6 +110,8 @@ type NewClusterOptions struct {
 	// MasterCount is the number of masters to create. Defaults to the length of MasterZones
 	// if MasterZones is explicitly nonempty, otherwise defaults to 1.
 	MasterCount int32
+	// APIServerCount is the number of API servers to create. Defaults to 0.
+	APIServerCount int32
 	// EncryptEtcdStorage is whether to encrypt the etcd volumes.
 	EncryptEtcdStorage *bool
 	// EtcdStorageType is the underlying cloud storage class of the etcd volumes.
@@ -268,6 +270,11 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, err
 	}
 
+	apiservers, err := setupAPIServers(opt, &cluster, zoneToSubnetMap)
+	if err != nil {
+		return nil, err
+	}
+
 	err = setupNetworking(opt, &cluster)
 	if err != nil {
 		return nil, err
@@ -284,6 +291,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	}
 
 	instanceGroups := append([]*api.InstanceGroup(nil), masters...)
+	instanceGroups = append(instanceGroups, apiservers...)
 	instanceGroups = append(instanceGroups, nodes...)
 	instanceGroups = append(instanceGroups, bastions...)
 
@@ -777,6 +785,47 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 		g.Spec.MinSize = fi.Int32(count)
 		g.Spec.MaxSize = fi.Int32(count)
 		g.ObjectMeta.Name = "nodes-" + zone
+
+		subnet := zoneToSubnetMap[zone]
+		if subnet == nil {
+			klog.Fatalf("subnet not found in zoneToSubnetMap")
+		}
+
+		g.Spec.Subnets = []string{subnet.Name}
+		if cp := api.CloudProviderID(cluster.Spec.CloudProvider); cp == api.CloudProviderGCE || cp == api.CloudProviderAzure {
+			g.Spec.Zones = []string{zone}
+		}
+
+		nodes = append(nodes, g)
+	}
+
+	return nodes, nil
+}
+
+func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap map[string]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
+	var nodes []*api.InstanceGroup
+
+	numZones := len(opt.Zones)
+	nodeCount := opt.APIServerCount
+
+	if nodeCount == 0 {
+		return nodes, nil
+	}
+
+	countPerIG := nodeCount / int32(numZones)
+	remainder := int(nodeCount) % numZones
+
+	for i, zone := range opt.Zones {
+		count := countPerIG
+		if i < remainder {
+			count++
+		}
+
+		g := &api.InstanceGroup{}
+		g.Spec.Role = api.InstanceGroupRoleAPIServer
+		g.Spec.MinSize = fi.Int32(count)
+		g.Spec.MaxSize = fi.Int32(count)
+		g.ObjectMeta.Name = "apiserver-" + zone
 
 		subnet := zoneToSubnetMap[zone]
 		if subnet == nil {
