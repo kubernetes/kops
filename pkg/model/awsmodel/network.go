@@ -84,6 +84,11 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			t.CIDR = fi.String(b.Cluster.Spec.NetworkCIDR)
 		}
 
+		if b.Cluster.Spec.AmazonProvidedIpv6CidrBlock {
+			fmt.Println("enableing ipv6")
+			t.AmazonProvidedIpv6CidrBlock = fi.Bool(true)
+		}
+
 		c.AddTask(t)
 	}
 

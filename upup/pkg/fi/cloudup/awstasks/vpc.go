@@ -36,10 +36,11 @@ type VPC struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
 
-	ID                 *string
-	CIDR               *string
-	EnableDNSHostnames *bool
-	EnableDNSSupport   *bool
+	ID                          *string
+	CIDR                        *string
+	EnableDNSHostnames          *bool
+	EnableDNSSupport            *bool
+	AmazonProvidedIpv6CidrBlock *bool
 
 	// Shared is set if this is a shared VPC
 	Shared *bool
@@ -163,8 +164,9 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 		klog.V(2).Infof("Creating VPC with CIDR: %q", *e.CIDR)
 
 		request := &ec2.CreateVpcInput{
-			CidrBlock:         e.CIDR,
-			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeVpc, e.Tags),
+			CidrBlock:                   e.CIDR,
+			TagSpecifications:           awsup.EC2TagSpecification(ec2.ResourceTypeVpc, e.Tags),
+			AmazonProvidedIpv6CidrBlock: e.AmazonProvidedIpv6CidrBlock,
 		}
 
 		response, err := t.Cloud.EC2().CreateVpc(request)
@@ -250,10 +252,11 @@ func (e *VPC) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 }
 
 type terraformVPC struct {
-	CIDR               *string           `json:"cidr_block,omitempty" cty:"cidr_block"`
-	EnableDNSHostnames *bool             `json:"enable_dns_hostnames,omitempty" cty:"enable_dns_hostnames"`
-	EnableDNSSupport   *bool             `json:"enable_dns_support,omitempty" cty:"enable_dns_support"`
-	Tags               map[string]string `json:"tags,omitempty" cty:"tags"`
+	CIDR                        *string           `json:"cidr_block,omitempty" cty:"cidr_block"`
+	EnableDNSHostnames          *bool             `json:"enable_dns_hostnames,omitempty" cty:"enable_dns_hostnames"`
+	EnableDNSSupport            *bool             `json:"enable_dns_support,omitempty" cty:"enable_dns_support"`
+	Tags                        map[string]string `json:"tags,omitempty" cty:"tags"`
+	AmazonProvidedIpv6CidrBlock *bool             `json:"assign_generated_ipv6_cidr_block,omitempty" cty:"assign_generated_ipv6_cidr_block"`
 }
 
 func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) error {
