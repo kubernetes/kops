@@ -76,9 +76,7 @@ spec:
           type: Directory
         name: kops-controller-pki
   updateStrategy:
-    rollingUpdate:
-      maxUnavailable: 1
-    type: RollingUpdate
+    type: OnDelete
 
 ---
 
