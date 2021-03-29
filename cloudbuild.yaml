@@ -49,6 +49,21 @@ steps:
   - kops-controller-manifest
   - dns-controller-manifest
   - kube-apiserver-healthcheck-manifest
+# Build cloudbuild artifacts (for attestation)
+- name: 'gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-experimental'
+  id: cloudbuild-artifacts
+  entrypoint: make
+  env:
+  # _GIT_TAG is not a valid semver, we use CI=1 instead
+  # - VERSION=$_GIT_TAG
+  - CI=$_CI
+  - PULL_BASE_REF=$_PULL_BASE_REF
+  - DOCKER_REGISTRY=$_DOCKER_REGISTRY
+  - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
+  - GCS_LOCATION=$_GCS_LOCATION
+  - LATEST_FILE=markers/${_PULL_BASE_REF}/latest-ci.txt
+  args:
+  - cloudbuild-artifacts
 substitutions:
   # _GIT_TAG will be filled with a git-based tag for the image, of the form vYYYYMMDD-hash, and
   # can be used as a substitution
@@ -58,3 +73,7 @@ substitutions:
   _DOCKER_REGISTRY: 'gcr.io'
   _DOCKER_IMAGE_PREFIX: 'k8s-staging-kops/'
   _GCS_LOCATION: 'gs://k8s-staging-kops/kops/releases/'
+artifacts:
+  objects:
+    location: '$_GCS_LOCATION/$_GIT_TAG/cloudbuild/'
+    paths: ["cloudbuild/*"]
