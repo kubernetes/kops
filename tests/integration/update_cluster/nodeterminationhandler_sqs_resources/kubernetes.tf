@@ -297,11 +297,21 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-queueprocessor-example-com" {
 resource "aws_iam_instance_profile" "masters-queueprocessor-example-com" {
   name = "masters.queueprocessor.example.com"
   role = aws_iam_role.masters-queueprocessor-example-com.name
+  tags = {
+    "KubernetesCluster"                                = "queueprocessor.example.com"
+    "Name"                                             = "masters.queueprocessor.example.com"
+    "kubernetes.io/cluster/queueprocessor.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-queueprocessor-example-com" {
   name = "nodes.queueprocessor.example.com"
   role = aws_iam_role.nodes-queueprocessor-example-com.name
+  tags = {
+    "KubernetesCluster"                                = "queueprocessor.example.com"
+    "Name"                                             = "nodes.queueprocessor.example.com"
+    "kubernetes.io/cluster/queueprocessor.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "masters-queueprocessor-example-com" {
@@ -716,7 +726,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }
