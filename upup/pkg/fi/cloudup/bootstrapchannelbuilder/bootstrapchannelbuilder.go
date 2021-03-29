@@ -216,12 +216,13 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			id := "k8s-1.16"
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key),
-				Version:           fi.String(version),
-				Selector:          map[string]string{"k8s-addon": key},
-				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.16.0-alpha.0",
-				Id:                id,
+				Name:               fi.String(key),
+				Version:            fi.String(version),
+				Selector:           map[string]string{"k8s-addon": key},
+				Manifest:           fi.String(location),
+				KubernetesVersion:  ">=1.16.0-alpha.0",
+				NeedsRollingUpdate: "control-plane",
+				Id:                 id,
 			})
 		}
 	}
