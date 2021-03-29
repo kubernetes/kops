@@ -337,6 +337,11 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addCalicoSrcDstCheckPermissions(p)
 	}
 
+	nth := b.Cluster.Spec.NodeTerminationHandler
+	if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSqsTerminationDraining) {
+		addNodeTerminationHandlerSQSPermissions(p, resource)
+	}
+
 	return p, nil
 }
 
@@ -375,11 +380,6 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && (b.Cluster.Spec.Networking.Calico.CrossSubnet || b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "") {
 		addCalicoSrcDstCheckPermissions(p)
-	}
-
-	nth := b.Cluster.Spec.NodeTerminationHandler
-	if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSqsTerminationDraining) {
-		addNodeTerminationHandlerSQSPermissions(p, resource)
 	}
 
 	return p, nil
@@ -1155,8 +1155,6 @@ func addNodeTerminationHandlerSQSPermissions(p *Policy, resource stringorslice.S
 			Action: stringorslice.Slice([]string{
 				"autoscaling:CompleteLifecycleAction",
 				"autoscaling:DescribeAutoScalingInstances",
-				"autoscaling:DescribeTags",
-				"ec2:DescribeInstances",
 				"sqs:DeleteMessage",
 				"sqs:ReceiveMessage",
 			}),
