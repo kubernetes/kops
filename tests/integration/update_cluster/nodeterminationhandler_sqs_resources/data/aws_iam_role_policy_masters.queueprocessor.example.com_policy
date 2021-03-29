@@ -164,6 +164,18 @@
       "Resource": [
         "*"
       ]
+    },
+    {
+      "Action": [
+        "autoscaling:CompleteLifecycleAction",
+        "autoscaling:DescribeAutoScalingInstances",
+        "sqs:DeleteMessage",
+        "sqs:ReceiveMessage"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
     }
   ],
   "Version": "2012-10-17"
