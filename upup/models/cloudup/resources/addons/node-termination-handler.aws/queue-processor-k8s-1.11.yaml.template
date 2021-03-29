@@ -271,7 +271,7 @@ spec:
               cpu: 50m
               memory: 64Mi
       nodeSelector:
-        kubernetes.io/os: linux
+        node-role.kubernetes.io/master: ""
       tolerations:
         - operator: Exists
 {{ end }}
