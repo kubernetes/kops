@@ -159,6 +159,7 @@ type ClusterSpec struct {
 	MasterKubelet                  *KubeletConfigSpec            `json:"masterKubelet,omitempty"`
 	CloudConfig                    *CloudConfiguration           `json:"cloudConfig,omitempty"`
 	ExternalDNS                    *ExternalDNSConfig            `json:"externalDns,omitempty"`
+	NTP                            *NTPConfig                    `json:"ntp,omitempty"`
 
 	// NodeTerminationHandler determines the cluster autoscaler configuration.
 	NodeTerminationHandler *NodeTerminationHandlerConfig `json:"nodeTerminationHandler,omitempty"`
