@@ -236,17 +236,32 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-minimal-example-com" {
 resource "aws_iam_instance_profile" "masters-minimal-example-com" {
   name = "masters.minimal.example.com"
   role = aws_iam_role.masters-minimal-example-com.name
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "masters.minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-minimal-example-com" {
   name = "nodes.minimal.example.com"
   role = aws_iam_role.nodes-minimal-example-com.name
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "nodes.minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_openid_connect_provider" "minimal-example-com" {
-  client_id_list  = ["amazonaws.com"]
-  thumbprint_list = ["a8de31f85544b9e73aeb26ded19330e0e996fb79"]
-  url             = "https://api.minimal.example.com"
+  client_id_list = ["amazonaws.com"]
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
+  thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280", "a9d53002e97e00e043244f3d170d6f4c414104fd"]
+  url             = "https://discovery.example.com/minimal.example.com/oidc"
 }
 
 resource "aws_iam_role_policy" "dns-controller-kube-system-sa-minimal-example-com" {
@@ -660,7 +675,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }

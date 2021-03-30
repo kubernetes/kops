@@ -347,16 +347,31 @@ resource "aws_elb" "bastion-private-shared-subnet-example-com" {
 resource "aws_iam_instance_profile" "bastions-private-shared-subnet-example-com" {
   name = "bastions.private-shared-subnet.example.com"
   role = aws_iam_role.bastions-private-shared-subnet-example-com.name
+  tags = {
+    "KubernetesCluster"                                       = "private-shared-subnet.example.com"
+    "Name"                                                    = "bastions.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "masters-private-shared-subnet-example-com" {
   name = "masters.private-shared-subnet.example.com"
   role = aws_iam_role.masters-private-shared-subnet-example-com.name
+  tags = {
+    "KubernetesCluster"                                       = "private-shared-subnet.example.com"
+    "Name"                                                    = "masters.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-private-shared-subnet-example-com" {
   name = "nodes.private-shared-subnet.example.com"
   role = aws_iam_role.nodes-private-shared-subnet-example-com.name
+  tags = {
+    "KubernetesCluster"                                       = "private-shared-subnet.example.com"
+    "Name"                                                    = "nodes.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "bastions-private-shared-subnet-example-com" {
@@ -875,7 +890,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }

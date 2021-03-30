@@ -176,6 +176,7 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 			VpcId:                   e.VPC.ID,
 			HealthyThresholdCount:   e.HealthyThreshold,
 			UnhealthyThresholdCount: e.UnhealthyThreshold,
+			Tags:                    awsup.ELBv2Tags(e.Tags),
 		}
 
 		klog.V(2).Infof("Creating Target Group for NLB")
@@ -186,9 +187,11 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 
 		targetGroupArn := *response.TargetGroups[0].TargetGroupArn
 		e.ARN = fi.String(targetGroupArn)
-
-		if err := t.AddELBV2Tags(targetGroupArn, e.Tags); err != nil {
-			return err
+	} else {
+		if a.ARN != nil {
+			if err := t.AddELBV2Tags(fi.StringValue(a.ARN), e.Tags); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

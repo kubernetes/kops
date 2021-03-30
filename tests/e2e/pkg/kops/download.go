@@ -19,7 +19,6 @@ package kops
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"strings"
@@ -39,7 +38,7 @@ func DownloadKops(markerURL, downloadPath string) (string, string, error) {
 
 	var kopsFile *os.File
 	if downloadPath == "" {
-		tmp, err := ioutil.TempFile("", "kops")
+		tmp, err := os.CreateTemp("", "kops")
 		if err != nil {
 			return "", "", err
 		}

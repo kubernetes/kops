@@ -384,3 +384,68 @@ func TestIGUpdatePolicy(t *testing.T) {
 		})
 	}
 }
+
+func TestValidInstanceGroup(t *testing.T) {
+	grid := []struct {
+		IG             *kops.InstanceGroup
+		ExpectedErrors int
+		Description    string
+	}{
+		{
+
+			IG: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "eu-central-1a",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role:    kops.InstanceGroupRoleMaster,
+					Subnets: []string{"eu-central-1a"},
+				},
+			},
+			ExpectedErrors: 0,
+			Description:    "Valid master instance group failed to validate",
+		},
+		{
+			IG: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "eu-central-1a",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role:    kops.InstanceGroupRoleAPIServer,
+					Subnets: []string{"eu-central-1a"},
+				},
+			},
+			ExpectedErrors: 0,
+			Description:    "Valid API Server instance group failed to validate",
+		},
+		{
+			IG: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "eu-central-1a",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role:    kops.InstanceGroupRoleNode,
+					Subnets: []string{"eu-central-1a"},
+				},
+			},
+			ExpectedErrors: 0,
+			Description:    "Valid node instance group failed to validate",
+		}, {
+			IG: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "eu-central-1a",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role:    kops.InstanceGroupRoleBastion,
+					Subnets: []string{"eu-central-1a"},
+				},
+			},
+			ExpectedErrors: 0,
+			Description:    "Valid bastion instance group failed to validate",
+		},
+	}
+	for _, g := range grid {
+		errList := ValidateInstanceGroup(g.IG, nil)
+		testErrors(t, g.Description, errList, []string{})
+	}
+}

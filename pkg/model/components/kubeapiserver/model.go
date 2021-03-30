@@ -80,7 +80,7 @@ func (b *KubeApiserverBuilder) Build(c *fi.ModelBuilderContext) error {
 	b.AssetBuilder.StaticManifests = append(b.AssetBuilder.StaticManifests, &assets.StaticManifest{
 		Key:   key,
 		Path:  location,
-		Roles: []kops.InstanceGroupRole{kops.InstanceGroupRoleMaster},
+		Roles: []kops.InstanceGroupRole{kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleAPIServer},
 	})
 	return nil
 }
@@ -95,7 +95,7 @@ kind: Pod
 spec:
   containers:
   - name: healthcheck
-    image: k8s.gcr.io/kops/kube-apiserver-healthcheck:1.21.0-alpha.1
+    image: k8s.gcr.io/kops/kube-apiserver-healthcheck:1.21.0-alpha.2
     livenessProbe:
       httpGet:
         # The sidecar serves a healthcheck on the same port,

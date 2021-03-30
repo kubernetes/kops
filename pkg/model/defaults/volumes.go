@@ -36,6 +36,8 @@ func DefaultInstanceGroupVolumeSize(role kops.InstanceGroupRole) (int32, error) 
 	switch role {
 	case kops.InstanceGroupRoleMaster:
 		return DefaultVolumeSizeMaster, nil
+	case kops.InstanceGroupRoleAPIServer:
+		return DefaultVolumeSizeNode, nil
 	case kops.InstanceGroupRoleNode:
 		return DefaultVolumeSizeNode, nil
 	case kops.InstanceGroupRoleBastion:

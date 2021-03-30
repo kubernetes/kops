@@ -17,9 +17,11 @@ limitations under the License.
 package deployer
 
 import (
+	"fmt"
 	"strings"
 
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/kubetest2/pkg/boskos"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
@@ -47,5 +49,20 @@ func (d *deployer) Down() error {
 	cmd.SetEnv(d.env()...)
 
 	exec.InheritOutput(cmd)
-	return cmd.Run()
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	if d.boskos != nil {
+		klog.V(2).Info("releasing boskos project")
+		err := boskos.Release(
+			d.boskos,
+			d.GCPProject,
+			d.boskosHeartbeatClose,
+		)
+		if err != nil {
+			return fmt.Errorf("down failed to release boskos project: %s", err)
+		}
+	}
+	return nil
 }

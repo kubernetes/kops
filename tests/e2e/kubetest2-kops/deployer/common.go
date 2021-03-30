@@ -24,10 +24,13 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/kops"
 	"k8s.io/kops/tests/e2e/pkg/target"
+	"sigs.k8s.io/kubetest2/pkg/boskos"
 )
 
 func (d *deployer) init() error {
@@ -72,13 +75,36 @@ func (d *deployer) initialize() error {
 			d.SSHPublicKeyPath = os.Getenv("AWS_SSH_PUBLIC_KEY_FILE")
 		}
 	case "gce":
-		// These environment variables are defined by the "preset-k8s-ssh" prow preset
-		// https://github.com/kubernetes/test-infra/blob/432c6e7dca38f0785901a6159275524cec369c4a/config/prow/config.yaml#L639-L656
-		if d.SSHPrivateKeyPath == "" {
-			d.SSHPrivateKeyPath = os.Getenv("JENKINS_GCE_SSH_PRIVATE_KEY_FILE")
-		}
-		if d.SSHPublicKeyPath == "" {
-			d.SSHPublicKeyPath = os.Getenv("JENKINS_GCE_SSH_PUBLIC_KEY_FILE")
+		if d.GCPProject == "" {
+			klog.V(1).Info("No GCP project provided, acquiring from Boskos")
+
+			boskosClient, err := boskos.NewClient("http://boskos.test-pods.svc.cluster.local.")
+			if err != nil {
+				return fmt.Errorf("failed to make boskos client: %s", err)
+			}
+			d.boskos = boskosClient
+
+			resource, err := boskos.Acquire(
+				d.boskos,
+				"gce-project",
+				5*time.Minute,
+				d.boskosHeartbeatClose,
+			)
+
+			if err != nil {
+				return fmt.Errorf("init failed to get project from boskos: %s", err)
+			}
+			d.GCPProject = resource.Name
+			klog.V(1).Infof("Got project %s from boskos", d.GCPProject)
+
+			if d.SSHPrivateKeyPath == "" && d.SSHPublicKeyPath == "" {
+				privateKey, publicKey, err := gce.SetupSSH(d.GCPProject)
+				if err != nil {
+					return err
+				}
+				d.SSHPrivateKeyPath = privateKey
+				d.SSHPublicKeyPath = publicKey
+			}
 		}
 	}
 	if d.SSHUser == "" {

@@ -51,10 +51,10 @@ require (
 	github.com/denverdino/aliyungo v0.0.0-20210222084345-ddfe3452f5e8
 	github.com/digitalocean/godo v1.58.0
 	github.com/docker/docker v20.10.5+incompatible
-	github.com/go-bindata/go-bindata/v3 v3.1.3
 	github.com/go-ini/ini v1.62.0
 	github.com/go-logr/logr v0.4.0
 	github.com/gogo/protobuf v1.3.2
+	github.com/golang/protobuf v1.5.1 // indirect
 	github.com/google/go-cmp v0.5.5
 	github.com/google/uuid v1.2.0
 	github.com/gophercloud/gophercloud v0.16.0
@@ -75,12 +75,14 @@ require (
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	github.com/zclconf/go-cty v1.8.0
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
+	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
-	golang.org/x/oauth2 v0.0.0-20210311163135-5366d9dc1934
-	golang.org/x/sys v0.0.0-20210313110737-8e9fff1a3a18
-	google.golang.org/api v0.41.0
+	golang.org/x/oauth2 v0.0.0-20210313182246-cd4f82c27b84
+	golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4
+	google.golang.org/api v0.42.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
+	gopkg.in/square/go-jose.v2 v2.3.1
 	helm.sh/helm/v3 v3.5.1
 	k8s.io/api v0.21.0-beta.1
 	k8s.io/apimachinery v0.21.0-beta.1

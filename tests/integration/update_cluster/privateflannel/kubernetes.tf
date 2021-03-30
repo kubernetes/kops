@@ -366,16 +366,31 @@ resource "aws_elb" "bastion-privateflannel-example-com" {
 resource "aws_iam_instance_profile" "bastions-privateflannel-example-com" {
   name = "bastions.privateflannel.example.com"
   role = aws_iam_role.bastions-privateflannel-example-com.name
+  tags = {
+    "KubernetesCluster"                                = "privateflannel.example.com"
+    "Name"                                             = "bastions.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "masters-privateflannel-example-com" {
   name = "masters.privateflannel.example.com"
   role = aws_iam_role.masters-privateflannel-example-com.name
+  tags = {
+    "KubernetesCluster"                                = "privateflannel.example.com"
+    "Name"                                             = "masters.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-privateflannel-example-com" {
   name = "nodes.privateflannel.example.com"
   role = aws_iam_role.nodes-privateflannel-example-com.name
+  tags = {
+    "KubernetesCluster"                                = "privateflannel.example.com"
+    "Name"                                             = "nodes.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy" "bastions-privateflannel-example-com" {
@@ -1007,7 +1022,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }

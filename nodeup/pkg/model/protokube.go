@@ -126,13 +126,6 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 	c.AddTask(service)
 
-	// DBUS is needed for the /var/run/dbus mount on kope.io images (based on Debian 9),
-	// at least until we can move to etcd-manager or start protokube as a service
-	// See https://github.com/kubernetes/kops/issues/10122#issuecomment-752969613
-	if t.Distribution == distributions.DistributionDebian9 {
-		c.AddTask(&nodetasks.Package{Name: "dbus"})
-	}
-
 	return nil
 }
 
@@ -154,7 +147,7 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Kubernetes Protokube Service")
-	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
+	manifest.Set("Unit", "Documentation", "https://kops.sigs.k8s.io")
 
 	manifest.Set("Service", "ExecStart", "/opt/kops/bin/protokube"+" "+protokubeRunArgs)
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/protokube")
@@ -459,6 +452,11 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 
 	for _, envVar := range proxy.GetProxyEnvVars(t.Cluster.Spec.EgressProxy) {
 		envVars[envVar.Name] = envVar.Value
+	}
+
+	switch t.Distribution {
+	case distributions.DistributionFlatcar:
+		envVars["PATH"] = fmt.Sprintf("/opt/kops/bin:%v", os.Getenv("PATH"))
 	}
 
 	var sysconfig = ""

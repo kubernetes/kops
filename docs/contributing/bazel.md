@@ -2,16 +2,14 @@
 
 ## Overview
 
-Building with bazel offers a deterministic, faster build, including creating smaller docker images.
+Building with Bazel offers a deterministic, faster build, including creating smaller docker images.
 
-While bazel works well for small projects, building with kubernetes still has a few challenges.  We take the following approach:
+While bazel works well for small projects, building with kubernetes still has a few challenges. We take the following approach:
 
+* We use [Bazelisk](https://github.com/bazelbuild/bazelisk), which automatically picks the correct version of Bazel for a branch
 * We don't yet generate files in bazel - we use external scripts (for now)
 * We vendor our dependencies, rather than relying on gazelle (although actually gazelle works, the issue is when external dependencies like apimachinery include bazel files that confuse gazelle)
 * We strip bazel files from external dependencies, so we don't confuse gazelle
-
-## Bazel versions:
-For building kOps release branches 1.14 and older, you may need to run an older version of bazel such as `0.24.0`. kOps 1.15 and newer should be able to use more recent versions of bazel due to deprecation fixes that have not be backported.
 
 ## How to run
 

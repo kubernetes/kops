@@ -101,7 +101,7 @@ spec:
       type: Public
 ```
 
-### Load Balancer Subnet configuration 
+### Load Balancer Subnet configuration
 
 **AWS only**
 
@@ -145,7 +145,7 @@ spec:
       type: Public
       subnets:
         - name: utility-subnet-a
-          allocationID: eipalloc-222ghi789
+          allocationId: eipalloc-222ghi789
 ```
 
 The specified Allocation ID's must already be created manually or external infrastructure as code, eg Terraform. You will need to place the loadBalanacer in the utility subnets for external connectivity.
@@ -493,7 +493,7 @@ spec:
     serviceNodePortRange: 30000-33000
 ```
 
-### Customize client-ca file 
+### Customize client-ca file
 
 This value is passed as `--client-ca-file` for `kube-apiserver`. (default: `/srv/kubernetes/ca.crt`)
 
@@ -599,6 +599,8 @@ spec:
   kubelet:
     cpuCFSQuotaPeriod: "100ms"
 ```
+
+This change requires `CustomCPUCFSQuotaPeriod` [feature gate](#feature-gates).
 
 ### Enable Custom metrics support
 To use custom metrics in kubernetes as per [custom metrics doc](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-custom-metrics)
@@ -1022,7 +1024,7 @@ Overriding the configuration of containerd has to be done with care as the defau
 ```yaml
 spec:
   containerd:
-    version: 1.4.3
+    version: 1.4.4
     logLevel: info
     configOverride: ""
 ```
@@ -1035,14 +1037,14 @@ kOps uses the `.tar.gz` packages for installing containerd on any supported OS. 
 spec:
   containerd:
     packages:
-      urlAmd64: https://github.com/containerd/containerd/releases/download/v1.4.3/cri-containerd-cni-1.4.3-linux-amd64.tar.gz
-      hashAmd64: 2697a342e3477c211ab48313e259fd7e32ad1f5ded19320e6a559f50a82bff3d
+      urlAmd64: https://github.com/containerd/containerd/releases/download/v1.4.4/cri-containerd-cni-1.4.4-linux-amd64.tar.gz
+      hashAmd64: 96641849cb78a0a119223a427dfdc1ade88412ef791a14193212c8c8e29d447b
 ```
 
 The format of the custom package must be identical to the official packages:
 
 ```bash
-tar tf cri-containerd-cni-1.4.3-linux-amd64.tar.gz
+tar tf cri-containerd-cni-1.4.4-linux-amd64.tar.gz
     usr/local/bin/containerd
     usr/local/bin/containerd-shim
     usr/local/bin/containerd-shim-runc-v1
@@ -1271,7 +1273,7 @@ As of Kubernetes 1.20, kOps will default the cgroup driver of the kubelet and th
 as opposed to cgroup fs.
 
 It is important to ensure that the kubelet and the container runtime are using the same cgroup driver. Below are examples showing
-how to set the cgroup driver for kubelet and the container runtime. 
+how to set the cgroup driver for kubelet and the container runtime.
 
 
 Setting kubelet to use cgroupfs
@@ -1289,5 +1291,5 @@ spec:
       - native.cgroupdriver=cgroupfs
 ```
 
-In the case of containerd, the cgroup-driver is dependant on the cgroup driver of kubelet. To use cgroupfs, just update the 
+In the case of containerd, the cgroup-driver is dependant on the cgroup driver of kubelet. To use cgroupfs, just update the
 cgroupDriver of kubelet to use cgroupfs.

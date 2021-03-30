@@ -280,11 +280,25 @@ resource "aws_elb" "api-externalpolicies-example-com" {
 resource "aws_iam_instance_profile" "masters-externalpolicies-example-com" {
   name = "masters.externalpolicies.example.com"
   role = aws_iam_role.masters-externalpolicies-example-com.name
+  tags = {
+    "KubernetesCluster"                                  = "externalpolicies.example.com"
+    "Name"                                               = "masters.externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
+    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_instance_profile" "nodes-externalpolicies-example-com" {
   name = "nodes.externalpolicies.example.com"
   role = aws_iam_role.nodes-externalpolicies-example-com.name
+  tags = {
+    "KubernetesCluster"                                  = "externalpolicies.example.com"
+    "Name"                                               = "nodes.externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
+    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "master-policyoverride-1242070525" {
@@ -814,7 +828,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
+      "version" = ">= 3.34.0"
     }
   }
 }

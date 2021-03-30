@@ -35,6 +35,7 @@ nav:
     - Welcome: "index.md"
     - Releases & Versioning: "welcome/releases.md"
     - Office Hours: "welcome/office_hours.md"
+    - Values: "values.md"
   - Getting Started:
     - Installing: "getting_started/install.md"
     - Deploying to AWS: "getting_started/aws.md"
@@ -75,6 +76,7 @@ nav:
     - Working with Instance Groups: "tutorial/working-with-instancegroups.md"
     - Using Manifests and Customizing: "manifests_and_customizing_via_api.md"
     - High Availability: "operations/high_availability.md"
+    - Scaling: "operations/scaling.md"
     - Instancegroup images: "operations/images.md"
     - Cluster configuration management: "changing_configuration.md"
     - Cluster Templating: "operations/cluster_template.md"
@@ -153,6 +155,8 @@ nav:
     - Ports: "contributing/ports.md"
     - Cluster Addons & Manager : "contributing/addons.md"
   - Releases:
+    - "1.21": releases/1.21-NOTES.md
+    - "1.20": releases/1.20-NOTES.md
     - "1.19": releases/1.19-NOTES.md
     - "1.18": releases/1.18-NOTES.md
     - "1.17": releases/1.17-NOTES.md

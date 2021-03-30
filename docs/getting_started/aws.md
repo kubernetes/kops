@@ -10,7 +10,6 @@ In order to correctly prepare your AWS account for `kops`, we require you to
 install the AWS CLI tools, and have API credentials for an account that has
 the permissions to create a new IAM account for `kops` later in the guide.
 
-
 Once you've [installed the AWS CLI tools](https://aws.amazon.com/cli/) and have correctly setup
 your system to use the official AWS methods of registering security credentials
 as [defined here](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials) we'll be ready to run `kops`, as it uses the Go AWS SDK.
@@ -23,7 +22,7 @@ the user, and credentials, using the [AWS console](http://docs.aws.amazon.com/IA
 
 The `kops` user will require the following IAM permissions to function properly:
 
-```
+```iam
 AmazonEC2FullAccess
 AmazonRoute53FullAccess
 AmazonS3FullAccess
@@ -123,16 +122,16 @@ Note: The NS values here are for the **SUBDOMAIN**
         "TTL": 300,
         "ResourceRecords": [
           {
-            "Value": "ns-1.awsdns-1.co.uk"
+            "Value": "ns-1.<example-aws-dns>-1.co.uk"
           },
           {
-            "Value": "ns-2.awsdns-2.org"
+            "Value": "ns-2.<example-aws-dns>-2.org"
           },
           {
-            "Value": "ns-3.awsdns-3.com"
+            "Value": "ns-3.<example-aws-dns>-3.com"
           },
           {
-            "Value": "ns-4.awsdns-4.net"
+            "Value": "ns-4.<example-aws-dns>-4.net"
           }
         ]
       }
@@ -143,7 +142,7 @@ Note: The NS values here are for the **SUBDOMAIN**
 
 * Apply the **SUBDOMAIN** NS records to the **PARENT** hosted zone.
 
-```
+```bash
 aws route53 change-resource-record-sets \
  --hosted-zone-id <parent-zone-id> \
  --change-batch file://subdomain.json
@@ -188,13 +187,13 @@ By default the assumption is that NS records are publicly available.  If you
 require private DNS records you should modify the commands we run later in this
 guide to include:
 
-```
+```bash
 kops create cluster --dns private $NAME
 ```
 
 If you have a mix of public and private zones, you will also need to include the `--dns-zone` argument with the hosted zone id you wish to deploy in:
 
-```
+```bash
 kops create cluster --dns private --dns-zone ZABCDEFG $NAME
 ```
 
@@ -211,12 +210,12 @@ dig ns subdomain.example.com
 
 Should return something similar to:
 
-```
+```bash
 ;; ANSWER SECTION:
-subdomain.example.com.        172800  IN  NS  ns-1.awsdns-1.net.
-subdomain.example.com.        172800  IN  NS  ns-2.awsdns-2.org.
-subdomain.example.com.        172800  IN  NS  ns-3.awsdns-3.com.
-subdomain.example.com.        172800  IN  NS  ns-4.awsdns-4.co.uk.
+subdomain.example.com.        172800  IN  NS  ns-1.<example-aws-dns>-1.net.
+subdomain.example.com.        172800  IN  NS  ns-2.<example-aws-dns>-2.org.
+subdomain.example.com.        172800  IN  NS  ns-3.<example-aws-dns>-3.com.
+subdomain.example.com.        172800  IN  NS  ns-4.<example-aws-dns>-4.co.uk.
 ```
 
 This is a critical component when setting up clusters. If you are experiencing
@@ -282,9 +281,9 @@ preferred object ACL, for example: `bucket-owner-full-control`.
 For available canned ACLs please consult [Amazon's S3
 documentation](http://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl).
 
-# Creating your first cluster
+## Creating your first cluster
 
-## Prepare local environment
+### Prepare local environment
 
 We're ready to start creating our first cluster!  Let's first set up a few
 environment variables to make the process easier.
@@ -304,7 +303,7 @@ export KOPS_STATE_STORE=s3://prefix-example-com-state-store
 Note: You don’t have to use environmental variables here. You can always define
 the values using the –name and –state flags later.
 
-## Create cluster configuration
+### Create cluster configuration
 
 We will need to note which availability zones are available to us. In this
 example we will be deploying our cluster to the us-west-2 region.
@@ -328,7 +327,7 @@ All instances created by `kops` will be built within ASG (Auto Scaling Groups),
 which means each instance will be automatically monitored and rebuilt by AWS if
 it suffers any failure.
 
-## Customize Cluster Configuration
+### Customize Cluster Configuration
 
 Now we have a cluster configuration, we can look at every aspect that defines
 our cluster by editing the description.
@@ -344,7 +343,7 @@ earlier, and automatically updated when we save and exit the editor.
 We'll leave everything set to the defaults for now, but the rest of `kops`
 documentation covers additional settings and configuration you can enable.
 
-## Build the Cluster
+### Build the Cluster
 
 Now we take the final step of actually building the cluster.  This'll take a
 while.  Once it finishes you'll have to wait longer while the booted instances
@@ -354,7 +353,7 @@ finish downloading Kubernetes components and reach a "ready" state.
 kops update cluster ${NAME} --yes
 ```
 
-## Use the Cluster
+### Use the Cluster
 
 Remember when you installed `kubectl` earlier? The configuration for your
 cluster was automatically generated and written to `~/.kube/config` for you!
@@ -379,11 +378,11 @@ kops validate cluster --wait 10m
 
 You can look at all system components with the following command.
 
-```
+```bash
 kubectl -n kube-system get po
 ```
 
-## Delete the Cluster
+### Delete the Cluster
 
 Running a Kubernetes cluster within AWS obviously costs money, and so you may
 want to delete your cluster if you are finished running experiments.
@@ -391,7 +390,7 @@ want to delete your cluster if you are finished running experiments.
 You can preview all of the AWS resources that will be destroyed when the cluster
 is deleted by issuing the following command.
 
-```
+```bash
 kops delete cluster --name ${NAME}
 ```
 
@@ -399,10 +398,9 @@ When you are sure you want to delete your cluster, issue the delete command
 with the `--yes` flag. Note that this command is very destructive, and will
 delete your cluster and everything contained within it!
 
-```
+```bash
 kops delete cluster --name ${NAME} --yes
 ```
-
 
 ## Next steps
 
@@ -412,7 +410,7 @@ Now that you have a working kOps cluster, read through the [recommendations for 
 
 There's an incredible team behind kOps and we encourage you to reach out to the
 community on the Kubernetes
-Slack(http://slack.k8s.io/).  Bring your
+Slack(<http://slack.k8s.io/>).  Bring your
 questions, comments, and requests and meet the people behind the project!
 
 ## Legal

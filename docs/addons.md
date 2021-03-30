@@ -33,8 +33,14 @@ Cluster autoscaler can be enabled to automatically adjust the size of the kubern
 spec:
   clusterAutoscaler:
     enabled: true
+    expander: least-waste
+    balanceSimilarNodeGroups: false
+    scaleDownUtilizationThreshold: 0.5
     skipNodesWithLocalStorage: true
     skipNodesWithSystemPods: true
+    newPodScaleUpDelay: 0s
+    scaleDownDelayAfterAdd: 10m0s
+    image: <the latest supported image for the specified kubernetes version>
     cpuRequest: "100m"
     memoryRequest: "300Mi"
 ```
@@ -240,7 +246,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons
 
 ### Custom addons
 
-The docs about the [addon management](development/addons.md#addon-management) describe in more detail how to define a addon resource with regards to versioning.
+The docs about the [addon management](contributing/addons.md#addon-management) describe in more detail how to define a addon resource with regards to versioning.
 Here is a minimal example of an addon manifest that would install two different addons.
 
 ```yaml

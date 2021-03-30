@@ -10,6 +10,5 @@ go_library(
         "//vendor/google.golang.org/protobuf/encoding/protowire:go_default_library",
         "//vendor/google.golang.org/protobuf/internal/errors:go_default_library",
         "//vendor/google.golang.org/protobuf/reflect/protoreflect:go_default_library",
-        "//vendor/google.golang.org/protobuf/reflect/protoregistry:go_default_library",
     ],
 )

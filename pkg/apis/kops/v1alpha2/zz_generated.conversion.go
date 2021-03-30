@@ -2030,6 +2030,7 @@ func autoConvert_v1alpha2_ClusterAutoscalerConfig_To_kops_ClusterAutoscalerConfi
 	out.SkipNodesWithSystemPods = in.SkipNodesWithSystemPods
 	out.SkipNodesWithLocalStorage = in.SkipNodesWithLocalStorage
 	out.NewPodScaleUpDelay = in.NewPodScaleUpDelay
+	out.ScaleDownDelayAfterAdd = in.ScaleDownDelayAfterAdd
 	out.Image = in.Image
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
@@ -2049,6 +2050,7 @@ func autoConvert_kops_ClusterAutoscalerConfig_To_v1alpha2_ClusterAutoscalerConfi
 	out.SkipNodesWithSystemPods = in.SkipNodesWithSystemPods
 	out.SkipNodesWithLocalStorage = in.SkipNodesWithLocalStorage
 	out.NewPodScaleUpDelay = in.NewPodScaleUpDelay
+	out.ScaleDownDelayAfterAdd = in.ScaleDownDelayAfterAdd
 	out.Image = in.Image
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
@@ -2157,6 +2159,7 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	out.SecretStore = in.SecretStore
 	out.KeyStore = in.KeyStore
 	out.ConfigStore = in.ConfigStore
+	out.PublicDataStore = in.PublicDataStore
 	out.DNSZone = in.DNSZone
 	if in.DNSControllerGossipConfig != nil {
 		in, out := &in.DNSControllerGossipConfig, &out.DNSControllerGossipConfig
@@ -2524,6 +2527,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 	out.SecretStore = in.SecretStore
 	out.KeyStore = in.KeyStore
 	out.ConfigStore = in.ConfigStore
+	out.PublicDataStore = in.PublicDataStore
 	out.DNSZone = in.DNSZone
 	if in.DNSControllerGossipConfig != nil {
 		in, out := &in.DNSControllerGossipConfig, &out.DNSControllerGossipConfig

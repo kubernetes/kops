@@ -209,26 +209,27 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 
 	{
 		key := "kops-controller.addons.k8s.io"
-		version := "1.21.0-alpha.1"
+		version := "1.21.0-alpha.2"
 
 		{
 			location := key + "/k8s-1.16.yaml"
 			id := "k8s-1.16"
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key),
-				Version:           fi.String(version),
-				Selector:          map[string]string{"k8s-addon": key},
-				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.16.0-alpha.0",
-				Id:                id,
+				Name:               fi.String(key),
+				Version:            fi.String(version),
+				Selector:           map[string]string{"k8s-addon": key},
+				Manifest:           fi.String(location),
+				KubernetesVersion:  ">=1.16.0-alpha.0",
+				NeedsRollingUpdate: "control-plane",
+				Id:                 id,
 			})
 		}
 	}
 
 	if featureflag.PublicJWKS.Enabled() {
 		key := "anonymous-issuer-discovery.addons.k8s.io"
-		version := "1.21.0-alpha.1"
+		version := "1.21.0-alpha.2"
 
 		{
 			location := key + "/k8s-1.16.yaml"
@@ -402,7 +403,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 	if externalDNS == nil || !externalDNS.Disable {
 		{
 			key := "dns-controller.addons.k8s.io"
-			version := "1.21.0-alpha.1"
+			version := "1.21.0-alpha.2"
 
 			{
 				location := key + "/k8s-1.12.yaml"

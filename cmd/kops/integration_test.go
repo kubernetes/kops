@@ -79,6 +79,12 @@ func newIntegrationTest(clusterName, srcDir string) *integrationTest {
 	}
 }
 
+// withCAKey indicates that we should use a fixed ca.crt & ca.key from the source directory as our CA.
+// This is needed when the CA is exposed, for example when using AWS WebIdentity federation.
+func (i *integrationTest) withCAKey() *integrationTest {
+	i.caKey = true
+	return i
+}
 func (i *integrationTest) withVersion(version string) *integrationTest {
 	i.version = version
 	return i
@@ -94,21 +100,8 @@ func (i *integrationTest) withoutSSHKey() *integrationTest {
 	return i
 }
 
-// withCAKey indicates that we should use a fixed ca.crt & ca.key from the source directory as our CA.
-// This is needed when the CA is exposed, for example when using AWS WebIdentity federation.
-func (i *integrationTest) withCAKey() *integrationTest {
-	i.caKey = true
-	return i
-}
-
 func (i *integrationTest) withoutPolicies() *integrationTest {
 	i.expectPolicies = false
-	return i
-}
-
-// withServiceAccountRoles indicates we expect to assign per-ServiceAccount IAM roles (instead of just using the node roles)
-func (i *integrationTest) withServiceAccountRoles() *integrationTest {
-	i.expectServiceAccountRoles = true
 	return i
 }
 
@@ -124,6 +117,12 @@ func (i *integrationTest) withJSONOutput() *integrationTest {
 
 func (i *integrationTest) withPrivate() *integrationTest {
 	i.private = true
+	return i
+}
+
+// withServiceAccountRoles indicates we expect to assign per-ServiceAccount IAM roles (instead of just using the node roles)
+func (i *integrationTest) withServiceAccountRoles() *integrationTest {
+	i.expectServiceAccountRoles = true
 	return i
 }
 
@@ -275,6 +274,18 @@ func TestPrivateDns2(t *testing.T) {
 	newIntegrationTest("privatedns2.example.com", "privatedns2").withPrivate().runTestTerraformAWS(t)
 }
 
+// TestPublicJWKS runs a simple configuration, but with UseServiceAccountIAM and PublicJWKS enabled
+func TestPublicJWKS(t *testing.T) {
+	featureflag.ParseFlags("+UseServiceAccountIAM,+PublicJWKS")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-UseServiceAccountIAM,-PublicJWKS")
+	}
+	defer unsetFeatureFlags()
+
+	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
+	newIntegrationTest("minimal.example.com", "public-jwks").withCAKey().withServiceAccountRoles().runTestTerraformAWS(t)
+}
+
 // TestSharedSubnet runs the test on a configuration with a shared subnet (and VPC)
 func TestSharedSubnet(t *testing.T) {
 	newIntegrationTest("sharedsubnet.example.com", "shared_subnet").runTestTerraformAWS(t)
@@ -341,16 +352,15 @@ func TestDockerCustom(t *testing.T) {
 	newIntegrationTest("docker.example.com", "docker-custom").runTestCloudformation(t)
 }
 
-// TestPublicJWKS runs a simple configuration, but with UseServiceAccountIAM and PublicJWKS enabled
-func TestPublicJWKS(t *testing.T) {
-	featureflag.ParseFlags("+UseServiceAccountIAM,+PublicJWKS")
+// TestAPIServerNodes runs a simple configuration with dedicated apiserver nodes
+func TestAPIServerNodes(t *testing.T) {
+	featureflag.ParseFlags("+APIServerNodes")
 	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-UseServiceAccountIAM,-PublicJWKS")
+		featureflag.ParseFlags("-APIServerNodes")
 	}
 	defer unsetFeatureFlags()
 
-	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
-	newIntegrationTest("minimal.example.com", "public-jwks").withCAKey().withServiceAccountRoles().runTestTerraformAWS(t)
+	newIntegrationTest("minimal.example.com", "apiservernodes").runTestCloudformation(t)
 }
 
 func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {

@@ -18,12 +18,15 @@ package iam
 
 import (
 	"fmt"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 // Subject represents an IAM identity, to which permissions are granted.
@@ -43,6 +46,15 @@ type NodeRoleMaster struct {
 
 // ServiceAccount implements Subject.
 func (_ *NodeRoleMaster) ServiceAccount() (types.NamespacedName, bool) {
+	return types.NamespacedName{}, false
+}
+
+// NodeRoleAPIServer represents the role of API server-only nodes, and implements Subject.
+type NodeRoleAPIServer struct {
+}
+
+// ServiceAccount implements Subject.
+func (_ *NodeRoleAPIServer) ServiceAccount() (types.NamespacedName, bool) {
 	return types.NamespacedName{}, false
 }
 
@@ -69,27 +81,49 @@ func BuildNodeRoleSubject(igRole kops.InstanceGroupRole) (Subject, error) {
 	switch igRole {
 	case kops.InstanceGroupRoleMaster:
 		return &NodeRoleMaster{}, nil
-
+	case kops.InstanceGroupRoleAPIServer:
+		return &NodeRoleAPIServer{}, nil
 	case kops.InstanceGroupRoleNode:
 		return &NodeRoleNode{}, nil
-
 	case kops.InstanceGroupRoleBastion:
 		return &NodeRoleBastion{}, nil
-
 	default:
 		return nil, fmt.Errorf("unknown instancegroup role %q", igRole)
 	}
 }
 
 // ServiceAccountIssuer determines the issuer in the ServiceAccount JWTs
-func ServiceAccountIssuer(clusterName string, clusterSpec *kops.ClusterSpec) string {
-	if clusterSpec.KubeAPIServer != nil && clusterSpec.KubeAPIServer.ServiceAccountIssuer != nil {
-		return *clusterSpec.KubeAPIServer.ServiceAccountIssuer
+func ServiceAccountIssuer(clusterSpec *kops.ClusterSpec) (string, error) {
+	if featureflag.PublicJWKS.Enabled() {
+		if clusterSpec.PublicDataStore == "" {
+			return "", fmt.Errorf("cluster.spec.publicDataStore is required with PublicJWKS feature flag")
+		}
+		base, err := vfs.Context.BuildVfsPath(clusterSpec.PublicDataStore)
+		if err != nil {
+			return "", fmt.Errorf("error parsing cluster.spec.publicDataStore=%q: %w", clusterSpec.PublicDataStore, err)
+		}
+		switch base := base.(type) {
+		case *vfs.S3Path:
+			baseURL, err := base.GetHTTPsUrl()
+			if err != nil {
+				return "", err
+			}
+			return baseURL + "/oidc", nil
+		case *vfs.MemFSPath:
+			if !base.IsClusterReadable() {
+				// If this _is_ a test, we should call MarkClusterReadable
+				return "", fmt.Errorf("cluster.spec.publicDataStore=%q is only supported in tests", clusterSpec.PublicDataStore)
+			}
+			return strings.Replace(base.Path(), "memfs://", "https://", 1) + "/oidc", nil
+		default:
+			return "", fmt.Errorf("cluster.spec.publicDataStore=%q is of unexpected type %T", clusterSpec.PublicDataStore, base)
+		}
+	} else {
+		if supportsPublicJWKS(clusterSpec) {
+			return "https://" + clusterSpec.MasterPublicName, nil
+		}
+		return "https://" + clusterSpec.MasterInternalName, nil
 	}
-	if supportsPublicJWKS(clusterSpec) {
-		return "https://api." + clusterName
-	}
-	return "https://api.internal." + clusterName
 }
 
 func supportsPublicJWKS(clusterSpec *kops.ClusterSpec) bool {

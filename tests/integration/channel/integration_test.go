@@ -238,12 +238,12 @@ func TestFindImage(t *testing.T) {
 		{
 			KubernetesVersion: "1.19.1",
 			Architecture:      "amd64",
-			ExpectedImage:     "099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210119.1",
+			ExpectedImage:     "099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210315",
 		},
 		{
 			KubernetesVersion: "1.19.1",
 			Architecture:      "arm64",
-			ExpectedImage:     "099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210119.1",
+			ExpectedImage:     "099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315",
 		},
 	}
 	for _, g := range grid {

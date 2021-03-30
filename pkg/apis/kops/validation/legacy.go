@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/util/subnet"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 // legacy contains validation functions that don't match the apimachinery style
@@ -371,6 +372,34 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("keyStore"), "Vault keystore is only available on AWS"))
 		}
 	}
+
+	publicDataStore := c.Spec.PublicDataStore
+	if publicDataStore != "" {
+		base, err := vfs.Context.BuildVfsPath(publicDataStore)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(fieldSpec.Child("publicDataStore"), publicDataStore, "not a valid VFS path"))
+		} else {
+			switch base := base.(type) {
+			case *vfs.S3Path:
+				// OK
+			case *vfs.MemFSPath:
+				// memfs is ok for tests; not OK otherwise
+				if !base.IsClusterReadable() {
+					// (If this _is_ a test, we should call MarkClusterReadable)
+					allErrs = append(allErrs, field.Invalid(fieldSpec.Child("publicDataStore"), publicDataStore, "S3 is the only supported VFS for publicStore"))
+				}
+			default:
+				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("publicDataStore"), publicDataStore, "S3 is the only supported VFS for publicStore"))
+			}
+		}
+	}
+
+	if featureflag.PublicJWKS.Enabled() {
+		if publicDataStore == "" {
+			allErrs = append(allErrs, field.Invalid(fieldSpec.Child("publicDataStore"), publicDataStore, "Public JWKS requires publicStore to be configured"))
+		}
+	}
+
 	return allErrs
 }
 

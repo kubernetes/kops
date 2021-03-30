@@ -35,7 +35,7 @@ type IAMOIDCProvider struct {
 	Lifecycle *fi.Lifecycle
 
 	ClientIDs   []*string
-	Thumbprints []fi.Resource
+	Thumbprints []*string
 	URL         *string
 
 	Name *string
@@ -74,15 +74,10 @@ func (e *IAMOIDCProvider) Find(c *fi.Context) (*IAMOIDCProvider, error) {
 		}
 
 		if actualURL == fi.StringValue(e.URL) {
-			var actualThumbprints []fi.Resource
-			for _, thumbprint := range descResp.ThumbprintList {
-				s := aws.StringValue(thumbprint)
-				actualThumbprints = append(actualThumbprints, fi.NewStringResource(s))
-			}
 
 			actual := &IAMOIDCProvider{
 				ClientIDs:   descResp.ClientIDList,
-				Thumbprints: actualThumbprints,
+				Thumbprints: descResp.ThumbprintList,
 				URL:         &actualURL,
 				Tags:        mapIAMTagsToMap(descResp.Tags),
 				arn:         arn,
@@ -125,17 +120,14 @@ func (s *IAMOIDCProvider) CheckChanges(a, e, changes *IAMOIDCProvider) error {
 }
 
 func (p *IAMOIDCProvider) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMOIDCProvider) error {
-	thumbprints, err := p.thumbprintsAsStrings()
-	if err != nil {
-		return err
-	}
+	thumbprints := e.Thumbprints
 
 	if a == nil {
 		klog.V(2).Infof("Creating IAMOIDCProvider with Name:%q", *e.Name)
 
 		request := &iam.CreateOpenIDConnectProviderInput{
 			ClientIDList:   e.ClientIDs,
-			ThumbprintList: aws.StringSlice(thumbprints),
+			ThumbprintList: thumbprints,
 			Url:            e.URL,
 			Tags:           mapToIAMTags(e.Tags),
 		}
@@ -152,7 +144,7 @@ func (p *IAMOIDCProvider) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMOID
 
 			request := &iam.UpdateOpenIDConnectProviderThumbprintInput{}
 			request.OpenIDConnectProviderArn = a.arn
-			request.ThumbprintList = aws.StringSlice(thumbprints)
+			request.ThumbprintList = thumbprints
 
 			_, err := t.Cloud.IAM().UpdateOpenIDConnectProviderThumbprint(request)
 			if err != nil {
@@ -169,7 +161,7 @@ func (p *IAMOIDCProvider) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMOID
 					OpenIDConnectProviderArn: a.arn,
 					TagKeys:                  existingTagKeys,
 				}
-				_, err = t.Cloud.IAM().UntagOpenIDConnectProvider(untagRequest)
+				_, err := t.Cloud.IAM().UntagOpenIDConnectProvider(untagRequest)
 				if err != nil {
 					return fmt.Errorf("error untagging IAMOIDCProvider: %v", err)
 				}
@@ -179,7 +171,7 @@ func (p *IAMOIDCProvider) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMOID
 					OpenIDConnectProviderArn: a.arn,
 					Tags:                     mapToIAMTags(e.Tags),
 				}
-				_, err = t.Cloud.IAM().TagOpenIDConnectProvider(tagRequest)
+				_, err := t.Cloud.IAM().TagOpenIDConnectProvider(tagRequest)
 				if err != nil {
 					return fmt.Errorf("error tagging IAMOIDCProvider: %v", err)
 				}
@@ -189,37 +181,22 @@ func (p *IAMOIDCProvider) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMOID
 	return nil
 }
 
-func (p *IAMOIDCProvider) thumbprintsAsStrings() ([]string, error) {
-	var list []string
-	for _, thumbprint := range p.Thumbprints {
-		s, err := fi.ResourceAsString(thumbprint)
-		if err != nil {
-			return nil, fmt.Errorf("error getting resource as string: %v", err)
-		}
-
-		list = append(list, s)
-	}
-	return list, nil
-}
-
 type terraformIAMOIDCProvider struct {
 	URL            *string   `json:"url" cty:"url"`
 	ClientIDList   []*string `json:"client_id_list" cty:"client_id_list"`
 	ThumbprintList []*string `json:"thumbprint_list" cty:"thumbprint_list"`
 
 	AssumeRolePolicy *terraform.Literal `json:"assume_role_policy" cty:"assume_role_policy"`
+	Tags             map[string]string  `json:"tags,omitempty" cty:"tags"`
 }
 
 func (p *IAMOIDCProvider) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMOIDCProvider) error {
-	thumbprints, err := p.thumbprintsAsStrings()
-	if err != nil {
-		return err
-	}
 
 	tf := &terraformIAMOIDCProvider{
 		URL:            e.URL,
 		ClientIDList:   e.ClientIDs,
-		ThumbprintList: aws.StringSlice(thumbprints),
+		ThumbprintList: e.Thumbprints,
+		Tags:           e.Tags,
 	}
 
 	return t.RenderResource("aws_iam_openid_connect_provider", *e.Name, tf)
