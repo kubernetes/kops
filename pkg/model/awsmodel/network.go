@@ -47,6 +47,7 @@ func isUnmanaged(subnet *kops.ClusterSubnetSpec) bool {
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	sharedVPC := b.Cluster.SharedVPC()
 	vpcName := b.ClusterName()
+	ipv6Enabled := b.Cluster.Spec.AmazonProvidedIpv6CidrBlock
 	tags := b.CloudTags(vpcName, sharedVPC)
 
 	// VPC that holds everything for the cluster
@@ -84,8 +85,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			t.CIDR = fi.String(b.Cluster.Spec.NetworkCIDR)
 		}
 
-		if b.Cluster.Spec.AmazonProvidedIpv6CidrBlock {
-			fmt.Println("enableing ipv6")
+		if ipv6Enabled {
 			t.AmazonProvidedIpv6CidrBlock = fi.Bool(true)
 		}
 
@@ -189,6 +189,15 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				RouteTable:      publicRouteTable,
 				InternetGateway: igw,
 			})
+			if ipv6Enabled {
+				c.AddTask(&awstasks.Route{
+					Name:            s("ipv6-0.0.0.0/0"),
+					Lifecycle:       b.Lifecycle,
+					IPv6CIDR:        s("::/0"),
+					RouteTable:      publicRouteTable,
+					InternetGateway: igw,
+				})
+			}
 		}
 	}
 
@@ -229,6 +238,10 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			CIDR:             fi.String(subnetSpec.CIDR),
 			Shared:           fi.Bool(sharedSubnet),
 			Tags:             tags,
+		}
+
+		if ipv6Enabled {
+			subnet.AwsIpv6SubnetNum = fi.Int(subnetSpec.AwsIpv6SubnetNum)
 		}
 
 		if subnetSpec.ProviderID != "" {

@@ -111,6 +111,14 @@ func writeLiteral(body *hclwrite.Body, key string, literal *terraformWriter.Lite
 			},
 		}
 		body.SetAttributeRaw(key, tokens)
+	} else if literal.Netnum > 0 {
+		tokens := hclwrite.Tokens{
+			{
+				Type:  hclsyntax.TokenIdent,
+				Bytes: []byte(fmt.Sprintf("%v(%s,%d,%d)", literal.CidrSubnetFn, literal.CidrLink, literal.SubnetBits, literal.Netnum)),
+			},
+		}
+		body.SetAttributeRaw(key, tokens)
 	} else if literal.ResourceType == "" || literal.ResourceName == "" || literal.ResourceProp == "" {
 		body.SetAttributeValue(key, cty.StringVal(literal.Value))
 	} else {

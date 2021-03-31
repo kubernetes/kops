@@ -29,6 +29,7 @@ type fileFn string
 const (
 	fileFnFile       fileFn = "file"
 	fileFnFileBase64 fileFn = "filebase64"
+	cidrSubnetFn     string = "cidrsubnet"
 )
 
 // Literal represents a literal in terraform syntax
@@ -48,12 +49,30 @@ type Literal struct {
 	FilePath string `cty:"file_path"`
 	// FileFn represents the function used to reference the file
 	FileFn fileFn `cty:"file_fn"`
+	// CidrSubnetFn represents the function used calculate the subnetMask for ipv6 aws vpc
+	CidrSubnetFn string `cty:"cidrsubnet_fn"`
+	CidrLink     string `cty:"vpc_ipv6_cidr_link"`
+	SubnetBits   int    `cty:"subnet_bits"`
+	Netnum       int    `cty:"netnum"`
 }
 
 var _ json.Marshaler = &Literal{}
 
 func (l *Literal) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&l.Value)
+}
+
+func LiteralCidrsubnetExpression(vpcCidrProp *Literal, subnetBits, netnum int) *Literal {
+	cidrLink := vpcCidrProp.ResourceType + "." + vpcCidrProp.ResourceName + "." + vpcCidrProp.ResourceProp
+	return &Literal{
+		// file() is hardcoded here because this field is
+		// used for Terraform 0.11 which does not have filebase64()
+		Value:        fmt.Sprintf("${cidrsubnet(%s,%d,%d)}", cidrLink, subnetBits, netnum),
+		CidrLink:     cidrLink,
+		CidrSubnetFn: cidrSubnetFn,
+		SubnetBits:   subnetBits,
+		Netnum:       netnum,
+	}
 }
 
 func LiteralFileExpression(modulePath string, base64 bool) *Literal {

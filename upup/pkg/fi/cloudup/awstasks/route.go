@@ -37,6 +37,7 @@ type Route struct {
 	RouteTable *RouteTable
 	Instance   *Instance
 	CIDR       *string
+	IPv6CIDR   *string
 
 	// Exactly one of the below fields
 	// MUST be provided.
@@ -123,7 +124,7 @@ func (s *Route) CheckChanges(a, e, changes *Route) error {
 		if e.RouteTable == nil {
 			return fi.RequiredField("RouteTable")
 		}
-		if e.CIDR == nil {
+		if e.CIDR == nil && e.IPv6CIDR == nil {
 			return fi.RequiredField("CIDR")
 		}
 		targetCount := 0
@@ -237,18 +238,24 @@ func checkNotNil(s *string) *string {
 }
 
 type terraformRoute struct {
-	RouteTableID      *terraformWriter.Literal `json:"route_table_id" cty:"route_table_id"`
-	CIDR              *string                  `json:"destination_cidr_block,omitempty" cty:"destination_cidr_block"`
-	InternetGatewayID *terraformWriter.Literal `json:"gateway_id,omitempty" cty:"gateway_id"`
-	NATGatewayID      *terraformWriter.Literal `json:"nat_gateway_id,omitempty" cty:"nat_gateway_id"`
-	TransitGatewayID  *string                  `json:"transit_gateway_id,omitempty" cty:"transit_gateway_id"`
-	InstanceID        *terraformWriter.Literal `json:"instance_id,omitempty" cty:"instance_id"`
+	RouteTableID      *terraform.Literal `json:"route_table_id" cty:"route_table_id"`
+	CIDR              *string            `json:"destination_cidr_block,omitempty" cty:"destination_cidr_block"`
+	IPv6CIDR          *string            `json:"destination_ipv6_cidr_block,omitempty" cty:"destination_ipv6_cidr_block"`
+	InternetGatewayID *terraform.Literal `json:"gateway_id,omitempty" cty:"gateway_id"`
+	NATGatewayID      *terraform.Literal `json:"nat_gateway_id,omitempty" cty:"nat_gateway_id"`
+	TransitGatewayID  *string            `json:"transit_gateway_id,omitempty" cty:"transit_gateway_id"`
+	InstanceID        *terraform.Literal `json:"instance_id,omitempty" cty:"instance_id"`
 }
 
 func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Route) error {
 	tf := &terraformRoute{
-		CIDR:         e.CIDR,
 		RouteTableID: e.RouteTable.TerraformLink(),
+	}
+
+	if e.CIDR != nil {
+		tf.CIDR = e.CIDR
+	} else {
+		tf.IPv6CIDR = e.IPv6CIDR
 	}
 
 	if e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil {

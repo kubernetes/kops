@@ -277,10 +277,11 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 	}
 
 	tf := &terraformVPC{
-		CIDR:               e.CIDR,
-		Tags:               e.Tags,
-		EnableDNSHostnames: e.EnableDNSHostnames,
-		EnableDNSSupport:   e.EnableDNSSupport,
+		CIDR:                        e.CIDR,
+		Tags:                        e.Tags,
+		EnableDNSHostnames:          e.EnableDNSHostnames,
+		EnableDNSSupport:            e.EnableDNSSupport,
+		AmazonProvidedIpv6CidrBlock: e.AmazonProvidedIpv6CidrBlock,
 	}
 
 	return t.RenderResource("aws_vpc", *e.Name, tf)
@@ -298,6 +299,14 @@ func (e *VPC) TerraformLink() *terraformWriter.Literal {
 	}
 
 	return terraformWriter.LiteralProperty("aws_vpc", *e.Name, "id")
+}
+
+func (e *VPC) TerraformIpv6CidrLink() *terraform.Literal {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		klog.Fatalf("only kops managed VPC is supported: %s", e)
+	}
+	return terraform.LiteralProperty("aws_vpc", *e.Name, "ipv6_cidr_block")
 }
 
 type cloudformationVPC struct {
