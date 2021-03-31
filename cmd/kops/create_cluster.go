@@ -425,6 +425,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			group.Spec.MachineType = c.NodeSize
 		}
 	}
+
 	if c.Image != "" {
 		for _, group := range instanceGroups {
 			group.Spec.Image = c.Image
@@ -435,7 +436,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			group.Spec.Image = c.MasterImage
 		}
 	}
-
 	if c.NodeImage != "" {
 		for _, group := range nodes {
 			group.Spec.Image = c.NodeImage

@@ -263,6 +263,11 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 	if err := t.AddOutputVariable("vpc_id", e.TerraformLink()); err != nil {
 		return err
 	}
+	if fi.BoolValue(e.AmazonProvidedIpv6CidrBlock) {
+		if err := t.AddOutputVariable("ipv6_vpc_cidr_block", e.TerraformIpv6CidrLink()); err != nil {
+			return err
+		}
+	}
 
 	shared := fi.BoolValue(e.Shared)
 	if shared {
