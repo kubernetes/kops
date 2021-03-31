@@ -221,7 +221,7 @@ type terraformSubnet struct {
 	CIDR             *string            `json:"cidr_block" cty:"cidr_block"`
 	AvailabilityZone *string            `json:"availability_zone" cty:"availability_zone"`
 	Tags             map[string]string  `json:"tags,omitempty" cty:"tags"`
-	Ipv6_CIDR        *terraform.Literal `json:"ipv6_cidr_block:omitempty" cty:"ipv6_cidr_block"`
+	Ipv6_CIDR        *terraform.Literal `json:"ipv6_cidr_block,omitempty" cty:"ipv6_cidr_block"`
 }
 
 func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
