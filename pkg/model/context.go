@@ -348,8 +348,10 @@ func (m *KopsModelContext) KubernetesVersion() semver.Version {
 	if err != nil {
 		klog.Fatalf("unable to determine kubernetes version from %q", kubernetesVersion)
 	}
-
-	return *sv
+	if sv != nil {
+		return *sv
+	}
+	return semver.Version{}
 }
 
 // IsKubernetesGTE checks if the kubernetes version is at least version, ignoring prereleases / patches
