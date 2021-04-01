@@ -13,6 +13,7 @@ go_library(
         "instancegroup.go",
         "keyset.go",
         "networking.go",
+        "ntpconfig.go",
         "register.go",
         "sshcredential.go",
         "topology.go",

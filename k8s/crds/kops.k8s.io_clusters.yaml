@@ -3911,6 +3911,15 @@ spec:
                   NonMasqueradeCIDR is the CIDR for the internal k8s network (on which
                   pods & services live) It cannot overlap ServiceClusterIPRange
                 type: string
+              ntp:
+                description: NTPConfig is the configuration for NTP.
+                properties:
+                  managed:
+                    description: Managed controls if the NTP configuration is managed
+                      by kOps. The NTP configuration task is skipped if this is set
+                      to false.
+                    type: boolean
+                type: object
               podCIDR:
                 description: PodCIDR is the CIDR from which we allocate IPs for pods
                 type: string
