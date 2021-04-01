@@ -1,4 +1,5 @@
 {{- if CiliumSecret }}
+
 apiVersion: v1
 kind: Secret
 metadata:

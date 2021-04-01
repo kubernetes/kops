@@ -1,5 +1,6 @@
 # Pulled and modified from: https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s-1.11.yaml
 
+
 {{- if WeaveSecret }}
 apiVersion: v1
 kind: Secret

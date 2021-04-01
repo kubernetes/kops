@@ -1,5 +1,6 @@
 # Pulled and modified from: https://docs.projectcalico.org/v3.13/manifests/canal.yaml
 
+
 ---
 # Source: calico/templates/calico-config.yaml
 # This ConfigMap is used to configure a self-hosted Canal installation.
