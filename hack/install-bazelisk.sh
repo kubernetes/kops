@@ -23,3 +23,8 @@ if ! command -v bazelisk &> /dev/null; then
   cd "${KOPS_ROOT}/hack" || exit 1
   go install github.com/bazelbuild/bazelisk
 fi
+
+echo $PATH
+which bazelisk || true
+go env
+ls -l $(go env GOPATH)/bin || true
