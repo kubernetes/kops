@@ -14,10 +14,13 @@ go_library(
     importpath = "k8s.io/client-go/applyconfigurations/storage/v1alpha1",
     visibility = ["//visibility:public"],
     deps = [
+        "//vendor/k8s.io/api/storage/v1alpha1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/managedfields:go_default_library",
         "//vendor/k8s.io/client-go/applyconfigurations/core/v1:go_default_library",
+        "//vendor/k8s.io/client-go/applyconfigurations/internal:go_default_library",
         "//vendor/k8s.io/client-go/applyconfigurations/meta/v1:go_default_library",
     ],
 )
