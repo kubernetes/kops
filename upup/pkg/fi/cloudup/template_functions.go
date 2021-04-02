@@ -583,7 +583,14 @@ func (tf *TemplateFunctions) ExternalDNSArgv() ([]string, error) {
 		return nil, fmt.Errorf("unhandled cloudprovider %q", cluster.Spec.CloudProvider)
 	}
 
+	argv = append(argv, "--events")
 	argv = append(argv, "--source=ingress")
+	argv = append(argv, "--source=pod")
+	argv = append(argv, "--source=service")
+	argv = append(argv, "--compatibility=kops-dns-controller")
+	argv = append(argv, "--registry=txt")
+	argv = append(argv, "--txt-owner-id=kops-"+tf.ClusterName())
+	argv = append(argv, "--zone-id-filter="+tf.Cluster.Spec.DNSZone)
 
 	return argv, nil
 }

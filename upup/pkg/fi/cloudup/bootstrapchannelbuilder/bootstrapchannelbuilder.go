@@ -422,6 +422,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		})
 	}
 
+	if !featureflag.EnableExternalDNS.Enabled() {
 	// @check the dns-controller has not been disabled
 	externalDNS := b.Cluster.Spec.ExternalDNS
 	if externalDNS == nil || !externalDNS.Disable {
@@ -446,8 +447,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			serviceAccountRoles = append(serviceAccountRoles, &dnscontroller.ServiceAccount{})
 		}
 	}
-
-	if featureflag.EnableExternalDNS.Enabled() {
+}else {
 		{
 			key := "external-dns.addons.k8s.io"
 

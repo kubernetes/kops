@@ -1058,7 +1058,7 @@ func AddDNSControllerPermissions(b *PolicyBuilder, p *Policy) {
 	wildcard := stringorslice.Slice([]string{"*"})
 	p.Statement = append(p.Statement, &Statement{
 		Effect:   StatementEffectAllow,
-		Action:   stringorslice.Slice([]string{"route53:ListHostedZones"}),
+		Action:   stringorslice.Slice([]string{"route53:ListHostedZones", "route53:ListTagsForResource"}),
 		Resource: wildcard,
 	})
 }
