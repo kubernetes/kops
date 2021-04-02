@@ -56,3 +56,7 @@ We have two suggested workflows to upgrade etcd-manager in your cluster. While b
    kops update cluster --yes
    kops rolling-update cluster --instance-group-roles=Master --force --cloudonly
    ```
+
+## Quick fix
+
+On your master nodes, you can simply delete outdated certificates and restart the etcd-manager containers : it will recreate new valid certificates for 1 year. More details can be found on this Github link : https://github.com/kubernetes/kops/issues/8959#issuecomment-618629976
