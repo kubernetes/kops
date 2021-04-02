@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
+	raws "k8s.io/kops/pkg/resources/aws"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -219,7 +220,28 @@ func findNatGatewayFromRouteTable(cloud awsup.AWSCloud, routeTable *RouteTable) 
 			if len(natGatewayIDs) == 0 {
 				klog.V(2).Infof("no NatGateway found in route table %s", *rt.RouteTableId)
 			} else if len(natGatewayIDs) > 1 {
-				return nil, fmt.Errorf("found multiple NatGateways in route table %s", *rt.RouteTableId)
+				clusterName, ok := routeTable.Tags[awsup.TagClusterName]
+				if !ok {
+					return nil, fmt.Errorf("Could not find '%s' tag from route table", awsup.TagClusterName)
+				}
+				filteredNatGateways := []*ec2.NatGateway{}
+				for _, natGatewayID := range natGatewayIDs {
+					gw, err := findNatGatewayById(cloud, natGatewayID)
+					if err != nil {
+						return nil, err
+					}
+
+					if raws.HasOwnedTag(ec2.ResourceTypeNatgateway+":"+fi.StringValue(natGatewayID), gw.Tags, clusterName) {
+						filteredNatGateways = append(filteredNatGateways, gw)
+					}
+				}
+				if len(filteredNatGateways) == 0 {
+					klog.V(2).Infof("no kOps NatGateway found in route table %s", *rt.RouteTableId)
+				} else if len(filteredNatGateways) > 1 {
+					return nil, fmt.Errorf("found multiple kOps NatGateways in route table %s", *rt.RouteTableId)
+				} else {
+					return filteredNatGateways[0], nil
+				}
 			} else {
 				return findNatGatewayById(cloud, natGatewayIDs[0])
 			}
