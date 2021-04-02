@@ -1396,11 +1396,6 @@ message EphemeralVolumeSource {
   //
   // Required, must not be nil.
   optional PersistentVolumeClaimTemplate volumeClaimTemplate = 1;
-
-  // Specifies a read-only configuration for the volume.
-  // Defaults to false (read/write).
-  // +optional
-  optional bool readOnly = 2;
 }
 
 // Event is a report of an event somewhere in the cluster.  Events
@@ -3426,7 +3421,8 @@ message PodSpec {
   optional string restartPolicy = 3;
 
   // Optional duration in seconds the pod needs to terminate gracefully. May be decreased in delete request.
-  // Value must be non-negative integer. The value zero indicates delete immediately.
+  // Value must be non-negative integer. The value zero indicates stop immediately via
+  // the kill signal (no opportunity to shut down).
   // If this value is nil, the default grace period will be used instead.
   // The grace period is the duration in seconds after the processes running in the pod are sent
   // a termination signal and the time when the processes are forcibly halted with a kill signal.
@@ -3888,6 +3884,18 @@ message Probe {
   // Defaults to 3. Minimum value is 1.
   // +optional
   optional int32 failureThreshold = 6;
+
+  // Optional duration in seconds the pod needs to terminate gracefully upon probe failure.
+  // The grace period is the duration in seconds after the processes running in the pod are sent
+  // a termination signal and the time when the processes are forcibly halted with a kill signal.
+  // Set this value longer than the expected cleanup time for your process.
+  // If this value is nil, the pod's terminationGracePeriodSeconds will be used. Otherwise, this
+  // value overrides the value provided by the pod spec.
+  // Value must be non-negative integer. The value zero indicates stop immediately via
+  // the kill signal (no opportunity to shut down).
+  // This is an alpha field and requires enabling ProbeTerminationGracePeriod feature gate.
+  // +optional
+  optional int64 terminationGracePeriodSeconds = 7;
 }
 
 // Represents a projected volume source
@@ -5537,7 +5545,7 @@ message VolumeSource {
   // +optional
   optional CSIVolumeSource csi = 28;
 
-  // Ephemeral represents a volume that is handled by a cluster storage driver (Alpha feature).
+  // Ephemeral represents a volume that is handled by a cluster storage driver.
   // The volume's lifecycle is tied to the pod that defines it - it will be created before the pod starts,
   // and deleted when the pod is removed.
   //
@@ -5561,6 +5569,9 @@ message VolumeSource {
   //
   // A pod can use both types of ephemeral volumes and
   // persistent volumes at the same time.
+  //
+  // This is a beta feature and only available when the GenericEphemeralVolume
+  // feature gate is enabled.
   //
   // +optional
   optional EphemeralVolumeSource ephemeral = 29;
