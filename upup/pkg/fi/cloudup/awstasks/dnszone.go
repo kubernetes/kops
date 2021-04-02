@@ -44,6 +44,8 @@ type DNSZone struct {
 
 	Private    *bool
 	PrivateVPC *VPC
+
+	Tags map[string]string
 }
 
 var _ fi.CompareWithID = &DNSZone{}
@@ -73,6 +75,19 @@ func (e *DNSZone) Find(c *fi.Context) (*DNSZone, error) {
 		actual.ZoneID = fi.String(strings.TrimPrefix(*z.HostedZone.Id, "/hostedzone/"))
 	}
 	actual.Private = z.HostedZone.Config.PrivateZone
+
+	ti := &route53.ListTagsForResourceInput{
+		ResourceId:   actual.ZoneID,
+		ResourceType: fi.String("hostedzone"),
+	}
+	to, err := cloud.Route53().ListTagsForResource(ti)
+	if err != nil {
+		return nil, err
+	}
+	actual.Tags = make(map[string]string)
+	for _, tag := range to.ResourceTagSet.Tags {
+		actual.Tags[*tag.Key] = *tag.Value
+	}
 
 	// If the zone is private, but we don't want it to be, that will be an error
 	// e.PrivateVPC won't be set, so we can't find the "right" VPC (without cheating)
@@ -221,7 +236,28 @@ func (_ *DNSZone) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSZone) error
 		}
 	}
 
-	// We don't tag the zone - we expect it to be shared
+	// We tag the zone with the shared tag
+	if changes.Tags != nil {
+		tags := []*route53.Tag{}
+		for key, value := range e.Tags {
+			tags = append(tags,
+				&route53.Tag{
+					Key:   fi.String(key),
+					Value: fi.String(value),
+				},
+			)
+		}
+		createTags := route53.ChangeTagsForResourceInput{
+			AddTags:      tags,
+			ResourceId:   e.ZoneID,
+			ResourceType: fi.String("hostedzone"),
+		}
+		_, err := t.Cloud.Route53().ChangeTagsForResource(&createTags)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

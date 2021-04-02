@@ -40,10 +40,13 @@ func (b *DNSModelBuilder) ensureDNSZone(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
+	tags := b.KopsModelContext.CloudTags(b.ClusterName(), true)
+
 	// Configuration for a DNS zone
 	dnsZone := &awstasks.DNSZone{
 		Name:      fi.String(b.NameForDNSZone()),
 		Lifecycle: b.Lifecycle,
+		Tags:      tags,
 	}
 
 	topology := b.Cluster.Spec.Topology

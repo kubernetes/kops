@@ -123,3 +123,33 @@ func (m *MockRoute53) ListHostedZonesByName(*route53.ListHostedZonesByNameInput)
 		HostedZones: zones,
 	}, nil
 }
+
+func (m *MockRoute53) ListTagsForResource(ti *route53.ListTagsForResourceInput) (*route53.ListTagsForResourceOutput, error) {
+	tags := []*route53.Tag{}
+
+	zone := m.findZone(*ti.ResourceId)
+
+	for key, val := range zone.tags {
+		tags = append(tags, &route53.Tag{Key: &key, Value: &val})
+	}
+
+	to := &route53.ListTagsForResourceOutput{
+		ResourceTagSet: &route53.ResourceTagSet{
+			ResourceId:   nil,
+			ResourceType: aws.String("hostedzone"),
+			Tags:         tags,
+		},
+	}
+	return to, nil
+}
+
+func (m *MockRoute53) ChangeTagsForResource(ti *route53.ChangeTagsForResourceInput) (*route53.ChangeTagsForResourceOutput, error) {
+
+	zone := m.findZone(*ti.ResourceId)
+
+	for _, tag := range ti.AddTags {
+		zone.tags[*tag.Key] = *tag.Value
+	}
+
+	return nil, nil
+}

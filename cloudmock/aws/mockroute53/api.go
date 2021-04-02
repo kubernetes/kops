@@ -30,6 +30,7 @@ type zoneInfo struct {
 	hostedZone *route53.HostedZone
 	records    []*route53.ResourceRecordSet
 	vpcs       []*route53.VPC
+	tags       map[string]string
 }
 
 type MockRoute53 struct {
@@ -63,6 +64,7 @@ func (m *MockRoute53) MockCreateZone(z *route53.HostedZone, vpcs []*route53.VPC)
 		ID:         aws.StringValue(z.Id),
 		hostedZone: z,
 		vpcs:       vpcs,
+		tags:       make(map[string]string),
 	}
 	m.Zones = append(m.Zones, zi)
 }
