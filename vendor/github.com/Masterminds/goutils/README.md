@@ -38,7 +38,7 @@ The code snippets below show examples of how to use GoUtils. Some functions retu
         fmt.Println (goutils.Initials("John Doe Foo")) // Prints out "JDF"
 
     }
-Some functions return errors mainly due to illegal arguements used as parameters. The code example below illustrates how to deal with function that returns an error. In this instance, the function is the `Random` function (located within the `randomstringutils.go` file).
+Some functions return errors mainly due to illegal arguments used as parameters. The code example below illustrates how to deal with function that returns an error. In this instance, the function is the `Random` function (located within the `randomstringutils.go` file).
 
     package main
 
