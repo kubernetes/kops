@@ -530,8 +530,9 @@ func (c *AutoScaling) CancelInstanceRefreshRequest(input *CancelInstanceRefreshI
 // roll back any replacements that have already been completed, but it prevents
 // new replacements from being started.
 //
-// For more information, see Replacing Auto Scaling Instances Based on an Instance
-// Refresh (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html).
+// For more information, see Replacing Auto Scaling instances based on an instance
+// refresh (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html)
+// in the Amazon EC2 Auto Scaling User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2208,8 +2209,9 @@ func (c *AutoScaling) DescribeInstanceRefreshesRequest(input *DescribeInstanceRe
 //
 //    * Cancelled - The operation is cancelled.
 //
-// For more information, see Replacing Auto Scaling Instances Based on an Instance
-// Refresh (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html).
+// For more information, see Replacing Auto Scaling instances based on an instance
+// refresh (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html)
+// in the Amazon EC2 Auto Scaling User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5322,8 +5324,9 @@ func (c *AutoScaling) StartInstanceRefreshRequest(input *StartInstanceRefreshInp
 // already run, call the DescribeInstanceRefreshes API. To cancel an instance
 // refresh operation in progress, use the CancelInstanceRefresh API.
 //
-// For more information, see Replacing Auto Scaling Instances Based on an Instance
-// Refresh (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html).
+// For more information, see Replacing Auto Scaling instances based on an instance
+// refresh (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html)
+// in the Amazon EC2 Auto Scaling User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -13284,8 +13287,25 @@ func (s RecordLifecycleActionHeartbeatOutput) GoString() string {
 }
 
 // Describes information used to start an instance refresh.
+//
+// All properties are optional. However, if you specify a value for CheckpointDelay,
+// you must also provide a value for CheckpointPercentages.
 type RefreshPreferences struct {
 	_ struct{} `type:"structure"`
+
+	// The amount of time, in seconds, to wait after a checkpoint before continuing.
+	// This property is optional, but if you specify a value for it, you must also
+	// specify a value for CheckpointPercentages. If you specify a value for CheckpointPercentages
+	// and not for CheckpointDelay, the CheckpointDelay defaults to 3600 (1 hour).
+	CheckpointDelay *int64 `type:"integer"`
+
+	// Threshold values for each checkpoint in ascending order. Each number must
+	// be unique. To replace all instances in the Auto Scaling group, the last number
+	// in the array must be 100.
+	//
+	// For usage examples, see Adding checkpoints to an instance refresh (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-adding-checkpoints-instance-refresh.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
+	CheckpointPercentages []*int64 `type:"list"`
 
 	// The number of seconds until a newly launched instance is configured and ready
 	// to use. During this time, Amazon EC2 Auto Scaling does not immediately move
@@ -13308,6 +13328,18 @@ func (s RefreshPreferences) String() string {
 // GoString returns the string representation
 func (s RefreshPreferences) GoString() string {
 	return s.String()
+}
+
+// SetCheckpointDelay sets the CheckpointDelay field's value.
+func (s *RefreshPreferences) SetCheckpointDelay(v int64) *RefreshPreferences {
+	s.CheckpointDelay = &v
+	return s
+}
+
+// SetCheckpointPercentages sets the CheckpointPercentages field's value.
+func (s *RefreshPreferences) SetCheckpointPercentages(v []*int64) *RefreshPreferences {
+	s.CheckpointPercentages = v
+	return s
 }
 
 // SetInstanceWarmup sets the InstanceWarmup field's value.

@@ -29,6 +29,8 @@ func unify(types []cty.Type, unsafe bool) (cty.Type, []Conversion) {
 	// unification purposes.
 	{
 		mapCt := 0
+		listCt := 0
+		setCt := 0
 		objectCt := 0
 		tupleCt := 0
 		dynamicCt := 0
@@ -36,6 +38,10 @@ func unify(types []cty.Type, unsafe bool) (cty.Type, []Conversion) {
 			switch {
 			case ty.IsMapType():
 				mapCt++
+			case ty.IsListType():
+				listCt++
+			case ty.IsSetType():
+				setCt++
 			case ty.IsObjectType():
 				objectCt++
 			case ty.IsTupleType():
@@ -48,7 +54,31 @@ func unify(types []cty.Type, unsafe bool) (cty.Type, []Conversion) {
 		}
 		switch {
 		case mapCt > 0 && (mapCt+dynamicCt) == len(types):
-			return unifyMapTypes(types, unsafe, dynamicCt > 0)
+			return unifyCollectionTypes(cty.Map, types, unsafe, dynamicCt > 0)
+
+		case mapCt > 0 && (mapCt+objectCt+dynamicCt) == len(types):
+			// Objects often contain map data, but are not directly typed as
+			// such due to language constructs or function types. Try to unify
+			// them as maps first before falling back to heterogeneous type
+			// conversion.
+			ty, convs := unifyObjectsAsMaps(types, unsafe)
+			// If we got a map back, we know the unification was successful.
+			if ty.IsMapType() {
+				return ty, convs
+			}
+		case listCt > 0 && (listCt+dynamicCt) == len(types):
+			return unifyCollectionTypes(cty.List, types, unsafe, dynamicCt > 0)
+		case listCt > 0 && (listCt+tupleCt+dynamicCt) == len(types):
+			// Tuples are often lists in disguise, and we may be able to
+			// unify them as such.
+			ty, convs := unifyTuplesAsList(types, unsafe)
+			// if we got a list back, we know the unification was successful.
+			// Otherwise we will fall back to the heterogeneous type codepath.
+			if ty.IsListType() {
+				return ty, convs
+			}
+		case setCt > 0 && (setCt+dynamicCt) == len(types):
+			return unifyCollectionTypes(cty.Set, types, unsafe, dynamicCt > 0)
 		case objectCt > 0 && (objectCt+dynamicCt) == len(types):
 			return unifyObjectTypes(types, unsafe, dynamicCt > 0)
 		case tupleCt > 0 && (tupleCt+dynamicCt) == len(types):
@@ -100,7 +130,121 @@ Preferences:
 	return cty.NilType, nil
 }
 
-func unifyMapTypes(types []cty.Type, unsafe bool, hasDynamic bool) (cty.Type, []Conversion) {
+// unifyTuplesAsList attempts to first see if the tuples unify as lists, then
+// re-unifies the given types with the list in place of the tuples.
+func unifyTuplesAsList(types []cty.Type, unsafe bool) (cty.Type, []Conversion) {
+	var tuples []cty.Type
+	var tupleIdxs []int
+	for i, t := range types {
+		if t.IsTupleType() {
+			tuples = append(tuples, t)
+			tupleIdxs = append(tupleIdxs, i)
+		}
+	}
+
+	ty, tupleConvs := unifyTupleTypesToList(tuples, unsafe)
+	if !ty.IsListType() {
+		return cty.NilType, nil
+	}
+
+	// the tuples themselves unified as a list, get the overall
+	// unification with this list type instead of the tuple.
+	// make a copy of the types, so we can fallback to the standard
+	// codepath if something went wrong
+	listed := make([]cty.Type, len(types))
+	copy(listed, types)
+	for _, idx := range tupleIdxs {
+		listed[idx] = ty
+	}
+
+	newTy, convs := unify(listed, unsafe)
+	if !newTy.IsListType() {
+		return cty.NilType, nil
+	}
+
+	// we have a good conversion, wrap the nested tuple conversions.
+	// We know the tuple conversion is not nil, because we went from tuple to
+	// list
+	for i, idx := range tupleIdxs {
+		listConv := convs[idx]
+		tupleConv := tupleConvs[i]
+
+		if listConv == nil {
+			convs[idx] = tupleConv
+			continue
+		}
+
+		convs[idx] = func(in cty.Value) (out cty.Value, err error) {
+			out, err = tupleConv(in)
+			if err != nil {
+				return out, err
+			}
+
+			return listConv(in)
+		}
+	}
+
+	return newTy, convs
+}
+
+// unifyObjectsAsMaps attempts to first see if the objects unify as maps, then
+// re-unifies the given types with the map in place of the objects.
+func unifyObjectsAsMaps(types []cty.Type, unsafe bool) (cty.Type, []Conversion) {
+	var objs []cty.Type
+	var objIdxs []int
+	for i, t := range types {
+		if t.IsObjectType() {
+			objs = append(objs, t)
+			objIdxs = append(objIdxs, i)
+		}
+	}
+
+	ty, objConvs := unifyObjectTypesToMap(objs, unsafe)
+	if !ty.IsMapType() {
+		return cty.NilType, nil
+	}
+
+	// the objects themselves unified as a map, get the overall
+	// unification with this map type instead of the object.
+	// Make a copy of the types, so we can fallback to the standard codepath if
+	// something went wrong without changing the original types.
+	mapped := make([]cty.Type, len(types))
+	copy(mapped, types)
+	for _, idx := range objIdxs {
+		mapped[idx] = ty
+	}
+
+	newTy, convs := unify(mapped, unsafe)
+	if !newTy.IsMapType() {
+		return cty.NilType, nil
+	}
+
+	// we have a good conversion, so wrap the nested object conversions.
+	// We know the object conversion is not nil, because we went from object to
+	// map.
+	for i, idx := range objIdxs {
+		mapConv := convs[idx]
+		objConv := objConvs[i]
+
+		if mapConv == nil {
+			convs[idx] = objConv
+			continue
+		}
+
+		convs[idx] = func(in cty.Value) (out cty.Value, err error) {
+			out, err = objConv(in)
+			if err != nil {
+				return out, err
+			}
+
+			return mapConv(in)
+		}
+	}
+
+	return newTy, convs
+}
+
+func unifyCollectionTypes(collectionType func(cty.Type) cty.Type, types []cty.Type, unsafe bool, hasDynamic bool) (cty.Type, []Conversion) {
 	// If we had any dynamic types in the input here then we can't predict
 	// what path we'll take through here once these become known types, so
 	// we'll conservatively produce DynamicVal for these.
@@ -117,7 +261,7 @@ func unifyMapTypes(types []cty.Type, unsafe bool, hasDynamic bool) (cty.Type, []
 		return cty.NilType, nil
 	}
 
-	retTy := cty.Map(retElemType)
+	retTy := collectionType(retElemType)
 
 	conversions := make([]Conversion, len(types))
 	for i, ty := range types {

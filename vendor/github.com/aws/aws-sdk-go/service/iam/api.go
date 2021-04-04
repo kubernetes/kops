@@ -362,6 +362,10 @@ func (c *IAM) AttachGroupPolicyRequest(input *AttachGroupPolicyInput) (req *requ
 // You use this operation to attach a managed policy to a group. To embed an
 // inline policy in a group, use PutGroupPolicy.
 //
+// As a best practice, you can validate your IAM policies. To learn more, see
+// Validating IAM policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_policy-validator.html)
+// in the IAM User Guide.
+//
 // For more information about policies, see Managed policies and inline policies
 // (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
 // in the IAM User Guide.
@@ -474,6 +478,10 @@ func (c *IAM) AttachRolePolicyRequest(input *AttachRolePolicyInput) (req *reques
 // see Managed policies and inline policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
 // in the IAM User Guide.
 //
+// As a best practice, you can validate your IAM policies. To learn more, see
+// Validating IAM policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_policy-validator.html)
+// in the IAM User Guide.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -579,6 +587,10 @@ func (c *IAM) AttachUserPolicyRequest(input *AttachUserPolicyInput) (req *reques
 //
 // You use this operation to attach a managed policy to a user. To embed an
 // inline policy in a user, use PutUserPolicy.
+//
+// As a best practice, you can validate your IAM policies. To learn more, see
+// Validating IAM policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_policy-validator.html)
+// in the IAM User Guide.
 //
 // For more information about policies, see Managed policies and inline policies
 // (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
@@ -1082,7 +1094,9 @@ func (c *IAM) CreateInstanceProfileRequest(input *CreateInstanceProfileInput) (r
 // CreateInstanceProfile API operation for AWS Identity and Access Management.
 //
 // Creates a new instance profile. For information about instance profiles,
-// see About instance profiles (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html#reference_iam-quotas-entities).
+// see Using roles for applications on Amazon EC2 (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html)
+// in the IAM User Guide, and Instance profiles (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#ec2-instance-profile)
+// in the Amazon EC2 User Guide.
 //
 // For information about the number of instance profiles you can create, see
 // IAM object quotas (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html)
@@ -1412,6 +1426,10 @@ func (c *IAM) CreatePolicyRequest(input *CreatePolicyInput) (req *request.Reques
 // This operation creates a policy version with a version identifier of v1 and
 // sets v1 as the policy's default version. For more information about policy
 // versions, see Versioning for managed policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-versions.html)
+// in the IAM User Guide.
+//
+// As a best practice, you can validate your IAM policies. To learn more, see
+// Validating IAM policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_policy-validator.html)
 // in the IAM User Guide.
 //
 // For more information about managed policies in general, see Managed policies
@@ -5473,6 +5491,12 @@ func (c *IAM) GetAccessKeyLastUsedRequest(input *GetAccessKeyLastUsedInput) (req
 //
 // See the AWS API reference guide for AWS Identity and Access Management's
 // API operation GetAccessKeyLastUsed for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeNoSuchEntityException "NoSuchEntity"
+//   The request was rejected because it referenced a resource entity that does
+//   not exist. The error message describes the resource.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetAccessKeyLastUsed
 func (c *IAM) GetAccessKeyLastUsed(input *GetAccessKeyLastUsedInput) (*GetAccessKeyLastUsedOutput, error) {
 	req, out := c.GetAccessKeyLastUsedRequest(input)
