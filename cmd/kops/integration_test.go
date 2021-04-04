@@ -286,6 +286,18 @@ func TestPublicJWKS(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "public-jwks").withCAKey().withServiceAccountRoles().runTestTerraformAWS(t)
 }
 
+// TestAWSLBController runs a simple configuration, but with AWS LB controller, UseServiceAccountIAM and PublicJWKS enabled
+func TestAWSLBController(t *testing.T) {
+	featureflag.ParseFlags("+UseServiceAccountIAM,+PublicJWKS")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-UseServiceAccountIAM,-PublicJWKS")
+	}
+	defer unsetFeatureFlags()
+
+	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
+	newIntegrationTest("minimal.example.com", "aws-lb-controller").withCAKey().withServiceAccountRoles().runTestTerraformAWS(t)
+}
+
 // TestSharedSubnet runs the test on a configuration with a shared subnet (and VPC)
 func TestSharedSubnet(t *testing.T) {
 	newIntegrationTest("sharedsubnet.example.com", "shared_subnet").runTestTerraformAWS(t)
