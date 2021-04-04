@@ -13,10 +13,23 @@ import (
 
 // ResourceSuggestion represents a single resource suggestion.
 type ResourceSuggestion struct {
-	DeploymentName  *string  `json:"deploymentName,omitempty"`
-	Namespace       *string  `json:"namespace,omitempty"`
-	SuggestedCPU    *float64 `json:"suggestedCPU,omitempty"`
-	RequestedCPU    *float64 `json:"requestedCPU,omitempty"`
+	ResourceName    *string                        `json:"resourceName,omitempty"`
+	ResourceType    *string                        `json:"resourceType,omitempty"`
+	DeploymentName  *string                        `json:"deploymentName,omitempty"`
+	Namespace       *string                        `json:"namespace,omitempty"`
+	SuggestedCPU    *float64                       `json:"suggestedCPU,omitempty"`
+	RequestedCPU    *float64                       `json:"requestedCPU,omitempty"`
+	SuggestedMemory *float64                       `json:"suggestedMemory,omitempty"`
+	RequestedMemory *float64                       `json:"requestedMemory,omitempty"`
+	Containers      []*ContainerResourceSuggestion `json:"containers,omitempty"`
+}
+
+// ContainerResourceSuggestion represents a resource suggestion for a
+// single container.
+type ContainerResourceSuggestion struct {
+	Name            *string  `json:"name,omitempty"`
+	SuggestedCPU    *float64 `json:"suggestedCpu,omitempty"`
+	RequestedCPU    *float64 `json:"requestedCpu,omitempty"`
 	SuggestedMemory *float64 `json:"suggestedMemory,omitempty"`
 	RequestedMemory *float64 `json:"requestedMemory,omitempty"`
 }
