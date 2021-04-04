@@ -319,6 +319,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		cmd.Flags().StringVar(&options.SpotinstOrientation, "spotinst-orientation", options.SpotinstOrientation, "Set the prediction strategy (valid values: balanced, cost, equal-distribution and availability)")
 	}
 
+	if featureflag.APIServerNodes.Enabled() {
+		cmd.Flags().Int32Var(&options.APIServerCount, "api-server-count", options.APIServerCount, "Set number of API server nodes. Defaults to 0.")
+	}
+
 	// Openstack flags
 	cmd.Flags().StringVar(&options.OpenstackExternalNet, "os-ext-net", options.OpenstackExternalNet, "The name of the external network to use with the openstack router")
 	cmd.Flags().StringVar(&options.OpenstackExternalSubnet, "os-ext-subnet", options.OpenstackExternalSubnet, "The name of the external floating subnet to use with the openstack router")
