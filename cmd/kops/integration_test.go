@@ -25,6 +25,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -58,10 +59,10 @@ type integrationTest struct {
 	private        bool
 	zones          int
 	expectPolicies bool
-	// expectServiceAccountRoles is true if we expect to assign per-ServiceAccount IAM roles (instead of just using the node roles)
-	expectServiceAccountRoles bool
-	lifecycleOverrides        []string
-	sshKey                    bool
+	// expectServiceAccountRolePolicies is a list of per-ServiceAccount IAM roles (instead of just using the node roles)
+	expectServiceAccountRolePolicies []string
+	lifecycleOverrides               []string
+	sshKey                           bool
 	// caKey is true if we should use a provided ca.crt & ca.key as our CA
 	caKey           bool
 	jsonOutput      bool
@@ -120,9 +121,12 @@ func (i *integrationTest) withPrivate() *integrationTest {
 	return i
 }
 
-// withServiceAccountRoles indicates we expect to assign per-ServiceAccount IAM roles (instead of just using the node roles)
-func (i *integrationTest) withServiceAccountRoles() *integrationTest {
-	i.expectServiceAccountRoles = true
+// withServiceAccountRoles indicates we expect to assign an IAM role for a ServiceAccount (instead of just using the node roles)
+func (i *integrationTest) withServiceAccountRole(sa string, inlinePolicy bool) *integrationTest {
+	i.expectServiceAccountRolePolicies = append(i.expectServiceAccountRolePolicies, fmt.Sprintf("aws_iam_role_%s.sa.%s_policy", sa, i.clusterName))
+	if inlinePolicy {
+		i.expectServiceAccountRolePolicies = append(i.expectServiceAccountRolePolicies, fmt.Sprintf("aws_iam_role_policy_%s.sa.%s_policy", sa, i.clusterName))
+	}
 	return i
 }
 
@@ -283,7 +287,11 @@ func TestPublicJWKS(t *testing.T) {
 	defer unsetFeatureFlags()
 
 	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
-	newIntegrationTest("minimal.example.com", "public-jwks").withCAKey().withServiceAccountRoles().runTestTerraformAWS(t)
+	newIntegrationTest("minimal.example.com", "public-jwks").
+		withCAKey().
+		withServiceAccountRole("dns-controller.kube-system", true).
+		runTestTerraformAWS(t)
+
 }
 
 // TestAWSLBController runs a simple configuration, but with AWS LB controller, UseServiceAccountIAM and PublicJWKS enabled
@@ -295,7 +303,11 @@ func TestAWSLBController(t *testing.T) {
 	defer unsetFeatureFlags()
 
 	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
-	newIntegrationTest("minimal.example.com", "aws-lb-controller").withCAKey().withServiceAccountRoles().runTestTerraformAWS(t)
+	newIntegrationTest("minimal.example.com", "aws-lb-controller").
+		withCAKey().
+		withServiceAccountRole("dns-controller.kube-system", true).
+		withServiceAccountRole("aws-load-balancer-controller.kube-system", true).
+		runTestTerraformAWS(t)
 }
 
 // TestSharedSubnet runs the test on a configuration with a shared subnet (and VPC)
@@ -568,12 +580,9 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 			}
 		}
 	}
-	if i.expectServiceAccountRoles {
-		expectedFilenames = append(expectedFilenames, []string{
-			"aws_iam_role_dns-controller.kube-system.sa." + i.clusterName + "_policy",
-			"aws_iam_role_policy_dns-controller.kube-system.sa." + i.clusterName + "_policy",
-		}...)
-	}
+
+	expectedFilenames = append(expectedFilenames, i.expectServiceAccountRolePolicies...)
+
 	i.runTest(t, h, expectedFilenames, tfFileName, tfFileName, nil)
 }
 
