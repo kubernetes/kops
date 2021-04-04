@@ -186,6 +186,20 @@ func ListValEmpty(element Type) Value {
 	}
 }
 
+// CanListVal returns false if the given Values can not be coalesced
+// into a single List due to inconsistent element types.
+func CanListVal(vals []Value) bool {
+	elementType := DynamicPseudoType
+	for _, val := range vals {
+		if elementType == DynamicPseudoType {
+			elementType = val.ty
+		} else if val.ty != DynamicPseudoType && !elementType.Equals(val.ty) {
+			return false
+		}
+	}
+	return true
+}
+
 // MapVal returns a Value of a map type whose element type is defined by
 // the types of the given values, which must be homogenous.
 //
@@ -227,6 +241,20 @@ func MapValEmpty(element Type) Value {
 	}
 }
 
+// CanMapVal returns false if the given Values can not be coalesced into a
+// single Map due to inconsistent element types.
+func CanMapVal(vals map[string]Value) bool {
+	elementType := DynamicPseudoType
+	for _, val := range vals {
+		if elementType == DynamicPseudoType {
+			elementType = val.ty
+		} else if val.ty != DynamicPseudoType && !elementType.Equals(val.ty) {
+			return false
+		}
+	}
+	return true
+}
+
 // SetVal returns a Value of set type whose element type is defined by
 // the types of the given values, which must be homogenous.
 //
@@ -265,6 +293,26 @@ func SetVal(vals []Value) Value {
 		ty: Set(elementType),
 		v:  rawVal,
 	}.WithMarks(markSets...)
+}
+
+// CanSetVal returns false if the given Values can not be coalesced
+// into a single Set due to inconsistent element types.
+func CanSetVal(vals []Value) bool {
+	elementType := DynamicPseudoType
+	var markSets []ValueMarks
+
+	for _, val := range vals {
+		if unmarkedVal, marks := val.UnmarkDeep(); len(marks) > 0 {
+			val = unmarkedVal
+			markSets = append(markSets, marks)
+		}
+		if elementType == DynamicPseudoType {
+			elementType = val.ty
+		} else if val.ty != DynamicPseudoType && !elementType.Equals(val.ty) {
+			return false
+		}
+	}
+	return true
 }
 
 // SetValFromValueSet returns a Value of set type based on an already-constructed

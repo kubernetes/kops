@@ -142,7 +142,7 @@ func (f Function) ReturnTypeForValues(args []cty.Value) (ty cty.Type, err error)
 	for i, spec := range f.spec.Params {
 		val := posArgs[i]
 
-		if val.IsMarked() && !spec.AllowMarked {
+		if val.ContainsMarked() && !spec.AllowMarked {
 			// During type checking we just unmark values and discard their
 			// marks, under the assumption that during actual execution of
 			// the function we'll do similarly and then re-apply the marks
@@ -150,7 +150,7 @@ func (f Function) ReturnTypeForValues(args []cty.Value) (ty cty.Type, err error)
 			// inspects values (rather than just types) in its Type
 			// implementation can potentially fail to take into account marks,
 			// unless it specifically opts in to seeing them.
-			unmarked, _ := val.Unmark()
+			unmarked, _ := val.UnmarkDeep()
 			newArgs := make([]cty.Value, len(args))
 			copy(newArgs, args)
 			newArgs[i] = unmarked
@@ -183,9 +183,9 @@ func (f Function) ReturnTypeForValues(args []cty.Value) (ty cty.Type, err error)
 		for i, val := range varArgs {
 			realI := i + len(posArgs)
 
-			if val.IsMarked() && !spec.AllowMarked {
+			if val.ContainsMarked() && !spec.AllowMarked {
 				// See the similar block in the loop above for what's going on here.
-				unmarked, _ := val.Unmark()
+				unmarked, _ := val.UnmarkDeep()
 				newArgs := make([]cty.Value, len(args))
 				copy(newArgs, args)
 				newArgs[realI] = unmarked
