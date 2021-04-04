@@ -215,6 +215,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return s
 	}
 
+	dest["UseServiceAccountIAM"] = tf.UseServiceAccountIAM
+
 	return nil
 }
 

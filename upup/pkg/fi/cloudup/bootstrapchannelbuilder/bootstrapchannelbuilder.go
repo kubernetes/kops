@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components/addonmanifests"
+	"k8s.io/kops/pkg/model/components/addonmanifests/awsloadbalancercontroller"
 	"k8s.io/kops/pkg/model/components/addonmanifests/dnscontroller"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/templates"
@@ -575,6 +576,19 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 				Id:                id,
 				NeedsPKI:          true,
 			})
+		}
+
+		// Generate aws-load-balancer-controller ServiceAccount IAM permissions
+		if b.UseServiceAccountIAM() {
+			serviceAccountRoles := []iam.Subject{&awsloadbalancercontroller.ServiceAccount{}}
+			for _, serviceAccountRole := range serviceAccountRoles {
+				iamModelBuilder := &model.IAMModelBuilder{KopsModelContext: b.KopsModelContext, Lifecycle: b.Lifecycle}
+
+				err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
+				if err != nil {
+					return nil, err
+				}
+			}
 		}
 	}
 
