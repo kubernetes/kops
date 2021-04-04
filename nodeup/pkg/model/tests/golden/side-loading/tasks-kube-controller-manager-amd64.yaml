@@ -24,7 +24,7 @@ contents: |
       - --flex-volume-plugin-dir=/usr/libexec/kubernetes/kubelet-plugins/volume/exec/
       - --kubeconfig=/var/lib/kube-controller-manager/kubeconfig
       - --leader-elect=true
-      - --root-ca-file=/srv/kubernetes/ca.crt
+      - --root-ca-file=/srv/kubernetes/cabundle.crt
       - --service-account-private-key-file=/srv/kubernetes/service-account.key
       - --use-service-account-credentials=true
       - --v=2

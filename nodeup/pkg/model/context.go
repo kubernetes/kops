@@ -247,7 +247,11 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Model
 	if c.UseKopsControllerForNodeBootstrap() {
 		cert, key := c.GetBootstrapCert(name)
 
-		ca, err := c.GetCert(fi.CertificateIDCA)
+		pool, err := c.KeyStore.FindCertificatePool(fi.CertificateIDCA)
+		if err != nil {
+			return nil, err
+		}
+		ca, err := pool.AsBytes()
 		if err != nil {
 			return nil, err
 		}
@@ -438,6 +442,33 @@ func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, n
 	}
 
 	serialized, err := cert.AsString()
+	if err != nil {
+		return err
+	}
+	p := filename
+	if !filepath.IsAbs(p) {
+		p = filepath.Join(c.PathSrvKubernetes(), filename)
+	}
+
+	ctx.AddTask(&nodetasks.File{
+		Path:     p,
+		Contents: fi.NewStringResource(serialized),
+		Type:     nodetasks.FileType_File,
+		Mode:     s("0600"),
+		Owner:    owner,
+	})
+
+	return nil
+}
+
+// BuildCertificateBundleTask builds a task to create a certificate bundle file.
+func (c *NodeupModelContext) BuildCertificateBundleTask(ctx *fi.ModelBuilderContext, name, filename string, owner *string) error {
+	pool, err := c.KeyStore.FindCertificatePool(name)
+	if err != nil {
+		return err
+	}
+
+	serialized, err := pool.AsString()
 	if err != nil {
 		return err
 	}

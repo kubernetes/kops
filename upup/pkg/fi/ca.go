@@ -124,6 +124,28 @@ func (c *CertificatePool) All() []*pki.Certificate {
 	return certs
 }
 
+func (c *CertificatePool) AsBytes() ([]byte, error) {
+	// Nicer behaviour because this is called from templates
+	if c == nil {
+		return nil, fmt.Errorf("AsBytes called on nil CertificatePool")
+	}
+
+	var data bytes.Buffer
+	if c.Primary != nil {
+		_, err := c.Primary.WriteTo(&data)
+		if err != nil {
+			return nil, fmt.Errorf("error writing SSL certificate: %v", err)
+		}
+	}
+	for _, cert := range c.Secondary {
+		_, err := cert.WriteTo(&data)
+		if err != nil {
+			return nil, fmt.Errorf("error writing SSL certificate: %v", err)
+		}
+	}
+	return data.Bytes(), nil
+}
+
 func (c *CertificatePool) AsString() (string, error) {
 	// Nicer behaviour because this is called from templates
 	if c == nil {

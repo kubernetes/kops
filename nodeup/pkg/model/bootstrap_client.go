@@ -55,7 +55,11 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
-	cert, err := b.GetCert(fi.CertificateIDCA)
+	pool, err := b.KeyStore.FindCertificatePool(fi.CertificateIDCA)
+	if err != nil {
+		return err
+	}
+	cert, err := pool.AsBytes()
 	if err != nil {
 		return err
 	}

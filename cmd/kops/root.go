@@ -149,6 +149,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdReplace(f, out))
 	cmd.AddCommand(NewCmdRollingUpdate(f, out))
 	cmd.AddCommand(NewCmdSet(f, out))
+	cmd.AddCommand(NewCmdRotate(f, out))
 	cmd.AddCommand(NewCmdToolbox(f, out))
 	cmd.AddCommand(NewCmdValidate(f, out))
 	cmd.AddCommand(NewCmdVersion(f, out))

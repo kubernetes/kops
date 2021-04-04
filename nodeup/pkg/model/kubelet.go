@@ -428,7 +428,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 
 	// check if we are using secure kubelet <-> api settings
 	if b.UseSecureKubelet() {
-		c.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
+		c.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "cabundle.crt")
 	}
 
 	if isMaster {

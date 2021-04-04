@@ -54,6 +54,10 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
+	if err := b.BuildCertificateBundleTask(c, fi.CertificateIDCA, "cabundle.crt", nil); err != nil {
+		return err
+	}
+
 	// Write out docker auth secret, if exists
 	if b.SecretStore != nil {
 		key := "dockerconfig"

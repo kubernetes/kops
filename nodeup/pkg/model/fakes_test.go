@@ -61,7 +61,14 @@ type fakeCAStore struct {
 var _ fi.CAStore = &fakeCAStore{}
 
 func (k fakeCAStore) FindCertificatePool(name string) (*fi.CertificatePool, error) {
-	panic("fakeCAStore does not implement FindCertificatePool")
+	pool := &fi.CertificatePool{}
+
+	cert, exists := k.certs[name]
+
+	if exists {
+		pool.Primary = cert
+	}
+	return pool, nil
 }
 
 func (k fakeCAStore) FindCertificateKeyset(name string) (*kops.Keyset, error) {

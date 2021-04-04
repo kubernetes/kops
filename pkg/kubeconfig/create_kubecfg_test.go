@@ -48,7 +48,9 @@ func (f fakeStatusStore) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiI
 }
 
 // mock a fake key store
-type fakeKeyStore struct {
+type fakeCAStore struct {
+	fi.CAStore
+
 	FindKeypairFn func(name string) (*pki.Certificate, *pki.PrivateKey, bool, error)
 
 	// StoreKeypair writes the keypair to the store
@@ -58,16 +60,27 @@ type fakeKeyStore struct {
 	MirrorToFn func(basedir vfs.Path) error
 }
 
-func (f fakeKeyStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
+func (f fakeCAStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
 	return f.FindKeypairFn(name)
 }
 
-func (f fakeKeyStore) StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
+func (f fakeCAStore) StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
 	return f.StoreKeypairFn(id, cert, privateKey)
 }
 
-func (f fakeKeyStore) MirrorTo(basedir vfs.Path) error {
+func (f fakeCAStore) MirrorTo(basedir vfs.Path) error {
 	return f.MirrorToFn(basedir)
+}
+
+func (f fakeCAStore) FindCertificatePool(name string) (*fi.CertificatePool, error) {
+	pool := &fi.CertificatePool{}
+	cert, _, _, err := f.FindKeypair(name)
+	if err != nil {
+		return pool, err
+	}
+	pool.Primary = cert
+
+	return pool, nil
 }
 
 // build a generic minimal cluster
@@ -313,7 +326,7 @@ func TestBuildKubecfg(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			kopsStateStore := "memfs://example-state-store"
 
-			keyStore := fakeKeyStore{
+			keyStore := fakeCAStore{
 				FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
 					return fakeCertificate(),
 						fakePrivateKey(),
