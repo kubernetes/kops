@@ -268,5 +268,5 @@ func (b *KopsModelContext) InstanceName(ig *kops.InstanceGroup, suffix string) s
 
 func QueueNamePrefix(clusterName string) string {
 	// periods aren't allowed in queue name
-	return strings.Replace(clusterName, ".", "-", -1)
+	return strings.ReplaceAll(clusterName, ".", "-")
 }

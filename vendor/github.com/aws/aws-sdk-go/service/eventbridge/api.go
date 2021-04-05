@@ -3799,6 +3799,8 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 //
 //    * Custom/SaaS HTTPS APIs via EventBridge API Destinations
 //
+//    * Amazon SageMaker Model Building Pipelines
+//
 // Creating rules with built-in targets is supported only in the AWS Management
 // Console. The built-in targets are EC2 CreateSnapshot API call, EC2 RebootInstances
 // API call, EC2 StopInstances API call, and EC2 TerminateInstances API call.
@@ -12619,6 +12621,109 @@ func (s *RunCommandTarget) SetValues(v []*string) *RunCommandTarget {
 	return s
 }
 
+// Name/Value pair of a parameter to start execution of a SageMaker Model Building
+// Pipeline.
+type SageMakerPipelineParameter struct {
+	_ struct{} `type:"structure"`
+
+	// Name of parameter to start execution of a SageMaker Model Building Pipeline.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// Value of parameter to start execution of a SageMaker Model Building Pipeline.
+	//
+	// Value is a required field
+	Value *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s SageMakerPipelineParameter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s SageMakerPipelineParameter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SageMakerPipelineParameter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SageMakerPipelineParameter"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *SageMakerPipelineParameter) SetName(v string) *SageMakerPipelineParameter {
+	s.Name = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *SageMakerPipelineParameter) SetValue(v string) *SageMakerPipelineParameter {
+	s.Value = &v
+	return s
+}
+
+// These are custom parameters to use when the target is a SageMaker Model Building
+// Pipeline that starts based on EventBridge events.
+type SageMakerPipelineParameters struct {
+	_ struct{} `type:"structure"`
+
+	// List of Parameter names and values for SageMaker Model Building Pipeline
+	// execution.
+	PipelineParameterList []*SageMakerPipelineParameter `type:"list"`
+}
+
+// String returns the string representation
+func (s SageMakerPipelineParameters) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s SageMakerPipelineParameters) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SageMakerPipelineParameters) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SageMakerPipelineParameters"}
+	if s.PipelineParameterList != nil {
+		for i, v := range s.PipelineParameterList {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "PipelineParameterList", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPipelineParameterList sets the PipelineParameterList field's value.
+func (s *SageMakerPipelineParameters) SetPipelineParameterList(v []*SageMakerPipelineParameter) *SageMakerPipelineParameters {
+	s.PipelineParameterList = v
+	return s
+}
+
 // This structure includes the custom parameter to be used when the target is
 // an SQS FIFO queue.
 type SqsParameters struct {
@@ -13036,6 +13141,14 @@ type Target struct {
 	// Parameters used when you are using the rule to invoke Amazon EC2 Run Command.
 	RunCommandParameters *RunCommandParameters `type:"structure"`
 
+	// Contains the SageMaker Model Building Pipeline parameters to start execution
+	// of a SageMaker Model Building Pipeline.
+	//
+	// If you specify a SageMaker Model Building Pipeline as a target, you can use
+	// this to specify parameters to start a pipeline execution based on EventBridge
+	// events.
+	SageMakerPipelineParameters *SageMakerPipelineParameters `type:"structure"`
+
 	// Contains the message group ID to use when the target is a FIFO queue.
 	//
 	// If you specify an SQS FIFO queue as a target, the queue must have content-based
@@ -13109,6 +13222,11 @@ func (s *Target) Validate() error {
 	if s.RunCommandParameters != nil {
 		if err := s.RunCommandParameters.Validate(); err != nil {
 			invalidParams.AddNested("RunCommandParameters", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.SageMakerPipelineParameters != nil {
+		if err := s.SageMakerPipelineParameters.Validate(); err != nil {
+			invalidParams.AddNested("SageMakerPipelineParameters", err.(request.ErrInvalidParams))
 		}
 	}
 
@@ -13199,6 +13317,12 @@ func (s *Target) SetRoleArn(v string) *Target {
 // SetRunCommandParameters sets the RunCommandParameters field's value.
 func (s *Target) SetRunCommandParameters(v *RunCommandParameters) *Target {
 	s.RunCommandParameters = v
+	return s
+}
+
+// SetSageMakerPipelineParameters sets the SageMakerPipelineParameters field's value.
+func (s *Target) SetSageMakerPipelineParameters(v *SageMakerPipelineParameters) *Target {
+	s.SageMakerPipelineParameters = v
 	return s
 }
 
