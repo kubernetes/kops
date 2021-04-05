@@ -7070,6 +7070,11 @@ func (s *CreateStackInstancesInput) Validate() error {
 	if s.StackSetName == nil {
 		invalidParams.Add(request.NewErrParamRequired("StackSetName"))
 	}
+	if s.DeploymentTargets != nil {
+		if err := s.DeploymentTargets.Validate(); err != nil {
+			invalidParams.AddNested("DeploymentTargets", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.OperationPreferences != nil {
 		if err := s.OperationPreferences.Validate(); err != nil {
 			invalidParams.AddNested("OperationPreferences", err.(request.ErrInvalidParams))
@@ -7745,6 +7750,11 @@ func (s *DeleteStackInstancesInput) Validate() error {
 	if s.StackSetName == nil {
 		invalidParams.Add(request.NewErrParamRequired("StackSetName"))
 	}
+	if s.DeploymentTargets != nil {
+		if err := s.DeploymentTargets.Validate(); err != nil {
+			invalidParams.AddNested("DeploymentTargets", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.OperationPreferences != nil {
 		if err := s.OperationPreferences.Validate(); err != nil {
 			invalidParams.AddNested("OperationPreferences", err.(request.ErrInvalidParams))
@@ -7931,6 +7941,8 @@ type DeploymentTargets struct {
 	// set updates.
 	Accounts []*string `type:"list"`
 
+	AccountsUrl *string `min:"1" type:"string"`
+
 	// The organization root ID or organizational unit (OU) IDs to which StackSets
 	// deploys.
 	OrganizationalUnitIds []*string `type:"list"`
@@ -7946,9 +7958,28 @@ func (s DeploymentTargets) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeploymentTargets) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeploymentTargets"}
+	if s.AccountsUrl != nil && len(*s.AccountsUrl) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountsUrl", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // SetAccounts sets the Accounts field's value.
 func (s *DeploymentTargets) SetAccounts(v []*string) *DeploymentTargets {
 	s.Accounts = v
+	return s
+}
+
+// SetAccountsUrl sets the AccountsUrl field's value.
+func (s *DeploymentTargets) SetAccountsUrl(v string) *DeploymentTargets {
+	s.AccountsUrl = &v
 	return s
 }
 
@@ -15644,6 +15675,8 @@ type StackSetOperationPreferences struct {
 	// but not both.
 	MaxConcurrentPercentage *int64 `min:"1" type:"integer"`
 
+	RegionConcurrencyType *string `type:"string" enum:"RegionConcurrencyType"`
+
 	// The order of the Regions in where you want to perform the stack operation.
 	RegionOrder []*string `type:"list"`
 }
@@ -15695,6 +15728,12 @@ func (s *StackSetOperationPreferences) SetMaxConcurrentCount(v int64) *StackSetO
 // SetMaxConcurrentPercentage sets the MaxConcurrentPercentage field's value.
 func (s *StackSetOperationPreferences) SetMaxConcurrentPercentage(v int64) *StackSetOperationPreferences {
 	s.MaxConcurrentPercentage = &v
+	return s
+}
+
+// SetRegionConcurrencyType sets the RegionConcurrencyType field's value.
+func (s *StackSetOperationPreferences) SetRegionConcurrencyType(v string) *StackSetOperationPreferences {
+	s.RegionConcurrencyType = &v
 	return s
 }
 
@@ -16955,6 +16994,11 @@ func (s *UpdateStackInstancesInput) Validate() error {
 	if s.StackSetName == nil {
 		invalidParams.Add(request.NewErrParamRequired("StackSetName"))
 	}
+	if s.DeploymentTargets != nil {
+		if err := s.DeploymentTargets.Validate(); err != nil {
+			invalidParams.AddNested("DeploymentTargets", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.OperationPreferences != nil {
 		if err := s.OperationPreferences.Validate(); err != nil {
 			invalidParams.AddNested("OperationPreferences", err.(request.ErrInvalidParams))
@@ -17333,6 +17377,11 @@ func (s *UpdateStackSetInput) Validate() error {
 	}
 	if s.TemplateURL != nil && len(*s.TemplateURL) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("TemplateURL", 1))
+	}
+	if s.DeploymentTargets != nil {
+		if err := s.DeploymentTargets.Validate(); err != nil {
+			invalidParams.AddNested("DeploymentTargets", err.(request.ErrInvalidParams))
+		}
 	}
 	if s.OperationPreferences != nil {
 		if err := s.OperationPreferences.Validate(); err != nil {
@@ -18104,6 +18153,22 @@ func ProvisioningType_Values() []string {
 		ProvisioningTypeNonProvisionable,
 		ProvisioningTypeImmutable,
 		ProvisioningTypeFullyMutable,
+	}
+}
+
+const (
+	// RegionConcurrencyTypeSequential is a RegionConcurrencyType enum value
+	RegionConcurrencyTypeSequential = "SEQUENTIAL"
+
+	// RegionConcurrencyTypeParallel is a RegionConcurrencyType enum value
+	RegionConcurrencyTypeParallel = "PARALLEL"
+)
+
+// RegionConcurrencyType_Values returns all elements of the RegionConcurrencyType enum
+func RegionConcurrencyType_Values() []string {
+	return []string{
+		RegionConcurrencyTypeSequential,
+		RegionConcurrencyTypeParallel,
 	}
 }
 
