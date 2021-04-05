@@ -36,7 +36,7 @@ type EventBridgeRule struct {
 	Lifecycle *fi.Lifecycle
 
 	EventPattern *string
-	TargetArn    *string
+	TargetArn    *string // required for cloudformation rendering
 
 	Tags map[string]string
 }
@@ -69,11 +69,19 @@ func (eb *EventBridgeRule) Find(c *fi.Context) (*EventBridgeRule, error) {
 	}
 
 	rule := response.Rules[0]
+
+	tagResponse, err := cloud.EventBridge().ListTagsForResource(&eventbridge.ListTagsForResourceInput{ResourceARN: rule.Arn})
+	if err != nil {
+		return nil, fmt.Errorf("error listing tags for EventBridge rule: %v", err)
+	}
+
 	actual := &EventBridgeRule{
 		ID:           eb.ID,
 		Name:         eb.Name,
 		Lifecycle:    eb.Lifecycle,
 		EventPattern: rule.EventPattern,
+		TargetArn:    eb.TargetArn,
+		Tags:         mapEventBridgeTagsToMap(tagResponse.Tags),
 	}
 	return actual, nil
 }

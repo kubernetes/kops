@@ -1,16 +1,16 @@
 {
   "Resources": {
-    "AWSAutoScalingAutoScalingGroupmasterustest1amastersqueueprocessorexamplecom": {
+    "AWSAutoScalingAutoScalingGroupmasterustest1amastersnthsqsresourcesexamplecom": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
-        "AutoScalingGroupName": "master-us-test-1a.masters.queueprocessor.example.com",
+        "AutoScalingGroupName": "master-us-test-1a.masters.nthsqsresources.example.com",
         "LaunchTemplate": {
           "LaunchTemplateId": {
-            "Ref": "AWSEC2LaunchTemplatemasterustest1amastersqueueprocessorexamplecom"
+            "Ref": "AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourcesexamplecom"
           },
           "Version": {
             "Fn::GetAtt": [
-              "AWSEC2LaunchTemplatemasterustest1amastersqueueprocessorexamplecom",
+              "AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourcesexamplecom",
               "LatestVersionNumber"
             ]
           }
@@ -19,18 +19,18 @@
         "MinSize": "1",
         "VPCZoneIdentifier": [
           {
-            "Ref": "AWSEC2Subnetustest1aqueueprocessorexamplecom"
+            "Ref": "AWSEC2Subnetustest1anthsqsresourcesexamplecom"
           }
         ],
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "queueprocessor.example.com",
+            "Value": "nthsqsresources.example.com",
             "PropagateAtLaunch": true
           },
           {
             "Key": "Name",
-            "Value": "master-us-test-1a.masters.queueprocessor.example.com",
+            "Value": "master-us-test-1a.masters.nthsqsresources.example.com",
             "PropagateAtLaunch": true
           },
           {
@@ -74,7 +74,7 @@
             "PropagateAtLaunch": true
           },
           {
-            "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
             "Value": "owned",
             "PropagateAtLaunch": true
           }
@@ -96,17 +96,17 @@
         ]
       }
     },
-    "AWSAutoScalingAutoScalingGroupnodesqueueprocessorexamplecom": {
+    "AWSAutoScalingAutoScalingGroupnodesnthsqsresourcesexamplecom": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
-        "AutoScalingGroupName": "nodes.queueprocessor.example.com",
+        "AutoScalingGroupName": "nodes.nthsqsresources.example.com",
         "LaunchTemplate": {
           "LaunchTemplateId": {
-            "Ref": "AWSEC2LaunchTemplatenodesqueueprocessorexamplecom"
+            "Ref": "AWSEC2LaunchTemplatenodesnthsqsresourcesexamplecom"
           },
           "Version": {
             "Fn::GetAtt": [
-              "AWSEC2LaunchTemplatenodesqueueprocessorexamplecom",
+              "AWSEC2LaunchTemplatenodesnthsqsresourcesexamplecom",
               "LatestVersionNumber"
             ]
           }
@@ -115,18 +115,18 @@
         "MinSize": "2",
         "VPCZoneIdentifier": [
           {
-            "Ref": "AWSEC2Subnetustest1aqueueprocessorexamplecom"
+            "Ref": "AWSEC2Subnetustest1anthsqsresourcesexamplecom"
           }
         ],
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "queueprocessor.example.com",
+            "Value": "nthsqsresources.example.com",
             "PropagateAtLaunch": true
           },
           {
             "Key": "Name",
-            "Value": "nodes.queueprocessor.example.com",
+            "Value": "nodes.nthsqsresources.example.com",
             "PropagateAtLaunch": true
           },
           {
@@ -155,7 +155,7 @@
             "PropagateAtLaunch": true
           },
           {
-            "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
             "Value": "owned",
             "PropagateAtLaunch": true
           }
@@ -182,7 +182,7 @@
       "Properties": {
         "LifecycleHookName": "master-us-test-1a-NTHLifecycleHook",
         "AutoScalingGroupName": {
-          "Ref": "AWSAutoScalingAutoScalingGroupmasterustest1amastersqueueprocessorexamplecom"
+          "Ref": "AWSAutoScalingAutoScalingGroupmasterustest1amastersnthsqsresourcesexamplecom"
         },
         "DefaultResult": "CONTINUE",
         "HeartbeatTimeout": 300,
@@ -194,14 +194,14 @@
       "Properties": {
         "LifecycleHookName": "nodes-NTHLifecycleHook",
         "AutoScalingGroupName": {
-          "Ref": "AWSAutoScalingAutoScalingGroupnodesqueueprocessorexamplecom"
+          "Ref": "AWSAutoScalingAutoScalingGroupnodesnthsqsresourcesexamplecom"
         },
         "DefaultResult": "CONTINUE",
         "HeartbeatTimeout": 300,
         "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING"
       }
     },
-    "AWSEC2DHCPOptionsqueueprocessorexamplecom": {
+    "AWSEC2DHCPOptionsnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::DHCPOptions",
       "Properties": {
         "DomainName": "us-test-1.compute.internal",
@@ -211,42 +211,42 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "queueprocessor.example.com"
+            "Value": "nthsqsresources.example.com"
           },
           {
             "Key": "Name",
-            "Value": "queueprocessor.example.com"
+            "Value": "nthsqsresources.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2InternetGatewayqueueprocessorexamplecom": {
+    "AWSEC2InternetGatewaynthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::InternetGateway",
       "Properties": {
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "queueprocessor.example.com"
+            "Value": "nthsqsresources.example.com"
           },
           {
             "Key": "Name",
-            "Value": "queueprocessor.example.com"
+            "Value": "nthsqsresources.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2LaunchTemplatemasterustest1amastersqueueprocessorexamplecom": {
+    "AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::LaunchTemplate",
       "Properties": {
-        "LaunchTemplateName": "master-us-test-1a.masters.queueprocessor.example.com",
+        "LaunchTemplateName": "master-us-test-1a.masters.nthsqsresources.example.com",
         "LaunchTemplateData": {
           "BlockDeviceMappings": [
             {
@@ -267,12 +267,12 @@
           ],
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilemastersqueueprocessorexamplecom"
+              "Ref": "AWSIAMInstanceProfilemastersnthsqsresourcesexamplecom"
             }
           },
           "ImageId": "ami-12345678",
           "InstanceType": "m3.medium",
-          "KeyName": "kubernetes.queueprocessor.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "KeyName": "kubernetes.nthsqsresources.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
           "MetadataOptions": {
             "HttpPutResponseHopLimit": 1,
             "HttpTokens": "optional"
@@ -284,7 +284,7 @@
               "DeviceIndex": 0,
               "Groups": [
                 {
-                  "Ref": "AWSEC2SecurityGroupmastersqueueprocessorexamplecom"
+                  "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
                 }
               ]
             }
@@ -295,11 +295,11 @@
               "Tags": [
                 {
                   "Key": "KubernetesCluster",
-                  "Value": "queueprocessor.example.com"
+                  "Value": "nthsqsresources.example.com"
                 },
                 {
                   "Key": "Name",
-                  "Value": "master-us-test-1a.masters.queueprocessor.example.com"
+                  "Value": "master-us-test-1a.masters.nthsqsresources.example.com"
                 },
                 {
                   "Key": "aws-node-termination-handler/managed",
@@ -334,7 +334,7 @@
                   "Value": "master-us-test-1a"
                 },
                 {
-                  "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+                  "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
                   "Value": "owned"
                 }
               ]
@@ -344,11 +344,11 @@
               "Tags": [
                 {
                   "Key": "KubernetesCluster",
-                  "Value": "queueprocessor.example.com"
+                  "Value": "nthsqsresources.example.com"
                 },
                 {
                   "Key": "Name",
-                  "Value": "master-us-test-1a.masters.queueprocessor.example.com"
+                  "Value": "master-us-test-1a.masters.nthsqsresources.example.com"
                 },
                 {
                   "Key": "aws-node-termination-handler/managed",
@@ -383,7 +383,7 @@
                   "Value": "master-us-test-1a"
                 },
                 {
-                  "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+                  "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
                   "Value": "owned"
                 }
               ]
@@ -393,10 +393,10 @@
         }
       }
     },
-    "AWSEC2LaunchTemplatenodesqueueprocessorexamplecom": {
+    "AWSEC2LaunchTemplatenodesnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::LaunchTemplate",
       "Properties": {
-        "LaunchTemplateName": "nodes.queueprocessor.example.com",
+        "LaunchTemplateName": "nodes.nthsqsresources.example.com",
         "LaunchTemplateData": {
           "BlockDeviceMappings": [
             {
@@ -413,12 +413,12 @@
           ],
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilenodesqueueprocessorexamplecom"
+              "Ref": "AWSIAMInstanceProfilenodesnthsqsresourcesexamplecom"
             }
           },
           "ImageId": "ami-12345678",
           "InstanceType": "t2.medium",
-          "KeyName": "kubernetes.queueprocessor.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "KeyName": "kubernetes.nthsqsresources.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
           "MetadataOptions": {
             "HttpPutResponseHopLimit": 1,
             "HttpTokens": "optional"
@@ -430,7 +430,7 @@
               "DeviceIndex": 0,
               "Groups": [
                 {
-                  "Ref": "AWSEC2SecurityGroupnodesqueueprocessorexamplecom"
+                  "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
                 }
               ]
             }
@@ -441,11 +441,11 @@
               "Tags": [
                 {
                   "Key": "KubernetesCluster",
-                  "Value": "queueprocessor.example.com"
+                  "Value": "nthsqsresources.example.com"
                 },
                 {
                   "Key": "Name",
-                  "Value": "nodes.queueprocessor.example.com"
+                  "Value": "nodes.nthsqsresources.example.com"
                 },
                 {
                   "Key": "aws-node-termination-handler/managed",
@@ -468,7 +468,7 @@
                   "Value": "nodes"
                 },
                 {
-                  "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+                  "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
                   "Value": "owned"
                 }
               ]
@@ -478,11 +478,11 @@
               "Tags": [
                 {
                   "Key": "KubernetesCluster",
-                  "Value": "queueprocessor.example.com"
+                  "Value": "nthsqsresources.example.com"
                 },
                 {
                   "Key": "Name",
-                  "Value": "nodes.queueprocessor.example.com"
+                  "Value": "nodes.nthsqsresources.example.com"
                 },
                 {
                   "Key": "aws-node-termination-handler/managed",
@@ -505,7 +505,7 @@
                   "Value": "nodes"
                 },
                 {
-                  "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+                  "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
                   "Value": "owned"
                 }
               ]
@@ -519,31 +519,31 @@
       "Type": "AWS::EC2::Route",
       "Properties": {
         "RouteTableId": {
-          "Ref": "AWSEC2RouteTablequeueprocessorexamplecom"
+          "Ref": "AWSEC2RouteTablenthsqsresourcesexamplecom"
         },
         "DestinationCidrBlock": "0.0.0.0/0",
         "GatewayId": {
-          "Ref": "AWSEC2InternetGatewayqueueprocessorexamplecom"
+          "Ref": "AWSEC2InternetGatewaynthsqsresourcesexamplecom"
         }
       }
     },
-    "AWSEC2RouteTablequeueprocessorexamplecom": {
+    "AWSEC2RouteTablenthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCqueueprocessorexamplecom"
+          "Ref": "AWSEC2VPCnthsqsresourcesexamplecom"
         },
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "queueprocessor.example.com"
+            "Value": "nthsqsresources.example.com"
           },
           {
             "Key": "Name",
-            "Value": "queueprocessor.example.com"
+            "Value": "nthsqsresources.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
             "Value": "owned"
           },
           {
@@ -553,11 +553,11 @@
         ]
       }
     },
-    "AWSEC2SecurityGroupEgressfrommastersqueueprocessorexamplecomegressall0to000000": {
+    "AWSEC2SecurityGroupEgressfrommastersnthsqsresourcesexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
@@ -565,11 +565,11 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupEgressfromnodesqueueprocessorexamplecomegressall0to000000": {
+    "AWSEC2SecurityGroupEgressfromnodesnthsqsresourcesexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
@@ -577,11 +577,11 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22mastersqueueprocessorexamplecom": {
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22mastersnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
         },
         "FromPort": 22,
         "ToPort": 22,
@@ -589,11 +589,11 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22nodesqueueprocessorexamplecom": {
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22nodesnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
         },
         "FromPort": 22,
         "ToPort": 22,
@@ -601,11 +601,11 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressfrom00000ingresstcp443to443mastersqueueprocessorexamplecom": {
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp443to443mastersnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
         },
         "FromPort": 443,
         "ToPort": 443,
@@ -613,186 +613,186 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressfrommastersqueueprocessorexamplecomingressall0to0mastersqueueprocessorexamplecom": {
+    "AWSEC2SecurityGroupIngressfrommastersnthsqsresourcesexamplecomingressall0to0mastersnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
         "IpProtocol": "-1"
       }
     },
-    "AWSEC2SecurityGroupIngressfrommastersqueueprocessorexamplecomingressall0to0nodesqueueprocessorexamplecom": {
+    "AWSEC2SecurityGroupIngressfrommastersnthsqsresourcesexamplecomingressall0to0nodesnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
         "IpProtocol": "-1"
       }
     },
-    "AWSEC2SecurityGroupIngressfromnodesqueueprocessorexamplecomingressall0to0nodesqueueprocessorexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesnthsqsresourcesexamplecomingressall0to0nodesnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
         "IpProtocol": "-1"
       }
     },
-    "AWSEC2SecurityGroupIngressfromnodesqueueprocessorexamplecomingresstcp1to2379mastersqueueprocessorexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesnthsqsresourcesexamplecomingresstcp1to2379mastersnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
         },
         "FromPort": 1,
         "ToPort": 2379,
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressfromnodesqueueprocessorexamplecomingresstcp2382to4000mastersqueueprocessorexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesnthsqsresourcesexamplecomingresstcp2382to4000mastersnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
         },
         "FromPort": 2382,
         "ToPort": 4000,
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressfromnodesqueueprocessorexamplecomingresstcp4003to65535mastersqueueprocessorexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesnthsqsresourcesexamplecomingresstcp4003to65535mastersnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
         },
         "FromPort": 4003,
         "ToPort": 65535,
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressfromnodesqueueprocessorexamplecomingressudp1to65535mastersqueueprocessorexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesnthsqsresourcesexamplecomingressudp1to65535mastersnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesqueueprocessorexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
         },
         "FromPort": 1,
         "ToPort": 65535,
         "IpProtocol": "udp"
       }
     },
-    "AWSEC2SecurityGroupmastersqueueprocessorexamplecom": {
+    "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupName": "masters.queueprocessor.example.com",
+        "GroupName": "masters.nthsqsresources.example.com",
         "VpcId": {
-          "Ref": "AWSEC2VPCqueueprocessorexamplecom"
+          "Ref": "AWSEC2VPCnthsqsresourcesexamplecom"
         },
         "GroupDescription": "Security group for masters",
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "queueprocessor.example.com"
+            "Value": "nthsqsresources.example.com"
           },
           {
             "Key": "Name",
-            "Value": "masters.queueprocessor.example.com"
+            "Value": "masters.nthsqsresources.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2SecurityGroupnodesqueueprocessorexamplecom": {
+    "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupName": "nodes.queueprocessor.example.com",
+        "GroupName": "nodes.nthsqsresources.example.com",
         "VpcId": {
-          "Ref": "AWSEC2VPCqueueprocessorexamplecom"
+          "Ref": "AWSEC2VPCnthsqsresourcesexamplecom"
         },
         "GroupDescription": "Security group for nodes",
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "queueprocessor.example.com"
+            "Value": "nthsqsresources.example.com"
           },
           {
             "Key": "Name",
-            "Value": "nodes.queueprocessor.example.com"
+            "Value": "nodes.nthsqsresources.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2SubnetRouteTableAssociationustest1aqueueprocessorexamplecom": {
+    "AWSEC2SubnetRouteTableAssociationustest1anthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
         "SubnetId": {
-          "Ref": "AWSEC2Subnetustest1aqueueprocessorexamplecom"
+          "Ref": "AWSEC2Subnetustest1anthsqsresourcesexamplecom"
         },
         "RouteTableId": {
-          "Ref": "AWSEC2RouteTablequeueprocessorexamplecom"
+          "Ref": "AWSEC2RouteTablenthsqsresourcesexamplecom"
         }
       }
     },
-    "AWSEC2Subnetustest1aqueueprocessorexamplecom": {
+    "AWSEC2Subnetustest1anthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCqueueprocessorexamplecom"
+          "Ref": "AWSEC2VPCnthsqsresourcesexamplecom"
         },
         "CidrBlock": "172.20.32.0/19",
         "AvailabilityZone": "us-test-1a",
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "queueprocessor.example.com"
+            "Value": "nthsqsresources.example.com"
           },
           {
             "Key": "Name",
-            "Value": "us-test-1a.queueprocessor.example.com"
+            "Value": "us-test-1a.nthsqsresources.example.com"
           },
           {
             "Key": "SubnetType",
             "Value": "Public"
           },
           {
-            "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
             "Value": "owned"
           },
           {
@@ -802,29 +802,29 @@
         ]
       }
     },
-    "AWSEC2VPCDHCPOptionsAssociationqueueprocessorexamplecom": {
+    "AWSEC2VPCDHCPOptionsAssociationnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::VPCDHCPOptionsAssociation",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCqueueprocessorexamplecom"
+          "Ref": "AWSEC2VPCnthsqsresourcesexamplecom"
         },
         "DhcpOptionsId": {
-          "Ref": "AWSEC2DHCPOptionsqueueprocessorexamplecom"
+          "Ref": "AWSEC2DHCPOptionsnthsqsresourcesexamplecom"
         }
       }
     },
-    "AWSEC2VPCGatewayAttachmentqueueprocessorexamplecom": {
+    "AWSEC2VPCGatewayAttachmentnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::VPCGatewayAttachment",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCqueueprocessorexamplecom"
+          "Ref": "AWSEC2VPCnthsqsresourcesexamplecom"
         },
         "InternetGatewayId": {
-          "Ref": "AWSEC2InternetGatewayqueueprocessorexamplecom"
+          "Ref": "AWSEC2InternetGatewaynthsqsresourcesexamplecom"
         }
       }
     },
-    "AWSEC2VPCqueueprocessorexamplecom": {
+    "AWSEC2VPCnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::VPC",
       "Properties": {
         "CidrBlock": "172.20.0.0/16",
@@ -833,20 +833,20 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "queueprocessor.example.com"
+            "Value": "nthsqsresources.example.com"
           },
           {
             "Key": "Name",
-            "Value": "queueprocessor.example.com"
+            "Value": "nthsqsresources.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2Volumeustest1aetcdeventsqueueprocessorexamplecom": {
+    "AWSEC2Volumeustest1aetcdeventsnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::Volume",
       "Properties": {
         "AvailabilityZone": "us-test-1a",
@@ -858,11 +858,11 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "queueprocessor.example.com"
+            "Value": "nthsqsresources.example.com"
           },
           {
             "Key": "Name",
-            "Value": "us-test-1a.etcd-events.queueprocessor.example.com"
+            "Value": "us-test-1a.etcd-events.nthsqsresources.example.com"
           },
           {
             "Key": "k8s.io/etcd/events",
@@ -873,13 +873,13 @@
             "Value": "1"
           },
           {
-            "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2Volumeustest1aetcdmainqueueprocessorexamplecom": {
+    "AWSEC2Volumeustest1aetcdmainnthsqsresourcesexamplecom": {
       "Type": "AWS::EC2::Volume",
       "Properties": {
         "AvailabilityZone": "us-test-1a",
@@ -891,11 +891,11 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "queueprocessor.example.com"
+            "Value": "nthsqsresources.example.com"
           },
           {
             "Key": "Name",
-            "Value": "us-test-1a.etcd-main.queueprocessor.example.com"
+            "Value": "us-test-1a.etcd-main.nthsqsresources.example.com"
           },
           {
             "Key": "k8s.io/etcd/main",
@@ -906,16 +906,16 @@
             "Value": "1"
           },
           {
-            "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEventsRulequeueprocessorexamplecomASGLifecycle": {
+    "AWSEventsRulenthsqsresourcesexamplecomASGLifecycle": {
       "Type": "AWS::Events::Rule",
       "Properties": {
-        "Name": "queueprocessor.example.com-ASGLifecycle",
+        "Name": "nthsqsresources.example.com-ASGLifecycle",
         "EventPattern": {
           "detail-type": [
             "EC2 Instance-terminate Lifecycle Action"
@@ -927,15 +927,15 @@
         "Targets": [
           {
             "Id": "1",
-            "Arn": "arn:aws:sqs:us-test-1:123456789012:queueprocessor-example-com-nth"
+            "Arn": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-example-com-nth"
           }
         ]
       }
     },
-    "AWSEventsRulequeueprocessorexamplecomRebalanceRecommendation": {
+    "AWSEventsRulenthsqsresourcesexamplecomRebalanceRecommendation": {
       "Type": "AWS::Events::Rule",
       "Properties": {
-        "Name": "queueprocessor.example.com-RebalanceRecommendation",
+        "Name": "nthsqsresources.example.com-RebalanceRecommendation",
         "EventPattern": {
           "detail-type": [
             "EC2 Instance Rebalance Recommendation"
@@ -947,15 +947,15 @@
         "Targets": [
           {
             "Id": "1",
-            "Arn": "arn:aws:sqs:us-test-1:123456789012:queueprocessor-example-com-nth"
+            "Arn": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-example-com-nth"
           }
         ]
       }
     },
-    "AWSEventsRulequeueprocessorexamplecomSpotInterruption": {
+    "AWSEventsRulenthsqsresourcesexamplecomSpotInterruption": {
       "Type": "AWS::Events::Rule",
       "Properties": {
-        "Name": "queueprocessor.example.com-SpotInterruption",
+        "Name": "nthsqsresources.example.com-SpotInterruption",
         "EventPattern": {
           "detail-type": [
             "EC2 Spot Instance Interruption Warning"
@@ -967,40 +967,40 @@
         "Targets": [
           {
             "Id": "1",
-            "Arn": "arn:aws:sqs:us-test-1:123456789012:queueprocessor-example-com-nth"
+            "Arn": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-example-com-nth"
           }
         ]
       }
     },
-    "AWSIAMInstanceProfilemastersqueueprocessorexamplecom": {
+    "AWSIAMInstanceProfilemastersnthsqsresourcesexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "masters.queueprocessor.example.com",
+        "InstanceProfileName": "masters.nthsqsresources.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemastersqueueprocessorexamplecom"
+            "Ref": "AWSIAMRolemastersnthsqsresourcesexamplecom"
           }
         ]
       }
     },
-    "AWSIAMInstanceProfilenodesqueueprocessorexamplecom": {
+    "AWSIAMInstanceProfilenodesnthsqsresourcesexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "nodes.queueprocessor.example.com",
+        "InstanceProfileName": "nodes.nthsqsresources.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolenodesqueueprocessorexamplecom"
+            "Ref": "AWSIAMRolenodesnthsqsresourcesexamplecom"
           }
         ]
       }
     },
-    "AWSIAMPolicymastersqueueprocessorexamplecom": {
+    "AWSIAMPolicymastersnthsqsresourcesexamplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "masters.queueprocessor.example.com",
+        "PolicyName": "masters.nthsqsresources.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemastersqueueprocessorexamplecom"
+            "Ref": "AWSIAMRolemastersnthsqsresourcesexamplecom"
           }
         ],
         "PolicyDocument": {
@@ -1048,7 +1048,7 @@
               ],
               "Condition": {
                 "StringEquals": {
-                  "ec2:ResourceTag/KubernetesCluster": "queueprocessor.example.com"
+                  "ec2:ResourceTag/KubernetesCluster": "nthsqsresources.example.com"
                 }
               },
               "Effect": "Allow",
@@ -1076,7 +1076,7 @@
               ],
               "Condition": {
                 "StringEquals": {
-                  "autoscaling:ResourceTag/KubernetesCluster": "queueprocessor.example.com"
+                  "autoscaling:ResourceTag/KubernetesCluster": "nthsqsresources.example.com"
                 }
               },
               "Effect": "Allow",
@@ -1187,13 +1187,13 @@
         }
       }
     },
-    "AWSIAMPolicynodesqueueprocessorexamplecom": {
+    "AWSIAMPolicynodesnthsqsresourcesexamplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "nodes.queueprocessor.example.com",
+        "PolicyName": "nodes.nthsqsresources.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolenodesqueueprocessorexamplecom"
+            "Ref": "AWSIAMRolenodesnthsqsresourcesexamplecom"
           }
         ],
         "PolicyDocument": {
@@ -1213,10 +1213,10 @@
         }
       }
     },
-    "AWSIAMRolemastersqueueprocessorexamplecom": {
+    "AWSIAMRolemastersnthsqsresourcesexamplecom": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "masters.queueprocessor.example.com",
+        "RoleName": "masters.nthsqsresources.example.com",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -1232,23 +1232,23 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "queueprocessor.example.com"
+            "Value": "nthsqsresources.example.com"
           },
           {
             "Key": "Name",
-            "Value": "masters.queueprocessor.example.com"
+            "Value": "masters.nthsqsresources.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSIAMRolenodesqueueprocessorexamplecom": {
+    "AWSIAMRolenodesnthsqsresourcesexamplecom": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "nodes.queueprocessor.example.com",
+        "RoleName": "nodes.nthsqsresources.example.com",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -1264,25 +1264,25 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "queueprocessor.example.com"
+            "Value": "nthsqsresources.example.com"
           },
           {
             "Key": "Name",
-            "Value": "nodes.queueprocessor.example.com"
+            "Value": "nodes.nthsqsresources.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSSQSQueuePolicyqueueprocessorexamplecomnthPolicy": {
+    "AWSSQSQueuePolicynthsqsresourcesexamplecomnthPolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
         "Queues": [
           {
-            "Ref": "AWSSQSQueuequeueprocessorexamplecomnth"
+            "Ref": "AWSSQSQueuenthsqsresourcesexamplecomnth"
           }
         ],
         "PolicyDocument": {
@@ -1297,7 +1297,7 @@
                 ]
               },
               "Resource": [
-                "arn:aws:sqs:us-test-1:123456789012:queueprocessor-example-com-nth"
+                "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-example-com-nth"
               ]
             }
           ],
@@ -1305,22 +1305,22 @@
         }
       }
     },
-    "AWSSQSQueuequeueprocessorexamplecomnth": {
+    "AWSSQSQueuenthsqsresourcesexamplecomnth": {
       "Type": "AWS::SQS::Queue",
       "Properties": {
-        "QueueName": "queueprocessor-example-com-nth",
+        "QueueName": "nthsqsresources-example-com-nth",
         "MessageRetentionPeriod": 300,
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "queueprocessor.example.com"
+            "Value": "nthsqsresources.example.com"
           },
           {
             "Key": "Name",
-            "Value": "queueprocessor-example-com-nth"
+            "Value": "nthsqsresources-example-com-nth"
           },
           {
-            "Key": "kubernetes.io/cluster/queueprocessor.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
             "Value": "owned"
           }
         ]

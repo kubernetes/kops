@@ -36,8 +36,6 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/kops/pkg/model"
-
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/jsonutils"
@@ -396,9 +394,10 @@ func TestAPIServerNodes(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "apiservernodes").runTestCloudformation(t)
 }
 
+// TestNTHQueueProcessor tests the output for resources required by NTH Queue Processor mode
 func TestNTHQueueProcessor(t *testing.T) {
-	newIntegrationTest("queueprocessor.example.com", "nodeterminationhandler_sqs_resources").withNTH().runTestTerraformAWS(t)
-	newIntegrationTest("queueprocessor.example.com", "nodeterminationhandler_sqs_resources").runTestCloudformation(t)
+	newIntegrationTest("nthsqsresources.example.com", "nth_sqs_resources").withNTH().runTestTerraformAWS(t)
+	newIntegrationTest("nthsqsresources.example.com", "nth_sqs_resources").runTestCloudformation(t)
 }
 
 func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
@@ -598,7 +597,7 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 				"aws_cloudwatch_event_rule_" + i.clusterName + "-ASGLifecycle_event_pattern",
 				"aws_cloudwatch_event_rule_" + i.clusterName + "-RebalanceRecommendation_event_pattern",
 				"aws_cloudwatch_event_rule_" + i.clusterName + "-SpotInterruption_event_pattern",
-				"aws_sqs_queue_" + model.QueueNamePrefix(i.clusterName) + "-nth_policy",
+				"aws_sqs_queue_" + strings.Replace(i.clusterName, ".", "-", -1) + "-nth_policy",
 			}...)
 		}
 	}
