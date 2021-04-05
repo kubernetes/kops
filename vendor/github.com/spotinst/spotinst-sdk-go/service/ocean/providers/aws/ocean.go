@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
@@ -286,6 +287,12 @@ type Progress struct {
 	Value *float64 `json:"value,omitempty"`
 }
 
+type LogEvent struct {
+	Message   *string    `json:"message,omitempty"`
+	Severity  *string    `json:"severity,omitempty"`
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+}
+
 type ListRollsInput struct {
 	ClusterID *string `json:"clusterId,omitempty"`
 }
@@ -317,6 +324,19 @@ type UpdateRollInput struct {
 
 type UpdateRollOutput struct {
 	Roll *RollStatus `json:"roll,omitempty"`
+}
+
+type GetLogEventsInput struct {
+	ClusterID  *string `json:"clusterId,omitempty"`
+	FromDate   *string `json:"fromDate,omitempty"`
+	ToDate     *string `json:"toDate,omitempty"`
+	ResourceID *string `json:"resourceId,omitempty"`
+	Severity   *string `json:"severity,omitempty"`
+	Limit      *int    `json:"limit,omitempty"`
+}
+
+type GetLogEventsOutput struct {
+	Events []*LogEvent `json:"events,omitempty"`
 }
 
 func clusterFromJSON(in []byte) (*Cluster, error) {
@@ -422,6 +442,41 @@ func rollStatusesFromHttpResponse(resp *http.Response) ([]*RollStatus, error) {
 		return nil, err
 	}
 	return rollStatusesFromJSON(body)
+}
+
+func logEventFromJSON(in []byte) (*LogEvent, error) {
+	b := new(LogEvent)
+	if err := json.Unmarshal(in, b); err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+func logEventsFromJSON(in []byte) ([]*LogEvent, error) {
+	var rw client.Response
+	if err := json.Unmarshal(in, &rw); err != nil {
+		return nil, err
+	}
+	out := make([]*LogEvent, len(rw.Response.Items))
+	if len(out) == 0 {
+		return out, nil
+	}
+	for i, rb := range rw.Response.Items {
+		b, err := logEventFromJSON(rb)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = b
+	}
+	return out, nil
+}
+
+func logEventsFromHttpResponse(resp *http.Response) ([]*LogEvent, error) {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return logEventsFromJSON(body)
 }
 
 func (s *ServiceOp) ListClusters(ctx context.Context, input *ListClustersInput) (*ListClustersOutput, error) {
@@ -541,6 +596,50 @@ func (s *ServiceOp) DeleteCluster(ctx context.Context, input *DeleteClusterInput
 	defer resp.Body.Close()
 
 	return &DeleteClusterOutput{}, nil
+}
+
+func (s *ServiceOp) GetLogEvents(ctx context.Context, input *GetLogEventsInput) (*GetLogEventsOutput, error) {
+	path, err := uritemplates.Expand("/ocean/aws/k8s/cluster/{clusterId}/log", uritemplates.Values{
+		"clusterId": spotinst.StringValue(input.ClusterID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	r := client.NewRequest(http.MethodGet, path)
+
+	if input.FromDate != nil {
+		r.Params.Set("fromDate", spotinst.StringValue(input.FromDate))
+	}
+
+	if input.ToDate != nil {
+		r.Params.Set("toDate", spotinst.StringValue(input.ToDate))
+	}
+
+	if input.ResourceID != nil {
+		r.Params.Set("resourceId", spotinst.StringValue(input.ResourceID))
+	}
+
+	if input.Severity != nil {
+		r.Params.Set("severity", spotinst.StringValue(input.Severity))
+	}
+
+	if input.Limit != nil {
+		r.Params.Set("limit", strconv.Itoa(spotinst.IntValue(input.Limit)))
+	}
+
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	events, err := logEventsFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &GetLogEventsOutput{Events: events}, nil
 }
 
 func (s *ServiceOp) ListRolls(ctx context.Context, input *ListRollsInput) (*ListRollsOutput, error) {
