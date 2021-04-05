@@ -7,6 +7,7 @@ go_library(
         "isatty_android.go",
         "isatty_bsd.go",
         "isatty_others.go",
+        "isatty_plan9.go",
         "isatty_solaris.go",
         "isatty_tcgets.go",
         "isatty_windows.go",
