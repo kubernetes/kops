@@ -56,35 +56,48 @@ func (q *SQS) Find(c *fi.Context) (*SQS, error) {
 		return nil, nil
 	}
 
-	request := &sqs.ListQueuesInput{
+	response, err := cloud.SQS().ListQueues(&sqs.ListQueuesInput{
 		MaxResults:      aws.Int64(2),
 		QueueNamePrefix: q.Name,
-	}
-	response, err := cloud.SQS().ListQueues(request)
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error listing SQS queues: %v", err)
 	}
 	if response == nil || len(response.QueueUrls) == 0 {
 		return nil, nil
 	}
-
 	if len(response.QueueUrls) != 1 {
 		return nil, fmt.Errorf("found multiple SQS queues matching queue name")
 	}
+	url := response.QueueUrls[0]
+
+	attributes, err := cloud.SQS().GetQueueAttributes(&sqs.GetQueueAttributesInput{
+		AttributeNames: []*string{s("MessageRetentionPeriod"), s("Policy")},
+		QueueUrl:       url,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error getting SQS queue attributes: %v", err)
+	}
+	policy := fi.NewStringResource(*attributes.Attributes["Policy"])
+	period, err := strconv.Atoi(*attributes.Attributes["MessageRetentionPeriod"])
+	if err != nil {
+		return nil, fmt.Errorf("error coverting MessageRetentionPeriod to int: %v", err)
+	}
 
 	tags, err := cloud.SQS().ListQueueTags(&sqs.ListQueueTagsInput{
-		QueueUrl: q.URL,
+		QueueUrl: url,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error listing SQS queue tags: %v", err)
 	}
 
 	actual := &SQS{
-		Name:      q.Name,
-		URL:       response.QueueUrls[0],
-		Tags:      intersectSQSTags(tags.Tags, q.Tags),
-		Lifecycle: q.Lifecycle,
-		Policy:    q.Policy,
+		Name:                   q.Name,
+		URL:                    url,
+		Lifecycle:              q.Lifecycle,
+		Policy:                 policy,
+		MessageRetentionPeriod: period,
+		Tags:                   intersectSQSTags(tags.Tags, q.Tags),
 	}
 
 	return actual, nil

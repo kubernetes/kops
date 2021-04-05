@@ -21,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/eventbridge"
 	"github.com/aws/aws-sdk-go/service/iam"
 )
 
@@ -62,6 +63,20 @@ func mapToIAMTags(tags map[string]string) []*iam.Tag {
 			Key:   aws.String(k),
 			Value: aws.String(v),
 		})
+	}
+	return m
+}
+
+func mapEventBridgeTagsToMap(tags []*eventbridge.Tag) map[string]string {
+	if tags == nil {
+		return nil
+	}
+	m := make(map[string]string)
+	for _, t := range tags {
+		if strings.HasPrefix(aws.StringValue(t.Key), "aws:cloudformation:") {
+			continue
+		}
+		m[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
 	}
 	return m
 }

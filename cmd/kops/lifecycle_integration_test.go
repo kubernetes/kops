@@ -153,6 +153,14 @@ func TestLifecyclePrivateSharedIP(t *testing.T) {
 	})
 }
 
+// TestLifecycleNodeTerminationHandlerQueueProcessor runs the test on a cluster with requisite resources for NTH Queue Processor
+func TestLifecycleNodeTerminationHandlerQueueProcessor(t *testing.T) {
+	runLifecycleTestAWS(&LifecycleTestOptions{
+		t:      t,
+		SrcDir: "nth_sqs_resources",
+	})
+}
+
 func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptions, cloud *awsup.MockAWSCloud) {
 	ctx := context.Background()
 

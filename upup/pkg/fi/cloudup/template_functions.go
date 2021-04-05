@@ -216,7 +216,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["UseServiceAccountIAM"] = tf.UseServiceAccountIAM
- 
+
 	if cluster.Spec.NodeTerminationHandler != nil {
 		dest["DefaultQueueName"] = func() string {
 			s := strings.Replace(tf.ClusterName(), ".", "-", -1)

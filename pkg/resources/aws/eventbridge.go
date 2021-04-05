@@ -46,7 +46,7 @@ func DeleteEventBridgeRule(cloud fi.Cloud, r *resources.Resource) error {
 		Rule: aws.String(r.Name),
 	})
 	if err != nil {
-		return fmt.Errorf("error listing targets for EventBridge Rule %q: %v", r.Name, err)
+		return fmt.Errorf("error listing targets for EventBridge rule %q: %v", r.Name, err)
 	}
 
 	var ids []*string
@@ -54,22 +54,22 @@ func DeleteEventBridgeRule(cloud fi.Cloud, r *resources.Resource) error {
 		ids = append(ids, target.Id)
 	}
 
-	klog.V(2).Infof("Removing EventBridge Targets for Rule %q", r.Name)
+	klog.V(2).Infof("Removing EventBridge Targets for rule %q", r.Name)
 	_, err = c.EventBridge().RemoveTargets(&eventbridge.RemoveTargetsInput{
 		Ids:  ids,
 		Rule: aws.String(r.Name),
 	})
 	if err != nil {
-		return fmt.Errorf("error removing targets for EventBridge Rule %q: %v", r.Name, err)
+		return fmt.Errorf("error removing targets for EventBridge rule %q: %v", r.Name, err)
 	}
 
-	klog.V(2).Infof("Deleting EventBridge Rule %q", r.Name)
+	klog.V(2).Infof("Deleting EventBridge rule %q", r.Name)
 	request := &eventbridge.DeleteRuleInput{
 		Name: aws.String(r.Name),
 	}
 	_, err = c.EventBridge().DeleteRule(request)
 	if err != nil {
-		return fmt.Errorf("error deleting EventBridge Rule %q: %v", r.Name, err)
+		return fmt.Errorf("error deleting EventBridge rule %q: %v", r.Name, err)
 	}
 	return nil
 }
@@ -77,9 +77,9 @@ func DeleteEventBridgeRule(cloud fi.Cloud, r *resources.Resource) error {
 func ListEventBridgeRules(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 
-	klog.V(2).Infof("Listing EventBridge Rules")
+	klog.V(2).Infof("Listing EventBridge rules")
 
-	// Rule names start with the cluster name so that we can search for them
+	// rule names start with the cluster name so that we can search for them
 	request := &eventbridge.ListRulesInput{
 		EventBusName: nil,
 		Limit:        nil,
@@ -87,7 +87,7 @@ func ListEventBridgeRules(cloud fi.Cloud, clusterName string) ([]*resources.Reso
 	}
 	response, err := c.EventBridge().ListRules(request)
 	if err != nil {
-		return nil, fmt.Errorf("error listing SQS queues: %v", err)
+		return nil, fmt.Errorf("error listing Eventbridge rules: %v", err)
 	}
 	if response == nil || len(response.Rules) == 0 {
 		return nil, nil

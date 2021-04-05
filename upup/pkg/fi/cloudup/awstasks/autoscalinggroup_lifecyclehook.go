@@ -37,8 +37,6 @@ type AutoscalingLifecycleHook struct {
 	DefaultResult       *string
 	HeartbeatTimeout    *int64
 	LifecycleTransition *string
-
-	Tags map[string]string
 }
 
 var _ fi.CompareWithID = &AutoscalingLifecycleHook{}
@@ -68,10 +66,13 @@ func (h *AutoscalingLifecycleHook) Find(c *fi.Context) (*AutoscalingLifecycleHoo
 
 	hook := response.LifecycleHooks[0]
 	actual := &AutoscalingLifecycleHook{
-		ID:               hook.AutoScalingGroupName,
-		Name:             h.Name,
-		Lifecycle:        h.Lifecycle,
-		AutoscalingGroup: h.AutoscalingGroup,
+		ID:                  hook.LifecycleHookName,
+		Name:                hook.LifecycleHookName,
+		Lifecycle:           h.Lifecycle,
+		AutoscalingGroup:    h.AutoscalingGroup,
+		DefaultResult:       hook.DefaultResult,
+		HeartbeatTimeout:    hook.HeartbeatTimeout,
+		LifecycleTransition: hook.LifecycleTransition,
 	}
 
 	return actual, nil
