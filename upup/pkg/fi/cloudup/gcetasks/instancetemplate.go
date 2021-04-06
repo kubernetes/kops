@@ -32,8 +32,12 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-// terraform 0.12 with google cloud provider 3.2 will complain if the length of the name_prefix is more than 32
-const InstanceTemplateNamePrefixMaxLength = 32
+const (
+	// terraform 0.12 with google cloud provider 3.2 will complain if the length of the name_prefix is more than 32
+	InstanceTemplateNamePrefixMaxLength = 32
+
+	accessConfigOneToOneNAT = "ONE_TO_ONE_NAT"
+)
 
 // InstanceTemplate represents a GCE InstanceTemplate
 // +kops:fitask
@@ -63,6 +67,9 @@ type InstanceTemplate struct {
 
 	Metadata    map[string]fi.Resource
 	MachineType *string
+
+	// HasExternalIP is set to true when an external IP is allocated to an instance.
+	HasExternalIP *bool
 
 	// ID is the actual name
 	ID *string
@@ -132,6 +139,17 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 
 			if ni.Subnetwork != "" {
 				actual.Subnet = &Subnet{Name: fi.String(lastComponent(ni.Subnetwork))}
+			}
+
+			acs := ni.AccessConfigs
+			if len(acs) > 0 {
+				if len(acs) != 1 {
+					return nil, fmt.Errorf("unexpected number of access configs in template %q: %d", *actual.Name, len(acs))
+				}
+				if acs[0].Type != accessConfigOneToOneNAT {
+					return nil, fmt.Errorf("unexpected access type in template %q: %s", *actual.Name, acs[0].Type)
+				}
+				actual.HasExternalIP = fi.Bool(true)
 			}
 		}
 
@@ -248,15 +266,19 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 
 	var networkInterfaces []*compute.NetworkInterface
 	ni := &compute.NetworkInterface{
-		Kind: "compute#networkInterface",
-		AccessConfigs: []*compute.AccessConfig{{
-			Kind: "compute#accessConfig",
-			//NatIP: *e.IPAddress.Address,
-			Type:        "ONE_TO_ONE_NAT",
-			NetworkTier: "PREMIUM",
-		}},
+		Kind:    "compute#networkInterface",
 		Network: e.Network.URL(project),
 	}
+	if fi.BoolValue(e.HasExternalIP) {
+		ni.AccessConfigs = []*compute.AccessConfig{
+			{
+				Kind:        "compute#accessConfig",
+				Type:        accessConfigOneToOneNAT,
+				NetworkTier: "PREMIUM",
+			},
+		}
+	}
+
 	if e.Subnet != nil {
 		ni.Subnetwork = e.Subnet.URL(project, region)
 	}
@@ -284,17 +306,17 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 		},
 	}
 	// if e.ServiceAccounts != nil {
-	// 	for _, s := range e.ServiceAccounts {
-	// 		serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
-	// 			Email:  s,
-	// 			Scopes: scopes,
-	// 		})
-	// 	}
+	//	for _, s := range e.ServiceAccounts {
+	//		serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
+	//			Email:  s,
+	//			Scopes: scopes,
+	//		})
+	//	}
 	// } else {
-	// 	serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
-	// 		Email:  "default",
-	// 		Scopes: scopes,
-	// 	})
+	//	serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
+	//		Email:  "default",
+	//		Scopes: scopes,
+	//	})
 	// }
 
 	var metadataItems []*compute.MetadataItems
@@ -529,7 +551,7 @@ func addServiceAccounts(serviceAccounts []*compute.ServiceAccount) *terraformSer
 		Scopes: csa.Scopes,
 	}
 	// for _, scope := range csa.Scopes {
-	// 	tsa.Scopes = append(tsa.Scopes, scope)
+	//	tsa.Scopes = append(tsa.Scopes, scope)
 	// }
 	return tsa
 }
