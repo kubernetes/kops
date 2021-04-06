@@ -287,6 +287,68 @@ func TestValidateKubeAPIServer(t *testing.T) {
 	}
 }
 
+func TestValidateKubelet(t *testing.T) {
+
+	grid := []struct {
+		Input          kops.KubeletConfigSpec
+		Cluster        *kops.Cluster
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.KubeletConfigSpec{
+				AnonymousAuth:              fi.Bool(false),
+				AuthorizationMode:          "Webhook",
+				AuthenticationTokenWebhook: fi.Bool(true),
+			},
+		},
+		{
+			Input: kops.KubeletConfigSpec{
+				AnonymousAuth:              fi.Bool(false),
+				AuthorizationMode:          "",
+				AuthenticationTokenWebhook: nil,
+			},
+			Cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "1.18.2",
+				},
+			},
+		},
+		{
+			Input: kops.KubeletConfigSpec{
+				AnonymousAuth:              fi.Bool(true),
+				AuthorizationMode:          "Webhook",
+				AuthenticationTokenWebhook: fi.Bool(true),
+			},
+			ExpectedErrors: []string{
+				"Forbidden::kubelet.anonymousAuth",
+			},
+		},
+		{
+			Input: kops.KubeletConfigSpec{
+				AnonymousAuth:              fi.Bool(true),
+				AuthorizationMode:          "",
+				AuthenticationTokenWebhook: nil,
+			},
+			ExpectedErrors: []string{
+				"Forbidden::kubelet.anonymousAuth",
+			},
+		},
+	}
+	for _, g := range grid {
+		if g.Cluster == nil {
+			g.Cluster = &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "1.19.0",
+				},
+			}
+		}
+		errs := validateKubelet(&g.Input, g.Cluster, field.NewPath("kubelet"))
+
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+
+	}
+}
+
 func Test_Validate_DockerConfig_Storage(t *testing.T) {
 	for _, name := range []string{"aufs", "zfs", "overlay"} {
 		config := &kops.DockerConfig{Storage: &name}

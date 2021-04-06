@@ -525,6 +525,13 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 			}
 		}
 
+		// as of 1.19, we default to authorizationMode=Webhook
+		if k.AuthorizationMode != "" || c.IsKubernetesGTE("1.19") {
+			if fi.BoolValue(k.AnonymousAuth) {
+				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("anonymousAuth"), "anonymousAuth must be disabled if authorization mode is set"))
+			}
+		}
+
 		if k.BootstrapKubeconfig != "" {
 			if c.Spec.KubeAPIServer == nil {
 				allErrs = append(allErrs, field.Required(kubeletPath.Root().Child("spec").Child("kubeAPIServer"), "bootstrap token require the NodeRestriction admissions controller"))
