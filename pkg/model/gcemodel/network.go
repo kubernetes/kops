@@ -19,6 +19,7 @@ package gcemodel
 import (
 	"fmt"
 
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
@@ -64,7 +65,30 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		t.GCEName = t.Name
 		c.AddTask(t)
-
 	}
+
+	// Create a CloudNAT for private topology.
+	if b.Cluster.Spec.Topology.Masters == kops.TopologyPrivate {
+		var hasPrivateSubnet bool
+		for _, subnet := range b.Cluster.Spec.Subnets {
+			if subnet.Type == kops.SubnetTypePrivate {
+				hasPrivateSubnet = true
+				break
+			}
+		}
+
+		if hasPrivateSubnet {
+			r := &gcetasks.Router{
+				Name:                          s(b.SafeObjectName("nat")),
+				Lifecycle:                     b.Lifecycle,
+				Network:                       s(b.LinkToNetwork().URL(b.Cluster.Spec.Project)),
+				Region:                        s(b.Region),
+				NATIPAllocationOption:         s(gcetasks.NATIPAllocationOptionAutoOnly),
+				SourceSubnetworkIPRangesToNAT: s(gcetasks.SourceSubnetworkIPRangesAll),
+			}
+			c.AddTask(r)
+		}
+	}
+
 	return nil
 }

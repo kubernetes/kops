@@ -87,6 +87,8 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				// TODO: Support preemptible nodes?
 				Preemptible: fi.Bool(false),
 
+				HasExternalIP: fi.Bool(b.Cluster.Spec.Topology.Masters == kops.TopologyPublic),
+
 				Scopes: []string{
 					"compute-rw",
 					"monitoring",
