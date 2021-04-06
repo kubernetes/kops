@@ -20,6 +20,7 @@ package deployer
 import (
 	"flag"
 	"sync"
+	"time"
 
 	"github.com/octago/sflags/gen/gpflag"
 	"github.com/spf13/pflag"
@@ -54,6 +55,8 @@ type deployer struct {
 	CreateArgs     string   `flag:"create-args" desc:"Extra space-separated arguments passed to 'kops create cluster'"`
 	KopsBinaryPath string   `flag:"kops-binary-path" desc:"The path to kops executable used for testing"`
 	StateStore     string   `flag:"-"`
+
+	ValidationWait time.Duration `flag:"validation-wait" desc:"time to wait for newly created cluster to pass validation"`
 
 	TemplatePath string `flag:"template-path" desc:"The path to the manifest template used for cluster creation"`
 
