@@ -401,7 +401,6 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 				return err
 			}
 
-			spec.SetRootVolumeSize(nil) // mutually exclusive
 			spec.SetBlockDeviceMappings([]*aws.BlockDeviceMapping{
 				e.convertBlockDeviceMapping(rootDevice),
 			})
