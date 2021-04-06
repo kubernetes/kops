@@ -294,16 +294,6 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 			actual.AutoScalerOpts.AutoHeadroomPercentage = ocean.AutoScaler.AutoHeadroomPercentage
 			actual.AutoScalerOpts.Cooldown = ocean.AutoScaler.Cooldown
 
-			// Headroom.
-			if headroom := ocean.AutoScaler.Headroom; headroom != nil {
-				actual.AutoScalerOpts.Headroom = &AutoScalerHeadroomOpts{
-					CPUPerUnit: headroom.CPUPerUnit,
-					GPUPerUnit: headroom.GPUPerUnit,
-					MemPerUnit: headroom.MemoryPerUnit,
-					NumOfUnits: headroom.NumOfUnits,
-				}
-			}
-
 			// Scale down.
 			if down := ocean.AutoScaler.Down; down != nil {
 				actual.AutoScalerOpts.Down = &AutoScalerDownOpts{
@@ -522,17 +512,6 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 				autoScaler.IsAutoConfig = opts.AutoConfig
 				autoScaler.AutoHeadroomPercentage = opts.AutoHeadroomPercentage
 				autoScaler.Cooldown = opts.Cooldown
-
-				// Headroom.
-				if headroom := opts.Headroom; headroom != nil {
-					autoScaler.IsAutoConfig = fi.Bool(false)
-					autoScaler.Headroom = &aws.AutoScalerHeadroom{
-						CPUPerUnit:    headroom.CPUPerUnit,
-						GPUPerUnit:    headroom.GPUPerUnit,
-						MemoryPerUnit: headroom.MemPerUnit,
-						NumOfUnits:    headroom.NumOfUnits,
-					}
-				}
 
 				// Scale down.
 				if down := opts.Down; down != nil {
@@ -943,20 +922,6 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 				autoScaler.AutoHeadroomPercentage = e.AutoScalerOpts.AutoHeadroomPercentage
 				autoScaler.Cooldown = e.AutoScalerOpts.Cooldown
 
-				// Headroom.
-				if headroom := opts.Headroom; headroom != nil {
-					autoScaler.IsAutoConfig = fi.Bool(false)
-					autoScaler.Headroom = &aws.AutoScalerHeadroom{
-						CPUPerUnit:    e.AutoScalerOpts.Headroom.CPUPerUnit,
-						GPUPerUnit:    e.AutoScalerOpts.Headroom.GPUPerUnit,
-						MemoryPerUnit: e.AutoScalerOpts.Headroom.MemPerUnit,
-						NumOfUnits:    e.AutoScalerOpts.Headroom.NumOfUnits,
-					}
-				} else if a.AutoScalerOpts != nil && a.AutoScalerOpts.Headroom != nil {
-					autoScaler.IsAutoConfig = fi.Bool(true)
-					autoScaler.SetHeadroom(nil)
-				}
-
 				// Scale down.
 				if down := opts.Down; down != nil {
 					autoScaler.Down = &aws.AutoScalerDown{
@@ -1170,17 +1135,6 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 					AutoConfig:             opts.AutoConfig,
 					AutoHeadroomPercentage: opts.AutoHeadroomPercentage,
 					Cooldown:               opts.Cooldown,
-				}
-
-				// Headroom.
-				if headroom := opts.Headroom; headroom != nil {
-					tf.AutoScaler.AutoConfig = fi.Bool(false)
-					tf.AutoScaler.Headroom = &terraformAutoScalerHeadroom{
-						CPUPerUnit: headroom.CPUPerUnit,
-						GPUPerUnit: headroom.GPUPerUnit,
-						MemPerUnit: headroom.MemPerUnit,
-						NumOfUnits: headroom.NumOfUnits,
-					}
 				}
 
 				// Scale down.
