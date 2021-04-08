@@ -9,6 +9,8 @@ Create a docker config.
 
 Create a new docker config, and store it in the state store. Used to configure docker on each master or node (i.e. for auth) Use update to modify it, this command will only create a new entry.
 
+ After creating a dockerconfig secret, a .docker/config.json file will be added to all newly created nodes without running kops update. This file should also apply auth to containerd, which is the default container runtime in kops 1.20 and above.
+
 ```
 kops create secret dockerconfig [flags]
 ```
