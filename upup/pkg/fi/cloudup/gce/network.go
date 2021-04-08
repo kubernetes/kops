@@ -64,15 +64,12 @@ func performNetworkAssignmentsIPAliases(ctx context.Context, c *kops.Cluster, cl
 
 	cloud := cloudObj.(GCECloud)
 
-	var regions []*compute.Region
-	if err := cloud.Compute().Regions.List(cloud.Project()).Pages(ctx, func(p *compute.RegionList) error {
-		regions = append(regions, p.Items...)
-		return nil
-	}); err != nil {
+	regions, err := cloud.Compute().Regions().List(ctx, cloud.Project())
+	if err != nil {
 		return fmt.Errorf("error listing Regions: %v", err)
 	}
 
-	network, err := cloud.Compute().Networks.Get(cloud.Project(), networkName).Do()
+	network, err := cloud.Compute().Networks().Get(cloud.Project(), networkName)
 	if err != nil {
 		return fmt.Errorf("error fetching network name %q: %v", networkName, err)
 	}
@@ -86,12 +83,11 @@ func performNetworkAssignmentsIPAliases(ctx context.Context, c *kops.Cluster, cl
 
 	var subnets []*compute.Subnetwork
 	for _, r := range regions {
-		if err := cloud.Compute().Subnetworks.List(cloud.Project(), r.Name).Pages(ctx, func(p *compute.SubnetworkList) error {
-			subnets = append(subnets, p.Items...)
-			return nil
-		}); err != nil {
+		l, err := cloud.Compute().Subnetworks().List(ctx, cloud.Project(), r.Name)
+		if err != nil {
 			return fmt.Errorf("error listing Subnetworks: %v", err)
 		}
+		subnets = append(subnets, l...)
 	}
 
 	var used cidrMap

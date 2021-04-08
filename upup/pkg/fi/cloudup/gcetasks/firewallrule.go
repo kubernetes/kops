@@ -48,7 +48,7 @@ func (e *FirewallRule) CompareWithID() *string {
 func (e *FirewallRule) Find(c *fi.Context) (*FirewallRule, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
-	r, err := cloud.Compute().Firewalls.Get(cloud.Project(), *e.Name).Do()
+	r, err := cloud.Compute().Firewalls().Get(cloud.Project(), *e.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -143,12 +143,12 @@ func (_ *FirewallRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *FirewallRul
 	}
 
 	if a == nil {
-		_, err := t.Cloud.Compute().Firewalls.Insert(t.Cloud.Project(), firewall).Do()
+		_, err := t.Cloud.Compute().Firewalls().Insert(t.Cloud.Project(), firewall)
 		if err != nil {
 			return fmt.Errorf("error creating FirewallRule: %v", err)
 		}
 	} else {
-		_, err := t.Cloud.Compute().Firewalls.Update(t.Cloud.Project(), *e.Name, firewall).Do()
+		_, err := t.Cloud.Compute().Firewalls().Update(t.Cloud.Project(), *e.Name, firewall)
 		if err != nil {
 			return fmt.Errorf("error creating FirewallRule: %v", err)
 		}

@@ -57,27 +57,27 @@ func (e *Address) Find(c *fi.Context) (*Address, error) {
 
 func findAddressByIP(cloud gce.GCECloud, ip string) (*Address, error) {
 	// Technically this is a regex, but it doesn't matter...
-	r, err := cloud.Compute().Addresses.List(cloud.Project(), cloud.Region()).Filter("address eq " + ip).Do()
+	addrs, err := cloud.Compute().Addresses().ListWithFilter(cloud.Project(), cloud.Region(), "address eq "+ip)
 	if err != nil {
 		return nil, fmt.Errorf("error listing IP Addresses: %v", err)
 	}
 
-	if len(r.Items) == 0 {
+	if len(addrs) == 0 {
 		return nil, nil
 	}
-	if len(r.Items) > 1 {
+	if len(addrs) > 1 {
 		return nil, fmt.Errorf("found multiple Addresses matching %q", ip)
 	}
 
 	actual := &Address{}
-	actual.IPAddress = &r.Items[0].Address
-	actual.Name = &r.Items[0].Name
+	actual.IPAddress = &addrs[0].Address
+	actual.Name = &addrs[0].Name
 
 	return actual, nil
 }
 
 func (e *Address) find(cloud gce.GCECloud) (*Address, error) {
-	r, err := cloud.Compute().Addresses.Get(cloud.Project(), cloud.Region(), *e.Name).Do()
+	r, err := cloud.Compute().Addresses().Get(cloud.Project(), cloud.Region(), *e.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -137,7 +137,7 @@ func (_ *Address) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Address) error {
 	if a == nil {
 		klog.Infof("GCE creating address: %q", addr.Name)
 
-		op, err := cloud.Compute().Addresses.Insert(cloud.Project(), cloud.Region(), addr).Do()
+		op, err := cloud.Compute().Addresses().Insert(cloud.Project(), cloud.Region(), addr)
 		if err != nil {
 			return fmt.Errorf("error creating IP Address: %v", err)
 		}
