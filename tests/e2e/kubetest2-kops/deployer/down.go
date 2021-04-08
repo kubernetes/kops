@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"sigs.k8s.io/kubetest2/pkg/boskos"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
@@ -51,6 +52,10 @@ func (d *deployer) Down() error {
 	exec.InheritOutput(cmd)
 	if err := cmd.Run(); err != nil {
 		return err
+	}
+
+	if d.CloudProvider == "gce" && d.createBucket {
+		gce.DeleteGCSBucket(d.stateStore(), d.GCPProject)
 	}
 
 	if d.boskos != nil {
