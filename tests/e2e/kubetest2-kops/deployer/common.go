@@ -105,6 +105,7 @@ func (d *deployer) initialize() error {
 				d.SSHPrivateKeyPath = privateKey
 				d.SSHPublicKeyPath = publicKey
 			}
+			d.createBucket = os.Getenv("KOPS_STATE_STORE") == ""
 		}
 	}
 	if d.SSHUser == "" {
@@ -147,10 +148,6 @@ func (d *deployer) verifyKopsFlags() error {
 		return errors.New("unsupported --cloud-provider value")
 	}
 
-	if d.StateStore == "" {
-		d.StateStore = stateStore(d.CloudProvider)
-	}
-
 	return nil
 }
 
@@ -160,7 +157,7 @@ func (d *deployer) env() []string {
 	vars = append(vars, []string{
 		fmt.Sprintf("PATH=%v", os.Getenv("PATH")),
 		fmt.Sprintf("HOME=%v", os.Getenv("HOME")),
-		fmt.Sprintf("KOPS_STATE_STORE=%v", d.StateStore),
+		fmt.Sprintf("KOPS_STATE_STORE=%v", d.stateStore()),
 		fmt.Sprintf("KOPS_FEATURE_FLAGS=%v", d.featureFlags()),
 		"KOPS_RUN_TOO_NEW_VERSION=1",
 	}...)
@@ -221,14 +218,15 @@ func defaultClusterName(cloudProvider string) (string, error) {
 
 // stateStore returns the kops state store to use
 // defaulting to values used in prow jobs
-func stateStore(cloudProvider string) string {
+func (d *deployer) stateStore() string {
 	ss := os.Getenv("KOPS_STATE_STORE")
 	if ss == "" {
-		switch cloudProvider {
+		switch d.CloudProvider {
 		case "aws":
 			ss = "s3://k8s-kops-prow"
 		case "gce":
-			ss = "gs://k8s-kops-gce"
+			d.createBucket = true
+			ss = "gs://" + gce.GCSBucketName(d.GCPProject)
 		}
 	}
 	return ss
