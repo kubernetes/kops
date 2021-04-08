@@ -102,17 +102,14 @@ func (s *dumpState) getInstances(ctx context.Context, zone string) (map[string]*
 		return s.instances[zone], nil
 	}
 
-	instances := make(map[string]*compute.Instance)
-	err := s.cloud.Compute().Instances.List(s.cloud.Project(), zone).Pages(ctx, func(page *compute.InstanceList) error {
-		for _, i := range page.Items {
-			instances[i.Name] = i
-		}
-		return nil
-	})
+	l, err := s.cloud.Compute().Instances().List(ctx, s.cloud.Project(), zone)
 	if err != nil {
 		return nil, err
 	}
-
+	instances := make(map[string]*compute.Instance)
+	for _, i := range l {
+		instances[i.Name] = i
+	}
 	s.instances[zone] = instances
 	return instances, nil
 }
