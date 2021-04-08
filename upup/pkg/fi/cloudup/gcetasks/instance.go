@@ -64,7 +64,7 @@ func (e *Instance) CompareWithID() *string {
 func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
-	r, err := cloud.Compute().Instances.Get(cloud.Project(), *e.Zone, *e.Name).Do()
+	r, err := cloud.Compute().Instances().Get(cloud.Project(), *e.Zone, *e.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -88,11 +88,11 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		if len(ni.AccessConfigs) != 0 {
 			ac := ni.AccessConfigs[0]
 			if ac.NatIP != "" {
-				addr, err := cloud.Compute().Addresses.List(cloud.Project(), cloud.Region()).Filter("address eq " + ac.NatIP).Do()
+				addrs, err := cloud.Compute().Addresses().ListWithFilter(cloud.Project(), cloud.Region(), "address eq "+ac.NatIP)
 				if err != nil {
 					return nil, fmt.Errorf("error querying for address %q: %v", ac.NatIP, err)
-				} else if len(addr.Items) != 0 {
-					actual.IPAddress = &Address{Name: &addr.Items[0].Name}
+				} else if len(addrs) != 0 {
+					actual.IPAddress = &Address{Name: &addrs[0].Name}
 				} else {
 					return nil, fmt.Errorf("address not found %q: %v", ac.NatIP, err)
 				}
@@ -113,7 +113,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 
 			// TODO: Parse source URL instead of assuming same project/zone?
 			name := lastComponent(source)
-			d, err := cloud.Compute().Disks.Get(cloud.Project(), *e.Zone, name).Do()
+			d, err := cloud.Compute().Disks().Get(cloud.Project(), *e.Zone, name)
 			if err != nil {
 				if gce.IsNotFound(err) {
 					return nil, fmt.Errorf("disk not found %q: %v", source, err)
@@ -326,8 +326,7 @@ func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error
 
 	if a == nil {
 		klog.V(2).Infof("Creating instance %q", i.Name)
-		_, err := cloud.Compute().Instances.Insert(project, zone, i).Do()
-		if err != nil {
+		if _, err := cloud.Compute().Instances().Insert(project, zone, i); err != nil {
 			return fmt.Errorf("error creating Instance: %v", err)
 		}
 	} else {
@@ -336,7 +335,7 @@ func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error
 
 			i.Metadata.Fingerprint = a.metadataFingerprint
 
-			op, err := cloud.Compute().Instances.SetMetadata(project, zone, i.Name, i.Metadata).Do()
+			op, err := cloud.Compute().Instances().SetMetadata(project, zone, i.Name, i.Metadata)
 			if err != nil {
 				return fmt.Errorf("error setting metadata on instance: %v", err)
 			}

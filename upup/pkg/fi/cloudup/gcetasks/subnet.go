@@ -49,7 +49,7 @@ func (e *Subnet) CompareWithID() *string {
 func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
-	s, err := cloud.Compute().Subnetworks.Get(cloud.Project(), cloud.Region(), *e.GCEName).Do()
+	s, err := cloud.Compute().Subnetworks().Get(cloud.Project(), cloud.Region(), *e.GCEName)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -107,12 +107,12 @@ func (_ *Subnet) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Subnet) error {
 			})
 		}
 
-		_, err := cloud.Compute().Subnetworks.Insert(t.Cloud.Project(), t.Cloud.Region(), subnet).Do()
+		_, err := cloud.Compute().Subnetworks().Insert(t.Cloud.Project(), t.Cloud.Region(), subnet)
 		if err != nil {
 			return fmt.Errorf("error creating Subnet: %v", err)
 		}
 	} else {
-		subnet, err := cloud.Compute().Subnetworks.Get(cloud.Project(), cloud.Region(), *e.GCEName).Do()
+		subnet, err := cloud.Compute().Subnetworks().Get(cloud.Project(), cloud.Region(), *e.GCEName)
 		if err != nil {
 			return fmt.Errorf("error fetching subnet for patch: %v", err)
 		}
@@ -137,12 +137,12 @@ func (_ *Subnet) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Subnet) error {
 				}
 			}
 			if patch {
-				_, err = t.Cloud.Compute().Subnetworks.Patch(t.Cloud.Project(), t.Cloud.Region(), subnet.Name, subnet).Do()
+				_, err = t.Cloud.Compute().Subnetworks().Patch(t.Cloud.Project(), t.Cloud.Region(), subnet.Name, subnet)
 				if err != nil {
 					return fmt.Errorf("error patching Subnet: %v", err)
 				}
 				patch = false
-				subnet, err = cloud.Compute().Subnetworks.Get(cloud.Project(), cloud.Region(), *e.GCEName).Do()
+				subnet, err = cloud.Compute().Subnetworks().Get(cloud.Project(), cloud.Region(), *e.GCEName)
 				if err != nil {
 					return fmt.Errorf("error fetching subnet for patch: %v", err)
 				}
@@ -167,11 +167,11 @@ func (_ *Subnet) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Subnet) error {
 						IpCidrRange: v,
 					})
 				}
-				_, err = t.Cloud.Compute().Subnetworks.Patch(t.Cloud.Project(), t.Cloud.Region(), subnet.Name, subnet).Do()
+				_, err = t.Cloud.Compute().Subnetworks().Patch(t.Cloud.Project(), t.Cloud.Region(), subnet.Name, subnet)
 				if err != nil {
 					return fmt.Errorf("error patching Subnet: %v", err)
 				}
-				_, err = cloud.Compute().Subnetworks.Get(cloud.Project(), cloud.Region(), *e.GCEName).Do()
+				_, err = cloud.Compute().Subnetworks().Get(cloud.Project(), cloud.Region(), *e.GCEName)
 				if err != nil {
 					return fmt.Errorf("error fetching subnet for patch: %v", err)
 				}

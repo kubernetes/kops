@@ -29,25 +29,20 @@ import (
 )
 
 func (c *gceCloudImplementation) allZones() ([]string, error) {
-	var zones []string
-
-	// TODO: use PageToken to list all not just the first 500
-	ctx := context.Background()
-	err := c.compute.Zones.List(c.project).Pages(ctx, func(page *compute.ZoneList) error {
-		for _, zone := range page.Items {
-			regionName := LastComponent(zone.Region)
-			if regionName == c.region {
-				zones = append(zones, zone.Name)
-			}
-		}
-
-		return nil
-	})
+	zones, err := c.compute.Zones().List(context.Background(), c.project)
 	if err != nil {
 		return nil, fmt.Errorf("error listing zones: %v", err)
 	}
 
-	return zones, nil
+	var zoneNames []string
+	for _, zone := range zones {
+		regionName := LastComponent(zone.Region)
+		if regionName == c.region {
+			zoneNames = append(zoneNames, zone.Name)
+		}
+	}
+
+	return zoneNames, nil
 }
 
 // FindClusterStatus discovers the status of the cluster, by inspecting the cloud objects
@@ -80,24 +75,22 @@ func (c *gceCloudImplementation) findEtcdStatus(cluster *kops.Cluster) ([]kops.E
 	// TODO: Filter disks query by Label?
 	ctx := context.Background()
 	for _, zone := range zones {
-		err := c.compute.Disks.List(c.project, zone).Pages(ctx, func(page *compute.DiskList) error {
-			for _, d := range page.Items {
-				klog.V(4).Infof("Found disk %q with labels %v", d.Name, d.Labels)
-
-				match := true
-				for k, v := range labels {
-					if d.Labels[k] != v {
-						match = false
-					}
-				}
-				if match {
-					disks = append(disks, d)
-				}
-			}
-			return nil
-		})
+		l, err := c.compute.Disks().List(ctx, c.project, zone)
 		if err != nil {
 			return nil, fmt.Errorf("error describing volumes: %v", err)
+		}
+		for _, d := range l {
+			klog.V(4).Infof("Found disk %q with labels %v", d.Name, d.Labels)
+
+			match := true
+			for k, v := range labels {
+				if d.Labels[k] != v {
+					match = false
+				}
+			}
+			if match {
+				disks = append(disks, d)
+			}
 		}
 	}
 
