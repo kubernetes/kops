@@ -1270,5 +1270,5 @@ spec:
       - native.cgroupdriver=cgroupfs
 ```
 
-In the case of containerd, the cgroup-driver is dependant on the cgroup driver of kubelet. To use cgroupfs, just update the
+In the case of containerd, the cgroup-driver is dependent on the cgroup driver of kubelet. To use cgroupfs, just update the
 cgroupDriver of kubelet to use cgroupfs.

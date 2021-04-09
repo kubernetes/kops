@@ -70,7 +70,7 @@ func TestAppendIfUnset(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			actual := appendIfUnset(tc.args, tc.arg, tc.val)
 			if !reflect.DeepEqual(actual, tc.expected) {
-				t.Errorf("arguments didnt match: %v vs %v", actual, tc.expected)
+				t.Errorf("arguments didn't match: %v vs %v", actual, tc.expected)
 			}
 		})
 	}
