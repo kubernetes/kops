@@ -26,6 +26,8 @@ import (
 
 var enqueueLog = logf.RuntimeLog.WithName("eventhandler").WithName("EnqueueRequestForObject")
 
+type empty struct{}
+
 var _ EventHandler = &EnqueueRequestForObject{}
 
 // EnqueueRequestForObject enqueues a Request containing the Name and Namespace of the object that is the source of the Event.
@@ -47,22 +49,18 @@ func (e *EnqueueRequestForObject) Create(evt event.CreateEvent, q workqueue.Rate
 
 // Update implements EventHandler
 func (e *EnqueueRequestForObject) Update(evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
-	if evt.ObjectOld != nil {
-		q.Add(reconcile.Request{NamespacedName: types.NamespacedName{
-			Name:      evt.ObjectOld.GetName(),
-			Namespace: evt.ObjectOld.GetNamespace(),
-		}})
-	} else {
-		enqueueLog.Error(nil, "UpdateEvent received with no old metadata", "event", evt)
-	}
-
 	if evt.ObjectNew != nil {
 		q.Add(reconcile.Request{NamespacedName: types.NamespacedName{
 			Name:      evt.ObjectNew.GetName(),
 			Namespace: evt.ObjectNew.GetNamespace(),
 		}})
+	} else if evt.ObjectOld != nil {
+		q.Add(reconcile.Request{NamespacedName: types.NamespacedName{
+			Name:      evt.ObjectOld.GetName(),
+			Namespace: evt.ObjectOld.GetNamespace(),
+		}})
 	} else {
-		enqueueLog.Error(nil, "UpdateEvent received with no new metadata", "event", evt)
+		enqueueLog.Error(nil, "UpdateEvent received with no metadata", "event", evt)
 	}
 }
 

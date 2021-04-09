@@ -25,7 +25,6 @@ import (
 
 	"github.com/go-logr/logr"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/util/workqueue"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	ctrlmetrics "sigs.k8s.io/controller-runtime/pkg/internal/controller/metrics"
@@ -66,9 +65,6 @@ type Controller struct {
 
 	// mu is used to synchronize Controller setup
 	mu sync.Mutex
-
-	// JitterPeriod allows tests to reduce the JitterPeriod so they complete faster
-	JitterPeriod time.Duration
 
 	// Started is true if the Controller has been Started
 	Started bool
@@ -150,8 +146,12 @@ func (c *Controller) Start(ctx context.Context) error {
 	c.ctx = ctx
 
 	c.Queue = c.MakeQueue()
-	defer c.Queue.ShutDown() // needs to be outside the iife so that we shutdown after the stop channel is closed
+	go func() {
+		<-ctx.Done()
+		c.Queue.ShutDown()
+	}()
 
+	wg := &sync.WaitGroup{}
 	err := func() error {
 		defer c.mu.Unlock()
 
@@ -203,19 +203,17 @@ func (c *Controller) Start(ctx context.Context) error {
 		// which won't be garbage collected if we hold a reference to it.
 		c.startWatches = nil
 
-		if c.JitterPeriod == 0 {
-			c.JitterPeriod = 1 * time.Second
-		}
-
 		// Launch workers to process resources
 		c.Log.Info("Starting workers", "worker count", c.MaxConcurrentReconciles)
+		wg.Add(c.MaxConcurrentReconciles)
 		for i := 0; i < c.MaxConcurrentReconciles; i++ {
-			go wait.UntilWithContext(ctx, func(ctx context.Context) {
+			go func() {
+				defer wg.Done()
 				// Run a worker thread that just dequeues items, processes them, and marks them done.
 				// It enforces that the reconcileHandler is never invoked concurrently with the same object.
 				for c.processNextWorkItem(ctx) {
 				}
-			}, c.JitterPeriod)
+			}()
 		}
 
 		c.Started = true
@@ -226,7 +224,9 @@ func (c *Controller) Start(ctx context.Context) error {
 	}
 
 	<-ctx.Done()
-	c.Log.Info("Stopping workers")
+	c.Log.Info("Shutdown signal received, waiting for all workers to finish")
+	wg.Wait()
+	c.Log.Info("All workers finished")
 	return nil
 }
 

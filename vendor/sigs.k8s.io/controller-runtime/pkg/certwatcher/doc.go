@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,9 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package auth
-
-import (
-	// Initialize common client auth plugins.
-	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
-)
+/*
+Package certwatcher is a helper for reloading Certificates from disk to be used
+with tls servers. It provides a helper func `GetCertificate` which can be
+called from `tls.Config` and passed into your tls.Listener. For a detailed
+example server view pkg/webhook/server.go.
+*/
+package certwatcher
