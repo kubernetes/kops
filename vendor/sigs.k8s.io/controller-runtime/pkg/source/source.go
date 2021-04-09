@@ -91,6 +91,11 @@ type Kind struct {
 
 	// cache used to watch APIs
 	cache cache.Cache
+
+	// started may contain an error if one was encountered during startup. If its closed and does not
+	// contain an error, startup and syncing finished.
+	started     chan error
+	startCancel func()
 }
 
 var _ SyncingSource = &Kind{}
@@ -110,16 +115,30 @@ func (ks *Kind) Start(ctx context.Context, handler handler.EventHandler, queue w
 		return fmt.Errorf("must call CacheInto on Kind before calling Start")
 	}
 
-	// Lookup the Informer from the Cache and add an EventHandler which populates the Queue
-	i, err := ks.cache.GetInformer(ctx, ks.Type)
-	if err != nil {
-		if kindMatchErr, ok := err.(*meta.NoKindMatchError); ok {
-			log.Error(err, "if kind is a CRD, it should be installed before calling Start",
-				"kind", kindMatchErr.GroupKind)
+	// cache.GetInformer will block until its context is cancelled if the cache was already started and it can not
+	// sync that informer (most commonly due to RBAC issues).
+	ctx, ks.startCancel = context.WithCancel(ctx)
+	ks.started = make(chan error)
+	go func() {
+		// Lookup the Informer from the Cache and add an EventHandler which populates the Queue
+		i, err := ks.cache.GetInformer(ctx, ks.Type)
+		if err != nil {
+			kindMatchErr := &meta.NoKindMatchError{}
+			if errors.As(err, &kindMatchErr) {
+				log.Error(err, "if kind is a CRD, it should be installed before calling Start",
+					"kind", kindMatchErr.GroupKind)
+			}
+			ks.started <- err
+			return
 		}
-		return err
-	}
-	i.AddEventHandler(internal.EventHandler{Queue: queue, EventHandler: handler, Predicates: prct})
+		i.AddEventHandler(internal.EventHandler{Queue: queue, EventHandler: handler, Predicates: prct})
+		if !ks.cache.WaitForCacheSync(ctx) {
+			// Would be great to return something more informative here
+			ks.started <- errors.New("cache did not sync")
+		}
+		close(ks.started)
+	}()
+
 	return nil
 }
 
@@ -133,11 +152,13 @@ func (ks *Kind) String() string {
 // WaitForSync implements SyncingSource to allow controllers to wait with starting
 // workers until the cache is synced.
 func (ks *Kind) WaitForSync(ctx context.Context) error {
-	if !ks.cache.WaitForCacheSync(ctx) {
-		// Would be great to return something more informative here
-		return errors.New("cache did not sync")
+	select {
+	case err := <-ks.started:
+		return err
+	case <-ctx.Done():
+		ks.startCancel()
+		return errors.New("timed out waiting for cache to be synced")
 	}
-	return nil
 }
 
 var _ inject.Cache = &Kind{}
