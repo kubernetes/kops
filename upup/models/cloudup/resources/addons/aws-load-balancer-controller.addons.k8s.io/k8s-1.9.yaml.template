@@ -513,7 +513,7 @@ spec:
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: cert
               readOnly: true
-      {{ if not UseServiceAccountIAM }}
+      {{ if WithDefaultBool .AWSLoadBalancerController.UseIRSA false }}
       nodeSelector:
         node-role.kubernetes.io/master: ""
       {{ end }}
@@ -521,7 +521,7 @@ spec:
         fsGroup: 1337
       serviceAccountName: aws-load-balancer-controller
       terminationGracePeriodSeconds: 10
-      {{ if not UseServiceAccountIAM }}
+      {{ if WithDefaultBool .AWSLoadBalancerController.UseIRSA false }}
       tolerations:
         - operator: Exists
       {{ end }}

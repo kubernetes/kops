@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -1081,6 +1082,71 @@ func Test_Validate_NodeLocalDNS(t *testing.T) {
 
 	for _, g := range grid {
 		errs := validateNodeLocalDNS(&g.Input, field.NewPath("spec"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
+
+func Test_Validate_IRSA(t *testing.T) {
+	featureflag.ParseFlags("+PublicJWKS")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-PublicJWKS")
+	}
+	defer unsetFeatureFlags()
+
+	grid := []struct {
+		Input          kops.ClusterSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.ClusterSpec{
+				IAMRolesForServiceAccounts: &kops.IAMRolesForServiceAccountsConfig{
+					Enabled:      fi.Bool(true),
+					OIDCLocation: kops.OIDCLocationPublicDataStore,
+				},
+			},
+			ExpectedErrors: []string{"Required value::spec.publicDataStore"},
+		},
+		{
+			Input: kops.ClusterSpec{
+				IAMRolesForServiceAccounts: &kops.IAMRolesForServiceAccountsConfig{
+					Enabled:      fi.Bool(true),
+					OIDCLocation: kops.OIDCLocationPublicDataStore,
+				},
+				PublicDataStore: "s3://some/bucket",
+			},
+		},
+		{
+			Input: kops.ClusterSpec{
+				IAMRolesForServiceAccounts: &kops.IAMRolesForServiceAccountsConfig{
+					Enabled:      fi.Bool(true),
+					OIDCLocation: kops.OIDCLocationAPIServer,
+				},
+			},
+			ExpectedErrors: []string{
+				"Forbidden::spec.kubeAPIServer.anonymousAuth",
+				"Forbidden::spec.kubernetesAPIAccess",
+			},
+		},
+		{
+			Input: kops.ClusterSpec{
+				IAMRolesForServiceAccounts: &kops.IAMRolesForServiceAccountsConfig{
+					Enabled:      fi.Bool(true),
+					OIDCLocation: kops.OIDCLocationAPIServer,
+				},
+				KubernetesAPIAccess: []string{"0.0.0.0/0"},
+				KubeAPIServer: &kops.KubeAPIServerConfig{
+					AnonymousAuth: fi.Bool(true),
+				},
+			},
+		},
+	}
+
+	for _, g := range grid {
+		c := &kops.Cluster{
+			Spec: g.Input,
+		}
+		c.Spec.CloudProvider = string(kops.CloudProviderAWS)
+		errs := validateIRSA(c, field.NewPath("spec"))
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }

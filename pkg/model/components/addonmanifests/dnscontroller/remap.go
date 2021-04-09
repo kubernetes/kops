@@ -25,11 +25,12 @@ import (
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/iam"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 // Remap remaps the dns-controller addon
 func Remap(context *model.KopsModelContext, addon *addonsapi.AddonSpec, objects []*kubemanifest.Object) error {
-	if !context.UseServiceAccountIAM() {
+	if context.Cluster.Spec.ExternalDNS == nil || !fi.BoolValue(context.Cluster.Spec.ExternalDNS.UseIRSA) {
 		return nil
 	}
 

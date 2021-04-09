@@ -934,6 +934,8 @@ type AWSLoadBalancerControllerConfig struct {
 	Enabled *bool `json:"enabled,omitempty"`
 	// Version is the container image tag used.
 	Version *string `json:"version,omitempty"`
+	// UseIRSA determines IRSA is used instead of assuming the control plane role.
+	UseIRSA *bool `json:"useIRSA,omitempty"`
 }
 
 // HasAdmissionController checks if a specific admission controller is enabled

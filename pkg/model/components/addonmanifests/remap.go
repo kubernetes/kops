@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/klog/v2"
 	addonsapi "k8s.io/kops/channels/pkg/api"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
@@ -92,7 +93,7 @@ func addServiceAccountRole(context *model.KopsModelContext, objects kubemanifest
 		}
 		containers := podSpec.Containers
 		sa := podSpec.ServiceAccountName
-		subject := getWellknownServiceAccount(sa)
+		subject := getWellknownServiceAccount(sa, context.Cluster.Spec)
 		if subject == nil {
 			continue
 		}
@@ -110,13 +111,14 @@ func addServiceAccountRole(context *model.KopsModelContext, objects kubemanifest
 	return nil
 }
 
-func getWellknownServiceAccount(name string) iam.Subject {
+func getWellknownServiceAccount(name string, spec kops.ClusterSpec) iam.Subject {
 	switch name {
 	case "aws-load-balancer-controller":
-		return &awsloadbalancercontroller.ServiceAccount{}
-	default:
-		return nil
+		if fi.BoolValue(spec.AWSLoadBalancerController.UseIRSA) {
+			return &awsloadbalancercontroller.ServiceAccount{}
+		}
 	}
+	return nil
 }
 
 func addLabels(addon *addonsapi.AddonSpec, objects kubemanifest.ObjectList) error {

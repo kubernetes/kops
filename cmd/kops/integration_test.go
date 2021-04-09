@@ -306,6 +306,21 @@ func TestPublicJWKS(t *testing.T) {
 
 }
 
+// TestPublicJWKS runs a simple configuration, but with UseServiceAccountIAM and PublicJWKS enabled
+func TestPublicJWKSAPIServer(t *testing.T) {
+	featureflag.ParseFlags("+UseServiceAccountIAM,+PublicJWKS")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-UseServiceAccountIAM,-PublicJWKS")
+	}
+	defer unsetFeatureFlags()
+
+	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
+	newIntegrationTest("minimal.example.com", "public-jwks-apiserver").
+		withCAKey().
+		runTestTerraformAWS(t)
+
+}
+
 // TestAWSLBController runs a simple configuration, but with AWS LB controller, UseServiceAccountIAM and PublicJWKS enabled
 func TestAWSLBController(t *testing.T) {
 	featureflag.ParseFlags("+UseServiceAccountIAM,+PublicJWKS")
@@ -317,7 +332,6 @@ func TestAWSLBController(t *testing.T) {
 	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
 	newIntegrationTest("minimal.example.com", "aws-lb-controller").
 		withCAKey().
-		withServiceAccountRole("dns-controller.kube-system", true).
 		withServiceAccountRole("aws-load-balancer-controller.kube-system", true).
 		runTestTerraformAWS(t)
 }

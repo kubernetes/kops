@@ -23,7 +23,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
@@ -100,7 +99,8 @@ func BuildNodeRoleSubject(igRole kops.InstanceGroupRole, enableLifecycleHookPerm
 
 // ServiceAccountIssuer determines the issuer in the ServiceAccount JWTs
 func ServiceAccountIssuer(clusterSpec *kops.ClusterSpec) (string, error) {
-	if featureflag.PublicJWKS.Enabled() {
+	irsa := clusterSpec.IAMRolesForServiceAccounts
+	if irsa != nil && fi.BoolValue(irsa.Enabled) && irsa.OIDCLocation == kops.OIDCLocationPublicDataStore {
 		if clusterSpec.PublicDataStore == "" {
 			return "", fmt.Errorf("cluster.spec.publicDataStore is required with PublicJWKS feature flag")
 		}

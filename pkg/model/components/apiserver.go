@@ -155,8 +155,10 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		c.EnableAdmissionPlugins = append(c.EnableAdmissionPlugins, c.AppendAdmissionPlugins...)
 	}
 
-	// We make sure to disable AnonymousAuth
-	c.AnonymousAuth = fi.Bool(false)
+	// We default AnonymousAuth to off
+	if c.AnonymousAuth == nil {
+		c.AnonymousAuth = fi.Bool(false)
+	}
 
 	if b.IsKubernetesGTE("1.17") {
 		// We query via the kube-apiserver-healthcheck proxy, which listens on port 3990

@@ -228,7 +228,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 	}
 
-	if featureflag.PublicJWKS.Enabled() {
+	irsa := b.Cluster.Spec.IAMRolesForServiceAccounts
+	if irsa != nil && fi.BoolValue(irsa.Enabled) {
 		key := "anonymous-issuer-discovery.addons.k8s.io"
 		version := "1.21.0-alpha.3"
 
@@ -421,7 +422,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 
 		// Generate dns-controller ServiceAccount IAM permissions
-		if b.UseServiceAccountIAM() {
+		if b.Cluster.Spec.ExternalDNS != nil && fi.BoolValue(b.Cluster.Spec.ExternalDNS.UseIRSA) {
 			serviceAccountRoles := []iam.Subject{&dnscontroller.ServiceAccount{}}
 			for _, serviceAccountRole := range serviceAccountRoles {
 				iamModelBuilder := &model.IAMModelBuilder{KopsModelContext: b.KopsModelContext, Lifecycle: b.Lifecycle}
@@ -579,7 +580,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 
 		// Generate aws-load-balancer-controller ServiceAccount IAM permissions
-		if b.UseServiceAccountIAM() {
+		if fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.UseIRSA) {
 			serviceAccountRoles := []iam.Subject{&awsloadbalancercontroller.ServiceAccount{}}
 			for _, serviceAccountRole := range serviceAccountRoles {
 				iamModelBuilder := &model.IAMModelBuilder{KopsModelContext: b.KopsModelContext, Lifecycle: b.Lifecycle}

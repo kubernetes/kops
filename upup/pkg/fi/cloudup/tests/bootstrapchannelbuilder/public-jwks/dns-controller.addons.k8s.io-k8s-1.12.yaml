@@ -38,10 +38,6 @@ spec:
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
-        - name: AWS_ROLE_ARN
-          value: arn:aws-test:iam::123456789012:role/dns-controller.kube-system.sa.minimal.example.com
-        - name: AWS_WEB_IDENTITY_TOKEN_FILE
-          value: /var/run/secrets/amazonaws.com/token
         image: k8s.gcr.io/kops/dns-controller:1.21.0-alpha.3
         name: dns-controller
         resources:
@@ -50,29 +46,14 @@ spec:
             memory: 50Mi
         securityContext:
           runAsNonRoot: true
-        volumeMounts:
-        - mountPath: /var/run/secrets/amazonaws.com/
-          name: token-amazonaws-com
-          readOnly: true
       dnsPolicy: Default
       hostNetwork: true
       nodeSelector:
         node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
-      securityContext:
-        fsGroup: 10001
       serviceAccount: dns-controller
       tolerations:
       - operator: Exists
-      volumes:
-      - name: token-amazonaws-com
-        projected:
-          defaultMode: 420
-          sources:
-          - serviceAccountToken:
-              audience: amazonaws.com
-              expirationSeconds: 86400
-              path: token
 
 ---
 

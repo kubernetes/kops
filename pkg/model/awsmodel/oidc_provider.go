@@ -27,7 +27,7 @@ import (
 	"io"
 
 	"gopkg.in/square/go-jose.v2"
-	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
@@ -61,7 +61,9 @@ const (
 
 func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 
-	if !featureflag.PublicJWKS.Enabled() {
+	irsa := b.Cluster.Spec.IAMRolesForServiceAccounts
+
+	if irsa == nil || !fi.BoolValue(irsa.Enabled) {
 		return nil
 	}
 
@@ -74,44 +76,58 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !found {
 		return fmt.Errorf("keypair/service-account task not found")
 	}
+	thumbprints := []fi.Resource{}
 
-	fingerprints := getFingerprints()
+	if irsa.OIDCLocation == kops.OIDCLocationPublicDataStore {
+		fingerprints := getS3Fingerprints()
 
-	thumbprints := []*string{}
+		for _, fingerprint := range fingerprints {
+			thumbprints = append(thumbprints, fi.NewStringResource(fingerprint))
+		}
 
-	for _, fingerprint := range fingerprints {
-		thumbprints = append(thumbprints, fi.String(fingerprint))
+		skTask := signingKeyTaskObject.(*fitasks.Keypair)
+
+		keys := &OIDCKeys{
+			SigningKey: skTask,
+		}
+
+		discovery, err := buildDiscoveryJSON(serviceAccountIssuer)
+		if err != nil {
+			return err
+		}
+		keysFile := &fitasks.ManagedFile{
+			Contents:  keys,
+			Lifecycle: b.Lifecycle,
+			Location:  fi.String("oidc/keys.json"),
+			Name:      fi.String("keys.json"),
+			Base:      fi.String(b.Cluster.Spec.PublicDataStore),
+			Public:    fi.Bool(true),
+		}
+		c.AddTask(keysFile)
+
+		discoveryFile := &fitasks.ManagedFile{
+			Contents:  fi.NewBytesResource(discovery),
+			Lifecycle: b.Lifecycle,
+			Location:  fi.String("oidc/.well-known/openid-configuration"),
+			Name:      fi.String("discovery.json"),
+			Base:      fi.String(b.Cluster.Spec.PublicDataStore),
+			Public:    fi.Bool(true),
+		}
+		c.AddTask(discoveryFile)
+
+	} else {
+
+		caTaskObject, found := c.Tasks["Keypair/ca"]
+		if !found {
+			return fmt.Errorf("keypair/ca task not found")
+		}
+
+		caTask := caTaskObject.(*fitasks.Keypair)
+		fingerprint := caTask.CertificateSHA1Fingerprint()
+
+		thumbprints = []fi.Resource{fingerprint}
+
 	}
-
-	skTask := signingKeyTaskObject.(*fitasks.Keypair)
-
-	keys := &OIDCKeys{
-		SigningKey: skTask,
-	}
-
-	discovery, err := buildDiscoveryJSON(serviceAccountIssuer)
-	if err != nil {
-		return err
-	}
-	keysFile := &fitasks.ManagedFile{
-		Contents:  keys,
-		Lifecycle: b.Lifecycle,
-		Location:  fi.String("oidc/keys.json"),
-		Name:      fi.String("keys.json"),
-		Base:      fi.String(b.Cluster.Spec.PublicDataStore),
-		Public:    fi.Bool(true),
-	}
-	c.AddTask(keysFile)
-
-	discoveryFile := &fitasks.ManagedFile{
-		Contents:  fi.NewBytesResource(discovery),
-		Lifecycle: b.Lifecycle,
-		Location:  fi.String("oidc/.well-known/openid-configuration"),
-		Name:      fi.String("discovery.json"),
-		Base:      fi.String(b.Cluster.Spec.PublicDataStore),
-		Public:    fi.Bool(true),
-	}
-	c.AddTask(discoveryFile)
 
 	c.AddTask(&awstasks.IAMOIDCProvider{
 		Name:        fi.String(b.ClusterName()),
@@ -195,7 +211,7 @@ func (o *OIDCKeys) Open() (io.Reader, error) {
 	return bytes.NewReader(jsonBytes), nil
 }
 
-func getFingerprints() []string {
+func getS3Fingerprints() []string {
 
 	//These strings are the sha1 of the two possible S3 root CAs.
 	return []string{

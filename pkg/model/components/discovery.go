@@ -20,7 +20,6 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -36,7 +35,8 @@ var _ loader.OptionsBuilder = &DiscoveryOptionsBuilder{}
 func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
-	useJWKS := featureflag.PublicJWKS.Enabled()
+	irsa := clusterSpec.IAMRolesForServiceAccounts
+	useJWKS := irsa != nil && fi.BoolValue(irsa.Enabled)
 	if !useJWKS && b.IsKubernetesLT("1.20") {
 		return nil
 	}
@@ -59,11 +59,14 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 
 	// We set apiserver ServiceAccountKey and ServiceAccountSigningKeyFile in nodeup
 
-	if useJWKS {
+	if b.IsKubernetesLT("1.20") {
 		if kubeAPIServer.FeatureGates == nil {
 			kubeAPIServer.FeatureGates = make(map[string]string)
 		}
 		kubeAPIServer.FeatureGates["ServiceAccountIssuerDiscovery"] = "true"
+	}
+
+	if useJWKS && irsa.OIDCLocation == kops.OIDCLocationPublicDataStore {
 
 		if kubeAPIServer.ServiceAccountJWKSURI == nil {
 			jwksURL := *kubeAPIServer.ServiceAccountIssuer
@@ -72,11 +75,11 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 			kubeAPIServer.ServiceAccountJWKSURI = &jwksURL
 		}
 	} else if kubeAPIServer.ServiceAccountJWKSURI == nil {
-		jwksURI, err := iam.ServiceAccountIssuer(clusterSpec)
+		jwksURI := serviceAccountIssuer + "/openid/v1/jwks"
 		if err != nil {
 			return err
 		}
-		kubeAPIServer.ServiceAccountJWKSURI = fi.String(jwksURI + "/openid/v1/jwks")
+		kubeAPIServer.ServiceAccountJWKSURI = fi.String(jwksURI)
 	}
 
 	return nil

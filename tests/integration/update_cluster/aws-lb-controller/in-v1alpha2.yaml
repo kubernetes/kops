@@ -6,6 +6,7 @@ metadata:
 spec:
   awsLoadBalancerController:
     enabled: true
+    useIRSA: true
   certManager:
     enabled: true
   kubernetesApiAccess:
@@ -23,6 +24,9 @@ spec:
       name: us-test-1a
     name: events
   iam: {}
+  iamRolesForServiceAccounts:
+    enabled: true
+    oidcLocation: PublicDataStore
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.21.0

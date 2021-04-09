@@ -1328,6 +1328,17 @@ func validateAWSLoadBalancerController(cluster *kops.Cluster, spec *kops.AWSLoad
 		if !components.IsCertManagerEnabled(cluster) {
 			allErrs = append(allErrs, field.Forbidden(fldPath, "AWS Load Balancer Controller requires that cert manager is enabled"))
 		}
+
+		if fi.BoolValue(spec.UseIRSA) {
+			if !featureflag.UseServiceAccountIAM.Enabled() {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("useIRSA"), "IAM roles requires the UseServiceAccountIAM feature flag to be enabled"))
+			}
+			if cluster.Spec.IAMRolesForServiceAccounts == nil ||
+				!fi.BoolValue(cluster.Spec.IAMRolesForServiceAccounts.Enabled) {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("useIRSA"), "IAM roles for ServiceAccounts requires that IRSA has been enabled"))
+			}
+
+		}
 	}
 	return allErrs
 }

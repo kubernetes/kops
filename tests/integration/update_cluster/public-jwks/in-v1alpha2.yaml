@@ -9,6 +9,8 @@ spec:
   channel: stable
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
+  externalDns:
+    useIRSA: true
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-us-test-1a
@@ -19,6 +21,9 @@ spec:
       name: us-test-1a
     name: events
   iam: {}
+  iamRolesForServiceAccounts:
+    enabled: true
+    oidcLocation: PublicDataStore
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.21.0

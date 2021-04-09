@@ -230,6 +230,10 @@ spec:
                     description: 'Enabled enables the loadbalancer controller. Default:
                       false'
                     type: boolean
+                  useIRSA:
+                    description: UseIRSA determines IRSA is used instead of assuming
+                      the control plane role.
+                    type: boolean
                   version:
                     description: Version is the container image tag used.
                     type: string
@@ -1009,6 +1013,10 @@ spec:
                     description: Disable indicates we do not wish to run the dns-controller
                       addon
                     type: boolean
+                  useIRSA:
+                    description: UseIRSA determines IRSA is used instead of assuming
+                      the control plane role.
+                    type: boolean
                   watchIngress:
                     description: WatchIngress indicates you want the dns-controller
                       to watch and create dns entries for ingress resources
@@ -1148,6 +1156,18 @@ spec:
                     type: string
                 required:
                 - legacy
+                type: object
+              iamRolesForServiceAccounts:
+                description: IAMRolesForServiceAccount defines the IRSA configuration.
+                properties:
+                  enabled:
+                    description: Enabled determines if the OIDC data will be publicly
+                      available in the given location.
+                    type: boolean
+                  oidcLocation:
+                    description: JWKSLocation determines the location of the OIDC
+                      metadata. Valid locations are "APIServer" and "PublicDataStore".
+                    type: string
                 type: object
               isolateMasters:
                 description: 'IsolateMasters determines whether we should lock down

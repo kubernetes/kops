@@ -307,15 +307,17 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys), b.Cluster.Spec.IAM.Legacy)
 	}
 
-	if !b.UseServiceAccountIAM {
+	if b.Cluster.Spec.ExternalDNS == nil || !fi.BoolValue(b.Cluster.Spec.ExternalDNS.UseIRSA) {
 		if b.Cluster.Spec.IAM.Legacy {
 			addLegacyDNSControllerPermissions(b, p)
 		}
 		AddDNSControllerPermissions(b, p)
+	}
 
-		if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
-			AddAWSLoadbalancerControllerPermissions(p, resource, b.Cluster.GetName())
-		}
+	if b.Cluster.Spec.AWSLoadBalancerController != nil &&
+		fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) &&
+		!fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.UseIRSA) {
+		AddAWSLoadbalancerControllerPermissions(p, resource, b.Cluster.GetName())
 	}
 
 	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {

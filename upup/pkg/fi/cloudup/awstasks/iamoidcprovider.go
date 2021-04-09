@@ -35,7 +35,7 @@ type IAMOIDCProvider struct {
 	Lifecycle *fi.Lifecycle
 
 	ClientIDs   []*string
-	Thumbprints []*string
+	Thumbprints []fi.Resource
 	URL         *string
 
 	Name *string
@@ -75,9 +75,13 @@ func (e *IAMOIDCProvider) Find(c *fi.Context) (*IAMOIDCProvider, error) {
 
 		if actualURL == fi.StringValue(e.URL) {
 
+			thumbprints := []fi.Resource{}
+			for _, thumbprint := range descResp.ThumbprintList {
+				thumbprints = append(thumbprints, fi.NewStringResource(fi.StringValue(thumbprint)))
+			}
 			actual := &IAMOIDCProvider{
 				ClientIDs:   descResp.ClientIDList,
-				Thumbprints: descResp.ThumbprintList,
+				Thumbprints: thumbprints,
 				URL:         &actualURL,
 				Tags:        mapIAMTagsToMap(descResp.Tags),
 				arn:         arn,
@@ -120,7 +124,14 @@ func (s *IAMOIDCProvider) CheckChanges(a, e, changes *IAMOIDCProvider) error {
 }
 
 func (p *IAMOIDCProvider) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMOIDCProvider) error {
-	thumbprints := e.Thumbprints
+	thumbprints := []*string{}
+	for _, thumbprintResource := range e.Thumbprints {
+		thumbprint, err := fi.ResourceAsString(thumbprintResource)
+		if err != nil {
+			return err
+		}
+		thumbprints = append(thumbprints, fi.String(thumbprint))
+	}
 
 	if a == nil {
 		klog.V(2).Infof("Creating IAMOIDCProvider with Name:%q", *e.Name)
@@ -191,11 +202,19 @@ type terraformIAMOIDCProvider struct {
 }
 
 func (p *IAMOIDCProvider) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMOIDCProvider) error {
+	thumbprints := []*string{}
+	for _, thumbprintResource := range e.Thumbprints {
+		thumbprint, err := fi.ResourceAsString(thumbprintResource)
+		if err != nil {
+			return err
+		}
+		thumbprints = append(thumbprints, fi.String(thumbprint))
+	}
 
 	tf := &terraformIAMOIDCProvider{
 		URL:            e.URL,
 		ClientIDList:   e.ClientIDs,
-		ThumbprintList: e.Thumbprints,
+		ThumbprintList: thumbprints,
 		Tags:           e.Tags,
 	}
 
