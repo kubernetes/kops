@@ -220,7 +220,11 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	if cluster.Spec.NodeTerminationHandler != nil {
 		dest["DefaultQueueName"] = func() string {
 			s := strings.Replace(tf.ClusterName(), ".", "-", -1)
-			url := "https://sqs." + tf.Region + ".amazonaws.com/" + tf.AWSAccountID + "/" + s + "-nth"
+			domain := ".amazonaws.com/"
+			if strings.Contains(tf.Region, "cn-") {
+				domain = ".amazonaws.com.cn/"
+			}
+			url := "https://sqs." + tf.Region + domain + tf.AWSAccountID + "/" + s + "-nth"
 			return url
 		}
 	}
