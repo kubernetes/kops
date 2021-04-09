@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ var log = logf.RuntimeLog.WithName("certwatcher")
 // changes, it reads and parses both and calls an optional callback with the new
 // certificate.
 type CertWatcher struct {
-	sync.Mutex
+	sync.RWMutex
 
 	currentCert *tls.Certificate
 	watcher     *fsnotify.Watcher
@@ -64,8 +64,8 @@ func New(certPath, keyPath string) (*CertWatcher, error) {
 
 // GetCertificate fetches the currently loaded certificate, which may be nil.
 func (cw *CertWatcher) GetCertificate(_ *tls.ClientHelloInfo) (*tls.Certificate, error) {
-	cw.Lock()
-	defer cw.Unlock()
+	cw.RLock()
+	defer cw.RUnlock()
 	return cw.currentCert, nil
 }
 
