@@ -33,8 +33,12 @@ type fakeKeyStore struct {
 
 var _ fi.Keystore = &fakeKeyStore{}
 
-func (k fakeKeyStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
+func (k fakeKeyStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
 	panic("fakeKeyStore does not implement FindKeypair")
+}
+
+func (k fakeKeyStore) FindKeyset(name string) (*fi.Keyset, error) {
+	panic("fakeKeyStore does not implement FindKeyset")
 }
 
 func (k fakeKeyStore) CreateKeypair(signer string, name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
