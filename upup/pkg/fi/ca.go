@@ -52,7 +52,7 @@ type Keystore interface {
 	// task to convert a Legacy Keypair to the new Keypair API format.
 	FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error)
 
-	// StoreKeypair writes the keypair to the store
+	// StoreKeypair writes the keypair to the store, making it the primary.
 	StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error
 
 	// MirrorTo will copy secrets to a vfs.Path, which is often easier for a machine to read

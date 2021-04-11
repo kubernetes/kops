@@ -162,6 +162,9 @@ func (k *keyset) ToAPIObject(name string, includePrivateKeyMaterial bool) (*kops
 
 		o.Spec.Keys = append(o.Spec.Keys, oki)
 	}
+	if k.primary != nil {
+		o.Spec.PrimaryId = k.primary.id
+	}
 	return o, nil
 }
 
@@ -660,6 +663,7 @@ func (c *VFSCAStore) storePrivateKey(name string, ki *keysetItem) error {
 			ks.items = make(map[string]*keysetItem)
 		}
 		ks.items[ki.id] = ki
+		ks.primary = ki
 
 		if err := c.writeKeysetBundle(p, name, ks, true); err != nil {
 			return fmt.Errorf("error writing bundle: %v", err)
@@ -703,6 +707,7 @@ func (c *VFSCAStore) storeCertificate(name string, ki *keysetItem) error {
 			ks.items = make(map[string]*keysetItem)
 		}
 		ks.items[ki.id] = ki
+		ks.primary = ki
 
 		if err := c.writeKeysetBundle(p, name, ks, false); err != nil {
 			return fmt.Errorf("error writing bundle: %v", err)
@@ -748,6 +753,9 @@ func (c *VFSCAStore) deletePrivateKey(name string, id string) (bool, error) {
 			return false, nil
 		}
 		delete(ks.items, id)
+		if ks.primary != nil && ks.primary.id == id {
+			ks.primary = nil
+		}
 
 		if err := c.writeKeysetBundle(p, name, ks, true); err != nil {
 			return false, fmt.Errorf("error writing bundle: %v", err)
@@ -778,6 +786,9 @@ func (c *VFSCAStore) deleteCertificate(name string, id string) (bool, error) {
 			return false, nil
 		}
 		delete(ks.items, id)
+		if ks.primary != nil && ks.primary.id == id {
+			ks.primary = nil
+		}
 
 		if err := c.writeKeysetBundle(p, name, ks, false); err != nil {
 			return false, fmt.Errorf("error writing bundle: %v", err)
