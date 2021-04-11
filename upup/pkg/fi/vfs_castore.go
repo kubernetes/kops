@@ -106,11 +106,12 @@ func (c *VFSCAStore) parseKeysetYaml(data []byte) (*kops.Keyset, bool, error) {
 	return keyset, gvk.Version != keysetFormatLatest, nil
 }
 
-// loadCertificatesBundle loads a keyset from the path
+// loadKeyset loads a keyset from the path
 // Returns (nil, nil) if the file is not found
 // Bundles avoid the need for a list-files permission, which can be tricky on e.g. GCE
-func (c *VFSCAStore) loadKeysetBundle(p vfs.Path) (*keyset, error) {
-	data, err := p.ReadFile()
+func (c *VFSCAStore) loadKeyset(p vfs.Path) (*keyset, error) {
+	bundlePath := p.Join("keyset.yaml")
+	data, err := bundlePath.ReadFile()
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
@@ -230,12 +231,6 @@ func SerializeKeyset(o *kops.Keyset) ([]byte, error) {
 	return objectData.Bytes(), nil
 }
 
-func (c *VFSCAStore) loadCertificates(p vfs.Path) (*keyset, error) {
-	bundlePath := p.Join("keyset.yaml")
-	bundle, err := c.loadKeysetBundle(bundlePath)
-	return bundle, err
-}
-
 func (c *VFSCAStore) loadOneCertificate(p vfs.Path) (*pki.Certificate, error) {
 	data, err := p.ReadFile()
 	if err != nil {
@@ -278,7 +273,7 @@ func (c *VFSCAStore) FindKeypair(id string) (*pki.Certificate, *pki.PrivateKey, 
 
 func (c *VFSCAStore) findCert(name string) (*pki.Certificate, bool, error) {
 	p := c.buildCertificatePoolPath(name)
-	certs, err := c.loadCertificates(p)
+	certs, err := c.loadKeyset(p)
 	if err != nil {
 		return nil, false, fmt.Errorf("error in 'FindCert' attempting to load cert %q: %v", name, err)
 	}
@@ -300,7 +295,7 @@ func (c *VFSCAStore) FindCertificatePool(name string) (*CertificatePool, error) 
 
 	var err error
 	p := c.buildCertificatePoolPath(name)
-	certs, err = c.loadCertificates(p)
+	certs, err = c.loadKeyset(p)
 	if err != nil {
 		return nil, fmt.Errorf("error in 'FindCertificatePool' attempting to load cert %q: %v", name, err)
 	}
@@ -327,7 +322,7 @@ func (c *VFSCAStore) FindCertificatePool(name string) (*CertificatePool, error) 
 
 func (c *VFSCAStore) FindCertificateKeyset(name string) (*kops.Keyset, error) {
 	p := c.buildCertificatePoolPath(name)
-	certs, err := c.loadCertificates(p)
+	certs, err := c.loadKeyset(p)
 	if err != nil {
 		return nil, fmt.Errorf("error in 'FindCertificatePool' attempting to load cert %q: %v", name, err)
 	}
@@ -584,13 +579,6 @@ func (c *VFSCAStore) AddCert(name string, cert *pki.Certificate) error {
 	return err
 }
 
-func (c *VFSCAStore) loadPrivateKeys(p vfs.Path) (*keyset, error) {
-	bundlePath := p.Join("keyset.yaml")
-	bundle, err := c.loadKeysetBundle(bundlePath)
-
-	return bundle, err
-}
-
 func (c *VFSCAStore) findPrivateKeyset(id string) (*keyset, error) {
 	var keys *keyset
 	var err error
@@ -603,7 +591,7 @@ func (c *VFSCAStore) findPrivateKeyset(id string) (*keyset, error) {
 			return cached, nil
 		}
 
-		keys, err = c.loadPrivateKeys(c.buildPrivateKeyPoolPath(id))
+		keys, err = c.loadKeyset(c.buildPrivateKeyPoolPath(id))
 		if err != nil {
 			return nil, err
 		}
@@ -616,7 +604,7 @@ func (c *VFSCAStore) findPrivateKeyset(id string) (*keyset, error) {
 		}
 	} else {
 		p := c.buildPrivateKeyPoolPath(id)
-		keys, err = c.loadPrivateKeys(p)
+		keys, err = c.loadKeyset(p)
 		if err != nil {
 			return nil, err
 		}
@@ -660,7 +648,7 @@ func (c *VFSCAStore) storePrivateKey(name string, ki *keysetItem) error {
 	// Write the bundle
 	{
 		p := c.buildPrivateKeyPoolPath(name)
-		ks, err := c.loadPrivateKeys(p)
+		ks, err := c.loadKeyset(p)
 		if err != nil {
 			return err
 		}
@@ -703,7 +691,7 @@ func (c *VFSCAStore) storeCertificate(name string, ki *keysetItem) error {
 	// Write the bundle
 	{
 		p := c.buildCertificatePoolPath(name)
-		ks, err := c.loadCertificates(p)
+		ks, err := c.loadKeyset(p)
 		if err != nil {
 			return err
 		}
@@ -751,7 +739,7 @@ func (c *VFSCAStore) deletePrivateKey(name string, id string) (bool, error) {
 	// Update the bundle
 	{
 		p := c.buildPrivateKeyPoolPath(name)
-		ks, err := c.loadPrivateKeys(p)
+		ks, err := c.loadKeyset(p)
 		if err != nil {
 			return false, err
 		}
@@ -781,7 +769,7 @@ func (c *VFSCAStore) deleteCertificate(name string, id string) (bool, error) {
 	// Update the bundle
 	{
 		p := c.buildCertificatePoolPath(name)
-		ks, err := c.loadCertificates(p)
+		ks, err := c.loadKeyset(p)
 		if err != nil {
 			return false, err
 		}
