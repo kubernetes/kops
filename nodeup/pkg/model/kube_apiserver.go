@@ -17,6 +17,10 @@ limitations under the License.
 package model
 
 import (
+	"bytes"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -26,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
@@ -80,6 +85,39 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 				return fmt.Errorf("encryptionConfig enabled, but could not load encryptionconfig secret: %v", err)
 			}
 		}
+	}
+	{
+		keyset, err := b.KeyStore.FindPrivateKeyset("service-account")
+		if err != nil {
+			return err
+		}
+
+		if keyset == nil {
+			return fmt.Errorf("service-account keyset not found")
+		}
+
+		buf := new(bytes.Buffer)
+		for _, keyItem := range keyset.Spec.Keys {
+			privateKey, err := pki.ParsePEMPrivateKey(keyItem.PrivateMaterial)
+			if err != nil {
+				return fmt.Errorf("error loading service-account private key %s: %v", keyItem.Id, err)
+			}
+			pkData, err := x509.MarshalPKIXPublicKey(privateKey.Key.(*rsa.PrivateKey).Public())
+			if err != nil {
+				return fmt.Errorf("marshalling public key: %v", err)
+			}
+			err = pem.Encode(buf, &pem.Block{Type: "RSA PUBLIC KEY", Bytes: pkData})
+			if err != nil {
+				return fmt.Errorf("encoding public key: %v", err)
+			}
+		}
+
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join(b.PathSrvKubernetes(), "service-account.pub"),
+			Contents: fi.NewBytesResource(buf.Bytes()),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0600"),
+		})
 	}
 	{
 		pod, err := b.buildPod()
@@ -282,8 +320,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	kubeAPIServer := b.Cluster.Spec.KubeAPIServer
 
-	// TODO pass the public key instead. We would first need to segregate the secrets better.
-	kubeAPIServer.ServiceAccountKeyFile = append(kubeAPIServer.ServiceAccountKeyFile, filepath.Join(b.PathSrvKubernetes(), "service-account.key"))
+	kubeAPIServer.ServiceAccountKeyFile = append(kubeAPIServer.ServiceAccountKeyFile, filepath.Join(b.PathSrvKubernetes(), "service-account.pub"))
 
 	// Set the signing key if we're using Service Account Token VolumeProjection
 	if kubeAPIServer.ServiceAccountSigningKeyFile == nil {

@@ -54,8 +54,8 @@ func (k fakeKeyStore) MirrorTo(basedir vfs.Path) error {
 type fakeCAStore struct {
 	fakeKeyStore
 
-	privateKeys map[string]*pki.PrivateKey
-	certs       map[string]*pki.Certificate
+	privateKeysets map[string]*kops.Keyset
+	certs          map[string]*pki.Certificate
 }
 
 var _ fi.CAStore = &fakeCAStore{}
@@ -69,11 +69,17 @@ func (k fakeCAStore) FindCertificateKeyset(name string) (*kops.Keyset, error) {
 }
 
 func (k fakeCAStore) FindPrivateKey(name string) (*pki.PrivateKey, error) {
-	return k.privateKeys[name], nil
+	primaryId := k.privateKeysets[name].Spec.PrimaryId
+	for _, item := range k.privateKeysets[name].Spec.Keys {
+		if item.Id == primaryId {
+			return pki.ParsePEMPrivateKey(item.PrivateMaterial)
+		}
+	}
+	return nil, nil
 }
 
 func (k fakeCAStore) FindPrivateKeyset(name string) (*kops.Keyset, error) {
-	panic("fakeCAStore does not implement FindPrivateKeyset")
+	return k.privateKeysets[name], nil
 }
 
 func (k fakeCAStore) FindCert(name string) (*pki.Certificate, error) {
