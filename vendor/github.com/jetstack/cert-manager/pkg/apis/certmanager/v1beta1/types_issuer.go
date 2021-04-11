@@ -279,7 +279,7 @@ type CAIssuer struct {
 	// The OCSP server list is an X.509 v3 extension that defines a list of
 	// URLs of OCSP responders. The OCSP responders can be queried for the
 	// revocation status of an issued certificate. If not set, the
-	// certificate wil be issued with no OCSP servers set. For example, an
+	// certificate will be issued with no OCSP servers set. For example, an
 	// OCSP server URL could be "http://ocsp.int-x3.letsencrypt.org".
 	// +optional
 	OCSPServers []string `json:"ocspServers,omitempty"`
@@ -321,6 +321,14 @@ type IssuerCondition struct {
 	// transition, complementing reason.
 	// +optional
 	Message string `json:"message,omitempty"`
+
+	// If set, this represents the .metadata.generation that the condition was
+	// set based upon.
+	// For instance, if .metadata.generation is currently 12, but the
+	// .status.condition[x].observedGeneration is 9, the condition is out of date
+	// with respect to the current state of the Issuer.
+	// +optional
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 }
 
 // IssuerConditionType represents an Issuer condition value.

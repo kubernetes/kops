@@ -98,6 +98,7 @@ type CertificateSpec struct {
 
 	// The requested 'duration' (i.e. lifetime) of the Certificate.
 	// This option may be ignored/overridden by some issuer types.
+	// If unset this defaults to 90 days.
 	// If overridden and `renewBefore` is greater than the actual certificate
 	// duration, the certificate will be automatically renewed 2/3rds of the
 	// way through the certificate's duration.
@@ -106,6 +107,7 @@ type CertificateSpec struct {
 
 	// The amount of time before the currently issued certificate's `notAfter`
 	// time that cert-manager will begin to attempt to renew the certificate.
+	// If unset this defaults to 30 days.
 	// If this value is greater than the total duration of the certificate
 	// (i.e. notAfter - notBefore), it will be automatically renewed 2/3rds of
 	// the way through the certificate's duration.
@@ -165,6 +167,18 @@ type CertificateSpec struct {
 	// in the CertificateRequest
 	// +optional
 	EncodeUsagesInRequest *bool `json:"encodeUsagesInRequest,omitempty"`
+
+	// revisionHistoryLimit is the maximum number of CertificateRequest revisions
+	// that are maintained in the Certificate's history. Each revision represents
+	// a single `CertificateRequest` created by this Certificate, either when it
+	// was created, renewed, or Spec was changed. Revisions will be removed by
+	// oldest first if the number of revisions exceeds this number. If set,
+	// revisionHistoryLimit must be a value of `1` or greater. If unset (`nil`),
+	// revisions will not be garbage collected. Default value is `nil`.
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:ExclusiveMaximum=false
+	// +optional
+	RevisionHistoryLimit *int32 `json:"revisionHistoryLimit,omitempty"`
 }
 
 // CertificatePrivateKey contains configuration options for private keys
@@ -383,6 +397,14 @@ type CertificateCondition struct {
 	// transition, complementing reason.
 	// +optional
 	Message string `json:"message,omitempty"`
+
+	// If set, this represents the .metadata.generation that the condition was
+	// set based upon.
+	// For instance, if .metadata.generation is currently 12, but the
+	// .status.condition[x].observedGeneration is 9, the condition is out of date
+	// with respect to the current state of the Certificate.
+	// +optional
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 }
 
 // CertificateConditionType represents an Certificate condition value.
