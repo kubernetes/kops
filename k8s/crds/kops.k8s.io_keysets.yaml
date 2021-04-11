@@ -59,6 +59,9 @@ spec:
                       type: string
                   type: object
                 type: array
+              primaryId:
+                description: PrimaryId is the id of the key used to mint new things.
+                type: string
               type:
                 description: Type is the type of the Keyset (PKI keypair, or secret
                   token)
