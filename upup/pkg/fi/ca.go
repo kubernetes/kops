@@ -43,6 +43,20 @@ type KeystoreItem struct {
 	Data []byte
 }
 
+// Keyset is a parsed api.Keyset.
+type Keyset struct {
+	LegacyFormat bool
+	Items        map[string]*KeysetItem
+	Primary      *KeysetItem
+}
+
+// KeysetItem is a certificate/key pair in a Keyset.
+type KeysetItem struct {
+	Id          string
+	Certificate *pki.Certificate
+	PrivateKey  *pki.PrivateKey
+}
+
 // Keystore contains just the functions we need to issue keypairs, not to list / manage them
 type Keystore interface {
 	// FindKeypair finds a cert & private key, returning nil where either is not found
