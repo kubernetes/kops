@@ -110,7 +110,7 @@ func parseKeyset(o *kops.Keyset) (*keyset, error) {
 		keyset.items[key.Id] = ki
 	}
 
-	keyset.primary = keyset.findPrimary()
+	keyset.primary = keyset.items[FindPrimary(o).Id]
 
 	return keyset, nil
 }
@@ -132,36 +132,23 @@ func (c *ClientsetCAStore) loadKeyset(ctx context.Context, name string) (*keyset
 	return keyset, nil
 }
 
-// findPrimary returns the primary keysetItem in the keyset
-func (k *keyset) findPrimary() *keysetItem {
-	var primary *keysetItem
-	var primaryVersion *big.Int
-
-	for _, item := range k.items {
-		version, ok := big.NewInt(0).SetString(item.id, 10)
-		if !ok {
-			klog.Warningf("Ignoring key item with non-integer version: %q", item.id)
-			continue
-		}
-
-		if primaryVersion == nil || version.Cmp(primaryVersion) > 0 {
-			primary = item
-			primaryVersion = version
-		}
-	}
-	return primary
-}
-
 // FindPrimary returns the primary KeysetItem in the Keyset
 func FindPrimary(keyset *kops.Keyset) *kops.KeysetItem {
 	var primary *kops.KeysetItem
 	var primaryVersion *big.Int
+
+	primaryId := keyset.Spec.PrimaryId
+
 	for i := range keyset.Spec.Keys {
 		item := &keyset.Spec.Keys[i]
 		version, ok := big.NewInt(0).SetString(item.Id, 10)
 		if !ok {
 			klog.Warningf("Ignoring key item with non-integer version: %q", item.Id)
 			continue
+		}
+
+		if item.Id == primaryId {
+			return item
 		}
 
 		if primaryVersion == nil || version.Cmp(primaryVersion) > 0 {
