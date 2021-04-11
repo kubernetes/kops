@@ -54,7 +54,7 @@ type deployer struct {
 	Env            []string `flag:"env" desc:"Additional env vars to set for kops commands in NAME=VALUE format"`
 	CreateArgs     string   `flag:"create-args" desc:"Extra space-separated arguments passed to 'kops create cluster'"`
 	KopsBinaryPath string   `flag:"kops-binary-path" desc:"The path to kops executable used for testing"`
-	StateStore     string   `flag:"-"`
+	createBucket   bool     `flag:"-"`
 
 	ValidationWait time.Duration `flag:"validation-wait" desc:"time to wait for newly created cluster to pass validation"`
 

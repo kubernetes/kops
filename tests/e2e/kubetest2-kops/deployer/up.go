@@ -44,6 +44,10 @@ func (d *deployer) Up() error {
 		return err
 	}
 
+	if d.CloudProvider == "gce" && d.createBucket {
+		gce.EnsureGCSBucket(d.stateStore(), d.GCPProject)
+	}
+
 	adminAccess := d.AdminAccess
 	if adminAccess == "" {
 		adminAccess = publicIP
