@@ -58,6 +58,9 @@ func (d *deployer) verifyBuildFlags() error {
 		}
 		d.StageLocation = fmt.Sprintf(defaultGCSPath, jobName)
 	}
+	if d.KopsBaseURL == "" {
+		d.KopsBaseURL = strings.Replace(d.StageLocation, "gs://", "https://storage.googleapis.com/", 1)
+	}
 	fi, err := os.Stat(d.KopsRoot)
 	if err != nil {
 		return err
