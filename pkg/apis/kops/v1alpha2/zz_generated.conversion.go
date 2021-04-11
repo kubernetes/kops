@@ -4454,6 +4454,7 @@ func Convert_kops_KeysetList_To_v1alpha2_KeysetList(in *kops.KeysetList, out *Ke
 
 func autoConvert_v1alpha2_KeysetSpec_To_kops_KeysetSpec(in *KeysetSpec, out *kops.KeysetSpec, s conversion.Scope) error {
 	out.Type = kops.KeysetType(in.Type)
+	out.PrimaryId = in.PrimaryId
 	if in.Keys != nil {
 		in, out := &in.Keys, &out.Keys
 		*out = make([]kops.KeysetItem, len(*in))
@@ -4475,6 +4476,7 @@ func Convert_v1alpha2_KeysetSpec_To_kops_KeysetSpec(in *KeysetSpec, out *kops.Ke
 
 func autoConvert_kops_KeysetSpec_To_v1alpha2_KeysetSpec(in *kops.KeysetSpec, out *KeysetSpec, s conversion.Scope) error {
 	out.Type = KeysetType(in.Type)
+	out.PrimaryId = in.PrimaryId
 	if in.Keys != nil {
 		in, out := &in.Keys, &out.Keys
 		*out = make([]KeysetItem, len(*in))
