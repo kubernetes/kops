@@ -17,6 +17,9 @@ limitations under the License.
 package nodeup
 
 import (
+	"fmt"
+	"reflect"
+
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -35,7 +38,7 @@ func (l *Loader) Build() (map[string]fi.Task, error) {
 		}
 		err := builder.Build(context)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("building %s: %v", reflect.TypeOf(builder), err)
 		}
 		tasks = context.Tasks
 	}
