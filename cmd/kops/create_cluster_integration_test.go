@@ -49,6 +49,7 @@ func TestCreateClusterMinimal(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.18", "v1alpha2")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.19", "v1alpha2")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.20", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.21", "v1alpha2")
 }
 
 // TestCreateClusterOverride tests the override flag
