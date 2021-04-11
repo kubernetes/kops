@@ -9383,8 +9383,6 @@ data:
 ---
 # Source: calico/templates/kdd-crds.yaml
 
-
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -9518,8 +9516,6 @@ status:
   storedVersions: []
 
 ---
-
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -9559,7 +9555,6 @@ spec:
                 format: int32
                 type: integer
               keepOriginalNextHop:
-                default: false
                 description: Option to keep the original nexthop field when routes
                   are sent to a BGP Peer. Setting "true" configures the selected BGP
                   Peers node to use the "next hop keep;" instead of "next hop self;"(default)
@@ -9625,8 +9620,6 @@ status:
   storedVersions: []
 
 ---
-
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -9688,8 +9681,6 @@ status:
     plural: ""
   conditions: []
   storedVersions: []
-
----
 
 ---
 apiVersion: apiextensions.k8s.io/v1
@@ -9758,14 +9749,10 @@ status:
   storedVersions: []
 
 ---
-
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: felixconfigurations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
 spec:
   group: crd.projectcalico.org
   names:
@@ -10312,8 +10299,6 @@ status:
     plural: ""
   conditions: []
   storedVersions: []
-
----
 
 ---
 apiVersion: apiextensions.k8s.io/v1
@@ -11089,8 +11074,6 @@ status:
   storedVersions: []
 
 ---
-
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -11144,8 +11127,6 @@ status:
     plural: ""
   conditions: []
   storedVersions: []
-
----
 
 ---
 apiVersion: apiextensions.k8s.io/v1
@@ -11258,8 +11239,6 @@ status:
   storedVersions: []
 
 ---
-
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -11343,8 +11322,6 @@ status:
   storedVersions: []
 
 ---
-
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -11403,8 +11380,6 @@ status:
   storedVersions: []
 
 ---
-
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -11461,8 +11436,6 @@ status:
     plural: ""
   conditions: []
   storedVersions: []
-
----
 
 ---
 apiVersion: apiextensions.k8s.io/v1
@@ -11564,8 +11537,6 @@ status:
     plural: ""
   conditions: []
   storedVersions: []
-
----
 
 ---
 apiVersion: apiextensions.k8s.io/v1
@@ -11791,8 +11762,6 @@ status:
     plural: ""
   conditions: []
   storedVersions: []
-
----
 
 ---
 apiVersion: apiextensions.k8s.io/v1
@@ -12547,8 +12516,6 @@ status:
     plural: ""
   conditions: []
   storedVersions: []
-
----
 
 ---
 apiVersion: apiextensions.k8s.io/v1
