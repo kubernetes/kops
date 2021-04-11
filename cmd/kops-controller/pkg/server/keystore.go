@@ -35,12 +35,12 @@ type keystoreEntry struct {
 
 var _ pki.Keystore = keystore{}
 
-func (k keystore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
+func (k keystore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
 	entry, ok := k.keys[name]
 	if !ok {
-		return nil, nil, false, fmt.Errorf("unknown CA %q", name)
+		return nil, nil, fmt.Errorf("unknown CA %q", name)
 	}
-	return entry.certificate, entry.key, false, nil
+	return entry.certificate, entry.key, nil
 }
 
 func newKeystore(basePath string, cas []string) (pki.Keystore, error) {

@@ -145,19 +145,15 @@ func FindPrimary(keyset *kops.Keyset) *kops.KeysetItem {
 	return primary
 }
 
-// FindKeypair implements CAStore::FindKeypair
-func (c *ClientsetCAStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
+// FindKeypair implements PKI::FindKeypair
+func (c *ClientsetCAStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	return FindKeypair(c, name)
+}
+
+// FindKeyset implements CAStore::FindKeyset
+func (c *ClientsetCAStore) FindKeyset(name string) (*Keyset, error) {
 	ctx := context.TODO()
-	keyset, err := c.loadKeyset(ctx, name)
-	if err != nil {
-		return nil, nil, false, err
-	}
-
-	if keyset != nil && keyset.Primary != nil {
-		return keyset.Primary.Certificate, keyset.Primary.PrivateKey, keyset.LegacyFormat, nil
-	}
-
-	return nil, nil, false, nil
+	return c.loadKeyset(ctx, name)
 }
 
 // FindCert implements CAStore::FindCert

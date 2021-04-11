@@ -252,26 +252,49 @@ func (c *VFSCAStore) loadOneCertificate(p vfs.Path) (*pki.Certificate, error) {
 	return cert, nil
 }
 
-func (c *VFSCAStore) FindKeypair(id string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
-	cert, legacyFormat, err := c.findCert(id)
+func (c *VFSCAStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	return FindKeypair(c, name)
+}
+
+func (c *VFSCAStore) FindKeyset(id string) (*Keyset, error) {
+	certs, err := c.loadKeyset(c.buildCertificatePoolPath(id))
 
 	if (cert == nil || os.IsNotExist(err)) && id == "service-account" {
 		// The strange name is because Kops prior to 1.19 used the api-server TLS key for this.
 		id = "master"
-		cert, _, err = c.findCert(id)
-		legacyFormat = true
+		certs, err = c.loadKeyset(c.buildCertificatePoolPath(id))
+		if certs != nil {
+			certs.LegacyFormat = true
+		}
 	}
 
 	if err != nil {
-		return nil, nil, false, err
+		return nil, err
 	}
 
-	key, err := c.FindPrivateKey(id)
+	keys, err := c.findPrivateKeyset(id)
 	if err != nil {
-		return nil, nil, false, err
+		return nil, err
 	}
 
-	return cert, key, legacyFormat, nil
+	if certs != nil {
+		if keys == nil {
+			return certs, nil
+		}
+		if certs.LegacyFormat {
+			keys.LegacyFormat = true
+		}
+		for key, certItem := range certs.Items {
+			keyItem := keys.Items[key]
+			if keyItem == nil {
+				keys.Items[key] = certItem
+			} else if keyItem.Certificate == nil {
+				keyItem.Certificate = certItem.Certificate
+			}
+		}
+	}
+
+	return keys, nil
 }
 
 func (c *VFSCAStore) findCert(name string) (*pki.Certificate, bool, error) {

@@ -45,6 +45,7 @@ type KeystoreItem struct {
 
 // Keyset is a parsed api.Keyset.
 type Keyset struct {
+	// LegacyFormat instructs a keypair task to convert a Legacy Keyset to the new Keyset API format.
 	LegacyFormat bool
 	Items        map[string]*KeysetItem
 	Primary      *KeysetItem
@@ -59,12 +60,10 @@ type KeysetItem struct {
 
 // Keystore contains just the functions we need to issue keypairs, not to list / manage them
 type Keystore interface {
-	// FindKeypair finds a cert & private key, returning nil where either is not found
-	// (if the certificate is found but not keypair, that is not an error: only the cert will be returned).
-	// This func returns a cert, private key and a bool.  The bool value is whether the keypair is stored
-	// in a legacy format. This bool is used by a keypair
-	// task to convert a Legacy Keypair to the new Keypair API format.
-	FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error)
+	pki.Keystore
+
+	// FindKeyset finds a Keyset.
+	FindKeyset(name string) (*Keyset, error)
 
 	// StoreKeypair writes the keypair to the store, making it the primary.
 	StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error
@@ -158,4 +157,16 @@ func (c *CertificatePool) AsString() (string, error) {
 		}
 	}
 	return data.String(), nil
+}
+
+// FindKeypair is a common implementation of pki.FindKeypair.
+func FindKeypair(c Keystore, name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	keyset, err := c.FindKeyset(name)
+	if err != nil {
+		return nil, nil, err
+	}
+	if keyset == nil || keyset.Primary == nil {
+		return nil, nil, nil
+	}
+	return keyset.Primary.Certificate, keyset.Primary.PrivateKey, nil
 }
