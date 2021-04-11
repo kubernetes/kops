@@ -40,7 +40,7 @@ type VFSCAStore struct {
 	cluster *kops.Cluster
 
 	mutex    sync.Mutex
-	cachedCA *keyset
+	cachedCA *Keyset
 }
 
 var _ CAStore = &VFSCAStore{}
@@ -106,10 +106,10 @@ func (c *VFSCAStore) parseKeysetYaml(data []byte) (*kops.Keyset, bool, error) {
 	return keyset, gvk.Version != keysetFormatLatest, nil
 }
 
-// loadKeyset loads a keyset from the path
+// loadKeyset loads a Keyset from the path.
 // Returns (nil, nil) if the file is not found
 // Bundles avoid the need for a list-files permission, which can be tricky on e.g. GCE
-func (c *VFSCAStore) loadKeyset(p vfs.Path) (*keyset, error) {
+func (c *VFSCAStore) loadKeyset(p vfs.Path) (*Keyset, error) {
 	bundlePath := p.Join("keyset.yaml")
 	data, err := bundlePath.ReadFile()
 	if err != nil {
@@ -129,31 +129,31 @@ func (c *VFSCAStore) loadKeyset(p vfs.Path) (*keyset, error) {
 		return nil, fmt.Errorf("error mapping bundle %q: %v", p, err)
 	}
 
-	keyset.legacyFormat = legacyFormat
+	keyset.LegacyFormat = legacyFormat
 	return keyset, nil
 }
 
-func (k *keyset) ToAPIObject(name string, includePrivateKeyMaterial bool) (*kops.Keyset, error) {
+func (k *Keyset) ToAPIObject(name string, includePrivateKeyMaterial bool) (*kops.Keyset, error) {
 	o := &kops.Keyset{}
 	o.Name = name
 	o.Spec.Type = kops.SecretTypeKeypair
 
-	for _, ki := range k.items {
+	for _, ki := range k.Items {
 		oki := kops.KeysetItem{
-			Id: ki.id,
+			Id: ki.Id,
 		}
 
-		if ki.certificate != nil {
+		if ki.Certificate != nil {
 			var publicMaterial bytes.Buffer
-			if _, err := ki.certificate.WriteTo(&publicMaterial); err != nil {
+			if _, err := ki.Certificate.WriteTo(&publicMaterial); err != nil {
 				return nil, err
 			}
 			oki.PublicMaterial = publicMaterial.Bytes()
 		}
 
-		if includePrivateKeyMaterial && ki.privateKey != nil {
+		if includePrivateKeyMaterial && ki.PrivateKey != nil {
 			var privateMaterial bytes.Buffer
-			if _, err := ki.privateKey.WriteTo(&privateMaterial); err != nil {
+			if _, err := ki.PrivateKey.WriteTo(&privateMaterial); err != nil {
 				return nil, err
 			}
 
@@ -162,14 +162,14 @@ func (k *keyset) ToAPIObject(name string, includePrivateKeyMaterial bool) (*kops
 
 		o.Spec.Keys = append(o.Spec.Keys, oki)
 	}
-	if k.primary != nil {
-		o.Spec.PrimaryId = k.primary.id
+	if k.Primary != nil {
+		o.Spec.PrimaryId = k.Primary.Id
 	}
 	return o, nil
 }
 
-// writeKeysetBundle writes a keyset bundle to VFS
-func (c *VFSCAStore) writeKeysetBundle(p vfs.Path, name string, keyset *keyset, includePrivateKeyMaterial bool) error {
+// writeKeysetBundle writes a Keyset bundle to VFS.
+func (c *VFSCAStore) writeKeysetBundle(p vfs.Path, name string, keyset *Keyset, includePrivateKeyMaterial bool) error {
 	p = p.Join("keyset.yaml")
 
 	o, err := keyset.ToAPIObject(name, includePrivateKeyMaterial)
@@ -189,7 +189,7 @@ func (c *VFSCAStore) writeKeysetBundle(p vfs.Path, name string, keyset *keyset, 
 	return p.WriteFile(bytes.NewReader(objectData), acl)
 }
 
-// serializeKeysetBundle converts a keyset bundle to yaml, for writing to VFS
+// serializeKeysetBundle converts a Keyset bundle to yaml, for writing to VFS.
 func serializeKeysetBundle(o *kops.Keyset) ([]byte, error) {
 	var objectData bytes.Buffer
 	codecs := kopscodecs.Codecs
@@ -281,8 +281,8 @@ func (c *VFSCAStore) findCert(name string) (*pki.Certificate, bool, error) {
 		return nil, false, fmt.Errorf("error in 'FindCert' attempting to load cert %q: %v", name, err)
 	}
 
-	if certs != nil && certs.primary != nil {
-		return certs.primary.certificate, certs.legacyFormat, nil
+	if certs != nil && certs.Primary != nil {
+		return certs.Primary.Certificate, certs.LegacyFormat, nil
 	}
 
 	return nil, false, nil
@@ -294,7 +294,7 @@ func (c *VFSCAStore) FindCert(name string) (*pki.Certificate, error) {
 }
 
 func (c *VFSCAStore) FindCertificatePool(name string) (*CertificatePool, error) {
-	var certs *keyset
+	var certs *Keyset
 
 	var err error
 	p := c.buildCertificatePoolPath(name)
@@ -306,18 +306,18 @@ func (c *VFSCAStore) FindCertificatePool(name string) (*CertificatePool, error) 
 	pool := &CertificatePool{}
 
 	if certs != nil {
-		if certs.primary != nil {
-			pool.Primary = certs.primary.certificate
+		if certs.Primary != nil {
+			pool.Primary = certs.Primary.Certificate
 		}
 
-		for k, cert := range certs.items {
-			if certs.primary != nil && k == certs.primary.id {
+		for k, cert := range certs.Items {
+			if certs.Primary != nil && k == certs.Primary.Id {
 				continue
 			}
-			if cert.certificate == nil {
+			if cert.Certificate == nil {
 				continue
 			}
-			pool.Secondary = append(pool.Secondary, cert.certificate)
+			pool.Secondary = append(pool.Secondary, cert.Certificate)
 		}
 	}
 	return pool, nil
@@ -462,7 +462,7 @@ func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
 	return nil
 }
 
-// mirrorKeyset writes keyset bundles for the certificates & privatekeys
+// mirrorKeyset writes Keyset bundles for the certificates & privatekeys.
 func mirrorKeyset(cluster *kops.Cluster, basedir vfs.Path, keyset *kops.Keyset) error {
 	primary := FindPrimary(keyset)
 	if primary == nil {
@@ -536,10 +536,10 @@ func mirrorSSHCredential(cluster *kops.Cluster, basedir vfs.Path, sshCredential 
 func (c *VFSCAStore) StoreKeypair(name string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
 	serial := cert.Certificate.SerialNumber.String()
 
-	ki := &keysetItem{
-		id:          serial,
-		certificate: cert,
-		privateKey:  privateKey,
+	ki := &KeysetItem{
+		Id:          serial,
+		Certificate: cert,
+		PrivateKey:  privateKey,
 	}
 
 	{
@@ -568,9 +568,9 @@ func (c *VFSCAStore) AddCert(name string, cert *pki.Certificate) error {
 
 	p := c.buildCertificatePath(name, serial)
 
-	ki := &keysetItem{
-		id:          serial,
-		certificate: cert,
+	ki := &KeysetItem{
+		Id:          serial,
+		Certificate: cert,
 	}
 	err := c.storeCertificate(name, ki)
 	if err != nil {
@@ -582,8 +582,8 @@ func (c *VFSCAStore) AddCert(name string, cert *pki.Certificate) error {
 	return err
 }
 
-func (c *VFSCAStore) findPrivateKeyset(id string) (*keyset, error) {
-	var keys *keyset
+func (c *VFSCAStore) findPrivateKeyset(id string) (*Keyset, error) {
+	var keys *Keyset
 	var err error
 	if id == CertificateIDCA {
 		c.mutex.Lock()
@@ -623,8 +623,8 @@ func (c *VFSCAStore) FindPrivateKey(id string) (*pki.PrivateKey, error) {
 	}
 
 	var key *pki.PrivateKey
-	if keys != nil && keys.primary != nil {
-		key = keys.primary.privateKey
+	if keys != nil && keys.Primary != nil {
+		key = keys.Primary.PrivateKey
 	}
 	return key, nil
 }
@@ -643,8 +643,8 @@ func (c *VFSCAStore) FindPrivateKeyset(name string) (*kops.Keyset, error) {
 	return o, nil
 }
 
-func (c *VFSCAStore) storePrivateKey(name string, ki *keysetItem) error {
-	if ki.privateKey == nil {
+func (c *VFSCAStore) storePrivateKey(name string, ki *KeysetItem) error {
+	if ki.PrivateKey == nil {
 		return fmt.Errorf("privateKey not provided to storeCertificate")
 	}
 
@@ -657,13 +657,13 @@ func (c *VFSCAStore) storePrivateKey(name string, ki *keysetItem) error {
 		}
 
 		if ks == nil {
-			ks = &keyset{}
+			ks = &Keyset{}
 		}
-		if ks.items == nil {
-			ks.items = make(map[string]*keysetItem)
+		if ks.Items == nil {
+			ks.Items = make(map[string]*KeysetItem)
 		}
-		ks.items[ki.id] = ki
-		ks.primary = ki
+		ks.Items[ki.Id] = ki
+		ks.Primary = ki
 
 		if err := c.writeKeysetBundle(p, name, ks, true); err != nil {
 			return fmt.Errorf("error writing bundle: %v", err)
@@ -674,11 +674,11 @@ func (c *VFSCAStore) storePrivateKey(name string, ki *keysetItem) error {
 	// Write the data
 	{
 		var data bytes.Buffer
-		if _, err := ki.privateKey.WriteTo(&data); err != nil {
+		if _, err := ki.PrivateKey.WriteTo(&data); err != nil {
 			return err
 		}
 
-		p := c.buildPrivateKeyPath(name, ki.id)
+		p := c.buildPrivateKeyPath(name, ki.Id)
 		acl, err := acls.GetACL(p, c.cluster)
 		if err != nil {
 			return err
@@ -687,8 +687,8 @@ func (c *VFSCAStore) storePrivateKey(name string, ki *keysetItem) error {
 	}
 }
 
-func (c *VFSCAStore) storeCertificate(name string, ki *keysetItem) error {
-	if ki.certificate == nil {
+func (c *VFSCAStore) storeCertificate(name string, ki *KeysetItem) error {
+	if ki.Certificate == nil {
 		return fmt.Errorf("certificate not provided to storeCertificate")
 	}
 
@@ -701,13 +701,13 @@ func (c *VFSCAStore) storeCertificate(name string, ki *keysetItem) error {
 		}
 
 		if ks == nil {
-			ks = &keyset{}
+			ks = &Keyset{}
 		}
-		if ks.items == nil {
-			ks.items = make(map[string]*keysetItem)
+		if ks.Items == nil {
+			ks.Items = make(map[string]*KeysetItem)
 		}
-		ks.items[ki.id] = ki
-		ks.primary = ki
+		ks.Items[ki.Id] = ki
+		ks.Primary = ki
 
 		if err := c.writeKeysetBundle(p, name, ks, false); err != nil {
 			return fmt.Errorf("error writing bundle: %v", err)
@@ -718,11 +718,11 @@ func (c *VFSCAStore) storeCertificate(name string, ki *keysetItem) error {
 	// Write the data
 	{
 		var data bytes.Buffer
-		if _, err := ki.certificate.WriteTo(&data); err != nil {
+		if _, err := ki.Certificate.WriteTo(&data); err != nil {
 			return err
 		}
 
-		p := c.buildCertificatePath(name, ki.id)
+		p := c.buildCertificatePath(name, ki.Id)
 		acl, err := acls.GetACL(p, c.cluster)
 		if err != nil {
 			return err
@@ -749,12 +749,12 @@ func (c *VFSCAStore) deletePrivateKey(name string, id string) (bool, error) {
 			return false, err
 		}
 
-		if ks == nil || ks.items[id] == nil {
+		if ks == nil || ks.Items[id] == nil {
 			return false, nil
 		}
-		delete(ks.items, id)
-		if ks.primary != nil && ks.primary.id == id {
-			ks.primary = nil
+		delete(ks.Items, id)
+		if ks.Primary != nil && ks.Primary.Id == id {
+			ks.Primary = nil
 		}
 
 		if err := c.writeKeysetBundle(p, name, ks, true); err != nil {
@@ -782,12 +782,12 @@ func (c *VFSCAStore) deleteCertificate(name string, id string) (bool, error) {
 			return false, err
 		}
 
-		if ks == nil || ks.items[id] == nil {
+		if ks == nil || ks.Items[id] == nil {
 			return false, nil
 		}
-		delete(ks.items, id)
-		if ks.primary != nil && ks.primary.id == id {
-			ks.primary = nil
+		delete(ks.Items, id)
+		if ks.Primary != nil && ks.Primary.Id == id {
+			ks.Primary = nil
 		}
 
 		if err := c.writeKeysetBundle(p, name, ks, false); err != nil {
