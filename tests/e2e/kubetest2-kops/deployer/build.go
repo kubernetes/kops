@@ -22,11 +22,13 @@ import (
 	"os"
 	"path"
 	"strings"
+
+	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
 const (
 	defaultJobName = "pull-kops-e2e-kubernetes-aws"
-	defaultGCSPath = "gs://kops-ci/pulls/%v"
+	defaultGCSPath = "gs://kops-ci/pulls/%v/pull-%v"
 )
 
 func (d *deployer) Build() error {
@@ -52,11 +54,14 @@ func (d *deployer) verifyBuildFlags() error {
 			return errors.New("stage-location must be a gs:// path")
 		}
 	} else {
-		jobName := os.Getenv("JOB_NAME")
-		if jobName == "" {
-			jobName = defaultJobName
+		stageLocation, err := defaultStageLocation(d.KopsRoot)
+		if err != nil {
+			return err
 		}
-		d.StageLocation = fmt.Sprintf(defaultGCSPath, jobName)
+		d.StageLocation = stageLocation
+	}
+	if d.KopsBaseURL == "" {
+		d.KopsBaseURL = strings.Replace(d.StageLocation, "gs://", "https://storage.googleapis.com/", 1)
 	}
 	fi, err := os.Stat(d.KopsRoot)
 	if err != nil {
@@ -72,4 +77,22 @@ func (d *deployer) verifyBuildFlags() error {
 	d.BuildOptions.KopsRoot = d.KopsRoot
 	d.BuildOptions.StageLocation = d.StageLocation
 	return nil
+}
+
+func defaultStageLocation(kopsRoot string) (string, error) {
+	jobName := os.Getenv("JOB_NAME")
+	if jobName == "" {
+		jobName = defaultJobName
+	}
+
+	cmd := exec.Command("git", "describe", "--always")
+	cmd.SetDir(kopsRoot)
+	output, err := exec.CombinedOutputLines(cmd)
+	if err != nil {
+		return "", err
+	} else if len(output) != 1 {
+		return "", fmt.Errorf("unexpected output from git describe: %v", output)
+	}
+	sha := strings.TrimSpace(output[0])
+	return fmt.Sprintf(defaultGCSPath, jobName, sha), nil
 }
