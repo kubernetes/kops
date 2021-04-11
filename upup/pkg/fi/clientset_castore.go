@@ -65,30 +65,16 @@ func NewClientsetSSHCredentialStore(cluster *kops.Cluster, clientset kopsinterna
 	return c
 }
 
-// keyset is a parsed Keyset
-type keyset struct {
-	legacyFormat bool
-	items        map[string]*keysetItem
-	primary      *keysetItem
-}
-
-// keysetItem is a parsed KeysetItem
-type keysetItem struct {
-	id          string
-	certificate *pki.Certificate
-	privateKey  *pki.PrivateKey
-}
-
-func parseKeyset(o *kops.Keyset) (*keyset, error) {
+func parseKeyset(o *kops.Keyset) (*Keyset, error) {
 	name := o.Name
 
-	keyset := &keyset{
-		items: make(map[string]*keysetItem),
+	keyset := &Keyset{
+		Items: make(map[string]*KeysetItem),
 	}
 
 	for _, key := range o.Spec.Keys {
-		ki := &keysetItem{
-			id: key.Id,
+		ki := &KeysetItem{
+			Id: key.Id,
 		}
 		if len(key.PublicMaterial) != 0 {
 			cert, err := pki.ParsePEMCertificate(key.PublicMaterial)
@@ -96,7 +82,7 @@ func parseKeyset(o *kops.Keyset) (*keyset, error) {
 				klog.Warningf("key public material was %s", key.PublicMaterial)
 				return nil, fmt.Errorf("error loading certificate %s/%s: %v", name, key.Id, err)
 			}
-			ki.certificate = cert
+			ki.Certificate = cert
 		}
 
 		if len(key.PrivateMaterial) != 0 {
@@ -104,19 +90,19 @@ func parseKeyset(o *kops.Keyset) (*keyset, error) {
 			if err != nil {
 				return nil, fmt.Errorf("error loading private key %s/%s: %v", name, key.Id, err)
 			}
-			ki.privateKey = privateKey
+			ki.PrivateKey = privateKey
 		}
 
-		keyset.items[key.Id] = ki
+		keyset.Items[key.Id] = ki
 	}
 
-	keyset.primary = keyset.items[FindPrimary(o).Id]
+	keyset.Primary = keyset.Items[FindPrimary(o).Id]
 
 	return keyset, nil
 }
 
-// loadKeyset gets the named keyset and the format of the Keyset.
-func (c *ClientsetCAStore) loadKeyset(ctx context.Context, name string) (*keyset, error) {
+// loadKeyset gets the named Keyset and the format of the Keyset.
+func (c *ClientsetCAStore) loadKeyset(ctx context.Context, name string) (*Keyset, error) {
 	o, err := c.clientset.Keysets(c.namespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -167,8 +153,8 @@ func (c *ClientsetCAStore) FindKeypair(name string) (*pki.Certificate, *pki.Priv
 		return nil, nil, false, err
 	}
 
-	if keyset != nil && keyset.primary != nil {
-		return keyset.primary.certificate, keyset.primary.privateKey, keyset.legacyFormat, nil
+	if keyset != nil && keyset.Primary != nil {
+		return keyset.Primary.Certificate, keyset.Primary.PrivateKey, keyset.LegacyFormat, nil
 	}
 
 	return nil, nil, false, nil
@@ -182,8 +168,8 @@ func (c *ClientsetCAStore) FindCert(name string) (*pki.Certificate, error) {
 		return nil, err
 	}
 
-	if keyset != nil && keyset.primary != nil {
-		return keyset.primary.certificate, nil
+	if keyset != nil && keyset.Primary != nil {
+		return keyset.Primary.Certificate, nil
 	}
 
 	return nil, nil
@@ -200,15 +186,15 @@ func (c *ClientsetCAStore) FindCertificatePool(name string) (*CertificatePool, e
 	pool := &CertificatePool{}
 
 	if keyset != nil {
-		if keyset.primary != nil {
-			pool.Primary = keyset.primary.certificate
+		if keyset.Primary != nil {
+			pool.Primary = keyset.Primary.Certificate
 		}
 
-		for id, item := range keyset.items {
-			if id == keyset.primary.id {
+		for id, item := range keyset.Items {
+			if id == keyset.Primary.Id {
 				continue
 			}
-			pool.Secondary = append(pool.Secondary, item.certificate)
+			pool.Secondary = append(pool.Secondary, item.Certificate)
 		}
 	}
 	return pool, nil
@@ -305,8 +291,8 @@ func (c *ClientsetCAStore) FindPrivateKey(name string) (*pki.PrivateKey, error) 
 		return nil, err
 	}
 
-	if keyset != nil && keyset.primary != nil {
-		return keyset.primary.privateKey, nil
+	if keyset != nil && keyset.Primary != nil {
+		return keyset.Primary.PrivateKey, nil
 	}
 	return nil, nil
 }
@@ -355,7 +341,7 @@ func (c *ClientsetCAStore) addKey(ctx context.Context, name string, keysetType k
 	return nil
 }
 
-// deleteKeysetItem deletes the specified key from the registry; deleting the whole keyset if it was the last one
+// deleteKeysetItem deletes the specified key from the registry; deleting the whole Keyset if it was the last one.
 func deleteKeysetItem(client kopsinternalversion.KeysetInterface, name string, keysetType kops.KeysetType, id string) error {
 	ctx := context.TODO()
 
