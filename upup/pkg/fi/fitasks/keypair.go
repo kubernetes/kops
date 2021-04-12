@@ -225,7 +225,21 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		if err != nil {
 			return err
 		}
-		err = c.Keystore.StoreKeypair(name, cert, privateKey)
+
+		serialString := cert.Certificate.SerialNumber.String()
+		ki := &fi.KeysetItem{
+			Id:          serialString,
+			Certificate: cert,
+			PrivateKey:  privateKey,
+		}
+
+		err = c.Keystore.StoreKeypair(name, &fi.Keyset{
+			LegacyFormat: false,
+			Items: map[string]*fi.KeysetItem{
+				serialString: ki,
+			},
+			Primary: ki,
+		})
 		if err != nil {
 			return err
 		}
@@ -252,7 +266,8 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		if err != nil {
 			return err
 		}
-		err = c.Keystore.StoreKeypair(name, keyset.Primary.Certificate, keyset.Primary.PrivateKey)
+		keyset.LegacyFormat = false
+		err = c.Keystore.StoreKeypair(name, keyset)
 		if err != nil {
 			return err
 		}

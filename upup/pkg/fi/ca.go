@@ -19,6 +19,7 @@ package fi
 import (
 	"bytes"
 	"fmt"
+	"strconv"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
@@ -65,8 +66,8 @@ type Keystore interface {
 	// FindKeyset finds a Keyset.
 	FindKeyset(name string) (*Keyset, error)
 
-	// StoreKeypair writes the keypair to the store, making it the primary.
-	StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error
+	// StoreKeypair writes the keyset to the store.
+	StoreKeypair(id string, keyset *Keyset) error
 
 	// MirrorTo will copy secrets to a vfs.Path, which is often easier for a machine to read
 	MirrorTo(basedir vfs.Path) error
@@ -98,9 +99,6 @@ type CAStore interface {
 	// ListKeysets will return all the KeySets
 	// The key material is not guaranteed to be populated - metadata like the name will be.
 	ListKeysets() ([]*kops.Keyset, error)
-
-	// AddCert adds an alternative certificate to the pool (primarily useful for CAs)
-	AddCert(name string, cert *pki.Certificate) error
 
 	// DeleteKeysetItem will delete the specified item from the Keyset
 	DeleteKeysetItem(item *kops.Keyset, id string) error
@@ -169,4 +167,18 @@ func FindKeypair(c Keystore, name string) (*pki.Certificate, *pki.PrivateKey, er
 		return nil, nil, nil
 	}
 	return keyset.Primary.Certificate, keyset.Primary.PrivateKey, nil
+}
+
+// AddCert adds an alternative certificate to the keyset (primarily useful for CAs)
+func AddCert(keyset *Keyset, cert *pki.Certificate) {
+	serial := 0
+
+	for keyset.Items[strconv.Itoa(serial)] != nil {
+		serial++
+	}
+
+	keyset.Items[strconv.Itoa(serial)] = &KeysetItem{
+		Id:          strconv.Itoa(serial),
+		Certificate: cert,
+	}
 }

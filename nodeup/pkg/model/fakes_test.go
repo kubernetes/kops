@@ -45,7 +45,7 @@ func (k fakeKeyStore) CreateKeypair(signer string, name string, template *x509.C
 	panic("fakeKeyStore does not implement CreateKeypair")
 }
 
-func (k fakeKeyStore) StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
+func (k fakeKeyStore) StoreKeypair(id string, keyset *fi.Keyset) error {
 	panic("fakeKeyStore does not implement StoreKeypair")
 }
 
@@ -92,10 +92,6 @@ func (k fakeCAStore) FindCert(name string) (*pki.Certificate, error) {
 
 func (k fakeCAStore) ListKeysets() ([]*kops.Keyset, error) {
 	panic("fakeCAStore does not implement ListKeysets")
-}
-
-func (k fakeCAStore) AddCert(name string, cert *pki.Certificate) error {
-	panic("fakeCAStore does not implement AddCert")
 }
 
 func (k fakeCAStore) DeleteKeysetItem(item *kops.Keyset, id string) error {
