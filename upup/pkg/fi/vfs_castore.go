@@ -66,8 +66,8 @@ func NewVFSSSHCredentialStore(cluster *kops.Cluster, basedir vfs.Path) SSHCreden
 	return c
 }
 
-func (s *VFSCAStore) VFSPath() vfs.Path {
-	return s.basedir
+func (c *VFSCAStore) VFSPath() vfs.Path {
+	return c.basedir
 }
 
 func (c *VFSCAStore) buildCertificatePoolPath(name string) vfs.Path {
@@ -207,49 +207,13 @@ func serializeKeysetBundle(o *kops.Keyset) ([]byte, error) {
 
 // removePrivateKeyMaterial returns a copy of the Keyset with the private key data removed
 func removePrivateKeyMaterial(o *kops.Keyset) *kops.Keyset {
-	copy := o.DeepCopy()
+	c := o.DeepCopy()
 
-	for i := range copy.Spec.Keys {
-		copy.Spec.Keys[i].PrivateMaterial = nil
+	for i := range c.Spec.Keys {
+		c.Spec.Keys[i].PrivateMaterial = nil
 	}
 
-	return copy
-}
-
-func SerializeKeyset(o *kops.Keyset) ([]byte, error) {
-	var objectData bytes.Buffer
-	{
-		codecs := kopscodecs.Codecs
-		yaml, ok := runtime.SerializerInfoForMediaType(codecs.SupportedMediaTypes(), "application/yaml")
-		if !ok {
-			klog.Fatalf("no YAML serializer registered")
-		}
-		encoder := codecs.EncoderForVersion(yaml.Serializer, v1alpha2.SchemeGroupVersion)
-
-		if err := encoder.Encode(o, &objectData); err != nil {
-			return nil, fmt.Errorf("error serializing keyset: %v", err)
-		}
-	}
-
-	return objectData.Bytes(), nil
-}
-
-func (c *VFSCAStore) loadOneCertificate(p vfs.Path) (*pki.Certificate, error) {
-	data, err := p.ReadFile()
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	cert, err := pki.ParsePEMCertificate(data)
-	if err != nil {
-		return nil, err
-	}
-	if cert == nil {
-		return nil, nil
-	}
-	return cert, nil
+	return c
 }
 
 func (c *VFSCAStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
@@ -556,53 +520,22 @@ func mirrorSSHCredential(cluster *kops.Cluster, basedir vfs.Path, sshCredential 
 	return nil
 }
 
-func (c *VFSCAStore) StoreKeypair(name string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
-	serial := cert.Certificate.SerialNumber.String()
-
-	ki := &KeysetItem{
-		Id:          serial,
-		Certificate: cert,
-		PrivateKey:  privateKey,
-	}
-
+func (c *VFSCAStore) StoreKeypair(name string, keyset *Keyset) error {
 	{
-		err := c.storePrivateKey(name, ki)
-		if err != nil {
-			return err
+		p := c.buildPrivateKeyPoolPath(name)
+		if err := c.writeKeysetBundle(p, name, keyset, true); err != nil {
+			return fmt.Errorf("writing private bundle: %v", err)
 		}
 	}
 
 	{
-		err := c.storeCertificate(name, ki)
-		if err != nil {
-			// TODO: Delete private key?
-			return err
+		p := c.buildCertificatePoolPath(name)
+		if err := c.writeKeysetBundle(p, name, keyset, false); err != nil {
+			return fmt.Errorf("writing certificate bundle: %v", err)
 		}
 	}
 
 	return nil
-}
-
-func (c *VFSCAStore) AddCert(name string, cert *pki.Certificate) error {
-	klog.Infof("Adding TLS certificate: %q", name)
-
-	// We add with a timestamp of zero so this will never be the newest cert
-	serial := pki.BuildPKISerial(0).String()
-
-	p := c.buildCertificatePath(name, serial)
-
-	ki := &KeysetItem{
-		Id:          serial,
-		Certificate: cert,
-	}
-	err := c.storeCertificate(name, ki)
-	if err != nil {
-		return err
-	}
-
-	// Make double-sure it round-trips
-	_, err = c.loadOneCertificate(p)
-	return err
 }
 
 func (c *VFSCAStore) findPrivateKeyset(id string) (*Keyset, error) {
@@ -664,94 +597,6 @@ func (c *VFSCAStore) FindPrivateKeyset(name string) (*kops.Keyset, error) {
 	}
 
 	return o, nil
-}
-
-func (c *VFSCAStore) storePrivateKey(name string, ki *KeysetItem) error {
-	if ki.PrivateKey == nil {
-		return fmt.Errorf("privateKey not provided to storeCertificate")
-	}
-
-	// Write the bundle
-	{
-		p := c.buildPrivateKeyPoolPath(name)
-		ks, err := c.loadKeyset(p)
-		if err != nil {
-			return err
-		}
-
-		if ks == nil {
-			ks = &Keyset{}
-		}
-		if ks.Items == nil {
-			ks.Items = make(map[string]*KeysetItem)
-		}
-		ks.Items[ki.Id] = ki
-		ks.Primary = ki
-
-		if err := c.writeKeysetBundle(p, name, ks, true); err != nil {
-			return fmt.Errorf("error writing bundle: %v", err)
-		}
-	}
-
-	// TODO stop writing and remove legacy format files after rollback to pre-kops 1.18 not needed
-	// Write the data
-	{
-		var data bytes.Buffer
-		if _, err := ki.PrivateKey.WriteTo(&data); err != nil {
-			return err
-		}
-
-		p := c.buildPrivateKeyPath(name, ki.Id)
-		acl, err := acls.GetACL(p, c.cluster)
-		if err != nil {
-			return err
-		}
-		return p.WriteFile(bytes.NewReader(data.Bytes()), acl)
-	}
-}
-
-func (c *VFSCAStore) storeCertificate(name string, ki *KeysetItem) error {
-	if ki.Certificate == nil {
-		return fmt.Errorf("certificate not provided to storeCertificate")
-	}
-
-	// Write the bundle
-	{
-		p := c.buildCertificatePoolPath(name)
-		ks, err := c.loadKeyset(p)
-		if err != nil {
-			return err
-		}
-
-		if ks == nil {
-			ks = &Keyset{}
-		}
-		if ks.Items == nil {
-			ks.Items = make(map[string]*KeysetItem)
-		}
-		ks.Items[ki.Id] = ki
-		ks.Primary = ki
-
-		if err := c.writeKeysetBundle(p, name, ks, false); err != nil {
-			return fmt.Errorf("error writing bundle: %v", err)
-		}
-	}
-
-	// TODO stop writing and remove legacy format files after rollback to pre-kops 1.18 not needed
-	// Write the data
-	{
-		var data bytes.Buffer
-		if _, err := ki.Certificate.WriteTo(&data); err != nil {
-			return err
-		}
-
-		p := c.buildCertificatePath(name, ki.Id)
-		acl, err := acls.GetACL(p, c.cluster)
-		if err != nil {
-			return err
-		}
-		return p.WriteFile(bytes.NewReader(data.Bytes()), acl)
-	}
 }
 
 func (c *VFSCAStore) deletePrivateKey(name string, id string) (bool, error) {
