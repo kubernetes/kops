@@ -11,6 +11,13 @@
       ]
     },
     {
+      "Action": "autoscaling:DescribeAutoScalingInstances",
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
       "Action": [
         "s3:*"
       ],

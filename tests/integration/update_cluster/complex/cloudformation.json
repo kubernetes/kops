@@ -1649,6 +1649,21 @@
             },
             {
               "Action": [
+                "autoscaling:CompleteLifecycleAction",
+                "autoscaling:DescribeAutoScalingInstances"
+              ],
+              "Condition": {
+                "StringEquals": {
+                  "autoscaling:ResourceTag/KubernetesCluster": "complex.example.com"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
                 "elasticloadbalancing:AddTags",
                 "elasticloadbalancing:AttachLoadBalancerToSubnets",
                 "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
@@ -1754,6 +1769,13 @@
                 "ec2:DescribeInstances",
                 "ec2:DescribeRegions"
               ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": "autoscaling:DescribeAutoScalingInstances",
               "Effect": "Allow",
               "Resource": [
                 "*"
