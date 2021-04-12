@@ -41,11 +41,12 @@ func GCSBucketName(projectID string) string {
 
 func EnsureGCSBucket(bucketPath, projectID string) error {
 	lsArgs := []string{
-		"gsutil", "ls", "-b", bucketPath,
+		"gsutil", "ls", "-b",
 	}
 	if projectID != "" {
 		lsArgs = append(lsArgs, "-p", projectID)
 	}
+	lsArgs = append(lsArgs, bucketPath)
 
 	klog.Info(strings.Join(lsArgs, " "))
 	cmd := exec.Command(lsArgs[0], lsArgs[1:]...)
@@ -59,11 +60,12 @@ func EnsureGCSBucket(bucketPath, projectID string) error {
 	}
 
 	mbArgs := []string{
-		"gsutil", "mb", bucketPath,
+		"gsutil", "mb",
 	}
 	if projectID != "" {
 		mbArgs = append(mbArgs, "-p", projectID)
 	}
+	mbArgs = append(mbArgs, bucketPath)
 
 	klog.Info(strings.Join(mbArgs, " "))
 	cmd = exec.Command(mbArgs[0], mbArgs[1:]...)
