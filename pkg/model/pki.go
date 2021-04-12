@@ -156,6 +156,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=service-account",
 			Type:      "ca",
+			Rotatable: true,
 		}
 		c.AddTask(serviceAccount)
 	}

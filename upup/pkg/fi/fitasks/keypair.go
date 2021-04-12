@@ -45,6 +45,8 @@ type Keypair struct {
 	Type string `json:"type"`
 	// LegacyFormat is whether the keypair is stored in a legacy format.
 	LegacyFormat bool `json:"oldFormat"`
+	// Rotatable is whether the keypair has a "next" version.
+	Rotatable bool `json:"rotatable,omitempty"`
 
 	certificate                *fi.TaskDependentResource
 	certificateSHA1Fingerprint *fi.TaskDependentResource
@@ -103,6 +105,12 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 	// Avoid spurious changes
 	actual.Lifecycle = e.Lifecycle
 
+	for id := range keyset.Items {
+		if id > keyset.Primary.Id {
+			actual.Rotatable = true
+		}
+	}
+
 	if err := e.setResources(cert); err != nil {
 		return nil, fmt.Errorf("error setting resources: %v", err)
 	}
@@ -152,6 +160,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 
 	changeStoredFormat := false
 	createCertificate := false
+	createNextCertificate := false
 	if a == nil {
 		createCertificate = true
 		klog.V(8).Infof("creating brand new certificate")
@@ -166,6 +175,8 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		} else if changes.Type != "" {
 			createCertificate = true
 			klog.Infof("creating certificate %q as Type has changed (actual=%v, expected=%v)", name, a.Type, e.Type)
+		} else if changes.Rotatable {
+			createNextCertificate = true
 		} else if changes.LegacyFormat {
 			changeStoredFormat = true
 		} else {
@@ -173,7 +184,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		}
 	}
 
-	if createCertificate {
+	if createCertificate || createNextCertificate {
 		klog.V(2).Infof("Creating PKI keypair %q", name)
 
 		keyset, err := c.Keystore.FindKeyset(name)
@@ -184,25 +195,10 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			keyset = &fi.Keyset{}
 		}
 
-		// We always reuse the private key if it exists,
-		// if we change keys we often have to regenerate e.g. the service accounts
-		// TODO: Eventually rotate keys / don't always reuse?
-		var privateKey *pki.PrivateKey
-		if keyset.Primary != nil {
-			privateKey = keyset.Primary.PrivateKey
-		}
-		if privateKey == nil {
-			klog.V(2).Infof("Creating privateKey %q", name)
-		}
-
 		signer := fi.CertificateIDCA
 		if e.Signer != nil {
 			signer = fi.StringValue(e.Signer.Name)
 		}
-
-		klog.Infof("Issuing new certificate: %q", *e.Name)
-
-		serial := pki.BuildPKISerial(time.Now().UnixNano())
 
 		subjectPkix, err := parsePkixName(e.Subject)
 		if err != nil {
@@ -213,39 +209,73 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			return fmt.Errorf("subject name was empty for SSL keypair %q", *e.Name)
 		}
 
+		timeNano := time.Now().UnixNano()
 		req := pki.IssueCertRequest{
 			Signer:         signer,
 			Type:           e.Type,
 			Subject:        *subjectPkix,
 			AlternateNames: e.AlternateNames,
-			PrivateKey:     privateKey,
-			Serial:         serial,
 		}
-		cert, privateKey, _, err := pki.IssueCert(&req, c.Keystore)
+
+		if createCertificate {
+			// We always reuse the private key if it exists,
+			// if we change keys we often have to regenerate e.g. the service accounts
+			if keyset.Primary != nil {
+				req.PrivateKey = keyset.Primary.PrivateKey
+			}
+			if req.PrivateKey == nil {
+				klog.V(2).Infof("Creating privateKey %q", name)
+			}
+
+			klog.Infof("Issuing new certificate: %q", *e.Name)
+
+			req.Serial = pki.BuildPKISerial(timeNano)
+
+			cert, privateKey, _, err := pki.IssueCert(&req, c.Keystore)
+			if err != nil {
+				return err
+			}
+
+			serialString := cert.Certificate.SerialNumber.String()
+			ki := &fi.KeysetItem{
+				Id:          serialString,
+				Certificate: cert,
+				PrivateKey:  privateKey,
+			}
+			keyset = &fi.Keyset{
+				LegacyFormat: false,
+				Items: map[string]*fi.KeysetItem{
+					serialString: ki,
+				},
+				Primary: ki,
+			}
+
+			// TODO: expose all certs in keyset
+			if err := e.setResources(cert); err != nil {
+				return fmt.Errorf("error setting resources: %v", err)
+			}
+		}
+
+		if e.Rotatable {
+			req.PrivateKey = nil
+			req.Serial = pki.BuildPKISerial(timeNano + 1)
+
+			cert, privateKey, _, err := pki.IssueCert(&req, c.Keystore)
+			if err != nil {
+				return err
+			}
+
+			serialString := cert.Certificate.SerialNumber.String()
+			keyset.Items[serialString] = &fi.KeysetItem{
+				Id:          serialString,
+				Certificate: cert,
+				PrivateKey:  privateKey,
+			}
+		}
+
+		err = c.Keystore.StoreKeypair(name, keyset)
 		if err != nil {
 			return err
-		}
-
-		serialString := cert.Certificate.SerialNumber.String()
-		ki := &fi.KeysetItem{
-			Id:          serialString,
-			Certificate: cert,
-			PrivateKey:  privateKey,
-		}
-
-		err = c.Keystore.StoreKeypair(name, &fi.Keyset{
-			LegacyFormat: false,
-			Items: map[string]*fi.KeysetItem{
-				serialString: ki,
-			},
-			Primary: ki,
-		})
-		if err != nil {
-			return err
-		}
-
-		if err := e.setResources(cert); err != nil {
-			return fmt.Errorf("error setting resources: %v", err)
 		}
 
 		// Make double-sure it round-trips
@@ -254,7 +284,11 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			return err
 		}
 
-		klog.V(8).Infof("created certificate with cn=%s", cert.Subject.CommonName)
+		if createCertificate {
+			klog.V(8).Infof("created certificate with cn=%s", keyset.Primary.Certificate.Subject.CommonName)
+		} else {
+			klog.V(8).Infof("created next certificate with cn=%s", keyset.Primary.Certificate.Subject.CommonName)
+		}
 	}
 
 	// TODO: Check correct subject / flags
