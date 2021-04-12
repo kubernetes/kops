@@ -352,6 +352,10 @@ type EC2API interface {
 	CreateReservedInstancesListingWithContext(aws.Context, *ec2.CreateReservedInstancesListingInput, ...request.Option) (*ec2.CreateReservedInstancesListingOutput, error)
 	CreateReservedInstancesListingRequest(*ec2.CreateReservedInstancesListingInput) (*request.Request, *ec2.CreateReservedInstancesListingOutput)
 
+	CreateRestoreImageTask(*ec2.CreateRestoreImageTaskInput) (*ec2.CreateRestoreImageTaskOutput, error)
+	CreateRestoreImageTaskWithContext(aws.Context, *ec2.CreateRestoreImageTaskInput, ...request.Option) (*ec2.CreateRestoreImageTaskOutput, error)
+	CreateRestoreImageTaskRequest(*ec2.CreateRestoreImageTaskInput) (*request.Request, *ec2.CreateRestoreImageTaskOutput)
+
 	CreateRoute(*ec2.CreateRouteInput) (*ec2.CreateRouteOutput, error)
 	CreateRouteWithContext(aws.Context, *ec2.CreateRouteInput, ...request.Option) (*ec2.CreateRouteOutput, error)
 	CreateRouteRequest(*ec2.CreateRouteInput) (*request.Request, *ec2.CreateRouteOutput)
@@ -375,6 +379,10 @@ type EC2API interface {
 	CreateSpotDatafeedSubscription(*ec2.CreateSpotDatafeedSubscriptionInput) (*ec2.CreateSpotDatafeedSubscriptionOutput, error)
 	CreateSpotDatafeedSubscriptionWithContext(aws.Context, *ec2.CreateSpotDatafeedSubscriptionInput, ...request.Option) (*ec2.CreateSpotDatafeedSubscriptionOutput, error)
 	CreateSpotDatafeedSubscriptionRequest(*ec2.CreateSpotDatafeedSubscriptionInput) (*request.Request, *ec2.CreateSpotDatafeedSubscriptionOutput)
+
+	CreateStoreImageTask(*ec2.CreateStoreImageTaskInput) (*ec2.CreateStoreImageTaskOutput, error)
+	CreateStoreImageTaskWithContext(aws.Context, *ec2.CreateStoreImageTaskInput, ...request.Option) (*ec2.CreateStoreImageTaskOutput, error)
+	CreateStoreImageTaskRequest(*ec2.CreateStoreImageTaskInput) (*request.Request, *ec2.CreateStoreImageTaskOutput)
 
 	CreateSubnet(*ec2.CreateSubnetInput) (*ec2.CreateSubnetOutput, error)
 	CreateSubnetWithContext(aws.Context, *ec2.CreateSubnetInput, ...request.Option) (*ec2.CreateSubnetOutput, error)
@@ -1257,6 +1265,13 @@ type EC2API interface {
 
 	DescribeStaleSecurityGroupsPages(*ec2.DescribeStaleSecurityGroupsInput, func(*ec2.DescribeStaleSecurityGroupsOutput, bool) bool) error
 	DescribeStaleSecurityGroupsPagesWithContext(aws.Context, *ec2.DescribeStaleSecurityGroupsInput, func(*ec2.DescribeStaleSecurityGroupsOutput, bool) bool, ...request.Option) error
+
+	DescribeStoreImageTasks(*ec2.DescribeStoreImageTasksInput) (*ec2.DescribeStoreImageTasksOutput, error)
+	DescribeStoreImageTasksWithContext(aws.Context, *ec2.DescribeStoreImageTasksInput, ...request.Option) (*ec2.DescribeStoreImageTasksOutput, error)
+	DescribeStoreImageTasksRequest(*ec2.DescribeStoreImageTasksInput) (*request.Request, *ec2.DescribeStoreImageTasksOutput)
+
+	DescribeStoreImageTasksPages(*ec2.DescribeStoreImageTasksInput, func(*ec2.DescribeStoreImageTasksOutput, bool) bool) error
+	DescribeStoreImageTasksPagesWithContext(aws.Context, *ec2.DescribeStoreImageTasksInput, func(*ec2.DescribeStoreImageTasksOutput, bool) bool, ...request.Option) error
 
 	DescribeSubnets(*ec2.DescribeSubnetsInput) (*ec2.DescribeSubnetsOutput, error)
 	DescribeSubnetsWithContext(aws.Context, *ec2.DescribeSubnetsInput, ...request.Option) (*ec2.DescribeSubnetsOutput, error)

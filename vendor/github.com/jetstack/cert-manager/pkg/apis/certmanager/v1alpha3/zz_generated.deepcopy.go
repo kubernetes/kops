@@ -276,6 +276,26 @@ func (in *CertificateRequestSpec) DeepCopyInto(out *CertificateRequestSpec) {
 		*out = make([]KeyUsage, len(*in))
 		copy(*out, *in)
 	}
+	if in.Groups != nil {
+		in, out := &in.Groups, &out.Groups
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.Extra != nil {
+		in, out := &in.Extra, &out.Extra
+		*out = make(map[string][]string, len(*in))
+		for key, val := range *in {
+			var outVal []string
+			if val == nil {
+				(*out)[key] = nil
+			} else {
+				in, out := &val, &outVal
+				*out = make([]string, len(*in))
+				copy(*out, *in)
+			}
+			(*out)[key] = outVal
+		}
+	}
 	return
 }
 
@@ -383,6 +403,11 @@ func (in *CertificateSpec) DeepCopyInto(out *CertificateSpec) {
 	if in.EncodeUsagesInRequest != nil {
 		in, out := &in.EncodeUsagesInRequest, &out.EncodeUsagesInRequest
 		*out = new(bool)
+		**out = **in
+	}
+	if in.RevisionHistoryLimit != nil {
+		in, out := &in.RevisionHistoryLimit, &out.RevisionHistoryLimit
+		*out = new(int32)
 		**out = **in
 	}
 	return
