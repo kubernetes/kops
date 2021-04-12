@@ -87,8 +87,8 @@ func (f fakeStatusCloud) FindClusterStatus(cluster *kops.Cluster) (*kops.Cluster
 type fakeKeyStore struct {
 	FindKeysetFn func(name string) (*fi.Keyset, error)
 
-	// StoreKeypair writes the keypair to the store
-	StoreKeypairFn func(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error
+	// StoreKeypair writes the keypair to the store.
+	StoreKeypairFn func(id string, keyset *fi.Keyset) error
 
 	// MirrorTo will copy secrets to a vfs.Path, which is often easier for a machine to read
 	MirrorToFn func(basedir vfs.Path) error
@@ -102,8 +102,8 @@ func (f fakeKeyStore) FindKeyset(name string) (*fi.Keyset, error) {
 	return f.FindKeysetFn(name)
 }
 
-func (f fakeKeyStore) StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
-	return f.StoreKeypairFn(id, cert, privateKey)
+func (f fakeKeyStore) StoreKeypair(id string, keyset *fi.Keyset) error {
+	return f.StoreKeypairFn(id, keyset)
 }
 
 func (f fakeKeyStore) MirrorTo(basedir vfs.Path) error {

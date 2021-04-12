@@ -54,7 +54,7 @@ func (s *configserverKeyStore) CreateKeypair(signer string, name string, templat
 }
 
 // StoreKeypair implements fi.Keystore
-func (s *configserverKeyStore) StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
+func (s *configserverKeyStore) StoreKeypair(id string, keyset *fi.Keyset) error {
 	return fmt.Errorf("StoreKeypair not supported by configserverKeyStore")
 }
 
@@ -107,11 +107,6 @@ func (s *configserverKeyStore) FindCert(name string) (*pki.Certificate, error) {
 // ListKeysets implements fi.CAStore
 func (s *configserverKeyStore) ListKeysets() ([]*kops.Keyset, error) {
 	return nil, fmt.Errorf("ListKeysets not supported by configserverKeyStore")
-}
-
-// AddCert implements fi.CAStore
-func (s *configserverKeyStore) AddCert(name string, cert *pki.Certificate) error {
-	return fmt.Errorf("AddCert not supported by configserverKeyStore")
 }
 
 // DeleteKeysetItem implements fi.CAStore
