@@ -45,7 +45,9 @@ func (d *deployer) Up() error {
 	}
 
 	if d.CloudProvider == "gce" && d.createBucket {
-		gce.EnsureGCSBucket(d.stateStore(), d.GCPProject)
+		if err := gce.EnsureGCSBucket(d.stateStore(), d.GCPProject); err != nil {
+			return err
+		}
 	}
 
 	adminAccess := d.AdminAccess
