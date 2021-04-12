@@ -54,6 +54,7 @@ func EnsureGCSBucket(bucketPath, projectID string) error {
 	if err == nil {
 		return nil
 	} else if len(output) != 1 || !strings.Contains(output[0], "BucketNotFound") {
+		klog.Info(output)
 		return err
 	}
 
