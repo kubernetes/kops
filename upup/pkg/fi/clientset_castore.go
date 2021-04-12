@@ -258,25 +258,9 @@ func (c *ClientsetCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
 }
 
 // StoreKeypair implements CAStore::StoreKeypair
-func (c *ClientsetCAStore) StoreKeypair(name string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
+func (c *ClientsetCAStore) StoreKeypair(name string, keyset *Keyset) error {
 	ctx := context.TODO()
-	return c.storeKeypair(ctx, name, cert.Certificate.SerialNumber.String(), cert, privateKey)
-}
-
-// AddCert implements CAStore::AddCert
-func (c *ClientsetCAStore) AddCert(name string, cert *pki.Certificate) error {
-	ctx := context.TODO()
-	klog.Infof("Adding TLS certificate: %q", name)
-
-	// We add with a timestamp of zero so this will never be the newest cert
-	serial := pki.BuildPKISerial(0)
-
-	err := c.storeKeypair(ctx, name, serial.String(), cert, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.storeKeyset(ctx, name, keyset, kops.SecretTypeKeypair)
 }
 
 // FindPrivateKey implements CAStore::FindPrivateKey
@@ -306,31 +290,52 @@ func (c *ClientsetCAStore) FindPrivateKeyset(name string) (*kops.Keyset, error) 
 	return o, nil
 }
 
-// addKey saves the specified key to the registry
-func (c *ClientsetCAStore) addKey(ctx context.Context, name string, keysetType kops.KeysetType, item *kops.KeysetItem) error {
+// storeKeyset saves the specified keyset to the registry.
+func (c *ClientsetCAStore) storeKeyset(ctx context.Context, name string, keyset *Keyset, keysetType kops.KeysetType) error {
 	create := false
 	client := c.clientset.Keysets(c.namespace)
-	keyset, err := client.Get(ctx, name, metav1.GetOptions{})
+	kopsKeyset, err := client.Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
-			keyset = nil
+			kopsKeyset = nil
 		} else {
 			return fmt.Errorf("error reading keyset %q: %v", name, err)
 		}
 	}
-	if keyset == nil {
-		keyset = &kops.Keyset{}
-		keyset.Name = name
-		keyset.Spec.Type = keysetType
+
+	if kopsKeyset == nil {
+		kopsKeyset = &kops.Keyset{}
+		kopsKeyset.Name = name
+		kopsKeyset.Spec.Type = keysetType
 		create = true
 	}
-	keyset.Spec.Keys = append(keyset.Spec.Keys, *item)
+
+	kopsKeyset.Spec.Keys = nil
+	kopsKeyset.Spec.PrimaryId = keyset.Primary.Id
+	for _, item := range keyset.Items {
+		var publicMaterial bytes.Buffer
+		if _, err := item.Certificate.WriteTo(&publicMaterial); err != nil {
+			return err
+		}
+
+		var privateMaterial bytes.Buffer
+		if _, err := item.PrivateKey.WriteTo(&privateMaterial); err != nil {
+			return err
+		}
+
+		kopsKeyset.Spec.Keys = append(kopsKeyset.Spec.Keys, kops.KeysetItem{
+			Id:              item.Id,
+			PublicMaterial:  publicMaterial.Bytes(),
+			PrivateMaterial: privateMaterial.Bytes(),
+		})
+	}
+
 	if create {
-		if _, err := client.Create(ctx, keyset, metav1.CreateOptions{}); err != nil {
+		if _, err := client.Create(ctx, kopsKeyset, metav1.CreateOptions{}); err != nil {
 			return fmt.Errorf("error creating keyset %q: %v", name, err)
 		}
 	} else {
-		if _, err := client.Update(ctx, keyset, metav1.UpdateOptions{}); err != nil {
+		if _, err := client.Update(ctx, kopsKeyset, metav1.UpdateOptions{}); err != nil {
 			return fmt.Errorf("error updating keyset %q: %v", name, err)
 		}
 	}
@@ -416,26 +421,6 @@ func (c *ClientsetCAStore) deleteSSHCredential(ctx context.Context, name string)
 		return fmt.Errorf("error deleting SSHCredential %q: %v", name, err)
 	}
 	return nil
-}
-
-// addKey saves the specified keypair to the registry
-func (c *ClientsetCAStore) storeKeypair(ctx context.Context, name string, id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
-	var publicMaterial bytes.Buffer
-	if _, err := cert.WriteTo(&publicMaterial); err != nil {
-		return err
-	}
-
-	var privateMaterial bytes.Buffer
-	if _, err := privateKey.WriteTo(&privateMaterial); err != nil {
-		return err
-	}
-
-	item := &kops.KeysetItem{
-		Id:              id,
-		PublicMaterial:  publicMaterial.Bytes(),
-		PrivateMaterial: privateMaterial.Bytes(),
-	}
-	return c.addKey(ctx, name, kops.SecretTypeKeypair, item)
 }
 
 // AddSSHPublicKey implements CAStore::AddSSHPublicKey

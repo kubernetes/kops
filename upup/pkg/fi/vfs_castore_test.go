@@ -24,7 +24,6 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -71,7 +70,18 @@ func TestVFSCAStoreRoundTrip(t *testing.T) {
 		t.Fatalf("error from ParsePEMCertificate: %v", err)
 	}
 
-	if err := s.StoreKeypair("ca", cert, privateKey); err != nil {
+	item := &KeysetItem{
+		Id:          "237054359138908419352140518924933177492",
+		Certificate: cert,
+		PrivateKey:  privateKey,
+	}
+	keyset := &Keyset{
+		Items: map[string]*KeysetItem{
+			"237054359138908419352140518924933177492": item,
+		},
+		Primary: item,
+	}
+	if err := s.StoreKeypair("ca", keyset); err != nil {
 		t.Fatalf("error from StoreKeypair: %v", err)
 	}
 
@@ -87,16 +97,14 @@ func TestVFSCAStoreRoundTrip(t *testing.T) {
 
 	for _, p := range []string{
 		"memfs://tests/issued/ca/keyset.yaml",
-		"memfs://tests/issued/ca/237054359138908419352140518924933177492.crt",
 		"memfs://tests/private/ca/keyset.yaml",
-		"memfs://tests/private/ca/237054359138908419352140518924933177492.key",
 	} {
 		if _, found := pathMap[p]; !found {
 			t.Fatalf("file not found: %v", p)
 		}
 	}
 
-	if len(pathMap) != 4 {
+	if len(pathMap) != 2 {
 		t.Fatalf("unexpected pathMap: %v", pathMap)
 	}
 
@@ -148,18 +156,6 @@ spec:
 		}
 	}
 
-	// Check issued/ca/237054359138908419352140518924933177492.crt round-tripped
-	{
-		roundTrip, err := pathMap["memfs://tests/issued/ca/237054359138908419352140518924933177492.crt"].ReadFile()
-		if err != nil {
-			t.Fatalf("error reading file memfs://tests/issued/ca/237054359138908419352140518924933177492.crt: %v", err)
-		}
-
-		if string(roundTrip) != certData {
-			t.Fatalf("unexpected round-tripped certificate data: %q", string(roundTrip))
-		}
-	}
-
 	// Check private/ca/keyset.yaml round-tripped
 	{
 		privateKeysetYaml, err := pathMap["memfs://tests/private/ca/keyset.yaml"].ReadFile()
@@ -204,34 +200,6 @@ spec:
 			t.Fatalf("unexpected round-tripped private key data: %q", roundTrip)
 		}
 	}
-
-	// Check private/ca/237054359138908419352140518924933177492.key round-tripped
-	{
-		roundTrip, err := pathMap["memfs://tests/private/ca/237054359138908419352140518924933177492.key"].ReadFile()
-		if err != nil {
-			t.Fatalf("error reading file memfs://tests/private/ca/237054359138908419352140518924933177492.key: %v", err)
-		}
-
-		if string(roundTrip) != privateKeyData {
-			t.Fatalf("unexpected round-tripped private key data: %q", string(roundTrip))
-		}
-	}
-
-	// Check that keyset gets deleted
-	{
-		keyset := &kops.Keyset{}
-		keyset.Name = "ca"
-		keyset.Spec.Type = kops.SecretTypeKeypair
-
-		s.DeleteKeysetItem(keyset, "237054359138908419352140518924933177492")
-
-		_, err := pathMap["memfs://tests/private/ca/237054359138908419352140518924933177492.key"].ReadFile()
-		if err == nil {
-			t.Fatalf("File memfs://tests/private/ca/237054359138908419352140518924933177492.key still exists")
-		}
-
-	}
-
 }
 
 func TestVFSCAStoreRoundTripWithVault(t *testing.T) {
@@ -265,7 +233,18 @@ func TestVFSCAStoreRoundTripWithVault(t *testing.T) {
 		t.Fatalf("error from ParsePEMCertificate: %v", err)
 	}
 
-	if err := s.StoreKeypair("ca", cert, privateKey); err != nil {
+	item := &KeysetItem{
+		Id:          "237054359138908419352140518924933177492",
+		Certificate: cert,
+		PrivateKey:  privateKey,
+	}
+	keyset := &Keyset{
+		Items: map[string]*KeysetItem{
+			"237054359138908419352140518924933177492": item,
+		},
+		Primary: item,
+	}
+	if err := s.StoreKeypair("ca", keyset); err != nil {
 		t.Fatalf("error from StoreKeypair: %v", err)
 	}
 
@@ -283,9 +262,7 @@ func TestVFSCAStoreRoundTripWithVault(t *testing.T) {
 
 	for _, p := range []string{
 		bp + "/issued/ca/keyset.yaml",
-		bp + "/issued/ca/237054359138908419352140518924933177492.crt",
 		bp + "/private/ca/keyset.yaml",
-		bp + "/private/ca/237054359138908419352140518924933177492.key",
 	} {
 		if _, found := pathMap[p]; !found {
 			t.Fatalf("file not found: %v", p)
@@ -343,18 +320,6 @@ spec:
 		}
 	}
 
-	// Check issued/ca/237054359138908419352140518924933177492.crt round-tripped
-	{
-		roundTrip, err := pathMap[bp+"/issued/ca/237054359138908419352140518924933177492.crt"].ReadFile()
-		if err != nil {
-			t.Fatalf("error reading file issued/ca/237054359138908419352140518924933177492.crt: %v", err)
-		}
-
-		if string(roundTrip) != certData {
-			t.Fatalf("unexpected round-tripped certificate data: %q", string(roundTrip))
-		}
-	}
-
 	// Check private/ca/keyset.yaml round-tripped
 	{
 		privateKeysetYaml, err := pathMap[bp+"/private/ca/keyset.yaml"].ReadFile()
@@ -398,32 +363,4 @@ spec:
 			t.Fatalf("unexpected round-tripped private key data: %q", roundTrip)
 		}
 	}
-
-	// Check private/ca/237054359138908419352140518924933177492.key round-tripped
-	{
-		roundTrip, err := pathMap[bp+"/private/ca/237054359138908419352140518924933177492.key"].ReadFile()
-		if err != nil {
-			t.Fatalf("error reading file private/ca/237054359138908419352140518924933177492.key: %v", err)
-		}
-
-		if string(roundTrip) != privateKeyData {
-			t.Fatalf("unexpected round-tripped private key data: %q", string(roundTrip))
-		}
-	}
-
-	// Check that keyset gets deleted
-	{
-		keyset := &kops.Keyset{}
-		keyset.Name = "ca"
-		keyset.Spec.Type = kops.SecretTypeKeypair
-
-		s.DeleteKeysetItem(keyset, "237054359138908419352140518924933177492")
-
-		_, err := pathMap[bp+"/private/ca/237054359138908419352140518924933177492.key"].ReadFile()
-		if err == nil {
-			t.Fatalf("File private/ca/237054359138908419352140518924933177492.key still exists")
-		}
-
-	}
-
 }
