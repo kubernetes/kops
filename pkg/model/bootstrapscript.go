@@ -219,7 +219,8 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 		ig:      ig,
 		builder: b,
 		caTask:  caTask,
-		ca:      caTask.Certificate(),
+		// TODO: use caTask.Keyset() and expose all CA certificates
+		ca: caTask.Certificate(),
 	}
 	task.resource.Task = task
 	c.AddTask(task)

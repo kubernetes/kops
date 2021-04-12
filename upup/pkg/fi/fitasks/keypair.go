@@ -17,7 +17,6 @@ limitations under the License.
 package fitasks
 
 import (
-	"crypto/sha1"
 	"crypto/x509/pkix"
 	"fmt"
 	"sort"
@@ -46,8 +45,8 @@ type Keypair struct {
 	// LegacyFormat is whether the keypair is stored in a legacy format.
 	LegacyFormat bool `json:"oldFormat"`
 
-	certificate                *fi.TaskDependentResource
-	certificateSHA1Fingerprint *fi.TaskDependentResource
+	certificate *fi.TaskDependentResource
+	keyset      *fi.Keyset
 }
 
 var _ fi.HasCheckExisting = &Keypair{}
@@ -103,7 +102,7 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 	// Avoid spurious changes
 	actual.Lifecycle = e.Lifecycle
 
-	if err := e.setResources(cert); err != nil {
+	if err := e.setResources(keyset); err != nil {
 		return nil, fmt.Errorf("error setting resources: %v", err)
 	}
 
@@ -233,18 +232,19 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			PrivateKey:  privateKey,
 		}
 
-		err = c.Keystore.StoreKeypair(name, &fi.Keyset{
+		keyset = &fi.Keyset{
 			LegacyFormat: false,
 			Items: map[string]*fi.KeysetItem{
 				serialString: ki,
 			},
 			Primary: ki,
-		})
+		}
+		err = c.Keystore.StoreKeypair(name, keyset)
 		if err != nil {
 			return err
 		}
 
-		if err := e.setResources(cert); err != nil {
+		if err := e.setResources(keyset); err != nil {
 			return fmt.Errorf("error setting resources: %v", err)
 		}
 
@@ -308,30 +308,23 @@ func (e *Keypair) ensureResources() {
 	if e.certificate == nil {
 		e.certificate = &fi.TaskDependentResource{Task: e}
 	}
-	if e.certificateSHA1Fingerprint == nil {
-		e.certificateSHA1Fingerprint = &fi.TaskDependentResource{Task: e}
-	}
 }
 
-func (e *Keypair) setResources(cert *pki.Certificate) error {
+func (e *Keypair) setResources(keyset *fi.Keyset) error {
 	e.ensureResources()
 
-	s, err := cert.AsString()
+	s, err := keyset.Primary.Certificate.AsString()
 	if err != nil {
 		return err
 	}
 	e.certificate.Resource = fi.NewStringResource(s)
 
-	fingerprint := sha1.Sum(cert.Certificate.Raw)
-	hex := fmt.Sprintf("%x", fingerprint)
-	e.certificateSHA1Fingerprint.Resource = fi.NewStringResource(hex)
-
+	e.keyset = keyset
 	return nil
 }
 
-func (e *Keypair) CertificateSHA1Fingerprint() fi.Resource {
-	e.ensureResources()
-	return e.certificateSHA1Fingerprint
+func (e *Keypair) Keyset() *fi.Keyset {
+	return e.keyset
 }
 
 func (e *Keypair) Certificate() fi.Resource {
