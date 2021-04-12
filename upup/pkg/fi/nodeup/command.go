@@ -49,6 +49,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 )
@@ -196,7 +197,24 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 	}
 
+	var cloud fi.Cloud
+
+	if api.CloudProviderID(c.cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+		region, err := awsup.FindRegion(c.cluster)
+		if err != nil {
+			return err
+		}
+		awsCloud, err := awsup.NewAWSCloud(region, nil)
+
+		cloud = awsCloud
+
+		if err != nil {
+			return err
+		}
+	}
+
 	modelContext := &model.NodeupModelContext{
+		Cloud:         cloud,
 		Architecture:  architecture,
 		Assets:        assetStore,
 		Cluster:       c.cluster,
@@ -240,6 +258,19 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	if err := modelContext.Init(); err != nil {
 		return err
+	}
+
+	if api.CloudProviderID(c.cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+		instanceIDBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/instance-id")
+		if err != nil {
+			return fmt.Errorf("error reading instance-id from AWS metadata: %v", err)
+		}
+		modelContext.InstanceID = string(instanceIDBytes)
+
+		modelContext.ConfigurationMode, err = getAWSConfigurationMode(modelContext)
+		if err != nil {
+			return err
+		}
 	}
 
 	if err := loadKernelModules(modelContext); err != nil {
@@ -295,7 +326,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 	// Protokube load image task is in ProtokubeBuilder
 
-	var cloud fi.Cloud
 	var target fi.Target
 	checkExisting := true
 
@@ -636,4 +666,30 @@ func getNodeConfigFromServer(ctx context.Context, config *nodeup.ConfigServerOpt
 		IncludeNodeConfig: true,
 	}
 	return client.QueryBootstrap(ctx, &request)
+}
+
+func getAWSConfigurationMode(c *model.NodeupModelContext) (string, error) {
+	// Only worker nodes and apiservers can actually autoscale.
+	// We are not adding describe permissions to the other roles
+	role := c.InstanceGroup.Spec.Role
+	if role != api.InstanceGroupRoleNode && role != api.InstanceGroupRoleAPIServer {
+		return "", nil
+	}
+
+	svc := c.Cloud.(awsup.AWSCloud).Autoscaling()
+
+	result, err := svc.DescribeAutoScalingInstances(&autoscaling.DescribeAutoScalingInstancesInput{
+		InstanceIds: []*string{&c.InstanceID},
+	})
+	if err != nil {
+		return "", fmt.Errorf("error describing instances: %v", err)
+	}
+	lifecycle := fi.StringValue(result.AutoScalingInstances[0].LifecycleState)
+	if strings.HasPrefix(lifecycle, "Warmed:") {
+		klog.Info("instance is entering warm pool")
+		return model.ConfigurationModeWarming, nil
+	} else {
+		klog.Info("instance is entering the ASG")
+		return "", nil
+	}
 }

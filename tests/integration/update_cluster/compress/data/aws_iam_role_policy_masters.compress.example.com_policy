@@ -81,6 +81,21 @@
     },
     {
       "Action": [
+        "autoscaling:CompleteLifecycleAction",
+        "autoscaling:DescribeAutoScalingInstances"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "autoscaling:ResourceTag/KubernetesCluster": "compress.example.com"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Action": [
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:AttachLoadBalancerToSubnets",
         "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",

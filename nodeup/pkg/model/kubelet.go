@@ -293,6 +293,11 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 
 	service.InitDefaults()
 
+	if b.ConfigurationMode == "Warming" {
+
+		service.Running = fi.Bool(false)
+	}
+
 	return service
 }
 
@@ -443,14 +448,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 			instanceTypeName = *b.NodeupConfig.DefaultMachineType
 		}
 
-		region, err := awsup.FindRegion(b.Cluster)
-		if err != nil {
-			return nil, err
-		}
-		awsCloud, err := awsup.NewAWSCloud(region, nil)
-		if err != nil {
-			return nil, err
-		}
+		awsCloud := b.Cloud.(awsup.AWSCloud)
 		// Get the instance type's detailed information.
 		instanceType, err := awsup.GetMachineTypeInfo(awsCloud, instanceTypeName)
 		if err != nil {
