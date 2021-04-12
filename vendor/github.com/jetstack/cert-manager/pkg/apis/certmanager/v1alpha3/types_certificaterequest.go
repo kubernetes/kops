@@ -99,6 +99,24 @@ type CertificateRequestSpec struct {
 	// Defaults to `digital signature` and `key encipherment` if not specified.
 	// +optional
 	Usages []KeyUsage `json:"usages,omitempty"`
+
+	// Username contains the name of the user that created the CertificateRequest.
+	// Populated by the cert-manager webhook on creation and immutable.
+	// +optional
+	Username string `json:"username,omitempty"`
+	// UID contains the uid of the user that created the CertificateRequest.
+	// Populated by the cert-manager webhook on creation and immutable.
+	// +optional
+	UID string `json:"uid,omitempty"`
+	// Groups contains group membership of the user that created the CertificateRequest.
+	// Populated by the cert-manager webhook on creation and immutable.
+	// +listType=atomic
+	// +optional
+	Groups []string `json:"groups,omitempty"`
+	// Extra contains extra attributes of the user that created the CertificateRequest.
+	// Populated by the cert-manager webhook on creation and immutable.
+	// +optional
+	Extra map[string][]string `json:"extra,omitempty"`
 }
 
 // CertificateRequestStatus defines the observed state of CertificateRequest and
@@ -132,7 +150,8 @@ type CertificateRequestStatus struct {
 
 // CertificateRequestCondition contains condition information for a CertificateRequest.
 type CertificateRequestCondition struct {
-	// Type of the condition, known values are (`Ready`, `InvalidRequest`).
+	// Type of the condition, known values are (`Ready`,
+	// `InvalidRequest`, `Approved`, `Denied`).
 	Type CertificateRequestConditionType `json:"type"`
 
 	// Status of the condition, one of (`True`, `False`, `Unknown`).
@@ -168,4 +187,14 @@ const (
 	// parameters being invalid. Additional information about why the request
 	// was rejected can be found in the `reason` and `message` fields.
 	CertificateRequestConditionInvalidRequest CertificateRequestConditionType = "InvalidRequest"
+
+	// CertificateRequestConditionApproved indicates that a certificate request
+	// is approved and ready for signing. Condition must never have a status of
+	// `False`, and cannot be modified once set.
+	CertificateRequestConditionApproved CertificateRequestConditionType = "Approved"
+
+	// CertificateRequestConditionDenied indicates that a certificate request is
+	// denied, and must never be signed. Condition must never have a status of
+	// `False`, and cannot be modified once set.
+	CertificateRequestConditionDenied CertificateRequestConditionType = "Denied"
 )
