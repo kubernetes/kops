@@ -42,8 +42,13 @@ import (
 	"github.com/blang/semver/v4"
 )
 
+const (
+	ConfigurationModeWarming string = "Warming"
+)
+
 // NodeupModelContext is the context supplied the nodeup tasks
 type NodeupModelContext struct {
+	Cloud         fi.Cloud
 	Architecture  architectures.Architecture
 	Assets        *fi.AssetStore
 	Cluster       *kops.Cluster
@@ -62,6 +67,10 @@ type NodeupModelContext struct {
 
 	kubernetesVersion semver.Version
 	bootstrapCerts    map[string]*nodetasks.BootstrapCert
+
+	// ConfigurationMode determines if we are prewarming an instance or running it live
+	ConfigurationMode string
+	InstanceID        string
 }
 
 // Init completes initialization of the object, for example pre-parsing the kubernetes version
