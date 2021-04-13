@@ -64,9 +64,9 @@ func (r *Templater) templateFuncsMap(tm *template.Template) template.FuncMap {
 
 	}
 
-	funcs["ChannelRecommendedImage"] = func(cloud, k8sVersion string, architecture architectures.Architecture) string {
+	funcs["ChannelRecommendedImage"] = func(cloud, k8sVersion string, architecture string) string {
 		ver, _ := semver.ParseTolerant(k8sVersion)
-		imageSpec := r.channel.FindImage(kopsapi.CloudProviderID(cloud), ver, architecture)
+		imageSpec := r.channel.FindImage(kopsapi.CloudProviderID(cloud), ver, architectures.Architecture(architecture))
 		return imageSpec.Name
 	}
 
