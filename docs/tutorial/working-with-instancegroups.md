@@ -5,7 +5,7 @@ an Auto Scaling group.
 
 By default, a cluster has:
 
-* An instance group called `nodes` spanning all the zones; these instances are your workers.
+* One instance group for each node zone, called `nodes-<zone>` (e.g. `nodes-us-east-1c`).  These instances are your workers.
 * One instance group for each master zone, called `master-<zone>` (e.g. `master-us-east-1c`).  These normally have
   minimum size and maximum size = 1, so they will run a single instance. We do this so that the cloud will
   always relaunch masters, even if everything is terminated at once. We have an instance group per zone
@@ -30,16 +30,16 @@ This page explains some common instance group operations. For more detailed docu
 ```
 NAME                    ROLE    MACHINETYPE     MIN     MAX     ZONES
 master-us-east-1c       Master                  1       1       us-east-1c
-nodes                   Node    t2.medium       2       2
+nodes-us-east-1c        Node    t2.medium       2       2       us-east-1c
 ```
 
 You can also use the `kops get ig` alias.
 
 ## Change the instance type in an instance group
 
-First you edit the instance group spec, using `kops edit ig nodes`. Change the machine type to `t2.large`,
+First you edit the instance group spec, using `kops edit ig nodes-us-east-1c`. Change the machine type to `t2.large`,
 for example.  Now if you `kops get ig`, you will see the large instance size. Note though that these changes
-have not yet been applied (this may change soon though!).
+have not yet been applied.
 
 To preview the change:
 
@@ -48,7 +48,7 @@ To preview the change:
 ```
 ...
 Will modify resources:
-  *awstasks.LaunchConfiguration launchConfiguration/mycluster.mydomain.com
+  *awstasks.LaunchTemplate LaunchTemplate/mycluster.mydomain.com
     InstanceType t2.medium -> t2.large
 ```
 
@@ -73,11 +73,11 @@ If you `kops get ig` you should see that you have InstanceGroups for your nodes 
 > kops get ig
 NAME			ROLE	MACHINETYPE	MIN	MAX	SUBNETS
 master-us-central1-a	Master	n1-standard-1	1	1	us-central1
-nodes			Node	n1-standard-2	2	2	us-central1
+nodes-us-central1-a	Node	n1-standard-2	2	2	us-central1
 ```
 
 Let's change the number of nodes to 3. We'll edit the InstanceGroup configuration using `kops edit` (which
-should be very familiar to you if you've used `kubectl edit`).  `kops edit ig nodes` will open
+should be very familiar to you if you've used `kubectl edit`).  `kops edit ig nodes-us-central1-a` will open
 the InstanceGroup in your editor, looking a bit like this:
 
 ```yaml
@@ -86,7 +86,7 @@ kind: InstanceGroup
 metadata:
   labels:
     kops.k8s.io/cluster: simple.k8s.local
-  name: nodes
+  name: nodes-us-central1-a
 spec:
   image: cos-cloud/cos-stable-57-9202-64-0
   machineType: n1-standard-2
@@ -112,12 +112,12 @@ run without `--yes` it should show you a preview of the changes, and now there s
 ```
 > kops update cluster
 Will modify resources:
-  InstanceGroupManager/us-central1-a-nodes-simple-k8s-local
+  InstanceGroupManager/us-central1-a-nodes-us-central1-a-simple-k8s-local
   	TargetSize          	 2 -> 3
 ```
 
 This is saying that we will alter the `TargetSize` property of the `InstanceGroupManager` object named
-`us-central1-a-nodes-simple-k8s-local`, changing it from 2 to 3.
+`us-central1-a-nodes-us-central1-a-simple-k8s-local`, changing it from 2 to 3.
 
 That's what we want, so we `kops update cluster --yes`.
 
@@ -128,12 +128,12 @@ which will then boot and join the cluster. Within a minute or so you should see 
 > kubectl get nodes
 NAME                        STATUS    AGE       VERSION
 master-us-central1-a-thjq   Ready     10h       v1.7.2
-nodes-g2v2                  Ready     10h       v1.7.2
-nodes-tmk8                  Ready     10h       v1.7.2
-nodes-z2cz                  Ready     1s       v1.7.2
+nodes-us-central1-a-g2v2    Ready     10h       v1.7.2
+nodes-us-central1-a-tmk8    Ready     10h       v1.7.2
+nodes-us-central1-a-z2cz    Ready     1s       v1.7.2
 ```
 
-`nodes-z2cz` just joined our cluster!
+`nodes-us-central1-a-z2cz` just joined our cluster!
 
 
 ## Changing the image
@@ -160,7 +160,7 @@ and that the Managed Instance Group is going to use it:
 
 ```
 Will create resources:
-  InstanceTemplate/nodes-simple-k8s-local
+  InstanceTemplate/nodes-us-central1-a-simple-k8s-local
   	Network             	name:default id:default
   	Tags                	[simple-k8s-local-k8s-io-role-node]
   	Preemptible         	false
@@ -173,8 +173,8 @@ Will create resources:
   	MachineType         	n1-standard-2
 
 Will modify resources:
-  InstanceGroupManager/us-central1-a-nodes-simple-k8s-local
-  	InstanceTemplate    	 id:nodes-simple-k8s-local-1507043948 -> name:nodes-simple-k8s-local
+  InstanceGroupManager/us-central1-a-nodes-us-central1-a-simple-k8s-local
+  	InstanceTemplate    	 id:nodes-us-central1-a-simple-k8s-local-1507043948 -> name:nodes-us-central1-a-simple-k8s-local
 ```
 
 Note that the `BootDiskImage` is indeed set to the debian 9 image you requested.
@@ -198,7 +198,7 @@ The default volume size for Masters is 64 GB, while the default volume size for 
 
 The procedure to resize the root volume works the same way:
 
-* Edit the instance group, set `rootVolumeSize` and/or `rootVolumeType` to the desired values: `kops edit ig nodes`
+* Edit the instance group, set `rootVolumeSize` and/or `rootVolumeType` to the desired values: `kops edit ig nodes-us-east-1c`
 * `rootVolumeType` must be one of [supported volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html), e.g. `gp2` (default), `io1` (high performance) or `standard` (for testing).
 * If `rootVolumeType` is set to `io1` then you can define the number of Iops by specifying `rootVolumeIops` (defaults to 100 if not defined)
 * Preview changes: `kops update cluster <clustername>`
@@ -209,7 +209,7 @@ For example, to set up a 200GB gp2 root volume, your InstanceGroup spec might lo
 
 ```YAML
 metadata:
-  name: nodes
+  name: nodes-us-east-1c
 spec:
   machineType: t3.medium
   maxSize: 2
@@ -223,7 +223,7 @@ Another example would be to set up a 200GB io1 root volume with 200 provisioned 
 
 ```YAML
 metadata:
-  name: nodes
+  name: nodes-us-east-1c
 spec:
   machineType: t3.medium
   maxSize: 2
@@ -234,11 +234,11 @@ spec:
   rootVolumeIops: 200
 ```
 
-As of kOps 1.19 you can use gp3 volumes for better performance,which would make your InstanceGroup spec look like:
+As of kOps 1.19 you can use gp3 volumes for better performance, which would make your InstanceGroup spec look like:
 
 ```YAML
 metadata:
-  name: nodes
+  name: nodes-us-east-1c
 spec:
   machineType: t3.medium
   maxSize: 2
@@ -257,7 +257,7 @@ You can encrypt the root volume  _(note, presently confined to AWS)_ via the ins
 
 ```YAML
 metadata:
-  name: nodes
+  name: nodes-us-east-1a
 spec:
   ...
   role: Node
@@ -447,7 +447,7 @@ An example spec looks like this:
 
 ```YAML
 metadata:
-  name: nodes
+  name: nodes-us-east-1a
 spec:
   machineType: t2.medium
   maxPrice: "0.01"
@@ -458,7 +458,7 @@ spec:
 
 So the procedure is:
 
-* Edit: `kops edit ig nodes`
+* Edit: `kops edit ig nodes-us-east-1a`
 * Preview: `kops update cluster <clustername>`
 * Apply: `kops update cluster <clustername> --yes`
 * Rolling-update, only if you want to apply changes immediately: `kops rolling-update cluster`
@@ -473,7 +473,7 @@ Additionally, `nodeLabels` can be added to an IG in order to take advantage of P
 
 ```YAML
 metadata:
-  name: nodes
+  name: nodes-us-east-1a
 spec:
   machineType: m3.medium
   maxSize: 3
