@@ -21,6 +21,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/upup/pkg/fi"
@@ -40,7 +41,7 @@ import (
 
 const (
 	DefaultEtcdVolumeSize             = 20
-	DefaultAWSEtcdVolumeType          = "gp3"
+	DefaultAWSEtcdVolumeType          = ec2.VolumeTypeGp3
 	DefaultAWSEtcdVolumeIonIops       = 100
 	DefaultAWSEtcdVolumeGp3Iops       = 3000
 	DefaultAWSEtcdVolumeGp3Throughput = 125
@@ -122,6 +123,7 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) error {
+	// https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html
 	volumeType := fi.StringValue(m.VolumeType)
 	if volumeType == "" {
 		volumeType = DefaultAWSEtcdVolumeType
@@ -129,20 +131,36 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 	volumeIops := fi.Int32Value(m.VolumeIops)
 	volumeThroughput := fi.Int32Value(m.VolumeThroughput)
 	switch volumeType {
-	case "io1", "io2":
-		if volumeIops <= 100 {
+	case ec2.VolumeTypeIo1, ec2.VolumeTypeIo2:
+		if volumeIops < 100 {
 			volumeIops = DefaultAWSEtcdVolumeIonIops
 		}
-	case "gp3":
+	case ec2.VolumeTypeGp3:
 		if volumeIops < 3000 {
 			volumeIops = DefaultAWSEtcdVolumeGp3Iops
 		}
 		if volumeThroughput < 125 {
 			volumeThroughput = DefaultAWSEtcdVolumeGp3Throughput
 		}
-	case "gp2", "standard":
-	default:
-		return fmt.Errorf("unknown volume type %q", volumeType)
+	}
+	volumeIopsSizeRatio := float64(volumeIops) / float64(volumeSize)
+	volumeThroughputIopsRatio := float64(volumeThroughput) / float64(volumeIops)
+	switch volumeType {
+	case ec2.VolumeTypeIo1:
+		if volumeIopsSizeRatio >= 50.0 {
+			return fmt.Errorf("volumeIops to volumeSize ratio must be lower than 50. For %s ratio is %.02f", name, volumeIopsSizeRatio)
+		}
+	case ec2.VolumeTypeIo2:
+		if volumeIopsSizeRatio >= 500.0 {
+			return fmt.Errorf("volumeIops to volumeSize ratio must be lower than 500. For %s ratio is %.02f", name, volumeIopsSizeRatio)
+		}
+	case ec2.VolumeTypeGp3:
+		if volumeIops > 3000 && volumeIopsSizeRatio >= 500.0 {
+			return fmt.Errorf("volumeIops to volumeSize ratio must be lower than 500. For %s ratio is %.02f", name, volumeIopsSizeRatio)
+		}
+		if volumeThroughputIopsRatio >= 0.25 {
+			return fmt.Errorf("volumeThroughput to volumeIops ratio must be lower than 0.25. For %s ratio is %.02f", name, volumeThroughputIopsRatio)
+		}
 	}
 
 	// The tags are how protokube knows to mount the volume and use it for etcd
@@ -175,24 +193,12 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 		Encrypted:        fi.Bool(encrypted),
 		Tags:             tags,
 	}
-	if volumeType == "io1" || volumeType == "io2" || volumeType == "gp3" {
-		// https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html
-		t.VolumeIops = i64(int64(volumeIops))
-		if volumeType == "io1" {
-			if float64(*t.VolumeIops)/float64(*t.SizeGB) > 50.0 {
-				return fmt.Errorf("volumeIops to volumeSize ratio must be lower than 50. For %s ratio is %f", *t.Name, float64(*t.VolumeIops)/float64(*t.SizeGB))
-			}
-		} else {
-			if float64(*t.VolumeIops)/float64(*t.SizeGB) > 500.0 {
-				return fmt.Errorf("volumeIops to volumeSize ratio must be lower than 500. For %s ratio is %f", *t.Name, float64(*t.VolumeIops)/float64(*t.SizeGB))
-			}
-		}
-		if volumeType == "gp3" {
-			t.VolumeThroughput = i64(int64(volumeThroughput))
-			if float64(*t.VolumeThroughput)/float64(*t.VolumeIops) > 0.25 {
-				return fmt.Errorf("volumeThroughput to volumeIops ratio must be lower than 0.25. For %s ratio is %f", *t.Name, float64(*t.VolumeThroughput)/float64(*t.VolumeIops))
-			}
-		}
+	switch volumeType {
+	case ec2.VolumeTypeGp3:
+		t.VolumeThroughput = i64(int64(volumeThroughput))
+		fallthrough
+	case ec2.VolumeTypeIo1, ec2.VolumeTypeIo2:
+		t.VolumeIops = fi.Int64(int64(volumeIops))
 	}
 
 	c.AddTask(t)
