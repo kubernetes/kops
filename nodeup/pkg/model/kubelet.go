@@ -426,10 +426,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	// Merge KubeletConfig for NodeLabels
 	c := b.NodeupConfig.KubeletConfig
 
-	// check if we are using secure kubelet <-> api settings
-	if b.UseSecureKubelet() {
-		c.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
-	}
+	c.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 
 	if isMaster {
 		c.BootstrapKubeconfig = ""
