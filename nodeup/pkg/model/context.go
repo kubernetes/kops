@@ -397,11 +397,6 @@ func (c *NodeupModelContext) UseBootstrapTokens() bool {
 	return c.Cluster.Spec.Kubelet != nil && c.Cluster.Spec.Kubelet.BootstrapKubeconfig != ""
 }
 
-// UseSecureKubelet checks if the kubelet api should be protected by a client certificate.
-func (c *NodeupModelContext) UseSecureKubelet() bool {
-	return c.NodeupConfig.KubeletConfig.AnonymousAuth != nil && !*c.NodeupConfig.KubeletConfig.AnonymousAuth
-}
-
 // KubectlPath returns distro based path for kubectl
 func (c *NodeupModelContext) KubectlPath() string {
 	kubeletCommand := "/usr/local/bin"
