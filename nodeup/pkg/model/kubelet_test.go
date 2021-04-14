@@ -157,8 +157,34 @@ func Test_RunKubeletBuilder(t *testing.T) {
 		t.Fatalf("error loading model %q: %v", basedir, err)
 		return
 	}
+	runKubeletBuilder(t, context, nodeUpModelContext)
 
-	builder := KubeletBuilder{NodeupModelContext: nodeUpModelContext}
+	testutils.ValidateTasks(t, filepath.Join(basedir, "tasks.yaml"), context)
+
+}
+
+func Test_RunKubeletBuilderWarmPool(t *testing.T) {
+	basedir := "tests/kubelet/warmpool"
+
+	context := &fi.ModelBuilderContext{
+		Tasks: make(map[string]fi.Task),
+	}
+	nodeUpModelContext, err := BuildNodeupModelContext(basedir)
+	if err != nil {
+		t.Fatalf("error loading model %q: %v", basedir, err)
+		return
+	}
+
+	nodeUpModelContext.ConfigurationMode = "Warming"
+
+	runKubeletBuilder(t, context, nodeUpModelContext)
+
+	testutils.ValidateTasks(t, filepath.Join(basedir, "tasks.yaml"), context)
+
+}
+
+func runKubeletBuilder(t *testing.T, context *fi.ModelBuilderContext, nodeupModelContext *NodeupModelContext) {
+	builder := KubeletBuilder{NodeupModelContext: nodeupModelContext}
 
 	kubeletConfig, err := builder.buildKubeletConfig()
 	if err != nil {
@@ -191,7 +217,6 @@ func Test_RunKubeletBuilder(t *testing.T) {
 		context.AddTask(task)
 	}
 
-	testutils.ValidateTasks(t, filepath.Join(basedir, "tasks.yaml"), context)
 }
 
 func BuildNodeupModelContext(basedir string) (*NodeupModelContext, error) {
