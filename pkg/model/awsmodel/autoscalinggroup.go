@@ -85,6 +85,20 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		tsk.LaunchTemplate = task
 		c.AddTask(tsk)
+
+		warmPool := ig.Spec.WarmPool
+		{
+			enabled := fi.Bool(warmPool != nil)
+			warmPoolTask := &awstasks.WarmPool{
+				Name:    &name,
+				Enabled: enabled,
+			}
+			if warmPool != nil {
+				warmPoolTask.MinSize = warmPool.MinSize
+				warmPoolTask.MaxSize = warmPool.MaxSize
+			}
+			c.AddTask(warmPoolTask)
+		}
 	}
 
 	return nil
