@@ -41,7 +41,7 @@ type CloudInstanceGroup struct {
 }
 
 // NewCloudInstance creates a new CloudInstance
-func (c *CloudInstanceGroup) NewCloudInstance(instanceId string, status string, nodeMap map[string]*v1.Node) (*CloudInstance, error) {
+func (c *CloudInstanceGroup) NewCloudInstance(instanceId string, status string, node *v1.Node) (*CloudInstance, error) {
 	if instanceId == "" {
 		return nil, fmt.Errorf("instance id for cloud instance member cannot be empty")
 	}
@@ -58,7 +58,6 @@ func (c *CloudInstanceGroup) NewCloudInstance(instanceId string, status string, 
 
 	cm.Status = status
 
-	node := nodeMap[instanceId]
 	if node != nil {
 		cm.Node = node
 	} else {

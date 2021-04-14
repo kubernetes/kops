@@ -183,7 +183,7 @@ func (c *azureCloudImplementation) buildCloudInstanceGroup(
 		// TODO(kenji): Set the status properly so that kops can
 		// tell whether a VM is up-to-date or not.
 		status := cloudinstances.CloudInstanceStatusUpToDate
-		_, err := cg.NewCloudInstance(*vm.Name, status, nodeMap)
+		_, err := cg.NewCloudInstance(*vm.Name, status, nodeMap[*vm.Name])
 		if err != nil {
 			return nil, fmt.Errorf("error creating cloud instance group member: %s", err)
 		}

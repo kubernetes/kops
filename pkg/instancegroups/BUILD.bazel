@@ -36,6 +36,7 @@ go_test(
     srcs = [
         "rollingupdate_os_test.go",
         "rollingupdate_test.go",
+        "rollingupdate_warmpool_test.go",
         "settings_test.go",
     ],
     embed = [":go_default_library"],

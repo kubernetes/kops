@@ -265,6 +265,15 @@ func (m *MockAutoscaling) TerminateInstanceInAutoScalingGroup(input *autoscaling
 				}, nil
 			}
 		}
+		wp := m.WarmPoolInstances[*group.AutoScalingGroupName]
+		for i := range wp {
+			if aws.StringValue(wp[i].InstanceId) == aws.StringValue(input.InstanceId) {
+				m.WarmPoolInstances[*group.AutoScalingGroupName] = append(wp[:i], wp[i+1:]...)
+				return &autoscaling.TerminateInstanceInAutoScalingGroupOutput{
+					Activity: nil, // TODO
+				}, nil
+			}
+		}
 	}
 
 	return nil, fmt.Errorf("Instance not found")

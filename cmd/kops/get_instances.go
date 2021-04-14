@@ -174,7 +174,11 @@ func instanceOutputTable(instances []*cloudinstances.CloudInstance, out io.Write
 	t.AddColumn("MACHINE-TYPE", func(i *cloudinstances.CloudInstance) string {
 		return i.MachineType
 	})
-	columns := []string{"ID", "NODE-NAME", "STATUS", "ROLES", "INTERNAL-IP", "INSTANCE-GROUP", "MACHINE-TYPE"}
+	t.AddColumn("STATE", func(i *cloudinstances.CloudInstance) string {
+		return string(i.State)
+	})
+
+	columns := []string{"ID", "NODE-NAME", "STATUS", "ROLES", "STATE", "INTERNAL-IP", "INSTANCE-GROUP", "MACHINE-TYPE"}
 	return t.Render(instances, os.Stdout, columns...)
 }
 

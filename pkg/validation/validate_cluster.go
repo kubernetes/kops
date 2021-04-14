@@ -307,6 +307,9 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 					// bastion nodes don't join the cluster
 					nodeExpectedToJoin = false
 				}
+				if member.State == cloudinstances.WarmPool {
+					nodeExpectedToJoin = false
+				}
 
 				if nodeExpectedToJoin {
 					v.addError(&ValidationError{
