@@ -18,22 +18,33 @@ type Service interface {
 	Update(context.Context, *UpdateGroupInput) (*UpdateGroupOutput, error)
 	Delete(context.Context, *DeleteGroupInput) (*DeleteGroupOutput, error)
 	Status(context.Context, *StatusGroupInput) (*StatusGroupOutput, error)
+	Scale(context.Context, *ScaleGroupInput) (*ScaleGroupOutput, error)
+	Detach(context.Context, *DetachGroupInput) (*DetachGroupOutput, error)
+
 	DeploymentStatus(context.Context, *DeploymentStatusInput) (*RollGroupOutput, error)
 	DeploymentStatusECS(context.Context, *DeploymentStatusInput) (*RollGroupOutput, error)
 	StopDeployment(context.Context, *StopDeploymentInput) (*StopDeploymentOutput, error)
-	Detach(context.Context, *DetachGroupInput) (*DetachGroupOutput, error)
+
 	Roll(context.Context, *RollGroupInput) (*RollGroupOutput, error)
 	RollECS(context.Context, *RollECSGroupInput) (*RollGroupOutput, error)
-	Scale(context.Context, *ScaleGroupInput) (*ScaleGroupOutput, error)
+
 	GetInstanceHealthiness(context.Context, *GetInstanceHealthinessInput) (*GetInstanceHealthinessOutput, error)
 	GetGroupEvents(context.Context, *GetGroupEventsInput) (*GetGroupEventsOutput, error)
+
 	ImportBeanstalkEnv(context.Context, *ImportBeanstalkInput) (*ImportBeanstalkOutput, error)
 	StartBeanstalkMaintenance(context.Context, *BeanstalkMaintenanceInput) (*BeanstalkMaintenanceOutput, error)
 	FinishBeanstalkMaintenance(context.Context, *BeanstalkMaintenanceInput) (*BeanstalkMaintenanceOutput, error)
 	GetBeanstalkMaintenanceStatus(context.Context, *BeanstalkMaintenanceInput) (*string, error)
+
 	CreateSuspensions(context.Context, *CreateSuspensionsInput) (*CreateSuspensionsOutput, error)
 	ListSuspensions(context.Context, *ListSuspensionsInput) (*ListSuspensionsOutput, error)
 	DeleteSuspensions(context.Context, *DeleteSuspensionsInput) (*DeleteSuspensionsOutput, error)
+
+	ListStatefulInstances(context.Context, *ListStatefulInstancesInput) (*ListStatefulInstancesOutput, error)
+	PauseStatefulInstance(context.Context, *PauseStatefulInstanceInput) (*PauseStatefulInstanceOutput, error)
+	ResumeStatefulInstance(context.Context, *ResumeStatefulInstanceInput) (*ResumeStatefulInstanceOutput, error)
+	RecycleStatefulInstance(context.Context, *RecycleStatefulInstanceInput) (*RecycleStatefulInstanceOutput, error)
+	DeallocateStatefulInstance(context.Context, *DeallocateStatefulInstanceInput) (*DeallocateStatefulInstanceOutput, error)
 }
 
 type ServiceOp struct {

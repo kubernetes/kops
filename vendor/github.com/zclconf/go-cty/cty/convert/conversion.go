@@ -33,14 +33,25 @@ func getConversion(in cty.Type, out cty.Type, unsafe bool) conversion {
 			// Conversion to DynamicPseudoType always just passes through verbatim.
 			return in, nil
 		}
-		if !in.IsKnown() {
-			return cty.UnknownVal(out), nil
-		}
-		if in.IsNull() {
-			// We'll pass through nulls, albeit type converted, and let
-			// the caller deal with whatever handling they want to do in
-			// case null values are considered valid in some applications.
-			return cty.NullVal(out), nil
+		if isKnown, isNull := in.IsKnown(), in.IsNull(); !isKnown || isNull {
+			// Avoid constructing unknown or null values with types which
+			// include optional attributes. Known or non-null object values
+			// will be passed to a conversion function which drops the optional
+			// attributes from the type. Unknown and null pass through values
+			// must do the same to ensure that homogeneous collections have a
+			// single element type.
+			out = out.WithoutOptionalAttributesDeep()
+
+			if !isKnown {
+				return cty.UnknownVal(out), nil
+			}
+
+			if isNull {
+				// We'll pass through nulls, albeit type converted, and let
+				// the caller deal with whatever handling they want to do in
+				// case null values are considered valid in some applications.
+				return cty.NullVal(out), nil
+			}
 		}
 
 		return conv(in, path)

@@ -1293,3 +1293,14 @@ spec:
 
 In the case of containerd, the cgroup-driver is dependant on the cgroup driver of kubelet. To use cgroupfs, just update the
 cgroupDriver of kubelet to use cgroupfs.
+
+## NTP
+
+The installation and the configuration of NTP can be skipped by setting `managed` to `false`.
+
+```yaml
+spec:
+  ntp:
+    managed: false
+```
+

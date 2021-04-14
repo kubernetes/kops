@@ -487,6 +487,7 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, ig
 	if ocean.AutoScalerOpts != nil { // remove unsupported options
 		ocean.AutoScalerOpts.Labels = nil
 		ocean.AutoScalerOpts.Taints = nil
+		ocean.AutoScalerOpts.Headroom = nil
 	}
 
 	// Create a Launch Spec for each instance group.
@@ -925,12 +926,6 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 				opts.ResourceLimits.MaxMemory = fi.Int(int(fi.Int64Value(v)))
 			}
 		}
-	}
-
-	// Toggle automatic configuration off if headroom resources are explicitly defined.
-	if fi.BoolValue(opts.AutoConfig) && opts.Headroom != nil {
-		opts.AutoConfig = fi.Bool(false)
-		opts.AutoHeadroomPercentage = nil
 	}
 
 	// Configure Elastigroup defaults to avoid state drifts.

@@ -70,9 +70,9 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
-	signingKeyTaskObject, found := c.Tasks["Keypair/master"]
+	signingKeyTaskObject, found := c.Tasks["Keypair/service-account"]
 	if !found {
-		return fmt.Errorf("keypair/master task not found")
+		return fmt.Errorf("keypair/service-account task not found")
 	}
 
 	fingerprints := getFingerprints()

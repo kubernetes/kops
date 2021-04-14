@@ -115,6 +115,44 @@ func (t Type) HasDynamicTypes() bool {
 	}
 }
 
+// WithoutOptionalAttributesDeep returns a type equivalent to the receiver but
+// with any objects with optional attributes converted into fully concrete
+// object types. This operation is applied recursively.
+func (t Type) WithoutOptionalAttributesDeep() Type {
+	switch {
+	case t == DynamicPseudoType, t.IsPrimitiveType(), t.IsCapsuleType():
+		return t
+	case t.IsMapType():
+		return Map(t.ElementType().WithoutOptionalAttributesDeep())
+	case t.IsListType():
+		return List(t.ElementType().WithoutOptionalAttributesDeep())
+	case t.IsSetType():
+		return Set(t.ElementType().WithoutOptionalAttributesDeep())
+	case t.IsTupleType():
+		originalElemTypes := t.TupleElementTypes()
+		elemTypes := make([]Type, len(originalElemTypes))
+		for i, et := range originalElemTypes {
+			elemTypes[i] = et.WithoutOptionalAttributesDeep()
+		}
+		return Tuple(elemTypes)
+	case t.IsObjectType():
+		originalAttrTypes := t.AttributeTypes()
+		attrTypes := make(map[string]Type, len(originalAttrTypes))
+		for k, t := range originalAttrTypes {
+			attrTypes[k] = t.WithoutOptionalAttributesDeep()
+		}
+
+		// This is the subtle line which does all the work of this function: by
+		// constructing a new Object type with these attribute types, we drop
+		// the list of optional attributes (if present). This results in a
+		// concrete Object type which requires all of the original attributes.
+		return Object(attrTypes)
+	default:
+		// Should never happen, since above should be exhaustive
+		panic("WithoutOptionalAttributesDeep does not support the given type")
+	}
+}
+
 type friendlyTypeNameMode rune
 
 const (

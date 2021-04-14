@@ -44,6 +44,12 @@ func (d *deployer) Up() error {
 		return err
 	}
 
+	if d.CloudProvider == "gce" && d.createBucket {
+		if err := gce.EnsureGCSBucket(d.stateStore(), d.GCPProject); err != nil {
+			return err
+		}
+	}
+
 	adminAccess := d.AdminAccess
 	if adminAccess == "" {
 		adminAccess = publicIP
@@ -147,17 +153,21 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 }
 
 func (d *deployer) IsUp() (bool, error) {
-	wait := "15m"
-	if d.TerraformVersion != "" {
-		// `--target terraform` doesn't precreate the API DNS records,
-		// so kops is more likely to hit negative TTLs during validation
-		wait = "20m"
+	wait := d.ValidationWait
+	if wait == 0 {
+		if d.TerraformVersion != "" {
+			// `--target terraform` doesn't precreate the API DNS records,
+			// so kops is more likely to hit negative TTLs during validation
+			wait = time.Duration(20) * time.Minute
+		} else {
+			wait = time.Duration(15) * time.Minute
+		}
 	}
 	args := []string{
 		d.KopsBinaryPath, "validate", "cluster",
 		"--name", d.ClusterName,
 		"--count", "10",
-		"--wait", wait,
+		"--wait", wait.String(),
 	}
 	klog.Info(strings.Join(args, " "))
 

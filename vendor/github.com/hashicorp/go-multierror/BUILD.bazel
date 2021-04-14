@@ -6,6 +6,7 @@ go_library(
         "append.go",
         "flatten.go",
         "format.go",
+        "group.go",
         "multierror.go",
         "prefix.go",
         "sort.go",

@@ -1,5 +1,10 @@
 # Change Log
 
+## [v1.59.0] - 2021-03-29
+
+- #439 - @andrewsomething - vpcs: Support listing members of a VPC.
+- #438 - @andrewsomething - Add Go 1.16.x to the testing matrix.
+
 ## [v1.58.0] - 2021-02-17
 
 - #436 - @MorrisLaw - kubernetes: add name field to associated resources

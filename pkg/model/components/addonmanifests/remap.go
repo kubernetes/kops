@@ -19,13 +19,17 @@ package addonmanifests
 import (
 	"fmt"
 
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/klog/v2"
 	addonsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/components/addonmanifests/awsloadbalancercontroller"
 	"k8s.io/kops/pkg/model/components/addonmanifests/dnscontroller"
+	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -49,6 +53,11 @@ func RemapAddonManifest(addon *addonsapi.AddonSpec, context *model.KopsModelCont
 			return nil, fmt.Errorf("failed to annotate %q: %w", name, err)
 		}
 
+		err = addServiceAccountRole(context, objects)
+		if err != nil {
+			return nil, fmt.Errorf("failed to add service account for %q: %w", name, err)
+		}
+
 		b, err := objects.ToYAML()
 		if err != nil {
 			return nil, err
@@ -66,6 +75,48 @@ func RemapAddonManifest(addon *addonsapi.AddonSpec, context *model.KopsModelCont
 	}
 
 	return manifest, nil
+}
+
+func addServiceAccountRole(context *model.KopsModelContext, objects kubemanifest.ObjectList) error {
+	for _, object := range objects {
+		if object.Kind() != "Deployment" {
+			continue
+		}
+		if object.APIVersion() != "apps/v1" {
+			continue
+		}
+		podSpec := &corev1.PodSpec{}
+
+		if err := object.Reparse(podSpec, "spec", "template", "spec"); err != nil {
+			return fmt.Errorf("failed to parse spec.template.spec from Deployment: %v", err)
+		}
+		containers := podSpec.Containers
+		sa := podSpec.ServiceAccountName
+		subject := getWellknownServiceAccount(sa)
+		if subject == nil {
+			continue
+		}
+		for k, container := range containers {
+			if err := iam.AddServiceAccountRole(&context.IAMModelContext, podSpec, &container, subject); err != nil {
+				return err
+			}
+			containers[k] = container
+		}
+		if err := object.Set(podSpec, "spec", "template", "spec"); err != nil {
+			return fmt.Errorf("failed to set object: %w", err)
+		}
+
+	}
+	return nil
+}
+
+func getWellknownServiceAccount(name string) iam.Subject {
+	switch name {
+	case "aws-load-balancer-controller":
+		return &awsloadbalancercontroller.ServiceAccount{}
+	default:
+		return nil
+	}
 }
 
 func addLabels(addon *addonsapi.AddonSpec, objects kubemanifest.ObjectList) error {

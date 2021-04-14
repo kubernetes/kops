@@ -146,7 +146,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if err := b.BuildPrivateKeyTask(c, "master", "service-account.key", nil); err != nil {
+	if err := b.BuildPrivateKeyTask(c, "service-account", "service-account.key", nil); err != nil {
 		return err
 	}
 

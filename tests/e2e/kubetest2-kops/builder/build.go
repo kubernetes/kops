@@ -35,6 +35,7 @@ func (b *BuildOptions) Build() error {
 		fmt.Sprintf("HOME=%v", os.Getenv("HOME")),
 		fmt.Sprintf("PATH=%v", os.Getenv("PATH")),
 		fmt.Sprintf("GCS_LOCATION=%v", b.StageLocation),
+		fmt.Sprintf("GOPATH=%v", os.Getenv("GOPATH")),
 	)
 	cmd.SetDir(b.KopsRoot)
 	exec.InheritOutput(cmd)

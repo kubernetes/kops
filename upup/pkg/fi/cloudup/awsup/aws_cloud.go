@@ -1635,7 +1635,7 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 	var candidates []string
 
 	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleNode:
+	case kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleNode, kops.InstanceGroupRoleAPIServer:
 		// t3.medium is the cheapest instance with 4GB of mem, unlimited by default, fast and has decent network
 		// c5.large and c4.large are a good second option in case t3.medium is not available in the AZ
 		candidates = []string{"t3.medium", "c5.large", "c4.large"}

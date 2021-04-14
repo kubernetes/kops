@@ -4,4 +4,4 @@ Zones:
 CloudProvider: aws
 Networking: cni
 NetworkID: vpc-12345678
-KubernetesVersion: v1.20.0
+KubernetesVersion: v1.21.0

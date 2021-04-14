@@ -828,6 +828,29 @@ type NewInstance struct {
 type TerminatedInstance struct {
 }
 
+type StatefulInstance struct {
+	StatefulInstanceID *string   `json:"id,omitempty"`
+	InstanceID         *string   `json:"instanceId,omitempty"`
+	State              *string   `json:"state,omitempty"`
+	PrivateIP          *string   `json:"privateIp,omitempty"`
+	ImageID            *string   `json:"imageId,omitempty"`
+	Devices            []*Device `json:"devices,omitempty"`
+	CreatedAt          *string   `json:"createdAt,omitempty"`
+	LaunchedAt         *string   `json:"launchedAt,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Device struct {
+	DeviceName *string `json:"deviceName,omitempty"`
+	VolumeID   *string `json:"volumeId,omitempty"`
+	SnapshotID *string `json:"snapshotId,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
 type ListGroupsInput struct{}
 
 type ListGroupsOutput struct {
@@ -936,6 +959,42 @@ type StopDeploymentInput struct {
 }
 
 type StopDeploymentOutput struct{}
+
+type ListStatefulInstancesInput struct {
+	GroupID *string `json:"groupId,omitempty"`
+}
+
+type ListStatefulInstancesOutput struct {
+	StatefulInstances []*StatefulInstance `json:"statefulInstances,omitempty"`
+}
+
+type PauseStatefulInstanceInput struct {
+	GroupID            *string `json:"groupId,omitempty"`
+	StatefulInstanceID *string `json:"statefulInstanceId,omitempty"`
+}
+
+type PauseStatefulInstanceOutput struct{}
+
+type ResumeStatefulInstanceInput struct {
+	GroupID            *string `json:"groupId,omitempty"`
+	StatefulInstanceID *string `json:"statefulInstanceId,omitempty"`
+}
+
+type ResumeStatefulInstanceOutput struct{}
+
+type RecycleStatefulInstanceInput struct {
+	GroupID            *string `json:"groupId,omitempty"`
+	StatefulInstanceID *string `json:"statefulInstanceId,omitempty"`
+}
+
+type RecycleStatefulInstanceOutput struct{}
+
+type DeallocateStatefulInstanceInput struct {
+	GroupID            *string `json:"groupId,omitempty"`
+	StatefulInstanceID *string `json:"statefulInstanceId,omitempty"`
+}
+
+type DeallocateStatefulInstanceOutput struct{}
 
 func deploymentStatusFromJSON(in []byte) (*RollGroupStatus, error) {
 	b := new(RollGroupStatus)
@@ -1110,6 +1169,41 @@ func groupEventsFromHttpResponse(resp *http.Response) ([]*GroupEvent, error) {
 		return nil, err
 	}
 	return groupEventsFromJSON(body)
+}
+
+func StatefulInstanceFromJSON(in []byte) (*StatefulInstance, error) {
+	b := new(StatefulInstance)
+	if err := json.Unmarshal(in, b); err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+func statefulInstancesFromJSON(in []byte) ([]*StatefulInstance, error) {
+	var rw client.Response
+	if err := json.Unmarshal(in, &rw); err != nil {
+		return nil, err
+	}
+	out := make([]*StatefulInstance, len(rw.Response.Items))
+	if len(out) == 0 {
+		return out, nil
+	}
+	for i, rb := range rw.Response.Items {
+		b, err := StatefulInstanceFromJSON(rb)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = b
+	}
+	return out, nil
+}
+
+func statefulInstancesFromHttpResponse(resp *http.Response) ([]*StatefulInstance, error) {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return statefulInstancesFromJSON(body)
 }
 
 func (s *ServiceOp) List(ctx context.Context, input *ListGroupsInput) (*ListGroupsOutput, error) {
@@ -1476,6 +1570,108 @@ func (s *ServiceOp) GetGroupEvents(ctx context.Context, input *GetGroupEventsInp
 		return nil, err
 	}
 	return &GetGroupEventsOutput{GroupEvents: events}, nil
+}
+
+func (s *ServiceOp) ListStatefulInstances(ctx context.Context, input *ListStatefulInstancesInput) (*ListStatefulInstancesOutput, error) {
+	path, err := uritemplates.Expand("/aws/ec2/group/{groupId}/statefulInstance", uritemplates.Values{
+		"groupId": spotinst.StringValue(input.GroupID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// We do not need the group ID anymore so let's drop it.
+	input.GroupID = nil
+
+	r := client.NewRequest(http.MethodGet, path)
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	statefulInstances, err := statefulInstancesFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ListStatefulInstancesOutput{StatefulInstances: statefulInstances}, nil
+}
+
+func (s *ServiceOp) PauseStatefulInstance(ctx context.Context, input *PauseStatefulInstanceInput) (*PauseStatefulInstanceOutput, error) {
+	path, err := uritemplates.Expand("/aws/ec2/group/{groupId}/statefulInstance/{statefulInstanceId}/pause", uritemplates.Values{
+		"groupId":            spotinst.StringValue(input.GroupID),
+		"statefulInstanceId": spotinst.StringValue(input.StatefulInstanceID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	r := client.NewRequest(http.MethodPut, path)
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return &PauseStatefulInstanceOutput{}, nil
+}
+
+func (s *ServiceOp) ResumeStatefulInstance(ctx context.Context, input *ResumeStatefulInstanceInput) (*ResumeStatefulInstanceOutput, error) {
+	path, err := uritemplates.Expand("/aws/ec2/group/{groupId}/statefulInstance/{statefulInstanceId}/resume", uritemplates.Values{
+		"groupId":            spotinst.StringValue(input.GroupID),
+		"statefulInstanceId": spotinst.StringValue(input.StatefulInstanceID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	r := client.NewRequest(http.MethodPut, path)
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return &ResumeStatefulInstanceOutput{}, nil
+}
+
+func (s *ServiceOp) RecycleStatefulInstance(ctx context.Context, input *RecycleStatefulInstanceInput) (*RecycleStatefulInstanceOutput, error) {
+	path, err := uritemplates.Expand("/aws/ec2/group/{groupId}/statefulInstance/{statefulInstanceId}/recycle", uritemplates.Values{
+		"groupId":            spotinst.StringValue(input.GroupID),
+		"statefulInstanceId": spotinst.StringValue(input.StatefulInstanceID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	r := client.NewRequest(http.MethodPut, path)
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return &RecycleStatefulInstanceOutput{}, nil
+}
+
+func (s *ServiceOp) DeallocateStatefulInstance(ctx context.Context, input *DeallocateStatefulInstanceInput) (*DeallocateStatefulInstanceOutput, error) {
+	path, err := uritemplates.Expand("/aws/ec2/group/{groupId}/statefulInstance/{statefulInstanceId}/deallocate", uritemplates.Values{
+		"groupId":            spotinst.StringValue(input.GroupID),
+		"statefulInstanceId": spotinst.StringValue(input.StatefulInstanceID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	r := client.NewRequest(http.MethodPut, path)
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return &DeallocateStatefulInstanceOutput{}, nil
 }
 
 // region Elastic Beanstalk
@@ -4347,6 +4543,89 @@ func (o CPUOptions) MarshalJSON() ([]byte, error) {
 func (o *CPUOptions) SetThreadsPerCore(v *int) *CPUOptions {
 	if o.ThreadsPerCore = v; o.ThreadsPerCore == nil {
 		o.nullFields = append(o.nullFields, "ThreadsPerCore")
+	}
+	return o
+}
+
+// endregion
+
+// region StatefulInstance
+
+func (o StatefulInstance) MarshalJSON() ([]byte, error) {
+	type noMethod StatefulInstance
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *StatefulInstance) SetStatefulInstanceID(v *string) *StatefulInstance {
+	if o.StatefulInstanceID = v; o.StatefulInstanceID == nil {
+		o.nullFields = append(o.nullFields, "StatefulInstanceID")
+	}
+	return o
+}
+
+func (o *StatefulInstance) SetInstanceID(v *string) *StatefulInstance {
+	if o.InstanceID = v; o.InstanceID == nil {
+		o.nullFields = append(o.nullFields, "InstanceID")
+	}
+	return o
+}
+
+func (o *StatefulInstance) SetState(v *string) *StatefulInstance {
+	if o.State = v; o.State == nil {
+		o.nullFields = append(o.nullFields, "State")
+	}
+	return o
+}
+
+func (o *StatefulInstance) SetPrivateIP(v *string) *StatefulInstance {
+	if o.PrivateIP = v; o.PrivateIP == nil {
+		o.nullFields = append(o.nullFields, "PrivateIP")
+	}
+	return o
+}
+
+func (o *StatefulInstance) SetImageID(v *string) *StatefulInstance {
+	if o.ImageID = v; o.ImageID == nil {
+		o.nullFields = append(o.nullFields, "ImageID")
+	}
+	return o
+}
+
+func (o *StatefulInstance) SetDevices(v []*Device) *StatefulInstance {
+	if o.Devices = v; o.Devices == nil {
+		o.nullFields = append(o.nullFields, "Devices")
+	}
+	return o
+}
+
+// endregion
+
+// region Device
+
+func (o Device) MarshalJSON() ([]byte, error) {
+	type noMethod Device
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Device) SetDeviceName(v *string) *Device {
+	if o.DeviceName = v; o.DeviceName == nil {
+		o.nullFields = append(o.nullFields, "DeviceName")
+	}
+	return o
+}
+
+func (o *Device) SetVolumeID(v *string) *Device {
+	if o.VolumeID = v; o.VolumeID == nil {
+		o.nullFields = append(o.nullFields, "VolumeID")
+	}
+	return o
+}
+
+func (o *Device) SetSnapshotID(v *string) *Device {
+	if o.SnapshotID = v; o.SnapshotID == nil {
+		o.nullFields = append(o.nullFields, "SnapshotID")
 	}
 	return o
 }

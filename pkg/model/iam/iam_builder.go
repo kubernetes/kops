@@ -259,7 +259,6 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	if b.Cluster.Spec.IAM.Legacy {
 		addLegacyDNSControllerPermissions(b, p)
 	}
-	AddDNSControllerPermissions(b, p)
 
 	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {
 		addECRPermissions(p)
@@ -311,6 +310,10 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 			addLegacyDNSControllerPermissions(b, p)
 		}
 		AddDNSControllerPermissions(b, p)
+
+		if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
+			AddAWSLoadbalancerControllerPermissions(p, resource, b.Cluster.GetName())
+		}
 	}
 
 	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {
@@ -331,10 +334,6 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && (b.Cluster.Spec.Networking.Calico.CrossSubnet || b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "") {
 		addCalicoSrcDstCheckPermissions(p)
-	}
-
-	if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
-		addAWSLoadbalancerControllerPermissions(p, b.Cluster.GetName())
 	}
 
 	return p, nil
@@ -722,7 +721,10 @@ func addCalicoSrcDstCheckPermissions(p *Policy) {
 	})
 }
 
-func addAWSLoadbalancerControllerPermissions(p *Policy, clusterName string) {
+// AddAWSLoadbalancerControllerPermissions adds the permissions needed for the aws load balancer controller to the givnen policy
+func AddAWSLoadbalancerControllerPermissions(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {
+	addMasterEC2Policies(p, resource, false, clusterName)
+	addMasterELBPolicies(p, resource, false)
 	p.Statement = append(p.Statement, &Statement{
 		Effect: StatementEffectAllow,
 		Action: stringorslice.Of(
@@ -730,7 +732,7 @@ func addAWSLoadbalancerControllerPermissions(p *Policy, clusterName string) {
 			"ec2:DeleteSecurityGroup",           // aws.go
 			"ec2:RevokeSecurityGroupIngress",    // aws.go
 		),
-		Resource: stringorslice.Slice([]string{"*"}),
+		Resource: resource,
 		Condition: Condition{
 			"StringEquals": map[string]string{
 				"ec2:ResourceTag/elbv2.k8s.aws/cluster": clusterName,
@@ -748,7 +750,7 @@ func addAWSLoadbalancerControllerPermissions(p *Policy, clusterName string) {
 				"elasticloadbalancing:DescribeListenerCertificates",
 				"elasticloadbalancing:CreateRule",
 			),
-			Resource: stringorslice.Slice([]string{"*"}),
+			Resource: resource,
 		})
 }
 
