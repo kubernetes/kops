@@ -112,7 +112,7 @@ Double check it is the correct commit!
 
 ```
 git push git@github.com:kubernetes/kops v${VERSION}
-git fetch origin # sync back up
+git fetch origin
 ```
 
 
@@ -133,9 +133,9 @@ e.g.
 ```
 git checkout -b relnotes_${VERSION}
 
-FROM=1.18.0
-TO=1.18.1
-DOC=1.18
+FROM=1.21.0-alpha.2
+TO=1.21.0-alpha.3
+DOC=1.21
 git log v${FROM}..v${TO} --oneline | grep Merge.pull | grep -v Revert..Merge.pull | cut -f 5 -d ' ' | tac  > /tmp/prs
 echo -e "\n## ${FROM} to ${TO}\n"  >> docs/releases/${DOC}-NOTES.md
 relnotes  -config .shipbot.yaml  < /tmp/prs  >> docs/releases/${DOC}-NOTES.md
