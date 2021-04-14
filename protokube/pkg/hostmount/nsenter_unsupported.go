@@ -21,7 +21,7 @@ package hostmount
 import (
 	"errors"
 
-	"k8s.io/utils/mount"
+	"k8s.io/mount-utils"
 	"k8s.io/utils/nsenter"
 )
 
@@ -42,6 +42,11 @@ func (mounter *Mounter) Mount(source string, target string, fstype string, optio
 
 // MountSensitive always returns an error on unsupported platforms
 func (n *Mounter) MountSensitive(source string, target string, fstype string, options []string, sensitiveOptions []string) error {
+	return errUnsupported
+}
+
+// MountSensitiveWithoutSystemd always returns an error on unsupported platforms
+func (n *Mounter) MountSensitiveWithoutSystemd(source string, target string, fstype string, options []string, sensitiveOptions []string) error {
 	return errUnsupported
 }
 

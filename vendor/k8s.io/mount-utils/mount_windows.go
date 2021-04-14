@@ -58,6 +58,12 @@ func (mounter *Mounter) Mount(source string, target string, fstype string, optio
 	return mounter.MountSensitive(source, target, fstype, options, nil /* sensitiveOptions */)
 }
 
+// MountSensitiveWithoutSystemd is the same as MountSensitive() but disable using ssytemd mount.
+// Windows not supported systemd mount, this function degrades to MountSensitive().
+func (mounter *Mounter) MountSensitiveWithoutSystemd(source string, target string, fstype string, options []string, sensitiveOptions []string) error {
+	return mounter.MountSensitive(source, target, fstype, options, sensitiveOptions /* sensitiveOptions */)
+}
+
 // MountSensitive is the same as Mount() but this method allows
 // sensitiveOptions to be passed in a separate parameter from the normal
 // mount options and ensures the sensitiveOptions are never logged. This
@@ -126,12 +132,23 @@ func (mounter *Mounter) MountSensitive(source string, target string, fstype stri
 		}
 	}
 
-	output, err := exec.Command("cmd", "/c", "mklink", "/D", target, bindSource).CombinedOutput()
+	// There is an issue in golang where EvalSymlinks fails on Windows when passed a
+	// UNC share root path without a trailing backslash.
+	// Ex: \\SERVER\share will fail to resolve but \\SERVER\share\ will resolve
+	// containerD on Windows calls EvalSymlinks so we'll add the backslash when making the symlink if it is missing.
+	// https://github.com/golang/go/pull/42096 fixes this issue in golang but a fix will not be available until
+	// golang v1.16
+	mklinkSource := bindSource
+	if !strings.HasSuffix(mklinkSource, "\\") {
+		mklinkSource = mklinkSource + "\\"
+	}
+
+	output, err := exec.Command("cmd", "/c", "mklink", "/D", target, mklinkSource).CombinedOutput()
 	if err != nil {
-		klog.Errorf("mklink failed: %v, source(%q) target(%q) output: %q", err, bindSource, target, string(output))
+		klog.Errorf("mklink failed: %v, source(%q) target(%q) output: %q", err, mklinkSource, target, string(output))
 		return err
 	}
-	klog.V(2).Infof("mklink source(%q) on target(%q) successfully, output: %q", bindSource, target, string(output))
+	klog.V(2).Infof("mklink source(%q) on target(%q) successfully, output: %q", mklinkSource, target, string(output))
 
 	return nil
 }
@@ -147,7 +164,7 @@ func newSMBMapping(username, password, remotepath string) (string, error) {
 	// https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_environment_variables?view=powershell-5.1
 	cmdLine := `$PWord = ConvertTo-SecureString -String $Env:smbpassword -AsPlainText -Force` +
 		`;$Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $Env:smbuser, $PWord` +
-		`;New-SmbGlobalMapping -RemotePath $Env:smbremotepath -Credential $Credential`
+		`;New-SmbGlobalMapping -RemotePath $Env:smbremotepath -Credential $Credential -RequirePrivacy $true`
 	cmd := exec.Command("powershell", "/c", cmdLine)
 	cmd.Env = append(os.Environ(),
 		fmt.Sprintf("smbuser=%s", username),
