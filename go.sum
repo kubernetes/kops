@@ -1778,6 +1778,7 @@ k8s.io/kubernetes v1.21.0/go.mod h1:Yx6XZ8zalyqEk7but+j4+5SvLzdyH1eeqZ4cwO+5dD4=
 k8s.io/legacy-cloud-providers v0.21.0 h1:iWf5xaX9yvYT5mkz8UB96UtISQ5IkrWeuMPMhRp01ZY=
 k8s.io/legacy-cloud-providers v0.21.0/go.mod h1:bNxo7gDg+PGkBmT/MFZswLTWdSWK9kAlS1s8DJca5q4=
 k8s.io/metrics v0.21.0/go.mod h1:L3Ji9EGPP1YBbfm9sPfEXSpnj8i24bfQbAFAsW0NueQ=
+k8s.io/mount-utils v0.21.0 h1:Z8mCBpIBG26Q9TFg6d0Wvai6AL1mMPqSYBbNVxo6J2A=
 k8s.io/mount-utils v0.21.0/go.mod h1:dwXbIPxKtTjrBEaX1aK/CMEf1KZ8GzMHpe3NEBfdFXI=
 k8s.io/sample-apiserver v0.21.0/go.mod h1:yMffYq14yQZtuVPVBGaBJ+3Scb2xHT6QeqFfk3v+AEY=
 k8s.io/system-validators v1.4.0/go.mod h1:bPldcLgkIUK22ALflnsXk8pvkTEndYdNuaHH6gRrl0Q=

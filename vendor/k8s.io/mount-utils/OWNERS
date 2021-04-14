@@ -8,8 +8,9 @@ reviewers:
   - andyzhangx
   - gnufied
 approvers:
-  - andyzhangx
   - jingxu97
   - saad-ali
   - jsafrane
 
+labels:
+  - sig/storage
