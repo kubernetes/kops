@@ -34,7 +34,7 @@ import (
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/distributions"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/utils/mount"
+	"k8s.io/mount-utils"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"

@@ -1402,6 +1402,9 @@ k8s.io/kubectl/pkg/validation
 ## explicit
 k8s.io/legacy-cloud-providers/aws
 k8s.io/legacy-cloud-providers/gce
+# k8s.io/mount-utils v0.21.0 => k8s.io/mount-utils v0.21.0
+## explicit
+k8s.io/mount-utils
 # k8s.io/utils v0.0.0-20210305010621-2afb4311ab10
 ## explicit
 k8s.io/utils/buffer
@@ -1409,7 +1412,6 @@ k8s.io/utils/exec
 k8s.io/utils/integer
 k8s.io/utils/io
 k8s.io/utils/keymutex
-k8s.io/utils/mount
 k8s.io/utils/net
 k8s.io/utils/nsenter
 k8s.io/utils/pointer

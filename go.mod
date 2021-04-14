@@ -94,6 +94,7 @@ require (
 	k8s.io/klog/v2 v2.8.0
 	k8s.io/kubectl v0.21.0
 	k8s.io/legacy-cloud-providers v0.21.0
+	k8s.io/mount-utils v0.21.0
 	k8s.io/utils v0.0.0-20210305010621-2afb4311ab10
 	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/controller-runtime v0.9.0-alpha.1
