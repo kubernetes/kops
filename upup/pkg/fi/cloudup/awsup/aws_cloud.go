@@ -780,34 +780,24 @@ func awsBuildCloudInstanceGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.Inst
 	}
 
 	for _, i := range g.Instances {
-		id := aws.StringValue(i.InstanceId)
-		if id == "" {
-			klog.Warningf("ignoring instance with no instance id: %s in autoscaling group: %s", id, cg.HumanName)
-			continue
-		}
-		instanceSeen[id] = true
-		// @step: check if the instance is terminating
-		if aws.StringValue(i.LifecycleState) == autoscaling.LifecycleStateTerminating {
-			klog.Warningf("ignoring instance as it is terminating: %s in autoscaling group: %s", id, cg.HumanName)
-			continue
-		}
-		if instances[id] == nil {
-			continue
-		}
-		currentConfigName := findInstanceLaunchConfiguration(i)
-		status := cloudinstances.CloudInstanceStatusUpToDate
-		if newConfigName != currentConfigName {
-			status = cloudinstances.CloudInstanceStatusNeedsUpdate
-		}
-		cm, err := cg.NewCloudInstance(id, status, nodeMap)
+		err := buildCloudInstance(i, instances, instanceSeen, nodeMap, cg, newConfigName)
 		if err != nil {
-			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
+			return nil, err
 		}
-
-		addCloudInstanceData(cm, instances[id])
-
 	}
 
+	result, err := c.Autoscaling().DescribeWarmPool(&autoscaling.DescribeWarmPoolInput{
+		AutoScalingGroupName: g.AutoScalingGroupName,
+	})
+	if err != nil {
+		return nil, err
+	}
+	for _, i := range result.Instances {
+		err := buildCloudInstance(i, instances, instanceSeen, nodeMap, cg, newConfigName)
+		if err != nil {
+			return nil, err
+		}
+	}
 	var detached []*string
 	for id, instance := range instances {
 		for _, tag := range instance.Tags {
@@ -821,7 +811,7 @@ func awsBuildCloudInstanceGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.Inst
 	}
 	for _, id := range detached {
 		if id != nil && *id != "" && !instanceSeen[*id] {
-			cm, err := cg.NewCloudInstance(*id, cloudinstances.CloudInstanceStatusDetached, nodeMap)
+			cm, err := cg.NewCloudInstance(*id, cloudinstances.CloudInstanceStatusDetached, nodeMap[*id])
 			if err != nil {
 				return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 			}
@@ -831,6 +821,38 @@ func awsBuildCloudInstanceGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.Inst
 	}
 
 	return cg, nil
+}
+
+func buildCloudInstance(i *autoscaling.Instance, instances map[string]*ec2.Instance, instanceSeen map[string]bool, nodeMap map[string]*v1.Node, cg *cloudinstances.CloudInstanceGroup, newConfigName string) error {
+	id := aws.StringValue(i.InstanceId)
+	if id == "" {
+		klog.Warningf("ignoring instance with no instance id: %s in autoscaling group: %s", id, cg.HumanName)
+		return nil
+	}
+	instanceSeen[id] = true
+	// @step: check if the instance is terminating
+	if aws.StringValue(i.LifecycleState) == autoscaling.LifecycleStateTerminating {
+		klog.Warningf("ignoring instance as it is terminating: %s in autoscaling group: %s", id, cg.HumanName)
+		return nil
+	}
+	if instances[id] == nil {
+		return nil
+	}
+	currentConfigName := findInstanceLaunchConfiguration(i)
+	status := cloudinstances.CloudInstanceStatusUpToDate
+	if newConfigName != currentConfigName {
+		status = cloudinstances.CloudInstanceStatusNeedsUpdate
+	}
+	cm, err := cg.NewCloudInstance(id, status, nodeMap[id])
+	if err != nil {
+		return fmt.Errorf("error creating cloud instance group member: %v", err)
+	}
+	if strings.HasPrefix(*i.LifecycleState, "Warmed") {
+		cm.State = cloudinstances.WarmPool
+	}
+
+	addCloudInstanceData(cm, instances[id])
+	return nil
 }
 
 func addCloudInstanceData(cm *cloudinstances.CloudInstance, instance *ec2.Instance) {

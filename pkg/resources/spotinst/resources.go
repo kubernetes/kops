@@ -383,7 +383,7 @@ func registerCloudInstances(instanceGroup *cloudinstances.CloudInstanceGroup, no
 			status = cloudinstances.CloudInstanceStatusNeedsUpdate
 		}
 		if _, err := instanceGroup.NewCloudInstance(
-			instance.Id(), status, nodeMap); err != nil {
+			instance.Id(), status, nodeMap[instance.Id()]); err != nil {
 			return fmt.Errorf("error creating cloud instance group member: %v", err)
 		}
 	}
