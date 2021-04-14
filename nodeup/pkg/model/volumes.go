@@ -22,8 +22,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 
 	"k8s.io/klog/v2"
+	"k8s.io/mount-utils"
 	utilexec "k8s.io/utils/exec"
-	"k8s.io/utils/mount"
 )
 
 // VolumesBuilder maintains the volume mounting
