@@ -37,10 +37,10 @@ var (
 	Used to configure docker on each master or node (i.e. for auth)
 	Use update to modify it, this command will only create a new entry.
 	
-	After creating a dockerconfig secret, a .docker/config.json file will 
-	be added to all newly created nodes without running kops update.
-	This file should also apply auth to containerd, which is the default
-	container runtime in kops 1.20 and above.`))
+	After creating a dockerconfig secret, a /root/.docker/config.json file
+    will be added to newly created nodes. This file will be used by Kubernetes
+    to authenticate to container registries and will also work when using
+	containerd as container runtime.`))
 
 	createSecretDockerconfigExample = templates.Examples(i18n.T(`
 	# Create a new docker config.
