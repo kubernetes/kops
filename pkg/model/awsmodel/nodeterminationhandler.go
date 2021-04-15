@@ -100,9 +100,6 @@ func (b *NodeTerminationHandlerBuilder) Build(c *fi.ModelBuilderContext) error {
 func (b *NodeTerminationHandlerBuilder) configureASG(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) error {
 	name := ig.Name + "-NTHLifecycleHook"
 
-	tags := b.CloudTags(name, false)
-	tags["aws-node-termination-handler/managed"] = ""
-
 	lifecyleTask := &awstasks.AutoscalingLifecycleHook{
 		ID:                  aws.String(name),
 		Name:                aws.String(name),

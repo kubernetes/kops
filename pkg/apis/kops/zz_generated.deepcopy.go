@@ -4092,6 +4092,11 @@ func (in *NodeTerminationHandlerConfig) DeepCopyInto(out *NodeTerminationHandler
 		*out = new(bool)
 		**out = **in
 	}
+	if in.ManagedAsgTag != nil {
+		in, out := &in.ManagedAsgTag, &out.ManagedAsgTag
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 

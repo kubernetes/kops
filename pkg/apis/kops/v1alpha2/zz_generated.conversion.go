@@ -5734,6 +5734,7 @@ func autoConvert_v1alpha2_NodeTerminationHandlerConfig_To_kops_NodeTerminationHa
 	out.EnableScheduledEventDraining = in.EnableScheduledEventDraining
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnableSqsTerminationDraining = in.EnableSqsTerminationDraining
+	out.ManagedAsgTag = in.ManagedAsgTag
 	return nil
 }
 
@@ -5748,6 +5749,7 @@ func autoConvert_kops_NodeTerminationHandlerConfig_To_v1alpha2_NodeTerminationHa
 	out.EnableScheduledEventDraining = in.EnableScheduledEventDraining
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnableSqsTerminationDraining = in.EnableSqsTerminationDraining
+	out.ManagedAsgTag = in.ManagedAsgTag
 	return nil
 }
 

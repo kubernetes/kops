@@ -129,13 +129,16 @@ spec:
 
 [Node Termination Handler](https://github.com/aws/aws-node-termination-handler) ensures that the Kubernetes control plane responds appropriately to events that can cause your EC2 instance to become unavailable, such as EC2 maintenance events, EC2 Spot interruptions, and EC2 instance rebalance recommendations. If not handled, your application code may not stop gracefully, take longer to recover full availability, or accidentally schedule work to nodes that are going down.
 
-If `enableSqsTerminationDraining` is enabled Node Termination Handler will operate in Queue Processor mode. In addition to the events mentioned above, Queue Processor mode allows Node Termination Handler to take care of ASG Scale-In, AZ-Rebalance, Unhealthy Instances, EC2 Instance Termination via the API or Console, and more. kOps will provision the necessary infrastructure: an SQS queue, EventBridge rules, and ASG Lifecycle hooks.
+If `enableSqsTerminationDraining` is enabled Node Termination Handler will operate in Queue Processor mode. In addition to the events mentioned above, Queue Processor mode allows Node Termination Handler to take care of ASG Scale-In, AZ-Rebalance, Unhealthy Instances, EC2 Instance Termination via the API or Console, and more. kOps will provision the necessary infrastructure: an SQS queue, EventBridge rules, and ASG Lifecycle hooks.`managedAsgTag` can be configured with Queue Processor mode to distinguish resource ownership between multiple clusters.
+
+If you switch between the two operating modes on an existing cluster, the old resources have to be manually deleted. For IMDS to Queue Processor, this means deleting the k8s nth daemonset. For Queue Processor to IMDS, this means deleting the k8s nth deployment and the AWS resources: the SQS queue, EventBridge rules, and ASG Lifecycle hooks.
 
 ```yaml
 spec:
   nodeTerminationHandler:
     enabled: true
     enableSqsTerminationDraining: true
+    managedAsgTag: "aws-node-termination-handler/managed"
 ```
 
 ## Static addons

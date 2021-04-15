@@ -103,7 +103,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-nthsqsresources-exam
   tag {
     key                 = "aws-node-termination-handler/managed"
     propagate_at_launch = true
-    value               = "true"
+    value               = ""
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"
@@ -171,7 +171,7 @@ resource "aws_autoscaling_group" "nodes-nthsqsresources-example-com" {
   tag {
     key                 = "aws-node-termination-handler/managed"
     propagate_at_launch = true
-    value               = "true"
+    value               = ""
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
@@ -406,7 +406,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-nthsqsresources-exampl
     tags = {
       "KubernetesCluster"                                                                                     = "nthsqsresources.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.nthsqsresources.example.com"
-      "aws-node-termination-handler/managed"                                                                  = "true"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
@@ -422,7 +422,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-nthsqsresources-exampl
     tags = {
       "KubernetesCluster"                                                                                     = "nthsqsresources.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.nthsqsresources.example.com"
-      "aws-node-termination-handler/managed"                                                                  = "true"
+      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
@@ -436,7 +436,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-nthsqsresources-exampl
   tags = {
     "KubernetesCluster"                                                                                     = "nthsqsresources.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.nthsqsresources.example.com"
-    "aws-node-termination-handler/managed"                                                                  = "true"
+    "aws-node-termination-handler/managed"                                                                  = ""
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
     "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
@@ -486,7 +486,7 @@ resource "aws_launch_template" "nodes-nthsqsresources-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "nthsqsresources.example.com"
       "Name"                                                                       = "nodes.nthsqsresources.example.com"
-      "aws-node-termination-handler/managed"                                       = "true"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
@@ -499,7 +499,7 @@ resource "aws_launch_template" "nodes-nthsqsresources-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "nthsqsresources.example.com"
       "Name"                                                                       = "nodes.nthsqsresources.example.com"
-      "aws-node-termination-handler/managed"                                       = "true"
+      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
@@ -510,7 +510,7 @@ resource "aws_launch_template" "nodes-nthsqsresources-example-com" {
   tags = {
     "KubernetesCluster"                                                          = "nthsqsresources.example.com"
     "Name"                                                                       = "nodes.nthsqsresources.example.com"
-    "aws-node-termination-handler/managed"                                       = "true"
+    "aws-node-termination-handler/managed"                                       = ""
     "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
