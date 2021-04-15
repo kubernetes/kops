@@ -81,6 +81,21 @@
     },
     {
       "Action": [
+        "autoscaling:CompleteLifecycleAction",
+        "autoscaling:DescribeAutoScalingInstances"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "autoscaling:ResourceTag/KubernetesCluster": "privatedns1.example.com"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Action": [
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:AttachLoadBalancerToSubnets",
         "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
