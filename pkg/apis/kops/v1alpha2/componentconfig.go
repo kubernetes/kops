@@ -856,6 +856,9 @@ type NodeTerminationHandlerConfig struct {
 
 	// EnableSqsTerminationDraining enables queue-processor mode which drains nodes when an SQS termination event is received.
 	EnableSqsTerminationDraining *bool `json:"enableSqsTerminationDraining,omitempty"`
+
+	// ManagedAsgTag is the tag used to determine which nodes NTH can take action on
+	ManagedAsgTag *string `json:"managedAsgTag,omitempty"`
 }
 
 // ClusterAutoscalerConfig determines the cluster autoscaler configuration.
