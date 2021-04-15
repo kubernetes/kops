@@ -3731,8 +3731,8 @@ spec:
                       networking
                     type: object
                   lyftvpc:
-                    description: LyftIpVlanNetworkingSpec declares that we want to
-                      use the cni-ipvlan-vpc-k8s CNI networking
+                    description: LyftVPCNetworkingSpec declares that we want to use
+                      the cni-ipvlan-vpc-k8s CNI networking
                     properties:
                       subnetTags:
                         additionalProperties:
