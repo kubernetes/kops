@@ -447,7 +447,7 @@ func buildCloudInstanceGroup(c *Cloud, ig *kops.InstanceGroup, g DOInstanceGroup
 	for _, member := range g.Members {
 
 		// TODO use a hash of the godo.DropletCreateRequest fields to calculate the second parameter.
-		_, err := cg.NewCloudInstance(member, cloudinstances.CloudInstanceStatusUpToDate, nodeMap)
+		_, err := cg.NewCloudInstance(member, cloudinstances.CloudInstanceStatusUpToDate, nodeMap[member])
 		if err != nil {
 			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 		}

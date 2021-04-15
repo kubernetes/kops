@@ -53,7 +53,9 @@ func getTestSetup() (*RollingUpdateCluster, *awsup.MockAWSCloud) {
 	k8sClient := fake.NewSimpleClientset()
 
 	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
-	mockAutoscaling := &mockautoscaling.MockAutoscaling{}
+	mockAutoscaling := &mockautoscaling.MockAutoscaling{
+		WarmPoolInstances: make(map[string][]*autoscaling.Instance),
+	}
 	mockcloud.MockAutoscaling = mockAutoscaling
 	mockcloud.MockEC2 = mockAutoscaling.GetEC2Shim(mockcloud.MockEC2)
 
@@ -135,7 +137,7 @@ func (v *assertNotCalledClusterValidator) Validate() (*validation.ValidationClus
 func makeGroup(groups map[string]*cloudinstances.CloudInstanceGroup, k8sClient kubernetes.Interface, cloud awsup.AWSCloud, name string, role kopsapi.InstanceGroupRole, count int, needUpdate int) {
 	fakeClient := k8sClient.(*fake.Clientset)
 
-	groups[name] = &cloudinstances.CloudInstanceGroup{
+	group := &cloudinstances.CloudInstanceGroup{
 		HumanName: name,
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
@@ -147,6 +149,8 @@ func makeGroup(groups map[string]*cloudinstances.CloudInstanceGroup, k8sClient k
 		},
 		Raw: &autoscaling.Group{AutoScalingGroupName: aws.String("asg-" + name)},
 	}
+	groups[name] = group
+
 	cloud.Autoscaling().CreateAutoScalingGroup(&autoscaling.CreateAutoScalingGroupInput{
 		AutoScalingGroupName: aws.String(name),
 		DesiredCapacity:      aws.Int64(int64(count)),
@@ -164,16 +168,16 @@ func makeGroup(groups map[string]*cloudinstances.CloudInstanceGroup, k8sClient k
 			}
 			_ = fakeClient.Tracker().Add(node)
 		}
-		member := cloudinstances.CloudInstance{
-			ID:                 id,
-			Node:               node,
-			CloudInstanceGroup: groups[name],
-		}
+
+		var status string
 		if i < needUpdate {
-			groups[name].NeedUpdate = append(groups[name].NeedUpdate, &member)
+			status = cloudinstances.CloudInstanceStatusNeedsUpdate
 		} else {
-			groups[name].Ready = append(groups[name].Ready, &member)
+			status = cloudinstances.CloudInstanceStatusUpToDate
 		}
+
+		group.NewCloudInstance(id, status, node)
+
 		instanceIds = append(instanceIds, aws.String(id))
 	}
 	cloud.Autoscaling().AttachInstances(&autoscaling.AttachInstancesInput{
