@@ -9,6 +9,13 @@
       "Resource": [
         "*"
       ]
+    },
+    {
+      "Action": "autoscaling:DescribeAutoScalingInstances",
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
     }
   ],
   "Version": "2012-10-17"
