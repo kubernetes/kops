@@ -345,10 +345,9 @@ func (m *KopsModelContext) KubernetesVersion() semver.Version {
 	}
 
 	sv, err := util.ParseKubernetesVersion(kubernetesVersion)
-	if err != nil {
-		klog.Fatalf("unable to determine kubernetes version from %q", kubernetesVersion)
+	if err != nil || sv == nil {
+		klog.Fatalf("unable to determine kubernetes version from %q: %v", kubernetesVersion, err)
 	}
-
 	return *sv
 }
 
