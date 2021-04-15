@@ -29,6 +29,7 @@ type MockAutoscaling struct {
 
 	mutex                sync.Mutex
 	Groups               map[string]*autoscaling.Group
+	WarmPoolInstances    map[string][]*autoscaling.Instance
 	LaunchConfigurations map[string]*autoscaling.LaunchConfiguration
 }
 

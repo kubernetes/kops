@@ -124,6 +124,21 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(group *cloudinstances.
 		}
 	}
 
+	nonWarmPool := []*cloudinstances.CloudInstance{}
+	// Run through the warm pool and delete all instances directly
+	for _, instance := range update {
+		if instance.State == cloudinstances.WarmPool {
+			klog.Infof("deleting warm pool instance %q", instance.ID)
+			err := c.Cloud.DeleteInstance(instance)
+			if err != nil {
+				return fmt.Errorf("failed to delete warm pool instance %q: %w", instance.ID, err)
+			}
+		} else {
+			nonWarmPool = append(nonWarmPool, instance)
+		}
+	}
+	update = nonWarmPool
+
 	if c.Interactive {
 		if maxSurge > 1 {
 			maxSurge = 1
