@@ -53,5 +53,9 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 		nth.EnableSqsTerminationDraining = fi.Bool(false)
 	}
 
+	if nth.ManagedAsgTag == nil {
+		nth.ManagedAsgTag = fi.String("aws-node-termination-handler/managed")
+	}
+
 	return nil
 }

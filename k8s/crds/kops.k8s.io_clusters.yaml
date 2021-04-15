@@ -3924,6 +3924,10 @@ spec:
                     description: 'Enabled enables the node termination handler. Default:
                       true'
                     type: boolean
+                  managedAsgTag:
+                    description: ManagedAsgTag is the tag used to determine which
+                      nodes NTH can take action on
+                    type: string
                   prometheusEnable:
                     description: EnablePrometheusMetrics enables the "/metrics" endpoint.
                     type: boolean

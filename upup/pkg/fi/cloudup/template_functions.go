@@ -227,6 +227,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			url := "https://sqs." + tf.Region + domain + tf.AWSAccountID + "/" + s + "-nth"
 			return url
 		}
+
+		dest["EnableSqsTerminationDraining"] = func() bool { return *cluster.Spec.NodeTerminationHandler.EnableSqsTerminationDraining }
 	}
 
 	return nil
