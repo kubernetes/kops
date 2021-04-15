@@ -1161,6 +1161,13 @@
               ]
             },
             {
+              "Action": "autoscaling:DescribeAutoScalingInstances",
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
               "Action": [
                 "iam:ListServerCertificates",
                 "iam:GetServerCertificate"
@@ -1254,6 +1261,21 @@
                 "autoscaling:SetDesiredCapacity",
                 "autoscaling:TerminateInstanceInAutoScalingGroup",
                 "autoscaling:UpdateAutoScalingGroup"
+              ],
+              "Condition": {
+                "StringEquals": {
+                  "autoscaling:ResourceTag/KubernetesCluster": "minimal.example.com"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "autoscaling:CompleteLifecycleAction",
+                "autoscaling:DescribeAutoScalingInstances"
               ],
               "Condition": {
                 "StringEquals": {
@@ -1372,6 +1394,13 @@
                 "ec2:DescribeInstances",
                 "ec2:DescribeRegions"
               ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": "autoscaling:DescribeAutoScalingInstances",
               "Effect": "Allow",
               "Resource": [
                 "*"

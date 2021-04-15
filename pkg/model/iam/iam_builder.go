@@ -245,6 +245,7 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	addMasterEC2Policies(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+	addASLifecyclePolicies(p, resource, b.Cluster.GetName())
 	addCertIAMPolicies(p, resource)
 
 	var err error
@@ -348,6 +349,7 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	addNodeEC2Policies(p, resource)
+	addASLifecyclePolicies(p, resource, b.Cluster.GetName())
 
 	var err error
 	if p, err = b.AddS3Permissions(p); err != nil {
@@ -1009,8 +1011,32 @@ func addMasterASPolicies(p *Policy, resource stringorslice.StringOrSlice, legacy
 					},
 				},
 			},
+			&Statement{
+				Effect: StatementEffectAllow,
+				Action: stringorslice.Of(
+					"autoscaling:CompleteLifecycleAction",      // aws_manager.go
+					"autoscaling:DescribeAutoScalingInstances", // aws_instancegroups.go
+				),
+				Resource: resource,
+				Condition: Condition{
+					"StringEquals": map[string]string{
+						"autoscaling:ResourceTag/KubernetesCluster": clusterName,
+					},
+				},
+			},
 		)
 	}
+}
+
+func addASLifecyclePolicies(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {
+	p.Statement = append(p.Statement,
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Of(
+				"autoscaling:DescribeAutoScalingInstances",
+			),
+			Resource: resource,
+		})
 }
 
 func addCertIAMPolicies(p *Policy, resource stringorslice.StringOrSlice) {
