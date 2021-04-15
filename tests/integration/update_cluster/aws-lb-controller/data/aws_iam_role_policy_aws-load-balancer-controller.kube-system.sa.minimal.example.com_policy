@@ -53,6 +53,18 @@
     },
     {
       "Action": [
+        "ec2:DescribeAvailabilityZones",
+        "ec2:DescribeLaunchTemplates",
+        "autoscaling:DescribeTags",
+        "autoscaling:DescribeAutoScalingGroups"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Action": [
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:AttachLoadBalancerToSubnets",
         "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",

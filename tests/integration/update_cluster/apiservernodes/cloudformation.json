@@ -1161,6 +1161,18 @@
               ]
             },
             {
+              "Action": [
+                "ec2:DescribeAvailabilityZones",
+                "ec2:DescribeLaunchTemplates",
+                "autoscaling:DescribeTags",
+                "autoscaling:DescribeAutoScalingGroups"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
               "Action": "autoscaling:DescribeAutoScalingInstances",
               "Effect": "Allow",
               "Resource": [
@@ -1239,6 +1251,18 @@
                   "ec2:ResourceTag/KubernetesCluster": "minimal.example.com"
                 }
               },
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:DescribeAvailabilityZones",
+                "ec2:DescribeLaunchTemplates",
+                "autoscaling:DescribeTags",
+                "autoscaling:DescribeAutoScalingGroups"
+              ],
               "Effect": "Allow",
               "Resource": [
                 "*"
