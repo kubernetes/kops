@@ -27,6 +27,11 @@ const CloudInstanceStatusNeedsUpdate = "NeedsUpdate"
 // CloudInstanceStatusReady means the instance has joined the cluster, is not detached, and is up to date.
 const CloudInstanceStatusUpToDate = "UpToDate"
 
+type State string
+
+// WarmPool means the instance is in the warm pool
+const WarmPool State = "WarmPool"
+
 // CloudInstance describes an instance in a CloudInstanceGroup group.
 type CloudInstance struct {
 	// ID is a unique identifier for the instance, meaningful to the cloud
@@ -43,4 +48,6 @@ type CloudInstance struct {
 	MachineType string
 	// Private IP is the private ip address of the instance.
 	PrivateIP string
+	// State is in which state the instance is in
+	State State
 }
