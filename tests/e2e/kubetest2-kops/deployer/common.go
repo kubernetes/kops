@@ -56,12 +56,14 @@ func (d *deployer) initialize() error {
 			return fmt.Errorf("init failed to check up flags: %v", err)
 		}
 	}
+	if d.KopsBinaryPath == "" {
+		d.KopsBinaryPath = path.Join(d.commonOptions.RunDir(), "kops")
+	}
 	if d.KopsVersionMarker != "" {
-		binaryPath, baseURL, err := kops.DownloadKops(d.KopsVersionMarker, d.KopsBinaryPath)
+		baseURL, err := kops.DownloadKops(d.KopsVersionMarker, d.KopsBinaryPath)
 		if err != nil {
 			return fmt.Errorf("init failed to download kops from url: %v", err)
 		}
-		d.KopsBinaryPath = binaryPath
 		d.KopsBaseURL = baseURL
 	}
 	switch d.CloudProvider {
