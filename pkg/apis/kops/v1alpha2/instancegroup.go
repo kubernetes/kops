@@ -49,36 +49,6 @@ type InstanceGroupList struct {
 // InstanceGroupRole string describes the roles of the nodes in this InstanceGroup (master or nodes)
 type InstanceGroupRole string
 
-const (
-	// InstanceGroupRoleMaster is a master role
-	InstanceGroupRoleMaster InstanceGroupRole = "Master"
-	// InstanceGroupRoleNode is a node role
-	InstanceGroupRoleNode InstanceGroupRole = "Node"
-	// InstanceGroupRoleBastion is a bastion role
-	InstanceGroupRoleBastion InstanceGroupRole = "Bastion"
-)
-
-// AllInstanceGroupRoles is a list of all available roles
-var AllInstanceGroupRoles = []InstanceGroupRole{
-	InstanceGroupRoleBastion,
-	InstanceGroupRoleMaster,
-	InstanceGroupRoleNode,
-}
-
-const (
-	// BtfsFilesystem indicates a btfs filesystem
-	BtfsFilesystem = "btfs"
-	// Ext4Filesystem indicates a ext3 filesystem
-	Ext4Filesystem = "ext4"
-	// XFSFilesystem indicates a xfs filesystem
-	XFSFilesystem = "xfs"
-)
-
-var (
-	// SupportedFilesystems is a list of supported filesystems to format as
-	SupportedFilesystems = []string{BtfsFilesystem, Ext4Filesystem, XFSFilesystem}
-)
-
 // InstanceGroupSpec is the specification for an InstanceGroup
 type InstanceGroupSpec struct {
 	// Type determines the role of instances in this instance group: masters or nodes
@@ -179,18 +149,6 @@ type InstanceGroupSpec struct {
 	//   'external': do not apply updates automatically; they are applied manually or by an external system
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 }
-
-const (
-	// SpotAllocationStrategyLowestPrices indicates a lowest-price strategy
-	SpotAllocationStrategyLowestPrices = "lowest-price"
-	// SpotAllocationStrategyDiversified indicates a diversified strategy
-	SpotAllocationStrategyDiversified = "diversified"
-	// SpotAllocationStrategyCapacityOptimized indicates a capacity optimized strategy
-	SpotAllocationStrategyCapacityOptimized = "capacity-optimized"
-)
-
-// SpotAllocationStrategies is a collection of supported strategies
-var SpotAllocationStrategies = []string{SpotAllocationStrategyLowestPrices, SpotAllocationStrategyDiversified, SpotAllocationStrategyCapacityOptimized}
 
 // InstanceMetadataOptions defines the EC2 instance metadata service options (AWS Only)
 type InstanceMetadataOptions struct {
