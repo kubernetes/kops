@@ -197,9 +197,14 @@ func (d *deployer) featureFlags() string {
 // defaultClusterName returns a kops cluster name to use when ClusterName is not set
 func defaultClusterName(cloudProvider string) (string, error) {
 	jobName := os.Getenv("JOB_NAME")
+	jobType := os.Getenv("JOB_TYPE")
 	buildID := os.Getenv("BUILD_ID")
+	pullNumber := os.Getenv("PULL_NUMBER")
 	if jobName == "" || buildID == "" {
 		return "", errors.New("JOB_NAME, and BUILD_ID env vars are required when --cluster-name is not set")
+	}
+	if jobType == "presubmit" && pullNumber == "" {
+		return "", errors.New("PULL_NUMBER must be set when JOB_TYPE=presubmit and --cluster-name is not set")
 	}
 
 	buildIDHash := fmt.Sprintf("%x", md5.Sum([]byte(buildID)))
@@ -213,6 +218,10 @@ func defaultClusterName(cloudProvider string) (string, error) {
 		suffix = "k8s.local"
 	}
 
+	if jobType == "presubmit" {
+		pullHash := fmt.Sprintf("%x", md5.Sum([]byte(pullNumber)))
+		return fmt.Sprintf("e2e-%v-%v.%v", pullHash[:10], jobHash[:5], suffix), nil
+	}
 	return fmt.Sprintf("e2e-%v-%v.%v", buildIDHash[:10], jobHash[:5], suffix), nil
 }
 
