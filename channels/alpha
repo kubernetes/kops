@@ -58,11 +58,11 @@ spec:
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.17.0 <1.18.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210315
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210325
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.18.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210315
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210325
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.20.0"
@@ -74,7 +74,7 @@ spec:
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.16.0 <1.18.0"
-    - name: "ubuntu-os-cloud/ubuntu-2004-focal-v20210315"
+    - name: "ubuntu-os-cloud/ubuntu-2004-focal-v20210325"
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.18.0"
@@ -118,27 +118,27 @@ spec:
     requiredVersion: 1.11.10
   kopsVersions:
   - range: ">=1.20.0-alpha.1"
-    #recommendedVersion: "1.19.0-beta.3"
+    recommendedVersion: "1.20.0"
     #requiredVersion: 1.20.0
     kubernetesVersion: 1.20.6
-  - range: ">=1.19.0-beta.3"
-    #recommendedVersion: "1.19.0-beta.3"
+  - range: ">=1.19.0-alpha.1"
+    recommendedVersion: "1.20.0"
     #requiredVersion: 1.19.0
     kubernetesVersion: 1.19.10
   - range: ">=1.18.0-alpha.1"
-    recommendedVersion: "1.18.2"
+    recommendedVersion: "1.20.0"
     #requiredVersion: 1.18.0
     kubernetesVersion: 1.18.18
   - range: ">=1.17.0-alpha.1"
-    recommendedVersion: "1.18.2"
+    recommendedVersion: "1.20.0"
     #requiredVersion: 1.17.0
     kubernetesVersion: 1.17.17
   - range: ">=1.16.0-alpha.1"
-    recommendedVersion: "1.18.2"
+    recommendedVersion: "1.20.0"
     #requiredVersion: 1.16.0
     kubernetesVersion: 1.16.15
   - range: ">=1.15.0-alpha.1"
-    recommendedVersion: "1.18.2"
+    recommendedVersion: "1.20.0"
     #requiredVersion: 1.15.0
     kubernetesVersion: 1.15.12
   - range: ">=1.14.0-alpha.1"
