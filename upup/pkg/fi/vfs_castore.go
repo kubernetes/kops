@@ -531,6 +531,17 @@ func mirrorSSHCredential(cluster *kops.Cluster, basedir vfs.Path, sshCredential 
 }
 
 func (c *VFSCAStore) StoreKeyset(name string, keyset *Keyset) error {
+	if keyset.Primary == nil || keyset.Primary.Id == "" {
+		return fmt.Errorf("keyset must have a primary key")
+	}
+	primaryId := keyset.Primary.Id
+	if keyset.Items[primaryId] == nil {
+		return fmt.Errorf("keyset's primary id %q not present in items", primaryId)
+	}
+	if keyset.Items[primaryId].PrivateKey == nil {
+		return fmt.Errorf("keyset's primary id %q must have a private key", primaryId)
+	}
+
 	{
 		p := c.buildPrivateKeyPoolPath(name)
 		if err := c.writeKeysetBundle(p, name, keyset, true); err != nil {
