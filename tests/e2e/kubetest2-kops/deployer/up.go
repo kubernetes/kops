@@ -39,6 +39,13 @@ func (d *deployer) Up() error {
 		return err
 	}
 
+	if d.terraform == nil {
+		klog.Info("Cleaning up any leaked resources from previous cluster")
+		// Intentionally ignore errors:
+		// Either the cluster didn't exist or something failed that the next cluster creation will catch
+		_ = d.Down()
+	}
+
 	publicIP, err := util.ExternalIPRange()
 	if err != nil {
 		return err
