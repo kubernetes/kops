@@ -480,12 +480,12 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 	}
 
 	if i.caKey {
-		options := &CreateSecretCaCertOptions{}
+		options := &CreateKeypairCaOptions{}
 		options.ClusterName = i.clusterName
-		options.CaPrivateKeyPath = path.Join(i.srcDir, "ca.key")
-		options.CaCertPath = path.Join(i.srcDir, "ca.crt")
+		options.PrivateKeyPath = path.Join(i.srcDir, "ca.key")
+		options.CertPath = path.Join(i.srcDir, "ca.crt")
 
-		err := RunCreateSecretCaCert(ctx, factory, &stdout, options)
+		err := RunCreateKeypairCa(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running %q create CA keypair: %v", inputYAML, err)
 		}

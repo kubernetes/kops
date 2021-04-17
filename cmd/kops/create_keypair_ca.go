@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 
 	"github.com/spf13/cobra"
 	"k8s.io/klog/v2"
@@ -35,35 +34,35 @@ import (
 )
 
 var (
-	createSecretCacertLong = templates.LongDesc(i18n.T(`
-	Add a ca certificate and private key.
+	createKeypairCaLong = templates.LongDesc(i18n.T(`
+	Add a cluster CA certificate and private key.
     `))
 
-	createSecretCacertExample = templates.Examples(i18n.T(`
-	Add a ca certificate and private key.
-	kops create secret keypair ca \
+	createKeypairCaExample = templates.Examples(i18n.T(`
+	Add a cluster CA certificate and private key.
+	kops create keypair ca \
 		--cert ~/ca.pem --key ~/ca-key.pem \
 		--name k8s-cluster.example.com --state s3://my-state-store
 	`))
 
-	createSecretCacertShort = i18n.T(`Add a ca cert and key`)
+	createKeypairCaShort = i18n.T(`Add a cluster CA cert and key`)
 )
 
-type CreateSecretCaCertOptions struct {
-	ClusterName      string
-	CaPrivateKeyPath string
-	CaCertPath       string
+type CreateKeypairCaOptions struct {
+	ClusterName    string
+	PrivateKeyPath string
+	CertPath       string
 }
 
-// NewCmdCreateSecretCaCert returns create ca certificate command
-func NewCmdCreateSecretCaCert(f *util.Factory, out io.Writer) *cobra.Command {
-	options := &CreateSecretCaCertOptions{}
+// NewCmdCreateKeypairCa returns create ca certificate command
+func NewCmdCreateKeypairCa(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &CreateKeypairCaOptions{}
 
 	cmd := &cobra.Command{
 		Use:     "ca",
-		Short:   createSecretCacertShort,
-		Long:    createSecretCacertLong,
-		Example: createSecretCacertExample,
+		Short:   createKeypairCaShort,
+		Long:    createKeypairCaLong,
+		Example: createKeypairCaExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := context.TODO()
 
@@ -74,26 +73,26 @@ func NewCmdCreateSecretCaCert(f *util.Factory, out io.Writer) *cobra.Command {
 
 			options.ClusterName = rootCommand.ClusterName()
 
-			err = RunCreateSecretCaCert(ctx, f, os.Stdout, options)
+			err = RunCreateKeypairCa(ctx, f, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	cmd.Flags().StringVar(&options.CaCertPath, "cert", options.CaCertPath, "Path to ca cert")
-	cmd.Flags().StringVar(&options.CaPrivateKeyPath, "key", options.CaPrivateKeyPath, "Path to ca cert private key")
+	cmd.Flags().StringVar(&options.CertPath, "cert", options.CertPath, "Path to CA certificate")
+	cmd.Flags().StringVar(&options.PrivateKeyPath, "key", options.PrivateKeyPath, "Path to CA private key")
 
 	return cmd
 }
 
-// RunCreateSecretCaCert adds a custom ca certificate and private key
-func RunCreateSecretCaCert(ctx context.Context, f *util.Factory, out io.Writer, options *CreateSecretCaCertOptions) error {
-	if options.CaCertPath == "" {
+// RunCreateKeypairCa adds a custom ca certificate and private key
+func RunCreateKeypairCa(ctx context.Context, f *util.Factory, out io.Writer, options *CreateKeypairCaOptions) error {
+	if options.CertPath == "" {
 		return fmt.Errorf("error cert provided")
 	}
 
-	if options.CaPrivateKeyPath == "" {
+	if options.PrivateKeyPath == "" {
 		return fmt.Errorf("error no private key provided")
 	}
 
@@ -112,16 +111,16 @@ func RunCreateSecretCaCert(ctx context.Context, f *util.Factory, out io.Writer, 
 		return fmt.Errorf("error getting keystore: %v", err)
 	}
 
-	options.CaCertPath = utils.ExpandPath(options.CaCertPath)
-	options.CaPrivateKeyPath = utils.ExpandPath(options.CaPrivateKeyPath)
+	options.CertPath = utils.ExpandPath(options.CertPath)
+	options.PrivateKeyPath = utils.ExpandPath(options.PrivateKeyPath)
 
-	certBytes, err := ioutil.ReadFile(options.CaCertPath)
+	certBytes, err := ioutil.ReadFile(options.CertPath)
 	if err != nil {
-		return fmt.Errorf("error reading user provided cert %q: %v", options.CaCertPath, err)
+		return fmt.Errorf("error reading user provided cert %q: %v", options.CertPath, err)
 	}
-	privateKeyBytes, err := ioutil.ReadFile(options.CaPrivateKeyPath)
+	privateKeyBytes, err := ioutil.ReadFile(options.PrivateKeyPath)
 	if err != nil {
-		return fmt.Errorf("error reading user provided private key %q: %v", options.CaPrivateKeyPath, err)
+		return fmt.Errorf("error reading user provided private key %q: %v", options.PrivateKeyPath, err)
 	}
 
 	privateKey, err := pki.ParsePEMPrivateKey(privateKeyBytes)
@@ -130,7 +129,7 @@ func RunCreateSecretCaCert(ctx context.Context, f *util.Factory, out io.Writer, 
 	}
 	cert, err := pki.ParsePEMCertificate(certBytes)
 	if err != nil {
-		return fmt.Errorf("error loading certificate %q: %v", options.CaCertPath, err)
+		return fmt.Errorf("error loading certificate %q: %v", options.CertPath, err)
 	}
 
 	serialString := cert.Certificate.SerialNumber.String()
@@ -148,11 +147,11 @@ func RunCreateSecretCaCert(ctx context.Context, f *util.Factory, out io.Writer, 
 		Primary: ki,
 	})
 	if err != nil {
-		return fmt.Errorf("error storing user provided keys %q %q: %v", options.CaCertPath, options.CaPrivateKeyPath, err)
+		return fmt.Errorf("error storing user provided keys %q %q: %v", options.CertPath, options.PrivateKeyPath, err)
 	}
 
-	klog.Infof("using user provided cert: %v\n", options.CaCertPath)
-	klog.Infof("using user provided private key: %v\n", options.CaPrivateKeyPath)
+	klog.Infof("using user provided cert: %v\n", options.CertPath)
+	klog.Infof("using user provided private key: %v\n", options.PrivateKeyPath)
 
 	return nil
 }
