@@ -13,7 +13,7 @@ Create a resource:
   *  instancegroup
   *  secret
 
- Create a cluster, instancegroup or secret using command line parameters, YAML configuration specification files, or stdin. (Note: secrets cannot be created from YAML config files yet).
+ Create a cluster, instancegroup, keypair, or secret using command line parameters, YAML configuration specification files, or stdin. (Note: keypairs and secrets cannot be created from YAML config files yet).
 
 ```
 kops create -f FILENAME [flags]
@@ -79,5 +79,6 @@ kops create -f FILENAME [flags]
 * [kops](kops.md)	 - kOps is Kubernetes Operations.
 * [kops create cluster](kops_create_cluster.md)	 - Create a Kubernetes cluster.
 * [kops create instancegroup](kops_create_instancegroup.md)	 - Create an instancegroup.
+* [kops create keypair](kops_create_keypair.md)	 - Create a keypair.
 * [kops create secret](kops_create_secret.md)	 - Create a secret.
 
