@@ -24,6 +24,7 @@ import (
 	"math/big"
 	"sort"
 	"strconv"
+	"time"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
@@ -225,4 +226,29 @@ func (k *Keyset) ToPublicKeyBytes() ([]byte, error) {
 		}
 	}
 	return buf.Bytes(), nil
+}
+
+// AddItem adds an item to the keyset
+func (k *Keyset) AddItem(cert *pki.Certificate, privateKey *pki.PrivateKey) error {
+	if cert == nil {
+		return fmt.Errorf("no certificate provided")
+	}
+	if privateKey == nil {
+		return fmt.Errorf("no private key provided")
+	}
+
+	// Make sure any subsequently created certificates will have ids that compare higher.
+	idNumber := pki.BuildPKISerial(time.Now().UnixNano())
+	if cert.Certificate.SerialNumber.Cmp(idNumber) <= 0 {
+		idNumber = cert.Certificate.SerialNumber
+	}
+	ki := &KeysetItem{
+		Id:          idNumber.String(),
+		Certificate: cert,
+		PrivateKey:  privateKey,
+	}
+	k.Items[ki.Id] = ki
+	k.Primary = ki
+
+	return nil
 }
