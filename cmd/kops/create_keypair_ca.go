@@ -18,10 +18,12 @@ package main
 
 import (
 	"context"
+	"crypto/x509/pkix"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 	"k8s.io/klog/v2"
@@ -91,10 +93,6 @@ func NewCmdCreateKeypairCa(f *util.Factory, out io.Writer) *cobra.Command {
 
 // RunCreateKeypairCa adds a custom ca certificate and private key
 func RunCreateKeypairCa(ctx context.Context, f *util.Factory, out io.Writer, options *CreateKeypairCaOptions) error {
-	if options.CertPath == "" {
-		return fmt.Errorf("error cert provided")
-	}
-
 	cluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
 		return fmt.Errorf("error getting cluster: %q: %v", options.ClusterName, err)
@@ -108,12 +106,6 @@ func RunCreateKeypairCa(ctx context.Context, f *util.Factory, out io.Writer, opt
 	keyStore, err := clientSet.KeyStore(cluster)
 	if err != nil {
 		return fmt.Errorf("error getting keystore: %v", err)
-	}
-
-	options.CertPath = utils.ExpandPath(options.CertPath)
-	certBytes, err := ioutil.ReadFile(options.CertPath)
-	if err != nil {
-		return fmt.Errorf("error reading user provided cert %q: %v", options.CertPath, err)
 	}
 
 	var privateKey *pki.PrivateKey
@@ -130,9 +122,36 @@ func RunCreateKeypairCa(ctx context.Context, f *util.Factory, out io.Writer, opt
 		}
 	}
 
-	cert, err := pki.ParsePEMCertificate(certBytes)
-	if err != nil {
-		return fmt.Errorf("error loading certificate %q: %v", options.CertPath, err)
+	var cert *pki.Certificate
+	if options.CertPath == "" {
+		if privateKey == nil {
+			privateKey, err = pki.GeneratePrivateKey()
+			if err != nil {
+				return fmt.Errorf("error generating private key: %v", err)
+			}
+		}
+
+		req := pki.IssueCertRequest{
+			Type:       "ca",
+			Subject:    pkix.Name{CommonName: "cn=kubernetes"},
+			Serial:     pki.BuildPKISerial(time.Now().UnixNano()),
+			PrivateKey: privateKey,
+		}
+		cert, _, _, err = pki.IssueCert(&req, nil)
+		if err != nil {
+			return fmt.Errorf("error issuing certificate: %v", err)
+		}
+	} else {
+		options.CertPath = utils.ExpandPath(options.CertPath)
+		certBytes, err := ioutil.ReadFile(options.CertPath)
+		if err != nil {
+			return fmt.Errorf("error reading user provided cert %q: %v", options.CertPath, err)
+		}
+
+		cert, err = pki.ParsePEMCertificate(certBytes)
+		if err != nil {
+			return fmt.Errorf("error loading certificate %q: %v", options.CertPath, err)
+		}
 	}
 
 	keyset, err := keyStore.FindKeyset(fi.CertificateIDCA)
@@ -154,7 +173,9 @@ func RunCreateKeypairCa(ctx context.Context, f *util.Factory, out io.Writer, opt
 		return fmt.Errorf("error storing user provided keys %q %q: %v", options.CertPath, options.PrivateKeyPath, err)
 	}
 
-	klog.Infof("using user provided cert: %v\n", options.CertPath)
+	if options.CertPath != "" {
+		klog.Infof("using user provided cert: %v\n", options.CertPath)
+	}
 	if options.PrivateKeyPath != "" {
 		klog.Infof("using user provided private key: %v\n", options.PrivateKeyPath)
 	}
