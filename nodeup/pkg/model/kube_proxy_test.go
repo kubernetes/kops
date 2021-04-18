@@ -177,3 +177,11 @@ func TestKubeProxyBuilderARM64(t *testing.T) {
 		return builder.Build(target)
 	})
 }
+func TestKubeProxyBuilderWarmPool(t *testing.T) {
+	RunGoldenTest(t, "tests/golden/minimal", "warmpool", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+		nodeupModelContext.ConfigurationMode = "Warming"
+		builder := KubeProxyBuilder{NodeupModelContext: nodeupModelContext}
+		builder.Architecture = architectures.ArchitectureArm64
+		return builder.Build(target)
+	})
+}
