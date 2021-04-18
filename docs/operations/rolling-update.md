@@ -1,6 +1,6 @@
 # Rolling Updates
 
-Upgrading and modifying a k8s cluster usually requires the replacement of cloud instances.
+Upgrading and modifying a Kubernetes cluster usually requires the replacement of cloud instances.
 In order to avoid loss of service and other disruption, kOps replaces cloud instances
 incrementally with a rolling update.
 
@@ -20,11 +20,12 @@ Cloud instances are chosen to be updated (replaced) if at least one of the follo
 ## Order of instance groups
 
 A rolling update will update instances from one instance group at a time. First, it will update
-bastion instance groups. Next, it will update master instance groups. Finally, it will update
-node instance groups.
+bastion instance groups. Next, it will update master instance groups, then apiserver instance
+groups. Finally, it will update node instance groups.
+Within an instance group role it will update instance groups in alphabetical order.
 
 A rolling update may be restricted to instance groups of particular roles
-("Bastion", "Master", and/or "Node") with the `--instance-group-roles` flag.
+("Bastion", "Master", "APIServer", and/or "Node") with the `--instance-group-roles` flag.
 A rolling update may be restricted to particular instance groups with the `--instance-group` flag.
 
 ## Updating an instance group
