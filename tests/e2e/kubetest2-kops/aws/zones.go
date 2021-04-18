@@ -23,16 +23,14 @@ import (
 )
 
 var allZones = []string{
-	// Disabled until region limits are increased https://github.com/kubernetes/k8s.io/issues/1921
-	//"ap-northeast-1a",
-	//"ap-northeast-1c",
-	//"ap-northeast-1d",
+	"ap-northeast-1a",
+	"ap-northeast-1c",
+	"ap-northeast-1d",
 	// AZ does not exist, so we're breaking the 3 AZs per region target here
 	//"ap-northeast-2b",
-	// Disabled until region limits are increased https://github.com/kubernetes/k8s.io/issues/1921
-	//"ap-northeast-2a",
-	//"ap-northeast-2c",
-	//"ap-northeast-2d",
+	"ap-northeast-2a",
+	"ap-northeast-2c",
+	"ap-northeast-2d",
 	// Disabled until etcd-manager supports the region and the AMIs used in testing are present
 	//"ap-northeast-3a",
 	//"ap-northeast-3b",
@@ -40,22 +38,18 @@ var allZones = []string{
 	"ap-south-1a",
 	"ap-south-1b",
 	"ap-south-1c",
-	// Disabled until region limits are increased https://github.com/kubernetes/k8s.io/issues/1921
-	//"ap-southeast-1a",
-	//"ap-southeast-1b",
-	//"ap-southeast-1c",
-	// Disabled until region limits are increased https://github.com/kubernetes/k8s.io/issues/1921
-	//"ap-southeast-2a",
-	//"ap-southeast-2b",
-	//"ap-southeast-2c",
-	// Disabled until region limits are increased https://github.com/kubernetes/k8s.io/issues/1921
-	//"ca-central-1a",
-	//"ca-central-1b",
-	//"ca-central-1d",
-	// Disabled until region limits are increased https://github.com/kubernetes/k8s.io/issues/1921
-	//"eu-central-1a",
-	//"eu-central-1b",
-	//"eu-central-1c",
+	"ap-southeast-1a",
+	"ap-southeast-1b",
+	"ap-southeast-1c",
+	"ap-southeast-2a",
+	"ap-southeast-2b",
+	"ap-southeast-2c",
+	"ca-central-1a",
+	"ca-central-1b",
+	"ca-central-1d",
+	"eu-central-1a",
+	"eu-central-1b",
+	"eu-central-1c",
 	// Disabled until region limits are increased https://github.com/kubernetes/k8s.io/issues/1921
 	//"eu-north-1a",
 	//"eu-north-1b",
@@ -63,18 +57,15 @@ var allZones = []string{
 	"eu-west-1a",
 	"eu-west-1b",
 	"eu-west-1c",
-	// Disabled until region limits are increased https://github.com/kubernetes/k8s.io/issues/1921
-	//"eu-west-2a",
-	//"eu-west-2b",
-	//"eu-west-2c",
-	// Disabled until region limits are increased https://github.com/kubernetes/k8s.io/issues/1921
-	//"eu-west-3a",
-	//"eu-west-3b",
-	//"eu-west-3c",
-	// Disabled until region limits are increased https://github.com/kubernetes/k8s.io/issues/1921
-	//"sa-east-1a",
-	//"sa-east-1b",
-	//"sa-east-1c",
+	"eu-west-2a",
+	"eu-west-2b",
+	"eu-west-2c",
+	"eu-west-3a",
+	"eu-west-3b",
+	"eu-west-3c",
+	"sa-east-1a",
+	"sa-east-1b",
+	"sa-east-1c",
 	"us-east-1a",
 	"us-east-1b",
 	"us-east-1c",
