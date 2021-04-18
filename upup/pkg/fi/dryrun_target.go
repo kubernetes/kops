@@ -302,11 +302,16 @@ func buildChangeList(a, e, changes Task) ([]change, error) {
 			}
 
 			fieldValC := valC.Field(i)
+			fieldValE := valE.Field(i)
+			fieldValA := valA.Field(i)
 
 			changed := true
 			switch fieldValC.Kind() {
 			case reflect.Ptr, reflect.Interface, reflect.Slice, reflect.Map:
 				changed = !fieldValC.IsNil()
+				if fieldValC.IsNil() && !fieldValA.IsNil() && fieldValE.IsNil() {
+					changed = true
+				}
 
 			case reflect.String:
 				changed = fieldValC.Interface().(string) != ""
@@ -320,12 +325,9 @@ func buildChangeList(a, e, changes Task) ([]change, error) {
 				continue
 			}
 
-			fieldValE := valE.Field(i)
-
 			description := ""
 			ignored := false
 			if fieldValE.CanInterface() {
-				fieldValA := valA.Field(i)
 
 				switch fieldValE.Interface().(type) {
 				//case SimpleUnit:
