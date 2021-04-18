@@ -61,6 +61,14 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
+	if b.ConfigurationMode == "Warming" {
+		pullTask := &nodetasks.PullImageTask{
+			Name:    kubeProxyImage(b.NodeupModelContext),
+			Runtime: b.Cluster.Spec.ContainerRuntime,
+		}
+		c.AddTask(pullTask)
+	}
+
 	{
 		pod, err := b.buildPod()
 		if err != nil {
@@ -185,11 +193,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		flags = append(flags, `--resource-container=""`)
 	}
 
-	image := c.Image
-	if b.Architecture != architectures.ArchitectureAmd64 {
-		image = strings.Replace(image, "-amd64", "-"+string(b.Architecture), 1)
-	}
-
+	image := kubeProxyImage(b.NodeupModelContext)
 	container := &v1.Container{
 		Name:  "kube-proxy",
 		Image: image,
@@ -311,4 +315,12 @@ func tolerateMasterTaints() []v1.Toleration {
 	//}
 
 	return tolerations
+}
+
+func kubeProxyImage(b *NodeupModelContext) string {
+	image := b.Cluster.Spec.KubeProxy.Image
+	if b.Architecture != architectures.ArchitectureAmd64 {
+		image = strings.Replace(image, "-amd64", "-"+string(b.Architecture), 1)
+	}
+	return image
 }
