@@ -51,6 +51,7 @@ func (_ *NodeRoleMaster) ServiceAccount() (types.NamespacedName, bool) {
 
 // NodeRoleAPIServer represents the role of API server-only nodes, and implements Subject.
 type NodeRoleAPIServer struct {
+	warmPool bool
 }
 
 // ServiceAccount implements Subject.
@@ -60,6 +61,7 @@ func (_ *NodeRoleAPIServer) ServiceAccount() (types.NamespacedName, bool) {
 
 // NodeRoleNode represents the role of normal ("worker") nodes, and implements Subject.
 type NodeRoleNode struct {
+	enableLifecycleHookPermissions bool
 }
 
 // ServiceAccount implements Subject.
@@ -77,14 +79,18 @@ func (_ *NodeRoleBastion) ServiceAccount() (types.NamespacedName, bool) {
 }
 
 // BuildNodeRoleSubject returns a Subject implementation for the specified InstanceGroupRole.
-func BuildNodeRoleSubject(igRole kops.InstanceGroupRole) (Subject, error) {
+func BuildNodeRoleSubject(igRole kops.InstanceGroupRole, enableLifecycleHookPermissions bool) (Subject, error) {
 	switch igRole {
 	case kops.InstanceGroupRoleMaster:
 		return &NodeRoleMaster{}, nil
 	case kops.InstanceGroupRoleAPIServer:
-		return &NodeRoleAPIServer{}, nil
+		return &NodeRoleAPIServer{
+			warmPool: enableLifecycleHookPermissions,
+		}, nil
 	case kops.InstanceGroupRoleNode:
-		return &NodeRoleNode{}, nil
+		return &NodeRoleNode{
+			enableLifecycleHookPermissions: enableLifecycleHookPermissions,
+		}, nil
 	case kops.InstanceGroupRoleBastion:
 		return &NodeRoleBastion{}, nil
 	default:

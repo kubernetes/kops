@@ -95,14 +95,14 @@ func (_ *AutoscalingLifecycleHook) CheckChanges(a, e, changes *AutoscalingLifecy
 	return nil
 }
 
-func (h *AutoscalingLifecycleHook) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingLifecycleHook) error {
-	if a == nil {
+func (*AutoscalingLifecycleHook) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingLifecycleHook) error {
+	if changes != nil {
 		request := &autoscaling.PutLifecycleHookInput{
 			AutoScalingGroupName: e.AutoscalingGroup.Name,
-			DefaultResult:        h.DefaultResult,
-			HeartbeatTimeout:     h.HeartbeatTimeout,
+			DefaultResult:        e.DefaultResult,
+			HeartbeatTimeout:     e.HeartbeatTimeout,
 			LifecycleHookName:    e.Name,
-			LifecycleTransition:  h.LifecycleTransition,
+			LifecycleTransition:  e.LifecycleTransition,
 		}
 		_, err := t.Cloud.Autoscaling().PutLifecycleHook(request)
 		if err != nil {

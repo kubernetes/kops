@@ -1573,6 +1573,32 @@
               ]
             },
             {
+              "Action": "autoscaling:CompleteLifecycleAction",
+              "Condition": {
+                "StringEquals": {
+                  "autoscaling:ResourceTag/KubernetesCluster": "privatecilium.example.com"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": "autoscaling:DescribeLifecycleHooks",
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": "autoscaling:DescribeAutoScalingInstances",
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
               "Action": [
                 "autoscaling:DescribeAutoScalingGroups",
                 "autoscaling:DescribeLaunchConfigurations",
