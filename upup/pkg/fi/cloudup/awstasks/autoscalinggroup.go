@@ -448,7 +448,8 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			return req.MixedInstancesPolicy
 		}
 
-		if changes.LaunchTemplate != nil {
+		// We have to update LaunchTemplate to remove mixedInstancesPolicy when it is removed from spec.
+		if changes.LaunchTemplate != nil || a.UseMixedInstancesPolicy() && !e.UseMixedInstancesPolicy() {
 			spec := &autoscaling.LaunchTemplateSpecification{
 				LaunchTemplateId: e.LaunchTemplate.ID,
 				Version:          aws.String("$Latest"),
