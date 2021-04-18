@@ -53,13 +53,9 @@ func (b *CiliumBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
-	if b.ConfigurationMode == "Warming" {
-		image := &nodetasks.PullImageTask{
-			Name:    "docker.io/cilium/cilium:" + cilium.Version,
-			Runtime: b.Cluster.Spec.ContainerRuntime,
-		}
-		c.AddTask(image)
-	}
+	image := "docker.io/cilium/cilium:" + cilium.Version
+
+	b.WarmPullImage(c, image)
 
 	return nil
 

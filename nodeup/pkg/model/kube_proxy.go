@@ -61,13 +61,7 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if b.ConfigurationMode == "Warming" {
-		pullTask := &nodetasks.PullImageTask{
-			Name:    kubeProxyImage(b.NodeupModelContext),
-			Runtime: b.Cluster.Spec.ContainerRuntime,
-		}
-		c.AddTask(pullTask)
-	}
+	b.WarmPullImage(c, kubeProxyImage(b.NodeupModelContext))
 
 	{
 		pod, err := b.buildPod()

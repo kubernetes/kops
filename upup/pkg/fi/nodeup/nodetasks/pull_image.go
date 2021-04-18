@@ -23,7 +23,6 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 )
 
 // PullImageTask is responsible for pulling a docker image
@@ -36,8 +35,8 @@ var _ fi.Task = &PullImageTask{}
 var _ fi.HasDependencies = &PullImageTask{}
 
 func (t *PullImageTask) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	// LoadImageTask depends on the docker service to ensure we
-	// sideload images after docker is completely updated and
+	// ImagePullTask depends on the container runtime service to ensure we
+	// sideload images after the container runtime is completely updated and
 	// configured.
 	var deps []fi.Task
 	for _, v := range tasks {
@@ -51,15 +50,6 @@ func (t *PullImageTask) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	return deps
 }
 
-func (e *PullImageTask) Find(c *fi.Context) (*PullImageTask, error) {
-	klog.Warningf("LoadImageTask checking if image present not yet implemented")
-	return nil, nil
-}
-
-func (e *PullImageTask) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
-}
-
 func (t *PullImageTask) GetName() *string {
 	if t.Name == "" {
 		return nil
@@ -67,17 +57,13 @@ func (t *PullImageTask) GetName() *string {
 	return &t.Name
 }
 
-func (*PullImageTask) CheckChanges(a, e, changes *PullImageTask) error {
-	return nil
-}
-
-func (*PullImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *PullImageTask) error {
+func (e *PullImageTask) Run(c *fi.Context) error {
 	runtime := e.Runtime
 	if runtime != "docker" && runtime != "containerd" {
 		return fmt.Errorf("no runtime specified")
 	}
 
-	// Load the container image
+	// Pull the container image
 	var args []string
 	switch runtime {
 	case "docker":
