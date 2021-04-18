@@ -205,12 +205,10 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			return err
 		}
 		awsCloud, err := awsup.NewAWSCloud(region, nil)
-
-		cloud = awsCloud
-
 		if err != nil {
 			return err
 		}
+		cloud = awsCloud
 	}
 
 	modelContext := &model.NodeupModelContext{
@@ -363,6 +361,44 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		klog.Exitf("error closing target: %v", err)
 	}
 
+	if modelContext.InstanceGroup.Spec.WarmPool != nil && modelContext.InstanceGroup.Spec.WarmPool.EnableLifecyleHook {
+		if api.CloudProviderID(c.cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+			err := completeWarmingLifecycleAction(cloud.(awsup.AWSCloud), modelContext)
+			if err != nil {
+				return fmt.Errorf("failed to complete lifecylce action: %w", err)
+			}
+		}
+	}
+	return nil
+}
+
+func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.NodeupModelContext) error {
+	asgName := modelContext.InstanceGroup.GetName() + "." + modelContext.Cluster.GetName()
+	hookName := "kops-warmpool"
+	svc := cloud.(awsup.AWSCloud).Autoscaling()
+	hooks, err := svc.DescribeLifecycleHooks(&autoscaling.DescribeLifecycleHooksInput{
+		AutoScalingGroupName: &asgName,
+		LifecycleHookNames:   []*string{&hookName},
+	})
+	if err != nil {
+		return fmt.Errorf("failed to find lifecycle hook %q: %w", hookName, err)
+	}
+
+	if len(hooks.LifecycleHooks) > 0 {
+		klog.Info("Found ASG lifecycle hook")
+		_, err := svc.CompleteLifecycleAction(&autoscaling.CompleteLifecycleActionInput{
+			AutoScalingGroupName:  &asgName,
+			InstanceId:            &modelContext.InstanceID,
+			LifecycleHookName:     &hookName,
+			LifecycleActionResult: fi.String("CONTINUE"),
+		})
+		if err != nil {
+			return fmt.Errorf("failed to complete lifecycle hook %q for %q: %v", hookName, modelContext.InstanceID, err)
+		}
+		klog.Info("Lifecycle action completed")
+	} else {
+		klog.Info("No ASG lifecycle hook found")
+	}
 	return nil
 }
 
