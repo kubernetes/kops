@@ -245,7 +245,7 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	addMasterEC2Policies(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
-	addASLifecyclePolicies(p, resource, b.Cluster.GetName())
+	addASLifecyclePolicies(p, resource, b.Cluster.GetName(), r.warmPool)
 	addCertIAMPolicies(p, resource)
 
 	var err error
@@ -293,6 +293,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	addMasterEC2Policies(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+	addASLifecyclePolicies(p, resource, b.Cluster.GetName(), true)
 	addMasterASPolicies(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
 	addMasterELBPolicies(p, resource, b.Cluster.Spec.IAM.Legacy)
 	addCertIAMPolicies(p, resource)
@@ -354,7 +355,7 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	addNodeEC2Policies(p, resource)
-	addASLifecyclePolicies(p, resource, b.Cluster.GetName())
+	addASLifecyclePolicies(p, resource, b.Cluster.GetName(), r.enableLifecycleHookPermissions)
 
 	var err error
 	if p, err = b.AddS3Permissions(p); err != nil {
@@ -1033,8 +1034,32 @@ func addMasterASPolicies(p *Policy, resource stringorslice.StringOrSlice, legacy
 	}
 }
 
-func addASLifecyclePolicies(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {
+func addASLifecyclePolicies(p *Policy, resource stringorslice.StringOrSlice, clusterName string, enableHookSupport bool) {
+	if enableHookSupport {
+		p.Statement = append(p.Statement,
+			&Statement{
+				Effect: StatementEffectAllow,
+				Action: stringorslice.Of(
+					"autoscaling:CompleteLifecycleAction", // aws_manager.go
+				),
+				Resource: resource,
+				Condition: Condition{
+					"StringEquals": map[string]string{
+						"autoscaling:ResourceTag/KubernetesCluster": clusterName,
+					},
+				},
+			},
+			&Statement{
+				Effect: StatementEffectAllow,
+				Action: stringorslice.Of(
+					"autoscaling:DescribeLifecycleHooks",
+				),
+				Resource: resource,
+			},
+		)
+	}
 	p.Statement = append(p.Statement,
+
 		&Statement{
 			Effect: StatementEffectAllow,
 			Action: stringorslice.Of(
