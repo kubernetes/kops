@@ -28,6 +28,7 @@ kops create keypair ca [flags]
       --cert string   Path to CA certificate
   -h, --help          help for ca
       --key string    Path to CA private key
+      --primary       Make the CA used to issue certificates
 ```
 
 ### Options inherited from parent commands

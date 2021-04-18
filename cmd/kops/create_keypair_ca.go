@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 
 	"github.com/spf13/cobra"
 	"k8s.io/klog/v2"
@@ -52,6 +53,7 @@ type CreateKeypairCaOptions struct {
 	ClusterName    string
 	PrivateKeyPath string
 	CertPath       string
+	Primary        bool
 }
 
 // NewCmdCreateKeypairCa returns create ca certificate command
@@ -82,6 +84,7 @@ func NewCmdCreateKeypairCa(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.CertPath, "cert", options.CertPath, "Path to CA certificate")
 	cmd.Flags().StringVar(&options.PrivateKeyPath, "key", options.PrivateKeyPath, "Path to CA private key")
+	cmd.Flags().BoolVar(&options.Primary, "primary", options.Primary, "Make the CA used to issue certificates")
 
 	return cmd
 }
@@ -132,10 +135,16 @@ func RunCreateKeypairCa(ctx context.Context, f *util.Factory, out io.Writer, opt
 		return fmt.Errorf("error loading certificate %q: %v", options.CertPath, err)
 	}
 
-	keyset := &fi.Keyset{
-		Items: map[string]*fi.KeysetItem{},
+	keyset, err := keyStore.FindKeyset(fi.CertificateIDCA)
+	if os.IsNotExist(err) || (err == nil && keyset == nil) {
+		keyset = &fi.Keyset{
+			Items: map[string]*fi.KeysetItem{},
+		}
+	} else if err != nil {
+		return fmt.Errorf("reading existing keyset: %v", err)
 	}
-	err = keyset.AddItem(cert, privateKey)
+
+	err = keyset.AddItem(cert, privateKey, options.Primary)
 	if err != nil {
 		return err
 	}
