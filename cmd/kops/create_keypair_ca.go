@@ -95,10 +95,6 @@ func RunCreateKeypairCa(ctx context.Context, f *util.Factory, out io.Writer, opt
 		return fmt.Errorf("error cert provided")
 	}
 
-	if options.PrivateKeyPath == "" {
-		return fmt.Errorf("error no private key provided")
-	}
-
 	cluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
 		return fmt.Errorf("error getting cluster: %q: %v", options.ClusterName, err)
@@ -115,21 +111,25 @@ func RunCreateKeypairCa(ctx context.Context, f *util.Factory, out io.Writer, opt
 	}
 
 	options.CertPath = utils.ExpandPath(options.CertPath)
-	options.PrivateKeyPath = utils.ExpandPath(options.PrivateKeyPath)
-
 	certBytes, err := ioutil.ReadFile(options.CertPath)
 	if err != nil {
 		return fmt.Errorf("error reading user provided cert %q: %v", options.CertPath, err)
 	}
-	privateKeyBytes, err := ioutil.ReadFile(options.PrivateKeyPath)
-	if err != nil {
-		return fmt.Errorf("error reading user provided private key %q: %v", options.PrivateKeyPath, err)
+
+	var privateKey *pki.PrivateKey
+	if options.PrivateKeyPath != "" {
+		options.PrivateKeyPath = utils.ExpandPath(options.PrivateKeyPath)
+		privateKeyBytes, err := ioutil.ReadFile(options.PrivateKeyPath)
+		if err != nil {
+			return fmt.Errorf("error reading user provided private key %q: %v", options.PrivateKeyPath, err)
+		}
+
+		privateKey, err = pki.ParsePEMPrivateKey(privateKeyBytes)
+		if err != nil {
+			return fmt.Errorf("error loading private key %q: %v", privateKeyBytes, err)
+		}
 	}
 
-	privateKey, err := pki.ParsePEMPrivateKey(privateKeyBytes)
-	if err != nil {
-		return fmt.Errorf("error loading private key %q: %v", privateKeyBytes, err)
-	}
 	cert, err := pki.ParsePEMCertificate(certBytes)
 	if err != nil {
 		return fmt.Errorf("error loading certificate %q: %v", options.CertPath, err)
@@ -155,7 +155,8 @@ func RunCreateKeypairCa(ctx context.Context, f *util.Factory, out io.Writer, opt
 	}
 
 	klog.Infof("using user provided cert: %v\n", options.CertPath)
-	klog.Infof("using user provided private key: %v\n", options.PrivateKeyPath)
-
+	if options.PrivateKeyPath != "" {
+		klog.Infof("using user provided private key: %v\n", options.PrivateKeyPath)
+	}
 	return nil
 }
