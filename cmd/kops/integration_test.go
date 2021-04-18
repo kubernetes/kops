@@ -484,6 +484,7 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 		options.ClusterName = i.clusterName
 		options.PrivateKeyPath = path.Join(i.srcDir, "ca.key")
 		options.CertPath = path.Join(i.srcDir, "ca.crt")
+		options.Primary = true
 
 		err := RunCreateKeypairCa(ctx, factory, &stdout, options)
 		if err != nil {

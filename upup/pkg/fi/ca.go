@@ -229,7 +229,7 @@ func (k *Keyset) ToPublicKeyBytes() ([]byte, error) {
 }
 
 // AddItem adds an item to the keyset
-func (k *Keyset) AddItem(cert *pki.Certificate, privateKey *pki.PrivateKey) error {
+func (k *Keyset) AddItem(cert *pki.Certificate, privateKey *pki.PrivateKey, primary bool) error {
 	if cert == nil {
 		return fmt.Errorf("no certificate provided")
 	}
@@ -237,9 +237,23 @@ func (k *Keyset) AddItem(cert *pki.Certificate, privateKey *pki.PrivateKey) erro
 		return fmt.Errorf("no private key provided")
 	}
 
-	// Make sure any subsequently created certificates will have ids that compare higher.
+	if !primary && k.Primary == nil {
+		return fmt.Errorf("cannot add secondary item when no existing primary item")
+	}
+
+	highestId := big.NewInt(0)
+	for id := range k.Items {
+		itemId, ok := big.NewInt(0).SetString(id, 10)
+		if ok && highestId.Cmp(itemId) < 0 {
+			highestId = itemId
+		}
+	}
+
+	// Make sure any subsequently created items will have ids that compare higher.
+	// If setting a primary, make sure its id doesn't compare lower than existing items.
 	idNumber := pki.BuildPKISerial(time.Now().UnixNano())
-	if cert.Certificate.SerialNumber.Cmp(idNumber) <= 0 {
+	if cert.Certificate.SerialNumber.Cmp(idNumber) <= 0 &&
+		(!primary || cert.Certificate.SerialNumber.Cmp(highestId) > 0) {
 		idNumber = cert.Certificate.SerialNumber
 	}
 	ki := &KeysetItem{
@@ -248,7 +262,9 @@ func (k *Keyset) AddItem(cert *pki.Certificate, privateKey *pki.PrivateKey) erro
 		PrivateKey:  privateKey,
 	}
 	k.Items[ki.Id] = ki
-	k.Primary = ki
+	if primary {
+		k.Primary = ki
+	}
 
 	return nil
 }
