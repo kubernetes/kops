@@ -68,6 +68,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = [
+        "ca_test.go",
         "dryruntarget_test.go",
         "files_test.go",
         "vfs_castore_test.go",
@@ -79,5 +80,6 @@ go_test(
         "//pkg/pki:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
+        "//vendor/github.com/stretchr/testify/require:go_default_library",
     ],
 )
