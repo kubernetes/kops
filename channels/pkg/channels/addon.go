@@ -173,10 +173,12 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 			return nil, fmt.Errorf("error applying update from %q: %v", manifestURL, err)
 		}
 
-		if a.Spec.NeedsRollingUpdate != "" {
-			err = a.AddNeedsUpdateLabel(ctx, k8sClient)
-			if err != nil {
-				return nil, fmt.Errorf("error adding needs-update label: %v", err)
+		if required.ExistingVersion != nil {
+			if a.Spec.NeedsRollingUpdate != "" {
+				err = a.AddNeedsUpdateLabel(ctx, k8sClient)
+				if err != nil {
+					return nil, fmt.Errorf("error adding needs-update label: %v", err)
+				}
 			}
 		}
 
