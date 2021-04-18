@@ -239,6 +239,88 @@ func TestAddItem(t *testing.T) {
 				primary: afterPrivateKey,
 			},
 		},
+		{
+			name: "first certonly",
+			keyset: fi.Keyset{
+				Items: map[string]*fi.KeysetItem{},
+			},
+			cert: cert,
+			expectedPrimary: expected{
+				error: "private key not provided for primary item",
+			},
+			expectedSecondary: expected{
+				error: "cannot add secondary item when no existing primary item",
+			},
+		},
+		{
+			name: "after certonly",
+			keyset: fi.Keyset{
+				Items: map[string]*fi.KeysetItem{
+					"6952323604391556590983096308": {
+						Id:          "6952323604391556590983096308",
+						Certificate: cert,
+						PrivateKey:  privateKey,
+					},
+				},
+				Primary: &fi.KeysetItem{
+					Id:          "6952323604391556590983096308",
+					Certificate: cert,
+					PrivateKey:  privateKey,
+				},
+			},
+			cert: afterCert,
+			expectedPrimary: expected{
+				error: "private key not provided for primary item",
+			},
+			expectedSecondary: expected{
+				items: expectedItems{
+					{
+						cert:       cert,
+						privateKey: privateKey,
+					},
+					{
+						validateId: func(t *testing.T, id string) {
+							assertSerialOlderThan(t, id, cert)
+						},
+						cert: afterCert,
+					},
+				},
+				primary: privateKey,
+			},
+		},
+		{
+			name: "before certonly",
+			keyset: fi.Keyset{
+				Items: map[string]*fi.KeysetItem{
+					"6952335996080054816494652246": {
+						Id:          "6952335996080054816494652246",
+						Certificate: afterCert,
+						PrivateKey:  afterPrivateKey,
+					},
+				},
+				Primary: &fi.KeysetItem{
+					Id:          "6952335996080054816494652246",
+					Certificate: afterCert,
+					PrivateKey:  afterPrivateKey,
+				},
+			},
+			cert: cert,
+			expectedPrimary: expected{
+				error: "private key not provided for primary item",
+			},
+			expectedSecondary: expected{
+				items: expectedItems{
+					{
+						cert:       afterCert,
+						privateKey: afterPrivateKey,
+					},
+					{
+						cert: cert,
+					},
+				},
+				primary: afterPrivateKey,
+			},
+		},
 	}
 	for _, tc := range tests {
 		runTestcase := func(t *testing.T, primary bool, tcExpected expected) {
@@ -305,5 +387,13 @@ func assertSerialNewerThan(t *testing.T, id string, cert *pki.Certificate) {
 	require.True(t, ok, "parses as integer")
 	if version.Cmp(cert.Certificate.SerialNumber) <= 0 {
 		t.Errorf("id %q not larger than %q", id, cert.Certificate.SerialNumber.String())
+	}
+}
+
+func assertSerialOlderThan(t *testing.T, id string, cert *pki.Certificate) {
+	version, ok := big.NewInt(0).SetString(id, 10)
+	require.True(t, ok, "parses as integer")
+	if version.Cmp(cert.Certificate.SerialNumber) >= 0 {
+		t.Errorf("id %q not smaller than %q", id, cert.Certificate.SerialNumber.String())
 	}
 }

@@ -492,10 +492,16 @@ func (x *ConvertKubeupCluster) Upgrade(ctx context.Context) error {
 		return fmt.Errorf("error reading new CA certs: %v", err)
 	}
 	for _, ca := range oldCACertPool.Secondary {
-		fi.AddCert(keyset, ca)
+		err = keyset.AddItem(ca, nil, false)
+		if err != nil {
+			return fmt.Errorf("error adding secondary CA cert: %v", err)
+		}
 	}
 	if oldCACertPool.Primary != nil {
-		fi.AddCert(keyset, oldCACertPool.Primary)
+		err = keyset.AddItem(oldCACertPool.Primary, nil, false)
+		if err != nil {
+			return fmt.Errorf("error adding secondary CA cert: %v", err)
+		}
 	}
 	err = newKeyStore.StoreKeyset(fi.CertificateIDCA, keyset)
 	if err != nil {
