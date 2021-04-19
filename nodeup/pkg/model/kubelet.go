@@ -282,6 +282,9 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Service", "User", "root")
 	manifest.Set("Service", "CPUAccounting", "true")
 	manifest.Set("Service", "MemoryAccounting", "true")
+
+	manifest.Set("Install", "WantedBy", "multi-user.target")
+
 	manifestString := manifest.Render()
 
 	klog.V(8).Infof("Built service manifest %q\n%s", "kubelet", manifestString)
