@@ -18,6 +18,7 @@ package components
 
 import (
 	"github.com/blang/semver/v4"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
@@ -90,6 +91,16 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if c.EnableRemoteNodeIdentity == nil {
 		c.EnableRemoteNodeIdentity = fi.Bool(true)
+	}
+
+	if c.CPURequest == nil {
+		defaultCPURequest := resource.MustParse("25m")
+		c.CPURequest = &defaultCPURequest
+	}
+
+	if c.MemoryRequest == nil {
+		defaultMemoryRequest := resource.MustParse("128Mi")
+		c.MemoryRequest = &defaultMemoryRequest
 	}
 
 	hubble := c.Hubble
