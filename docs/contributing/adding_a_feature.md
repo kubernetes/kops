@@ -87,6 +87,8 @@ Then we conditionally move cilium-operator to masters:
       {{ '{{ end }}' }}
 ```
 
+After changing manifest files remember to run `bash hack/update-expected.sh` in order to get updated [manifestHash](https://github.com/kubernetes/kops/blob/master/upup/pkg/fi/cloudup/tests/bootstrapchannelbuilder/cilium/manifest.yaml#L74) values.
+
 ## Configuring kubelet
 
 When Cilium is in ENI mode `kubelet` needs to be configured with the local IP address, so that it can distinguish it
