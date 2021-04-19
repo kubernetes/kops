@@ -644,3 +644,13 @@ func (c *NodeupModelContext) CNIBinDir() string {
 func (c *NodeupModelContext) CNIConfDir() string {
 	return "/etc/cni/net.d/"
 }
+
+func (c *NodeupModelContext) WarmPullImage(ctx *fi.ModelBuilderContext, imageName string) {
+	if c.ConfigurationMode == "Warming" {
+		image := &nodetasks.PullImageTask{
+			Name:    imageName,
+			Runtime: c.Cluster.Spec.ContainerRuntime,
+		}
+		ctx.AddTask(image)
+	}
+}
