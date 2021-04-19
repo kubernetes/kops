@@ -261,6 +261,11 @@ type CiliumNetworkingSpec struct {
 	// Version is the version of the Cilium agent and the Cilium Operator.
 	Version string `json:"version,omitempty"`
 
+	// MemoryRequest memory request of Cilium agent + operator container. (default: 128Mi)
+	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
+	// CPURequest CPU request of Cilium agent + operator container. (default: 25m)
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
+
 	// AccessLog is not implemented and may be removed in the future.
 	// Setting this has no effect.
 	AccessLog string `json:"accessLog,omitempty"`

@@ -138,6 +138,16 @@ Once the secret has been created, encryption can be enabled by setting `enableEn
       enableEncryption: true
 ```
 
+#### Resources in Cilium
+{{ kops_feature_table(kops_added_default='1.21', k8s_min='1.20') }}
+
+As of kOps 1.20, it is possible to choose your own values for Cilium Agents + Operator. Example:
+```yaml
+  networking:
+    cilium:
+      cpuRequest: "25m"
+      memoryRequest: "128Mi"
+```
 
 ## Getting help
 

@@ -461,6 +461,10 @@ spec:
           name: prometheus
           protocol: TCP
         {{ end }}
+        resources:
+          requests:
+            cpu: {{ or .CPURequest "25m" }}
+            memory: {{ or .MemoryRequest "128Mi" }}
         readinessProbe:
           exec:
             command:
@@ -750,6 +754,10 @@ spec:
           name: prometheus
           protocol: TCP
         {{ end }}
+        resources:
+          requests:
+            cpu: {{ or .CPURequest "25m" }}
+            memory: {{ or .MemoryRequest "128Mi" }}
         livenessProbe:
           httpGet:
             host: "127.0.0.1"
