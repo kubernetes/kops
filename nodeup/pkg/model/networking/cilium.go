@@ -36,7 +36,7 @@ var _ fi.ModelBuilder = &CiliumBuilder{}
 
 // Build is responsible for configuring the network cni
 func (b *CiliumBuilder) Build(c *fi.ModelBuilderContext) error {
-	networking := b.Cluster.Spec.Networking
+	cilium := b.Cluster.Spec.Networking.Cilium
 
 	// As long as the Cilium Etcd cluster exists, we should do this
 	if apiModel.UseCiliumEtcd(b.Cluster) {
@@ -45,13 +45,17 @@ func (b *CiliumBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if networking.Cilium == nil {
+	if cilium == nil {
 		return nil
 	}
 
 	if err := b.buildBPFMount(c); err != nil {
 		return err
 	}
+
+	image := "docker.io/cilium/cilium:" + cilium.Version
+
+	b.WarmPullImage(c, image)
 
 	return nil
 
