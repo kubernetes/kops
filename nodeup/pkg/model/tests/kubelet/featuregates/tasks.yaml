@@ -25,6 +25,9 @@ definition: |
   User=root
   CPUAccounting=true
   MemoryAccounting=true
+
+  [Install]
+  WantedBy=multi-user.target
 enabled: true
 manageState: true
 running: true
