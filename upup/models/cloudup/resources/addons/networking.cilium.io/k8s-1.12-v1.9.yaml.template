@@ -525,6 +525,10 @@ spec:
           periodSeconds: 30
           successThreshold: 1
           timeoutSeconds: 5
+        resources:
+          requests:
+            cpu: {{ or .CPURequest "25m" }}
+            memory: {{ or .MemoryRequest "128Mi" }}
         readinessProbe:
           httpGet:
             host: '127.0.0.1'
@@ -823,6 +827,10 @@ spec:
           name: prometheus
           protocol: TCP
         {{ end }}
+        resources:
+          requests:
+            cpu: {{ or .CPURequest "25m" }}
+            memory: {{ or .MemoryRequest "128Mi" }}
         livenessProbe:
           httpGet:
             host: '127.0.0.1'
@@ -891,7 +899,7 @@ spec:
   strategy:
     rollingUpdate:
       maxUnavailable: 1
-      type: RollingUpdate    
+      type: RollingUpdate
   template:
     metadata:
       labels:

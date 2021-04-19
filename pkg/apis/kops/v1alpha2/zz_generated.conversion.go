@@ -1646,6 +1646,8 @@ func Convert_kops_CertManagerConfig_To_v1alpha2_CertManagerConfig(in *kops.CertM
 
 func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *CiliumNetworkingSpec, out *kops.CiliumNetworkingSpec, s conversion.Scope) error {
 	out.Version = in.Version
+	out.MemoryRequest = in.MemoryRequest
+	out.CPURequest = in.CPURequest
 	out.AccessLog = in.AccessLog
 	out.AgentLabels = in.AgentLabels
 	out.AgentPrometheusPort = in.AgentPrometheusPort
@@ -1738,6 +1740,8 @@ func Convert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *Cili
 
 func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *kops.CiliumNetworkingSpec, out *CiliumNetworkingSpec, s conversion.Scope) error {
 	out.Version = in.Version
+	out.MemoryRequest = in.MemoryRequest
+	out.CPURequest = in.CPURequest
 	out.AccessLog = in.AccessLog
 	out.AgentLabels = in.AgentLabels
 	out.AgentPrometheusPort = in.AgentPrometheusPort

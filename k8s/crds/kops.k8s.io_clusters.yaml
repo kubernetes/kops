@@ -3402,6 +3402,14 @@ spec:
                           fetches information from the container runtime and this
                           field is ignored. Default: none'
                         type: string
+                      cpuRequest:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: 'CPURequest CPU request of Cilium agent + operator
+                          container. (default: 25m)'
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
                       debug:
                         description: Debug runs Cilium in debug mode.
                         type: boolean
@@ -3592,6 +3600,14 @@ spec:
                           be removed in the future. Setting this has no effect.
                         format: int32
                         type: integer
+                      memoryRequest:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: 'MemoryRequest memory request of Cilium agent
+                          + operator container. (default: 128Mi)'
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
                       monitorAggregation:
                         description: 'MonitorAggregation sets the level of packet
                           monitoring. Possible values are "low", "medium", or "maximum".
