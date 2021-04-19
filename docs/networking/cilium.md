@@ -147,8 +147,6 @@ As of kOps 1.20, it is possible to choose your own values for Cilium Agents + Op
     cilium:
       cpuRequest: "25m"
       memoryRequest: "128Mi"
-      cpuLimit: "100m"
-      memoryLimit: "300Mi"
 ```
 
 ## Getting help
