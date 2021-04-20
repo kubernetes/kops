@@ -78,6 +78,10 @@ spec:
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.18.0"
+    - name: "Canonical:UbuntuServer:20.04-LTS:latest"
+      providerID: azure
+      architectureID: amd64
+      kubernetesVersion: ">=1.20.0"
   cluster:
     kubernetesVersion: v1.5.8
     networking:
