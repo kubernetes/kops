@@ -31912,7 +31912,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: hubble-relay
-          image: "docker.io/cilium/hubble-relay:{{ .Networking.Cilium.Version }}"
+          image: "docker.io/cilium/hubble-relay:{{ .Version }}"
           imagePullPolicy: IfNotPresent
           command:
             - "hubble-relay"
@@ -32889,7 +32889,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: hubble-relay
-          image: "docker.io/cilium/hubble-relay:{{ .Networking.Cilium.Version }}"
+          image: "docker.io/cilium/hubble-relay:{{ .Version }}"
           imagePullPolicy: IfNotPresent
           command:
             - hubble-relay
