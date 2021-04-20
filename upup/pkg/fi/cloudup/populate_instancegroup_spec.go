@@ -49,9 +49,8 @@ const (
 	defaultMasterMachineTypeALI   = "ecs.n2.medium"
 	defaultMasterMachineTypeAzure = "Standard_B2ms"
 
-	defaultDONodeImage    = "ubuntu-20-04-x64"
-	defaultALINodeImage   = "centos_7_04_64_20G_alibase_201701015.vhd"
-	defaultAzureNodeImage = "Canonical:UbuntuServer:20.04-LTS:latest"
+	defaultDONodeImage  = "ubuntu-20-04-x64"
+	defaultALINodeImage = "centos_7_04_64_20G_alibase_201701015.vhd"
 )
 
 // TODO: this hardcoded list can be replaced with DescribeInstanceTypes' DedicatedHostsSupported field
@@ -258,8 +257,6 @@ func defaultImage(cluster *kops.Cluster, channel *kops.Channel, architecture arc
 		return defaultDONodeImage
 	case kops.CloudProviderALI:
 		return defaultALINodeImage
-	case kops.CloudProviderAzure:
-		return defaultAzureNodeImage
 	}
 	klog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.CloudProvider)
 	return ""
