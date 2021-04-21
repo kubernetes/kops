@@ -66,6 +66,7 @@ Cert-manager handles x509 certificates for your cluster.
 spec:
   certManager:
     enabled: true
+    defaultIssuer: yourDefaultIssuer
 ```
 
 **Warning: cert-manager only supports one installation per cluster. If you are already running cert-manager, you need to remove this installation prior to enabling this addon. As long as you are using v1 versions of the cert-manager resources, it is safe to remove existing installs and replace it with this addon**
