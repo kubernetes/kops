@@ -41,6 +41,7 @@ import (
 )
 
 const rollingUpdateTaintKey = "kops.k8s.io/scheduled-for-update"
+const labelNodeExcludeBalancers = "node.kubernetes.io/exclude-from-external-load-balancers"
 
 // promptInteractive asks the user to continue, mostly copied from vendor/google.golang.org/api/examples/gmail.go.
 func promptInteractive(upgradedHostID, upgradedHostName string) (stopPrompting bool, err error) {
@@ -335,10 +336,10 @@ func (c *RollingUpdateCluster) patchExcludeFromLB(node *corev1.Node) error {
 		node.Labels = map[string]string{}
 	}
 
-	if _, ok := node.Labels[corev1.LabelNodeExcludeBalancers]; ok {
+	if _, ok := node.Labels[labelNodeExcludeBalancers]; ok {
 		return nil
 	}
-	node.Labels[corev1.LabelNodeExcludeBalancers] = ""
+	node.Labels[labelNodeExcludeBalancers] = ""
 
 	newData, err := json.Marshal(node)
 	if err != nil {
