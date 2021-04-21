@@ -73,6 +73,8 @@ go_library(
         "vpccidrblock.go",
         "vpccidrblock_fitask.go",
         "vpcdhcpoptionsassociation_fitask.go",
+        "warmpool.go",
+        "warmpool_fitask.go",
     ],
     importpath = "k8s.io/kops/upup/pkg/fi/cloudup/awstasks",
     visibility = ["//visibility:public"],

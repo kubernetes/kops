@@ -902,6 +902,23 @@ spec:
                       type: string
                   type: object
                 type: array
+              warmPool:
+                description: WarmPool configures an ASG warm pool for the instance
+                  group
+                properties:
+                  maxSize:
+                    description: MaxSize is the maximum size of the warm pool. The
+                      desired size of the instance group is subtracted from this number
+                      to determine the desired size of the warm pool (unless the resulting
+                      number is smaller than MinSize). The default is the instance
+                      group's MaxSize.
+                    format: int64
+                    type: integer
+                  minSize:
+                    description: MinSize is the minimum size of the pool
+                    format: int64
+                    type: integer
+                type: object
               zones:
                 description: Zones is the names of the Zones where machines in this
                   instance group should be placed This is needed for regional subnets

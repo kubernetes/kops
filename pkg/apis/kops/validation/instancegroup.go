@@ -143,6 +143,24 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud) field.ErrorLis
 
 	allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "updatePolicy"), g.Spec.UpdatePolicy, []string{kops.UpdatePolicyAutomatic, kops.UpdatePolicyExternal})...)
 
+	warmPool := g.Spec.WarmPool
+	if warmPool != nil {
+		if g.Spec.Role != kops.InstanceGroupRoleNode && g.Spec.Role != kops.InstanceGroupRoleAPIServer {
+			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool only allowed on instance groups with role Node or APIServer"))
+		}
+		if g.Spec.MixedInstancesPolicy != nil {
+			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool cannot be combined with a mixed instances policy"))
+		}
+		if g.Spec.MaxPrice != nil {
+			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool cannot be used with spot instances"))
+		}
+		if warmPool.MaxSize != nil {
+			if warmPool.MinSize > *warmPool.MaxSize {
+				allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "warmPool", "maxSize"), fi.Int64Value(warmPool.MaxSize), "warm pool maxSize cannot be set to lower than minSize"))
+
+			}
+		}
+	}
 	return allErrs
 }
 
@@ -206,10 +224,15 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 		}
 	}
 
-	if g.Spec.RootVolumeType != nil && kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
-		allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "rootVolumeType"), g.Spec.RootVolumeType, []string{"standard", "gp3", "gp2", "io1", "io2"})...)
+	if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
+		if g.Spec.RootVolumeType != nil {
+			allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "rootVolumeType"), g.Spec.RootVolumeType, []string{"standard", "gp3", "gp2", "io1", "io2"})...)
+		}
+	} else {
+		if g.Spec.WarmPool != nil {
+			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool only supported on AWS"))
+		}
 	}
-
 	return allErrs
 }
 
