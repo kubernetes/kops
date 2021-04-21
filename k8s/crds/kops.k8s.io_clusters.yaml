@@ -237,6 +237,10 @@ spec:
               certManager:
                 description: CertManager determines the metrics server configuration.
                 properties:
+                  defaultIssuer:
+                    description: 'defaultIssuer sets a default clusterIssuer Default:
+                      none'
+                    type: string
                   enabled:
                     description: 'Enabled enables the cert manager. Default: false'
                     type: boolean
