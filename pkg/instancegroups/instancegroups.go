@@ -41,6 +41,7 @@ import (
 )
 
 const rollingUpdateTaintKey = "kops.k8s.io/scheduled-for-update"
+const labelNodeExcludeBalancers = "node.kubernetes.io/exclude-from-external-load-balancers"
 
 // promptInteractive asks the user to continue, mostly copied from vendor/google.golang.org/api/examples/gmail.go.
 func promptInteractive(upgradedHostID, upgradedHostName string) (stopPrompting bool, err error) {
@@ -325,6 +326,38 @@ func (c *RollingUpdateCluster) patchTaint(node *corev1.Node) error {
 	return err
 }
 
+func (c *RollingUpdateCluster) patchExcludeFromLB(node *corev1.Node) error {
+	oldData, err := json.Marshal(node)
+	if err != nil {
+		return err
+	}
+
+	if node.Labels == nil {
+		node.Labels = map[string]string{}
+	}
+
+	if _, ok := node.Labels[labelNodeExcludeBalancers]; ok {
+		return nil
+	}
+	node.Labels[labelNodeExcludeBalancers] = ""
+
+	newData, err := json.Marshal(node)
+	if err != nil {
+		return err
+	}
+
+	patchBytes, err := strategicpatch.CreateTwoWayMergePatch(oldData, newData, node)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.K8sClient.CoreV1().Nodes().Patch(c.Ctx, node.Name, types.StrategicMergePatchType, patchBytes, metav1.PatchOptions{})
+	if apierrors.IsNotFound(err) {
+		return nil
+	}
+	return err
+}
+
 func (c *RollingUpdateCluster) drainTerminateAndWait(u *cloudinstances.CloudInstance, sleepAfterTerminate time.Duration) error {
 	instanceID := u.ID
 
@@ -586,6 +619,13 @@ func (c *RollingUpdateCluster) drainNode(u *cloudinstances.CloudInstance) error 
 			return nil
 		}
 		return fmt.Errorf("error cordoning node: %v", err)
+	}
+
+	if err := c.patchExcludeFromLB(u.Node); err != nil {
+		if apierrors.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("error excluding node from load balancer: %v", err)
 	}
 
 	if err := drain.RunNodeDrain(helper, u.Node.Name); err != nil {

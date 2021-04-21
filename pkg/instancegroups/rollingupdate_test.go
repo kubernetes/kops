@@ -45,8 +45,9 @@ import (
 )
 
 const (
-	cordonPatch = "{\"spec\":{\"unschedulable\":true}}"
-	taintPatch  = "{\"spec\":{\"taints\":[{\"effect\":\"PreferNoSchedule\",\"key\":\"kops.k8s.io/scheduled-for-update\"}]}}"
+	cordonPatch    = "{\"spec\":{\"unschedulable\":true}}"
+	excludeLBPatch = "{\"metadata\":{\"labels\":{\"node.kubernetes.io/exclude-from-external-load-balancers\":\"\"}}}"
+	taintPatch     = "{\"spec\":{\"taints\":[{\"effect\":\"PreferNoSchedule\",\"key\":\"kops.k8s.io/scheduled-for-update\"}]}}"
 )
 
 func getTestSetup() (*RollingUpdateCluster, *awsup.MockAWSCloud) {
@@ -209,6 +210,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 	assert.NoError(t, err, "rolling update")
 
 	cordoned := ""
+	excluded := ""
 	tainted := map[string]bool{}
 	deleted := map[string]bool{}
 	for _, action := range c.K8sClient.(*fake.Clientset).Actions() {
@@ -219,6 +221,11 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 				assert.Equal(t, "", cordoned, "at most one node cordoned at a time")
 				assert.True(t, tainted[a.GetName()], "node", a.GetName(), "tainted")
 				cordoned = a.GetName()
+			} else if string(a.GetPatch()) == excludeLBPatch {
+				assertExclude(t, a)
+				assert.Equal(t, "", excluded, "at most one node excluded at a time")
+				assert.True(t, tainted[a.GetName()], "node", a.GetName(), "tainted")
+				excluded = a.GetName()
 			} else {
 				assertTaint(t, a)
 				assert.Equal(t, "", cordoned, "not tainting while node cordoned")
@@ -228,6 +235,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		case testingclient.DeleteAction:
 			assert.Equal(t, "nodes", a.GetResource().Resource)
 			assert.Equal(t, cordoned, a.GetName(), "node was cordoned before delete")
+			assert.Equal(t, excluded, a.GetName(), "node was excluded before delete")
 			assert.False(t, deleted[a.GetName()], "node", a.GetName(), "already deleted")
 			if !strings.HasPrefix(a.GetName(), "master-") {
 				assert.True(t, deleted["master-1a.local"], "master-1a was deleted before node", a.GetName())
@@ -235,6 +243,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 			}
 			deleted[a.GetName()] = true
 			cordoned = ""
+			excluded = ""
 		case testingclient.ListAction:
 			// Don't care
 		default:
@@ -809,6 +818,7 @@ func TestRollingUpdateTaintAllButOneNeedUpdate(t *testing.T) {
 	assert.NoError(t, err, "rolling update")
 
 	cordoned := ""
+	excluded := ""
 	tainted := map[string]bool{}
 	deleted := map[string]bool{}
 	for _, action := range c.K8sClient.(*fake.Clientset).Actions() {
@@ -818,6 +828,10 @@ func TestRollingUpdateTaintAllButOneNeedUpdate(t *testing.T) {
 				assertCordon(t, a)
 				assert.Equal(t, "", cordoned, "at most one node cordoned at a time")
 				cordoned = a.GetName()
+			} else if string(a.GetPatch()) == excludeLBPatch {
+				assertExclude(t, a)
+				assert.Equal(t, "", excluded, "at most one node excluded at a time")
+				excluded = a.GetName()
 			} else {
 				assertTaint(t, a)
 				assert.False(t, tainted[a.GetName()], "node", a.GetName(), "already tainted")
@@ -826,10 +840,12 @@ func TestRollingUpdateTaintAllButOneNeedUpdate(t *testing.T) {
 		case testingclient.DeleteAction:
 			assert.Equal(t, "nodes", a.GetResource().Resource)
 			assert.Equal(t, cordoned, a.GetName(), "node was cordoned before delete")
+			assert.Equal(t, excluded, a.GetName(), "node was excluded before delete")
 			assert.Len(t, tainted, 2, "all nodes tainted before any delete")
 			assert.False(t, deleted[a.GetName()], "node", a.GetName(), "already deleted")
 			deleted[a.GetName()] = true
 			cordoned = ""
+			excluded = ""
 		case testingclient.ListAction:
 			// Don't care
 		default:
@@ -855,6 +871,7 @@ func TestRollingUpdateMaxSurgeIgnoredForMaster(t *testing.T) {
 	assert.NoError(t, err, "rolling update")
 
 	cordoned := ""
+	excluded := ""
 	tainted := map[string]bool{}
 	deleted := map[string]bool{}
 	for _, action := range c.K8sClient.(*fake.Clientset).Actions() {
@@ -865,6 +882,11 @@ func TestRollingUpdateMaxSurgeIgnoredForMaster(t *testing.T) {
 				assert.Equal(t, "", cordoned, "at most one node cordoned at a time")
 				assert.True(t, tainted[a.GetName()], "node", a.GetName(), "tainted")
 				cordoned = a.GetName()
+			} else if string(a.GetPatch()) == excludeLBPatch {
+				assertExclude(t, a)
+				assert.Equal(t, "", excluded, "at most one node excluded at a time")
+				assert.True(t, tainted[a.GetName()], "node", a.GetName(), "tainted")
+				excluded = a.GetName()
 			} else {
 				assertTaint(t, a)
 				assert.Equal(t, "", cordoned, "not tainting while node cordoned")
@@ -874,9 +896,11 @@ func TestRollingUpdateMaxSurgeIgnoredForMaster(t *testing.T) {
 		case testingclient.DeleteAction:
 			assert.Equal(t, "nodes", a.GetResource().Resource)
 			assert.Equal(t, cordoned, a.GetName(), "node was cordoned before delete")
+			assert.Equal(t, excluded, a.GetName(), "node was excluded before delete")
 			assert.False(t, deleted[a.GetName()], "node", a.GetName(), "already deleted")
 			deleted[a.GetName()] = true
 			cordoned = ""
+			excluded = ""
 		case testingclient.ListAction:
 			// Don't care
 		default:
@@ -1478,6 +1502,11 @@ func TestRollingUpdateMaxSurgeAllNeedUpdateMaxAlreadyDetached(t *testing.T) {
 func assertCordon(t *testing.T, action testingclient.PatchAction) {
 	assert.Equal(t, "nodes", action.GetResource().Resource)
 	assert.Equal(t, cordonPatch, string(action.GetPatch()))
+}
+
+func assertExclude(t *testing.T, action testingclient.PatchAction) {
+	assert.Equal(t, "nodes", action.GetResource().Resource)
+	assert.Equal(t, excludeLBPatch, string(action.GetPatch()))
 }
 
 func assertTaint(t *testing.T, action testingclient.PatchAction) {
