@@ -135,7 +135,7 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 		}
 
 		if response == nil || len(response.Addresses) == 0 {
-			return nil, nil
+			return nil, fmt.Errorf("found no ElasticIPs for: %v", e)
 		}
 
 		if len(response.Addresses) != 1 {
