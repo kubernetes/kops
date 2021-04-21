@@ -182,6 +182,18 @@ type InstanceGroupSpec struct {
 	//   'automatic' (default): apply updates automatically (apply OS security upgrades, avoiding rebooting when possible)
 	//   'external': do not apply updates automatically; they are applied manually or by an external system
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
+	// WarmPool specifies a pool of pre-warmed instances for later use (AWS only).
+	WarmPool *WarmPoolSpec `json:"warmPool,omitempty"`
+}
+
+type WarmPoolSpec struct {
+	// MinSize is the minimum size of the warm pool.
+	MinSize int64 `json:"minSize,omitempty"`
+	// MaxSize is the maximum size of the warm pool. The desired size of the instance group
+	// is subtracted from this number to determine the desired size of the warm pool
+	// (unless the resulting number is smaller than MinSize).
+	// The default is the instance group's MaxSize.
+	MaxSize *int64 `json:"maxSize,omitempty"`
 }
 
 const (
