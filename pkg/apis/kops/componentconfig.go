@@ -916,6 +916,10 @@ type CertManagerConfig struct {
 	// Image is the docker container used.
 	// Default: the latest supported image for the specified kubernetes version.
 	Image *string `json:"image,omitempty"`
+
+	// defaultIssuer sets a default clusterIssuer
+	// Default: none
+	DefaultIssuer *string `json:"defaultIssuer,omitempty"`
 }
 
 // AWSLoadBalancerControllerConfig determines the AWS LB controller configuration.
