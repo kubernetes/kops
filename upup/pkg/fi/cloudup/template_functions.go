@@ -228,7 +228,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			return url
 		}
 
-		dest["EnableSqsTerminationDraining"] = func() bool { return *cluster.Spec.NodeTerminationHandler.EnableSqsTerminationDraining }
+		dest["EnableSQSTerminationDraining"] = func() bool { return *cluster.Spec.NodeTerminationHandler.EnableSQSTerminationDraining }
 	}
 
 	return nil
