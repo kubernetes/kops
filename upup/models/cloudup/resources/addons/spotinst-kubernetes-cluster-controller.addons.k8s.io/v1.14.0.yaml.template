@@ -94,7 +94,7 @@ rules:
   # ----------------------------------------------------------------------------
 - apiGroups: ["certificates.k8s.io"]
   resources: ["certificatesigningrequests"]
-  verbs: ["get", "list"]
+  verbs: ["get", "list", "create", "delete"]
 - apiGroups: ["certificates.k8s.io"]
   resources: ["certificatesigningrequests/approval"]
   verbs: ["patch", "update"]
@@ -205,7 +205,7 @@ spec:
       containers:
       - name: spotinst-kubernetes-cluster-controller
         imagePullPolicy: Always
-        image: spotinst/kubernetes-cluster-controller:1.0.73
+        image: spotinst/kubernetes-cluster-controller:1.0.74
         livenessProbe:
           httpGet:
             path: /healthcheck
