@@ -20,6 +20,9 @@ const (
 	// KopsControllerPort is the port where kops-controller listens.
 	KopsControllerPort = 3988
 
+	// KopsControllerMetricsPort is the port where prometheus metrics exporter port in kops-controller.
+	KopsControllerMetricsPort = 3987
+
 	// NodeLocalDNSHealthCheck is the port where the node-local-dns health check listens.
 	NodeLocalDNSHealthCheck = 3989
 

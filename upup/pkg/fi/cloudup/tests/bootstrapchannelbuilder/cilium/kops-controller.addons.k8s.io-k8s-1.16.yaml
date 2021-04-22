@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   config.yaml: |
-    {"cloud":"aws","configBase":"memfs://clusters.example.com/minimal.example.com"}
+    {"cloud":"aws","configBase":"memfs://clusters.example.com/minimal.example.com","registryPath":"memfs://clusters.example.com"}
 kind: ConfigMap
 metadata:
   creationTimestamp: null
@@ -46,6 +46,10 @@ spec:
         - --conf=/etc/kubernetes/kops-controller/config/config.yaml
         image: k8s.gcr.io/kops/kops-controller:1.21.0-alpha.3
         name: kops-controller
+        ports:
+        - containerPort: 3987
+          name: server
+          protocol: TCP
         resources:
           requests:
             cpu: 50m
@@ -114,6 +118,14 @@ rules:
   - list
   - watch
   - patch
+- apiGroups:
+  - ""
+  resources:
+  - componentstatuses
+  - pods
+  verbs:
+  - get
+  - list
 
 ---
 
@@ -204,3 +216,25 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: User
   name: system:serviceaccount:kube-system:kops-controller
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: kops-controller.addons.k8s.io
+    addon.kops.k8s.io/version: 1.21.0-alpha.3
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: kops-controller.addons.k8s.io
+  name: kops-controller
+  namespace: kube-system
+spec:
+  ports:
+  - port: 3987
+    protocol: TCP
+    targetPort: 3987
+  selector:
+    k8s-app: kops-controller
+  type: ClusterIP

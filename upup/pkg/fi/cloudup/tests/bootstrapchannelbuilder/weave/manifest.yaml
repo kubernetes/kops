@@ -7,7 +7,7 @@ spec:
   - id: k8s-1.16
     kubernetesVersion: '>=1.16.0-alpha.0'
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: d393cb5a91ee4b47c4666d60f0f88a959aaa7b1c
+    manifestHash: 6846d6f2096af113318f9a3aa58b30039aedc5e8
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:

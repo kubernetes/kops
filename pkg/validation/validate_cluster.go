@@ -159,7 +159,7 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 	if err != nil {
 		return nil, err
 	}
-	readyNodes, nodeInstanceGroupMapping := validation.validateNodes(cloudGroups, v.instanceGroups)
+	readyNodes, nodeInstanceGroupMapping := validation.ValidateNodes(cloudGroups, v.instanceGroups)
 
 	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, nodeInstanceGroupMapping); err != nil {
 		return nil, fmt.Errorf("cannot get pod health for %q: %v", clusterName, err)
@@ -269,7 +269,7 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 	return nil
 }
 
-func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances.CloudInstanceGroup, groups []*kops.InstanceGroup) ([]v1.Node, map[string]*kops.InstanceGroup) {
+func (v *ValidationCluster) ValidateNodes(cloudGroups map[string]*cloudinstances.CloudInstanceGroup, groups []*kops.InstanceGroup) ([]v1.Node, map[string]*kops.InstanceGroup) {
 	var readyNodes []v1.Node
 	groupsSeen := map[string]bool{}
 	nodeInstanceGroupMapping := map[string]*kops.InstanceGroup{}

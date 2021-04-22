@@ -32,6 +32,7 @@ type CloudInstanceGroup struct {
 	InstanceGroup *kopsapi.InstanceGroup
 	Ready         []*CloudInstance
 	NeedUpdate    []*CloudInstance
+	All           []*CloudInstance
 	MinSize       int
 	TargetSize    int
 	MaxSize       int
@@ -55,6 +56,7 @@ func (c *CloudInstanceGroup) NewCloudInstance(instanceId string, status string, 
 	} else {
 		c.NeedUpdate = append(c.NeedUpdate, cm)
 	}
+	c.All = append(c.All, cm)
 
 	cm.Status = status
 
