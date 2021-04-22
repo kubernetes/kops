@@ -147,7 +147,7 @@ func (q *SQS) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SQS) error {
 	return nil
 }
 
-type terraformSqsQueue struct {
+type terraformSQSQueue struct {
 	Name                    *string            `json:"name" cty:"name"`
 	MessageRetentionSeconds int                `json:"message_retention_seconds" cty:"message_retention_seconds"`
 	Policy                  *terraform.Literal `json:"policy" cty:"policy"`
@@ -160,7 +160,7 @@ func (_ *SQS) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SQS) 
 		return err
 	}
 
-	tf := &terraformSqsQueue{
+	tf := &terraformSQSQueue{
 		Name:                    e.Name,
 		MessageRetentionSeconds: e.MessageRetentionPeriod,
 		Policy:                  p,

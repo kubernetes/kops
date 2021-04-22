@@ -30,7 +30,7 @@ spec:
   nonMasqueradeCIDR: 100.64.0.0/10
   nodeTerminationHandler:
     enabled: true
-    enableSqsTerminationDraining: true
+    enableSQSTerminationDraining: true
   sshAccess:
     - 0.0.0.0/0
   topology:
