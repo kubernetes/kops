@@ -66,7 +66,7 @@ roleRef:
   kind: ClusterRole
   name: aws-node-termination-handler
   apiGroup: rbac.authorization.k8s.io
-{{ if EnableSqsTerminationDraining }}
+{{ if EnableSQSTerminationDraining }}
 ---
 # Source: aws-node-termination-handler/templates/deployment.yaml
 apiVersion: apps/v1
@@ -193,7 +193,7 @@ spec:
             - name: CHECK_ASG_TAG_BEFORE_DRAINING
               value: "true"
             - name: MANAGED_ASG_TAG
-              value: "{{ .ManagedAsgTag }}"
+              value: "{{ .ManagedASGTag }}"
             - name: WORKERS
               value: "10"
           resources:

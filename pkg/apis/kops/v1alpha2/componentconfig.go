@@ -854,11 +854,11 @@ type NodeTerminationHandlerConfig struct {
 	// EnablePrometheusMetrics enables the "/metrics" endpoint.
 	EnablePrometheusMetrics *bool `json:"prometheusEnable,omitempty"`
 
-	// EnableSqsTerminationDraining enables queue-processor mode which drains nodes when an SQS termination event is received.
-	EnableSqsTerminationDraining *bool `json:"enableSqsTerminationDraining,omitempty"`
+	// EnableSQSTerminationDraining enables queue-processor mode which drains nodes when an SQS termination event is received.
+	EnableSQSTerminationDraining *bool `json:"enableSQSTerminationDraining,omitempty"`
 
-	// ManagedAsgTag is the tag used to determine which nodes NTH can take action on
-	ManagedAsgTag *string `json:"managedAsgTag,omitempty"`
+	// ManagedASGTag is the tag used to determine which nodes NTH can take action on
+	ManagedASGTag *string `json:"managedASGTag,omitempty"`
 }
 
 // ClusterAutoscalerConfig determines the cluster autoscaler configuration.

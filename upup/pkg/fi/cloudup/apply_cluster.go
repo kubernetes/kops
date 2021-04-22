@@ -581,7 +581,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 
 			nth := c.Cluster.Spec.NodeTerminationHandler
-			if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSqsTerminationDraining) {
+			if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSQSTerminationDraining) {
 				l.Builders = append(l.Builders, &awsmodel.NodeTerminationHandlerBuilder{
 					AWSModelContext: awsModelContext,
 					Lifecycle:       &clusterLifecycle,

@@ -338,7 +338,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	nth := b.Cluster.Spec.NodeTerminationHandler
-	if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSqsTerminationDraining) {
+	if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSQSTerminationDraining) {
 		addNodeTerminationHandlerSQSPermissions(p, resource)
 	}
 
