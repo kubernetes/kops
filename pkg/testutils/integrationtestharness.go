@@ -23,6 +23,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"k8s.io/kops/cloudmock/aws/mockeventbridge"
+	"k8s.io/kops/cloudmock/aws/mocksqs"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -140,6 +143,10 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 	cloud.MockIAM = mockIAM
 	mockAutoscaling := &mockautoscaling.MockAutoscaling{}
 	cloud.MockAutoscaling = mockAutoscaling
+	mockSQS := &mocksqs.MockSQS{}
+	cloud.MockSQS = mockSQS
+	mockEventBridge := &mockeventbridge.MockEventBridge{}
+	cloud.MockEventBridge = mockEventBridge
 
 	mockRoute53.MockCreateZone(&route53.HostedZone{
 		Id:   aws.String("/hostedzone/Z1AFAKE1ZON3YO"),

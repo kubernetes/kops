@@ -3906,6 +3906,10 @@ spec:
                 description: NodeTerminationHandler determines the cluster autoscaler
                   configuration.
                 properties:
+                  enableSQSTerminationDraining:
+                    description: EnableSQSTerminationDraining enables queue-processor
+                      mode which drains nodes when an SQS termination event is received.
+                    type: boolean
                   enableScheduledEventDraining:
                     description: 'EnableScheduledEventDraining makes node termination
                       handler drain nodes before the maintenance window starts for
@@ -3920,6 +3924,10 @@ spec:
                     description: 'Enabled enables the node termination handler. Default:
                       true'
                     type: boolean
+                  managedASGTag:
+                    description: ManagedASGTag is the tag used to determine which
+                      nodes NTH can take action on
+                    type: string
                   prometheusEnable:
                     description: EnablePrometheusMetrics enables the "/metrics" endpoint.
                     type: boolean

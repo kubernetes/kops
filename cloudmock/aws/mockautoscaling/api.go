@@ -31,6 +31,7 @@ type MockAutoscaling struct {
 	Groups               map[string]*autoscaling.Group
 	WarmPoolInstances    map[string][]*autoscaling.Instance
 	LaunchConfigurations map[string]*autoscaling.LaunchConfiguration
+	LifecycleHooks       map[string]*autoscaling.LifecycleHook
 }
 
 var _ autoscalingiface.AutoScalingAPI = &MockAutoscaling{}
