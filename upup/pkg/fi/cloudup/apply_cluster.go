@@ -580,6 +580,14 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				l.Builders = append(l.Builders, awsModelBuilder)
 			}
 
+			nth := c.Cluster.Spec.NodeTerminationHandler
+			if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSQSTerminationDraining) {
+				l.Builders = append(l.Builders, &awsmodel.NodeTerminationHandlerBuilder{
+					AWSModelContext: awsModelContext,
+					Lifecycle:       &clusterLifecycle,
+				})
+			}
+
 		case kops.CloudProviderDO:
 			doModelContext := &domodel.DOModelContext{
 				KopsModelContext: modelContext,

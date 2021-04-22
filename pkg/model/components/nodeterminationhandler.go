@@ -48,5 +48,14 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 	if nth.EnablePrometheusMetrics == nil {
 		nth.EnablePrometheusMetrics = fi.Bool(false)
 	}
+
+	if nth.EnableSQSTerminationDraining == nil {
+		nth.EnableSQSTerminationDraining = fi.Bool(false)
+	}
+
+	if nth.ManagedASGTag == nil {
+		nth.ManagedASGTag = fi.String("aws-node-termination-handler/managed")
+	}
+
 	return nil
 }

@@ -67,6 +67,8 @@ type integrationTest struct {
 	caKey           bool
 	jsonOutput      bool
 	bastionUserData bool
+	// nth is true if we should check for files created by nth queue processor add on
+	nth bool
 }
 
 func newIntegrationTest(clusterName, srcDir string) *integrationTest {
@@ -132,6 +134,11 @@ func (i *integrationTest) withServiceAccountRole(sa string, inlinePolicy bool) *
 
 func (i *integrationTest) withBastionUserData() *integrationTest {
 	i.bastionUserData = true
+	return i
+}
+
+func (i *integrationTest) withNTH() *integrationTest {
+	i.nth = true
 	return i
 }
 
@@ -387,6 +394,12 @@ func TestAPIServerNodes(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "apiservernodes").runTestCloudformation(t)
 }
 
+// TestNTHQueueProcessor tests the output for resources required by NTH Queue Processor mode
+func TestNTHQueueProcessor(t *testing.T) {
+	newIntegrationTest("nthsqsresources.example.com", "nth_sqs_resources").withNTH().runTestTerraformAWS(t)
+	newIntegrationTest("nthsqsresources.example.com", "nth_sqs_resources").runTestCloudformation(t)
+}
+
 func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
 	ctx := context.Background()
 
@@ -578,6 +591,14 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 			if i.bastionUserData {
 				expectedFilenames = append(expectedFilenames, "aws_launch_template_bastion."+i.clusterName+"_user_data")
 			}
+		}
+		if i.nth {
+			expectedFilenames = append(expectedFilenames, []string{
+				"aws_cloudwatch_event_rule_" + i.clusterName + "-ASGLifecycle_event_pattern",
+				"aws_cloudwatch_event_rule_" + i.clusterName + "-RebalanceRecommendation_event_pattern",
+				"aws_cloudwatch_event_rule_" + i.clusterName + "-SpotInterruption_event_pattern",
+				"aws_sqs_queue_" + strings.Replace(i.clusterName, ".", "-", -1) + "-nth_policy",
+			}...)
 		}
 	}
 
