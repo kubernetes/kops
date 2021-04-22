@@ -336,3 +336,41 @@ func (m *MockAutoscaling) DeleteAutoScalingGroupRequest(*autoscaling.DeleteAutoS
 	klog.Fatalf("Not implemented")
 	return nil, nil
 }
+
+func (m *MockAutoscaling) PutLifecycleHook(input *autoscaling.PutLifecycleHookInput) (*autoscaling.PutLifecycleHookOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	hook := &autoscaling.LifecycleHook{
+		AutoScalingGroupName:  input.AutoScalingGroupName,
+		DefaultResult:         input.DefaultResult,
+		GlobalTimeout:         input.HeartbeatTimeout,
+		HeartbeatTimeout:      input.HeartbeatTimeout,
+		LifecycleHookName:     input.LifecycleHookName,
+		LifecycleTransition:   input.LifecycleTransition,
+		NotificationMetadata:  input.NotificationMetadata,
+		NotificationTargetARN: input.NotificationTargetARN,
+		RoleARN:               input.RoleARN,
+	}
+
+	if m.LifecycleHooks == nil {
+		m.LifecycleHooks = make(map[string]*autoscaling.LifecycleHook)
+	}
+	m.LifecycleHooks[*hook.AutoScalingGroupName] = hook
+
+	return &autoscaling.PutLifecycleHookOutput{}, nil
+}
+
+func (m *MockAutoscaling) DescribeLifecycleHooks(input *autoscaling.DescribeLifecycleHooksInput) (*autoscaling.DescribeLifecycleHooksOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	name := *input.AutoScalingGroupName
+	response := &autoscaling.DescribeLifecycleHooksOutput{}
+
+	hook := m.LifecycleHooks[name]
+	if hook == nil {
+		return response, nil
+	}
+	response.LifecycleHooks = []*autoscaling.LifecycleHook{hook}
+	return response, nil
+}

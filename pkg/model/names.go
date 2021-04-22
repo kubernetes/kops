@@ -265,3 +265,8 @@ func (b *KopsModelContext) LinkToPrivateRouteTableInZone(zoneName string) *awsta
 func (b *KopsModelContext) InstanceName(ig *kops.InstanceGroup, suffix string) string {
 	return b.AutoscalingGroupName(ig) + suffix
 }
+
+func QueueNamePrefix(clusterName string) string {
+	// periods aren't allowed in queue name
+	return strings.ReplaceAll(clusterName, ".", "-")
+}

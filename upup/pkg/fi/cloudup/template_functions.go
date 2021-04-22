@@ -217,6 +217,20 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["UseServiceAccountIAM"] = tf.UseServiceAccountIAM
 
+	if cluster.Spec.NodeTerminationHandler != nil {
+		dest["DefaultQueueName"] = func() string {
+			s := strings.Replace(tf.ClusterName(), ".", "-", -1)
+			domain := ".amazonaws.com/"
+			if strings.Contains(tf.Region, "cn-") {
+				domain = ".amazonaws.com.cn/"
+			}
+			url := "https://sqs." + tf.Region + domain + tf.AWSAccountID + "/" + s + "-nth"
+			return url
+		}
+
+		dest["EnableSQSTerminationDraining"] = func() bool { return *cluster.Spec.NodeTerminationHandler.EnableSQSTerminationDraining }
+	}
+
 	return nil
 }
 

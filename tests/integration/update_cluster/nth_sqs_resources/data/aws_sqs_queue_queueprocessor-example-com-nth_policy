@@ -1,0 +1,13 @@
+{
+		"Version": "2012-10-17",
+		"Statement": [{                     
+			"Effect": "Allow",
+			"Principal": {
+				"Service": ["events.amazonaws.com", "sqs.amazonaws.com"]
+			},
+			"Action": "sqs:SendMessage",
+			"Resource": [
+				"arn:aws:sqs:us-test-1:123456789012:queueprocessor-example-com-nth"
+			]
+		}]
+	}

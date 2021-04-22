@@ -4092,6 +4092,16 @@ func (in *NodeTerminationHandlerConfig) DeepCopyInto(out *NodeTerminationHandler
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EnableSQSTerminationDraining != nil {
+		in, out := &in.EnableSQSTerminationDraining, &out.EnableSQSTerminationDraining
+		*out = new(bool)
+		**out = **in
+	}
+	if in.ManagedASGTag != nil {
+		in, out := &in.ManagedASGTag, &out.ManagedASGTag
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 
