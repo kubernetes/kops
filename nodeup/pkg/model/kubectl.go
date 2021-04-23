@@ -35,7 +35,7 @@ var _ fi.ModelBuilder = &KubectlBuilder{}
 
 // Build is responsible for managing the kubectl on the nodes
 func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
-	if !b.IsMaster {
+	if !b.HasAPIServer {
 		return nil
 	}
 

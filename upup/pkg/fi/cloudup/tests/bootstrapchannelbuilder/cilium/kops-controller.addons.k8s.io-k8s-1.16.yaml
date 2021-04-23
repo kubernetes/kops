@@ -44,6 +44,9 @@ spec:
         - /kops-controller
         - --v=2
         - --conf=/etc/kubernetes/kops-controller/config/config.yaml
+        env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: 127.0.0.1
         image: k8s.gcr.io/kops/kops-controller:1.21.0-alpha.3
         name: kops-controller
         resources:
