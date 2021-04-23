@@ -56,16 +56,15 @@ func (d *deployer) initialize() error {
 			return fmt.Errorf("init failed to check up flags: %v", err)
 		}
 	}
-	if d.KopsBinaryPath == "" {
-		d.KopsBinaryPath = path.Join(d.commonOptions.RunDir(), "kops")
-	}
 	if d.KopsVersionMarker != "" {
+		d.KopsBinaryPath = path.Join(d.commonOptions.RunDir(), "kops")
 		baseURL, err := kops.DownloadKops(d.KopsVersionMarker, d.KopsBinaryPath)
 		if err != nil {
 			return fmt.Errorf("init failed to download kops from url: %v", err)
 		}
 		d.KopsBaseURL = baseURL
 	}
+
 	switch d.CloudProvider {
 	case "aws":
 		// These environment variables are defined by the "preset-aws-ssh" prow preset
@@ -135,11 +134,7 @@ func (d *deployer) verifyKopsFlags() error {
 	}
 
 	if d.KopsBinaryPath == "" && d.KopsVersionMarker == "" {
-		if ws := os.Getenv("WORKSPACE"); ws != "" {
-			d.KopsBinaryPath = path.Join(ws, "kops")
-		} else {
-			return errors.New("missing required --kops-binary-path when --kops-version-marker is not used")
-		}
+		return errors.New("missing required --kops-binary-path when --kops-version-marker is not used")
 	}
 
 	switch d.CloudProvider {
