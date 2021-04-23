@@ -115,9 +115,9 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 			Mode: s("0755"),
 		})
 
-		if b.IsMaster || !b.UseBootstrapTokens() {
+		if b.HasAPIServer || !b.UseBootstrapTokens() {
 			var kubeconfig fi.Resource
-			if b.IsMaster && (b.IsKubernetesGTE("1.19") || b.UseBootstrapTokens()) {
+			if b.HasAPIServer && (b.IsKubernetesGTE("1.19") || b.UseBootstrapTokens()) {
 				kubeconfig, err = b.buildMasterKubeletKubeconfig(c)
 			} else {
 				kubeconfig, err = b.BuildBootstrapKubeconfig("kubelet", c)
@@ -565,7 +565,7 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.ModelBuilderContex
 			return err
 		}
 
-		if !b.IsMaster {
+		if !b.HasAPIServer {
 			cert, key := b.GetBootstrapCert(name)
 
 			c.AddTask(&nodetasks.File{
