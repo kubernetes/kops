@@ -48,19 +48,19 @@ func DeleteEventBridgeRule(cloud fi.Cloud, r *resources.Resource) error {
 	if err != nil {
 		return fmt.Errorf("error listing targets for EventBridge rule %q: %v", r.Name, err)
 	}
-
-	var ids []*string
-	for _, target := range targets.Targets {
-		ids = append(ids, target.Id)
-	}
-
-	klog.V(2).Infof("Removing EventBridge Targets for rule %q", r.Name)
-	_, err = c.EventBridge().RemoveTargets(&eventbridge.RemoveTargetsInput{
-		Ids:  ids,
-		Rule: aws.String(r.Name),
-	})
-	if err != nil {
-		return fmt.Errorf("error removing targets for EventBridge rule %q: %v", r.Name, err)
+	if len(targets.Targets) > 0 {
+		var ids []*string
+		for _, target := range targets.Targets {
+			ids = append(ids, target.Id)
+		}
+		klog.V(2).Infof("Removing EventBridge Targets for rule %q", r.Name)
+		_, err = c.EventBridge().RemoveTargets(&eventbridge.RemoveTargetsInput{
+			Ids:  ids,
+			Rule: aws.String(r.Name),
+		})
+		if err != nil {
+			return fmt.Errorf("error removing targets for EventBridge rule %q: %v", r.Name, err)
+		}
 	}
 
 	klog.V(2).Infof("Deleting EventBridge rule %q", r.Name)

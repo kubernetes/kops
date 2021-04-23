@@ -143,20 +143,27 @@ The kOps CLI requires additional IAM permissions to manage the requisite EventBr
 
 ```json
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "events:PutEvents",
-                "events:PutTargets",
-                "sqs:CreateQueue",
-                "sqs:ListQueues",
-                "sqs:DeleteQueue",
-            ],
-            "Resource": "*"
-        }
-    ]
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "events:DeleteRule",
+        "events:ListRules",
+        "events:ListTargetsByRule",
+        "events:ListTagsForResource",
+        "events:PutEvents",
+        "events:PutTargets",
+        "events:RemoveTargets",
+        "sqs:CreateQueue",
+        "sqs:DeleteQueue",
+        "sqs:GetQueueAttributes",
+        "sqs:ListQueues",
+        "sqs:ListQueueTags"
+      ],
+      "Resource": "*"
+    }
+  ]
 }
 ```
 
