@@ -228,7 +228,7 @@ func (c *NodeupModelContext) BuildIssuedKubeconfig(name string, subject nodetask
 		Key:  keyResource,
 		CA:   caResource,
 	}
-	if c.IsMaster {
+	if c.HasAPIServer {
 		// @note: use https even for local connections, so we can turn off the insecure port
 		kubeConfig.ServerURL = "https://127.0.0.1"
 	} else {
@@ -267,7 +267,7 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Model
 			Key:  key,
 			CA:   fi.NewBytesResource(ca),
 		}
-		if c.IsMaster {
+		if c.HasAPIServer {
 			// @note: use https even for local connections, so we can turn off the insecure port
 			kubeConfig.ServerURL = "https://127.0.0.1"
 		} else {
@@ -302,7 +302,7 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Model
 			Key:  fi.NewBytesResource(key),
 			CA:   fi.NewBytesResource(ca),
 		}
-		if c.IsMaster {
+		if c.HasAPIServer {
 			// @note: use https even for local connections, so we can turn off the insecure port
 			// This code path is used for the kubelet cert in Kubernetes 1.18 and earlier.
 			kubeConfig.ServerURL = "https://127.0.0.1"
@@ -399,7 +399,7 @@ func (c *NodeupModelContext) UsesSecondaryIP() bool {
 
 // UseBootstrapTokens checks if we are using bootstrap tokens
 func (c *NodeupModelContext) UseBootstrapTokens() bool {
-	if c.IsMaster {
+	if c.HasAPIServer {
 		return fi.BoolValue(c.Cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken)
 	}
 
