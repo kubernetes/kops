@@ -85,7 +85,7 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 		var kubeconfig fi.Resource
 		var err error
 
-		if b.IsMaster {
+		if b.HasAPIServer {
 			kubeconfig = b.BuildIssuedKubeconfig("kube-proxy", nodetasks.PKIXName{CommonName: rbac.KubeProxy}, c)
 		} else {
 			kubeconfig, err = b.BuildBootstrapKubeconfig("kube-proxy", c)
