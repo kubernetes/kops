@@ -226,7 +226,7 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 		// so let's advise the user how to engage the cloud provider and deploy
 		if sb.String() != "" {
 			fmt.Fprintf(&sb, "\n")
-			fmt.Fprintf(&sb, "To deploy these resources, run: kops update cluster %s --yes\n", clusterName)
+			fmt.Fprintf(&sb, "To deploy these resources, run: kops update cluster --name %s --yes\n", clusterName)
 			fmt.Fprintf(&sb, "\n")
 		}
 		_, err := out.Write(sb.Bytes())
