@@ -52,6 +52,9 @@ func (e *WarmPool) Find(c *fi.Context) (*WarmPool, error) {
 		AutoScalingGroupName: e.Name,
 	})
 	if err != nil {
+		if awsup.AWSErrorCode(err) == "ValidationError" {
+			return nil, nil
+		}
 		return nil, err
 	}
 	if warmPool.WarmPoolConfiguration == nil {
@@ -96,6 +99,9 @@ func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error
 
 			_, err := svc.PutWarmPool(request)
 			if err != nil {
+				if awsup.AWSErrorCode(err) == "ValidationError" {
+					return fi.NewTryAgainLaterError("waiting for ASG to become ready")
+				}
 				return fmt.Errorf("error modifying warm pool: %w", err)
 			}
 		} else {
