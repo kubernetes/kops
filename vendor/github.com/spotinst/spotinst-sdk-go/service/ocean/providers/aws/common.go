@@ -1,6 +1,8 @@
-package gcp
+package aws
 
 import "github.com/spotinst/spotinst-sdk-go/spotinst/util/jsonutil"
+
+// region Tag
 
 type Tag struct {
 	Key   *string `json:"tagKey,omitempty"`
@@ -29,3 +31,5 @@ func (o *Tag) SetValue(v *string) *Tag {
 	}
 	return o
 }
+
+// endregion

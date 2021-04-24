@@ -8,6 +8,7 @@ go_library(
     visibility = ["//vendor/google.golang.org/grpc:__subpackages__"],
     deps = [
         "//vendor/google.golang.org/grpc/internal/serviceconfig:go_default_library",
+        "//vendor/google.golang.org/grpc/metadata:go_default_library",
         "//vendor/google.golang.org/grpc/resolver:go_default_library",
     ],
 )
