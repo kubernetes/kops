@@ -32775,7 +32775,7 @@ spec:
         - --config-dir=/tmp/cilium/config-map
         - --debug=$(CILIUM_DEBUG)
         command:
-        - cilium-operator-generic
+        - cilium-operator
         env:
         - name: K8S_NODE_NAME
           valueFrom:
@@ -32797,7 +32797,7 @@ spec:
           value: "{{ $.MasterInternalName }}"
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: "docker.io/cilium/operator-generic:{{ .Version }}"
+        image: "docker.io/cilium/operator:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         name: cilium-operator
         {{ if .EnablePrometheusMetrics }}
