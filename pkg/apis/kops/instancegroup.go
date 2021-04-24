@@ -199,6 +199,10 @@ type WarmPoolSpec struct {
 	EnableLifecyleHook bool `json:"enableLifecycleHook,omitempty"`
 }
 
+func (in *WarmPoolSpec) IsEnabled() bool {
+	return in != nil && (in.MaxSize == nil || *in.MaxSize != 0)
+}
+
 const (
 	// SpotAllocationStrategyLowestPrices indicates a lowest-price strategy
 	SpotAllocationStrategyLowestPrices = "lowest-price"
