@@ -7,23 +7,3 @@ go_library(
     importpath = "github.com/jetstack/cert-manager/pkg/apis/acme",
     visibility = ["//visibility:public"],
 )
-
-filegroup(
-    name = "package-srcs",
-    srcs = glob(["**"]),
-    tags = ["automanaged"],
-    visibility = ["//visibility:private"],
-)
-
-filegroup(
-    name = "all-srcs",
-    srcs = [
-        ":package-srcs",
-        "//pkg/apis/acme/v1:all-srcs",
-        "//pkg/apis/acme/v1alpha2:all-srcs",
-        "//pkg/apis/acme/v1alpha3:all-srcs",
-        "//pkg/apis/acme/v1beta1:all-srcs",
-    ],
-    tags = ["automanaged"],
-    visibility = ["//visibility:public"],
-)
