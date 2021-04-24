@@ -49,6 +49,11 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 
 		for _, server := range s {
 			if clusterName, ok := server.Metadata[openstack.TagClusterName]; ok {
+				// verify that the instance is from the same cluster
+				if clusterName != p.clusterName {
+					continue
+				}
+
 				var err error
 				// find kopsNetwork from metadata, fallback to clustername
 				ifName := clusterName
