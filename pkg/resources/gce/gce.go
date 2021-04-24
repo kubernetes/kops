@@ -44,6 +44,7 @@ const (
 	typeAddress              = "Address"
 	typeRoute                = "Route"
 	typeSubnet               = "Subnet"
+	typeRouter               = "Router"
 	typeDNSRecord            = "DNSRecord"
 )
 
@@ -96,6 +97,7 @@ func ListResourcesGCE(gceCloud gce.GCECloud, clusterName string, region string) 
 		// TODO: Find routes via instances (via instance groups)
 		d.listAddresses,
 		d.listSubnets,
+		d.listRouters,
 	}
 	for _, fn := range listFunctions {
 		resourceTrackers, err := fn()
@@ -769,6 +771,61 @@ func deleteSubnet(cloud fi.Cloud, r *resources.Resource) error {
 			return nil
 		}
 		return fmt.Errorf("error deleting subnetwork %s: %v", o.SelfLink, err)
+	}
+
+	return c.WaitForOp(op)
+}
+
+func (d *clusterDiscoveryGCE) listRouters() ([]*resources.Resource, error) {
+	c := d.gceCloud
+
+	var resourceTrackers []*resources.Resource
+	ctx := context.Background()
+
+	err := c.Compute().Routers.List(c.Project(), c.Region()).Pages(ctx, func(page *compute.RouterList) error {
+		for _, o := range page.Items {
+			if !d.matchesClusterName(o.Name) {
+				klog.V(8).Infof("skipping Router with name %q", o.Name)
+				continue
+			}
+
+			resourceTracker := &resources.Resource{
+				Name:    o.Name,
+				ID:      o.Name,
+				Type:    typeRouter,
+				Deleter: deleteRouter,
+				Obj:     o,
+			}
+
+			klog.V(4).Infof("found resource: %s", o.SelfLink)
+			resourceTrackers = append(resourceTrackers, resourceTracker)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error listing routers: %v", err)
+	}
+
+	return resourceTrackers, nil
+}
+
+func deleteRouter(cloud fi.Cloud, r *resources.Resource) error {
+	c := cloud.(gce.GCECloud)
+	o := r.Obj.(*compute.Router)
+
+	klog.V(2).Infof("deleting GCE router %s", o.SelfLink)
+	u, err := gce.ParseGoogleCloudURL(o.SelfLink)
+	if err != nil {
+		return err
+	}
+
+	op, err := c.Compute().Routers.Delete(u.Project, u.Region, u.Name).Do()
+	if err != nil {
+		if gce.IsNotFound(err) {
+			klog.Infof("router not found, assuming deleted: %q", o.SelfLink)
+			return nil
+		}
+		return fmt.Errorf("error deleting router %s: %v", o.SelfLink, err)
 	}
 
 	return c.WaitForOp(op)
