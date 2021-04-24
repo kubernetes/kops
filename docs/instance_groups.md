@@ -239,7 +239,7 @@ The number of Spot Instance pools across which to allocate your Spot Instances. 
 
 {{ kops_feature_table(kops_added_default='1.21') }}
 
-A Warm Pool contains pre-initialized EC2 instances that can join the cluster significantly faster than regular instances. These instances run the kOps configuration process, pulls known Docker images, and then shuts down. Once the ASG need to scale out, it will pull instances from the warm pool if available.
+A Warm Pool contains pre-initialized EC2 instances that can join the cluster significantly faster than regular instances. These instances run the kOps configuration process, pull known Docker images, and then shut down. When the ASG needs to scale out it will pull instances from the warm pool if any are available.
 
 You can enable the warm pool by adding the following:
 
