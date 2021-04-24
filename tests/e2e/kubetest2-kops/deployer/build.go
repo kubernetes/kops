@@ -78,12 +78,6 @@ func (d *deployer) verifyBuildFlags() error {
 
 	d.BuildOptions.KopsRoot = d.KopsRoot
 	d.BuildOptions.StageLocation = d.StageLocation
-	for _, envvar := range d.env() {
-		// Set all of the env vars we use for kops in the current process
-		// so that the tester inherits them when shelling out to kops
-		i := strings.Index(envvar, "=")
-		os.Setenv(envvar[0:i], envvar[i+1:])
-	}
 	return nil
 }
 
