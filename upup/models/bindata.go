@@ -28104,6 +28104,11 @@ spec:
         - --cluster-resource-namespace=$(POD_NAMESPACE)
         - --leader-election-namespace=kube-system
         - --enable-certificate-owner-ref=true
+        {{ if .CertManager.DefaultIssuer }}
+        - --default-issuer-name={{ .CertManager.DefaultIssuer }}
+        - --default-issuer-kind=ClusterIssuer
+        - --default-issuer-group=cert-manager.io
+        {{ end }}
         env:
         - name: POD_NAMESPACE
           valueFrom:
@@ -28122,7 +28127,7 @@ spec:
       tolerations:
       - key: node-role.kubernetes.io/master
         operator: Exists
-        
+
 ---
 apiVersion: apps/v1
 kind: Deployment
