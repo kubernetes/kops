@@ -75,7 +75,15 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Generate IAM tasks for each shared role
 	for profileARN, igRole := range sharedProfileARNsToIGRole {
-		role, err := iam.BuildNodeRoleSubject(igRole)
+		lchPermissions := false
+		for _, ig := range b.InstanceGroups {
+			if ig.Spec.Role == igRole && ig.Spec.WarmPool != nil && ig.Spec.WarmPool.EnableLifecyleHook {
+				lchPermissions = true
+				break
+
+			}
+		}
+		role, err := iam.BuildNodeRoleSubject(igRole, lchPermissions)
 		if err != nil {
 			return err
 		}
@@ -92,7 +100,15 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Generate IAM tasks for each managed role
 	for igRole := range managedRoles {
-		role, err := iam.BuildNodeRoleSubject(igRole)
+		warmPool := false
+		for _, ig := range b.InstanceGroups {
+			if ig.Spec.Role == igRole && ig.Spec.WarmPool != nil && ig.Spec.WarmPool.EnableLifecyleHook {
+				warmPool = true
+				break
+
+			}
+		}
+		role, err := iam.BuildNodeRoleSubject(igRole, warmPool)
 		if err != nil {
 			return err
 		}

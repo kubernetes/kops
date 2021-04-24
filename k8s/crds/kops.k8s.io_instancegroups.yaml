@@ -906,6 +906,12 @@ spec:
                 description: WarmPool configures an ASG warm pool for the instance
                   group
                 properties:
+                  enableLifecycleHook:
+                    description: EnableLifecyleHook determines if an ASG lifecycle
+                      hook will be added ensuring that nodeup runs to completion.
+                      Note that the metadata API must be protected from arbitrary
+                      Pods when this is enabled.
+                    type: boolean
                   maxSize:
                     description: MaxSize is the maximum size of the warm pool. The
                       desired size of the instance group is subtracted from this number
