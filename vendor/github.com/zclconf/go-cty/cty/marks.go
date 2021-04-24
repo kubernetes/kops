@@ -27,13 +27,31 @@ type marker struct {
 type ValueMarks map[interface{}]struct{}
 
 // NewValueMarks constructs a new ValueMarks set with the given mark values.
+//
+// If any of the arguments are already ValueMarks values then they'll be merged
+// into the result, rather than used directly as individual marks.
 func NewValueMarks(marks ...interface{}) ValueMarks {
 	if len(marks) == 0 {
 		return nil
 	}
 	ret := make(ValueMarks, len(marks))
 	for _, v := range marks {
+		if vm, ok := v.(ValueMarks); ok {
+			// Constructing a new ValueMarks with an existing ValueMarks
+			// implements a merge operation. (This can cause our result to
+			// have a larger size than we expected, but that's okay.)
+			for v := range vm {
+				ret[v] = struct{}{}
+			}
+			continue
+		}
 		ret[v] = struct{}{}
+	}
+	if len(ret) == 0 {
+		// If we were merging ValueMarks values together and they were all
+		// empty then we'll avoid returning a zero-length map and return a
+		// nil instead, as is conventional.
+		return nil
 	}
 	return ret
 }
@@ -180,6 +198,9 @@ func (val Value) Mark(mark interface{}) Value {
 		for k, v := range mr.marks {
 			newMarker.marks[k] = v
 		}
+		// unwrap the inner marked value, so we don't get multiple layers
+		// of marking.
+		newMarker.realV = mr.realV
 	} else {
 		// It's not a marker yet, so we're creating the first mark.
 		newMarker.marks = make(ValueMarks, 1)

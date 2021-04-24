@@ -17,13 +17,14 @@ package slb
 
 // BackendServerInDescribeVServerGroupAttribute is a nested struct in slb response
 type BackendServerInDescribeVServerGroupAttribute struct {
-	ServerId       string `json:"ServerId" xml:"ServerId"`
-	Port           int    `json:"Port" xml:"Port"`
-	Weight         int    `json:"Weight" xml:"Weight"`
-	Type           string `json:"Type" xml:"Type"`
-	ServerIp       string `json:"ServerIp" xml:"ServerIp"`
-	VpcId          string `json:"VpcId" xml:"VpcId"`
-	VbrId          string `json:"VbrId" xml:"VbrId"`
-	ServerRegionId string `json:"ServerRegionId" xml:"ServerRegionId"`
-	Description    string `json:"Description" xml:"Description"`
+	ServerId               string `json:"ServerId" xml:"ServerId"`
+	Port                   int    `json:"Port" xml:"Port"`
+	Weight                 int    `json:"Weight" xml:"Weight"`
+	Type                   string `json:"Type" xml:"Type"`
+	ServerIp               string `json:"ServerIp" xml:"ServerIp"`
+	VpcId                  string `json:"VpcId" xml:"VpcId"`
+	VbrId                  string `json:"VbrId" xml:"VbrId"`
+	ServerRegionId         string `json:"ServerRegionId" xml:"ServerRegionId"`
+	Description            string `json:"Description" xml:"Description"`
+	ProxyProtocolV2Enabled bool   `json:"ProxyProtocolV2Enabled" xml:"ProxyProtocolV2Enabled"`
 }

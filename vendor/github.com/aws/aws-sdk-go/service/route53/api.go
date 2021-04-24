@@ -746,6 +746,9 @@ func (c *Route53) CreateHostedZoneRequest(input *CreateHostedZoneInput) (req *re
 // records are not yet available on all Route 53 DNS servers. When the NS and
 // SOA records are available, the status of the zone changes to INSYNC.
 //
+// The CreateHostedZone request requires the caller to have an ec2:DescribeVpcs
+// permission.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -2121,7 +2124,7 @@ func (c *Route53) DeleteKeySigningKeyRequest(input *DeleteKeySigningKeyInput) (r
 // DeleteKeySigningKey API operation for Amazon Route 53.
 //
 // Deletes a key-signing key (KSK). Before you can delete a KSK, you must deactivate
-// it. The KSK must be deactived before you can delete it regardless of whether
+// it. The KSK must be deactivated before you can delete it regardless of whether
 // the hosted zone is enabled for DNSSEC signing.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -6337,6 +6340,8 @@ func (c *Route53) TestDNSAnswerRequest(input *TestDNSAnswerInput) (req *request.
 // for a specified record name and type. You can optionally specify the IP address
 // of a DNS resolver, an EDNS0 client subnet IP address, and a subnet mask.
 //
+// This call only supports querying public hosted zones.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -8273,7 +8278,7 @@ type CreateKeySigningKeyInput struct {
 	// The key policy must also include the Amazon Route 53 service in the principal
 	// for your account. Specify the following:
 	//
-	//    * "Service": "api-service.dnssec.route53.aws.internal"
+	//    * "Service": "dnssec.route53.aws.amazonaws.com"
 	//
 	// For more information about working with a customer managed CMK in AWS KMS,
 	// see AWS Key Management Service concepts (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html).
