@@ -155,10 +155,15 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud) field.ErrorLis
 			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool cannot be used with spot instances"))
 		}
 		if warmPool.MaxSize != nil {
-			if warmPool.MinSize > *warmPool.MaxSize {
+			if *warmPool.MaxSize < 0 {
+				allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "warmPool", "maxSize"), *warmPool.MaxSize, "warm pool maxSize cannot be negative"))
+			} else if warmPool.MinSize > *warmPool.MaxSize {
 				allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "warmPool", "maxSize"), fi.Int64Value(warmPool.MaxSize), "warm pool maxSize cannot be set to lower than minSize"))
 
 			}
+		}
+		if warmPool.MinSize < 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "warmPool", "minSize"), warmPool.MinSize, "warm pool minSize cannot be negative"))
 		}
 	}
 	return allErrs
