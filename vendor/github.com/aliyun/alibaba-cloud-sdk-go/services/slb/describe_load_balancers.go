@@ -95,6 +95,7 @@ type DescribeLoadBalancersRequest struct {
 	BusinessStatus        string                      `position:"Query" name:"BusinessStatus"`
 	Address               string                      `position:"Query" name:"Address"`
 	ResourceOwnerAccount  string                      `position:"Query" name:"ResourceOwnerAccount"`
+	FilterByTagOrName     requests.Boolean            `position:"Query" name:"FilterByTagOrName"`
 	OwnerAccount          string                      `position:"Query" name:"OwnerAccount"`
 	LoadBalancerStatus    string                      `position:"Query" name:"LoadBalancerStatus"`
 	VpcId                 string                      `position:"Query" name:"VpcId"`

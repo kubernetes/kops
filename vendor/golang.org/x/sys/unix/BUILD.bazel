@@ -43,6 +43,7 @@ go_library(
         "fcntl_linux_32bit.go",
         "fdset.go",
         "ioctl.go",
+        "ioctl_linux.go",
         "pagesize_unix.go",
         "pledge_openbsd.go",
         "ptrace_darwin.go",

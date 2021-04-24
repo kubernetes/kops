@@ -8,6 +8,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/service/ocean/providers/azure:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/service/ocean/providers/gcp:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/client:go_default_library",

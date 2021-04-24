@@ -413,13 +413,24 @@ Token:
 			close := p.Peek()
 			if close.Type != TokenTemplateSeqEnd {
 				if !p.recovery {
-					diags = append(diags, &hcl.Diagnostic{
-						Severity: hcl.DiagError,
-						Summary:  "Extra characters after interpolation expression",
-						Detail:   "Expected a closing brace to end the interpolation expression, but found extra characters.",
-						Subject:  &close.Range,
-						Context:  hcl.RangeBetween(startRange, close.Range).Ptr(),
-					})
+					switch close.Type {
+					case TokenColon:
+						diags = append(diags, &hcl.Diagnostic{
+							Severity: hcl.DiagError,
+							Summary:  "Extra characters after interpolation expression",
+							Detail:   "Template interpolation doesn't expect a colon at this location. Did you intend this to be a literal sequence to be processed as part of another language? If so, you can escape it by starting with \"$${\" instead of just \"${\".",
+							Subject:  &close.Range,
+							Context:  hcl.RangeBetween(startRange, close.Range).Ptr(),
+						})
+					default:
+						diags = append(diags, &hcl.Diagnostic{
+							Severity: hcl.DiagError,
+							Summary:  "Extra characters after interpolation expression",
+							Detail:   "Expected a closing brace to end the interpolation expression, but found extra characters.\n\nThis can happen when you include interpolation syntax for another language, such as shell scripting, but forget to escape the interpolation start token. If this is an embedded sequence for another language, escape it by starting with \"$${\" instead of just \"${\".",
+							Subject:  &close.Range,
+							Context:  hcl.RangeBetween(startRange, close.Range).Ptr(),
+						})
+					}
 				}
 				p.recover(TokenTemplateSeqEnd)
 			} else {

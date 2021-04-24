@@ -1,5 +1,12 @@
 # HCL Changelog
 
+## v2.10.0 (April 20, 2021)
+
+### Enhancements
+
+* dynblock,hcldec: Using dynblock in conjunction with hcldec can now decode blocks with unknown dynamic for_each arguments as entirely unknown values ([#461](https://github.com/hashicorp/hcl/pull/461))
+* hclsyntax: Some syntax errors during parsing of the inside of `${` ... `}` template interpolation sequences will now produce an extra hint message about the need to escape as `$${` when trying to include interpolation syntax for other languages like shell scripting, AWS IAM policies, etc. ([#462](https://github.com/hashicorp/hcl/pull/462))
+
 ## v2.9.1 (March 10, 2021)
 
 ### Bugs Fixed

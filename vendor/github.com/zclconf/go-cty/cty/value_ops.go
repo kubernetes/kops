@@ -492,18 +492,23 @@ func (val Value) RawEquals(other Value) bool {
 
 	case ty.IsMapType():
 		ety := ty.typeImpl.(typeMap).ElementTypeT
-		if len(val.v.(map[string]interface{})) == len(other.v.(map[string]interface{})) {
-			for k := range val.v.(map[string]interface{}) {
-				if _, ok := other.v.(map[string]interface{})[k]; !ok {
+		if !val.HasSameMarks(other) {
+			return false
+		}
+		valUn, _ := val.Unmark()
+		otherUn, _ := other.Unmark()
+		if len(valUn.v.(map[string]interface{})) == len(otherUn.v.(map[string]interface{})) {
+			for k := range valUn.v.(map[string]interface{}) {
+				if _, ok := otherUn.v.(map[string]interface{})[k]; !ok {
 					return false
 				}
 				lhs := Value{
 					ty: ety,
-					v:  val.v.(map[string]interface{})[k],
+					v:  valUn.v.(map[string]interface{})[k],
 				}
 				rhs := Value{
 					ty: ety,
-					v:  other.v.(map[string]interface{})[k],
+					v:  otherUn.v.(map[string]interface{})[k],
 				}
 				eq := lhs.RawEquals(rhs)
 				if !eq {
