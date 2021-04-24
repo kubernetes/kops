@@ -248,6 +248,26 @@ func (t *Tester) addClusterTagFlag() error {
 	return nil
 }
 
+func (t *Tester) addProjectFlag() error {
+	if hasFlag(t.TestArgs, "gce-project") {
+		return nil
+	}
+
+	cluster, err := t.getKopsCluster()
+	if err != nil {
+		return err
+	}
+
+	projectID := cluster.Spec.Project
+	if projectID == "" {
+		return nil
+	}
+	klog.Infof("Setting --gce-project=%s", projectID)
+	t.TestArgs += " --gce-project=" + projectID
+
+	return nil
+}
+
 func (t *Tester) getZones() ([]string, error) {
 	cluster, err := t.getKopsCluster()
 	if err != nil {
@@ -322,6 +342,10 @@ func (t *Tester) execute() error {
 	}
 
 	if err := t.addMultiZoneFlag(); err != nil {
+		return err
+	}
+
+	if err := t.addProjectFlag(); err != nil {
 		return err
 	}
 
