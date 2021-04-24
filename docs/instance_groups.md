@@ -234,3 +234,42 @@ https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstancesDistributi
 ### spotInstancePools
 Used only when the Spot allocation strategy is lowest-price.
 The number of Spot Instance pools across which to allocate your Spot Instances. The Spot pools are determined from the different instance types in the Overrides array of LaunchTemplate. Default if not set is 2.
+
+## warmPool (AWS Only)
+
+{{ kops_feature_table(kops_added_default='1.21') }}
+
+A Warm Pool contains pre-initialized EC2 instances that can join the cluster significantly faster than regular instances. These instances run the kOps configuration process, pulls known Docker images, and then shuts down. Once the ASG need to scale out, it will pull instances from the warm pool if available.
+
+You can enable the warm pool by adding the following:
+
+```yaml
+spec:
+  warmPool: {}
+```
+
+This will use the AWS default settings. You can change the pool size like this:
+
+```yaml
+spec:
+  warmPool:
+    minSize: 3
+    maxSize: 10
+```
+
+### Lifecycle hook
+
+By default AWS does not guarantee that the kOps configuration will run to completion. Nor that the instance will timely shut down after completion if the instance is allowed to run that long. In order to guarantee this, a lifecycle hook is needed.
+
+**You have to ensure your metadata API is protected if you enable this. If not, any Pod in the cluster will be able to complete the lifecycle hook with the `ABANDONED` result, preventing any instance from ever joining the cluster.**
+
+The following config will enable the lifecycle hook as well as protect the metadata API from abuse:
+
+```yaml
+spec:
+  warmPool:
+    enableLifecycleHook: true
+  instanceMetadata:
+    httpPutResponseHopLimit: 1
+    httpTokens: required
+```
