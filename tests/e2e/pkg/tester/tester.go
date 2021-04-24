@@ -172,14 +172,91 @@ func (t *Tester) addZoneFlag() error {
 		return nil
 	}
 
+	zoneNames, err := t.getZones()
+	if err != nil {
+		return err
+	}
+
+	// gce-zone only expects one zone, we just pass the first one
+	zone := zoneNames[0]
+	klog.Infof("Setting --gce-zone=%s", zone)
+	t.TestArgs += " --gce-zone=" + zone
+
+	// TODO: Pass the new gce-zones flag for 1.21 with all zones?
+
+	return nil
+}
+
+func (t *Tester) addMultiZoneFlag() error {
+	if hasFlag(t.TestArgs, "gce-multizone") {
+		return nil
+	}
+
+	zoneNames, err := t.getZones()
+	if err != nil {
+		return err
+	}
+
+	klog.Infof("Setting --gce-multizone=%t", len(zoneNames) > 1)
+	t.TestArgs += fmt.Sprintf(" --gce-multizone=%t", len(zoneNames) > 1)
+
+	return nil
+}
+
+func (t *Tester) addRegionFlag() error {
+	// gce-zone is used for other cloud providers as well
+	if hasFlag(t.TestArgs, "gce-region") {
+		return nil
+	}
+
 	cluster, err := t.getKopsCluster()
 	if err != nil {
 		return err
 	}
 
-	igs, err := t.getKopsInstanceGroups()
+	// We don't explicitly set the provider's region in the spec so we need to extract it from vairous fields
+	var region string
+	switch cluster.Spec.CloudProvider {
+	case "aws":
+		zone := cluster.Spec.Subnets[0].Zone
+		region = zone[:len(zone)-1]
+	case "gce":
+		region = cluster.Spec.Subnets[0].Region
+	default:
+		return fmt.Errorf("unhandled region detection for cloud provider: %v", cluster.Spec.CloudProvider)
+	}
+
+	klog.Infof("Setting --gce-region=%s", region)
+	t.TestArgs += " --gce-region=" + region
+	return nil
+}
+
+func (t *Tester) addClusterTagFlag() error {
+	if hasFlag(t.TestArgs, "cluster-tag") {
+		return nil
+	}
+
+	cluster, err := t.getKopsCluster()
 	if err != nil {
 		return err
+	}
+
+	clusterName := cluster.ObjectMeta.Name
+	klog.Infof("Setting --cluster-tag=%s", clusterName)
+	t.TestArgs += " --cluster-tag=" + clusterName
+
+	return nil
+}
+
+func (t *Tester) getZones() ([]string, error) {
+	cluster, err := t.getKopsCluster()
+	if err != nil {
+		return nil, err
+	}
+
+	igs, err := t.getKopsInstanceGroups()
+	if err != nil {
+		return nil, err
 	}
 
 	zones := sets.NewString()
@@ -198,17 +275,9 @@ func (t *Tester) addZoneFlag() error {
 	zoneNames := zones.List()
 
 	if len(zoneNames) == 0 {
-		return fmt.Errorf("no zones found in instance groups")
+		return nil, fmt.Errorf("no zones found in instance groups")
 	}
-
-	// gce-zone only expects one zone, we just pass the first one
-	zone := zoneNames[0]
-	klog.Infof("Setting --gce-zone=%s", zone)
-	t.TestArgs += " --gce-zone=" + zone
-
-	// TODO: Pass the new gce-zones flag for 1.21 with all zones?
-
-	return nil
+	return zoneNames, nil
 }
 
 func (t *Tester) execute() error {
@@ -241,6 +310,18 @@ func (t *Tester) execute() error {
 	}
 
 	if err := t.addZoneFlag(); err != nil {
+		return err
+	}
+
+	if err := t.addClusterTagFlag(); err != nil {
+		return err
+	}
+
+	if err := t.addRegionFlag(); err != nil {
+		return err
+	}
+
+	if err := t.addMultiZoneFlag(); err != nil {
 		return err
 	}
 
