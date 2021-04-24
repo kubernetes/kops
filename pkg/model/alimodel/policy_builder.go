@@ -329,7 +329,7 @@ func (b *PolicyBuilder) AddOSSPermissions(p *Policy) (*Policy, error) {
 		}
 	}
 
-	nodeRole, err := iam.BuildNodeRoleSubject(b.Role)
+	nodeRole, err := iam.BuildNodeRoleSubject(b.Role, false)
 	if err != nil {
 		return nil, err
 	}

@@ -21,6 +21,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -96,6 +97,26 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			if warmPool != nil {
 				warmPoolTask.MinSize = warmPool.MinSize
 				warmPoolTask.MaxSize = warmPool.MaxSize
+
+				if warmPool.EnableLifecyleHook {
+					name := "kops-warmpool"
+
+					lifecyleTask := &awstasks.AutoscalingLifecycleHook{
+						ID:               aws.String(name),
+						Name:             aws.String(name),
+						Lifecycle:        b.Lifecycle,
+						AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
+						DefaultResult:    aws.String("ABANDON"),
+						// We let nodeup have 10 min to complete. Normally this should happen much faster,
+						// but CP nodes need 5 min or so to start on new clusters, and we need to wait for that.
+						HeartbeatTimeout:    aws.Int64(600),
+						LifecycleTransition: aws.String("autoscaling:EC2_INSTANCE_LAUNCHING"),
+					}
+
+					c.AddTask(lifecyleTask)
+
+				}
+
 			}
 			c.AddTask(warmPoolTask)
 		}

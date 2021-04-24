@@ -102,7 +102,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				},
 			}
 
-			nodeRole, err := iam.BuildNodeRoleSubject(ig.Spec.Role)
+			nodeRole, err := iam.BuildNodeRoleSubject(ig.Spec.Role, false)
 			if err != nil {
 				return nil, err
 			}
