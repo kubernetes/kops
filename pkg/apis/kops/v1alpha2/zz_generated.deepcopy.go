@@ -415,6 +415,11 @@ func (in *CertManagerConfig) DeepCopyInto(out *CertManagerConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.DefaultIssuer != nil {
+		in, out := &in.DefaultIssuer, &out.DefaultIssuer
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 
