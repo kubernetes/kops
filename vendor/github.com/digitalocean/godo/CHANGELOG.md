@@ -1,5 +1,11 @@
 # Change Log
 
+## [v1.60.0] - 2021-04-04
+
+- #443 - @andrewsomething - apps: Support pagination.
+- #442 - @andrewsomething - dbaas: Support restoring from a backup.
+- #441 - @andrewsomething - k8s: Add URN method to KubernetesCluster.
+
 ## [v1.59.0] - 2021-03-29
 
 - #439 - @andrewsomething - vpcs: Support listing members of a VPC.

@@ -154,6 +154,7 @@ func (future *CreateOrUpdateByIDFuture) result(client Client) (gr GenericResourc
 		return
 	}
 	if !done {
+		gr.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.CreateOrUpdateByIDFuture")
 		return
 	}
@@ -196,6 +197,7 @@ func (future *CreateOrUpdateFuture) result(client Client) (gr GenericResource, e
 		return
 	}
 	if !done {
+		gr.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.CreateOrUpdateFuture")
 		return
 	}
@@ -243,6 +245,7 @@ func (future *DeleteByIDFuture) result(client Client) (ar autorest.Response, err
 		return
 	}
 	if !done {
+		ar.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeleteByIDFuture")
 		return
 	}
@@ -278,6 +281,7 @@ func (future *DeleteFuture) result(client Client) (ar autorest.Response, err err
 		return
 	}
 	if !done {
+		ar.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeleteFuture")
 		return
 	}
@@ -835,6 +839,7 @@ func (future *DeploymentsCreateOrUpdateAtManagementGroupScopeFuture) result(clie
 		return
 	}
 	if !done {
+		de.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsCreateOrUpdateAtManagementGroupScopeFuture")
 		return
 	}
@@ -877,6 +882,7 @@ func (future *DeploymentsCreateOrUpdateAtScopeFuture) result(client DeploymentsC
 		return
 	}
 	if !done {
+		de.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsCreateOrUpdateAtScopeFuture")
 		return
 	}
@@ -919,6 +925,7 @@ func (future *DeploymentsCreateOrUpdateAtSubscriptionScopeFuture) result(client 
 		return
 	}
 	if !done {
+		de.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsCreateOrUpdateAtSubscriptionScopeFuture")
 		return
 	}
@@ -961,6 +968,7 @@ func (future *DeploymentsCreateOrUpdateAtTenantScopeFuture) result(client Deploy
 		return
 	}
 	if !done {
+		de.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsCreateOrUpdateAtTenantScopeFuture")
 		return
 	}
@@ -1003,6 +1011,7 @@ func (future *DeploymentsCreateOrUpdateFuture) result(client DeploymentsClient) 
 		return
 	}
 	if !done {
+		de.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsCreateOrUpdateFuture")
 		return
 	}
@@ -1045,6 +1054,7 @@ func (future *DeploymentsDeleteAtManagementGroupScopeFuture) result(client Deplo
 		return
 	}
 	if !done {
+		ar.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsDeleteAtManagementGroupScopeFuture")
 		return
 	}
@@ -1081,6 +1091,7 @@ func (future *DeploymentsDeleteAtScopeFuture) result(client DeploymentsClient) (
 		return
 	}
 	if !done {
+		ar.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsDeleteAtScopeFuture")
 		return
 	}
@@ -1117,6 +1128,7 @@ func (future *DeploymentsDeleteAtSubscriptionScopeFuture) result(client Deployme
 		return
 	}
 	if !done {
+		ar.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsDeleteAtSubscriptionScopeFuture")
 		return
 	}
@@ -1153,6 +1165,7 @@ func (future *DeploymentsDeleteAtTenantScopeFuture) result(client DeploymentsCli
 		return
 	}
 	if !done {
+		ar.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsDeleteAtTenantScopeFuture")
 		return
 	}
@@ -1189,6 +1202,7 @@ func (future *DeploymentsDeleteFuture) result(client DeploymentsClient) (ar auto
 		return
 	}
 	if !done {
+		ar.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsDeleteFuture")
 		return
 	}
@@ -1225,6 +1239,7 @@ func (future *DeploymentsValidateAtManagementGroupScopeFuture) result(client Dep
 		return
 	}
 	if !done {
+		dvr.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsValidateAtManagementGroupScopeFuture")
 		return
 	}
@@ -1267,6 +1282,7 @@ func (future *DeploymentsValidateAtScopeFuture) result(client DeploymentsClient)
 		return
 	}
 	if !done {
+		dvr.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsValidateAtScopeFuture")
 		return
 	}
@@ -1309,6 +1325,7 @@ func (future *DeploymentsValidateAtSubscriptionScopeFuture) result(client Deploy
 		return
 	}
 	if !done {
+		dvr.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsValidateAtSubscriptionScopeFuture")
 		return
 	}
@@ -1351,6 +1368,7 @@ func (future *DeploymentsValidateAtTenantScopeFuture) result(client DeploymentsC
 		return
 	}
 	if !done {
+		dvr.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsValidateAtTenantScopeFuture")
 		return
 	}
@@ -1393,6 +1411,7 @@ func (future *DeploymentsValidateFuture) result(client DeploymentsClient) (dvr D
 		return
 	}
 	if !done {
+		dvr.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsValidateFuture")
 		return
 	}
@@ -1435,6 +1454,7 @@ func (future *DeploymentsWhatIfAtManagementGroupScopeFuture) result(client Deplo
 		return
 	}
 	if !done {
+		wior.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsWhatIfAtManagementGroupScopeFuture")
 		return
 	}
@@ -1477,6 +1497,7 @@ func (future *DeploymentsWhatIfAtSubscriptionScopeFuture) result(client Deployme
 		return
 	}
 	if !done {
+		wior.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsWhatIfAtSubscriptionScopeFuture")
 		return
 	}
@@ -1519,6 +1540,7 @@ func (future *DeploymentsWhatIfAtTenantScopeFuture) result(client DeploymentsCli
 		return
 	}
 	if !done {
+		wior.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsWhatIfAtTenantScopeFuture")
 		return
 	}
@@ -1561,6 +1583,7 @@ func (future *DeploymentsWhatIfFuture) result(client DeploymentsClient) (wior Wh
 		return
 	}
 	if !done {
+		wior.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsWhatIfFuture")
 		return
 	}
@@ -2081,6 +2104,7 @@ func (future *GroupsDeleteFuture) result(client GroupsClient) (ar autorest.Respo
 		return
 	}
 	if !done {
+		ar.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.GroupsDeleteFuture")
 		return
 	}
@@ -2117,6 +2141,7 @@ func (future *GroupsExportTemplateFuture) result(client GroupsClient) (ger Group
 		return
 	}
 	if !done {
+		ger.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.GroupsExportTemplateFuture")
 		return
 	}
@@ -2373,6 +2398,7 @@ func (future *MoveResourcesFuture) result(client Client) (ar autorest.Response, 
 		return
 	}
 	if !done {
+		ar.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.MoveResourcesFuture")
 		return
 	}
@@ -3288,6 +3314,7 @@ func (future *UpdateByIDFuture) result(client Client) (gr GenericResource, err e
 		return
 	}
 	if !done {
+		gr.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.UpdateByIDFuture")
 		return
 	}
@@ -3329,6 +3356,7 @@ func (future *UpdateFuture) result(client Client) (gr GenericResource, err error
 		return
 	}
 	if !done {
+		gr.Response.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.UpdateFuture")
 		return
 	}
@@ -3371,6 +3399,7 @@ func (future *ValidateMoveResourcesFuture) result(client Client) (ar autorest.Re
 		return
 	}
 	if !done {
+		ar.Response = future.Response()
 		err = azure.NewAsyncOpIncompleteError("resources.ValidateMoveResourcesFuture")
 		return
 	}
