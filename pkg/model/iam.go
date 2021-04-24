@@ -77,7 +77,7 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for profileARN, igRole := range sharedProfileARNsToIGRole {
 		lchPermissions := false
 		for _, ig := range b.InstanceGroups {
-			if ig.Spec.Role == igRole && ig.Spec.WarmPool != nil && ig.Spec.WarmPool.EnableLifecyleHook {
+			if ig.Spec.Role == igRole && ig.Spec.WarmPool.IsEnabled() && ig.Spec.WarmPool.EnableLifecyleHook {
 				lchPermissions = true
 				break
 
@@ -102,7 +102,7 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for igRole := range managedRoles {
 		warmPool := false
 		for _, ig := range b.InstanceGroups {
-			if ig.Spec.Role == igRole && ig.Spec.WarmPool != nil && ig.Spec.WarmPool.EnableLifecyleHook {
+			if ig.Spec.Role == igRole && ig.Spec.WarmPool.IsEnabled() && ig.Spec.WarmPool.EnableLifecyleHook {
 				warmPool = true
 				break
 
