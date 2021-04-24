@@ -106,7 +106,7 @@ func (d *deployer) initialize() error {
 				d.SSHPrivateKeyPath = privateKey
 				d.SSHPublicKeyPath = publicKey
 			}
-			d.createBucket = os.Getenv("KOPS_STATE_STORE") == ""
+			d.createBucket = true
 		}
 	}
 	if d.SSHUser == "" {
@@ -118,6 +118,14 @@ func (d *deployer) initialize() error {
 			return err
 		}
 		d.terraform = t
+	}
+	if d.commonOptions.ShouldTest() {
+		for _, envvar := range d.env() {
+			// Set all of the env vars we use for kops in the current process
+			// so that the tester inherits them when shelling out to kops
+			i := strings.Index(envvar, "=")
+			os.Setenv(envvar[0:i], envvar[i+1:])
+		}
 	}
 	return nil
 }
