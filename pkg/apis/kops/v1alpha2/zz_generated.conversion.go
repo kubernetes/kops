@@ -1068,6 +1068,8 @@ func RegisterConversions(s *runtime.Scheme) error {
 
 func autoConvert_v1alpha2_AWSEBSCSIDriver_To_kops_AWSEBSCSIDriver(in *AWSEBSCSIDriver, out *kops.AWSEBSCSIDriver, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.Version = in.Version
+	out.VolumeAttachLimit = in.VolumeAttachLimit
 	return nil
 }
 
@@ -1078,6 +1080,8 @@ func Convert_v1alpha2_AWSEBSCSIDriver_To_kops_AWSEBSCSIDriver(in *AWSEBSCSIDrive
 
 func autoConvert_kops_AWSEBSCSIDriver_To_v1alpha2_AWSEBSCSIDriver(in *kops.AWSEBSCSIDriver, out *AWSEBSCSIDriver, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.Version = in.Version
+	out.VolumeAttachLimit = in.VolumeAttachLimit
 	return nil
 }
 
