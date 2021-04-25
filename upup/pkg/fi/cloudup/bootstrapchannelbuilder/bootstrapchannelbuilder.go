@@ -424,7 +424,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		if b.UseServiceAccountIAM() {
 			serviceAccountRoles := []iam.Subject{&dnscontroller.ServiceAccount{}}
 			for _, serviceAccountRole := range serviceAccountRoles {
-				iamModelBuilder := &model.IAMModelBuilder{KopsModelContext: b.KopsModelContext, Lifecycle: b.Lifecycle}
+				iamModelBuilder := &model.IAMModelBuilder{KopsModelContext: b.KopsModelContext, Lifecycle: b.Lifecycle, Cluster: b.Cluster}
 
 				err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
 				if err != nil {
@@ -582,7 +582,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		if b.UseServiceAccountIAM() {
 			serviceAccountRoles := []iam.Subject{&awsloadbalancercontroller.ServiceAccount{}}
 			for _, serviceAccountRole := range serviceAccountRoles {
-				iamModelBuilder := &model.IAMModelBuilder{KopsModelContext: b.KopsModelContext, Lifecycle: b.Lifecycle}
+				iamModelBuilder := &model.IAMModelBuilder{KopsModelContext: b.KopsModelContext, Lifecycle: b.Lifecycle, Cluster: b.Cluster}
 
 				err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
 				if err != nil {

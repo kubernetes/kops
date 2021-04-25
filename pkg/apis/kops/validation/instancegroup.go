@@ -143,29 +143,6 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud) field.ErrorLis
 
 	allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "updatePolicy"), g.Spec.UpdatePolicy, []string{kops.UpdatePolicyAutomatic, kops.UpdatePolicyExternal})...)
 
-	warmPool := g.Spec.WarmPool
-	if warmPool != nil {
-		if g.Spec.Role != kops.InstanceGroupRoleNode && g.Spec.Role != kops.InstanceGroupRoleAPIServer {
-			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool only allowed on instance groups with role Node or APIServer"))
-		}
-		if g.Spec.MixedInstancesPolicy != nil {
-			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool cannot be combined with a mixed instances policy"))
-		}
-		if g.Spec.MaxPrice != nil {
-			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool cannot be used with spot instances"))
-		}
-		if warmPool.MaxSize != nil {
-			if *warmPool.MaxSize < 0 {
-				allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "warmPool", "maxSize"), *warmPool.MaxSize, "warm pool maxSize cannot be negative"))
-			} else if warmPool.MinSize > *warmPool.MaxSize {
-				allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "warmPool", "maxSize"), fi.Int64Value(warmPool.MaxSize), "warm pool maxSize cannot be set to lower than minSize"))
-
-			}
-		}
-		if warmPool.MinSize < 0 {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "warmPool", "minSize"), warmPool.MinSize, "warm pool minSize cannot be negative"))
-		}
-	}
 	return allErrs
 }
 
@@ -238,6 +215,33 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool only supported on AWS"))
 		}
 	}
+
+	{
+		warmPool := cluster.Spec.WarmPool.ResolveDefaults(g)
+		if warmPool.MaxSize == nil || *warmPool.MaxSize != 0 {
+			if g.Spec.Role != kops.InstanceGroupRoleNode && g.Spec.Role != kops.InstanceGroupRoleAPIServer {
+				allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool only allowed on instance groups with role Node or APIServer"))
+			}
+			if g.Spec.MixedInstancesPolicy != nil {
+				allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool cannot be combined with a mixed instances policy"))
+			}
+			if g.Spec.MaxPrice != nil {
+				allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool cannot be used with spot instances"))
+			}
+		}
+		if warmPool.MaxSize != nil {
+			if *warmPool.MaxSize < 0 {
+				allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "warmPool", "maxSize"), *warmPool.MaxSize, "warm pool maxSize cannot be negative"))
+			} else if warmPool.MinSize > *warmPool.MaxSize {
+				allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "warmPool", "maxSize"), *warmPool.MaxSize, "warm pool maxSize cannot be set to lower than minSize"))
+
+			}
+		}
+		if warmPool.MinSize < 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "warmPool", "minSize"), warmPool.MinSize, "warm pool minSize cannot be negative"))
+		}
+	}
+
 	return allErrs
 }
 
