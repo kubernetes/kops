@@ -89,12 +89,12 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		warmPool := ig.Spec.WarmPool
 		{
-			enabled := fi.Bool(warmPool != nil)
+			enabled := fi.Bool(warmPool.IsEnabled())
 			warmPoolTask := &awstasks.WarmPool{
 				Name:    &name,
 				Enabled: enabled,
 			}
-			if warmPool != nil {
+			if warmPool.IsEnabled() {
 				warmPoolTask.MinSize = warmPool.MinSize
 				warmPoolTask.MaxSize = warmPool.MaxSize
 
