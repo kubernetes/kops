@@ -835,8 +835,19 @@ type CloudConfiguration struct {
 
 // AWSEBSCSIDriver is the config for the AWS EBS CSI driver
 type AWSEBSCSIDriver struct {
-	//Enabled enables the AWS EBS CSI driver
+	// Enabled enables the AWS EBS CSI driver
+	// Default: false
 	Enabled *bool `json:"enabled,omitempty"`
+
+	// Version is the container image tag used.
+	// Default: The latest stable release which is compatible with your Kubernetes version
+	Version *string `json:"version,omitempty"`
+
+	// VolumeAttachLimit is the maximum number of volumes attachable per node.
+	// If specified, the limit applies to all nodes.
+	// If not specified, the value is approximated from the instance type.
+	// Default: -
+	VolumeAttachLimit *int `json:"volumeAttachLimit,omitempty"`
 }
 
 // NodeTerminationHandlerConfig determines the node termination handler configuration.
