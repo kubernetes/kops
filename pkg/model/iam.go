@@ -36,6 +36,7 @@ type IAMModelBuilder struct {
 	*KopsModelContext
 
 	Lifecycle *fi.Lifecycle
+	Cluster   *kops.Cluster
 }
 
 var _ fi.ModelBuilder = &IAMModelBuilder{}
@@ -76,8 +77,10 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Generate IAM tasks for each shared role
 	for profileARN, igRole := range sharedProfileARNsToIGRole {
 		lchPermissions := false
+		defaultWarmPool := b.Cluster.Spec.WarmPool
 		for _, ig := range b.InstanceGroups {
-			if ig.Spec.Role == igRole && ig.Spec.WarmPool.IsEnabled() && ig.Spec.WarmPool.EnableLifecycleHook {
+			warmPool := defaultWarmPool.ResolveDefaults(ig)
+			if ig.Spec.Role == igRole && warmPool.IsEnabled() && warmPool.EnableLifecycleHook {
 				lchPermissions = true
 				break
 
@@ -99,16 +102,18 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Generate IAM tasks for each managed role
+	defaultWarmPool := b.Cluster.Spec.WarmPool
 	for igRole := range managedRoles {
-		warmPool := false
+		haveWarmPool := false
 		for _, ig := range b.InstanceGroups {
-			if ig.Spec.Role == igRole && ig.Spec.WarmPool.IsEnabled() && ig.Spec.WarmPool.EnableLifecycleHook {
-				warmPool = true
+			warmPool := defaultWarmPool.ResolveDefaults(ig)
+			if ig.Spec.Role == igRole && warmPool.IsEnabled() && warmPool.EnableLifecycleHook {
+				haveWarmPool = true
 				break
 
 			}
 		}
-		role, err := iam.BuildNodeRoleSubject(igRole, warmPool)
+		role, err := iam.BuildNodeRoleSubject(igRole, haveWarmPool)
 		if err != nil {
 			return err
 		}
