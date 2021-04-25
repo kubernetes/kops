@@ -1146,16 +1146,14 @@ spec:
                     type: boolean
                   permissionsBoundary:
                     type: string
-                required:
-                - legacy
-                type: object
-              iamRolesForServiceAccounts:
-                description: IAMRolesForServiceAccount defines the IRSA configuration.
-                properties:
-                  serviceAccounts:
+                  serviceAccountMappings:
+                    description: ServiceAccountMappings defines the relatinship between
+                      Kubernetes ServiceAccounts and IAM roles.
                     items:
+                      description: ServiceAccountMapping defines the relationship
+                        between a Kubernetes ServiceAccount and an IAM Role.
                       properties:
-                        iamPolicyARN:
+                        iamPolicyARNs:
                           items:
                             type: string
                           type: array
@@ -1170,6 +1168,8 @@ spec:
                       - namespace
                       type: object
                     type: array
+                required:
+                - legacy
                 type: object
               isolateMasters:
                 description: 'IsolateMasters determines whether we should lock down

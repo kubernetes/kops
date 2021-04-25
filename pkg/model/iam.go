@@ -120,9 +120,9 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	irsa := b.Cluster.Spec.IAMRolesForServiceAccounts
-	if irsa != nil {
-		for _, sa := range irsa.ServiceAccounts {
+	iamSpec := b.Cluster.Spec.IAM
+	if iamSpec != nil {
+		for _, sa := range iamSpec.ServiceAccountMappings {
 			var p *iam.Policy
 			if sa.InlinePolicy != "" {
 				bp, err := b.buildPolicy(sa.InlinePolicy)
@@ -142,7 +142,7 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			if err != nil {
 				return fmt.Errorf("error building service account role tasks: %w", err)
 			}
-			if len(sa.IAMPolicyARNs) == 0 {
+			if len(sa.IAMPolicyARNs) > 0 {
 				name := "external-" + fi.StringValue(iamRole.Name)
 				externalPolicies := sa.IAMPolicyARNs
 				c.AddTask(&awstasks.IAMRolePolicy{

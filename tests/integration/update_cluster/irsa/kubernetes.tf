@@ -274,6 +274,11 @@ resource "aws_iam_openid_connect_provider" "minimal-example-com" {
   url             = "https://discovery.example.com/minimal.example.com/oidc"
 }
 
+resource "aws_iam_role_policy_attachment" "external-myserviceaccount-default-sa-minimal-example-com-3186075376" {
+  policy_arn = "arn:aws:iam::123456789012:policy/UsersManageOwnCredentials"
+  role       = aws_iam_role.myserviceaccount-default-sa-minimal-example-com.name
+}
+
 resource "aws_iam_role_policy" "masters-minimal-example-com" {
   name   = "masters.minimal.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_masters.minimal.example.com_policy")

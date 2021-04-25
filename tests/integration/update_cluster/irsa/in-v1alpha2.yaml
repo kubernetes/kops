@@ -18,12 +18,11 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-  iam: {}
-  iamRolesForServiceAccounts:
-    serviceAccounts:
+  iam:
+    serviceAccountMappings:
       - name: myserviceaccount
         namespace: default
-        iamPolicyARN: 
+        iamPolicyARNs:
         - arn:aws:iam::123456789012:policy/UsersManageOwnCredentials
       - name: myotherserviceaccount
         namespace: myapp

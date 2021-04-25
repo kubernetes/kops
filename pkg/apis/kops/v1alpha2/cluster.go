@@ -204,20 +204,13 @@ type ClusterSpec struct {
 	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
 	// ClusterAutoscaler defines the cluaster autoscaler configuration.
 	ClusterAutoscaler *ClusterAutoscalerConfig `json:"clusterAutoscaler,omitempty"`
-
-	// IAMRolesForServiceAccount defines the IRSA configuration.
-	IAMRolesForServiceAccounts *IAMRolesForServiceAccountsConfig `json:"iamRolesForServiceAccounts,omitempty"`
 }
 
-// IAMRoleForServiceAccountConfig defines the IRSA configuration.
-type IAMRolesForServiceAccountsConfig struct {
-	ServiceAccounts []ServiceAccountMapping `json:"serviceAccounts,omitempty"`
-}
-
+// ServiceAccountMapping defines the relationship between a Kubernetes ServiceAccount and an IAM Role.
 type ServiceAccountMapping struct {
 	Name          string   `json:"name"`
 	Namespace     string   `json:"namespace"`
-	IAMPolicyARNs []string `json:"iamPolicyARN,omitempty"`
+	IAMPolicyARNs []string `json:"iamPolicyARNs,omitempty"`
 	InlinePolicy  string   `json:"inlinePolicy,omitempty"`
 }
 
@@ -282,6 +275,8 @@ type IAMSpec struct {
 	Legacy                 bool    `json:"legacy"`
 	AllowContainerRegistry bool    `json:"allowContainerRegistry,omitempty"`
 	PermissionsBoundary    *string `json:"permissionsBoundary,omitempty"`
+	// ServiceAccountMappings defines the relatinship between Kubernetes ServiceAccounts and IAM roles.
+	ServiceAccountMappings []ServiceAccountMapping `json:"serviceAccountMappings,omitempty"`
 }
 
 // HookSpec is a definition hook
