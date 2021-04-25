@@ -57,6 +57,7 @@ type AutoscalingGroupModelBuilder struct {
 	BootstrapScriptBuilder *model.BootstrapScriptBuilder
 	Lifecycle              *fi.Lifecycle
 	SecurityLifecycle      *fi.Lifecycle
+	Cluster                *kops.Cluster
 }
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
@@ -87,7 +88,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		tsk.LaunchTemplate = task
 		c.AddTask(tsk)
 
-		warmPool := ig.Spec.WarmPool
+		warmPool := b.Cluster.Spec.WarmPool.ResolveDefaults(ig)
 		{
 			enabled := fi.Bool(warmPool.IsEnabled())
 			warmPoolTask := &awstasks.WarmPool{

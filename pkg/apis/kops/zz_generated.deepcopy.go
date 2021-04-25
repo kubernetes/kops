@@ -1183,6 +1183,11 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 		*out = new(ClusterAutoscalerConfig)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.WarmPool != nil {
+		in, out := &in.WarmPool, &out.WarmPool
+		*out = new(WarmPoolSpec)
+		(*in).DeepCopyInto(*out)
+	}
 	return
 }
 
