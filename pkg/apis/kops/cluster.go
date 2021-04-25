@@ -205,27 +205,27 @@ type ClusterSpec struct {
 	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
 	// ClusterAutoscaler defines the cluster autoscaler configuration.
 	ClusterAutoscaler *ClusterAutoscalerConfig `json:"clusterAutoscaler,omitempty"`
-	// IAMRolesForServiceAccount defines the IRSA configuration.
+	// IAMRolesForServiceAccounts defines the IAM Roles for Service Accounts configuration.
 	IAMRolesForServiceAccounts *IAMRolesForServiceAccountsConfig `json:"iamRolesForServiceAccounts,omitempty"`
 }
 
-// OIDCLocation determines where OIDC metadata will be stored
-type OIDCLocation string
+// OIDCProviderLocation determines where OIDC metadata will be stored
+type OIDCProviderLocation string
 
 const (
-	// OIDCLocationAPIServer will use the k8s API server as OIDC metadata provider
-	OIDCLocationAPIServer OIDCLocation = "APIServer"
-	// OIDCLocationPublicDataStore will store the OIDC metadata on a publically accessible VFS
-	OIDCLocationPublicDataStore OIDCLocation = "PublicDataStore"
+	// OIDCProviderLocationAPIServer will use the k8s API server as OIDC metadata provider.
+	OIDCProviderLocationAPIServer OIDCProviderLocation = "APIServer"
+	// OIDProviderCLocationPublicDataStore will store the OIDC metadata on a publically accessible VFS.
+	OIDCLocationPublicDataStore OIDCProviderLocation = "PublicDataStore"
+	// OIDCProviderLocationNone will not store the OIDC metadata and disable any cloud OIDC provider
+	OIDCProviderLocationNone OIDCProviderLocation = "None"
 )
 
 // InstanceRoleForServiceAccountConfig defines the IRSA configuration.
 type IAMRolesForServiceAccountsConfig struct {
-	// Enabled determines if the OIDC data will be publicly available in the given location.
-	Enabled *bool `json:"enabled,omitempty"`
 	// JWKSLocation determines the location of the OIDC metadata.
 	// Valid locations are "APIServer" and "PublicDataStore".
-	OIDCLocation OIDCLocation `json:"oidcLocation,omitempty"`
+	OIDCProviderLocation OIDCProviderLocation `json:"oidcLocation,omitempty"`
 }
 
 // NodeAuthorizationSpec is used to node authorization
@@ -492,7 +492,7 @@ type ExternalDNSConfig struct {
 	WatchIngress *bool `json:"watchIngress,omitempty"`
 	// WatchNamespace is namespace to watch, defaults to all (use to control whom can creates dns entries)
 	WatchNamespace string `json:"watchNamespace,omitempty"`
-	// UseIRSA determines IRSA is used instead of assuming the control plane role.
+	// UseIRSA determines whether IRSA is used instead of assuming the control plane role.
 	UseIRSA *bool `json:"useIRSA,omitempty"`
 }
 

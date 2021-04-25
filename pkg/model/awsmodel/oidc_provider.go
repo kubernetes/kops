@@ -63,7 +63,7 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	irsa := b.Cluster.Spec.IAMRolesForServiceAccounts
 
-	if irsa == nil || !fi.BoolValue(irsa.Enabled) {
+	if irsa == nil || irsa.OIDCProviderLocation == kops.OIDCProviderLocationNone {
 		return nil
 	}
 
@@ -78,7 +78,7 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 	thumbprints := []fi.Resource{}
 
-	if irsa.OIDCLocation == kops.OIDCLocationPublicDataStore {
+	if irsa.OIDCProviderLocation == kops.OIDCLocationPublicDataStore {
 		fingerprints := getS3Fingerprints()
 
 		for _, fingerprint := range fingerprints {
@@ -98,7 +98,7 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 		keysFile := &fitasks.ManagedFile{
 			Contents:  keys,
 			Lifecycle: b.Lifecycle,
-			Location:  fi.String("oidc/keys.json"),
+			Location:  fi.String("/openid/v1/jwks"),
 			Name:      fi.String("keys.json"),
 			Base:      fi.String(b.Cluster.Spec.PublicDataStore),
 			Public:    fi.Bool(true),
@@ -144,7 +144,7 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 func buildDiscoveryJSON(issuerURL string) ([]byte, error) {
 	d := oidcDiscovery{
 		Issuer:                fmt.Sprintf("%v/", issuerURL),
-		JWKSURI:               fmt.Sprintf("%v/keys.json", issuerURL),
+		JWKSURI:               fmt.Sprintf("%v/openid/v1/jwks", issuerURL),
 		AuthorizationEndpoint: "urn:kubernetes:programmatic_authorization",
 		ResponseTypes:         []string{"id_token"},
 		SubjectTypes:          []string{"public"},

@@ -3799,8 +3799,7 @@ func Convert_kops_IAMProfileSpec_To_v1alpha2_IAMProfileSpec(in *kops.IAMProfileS
 }
 
 func autoConvert_v1alpha2_IAMRolesForServiceAccountsConfig_To_kops_IAMRolesForServiceAccountsConfig(in *IAMRolesForServiceAccountsConfig, out *kops.IAMRolesForServiceAccountsConfig, s conversion.Scope) error {
-	out.Enabled = in.Enabled
-	out.OIDCLocation = kops.OIDCLocation(in.OIDCLocation)
+	out.OIDCProviderLocation = kops.OIDCProviderLocation(in.OIDCProviderLocation)
 	return nil
 }
 
@@ -3810,8 +3809,7 @@ func Convert_v1alpha2_IAMRolesForServiceAccountsConfig_To_kops_IAMRolesForServic
 }
 
 func autoConvert_kops_IAMRolesForServiceAccountsConfig_To_v1alpha2_IAMRolesForServiceAccountsConfig(in *kops.IAMRolesForServiceAccountsConfig, out *IAMRolesForServiceAccountsConfig, s conversion.Scope) error {
-	out.Enabled = in.Enabled
-	out.OIDCLocation = OIDCLocation(in.OIDCLocation)
+	out.OIDCProviderLocation = OIDCProviderLocation(in.OIDCProviderLocation)
 	return nil
 }
 

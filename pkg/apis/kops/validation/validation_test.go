@@ -1100,8 +1100,7 @@ func Test_Validate_IRSA(t *testing.T) {
 		{
 			Input: kops.ClusterSpec{
 				IAMRolesForServiceAccounts: &kops.IAMRolesForServiceAccountsConfig{
-					Enabled:      fi.Bool(true),
-					OIDCLocation: kops.OIDCLocationPublicDataStore,
+					OIDCProviderLocation: kops.OIDCLocationPublicDataStore,
 				},
 			},
 			ExpectedErrors: []string{"Required value::spec.publicDataStore"},
@@ -1109,8 +1108,7 @@ func Test_Validate_IRSA(t *testing.T) {
 		{
 			Input: kops.ClusterSpec{
 				IAMRolesForServiceAccounts: &kops.IAMRolesForServiceAccountsConfig{
-					Enabled:      fi.Bool(true),
-					OIDCLocation: kops.OIDCLocationPublicDataStore,
+					OIDCProviderLocation: kops.OIDCLocationPublicDataStore,
 				},
 				PublicDataStore: "s3://some/bucket",
 			},
@@ -1118,8 +1116,7 @@ func Test_Validate_IRSA(t *testing.T) {
 		{
 			Input: kops.ClusterSpec{
 				IAMRolesForServiceAccounts: &kops.IAMRolesForServiceAccountsConfig{
-					Enabled:      fi.Bool(true),
-					OIDCLocation: kops.OIDCLocationAPIServer,
+					OIDCProviderLocation: kops.OIDCProviderLocationAPIServer,
 				},
 			},
 			ExpectedErrors: []string{
@@ -1130,8 +1127,7 @@ func Test_Validate_IRSA(t *testing.T) {
 		{
 			Input: kops.ClusterSpec{
 				IAMRolesForServiceAccounts: &kops.IAMRolesForServiceAccountsConfig{
-					Enabled:      fi.Bool(true),
-					OIDCLocation: kops.OIDCLocationAPIServer,
+					OIDCProviderLocation: kops.OIDCProviderLocationAPIServer,
 				},
 				KubernetesAPIAccess: []string{"0.0.0.0/0"},
 				KubeAPIServer: &kops.KubeAPIServerConfig{

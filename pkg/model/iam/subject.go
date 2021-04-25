@@ -100,7 +100,7 @@ func BuildNodeRoleSubject(igRole kops.InstanceGroupRole, enableLifecycleHookPerm
 // ServiceAccountIssuer determines the issuer in the ServiceAccount JWTs
 func ServiceAccountIssuer(clusterSpec *kops.ClusterSpec) (string, error) {
 	irsa := clusterSpec.IAMRolesForServiceAccounts
-	if irsa != nil && fi.BoolValue(irsa.Enabled) && irsa.OIDCLocation == kops.OIDCLocationPublicDataStore {
+	if irsa != nil && irsa.OIDCProviderLocation == kops.OIDCLocationPublicDataStore {
 		if clusterSpec.PublicDataStore == "" {
 			return "", fmt.Errorf("cluster.spec.publicDataStore is required with PublicJWKS feature flag")
 		}

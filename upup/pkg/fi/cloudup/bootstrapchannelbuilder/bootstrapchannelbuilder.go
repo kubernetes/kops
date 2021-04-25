@@ -229,7 +229,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 	}
 
 	irsa := b.Cluster.Spec.IAMRolesForServiceAccounts
-	if irsa != nil && fi.BoolValue(irsa.Enabled) {
+	if irsa != nil && irsa.OIDCProviderLocation == kops.OIDCProviderLocationAPIServer {
 		key := "anonymous-issuer-discovery.addons.k8s.io"
 		version := "1.21.0-alpha.3"
 

@@ -401,8 +401,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("externalDNS", "useIRSA"), "IAM roles for external-dns requires the UseServiceAccountIAM feature flag to be enabled"))
 		}
 		if c.Spec.IAMRolesForServiceAccounts == nil ||
-			!fi.BoolValue(c.Spec.IAMRolesForServiceAccounts.Enabled) ||
-			c.Spec.IAMRolesForServiceAccounts.OIDCLocation != kops.OIDCLocationPublicDataStore {
+			c.Spec.IAMRolesForServiceAccounts.OIDCProviderLocation != kops.OIDCLocationPublicDataStore {
 			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("externalDNS", "useIRSA"), "IAM roles for the external-dns ServiceAccount requires that IRSA has been enabled and that PublicDataStore is used as OIDC location"))
 		}
 
@@ -416,7 +415,7 @@ func validateIRSA(c *kops.Cluster, fieldSpec *field.Path) (allErrs field.ErrorLi
 
 	irsa := c.Spec.IAMRolesForServiceAccounts
 
-	if irsa != nil && fi.BoolValue(irsa.Enabled) {
+	if irsa != nil {
 		irsaSpec := fieldSpec.Child("iamRolesForServiceAccounts")
 
 		if kops.CloudProviderID(c.Spec.CloudProvider) != kops.CloudProviderAWS {
@@ -427,15 +426,15 @@ func validateIRSA(c *kops.Cluster, fieldSpec *field.Path) (allErrs field.ErrorLi
 			allErrs = append(allErrs, field.Forbidden(irsaSpec, "IAMRolesForServiceAccounts requires the PublicJWKS feature flag to be enabled."))
 		}
 
-		switch irsa.OIDCLocation {
+		switch irsa.OIDCProviderLocation {
 		case kops.OIDCLocationPublicDataStore:
 			if c.Spec.PublicDataStore == "" {
-				allErrs = append(allErrs, field.Required(fieldSpec.Child("publicDataStore"), "OIDC location set to PublicDataStore, but publicDataStore is not configured"))
+				allErrs = append(allErrs, field.Required(fieldSpec.Child("publicDataStore"), "must be configured when OIDC location is set to PublicDataStore"))
 			}
-		case kops.OIDCLocationAPIServer:
+		case kops.OIDCProviderLocationAPIServer:
 			if c.Spec.KubeAPIServer == nil || !fi.BoolValue(c.Spec.KubeAPIServer.AnonymousAuth) {
 				allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeAPIServer", "anonymousAuth"),
-					"Exposing OIDC metadata on the API Server requires anonmousAuth to be enabled"))
+					"Exposing OIDC metadata on the API Server requires anonymousAuth to be enabled"))
 			}
 			found := false
 			for _, cidr := range c.Spec.KubernetesAPIAccess {
@@ -449,8 +448,7 @@ func validateIRSA(c *kops.Cluster, fieldSpec *field.Path) (allErrs field.ErrorLi
 			}
 
 		default:
-			allErrs = append(allErrs, field.NotSupported(irsaSpec.Child("oidcLocation"), irsa.OIDCLocation, []string{"APIServer", "PublicDataStore"}))
-
+			allErrs = append(allErrs, field.NotSupported(irsaSpec.Child("oidcLocation"), irsa.OIDCProviderLocation, []string{"APIServer", "PublicDataStore", "None"}))
 		}
 
 	}

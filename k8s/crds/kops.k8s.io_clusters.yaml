@@ -1160,13 +1160,9 @@ spec:
               iamRolesForServiceAccounts:
                 description: IAMRolesForServiceAccount defines the IRSA configuration.
                 properties:
-                  enabled:
-                    description: Enabled determines if the OIDC data will be publicly
-                      available in the given location.
-                    type: boolean
                   oidcLocation:
-                    description: JWKSLocation determines the location of the OIDC
-                      metadata. Valid locations are "APIServer" and "PublicDataStore".
+                    description: OIDCProviderLocation determines the location of the
+                      OIDC metadata. Valid locations are "APIServer" and "PublicDataStore".
                     type: string
                 type: object
               isolateMasters:

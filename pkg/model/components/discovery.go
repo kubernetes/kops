@@ -17,8 +17,6 @@ limitations under the License.
 package components
 
 import (
-	"strings"
-
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
@@ -36,7 +34,7 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
 	irsa := clusterSpec.IAMRolesForServiceAccounts
-	useJWKS := irsa != nil && fi.BoolValue(irsa.Enabled)
+	useJWKS := irsa != nil && irsa.OIDCProviderLocation != kops.OIDCProviderLocationNone
 	if !useJWKS && b.IsKubernetesLT("1.20") {
 		return nil
 	}
@@ -46,6 +44,8 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	kubeAPIServer := clusterSpec.KubeAPIServer
+
+	// We set apiserver ServiceAccountKey and ServiceAccountSigningKeyFile in nodeup
 
 	if len(kubeAPIServer.APIAudiences) == 0 {
 		kubeAPIServer.APIAudiences = []string{"kubernetes.svc.default"}
@@ -57,29 +57,16 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 	kubeAPIServer.ServiceAccountIssuer = &serviceAccountIssuer
 
-	// We set apiserver ServiceAccountKey and ServiceAccountSigningKeyFile in nodeup
+	if kubeAPIServer.ServiceAccountJWKSURI == nil {
+		jwksURI := serviceAccountIssuer + "/openid/v1/jwks"
+		kubeAPIServer.ServiceAccountJWKSURI = fi.String(jwksURI)
+	}
 
-	if b.IsKubernetesLT("1.20") {
+	if useJWKS && b.IsKubernetesLT("1.20") {
 		if kubeAPIServer.FeatureGates == nil {
 			kubeAPIServer.FeatureGates = make(map[string]string)
 		}
 		kubeAPIServer.FeatureGates["ServiceAccountIssuerDiscovery"] = "true"
-	}
-
-	if useJWKS && irsa.OIDCLocation == kops.OIDCLocationPublicDataStore {
-
-		if kubeAPIServer.ServiceAccountJWKSURI == nil {
-			jwksURL := *kubeAPIServer.ServiceAccountIssuer
-			jwksURL = strings.TrimSuffix(jwksURL, "/") + "/keys.json"
-
-			kubeAPIServer.ServiceAccountJWKSURI = &jwksURL
-		}
-	} else if kubeAPIServer.ServiceAccountJWKSURI == nil {
-		jwksURI := serviceAccountIssuer + "/openid/v1/jwks"
-		if err != nil {
-			return err
-		}
-		kubeAPIServer.ServiceAccountJWKSURI = fi.String(jwksURI)
 	}
 
 	return nil
