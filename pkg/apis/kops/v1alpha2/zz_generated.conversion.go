@@ -6413,7 +6413,7 @@ func Convert_kops_VolumeSpec_To_v1alpha2_VolumeSpec(in *kops.VolumeSpec, out *Vo
 func autoConvert_v1alpha2_WarmPoolSpec_To_kops_WarmPoolSpec(in *WarmPoolSpec, out *kops.WarmPoolSpec, s conversion.Scope) error {
 	out.MinSize = in.MinSize
 	out.MaxSize = in.MaxSize
-	out.EnableLifecyleHook = in.EnableLifecyleHook
+	out.EnableLifecycleHook = in.EnableLifecycleHook
 	return nil
 }
 
@@ -6425,7 +6425,7 @@ func Convert_v1alpha2_WarmPoolSpec_To_kops_WarmPoolSpec(in *WarmPoolSpec, out *k
 func autoConvert_kops_WarmPoolSpec_To_v1alpha2_WarmPoolSpec(in *kops.WarmPoolSpec, out *WarmPoolSpec, s conversion.Scope) error {
 	out.MinSize = in.MinSize
 	out.MaxSize = in.MaxSize
-	out.EnableLifecyleHook = in.EnableLifecyleHook
+	out.EnableLifecycleHook = in.EnableLifecycleHook
 	return nil
 }
 

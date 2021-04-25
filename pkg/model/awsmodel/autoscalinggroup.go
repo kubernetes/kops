@@ -98,7 +98,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				warmPoolTask.MinSize = warmPool.MinSize
 				warmPoolTask.MaxSize = warmPool.MaxSize
 
-				if warmPool.EnableLifecyleHook {
+				if warmPool.EnableLifecycleHook {
 					name := "kops-warmpool"
 
 					lifecyleTask := &awstasks.AutoscalingLifecycleHook{
