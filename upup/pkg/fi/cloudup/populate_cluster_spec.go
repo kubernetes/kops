@@ -280,6 +280,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 			codeModels = append(codeModels, &components.DiscoveryOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.ClusterAutoscalerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.NodeTerminationHandlerOptionsBuilder{OptionsContext: optionsContext})
+			codeModels = append(codeModels, &components.AWSEBSCSIDriverOptionsBuilder{OptionsContext: optionsContext})
 		}
 	}
 
