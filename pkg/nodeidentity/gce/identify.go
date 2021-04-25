@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"cloud.google.com/go/compute/metadata"
@@ -180,7 +179,7 @@ func (i *nodeIdentifier) getMIG(zone string, migName string) (*compute.InstanceG
 
 // getMIGMember queries GCE for the instance from the MIG
 func (i *nodeIdentifier) getManagedInstance(mig *compute.InstanceGroupManager, instanceID uint64) (*compute.ManagedInstance, error) {
-	filter := "id=" + strconv.FormatUint(instanceID, 10)
+	filter := fmt.Sprintf("id=\"%d\"", instanceID)
 	zone := lastComponent(mig.Zone)
 	instances, err := i.computeService.InstanceGroupManagers.ListManagedInstances(i.project, zone, mig.Name).Filter(filter).Do()
 	if err != nil {
