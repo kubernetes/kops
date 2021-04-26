@@ -18,27 +18,7 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-  iam:
-    serviceAccountMappings:
-      - name: myserviceaccount
-        namespace: default
-        iamPolicyARNs:
-        - arn:aws:iam::123456789012:policy/UsersManageOwnCredentials
-      - name: myotherserviceaccount
-        namespace: myapp
-        inlinePolicy: |
-          [
-            {
-              "Effect": "Allow",
-              "Action": ["dynamodb:*"],
-              "Resource": ["*"]
-            },
-            {
-              "Effect": "Allow",
-              "Action": ["es:*"],
-              "Resource": ["*"]
-            }
-          ]
+  iam: {}
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.20.0
@@ -97,3 +77,36 @@ spec:
   role: Master
   subnets:
   - us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha1
+kind: AWSIdentityBinding
+spec:
+  subject:
+    namespace: default
+    name: myserviceaccount
+  iamPolicyARNs:
+  - arn:aws:iam::123456789012:policy/UsersManageOwnCredentials
+
+---
+
+apiVersion: kops.k8s.io/v1alpha1
+kind: AWSIdentityBinding
+spec:
+  subject:
+    namespace: myapp
+    name: myotherserviceaccount
+  inlinePolicy: |
+          [
+            {
+              "Effect": "Allow",
+              "Action": ["dynamodb:*"],
+              "Resource": ["*"]
+            },
+            {
+              "Effect": "Allow",
+              "Action": ["es:*"],
+              "Resource": ["*"]
+            }
+          ]

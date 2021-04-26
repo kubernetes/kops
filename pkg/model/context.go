@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/iam"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
@@ -46,6 +47,7 @@ const (
 type KopsModelContext struct {
 	iam.IAMModelContext
 	InstanceGroups []*kops.InstanceGroup
+	Addons         kubemanifest.ObjectList
 	Region         string
 	SSHPublicKeys  [][]byte
 }

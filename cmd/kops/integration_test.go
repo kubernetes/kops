@@ -407,9 +407,9 @@ func TestNTHQueueProcessor(t *testing.T) {
 
 // TestCustomIRSA runs a simple configuration, but with some additional IAM roles for ServiceAccounts
 func TestCustomIRSA(t *testing.T) {
-	featureflag.ParseFlags("+PublicJWKS")
+	featureflag.ParseFlags("+PublicJWKS,+ClusterAddons")
 	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-PublicJWKS")
+		featureflag.ParseFlags("-PublicJWKS,-ClusterAddons")
 	}
 	defer unsetFeatureFlags()
 	newIntegrationTest("minimal.example.com", "irsa").

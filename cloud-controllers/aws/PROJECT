@@ -1,0 +1,15 @@
+domain: kops.k8s.io
+layout:
+- go.kubebuilder.io/v3
+projectName: aws
+repo: k8s.io/kops
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: kops.k8s.io
+  kind: AWSIdentityBinding
+  path: k8s.io/kops/api/v1alpha1
+  version: v1alpha1
+version: "3"

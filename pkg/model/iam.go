@@ -125,10 +125,10 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		for _, sa := range iamSpec.ServiceAccountMappings {
 			var p *iam.Policy
 			if sa.InlinePolicy != "" {
-				bp, err := b.buildPolicy(sa.InlinePolicy)
+				bp, err := b.ParsePolicy(sa.InlinePolicy)
 				p = bp
 				if err != nil {
-					return fmt.Errorf("error inline policy: %w", err)
+					return fmt.Errorf("error parsing inline policy: %w", err)
 				}
 			}
 			serviceAccount := &iam.GenericServiceAccount{
@@ -345,9 +345,9 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 			}
 
 			if additionalPolicy != "" {
-				p, err := b.buildPolicy(additionalPolicy)
+				p, err := b.ParsePolicy(additionalPolicy)
 				if err != nil {
-					return fmt.Errorf("additionalPolicy %q is invalid: %v", roleKey, err)
+					return fmt.Errorf("additionalPolicy %q is invalid: %w", roleKey, err)
 				}
 
 				policy, err := p.AsJSON()
@@ -367,7 +367,7 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 	return nil
 }
 
-func (b *IAMModelBuilder) buildPolicy(policyString string) (*iam.Policy, error) {
+func (b *IAMModelBuilder) ParsePolicy(policyString string) (*iam.Policy, error) {
 	p := &iam.Policy{
 		Version: iam.PolicyDefaultVersion,
 	}
