@@ -10,6 +10,7 @@ go_library(
         "clusterautoscaler.go",
         "containerd.go",
         "context.go",
+        "crio.go",
         "defaults.go",
         "discovery.go",
         "docker.go",
@@ -37,6 +38,7 @@ go_library(
         "//upup/pkg/fi/cloudup/gce:go_default_library",
         "//upup/pkg/fi/loader:go_default_library",
         "//util/pkg/vfs:go_default_library",
+        "//vendor/github.com/blang/semver:go_default_library",
         "//vendor/github.com/blang/semver/v4:go_default_library",
         "//vendor/github.com/pelletier/go-toml:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
@@ -51,6 +53,7 @@ go_test(
     srcs = [
         "cloudconfiguration_test.go",
         "containerd_test.go",
+        "crio_test.go",
         "image_test.go",
         "kubecontrollermanager_test.go",
         "kubelet_test.go",

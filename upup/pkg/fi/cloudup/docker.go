@@ -252,22 +252,3 @@ func findAllDockerHashesArm64() map[string]string {
 
 	return hashes
 }
-
-func findAssetsUrlHash(assetBuilder *assets.AssetBuilder, assetUrl string, assetHash string) (*url.URL, *hashing.Hash, error) {
-	u, err := url.Parse(assetUrl)
-	if err != nil {
-		return nil, nil, fmt.Errorf("unable to parse asset URL %q: %v", assetUrl, err)
-	}
-
-	h, err := hashing.FromString(assetHash)
-	if err != nil {
-		return nil, nil, fmt.Errorf("unable to parse asset hash %q: %v", assetHash, err)
-	}
-
-	u, err = assetBuilder.RemapFileAndSHAValue(u, assetHash)
-	if err != nil {
-		return nil, nil, fmt.Errorf("unable to remap asset: %v", err)
-	}
-
-	return u, h, nil
-}

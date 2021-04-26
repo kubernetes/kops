@@ -9,6 +9,7 @@ go_library(
         "containerd.go",
         "context.go",
         "convenience.go",
+        "crio.go",
         "directories.go",
         "docker.go",
         "etcd.go",
@@ -86,6 +87,7 @@ go_test(
     srcs = [
         "cloudconfig_test.go",
         "containerd_test.go",
+        "crio_test.go",
         "docker_test.go",
         "fakes_test.go",
         "kops_controller_test.go",

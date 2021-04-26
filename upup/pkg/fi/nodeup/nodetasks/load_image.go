@@ -88,7 +88,7 @@ func (_ *LoadImageTask) CheckChanges(a, e, changes *LoadImageTask) error {
 
 func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadImageTask) error {
 	runtime := e.Runtime
-	if runtime != "docker" && runtime != "containerd" {
+	if runtime != "docker" && runtime != "containerd" && runtime != "crio" {
 		return fmt.Errorf("no runtime specified")
 	}
 
@@ -140,7 +140,7 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 			return fmt.Errorf("error ungzipping container image: %v", err)
 		}
 	} else {
-		// Assume container image is tar file alerady
+		// Assume container image is tar file already
 		tarFile = localFile
 	}
 
@@ -151,6 +151,9 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 		args = []string{"docker", "load", "-i", tarFile}
 	case "containerd":
 		args = []string{"ctr", "--namespace", "k8s.io", "images", "import", tarFile}
+	case "crio":
+		// This is mainly for running e2e tests for cri-o to load tar images. cri-o doesn't support loading images from tarfiles
+		args = []string{"podman", "load", "-i", tarFile}
 	default:
 		return fmt.Errorf("unknown container runtime: %s", runtime)
 	}

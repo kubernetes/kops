@@ -308,6 +308,35 @@ func Test_Validate_DockerConfig_Storage(t *testing.T) {
 	}
 }
 
+func Test_Validate_CrioConfig(t *testing.T) {
+	grid := []struct {
+		Input          kops.CrioConfig
+		ExpectedErrors []string
+	}{
+		{
+			Input:          kops.CrioConfig{},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input: kops.CrioConfig{
+				LogLevel: fi.String("info"),
+			},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input: kops.CrioConfig{
+				LogLevel: fi.String("wrong-log-level"),
+			},
+			ExpectedErrors: []string{"Unsupported value::crio.logLevel"},
+		},
+	}
+
+	for _, g := range grid {
+		errs := validateCrioConfig(&g.Input, field.NewPath("crio"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
+
 func Test_Validate_Networking_Flannel(t *testing.T) {
 
 	grid := []struct {

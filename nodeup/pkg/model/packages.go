@@ -52,6 +52,12 @@ func (b *PackagesBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(&nodetasks.Package{Name: "pigz"})
 		c.AddTask(&nodetasks.Package{Name: "socat"})
 		c.AddTask(&nodetasks.Package{Name: "util-linux"})
+		if b.Distribution.IsUbuntu() {
+			// install podman for crio testing
+			c.AddTask(&nodetasks.Package{Name: "podman"})
+		}
+		// For ARM testing
+		c.AddTask(&nodetasks.Package{Name: "runc"})
 	} else if b.Distribution.IsRHELFamily() {
 		c.AddTask(&nodetasks.Package{Name: "nfs-utils"})
 		// From containerd: https://github.com/containerd/cri/blob/master/contrib/ansible/tasks/bootstrap_centos.yaml
