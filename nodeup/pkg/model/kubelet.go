@@ -230,6 +230,10 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		} else {
 			flags += " --container-runtime-endpoint=unix://" + fi.StringValue(b.Cluster.Spec.Containerd.Address)
 		}
+	case "crio":
+		flags += " --container-runtime=remote"
+		flags += " --container-runtime-endpoint=unix:///run/crio/crio.sock"
+		flags += " --runtime-request-timeout=15m"
 	}
 
 	if b.UseKopsControllerForNodeBootstrap() {
@@ -262,6 +266,8 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 		manifest.Set("Unit", "After", "docker.service")
 	case "containerd":
 		manifest.Set("Unit", "After", "containerd.service")
+	case "crio":
+		manifest.Set("Unit", "After", "crio.service")
 	default:
 		klog.Warningf("unknown container runtime %q", b.Cluster.Spec.ContainerRuntime)
 	}
