@@ -1,0 +1,1207 @@
+{
+  "Resources": {
+    "AWSAutoScalingAutoScalingGroupmasterustest1amasterscrioexamplecom": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AutoScalingGroupName": "master-us-test-1a.masters.crio.example.com",
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatemasterustest1amasterscrioexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatemasterustest1amasterscrioexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
+        },
+        "MaxSize": "1",
+        "MinSize": "1",
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "AWSEC2Subnetustest1acrioexamplecom"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "crio.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Name",
+            "Value": "master-us-test-1a.masters.crio.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+            "Value": "master",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kops.k8s.io/instancegroup",
+            "Value": "master-us-test-1a",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kubernetes.io/cluster/crio.example.com",
+            "Value": "owned",
+            "PropagateAtLaunch": true
+          }
+        ],
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute",
+            "Metrics": [
+              "GroupDesiredCapacity",
+              "GroupInServiceInstances",
+              "GroupMaxSize",
+              "GroupMinSize",
+              "GroupPendingInstances",
+              "GroupStandbyInstances",
+              "GroupTerminatingInstances",
+              "GroupTotalInstances"
+            ]
+          }
+        ]
+      }
+    },
+    "AWSAutoScalingAutoScalingGroupnodescrioexamplecom": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AutoScalingGroupName": "nodes.crio.example.com",
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatenodescrioexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatenodescrioexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
+        },
+        "MaxSize": "2",
+        "MinSize": "2",
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "AWSEC2Subnetustest1acrioexamplecom"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "crio.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.crio.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+            "Value": "node",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/role/node",
+            "Value": "1",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kops.k8s.io/instancegroup",
+            "Value": "nodes",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kubernetes.io/cluster/crio.example.com",
+            "Value": "owned",
+            "PropagateAtLaunch": true
+          }
+        ],
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute",
+            "Metrics": [
+              "GroupDesiredCapacity",
+              "GroupInServiceInstances",
+              "GroupMaxSize",
+              "GroupMinSize",
+              "GroupPendingInstances",
+              "GroupStandbyInstances",
+              "GroupTerminatingInstances",
+              "GroupTotalInstances"
+            ]
+          }
+        ]
+      }
+    },
+    "AWSEC2DHCPOptionscrioexamplecom": {
+      "Type": "AWS::EC2::DHCPOptions",
+      "Properties": {
+        "DomainName": "us-test-1.compute.internal",
+        "DomainNameServers": [
+          "AmazonProvidedDNS"
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "crio.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "crio.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/crio.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2InternetGatewaycrioexamplecom": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "crio.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "crio.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/crio.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2LaunchTemplatemasterustest1amasterscrioexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "master-us-test-1a.masters.crio.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp3",
+                "VolumeSize": 64,
+                "Iops": 3000,
+                "Throughput": 125,
+                "DeleteOnTermination": true,
+                "Encrypted": true
+              }
+            },
+            {
+              "DeviceName": "/dev/sdc",
+              "VirtualName": "ephemeral0"
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilemasterscrioexamplecom"
+            }
+          },
+          "ImageId": "ami-11400000",
+          "InstanceType": "m3.medium",
+          "KeyName": "kubernetes.crio.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "MetadataOptions": {
+            "HttpPutResponseHopLimit": 1,
+            "HttpTokens": "optional"
+          },
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": true,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupmasterscrioexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "crio.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.crio.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "master"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/crio.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "crio.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.crio.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "master"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/crio.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
+      }
+    },
+    "AWSEC2LaunchTemplatenodescrioexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "nodes.crio.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp3",
+                "VolumeSize": 128,
+                "Iops": 3000,
+                "Throughput": 125,
+                "DeleteOnTermination": true,
+                "Encrypted": true
+              }
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilenodescrioexamplecom"
+            }
+          },
+          "ImageId": "ami-11400000",
+          "InstanceType": "t2.medium",
+          "KeyName": "kubernetes.crio.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "MetadataOptions": {
+            "HttpPutResponseHopLimit": 1,
+            "HttpTokens": "optional"
+          },
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": true,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupnodescrioexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "crio.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.crio.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "node"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/crio.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "crio.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.crio.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "node"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/crio.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
+      }
+    },
+    "AWSEC2Route00000": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTablecrioexamplecom"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "AWSEC2InternetGatewaycrioexamplecom"
+        }
+      }
+    },
+    "AWSEC2RouteTablecrioexamplecom": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCcrioexamplecom"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "crio.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "crio.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/crio.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/kops/role",
+            "Value": "public"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupEgressfrommasterscrioexamplecomegressall0to000000": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscrioexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressfromnodescrioexamplecomegressall0to000000": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodescrioexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22masterscrioexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscrioexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22nodescrioexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodescrioexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp443to443masterscrioexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscrioexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrommasterscrioexamplecomingressall0to0masterscrioexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscrioexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscrioexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrommasterscrioexamplecomingressall0to0nodescrioexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodescrioexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscrioexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfromnodescrioexamplecomingressall0to0nodescrioexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodescrioexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodescrioexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfromnodescrioexamplecomingresstcp1to2379masterscrioexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscrioexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodescrioexamplecom"
+        },
+        "FromPort": 1,
+        "ToPort": 2379,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfromnodescrioexamplecomingresstcp2382to4000masterscrioexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscrioexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodescrioexamplecom"
+        },
+        "FromPort": 2382,
+        "ToPort": 4000,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfromnodescrioexamplecomingresstcp4003to65535masterscrioexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscrioexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodescrioexamplecom"
+        },
+        "FromPort": 4003,
+        "ToPort": 65535,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfromnodescrioexamplecomingressudp1to65535masterscrioexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscrioexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodescrioexamplecom"
+        },
+        "FromPort": 1,
+        "ToPort": 65535,
+        "IpProtocol": "udp"
+      }
+    },
+    "AWSEC2SecurityGroupmasterscrioexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "masters.crio.example.com",
+        "VpcId": {
+          "Ref": "AWSEC2VPCcrioexamplecom"
+        },
+        "GroupDescription": "Security group for masters",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "crio.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.crio.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/crio.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupnodescrioexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "nodes.crio.example.com",
+        "VpcId": {
+          "Ref": "AWSEC2VPCcrioexamplecom"
+        },
+        "GroupDescription": "Security group for nodes",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "crio.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.crio.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/crio.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SubnetRouteTableAssociationustest1acrioexamplecom": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "AWSEC2Subnetustest1acrioexamplecom"
+        },
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTablecrioexamplecom"
+        }
+      }
+    },
+    "AWSEC2Subnetustest1acrioexamplecom": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCcrioexamplecom"
+        },
+        "CidrBlock": "172.20.32.0/19",
+        "AvailabilityZone": "us-test-1a",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "crio.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.crio.example.com"
+          },
+          {
+            "Key": "SubnetType",
+            "Value": "Public"
+          },
+          {
+            "Key": "kubernetes.io/cluster/crio.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/role/elb",
+            "Value": "1"
+          }
+        ]
+      }
+    },
+    "AWSEC2VPCDHCPOptionsAssociationcrioexamplecom": {
+      "Type": "AWS::EC2::VPCDHCPOptionsAssociation",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCcrioexamplecom"
+        },
+        "DhcpOptionsId": {
+          "Ref": "AWSEC2DHCPOptionscrioexamplecom"
+        }
+      }
+    },
+    "AWSEC2VPCGatewayAttachmentcrioexamplecom": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCcrioexamplecom"
+        },
+        "InternetGatewayId": {
+          "Ref": "AWSEC2InternetGatewaycrioexamplecom"
+        }
+      }
+    },
+    "AWSEC2VPCcrioexamplecom": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "172.20.0.0/16",
+        "EnableDnsHostnames": true,
+        "EnableDnsSupport": true,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "crio.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "crio.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/crio.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2Volumeustest1aetcdeventscrioexamplecom": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "AvailabilityZone": "us-test-1a",
+        "Size": 20,
+        "VolumeType": "gp3",
+        "Iops": 3000,
+        "Throughput": 125,
+        "Encrypted": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "crio.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.etcd-events.crio.example.com"
+          },
+          {
+            "Key": "k8s.io/etcd/events",
+            "Value": "us-test-1a/us-test-1a"
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/cluster/crio.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2Volumeustest1aetcdmaincrioexamplecom": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "AvailabilityZone": "us-test-1a",
+        "Size": 20,
+        "VolumeType": "gp3",
+        "Iops": 3000,
+        "Throughput": 125,
+        "Encrypted": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "crio.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.etcd-main.crio.example.com"
+          },
+          {
+            "Key": "k8s.io/etcd/main",
+            "Value": "us-test-1a/us-test-1a"
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/cluster/crio.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSIAMInstanceProfilemasterscrioexamplecom": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "InstanceProfileName": "masters.crio.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolemasterscrioexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSIAMInstanceProfilenodescrioexamplecom": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "InstanceProfileName": "nodes.crio.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolenodescrioexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSIAMPolicymasterscrioexamplecom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "masters.crio.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolemasterscrioexamplecom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ec2:DescribeAccountAttributes",
+                "ec2:DescribeInstances",
+                "ec2:DescribeInternetGateways",
+                "ec2:DescribeRegions",
+                "ec2:DescribeRouteTables",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeVolumes"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:CreateSecurityGroup",
+                "ec2:CreateTags",
+                "ec2:CreateVolume",
+                "ec2:DescribeVolumesModifications",
+                "ec2:ModifyInstanceAttribute",
+                "ec2:ModifyVolume"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:AttachVolume",
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:CreateRoute",
+                "ec2:DeleteRoute",
+                "ec2:DeleteSecurityGroup",
+                "ec2:DeleteVolume",
+                "ec2:DetachVolume",
+                "ec2:RevokeSecurityGroupIngress"
+              ],
+              "Condition": {
+                "StringEquals": {
+                  "ec2:ResourceTag/KubernetesCluster": "crio.example.com"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": "autoscaling:CompleteLifecycleAction",
+              "Condition": {
+                "StringEquals": {
+                  "autoscaling:ResourceTag/KubernetesCluster": "crio.example.com"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": "autoscaling:DescribeLifecycleHooks",
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": "autoscaling:DescribeAutoScalingInstances",
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeTags",
+                "ec2:DescribeLaunchTemplateVersions"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup",
+                "autoscaling:UpdateAutoScalingGroup"
+              ],
+              "Condition": {
+                "StringEquals": {
+                  "autoscaling:ResourceTag/KubernetesCluster": "crio.example.com"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "autoscaling:CompleteLifecycleAction",
+                "autoscaling:DescribeAutoScalingInstances"
+              ],
+              "Condition": {
+                "StringEquals": {
+                  "autoscaling:ResourceTag/KubernetesCluster": "crio.example.com"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "elasticloadbalancing:AddTags",
+                "elasticloadbalancing:AttachLoadBalancerToSubnets",
+                "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
+                "elasticloadbalancing:CreateLoadBalancer",
+                "elasticloadbalancing:CreateLoadBalancerPolicy",
+                "elasticloadbalancing:CreateLoadBalancerListeners",
+                "elasticloadbalancing:ConfigureHealthCheck",
+                "elasticloadbalancing:DeleteLoadBalancer",
+                "elasticloadbalancing:DeleteLoadBalancerListeners",
+                "elasticloadbalancing:DescribeLoadBalancers",
+                "elasticloadbalancing:DescribeLoadBalancerAttributes",
+                "elasticloadbalancing:DetachLoadBalancerFromSubnets",
+                "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                "elasticloadbalancing:ModifyLoadBalancerAttributes",
+                "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:DescribeVpcs",
+                "elasticloadbalancing:AddTags",
+                "elasticloadbalancing:CreateListener",
+                "elasticloadbalancing:CreateTargetGroup",
+                "elasticloadbalancing:DeleteListener",
+                "elasticloadbalancing:DeleteTargetGroup",
+                "elasticloadbalancing:DeregisterTargets",
+                "elasticloadbalancing:DescribeListeners",
+                "elasticloadbalancing:DescribeLoadBalancerPolicies",
+                "elasticloadbalancing:DescribeTargetGroups",
+                "elasticloadbalancing:DescribeTargetHealth",
+                "elasticloadbalancing:ModifyListener",
+                "elasticloadbalancing:ModifyTargetGroup",
+                "elasticloadbalancing:RegisterTargets",
+                "elasticloadbalancing:SetLoadBalancerPoliciesOfListener"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "iam:ListServerCertificates",
+                "iam:GetServerCertificate"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ChangeResourceRecordSets",
+                "route53:ListResourceRecordSets",
+                "route53:GetHostedZone"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
+              ]
+            },
+            {
+              "Action": [
+                "route53:GetChange"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::change/*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ListHostedZones"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMPolicynodescrioexamplecom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "nodes.crio.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolenodescrioexamplecom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ec2:DescribeInstances",
+                "ec2:DescribeRegions"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": "autoscaling:DescribeAutoScalingInstances",
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMRolemasterscrioexamplecom": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "masters.crio.example.com",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "crio.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.crio.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/crio.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSIAMRolenodescrioexamplecom": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "nodes.crio.example.com",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "crio.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.crio.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/crio.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    }
+  }
+}
