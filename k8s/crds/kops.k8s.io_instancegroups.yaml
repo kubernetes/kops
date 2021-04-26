@@ -907,7 +907,7 @@ spec:
                   group
                 properties:
                   enableLifecycleHook:
-                    description: EnableLifecyleHook determines if an ASG lifecycle
+                    description: EnableLifecycleHook determines if an ASG lifecycle
                       hook will be added ensuring that nodeup runs to completion.
                       Note that the metadata API must be protected from arbitrary
                       Pods when this is enabled.

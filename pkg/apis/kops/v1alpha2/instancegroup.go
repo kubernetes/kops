@@ -159,9 +159,9 @@ type WarmPoolSpec struct {
 	// (unless the resulting number is smaller than MinSize).
 	// The default is the instance group's MaxSize.
 	MaxSize *int64 `json:"maxSize,omitempty"`
-	// EnableLifecyleHook determines if an ASG lifecycle hook will be added ensuring that nodeup runs to completion.
+	// EnableLifecycleHook determines if an ASG lifecycle hook will be added ensuring that nodeup runs to completion.
 	// Note that the metadata API must be protected from arbitrary Pods when this is enabled.
-	EnableLifecyleHook bool `json:"enableLifecycleHook,omitempty"`
+	EnableLifecycleHook bool `json:"enableLifecycleHook,omitempty"`
 }
 
 // InstanceMetadataOptions defines the EC2 instance metadata service options (AWS Only)
