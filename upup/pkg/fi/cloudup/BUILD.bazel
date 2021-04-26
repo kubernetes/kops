@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "apply_cluster.go",
         "containerd.go",
+        "crio.go",
         "defaults.go",
         "dns.go",
         "docker.go",
@@ -95,6 +96,7 @@ go_test(
     srcs = [
         "bootstrapchannelbuilder_test.go",
         "containerd_test.go",
+        "crio_test.go",
         "deepvalidate_test.go",
         "defaults_test.go",
         "dns_test.go",
