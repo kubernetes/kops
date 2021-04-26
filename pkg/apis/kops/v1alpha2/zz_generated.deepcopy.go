@@ -34,6 +34,16 @@ func (in *AWSEBSCSIDriver) DeepCopyInto(out *AWSEBSCSIDriver) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.Version != nil {
+		in, out := &in.Version, &out.Version
+		*out = new(string)
+		**out = **in
+	}
+	if in.VolumeAttachLimit != nil {
+		in, out := &in.VolumeAttachLimit, &out.VolumeAttachLimit
+		*out = new(int)
+		**out = **in
+	}
 	return
 }
 
