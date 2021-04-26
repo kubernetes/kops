@@ -52,7 +52,7 @@ func (b *PackagesBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(&nodetasks.Package{Name: "pigz"})
 		c.AddTask(&nodetasks.Package{Name: "socat"})
 		c.AddTask(&nodetasks.Package{Name: "util-linux"})
-		if b.Distribution.IsUbuntu() {
+		if b.Distribution == distributions.DistributionUbuntu2010 {
 			// install podman for crio testing
 			c.AddTask(&nodetasks.Package{Name: "podman"})
 		}
