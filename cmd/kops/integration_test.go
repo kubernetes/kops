@@ -383,6 +383,11 @@ func TestContainerdCustom(t *testing.T) {
 	newIntegrationTest("containerd.example.com", "containerd-custom").runTestCloudformation(t)
 }
 
+func TestCrio(t *testing.T) {
+	newIntegrationTest("crio.example.com", "crio").runTestCloudformation(t)
+	newIntegrationTest("crio.example.com", "crio").runTestTerraformAWS(t)
+}
+
 // TestDockerCustom runs the test on a custom Docker URL configuration
 func TestDockerCustom(t *testing.T) {
 	newIntegrationTest("docker.example.com", "docker-custom").runTestCloudformation(t)
