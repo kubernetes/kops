@@ -260,8 +260,20 @@ spec:
                       driver
                     properties:
                       enabled:
-                        description: Enabled enables the AWS EBS CSI driver
+                        description: 'Enabled enables the AWS EBS CSI driver Default:
+                          false'
                         type: boolean
+                      version:
+                        description: 'Version is the container image tag used. Default:
+                          The latest stable release which is compatible with your
+                          Kubernetes version'
+                        type: string
+                      volumeAttachLimit:
+                        description: 'VolumeAttachLimit is the maximum number of volumes
+                          attachable per node. If specified, the limit applies to
+                          all nodes. If not specified, the value is approximated from
+                          the instance type. Default: -'
+                        type: integer
                     type: object
                   azure:
                     description: Azure cloud-config options
