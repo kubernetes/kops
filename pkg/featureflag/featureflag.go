@@ -91,9 +91,9 @@ var (
 	LegacyIAM = New("LegacyIAM", Bool(false))
 	// ClusterAddons activates experimental cluster-addons support
 	ClusterAddons = New("ClusterAddons", Bool(false))
-	// UseServiceAccountIAM controls whether we use pod-level IAM permissions for our system pods.
+	// UseServiceAccountIAM controls whether we use pod-level IAM permissions for our system pods and kOps addons.
 	UseServiceAccountIAM = New("UseServiceAccountIAM", Bool(false))
-	// PublicJWKS enables public jwks access.  This is generally not as secure as republishing.
+	// PublicJWKS enables public jwks access.
 	PublicJWKS = New("PublicJWKS", Bool(false))
 	// Azure toggles the Azure support.
 	Azure = New("Azure", Bool(false))

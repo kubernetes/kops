@@ -246,6 +246,44 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateCloudConfiguration(spec.CloudConfig, fieldPath.Child("cloudConfig"))...)
 	}
 
+	if spec.IAM != nil {
+		allErrs = append(allErrs, validateSAMappings(spec.IAM.ServiceAccountMappings, fieldPath.Child("iam", "serviceAccountMappings"))...)
+	}
+
+	return allErrs
+}
+
+func validateSAMappings(mappings []kops.ServiceAccountMapping, path *field.Path) (allErrs field.ErrorList) {
+	if len(mappings) == 0 {
+		return allErrs
+	}
+	if !featureflag.PublicJWKS.Enabled() {
+		allErrs = append(allErrs, field.Forbidden(path, "IAM roles for ServiceAccounts requires PublicJWKS feature flag to be enabled"))
+	}
+
+	sas := make(map[string]string)
+	for _, sa := range mappings {
+		key := fmt.Sprintf("%s/%s", sa.Namespace, sa.Name)
+		p := path.Key(key)
+		if sa.Namespace == "" {
+			allErrs = append(allErrs, field.Required(p.Child("namespace"), "namespace cannot be empty"))
+		}
+		if sa.Name == "" {
+			allErrs = append(allErrs, field.Required(p.Child("name"), "name cannot be empty"))
+		}
+		_, duplicate := sas[key]
+		if duplicate {
+			allErrs = append(allErrs, field.Duplicate(p, key))
+		}
+		sas[key] = ""
+
+		if len(sa.IAMPolicyARNs) == 0 && sa.InlinePolicy == "" {
+			allErrs = append(allErrs, field.Required(p, "either inlinePolicy or iamPolicyARN must be set"))
+		}
+		if len(sa.IAMPolicyARNs) > 0 && sa.InlinePolicy != "" {
+			allErrs = append(allErrs, field.Forbidden(p, "cannot set both inlinePolicy and iamPolicyARN"))
+		}
+	}
 	return allErrs
 }
 

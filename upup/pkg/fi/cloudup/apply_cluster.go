@@ -43,6 +43,7 @@ import (
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/addonsmodel"
 	"k8s.io/kops/pkg/model/alimodel"
 	"k8s.io/kops/pkg/model/awsmodel"
 	"k8s.io/kops/pkg/model/azuremodel"
@@ -388,6 +389,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	modelContext := &model.KopsModelContext{
 		IAMModelContext: iam.IAMModelContext{Cluster: cluster},
 		InstanceGroups:  c.InstanceGroups,
+		Addons:          addons,
 	}
 
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -538,6 +540,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				Lifecycle:        &clusterLifecycle,
 			},
 			&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+			&addonsmodel.AddonsBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
 		)
 
 		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {

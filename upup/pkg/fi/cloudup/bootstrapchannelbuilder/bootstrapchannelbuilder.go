@@ -426,7 +426,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			for _, serviceAccountRole := range serviceAccountRoles {
 				iamModelBuilder := &model.IAMModelBuilder{KopsModelContext: b.KopsModelContext, Lifecycle: b.Lifecycle}
 
-				err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
+				_, err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
 				if err != nil {
 					return nil, err
 				}
@@ -584,7 +584,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			for _, serviceAccountRole := range serviceAccountRoles {
 				iamModelBuilder := &model.IAMModelBuilder{KopsModelContext: b.KopsModelContext, Lifecycle: b.Lifecycle}
 
-				err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
+				_, err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
 				if err != nil {
 					return nil, err
 				}

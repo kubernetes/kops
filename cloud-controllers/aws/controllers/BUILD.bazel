@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["awsidentitybinding_controller.go"],
+    importpath = "k8s.io/kops/cloud-controllers/aws/controllers",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//cloud-controllers/aws/api/v1alpha1:go_default_library",
+        "//pkg/model:go_default_library",
+        "//pkg/model/iam:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/awstasks:go_default_library",
+        "//vendor/github.com/go-logr/logr:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/client:go_default_library",
+    ],
+)

@@ -207,6 +207,14 @@ type ClusterSpec struct {
 	ClusterAutoscaler *ClusterAutoscalerConfig `json:"clusterAutoscaler,omitempty"`
 }
 
+// ServiceAccountMapping defines the relationship between a Kubernetes ServiceAccount and an IAM Role.
+type ServiceAccountMapping struct {
+	Name          string   `json:"name"`
+	Namespace     string   `json:"namespace"`
+	IAMPolicyARNs []string `json:"iamPolicyARNs,omitempty"`
+	InlinePolicy  string   `json:"inlinePolicy,omitempty"`
+}
+
 // NodeAuthorizationSpec is used to node authorization
 type NodeAuthorizationSpec struct {
 	// NodeAuthorizer defined the configuration for the node authorizer
@@ -269,6 +277,8 @@ type IAMSpec struct {
 	Legacy                 bool    `json:"legacy"`
 	AllowContainerRegistry bool    `json:"allowContainerRegistry,omitempty"`
 	PermissionsBoundary    *string `json:"permissionsBoundary,omitempty"`
+	// ServiceAccountMappings defines the relatinship between Kubernetes ServiceAccounts and IAM roles.
+	ServiceAccountMappings []ServiceAccountMapping `json:"serviceAccountMappings,omitempty"`
 }
 
 // HookSpec is a definition hook

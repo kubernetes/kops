@@ -22,6 +22,7 @@ import (
 	"regexp"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -92,6 +93,17 @@ func Decode(data []byte, defaultReadVersion *schema.GroupVersionKind) (runtime.O
 	decoder := decoder()
 
 	object, gvk, err := decoder.Decode(data, defaultReadVersion, nil)
+	return object, gvk, err
+}
+
+// DecodeUnstructured decodes data into an unstructured.Unstructured, with the specified default version
+func DecodeUnstructured(data []byte, defaultReadVersion *schema.GroupVersionKind) (runtime.Object, *schema.GroupVersionKind, error) {
+	data = rewriteAPIGroup(data)
+
+	decoder := decoder()
+
+	u := &unstructured.Unstructured{}
+	object, gvk, err := decoder.Decode(data, defaultReadVersion, u)
 	return object, gvk, err
 }
 

@@ -1158,6 +1158,28 @@ spec:
                     type: boolean
                   permissionsBoundary:
                     type: string
+                  serviceAccountMappings:
+                    description: ServiceAccountMappings defines the relatinship between
+                      Kubernetes ServiceAccounts and IAM roles.
+                    items:
+                      description: ServiceAccountMapping defines the relationship
+                        between a Kubernetes ServiceAccount and an IAM Role.
+                      properties:
+                        iamPolicyARNs:
+                          items:
+                            type: string
+                          type: array
+                        inlinePolicy:
+                          type: string
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                      required:
+                      - name
+                      - namespace
+                      type: object
+                    type: array
                 required:
                 - legacy
                 type: object

@@ -25,10 +25,13 @@ import (
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kopscodecs"
+	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/text"
 	"k8s.io/kops/util/pkg/vfs"
@@ -118,6 +121,9 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 	}
 
 	var clusterName = ""
+	var addons kubemanifest.ObjectList
+	var addonsCluster *kopsapi.Cluster
+
 	//var cSpec = false
 	var sb bytes.Buffer
 	fmt.Fprintf(&sb, "\n")
@@ -134,9 +140,26 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 				return fmt.Errorf("error reading file %q: %v", f, err)
 			}
 		}
+
 		// TODO: this does not support a JSON array
 		sections := text.SplitContentToSections(contents)
 		for _, section := range sections {
+			if featureflag.ClusterAddons.Enabled() {
+				u, gvk, err := kopscodecs.DecodeUnstructured(section, nil)
+				if err != nil {
+					return fmt.Errorf("error parsing file %q: %v", f, err)
+				}
+
+				switch gvk.Group + "/" + gvk.Kind {
+				case "kops.k8s.io/Cluster", "kops.k8s.io/InstanceGroup", "kops.k8s.io/SSHCredential":
+				// handled below
+
+				default:
+					addons = append(addons, kubemanifest.FromUnstructured(u.(*unstructured.Unstructured)))
+					continue
+				}
+			}
+
 			o, gvk, err := kopscodecs.Decode(section, nil)
 			if err != nil {
 				return fmt.Errorf("error parsing file %q: %v", f, err)
@@ -155,13 +178,14 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 				if err != nil {
 					return fmt.Errorf("error populating configuration: %v", err)
 				}
-				_, err = clientset.CreateCluster(ctx, v)
+				cluster, err := clientset.CreateCluster(ctx, v)
 				if err != nil {
 					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("cluster %q already exists", v.ObjectMeta.Name)
 					}
 					return fmt.Errorf("error creating cluster: %v", err)
 				}
+				addonsCluster = cluster
 				fmt.Fprintf(&sb, "Created cluster/%s\n", v.ObjectMeta.Name)
 				//cSpec = true
 
@@ -219,8 +243,22 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 				return fmt.Errorf("Unhandled kind %q in %s", gvk, f)
 			}
 		}
-
 	}
+
+	if len(addons) != 0 {
+		if addonsCluster == nil {
+			// Currently this command doesn't take a cluster name, so we require the cluster to be created at the same time.
+			// TODO: accept a cluster name flag?
+			return fmt.Errorf("must create cluster alongside addons")
+		}
+		addonsClient := clientset.AddonsFor(addonsCluster)
+
+		// TODO: Support merge
+		if err := addonsClient.Replace(addons); err != nil {
+			return fmt.Errorf("error writing updated addon configuration: %v", err)
+		}
+	}
+
 	{
 		// If there is a value in this sb, this should mean that we have something to deploy
 		// so let's advise the user how to engage the cloud provider and deploy

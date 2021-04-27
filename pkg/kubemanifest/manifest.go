@@ -21,6 +21,9 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/util/pkg/text"
 	"sigs.k8s.io/yaml"
@@ -207,4 +210,26 @@ func (m *Object) Set(newValue interface{}, fieldPath ...string) error {
 	current[fieldPath[len(fieldPath)-1]] = newValue
 
 	return nil
+}
+
+// FromUnstructured converts an unstructured.Unstructured object to an Object wrapper type.
+func FromUnstructured(u *unstructured.Unstructured) *Object {
+	return &Object{
+		data: u.Object,
+	}
+}
+
+// GroupVersionKind returns the group/version/kind for the object
+func (o *Object) GroupVersionKind() (schema.GroupVersionKind, error) {
+	apiVersion := o.APIVersion()
+	gv, err := schema.ParseGroupVersion(apiVersion)
+	if err != nil {
+		return schema.GroupVersionKind{}, fmt.Errorf("cannot parse apiVersion %q", apiVersion)
+	}
+	return gv.WithKind(o.Kind()), nil
+}
+
+// ConvertTo converts the object to a structured type.
+func (o *Object) ConvertInto(out runtime.Object) error {
+	return runtime.DefaultUnstructuredConverter.FromUnstructured(o.data, out)
 }

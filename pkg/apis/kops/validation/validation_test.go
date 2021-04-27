@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -1176,4 +1177,90 @@ func Test_Validate_CloudConfiguration(t *testing.T) {
 			testErrors(t, g.Input, errs, g.ExpectedErrors)
 		})
 	}
+}
+
+func TestValidateIRSA(t *testing.T) {
+
+	featureflag.ParseFlags("+PublicJWKS")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-PublicJWKS")
+	}
+	defer unsetFeatureFlags()
+
+	grid := []struct {
+		Description    string
+		Input          []kops.ServiceAccountMapping
+		ExpectedErrors []string
+	}{
+
+		{
+			Description: "Duplicate SA",
+			Input: []kops.ServiceAccountMapping{
+				{
+					Name:          "MySA",
+					Namespace:     "MyNS",
+					IAMPolicyARNs: []string{"-"},
+				},
+				{
+					Name:          "MySA",
+					Namespace:     "MyNS",
+					IAMPolicyARNs: []string{"-"},
+				},
+			},
+			ExpectedErrors: []string{"Duplicate value::iam.serviceAccountMappings[MyNS/MySA]"},
+		},
+		{
+			Description: "Duplicate SA",
+			Input: []kops.ServiceAccountMapping{
+				{
+					Name:      "MySA",
+					Namespace: "MyNS",
+				},
+			},
+			ExpectedErrors: []string{"Required value::iam.serviceAccountMappings[MyNS/MySA]"},
+		},
+		{
+			Description: "Duplicate SA",
+			Input: []kops.ServiceAccountMapping{
+				{
+					Name:          "MySA",
+					Namespace:     "MyNS",
+					IAMPolicyARNs: []string{"-"},
+					InlinePolicy:  "-",
+				},
+			},
+			ExpectedErrors: []string{"Forbidden::iam.serviceAccountMappings[MyNS/MySA]"},
+		},
+		{
+			Description: "Empty SA name",
+			Input: []kops.ServiceAccountMapping{
+				{
+					Namespace:     "MyNS",
+					IAMPolicyARNs: []string{"-"},
+					InlinePolicy:  "-",
+				},
+			},
+			ExpectedErrors: []string{"Required value::iam.serviceAccountMappings[MyNS/].name"},
+		},
+		{
+			Description: "Empty SA namespace",
+			Input: []kops.ServiceAccountMapping{
+				{
+					Name:          "MySA",
+					IAMPolicyARNs: []string{"-"},
+					InlinePolicy:  "-",
+				},
+			},
+			ExpectedErrors: []string{"Required value::iam.serviceAccountMappings[/MySA].namespace"},
+		},
+	}
+
+	for _, g := range grid {
+		fldPath := field.NewPath("iam.serviceAccountMappings")
+		t.Run(g.Description, func(t *testing.T) {
+			errs := validateSAMappings(g.Input, fldPath)
+			testErrors(t, g.Input, errs, g.ExpectedErrors)
+		})
+	}
+
 }

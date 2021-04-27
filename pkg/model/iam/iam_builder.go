@@ -678,6 +678,9 @@ func (b *PolicyResource) Open() (io.Reader, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error building IAM policy: %v", err)
 	}
+	if policy == nil {
+		return bytes.NewReader([]byte{}), nil
+	}
 	j, err := policy.AsJSON()
 	if err != nil {
 		return nil, fmt.Errorf("error building IAM policy: %v", err)
