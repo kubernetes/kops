@@ -100,11 +100,13 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				warmPoolTask.MaxSize = warmPool.MaxSize
 
 				if warmPool.EnableLifecycleHook {
-					name := "kops-warmpool"
+					hookName := "kops-warmpool"
+					name := fmt.Sprintf("%s-%s", hookName, ig.GetName())
 
 					lifecyleTask := &awstasks.AutoscalingLifecycleHook{
 						ID:               aws.String(name),
 						Name:             aws.String(name),
+						HookName:         aws.String(hookName),
 						Lifecycle:        b.Lifecycle,
 						AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
 						DefaultResult:    aws.String("ABANDON"),
