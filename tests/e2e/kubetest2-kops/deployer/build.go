@@ -23,6 +23,7 @@ import (
 	"path"
 	"strings"
 
+	"k8s.io/kops/tests/e2e/pkg/util"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
@@ -38,7 +39,8 @@ func (d *deployer) Build() error {
 	if err := d.BuildOptions.Build(); err != nil {
 		return err
 	}
-	return nil
+	// Copy the kops binary into the test's RunDir to be included in the tester's PATH
+	return util.Copy(d.KopsBinaryPath, path.Join(d.commonOptions.RunDir(), "kops"))
 }
 
 func (d *deployer) verifyBuildFlags() error {

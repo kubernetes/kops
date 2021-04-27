@@ -57,13 +57,14 @@ func (d *deployer) initialize() error {
 		}
 	}
 	if d.KopsVersionMarker != "" {
-		binaryPath, baseURL, err := kops.DownloadKops(d.KopsVersionMarker, d.KopsBinaryPath)
+		d.KopsBinaryPath = path.Join(d.commonOptions.RunDir(), "kops")
+		baseURL, err := kops.DownloadKops(d.KopsVersionMarker, d.KopsBinaryPath)
 		if err != nil {
 			return fmt.Errorf("init failed to download kops from url: %v", err)
 		}
-		d.KopsBinaryPath = binaryPath
 		d.KopsBaseURL = baseURL
 	}
+
 	switch d.CloudProvider {
 	case "aws":
 		// These environment variables are defined by the "preset-aws-ssh" prow preset
@@ -105,7 +106,7 @@ func (d *deployer) initialize() error {
 				d.SSHPrivateKeyPath = privateKey
 				d.SSHPublicKeyPath = publicKey
 			}
-			d.createBucket = os.Getenv("KOPS_STATE_STORE") == ""
+			d.createBucket = true
 		}
 	}
 	if d.SSHUser == "" {
@@ -117,6 +118,14 @@ func (d *deployer) initialize() error {
 			return err
 		}
 		d.terraform = t
+	}
+	if d.commonOptions.ShouldTest() {
+		for _, envvar := range d.env() {
+			// Set all of the env vars we use for kops in the current process
+			// so that the tester inherits them when shelling out to kops
+			i := strings.Index(envvar, "=")
+			os.Setenv(envvar[0:i], envvar[i+1:])
+		}
 	}
 	return nil
 }
@@ -133,11 +142,7 @@ func (d *deployer) verifyKopsFlags() error {
 	}
 
 	if d.KopsBinaryPath == "" && d.KopsVersionMarker == "" {
-		if ws := os.Getenv("WORKSPACE"); ws != "" {
-			d.KopsBinaryPath = path.Join(ws, "kops")
-		} else {
-			return errors.New("missing required --kops-binary-path when --kops-version-marker is not used")
-		}
+		return errors.New("missing required --kops-binary-path when --kops-version-marker is not used")
 	}
 
 	switch d.CloudProvider {
