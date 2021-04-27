@@ -1162,8 +1162,7 @@ spec:
             - --csi-address=$(ADDRESS)
             - --v=5
             - --feature-gates=Topology=true
-            - --enable-leader-election
-            - --leader-election-type=leases
+            - --leader-election=true
             - --extra-create-metadata=true
           env:
             - name: ADDRESS
