@@ -693,6 +693,13 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 				g.Spec.Zones = []string{zone}
 			}
 
+			if cluster.IsKubernetesGTE("1.22") {
+				g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
+					HTTPPutResponseHopLimit: fi.Int64(3),
+					HTTPTokens:              fi.String("required"),
+				}
+			}
+
 			masters = append(masters, g)
 		}
 	}
@@ -807,6 +814,13 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 			g.Spec.Zones = []string{zone}
 		}
 
+		if cluster.IsKubernetesGTE("1.22") {
+			g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
+				HTTPPutResponseHopLimit: fi.Int64(1),
+				HTTPTokens:              fi.String("required"),
+			}
+		}
+
 		nodes = append(nodes, g)
 	}
 
@@ -846,6 +860,13 @@ func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetM
 		g.Spec.Subnets = []string{subnet.Name}
 		if cp := api.CloudProviderID(cluster.Spec.CloudProvider); cp == api.CloudProviderGCE || cp == api.CloudProviderAzure {
 			g.Spec.Zones = []string{zone}
+		}
+
+		if cluster.IsKubernetesGTE("1.22") {
+			g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
+				HTTPPutResponseHopLimit: fi.Int64(1),
+				HTTPTokens:              fi.String("required"),
+			}
 		}
 
 		nodes = append(nodes, g)
@@ -998,6 +1019,14 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
 				bastionGroup.Spec.Zones = allZones.List()
 			}
+
+			if cluster.IsKubernetesGTE("1.22") {
+				bastionGroup.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
+					HTTPPutResponseHopLimit: fi.Int64(1),
+					HTTPTokens:              fi.String("required"),
+				}
+			}
+
 		}
 
 	default:
