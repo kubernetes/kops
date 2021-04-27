@@ -204,6 +204,8 @@ type ClusterSpec struct {
 	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
 	// ClusterAutoscaler defines the cluaster autoscaler configuration.
 	ClusterAutoscaler *ClusterAutoscalerConfig `json:"clusterAutoscaler,omitempty"`
+	// WarmPool defines the default warm pool settings for instance groups (AWS only).
+	WarmPool *WarmPoolSpec `json:"warmPool,omitempty"`
 }
 
 // NodeAuthorizationSpec is used to node authorization
@@ -706,4 +708,17 @@ type PackagesConfig struct {
 	UrlAmd64 *string `json:"urlAmd64,omitempty"`
 	// UrlArm64 overrides the URL for the ARM64 package.
 	UrlArm64 *string `json:"urlArm64,omitempty"`
+}
+
+type WarmPoolSpec struct {
+	// MinSize is the minimum size of the pool
+	MinSize int64 `json:"minSize,omitempty"`
+	// MaxSize is the maximum size of the warm pool. The desired size of the instance group
+	// is subtracted from this number to determine the desired size of the warm pool
+	// (unless the resulting number is smaller than MinSize).
+	// The default is the instance group's MaxSize.
+	MaxSize *int64 `json:"maxSize,omitempty"`
+	// EnableLifecycleHook determines if an ASG lifecycle hook will be added ensuring that nodeup runs to completion.
+	// Note that the metadata API must be protected from arbitrary Pods when this is enabled.
+	EnableLifecycleHook bool `json:"enableLifecycleHook,omitempty"`
 }

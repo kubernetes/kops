@@ -42,6 +42,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = [
+        "cluster_test.go",
         "parse_test.go",
         "semver_test.go",
     ],
@@ -49,6 +50,7 @@ go_test(
     deps = [
         "//upup/pkg/fi/utils:go_default_library",
         "//vendor/github.com/blang/semver/v4:go_default_library",
+        "//vendor/github.com/stretchr/testify/assert:go_default_library",
         "//vendor/gopkg.in/inf.v0:go_default_library",
     ],
 )

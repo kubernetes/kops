@@ -257,6 +257,9 @@ spec:
     maxSize: 10
 ```
 
+You can also specify defaults for all instance groups of type Node or APIServer by setting the `warmPool` field in the cluster spec.
+If warm pools are enabled at the cluster spec level, you can disable them at the instance group level by setting `maxSize: 0`.
+
 ### Lifecycle hook
 
 By default AWS does not guarantee that the kOps configuration will run to completion. Nor that the instance will timely shut down after completion if the instance is allowed to run that long. In order to guarantee this, a lifecycle hook is needed.
