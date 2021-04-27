@@ -5,7 +5,7 @@ go_library(
     srcs = [
         "autoscalinggroup.go",
         "autoscalinggroup_fitask.go",
-        "autoscalinggroup_lifecyclehook.go",
+        "autoscalinglifecyclehook.go",
         "autoscalinglifecyclehook_fitask.go",
         "block_device_mappings.go",
         "classic_load_balancer.go",
