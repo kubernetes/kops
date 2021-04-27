@@ -2503,6 +2503,15 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.ClusterAutoscaler = nil
 	}
+	if in.WarmPool != nil {
+		in, out := &in.WarmPool, &out.WarmPool
+		*out = new(kops.WarmPoolSpec)
+		if err := Convert_v1alpha2_WarmPoolSpec_To_kops_WarmPoolSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.WarmPool = nil
+	}
 	return nil
 }
 
@@ -2879,6 +2888,15 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 		}
 	} else {
 		out.ClusterAutoscaler = nil
+	}
+	if in.WarmPool != nil {
+		in, out := &in.WarmPool, &out.WarmPool
+		*out = new(WarmPoolSpec)
+		if err := Convert_kops_WarmPoolSpec_To_v1alpha2_WarmPoolSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.WarmPool = nil
 	}
 	return nil
 }

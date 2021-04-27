@@ -246,6 +246,14 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateCloudConfiguration(spec.CloudConfig, fieldPath.Child("cloudConfig"))...)
 	}
 
+	if spec.WarmPool != nil {
+		if kops.CloudProviderID(spec.CloudProvider) != kops.CloudProviderAWS {
+			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool only supported on AWS"))
+		} else {
+			allErrs = append(allErrs, validateWarmPool(spec.WarmPool, fieldPath.Child("warmPool"))...)
+		}
+	}
+
 	return allErrs
 }
 
@@ -1339,6 +1347,20 @@ func validateCloudConfiguration(cloudConfig *kops.CloudConfiguration, fldPath *f
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("manageStorageClasses"),
 				"Management of storage classes and OpenStack block storage classes are both specified but disagree"))
 		}
+	}
+	return allErrs
+}
+
+func validateWarmPool(warmPool *kops.WarmPoolSpec, fldPath *field.Path) (allErrs field.ErrorList) {
+	if warmPool.MaxSize != nil {
+		if *warmPool.MaxSize < 0 {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("maxSize"), *warmPool.MaxSize, "warm pool maxSize cannot be negative"))
+		} else if warmPool.MinSize > *warmPool.MaxSize {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("maxSize"), *warmPool.MaxSize, "warm pool maxSize cannot be set to lower than minSize"))
+		}
+	}
+	if warmPool.MinSize < 0 {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("minSize"), warmPool.MinSize, "warm pool minSize cannot be negative"))
 	}
 	return allErrs
 }

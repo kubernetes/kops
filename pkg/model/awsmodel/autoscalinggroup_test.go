@@ -68,6 +68,7 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 				InstanceGroups:  igs,
 			},
 		},
+		Cluster: cluster,
 	}
 
 	c := &fi.ModelBuilderContext{
@@ -153,6 +154,7 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 				InstanceGroups:  igs,
 			},
 		},
+		Cluster: cluster,
 	}
 
 	c := &fi.ModelBuilderContext{

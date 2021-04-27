@@ -4141,6 +4141,29 @@ spec:
                   needed containers. This is needed if some APIs do have self-signed
                   certs
                 type: boolean
+              warmPool:
+                description: WarmPool defines the default warm pool settings for instance
+                  groups (AWS only).
+                properties:
+                  enableLifecycleHook:
+                    description: EnableLifecycleHook determines if an ASG lifecycle
+                      hook will be added ensuring that nodeup runs to completion.
+                      Note that the metadata API must be protected from arbitrary
+                      Pods when this is enabled.
+                    type: boolean
+                  maxSize:
+                    description: MaxSize is the maximum size of the warm pool. The
+                      desired size of the instance group is subtracted from this number
+                      to determine the desired size of the warm pool (unless the resulting
+                      number is smaller than MinSize). The default is the instance
+                      group's MaxSize.
+                    format: int64
+                    type: integer
+                  minSize:
+                    description: MinSize is the minimum size of the pool
+                    format: int64
+                    type: integer
+                type: object
             type: object
         type: object
     served: true

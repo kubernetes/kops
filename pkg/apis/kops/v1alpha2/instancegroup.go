@@ -151,18 +151,6 @@ type InstanceGroupSpec struct {
 	// WarmPool configures an ASG warm pool for the instance group
 	WarmPool *WarmPoolSpec `json:"warmPool,omitempty"`
 }
-type WarmPoolSpec struct {
-	// MinSize is the minimum size of the pool
-	MinSize int64 `json:"minSize,omitempty"`
-	// MaxSize is the maximum size of the warm pool. The desired size of the instance group
-	// is subtracted from this number to determine the desired size of the warm pool
-	// (unless the resulting number is smaller than MinSize).
-	// The default is the instance group's MaxSize.
-	MaxSize *int64 `json:"maxSize,omitempty"`
-	// EnableLifecycleHook determines if an ASG lifecycle hook will be added ensuring that nodeup runs to completion.
-	// Note that the metadata API must be protected from arbitrary Pods when this is enabled.
-	EnableLifecycleHook bool `json:"enableLifecycleHook,omitempty"`
-}
 
 // InstanceMetadataOptions defines the EC2 instance metadata service options (AWS Only)
 type InstanceMetadataOptions struct {

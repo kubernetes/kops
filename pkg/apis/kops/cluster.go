@@ -201,10 +201,12 @@ type ClusterSpec struct {
 	// specified, each parameter must follow the form variable=value, the way
 	// it would appear in sysctl.conf.
 	SysctlParameters []string `json:"sysctlParameters,omitempty"`
-	// RollingUpdate defines the default rolling-update settings for instance groups
+	// RollingUpdate defines the default rolling-update settings for instance groups.
 	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
 	// ClusterAutoscaler defines the cluster autoscaler configuration.
 	ClusterAutoscaler *ClusterAutoscalerConfig `json:"clusterAutoscaler,omitempty"`
+	// WarmPool defines the default warm pool settings for instance groups (AWS only).
+	WarmPool *WarmPoolSpec `json:"warmPool,omitempty"`
 }
 
 // NodeAuthorizationSpec is used to node authorization
@@ -842,4 +844,50 @@ type PackagesConfig struct {
 	UrlAmd64 *string `json:"urlAmd64,omitempty"`
 	// UrlArm64 overrides the URL for the ARM64 package.
 	UrlArm64 *string `json:"urlArm64,omitempty"`
+}
+
+type WarmPoolSpec struct {
+	// MinSize is the minimum size of the warm pool.
+	MinSize int64 `json:"minSize,omitempty"`
+	// MaxSize is the maximum size of the warm pool. The desired size of the instance group
+	// is subtracted from this number to determine the desired size of the warm pool
+	// (unless the resulting number is smaller than MinSize).
+	// The default is the instance group's MaxSize.
+	MaxSize *int64 `json:"maxSize,omitempty"`
+	// EnableLifecyleHook determines if an ASG lifecycle hook will be added ensuring that nodeup runs to completion.
+	// Note that the metadata API must be protected from arbitrary Pods when this is enabled.
+	EnableLifecycleHook bool `json:"enableLifecycleHook,omitempty"`
+}
+
+func (in *WarmPoolSpec) IsEnabled() bool {
+	return in != nil && (in.MaxSize == nil || *in.MaxSize != 0)
+}
+
+func (in *WarmPoolSpec) ResolveDefaults(ig *InstanceGroup) *WarmPoolSpec {
+	igWarmPool := ig.Spec.WarmPool
+	if igWarmPool == nil {
+		if in == nil || (ig.Spec.Role == InstanceGroupRoleMaster || ig.Spec.Role == InstanceGroupRoleBastion) {
+			var zero int64
+			return &WarmPoolSpec{
+				MaxSize: &zero,
+			}
+		}
+		return in
+	}
+
+	if in == nil || (ig.Spec.Role == InstanceGroupRoleMaster || ig.Spec.Role == InstanceGroupRoleBastion) {
+		return igWarmPool
+	}
+
+	spec := *igWarmPool
+	if spec.MaxSize == nil {
+		spec.MaxSize = in.MaxSize
+	}
+	if spec.MinSize == 0 {
+		spec.MinSize = in.MinSize
+	}
+	if !spec.EnableLifecycleHook {
+		spec.EnableLifecycleHook = in.EnableLifecycleHook
+	}
+	return &spec
 }
