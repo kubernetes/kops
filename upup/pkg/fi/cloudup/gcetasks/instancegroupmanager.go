@@ -48,7 +48,7 @@ func (e *InstanceGroupManager) CompareWithID() *string {
 func (e *InstanceGroupManager) Find(c *fi.Context) (*InstanceGroupManager, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
-	r, err := cloud.Compute().InstanceGroupManagers.Get(cloud.Project(), *e.Zone, *e.Name).Do()
+	r, err := cloud.Compute().InstanceGroupManagers().Get(cloud.Project(), *e.Zone, *e.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -109,7 +109,7 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 			// TargetSize 0 will normally be omitted by the marshaling code; we need to force it
 			i.ForceSendFields = append(i.ForceSendFields, "TargetSize")
 		}
-		op, err := t.Cloud.Compute().InstanceGroupManagers.Insert(t.Cloud.Project(), *e.Zone, i).Do()
+		op, err := t.Cloud.Compute().InstanceGroupManagers().Insert(t.Cloud.Project(), *e.Zone, i)
 		if err != nil {
 			return fmt.Errorf("error creating InstanceGroupManager: %v", err)
 		}
@@ -119,10 +119,7 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 		}
 	} else {
 		if changes.TargetPools != nil {
-			request := &compute.InstanceGroupManagersSetTargetPoolsRequest{
-				TargetPools: i.TargetPools,
-			}
-			op, err := t.Cloud.Compute().InstanceGroupManagers.SetTargetPools(t.Cloud.Project(), *e.Zone, i.Name, request).Do()
+			op, err := t.Cloud.Compute().InstanceGroupManagers().SetTargetPools(t.Cloud.Project(), *e.Zone, i.Name, i.TargetPools)
 			if err != nil {
 				return fmt.Errorf("error updating TargetPools for InstanceGroupManager: %v", err)
 			}
@@ -135,10 +132,7 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 		}
 
 		if changes.InstanceTemplate != nil {
-			request := &compute.InstanceGroupManagersSetInstanceTemplateRequest{
-				InstanceTemplate: instanceTemplateURL,
-			}
-			op, err := t.Cloud.Compute().InstanceGroupManagers.SetInstanceTemplate(t.Cloud.Project(), *e.Zone, i.Name, request).Do()
+			op, err := t.Cloud.Compute().InstanceGroupManagers().SetInstanceTemplate(t.Cloud.Project(), *e.Zone, i.Name, instanceTemplateURL)
 			if err != nil {
 				return fmt.Errorf("error updating InstanceTemplate for InstanceGroupManager: %v", err)
 			}
@@ -155,7 +149,7 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 			if i.TargetSize != 0 {
 				newSize = int64(i.TargetSize)
 			}
-			op, err := t.Cloud.Compute().InstanceGroupManagers.Resize(t.Cloud.Project(), *e.Zone, i.Name, newSize).Do()
+			op, err := t.Cloud.Compute().InstanceGroupManagers().Resize(t.Cloud.Project(), *e.Zone, i.Name, newSize)
 			if err != nil {
 				return fmt.Errorf("error resizing InstanceGroupManager: %v", err)
 			}

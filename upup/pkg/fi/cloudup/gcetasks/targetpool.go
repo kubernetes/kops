@@ -43,7 +43,7 @@ func (e *TargetPool) Find(c *fi.Context) (*TargetPool, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 	name := fi.StringValue(e.Name)
 
-	r, err := cloud.Compute().TargetPools.Get(cloud.Project(), cloud.Region(), name).Do()
+	r, err := cloud.Compute().TargetPools().Get(cloud.Project(), cloud.Region(), name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -84,7 +84,7 @@ func (_ *TargetPool) RenderGCE(t *gce.GCEAPITarget, a, e, changes *TargetPool) e
 	if a == nil {
 		klog.V(4).Infof("Creating TargetPool %q", o.Name)
 
-		op, err := t.Cloud.Compute().TargetPools.Insert(t.Cloud.Project(), t.Cloud.Region(), o).Do()
+		op, err := t.Cloud.Compute().TargetPools().Insert(t.Cloud.Project(), t.Cloud.Region(), o)
 		if err != nil {
 			return fmt.Errorf("error creating TargetPool %q: %v", name, err)
 		}

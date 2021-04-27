@@ -32,7 +32,7 @@ func DeleteInstanceGroupManager(c GCECloud, t *compute.InstanceGroupManager) err
 		return err
 	}
 
-	op, err := c.Compute().InstanceGroupManagers.Delete(u.Project, u.Zone, u.Name).Do()
+	op, err := c.Compute().InstanceGroupManagers().Delete(u.Project, u.Zone, u.Name)
 	if err != nil {
 		if IsNotFound(err) {
 			klog.Infof("InstanceGroupManager not found, assuming deleted: %q", t.SelfLink)
@@ -52,7 +52,7 @@ func DeleteInstanceTemplate(c GCECloud, selfLink string) error {
 		return err
 	}
 
-	op, err := c.Compute().InstanceTemplates.Delete(u.Project, u.Name).Do()
+	op, err := c.Compute().InstanceTemplates().Delete(u.Project, u.Name)
 	if err != nil {
 		if IsNotFound(err) {
 			klog.Infof("instancetemplate not found, assuming deleted: %q", selfLink)
@@ -72,7 +72,7 @@ func DeleteInstance(c GCECloud, instanceSelfLink string) error {
 		return err
 	}
 
-	op, err := c.Compute().Instances.Delete(u.Project, u.Zone, u.Name).Do()
+	op, err := c.Compute().Instances().Delete(u.Project, u.Zone, u.Name)
 	if err != nil {
 		if IsNotFound(err) {
 			klog.Infof("Instance not found, assuming deleted: %q", instanceSelfLink)
@@ -98,12 +98,7 @@ func ListManagedInstances(c GCECloud, igm *compute.InstanceGroupManager) ([]*com
 	//		googleapi.Field("items/metadata/items[key='instance-template']"),
 	//	)
 
-	var instances []*compute.ManagedInstance
-	err := c.Compute().InstanceGroupManagers.ListManagedInstances(project, zoneName, igm.Name).Pages(ctx,
-		func(page *compute.InstanceGroupManagersListManagedInstancesResponse) error {
-			instances = append(instances, page.ManagedInstances...)
-			return nil
-		})
+	instances, err := c.Compute().InstanceGroupManagers().ListManagedInstances(ctx, project, zoneName, igm.Name)
 	if err != nil {
 		return nil, fmt.Errorf("error listing ManagedInstances in %s: %v", igm.Name, err)
 	}

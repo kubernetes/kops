@@ -45,6 +45,7 @@ import (
 	"k8s.io/kops/cloudmock/aws/mockelbv2"
 	"k8s.io/kops/cloudmock/aws/mockiam"
 	"k8s.io/kops/cloudmock/aws/mockroute53"
+	gcemock "k8s.io/kops/cloudmock/gce"
 	"k8s.io/kops/cloudmock/openstack/mockblockstorage"
 	"k8s.io/kops/cloudmock/openstack/mockcompute"
 	"k8s.io/kops/cloudmock/openstack/mockdns"
@@ -55,7 +56,6 @@ import (
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -282,8 +282,8 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 }
 
 // SetupMockGCE configures a mock GCE cloud provider
-func (h *IntegrationTestHarness) SetupMockGCE() {
-	gce.InstallMockGCECloud("us-test1", "testproject")
+func (h *IntegrationTestHarness) SetupMockGCE() *gcemock.MockGCECloud {
+	return gcemock.InstallMockGCECloud("us-test1", "testproject")
 }
 
 func SetupMockOpenstack() *openstack.MockCloud {

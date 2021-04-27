@@ -164,6 +164,7 @@ go_test(
     shard_count = 10,
     deps = [
         "//cloudmock/aws/mockec2:go_default_library",
+        "//cloudmock/gce:go_default_library",
         "//cmd/kops/util:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/commands:go_default_library",
