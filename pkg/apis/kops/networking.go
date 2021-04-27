@@ -471,6 +471,11 @@ type CiliumNetworkingSpec struct {
 	// AutoDirectNodeRoutes adds automatic L2 routing between nodes.
 	// Default: false
 	AutoDirectNodeRoutes bool `json:"autoDirectNodeRoutes,omitempty"`
+	// EnableHostReachableServices configures Cilium to enable services to be
+	// reached from the host namespace in addition to pod namespaces.
+	// https://docs.cilium.io/en/v1.9/gettingstarted/host-services/
+	// Default: false
+	EnableHostReachableServices bool `json:"enableHostReachableServices,omitempty"`
 	// EnableNodePort replaces kube-proxy with Cilium's BPF implementation.
 	// Requires spec.kubeProxy.enabled be set to false.
 	// Default: false

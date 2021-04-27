@@ -1729,6 +1729,7 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.Ipam = in.Ipam
 	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
 	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
+	out.EnableHostReachableServices = in.EnableHostReachableServices
 	out.EnableNodePort = in.EnableNodePort
 	out.EtcdManaged = in.EtcdManaged
 	out.EnableRemoteNodeIdentity = in.EnableRemoteNodeIdentity
@@ -1823,6 +1824,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	out.Ipam = in.Ipam
 	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
 	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
+	out.EnableHostReachableServices = in.EnableHostReachableServices
 	out.EnableNodePort = in.EnableNodePort
 	out.EtcdManaged = in.EtcdManaged
 	out.EnableRemoteNodeIdentity = in.EnableRemoteNodeIdentity
