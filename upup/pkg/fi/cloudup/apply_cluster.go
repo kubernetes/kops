@@ -554,7 +554,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
 				&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
 				&model.NetworkModelBuilder{KopsModelContext: modelContext, Lifecycle: &networkLifecycle},
-				&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+				&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle, Cluster: cluster},
 				&awsmodel.OIDCProviderBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle, KeyStore: keyStore},
 			)
 
@@ -563,6 +563,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				BootstrapScriptBuilder: bootstrapScriptBuilder,
 				Lifecycle:              &clusterLifecycle,
 				SecurityLifecycle:      &securityLifecycle,
+				Cluster:                cluster,
 			}
 
 			if featureflag.Spotinst.Enabled() {
