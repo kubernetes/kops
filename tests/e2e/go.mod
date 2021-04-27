@@ -12,7 +12,7 @@ require (
 	k8s.io/klog/v2 v2.8.0
 	k8s.io/kops v0.0.0-00010101000000-000000000000
 	sigs.k8s.io/boskos v0.0.0-20200710214748-f5935686c7fc
-	sigs.k8s.io/kubetest2 v0.0.0-20210309183806-9230b4e73d8d
+	sigs.k8s.io/kubetest2 v0.0.0-20210423234514-1c731a5d2283
 )
 
 replace k8s.io/kops => ../../.
