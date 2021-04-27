@@ -75,7 +75,7 @@ func (r *Router) CompareWithID() *string {
 func (r *Router) Find(c *fi.Context) (*Router, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
-	found, err := cloud.Compute().Routers.Get(cloud.Project(), *r.Region, *r.Name).Do()
+	found, err := cloud.Compute().Routers().Get(cloud.Project(), *r.Region, *r.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -154,7 +154,7 @@ func (*Router) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Router) error {
 				},
 			},
 		}
-		if _, err := t.Cloud.Compute().Routers.Insert(t.Cloud.Project(), *e.Region, router).Do(); err != nil {
+		if _, err := t.Cloud.Compute().Routers().Insert(t.Cloud.Project(), *e.Region, router); err != nil {
 			return fmt.Errorf("error creating Router: %v", err)
 		}
 	} else {

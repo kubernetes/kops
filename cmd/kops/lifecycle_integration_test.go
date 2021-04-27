@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"k8s.io/kops/cloudmock/aws/mockec2"
+	gcemock "k8s.io/kops/cloudmock/gce"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/featureflag"
@@ -74,6 +75,14 @@ func TestLifecycleMinimalOpenstack(t *testing.T) {
 		t:           t,
 		SrcDir:      "minimal_openstack",
 		ClusterName: "minimal-openstack.k8s.local",
+	})
+}
+
+func TestLifecycleMinimalGCE(t *testing.T) {
+	runLifecycleTestGCE(&LifecycleTestOptions{
+		t:           t,
+		SrcDir:      "minimal_gce",
+		ClusterName: "minimal-gce.example.com",
 	})
 }
 
@@ -350,6 +359,15 @@ func AllOpenstackResources(c *openstack.MockCloud) map[string]interface{} {
 	return all
 }
 
+// AllGCEResources returns all resources
+func AllGCEResources(c *gcemock.MockGCECloud) map[string]interface{} {
+	all := make(map[string]interface{})
+	for k, v := range c.AllResources() {
+		all[k] = v
+	}
+	return all
+}
+
 func runLifecycleTestAWS(o *LifecycleTestOptions) {
 	o.AddDefaults()
 
@@ -459,6 +477,81 @@ func runLifecycleTestOpenstack(o *LifecycleTestOptions) {
 		if !reflect.DeepEqual(beforeIds, afterIds) {
 			t.Fatalf("resources changed by cluster create / destroy: %v -> %v", beforeIds, afterIds)
 		}
+	}
+}
+
+func runLifecycleTestGCE(o *LifecycleTestOptions) {
+	o.AddDefaults()
+
+	t := o.t
+
+	h := testutils.NewIntegrationTestHarness(o.t)
+	defer h.Close()
+
+	h.MockKopsVersion("1.21.0-alpha.1")
+
+	featureflag.ParseFlags("AlphaAllowGCE")
+
+	cloud := h.SetupMockGCE()
+
+	var beforeIds []string
+	for id := range AllGCEResources(cloud) {
+		beforeIds = append(beforeIds, id)
+	}
+	sort.Strings(beforeIds)
+
+	ctx := context.Background()
+
+	t.Logf("running lifecycle test for cluster %s", o.ClusterName)
+
+	var stdout bytes.Buffer
+	inputYAML := "in-" + o.Version + ".yaml"
+
+	factory := util.NewFactory(&util.FactoryOptions{
+		RegistryPath: "memfs://tests",
+	})
+
+	{
+		options := &CreateOptions{}
+		options.Filenames = []string{path.Join(o.SrcDir, inputYAML)}
+
+		err := RunCreate(ctx, factory, &stdout, options)
+		if err != nil {
+			t.Fatalf("error running %q create: %v", inputYAML, err)
+		}
+	}
+
+	{
+		options := &CreateSecretPublickeyOptions{}
+		options.ClusterName = o.ClusterName
+		options.Name = "admin"
+		options.PublicKeyPath = path.Join(o.SrcDir, "id_rsa.pub")
+
+		err := RunCreateSecretPublicKey(ctx, factory, &stdout, options)
+		if err != nil {
+			t.Fatalf("error running %q create: %v", inputYAML, err)
+		}
+	}
+
+	updateEnsureNoChanges(ctx, t, factory, o.ClusterName, stdout)
+
+	{
+		options := &DeleteClusterOptions{}
+		options.Yes = true
+		options.ClusterName = o.ClusterName
+		if err := RunDeleteCluster(ctx, factory, &stdout, options); err != nil {
+			t.Fatalf("error running delete cluster %q: %v", o.ClusterName, err)
+		}
+	}
+
+	var afterIds []string
+	for id := range AllGCEResources(cloud) {
+		afterIds = append(afterIds, id)
+	}
+	sort.Strings(afterIds)
+
+	if !reflect.DeepEqual(beforeIds, afterIds) {
+		t.Fatalf("resources changed by cluster create / destroy: %v -> %v", beforeIds, afterIds)
 	}
 }
 
