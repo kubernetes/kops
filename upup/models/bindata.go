@@ -4770,6 +4770,9 @@ data:
   masquerade: "{{- if .DisableMasquerade -}}false{{- else -}}true{{- end -}}"
   install-iptables-rules: "{{- if .IPTablesRulesNoinstall -}}false{{- else -}}true{{- end -}}"
   auto-direct-node-routes: "{{ .AutoDirectNodeRoutes }}"
+  {{ if .EnableHostReachableServices }}
+  enable-host-reachable-services: "{{ .EnableHostReachableServices }}"
+  {{ end }}
   enable-node-port: "{{ .EnableNodePort }}"
   kube-proxy-replacement: "{{- if .EnableNodePort -}}strict{{- else -}}partial{{- end -}}"
   enable-remote-node-identity: "{{ .EnableRemoteNodeIdentity -}}"
@@ -5722,6 +5725,9 @@ data:
   masquerade: "{{- if .DisableMasquerade -}}false{{- else -}}true{{- end -}}"
   install-iptables-rules: "{{- if .IPTablesRulesNoinstall -}}false{{- else -}}true{{- end -}}"
   auto-direct-node-routes: "{{ .AutoDirectNodeRoutes }}"
+  {{ if .EnableHostReachableServices }}
+  enable-host-reachable-services: "{{ .EnableHostReachableServices }}"
+  {{ end }}
   enable-node-port: "{{ .EnableNodePort }}"
   kube-proxy-replacement: "{{- if .EnableNodePort -}}strict{{- else -}}partial{{- end -}}"
   enable-remote-node-identity: "{{- if .EnableRemoteNodeIdentity -}}true{{- else -}}false{{- end -}}"
