@@ -240,6 +240,21 @@ func TestSetClusterFields(t *testing.T) {
 		},
 		{
 			Fields: []string{
+				"cluster.spec.networking.cilium.enableHostReachableServices=true",
+			},
+			Input: kops.Cluster{},
+			Output: kops.Cluster{
+				Spec: kops.ClusterSpec{
+					Networking: &kops.NetworkingSpec{
+						Cilium: &kops.CiliumNetworkingSpec{
+							EnableHostReachableServices: true,
+						},
+					},
+				},
+			},
+		},
+		{
+			Fields: []string{
 				"cluster.spec.networking.cilium.enableNodePort=true",
 			},
 			Input: kops.Cluster{},
