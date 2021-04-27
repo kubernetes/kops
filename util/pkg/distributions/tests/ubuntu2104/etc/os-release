@@ -1,0 +1,12 @@
+NAME="Ubuntu"
+VERSION="21.04 (Hirsute Hippo)"
+ID=ubuntu
+ID_LIKE=debian
+PRETTY_NAME="Ubuntu 21.04"
+VERSION_ID="21.04"
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+VERSION_CODENAME=hirsute
+UBUNTU_CODENAME=hirsute
