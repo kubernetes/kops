@@ -48,7 +48,7 @@ func (e *ForwardingRule) Find(c *fi.Context) (*ForwardingRule, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 	name := fi.StringValue(e.Name)
 
-	r, err := cloud.Compute().ForwardingRules.Get(cloud.Project(), cloud.Region(), name).Do()
+	r, err := cloud.Compute().ForwardingRules().Get(cloud.Project(), cloud.Region(), name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -125,7 +125,7 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 	if a == nil {
 		klog.V(4).Infof("Creating ForwardingRule %q", o.Name)
 
-		_, err := t.Cloud.Compute().ForwardingRules.Insert(t.Cloud.Project(), t.Cloud.Region(), o).Do()
+		_, err := t.Cloud.Compute().ForwardingRules().Insert(t.Cloud.Project(), t.Cloud.Region(), o)
 		if err != nil {
 			return fmt.Errorf("error creating ForwardingRule %q: %v", o.Name, err)
 		}

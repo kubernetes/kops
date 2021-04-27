@@ -1,6 +1,6 @@
 locals {
   cluster_name = "minimal-gce.example.com"
-  project      = "us-test1"
+  project      = "testproject"
   region       = "us-test1"
 }
 
@@ -9,7 +9,7 @@ output "cluster_name" {
 }
 
 output "project" {
-  value = "us-test1"
+  value = "testproject"
 }
 
 output "region" {

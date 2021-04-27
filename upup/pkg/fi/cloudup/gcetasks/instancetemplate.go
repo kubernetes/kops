@@ -17,6 +17,7 @@ limitations under the License.
 package gcetasks
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"sort"
@@ -85,7 +86,7 @@ func (e *InstanceTemplate) CompareWithID() *string {
 func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
-	response, err := cloud.Compute().InstanceTemplates.List(cloud.Project()).Do()
+	templates, err := cloud.Compute().InstanceTemplates().List(context.Background(), cloud.Project())
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -98,7 +99,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		return nil, err
 	}
 
-	for _, r := range response.Items {
+	for _, r := range templates {
 		if !strings.HasPrefix(r.Name, fi.StringValue(e.NamePrefix)+"-") {
 			continue
 		}
@@ -427,7 +428,7 @@ func (_ *InstanceTemplate) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instanc
 		e.ID = &name
 		i.Name = name
 
-		op, err := t.Cloud.Compute().InstanceTemplates.Insert(t.Cloud.Project(), i).Do()
+		op, err := t.Cloud.Compute().InstanceTemplates().Insert(t.Cloud.Project(), i)
 		if err != nil {
 			return fmt.Errorf("error creating InstanceTemplate: %v", err)
 		}
