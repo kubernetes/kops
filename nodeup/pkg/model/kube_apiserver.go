@@ -312,14 +312,20 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		}
 	}
 
-	var mainEtcdCluster, eventsEtcdCluster string
-	if b.IsMaster {
-		mainEtcdCluster = "https://127.0.0.1:4001"
-		eventsEtcdCluster = "https://127.0.0.1:4002"
-	} else {
-		host := b.Cluster.ObjectMeta.Name
-		mainEtcdCluster = "https://main.etcd." + host + ":4001"
-		eventsEtcdCluster = "https://events.etcd." + host + ":4002"
+	// we need to replace 127.0.0.1 for etcd urls with the dns names in case this apiserver is not
+	// running on master nodes
+	if !b.IsMaster {
+		clusterName := b.Cluster.ObjectMeta.Name
+		mainEtcdDNSName := "main.etcd." + clusterName
+		eventsEtcdDNSName := "events.etcd." + clusterName
+		for i := range kubeAPIServer.EtcdServers {
+			kubeAPIServer.EtcdServers[i] = strings.ReplaceAll(kubeAPIServer.EtcdServers[i], "127.0.0.1", mainEtcdDNSName)
+		}
+		for i := range kubeAPIServer.EtcdServersOverrides {
+			if strings.HasPrefix(kubeAPIServer.EtcdServersOverrides[i], "/events") {
+				kubeAPIServer.EtcdServersOverrides[i] = strings.ReplaceAll(kubeAPIServer.EtcdServersOverrides[i], "127.0.0.1", eventsEtcdDNSName)
+			}
+		}
 	}
 
 	if b.UseEtcdManager() && b.UseEtcdTLS() {
@@ -327,14 +333,10 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		kubeAPIServer.EtcdCAFile = filepath.Join(basedir, "etcd-ca.crt")
 		kubeAPIServer.EtcdCertFile = filepath.Join(basedir, "etcd-client.crt")
 		kubeAPIServer.EtcdKeyFile = filepath.Join(basedir, "etcd-client.key")
-		kubeAPIServer.EtcdServers = []string{mainEtcdCluster}
-		kubeAPIServer.EtcdServersOverrides = []string{"/events#" + eventsEtcdCluster}
 	} else if b.UseEtcdTLS() {
 		kubeAPIServer.EtcdCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 		kubeAPIServer.EtcdCertFile = filepath.Join(b.PathSrvKubernetes(), "etcd-client.pem")
 		kubeAPIServer.EtcdKeyFile = filepath.Join(b.PathSrvKubernetes(), "etcd-client-key.pem")
-		kubeAPIServer.EtcdServers = []string{mainEtcdCluster}
-		kubeAPIServer.EtcdServersOverrides = []string{"/events#" + eventsEtcdCluster}
 	}
 
 	// @note we are making assumption were using the ones created by the pki model, not custom defined ones
