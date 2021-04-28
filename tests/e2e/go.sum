@@ -2209,7 +2209,7 @@ sigs.k8s.io/boskos v0.0.0-20200710214748-f5935686c7fc/go.mod h1:ZO5RV+VxJS9mb6Dv
 sigs.k8s.io/controller-runtime v0.5.0/go.mod h1:REiJzC7Y00U+2YkMbT8wxgrsX5USpXKGhb2sCtAXiT8=
 sigs.k8s.io/controller-runtime v0.5.4/go.mod h1:JZUwSMVbxDupo0lTJSSFP5pimEyxGynROImSsqIOx1A=
 sigs.k8s.io/controller-runtime v0.6.2/go.mod h1:vhcq/rlnENJ09SIRp3EveTaZ0yqH526hjf9iJdbUJ/E=
-sigs.k8s.io/controller-runtime v0.9.0-alpha.1/go.mod h1:BARxVvgj+8Ihw9modUvYh7/OJmjxuBtLK8P36jdf7rY=
+sigs.k8s.io/controller-runtime v0.9.0-beta.0/go.mod h1:ufPDuvefw2Y1KnBgHQrLdOjueYlj+XJV2AszbT+WTxs=
 sigs.k8s.io/controller-tools v0.2.9-0.20200414181213-645d44dca7c0/go.mod h1:YKE/iHvcKITCljdnlqHYe+kAt7ZldvtAwUzQff0k1T0=
 sigs.k8s.io/kubetest2 v0.0.0-20210309183806-9230b4e73d8d h1:dhWiqYfVQS+jhaoGsdbw7rZJjtuN4gzgcoHPgXptttI=
 sigs.k8s.io/kubetest2 v0.0.0-20210309183806-9230b4e73d8d/go.mod h1:miwZW11FA2Bvclxo4WqIVY+gHTR5B927inXdfxJYoAA=
