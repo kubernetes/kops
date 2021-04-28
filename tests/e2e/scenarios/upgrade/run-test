@@ -28,7 +28,7 @@ KUBETEST2_COMMON_ARGS="-v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${
 KUBETEST2_COMMON_ARGS="${KUBETEST2_COMMON_ARGS} --admin-access=${ADMIN_ACCESS:-}"
 
 export GO111MODULE=on
-go get sigs.k8s.io/kubetest2@latest
+go install sigs.k8s.io/kubetest2
 
 cd ${REPO_ROOT}/tests/e2e
 go install ./kubetest2-kops
