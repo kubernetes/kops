@@ -311,6 +311,10 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 					nodeExpectedToJoin = false
 				}
 
+				if member.Status == cloudinstances.CloudInstanceStatusDetached {
+					nodeExpectedToJoin = false
+				}
+
 				if nodeExpectedToJoin {
 					v.addError(&ValidationError{
 						Kind:          "Machine",
