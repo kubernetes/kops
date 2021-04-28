@@ -104,14 +104,14 @@ func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error
 				}
 				return fmt.Errorf("error modifying warm pool: %w", err)
 			}
-		} else {
+		} else if a != nil {
 			_, err := svc.DeleteWarmPool(&autoscaling.DeleteWarmPoolInput{
 				AutoScalingGroupName: e.Name,
 				// We don't need to do any cleanup so, the faster the better
 				ForceDelete: fi.Bool(true),
 			})
 			if err != nil {
-				return fmt.Errorf("error modifying warm pool: %w", err)
+				return fmt.Errorf("error deleting warm pool: %w", err)
 			}
 		}
 	}
