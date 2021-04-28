@@ -34,7 +34,6 @@ import (
 	"k8s.io/client-go/metadata"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
-
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
 
@@ -48,6 +47,7 @@ func newSpecificInformersMap(config *rest.Config,
 	mapper meta.RESTMapper,
 	resync time.Duration,
 	namespace string,
+	selectors SelectorsByGVK,
 	createListWatcher createListWatcherFunc) *specificInformersMap {
 	ip := &specificInformersMap{
 		config:            config,
@@ -60,6 +60,7 @@ func newSpecificInformersMap(config *rest.Config,
 		startWait:         make(chan struct{}),
 		createListWatcher: createListWatcher,
 		namespace:         namespace,
+		selectors:         selectors,
 	}
 	return ip
 }
@@ -120,6 +121,10 @@ type specificInformersMap struct {
 	// namespace is the namespace that all ListWatches are restricted to
 	// default or empty string means all namespaces
 	namespace string
+
+	// selectors are the label or field selectors that will be added to the
+	// ListWatch ListOptions.
+	selectors SelectorsByGVK
 }
 
 // Start calls Run on each of the informers and sets started to true.  Blocks on the context.
@@ -216,6 +221,13 @@ func (ip *specificInformersMap) addInformerToMap(gvk schema.GroupVersionKind, ob
 	if err != nil {
 		return nil, false, err
 	}
+
+	switch obj.(type) {
+	case *metav1.PartialObjectMetadata, *metav1.PartialObjectMetadataList:
+		ni = metadataSharedIndexInformerPreserveGVK(gvk, ni)
+	default:
+	}
+
 	i := &MapEntry{
 		Informer: ni,
 		Reader:   CacheReader{indexer: ni.GetIndexer(), groupVersionKind: gvk, scopeName: rm.Scope.Name()},
@@ -256,6 +268,7 @@ func createStructuredListWatch(gvk schema.GroupVersionKind, ip *specificInformer
 	// Create a new ListWatch for the obj
 	return &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
+			ip.selectors[gvk].ApplyToList(&opts)
 			res := listObj.DeepCopyObject()
 			isNamespaceScoped := ip.namespace != "" && mapping.Scope.Name() != meta.RESTScopeNameRoot
 			err := client.Get().NamespaceIfScoped(ip.namespace, isNamespaceScoped).Resource(mapping.Resource.Resource).VersionedParams(&opts, ip.paramCodec).Do(ctx).Into(res)
@@ -263,6 +276,7 @@ func createStructuredListWatch(gvk schema.GroupVersionKind, ip *specificInformer
 		},
 		// Setup the watch function
 		WatchFunc: func(opts metav1.ListOptions) (watch.Interface, error) {
+			ip.selectors[gvk].ApplyToList(&opts)
 			// Watch needs to be set to true separately
 			opts.Watch = true
 			isNamespaceScoped := ip.namespace != "" && mapping.Scope.Name() != meta.RESTScopeNameRoot
@@ -278,7 +292,12 @@ func createUnstructuredListWatch(gvk schema.GroupVersionKind, ip *specificInform
 	if err != nil {
 		return nil, err
 	}
-	dynamicClient, err := dynamic.NewForConfig(ip.config)
+
+	// If the rest configuration has a negotiated serializer passed in,
+	// we should remove it and use the one that the dynamic client sets for us.
+	cfg := rest.CopyConfig(ip.config)
+	cfg.NegotiatedSerializer = nil
+	dynamicClient, err := dynamic.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -289,6 +308,7 @@ func createUnstructuredListWatch(gvk schema.GroupVersionKind, ip *specificInform
 	// Create a new ListWatch for the obj
 	return &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
+			ip.selectors[gvk].ApplyToList(&opts)
 			if ip.namespace != "" && mapping.Scope.Name() != meta.RESTScopeNameRoot {
 				return dynamicClient.Resource(mapping.Resource).Namespace(ip.namespace).List(ctx, opts)
 			}
@@ -296,6 +316,7 @@ func createUnstructuredListWatch(gvk schema.GroupVersionKind, ip *specificInform
 		},
 		// Setup the watch function
 		WatchFunc: func(opts metav1.ListOptions) (watch.Interface, error) {
+			ip.selectors[gvk].ApplyToList(&opts)
 			// Watch needs to be set to true separately
 			opts.Watch = true
 			if ip.namespace != "" && mapping.Scope.Name() != meta.RESTScopeNameRoot {
@@ -314,8 +335,13 @@ func createMetadataListWatch(gvk schema.GroupVersionKind, ip *specificInformersM
 		return nil, err
 	}
 
+	// Always clear the negotiated serializer and use the one
+	// set from the metadata client.
+	cfg := rest.CopyConfig(ip.config)
+	cfg.NegotiatedSerializer = nil
+
 	// grab the metadata client
-	client, err := metadata.NewForConfig(ip.config)
+	client, err := metadata.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -327,6 +353,7 @@ func createMetadataListWatch(gvk schema.GroupVersionKind, ip *specificInformersM
 	// create the relevant listwatch
 	return &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
+			ip.selectors[gvk].ApplyToList(&opts)
 			if ip.namespace != "" && mapping.Scope.Name() != meta.RESTScopeNameRoot {
 				return client.Resource(mapping.Resource).Namespace(ip.namespace).List(ctx, opts)
 			}
@@ -334,6 +361,7 @@ func createMetadataListWatch(gvk schema.GroupVersionKind, ip *specificInformersM
 		},
 		// Setup the watch function
 		WatchFunc: func(opts metav1.ListOptions) (watch.Interface, error) {
+			ip.selectors[gvk].ApplyToList(&opts)
 			// Watch needs to be set to true separately
 			opts.Watch = true
 			if ip.namespace != "" && mapping.Scope.Name() != meta.RESTScopeNameRoot {

@@ -164,13 +164,13 @@ func (blder *Builder) Named(name string) *Builder {
 	return blder
 }
 
-// Complete builds the Application ControllerManagedBy.
+// Complete builds the Application Controller.
 func (blder *Builder) Complete(r reconcile.Reconciler) error {
 	_, err := blder.Build(r)
 	return err
 }
 
-// Build builds the Application ControllerManagedBy and returns the Controller it created.
+// Build builds the Application Controller and returns the Controller it created.
 func (blder *Builder) Build(r reconcile.Reconciler) (controller.Controller, error) {
 	if r == nil {
 		return nil, fmt.Errorf("must provide a non-nil Reconciler")

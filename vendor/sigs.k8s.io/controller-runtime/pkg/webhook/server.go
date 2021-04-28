@@ -29,8 +29,8 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"k8s.io/apimachinery/pkg/runtime"
+	kscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/certwatcher"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/internal/metrics"
@@ -124,7 +124,7 @@ func (s *Server) Register(path string, hook http.Handler) {
 	}
 	// TODO(directxman12): call setfields if we've already started the server
 	s.webhooks[path] = hook
-	s.WebhookMux.Handle(path, instrumentedHook(path, hook))
+	s.WebhookMux.Handle(path, metrics.InstrumentedHook(path, hook))
 
 	regLog := log.WithValues("path", path)
 	regLog.Info("registering webhook")
@@ -149,25 +149,24 @@ func (s *Server) Register(path string, hook http.Handler) {
 	}
 }
 
-// instrumentedHook adds some instrumentation on top of the given webhook.
-func instrumentedHook(path string, hookRaw http.Handler) http.Handler {
-	lbl := prometheus.Labels{"webhook": path}
+// StartStandalone runs a webhook server without
+// a controller manager.
+func (s *Server) StartStandalone(ctx context.Context, scheme *runtime.Scheme) error {
+	// Use the Kubernetes client-go scheme if none is specified
+	if scheme == nil {
+		scheme = kscheme.Scheme
+	}
 
-	lat := metrics.RequestLatency.MustCurryWith(lbl)
-	cnt := metrics.RequestTotal.MustCurryWith(lbl)
-	gge := metrics.RequestInFlight.With(lbl)
+	if err := s.InjectFunc(func(i interface{}) error {
+		if _, err := inject.SchemeInto(scheme, i); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
 
-	// Initialize the most likely HTTP status codes.
-	cnt.WithLabelValues("200")
-	cnt.WithLabelValues("500")
-
-	return promhttp.InstrumentHandlerDuration(
-		lat,
-		promhttp.InstrumentHandlerCounter(
-			cnt,
-			promhttp.InstrumentHandlerInFlight(gge, hookRaw),
-		),
-	)
+	return s.Start(ctx)
 }
 
 // Start runs the server.

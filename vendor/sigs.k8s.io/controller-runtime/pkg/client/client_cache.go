@@ -133,7 +133,6 @@ type resourceMeta struct {
 // isNamespaced returns true if the type is namespaced
 func (r *resourceMeta) isNamespaced() bool {
 	return r.mapping.Scope.Name() != meta.RESTScopeNameRoot
-
 }
 
 // resource returns the resource name of the type
