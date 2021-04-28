@@ -8,6 +8,7 @@ go_library(
     visibility = ["//vendor/sigs.k8s.io/controller-runtime/pkg/webhook:__subpackages__"],
     deps = [
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
+        "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/metrics:go_default_library",
     ],
 )
