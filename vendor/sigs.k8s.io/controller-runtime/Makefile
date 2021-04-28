@@ -24,6 +24,8 @@
 SHELL:=/usr/bin/env bash
 .DEFAULT_GOAL:=help
 
+export WHAT ?= ./...
+
 # Use GOPROXY environment variable if set
 GOPROXY := $(shell go env GOPROXY)
 ifeq ($(GOPROXY),)
