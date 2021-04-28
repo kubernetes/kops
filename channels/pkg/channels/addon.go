@@ -237,6 +237,9 @@ func (a *Addon) installPKI(ctx context.Context, k8sClient kubernetes.Interface, 
 		Subject: pkix.Name{
 			CommonName: a.Name,
 		},
+		AlternateNames: []string{
+			a.Name,
+		},
 	}
 	cert, privateKey, _, err := pki.IssueCert(req, nil)
 	if err != nil {
