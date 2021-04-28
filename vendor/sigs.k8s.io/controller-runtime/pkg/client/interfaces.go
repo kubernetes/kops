@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/watch"
 )
 
 // ObjectKey identifies a Kubernetes Object.
@@ -106,6 +107,14 @@ type Client interface {
 	Scheme() *runtime.Scheme
 	// RESTMapper returns the rest this client is using.
 	RESTMapper() meta.RESTMapper
+}
+
+// WithWatch supports Watch on top of the CRUD operations supported by
+// the normal Client. Its intended use-case are CLI apps that need to wait for
+// events.
+type WithWatch interface {
+	Client
+	Watch(ctx context.Context, obj ObjectList, opts ...ListOption) (watch.Interface, error)
 }
 
 // IndexerFunc knows how to take an object and turn it into a series

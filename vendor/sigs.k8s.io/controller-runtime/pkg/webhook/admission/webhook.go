@@ -27,8 +27,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/json"
+	"k8s.io/client-go/kubernetes/scheme"
 
+	logf "sigs.k8s.io/controller-runtime/pkg/internal/log"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/internal/metrics"
 )
 
 var (
@@ -110,6 +113,9 @@ func (f HandlerFunc) Handle(ctx context.Context, req Request) Response {
 }
 
 // Webhook represents each individual webhook.
+//
+// It must be registered with a webhook.Server or
+// populated by StandaloneWebhook to be ran on an arbitrary HTTP server.
 type Webhook struct {
 	// Handler actually processes an admission request returning whether it was allowed or denied,
 	// and potentially patches to apply to the handler.
@@ -202,4 +208,44 @@ func (w *Webhook) InjectFunc(f inject.Func) error {
 	}
 
 	return setFields(w.Handler)
+}
+
+// StandaloneOptions let you configure a StandaloneWebhook.
+type StandaloneOptions struct {
+	// Scheme is the scheme used to resolve runtime.Objects to GroupVersionKinds / Resources
+	// Defaults to the kubernetes/client-go scheme.Scheme, but it's almost always better
+	// idea to pass your own scheme in.  See the documentation in pkg/scheme for more information.
+	Scheme *runtime.Scheme
+	// Logger to be used by the webhook.
+	// If none is set, it defaults to log.Log global logger.
+	Logger logr.Logger
+	// MetricsPath is used for labelling prometheus metrics
+	// by the path is served on.
+	// If none is set, prometheus metrics will not be generated.
+	MetricsPath string
+}
+
+// StandaloneWebhook prepares a webhook for use without a webhook.Server,
+// passing in the information normally populated by webhook.Server
+// and instrumenting the webhook with metrics.
+//
+// Use this to attach your webhook to an arbitrary HTTP server or mux.
+func StandaloneWebhook(hook *Webhook, opts StandaloneOptions) (http.Handler, error) {
+	if opts.Scheme == nil {
+		opts.Scheme = scheme.Scheme
+	}
+
+	if err := hook.InjectScheme(opts.Scheme); err != nil {
+		return nil, err
+	}
+
+	if opts.Logger == nil {
+		opts.Logger = logf.RuntimeLog.WithName("webhook")
+	}
+	hook.log = opts.Logger
+
+	if opts.MetricsPath == "" {
+		return hook, nil
+	}
+	return metrics.InstrumentedHook(opts.MetricsPath, hook), nil
 }

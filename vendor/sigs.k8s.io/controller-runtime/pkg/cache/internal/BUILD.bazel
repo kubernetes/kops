@@ -6,6 +6,8 @@ go_library(
         "cache_reader.go",
         "deleg_map.go",
         "informers_map.go",
+        "metadata_infomer_wrapper.go",
+        "selector.go",
     ],
     importmap = "k8s.io/kops/vendor/sigs.k8s.io/controller-runtime/pkg/cache/internal",
     importpath = "sigs.k8s.io/controller-runtime/pkg/cache/internal",
