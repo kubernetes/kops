@@ -1638,6 +1638,7 @@ func Convert_kops_CanalNetworkingSpec_To_v1alpha2_CanalNetworkingSpec(in *kops.C
 
 func autoConvert_v1alpha2_CertManagerConfig_To_kops_CertManagerConfig(in *CertManagerConfig, out *kops.CertManagerConfig, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.Managed = in.Managed
 	out.Image = in.Image
 	out.DefaultIssuer = in.DefaultIssuer
 	return nil
@@ -1650,6 +1651,7 @@ func Convert_v1alpha2_CertManagerConfig_To_kops_CertManagerConfig(in *CertManage
 
 func autoConvert_kops_CertManagerConfig_To_v1alpha2_CertManagerConfig(in *kops.CertManagerConfig, out *CertManagerConfig, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.Managed = in.Managed
 	out.Image = in.Image
 	out.DefaultIssuer = in.DefaultIssuer
 	return nil
