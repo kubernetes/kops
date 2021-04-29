@@ -924,6 +924,10 @@ type CertManagerConfig struct {
 	// Default: false
 	Enabled *bool `json:"enabled,omitempty"`
 
+	// Managed controls if cert-manager is manged and deployed by kOps.
+	// The deployment of cert-manager is skipped if this is set to false.
+	Managed *bool `json:"managed,omitempty"`
+
 	// Image is the docker container used.
 	// Default: the latest supported image for the specified kubernetes version.
 	Image *string `json:"image,omitempty"`

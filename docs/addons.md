@@ -69,7 +69,23 @@ spec:
     defaultIssuer: yourDefaultIssuer
 ```
 
-**Warning: cert-manager only supports one installation per cluster. If you are already running cert-manager, you need to remove this installation prior to enabling this addon. As long as you are using v1 versions of the cert-manager resources, it is safe to remove existing installs and replace it with this addon**
+**Warning: cert-manager only supports one installation per cluster. If you are already running cert-manager, you need to
+either remove this installation prior to enabling this addon, or mark cert-manger as not being managed by kOps (see below).
+As long as you are using v1 versions of the cert-manager resources, it is safe to remove existing installs and replace it with this addon**
+
+##### Self-provisioned cert-manager
+{{ kops_feature_table(kops_added_default='1.21', k8s_min='1.16') }}
+
+The following cert-manager configuration allows provisioning cert-manager externally and allows all dependent plugins
+to be deployed. Please note that addons might run into errors until cert-manager is deployed.
+
+```yaml
+spec:
+  certManager:
+    enabled: true
+    managed: false
+```
+
 
 Read more about cert-manager in the [official documentation](https://cert-manager.io/docs/)
 
