@@ -47,6 +47,7 @@ require (
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1046
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.0.2
 	github.com/aws/aws-sdk-go v1.38.25
+	github.com/blang/semver v3.5.1+incompatible
 	github.com/blang/semver/v4 v4.0.0
 	github.com/denverdino/aliyungo v0.0.0-20210318042315-546d0768f5c7
 	github.com/digitalocean/godo v1.60.0

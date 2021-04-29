@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "containerd_license.go",
+        "crio_license.go",
         "docker_healthcheck.go",
         "docker_license.go",
     ],

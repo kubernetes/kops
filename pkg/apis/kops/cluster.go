@@ -147,6 +147,7 @@ type ClusterSpec struct {
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []EtcdClusterSpec `json:"etcdClusters,omitempty"`
 	// Component configurations
+	Crio                           *CrioConfig                   `json:"crio,omitempty"`
 	Containerd                     *ContainerdConfig             `json:"containerd,omitempty"`
 	Docker                         *DockerConfig                 `json:"docker,omitempty"`
 	KubeDNS                        *KubeDNSConfig                `json:"kubeDNS,omitempty"`

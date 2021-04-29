@@ -48,6 +48,7 @@ const (
 	dockerService     = "docker.service"
 	kubeletService    = "kubelet.service"
 	protokubeService  = "protokube.service"
+	crioService       = "crio.service"
 )
 
 type Service struct {

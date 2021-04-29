@@ -8,6 +8,7 @@ go_library(
         "cluster.go",
         "componentconfig.go",
         "containerdconfig.go",
+        "crioconfig.go",
         "doc.go",
         "dockerconfig.go",
         "instancegroup.go",

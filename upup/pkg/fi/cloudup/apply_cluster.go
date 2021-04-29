@@ -1063,6 +1063,8 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 			containerRuntimeAssetUrl, containerRuntimeAssetHash, err = findDockerAsset(c.Cluster, assetBuilder, arch)
 		case "containerd":
 			containerRuntimeAssetUrl, containerRuntimeAssetHash, err = findContainerdAsset(c.Cluster, assetBuilder, arch)
+		case "crio":
+			containerRuntimeAssetUrl, containerRuntimeAssetHash, err = findCrioAsset(c.Cluster, assetBuilder, arch)
 		default:
 			err = fmt.Errorf("unknown container runtime: %q", c.Cluster.Spec.ContainerRuntime)
 		}
@@ -1075,6 +1077,7 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 		if err != nil {
 			return err
 		}
+
 		c.NodeUpAssets[arch] = asset
 	}
 
