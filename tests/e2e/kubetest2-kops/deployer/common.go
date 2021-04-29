@@ -123,8 +123,11 @@ func (d *deployer) initialize() error {
 		for _, envvar := range d.env() {
 			// Set all of the env vars we use for kops in the current process
 			// so that the tester inherits them when shelling out to kops
-			i := strings.Index(envvar, "=")
-			os.Setenv(envvar[0:i], envvar[i+1:])
+			if i := strings.Index(envvar, "="); i != -1 {
+				os.Setenv(envvar[0:i], envvar[i+1:])
+			} else {
+				os.Setenv(envvar, "")
+			}
 		}
 	}
 	return nil
@@ -137,7 +140,7 @@ func (d *deployer) verifyKopsFlags() error {
 		if err != nil {
 			return err
 		}
-		klog.Info("Using cluster name ", d.ClusterName)
+		klog.Infof("Using cluster name: %v", d.ClusterName)
 		d.ClusterName = name
 	}
 
