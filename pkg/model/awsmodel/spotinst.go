@@ -126,8 +126,7 @@ const (
 
 // SpotInstanceGroupModelBuilder configures SpotInstanceGroup objects
 type SpotInstanceGroupModelBuilder struct {
-	*model.KopsModelContext
-
+	*AWSModelContext
 	BootstrapScriptBuilder *model.BootstrapScriptBuilder
 	Lifecycle              *fi.Lifecycle
 	SecurityLifecycle      *fi.Lifecycle

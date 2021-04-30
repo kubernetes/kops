@@ -548,14 +548,14 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 			l.Builders = append(l.Builders,
 				&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
-				&awsmodel.BastionModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
-				&awsmodel.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
-				&awsmodel.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
-				&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
-				&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
-				&model.NetworkModelBuilder{KopsModelContext: modelContext, Lifecycle: &networkLifecycle},
-				&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle, Cluster: cluster},
-				&awsmodel.OIDCProviderBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle, KeyStore: keyStore},
+				&awsmodel.BastionModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
+				&awsmodel.DNSModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &clusterLifecycle},
+				&awsmodel.ExternalAccessModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle},
+				&awsmodel.FirewallModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle},
+				&awsmodel.SSHKeyModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle},
+				&awsmodel.NetworkModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &networkLifecycle},
+				&awsmodel.IAMModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle, Cluster: cluster},
+				&awsmodel.OIDCProviderBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle, KeyStore: keyStore},
 			)
 
 			awsModelBuilder := &awsmodel.AutoscalingGroupModelBuilder{
@@ -568,7 +568,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 			if featureflag.Spotinst.Enabled() {
 				l.Builders = append(l.Builders, &awsmodel.SpotInstanceGroupModelBuilder{
-					KopsModelContext:       modelContext,
+					AWSModelContext:        awsModelContext,
 					BootstrapScriptBuilder: bootstrapScriptBuilder,
 					Lifecycle:              &clusterLifecycle,
 					SecurityLifecycle:      &securityLifecycle,

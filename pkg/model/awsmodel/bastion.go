@@ -21,7 +21,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
@@ -38,7 +37,7 @@ const (
 // Bastion instances have access to all internal master and node instances.
 
 type BastionModelBuilder struct {
-	*model.KopsModelContext
+	*AWSModelContext
 	Lifecycle         *fi.Lifecycle
 	SecurityLifecycle *fi.Lifecycle
 }
@@ -85,7 +84,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Egress:        fi.Bool(true),
 			CIDR:          fi.String("0.0.0.0/0"),
 		}
-		b.AddDirectionalGroupRule(c, t)
+		AddDirectionalGroupRule(c, t)
 	}
 
 	// Allow incoming SSH traffic to bastions, through the ELB
@@ -100,14 +99,14 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			FromPort:      fi.Int64(22),
 			ToPort:        fi.Int64(22),
 		}
-		b.AddDirectionalGroupRule(c, t)
+		AddDirectionalGroupRule(c, t)
 	}
 
 	// Allow bastion nodes to SSH to masters
 	for _, src := range bastionGroups {
 		for _, dest := range masterGroups {
 			t := &awstasks.SecurityGroupRule{
-				Name:          fi.String("bastion-to-master-ssh" + model.JoinSuffixes(src, dest)),
+				Name:          fi.String("bastion-to-master-ssh" + JoinSuffixes(src, dest)),
 				Lifecycle:     b.SecurityLifecycle,
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
@@ -115,7 +114,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				FromPort:      fi.Int64(22),
 				ToPort:        fi.Int64(22),
 			}
-			b.AddDirectionalGroupRule(c, t)
+			AddDirectionalGroupRule(c, t)
 		}
 	}
 
@@ -123,7 +122,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, src := range bastionGroups {
 		for _, dest := range nodeGroups {
 			t := &awstasks.SecurityGroupRule{
-				Name:          fi.String("bastion-to-node-ssh" + model.JoinSuffixes(src, dest)),
+				Name:          fi.String("bastion-to-node-ssh" + JoinSuffixes(src, dest)),
 				Lifecycle:     b.SecurityLifecycle,
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
@@ -131,7 +130,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				FromPort:      fi.Int64(22),
 				ToPort:        fi.Int64(22),
 			}
-			b.AddDirectionalGroupRule(c, t)
+			AddDirectionalGroupRule(c, t)
 		}
 	}
 
@@ -160,7 +159,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			CIDR:          fi.String("0.0.0.0/0"),
 		}
 
-		b.AddDirectionalGroupRule(c, t)
+		AddDirectionalGroupRule(c, t)
 	}
 
 	// Allow external access to ELB
@@ -175,7 +174,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			ToPort:        fi.Int64(22),
 			CIDR:          fi.String(sshAccess),
 		}
-		b.AddDirectionalGroupRule(c, t)
+		AddDirectionalGroupRule(c, t)
 	}
 
 	var elbSubnets []*awstasks.Subnet

@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/awsmodel"
 	"k8s.io/kops/pkg/model/components/addonmanifests"
 	"k8s.io/kops/pkg/model/components/addonmanifests/awsloadbalancercontroller"
 	"k8s.io/kops/pkg/model/components/addonmanifests/dnscontroller"
@@ -422,9 +423,13 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 
 		// Generate dns-controller ServiceAccount IAM permissions
 		if b.UseServiceAccountIAM() {
+			awsModelContext := &awsmodel.AWSModelContext{
+				KopsModelContext: b.KopsModelContext,
+			}
+
 			serviceAccountRoles := []iam.Subject{&dnscontroller.ServiceAccount{}}
 			for _, serviceAccountRole := range serviceAccountRoles {
-				iamModelBuilder := &model.IAMModelBuilder{KopsModelContext: b.KopsModelContext, Lifecycle: b.Lifecycle, Cluster: b.Cluster}
+				iamModelBuilder := &awsmodel.IAMModelBuilder{AWSModelContext: awsModelContext, Lifecycle: b.Lifecycle, Cluster: b.Cluster}
 
 				err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
 				if err != nil {
@@ -580,9 +585,13 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 
 		// Generate aws-load-balancer-controller ServiceAccount IAM permissions
 		if b.UseServiceAccountIAM() {
+			awsModelContext := &awsmodel.AWSModelContext{
+				KopsModelContext: b.KopsModelContext,
+			}
+
 			serviceAccountRoles := []iam.Subject{&awsloadbalancercontroller.ServiceAccount{}}
 			for _, serviceAccountRole := range serviceAccountRoles {
-				iamModelBuilder := &model.IAMModelBuilder{KopsModelContext: b.KopsModelContext, Lifecycle: b.Lifecycle, Cluster: b.Cluster}
+				iamModelBuilder := &awsmodel.IAMModelBuilder{AWSModelContext: awsModelContext, Lifecycle: b.Lifecycle, Cluster: b.Cluster}
 
 				err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
 				if err != nil {
