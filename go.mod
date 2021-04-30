@@ -44,11 +44,11 @@ require (
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/Masterminds/sprig/v3 v3.2.2
-	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1046
+	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1059
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.0.2
-	github.com/aws/aws-sdk-go v1.38.25
+	github.com/aws/aws-sdk-go v1.38.29
 	github.com/blang/semver/v4 v4.0.0
-	github.com/denverdino/aliyungo v0.0.0-20210318042315-546d0768f5c7
+	github.com/denverdino/aliyungo v0.0.0-20210425065611-55bee4942cba
 	github.com/digitalocean/godo v1.60.0
 	github.com/docker/docker v20.10.6+incompatible
 	github.com/go-ini/ini v1.62.0
@@ -75,9 +75,9 @@ require (
 	github.com/zclconf/go-cty v1.8.2
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b
 	golang.org/x/mod v0.4.2 // indirect
-	golang.org/x/net v0.0.0-20210423184538-5f58ad60dda6
-	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78
-	golang.org/x/sys v0.0.0-20210423185535-09eb48e85fd7
+	golang.org/x/net v0.0.0-20210428140749-89ef3d95e781
+	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
+	golang.org/x/sys v0.0.0-20210426230700-d19ff857e887
 	google.golang.org/api v0.45.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
@@ -87,7 +87,7 @@ require (
 	k8s.io/apimachinery v0.21.0
 	k8s.io/cli-runtime v0.21.0
 	k8s.io/client-go v0.21.0
-	k8s.io/cloud-provider-openstack v1.20.4
+	k8s.io/cloud-provider-openstack v1.21.0
 	k8s.io/component-base v0.21.0
 	k8s.io/gengo v0.0.0-20210203185629-de9496dff47b
 	k8s.io/klog/v2 v2.8.0

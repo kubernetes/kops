@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -48,18 +49,7 @@ func (client *Client) Init(endpoint, version, accessKeyId, accessKeySecret strin
 		ak += "&"
 	}
 	client.AccessKeySecret = ak
-	client.debug = false
-	handshakeTimeout, err := strconv.Atoi(os.Getenv("TLSHandshakeTimeout"))
-	if err != nil {
-		handshakeTimeout = 0
-	}
-	if handshakeTimeout == 0 {
-		client.httpClient = &http.Client{}
-	} else {
-		t := &http.Transport{
-			TLSHandshakeTimeout: time.Duration(handshakeTimeout) * time.Second}
-		client.httpClient = &http.Client{Transport: t}
-	}
+	client.InitClient()
 	client.endpoint = endpoint
 	client.version = version
 }
@@ -84,35 +74,82 @@ func (client *Client) NewInit4RegionalDomain(endpoint, version, accessKeyId, acc
 // Intialize client object when all properties are ready
 func (client *Client) InitClient() *Client {
 	client.debug = false
-	handshakeTimeout, err := strconv.Atoi(os.Getenv("TLSHandshakeTimeout"))
-	if err != nil {
-		handshakeTimeout = 0
+
+	// create DefaultTransport manully, because transport doesn't has clone method in go 1.10
+	t :=&http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
 	}
-	if handshakeTimeout == 0 {
-		client.httpClient = &http.Client{}
-	} else {
-		t := &http.Transport{
-			TLSHandshakeTimeout: time.Duration(handshakeTimeout) * time.Second}
-		client.httpClient = &http.Client{Transport: t}
+
+	handshakeTimeoutStr, ok := os.LookupEnv("TLSHandshakeTimeout")
+	if ok {
+		handshakeTimeout, err := strconv.Atoi(handshakeTimeoutStr)
+		if err != nil {
+			log.Printf("Get TLSHandshakeTimeout from env error: %v.", err)
+		} else {
+			t.TLSHandshakeTimeout = time.Duration(handshakeTimeout) * time.Second
+		}
 	}
+
+	responseHeaderTimeoutStr, ok := os.LookupEnv("ResponseHeaderTimeout")
+	if ok {
+		responseHeaderTimeout, err := strconv.Atoi(responseHeaderTimeoutStr)
+		if err != nil {
+			log.Printf("Get ResponseHeaderTimeout from env error: %v.", err)
+		} else {
+			t.ResponseHeaderTimeout = time.Duration(responseHeaderTimeout) * time.Second
+		}
+	}
+
+	expectContinueTimeoutStr, ok := os.LookupEnv("ExpectContinueTimeout")
+	if ok {
+		expectContinueTimeout, err := strconv.Atoi(expectContinueTimeoutStr)
+		if err != nil {
+			log.Printf("Get ExpectContinueTimeout from env error: %v.", err)
+		} else {
+			t.ExpectContinueTimeout = time.Duration(expectContinueTimeout) * time.Second
+		}
+	}
+
+	idleConnTimeoutStr, ok := os.LookupEnv("IdleConnTimeout")
+	if ok {
+		idleConnTimeout, err := strconv.Atoi(idleConnTimeoutStr)
+		if err != nil {
+			log.Printf("Get IdleConnTimeout from env error: %v.", err)
+		} else {
+			t.IdleConnTimeout = time.Duration(idleConnTimeout) * time.Second
+		}
+	}
+
+	client.httpClient = &http.Client{
+		Transport: t,
+	}
+
+	httpTimeoutStr, ok := os.LookupEnv("HttpTimeout")
+	if ok {
+		httpTimeout, err := strconv.Atoi(httpTimeoutStr)
+		if err != nil {
+			log.Printf("Get HttpTimeout from env error: %v.", err)
+		} else {
+			client.httpClient.Timeout = time.Duration(httpTimeout) * time.Second
+		}
+	}
+
 	return client
 }
 
 // Intialize client object when all properties are ready
 //only for regional domain hz
 func (client *Client) InitClient4RegionalDomain() *Client {
-	client.debug = false
-	handshakeTimeout, err := strconv.Atoi(os.Getenv("TLSHandshakeTimeout"))
-	if err != nil {
-		handshakeTimeout = 0
-	}
-	if handshakeTimeout == 0 {
-		client.httpClient = &http.Client{}
-	} else {
-		t := &http.Transport{
-			TLSHandshakeTimeout: time.Duration(handshakeTimeout) * time.Second}
-		client.httpClient = &http.Client{Transport: t}
-	}
+	client.InitClient()
 	//set endpoint
 	client.setEndpoint4RegionalDomain(client.regionID, client.serviceCode, client.AccessKeyId, client.AccessKeySecret, client.securityToken)
 	return client
