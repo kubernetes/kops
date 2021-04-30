@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package model
+package awsmodel
 
 import (
 	"fmt"
@@ -30,7 +30,7 @@ import (
 
 // NetworkModelBuilder configures network objects
 type NetworkModelBuilder struct {
-	*KopsModelContext
+	*AWSModelContext
 	Lifecycle *fi.Lifecycle
 }
 
@@ -57,7 +57,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			vpcTags = nil
 		}
 		t := &awstasks.VPC{
-			Name:             s(vpcName),
+			Name:             fi.String(vpcName),
 			Lifecycle:        b.Lifecycle,
 			Shared:           fi.Bool(sharedVPC),
 			EnableDNSSupport: fi.Bool(true),
@@ -77,11 +77,11 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		if b.Cluster.Spec.NetworkID != "" {
-			t.ID = s(b.Cluster.Spec.NetworkID)
+			t.ID = fi.String(b.Cluster.Spec.NetworkID)
 		}
 
 		if b.Cluster.Spec.NetworkCIDR != "" {
-			t.CIDR = s(b.Cluster.Spec.NetworkCIDR)
+			t.CIDR = fi.String(b.Cluster.Spec.NetworkCIDR)
 		}
 
 		c.AddTask(t)
@@ -90,11 +90,11 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !sharedVPC {
 		for _, cidr := range b.Cluster.Spec.AdditionalNetworkCIDRs {
 			c.AddTask(&awstasks.VPCCIDRBlock{
-				Name:      s(cidr),
+				Name:      fi.String(cidr),
 				Lifecycle: b.Lifecycle,
 				VPC:       b.LinkToVPC(),
 				Shared:    fi.Bool(sharedVPC),
-				CIDRBlock: s(cidr),
+				CIDRBlock: fi.String(cidr),
 			})
 		}
 	}
@@ -102,22 +102,22 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// TODO: would be good to create these as shared, to verify them
 	if !sharedVPC {
 		dhcp := &awstasks.DHCPOptions{
-			Name:              s(b.ClusterName()),
+			Name:              fi.String(b.ClusterName()),
 			Lifecycle:         b.Lifecycle,
-			DomainNameServers: s("AmazonProvidedDNS"),
+			DomainNameServers: fi.String("AmazonProvidedDNS"),
 
 			Tags:   tags,
 			Shared: fi.Bool(sharedVPC),
 		}
 		if b.Region == "us-east-1" {
-			dhcp.DomainName = s("ec2.internal")
+			dhcp.DomainName = fi.String("ec2.internal")
 		} else {
-			dhcp.DomainName = s(b.Region + ".compute.internal")
+			dhcp.DomainName = fi.String(b.Region + ".compute.internal")
 		}
 		c.AddTask(dhcp)
 
 		c.AddTask(&awstasks.VPCDHCPOptionsAssociation{
-			Name:        s(b.ClusterName()),
+			Name:        fi.String(b.ClusterName()),
 			Lifecycle:   b.Lifecycle,
 			VPC:         b.LinkToVPC(),
 			DHCPOptions: dhcp,
@@ -150,7 +150,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !allSubnetsUnmanaged {
 		// The internet gateway is the main entry point to the cluster.
 		igw := &awstasks.InternetGateway{
-			Name:      s(b.ClusterName()),
+			Name:      fi.String(b.ClusterName()),
 			Lifecycle: b.Lifecycle,
 			VPC:       b.LinkToVPC(),
 			Shared:    fi.Bool(sharedVPC),
@@ -166,7 +166,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			routeTableTags := b.CloudTags(vpcName, sharedRouteTable)
 			routeTableTags[awsup.TagNameKopsRole] = "public"
 			publicRouteTable = &awstasks.RouteTable{
-				Name:      s(b.ClusterName()),
+				Name:      fi.String(b.ClusterName()),
 				Lifecycle: b.Lifecycle,
 
 				VPC: b.LinkToVPC(),
@@ -178,9 +178,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			// TODO: Validate when allSubnetsShared
 			c.AddTask(&awstasks.Route{
-				Name:            s("0.0.0.0/0"),
+				Name:            fi.String("0.0.0.0/0"),
 				Lifecycle:       b.Lifecycle,
-				CIDR:            s("0.0.0.0/0"),
+				CIDR:            fi.String("0.0.0.0/0"),
 				RouteTable:      publicRouteTable,
 				InternetGateway: igw,
 			})
@@ -216,18 +216,18 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		subnet := &awstasks.Subnet{
-			Name:             s(subnetName),
-			ShortName:        s(subnetSpec.Name),
+			Name:             fi.String(subnetName),
+			ShortName:        fi.String(subnetSpec.Name),
 			Lifecycle:        b.Lifecycle,
 			VPC:              b.LinkToVPC(),
-			AvailabilityZone: s(subnetSpec.Zone),
-			CIDR:             s(subnetSpec.CIDR),
+			AvailabilityZone: fi.String(subnetSpec.Zone),
+			CIDR:             fi.String(subnetSpec.CIDR),
 			Shared:           fi.Bool(sharedSubnet),
 			Tags:             tags,
 		}
 
 		if subnetSpec.ProviderID != "" {
-			subnet.ID = s(subnetSpec.ProviderID)
+			subnet.ID = fi.String(subnetSpec.ProviderID)
 		}
 		c.AddTask(subnet)
 
@@ -235,7 +235,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		case kops.SubnetTypePublic, kops.SubnetTypeUtility:
 			if !sharedSubnet && !isUnmanaged(subnetSpec) {
 				c.AddTask(&awstasks.RouteTableAssociation{
-					Name:       s(subnetSpec.Name + "." + b.ClusterName()),
+					Name:       fi.String(subnetSpec.Name + "." + b.ClusterName()),
 					Lifecycle:  b.Lifecycle,
 					RouteTable: publicRouteTable,
 					Subnet:     subnet,
@@ -250,7 +250,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				//
 				// Map the Private subnet to the Private route table
 				c.AddTask(&awstasks.RouteTableAssociation{
-					Name:       s("private-" + subnetSpec.Name + "." + b.ClusterName()),
+					Name:       fi.String("private-" + subnetSpec.Name + "." + b.ClusterName()),
 					Lifecycle:  b.Lifecycle,
 					RouteTable: b.LinkToPrivateRouteTableInZone(subnetSpec.Zone),
 					Subnet:     subnet,
@@ -309,10 +309,10 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			if strings.HasPrefix(egress, "nat-") {
 
 				ngw = &awstasks.NatGateway{
-					Name:                 s(zone + "." + b.ClusterName()),
+					Name:                 fi.String(zone + "." + b.ClusterName()),
 					Lifecycle:            b.Lifecycle,
 					Subnet:               utilitySubnet,
-					ID:                   s(egress),
+					ID:                   fi.String(egress),
 					AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
 					// If we're here, it means this NatGateway was specified, so we are Shared
 					Shared: fi.Bool(true),
@@ -324,8 +324,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			} else if strings.HasPrefix(egress, "eipalloc-") {
 
 				eip := &awstasks.ElasticIP{
-					Name:                           s(zone + "." + b.ClusterName()),
-					ID:                             s(egress),
+					Name:                           fi.String(zone + "." + b.ClusterName()),
+					ID:                             fi.String(egress),
 					Lifecycle:                      b.Lifecycle,
 					AssociatedNatGatewayRouteTable: b.LinkToPrivateRouteTableInZone(zone),
 					Shared:                         fi.Bool(true),
@@ -334,7 +334,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				c.AddTask(eip)
 
 				ngw = &awstasks.NatGateway{
-					Name:                 s(zone + "." + b.ClusterName()),
+					Name:                 fi.String(zone + "." + b.ClusterName()),
 					Lifecycle:            b.Lifecycle,
 					Subnet:               utilitySubnet,
 					ElasticIP:            eip,
@@ -346,9 +346,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			} else if strings.HasPrefix(egress, "i-") {
 
 				in = &awstasks.Instance{
-					Name:      s(egress),
+					Name:      fi.String(egress),
 					Lifecycle: b.Lifecycle,
-					ID:        s(egress),
+					ID:        fi.String(egress),
 					Shared:    fi.Bool(true),
 					Tags:      nil, // We don't need to add tags here
 				}
@@ -368,13 +368,13 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			// subnet needs a NGW, lets create it. We tie it to a subnet
 			// so we can track it in AWS
 			eip := &awstasks.ElasticIP{
-				Name:                           s(zone + "." + b.ClusterName()),
+				Name:                           fi.String(zone + "." + b.ClusterName()),
 				Lifecycle:                      b.Lifecycle,
 				AssociatedNatGatewayRouteTable: b.LinkToPrivateRouteTableInZone(zone),
 			}
 
 			if publicIP != "" {
-				eip.PublicIP = s(publicIP)
+				eip.PublicIP = fi.String(publicIP)
 				eip.Tags = b.CloudTags(*eip.Name, true)
 			} else {
 				eip.Tags = b.CloudTags(*eip.Name, false)
@@ -391,7 +391,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			//var ngw = &awstasks.NatGateway{}
 			ngw = &awstasks.NatGateway{
-				Name:                 s(zone + "." + b.ClusterName()),
+				Name:                 fi.String(zone + "." + b.ClusterName()),
 				Lifecycle:            b.Lifecycle,
 				Subnet:               utilitySubnet,
 				ElasticIP:            eip,
@@ -410,7 +410,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		routeTableTags := b.CloudTags(b.NamePrivateRouteTableInZone(zone), routeTableShared)
 		routeTableTags[awsup.TagNameKopsRole] = "private-" + zone
 		rt := &awstasks.RouteTable{
-			Name:      s(b.NamePrivateRouteTableInZone(zone)),
+			Name:      fi.String(b.NamePrivateRouteTableInZone(zone)),
 			VPC:       b.LinkToVPC(),
 			Lifecycle: b.Lifecycle,
 
@@ -427,9 +427,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		if in != nil {
 
 			r = &awstasks.Route{
-				Name:       s("private-" + zone + "-0.0.0.0/0"),
+				Name:       fi.String("private-" + zone + "-0.0.0.0/0"),
 				Lifecycle:  b.Lifecycle,
-				CIDR:       s("0.0.0.0/0"),
+				CIDR:       fi.String("0.0.0.0/0"),
 				RouteTable: rt,
 				Instance:   in,
 			}
@@ -437,9 +437,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		} else {
 
 			r = &awstasks.Route{
-				Name:       s("private-" + zone + "-0.0.0.0/0"),
+				Name:       fi.String("private-" + zone + "-0.0.0.0/0"),
 				Lifecycle:  b.Lifecycle,
-				CIDR:       s("0.0.0.0/0"),
+				CIDR:       fi.String("0.0.0.0/0"),
 				RouteTable: rt,
 				// Only one of these will be not nil
 				NatGateway:       ngw,
