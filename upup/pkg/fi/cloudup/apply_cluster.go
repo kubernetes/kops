@@ -552,7 +552,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				&awsmodel.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
 				&awsmodel.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
 				&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
-				&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+				&awsmodel.SSHKeyModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle},
 				&model.NetworkModelBuilder{KopsModelContext: modelContext, Lifecycle: &networkLifecycle},
 				&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle, Cluster: cluster},
 				&awsmodel.OIDCProviderBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle, KeyStore: keyStore},
