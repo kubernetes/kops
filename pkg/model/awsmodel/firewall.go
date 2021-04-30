@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package model
+package awsmodel
 
 import (
 	"fmt"
@@ -35,7 +35,7 @@ const (
 
 // FirewallModelBuilder configures firewall network objects
 type FirewallModelBuilder struct {
-	*KopsModelContext
+	*AWSModelContext
 	Lifecycle *fi.Lifecycle
 }
 
@@ -84,7 +84,7 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) ([]Secu
 				Egress:        fi.Bool(true),
 				CIDR:          fi.String("0.0.0.0/0"),
 			}
-			b.AddDirectionalGroupRule(c, t)
+			AddDirectionalGroupRule(c, t)
 		}
 
 		// Nodes can talk to nodes
@@ -97,7 +97,7 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) ([]Secu
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
 			}
-			b.AddDirectionalGroupRule(c, t)
+			AddDirectionalGroupRule(c, t)
 		}
 
 	}
@@ -167,7 +167,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 					ToPort:        fi.Int64(int64(r.To)),
 					Protocol:      fi.String("udp"),
 				}
-				b.AddDirectionalGroupRule(c, t)
+				AddDirectionalGroupRule(c, t)
 			}
 			for _, r := range tcpRanges {
 				t := &awstasks.SecurityGroupRule{
@@ -179,7 +179,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 					ToPort:        fi.Int64(int64(r.To)),
 					Protocol:      fi.String("tcp"),
 				}
-				b.AddDirectionalGroupRule(c, t)
+				AddDirectionalGroupRule(c, t)
 			}
 			for _, protocol := range protocols {
 				awsName := strconv.Itoa(int(protocol))
@@ -198,7 +198,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 					SourceGroup:   nodeGroup.Task,
 					Protocol:      fi.String(awsName),
 				}
-				b.AddDirectionalGroupRule(c, t)
+				AddDirectionalGroupRule(c, t)
 			}
 		}
 	}
@@ -216,7 +216,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 					SecurityGroup: dest.Task,
 					SourceGroup:   src.Task,
 				}
-				b.AddDirectionalGroupRule(c, t)
+				AddDirectionalGroupRule(c, t)
 			}
 		}
 	}
@@ -244,7 +244,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeG
 				Egress:        fi.Bool(true),
 				CIDR:          fi.String("0.0.0.0/0"),
 			}
-			b.AddDirectionalGroupRule(c, t)
+			AddDirectionalGroupRule(c, t)
 		}
 
 		// Masters can talk to masters
@@ -257,7 +257,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeG
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
 			}
-			b.AddDirectionalGroupRule(c, t)
+			AddDirectionalGroupRule(c, t)
 		}
 
 		// Masters can talk to nodes
@@ -270,7 +270,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeG
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
 			}
-			b.AddDirectionalGroupRule(c, t)
+			AddDirectionalGroupRule(c, t)
 		}
 	}
 
@@ -283,7 +283,7 @@ type SecurityGroupInfo struct {
 	Task   *awstasks.SecurityGroup
 }
 
-func (b *KopsModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]SecurityGroupInfo, error) {
+func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]SecurityGroupInfo, error) {
 	var baseGroup *awstasks.SecurityGroup
 	if role == kops.InstanceGroupRoleMaster {
 		name := b.SecurityGroupName(role)
@@ -405,7 +405,7 @@ func JoinSuffixes(src SecurityGroupInfo, dest SecurityGroupInfo) string {
 	return s + d
 }
 
-func (b *KopsModelContext) AddDirectionalGroupRule(c *fi.ModelBuilderContext, t *awstasks.SecurityGroupRule) {
+func AddDirectionalGroupRule(c *fi.ModelBuilderContext, t *awstasks.SecurityGroupRule) {
 
 	name := generateName(t)
 	t.Name = fi.String(name)
