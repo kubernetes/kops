@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package model
+package awsmodel
 
 import (
 	"fmt"
@@ -30,7 +30,7 @@ import (
 
 // NetworkModelBuilder configures network objects
 type NetworkModelBuilder struct {
-	*KopsModelContext
+	*AWSModelContext
 	Lifecycle *fi.Lifecycle
 }
 
