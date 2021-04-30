@@ -155,7 +155,7 @@ func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName string, c *fi.M
 	}
 
 	iamRole := &awstasks.IAMRole{
-		Name:      s(iamName),
+		Name:      fi.String(iamName),
 		Lifecycle: b.Lifecycle,
 
 		RolePolicyDocument: rolePolicy,
@@ -164,10 +164,10 @@ func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName string, c *fi.M
 
 	if isServiceAccount {
 		// e.g. kube-system-dns-controller
-		iamRole.ExportWithID = s(roleKey)
+		iamRole.ExportWithID = fi.String(roleKey)
 	} else {
 		// e.g. nodes
-		iamRole.ExportWithID = s(roleKey + "s")
+		iamRole.ExportWithID = fi.String(roleKey + "s")
 	}
 
 	if b.Cluster.Spec.IAM != nil && b.Cluster.Spec.IAM.PermissionsBoundary != nil {
@@ -199,7 +199,7 @@ func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.Subject, iamName string, i
 	}
 
 	t := &awstasks.IAMRolePolicy{
-		Name:      s(iamName),
+		Name:      fi.String(iamName),
 		Lifecycle: b.Lifecycle,
 
 		Role:           iamRole,
@@ -252,7 +252,7 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 		var iamInstanceProfile *awstasks.IAMInstanceProfile
 		{
 			iamInstanceProfile = &awstasks.IAMInstanceProfile{
-				Name:      s(iamName),
+				Name:      fi.String(iamName),
 				Lifecycle: b.Lifecycle,
 				Shared:    fi.Bool(shared),
 				Tags:      b.CloudTags(iamName, false),
@@ -262,7 +262,7 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 
 		{
 			iamInstanceProfileRole := &awstasks.IAMInstanceProfileRole{
-				Name:      s(iamName),
+				Name:      fi.String(iamName),
 				Lifecycle: b.Lifecycle,
 
 				InstanceProfile: iamInstanceProfile,
@@ -283,7 +283,7 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 
 			name := fmt.Sprintf("%s-policyoverride", roleKey)
 			t := &awstasks.IAMRolePolicy{
-				Name:             s(name),
+				Name:             fi.String(name),
 				Lifecycle:        b.Lifecycle,
 				Role:             iamRole,
 				Managed:          true,
@@ -305,7 +305,7 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 			additionalPolicyName := "additional." + iamName
 
 			t := &awstasks.IAMRolePolicy{
-				Name:      s(additionalPolicyName),
+				Name:      fi.String(additionalPolicyName),
 				Lifecycle: b.Lifecycle,
 
 				Role: iamRole,

@@ -183,19 +183,19 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 	encrypted := fi.BoolValue(m.EncryptedVolume)
 
 	t := &awstasks.EBSVolume{
-		Name:      s(name),
+		Name:      fi.String(name),
 		Lifecycle: b.Lifecycle,
 
-		AvailabilityZone: s(zone),
+		AvailabilityZone: fi.String(zone),
 		SizeGB:           fi.Int64(int64(volumeSize)),
-		VolumeType:       s(volumeType),
+		VolumeType:       fi.String(volumeType),
 		KmsKeyId:         m.KmsKeyId,
 		Encrypted:        fi.Bool(encrypted),
 		Tags:             tags,
 	}
 	switch volumeType {
 	case ec2.VolumeTypeGp3:
-		t.VolumeThroughput = i64(int64(volumeThroughput))
+		t.VolumeThroughput = fi.Int64(int64(volumeThroughput))
 		fallthrough
 	case ec2.VolumeTypeIo1, ec2.VolumeTypeIo2:
 		t.VolumeIops = fi.Int64(int64(volumeIops))
@@ -223,10 +223,10 @@ func (b *MasterVolumeBuilder) addDOVolume(c *fi.ModelBuilderContext, name string
 	tags[do.TagKubernetesClusterNamePrefix] = do.SafeClusterName(b.Cluster.ObjectMeta.Name)
 
 	t := &dotasks.Volume{
-		Name:      s(name),
+		Name:      fi.String(name),
 		Lifecycle: b.Lifecycle,
 		SizeGB:    fi.Int64(int64(volumeSize)),
-		Region:    s(zone),
+		Region:    fi.String(zone),
 		Tags:      tags,
 	}
 
@@ -268,12 +268,12 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, name strin
 	}
 
 	t := &gcetasks.Disk{
-		Name:      s(name),
+		Name:      fi.String(name),
 		Lifecycle: b.Lifecycle,
 
-		Zone:       s(zone),
+		Zone:       fi.String(zone),
 		SizeGB:     fi.Int64(int64(volumeSize)),
-		VolumeType: s(volumeType),
+		VolumeType: fi.String(volumeType),
 		Labels:     tags,
 	}
 
@@ -299,9 +299,9 @@ func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.ModelBuilderContext, name
 		zone = fi.StringValue(b.Cluster.Spec.CloudConfig.Openstack.BlockStorage.OverrideAZ)
 	}
 	t := &openstacktasks.Volume{
-		Name:             s(name),
-		AvailabilityZone: s(zone),
-		VolumeType:       s(volumeType),
+		Name:             fi.String(name),
+		AvailabilityZone: fi.String(zone),
+		VolumeType:       fi.String(volumeType),
 		SizeGB:           fi.Int64(int64(volumeSize)),
 		Tags:             tags,
 		Lifecycle:        b.Lifecycle,
@@ -338,10 +338,10 @@ func (b *MasterVolumeBuilder) addALIVolume(c *fi.ModelBuilderContext, name strin
 
 	t := &alitasks.Disk{
 		Lifecycle:    b.Lifecycle,
-		Name:         s(name),
-		ZoneId:       s(zone),
+		Name:         fi.String(name),
+		ZoneId:       fi.String(zone),
 		SizeGB:       fi.Int(int(volumeSize)),
-		DiskCategory: s(volumeType),
+		DiskCategory: fi.String(volumeType),
 		Encrypted:    fi.Bool(encrypted),
 		Tags:         tags,
 	}
