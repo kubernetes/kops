@@ -840,3 +840,55 @@ func Test_ValidateBastionNodes(t *testing.T) {
 	})
 
 }
+
+func Test_ValidateDetachedNodesNotValidated(t *testing.T) {
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	groups["node-1"] = &cloudinstances.CloudInstanceGroup{
+		InstanceGroup: &kopsapi.InstanceGroup{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "node-1",
+			},
+			Spec: kopsapi.InstanceGroupSpec{
+				Role: kopsapi.InstanceGroupRoleNode,
+			},
+		},
+		MinSize:    2,
+		TargetSize: 2,
+		Ready: []*cloudinstances.CloudInstance{
+			{
+				ID: "i-00001",
+				Node: &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{Name: "node-1a"},
+					Status: v1.NodeStatus{
+						Conditions: []v1.NodeCondition{
+							{Type: "Ready", Status: v1.ConditionTrue},
+						},
+					},
+				},
+			},
+			{
+				ID: "i-00002",
+				Node: &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{Name: "node-2a"},
+					Status: v1.NodeStatus{
+						Conditions: []v1.NodeCondition{
+							{Type: "Ready", Status: v1.ConditionTrue},
+						},
+					},
+				},
+			},
+		},
+		NeedUpdate: []*cloudinstances.CloudInstance{
+			{
+				ID:     "i-00003",
+				Status: cloudinstances.CloudInstanceStatusDetached,
+			},
+		},
+	}
+
+	v, err := testValidate(t, groups, nil)
+	require.NoError(t, err)
+	if !assert.Empty(t, v.Failures) {
+		printDebug(t, v)
+	}
+}
