@@ -89,8 +89,6 @@ type ClusterSpec struct {
 	KeyStore string `json:"keyStore,omitempty"`
 	// ConfigStore is the VFS path to where the configuration (Cluster, InstanceGroups etc) is stored
 	ConfigStore string `json:"configStore,omitempty"`
-	// PublicDataStore is the VFS path to where public data is stored
-	PublicDataStore string `json:"publicDataStore,omitempty"`
 	// DNSZone is the DNS zone we should use when configuring DNS
 	// This is because some clouds let us define a managed zone foo.bar, and then have
 	// kubernetes.dev.foo.bar, without needing to define dev.foo.bar as a hosted zone.
@@ -206,6 +204,17 @@ type ClusterSpec struct {
 	ClusterAutoscaler *ClusterAutoscalerConfig `json:"clusterAutoscaler,omitempty"`
 	// WarmPool defines the default warm pool settings for instance groups (AWS only).
 	WarmPool *WarmPoolSpec `json:"warmPool,omitempty"`
+
+	// ServiceAccountIssuerDiscovery configures the OIDC Issuer for ServiceAccounts.
+	ServiceAccountIssuerDiscovery *ServiceAccountIssuerDiscoveryConfig `json:"serviceAccountIssuerDiscovery,omitempty"`
+}
+
+// ServiceAccountIssuerDiscoveryConfig configures an OIDC Issuer.
+type ServiceAccountIssuerDiscoveryConfig struct {
+	// DiscoveryStore is the VFS path to where OIDC Issuer Discovery metadata is stored.
+	DiscoveryStore string `json:"discoveryStore,omitempty"`
+	// EnableAWSOIDCProvider will provision an AWS OIDC provider that trusts the ServiceAccount Issuer
+	EnableAWSOIDCProvider bool `json:"enableAWSOIDCProvider,omitempty"`
 }
 
 // NodeAuthorizationSpec is used to node authorization

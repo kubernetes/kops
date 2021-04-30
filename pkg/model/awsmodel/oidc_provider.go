@@ -17,7 +17,6 @@ limitations under the License.
 package awsmodel
 
 import (
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -38,7 +37,8 @@ const (
 
 func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 
-	if !featureflag.PublicJWKS.Enabled() {
+	if b.Cluster.Spec.ServiceAccountIssuerDiscovery == nil ||
+		!b.Cluster.Spec.ServiceAccountIssuerDiscovery.EnableAWSOIDCProvider {
 		return nil
 	}
 
