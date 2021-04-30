@@ -23,7 +23,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
@@ -100,8 +99,9 @@ func BuildNodeRoleSubject(igRole kops.InstanceGroupRole, enableLifecycleHookPerm
 
 // ServiceAccountIssuer determines the issuer in the ServiceAccount JWTs
 func ServiceAccountIssuer(clusterSpec *kops.ClusterSpec) (string, error) {
-	if featureflag.PublicJWKS.Enabled() {
-		store := clusterSpec.ServiceAccountIssuerDiscovery.DiscoveryStore
+	said := clusterSpec.ServiceAccountIssuerDiscovery
+	if said != nil && said.DiscoveryStore != "" {
+		store := said.DiscoveryStore
 		base, err := vfs.Context.BuildVfsPath(store)
 		if err != nil {
 			return "", fmt.Errorf("error parsing locationStore=%q: %w", store, err)
