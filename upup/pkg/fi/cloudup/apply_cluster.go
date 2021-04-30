@@ -549,13 +549,13 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			l.Builders = append(l.Builders,
 				&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
 				&awsmodel.BastionModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
-				&awsmodel.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+				&awsmodel.DNSModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &clusterLifecycle},
 				&awsmodel.ExternalAccessModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle},
 				&awsmodel.FirewallModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle},
 				&awsmodel.SSHKeyModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle},
 				&awsmodel.NetworkModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &networkLifecycle},
 				&awsmodel.IAMModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle, Cluster: cluster},
-				&awsmodel.OIDCProviderBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle, KeyStore: keyStore},
+				&awsmodel.OIDCProviderBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle, KeyStore: keyStore},
 			)
 
 			awsModelBuilder := &awsmodel.AutoscalingGroupModelBuilder{
@@ -568,7 +568,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 			if featureflag.Spotinst.Enabled() {
 				l.Builders = append(l.Builders, &awsmodel.SpotInstanceGroupModelBuilder{
-					KopsModelContext:       modelContext,
+					AWSModelContext:        awsModelContext,
 					BootstrapScriptBuilder: bootstrapScriptBuilder,
 					Lifecycle:              &clusterLifecycle,
 					SecurityLifecycle:      &securityLifecycle,

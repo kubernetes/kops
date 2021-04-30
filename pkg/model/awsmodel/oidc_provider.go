@@ -28,7 +28,6 @@ import (
 
 	"gopkg.in/square/go-jose.v2"
 	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -37,8 +36,7 @@ import (
 
 // OIDCProviderBuilder configures IAM OIDC Provider
 type OIDCProviderBuilder struct {
-	*model.KopsModelContext
-
+	*AWSModelContext
 	KeyStore  fi.CAStore
 	Lifecycle *fi.Lifecycle
 }
