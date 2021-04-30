@@ -18,7 +18,6 @@ package bootstrapchannelbuilder
 
 import (
 	"fmt"
-	"k8s.io/kops/pkg/model/awsmodel"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -28,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/awsmodel"
 	"k8s.io/kops/pkg/model/components/addonmanifests"
 	"k8s.io/kops/pkg/model/components/addonmanifests/awsloadbalancercontroller"
 	"k8s.io/kops/pkg/model/components/addonmanifests/dnscontroller"

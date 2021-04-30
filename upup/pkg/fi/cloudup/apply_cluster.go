@@ -548,10 +548,10 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 			l.Builders = append(l.Builders,
 				&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
-				&awsmodel.BastionModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
+				&awsmodel.BastionModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
 				&awsmodel.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
-				&awsmodel.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
-				&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+				&awsmodel.ExternalAccessModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle},
+				&awsmodel.FirewallModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle},
 				&awsmodel.SSHKeyModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle},
 				&awsmodel.NetworkModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &networkLifecycle},
 				&awsmodel.IAMModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle, Cluster: cluster},

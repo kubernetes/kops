@@ -21,7 +21,6 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
@@ -29,7 +28,7 @@ import (
 // ExternalAccessModelBuilder configures security group rules for external access
 // (SSHAccess, KubernetesAPIAccess)
 type ExternalAccessModelBuilder struct {
-	*model.KopsModelContext
+	*AWSModelContext
 	Lifecycle *fi.Lifecycle
 }
 
@@ -72,7 +71,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					ToPort:        fi.Int64(22),
 					CIDR:          fi.String(sshAccess),
 				}
-				b.AddDirectionalGroupRule(c, t)
+				AddDirectionalGroupRule(c, t)
 			}
 
 			for _, nodeGroup := range nodeGroups {
@@ -86,7 +85,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					ToPort:        fi.Int64(22),
 					CIDR:          fi.String(sshAccess),
 				}
-				b.AddDirectionalGroupRule(c, t)
+				AddDirectionalGroupRule(c, t)
 			}
 		}
 	}
@@ -141,7 +140,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					ToPort:        fi.Int64(443),
 					CIDR:          fi.String(apiAccess),
 				}
-				b.AddDirectionalGroupRule(c, t)
+				AddDirectionalGroupRule(c, t)
 			}
 		}
 	}
