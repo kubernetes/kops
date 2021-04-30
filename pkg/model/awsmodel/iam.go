@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package model
+package awsmodel
 
 import (
 	"fmt"
@@ -25,6 +25,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/util/stringorslice"
 	"k8s.io/kops/upup/pkg/fi"
@@ -33,8 +34,7 @@ import (
 
 // IAMModelBuilder configures IAM objects
 type IAMModelBuilder struct {
-	*KopsModelContext
-
+	*AWSModelContext
 	Lifecycle *fi.Lifecycle
 	Cluster   *kops.Cluster
 }
@@ -91,7 +91,7 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
-		iamName, err := findCustomAuthNameFromArn(profileARN)
+		iamName, err := model.FindCustomAuthNameFromArn(profileARN)
 		if err != nil {
 			return fmt.Errorf("unable to parse instance profile name from arn %q: %v", profileARN, err)
 		}

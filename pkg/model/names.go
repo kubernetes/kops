@@ -153,8 +153,8 @@ func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) string {
 
 var roleNamRegExp = regexp.MustCompile(`([^/]+$)`)
 
-// findCustomAuthNameFromArn parses the name of a instance profile from the arn
-func findCustomAuthNameFromArn(arn string) (string, error) {
+// FindCustomAuthNameFromArn parses the name of a instance profile from the arn
+func FindCustomAuthNameFromArn(arn string) (string, error) {
 	if arn == "" {
 		return "", fmt.Errorf("unable to parse role arn as it is not set")
 	}
@@ -168,7 +168,7 @@ func findCustomAuthNameFromArn(arn string) (string, error) {
 
 func (b *KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) (*awstasks.IAMInstanceProfile, error) {
 	if ig.Spec.IAM != nil && ig.Spec.IAM.Profile != nil {
-		name, err := findCustomAuthNameFromArn(fi.StringValue(ig.Spec.IAM.Profile))
+		name, err := FindCustomAuthNameFromArn(fi.StringValue(ig.Spec.IAM.Profile))
 		return &awstasks.IAMInstanceProfile{Name: &name}, err
 	}
 	name := b.IAMName(ig.Spec.Role)

@@ -554,7 +554,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
 				&awsmodel.SSHKeyModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle},
 				&awsmodel.NetworkModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &networkLifecycle},
-				&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle, Cluster: cluster},
+				&awsmodel.IAMModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle, Cluster: cluster},
 				&awsmodel.OIDCProviderBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle, KeyStore: keyStore},
 			)
 
