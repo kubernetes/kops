@@ -259,7 +259,7 @@ func (b *KopsModelContext) NamePrivateRouteTableInZone(zoneName string) string {
 }
 
 func (b *KopsModelContext) LinkToPrivateRouteTableInZone(zoneName string) *awstasks.RouteTable {
-	return &awstasks.RouteTable{Name: s(b.NamePrivateRouteTableInZone(zoneName))}
+	return &awstasks.RouteTable{Name: fi.String(b.NamePrivateRouteTableInZone(zoneName))}
 }
 
 func (b *KopsModelContext) InstanceName(ig *kops.InstanceGroup, suffix string) string {

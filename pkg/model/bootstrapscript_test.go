@@ -187,7 +187,7 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 					Members: []kops.EtcdMemberSpec{
 						{
 							Name:          "test",
-							InstanceGroup: s("ig-1"),
+							InstanceGroup: fi.String("ig-1"),
 						},
 					},
 					Version: "3.1.11",
@@ -197,7 +197,7 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 					Members: []kops.EtcdMemberSpec{
 						{
 							Name:          "test",
-							InstanceGroup: s("ig-1"),
+							InstanceGroup: fi.String("ig-1"),
 						},
 					},
 					Version: "3.1.11",
@@ -206,14 +206,14 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 			},
 			NetworkCIDR: "10.79.0.0/24",
 			CloudConfig: &kops.CloudConfiguration{
-				NodeTags: s("something"),
+				NodeTags: fi.String("something"),
 			},
 			ContainerRuntime: "docker",
 			Containerd: &kops.ContainerdConfig{
-				LogLevel: s("info"),
+				LogLevel: fi.String("info"),
 			},
 			Docker: &kops.DockerConfig{
-				LogLevel: s("INFO"),
+				LogLevel: fi.String("INFO"),
 			},
 			KubeAPIServer: &kops.KubeAPIServerConfig{
 				Image: "CoreOS",
