@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package model
+package awsmodel
 
 import (
 	"k8s.io/kops/upup/pkg/fi"
@@ -23,7 +23,7 @@ import (
 
 // SSHKeyModelBuilder configures SSH objects
 type SSHKeyModelBuilder struct {
-	*KopsModelContext
+	*AWSModelContext
 	Lifecycle *fi.Lifecycle
 }
 
