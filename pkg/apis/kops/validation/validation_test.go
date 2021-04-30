@@ -843,6 +843,20 @@ func Test_Validate_Cilium(t *testing.T) {
 					Enabled: fi.Bool(true),
 				},
 			},
+			ExpectedErrors: []string{"Forbidden::cilium.hubble.enabled"},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				Version: "v1.8.0",
+				Hubble: &kops.HubbleSpec{
+					Enabled: fi.Bool(true),
+				},
+			},
+			Spec: kops.ClusterSpec{
+				CertManager: &kops.CertManagerConfig{
+					Enabled: fi.Bool(true),
+				},
+			},
 		},
 	}
 	for _, g := range grid {
