@@ -373,11 +373,13 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		}
 	}
 
-	publicDataStore := c.Spec.PublicDataStore
-	if publicDataStore != "" {
-		base, err := vfs.Context.BuildVfsPath(publicDataStore)
+	said := c.Spec.ServiceAccountIssuerDiscovery
+	if said != nil {
+		saidStore := said.DiscoveryStore
+		saidStoreField := fieldSpec.Child("serviceAccountIssuerDiscovery", "discoveryStore")
+		base, err := vfs.Context.BuildVfsPath(saidStore)
 		if err != nil {
-			allErrs = append(allErrs, field.Invalid(fieldSpec.Child("publicDataStore"), publicDataStore, "not a valid VFS path"))
+			allErrs = append(allErrs, field.Invalid(saidStoreField, saidStore, "not a valid VFS path"))
 		} else {
 			switch base := base.(type) {
 			case *vfs.S3Path:
@@ -386,17 +388,11 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 				// memfs is ok for tests; not OK otherwise
 				if !base.IsClusterReadable() {
 					// (If this _is_ a test, we should call MarkClusterReadable)
-					allErrs = append(allErrs, field.Invalid(fieldSpec.Child("publicDataStore"), publicDataStore, "S3 is the only supported VFS for publicStore"))
+					allErrs = append(allErrs, field.Invalid(saidStoreField, saidStore, "S3 is the only supported VFS for discoveryStore"))
 				}
 			default:
-				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("publicDataStore"), publicDataStore, "S3 is the only supported VFS for publicStore"))
+				allErrs = append(allErrs, field.Invalid(saidStoreField, saidStore, "S3 is the only supported VFS for discoveryStore"))
 			}
-		}
-	}
-
-	if featureflag.PublicJWKS.Enabled() {
-		if publicDataStore == "" {
-			allErrs = append(allErrs, field.Invalid(fieldSpec.Child("publicDataStore"), publicDataStore, "Public JWKS requires publicStore to be configured"))
 		}
 	}
 

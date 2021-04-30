@@ -101,12 +101,10 @@ func BuildNodeRoleSubject(igRole kops.InstanceGroupRole, enableLifecycleHookPerm
 // ServiceAccountIssuer determines the issuer in the ServiceAccount JWTs
 func ServiceAccountIssuer(clusterSpec *kops.ClusterSpec) (string, error) {
 	if featureflag.PublicJWKS.Enabled() {
-		if clusterSpec.PublicDataStore == "" {
-			return "", fmt.Errorf("cluster.spec.publicDataStore is required with PublicJWKS feature flag")
-		}
-		base, err := vfs.Context.BuildVfsPath(clusterSpec.PublicDataStore)
+		store := clusterSpec.ServiceAccountIssuerDiscovery.DiscoveryStore
+		base, err := vfs.Context.BuildVfsPath(store)
 		if err != nil {
-			return "", fmt.Errorf("error parsing cluster.spec.publicDataStore=%q: %w", clusterSpec.PublicDataStore, err)
+			return "", fmt.Errorf("error parsing locationStore=%q: %w", store, err)
 		}
 		switch base := base.(type) {
 		case *vfs.S3Path:
@@ -118,11 +116,11 @@ func ServiceAccountIssuer(clusterSpec *kops.ClusterSpec) (string, error) {
 		case *vfs.MemFSPath:
 			if !base.IsClusterReadable() {
 				// If this _is_ a test, we should call MarkClusterReadable
-				return "", fmt.Errorf("cluster.spec.publicDataStore=%q is only supported in tests", clusterSpec.PublicDataStore)
+				return "", fmt.Errorf("locationStore=%q is only supported in tests", store)
 			}
 			return strings.Replace(base.Path(), "memfs://", "https://", 1) + "/oidc", nil
 		default:
-			return "", fmt.Errorf("cluster.spec.publicDataStore=%q is of unexpected type %T", clusterSpec.PublicDataStore, base)
+			return "", fmt.Errorf("locationStore=%q is of unexpected type %T", store, base)
 		}
 	} else {
 		if supportsPublicJWKS(clusterSpec) {
