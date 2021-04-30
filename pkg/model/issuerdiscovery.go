@@ -82,7 +82,7 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		Lifecycle: b.Lifecycle,
 		Location:  fi.String("/openid/v1/jwks"),
 		Name:      fi.String("keys.json"),
-		Base:      fi.String(b.Cluster.Spec.PublicDataStore),
+		Base:      fi.String(b.Cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryStore),
 		Public:    fi.Bool(true),
 	}
 	c.AddTask(keysFile)
@@ -92,7 +92,7 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		Lifecycle: b.Lifecycle,
 		Location:  fi.String("oidc/.well-known/openid-configuration"),
 		Name:      fi.String("discovery.json"),
-		Base:      fi.String(b.Cluster.Spec.PublicDataStore),
+		Base:      fi.String(b.Cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryStore),
 		Public:    fi.Bool(true),
 	}
 	c.AddTask(discoveryFile)
