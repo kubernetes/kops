@@ -85,6 +85,8 @@ Contents: |
       volumeMounts:
       - mountPath: /rootfs
         name: rootfs
+      - mountPath: /run
+        name: run
       - mountPath: /etc/kubernetes/pki/etcd-manager
         name: pki
       - mountPath: /var/log/etcd.log
@@ -100,6 +102,10 @@ Contents: |
         path: /
         type: Directory
       name: rootfs
+    - hostPath:
+        path: /run
+        type: DirectoryOrCreate
+      name: run
     - hostPath:
         path: /etc/kubernetes/pki/etcd-manager-events
         type: DirectoryOrCreate
@@ -142,6 +148,8 @@ Contents: |
       volumeMounts:
       - mountPath: /rootfs
         name: rootfs
+      - mountPath: /run
+        name: run
       - mountPath: /etc/kubernetes/pki/etcd-manager
         name: pki
       - mountPath: /var/log/etcd.log
@@ -157,6 +165,10 @@ Contents: |
         path: /
         type: Directory
       name: rootfs
+    - hostPath:
+        path: /run
+        type: DirectoryOrCreate
+      name: run
     - hostPath:
         path: /etc/kubernetes/pki/etcd-manager-main
         type: DirectoryOrCreate
