@@ -5789,6 +5789,8 @@ func autoConvert_v1alpha2_NodeTerminationHandlerConfig_To_kops_NodeTerminationHa
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnableSQSTerminationDraining = in.EnableSQSTerminationDraining
 	out.ManagedASGTag = in.ManagedASGTag
+	out.MemoryRequest = in.MemoryRequest
+	out.CPURequest = in.CPURequest
 	return nil
 }
 
@@ -5804,6 +5806,8 @@ func autoConvert_kops_NodeTerminationHandlerConfig_To_v1alpha2_NodeTerminationHa
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnableSQSTerminationDraining = in.EnableSQSTerminationDraining
 	out.ManagedASGTag = in.ManagedASGTag
+	out.MemoryRequest = in.MemoryRequest
+	out.CPURequest = in.CPURequest
 	return nil
 }
 
