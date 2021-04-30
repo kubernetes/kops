@@ -5,15 +5,10 @@ go_library(
     srcs = [
         "bootstrapscript.go",
         "context.go",
-        "convenience.go",
-        "firewall.go",
-        "iam.go",
         "manifests.go",
         "master_volumes.go",
         "names.go",
-        "network.go",
         "pki.go",
-        "sshkey.go",
         "template_resource.go",
     ],
     importpath = "k8s.io/kops/pkg/model",
@@ -23,7 +18,6 @@ go_library(
         "//pkg/apis/kops/model:go_default_library",
         "//pkg/apis/kops/util:go_default_library",
         "//pkg/apis/nodeup:go_default_library",
-        "//pkg/dns:go_default_library",
         "//pkg/featureflag:go_default_library",
         "//pkg/model/components:go_default_library",
         "//pkg/model/iam:go_default_library",
@@ -33,7 +27,6 @@ go_library(
         "//pkg/pki:go_default_library",
         "//pkg/rbac:go_default_library",
         "//pkg/tokens:go_default_library",
-        "//pkg/util/stringorslice:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/alitasks:go_default_library",
         "//upup/pkg/fi/cloudup/aliup:go_default_library",
@@ -52,7 +45,6 @@ go_library(
         "//util/pkg/architectures:go_default_library",
         "//util/pkg/mirrors:go_default_library",
         "//util/pkg/vfs:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/aws/endpoints:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
         "//vendor/github.com/blang/semver/v4:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
@@ -60,18 +52,13 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/util/yaml:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/scheme:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
-        "//vendor/k8s.io/legacy-cloud-providers/aws:go_default_library",
         "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
 
 go_test(
     name = "go_default_test",
-    srcs = [
-        "bootstrapscript_test.go",
-        "firewall_test.go",
-        "iam_test.go",
-    ],
+    srcs = ["bootstrapscript_test.go"],
     data = glob(["tests/**"]),  #keep
     embed = [":go_default_library"],
     deps = [
