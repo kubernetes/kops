@@ -5844,6 +5844,7 @@ func Convert_kops_NodeTerminationHandlerConfig_To_v1alpha2_NodeTerminationHandle
 
 func autoConvert_v1alpha2_OIDCIssuerConfig_To_kops_OIDCIssuerConfig(in *OIDCIssuerConfig, out *kops.OIDCIssuerConfig, s conversion.Scope) error {
 	out.DiscoveryStore = in.DiscoveryStore
+	out.EnableAWSOIDCProvider = in.EnableAWSOIDCProvider
 	return nil
 }
 
@@ -5854,6 +5855,7 @@ func Convert_v1alpha2_OIDCIssuerConfig_To_kops_OIDCIssuerConfig(in *OIDCIssuerCo
 
 func autoConvert_kops_OIDCIssuerConfig_To_v1alpha2_OIDCIssuerConfig(in *kops.OIDCIssuerConfig, out *OIDCIssuerConfig, s conversion.Scope) error {
 	out.DiscoveryStore = in.DiscoveryStore
+	out.EnableAWSOIDCProvider = in.EnableAWSOIDCProvider
 	return nil
 }
 

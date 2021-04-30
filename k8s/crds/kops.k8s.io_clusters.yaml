@@ -4041,6 +4041,10 @@ spec:
                     description: DiscoveryStore is the VFS path to where OIDC Issuer
                       Discovery metadata is stored.
                     type: string
+                  enableAWSOIDCProvider:
+                    description: EnableAWSOIDCProvider will provision an AWS OIDC
+                      provider that trusts the ServiceAccount Issuer
+                    type: boolean
                 type: object
               serviceClusterIPRange:
                 description: ServiceClusterIPRange is the CIDR, from the internal
