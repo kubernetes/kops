@@ -527,6 +527,11 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				KopsModelContext: modelContext,
 				Lifecycle:        &clusterLifecycle,
 			},
+			&model.IssuerDiscoveryModelBuilder{
+				KopsModelContext: modelContext,
+				Lifecycle:        &clusterLifecycle,
+				Cluster:          cluster,
+			},
 			&kubeapiserver.KubeApiserverBuilder{
 				AssetBuilder:     assetBuilder,
 				KopsModelContext: modelContext,
