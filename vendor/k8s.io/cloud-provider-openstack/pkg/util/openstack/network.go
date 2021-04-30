@@ -19,7 +19,7 @@ package openstack
 import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
-	"k8s.io/cloud-provider-openstack/pkg/cloudprovider/providers/openstack/metrics"
+	"k8s.io/cloud-provider-openstack/pkg/metrics"
 )
 
 // GetFloatingIPs returns all the filtered floating IPs

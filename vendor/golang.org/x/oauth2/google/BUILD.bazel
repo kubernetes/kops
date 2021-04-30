@@ -17,6 +17,7 @@ go_library(
     deps = [
         "//vendor/cloud.google.com/go/compute/metadata:go_default_library",
         "//vendor/golang.org/x/oauth2:go_default_library",
+        "//vendor/golang.org/x/oauth2/authhandler:go_default_library",
         "//vendor/golang.org/x/oauth2/google/internal/externalaccount:go_default_library",
         "//vendor/golang.org/x/oauth2/internal:go_default_library",
         "//vendor/golang.org/x/oauth2/jws:go_default_library",

@@ -22,7 +22,7 @@ go_library(
         "//vendor/github.com/gophercloud/gophercloud/pagination:go_default_library",
         "//vendor/github.com/hashicorp/go-version:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
-        "//vendor/k8s.io/cloud-provider-openstack/pkg/cloudprovider/providers/openstack/metrics:go_default_library",
+        "//vendor/k8s.io/cloud-provider-openstack/pkg/metrics:go_default_library",
         "//vendor/k8s.io/cloud-provider-openstack/pkg/util/errors:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
     ],

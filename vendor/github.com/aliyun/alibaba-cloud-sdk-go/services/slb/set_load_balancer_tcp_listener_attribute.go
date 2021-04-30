@@ -89,7 +89,6 @@ type SetLoadBalancerTCPListenerAttributeRequest struct {
 	HealthCheckDomain              string                                          `position:"Query" name:"HealthCheckDomain"`
 	SynProxy                       string                                          `position:"Query" name:"SynProxy"`
 	OwnerId                        requests.Integer                                `position:"Query" name:"OwnerId"`
-	ProxyProtocolVpcIdEnabled      requests.Boolean                                `position:"Query" name:"ProxyProtocolVpcIdEnabled"`
 	Tags                           string                                          `position:"Query" name:"Tags"`
 	LoadBalancerId                 string                                          `position:"Query" name:"LoadBalancerId"`
 	MasterSlaveServerGroupId       string                                          `position:"Query" name:"MasterSlaveServerGroupId"`
