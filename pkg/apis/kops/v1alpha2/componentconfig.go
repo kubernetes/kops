@@ -870,6 +870,13 @@ type NodeTerminationHandlerConfig struct {
 
 	// ManagedASGTag is the tag used to determine which nodes NTH can take action on
 	ManagedASGTag *string `json:"managedASGTag,omitempty"`
+
+	// MemoryRequest of NodeTerminationHandler container.
+	// Default: 64Mi
+	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
+	// CPURequest of NodeTerminationHandler container.
+	// Default: 50m
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 }
 
 // ClusterAutoscalerConfig determines the cluster autoscaler configuration.

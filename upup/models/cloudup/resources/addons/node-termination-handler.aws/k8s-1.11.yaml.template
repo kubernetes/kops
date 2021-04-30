@@ -197,12 +197,9 @@ spec:
             - name: WORKERS
               value: "10"
           resources:
-            limits:
-              cpu: 100m
-              memory: 128Mi
             requests:
-              cpu: 50m
-              memory: 64Mi
+              cpu: {{ .CPURequest }}
+              memory: {{ .MemoryRequest }}
       nodeSelector:
         node-role.kubernetes.io/master: ""
       tolerations:
@@ -309,11 +306,9 @@ spec:
           - name: LOG_LEVEL
             value: "info"
           resources:
-            limits:
-              memory: 128Mi
             requests:
-              cpu: 50m
-              memory: 64Mi
+              cpu: {{ .CPURequest }}
+              memory: {{ .MemoryRequest }}
       nodeSelector:
         kubernetes.io/os: linux
       tolerations:
