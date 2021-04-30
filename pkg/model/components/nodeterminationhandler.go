@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -55,6 +56,16 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 
 	if nth.ManagedASGTag == nil {
 		nth.ManagedASGTag = fi.String("aws-node-termination-handler/managed")
+	}
+
+	if nth.CPURequest == nil {
+		defaultCPURequest := resource.MustParse("50m")
+		nth.CPURequest = &defaultCPURequest
+	}
+
+	if nth.MemoryRequest == nil {
+		defaultMemoryRequest := resource.MustParse("64Mi")
+		nth.MemoryRequest = &defaultMemoryRequest
 	}
 
 	return nil

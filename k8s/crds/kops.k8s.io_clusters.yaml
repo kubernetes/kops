@@ -3928,6 +3928,14 @@ spec:
                 description: NodeTerminationHandler determines the cluster autoscaler
                   configuration.
                 properties:
+                  cpuRequest:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: 'CPURequest of NodeTerminationHandler container.
+                      Default: 50m'
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   enableSQSTerminationDraining:
                     description: EnableSQSTerminationDraining enables queue-processor
                       mode which drains nodes when an SQS termination event is received.
@@ -3950,6 +3958,14 @@ spec:
                     description: ManagedASGTag is the tag used to determine which
                       nodes NTH can take action on
                     type: string
+                  memoryRequest:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: 'MemoryRequest of NodeTerminationHandler container.
+                      Default: 64Mi'
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   prometheusEnable:
                     description: EnablePrometheusMetrics enables the "/metrics" endpoint.
                     type: boolean
