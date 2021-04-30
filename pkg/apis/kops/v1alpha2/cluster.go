@@ -213,6 +213,8 @@ type ClusterSpec struct {
 type OIDCIssuerConfig struct {
 	// DiscoveryStore is the VFS path to where OIDC Issuer Discovery metadata is stored.
 	DiscoveryStore string `json:"discoveryStore,omitempty"`
+	// EnableAWSOIDCProvider will provision an AWS OIDC provider that trusts the ServiceAccount Issuer
+	EnableAWSOIDCProvider bool `json:"enableAWSOIDCProvider,omitempty"`
 }
 
 // NodeAuthorizationSpec is used to node authorization

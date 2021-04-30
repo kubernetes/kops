@@ -34,6 +34,7 @@ spec:
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceAccountIssuerDiscovery:
     discoveryStore: memfs://discovery.example.com/minimal.example.com
+    enableAWSOIDCProvider: true
   sshAccess:
     - 0.0.0.0/0
   topology:
