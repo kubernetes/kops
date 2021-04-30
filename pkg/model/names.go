@@ -86,8 +86,8 @@ func (b *KopsModelContext) LinkToELBSecurityGroup(prefix string) *awstasks.Secur
 // LBName32 will attempt to calculate a meaningful name for an ELB given a prefix
 // Will never return a string longer than 32 chars
 // Note this is _not_ the primary identifier for the ELB - we use the Name tag for that.
-func (m *KopsModelContext) LBName32(prefix string) string {
-	return awsup.GetResourceName32(m.Cluster.ObjectMeta.Name, prefix)
+func (b *KopsModelContext) LBName32(prefix string) string {
+	return awsup.GetResourceName32(b.Cluster.ObjectMeta.Name, prefix)
 }
 
 // CLBName returns CLB name plus cluster name
@@ -177,19 +177,19 @@ func (b *KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) (*aw
 
 // SSHKeyName computes a unique SSH key name, combining the cluster name and the SSH public key fingerprint.
 // If an SSH key name is provided in the cluster configuration, it will use that instead.
-func (c *KopsModelContext) SSHKeyName() (string, error) {
+func (b *KopsModelContext) SSHKeyName() (string, error) {
 	// use configured SSH key name if present
-	sshKeyName := c.Cluster.Spec.SSHKeyName
+	sshKeyName := b.Cluster.Spec.SSHKeyName
 	if sshKeyName != nil && *sshKeyName != "" {
 		return *sshKeyName, nil
 	}
 
-	fingerprint, err := pki.ComputeOpenSSHKeyFingerprint(string(c.SSHPublicKeys[0]))
+	fingerprint, err := pki.ComputeOpenSSHKeyFingerprint(string(b.SSHPublicKeys[0]))
 	if err != nil {
 		return "", err
 	}
 
-	name := "kubernetes." + c.Cluster.ObjectMeta.Name + "-" + fingerprint
+	name := "kubernetes." + b.Cluster.ObjectMeta.Name + "-" + fingerprint
 	return name, nil
 }
 
