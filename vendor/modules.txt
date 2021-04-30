@@ -87,7 +87,7 @@ github.com/PuerkitoBio/purell
 github.com/PuerkitoBio/urlesc
 # github.com/agext/levenshtein v1.2.1
 github.com/agext/levenshtein
-# github.com/aliyun/alibaba-cloud-sdk-go v1.61.1046
+# github.com/aliyun/alibaba-cloud-sdk-go v1.61.1059
 ## explicit
 github.com/aliyun/alibaba-cloud-sdk-go/sdk
 github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth
@@ -110,7 +110,7 @@ github.com/aws/amazon-ec2-instance-selector/v2/pkg/bytequantity
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/cli
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs
-# github.com/aws/aws-sdk-go v1.38.25
+# github.com/aws/aws-sdk-go v1.38.29
 ## explicit
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
@@ -225,7 +225,7 @@ github.com/deislabs/oras/pkg/auth/docker
 github.com/deislabs/oras/pkg/content
 github.com/deislabs/oras/pkg/context
 github.com/deislabs/oras/pkg/oras
-# github.com/denverdino/aliyungo v0.0.0-20210318042315-546d0768f5c7
+# github.com/denverdino/aliyungo v0.0.0-20210425065611-55bee4942cba
 ## explicit
 github.com/denverdino/aliyungo/common
 github.com/denverdino/aliyungo/ecs
@@ -727,7 +727,7 @@ golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 ## explicit
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20210423184538-5f58ad60dda6
+# golang.org/x/net v0.0.0-20210428140749-89ef3d95e781
 ## explicit
 golang.org/x/net/bpf
 golang.org/x/net/context
@@ -745,9 +745,10 @@ golang.org/x/net/ipv4
 golang.org/x/net/ipv6
 golang.org/x/net/proxy
 golang.org/x/net/trace
-# golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78
+# golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
 ## explicit
 golang.org/x/oauth2
+golang.org/x/oauth2/authhandler
 golang.org/x/oauth2/google
 golang.org/x/oauth2/google/internal/externalaccount
 golang.org/x/oauth2/internal
@@ -756,7 +757,7 @@ golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.0.0-20210423185535-09eb48e85fd7
+# golang.org/x/sys v0.0.0-20210426230700-d19ff857e887
 ## explicit
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
@@ -1355,9 +1356,9 @@ k8s.io/cloud-provider/service/helpers
 k8s.io/cloud-provider/volume
 k8s.io/cloud-provider/volume/errors
 k8s.io/cloud-provider/volume/helpers
-# k8s.io/cloud-provider-openstack v1.20.4
+# k8s.io/cloud-provider-openstack v1.21.0
 ## explicit
-k8s.io/cloud-provider-openstack/pkg/cloudprovider/providers/openstack/metrics
+k8s.io/cloud-provider-openstack/pkg/metrics
 k8s.io/cloud-provider-openstack/pkg/util/errors
 k8s.io/cloud-provider-openstack/pkg/util/openstack
 # k8s.io/component-base v0.21.0 => k8s.io/component-base v0.21.0

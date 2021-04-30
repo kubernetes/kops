@@ -113,7 +113,6 @@ type DescribeLoadBalancerUDPListenerAttributeResponse struct {
 	MaxConnection             int                                                  `json:"MaxConnection" xml:"MaxConnection"`
 	PersistenceTimeout        int                                                  `json:"PersistenceTimeout" xml:"PersistenceTimeout"`
 	ProxyProtocolV2Enabled    bool                                                 `json:"ProxyProtocolV2Enabled" xml:"ProxyProtocolV2Enabled"`
-	ProxyProtocolVpcIdEnabled bool                                                 `json:"ProxyProtocolVpcIdEnabled" xml:"ProxyProtocolVpcIdEnabled"`
 	QuicVersion               string                                               `json:"QuicVersion" xml:"QuicVersion"`
 	RequestId                 string                                               `json:"RequestId" xml:"RequestId"`
 	Scheduler                 string                                               `json:"Scheduler" xml:"Scheduler"`
