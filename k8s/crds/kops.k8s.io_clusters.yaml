@@ -3991,10 +3991,6 @@ spec:
                 description: Project is the cloud project we should use, required
                   on GCE
                 type: string
-              publicDataStore:
-                description: PublicDataStore is the VFS path to where public data
-                  is stored
-                type: string
               rollingUpdate:
                 description: RollingUpdate defines the default rolling-update settings
                   for instance groups
@@ -4037,6 +4033,15 @@ spec:
               secretStore:
                 description: SecretStore is the VFS path to where secrets are stored
                 type: string
+              serviceAccountIssuerDiscovery:
+                description: ServiceAccountIssuerDiscovery configures the OIDC Issuer
+                  for ServiceAccounts.
+                properties:
+                  discoveryStore:
+                    description: DiscoveryStore is the VFS path to where OIDC Issuer
+                      Discovery metadata is stored.
+                    type: string
+                type: object
               serviceClusterIPRange:
                 description: ServiceClusterIPRange is the CIDR, from the internal
                   network, where we allocate IPs for services
