@@ -206,11 +206,11 @@ type ClusterSpec struct {
 	WarmPool *WarmPoolSpec `json:"warmPool,omitempty"`
 
 	// ServiceAccountIssuerDiscovery configures the OIDC Issuer for ServiceAccounts.
-	ServiceAccountIssuerDiscovery *OIDCIssuerConfig `json:"serviceAccountIssuerDiscovery,omitempty"`
+	ServiceAccountIssuerDiscovery *ServiceAccountIssuerDiscoveryConfig `json:"serviceAccountIssuerDiscovery,omitempty"`
 }
 
-// OIDCIssuerConfig configures an OIDC Issuer.
-type OIDCIssuerConfig struct {
+// ServiceAccountIssuerDiscoveryConfig configures an OIDC Issuer.
+type ServiceAccountIssuerDiscoveryConfig struct {
 	// DiscoveryStore is the VFS path to where OIDC Issuer Discovery metadata is stored.
 	DiscoveryStore string `json:"discoveryStore,omitempty"`
 	// EnableAWSOIDCProvider will provision an AWS OIDC provider that trusts the ServiceAccount Issuer
