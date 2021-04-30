@@ -113,7 +113,6 @@ type DescribeLoadBalancerTCPListenerAttributeResponse struct {
 	MaxConnection                  int                                                  `json:"MaxConnection" xml:"MaxConnection"`
 	PersistenceTimeout             int                                                  `json:"PersistenceTimeout" xml:"PersistenceTimeout"`
 	ProxyProtocolV2Enabled         bool                                                 `json:"ProxyProtocolV2Enabled" xml:"ProxyProtocolV2Enabled"`
-	ProxyProtocolVpcIdEnabled      bool                                                 `json:"ProxyProtocolVpcIdEnabled" xml:"ProxyProtocolVpcIdEnabled"`
 	RequestId                      string                                               `json:"RequestId" xml:"RequestId"`
 	Scheduler                      string                                               `json:"Scheduler" xml:"Scheduler"`
 	SlaveServerGroupId             string                                               `json:"SlaveServerGroupId" xml:"SlaveServerGroupId"`

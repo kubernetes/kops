@@ -85,7 +85,6 @@ type CreateLoadBalancerUDPListenerRequest struct {
 	HealthCheckMethod         string                                    `position:"Query" name:"HealthCheckMethod"`
 	HealthCheckDomain         string                                    `position:"Query" name:"HealthCheckDomain"`
 	OwnerId                   requests.Integer                          `position:"Query" name:"OwnerId"`
-	ProxyProtocolVpcIdEnabled requests.Boolean                          `position:"Query" name:"ProxyProtocolVpcIdEnabled"`
 	Tags                      string                                    `position:"Query" name:"Tags"`
 	LoadBalancerId            string                                    `position:"Query" name:"LoadBalancerId"`
 	MasterSlaveServerGroupId  string                                    `position:"Query" name:"MasterSlaveServerGroupId"`
