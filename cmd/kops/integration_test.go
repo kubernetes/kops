@@ -190,6 +190,11 @@ func TestMinimalCloudformation(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal-cloudformation").runTestCloudformation(t)
 }
 
+// TestMinimalEtcd runs the test on a minimum configuration using custom etcd config, similar to kops create cluster minimal.example.com --zones us-west-1a
+func TestMinimalEtcd(t *testing.T) {
+	newIntegrationTest("minimal-etcd.example.com", "minimal-etcd").runTestCloudformation(t)
+}
+
 // TestMinimalGp3 runs the test on a minimum configuration using gp3 volumes, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimalGp3(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal-gp3").runTestTerraformAWS(t)
