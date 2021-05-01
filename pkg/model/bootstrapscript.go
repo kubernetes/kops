@@ -326,16 +326,19 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 
 				for _, etcdCluster := range cs.EtcdClusters {
 					c := kops.EtcdClusterSpec{
-						Image:   etcdCluster.Image,
-						Version: etcdCluster.Version,
+						Image:         etcdCluster.Image,
+						Version:       etcdCluster.Version,
+						CPURequest:    etcdCluster.CPURequest,
+						MemoryRequest: etcdCluster.MemoryRequest,
 					}
-					// if the user has not specified memory or cpu allotments for etcd, do not
-					// apply one.  Described in PR #6313.
-					if etcdCluster.CPURequest != nil {
-						c.CPURequest = etcdCluster.CPURequest
-					}
-					if etcdCluster.MemoryRequest != nil {
-						c.MemoryRequest = etcdCluster.MemoryRequest
+					for _, etcdMember := range etcdCluster.Members {
+						if fi.StringValue(etcdMember.InstanceGroup) == b.ig.Name && etcdMember.VolumeSize != nil {
+							m := kops.EtcdMemberSpec{
+								Name:       etcdMember.Name,
+								VolumeSize: etcdMember.VolumeSize,
+							}
+							c.Members = append(c.Members, m)
+						}
 					}
 					spec["etcdClusters"].(map[string]kops.EtcdClusterSpec)[etcdCluster.Name] = c
 				}
