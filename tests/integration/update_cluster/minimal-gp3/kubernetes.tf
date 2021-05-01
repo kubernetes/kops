@@ -201,7 +201,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-minimal-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
   iops              = 5000
-  size              = 20
+  size              = 50
   tags = {
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "us-test-1a.etcd-main.minimal.example.com"

@@ -14,12 +14,14 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
       volumeIops: 5000
+      volumeSize: 50
       volumeThroughput: 125
       volumeType: gp3
     name: main
   - etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
+      volumeSize: 20
       volumeType: gp3
     name: events
   iam: {}
