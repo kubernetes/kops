@@ -803,7 +803,7 @@
       "Type": "AWS::EC2::Volume",
       "Properties": {
         "AvailabilityZone": "us-test-1a",
-        "Size": 20,
+        "Size": 50,
         "VolumeType": "gp3",
         "Iops": 5000,
         "Throughput": 125,
