@@ -736,8 +736,11 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 		}
 
 		if v.Hubble != nil && fi.BoolValue(v.Hubble.Enabled) {
+			if !components.IsCertManagerEnabled(cluster) {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("hubble", "enabled"), "Hubble requires that cert manager is enabled"))
+			}
 			if version.Minor < 8 {
-				allErrs = append(allErrs, field.Forbidden(fldPath.Root().Child("hubble", "enabled"), "Hubble requires Cilium 1.8 or newer"))
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("hubble", "enabled"), "Hubble requires Cilium 1.8 or newer"))
 			}
 		}
 	}
