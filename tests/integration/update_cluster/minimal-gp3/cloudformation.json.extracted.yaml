@@ -164,8 +164,14 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   encryptionConfig: null
   etcdClusters:
     events:
+      etcdMembers:
+      - name: us-test-1a
+        volumeSize: 20
       version: 3.4.13
     main:
+      etcdMembers:
+      - name: us-test-1a
+        volumeSize: 50
       version: 3.4.13
   kubeAPIServer:
     allowPrivileged: true
