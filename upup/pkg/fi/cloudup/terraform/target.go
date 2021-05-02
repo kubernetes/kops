@@ -94,19 +94,24 @@ func tfSanitize(name string) string {
 	return strings.NewReplacer(".", "-", "/", "--", ":", "_").Replace(name)
 }
 
-func (t *TerraformTarget) AddFile(resourceType string, resourceName string, key string, r fi.Resource, base64 bool) (*Literal, error) {
-	id := resourceType + "_" + resourceName + "_" + key
-
+func (t *TerraformTarget) AddFileResource(resourceType string, resourceName string, key string, r fi.Resource, base64 bool) (*Literal, error) {
 	d, err := fi.ResourceAsBytes(r)
 	if err != nil {
+		id := resourceType + "_" + resourceName + "_" + key
 		return nil, fmt.Errorf("error rending resource %s %v", id, err)
 	}
+
+	return t.AddFileBytes(resourceType, resourceName, key, d, base64)
+}
+
+func (t *TerraformTarget) AddFileBytes(resourceType string, resourceName string, key string, data []byte, base64 bool) (*Literal, error) {
+	id := resourceType + "_" + resourceName + "_" + key
 
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 
 	p := path.Join("data", id)
-	t.files[p] = d
+	t.files[p] = data
 
 	modulePath := path.Join("${path.module}", p)
 	l := LiteralFileExpression(modulePath, base64)

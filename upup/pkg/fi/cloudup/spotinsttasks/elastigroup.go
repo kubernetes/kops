@@ -1506,7 +1506,7 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 	// User data.
 	if e.UserData != nil {
 		var err error
-		tf.UserData, err = t.AddFile("spotinst_elastigroup_aws", *e.Name, "user_data", e.UserData, false)
+		tf.UserData, err = t.AddFileResource("spotinst_elastigroup_aws", *e.Name, "user_data", e.UserData, false)
 		if err != nil {
 			return err
 		}

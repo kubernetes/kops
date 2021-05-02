@@ -183,7 +183,7 @@ type terraformSQSQueue struct {
 }
 
 func (_ *SQS) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SQS) error {
-	p, err := t.AddFile("aws_sqs_queue", *e.Name, "policy", e.Policy, false)
+	p, err := t.AddFileResource("aws_sqs_queue", *e.Name, "policy", e.Policy, false)
 	if err != nil {
 		return err
 	}
