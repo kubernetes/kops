@@ -258,7 +258,7 @@ type terraformIAMRole struct {
 }
 
 func (_ *IAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMRole) error {
-	policy, err := t.AddFile("aws_iam_role", *e.Name, "policy", e.RolePolicyDocument, false)
+	policy, err := t.AddFileResource("aws_iam_role", *e.Name, "policy", e.RolePolicyDocument, false)
 	if err != nil {
 		return fmt.Errorf("error rendering RolePolicyDocument: %v", err)
 	}

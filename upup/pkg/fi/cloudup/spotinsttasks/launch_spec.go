@@ -874,7 +874,7 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 	{
 		if e.UserData != nil {
 			var err error
-			tf.UserData, err = t.AddFile("spotinst_ocean_aws_launch_spec", *e.Name, "user_data", e.UserData, false)
+			tf.UserData, err = t.AddFileResource("spotinst_ocean_aws_launch_spec", *e.Name, "user_data", e.UserData, false)
 			if err != nil {
 				return err
 			}

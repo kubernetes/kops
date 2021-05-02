@@ -132,7 +132,7 @@ type terraformEventBridgeRule struct {
 }
 
 func (_ *EventBridgeRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EventBridgeRule) error {
-	m, err := t.AddFile("aws_cloudwatch_event_rule", *e.Name, "event_pattern", fi.NewStringResource(*e.EventPattern), false)
+	m, err := t.AddFileBytes("aws_cloudwatch_event_rule", *e.Name, "event_pattern", []byte(*e.EventPattern), false)
 	if err != nil {
 		return err
 	}
