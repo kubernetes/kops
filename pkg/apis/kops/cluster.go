@@ -218,6 +218,24 @@ type ServiceAccountIssuerDiscoveryConfig struct {
 	EnableAWSOIDCProvider bool `json:"enableAWSOIDCProvider,omitempty"`
 }
 
+// ServiceAccountExternalPermissions grants a ServiceAccount permissions to external resources.
+type ServiceAccountExternalPermission struct {
+	// Name is the name of the Kubernetes ServiceAccount.
+	Name string `json:"name"`
+	// Namespace is the namespace of the Kubernetes ServiceAccount.
+	Namespace string `json:"namespace"`
+	// AWS grants permissions to AWS resources.
+	AWS *AWSPermission `json:"aws,omitempty"`
+}
+
+// AWSPermission grants permissions to AWS resources.
+type AWSPermission struct {
+	// PolicyARNs is a list of existing IAM Policies.
+	PolicyARNs []string `json:"policyARNs,omitempty"`
+	// InlinePolicy is an IAM Policy that will be attached inline to the IAM Role.
+	InlinePolicy string `json:"inlinePolicy,omitempty"`
+}
+
 // NodeAuthorizationSpec is used to node authorization
 type NodeAuthorizationSpec struct {
 	// NodeAuthorizer defined the configuration for the node authorizer
@@ -280,6 +298,8 @@ type IAMSpec struct {
 	Legacy                 bool    `json:"legacy"`
 	AllowContainerRegistry bool    `json:"allowContainerRegistry,omitempty"`
 	PermissionsBoundary    *string `json:"permissionsBoundary,omitempty"`
+	// ServiceAccountExternalPermissions defines the relatinship between Kubernetes ServiceAccounts and permissions with external resources.
+	ServiceAccountExternalPermissions []ServiceAccountExternalPermission `json:"serviceAccountExternalPermissions,omitempty"`
 }
 
 // HookSpec is a definition hook

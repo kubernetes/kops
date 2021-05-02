@@ -1191,3 +1191,92 @@ func Test_Validate_CloudConfiguration(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateSAExternalPermissions(t *testing.T) {
+	grid := []struct {
+		Description    string
+		Input          []kops.ServiceAccountExternalPermission
+		ExpectedErrors []string
+	}{
+
+		{
+			Description: "Duplicate SA",
+			Input: []kops.ServiceAccountExternalPermission{
+				{
+					Name:      "MySA",
+					Namespace: "MyNS",
+					AWS: &kops.AWSPermission{
+						PolicyARNs: []string{"-"},
+					},
+				},
+				{
+					Name:      "MySA",
+					Namespace: "MyNS",
+					AWS: &kops.AWSPermission{
+						PolicyARNs: []string{"-"},
+					},
+				},
+			},
+			ExpectedErrors: []string{"Duplicate value::iam.serviceAccountExternalPermissions[MyNS/MySA]"},
+		},
+		{
+			Description: "Missing permissions",
+			Input: []kops.ServiceAccountExternalPermission{
+				{
+					Name:      "MySA",
+					Namespace: "MyNS",
+				},
+			},
+			ExpectedErrors: []string{"Required value::iam.serviceAccountExternalPermissions[MyNS/MySA].aws"},
+		},
+		{
+			Description: "Setting both arn and inline",
+			Input: []kops.ServiceAccountExternalPermission{
+				{
+					Name:      "MySA",
+					Namespace: "MyNS",
+					AWS: &kops.AWSPermission{
+						PolicyARNs:   []string{"-"},
+						InlinePolicy: "-",
+					},
+				},
+			},
+			ExpectedErrors: []string{"Forbidden::iam.serviceAccountExternalPermissions[MyNS/MySA].aws"},
+		},
+		{
+			Description: "Empty SA name",
+			Input: []kops.ServiceAccountExternalPermission{
+				{
+					Namespace: "MyNS",
+					AWS: &kops.AWSPermission{
+						PolicyARNs:   []string{"-"},
+						InlinePolicy: "-",
+					},
+				},
+			},
+			ExpectedErrors: []string{"Required value::iam.serviceAccountExternalPermissions[MyNS/].name"},
+		},
+		{
+			Description: "Empty SA namespace",
+			Input: []kops.ServiceAccountExternalPermission{
+				{
+					Name: "MySA",
+					AWS: &kops.AWSPermission{
+						PolicyARNs:   []string{"-"},
+						InlinePolicy: "-",
+					},
+				},
+			},
+			ExpectedErrors: []string{"Required value::iam.serviceAccountExternalPermissions[/MySA].namespace"},
+		},
+	}
+
+	for _, g := range grid {
+		fldPath := field.NewPath("iam.serviceAccountExternalPermissions")
+		t.Run(g.Description, func(t *testing.T) {
+			errs := validateSAExternalPermissions(g.Input, fldPath)
+			testErrors(t, g.Input, errs, g.ExpectedErrors)
+		})
+	}
+
+}

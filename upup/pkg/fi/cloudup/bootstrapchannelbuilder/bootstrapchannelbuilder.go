@@ -431,7 +431,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			for _, serviceAccountRole := range serviceAccountRoles {
 				iamModelBuilder := &awsmodel.IAMModelBuilder{AWSModelContext: awsModelContext, Lifecycle: b.Lifecycle, Cluster: b.Cluster}
 
-				err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
+				_, err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
 				if err != nil {
 					return nil, err
 				}
@@ -593,7 +593,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			for _, serviceAccountRole := range serviceAccountRoles {
 				iamModelBuilder := &awsmodel.IAMModelBuilder{AWSModelContext: awsModelContext, Lifecycle: b.Lifecycle, Cluster: b.Cluster}
 
-				err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
+				_, err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
 				if err != nil {
 					return nil, err
 				}
