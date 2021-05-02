@@ -328,6 +328,7 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 					c := kops.EtcdClusterSpec{
 						Image:         etcdCluster.Image,
 						Version:       etcdCluster.Version,
+						Manager:       etcdCluster.Manager,
 						CPURequest:    etcdCluster.CPURequest,
 						MemoryRequest: etcdCluster.MemoryRequest,
 					}
