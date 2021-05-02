@@ -28,7 +28,6 @@ import (
 
 	"gopkg.in/square/go-jose.v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -53,7 +52,8 @@ type oidcDiscovery struct {
 }
 
 func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	if !featureflag.PublicJWKS.Enabled() {
+	said := b.Cluster.Spec.ServiceAccountIssuerDiscovery
+	if said == nil {
 		return nil
 	}
 

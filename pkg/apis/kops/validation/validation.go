@@ -254,6 +254,52 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		}
 	}
 
+	if spec.IAM != nil {
+		if len(spec.IAM.ServiceAccountExternalPermissions) > 0 {
+			if spec.ServiceAccountIssuerDiscovery == nil || !spec.ServiceAccountIssuerDiscovery.EnableAWSOIDCProvider {
+				allErrs = append(allErrs, field.Forbidden(fieldPath.Child("iam", "serviceAccountExternalPermissions"), "serviceAccountExternalPermissions requires AWS OIDC Provider to be enabled"))
+			}
+			allErrs = append(allErrs, validateSAExternalPermissions(spec.IAM.ServiceAccountExternalPermissions, fieldPath.Child("iam", "serviceAccountExternalPermissions"))...)
+		}
+	}
+
+	return allErrs
+}
+
+func validateSAExternalPermissions(externalPermissions []kops.ServiceAccountExternalPermission, path *field.Path) (allErrs field.ErrorList) {
+	if len(externalPermissions) == 0 {
+		return allErrs
+	}
+
+	sas := make(map[string]string)
+	for _, sa := range externalPermissions {
+		key := fmt.Sprintf("%s/%s", sa.Namespace, sa.Name)
+		p := path.Key(key)
+		if sa.Namespace == "" {
+			allErrs = append(allErrs, field.Required(p.Child("namespace"), "namespace cannot be empty"))
+		}
+		if sa.Name == "" {
+			allErrs = append(allErrs, field.Required(p.Child("name"), "name cannot be empty"))
+		}
+		_, duplicate := sas[key]
+		if duplicate {
+			allErrs = append(allErrs, field.Duplicate(p, key))
+		}
+		sas[key] = ""
+		aws := sa.AWS
+		ap := p.Child("aws")
+		if aws == nil {
+			allErrs = append(allErrs, field.Required(ap, "AWS permissions must be set"))
+			continue
+		}
+
+		if len(aws.PolicyARNs) == 0 && aws.InlinePolicy == "" {
+			allErrs = append(allErrs, field.Required(ap, "either inlinePolicy or policyARN must be set"))
+		}
+		if len(aws.PolicyARNs) > 0 && aws.InlinePolicy != "" {
+			allErrs = append(allErrs, field.Forbidden(ap, "cannot set both inlinePolicy and policyARN"))
+		}
+	}
 	return allErrs
 }
 
