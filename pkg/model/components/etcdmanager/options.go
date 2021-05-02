@@ -45,20 +45,12 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
 			continue
 		}
 
-		if etcdCluster.Manager == nil {
-			etcdCluster.Manager = &kops.EtcdManagerSpec{}
-		}
-
 		if etcdCluster.Backups == nil {
 			etcdCluster.Backups = &kops.EtcdBackupSpec{}
 		}
 		if etcdCluster.Backups.BackupStore == "" {
 			base := clusterSpec.ConfigBase
 			etcdCluster.Backups.BackupStore = urls.Join(base, "backups", "etcd", etcdCluster.Name)
-		}
-
-		if etcdCluster.Version == "" {
-			etcdCluster.Version = "3.2.18"
 		}
 
 		if !etcdVersionIsSupported(etcdCluster.Version) {

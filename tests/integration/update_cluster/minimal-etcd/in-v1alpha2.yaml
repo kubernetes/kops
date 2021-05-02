@@ -1,0 +1,90 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2016-12-10T22:42:27Z"
+  name: minimal-etcd.example.com
+spec:
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  channel: stable
+  cloudProvider: aws
+  configBase: memfs://clusters.example.com/minimal-etcd.example.com
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+      volumeSize: 20
+    manager:
+      image: gcr.io/k8s-staging-etcdadm/etcd:v20210430-v0.1.3-739-g7da12acc
+      logLevel: 10
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+      volumeSize: 20
+    manager:
+      env:
+      - name: ETCD_MANAGER_HOURLY_BACKUPS_RETENTION
+        value: 1d
+      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
+        value: 30d
+      image: gcr.io/k8s-staging-etcdadm/etcd:v20210430-v0.1.3-739-g7da12acc
+    name: events
+  iam: {}
+  kubelet:
+    anonymousAuth: false
+  kubernetesVersion: v1.21.0
+  masterInternalName: api.internal.minimal-etcd.example.com
+  masterPublicName: api.minimal-etcd.example.com
+  networkCIDR: 172.20.0.0/16
+  networking:
+    cni: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+    - 0.0.0.0/0
+  topology:
+    masters: public
+    nodes: public
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-test-1a
+    type: Public
+    zone: us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-10T22:42:28Z"
+  name: nodes
+  labels:
+    kops.k8s.io/cluster: minimal-etcd.example.com
+spec:
+  associatePublicIp: true
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+  subnets:
+  - us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-10T22:42:28Z"
+  name: master-us-test-1a
+  labels:
+    kops.k8s.io/cluster: minimal-etcd.example.com
+spec:
+  associatePublicIp: true
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1a
