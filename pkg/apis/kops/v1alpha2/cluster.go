@@ -219,7 +219,9 @@ type ServiceAccountIssuerDiscoveryConfig struct {
 
 // ServiceAccountExternalPermissions grants a ServiceAccount permissions to external resources.
 type ServiceAccountExternalPermission struct {
-	Name      string `json:"name"`
+	// Name is the name of the Kubernetes ServiceAccount.
+	Name string `json:"name"`
+	// Namespace is the namespace of the Kubernetes ServiceAccount.
 	Namespace string `json:"namespace"`
 	// AWS grants permissions to AWS resources.
 	AWS *AWSPermission `json:"aws,omitempty"`
@@ -227,8 +229,10 @@ type ServiceAccountExternalPermission struct {
 
 // AWSPermission grants permissions to AWS resources.
 type AWSPermission struct {
-	PolicyARNs   []string `json:"policyARNs,omitempty"`
-	InlinePolicy string   `json:"inlinePolicy,omitempty"`
+	// PolicyARNs is a list of existing IAM Policies.
+	PolicyARNs []string `json:"policyARNs,omitempty"`
+	// InlinePolicy is an IAM Policy that will be attached inline to the IAM Role.
+	InlinePolicy string `json:"inlinePolicy,omitempty"`
 }
 
 // NodeAuthorizationSpec is used to node authorization

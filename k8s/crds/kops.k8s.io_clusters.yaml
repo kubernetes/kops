@@ -1175,15 +1175,21 @@ spec:
                           description: AWS grants permissions to AWS resources.
                           properties:
                             inlinePolicy:
+                              description: InlinePolicy is an IAM Policy that will
+                                be attached inline to the IAM Role.
                               type: string
                             policyARNs:
+                              description: PolicyARNs is a list of existing IAM Policies.
                               items:
                                 type: string
                               type: array
                           type: object
                         name:
+                          description: Name is the name of the Kubernetes ServiceAccount.
                           type: string
                         namespace:
+                          description: Namespace is the namespace of the Kubernetes
+                            ServiceAccount.
                           type: string
                       required:
                       - name
