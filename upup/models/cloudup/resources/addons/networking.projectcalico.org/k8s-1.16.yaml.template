@@ -531,6 +531,13 @@ spec:
                 description: 'BPFEnabled, if enabled Felix will use the BPF dataplane.
                   [Default: false]'
                 type: boolean
+              bpfExtToServiceConnmark:
+                description: 'BPFExtToServiceConnmark in BPF mode, control a 32bit
+                  mark that is set on connections from an external client to a local
+                  service. This mark allows us to control how packets of that connection
+                  are routed within the host and how is routing intepreted by RPF
+                  check. [Default: 0]'
+                type: integer
               bpfExternalServiceMode:
                 description: 'BPFExternalServiceMode in BPF mode, controls how connections
                   from outside the cluster to services (node ports and cluster IPs)
@@ -619,49 +626,55 @@ spec:
                   type: string
                 type: array
               failsafeInboundHostPorts:
-                description: 'FailsafeInboundHostPorts is a comma-delimited list of
-                  UDP/TCP ports that Felix will allow incoming traffic to host endpoints
+                description: 'FailsafeInboundHostPorts is a list of UDP/TCP ports
+                  and CIDRs that Felix will allow incoming traffic to host endpoints
                   on irrespective of the security policy. This is useful to avoid
-                  accidentally cutting off a host with incorrect configuration. Each
-                  port should be specified as tcp:<port-number> or udp:<port-number>.
-                  For back-compatibility, if the protocol is not specified, it defaults
-                  to "tcp". To disable all inbound host ports, use the value none.
-                  The default value allows ssh access and DHCP. [Default: tcp:22,
+                  accidentally cutting off a host with incorrect configuration. For
+                  back-compatibility, if the protocol is not specified, it defaults
+                  to "tcp". If a CIDR is not specified, it will allow traffic from
+                  all addresses. To disable all inbound host ports, use the value
+                  none. The default value allows ssh access and DHCP. [Default: tcp:22,
                   udp:68, tcp:179, tcp:2379, tcp:2380, tcp:6443, tcp:6666, tcp:6667]'
                 items:
-                  description: ProtoPort is combination of protocol and port, both
-                    must be specified.
+                  description: ProtoPort is combination of protocol, port, and CIDR.
+                    All three must be specified.
                   properties:
+                    net:
+                      type: string
                     port:
                       type: integer
                     protocol:
                       type: string
                   required:
+                  - net
                   - port
                   - protocol
                   type: object
                 type: array
               failsafeOutboundHostPorts:
-                description: 'FailsafeOutboundHostPorts is a comma-delimited list
-                  of UDP/TCP ports that Felix will allow outgoing traffic from host
-                  endpoints to irrespective of the security policy. This is useful
-                  to avoid accidentally cutting off a host with incorrect configuration.
-                  Each port should be specified as tcp:<port-number> or udp:<port-number>.
-                  For back-compatibility, if the protocol is not specified, it defaults
-                  to "tcp". To disable all outbound host ports, use the value none.
-                  The default value opens etcd''s standard ports to ensure that Felix
-                  does not get cut off from etcd as well as allowing DHCP and DNS.
-                  [Default: tcp:179, tcp:2379, tcp:2380, tcp:6443, tcp:6666, tcp:6667,
-                  udp:53, udp:67]'
+                description: 'FailsafeOutboundHostPorts is a list of UDP/TCP ports
+                  and CIDRs that Felix will allow outgoing traffic from host endpoints
+                  to irrespective of the security policy. This is useful to avoid
+                  accidentally cutting off a host with incorrect configuration. For
+                  back-compatibility, if the protocol is not specified, it defaults
+                  to "tcp". If a CIDR is not specified, it will allow traffic from
+                  all addresses. To disable all outbound host ports, use the value
+                  none. The default value opens etcd''s standard ports to ensure that
+                  Felix does not get cut off from etcd as well as allowing DHCP and
+                  DNS. [Default: tcp:179, tcp:2379, tcp:2380, tcp:6443, tcp:6666,
+                  tcp:6667, udp:53, udp:67]'
                 items:
-                  description: ProtoPort is combination of protocol and port, both
-                    must be specified.
+                  description: ProtoPort is combination of protocol, port, and CIDR.
+                    All three must be specified.
                   properties:
+                    net:
+                      type: string
                     port:
                       type: integer
                     protocol:
                       type: string
                   required:
+                  - net
                   - port
                   - protocol
                   type: object
@@ -3579,7 +3592,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/typha:{{ or .Networking.Calico.Version "v3.18.2" }}
+      - image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/typha:{{ or .Networking.Calico.Version "v3.19.0" }}
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -3698,7 +3711,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.18.2" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.19.0" }}
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           envFrom:
           - configMapRef:
@@ -3725,7 +3738,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.18.2" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.19.0" }}
           command: ["/opt/cni/bin/install"]
           envFrom:
           - configMapRef:
@@ -3766,7 +3779,7 @@ spec:
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/pod2daemon-flexvol:{{ or .Networking.Calico.Version "v3.18.2" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/pod2daemon-flexvol:{{ or .Networking.Calico.Version "v3.19.0" }}
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
@@ -3777,7 +3790,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/node:{{ or .Networking.Calico.Version "v3.18.2" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/node:{{ or .Networking.Calico.Version "v3.19.0" }}
           envFrom:
           - configMapRef:
               # Allow KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT to be overridden for eBPF mode.
@@ -3857,9 +3870,6 @@ spec:
             # Disable IPv6 on Kubernetes.
             - name: FELIX_IPV6SUPPORT
               value: "false"
-            # Set Felix logging to "info"
-            - name: FELIX_LOGSEVERITYSCREEN
-              value: "{{- or .Networking.Calico.LogSeverityScreen "info" }}"
             - name: FELIX_HEALTHENABLED
               value: "true"
 
@@ -3885,6 +3895,9 @@ spec:
             # Set Felix iptables binary variant, Legacy or NFT
             - name: FELIX_IPTABLESBACKEND
               value: "{{- or .Networking.Calico.IptablesBackend "Auto" }}"
+            # Controls the log level
+            - name: FELIX_LOGSEVERITYSCREEN
+              value: "{{- or .Networking.Calico.LogSeverityScreen "info" }}"
             # Set to enable the experimental Prometheus metrics server
             - name: FELIX_PROMETHEUSMETRICSENABLED
               value: "{{- .Networking.Calico.PrometheusMetricsEnabled }}"
@@ -4047,24 +4060,27 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
         - name: calico-kube-controllers
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/kube-controllers:{{ or .Networking.Calico.Version "v3.18.2" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/kube-controllers:{{ or .Networking.Calico.Version "v3.19.0" }}
           env:
             # Choose which controllers to run.
             - name: ENABLED_CONTROLLERS
               value: node
             - name: DATASTORE_TYPE
               value: kubernetes
+          livenessProbe:
+            exec:
+              command:
+              - /usr/bin/check-status
+              - -l
+            periodSeconds: 10
+            initialDelaySeconds: 10
+            failureThreshold: 6
           readinessProbe:
             exec:
               command:
               - /usr/bin/check-status
               - -r
-          livenessProbe:
-            exec:
-              command:
-              - /usr/bin/check-status
-              - -r
-            failureThreshold: 10
+            periodSeconds: 10
 
 ---
 
