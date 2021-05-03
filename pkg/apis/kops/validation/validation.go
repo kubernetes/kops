@@ -789,6 +789,10 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			allErrs = append(allErrs, field.Forbidden(versionFld, "Version 1.7 requires kubernetesVersion before 1.17"))
 		}
 
+		if version.Minor == 10 && cluster.IsKubernetesLT("1.16") {
+			allErrs = append(allErrs, field.Forbidden(versionFld, "Version 1.10 requires kubernetesVersion 1.16 or newer"))
+		}
+
 		if v.Hubble != nil && fi.BoolValue(v.Hubble.Enabled) {
 			if !components.IsCertManagerEnabled(cluster) {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("hubble", "enabled"), "Hubble requires that cert manager is enabled"))
