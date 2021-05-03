@@ -145,7 +145,9 @@ func writeLocalsOutputs(body *hclwrite.Body, outputs map[string]*terraformOutput
 	for k := range outputs {
 		outputNames = append(outputNames, k)
 	}
-	sort.Strings(outputNames)
+	sort.Slice(outputNames, func(i, j int) bool {
+		return tfSanitize(outputs[outputNames[i]].Key) < tfSanitize(outputs[outputNames[j]].Key)
+	})
 
 	for _, n := range outputNames {
 		v := outputs[n]
