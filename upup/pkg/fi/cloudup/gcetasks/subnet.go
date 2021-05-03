@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -202,10 +203,10 @@ func (e *Subnet) URL(project string, region string) string {
 }
 
 type terraformSubnet struct {
-	Name    *string            `json:"name" cty:"name"`
-	Network *terraform.Literal `json:"network" cty:"network"`
-	Region  *string            `json:"region" cty:"region"`
-	CIDR    *string            `json:"ip_cidr_range" cty:"ip_cidr_range"`
+	Name    *string                  `json:"name" cty:"name"`
+	Network *terraformWriter.Literal `json:"network" cty:"network"`
+	Region  *string                  `json:"region" cty:"region"`
+	CIDR    *string                  `json:"ip_cidr_range" cty:"ip_cidr_range"`
 
 	// SecondaryIPRange defines additional IP ranges
 	SecondaryIPRange []terraformSubnetRange `json:"secondary_ip_range,omitempty" cty:"secondary_ip_range"`
@@ -234,6 +235,6 @@ func (_ *Subnet) RenderSubnet(t *terraform.TerraformTarget, a, e, changes *Subne
 	return t.RenderResource("google_compute_subnetwork", *e.Name, tf)
 }
 
-func (i *Subnet) TerraformName() *terraform.Literal {
-	return terraform.LiteralProperty("google_compute_subnetwork", *i.Name, "name")
+func (i *Subnet) TerraformName() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("google_compute_subnetwork", *i.Name, "name")
 }

@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -184,10 +185,10 @@ func (_ *SecurityGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Security
 }
 
 type terraformSecurityGroup struct {
-	Name        *string            `json:"name" cty:"name"`
-	VPCID       *terraform.Literal `json:"vpc_id" cty:"vpc_id"`
-	Description *string            `json:"description" cty:"description"`
-	Tags        map[string]string  `json:"tags,omitempty" cty:"tags"`
+	Name        *string                  `json:"name" cty:"name"`
+	VPCID       *terraformWriter.Literal `json:"vpc_id" cty:"vpc_id"`
+	Description *string                  `json:"description" cty:"description"`
+	Tags        map[string]string        `json:"tags,omitempty" cty:"tags"`
 }
 
 func (_ *SecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroup) error {
@@ -207,18 +208,18 @@ func (_ *SecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, chan
 	return t.RenderResource("aws_security_group", *e.Name, tf)
 }
 
-func (e *SecurityGroup) TerraformLink() *terraform.Literal {
+func (e *SecurityGroup) TerraformLink() *terraformWriter.Literal {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not terraform owned / managed
 		if e.ID != nil {
-			return terraform.LiteralFromStringValue(*e.ID)
+			return terraformWriter.LiteralFromStringValue(*e.ID)
 		} else {
 			klog.Warningf("ID not set on shared subnet %v", e)
 		}
 	}
 
-	return terraform.LiteralProperty("aws_security_group", *e.Name, "id")
+	return terraformWriter.LiteralProperty("aws_security_group", *e.Name, "id")
 }
 
 type cloudformationSecurityGroup struct {

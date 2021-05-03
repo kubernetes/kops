@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // ForwardingRule represents a GCE ForwardingRule
@@ -138,11 +139,11 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 }
 
 type terraformForwardingRule struct {
-	Name       string             `json:"name" cty:"name"`
-	PortRange  string             `json:"port_range,omitempty" cty:"port_range"`
-	Target     *terraform.Literal `json:"target,omitempty" cty:"target"`
-	IPAddress  *terraform.Literal `json:"ip_address,omitempty" cty:"ip_address"`
-	IPProtocol string             `json:"ip_protocol,omitempty" cty:"ip_protocol"`
+	Name       string                   `json:"name" cty:"name"`
+	PortRange  string                   `json:"port_range,omitempty" cty:"port_range"`
+	Target     *terraformWriter.Literal `json:"target,omitempty" cty:"target"`
+	IPAddress  *terraformWriter.Literal `json:"ip_address,omitempty" cty:"ip_address"`
+	IPProtocol string                   `json:"ip_protocol,omitempty" cty:"ip_protocol"`
 }
 
 func (_ *ForwardingRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ForwardingRule) error {
@@ -165,8 +166,8 @@ func (_ *ForwardingRule) RenderTerraform(t *terraform.TerraformTarget, a, e, cha
 	return t.RenderResource("google_compute_forwarding_rule", name, tf)
 }
 
-func (e *ForwardingRule) TerraformLink() *terraform.Literal {
+func (e *ForwardingRule) TerraformLink() *terraformWriter.Literal {
 	name := fi.StringValue(e.Name)
 
-	return terraform.LiteralSelfLink("google_compute_forwarding_rule", name)
+	return terraformWriter.LiteralSelfLink("google_compute_forwarding_rule", name)
 }

@@ -27,7 +27,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // MaxUserDataSize is the max size of the userdata
@@ -297,14 +297,14 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 	return t.AddAWSTags(*e.ID, e.Tags)
 }
 
-func (e *Instance) TerraformLink() *terraform.Literal {
+func (e *Instance) TerraformLink() *terraformWriter.Literal {
 	if fi.BoolValue(e.Shared) {
 		if e.ID == nil {
 			klog.Fatalf("ID must be set, if NAT Instance is shared: %s", e)
 		}
 
-		return terraform.LiteralFromStringValue(*e.ID)
+		return terraformWriter.LiteralFromStringValue(*e.ID)
 	}
 
-	return terraform.LiteralSelfLink("aws_instance", *e.Name)
+	return terraformWriter.LiteralSelfLink("aws_instance", *e.Name)
 }

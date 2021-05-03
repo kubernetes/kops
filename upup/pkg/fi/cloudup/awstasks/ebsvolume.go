@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
@@ -243,9 +244,9 @@ func (_ *EBSVolume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes 
 	return t.RenderResource("aws_ebs_volume", tfName, tf)
 }
 
-func (e *EBSVolume) TerraformLink() *terraform.Literal {
+func (e *EBSVolume) TerraformLink() *terraformWriter.Literal {
 	tfName, _ := e.TerraformName()
-	return terraform.LiteralSelfLink("aws_ebs_volume", tfName)
+	return terraformWriter.LiteralSelfLink("aws_ebs_volume", tfName)
 }
 
 // TerraformName returns the terraform-safe name, along with a boolean indicating of whether name-prefixing was needed.

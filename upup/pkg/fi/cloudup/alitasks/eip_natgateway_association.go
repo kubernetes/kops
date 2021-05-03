@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 const (
@@ -141,8 +142,8 @@ type terraformEip struct {
 }
 
 type terraformEipAssociation struct {
-	InstanceID   *terraform.Literal `json:"instance_id,omitempty" cty:"instance_id"`
-	AllocationID *terraform.Literal `json:"allocation_id,omitempty" cty:"allocation_id"`
+	InstanceID   *terraformWriter.Literal `json:"instance_id,omitempty" cty:"instance_id"`
+	AllocationID *terraformWriter.Literal `json:"allocation_id,omitempty" cty:"allocation_id"`
 }
 
 func (_ *EIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EIP) error {
@@ -160,6 +161,6 @@ func (_ *EIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EIP) 
 	return t.RenderResource("alicloud_eip_association", *e.Name+"_asso", associationtf)
 }
 
-func (e *EIP) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("alicloud_eip", *e.Name, "id")
+func (e *EIP) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("alicloud_eip", *e.Name, "id")
 }

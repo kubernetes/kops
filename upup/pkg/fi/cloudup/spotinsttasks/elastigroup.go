@@ -37,6 +37,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
@@ -1346,8 +1347,8 @@ type terraformElastigroup struct {
 	Description          *string                                 `json:"description,omitempty" cty:"description"`
 	Product              *string                                 `json:"product,omitempty" cty:"product"`
 	Region               *string                                 `json:"region,omitempty" cty:"region"`
-	SubnetIDs            []*terraform.Literal                    `json:"subnet_ids,omitempty" cty:"subnet_ids"`
-	LoadBalancers        []*terraform.Literal                    `json:"elastic_load_balancers,omitempty" cty:"elastic_load_balancers"`
+	SubnetIDs            []*terraformWriter.Literal              `json:"subnet_ids,omitempty" cty:"subnet_ids"`
+	LoadBalancers        []*terraformWriter.Literal              `json:"elastic_load_balancers,omitempty" cty:"elastic_load_balancers"`
 	NetworkInterfaces    []*terraformElastigroupNetworkInterface `json:"network_interface,omitempty" cty:"network_interface"`
 	RootBlockDevice      *terraformElastigroupBlockDevice        `json:"ebs_block_device,omitempty" cty:"ebs_block_device"`
 	EphemeralBlockDevice []*terraformElastigroupBlockDevice      `json:"ephemeral_block_device,omitempty" cty:"ephemeral_block_device"`
@@ -1368,14 +1369,14 @@ type terraformElastigroup struct {
 	OnDemand *string  `json:"instance_types_ondemand,omitempty" cty:"instance_types_ondemand"`
 	Spot     []string `json:"instance_types_spot,omitempty" cty:"instance_types_spot"`
 
-	Monitoring         *bool                `json:"enable_monitoring,omitempty" cty:"enable_monitoring"`
-	EBSOptimized       *bool                `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
-	ImageID            *string              `json:"image_id,omitempty" cty:"image_id"`
-	HealthCheckType    *string              `json:"health_check_type,omitempty" cty:"health_check_type"`
-	SecurityGroups     []*terraform.Literal `json:"security_groups,omitempty" cty:"security_groups"`
-	UserData           *terraform.Literal   `json:"user_data,omitempty" cty:"user_data"`
-	IAMInstanceProfile *terraform.Literal   `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
-	KeyName            *terraform.Literal   `json:"key_name,omitempty" cty:"key_name"`
+	Monitoring         *bool                      `json:"enable_monitoring,omitempty" cty:"enable_monitoring"`
+	EBSOptimized       *bool                      `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
+	ImageID            *string                    `json:"image_id,omitempty" cty:"image_id"`
+	HealthCheckType    *string                    `json:"health_check_type,omitempty" cty:"health_check_type"`
+	SecurityGroups     []*terraformWriter.Literal `json:"security_groups,omitempty" cty:"security_groups"`
+	UserData           *terraformWriter.Literal   `json:"user_data,omitempty" cty:"user_data"`
+	IAMInstanceProfile *terraformWriter.Literal   `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
+	KeyName            *terraformWriter.Literal   `json:"key_name,omitempty" cty:"key_name"`
 }
 
 type terraformElastigroupBlockDevice struct {
@@ -1665,8 +1666,8 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 	return t.RenderResource("spotinst_elastigroup_aws", *e.Name, tf)
 }
 
-func (e *Elastigroup) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("spotinst_elastigroup_aws", *e.Name, "id")
+func (e *Elastigroup) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("spotinst_elastigroup_aws", *e.Name, "id")
 }
 
 func (e *Elastigroup) buildTags() []*aws.Tag {

@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -251,10 +252,10 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 }
 
 type terraformIAMRole struct {
-	Name                *string            `json:"name" cty:"name"`
-	AssumeRolePolicy    *terraform.Literal `json:"assume_role_policy" cty:"assume_role_policy"`
-	PermissionsBoundary *string            `json:"permissions_boundary,omitempty" cty:"permissions_boundary"`
-	Tags                map[string]string  `json:"tags,omitempty" cty:"tags"`
+	Name                *string                  `json:"name" cty:"name"`
+	AssumeRolePolicy    *terraformWriter.Literal `json:"assume_role_policy" cty:"assume_role_policy"`
+	PermissionsBoundary *string                  `json:"permissions_boundary,omitempty" cty:"permissions_boundary"`
+	Tags                map[string]string        `json:"tags,omitempty" cty:"tags"`
 }
 
 func (_ *IAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMRole) error {
@@ -274,15 +275,15 @@ func (_ *IAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *I
 	}
 
 	if fi.StringValue(e.ExportWithID) != "" {
-		t.AddOutputVariable(*e.ExportWithID+"_role_arn", terraform.LiteralProperty("aws_iam_role", *e.Name, "arn"))
+		t.AddOutputVariable(*e.ExportWithID+"_role_arn", terraformWriter.LiteralProperty("aws_iam_role", *e.Name, "arn"))
 		t.AddOutputVariable(*e.ExportWithID+"_role_name", e.TerraformLink())
 	}
 
 	return t.RenderResource("aws_iam_role", *e.Name, tf)
 }
 
-func (e *IAMRole) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("aws_iam_role", *e.Name, "name")
+func (e *IAMRole) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("aws_iam_role", *e.Name, "name")
 }
 
 type cloudformationIAMRole struct {

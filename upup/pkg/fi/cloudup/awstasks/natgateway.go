@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -361,9 +362,9 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 }
 
 type terraformNATGateway struct {
-	AllocationID *terraform.Literal `json:"allocation_id,omitempty" cty:"allocation_id"`
-	SubnetID     *terraform.Literal `json:"subnet_id,omitempty" cty:"subnet_id"`
-	Tag          map[string]string  `json:"tags,omitempty" cty:"tags"`
+	AllocationID *terraformWriter.Literal `json:"allocation_id,omitempty" cty:"allocation_id"`
+	SubnetID     *terraformWriter.Literal `json:"subnet_id,omitempty" cty:"subnet_id"`
+	Tag          map[string]string        `json:"tags,omitempty" cty:"tags"`
 }
 
 func (_ *NatGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NatGateway) error {
@@ -385,16 +386,16 @@ func (_ *NatGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 	return t.RenderResource("aws_nat_gateway", *e.Name, tf)
 }
 
-func (e *NatGateway) TerraformLink() *terraform.Literal {
+func (e *NatGateway) TerraformLink() *terraformWriter.Literal {
 	if fi.BoolValue(e.Shared) {
 		if e.ID == nil {
 			klog.Fatalf("ID must be set, if NatGateway is shared: %s", e)
 		}
 
-		return terraform.LiteralFromStringValue(*e.ID)
+		return terraformWriter.LiteralFromStringValue(*e.ID)
 	}
 
-	return terraform.LiteralProperty("aws_nat_gateway", *e.Name, "id")
+	return terraformWriter.LiteralProperty("aws_nat_gateway", *e.Name, "id")
 }
 
 type cloudformationNATGateway struct {

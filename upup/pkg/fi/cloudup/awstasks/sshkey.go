@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
@@ -182,9 +183,9 @@ func (_ *SSHKey) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SSHKey) error {
 }
 
 type terraformSSHKey struct {
-	Name      *string            `json:"key_name" cty:"key_name"`
-	PublicKey *terraform.Literal `json:"public_key" cty:"public_key"`
-	Tags      map[string]string  `json:"tags" cty:"tags"`
+	Name      *string                  `json:"key_name" cty:"key_name"`
+	PublicKey *terraformWriter.Literal `json:"public_key" cty:"public_key"`
+	Tags      map[string]string        `json:"tags" cty:"tags"`
 }
 
 func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SSHKey) error {
@@ -213,15 +214,15 @@ func (e *SSHKey) IsExistingKey() bool {
 	return e.PublicKey == nil
 }
 
-func (e *SSHKey) TerraformLink() *terraform.Literal {
+func (e *SSHKey) TerraformLink() *terraformWriter.Literal {
 	if e.NoSSHKey() {
 		return nil
 	}
 	if e.IsExistingKey() {
-		return terraform.LiteralFromStringValue(*e.Name)
+		return terraformWriter.LiteralFromStringValue(*e.Name)
 	}
 	tfName := strings.Replace(*e.Name, ":", "", -1)
-	return terraform.LiteralProperty("aws_key_pair", tfName, "id")
+	return terraformWriter.LiteralProperty("aws_key_pair", tfName, "id")
 }
 
 func (_ *SSHKey) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *SSHKey) error {

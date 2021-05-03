@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -114,8 +115,8 @@ func (_ *NatGateway) RenderALI(t *aliup.ALIAPITarget, a, e, changes *NatGateway)
 }
 
 type terraformNatGateway struct {
-	Name  *string            `json:"name,omitempty" cty:"name"`
-	VpcId *terraform.Literal `json:"vpc_id,omitempty" cty:"vpc_id"`
+	Name  *string                  `json:"name,omitempty" cty:"name"`
+	VpcId *terraformWriter.Literal `json:"vpc_id,omitempty" cty:"vpc_id"`
 }
 
 func (_ *NatGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NatGateway) error {
@@ -127,6 +128,6 @@ func (_ *NatGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 	return t.RenderResource("alicloud_nat_gateway", *e.Name, tf)
 }
 
-func (e *NatGateway) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("alicloud_nat_gateway", *e.Name, "id")
+func (e *NatGateway) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("alicloud_nat_gateway", *e.Name, "id")
 }
