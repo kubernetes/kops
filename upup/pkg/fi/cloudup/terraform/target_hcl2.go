@@ -29,8 +29,6 @@ import (
 )
 
 func (t *TerraformTarget) finishHCL2(taskMap map[string]fi.Task) error {
-	resourcesByType := make(map[string]map[string]interface{})
-
 	f := hclwrite.NewEmptyFile()
 	rootBody := f.Body()
 
@@ -48,39 +46,45 @@ func (t *TerraformTarget) finishHCL2(taskMap map[string]fi.Task) error {
 	}
 	rootBody.AppendNewline()
 
-	sort.Sort(byTypeAndName(t.resources))
-	for _, res := range t.resources {
-		resources := resourcesByType[res.ResourceType]
-		if resources == nil {
-			resources = make(map[string]interface{})
-			resourcesByType[res.ResourceType] = resources
-		}
+	resourcesByType, err := t.getResourcesByType()
+	if err != nil {
+		return err
+	}
 
-		tfName := tfSanitize(res.ResourceName)
+	resourceTypes := make([]string, 0, len(resourcesByType))
+	for resourceType := range resourcesByType {
+		resourceTypes = append(resourceTypes, resourceType)
+	}
+	sort.Strings(resourceTypes)
+	for _, resourceType := range resourceTypes {
+		resources := resourcesByType[resourceType]
+		resourceNames := make([]string, 0, len(resources))
+		for resourceName := range resources {
+			resourceNames = append(resourceNames, resourceName)
+		}
+		sort.Strings(resourceNames)
+		for _, resourceName := range resourceNames {
+			item := resources[resourceName]
 
-		if resources[tfName] != nil {
-			return fmt.Errorf("duplicate resource found: %s.%s", res.ResourceType, tfName)
+			resBlock := rootBody.AppendNewBlock("resource", []string{resourceType, resourceName})
+			resBody := resBlock.Body()
+			resType, err := gocty.ImpliedType(item)
+			if err != nil {
+				return err
+			}
+			resVal, err := gocty.ToCtyValue(item, resType)
+			if err != nil {
+				return err
+			}
+			if resVal.IsNull() {
+				continue
+			}
+			resVal.ForEachElement(func(key cty.Value, value cty.Value) bool {
+				writeValue(resBody, key.AsString(), value)
+				return false
+			})
+			rootBody.AppendNewline()
 		}
-		resources[tfName] = res.Item
-
-		resBlock := rootBody.AppendNewBlock("resource", []string{res.ResourceType, tfName})
-		resBody := resBlock.Body()
-		resType, err := gocty.ImpliedType(res.Item)
-		if err != nil {
-			return err
-		}
-		resVal, err := gocty.ToCtyValue(res.Item, resType)
-		if err != nil {
-			return err
-		}
-		if resVal.IsNull() {
-			continue
-		}
-		resVal.ForEachElement(func(key cty.Value, value cty.Value) bool {
-			writeValue(resBody, key.AsString(), value)
-			return false
-		})
-		rootBody.AppendNewline()
 	}
 
 	terraformBlock := rootBody.AppendNewBlock("terraform", []string{})

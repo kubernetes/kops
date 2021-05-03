@@ -71,14 +71,6 @@ type terraformResource struct {
 	Item         interface{}
 }
 
-type byTypeAndName []*terraformResource
-
-func (a byTypeAndName) Len() int { return len(a) }
-func (a byTypeAndName) Less(i, j int) bool {
-	return a[i].ResourceType+" "+tfSanitize(a[i].ResourceName) < a[j].ResourceType+" "+tfSanitize(a[j].ResourceName)
-}
-func (a byTypeAndName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-
 type terraformOutputVariable struct {
 	Key        string
 	Value      *Literal
@@ -211,4 +203,26 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 	klog.Infof("Terraform output is in %s", t.outDir)
 
 	return nil
+}
+
+func (t *TerraformTarget) getResourcesByType() (map[string]map[string]interface{}, error) {
+	resourcesByType := make(map[string]map[string]interface{})
+
+	for _, res := range t.resources {
+		resources := resourcesByType[res.ResourceType]
+		if resources == nil {
+			resources = make(map[string]interface{})
+			resourcesByType[res.ResourceType] = resources
+		}
+
+		tfName := tfSanitize(res.ResourceName)
+
+		if resources[tfName] != nil {
+			return nil, fmt.Errorf("duplicate resource found: %s.%s", res.ResourceType, tfName)
+		}
+
+		resources[tfName] = res.Item
+	}
+
+	return resourcesByType, nil
 }
