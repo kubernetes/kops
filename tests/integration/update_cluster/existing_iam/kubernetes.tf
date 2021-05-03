@@ -733,6 +733,22 @@ resource "aws_launch_template" "nodes-existing-iam-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.existing-iam.example.com_user_data")
 }
 
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.existing-iam-example-com.id
+  route_table_id         = aws_route_table.existing-iam-example-com.id
+}
+
+resource "aws_route_table" "existing-iam-example-com" {
+  tags = {
+    "KubernetesCluster"                              = "existing-iam.example.com"
+    "Name"                                           = "existing-iam.example.com"
+    "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+    "kubernetes.io/kops/role"                        = "public"
+  }
+  vpc_id = aws_vpc.existing-iam-example-com.id
+}
+
 resource "aws_route_table_association" "us-test-1a-existing-iam-example-com" {
   route_table_id = aws_route_table.existing-iam-example-com.id
   subnet_id      = aws_subnet.us-test-1a-existing-iam-example-com.id
@@ -748,20 +764,26 @@ resource "aws_route_table_association" "us-test-1c-existing-iam-example-com" {
   subnet_id      = aws_subnet.us-test-1c-existing-iam-example-com.id
 }
 
-resource "aws_route_table" "existing-iam-example-com" {
+resource "aws_security_group" "masters-existing-iam-example-com" {
+  description = "Security group for masters"
+  name        = "masters.existing-iam.example.com"
   tags = {
     "KubernetesCluster"                              = "existing-iam.example.com"
-    "Name"                                           = "existing-iam.example.com"
+    "Name"                                           = "masters.existing-iam.example.com"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
-    "kubernetes.io/kops/role"                        = "public"
   }
   vpc_id = aws_vpc.existing-iam-example-com.id
 }
 
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.existing-iam-example-com.id
-  route_table_id         = aws_route_table.existing-iam-example-com.id
+resource "aws_security_group" "nodes-existing-iam-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.existing-iam.example.com"
+  tags = {
+    "KubernetesCluster"                              = "existing-iam.example.com"
+    "Name"                                           = "nodes.existing-iam.example.com"
+    "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.existing-iam-example-com.id
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-masters-existing-iam-example-com" {
@@ -872,28 +894,6 @@ resource "aws_security_group_rule" "from-nodes-existing-iam-example-com-ingress-
   type                     = "ingress"
 }
 
-resource "aws_security_group" "masters-existing-iam-example-com" {
-  description = "Security group for masters"
-  name        = "masters.existing-iam.example.com"
-  tags = {
-    "KubernetesCluster"                              = "existing-iam.example.com"
-    "Name"                                           = "masters.existing-iam.example.com"
-    "kubernetes.io/cluster/existing-iam.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.existing-iam-example-com.id
-}
-
-resource "aws_security_group" "nodes-existing-iam-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.existing-iam.example.com"
-  tags = {
-    "KubernetesCluster"                              = "existing-iam.example.com"
-    "Name"                                           = "nodes.existing-iam.example.com"
-    "kubernetes.io/cluster/existing-iam.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.existing-iam-example-com.id
-}
-
 resource "aws_subnet" "us-test-1a-existing-iam-example-com" {
   availability_zone = "us-test-1a"
   cidr_block        = "172.20.32.0/19"
@@ -933,9 +933,15 @@ resource "aws_subnet" "us-test-1c-existing-iam-example-com" {
   vpc_id = aws_vpc.existing-iam-example-com.id
 }
 
-resource "aws_vpc_dhcp_options_association" "existing-iam-example-com" {
-  dhcp_options_id = aws_vpc_dhcp_options.existing-iam-example-com.id
-  vpc_id          = aws_vpc.existing-iam-example-com.id
+resource "aws_vpc" "existing-iam-example-com" {
+  cidr_block           = "172.20.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = {
+    "KubernetesCluster"                              = "existing-iam.example.com"
+    "Name"                                           = "existing-iam.example.com"
+    "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+  }
 }
 
 resource "aws_vpc_dhcp_options" "existing-iam-example-com" {
@@ -948,15 +954,9 @@ resource "aws_vpc_dhcp_options" "existing-iam-example-com" {
   }
 }
 
-resource "aws_vpc" "existing-iam-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  tags = {
-    "KubernetesCluster"                              = "existing-iam.example.com"
-    "Name"                                           = "existing-iam.example.com"
-    "kubernetes.io/cluster/existing-iam.example.com" = "owned"
-  }
+resource "aws_vpc_dhcp_options_association" "existing-iam-example-com" {
+  dhcp_options_id = aws_vpc_dhcp_options.existing-iam-example-com.id
+  vpc_id          = aws_vpc.existing-iam-example-com.id
 }
 
 terraform {

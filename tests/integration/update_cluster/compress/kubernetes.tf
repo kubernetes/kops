@@ -243,18 +243,6 @@ resource "aws_iam_instance_profile" "nodes-compress-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "masters-compress-example-com" {
-  name   = "masters.compress.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.compress.example.com_policy")
-  role   = aws_iam_role.masters-compress-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-compress-example-com" {
-  name   = "nodes.compress.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.compress.example.com_policy")
-  role   = aws_iam_role.nodes-compress-example-com.name
-}
-
 resource "aws_iam_role" "masters-compress-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.compress.example.com_policy")
   name               = "masters.compress.example.com"
@@ -273,6 +261,18 @@ resource "aws_iam_role" "nodes-compress-example-com" {
     "Name"                                       = "nodes.compress.example.com"
     "kubernetes.io/cluster/compress.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "masters-compress-example-com" {
+  name   = "masters.compress.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.compress.example.com_policy")
+  role   = aws_iam_role.masters-compress-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-compress-example-com" {
+  name   = "nodes.compress.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.compress.example.com_policy")
+  role   = aws_iam_role.nodes-compress-example-com.name
 }
 
 resource "aws_internet_gateway" "compress-example-com" {
@@ -431,9 +431,10 @@ resource "aws_launch_template" "nodes-compress-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.compress.example.com_user_data")
 }
 
-resource "aws_route_table_association" "us-test-1a-compress-example-com" {
-  route_table_id = aws_route_table.compress-example-com.id
-  subnet_id      = aws_subnet.us-test-1a-compress-example-com.id
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.compress-example-com.id
+  route_table_id         = aws_route_table.compress-example-com.id
 }
 
 resource "aws_route_table" "compress-example-com" {
@@ -446,10 +447,31 @@ resource "aws_route_table" "compress-example-com" {
   vpc_id = aws_vpc.compress-example-com.id
 }
 
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.compress-example-com.id
-  route_table_id         = aws_route_table.compress-example-com.id
+resource "aws_route_table_association" "us-test-1a-compress-example-com" {
+  route_table_id = aws_route_table.compress-example-com.id
+  subnet_id      = aws_subnet.us-test-1a-compress-example-com.id
+}
+
+resource "aws_security_group" "masters-compress-example-com" {
+  description = "Security group for masters"
+  name        = "masters.compress.example.com"
+  tags = {
+    "KubernetesCluster"                          = "compress.example.com"
+    "Name"                                       = "masters.compress.example.com"
+    "kubernetes.io/cluster/compress.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.compress-example-com.id
+}
+
+resource "aws_security_group" "nodes-compress-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.compress.example.com"
+  tags = {
+    "KubernetesCluster"                          = "compress.example.com"
+    "Name"                                       = "nodes.compress.example.com"
+    "kubernetes.io/cluster/compress.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.compress-example-com.id
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-masters-compress-example-com" {
@@ -560,28 +582,6 @@ resource "aws_security_group_rule" "from-nodes-compress-example-com-ingress-udp-
   type                     = "ingress"
 }
 
-resource "aws_security_group" "masters-compress-example-com" {
-  description = "Security group for masters"
-  name        = "masters.compress.example.com"
-  tags = {
-    "KubernetesCluster"                          = "compress.example.com"
-    "Name"                                       = "masters.compress.example.com"
-    "kubernetes.io/cluster/compress.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.compress-example-com.id
-}
-
-resource "aws_security_group" "nodes-compress-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.compress.example.com"
-  tags = {
-    "KubernetesCluster"                          = "compress.example.com"
-    "Name"                                       = "nodes.compress.example.com"
-    "kubernetes.io/cluster/compress.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.compress-example-com.id
-}
-
 resource "aws_subnet" "us-test-1a-compress-example-com" {
   availability_zone = "us-test-1a"
   cidr_block        = "172.20.32.0/19"
@@ -595,9 +595,15 @@ resource "aws_subnet" "us-test-1a-compress-example-com" {
   vpc_id = aws_vpc.compress-example-com.id
 }
 
-resource "aws_vpc_dhcp_options_association" "compress-example-com" {
-  dhcp_options_id = aws_vpc_dhcp_options.compress-example-com.id
-  vpc_id          = aws_vpc.compress-example-com.id
+resource "aws_vpc" "compress-example-com" {
+  cidr_block           = "172.20.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = {
+    "KubernetesCluster"                          = "compress.example.com"
+    "Name"                                       = "compress.example.com"
+    "kubernetes.io/cluster/compress.example.com" = "owned"
+  }
 }
 
 resource "aws_vpc_dhcp_options" "compress-example-com" {
@@ -610,15 +616,9 @@ resource "aws_vpc_dhcp_options" "compress-example-com" {
   }
 }
 
-resource "aws_vpc" "compress-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  tags = {
-    "KubernetesCluster"                          = "compress.example.com"
-    "Name"                                       = "compress.example.com"
-    "kubernetes.io/cluster/compress.example.com" = "owned"
-  }
+resource "aws_vpc_dhcp_options_association" "compress-example-com" {
+  dhcp_options_id = aws_vpc_dhcp_options.compress-example-com.id
+  vpc_id          = aws_vpc.compress-example-com.id
 }
 
 terraform {
