@@ -25,22 +25,9 @@ import (
 )
 
 func (t *TerraformTarget) finishJSON(taskMap map[string]fi.Task) error {
-	resourcesByType := make(map[string]map[string]interface{})
-
-	for _, res := range t.resources {
-		resources := resourcesByType[res.ResourceType]
-		if resources == nil {
-			resources = make(map[string]interface{})
-			resourcesByType[res.ResourceType] = resources
-		}
-
-		tfName := tfSanitize(res.ResourceName)
-
-		if resources[tfName] != nil {
-			return fmt.Errorf("duplicate resource found: %s.%s", res.ResourceType, tfName)
-		}
-
-		resources[tfName] = res.Item
+	resourcesByType, err := t.getResourcesByType()
+	if err != nil {
+		return err
 	}
 
 	providersByName := make(map[string]map[string]interface{})
