@@ -65,10 +65,6 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 		c.SidecarIstioProxyImage = "cilium/istio_proxy"
 	}
 
-	if c.Tunnel == "" {
-		c.Tunnel = "vxlan"
-	}
-
 	if c.ToFqdnsDNSRejectResponseCode == "" {
 		c.ToFqdnsDNSRejectResponseCode = "refused"
 	}
@@ -86,6 +82,14 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 			c.Ipam = "kubernetes"
 		} else {
 			c.Ipam = "hostscope"
+		}
+	}
+
+	if c.Tunnel == "" {
+		if c.Ipam == "eni" {
+			c.Tunnel = "disabled"
+		} else {
+			c.Tunnel = "vxlan"
 		}
 	}
 
