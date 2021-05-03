@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -186,8 +187,8 @@ type terraformIAMOIDCProvider struct {
 	ClientIDList   []*string `json:"client_id_list" cty:"client_id_list"`
 	ThumbprintList []*string `json:"thumbprint_list" cty:"thumbprint_list"`
 
-	AssumeRolePolicy *terraform.Literal `json:"assume_role_policy" cty:"assume_role_policy"`
-	Tags             map[string]string  `json:"tags,omitempty" cty:"tags"`
+	AssumeRolePolicy *terraformWriter.Literal `json:"assume_role_policy" cty:"assume_role_policy"`
+	Tags             map[string]string        `json:"tags,omitempty" cty:"tags"`
 }
 
 func (p *IAMOIDCProvider) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMOIDCProvider) error {
@@ -202,8 +203,8 @@ func (p *IAMOIDCProvider) RenderTerraform(t *terraform.TerraformTarget, a, e, ch
 	return t.RenderResource("aws_iam_openid_connect_provider", *e.Name, tf)
 }
 
-func (e *IAMOIDCProvider) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("aws_iam_openid_connect_provider", *e.Name, "arn")
+func (e *IAMOIDCProvider) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("aws_iam_openid_connect_provider", *e.Name, "arn")
 }
 
 func (_ *IAMOIDCProvider) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *IAMOIDCProvider) error {

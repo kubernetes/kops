@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 const (
@@ -451,8 +452,8 @@ type terraformInstanceTemplate struct {
 	Scheduling            *terraformScheduling                     `json:"scheduling,omitempty" cty:"scheduling"`
 	Disks                 []*terraformInstanceTemplateAttachedDisk `json:"disk,omitempty" cty:"disk"`
 	NetworkInterfaces     []*terraformNetworkInterface             `json:"network_interface,omitempty" cty:"network_interface"`
-	Metadata              map[string]*terraform.Literal            `json:"metadata,omitempty" cty:"metadata"`
-	MetadataStartupScript *terraform.Literal                       `json:"metadata_startup_script,omitempty" cty:"metadata_startup_script"`
+	Metadata              map[string]*terraformWriter.Literal      `json:"metadata,omitempty" cty:"metadata"`
+	MetadataStartupScript *terraformWriter.Literal                 `json:"metadata_startup_script,omitempty" cty:"metadata_startup_script"`
 	Tags                  []string                                 `json:"tags,omitempty" cty:"tags"`
 }
 
@@ -484,13 +485,13 @@ type terraformInstanceTemplateAttachedDisk struct {
 }
 
 type terraformNetworkInterface struct {
-	Network      *terraform.Literal       `json:"network,omitempty" cty:"network"`
-	Subnetwork   *terraform.Literal       `json:"subnetwork,omitempty" cty:"subnetwork"`
+	Network      *terraformWriter.Literal `json:"network,omitempty" cty:"network"`
+	Subnetwork   *terraformWriter.Literal `json:"subnetwork,omitempty" cty:"subnetwork"`
 	AccessConfig []*terraformAccessConfig `json:"access_config" cty:"access_config"`
 }
 
 type terraformAccessConfig struct {
-	NatIP *terraform.Literal `json:"nat_ip,omitempty" cty:"nat_ip"`
+	NatIP *terraformWriter.Literal `json:"nat_ip,omitempty" cty:"nat_ip"`
 }
 
 func addNetworks(network *Network, subnet *Subnet, networkInterfaces []*compute.NetworkInterface) []*terraformNetworkInterface {
@@ -507,7 +508,7 @@ func addNetworks(network *Network, subnet *Subnet, networkInterfaces []*compute.
 			tac := &terraformAccessConfig{}
 			natIP := gac.NatIP
 			if natIP != "" {
-				tac.NatIP = terraform.LiteralFromStringValue(natIP)
+				tac.NatIP = terraformWriter.LiteralFromStringValue(natIP)
 			}
 
 			tf.AccessConfig = append(tf.AccessConfig, tac)
@@ -518,22 +519,21 @@ func addNetworks(network *Network, subnet *Subnet, networkInterfaces []*compute.
 	return ni
 }
 
-func addMetadata(target *terraform.TerraformTarget, name string, metadata *compute.Metadata) (map[string]*terraform.Literal, error) {
+func addMetadata(target *terraform.TerraformTarget, name string, metadata *compute.Metadata) (map[string]*terraformWriter.Literal, error) {
 	if metadata == nil {
 		return nil, nil
 	}
-	m := make(map[string]*terraform.Literal)
+	m := make(map[string]*terraformWriter.Literal)
 	for _, g := range metadata.Items {
 		val := fi.StringValue(g.Value)
 		if strings.Contains(val, "\n") {
-			v := fi.NewStringResource(val)
-			tfResource, err := target.AddFile("google_compute_instance_template", name, "metadata_"+g.Key, v, false)
+			tfResource, err := target.AddFileBytes("google_compute_instance_template", name, "metadata_"+g.Key, []byte(val), false)
 			if err != nil {
 				return nil, err
 			}
 			m[g.Key] = tfResource
 		} else {
-			m[g.Key] = terraform.LiteralFromStringValue(val)
+			m[g.Key] = terraformWriter.LiteralFromStringValue(val)
 		}
 	}
 	return m, nil
@@ -613,6 +613,6 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	return t.RenderResource("google_compute_instance_template", name, tf)
 }
 
-func (i *InstanceTemplate) TerraformLink() *terraform.Literal {
-	return terraform.LiteralSelfLink("google_compute_instance_template", *i.Name)
+func (i *InstanceTemplate) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralSelfLink("google_compute_instance_template", *i.Name)
 }

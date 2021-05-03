@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
@@ -215,10 +216,10 @@ func subnetSlicesEqualIgnoreOrder(l, r []*Subnet) bool {
 }
 
 type terraformSubnet struct {
-	VPCID            *terraform.Literal `json:"vpc_id" cty:"vpc_id"`
-	CIDR             *string            `json:"cidr_block" cty:"cidr_block"`
-	AvailabilityZone *string            `json:"availability_zone" cty:"availability_zone"`
-	Tags             map[string]string  `json:"tags,omitempty" cty:"tags"`
+	VPCID            *terraformWriter.Literal `json:"vpc_id" cty:"vpc_id"`
+	CIDR             *string                  `json:"cidr_block" cty:"cidr_block"`
+	AvailabilityZone *string                  `json:"availability_zone" cty:"availability_zone"`
+	Tags             map[string]string        `json:"tags,omitempty" cty:"tags"`
 }
 
 func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
@@ -237,7 +238,7 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 		// We probably shouldn't output subnet_ids only in this case - we normally output them by role,
 		// but removing it now might break people.  We could always output subnet_ids though, if we
 		// ever get a request for that.
-		return t.AddOutputVariableArray("subnet_ids", terraform.LiteralFromStringValue(*e.ID))
+		return t.AddOutputVariableArray("subnet_ids", terraformWriter.LiteralFromStringValue(*e.ID))
 	}
 
 	tf := &terraformSubnet{
@@ -250,7 +251,7 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 	return t.RenderResource("aws_subnet", *e.Name, tf)
 }
 
-func (e *Subnet) TerraformLink() *terraform.Literal {
+func (e *Subnet) TerraformLink() *terraformWriter.Literal {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		if e.ID == nil {
@@ -258,10 +259,10 @@ func (e *Subnet) TerraformLink() *terraform.Literal {
 		}
 
 		klog.V(4).Infof("reusing existing subnet with id %q", *e.ID)
-		return terraform.LiteralFromStringValue(*e.ID)
+		return terraformWriter.LiteralFromStringValue(*e.ID)
 	}
 
-	return terraform.LiteralProperty("aws_subnet", *e.Name, "id")
+	return terraformWriter.LiteralProperty("aws_subnet", *e.Name, "id")
 }
 
 type cloudformationSubnet struct {

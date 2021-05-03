@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "hcl2.go",
         "lifecycle.go",
-        "literal.go",
         "target.go",
         "target_hcl2.go",
         "target_json.go",
@@ -16,6 +15,7 @@ go_library(
         "//pkg/apis/kops:go_default_library",
         "//pkg/featureflag:go_default_library",
         "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/terraformWriter:go_default_library",
         "//vendor/github.com/hashicorp/hcl/v2:go_default_library",
         "//vendor/github.com/hashicorp/hcl/v2/hclsyntax:go_default_library",
         "//vendor/github.com/hashicorp/hcl/v2/hclwrite:go_default_library",
@@ -34,6 +34,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//pkg/diff:go_default_library",
+        "//upup/pkg/fi/cloudup/terraformWriter:go_default_library",
         "//vendor/github.com/hashicorp/hcl/v2/hclwrite:go_default_library",
         "//vendor/github.com/zclconf/go-cty/cty:go_default_library",
         "//vendor/github.com/zclconf/go-cty/cty/gocty:go_default_library",

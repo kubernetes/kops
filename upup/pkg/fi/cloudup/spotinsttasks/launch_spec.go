@@ -32,6 +32,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -770,8 +771,8 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 }
 
 type terraformLaunchSpec struct {
-	Name    *string            `json:"name,omitempty" cty:"name"`
-	OceanID *terraform.Literal `json:"ocean_id,omitempty" cty:"ocean_id"`
+	Name    *string                  `json:"name,omitempty" cty:"name"`
+	OceanID *terraformWriter.Literal `json:"ocean_id,omitempty" cty:"ocean_id"`
 
 	Monitoring               *bool                          `json:"monitoring,omitempty" cty:"monitoring"`
 	EBSOptimized             *bool                          `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
@@ -779,12 +780,12 @@ type terraformLaunchSpec struct {
 	AssociatePublicIPAddress *bool                          `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
 	RestrictScaleDown        *bool                          `json:"restrict_scale_down,omitempty" cty:"restrict_scale_down"`
 	RootVolumeSize           *int64                         `json:"root_volume_size,omitempty" cty:"root_volume_size"`
-	UserData                 *terraform.Literal             `json:"user_data,omitempty" cty:"user_data"`
-	IAMInstanceProfile       *terraform.Literal             `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
-	KeyName                  *terraform.Literal             `json:"key_name,omitempty" cty:"key_name"`
+	UserData                 *terraformWriter.Literal       `json:"user_data,omitempty" cty:"user_data"`
+	IAMInstanceProfile       *terraformWriter.Literal       `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
+	KeyName                  *terraformWriter.Literal       `json:"key_name,omitempty" cty:"key_name"`
 	InstanceTypes            []string                       `json:"instance_types,omitempty" cty:"instance_types"`
-	SubnetIDs                []*terraform.Literal           `json:"subnet_ids,omitempty" cty:"subnet_ids"`
-	SecurityGroups           []*terraform.Literal           `json:"security_groups,omitempty" cty:"security_groups"`
+	SubnetIDs                []*terraformWriter.Literal     `json:"subnet_ids,omitempty" cty:"subnet_ids"`
+	SecurityGroups           []*terraformWriter.Literal     `json:"security_groups,omitempty" cty:"security_groups"`
 	Taints                   []*terraformTaint              `json:"taints,omitempty" cty:"taints"`
 	Labels                   []*terraformKV                 `json:"labels,omitempty" cty:"labels"`
 	Tags                     []*terraformKV                 `json:"tags,omitempty" cty:"tags"`
@@ -874,7 +875,7 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 	{
 		if e.UserData != nil {
 			var err error
-			tf.UserData, err = t.AddFile("spotinst_ocean_aws_launch_spec", *e.Name, "user_data", e.UserData, false)
+			tf.UserData, err = t.AddFileResource("spotinst_ocean_aws_launch_spec", *e.Name, "user_data", e.UserData, false)
 			if err != nil {
 				return err
 			}
@@ -981,8 +982,8 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 	return t.RenderResource("spotinst_ocean_aws_launch_spec", *e.Name, tf)
 }
 
-func (o *LaunchSpec) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("spotinst_ocean_aws_launch_spec", *o.Name, "id")
+func (o *LaunchSpec) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("spotinst_ocean_aws_launch_spec", *o.Name, "id")
 }
 
 func (o *LaunchSpec) buildTags() []*aws.Tag {

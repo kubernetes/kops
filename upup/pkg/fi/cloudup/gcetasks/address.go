@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -163,8 +164,8 @@ func (_ *Address) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *A
 	return t.RenderResource("google_compute_address", *e.Name, tf)
 }
 
-func (e *Address) TerraformAddress() *terraform.Literal {
+func (e *Address) TerraformAddress() *terraformWriter.Literal {
 	name := fi.StringValue(e.Name)
 
-	return terraform.LiteralProperty("google_compute_address", name, "address")
+	return terraformWriter.LiteralProperty("google_compute_address", name, "address")
 }

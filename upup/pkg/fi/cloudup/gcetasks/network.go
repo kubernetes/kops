@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -175,6 +176,6 @@ func (_ *Network) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *N
 	return t.RenderResource("google_compute_network", *e.Name, tf)
 }
 
-func (i *Network) TerraformName() *terraform.Literal {
-	return terraform.LiteralProperty("google_compute_network", *i.Name, "name")
+func (i *Network) TerraformName() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("google_compute_network", *i.Name, "name")
 }

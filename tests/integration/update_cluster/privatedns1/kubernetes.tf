@@ -439,24 +439,6 @@ resource "aws_iam_instance_profile" "nodes-privatedns1-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-privatedns1-example-com" {
-  name   = "bastions.privatedns1.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatedns1.example.com_policy")
-  role   = aws_iam_role.bastions-privatedns1-example-com.name
-}
-
-resource "aws_iam_role_policy" "masters-privatedns1-example-com" {
-  name   = "masters.privatedns1.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.privatedns1.example.com_policy")
-  role   = aws_iam_role.masters-privatedns1-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-privatedns1-example-com" {
-  name   = "nodes.privatedns1.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.privatedns1.example.com_policy")
-  role   = aws_iam_role.nodes-privatedns1-example-com.name
-}
-
 resource "aws_iam_role" "bastions-privatedns1-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privatedns1.example.com_policy")
   name               = "bastions.privatedns1.example.com"
@@ -491,6 +473,24 @@ resource "aws_iam_role" "nodes-privatedns1-example-com" {
     "foo/bar"                                       = "fib+baz"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "bastions-privatedns1-example-com" {
+  name   = "bastions.privatedns1.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatedns1.example.com_policy")
+  role   = aws_iam_role.bastions-privatedns1-example-com.name
+}
+
+resource "aws_iam_role_policy" "masters-privatedns1-example-com" {
+  name   = "masters.privatedns1.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.privatedns1.example.com_policy")
+  role   = aws_iam_role.masters-privatedns1-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-privatedns1-example-com" {
+  name   = "nodes.privatedns1.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.privatedns1.example.com_policy")
+  role   = aws_iam_role.nodes-privatedns1-example-com.name
 }
 
 resource "aws_internet_gateway" "privatedns1-example-com" {
@@ -762,6 +762,18 @@ resource "aws_nat_gateway" "us-test-1a-privatedns1-example-com" {
   }
 }
 
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.privatedns1-example-com.id
+  route_table_id         = aws_route_table.privatedns1-example-com.id
+}
+
+resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.us-test-1a-privatedns1-example-com.id
+  route_table_id         = aws_route_table.private-us-test-1a-privatedns1-example-com.id
+}
+
 resource "aws_route53_record" "api-privatedns1-example-com" {
   alias {
     evaluate_target_health = false
@@ -776,16 +788,6 @@ resource "aws_route53_record" "api-privatedns1-example-com" {
 resource "aws_route53_zone_association" "internal-example-com" {
   vpc_id  = aws_vpc.privatedns1-example-com.id
   zone_id = "/hostedzone/Z2AFAKE1ZON3NO"
-}
-
-resource "aws_route_table_association" "private-us-test-1a-privatedns1-example-com" {
-  route_table_id = aws_route_table.private-us-test-1a-privatedns1-example-com.id
-  subnet_id      = aws_subnet.us-test-1a-privatedns1-example-com.id
-}
-
-resource "aws_route_table_association" "utility-us-test-1a-privatedns1-example-com" {
-  route_table_id = aws_route_table.privatedns1-example-com.id
-  subnet_id      = aws_subnet.utility-us-test-1a-privatedns1-example-com.id
 }
 
 resource "aws_route_table" "private-us-test-1a-privatedns1-example-com" {
@@ -812,16 +814,79 @@ resource "aws_route_table" "privatedns1-example-com" {
   vpc_id = aws_vpc.privatedns1-example-com.id
 }
 
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.privatedns1-example-com.id
-  route_table_id         = aws_route_table.privatedns1-example-com.id
+resource "aws_route_table_association" "private-us-test-1a-privatedns1-example-com" {
+  route_table_id = aws_route_table.private-us-test-1a-privatedns1-example-com.id
+  subnet_id      = aws_subnet.us-test-1a-privatedns1-example-com.id
 }
 
-resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.us-test-1a-privatedns1-example-com.id
-  route_table_id         = aws_route_table.private-us-test-1a-privatedns1-example-com.id
+resource "aws_route_table_association" "utility-us-test-1a-privatedns1-example-com" {
+  route_table_id = aws_route_table.privatedns1-example-com.id
+  subnet_id      = aws_subnet.utility-us-test-1a-privatedns1-example-com.id
+}
+
+resource "aws_security_group" "api-elb-privatedns1-example-com" {
+  description = "Security group for api ELB"
+  name        = "api-elb.privatedns1.example.com"
+  tags = {
+    "KubernetesCluster"                             = "privatedns1.example.com"
+    "Name"                                          = "api-elb.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatedns1-example-com.id
+}
+
+resource "aws_security_group" "bastion-elb-privatedns1-example-com" {
+  description = "Security group for bastion ELB"
+  name        = "bastion-elb.privatedns1.example.com"
+  tags = {
+    "KubernetesCluster"                             = "privatedns1.example.com"
+    "Name"                                          = "bastion-elb.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatedns1-example-com.id
+}
+
+resource "aws_security_group" "bastion-privatedns1-example-com" {
+  description = "Security group for bastion"
+  name        = "bastion.privatedns1.example.com"
+  tags = {
+    "KubernetesCluster"                             = "privatedns1.example.com"
+    "Name"                                          = "bastion.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatedns1-example-com.id
+}
+
+resource "aws_security_group" "masters-privatedns1-example-com" {
+  description = "Security group for masters"
+  name        = "masters.privatedns1.example.com"
+  tags = {
+    "KubernetesCluster"                             = "privatedns1.example.com"
+    "Name"                                          = "masters.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatedns1-example-com.id
+}
+
+resource "aws_security_group" "nodes-privatedns1-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.privatedns1.example.com"
+  tags = {
+    "KubernetesCluster"                             = "privatedns1.example.com"
+    "Name"                                          = "nodes.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatedns1-example-com.id
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-elb-privatedns1-example-com" {
@@ -995,71 +1060,6 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   type              = "ingress"
 }
 
-resource "aws_security_group" "api-elb-privatedns1-example-com" {
-  description = "Security group for api ELB"
-  name        = "api-elb.privatedns1.example.com"
-  tags = {
-    "KubernetesCluster"                             = "privatedns1.example.com"
-    "Name"                                          = "api-elb.privatedns1.example.com"
-    "Owner"                                         = "John Doe"
-    "foo/bar"                                       = "fib+baz"
-    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatedns1-example-com.id
-}
-
-resource "aws_security_group" "bastion-elb-privatedns1-example-com" {
-  description = "Security group for bastion ELB"
-  name        = "bastion-elb.privatedns1.example.com"
-  tags = {
-    "KubernetesCluster"                             = "privatedns1.example.com"
-    "Name"                                          = "bastion-elb.privatedns1.example.com"
-    "Owner"                                         = "John Doe"
-    "foo/bar"                                       = "fib+baz"
-    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatedns1-example-com.id
-}
-
-resource "aws_security_group" "bastion-privatedns1-example-com" {
-  description = "Security group for bastion"
-  name        = "bastion.privatedns1.example.com"
-  tags = {
-    "KubernetesCluster"                             = "privatedns1.example.com"
-    "Name"                                          = "bastion.privatedns1.example.com"
-    "Owner"                                         = "John Doe"
-    "foo/bar"                                       = "fib+baz"
-    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatedns1-example-com.id
-}
-
-resource "aws_security_group" "masters-privatedns1-example-com" {
-  description = "Security group for masters"
-  name        = "masters.privatedns1.example.com"
-  tags = {
-    "KubernetesCluster"                             = "privatedns1.example.com"
-    "Name"                                          = "masters.privatedns1.example.com"
-    "Owner"                                         = "John Doe"
-    "foo/bar"                                       = "fib+baz"
-    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatedns1-example-com.id
-}
-
-resource "aws_security_group" "nodes-privatedns1-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.privatedns1.example.com"
-  tags = {
-    "KubernetesCluster"                             = "privatedns1.example.com"
-    "Name"                                          = "nodes.privatedns1.example.com"
-    "Owner"                                         = "John Doe"
-    "foo/bar"                                       = "fib+baz"
-    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatedns1-example-com.id
-}
-
 resource "aws_subnet" "us-test-1a-privatedns1-example-com" {
   availability_zone = "us-test-1a"
   cidr_block        = "172.20.32.0/19"
@@ -1090,9 +1090,17 @@ resource "aws_subnet" "utility-us-test-1a-privatedns1-example-com" {
   vpc_id = aws_vpc.privatedns1-example-com.id
 }
 
-resource "aws_vpc_dhcp_options_association" "privatedns1-example-com" {
-  dhcp_options_id = aws_vpc_dhcp_options.privatedns1-example-com.id
-  vpc_id          = aws_vpc.privatedns1-example-com.id
+resource "aws_vpc" "privatedns1-example-com" {
+  cidr_block           = "172.20.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = {
+    "KubernetesCluster"                             = "privatedns1.example.com"
+    "Name"                                          = "privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+  }
 }
 
 resource "aws_vpc_dhcp_options" "privatedns1-example-com" {
@@ -1107,17 +1115,9 @@ resource "aws_vpc_dhcp_options" "privatedns1-example-com" {
   }
 }
 
-resource "aws_vpc" "privatedns1-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  tags = {
-    "KubernetesCluster"                             = "privatedns1.example.com"
-    "Name"                                          = "privatedns1.example.com"
-    "Owner"                                         = "John Doe"
-    "foo/bar"                                       = "fib+baz"
-    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
-  }
+resource "aws_vpc_dhcp_options_association" "privatedns1-example-com" {
+  dhcp_options_id = aws_vpc_dhcp_options.privatedns1-example-com.id
+  vpc_id          = aws_vpc.privatedns1-example-com.id
 }
 
 terraform {

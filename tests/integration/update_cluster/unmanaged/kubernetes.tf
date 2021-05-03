@@ -379,24 +379,6 @@ resource "aws_iam_instance_profile" "nodes-unmanaged-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-unmanaged-example-com" {
-  name   = "bastions.unmanaged.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.unmanaged.example.com_policy")
-  role   = aws_iam_role.bastions-unmanaged-example-com.name
-}
-
-resource "aws_iam_role_policy" "masters-unmanaged-example-com" {
-  name   = "masters.unmanaged.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.unmanaged.example.com_policy")
-  role   = aws_iam_role.masters-unmanaged-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-unmanaged-example-com" {
-  name   = "nodes.unmanaged.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.unmanaged.example.com_policy")
-  role   = aws_iam_role.nodes-unmanaged-example-com.name
-}
-
 resource "aws_iam_role" "bastions-unmanaged-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.unmanaged.example.com_policy")
   name               = "bastions.unmanaged.example.com"
@@ -425,6 +407,24 @@ resource "aws_iam_role" "nodes-unmanaged-example-com" {
     "Name"                                        = "nodes.unmanaged.example.com"
     "kubernetes.io/cluster/unmanaged.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "bastions-unmanaged-example-com" {
+  name   = "bastions.unmanaged.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_bastions.unmanaged.example.com_policy")
+  role   = aws_iam_role.bastions-unmanaged-example-com.name
+}
+
+resource "aws_iam_role_policy" "masters-unmanaged-example-com" {
+  name   = "masters.unmanaged.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.unmanaged.example.com_policy")
+  role   = aws_iam_role.masters-unmanaged-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-unmanaged-example-com" {
+  name   = "nodes.unmanaged.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.unmanaged.example.com_policy")
+  role   = aws_iam_role.nodes-unmanaged-example-com.name
 }
 
 resource "aws_key_pair" "kubernetes-unmanaged-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {
@@ -664,6 +664,61 @@ resource "aws_route53_record" "api-unmanaged-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
+resource "aws_security_group" "api-elb-unmanaged-example-com" {
+  description = "Security group for api ELB"
+  name        = "api-elb.unmanaged.example.com"
+  tags = {
+    "KubernetesCluster"                           = "unmanaged.example.com"
+    "Name"                                        = "api-elb.unmanaged.example.com"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
+resource "aws_security_group" "bastion-elb-unmanaged-example-com" {
+  description = "Security group for bastion ELB"
+  name        = "bastion-elb.unmanaged.example.com"
+  tags = {
+    "KubernetesCluster"                           = "unmanaged.example.com"
+    "Name"                                        = "bastion-elb.unmanaged.example.com"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
+resource "aws_security_group" "bastion-unmanaged-example-com" {
+  description = "Security group for bastion"
+  name        = "bastion.unmanaged.example.com"
+  tags = {
+    "KubernetesCluster"                           = "unmanaged.example.com"
+    "Name"                                        = "bastion.unmanaged.example.com"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
+resource "aws_security_group" "masters-unmanaged-example-com" {
+  description = "Security group for masters"
+  name        = "masters.unmanaged.example.com"
+  tags = {
+    "KubernetesCluster"                           = "unmanaged.example.com"
+    "Name"                                        = "masters.unmanaged.example.com"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
+resource "aws_security_group" "nodes-unmanaged-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.unmanaged.example.com"
+  tags = {
+    "KubernetesCluster"                           = "unmanaged.example.com"
+    "Name"                                        = "nodes.unmanaged.example.com"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-elb-unmanaged-example-com" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 22
@@ -833,61 +888,6 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   security_group_id = aws_security_group.api-elb-unmanaged-example-com.id
   to_port           = 4
   type              = "ingress"
-}
-
-resource "aws_security_group" "api-elb-unmanaged-example-com" {
-  description = "Security group for api ELB"
-  name        = "api-elb.unmanaged.example.com"
-  tags = {
-    "KubernetesCluster"                           = "unmanaged.example.com"
-    "Name"                                        = "api-elb.unmanaged.example.com"
-    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
-}
-
-resource "aws_security_group" "bastion-elb-unmanaged-example-com" {
-  description = "Security group for bastion ELB"
-  name        = "bastion-elb.unmanaged.example.com"
-  tags = {
-    "KubernetesCluster"                           = "unmanaged.example.com"
-    "Name"                                        = "bastion-elb.unmanaged.example.com"
-    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
-}
-
-resource "aws_security_group" "bastion-unmanaged-example-com" {
-  description = "Security group for bastion"
-  name        = "bastion.unmanaged.example.com"
-  tags = {
-    "KubernetesCluster"                           = "unmanaged.example.com"
-    "Name"                                        = "bastion.unmanaged.example.com"
-    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
-}
-
-resource "aws_security_group" "masters-unmanaged-example-com" {
-  description = "Security group for masters"
-  name        = "masters.unmanaged.example.com"
-  tags = {
-    "KubernetesCluster"                           = "unmanaged.example.com"
-    "Name"                                        = "masters.unmanaged.example.com"
-    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
-}
-
-resource "aws_security_group" "nodes-unmanaged-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.unmanaged.example.com"
-  tags = {
-    "KubernetesCluster"                           = "unmanaged.example.com"
-    "Name"                                        = "nodes.unmanaged.example.com"
-    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
 }
 
 resource "aws_subnet" "us-test-1a-unmanaged-example-com" {

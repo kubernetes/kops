@@ -443,18 +443,6 @@ resource "aws_iam_instance_profile" "nodes-ha-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "masters-ha-example-com" {
-  name   = "masters.ha.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.ha.example.com_policy")
-  role   = aws_iam_role.masters-ha-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-ha-example-com" {
-  name   = "nodes.ha.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.ha.example.com_policy")
-  role   = aws_iam_role.nodes-ha-example-com.name
-}
-
 resource "aws_iam_role" "masters-ha-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.ha.example.com_policy")
   name               = "masters.ha.example.com"
@@ -473,6 +461,18 @@ resource "aws_iam_role" "nodes-ha-example-com" {
     "Name"                                 = "nodes.ha.example.com"
     "kubernetes.io/cluster/ha.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "masters-ha-example-com" {
+  name   = "masters.ha.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.ha.example.com_policy")
+  role   = aws_iam_role.masters-ha-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-ha-example-com" {
+  name   = "nodes.ha.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.ha.example.com_policy")
+  role   = aws_iam_role.nodes-ha-example-com.name
 }
 
 resource "aws_internet_gateway" "ha-example-com" {
@@ -805,6 +805,22 @@ resource "aws_launch_template" "nodes-ha-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.ha.example.com_user_data")
 }
 
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.ha-example-com.id
+  route_table_id         = aws_route_table.ha-example-com.id
+}
+
+resource "aws_route_table" "ha-example-com" {
+  tags = {
+    "KubernetesCluster"                    = "ha.example.com"
+    "Name"                                 = "ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
+    "kubernetes.io/kops/role"              = "public"
+  }
+  vpc_id = aws_vpc.ha-example-com.id
+}
+
 resource "aws_route_table_association" "us-test-1a-ha-example-com" {
   route_table_id = aws_route_table.ha-example-com.id
   subnet_id      = aws_subnet.us-test-1a-ha-example-com.id
@@ -820,20 +836,26 @@ resource "aws_route_table_association" "us-test-1c-ha-example-com" {
   subnet_id      = aws_subnet.us-test-1c-ha-example-com.id
 }
 
-resource "aws_route_table" "ha-example-com" {
+resource "aws_security_group" "masters-ha-example-com" {
+  description = "Security group for masters"
+  name        = "masters.ha.example.com"
   tags = {
     "KubernetesCluster"                    = "ha.example.com"
-    "Name"                                 = "ha.example.com"
+    "Name"                                 = "masters.ha.example.com"
     "kubernetes.io/cluster/ha.example.com" = "owned"
-    "kubernetes.io/kops/role"              = "public"
   }
   vpc_id = aws_vpc.ha-example-com.id
 }
 
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.ha-example-com.id
-  route_table_id         = aws_route_table.ha-example-com.id
+resource "aws_security_group" "nodes-ha-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.ha.example.com"
+  tags = {
+    "KubernetesCluster"                    = "ha.example.com"
+    "Name"                                 = "nodes.ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.ha-example-com.id
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-masters-ha-example-com" {
@@ -944,28 +966,6 @@ resource "aws_security_group_rule" "from-nodes-ha-example-com-ingress-udp-1to655
   type                     = "ingress"
 }
 
-resource "aws_security_group" "masters-ha-example-com" {
-  description = "Security group for masters"
-  name        = "masters.ha.example.com"
-  tags = {
-    "KubernetesCluster"                    = "ha.example.com"
-    "Name"                                 = "masters.ha.example.com"
-    "kubernetes.io/cluster/ha.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.ha-example-com.id
-}
-
-resource "aws_security_group" "nodes-ha-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.ha.example.com"
-  tags = {
-    "KubernetesCluster"                    = "ha.example.com"
-    "Name"                                 = "nodes.ha.example.com"
-    "kubernetes.io/cluster/ha.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.ha-example-com.id
-}
-
 resource "aws_subnet" "us-test-1a-ha-example-com" {
   availability_zone = "us-test-1a"
   cidr_block        = "172.20.32.0/19"
@@ -1005,9 +1005,15 @@ resource "aws_subnet" "us-test-1c-ha-example-com" {
   vpc_id = aws_vpc.ha-example-com.id
 }
 
-resource "aws_vpc_dhcp_options_association" "ha-example-com" {
-  dhcp_options_id = aws_vpc_dhcp_options.ha-example-com.id
-  vpc_id          = aws_vpc.ha-example-com.id
+resource "aws_vpc" "ha-example-com" {
+  cidr_block           = "172.20.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = {
+    "KubernetesCluster"                    = "ha.example.com"
+    "Name"                                 = "ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
+  }
 }
 
 resource "aws_vpc_dhcp_options" "ha-example-com" {
@@ -1020,15 +1026,9 @@ resource "aws_vpc_dhcp_options" "ha-example-com" {
   }
 }
 
-resource "aws_vpc" "ha-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  tags = {
-    "KubernetesCluster"                    = "ha.example.com"
-    "Name"                                 = "ha.example.com"
-    "kubernetes.io/cluster/ha.example.com" = "owned"
-  }
+resource "aws_vpc_dhcp_options_association" "ha-example-com" {
+  dhcp_options_id = aws_vpc_dhcp_options.ha-example-com.id
+  vpc_id          = aws_vpc.ha-example-com.id
 }
 
 terraform {

@@ -22,12 +22,13 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 func TestWriteLocalsOutputs(t *testing.T) {
 	cases := []struct {
 		name        string
-		values      map[string]*terraformOutputVariable
+		values      map[string]terraformWriter.OutputValue
 		expected    string
 		errExpected bool
 	}{
@@ -37,10 +38,9 @@ func TestWriteLocalsOutputs(t *testing.T) {
 		},
 		{
 			name: "single output",
-			values: map[string]*terraformOutputVariable{
+			values: map[string]terraformWriter.OutputValue{
 				"key1": {
-					Key:   "key1",
-					Value: LiteralFromStringValue("value1"),
+					Value: terraformWriter.LiteralFromStringValue("value1"),
 				},
 			},
 			expected: `
@@ -54,47 +54,11 @@ output "key1" {
 		},
 		{
 			name: "list output",
-			values: map[string]*terraformOutputVariable{
+			values: map[string]terraformWriter.OutputValue{
 				"key1": {
-					Key: "key1",
-					ValueArray: []*Literal{
-						LiteralFromStringValue("value2"),
-						LiteralFromStringValue("value1"),
-					},
-				},
-			},
-			expected: `
-locals {
-  key1 = ["value1", "value2"]
-}
-
-output "key1" {
-  value = ["value1", "value2"]
-}`,
-		},
-		{
-			name: "duplicate names",
-			values: map[string]*terraformOutputVariable{
-				"key.1": {
-					Key:   "key.1",
-					Value: LiteralFromStringValue("value1"),
-				},
-				"key-1": {
-					Key:   "key-1",
-					Value: LiteralFromStringValue("value2"),
-				},
-			},
-			errExpected: true,
-		},
-		{
-			name: "duplicate values",
-			values: map[string]*terraformOutputVariable{
-				"key1": {
-					Key: "key1",
-					ValueArray: []*Literal{
-						LiteralFromStringValue("value1"),
-						LiteralFromStringValue("value1"),
-						LiteralFromStringValue("value2"),
+					ValueArray: []*terraformWriter.Literal{
+						terraformWriter.LiteralFromStringValue("value1"),
+						terraformWriter.LiteralFromStringValue("value2"),
 					},
 				},
 			},

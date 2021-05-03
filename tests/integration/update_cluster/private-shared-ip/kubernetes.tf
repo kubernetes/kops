@@ -379,24 +379,6 @@ resource "aws_iam_instance_profile" "nodes-private-shared-ip-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-private-shared-ip-example-com" {
-  name   = "bastions.private-shared-ip.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.private-shared-ip.example.com_policy")
-  role   = aws_iam_role.bastions-private-shared-ip-example-com.name
-}
-
-resource "aws_iam_role_policy" "masters-private-shared-ip-example-com" {
-  name   = "masters.private-shared-ip.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.private-shared-ip.example.com_policy")
-  role   = aws_iam_role.masters-private-shared-ip-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-private-shared-ip-example-com" {
-  name   = "nodes.private-shared-ip.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.private-shared-ip.example.com_policy")
-  role   = aws_iam_role.nodes-private-shared-ip-example-com.name
-}
-
 resource "aws_iam_role" "bastions-private-shared-ip-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.private-shared-ip.example.com_policy")
   name               = "bastions.private-shared-ip.example.com"
@@ -425,6 +407,24 @@ resource "aws_iam_role" "nodes-private-shared-ip-example-com" {
     "Name"                                                = "nodes.private-shared-ip.example.com"
     "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "bastions-private-shared-ip-example-com" {
+  name   = "bastions.private-shared-ip.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_bastions.private-shared-ip.example.com_policy")
+  role   = aws_iam_role.bastions-private-shared-ip-example-com.name
+}
+
+resource "aws_iam_role_policy" "masters-private-shared-ip-example-com" {
+  name   = "masters.private-shared-ip.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.private-shared-ip.example.com_policy")
+  role   = aws_iam_role.masters-private-shared-ip-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-private-shared-ip-example-com" {
+  name   = "nodes.private-shared-ip.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.private-shared-ip.example.com_policy")
+  role   = aws_iam_role.nodes-private-shared-ip-example-com.name
 }
 
 resource "aws_key_pair" "kubernetes-private-shared-ip-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {
@@ -663,6 +663,18 @@ resource "aws_nat_gateway" "us-test-1a-private-shared-ip-example-com" {
   }
 }
 
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = "igw-1"
+  route_table_id         = aws_route_table.private-shared-ip-example-com.id
+}
+
+resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.us-test-1a-private-shared-ip-example-com.id
+  route_table_id         = aws_route_table.private-us-test-1a-private-shared-ip-example-com.id
+}
+
 resource "aws_route53_record" "api-private-shared-ip-example-com" {
   alias {
     evaluate_target_health = false
@@ -672,16 +684,6 @@ resource "aws_route53_record" "api-private-shared-ip-example-com" {
   name    = "api.private-shared-ip.example.com"
   type    = "A"
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
-}
-
-resource "aws_route_table_association" "private-us-test-1a-private-shared-ip-example-com" {
-  route_table_id = aws_route_table.private-us-test-1a-private-shared-ip-example-com.id
-  subnet_id      = aws_subnet.us-test-1a-private-shared-ip-example-com.id
-}
-
-resource "aws_route_table_association" "utility-us-test-1a-private-shared-ip-example-com" {
-  route_table_id = aws_route_table.private-shared-ip-example-com.id
-  subnet_id      = aws_subnet.utility-us-test-1a-private-shared-ip-example-com.id
 }
 
 resource "aws_route_table" "private-shared-ip-example-com" {
@@ -704,16 +706,69 @@ resource "aws_route_table" "private-us-test-1a-private-shared-ip-example-com" {
   vpc_id = "vpc-12345678"
 }
 
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = "igw-1"
-  route_table_id         = aws_route_table.private-shared-ip-example-com.id
+resource "aws_route_table_association" "private-us-test-1a-private-shared-ip-example-com" {
+  route_table_id = aws_route_table.private-us-test-1a-private-shared-ip-example-com.id
+  subnet_id      = aws_subnet.us-test-1a-private-shared-ip-example-com.id
 }
 
-resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.us-test-1a-private-shared-ip-example-com.id
-  route_table_id         = aws_route_table.private-us-test-1a-private-shared-ip-example-com.id
+resource "aws_route_table_association" "utility-us-test-1a-private-shared-ip-example-com" {
+  route_table_id = aws_route_table.private-shared-ip-example-com.id
+  subnet_id      = aws_subnet.utility-us-test-1a-private-shared-ip-example-com.id
+}
+
+resource "aws_security_group" "api-elb-private-shared-ip-example-com" {
+  description = "Security group for api ELB"
+  name        = "api-elb.private-shared-ip.example.com"
+  tags = {
+    "KubernetesCluster"                                   = "private-shared-ip.example.com"
+    "Name"                                                = "api-elb.private-shared-ip.example.com"
+    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
+resource "aws_security_group" "bastion-elb-private-shared-ip-example-com" {
+  description = "Security group for bastion ELB"
+  name        = "bastion-elb.private-shared-ip.example.com"
+  tags = {
+    "KubernetesCluster"                                   = "private-shared-ip.example.com"
+    "Name"                                                = "bastion-elb.private-shared-ip.example.com"
+    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
+resource "aws_security_group" "bastion-private-shared-ip-example-com" {
+  description = "Security group for bastion"
+  name        = "bastion.private-shared-ip.example.com"
+  tags = {
+    "KubernetesCluster"                                   = "private-shared-ip.example.com"
+    "Name"                                                = "bastion.private-shared-ip.example.com"
+    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
+resource "aws_security_group" "masters-private-shared-ip-example-com" {
+  description = "Security group for masters"
+  name        = "masters.private-shared-ip.example.com"
+  tags = {
+    "KubernetesCluster"                                   = "private-shared-ip.example.com"
+    "Name"                                                = "masters.private-shared-ip.example.com"
+    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
+resource "aws_security_group" "nodes-private-shared-ip-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.private-shared-ip.example.com"
+  tags = {
+    "KubernetesCluster"                                   = "private-shared-ip.example.com"
+    "Name"                                                = "nodes.private-shared-ip.example.com"
+    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-elb-private-shared-ip-example-com" {
@@ -885,61 +940,6 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   security_group_id = aws_security_group.api-elb-private-shared-ip-example-com.id
   to_port           = 4
   type              = "ingress"
-}
-
-resource "aws_security_group" "api-elb-private-shared-ip-example-com" {
-  description = "Security group for api ELB"
-  name        = "api-elb.private-shared-ip.example.com"
-  tags = {
-    "KubernetesCluster"                                   = "private-shared-ip.example.com"
-    "Name"                                                = "api-elb.private-shared-ip.example.com"
-    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
-}
-
-resource "aws_security_group" "bastion-elb-private-shared-ip-example-com" {
-  description = "Security group for bastion ELB"
-  name        = "bastion-elb.private-shared-ip.example.com"
-  tags = {
-    "KubernetesCluster"                                   = "private-shared-ip.example.com"
-    "Name"                                                = "bastion-elb.private-shared-ip.example.com"
-    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
-}
-
-resource "aws_security_group" "bastion-private-shared-ip-example-com" {
-  description = "Security group for bastion"
-  name        = "bastion.private-shared-ip.example.com"
-  tags = {
-    "KubernetesCluster"                                   = "private-shared-ip.example.com"
-    "Name"                                                = "bastion.private-shared-ip.example.com"
-    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
-}
-
-resource "aws_security_group" "masters-private-shared-ip-example-com" {
-  description = "Security group for masters"
-  name        = "masters.private-shared-ip.example.com"
-  tags = {
-    "KubernetesCluster"                                   = "private-shared-ip.example.com"
-    "Name"                                                = "masters.private-shared-ip.example.com"
-    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
-}
-
-resource "aws_security_group" "nodes-private-shared-ip-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.private-shared-ip.example.com"
-  tags = {
-    "KubernetesCluster"                                   = "private-shared-ip.example.com"
-    "Name"                                                = "nodes.private-shared-ip.example.com"
-    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
 }
 
 resource "aws_subnet" "us-test-1a-private-shared-ip-example-com" {
