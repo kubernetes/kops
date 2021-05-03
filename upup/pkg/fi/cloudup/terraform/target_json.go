@@ -25,7 +25,7 @@ import (
 )
 
 func (t *TerraformTarget) finishJSON(taskMap map[string]fi.Task) error {
-	resourcesByType, err := t.getResourcesByType()
+	resourcesByType, err := t.GetResourcesByType()
 	if err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func (t *TerraformTarget) finishJSON(taskMap map[string]fi.Task) error {
 		providersByName["aws"] = providerAWS
 	}
 
-	outputs, err := t.getOutputs()
+	outputs, err := t.GetOutputs()
 	if err != nil {
 		return err
 	}
@@ -110,6 +110,6 @@ func (t *TerraformTarget) finishJSON(taskMap map[string]fi.Task) error {
 		return fmt.Errorf("error marshaling terraform data to json: %v", err)
 	}
 
-	t.files["kubernetes.tf.json"] = jsonBytes
+	t.Files["kubernetes.tf.json"] = jsonBytes
 	return nil
 }

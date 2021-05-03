@@ -21,6 +21,7 @@ import (
 	"strconv"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
 	"github.com/denverdino/aliyungo/slb"
 	"k8s.io/kops/upup/pkg/fi"
@@ -149,10 +150,10 @@ func (_ *LoadBalancerListener) RenderALI(t *aliup.ALIAPITarget, a, e, changes *L
 }
 
 type terraformLoadBalancerListener struct {
-	ListenerPort      *int               `json:"frontend_port,omitempty" cty:"frontend_port"`
-	BackendServerPort *int               `json:"backend_port,omitempty" cty:"backend_port"`
-	Protocol          *string            `json:"protocol,omitempty" cty:"protocol"`
-	LoadBalancerId    *terraform.Literal `json:"load_balancer_id,omitempty" cty:"load_balancer_id"`
+	ListenerPort      *int                     `json:"frontend_port,omitempty" cty:"frontend_port"`
+	BackendServerPort *int                     `json:"backend_port,omitempty" cty:"backend_port"`
+	Protocol          *string                  `json:"protocol,omitempty" cty:"protocol"`
+	LoadBalancerId    *terraformWriter.Literal `json:"load_balancer_id,omitempty" cty:"load_balancer_id"`
 }
 
 func (_ *LoadBalancerListener) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancerListener) error {
@@ -167,6 +168,6 @@ func (_ *LoadBalancerListener) RenderTerraform(t *terraform.TerraformTarget, a, 
 	return t.RenderResource("alicloud_slb_listener", *e.Name, tf)
 }
 
-func (s *LoadBalancerListener) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("alicloud_slb_listener", *s.Name, "frontend_port")
+func (s *LoadBalancerListener) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("alicloud_slb_listener", *s.Name, "frontend_port")
 }

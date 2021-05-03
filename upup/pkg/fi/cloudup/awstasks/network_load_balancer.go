@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // NetworkLoadBalancer manages an NLB.  We find the existing NLB using the Name tag.
@@ -736,13 +737,13 @@ type terraformNetworkLoadBalancer struct {
 }
 
 type terraformNetworkLoadBalancerSubnetMapping struct {
-	Subnet             *terraform.Literal `json:"subnet_id" cty:"subnet_id"`
-	AllocationID       *string            `json:"allocation_id,omitempty" cty:"allocation_id"`
-	PrivateIPv4Address *string            `json:"private_ipv4_address,omitempty" cty:"private_ipv4_address"`
+	Subnet             *terraformWriter.Literal `json:"subnet_id" cty:"subnet_id"`
+	AllocationID       *string                  `json:"allocation_id,omitempty" cty:"allocation_id"`
+	PrivateIPv4Address *string                  `json:"private_ipv4_address,omitempty" cty:"private_ipv4_address"`
 }
 
 type terraformNetworkLoadBalancerListener struct {
-	LoadBalancer   *terraform.Literal                           `json:"load_balancer_arn" cty:"load_balancer_arn"`
+	LoadBalancer   *terraformWriter.Literal                     `json:"load_balancer_arn" cty:"load_balancer_arn"`
 	Port           int64                                        `json:"port" cty:"port"`
 	Protocol       string                                       `json:"protocol" cty:"protocol"`
 	CertificateARN *string                                      `json:"certificate_arn,omitempty" cty:"certificate_arn"`
@@ -751,8 +752,8 @@ type terraformNetworkLoadBalancerListener struct {
 }
 
 type terraformNetworkLoadBalancerListenerAction struct {
-	Type           string             `json:"type" cty:"type"`
-	TargetGroupARN *terraform.Literal `json:"target_group_arn,omitempty" cty:"target_group_arn"`
+	Type           string                   `json:"type" cty:"type"`
+	TargetGroupARN *terraformWriter.Literal `json:"target_group_arn,omitempty" cty:"target_group_arn"`
 }
 
 func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NetworkLoadBalancer) error {
@@ -816,12 +817,12 @@ func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 	return nil
 }
 
-func (e *NetworkLoadBalancer) TerraformLink(params ...string) *terraform.Literal {
+func (e *NetworkLoadBalancer) TerraformLink(params ...string) *terraformWriter.Literal {
 	prop := "id"
 	if len(params) > 0 {
 		prop = params[0]
 	}
-	return terraform.LiteralProperty("aws_lb", *e.Name, prop)
+	return terraformWriter.LiteralProperty("aws_lb", *e.Name, prop)
 }
 
 type cloudformationNetworkLoadBalancer struct {

@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
@@ -184,8 +185,8 @@ func (s *SecurityGroup) getGroupTagsToDelete(currentTags map[string]string) map[
 }
 
 type terraformSecurityGroup struct {
-	Name  *string            `json:"name,omitempty" cty:"name"`
-	VPCId *terraform.Literal `json:"vpc_id,omitempty" cty:"vpc_id"`
+	Name  *string                  `json:"name,omitempty" cty:"name"`
+	VPCId *terraformWriter.Literal `json:"vpc_id,omitempty" cty:"vpc_id"`
 }
 
 func (_ *SecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroup) error {
@@ -197,6 +198,6 @@ func (_ *SecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, chan
 	return t.RenderResource("alicloud_security_group", *e.Name, tf)
 }
 
-func (l *SecurityGroup) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("alicloud_security_group", *l.Name, "id")
+func (l *SecurityGroup) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("alicloud_security_group", *l.Name, "id")
 }

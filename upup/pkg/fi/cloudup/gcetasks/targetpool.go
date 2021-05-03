@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // TargetPool represents a GCE TargetPool
@@ -117,8 +118,8 @@ func (_ *TargetPool) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 	return t.RenderResource("google_compute_target_pool", name, tf)
 }
 
-func (e *TargetPool) TerraformLink() *terraform.Literal {
+func (e *TargetPool) TerraformLink() *terraformWriter.Literal {
 	name := fi.StringValue(e.Name)
 
-	return terraform.LiteralSelfLink("google_compute_target_pool", name)
+	return terraformWriter.LiteralSelfLink("google_compute_target_pool", name)
 }

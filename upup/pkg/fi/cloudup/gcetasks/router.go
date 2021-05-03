@@ -41,6 +41,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 const (
@@ -202,6 +203,6 @@ func (*Router) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rout
 }
 
 // TerraformName returns the Terraform name.
-func (r *Router) TerraformName() *terraform.Literal {
-	return terraform.LiteralProperty("google_compute_router_nat", *r.Name, "name")
+func (r *Router) TerraformName() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("google_compute_router_nat", *r.Name, "name")
 }

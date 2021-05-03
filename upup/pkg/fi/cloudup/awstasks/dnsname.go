@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -49,7 +50,7 @@ type DNSTarget interface {
 	getHostedZoneId() *string
 	CloudformationAttrDNSName() *cloudformation.Literal
 	CloudformationAttrCanonicalHostedZoneNameID() *cloudformation.Literal
-	TerraformLink(...string) *terraform.Literal
+	TerraformLink(...string) *terraformWriter.Literal
 }
 
 func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
@@ -290,14 +291,14 @@ type terraformRoute53Record struct {
 	TTL     *string  `json:"ttl,omitempty" cty:"ttl"`
 	Records []string `json:"records,omitempty" cty:"records"`
 
-	Alias  *terraformAlias    `json:"alias,omitempty" cty:"alias"`
-	ZoneID *terraform.Literal `json:"zone_id" cty:"zone_id"`
+	Alias  *terraformAlias          `json:"alias,omitempty" cty:"alias"`
+	ZoneID *terraformWriter.Literal `json:"zone_id" cty:"zone_id"`
 }
 
 type terraformAlias struct {
-	Name                 *terraform.Literal `json:"name" cty:"name"`
-	ZoneID               *terraform.Literal `json:"zone_id" cty:"zone_id"`
-	EvaluateTargetHealth *bool              `json:"evaluate_target_health" cty:"evaluate_target_health"`
+	Name                 *terraformWriter.Literal `json:"name" cty:"name"`
+	ZoneID               *terraformWriter.Literal `json:"zone_id" cty:"zone_id"`
+	EvaluateTargetHealth *bool                    `json:"evaluate_target_health" cty:"evaluate_target_health"`
 }
 
 func (_ *DNSName) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DNSName) error {
@@ -318,8 +319,8 @@ func (_ *DNSName) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 	return t.RenderResource("aws_route53_record", *e.Name, tf)
 }
 
-func (e *DNSName) TerraformLink() *terraform.Literal {
-	return terraform.LiteralSelfLink("aws_route53_record", *e.Name)
+func (e *DNSName) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralSelfLink("aws_route53_record", *e.Name)
 }
 
 type cloudformationRoute53Record struct {

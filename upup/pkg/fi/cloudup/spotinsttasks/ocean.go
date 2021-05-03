@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -977,14 +978,14 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 }
 
 type terraformOcean struct {
-	Name                   *string              `json:"name,omitempty" cty:"name"`
-	ControllerClusterID    *string              `json:"controller_id,omitempty" cty:"controller_id"`
-	Region                 *string              `json:"region,omitempty" cty:"region"`
-	InstanceTypesWhitelist []string             `json:"whitelist,omitempty" cty:"whitelist"`
-	InstanceTypesBlacklist []string             `json:"blacklist,omitempty" cty:"blacklist"`
-	SubnetIDs              []*terraform.Literal `json:"subnet_ids,omitempty" cty:"subnet_ids"`
-	AutoScaler             *terraformAutoScaler `json:"autoscaler,omitempty" cty:"autoscaler"`
-	Tags                   []*terraformKV       `json:"tags,omitempty" cty:"tags"`
+	Name                   *string                    `json:"name,omitempty" cty:"name"`
+	ControllerClusterID    *string                    `json:"controller_id,omitempty" cty:"controller_id"`
+	Region                 *string                    `json:"region,omitempty" cty:"region"`
+	InstanceTypesWhitelist []string                   `json:"whitelist,omitempty" cty:"whitelist"`
+	InstanceTypesBlacklist []string                   `json:"blacklist,omitempty" cty:"blacklist"`
+	SubnetIDs              []*terraformWriter.Literal `json:"subnet_ids,omitempty" cty:"subnet_ids"`
+	AutoScaler             *terraformAutoScaler       `json:"autoscaler,omitempty" cty:"autoscaler"`
+	Tags                   []*terraformKV             `json:"tags,omitempty" cty:"tags"`
 
 	MinSize         *int64 `json:"min_size,omitempty" cty:"min_size"`
 	MaxSize         *int64 `json:"max_size,omitempty" cty:"max_size"`
@@ -995,15 +996,15 @@ type terraformOcean struct {
 	DrainingTimeout          *int64 `json:"draining_timeout,omitempty" cty:"draining_timeout"`
 	GracePeriod              *int64 `json:"grace_period,omitempty" cty:"grace_period"`
 
-	Monitoring               *bool                `json:"monitoring,omitempty" cty:"monitoring"`
-	EBSOptimized             *bool                `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
-	ImageID                  *string              `json:"image_id,omitempty" cty:"image_id"`
-	AssociatePublicIPAddress *bool                `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
-	RootVolumeSize           *int64               `json:"root_volume_size,omitempty" cty:"root_volume_size"`
-	UserData                 *terraform.Literal   `json:"user_data,omitempty" cty:"user_data"`
-	IAMInstanceProfile       *terraform.Literal   `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
-	KeyName                  *terraform.Literal   `json:"key_name,omitempty" cty:"key_name"`
-	SecurityGroups           []*terraform.Literal `json:"security_groups,omitempty" cty:"security_groups"`
+	Monitoring               *bool                      `json:"monitoring,omitempty" cty:"monitoring"`
+	EBSOptimized             *bool                      `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
+	ImageID                  *string                    `json:"image_id,omitempty" cty:"image_id"`
+	AssociatePublicIPAddress *bool                      `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
+	RootVolumeSize           *int64                     `json:"root_volume_size,omitempty" cty:"root_volume_size"`
+	UserData                 *terraformWriter.Literal   `json:"user_data,omitempty" cty:"user_data"`
+	IAMInstanceProfile       *terraformWriter.Literal   `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
+	KeyName                  *terraformWriter.Literal   `json:"key_name,omitempty" cty:"key_name"`
+	SecurityGroups           []*terraformWriter.Literal `json:"security_groups,omitempty" cty:"security_groups"`
 }
 
 func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Ocean) error {
@@ -1171,8 +1172,8 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 	return t.RenderResource("spotinst_ocean_aws", *e.Name, tf)
 }
 
-func (o *Ocean) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("spotinst_ocean_aws", *o.Name, "id")
+func (o *Ocean) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("spotinst_ocean_aws", *o.Name, "id")
 }
 
 func (o *Ocean) buildTags() []*aws.Tag {

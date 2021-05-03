@@ -22,12 +22,13 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 func TestWriteLocalsOutputs(t *testing.T) {
 	cases := []struct {
 		name        string
-		values      map[string]terraformOutputValue
+		values      map[string]terraformWriter.OutputValue
 		expected    string
 		errExpected bool
 	}{
@@ -37,9 +38,9 @@ func TestWriteLocalsOutputs(t *testing.T) {
 		},
 		{
 			name: "single output",
-			values: map[string]terraformOutputValue{
+			values: map[string]terraformWriter.OutputValue{
 				"key1": {
-					Value: LiteralFromStringValue("value1"),
+					Value: terraformWriter.LiteralFromStringValue("value1"),
 				},
 			},
 			expected: `
@@ -53,11 +54,11 @@ output "key1" {
 		},
 		{
 			name: "list output",
-			values: map[string]terraformOutputValue{
+			values: map[string]terraformWriter.OutputValue{
 				"key1": {
-					ValueArray: []*Literal{
-						LiteralFromStringValue("value1"),
-						LiteralFromStringValue("value2"),
+					ValueArray: []*terraformWriter.Literal{
+						terraformWriter.LiteralFromStringValue("value1"),
+						terraformWriter.LiteralFromStringValue("value2"),
 					},
 				},
 			},
