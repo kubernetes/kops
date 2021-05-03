@@ -32,7 +32,11 @@ func (t *TerraformTarget) finishHCL2(taskMap map[string]fi.Task) error {
 	f := hclwrite.NewEmptyFile()
 	rootBody := f.Body()
 
-	writeLocalsOutputs(rootBody, t.outputs)
+	outputs, err := t.getOutputs()
+	if err != nil {
+		return err
+	}
+	writeLocalsOutputs(rootBody, outputs)
 
 	providerName := string(t.Cloud.ProviderID())
 	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
@@ -130,7 +134,7 @@ func (t *TerraformTarget) finishHCL2(taskMap map[string]fi.Task) error {
 // output "key2" {
 //   value = "value2"
 // }
-func writeLocalsOutputs(body *hclwrite.Body, outputs map[string]*terraformOutputVariable) error {
+func writeLocalsOutputs(body *hclwrite.Body, outputs map[string]terraformOutputValue) error {
 	if len(outputs) == 0 {
 		return nil
 	}
@@ -145,25 +149,18 @@ func writeLocalsOutputs(body *hclwrite.Body, outputs map[string]*terraformOutput
 	for k := range outputs {
 		outputNames = append(outputNames, k)
 	}
-	sort.Slice(outputNames, func(i, j int) bool {
-		return tfSanitize(outputs[outputNames[i]].Key) < tfSanitize(outputs[outputNames[j]].Key)
-	})
+	sort.Strings(outputNames)
 
-	for _, n := range outputNames {
-		v := outputs[n]
-		tfName := tfSanitize(v.Key)
+	for _, tfName := range outputNames {
+		v := outputs[tfName]
 		outputBlock := body.AppendNewBlock("output", []string{tfName})
 		outputBody := outputBlock.Body()
 		if v.Value != nil {
 			writeLiteral(outputBody, "value", v.Value)
 			writeLiteral(localsBody, tfName, v.Value)
 		} else {
-			deduped, err := DedupLiterals(v.ValueArray)
-			if err != nil {
-				return err
-			}
-			writeLiteralList(outputBody, "value", deduped)
-			writeLiteralList(localsBody, tfName, deduped)
+			writeLiteralList(outputBody, "value", v.ValueArray)
+			writeLiteralList(localsBody, tfName, v.ValueArray)
 		}
 
 		if existingOutputVars[tfName] {
