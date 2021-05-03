@@ -461,18 +461,6 @@ resource "aws_iam_instance_profile" "nodes-mixedinstances-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "masters-mixedinstances-example-com" {
-  name   = "masters.mixedinstances.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.mixedinstances.example.com_policy")
-  role   = aws_iam_role.masters-mixedinstances-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-mixedinstances-example-com" {
-  name   = "nodes.mixedinstances.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.mixedinstances.example.com_policy")
-  role   = aws_iam_role.nodes-mixedinstances-example-com.name
-}
-
 resource "aws_iam_role" "masters-mixedinstances-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.mixedinstances.example.com_policy")
   name               = "masters.mixedinstances.example.com"
@@ -491,6 +479,18 @@ resource "aws_iam_role" "nodes-mixedinstances-example-com" {
     "Name"                                             = "nodes.mixedinstances.example.com"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "masters-mixedinstances-example-com" {
+  name   = "masters.mixedinstances.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.mixedinstances.example.com_policy")
+  role   = aws_iam_role.masters-mixedinstances-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-mixedinstances-example-com" {
+  name   = "nodes.mixedinstances.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.mixedinstances.example.com_policy")
+  role   = aws_iam_role.nodes-mixedinstances-example-com.name
 }
 
 resource "aws_internet_gateway" "mixedinstances-example-com" {
@@ -823,6 +823,22 @@ resource "aws_launch_template" "nodes-mixedinstances-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.mixedinstances.example.com_user_data")
 }
 
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.mixedinstances-example-com.id
+  route_table_id         = aws_route_table.mixedinstances-example-com.id
+}
+
+resource "aws_route_table" "mixedinstances-example-com" {
+  tags = {
+    "KubernetesCluster"                                = "mixedinstances.example.com"
+    "Name"                                             = "mixedinstances.example.com"
+    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+    "kubernetes.io/kops/role"                          = "public"
+  }
+  vpc_id = aws_vpc.mixedinstances-example-com.id
+}
+
 resource "aws_route_table_association" "us-test-1a-mixedinstances-example-com" {
   route_table_id = aws_route_table.mixedinstances-example-com.id
   subnet_id      = aws_subnet.us-test-1a-mixedinstances-example-com.id
@@ -838,20 +854,26 @@ resource "aws_route_table_association" "us-test-1c-mixedinstances-example-com" {
   subnet_id      = aws_subnet.us-test-1c-mixedinstances-example-com.id
 }
 
-resource "aws_route_table" "mixedinstances-example-com" {
+resource "aws_security_group" "masters-mixedinstances-example-com" {
+  description = "Security group for masters"
+  name        = "masters.mixedinstances.example.com"
   tags = {
     "KubernetesCluster"                                = "mixedinstances.example.com"
-    "Name"                                             = "mixedinstances.example.com"
+    "Name"                                             = "masters.mixedinstances.example.com"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
-    "kubernetes.io/kops/role"                          = "public"
   }
   vpc_id = aws_vpc.mixedinstances-example-com.id
 }
 
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.mixedinstances-example-com.id
-  route_table_id         = aws_route_table.mixedinstances-example-com.id
+resource "aws_security_group" "nodes-mixedinstances-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.mixedinstances.example.com"
+  tags = {
+    "KubernetesCluster"                                = "mixedinstances.example.com"
+    "Name"                                             = "nodes.mixedinstances.example.com"
+    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.mixedinstances-example-com.id
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-masters-mixedinstances-example-com" {
@@ -962,28 +984,6 @@ resource "aws_security_group_rule" "from-nodes-mixedinstances-example-com-ingres
   type                     = "ingress"
 }
 
-resource "aws_security_group" "masters-mixedinstances-example-com" {
-  description = "Security group for masters"
-  name        = "masters.mixedinstances.example.com"
-  tags = {
-    "KubernetesCluster"                                = "mixedinstances.example.com"
-    "Name"                                             = "masters.mixedinstances.example.com"
-    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.mixedinstances-example-com.id
-}
-
-resource "aws_security_group" "nodes-mixedinstances-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.mixedinstances.example.com"
-  tags = {
-    "KubernetesCluster"                                = "mixedinstances.example.com"
-    "Name"                                             = "nodes.mixedinstances.example.com"
-    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.mixedinstances-example-com.id
-}
-
 resource "aws_subnet" "us-test-1a-mixedinstances-example-com" {
   availability_zone = "us-test-1a"
   cidr_block        = "10.0.1.0/24"
@@ -1023,9 +1023,15 @@ resource "aws_subnet" "us-test-1c-mixedinstances-example-com" {
   vpc_id = aws_vpc.mixedinstances-example-com.id
 }
 
-resource "aws_vpc_dhcp_options_association" "mixedinstances-example-com" {
-  dhcp_options_id = aws_vpc_dhcp_options.mixedinstances-example-com.id
-  vpc_id          = aws_vpc.mixedinstances-example-com.id
+resource "aws_vpc" "mixedinstances-example-com" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = {
+    "KubernetesCluster"                                = "mixedinstances.example.com"
+    "Name"                                             = "mixedinstances.example.com"
+    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+  }
 }
 
 resource "aws_vpc_dhcp_options" "mixedinstances-example-com" {
@@ -1038,15 +1044,9 @@ resource "aws_vpc_dhcp_options" "mixedinstances-example-com" {
   }
 }
 
-resource "aws_vpc" "mixedinstances-example-com" {
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  tags = {
-    "KubernetesCluster"                                = "mixedinstances.example.com"
-    "Name"                                             = "mixedinstances.example.com"
-    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
-  }
+resource "aws_vpc_dhcp_options_association" "mixedinstances-example-com" {
+  dhcp_options_id = aws_vpc_dhcp_options.mixedinstances-example-com.id
+  vpc_id          = aws_vpc.mixedinstances-example-com.id
 }
 
 terraform {

@@ -73,14 +73,16 @@ resource "aws_nat_gateway" "us-test-1a-lifecyclephases-example-com" {
   }
 }
 
-resource "aws_route_table_association" "private-us-test-1a-lifecyclephases-example-com" {
-  route_table_id = aws_route_table.private-us-test-1a-lifecyclephases-example-com.id
-  subnet_id      = aws_subnet.us-test-1a-lifecyclephases-example-com.id
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.lifecyclephases-example-com.id
+  route_table_id         = aws_route_table.lifecyclephases-example-com.id
 }
 
-resource "aws_route_table_association" "utility-us-test-1a-lifecyclephases-example-com" {
-  route_table_id = aws_route_table.lifecyclephases-example-com.id
-  subnet_id      = aws_subnet.utility-us-test-1a-lifecyclephases-example-com.id
+resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.us-test-1a-lifecyclephases-example-com.id
+  route_table_id         = aws_route_table.private-us-test-1a-lifecyclephases-example-com.id
 }
 
 resource "aws_route_table" "lifecyclephases-example-com" {
@@ -103,16 +105,14 @@ resource "aws_route_table" "private-us-test-1a-lifecyclephases-example-com" {
   vpc_id = aws_vpc.lifecyclephases-example-com.id
 }
 
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.lifecyclephases-example-com.id
-  route_table_id         = aws_route_table.lifecyclephases-example-com.id
+resource "aws_route_table_association" "private-us-test-1a-lifecyclephases-example-com" {
+  route_table_id = aws_route_table.private-us-test-1a-lifecyclephases-example-com.id
+  subnet_id      = aws_subnet.us-test-1a-lifecyclephases-example-com.id
 }
 
-resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.us-test-1a-lifecyclephases-example-com.id
-  route_table_id         = aws_route_table.private-us-test-1a-lifecyclephases-example-com.id
+resource "aws_route_table_association" "utility-us-test-1a-lifecyclephases-example-com" {
+  route_table_id = aws_route_table.lifecyclephases-example-com.id
+  subnet_id      = aws_subnet.utility-us-test-1a-lifecyclephases-example-com.id
 }
 
 resource "aws_subnet" "us-test-1a-lifecyclephases-example-com" {
@@ -141,9 +141,15 @@ resource "aws_subnet" "utility-us-test-1a-lifecyclephases-example-com" {
   vpc_id = aws_vpc.lifecyclephases-example-com.id
 }
 
-resource "aws_vpc_dhcp_options_association" "lifecyclephases-example-com" {
-  dhcp_options_id = aws_vpc_dhcp_options.lifecyclephases-example-com.id
-  vpc_id          = aws_vpc.lifecyclephases-example-com.id
+resource "aws_vpc" "lifecyclephases-example-com" {
+  cidr_block           = "172.20.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = {
+    "KubernetesCluster"                                 = "lifecyclephases.example.com"
+    "Name"                                              = "lifecyclephases.example.com"
+    "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
+  }
 }
 
 resource "aws_vpc_dhcp_options" "lifecyclephases-example-com" {
@@ -156,15 +162,9 @@ resource "aws_vpc_dhcp_options" "lifecyclephases-example-com" {
   }
 }
 
-resource "aws_vpc" "lifecyclephases-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  tags = {
-    "KubernetesCluster"                                 = "lifecyclephases.example.com"
-    "Name"                                              = "lifecyclephases.example.com"
-    "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
-  }
+resource "aws_vpc_dhcp_options_association" "lifecyclephases-example-com" {
+  dhcp_options_id = aws_vpc_dhcp_options.lifecyclephases-example-com.id
+  vpc_id          = aws_vpc.lifecyclephases-example-com.id
 }
 
 terraform {
