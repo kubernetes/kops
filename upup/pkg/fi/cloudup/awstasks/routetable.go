@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -191,8 +192,8 @@ func (_ *RouteTable) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *RouteTable)
 }
 
 type terraformRouteTable struct {
-	VPCID *terraform.Literal `json:"vpc_id" cty:"vpc_id"`
-	Tags  map[string]string  `json:"tags,omitempty" cty:"tags"`
+	VPCID *terraformWriter.Literal `json:"vpc_id" cty:"vpc_id"`
+	Tags  map[string]string        `json:"tags,omitempty" cty:"tags"`
 }
 
 func (_ *RouteTable) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *RouteTable) error {
@@ -212,8 +213,8 @@ func (_ *RouteTable) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 	return t.RenderResource("aws_route_table", *e.Name, tf)
 }
 
-func (e *RouteTable) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("aws_route_table", *e.Name, "id")
+func (e *RouteTable) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("aws_route_table", *e.Name, "id")
 }
 
 type cloudformationRouteTable struct {

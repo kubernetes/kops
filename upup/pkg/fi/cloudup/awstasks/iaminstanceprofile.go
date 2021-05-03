@@ -23,6 +23,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -165,11 +166,11 @@ func (_ *IAMInstanceProfile) RenderTerraform(t *terraform.TerraformTarget, a, e,
 	return nil
 }
 
-func (e *IAMInstanceProfile) TerraformLink() *terraform.Literal {
+func (e *IAMInstanceProfile) TerraformLink() *terraformWriter.Literal {
 	if fi.BoolValue(e.Shared) {
-		return terraform.LiteralFromStringValue(fi.StringValue(e.Name))
+		return terraformWriter.LiteralFromStringValue(fi.StringValue(e.Name))
 	}
-	return terraform.LiteralProperty("aws_iam_instance_profile", *e.Name, "id")
+	return terraformWriter.LiteralProperty("aws_iam_instance_profile", *e.Name, "id")
 }
 
 func (_ *IAMInstanceProfile) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *IAMInstanceProfile) error {

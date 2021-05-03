@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package terraform
+package terraformWriter
 
 import (
 	"encoding/json"
@@ -134,9 +134,13 @@ func SortLiterals(v []*Literal) {
 	}
 }
 
-// DedupLiterals removes any duplicate Literals before returning the slice.
+// dedupLiterals removes any duplicate Literals before returning the slice.
 // As a side-effect, it currently returns the Literals in sorted order.
-func DedupLiterals(v []*Literal) ([]*Literal, error) {
+func dedupLiterals(v []*Literal) ([]*Literal, error) {
+	if v == nil {
+		return nil, nil
+	}
+
 	proxies, err := buildSortProxies(v)
 	if err != nil {
 		return nil, err

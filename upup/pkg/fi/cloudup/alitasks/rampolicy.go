@@ -22,6 +22,7 @@ import (
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ram"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -146,9 +147,9 @@ type terraformRAMPolicy struct {
 }
 
 type terraformRAMPolicyAttach struct {
-	PolicyName *terraform.Literal `json:"policy_name,omitempty" cty:"policy_name"`
-	PolicyType *string            `json:"policy_type,omitempty" cty:"policy_type"`
-	RoleName   *terraform.Literal `json:"role_name,omitempty" cty:"role_name"`
+	PolicyName *terraformWriter.Literal `json:"policy_name,omitempty" cty:"policy_name"`
+	PolicyType *string                  `json:"policy_type,omitempty" cty:"policy_type"`
+	RoleName   *terraformWriter.Literal `json:"role_name,omitempty" cty:"role_name"`
 }
 
 func (_ *RAMPolicy) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *RAMPolicy) error {
@@ -176,6 +177,6 @@ func (_ *RAMPolicy) RenderTerraform(t *terraform.TerraformTarget, a, e, changes 
 	return err
 }
 
-func (s *RAMPolicy) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("alicloud_ram_policy", *s.Name, "id")
+func (s *RAMPolicy) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("alicloud_ram_policy", *s.Name, "id")
 }

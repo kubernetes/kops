@@ -24,6 +24,7 @@ import (
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ess"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
@@ -181,8 +182,8 @@ type terraformScalingGroup struct {
 	MaxSize *int    `json:"max_size,omitempty" cty:"max_size"`
 	MinSize *int    `json:"min_size,omitempty" cty:"min_size"`
 
-	VSwitchs     []*terraform.Literal `json:"vswitch_ids,omitempty" cty:"vswitch_ids"`
-	LoadBalancer []*terraform.Literal `json:"loadbalancer_ids,omitempty" cty:"loadbalancer_ids"`
+	VSwitchs     []*terraformWriter.Literal `json:"vswitch_ids,omitempty" cty:"vswitch_ids"`
+	LoadBalancer []*terraformWriter.Literal `json:"loadbalancer_ids,omitempty" cty:"loadbalancer_ids"`
 }
 
 func (_ *ScalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ScalingGroup) error {
@@ -205,6 +206,6 @@ func (_ *ScalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 	return t.RenderResource("alicloud_ess_scaling_group", *e.Name, tf)
 }
 
-func (a *ScalingGroup) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("alicloud_ess_scaling_group", *a.Name, "id")
+func (a *ScalingGroup) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("alicloud_ess_scaling_group", *a.Name, "id")
 }

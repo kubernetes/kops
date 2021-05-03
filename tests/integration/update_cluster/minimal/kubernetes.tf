@@ -243,18 +243,6 @@ resource "aws_iam_instance_profile" "nodes-minimal-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "masters-minimal-example-com" {
-  name   = "masters.minimal.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.minimal.example.com_policy")
-  role   = aws_iam_role.masters-minimal-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-minimal-example-com" {
-  name   = "nodes.minimal.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.minimal.example.com_policy")
-  role   = aws_iam_role.nodes-minimal-example-com.name
-}
-
 resource "aws_iam_role" "masters-minimal-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.minimal.example.com_policy")
   name               = "masters.minimal.example.com"
@@ -273,6 +261,18 @@ resource "aws_iam_role" "nodes-minimal-example-com" {
     "Name"                                      = "nodes.minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "masters-minimal-example-com" {
+  name   = "masters.minimal.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.minimal.example.com_policy")
+  role   = aws_iam_role.masters-minimal-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-minimal-example-com" {
+  name   = "nodes.minimal.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.minimal.example.com_policy")
+  role   = aws_iam_role.nodes-minimal-example-com.name
 }
 
 resource "aws_internet_gateway" "minimal-example-com" {
@@ -443,9 +443,10 @@ resource "aws_launch_template" "nodes-minimal-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.minimal.example.com_user_data")
 }
 
-resource "aws_route_table_association" "us-test-1a-minimal-example-com" {
-  route_table_id = aws_route_table.minimal-example-com.id
-  subnet_id      = aws_subnet.us-test-1a-minimal-example-com.id
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.minimal-example-com.id
+  route_table_id         = aws_route_table.minimal-example-com.id
 }
 
 resource "aws_route_table" "minimal-example-com" {
@@ -458,10 +459,31 @@ resource "aws_route_table" "minimal-example-com" {
   vpc_id = aws_vpc.minimal-example-com.id
 }
 
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.minimal-example-com.id
-  route_table_id         = aws_route_table.minimal-example-com.id
+resource "aws_route_table_association" "us-test-1a-minimal-example-com" {
+  route_table_id = aws_route_table.minimal-example-com.id
+  subnet_id      = aws_subnet.us-test-1a-minimal-example-com.id
+}
+
+resource "aws_security_group" "masters-minimal-example-com" {
+  description = "Security group for masters"
+  name        = "masters.minimal.example.com"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "masters.minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.minimal-example-com.id
+}
+
+resource "aws_security_group" "nodes-minimal-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.minimal.example.com"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "nodes.minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.minimal-example-com.id
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-masters-minimal-example-com" {
@@ -572,28 +594,6 @@ resource "aws_security_group_rule" "from-nodes-minimal-example-com-ingress-udp-1
   type                     = "ingress"
 }
 
-resource "aws_security_group" "masters-minimal-example-com" {
-  description = "Security group for masters"
-  name        = "masters.minimal.example.com"
-  tags = {
-    "KubernetesCluster"                         = "minimal.example.com"
-    "Name"                                      = "masters.minimal.example.com"
-    "kubernetes.io/cluster/minimal.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.minimal-example-com.id
-}
-
-resource "aws_security_group" "nodes-minimal-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.minimal.example.com"
-  tags = {
-    "KubernetesCluster"                         = "minimal.example.com"
-    "Name"                                      = "nodes.minimal.example.com"
-    "kubernetes.io/cluster/minimal.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.minimal-example-com.id
-}
-
 resource "aws_subnet" "us-test-1a-minimal-example-com" {
   availability_zone = "us-test-1a"
   cidr_block        = "172.20.32.0/19"
@@ -607,9 +607,15 @@ resource "aws_subnet" "us-test-1a-minimal-example-com" {
   vpc_id = aws_vpc.minimal-example-com.id
 }
 
-resource "aws_vpc_dhcp_options_association" "minimal-example-com" {
-  dhcp_options_id = aws_vpc_dhcp_options.minimal-example-com.id
-  vpc_id          = aws_vpc.minimal-example-com.id
+resource "aws_vpc" "minimal-example-com" {
+  cidr_block           = "172.20.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
 }
 
 resource "aws_vpc_dhcp_options" "minimal-example-com" {
@@ -622,15 +628,9 @@ resource "aws_vpc_dhcp_options" "minimal-example-com" {
   }
 }
 
-resource "aws_vpc" "minimal-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  tags = {
-    "KubernetesCluster"                         = "minimal.example.com"
-    "Name"                                      = "minimal.example.com"
-    "kubernetes.io/cluster/minimal.example.com" = "owned"
-  }
+resource "aws_vpc_dhcp_options_association" "minimal-example-com" {
+  dhcp_options_id = aws_vpc_dhcp_options.minimal-example-com.id
+  vpc_id          = aws_vpc.minimal-example-com.id
 }
 
 terraform {

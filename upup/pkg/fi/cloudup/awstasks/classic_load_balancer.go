@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 	"k8s.io/kops/util/pkg/slice"
 )
 
@@ -699,8 +700,8 @@ func (a OrderLoadBalancersByName) Less(i, j int) bool {
 type terraformLoadBalancer struct {
 	LoadBalancerName *string                          `json:"name" cty:"name"`
 	Listener         []*terraformLoadBalancerListener `json:"listener" cty:"listener"`
-	SecurityGroups   []*terraform.Literal             `json:"security_groups" cty:"security_groups"`
-	Subnets          []*terraform.Literal             `json:"subnets" cty:"subnets"`
+	SecurityGroups   []*terraformWriter.Literal       `json:"security_groups" cty:"security_groups"`
+	Subnets          []*terraformWriter.Literal       `json:"subnets" cty:"subnets"`
 	Internal         *bool                            `json:"internal,omitempty" cty:"internal"`
 
 	HealthCheck *terraformLoadBalancerHealthCheck `json:"health_check,omitempty" cty:"health_check"`
@@ -754,12 +755,12 @@ func (_ *ClassicLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 	for _, subnet := range e.Subnets {
 		tf.Subnets = append(tf.Subnets, subnet.TerraformLink())
 	}
-	terraform.SortLiterals(tf.Subnets)
+	terraformWriter.SortLiterals(tf.Subnets)
 
 	for _, sg := range e.SecurityGroups {
 		tf.SecurityGroups = append(tf.SecurityGroups, sg.TerraformLink())
 	}
-	terraform.SortLiterals(tf.SecurityGroups)
+	terraformWriter.SortLiterals(tf.SecurityGroups)
 
 	for loadBalancerPort, listener := range e.Listeners {
 		loadBalancerPortInt, err := strconv.ParseInt(loadBalancerPort, 10, 64)
@@ -827,7 +828,7 @@ func (_ *ClassicLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 	return t.RenderResource("aws_elb", *e.Name, tf)
 }
 
-func (e *ClassicLoadBalancer) TerraformLink(params ...string) *terraform.Literal {
+func (e *ClassicLoadBalancer) TerraformLink(params ...string) *terraformWriter.Literal {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		if e.LoadBalancerName == nil {
@@ -835,14 +836,14 @@ func (e *ClassicLoadBalancer) TerraformLink(params ...string) *terraform.Literal
 		}
 
 		klog.V(4).Infof("reusing existing LB with name %q", *e.LoadBalancerName)
-		return terraform.LiteralFromStringValue(*e.LoadBalancerName)
+		return terraformWriter.LiteralFromStringValue(*e.LoadBalancerName)
 	}
 
 	prop := "id"
 	if len(params) > 0 {
 		prop = params[0]
 	}
-	return terraform.LiteralProperty("aws_elb", *e.Name, prop)
+	return terraformWriter.LiteralProperty("aws_elb", *e.Name, prop)
 }
 
 type cloudformationClassicLoadBalancer struct {

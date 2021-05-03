@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -293,8 +294,8 @@ func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Secu
 type terraformSecurityGroupIngress struct {
 	Type *string `json:"type" cty:"type"`
 
-	SecurityGroup *terraform.Literal `json:"security_group_id" cty:"security_group_id"`
-	SourceGroup   *terraform.Literal `json:"source_security_group_id,omitempty" cty:"source_security_group_id"`
+	SecurityGroup *terraformWriter.Literal `json:"security_group_id" cty:"security_group_id"`
+	SourceGroup   *terraformWriter.Literal `json:"source_security_group_id,omitempty" cty:"source_security_group_id"`
 
 	FromPort *int64 `json:"from_port,omitempty" cty:"from_port"`
 	ToPort   *int64 `json:"to_port,omitempty" cty:"to_port"`

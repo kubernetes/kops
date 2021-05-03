@@ -247,18 +247,6 @@ resource "aws_iam_instance_profile" "nodes-externallb-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "masters-externallb-example-com" {
-  name   = "masters.externallb.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.externallb.example.com_policy")
-  role   = aws_iam_role.masters-externallb-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-externallb-example-com" {
-  name   = "nodes.externallb.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.externallb.example.com_policy")
-  role   = aws_iam_role.nodes-externallb-example-com.name
-}
-
 resource "aws_iam_role" "masters-externallb-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.externallb.example.com_policy")
   name               = "masters.externallb.example.com"
@@ -277,6 +265,18 @@ resource "aws_iam_role" "nodes-externallb-example-com" {
     "Name"                                         = "nodes.externallb.example.com"
     "kubernetes.io/cluster/externallb.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "masters-externallb-example-com" {
+  name   = "masters.externallb.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.externallb.example.com_policy")
+  role   = aws_iam_role.masters-externallb-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-externallb-example-com" {
+  name   = "nodes.externallb.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.externallb.example.com_policy")
+  role   = aws_iam_role.nodes-externallb-example-com.name
 }
 
 resource "aws_internet_gateway" "externallb-example-com" {
@@ -447,9 +447,10 @@ resource "aws_launch_template" "nodes-externallb-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.externallb.example.com_user_data")
 }
 
-resource "aws_route_table_association" "us-test-1a-externallb-example-com" {
-  route_table_id = aws_route_table.externallb-example-com.id
-  subnet_id      = aws_subnet.us-test-1a-externallb-example-com.id
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.externallb-example-com.id
+  route_table_id         = aws_route_table.externallb-example-com.id
 }
 
 resource "aws_route_table" "externallb-example-com" {
@@ -462,10 +463,31 @@ resource "aws_route_table" "externallb-example-com" {
   vpc_id = aws_vpc.externallb-example-com.id
 }
 
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.externallb-example-com.id
-  route_table_id         = aws_route_table.externallb-example-com.id
+resource "aws_route_table_association" "us-test-1a-externallb-example-com" {
+  route_table_id = aws_route_table.externallb-example-com.id
+  subnet_id      = aws_subnet.us-test-1a-externallb-example-com.id
+}
+
+resource "aws_security_group" "masters-externallb-example-com" {
+  description = "Security group for masters"
+  name        = "masters.externallb.example.com"
+  tags = {
+    "KubernetesCluster"                            = "externallb.example.com"
+    "Name"                                         = "masters.externallb.example.com"
+    "kubernetes.io/cluster/externallb.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.externallb-example-com.id
+}
+
+resource "aws_security_group" "nodes-externallb-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.externallb.example.com"
+  tags = {
+    "KubernetesCluster"                            = "externallb.example.com"
+    "Name"                                         = "nodes.externallb.example.com"
+    "kubernetes.io/cluster/externallb.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.externallb-example-com.id
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-masters-externallb-example-com" {
@@ -576,28 +598,6 @@ resource "aws_security_group_rule" "from-nodes-externallb-example-com-ingress-ud
   type                     = "ingress"
 }
 
-resource "aws_security_group" "masters-externallb-example-com" {
-  description = "Security group for masters"
-  name        = "masters.externallb.example.com"
-  tags = {
-    "KubernetesCluster"                            = "externallb.example.com"
-    "Name"                                         = "masters.externallb.example.com"
-    "kubernetes.io/cluster/externallb.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.externallb-example-com.id
-}
-
-resource "aws_security_group" "nodes-externallb-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.externallb.example.com"
-  tags = {
-    "KubernetesCluster"                            = "externallb.example.com"
-    "Name"                                         = "nodes.externallb.example.com"
-    "kubernetes.io/cluster/externallb.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.externallb-example-com.id
-}
-
 resource "aws_subnet" "us-test-1a-externallb-example-com" {
   availability_zone = "us-test-1a"
   cidr_block        = "172.20.32.0/19"
@@ -611,9 +611,15 @@ resource "aws_subnet" "us-test-1a-externallb-example-com" {
   vpc_id = aws_vpc.externallb-example-com.id
 }
 
-resource "aws_vpc_dhcp_options_association" "externallb-example-com" {
-  dhcp_options_id = aws_vpc_dhcp_options.externallb-example-com.id
-  vpc_id          = aws_vpc.externallb-example-com.id
+resource "aws_vpc" "externallb-example-com" {
+  cidr_block           = "172.20.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = {
+    "KubernetesCluster"                            = "externallb.example.com"
+    "Name"                                         = "externallb.example.com"
+    "kubernetes.io/cluster/externallb.example.com" = "owned"
+  }
 }
 
 resource "aws_vpc_dhcp_options" "externallb-example-com" {
@@ -626,15 +632,9 @@ resource "aws_vpc_dhcp_options" "externallb-example-com" {
   }
 }
 
-resource "aws_vpc" "externallb-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  tags = {
-    "KubernetesCluster"                            = "externallb.example.com"
-    "Name"                                         = "externallb.example.com"
-    "kubernetes.io/cluster/externallb.example.com" = "owned"
-  }
+resource "aws_vpc_dhcp_options_association" "externallb-example-com" {
+  dhcp_options_id = aws_vpc_dhcp_options.externallb-example-com.id
+  vpc_id          = aws_vpc.externallb-example-com.id
 }
 
 terraform {

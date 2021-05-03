@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -267,7 +268,7 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 		return nil
 	}
 
-	if err := t.AddOutputVariable("vpc_cidr_block", terraform.LiteralProperty("aws_vpc", *e.Name, "cidr_block")); err != nil {
+	if err := t.AddOutputVariable("vpc_cidr_block", terraformWriter.LiteralProperty("aws_vpc", *e.Name, "cidr_block")); err != nil {
 		// TODO: Should we try to output vpc_cidr_block for shared vpcs?
 		return err
 	}
@@ -282,7 +283,7 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 	return t.RenderResource("aws_vpc", *e.Name, tf)
 }
 
-func (e *VPC) TerraformLink() *terraform.Literal {
+func (e *VPC) TerraformLink() *terraformWriter.Literal {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		if e.ID == nil {
@@ -290,10 +291,10 @@ func (e *VPC) TerraformLink() *terraform.Literal {
 		}
 
 		klog.V(4).Infof("reusing existing VPC with id %q", *e.ID)
-		return terraform.LiteralFromStringValue(*e.ID)
+		return terraformWriter.LiteralFromStringValue(*e.ID)
 	}
 
-	return terraform.LiteralProperty("aws_vpc", *e.Name, "id")
+	return terraformWriter.LiteralProperty("aws_vpc", *e.Name, "id")
 }
 
 type cloudformationVPC struct {

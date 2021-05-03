@@ -25,22 +25,9 @@ import (
 )
 
 func (t *TerraformTarget) finishJSON(taskMap map[string]fi.Task) error {
-	resourcesByType := make(map[string]map[string]interface{})
-
-	for _, res := range t.resources {
-		resources := resourcesByType[res.ResourceType]
-		if resources == nil {
-			resources = make(map[string]interface{})
-			resourcesByType[res.ResourceType] = resources
-		}
-
-		tfName := tfSanitize(res.ResourceName)
-
-		if resources[tfName] != nil {
-			return fmt.Errorf("duplicate resource found: %s.%s", res.ResourceType, tfName)
-		}
-
-		resources[tfName] = res.Item
+	resourcesByType, err := t.GetResourcesByType()
+	if err != nil {
+		return err
 	}
 
 	providersByName := make(map[string]map[string]interface{})
@@ -61,44 +48,21 @@ func (t *TerraformTarget) finishJSON(taskMap map[string]fi.Task) error {
 		providersByName["aws"] = providerAWS
 	}
 
-	outputVariables := make(map[string]interface{})
-	for _, v := range t.outputs {
-		tfName := tfSanitize(v.Key)
-
-		if outputVariables[tfName] != nil {
-			return fmt.Errorf("duplicate variable found: %s", tfName)
-		}
-
-		tfVar := make(map[string]interface{})
-		if v.Value != nil {
-			tfVar["value"] = v.Value
-		} else {
-			deduped, err := DedupLiterals(v.ValueArray)
-			if err != nil {
-				return err
-			}
-			tfVar["value"] = deduped
-		}
-		outputVariables[tfName] = tfVar
+	outputs, err := t.GetOutputs()
+	if err != nil {
+		return err
 	}
-
+	outputVariables := make(map[string]interface{})
 	localVariables := make(map[string]interface{})
-	for _, v := range t.outputs {
-		tfName := tfSanitize(v.Key)
-
-		if localVariables[tfName] != nil {
-			return fmt.Errorf("duplicate variable found: %s", tfName)
-		}
-
+	for tfName, v := range outputs {
+		var tfVar interface{}
 		if v.Value != nil {
-			localVariables[tfName] = v.Value
+			tfVar = v.Value
 		} else {
-			deduped, err := DedupLiterals(v.ValueArray)
-			if err != nil {
-				return err
-			}
-			localVariables[tfName] = deduped
+			tfVar = v.ValueArray
 		}
+		outputVariables[tfName] = map[string]interface{}{"value": tfVar}
+		localVariables[tfName] = tfVar
 	}
 
 	data := make(map[string]interface{})
@@ -146,6 +110,6 @@ func (t *TerraformTarget) finishJSON(taskMap map[string]fi.Task) error {
 		return fmt.Errorf("error marshaling terraform data to json: %v", err)
 	}
 
-	t.files["kubernetes.tf.json"] = jsonBytes
+	t.Files["kubernetes.tf.json"] = jsonBytes
 	return nil
 }

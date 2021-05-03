@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -210,7 +211,7 @@ type terraformTargetGroup struct {
 	Name        string                          `json:"name" cty:"name"`
 	Port        int64                           `json:"port" cty:"port"`
 	Protocol    string                          `json:"protocol" cty:"protocol"`
-	VPCID       terraform.Literal               `json:"vpc_id" cty:"vpc_id"`
+	VPCID       terraformWriter.Literal         `json:"vpc_id" cty:"vpc_id"`
 	Tags        map[string]string               `json:"tags,omitempty" cty:"tags"`
 	HealthCheck terraformTargetGroupHealthCheck `json:"health_check" cty:"health_check"`
 }
@@ -247,16 +248,16 @@ func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 	return t.RenderResource("aws_lb_target_group", *e.Name, tf)
 }
 
-func (e *TargetGroup) TerraformLink(params ...string) *terraform.Literal {
+func (e *TargetGroup) TerraformLink(params ...string) *terraformWriter.Literal {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		if e.ARN != nil {
-			return terraform.LiteralFromStringValue(*e.ARN)
+			return terraformWriter.LiteralFromStringValue(*e.ARN)
 		} else {
 			klog.Warningf("ID not set on shared Target Group %v", e)
 		}
 	}
-	return terraform.LiteralProperty("aws_lb_target_group", *e.Name, "id")
+	return terraformWriter.LiteralProperty("aws_lb_target_group", *e.Name, "id")
 }
 
 type cloudformationTargetGroup struct {

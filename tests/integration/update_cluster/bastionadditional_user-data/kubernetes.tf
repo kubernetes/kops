@@ -393,24 +393,6 @@ resource "aws_iam_instance_profile" "nodes-bastionuserdata-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-bastionuserdata-example-com" {
-  name   = "bastions.bastionuserdata.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.bastionuserdata.example.com_policy")
-  role   = aws_iam_role.bastions-bastionuserdata-example-com.name
-}
-
-resource "aws_iam_role_policy" "masters-bastionuserdata-example-com" {
-  name   = "masters.bastionuserdata.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.bastionuserdata.example.com_policy")
-  role   = aws_iam_role.masters-bastionuserdata-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-bastionuserdata-example-com" {
-  name   = "nodes.bastionuserdata.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.bastionuserdata.example.com_policy")
-  role   = aws_iam_role.nodes-bastionuserdata-example-com.name
-}
-
 resource "aws_iam_role" "bastions-bastionuserdata-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.bastionuserdata.example.com_policy")
   name               = "bastions.bastionuserdata.example.com"
@@ -439,6 +421,24 @@ resource "aws_iam_role" "nodes-bastionuserdata-example-com" {
     "Name"                                              = "nodes.bastionuserdata.example.com"
     "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "bastions-bastionuserdata-example-com" {
+  name   = "bastions.bastionuserdata.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_bastions.bastionuserdata.example.com_policy")
+  role   = aws_iam_role.bastions-bastionuserdata-example-com.name
+}
+
+resource "aws_iam_role_policy" "masters-bastionuserdata-example-com" {
+  name   = "masters.bastionuserdata.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.bastionuserdata.example.com_policy")
+  role   = aws_iam_role.masters-bastionuserdata-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-bastionuserdata-example-com" {
+  name   = "nodes.bastionuserdata.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.bastionuserdata.example.com_policy")
+  role   = aws_iam_role.nodes-bastionuserdata-example-com.name
 }
 
 resource "aws_internet_gateway" "bastionuserdata-example-com" {
@@ -687,6 +687,18 @@ resource "aws_nat_gateway" "us-test-1a-bastionuserdata-example-com" {
   }
 }
 
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.bastionuserdata-example-com.id
+  route_table_id         = aws_route_table.bastionuserdata-example-com.id
+}
+
+resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.us-test-1a-bastionuserdata-example-com.id
+  route_table_id         = aws_route_table.private-us-test-1a-bastionuserdata-example-com.id
+}
+
 resource "aws_route53_record" "api-bastionuserdata-example-com" {
   alias {
     evaluate_target_health = false
@@ -696,16 +708,6 @@ resource "aws_route53_record" "api-bastionuserdata-example-com" {
   name    = "api.bastionuserdata.example.com"
   type    = "A"
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
-}
-
-resource "aws_route_table_association" "private-us-test-1a-bastionuserdata-example-com" {
-  route_table_id = aws_route_table.private-us-test-1a-bastionuserdata-example-com.id
-  subnet_id      = aws_subnet.us-test-1a-bastionuserdata-example-com.id
-}
-
-resource "aws_route_table_association" "utility-us-test-1a-bastionuserdata-example-com" {
-  route_table_id = aws_route_table.bastionuserdata-example-com.id
-  subnet_id      = aws_subnet.utility-us-test-1a-bastionuserdata-example-com.id
 }
 
 resource "aws_route_table" "bastionuserdata-example-com" {
@@ -728,16 +730,69 @@ resource "aws_route_table" "private-us-test-1a-bastionuserdata-example-com" {
   vpc_id = aws_vpc.bastionuserdata-example-com.id
 }
 
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.bastionuserdata-example-com.id
-  route_table_id         = aws_route_table.bastionuserdata-example-com.id
+resource "aws_route_table_association" "private-us-test-1a-bastionuserdata-example-com" {
+  route_table_id = aws_route_table.private-us-test-1a-bastionuserdata-example-com.id
+  subnet_id      = aws_subnet.us-test-1a-bastionuserdata-example-com.id
 }
 
-resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.us-test-1a-bastionuserdata-example-com.id
-  route_table_id         = aws_route_table.private-us-test-1a-bastionuserdata-example-com.id
+resource "aws_route_table_association" "utility-us-test-1a-bastionuserdata-example-com" {
+  route_table_id = aws_route_table.bastionuserdata-example-com.id
+  subnet_id      = aws_subnet.utility-us-test-1a-bastionuserdata-example-com.id
+}
+
+resource "aws_security_group" "api-elb-bastionuserdata-example-com" {
+  description = "Security group for api ELB"
+  name        = "api-elb.bastionuserdata.example.com"
+  tags = {
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "api-elb.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.bastionuserdata-example-com.id
+}
+
+resource "aws_security_group" "bastion-bastionuserdata-example-com" {
+  description = "Security group for bastion"
+  name        = "bastion.bastionuserdata.example.com"
+  tags = {
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "bastion.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.bastionuserdata-example-com.id
+}
+
+resource "aws_security_group" "bastion-elb-bastionuserdata-example-com" {
+  description = "Security group for bastion ELB"
+  name        = "bastion-elb.bastionuserdata.example.com"
+  tags = {
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "bastion-elb.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.bastionuserdata-example-com.id
+}
+
+resource "aws_security_group" "masters-bastionuserdata-example-com" {
+  description = "Security group for masters"
+  name        = "masters.bastionuserdata.example.com"
+  tags = {
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "masters.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.bastionuserdata-example-com.id
+}
+
+resource "aws_security_group" "nodes-bastionuserdata-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.bastionuserdata.example.com"
+  tags = {
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "nodes.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.bastionuserdata-example-com.id
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-elb-bastionuserdata-example-com" {
@@ -767,24 +822,6 @@ resource "aws_security_group_rule" "from-api-elb-bastionuserdata-example-com-egr
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "from-bastion-elb-bastionuserdata-example-com-egress-all-0to0-0-0-0-0--0" {
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 0
-  protocol          = "-1"
-  security_group_id = aws_security_group.bastion-elb-bastionuserdata-example-com.id
-  to_port           = 0
-  type              = "egress"
-}
-
-resource "aws_security_group_rule" "from-bastion-elb-bastionuserdata-example-com-ingress-tcp-22to22-bastion-bastionuserdata-example-com" {
-  from_port                = 22
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.bastion-bastionuserdata-example-com.id
-  source_security_group_id = aws_security_group.bastion-elb-bastionuserdata-example-com.id
-  to_port                  = 22
-  type                     = "ingress"
-}
-
 resource "aws_security_group_rule" "from-bastion-bastionuserdata-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
@@ -808,6 +845,24 @@ resource "aws_security_group_rule" "from-bastion-bastionuserdata-example-com-ing
   protocol                 = "tcp"
   security_group_id        = aws_security_group.nodes-bastionuserdata-example-com.id
   source_security_group_id = aws_security_group.bastion-bastionuserdata-example-com.id
+  to_port                  = 22
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "from-bastion-elb-bastionuserdata-example-com-egress-all-0to0-0-0-0-0--0" {
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.bastion-elb-bastionuserdata-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-bastion-elb-bastionuserdata-example-com-ingress-tcp-22to22-bastion-bastionuserdata-example-com" {
+  from_port                = 22
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.bastion-bastionuserdata-example-com.id
+  source_security_group_id = aws_security_group.bastion-elb-bastionuserdata-example-com.id
   to_port                  = 22
   type                     = "ingress"
 }
@@ -911,61 +966,6 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   type              = "ingress"
 }
 
-resource "aws_security_group" "api-elb-bastionuserdata-example-com" {
-  description = "Security group for api ELB"
-  name        = "api-elb.bastionuserdata.example.com"
-  tags = {
-    "KubernetesCluster"                                 = "bastionuserdata.example.com"
-    "Name"                                              = "api-elb.bastionuserdata.example.com"
-    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.bastionuserdata-example-com.id
-}
-
-resource "aws_security_group" "bastion-elb-bastionuserdata-example-com" {
-  description = "Security group for bastion ELB"
-  name        = "bastion-elb.bastionuserdata.example.com"
-  tags = {
-    "KubernetesCluster"                                 = "bastionuserdata.example.com"
-    "Name"                                              = "bastion-elb.bastionuserdata.example.com"
-    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.bastionuserdata-example-com.id
-}
-
-resource "aws_security_group" "bastion-bastionuserdata-example-com" {
-  description = "Security group for bastion"
-  name        = "bastion.bastionuserdata.example.com"
-  tags = {
-    "KubernetesCluster"                                 = "bastionuserdata.example.com"
-    "Name"                                              = "bastion.bastionuserdata.example.com"
-    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.bastionuserdata-example-com.id
-}
-
-resource "aws_security_group" "masters-bastionuserdata-example-com" {
-  description = "Security group for masters"
-  name        = "masters.bastionuserdata.example.com"
-  tags = {
-    "KubernetesCluster"                                 = "bastionuserdata.example.com"
-    "Name"                                              = "masters.bastionuserdata.example.com"
-    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.bastionuserdata-example-com.id
-}
-
-resource "aws_security_group" "nodes-bastionuserdata-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.bastionuserdata.example.com"
-  tags = {
-    "KubernetesCluster"                                 = "bastionuserdata.example.com"
-    "Name"                                              = "nodes.bastionuserdata.example.com"
-    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.bastionuserdata-example-com.id
-}
-
 resource "aws_subnet" "us-test-1a-bastionuserdata-example-com" {
   availability_zone = "us-test-1a"
   cidr_block        = "172.20.32.0/19"
@@ -992,9 +992,15 @@ resource "aws_subnet" "utility-us-test-1a-bastionuserdata-example-com" {
   vpc_id = aws_vpc.bastionuserdata-example-com.id
 }
 
-resource "aws_vpc_dhcp_options_association" "bastionuserdata-example-com" {
-  dhcp_options_id = aws_vpc_dhcp_options.bastionuserdata-example-com.id
-  vpc_id          = aws_vpc.bastionuserdata-example-com.id
+resource "aws_vpc" "bastionuserdata-example-com" {
+  cidr_block           = "172.20.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = {
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
 }
 
 resource "aws_vpc_dhcp_options" "bastionuserdata-example-com" {
@@ -1007,15 +1013,9 @@ resource "aws_vpc_dhcp_options" "bastionuserdata-example-com" {
   }
 }
 
-resource "aws_vpc" "bastionuserdata-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  tags = {
-    "KubernetesCluster"                                 = "bastionuserdata.example.com"
-    "Name"                                              = "bastionuserdata.example.com"
-    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
-  }
+resource "aws_vpc_dhcp_options_association" "bastionuserdata-example-com" {
+  dhcp_options_id = aws_vpc_dhcp_options.bastionuserdata-example-com.id
+  vpc_id          = aws_vpc.bastionuserdata-example-com.id
 }
 
 terraform {

@@ -22,6 +22,7 @@ import (
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ram"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -136,6 +137,6 @@ func (_ *RAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *R
 	return t.RenderResource("alicloud_ram_role", *e.Name, tf)
 }
 
-func (s *RAMRole) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("alicloud_ram_role", *s.Name, "name")
+func (s *RAMRole) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("alicloud_ram_role", *s.Name, "name")
 }
