@@ -29,6 +29,7 @@ import (
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ess"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
@@ -307,10 +308,10 @@ type terraformLaunchConfiguration struct {
 	SystemDiskCategory *string `json:"system_disk_category,omitempty" cty:"system_disk_category"`
 	UserData           *string `json:"user_data,omitempty" cty:"user_data"`
 
-	RAMRole       *terraform.Literal `json:"role_name,omitempty" cty:"role_name"`
-	ScalingGroup  *terraform.Literal `json:"scaling_group_id,omitempty" cty:"scaling_group_id"`
-	SSHKey        *terraform.Literal `json:"key_name,omitempty" cty:"key_name"`
-	SecurityGroup *terraform.Literal `json:"security_group_id,omitempty" cty:"security_group_id"`
+	RAMRole       *terraformWriter.Literal `json:"role_name,omitempty" cty:"role_name"`
+	ScalingGroup  *terraformWriter.Literal `json:"scaling_group_id,omitempty" cty:"scaling_group_id"`
+	SSHKey        *terraformWriter.Literal `json:"key_name,omitempty" cty:"key_name"`
+	SecurityGroup *terraformWriter.Literal `json:"security_group_id,omitempty" cty:"security_group_id"`
 }
 
 func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LaunchConfiguration) error {
@@ -336,8 +337,8 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 	return t.RenderResource("alicloud_ess_scaling_configuration", *e.Name, tf)
 }
 
-func (l *LaunchConfiguration) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("alicloud_ess_scaling_configuration", fi.StringValue(l.Name), "id")
+func (l *LaunchConfiguration) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("alicloud_ess_scaling_configuration", fi.StringValue(l.Name), "id")
 }
 
 // deleteLaunchConfiguration tracks a LaunchConfiguration that we're going to delete

@@ -32,6 +32,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -294,10 +295,10 @@ func (e *IAMRolePolicy) policyDocumentString() (string, error) {
 }
 
 type terraformIAMRolePolicy struct {
-	Name           *string            `json:"name,omitempty" cty:"name"`
-	Role           *terraform.Literal `json:"role" cty:"role"`
-	PolicyDocument *terraform.Literal `json:"policy,omitempty" cty:"policy"`
-	PolicyArn      *string            `json:"policy_arn,omitempty" cty:"policy_arn"`
+	Name           *string                  `json:"name,omitempty" cty:"name"`
+	Role           *terraformWriter.Literal `json:"role" cty:"role"`
+	PolicyDocument *terraformWriter.Literal `json:"policy,omitempty" cty:"policy"`
+	PolicyArn      *string                  `json:"policy_arn,omitempty" cty:"policy_arn"`
 }
 
 func (_ *IAMRolePolicy) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMRolePolicy) error {
@@ -331,7 +332,7 @@ func (_ *IAMRolePolicy) RenderTerraform(t *terraform.TerraformTarget, a, e, chan
 		return nil
 	}
 
-	policy, err := t.AddFile("aws_iam_role_policy", *e.Name, "policy", e.PolicyDocument, false)
+	policy, err := t.AddFileResource("aws_iam_role_policy", *e.Name, "policy", e.PolicyDocument, false)
 	if err != nil {
 		return fmt.Errorf("error rendering PolicyDocument: %v", err)
 	}
@@ -345,8 +346,8 @@ func (_ *IAMRolePolicy) RenderTerraform(t *terraform.TerraformTarget, a, e, chan
 	return t.RenderResource("aws_iam_role_policy", *e.Name, tf)
 }
 
-func (e *IAMRolePolicy) TerraformLink() *terraform.Literal {
-	return terraform.LiteralSelfLink("aws_iam_role_policy", *e.Name)
+func (e *IAMRolePolicy) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralSelfLink("aws_iam_role_policy", *e.Name)
 }
 
 type cloudformationIAMRolePolicy struct {

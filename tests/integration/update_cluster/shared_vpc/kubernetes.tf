@@ -238,18 +238,6 @@ resource "aws_iam_instance_profile" "nodes-sharedvpc-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "masters-sharedvpc-example-com" {
-  name   = "masters.sharedvpc.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.sharedvpc.example.com_policy")
-  role   = aws_iam_role.masters-sharedvpc-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-sharedvpc-example-com" {
-  name   = "nodes.sharedvpc.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.sharedvpc.example.com_policy")
-  role   = aws_iam_role.nodes-sharedvpc-example-com.name
-}
-
 resource "aws_iam_role" "masters-sharedvpc-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.sharedvpc.example.com_policy")
   name               = "masters.sharedvpc.example.com"
@@ -268,6 +256,18 @@ resource "aws_iam_role" "nodes-sharedvpc-example-com" {
     "Name"                                        = "nodes.sharedvpc.example.com"
     "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "masters-sharedvpc-example-com" {
+  name   = "masters.sharedvpc.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.sharedvpc.example.com_policy")
+  role   = aws_iam_role.masters-sharedvpc-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-sharedvpc-example-com" {
+  name   = "nodes.sharedvpc.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.sharedvpc.example.com_policy")
+  role   = aws_iam_role.nodes-sharedvpc-example-com.name
 }
 
 resource "aws_key_pair" "kubernetes-sharedvpc-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {
@@ -429,9 +429,10 @@ resource "aws_launch_template" "nodes-sharedvpc-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.sharedvpc.example.com_user_data")
 }
 
-resource "aws_route_table_association" "us-test-1a-sharedvpc-example-com" {
-  route_table_id = aws_route_table.sharedvpc-example-com.id
-  subnet_id      = aws_subnet.us-test-1a-sharedvpc-example-com.id
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = "igw-1"
+  route_table_id         = aws_route_table.sharedvpc-example-com.id
 }
 
 resource "aws_route_table" "sharedvpc-example-com" {
@@ -444,10 +445,31 @@ resource "aws_route_table" "sharedvpc-example-com" {
   vpc_id = "vpc-12345678"
 }
 
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = "igw-1"
-  route_table_id         = aws_route_table.sharedvpc-example-com.id
+resource "aws_route_table_association" "us-test-1a-sharedvpc-example-com" {
+  route_table_id = aws_route_table.sharedvpc-example-com.id
+  subnet_id      = aws_subnet.us-test-1a-sharedvpc-example-com.id
+}
+
+resource "aws_security_group" "masters-sharedvpc-example-com" {
+  description = "Security group for masters"
+  name        = "masters.sharedvpc.example.com"
+  tags = {
+    "KubernetesCluster"                           = "sharedvpc.example.com"
+    "Name"                                        = "masters.sharedvpc.example.com"
+    "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
+resource "aws_security_group" "nodes-sharedvpc-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.sharedvpc.example.com"
+  tags = {
+    "KubernetesCluster"                           = "sharedvpc.example.com"
+    "Name"                                        = "nodes.sharedvpc.example.com"
+    "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-masters-sharedvpc-example-com" {
@@ -556,28 +578,6 @@ resource "aws_security_group_rule" "from-nodes-sharedvpc-example-com-ingress-udp
   source_security_group_id = aws_security_group.nodes-sharedvpc-example-com.id
   to_port                  = 65535
   type                     = "ingress"
-}
-
-resource "aws_security_group" "masters-sharedvpc-example-com" {
-  description = "Security group for masters"
-  name        = "masters.sharedvpc.example.com"
-  tags = {
-    "KubernetesCluster"                           = "sharedvpc.example.com"
-    "Name"                                        = "masters.sharedvpc.example.com"
-    "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
-}
-
-resource "aws_security_group" "nodes-sharedvpc-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.sharedvpc.example.com"
-  tags = {
-    "KubernetesCluster"                           = "sharedvpc.example.com"
-    "Name"                                        = "nodes.sharedvpc.example.com"
-    "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
 }
 
 resource "aws_subnet" "us-test-1a-sharedvpc-example-com" {

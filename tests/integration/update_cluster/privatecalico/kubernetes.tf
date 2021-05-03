@@ -393,24 +393,6 @@ resource "aws_iam_instance_profile" "nodes-privatecalico-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-privatecalico-example-com" {
-  name   = "bastions.privatecalico.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatecalico.example.com_policy")
-  role   = aws_iam_role.bastions-privatecalico-example-com.name
-}
-
-resource "aws_iam_role_policy" "masters-privatecalico-example-com" {
-  name   = "masters.privatecalico.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.privatecalico.example.com_policy")
-  role   = aws_iam_role.masters-privatecalico-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-privatecalico-example-com" {
-  name   = "nodes.privatecalico.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.privatecalico.example.com_policy")
-  role   = aws_iam_role.nodes-privatecalico-example-com.name
-}
-
 resource "aws_iam_role" "bastions-privatecalico-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privatecalico.example.com_policy")
   name               = "bastions.privatecalico.example.com"
@@ -439,6 +421,24 @@ resource "aws_iam_role" "nodes-privatecalico-example-com" {
     "Name"                                            = "nodes.privatecalico.example.com"
     "kubernetes.io/cluster/privatecalico.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "bastions-privatecalico-example-com" {
+  name   = "bastions.privatecalico.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatecalico.example.com_policy")
+  role   = aws_iam_role.bastions-privatecalico-example-com.name
+}
+
+resource "aws_iam_role_policy" "masters-privatecalico-example-com" {
+  name   = "masters.privatecalico.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.privatecalico.example.com_policy")
+  role   = aws_iam_role.masters-privatecalico-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-privatecalico-example-com" {
+  name   = "nodes.privatecalico.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.privatecalico.example.com_policy")
+  role   = aws_iam_role.nodes-privatecalico-example-com.name
 }
 
 resource "aws_internet_gateway" "privatecalico-example-com" {
@@ -686,6 +686,18 @@ resource "aws_nat_gateway" "us-test-1a-privatecalico-example-com" {
   }
 }
 
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.privatecalico-example-com.id
+  route_table_id         = aws_route_table.privatecalico-example-com.id
+}
+
+resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.us-test-1a-privatecalico-example-com.id
+  route_table_id         = aws_route_table.private-us-test-1a-privatecalico-example-com.id
+}
+
 resource "aws_route53_record" "api-privatecalico-example-com" {
   alias {
     evaluate_target_health = false
@@ -695,16 +707,6 @@ resource "aws_route53_record" "api-privatecalico-example-com" {
   name    = "api.privatecalico.example.com"
   type    = "A"
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
-}
-
-resource "aws_route_table_association" "private-us-test-1a-privatecalico-example-com" {
-  route_table_id = aws_route_table.private-us-test-1a-privatecalico-example-com.id
-  subnet_id      = aws_subnet.us-test-1a-privatecalico-example-com.id
-}
-
-resource "aws_route_table_association" "utility-us-test-1a-privatecalico-example-com" {
-  route_table_id = aws_route_table.privatecalico-example-com.id
-  subnet_id      = aws_subnet.utility-us-test-1a-privatecalico-example-com.id
 }
 
 resource "aws_route_table" "private-us-test-1a-privatecalico-example-com" {
@@ -727,16 +729,69 @@ resource "aws_route_table" "privatecalico-example-com" {
   vpc_id = aws_vpc.privatecalico-example-com.id
 }
 
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.privatecalico-example-com.id
-  route_table_id         = aws_route_table.privatecalico-example-com.id
+resource "aws_route_table_association" "private-us-test-1a-privatecalico-example-com" {
+  route_table_id = aws_route_table.private-us-test-1a-privatecalico-example-com.id
+  subnet_id      = aws_subnet.us-test-1a-privatecalico-example-com.id
 }
 
-resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.us-test-1a-privatecalico-example-com.id
-  route_table_id         = aws_route_table.private-us-test-1a-privatecalico-example-com.id
+resource "aws_route_table_association" "utility-us-test-1a-privatecalico-example-com" {
+  route_table_id = aws_route_table.privatecalico-example-com.id
+  subnet_id      = aws_subnet.utility-us-test-1a-privatecalico-example-com.id
+}
+
+resource "aws_security_group" "api-elb-privatecalico-example-com" {
+  description = "Security group for api ELB"
+  name        = "api-elb.privatecalico.example.com"
+  tags = {
+    "KubernetesCluster"                               = "privatecalico.example.com"
+    "Name"                                            = "api-elb.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatecalico-example-com.id
+}
+
+resource "aws_security_group" "bastion-elb-privatecalico-example-com" {
+  description = "Security group for bastion ELB"
+  name        = "bastion-elb.privatecalico.example.com"
+  tags = {
+    "KubernetesCluster"                               = "privatecalico.example.com"
+    "Name"                                            = "bastion-elb.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatecalico-example-com.id
+}
+
+resource "aws_security_group" "bastion-privatecalico-example-com" {
+  description = "Security group for bastion"
+  name        = "bastion.privatecalico.example.com"
+  tags = {
+    "KubernetesCluster"                               = "privatecalico.example.com"
+    "Name"                                            = "bastion.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatecalico-example-com.id
+}
+
+resource "aws_security_group" "masters-privatecalico-example-com" {
+  description = "Security group for masters"
+  name        = "masters.privatecalico.example.com"
+  tags = {
+    "KubernetesCluster"                               = "privatecalico.example.com"
+    "Name"                                            = "masters.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatecalico-example-com.id
+}
+
+resource "aws_security_group" "nodes-privatecalico-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.privatecalico.example.com"
+  tags = {
+    "KubernetesCluster"                               = "privatecalico.example.com"
+    "Name"                                            = "nodes.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatecalico-example-com.id
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-elb-privatecalico-example-com" {
@@ -919,61 +974,6 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   type              = "ingress"
 }
 
-resource "aws_security_group" "api-elb-privatecalico-example-com" {
-  description = "Security group for api ELB"
-  name        = "api-elb.privatecalico.example.com"
-  tags = {
-    "KubernetesCluster"                               = "privatecalico.example.com"
-    "Name"                                            = "api-elb.privatecalico.example.com"
-    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatecalico-example-com.id
-}
-
-resource "aws_security_group" "bastion-elb-privatecalico-example-com" {
-  description = "Security group for bastion ELB"
-  name        = "bastion-elb.privatecalico.example.com"
-  tags = {
-    "KubernetesCluster"                               = "privatecalico.example.com"
-    "Name"                                            = "bastion-elb.privatecalico.example.com"
-    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatecalico-example-com.id
-}
-
-resource "aws_security_group" "bastion-privatecalico-example-com" {
-  description = "Security group for bastion"
-  name        = "bastion.privatecalico.example.com"
-  tags = {
-    "KubernetesCluster"                               = "privatecalico.example.com"
-    "Name"                                            = "bastion.privatecalico.example.com"
-    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatecalico-example-com.id
-}
-
-resource "aws_security_group" "masters-privatecalico-example-com" {
-  description = "Security group for masters"
-  name        = "masters.privatecalico.example.com"
-  tags = {
-    "KubernetesCluster"                               = "privatecalico.example.com"
-    "Name"                                            = "masters.privatecalico.example.com"
-    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatecalico-example-com.id
-}
-
-resource "aws_security_group" "nodes-privatecalico-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.privatecalico.example.com"
-  tags = {
-    "KubernetesCluster"                               = "privatecalico.example.com"
-    "Name"                                            = "nodes.privatecalico.example.com"
-    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatecalico-example-com.id
-}
-
 resource "aws_subnet" "us-test-1a-privatecalico-example-com" {
   availability_zone = "us-test-1a"
   cidr_block        = "172.20.32.0/19"
@@ -1000,9 +1000,15 @@ resource "aws_subnet" "utility-us-test-1a-privatecalico-example-com" {
   vpc_id = aws_vpc.privatecalico-example-com.id
 }
 
-resource "aws_vpc_dhcp_options_association" "privatecalico-example-com" {
-  dhcp_options_id = aws_vpc_dhcp_options.privatecalico-example-com.id
-  vpc_id          = aws_vpc.privatecalico-example-com.id
+resource "aws_vpc" "privatecalico-example-com" {
+  cidr_block           = "172.20.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = {
+    "KubernetesCluster"                               = "privatecalico.example.com"
+    "Name"                                            = "privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
 }
 
 resource "aws_vpc_dhcp_options" "privatecalico-example-com" {
@@ -1015,15 +1021,9 @@ resource "aws_vpc_dhcp_options" "privatecalico-example-com" {
   }
 }
 
-resource "aws_vpc" "privatecalico-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  tags = {
-    "KubernetesCluster"                               = "privatecalico.example.com"
-    "Name"                                            = "privatecalico.example.com"
-    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
-  }
+resource "aws_vpc_dhcp_options_association" "privatecalico-example-com" {
+  dhcp_options_id = aws_vpc_dhcp_options.privatecalico-example-com.id
+  vpc_id          = aws_vpc.privatecalico-example-com.id
 }
 
 terraform {

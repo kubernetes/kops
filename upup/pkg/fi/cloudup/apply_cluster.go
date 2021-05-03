@@ -67,6 +67,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/mirrors"
@@ -699,17 +700,17 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		tf := terraform.NewTerraformTarget(cloud, project, outDir, cluster.Spec.Target)
 
 		// We include a few "util" variables in the TF output
-		if err := tf.AddOutputVariable("region", terraform.LiteralFromStringValue(cloud.Region())); err != nil {
+		if err := tf.AddOutputVariable("region", terraformWriter.LiteralFromStringValue(cloud.Region())); err != nil {
 			return err
 		}
 
 		if project != "" {
-			if err := tf.AddOutputVariable("project", terraform.LiteralFromStringValue(project)); err != nil {
+			if err := tf.AddOutputVariable("project", terraformWriter.LiteralFromStringValue(project)); err != nil {
 				return err
 			}
 		}
 
-		if err := tf.AddOutputVariable("cluster_name", terraform.LiteralFromStringValue(cluster.ObjectMeta.Name)); err != nil {
+		if err := tf.AddOutputVariable("cluster_name", terraformWriter.LiteralFromStringValue(cluster.ObjectMeta.Name)); err != nil {
 			return err
 		}
 

@@ -399,24 +399,6 @@ resource "aws_iam_instance_profile" "nodes-privatekopeio-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-privatekopeio-example-com" {
-  name   = "bastions.privatekopeio.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatekopeio.example.com_policy")
-  role   = aws_iam_role.bastions-privatekopeio-example-com.name
-}
-
-resource "aws_iam_role_policy" "masters-privatekopeio-example-com" {
-  name   = "masters.privatekopeio.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.privatekopeio.example.com_policy")
-  role   = aws_iam_role.masters-privatekopeio-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-privatekopeio-example-com" {
-  name   = "nodes.privatekopeio.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.privatekopeio.example.com_policy")
-  role   = aws_iam_role.nodes-privatekopeio-example-com.name
-}
-
 resource "aws_iam_role" "bastions-privatekopeio-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privatekopeio.example.com_policy")
   name               = "bastions.privatekopeio.example.com"
@@ -445,6 +427,24 @@ resource "aws_iam_role" "nodes-privatekopeio-example-com" {
     "Name"                                            = "nodes.privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "bastions-privatekopeio-example-com" {
+  name   = "bastions.privatekopeio.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatekopeio.example.com_policy")
+  role   = aws_iam_role.bastions-privatekopeio-example-com.name
+}
+
+resource "aws_iam_role_policy" "masters-privatekopeio-example-com" {
+  name   = "masters.privatekopeio.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.privatekopeio.example.com_policy")
+  role   = aws_iam_role.masters-privatekopeio-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-privatekopeio-example-com" {
+  name   = "nodes.privatekopeio.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.privatekopeio.example.com_policy")
+  role   = aws_iam_role.nodes-privatekopeio-example-com.name
 }
 
 resource "aws_internet_gateway" "privatekopeio-example-com" {
@@ -682,6 +682,24 @@ resource "aws_launch_template" "nodes-privatekopeio-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.privatekopeio.example.com_user_data")
 }
 
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.privatekopeio-example-com.id
+  route_table_id         = aws_route_table.privatekopeio-example-com.id
+}
+
+resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = "nat-a2345678"
+  route_table_id         = aws_route_table.private-us-test-1a-privatekopeio-example-com.id
+}
+
+resource "aws_route" "route-private-us-test-1b-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = "nat-b2345678"
+  route_table_id         = aws_route_table.private-us-test-1b-privatekopeio-example-com.id
+}
+
 resource "aws_route53_record" "api-privatekopeio-example-com" {
   alias {
     evaluate_target_health = false
@@ -691,26 +709,6 @@ resource "aws_route53_record" "api-privatekopeio-example-com" {
   name    = "api.privatekopeio.example.com"
   type    = "A"
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
-}
-
-resource "aws_route_table_association" "private-us-test-1a-privatekopeio-example-com" {
-  route_table_id = aws_route_table.private-us-test-1a-privatekopeio-example-com.id
-  subnet_id      = aws_subnet.us-test-1a-privatekopeio-example-com.id
-}
-
-resource "aws_route_table_association" "private-us-test-1b-privatekopeio-example-com" {
-  route_table_id = aws_route_table.private-us-test-1b-privatekopeio-example-com.id
-  subnet_id      = aws_subnet.us-test-1b-privatekopeio-example-com.id
-}
-
-resource "aws_route_table_association" "utility-us-test-1a-privatekopeio-example-com" {
-  route_table_id = aws_route_table.privatekopeio-example-com.id
-  subnet_id      = aws_subnet.utility-us-test-1a-privatekopeio-example-com.id
-}
-
-resource "aws_route_table_association" "utility-us-test-1b-privatekopeio-example-com" {
-  route_table_id = aws_route_table.privatekopeio-example-com.id
-  subnet_id      = aws_subnet.utility-us-test-1b-privatekopeio-example-com.id
 }
 
 resource "aws_route_table" "private-us-test-1a-privatekopeio-example-com" {
@@ -743,22 +741,79 @@ resource "aws_route_table" "privatekopeio-example-com" {
   vpc_id = aws_vpc.privatekopeio-example-com.id
 }
 
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.privatekopeio-example-com.id
-  route_table_id         = aws_route_table.privatekopeio-example-com.id
+resource "aws_route_table_association" "private-us-test-1a-privatekopeio-example-com" {
+  route_table_id = aws_route_table.private-us-test-1a-privatekopeio-example-com.id
+  subnet_id      = aws_subnet.us-test-1a-privatekopeio-example-com.id
 }
 
-resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = "nat-a2345678"
-  route_table_id         = aws_route_table.private-us-test-1a-privatekopeio-example-com.id
+resource "aws_route_table_association" "private-us-test-1b-privatekopeio-example-com" {
+  route_table_id = aws_route_table.private-us-test-1b-privatekopeio-example-com.id
+  subnet_id      = aws_subnet.us-test-1b-privatekopeio-example-com.id
 }
 
-resource "aws_route" "route-private-us-test-1b-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = "nat-b2345678"
-  route_table_id         = aws_route_table.private-us-test-1b-privatekopeio-example-com.id
+resource "aws_route_table_association" "utility-us-test-1a-privatekopeio-example-com" {
+  route_table_id = aws_route_table.privatekopeio-example-com.id
+  subnet_id      = aws_subnet.utility-us-test-1a-privatekopeio-example-com.id
+}
+
+resource "aws_route_table_association" "utility-us-test-1b-privatekopeio-example-com" {
+  route_table_id = aws_route_table.privatekopeio-example-com.id
+  subnet_id      = aws_subnet.utility-us-test-1b-privatekopeio-example-com.id
+}
+
+resource "aws_security_group" "api-elb-privatekopeio-example-com" {
+  description = "Security group for api ELB"
+  name        = "api-elb.privatekopeio.example.com"
+  tags = {
+    "KubernetesCluster"                               = "privatekopeio.example.com"
+    "Name"                                            = "api-elb.privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatekopeio-example-com.id
+}
+
+resource "aws_security_group" "bastion-elb-privatekopeio-example-com" {
+  description = "Security group for bastion ELB"
+  name        = "bastion-elb.privatekopeio.example.com"
+  tags = {
+    "KubernetesCluster"                               = "privatekopeio.example.com"
+    "Name"                                            = "bastion-elb.privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatekopeio-example-com.id
+}
+
+resource "aws_security_group" "bastion-privatekopeio-example-com" {
+  description = "Security group for bastion"
+  name        = "bastion.privatekopeio.example.com"
+  tags = {
+    "KubernetesCluster"                               = "privatekopeio.example.com"
+    "Name"                                            = "bastion.privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatekopeio-example-com.id
+}
+
+resource "aws_security_group" "masters-privatekopeio-example-com" {
+  description = "Security group for masters"
+  name        = "masters.privatekopeio.example.com"
+  tags = {
+    "KubernetesCluster"                               = "privatekopeio.example.com"
+    "Name"                                            = "masters.privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatekopeio-example-com.id
+}
+
+resource "aws_security_group" "nodes-privatekopeio-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.privatekopeio.example.com"
+  tags = {
+    "KubernetesCluster"                               = "privatekopeio.example.com"
+    "Name"                                            = "nodes.privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatekopeio-example-com.id
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-elb-privatekopeio-example-com" {
@@ -932,61 +987,6 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   type              = "ingress"
 }
 
-resource "aws_security_group" "api-elb-privatekopeio-example-com" {
-  description = "Security group for api ELB"
-  name        = "api-elb.privatekopeio.example.com"
-  tags = {
-    "KubernetesCluster"                               = "privatekopeio.example.com"
-    "Name"                                            = "api-elb.privatekopeio.example.com"
-    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatekopeio-example-com.id
-}
-
-resource "aws_security_group" "bastion-elb-privatekopeio-example-com" {
-  description = "Security group for bastion ELB"
-  name        = "bastion-elb.privatekopeio.example.com"
-  tags = {
-    "KubernetesCluster"                               = "privatekopeio.example.com"
-    "Name"                                            = "bastion-elb.privatekopeio.example.com"
-    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatekopeio-example-com.id
-}
-
-resource "aws_security_group" "bastion-privatekopeio-example-com" {
-  description = "Security group for bastion"
-  name        = "bastion.privatekopeio.example.com"
-  tags = {
-    "KubernetesCluster"                               = "privatekopeio.example.com"
-    "Name"                                            = "bastion.privatekopeio.example.com"
-    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatekopeio-example-com.id
-}
-
-resource "aws_security_group" "masters-privatekopeio-example-com" {
-  description = "Security group for masters"
-  name        = "masters.privatekopeio.example.com"
-  tags = {
-    "KubernetesCluster"                               = "privatekopeio.example.com"
-    "Name"                                            = "masters.privatekopeio.example.com"
-    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatekopeio-example-com.id
-}
-
-resource "aws_security_group" "nodes-privatekopeio-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.privatekopeio.example.com"
-  tags = {
-    "KubernetesCluster"                               = "privatekopeio.example.com"
-    "Name"                                            = "nodes.privatekopeio.example.com"
-    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatekopeio-example-com.id
-}
-
 resource "aws_subnet" "us-test-1a-privatekopeio-example-com" {
   availability_zone = "us-test-1a"
   cidr_block        = "172.20.32.0/19"
@@ -1039,9 +1039,15 @@ resource "aws_subnet" "utility-us-test-1b-privatekopeio-example-com" {
   vpc_id = aws_vpc.privatekopeio-example-com.id
 }
 
-resource "aws_vpc_dhcp_options_association" "privatekopeio-example-com" {
-  dhcp_options_id = aws_vpc_dhcp_options.privatekopeio-example-com.id
-  vpc_id          = aws_vpc.privatekopeio-example-com.id
+resource "aws_vpc" "privatekopeio-example-com" {
+  cidr_block           = "172.20.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = {
+    "KubernetesCluster"                               = "privatekopeio.example.com"
+    "Name"                                            = "privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+  }
 }
 
 resource "aws_vpc_dhcp_options" "privatekopeio-example-com" {
@@ -1054,15 +1060,9 @@ resource "aws_vpc_dhcp_options" "privatekopeio-example-com" {
   }
 }
 
-resource "aws_vpc" "privatekopeio-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  tags = {
-    "KubernetesCluster"                               = "privatekopeio.example.com"
-    "Name"                                            = "privatekopeio.example.com"
-    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
-  }
+resource "aws_vpc_dhcp_options_association" "privatekopeio-example-com" {
+  dhcp_options_id = aws_vpc_dhcp_options.privatekopeio-example-com.id
+  vpc_id          = aws_vpc.privatekopeio-example-com.id
 }
 
 terraform {

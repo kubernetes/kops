@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/eventbridge"
@@ -127,8 +128,8 @@ func (eb *EventBridgeTarget) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Eve
 }
 
 type terraformEventBridgeTarget struct {
-	RuleName  *terraform.Literal `json:"rule" cty:"rule"`
-	TargetArn *string            `json:"arn" cty:"arn"`
+	RuleName  *terraformWriter.Literal `json:"rule" cty:"rule"`
+	TargetArn *string                  `json:"arn" cty:"arn"`
 }
 
 func (_ *EventBridgeTarget) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EventBridgeTarget) error {

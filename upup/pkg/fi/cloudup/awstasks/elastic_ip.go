@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -292,15 +293,15 @@ func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes 
 	return t.RenderResource("aws_eip", *e.Name, tf)
 }
 
-func (e *ElasticIP) TerraformLink() *terraform.Literal {
+func (e *ElasticIP) TerraformLink() *terraformWriter.Literal {
 	if fi.BoolValue(e.Shared) {
 		if e.ID == nil {
 			klog.Fatalf("ID must be set, if ElasticIP is shared: %v", e)
 		}
-		return terraform.LiteralFromStringValue(*e.ID)
+		return terraformWriter.LiteralFromStringValue(*e.ID)
 	}
 
-	return terraform.LiteralProperty("aws_eip", *e.Name, "id")
+	return terraformWriter.LiteralProperty("aws_eip", *e.Name, "id")
 }
 
 type cloudformationElasticIP struct {

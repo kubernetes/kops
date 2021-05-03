@@ -44,6 +44,7 @@ go_library(
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/aliup:go_default_library",
         "//upup/pkg/fi/cloudup/terraform:go_default_library",
+        "//upup/pkg/fi/cloudup/terraformWriter:go_default_library",
         "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests:go_default_library",
         "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/services/slb:go_default_library",
         "//vendor/github.com/denverdino/aliyungo/common:go_default_library",

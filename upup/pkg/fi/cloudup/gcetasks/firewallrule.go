@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // FirewallRule represents a GCE firewall rules
@@ -163,8 +164,8 @@ type terraformAllow struct {
 }
 
 type terraformFirewall struct {
-	Name    string             `json:"name" cty:"name"`
-	Network *terraform.Literal `json:"network" cty:"network"`
+	Name    string                   `json:"name" cty:"name"`
+	Network *terraformWriter.Literal `json:"network" cty:"network"`
 
 	Allowed []*terraformAllow `json:"allow,omitempty" cty:"allow"`
 

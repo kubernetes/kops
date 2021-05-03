@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -110,9 +111,9 @@ func (_ *IAMInstanceProfileRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 }
 
 type terraformIAMInstanceProfile struct {
-	Name *string            `json:"name" cty:"name"`
-	Role *terraform.Literal `json:"role" cty:"role"`
-	Tags map[string]string  `json:"tags,omitempty" cty:"tags"`
+	Name *string                  `json:"name" cty:"name"`
+	Role *terraformWriter.Literal `json:"role" cty:"role"`
+	Tags map[string]string        `json:"tags,omitempty" cty:"tags"`
 }
 
 func (_ *IAMInstanceProfileRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMInstanceProfileRole) error {

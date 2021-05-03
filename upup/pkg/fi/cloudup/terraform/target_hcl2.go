@@ -26,15 +26,18 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 func (t *TerraformTarget) finishHCL2(taskMap map[string]fi.Task) error {
-	resourcesByType := make(map[string]map[string]interface{})
-
 	f := hclwrite.NewEmptyFile()
 	rootBody := f.Body()
 
-	writeLocalsOutputs(rootBody, t.outputs)
+	outputs, err := t.GetOutputs()
+	if err != nil {
+		return err
+	}
+	writeLocalsOutputs(rootBody, outputs)
 
 	providerName := string(t.Cloud.ProviderID())
 	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
@@ -48,39 +51,45 @@ func (t *TerraformTarget) finishHCL2(taskMap map[string]fi.Task) error {
 	}
 	rootBody.AppendNewline()
 
-	sort.Sort(byTypeAndName(t.resources))
-	for _, res := range t.resources {
-		resources := resourcesByType[res.ResourceType]
-		if resources == nil {
-			resources = make(map[string]interface{})
-			resourcesByType[res.ResourceType] = resources
-		}
+	resourcesByType, err := t.GetResourcesByType()
+	if err != nil {
+		return err
+	}
 
-		tfName := tfSanitize(res.ResourceName)
+	resourceTypes := make([]string, 0, len(resourcesByType))
+	for resourceType := range resourcesByType {
+		resourceTypes = append(resourceTypes, resourceType)
+	}
+	sort.Strings(resourceTypes)
+	for _, resourceType := range resourceTypes {
+		resources := resourcesByType[resourceType]
+		resourceNames := make([]string, 0, len(resources))
+		for resourceName := range resources {
+			resourceNames = append(resourceNames, resourceName)
+		}
+		sort.Strings(resourceNames)
+		for _, resourceName := range resourceNames {
+			item := resources[resourceName]
 
-		if resources[tfName] != nil {
-			return fmt.Errorf("duplicate resource found: %s.%s", res.ResourceType, tfName)
+			resBlock := rootBody.AppendNewBlock("resource", []string{resourceType, resourceName})
+			resBody := resBlock.Body()
+			resType, err := gocty.ImpliedType(item)
+			if err != nil {
+				return err
+			}
+			resVal, err := gocty.ToCtyValue(item, resType)
+			if err != nil {
+				return err
+			}
+			if resVal.IsNull() {
+				continue
+			}
+			resVal.ForEachElement(func(key cty.Value, value cty.Value) bool {
+				writeValue(resBody, key.AsString(), value)
+				return false
+			})
+			rootBody.AppendNewline()
 		}
-		resources[tfName] = res.Item
-
-		resBlock := rootBody.AppendNewBlock("resource", []string{res.ResourceType, tfName})
-		resBody := resBlock.Body()
-		resType, err := gocty.ImpliedType(res.Item)
-		if err != nil {
-			return err
-		}
-		resVal, err := gocty.ToCtyValue(res.Item, resType)
-		if err != nil {
-			return err
-		}
-		if resVal.IsNull() {
-			continue
-		}
-		resVal.ForEachElement(func(key cty.Value, value cty.Value) bool {
-			writeValue(resBody, key.AsString(), value)
-			return false
-		})
-		rootBody.AppendNewline()
 	}
 
 	terraformBlock := rootBody.AppendNewBlock("terraform", []string{})
@@ -109,7 +118,7 @@ func (t *TerraformTarget) finishHCL2(taskMap map[string]fi.Task) error {
 	}
 
 	bytes := hclwrite.Format(f.Bytes())
-	t.files["kubernetes.tf"] = bytes
+	t.Files["kubernetes.tf"] = bytes
 
 	return nil
 }
@@ -126,7 +135,7 @@ func (t *TerraformTarget) finishHCL2(taskMap map[string]fi.Task) error {
 // output "key2" {
 //   value = "value2"
 // }
-func writeLocalsOutputs(body *hclwrite.Body, outputs map[string]*terraformOutputVariable) error {
+func writeLocalsOutputs(body *hclwrite.Body, outputs map[string]terraformWriter.OutputValue) error {
 	if len(outputs) == 0 {
 		return nil
 	}
@@ -143,21 +152,16 @@ func writeLocalsOutputs(body *hclwrite.Body, outputs map[string]*terraformOutput
 	}
 	sort.Strings(outputNames)
 
-	for _, n := range outputNames {
-		v := outputs[n]
-		tfName := tfSanitize(v.Key)
+	for _, tfName := range outputNames {
+		v := outputs[tfName]
 		outputBlock := body.AppendNewBlock("output", []string{tfName})
 		outputBody := outputBlock.Body()
 		if v.Value != nil {
 			writeLiteral(outputBody, "value", v.Value)
 			writeLiteral(localsBody, tfName, v.Value)
 		} else {
-			deduped, err := DedupLiterals(v.ValueArray)
-			if err != nil {
-				return err
-			}
-			writeLiteralList(outputBody, "value", deduped)
-			writeLiteralList(localsBody, tfName, deduped)
+			writeLiteralList(outputBody, "value", v.ValueArray)
+			writeLiteralList(localsBody, tfName, v.ValueArray)
 		}
 
 		if existingOutputVars[tfName] {

@@ -314,18 +314,6 @@ resource "aws_iam_instance_profile" "nodes-nthsqsresources-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "masters-nthsqsresources-example-com" {
-  name   = "masters.nthsqsresources.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.nthsqsresources.example.com_policy")
-  role   = aws_iam_role.masters-nthsqsresources-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-nthsqsresources-example-com" {
-  name   = "nodes.nthsqsresources.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.nthsqsresources.example.com_policy")
-  role   = aws_iam_role.nodes-nthsqsresources-example-com.name
-}
-
 resource "aws_iam_role" "masters-nthsqsresources-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.nthsqsresources.example.com_policy")
   name               = "masters.nthsqsresources.example.com"
@@ -344,6 +332,18 @@ resource "aws_iam_role" "nodes-nthsqsresources-example-com" {
     "Name"                                              = "nodes.nthsqsresources.example.com"
     "kubernetes.io/cluster/nthsqsresources.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "masters-nthsqsresources-example-com" {
+  name   = "masters.nthsqsresources.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.nthsqsresources.example.com_policy")
+  role   = aws_iam_role.masters-nthsqsresources-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-nthsqsresources-example-com" {
+  name   = "nodes.nthsqsresources.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.nthsqsresources.example.com_policy")
+  role   = aws_iam_role.nodes-nthsqsresources-example-com.name
 }
 
 resource "aws_internet_gateway" "nthsqsresources-example-com" {
@@ -520,9 +520,10 @@ resource "aws_launch_template" "nodes-nthsqsresources-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.nthsqsresources.example.com_user_data")
 }
 
-resource "aws_route_table_association" "us-test-1a-nthsqsresources-example-com" {
-  route_table_id = aws_route_table.nthsqsresources-example-com.id
-  subnet_id      = aws_subnet.us-test-1a-nthsqsresources-example-com.id
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.nthsqsresources-example-com.id
+  route_table_id         = aws_route_table.nthsqsresources-example-com.id
 }
 
 resource "aws_route_table" "nthsqsresources-example-com" {
@@ -535,10 +536,31 @@ resource "aws_route_table" "nthsqsresources-example-com" {
   vpc_id = aws_vpc.nthsqsresources-example-com.id
 }
 
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.nthsqsresources-example-com.id
-  route_table_id         = aws_route_table.nthsqsresources-example-com.id
+resource "aws_route_table_association" "us-test-1a-nthsqsresources-example-com" {
+  route_table_id = aws_route_table.nthsqsresources-example-com.id
+  subnet_id      = aws_subnet.us-test-1a-nthsqsresources-example-com.id
+}
+
+resource "aws_security_group" "masters-nthsqsresources-example-com" {
+  description = "Security group for masters"
+  name        = "masters.nthsqsresources.example.com"
+  tags = {
+    "KubernetesCluster"                                 = "nthsqsresources.example.com"
+    "Name"                                              = "masters.nthsqsresources.example.com"
+    "kubernetes.io/cluster/nthsqsresources.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.nthsqsresources-example-com.id
+}
+
+resource "aws_security_group" "nodes-nthsqsresources-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.nthsqsresources.example.com"
+  tags = {
+    "KubernetesCluster"                                 = "nthsqsresources.example.com"
+    "Name"                                              = "nodes.nthsqsresources.example.com"
+    "kubernetes.io/cluster/nthsqsresources.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.nthsqsresources-example-com.id
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-masters-nthsqsresources-example-com" {
@@ -649,28 +671,6 @@ resource "aws_security_group_rule" "from-nodes-nthsqsresources-example-com-ingre
   type                     = "ingress"
 }
 
-resource "aws_security_group" "masters-nthsqsresources-example-com" {
-  description = "Security group for masters"
-  name        = "masters.nthsqsresources.example.com"
-  tags = {
-    "KubernetesCluster"                                 = "nthsqsresources.example.com"
-    "Name"                                              = "masters.nthsqsresources.example.com"
-    "kubernetes.io/cluster/nthsqsresources.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.nthsqsresources-example-com.id
-}
-
-resource "aws_security_group" "nodes-nthsqsresources-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.nthsqsresources.example.com"
-  tags = {
-    "KubernetesCluster"                                 = "nthsqsresources.example.com"
-    "Name"                                              = "nodes.nthsqsresources.example.com"
-    "kubernetes.io/cluster/nthsqsresources.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.nthsqsresources-example-com.id
-}
-
 resource "aws_sqs_queue" "nthsqsresources-example-com-nth" {
   message_retention_seconds = 300
   name                      = "nthsqsresources-example-com-nth"
@@ -695,9 +695,15 @@ resource "aws_subnet" "us-test-1a-nthsqsresources-example-com" {
   vpc_id = aws_vpc.nthsqsresources-example-com.id
 }
 
-resource "aws_vpc_dhcp_options_association" "nthsqsresources-example-com" {
-  dhcp_options_id = aws_vpc_dhcp_options.nthsqsresources-example-com.id
-  vpc_id          = aws_vpc.nthsqsresources-example-com.id
+resource "aws_vpc" "nthsqsresources-example-com" {
+  cidr_block           = "172.20.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = {
+    "KubernetesCluster"                                 = "nthsqsresources.example.com"
+    "Name"                                              = "nthsqsresources.example.com"
+    "kubernetes.io/cluster/nthsqsresources.example.com" = "owned"
+  }
 }
 
 resource "aws_vpc_dhcp_options" "nthsqsresources-example-com" {
@@ -710,15 +716,9 @@ resource "aws_vpc_dhcp_options" "nthsqsresources-example-com" {
   }
 }
 
-resource "aws_vpc" "nthsqsresources-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  tags = {
-    "KubernetesCluster"                                 = "nthsqsresources.example.com"
-    "Name"                                              = "nthsqsresources.example.com"
-    "kubernetes.io/cluster/nthsqsresources.example.com" = "owned"
-  }
+resource "aws_vpc_dhcp_options_association" "nthsqsresources-example-com" {
+  dhcp_options_id = aws_vpc_dhcp_options.nthsqsresources-example-com.id
+  vpc_id          = aws_vpc.nthsqsresources-example-com.id
 }
 
 terraform {
