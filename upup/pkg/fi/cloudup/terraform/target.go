@@ -77,6 +77,11 @@ type terraformOutputVariable struct {
 	ValueArray []*Literal
 }
 
+type terraformOutputValue struct {
+	Value      *Literal
+	ValueArray []*Literal
+}
+
 // A TF name can't have dots in it (if we want to refer to it from a literal),
 // so we replace them
 func tfSanitize(name string) string {
@@ -225,4 +230,23 @@ func (t *TerraformTarget) getResourcesByType() (map[string]map[string]interface{
 	}
 
 	return resourcesByType, nil
+}
+
+func (t *TerraformTarget) getOutputs() (map[string]terraformOutputValue, error) {
+	values := map[string]terraformOutputValue{}
+	for _, v := range t.outputs {
+		tfName := tfSanitize(v.Key)
+		if _, found := values[tfName]; found {
+			return nil, fmt.Errorf("duplicate variable found: %s", tfName)
+		}
+		deduped, err := dedupLiterals(v.ValueArray)
+		if err != nil {
+			return nil, err
+		}
+		values[tfName] = terraformOutputValue{
+			Value:      v.Value,
+			ValueArray: deduped,
+		}
+	}
+	return values, nil
 }
