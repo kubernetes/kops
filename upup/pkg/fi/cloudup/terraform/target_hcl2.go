@@ -26,13 +26,14 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 func (t *TerraformTarget) finishHCL2(taskMap map[string]fi.Task) error {
 	f := hclwrite.NewEmptyFile()
 	rootBody := f.Body()
 
-	outputs, err := t.getOutputs()
+	outputs, err := t.GetOutputs()
 	if err != nil {
 		return err
 	}
@@ -50,7 +51,7 @@ func (t *TerraformTarget) finishHCL2(taskMap map[string]fi.Task) error {
 	}
 	rootBody.AppendNewline()
 
-	resourcesByType, err := t.getResourcesByType()
+	resourcesByType, err := t.GetResourcesByType()
 	if err != nil {
 		return err
 	}
@@ -117,7 +118,7 @@ func (t *TerraformTarget) finishHCL2(taskMap map[string]fi.Task) error {
 	}
 
 	bytes := hclwrite.Format(f.Bytes())
-	t.files["kubernetes.tf"] = bytes
+	t.Files["kubernetes.tf"] = bytes
 
 	return nil
 }
@@ -134,7 +135,7 @@ func (t *TerraformTarget) finishHCL2(taskMap map[string]fi.Task) error {
 // output "key2" {
 //   value = "value2"
 // }
-func writeLocalsOutputs(body *hclwrite.Body, outputs map[string]terraformOutputValue) error {
+func writeLocalsOutputs(body *hclwrite.Body, outputs map[string]terraformWriter.OutputValue) error {
 	if len(outputs) == 0 {
 		return nil
 	}

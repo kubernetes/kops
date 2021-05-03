@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
@@ -176,10 +177,10 @@ func (q *SQS) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SQS) error {
 }
 
 type terraformSQSQueue struct {
-	Name                    *string            `json:"name" cty:"name"`
-	MessageRetentionSeconds int                `json:"message_retention_seconds" cty:"message_retention_seconds"`
-	Policy                  *terraform.Literal `json:"policy" cty:"policy"`
-	Tags                    map[string]string  `json:"tags" cty:"tags"`
+	Name                    *string                  `json:"name" cty:"name"`
+	MessageRetentionSeconds int                      `json:"message_retention_seconds" cty:"message_retention_seconds"`
+	Policy                  *terraformWriter.Literal `json:"policy" cty:"policy"`
+	Tags                    map[string]string        `json:"tags" cty:"tags"`
 }
 
 func (_ *SQS) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SQS) error {

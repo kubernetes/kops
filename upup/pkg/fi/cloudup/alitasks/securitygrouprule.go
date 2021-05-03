@@ -23,6 +23,7 @@ import (
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
@@ -180,13 +181,13 @@ func (_ *SecurityGroupRule) RenderALI(t *aliup.ALIAPITarget, a, e, changes *Secu
 }
 
 type terraformSecurityGroupRole struct {
-	Name            *string            `json:"name,omitempty" cty:"name"`
-	Type            *string            `json:"type,omitempty" cty:"type"`
-	IpProtocol      *string            `json:"ip_protocol,omitempty" cty:"ip_protocol"`
-	SourceCidrIp    *string            `json:"cidr_ip,omitempty" cty:"cidr_ip"`
-	SecurityGroupId *terraform.Literal `json:"security_group_id,omitempty" cty:"security_group_id"`
-	SourceGroupId   *terraform.Literal `json:"source_security_group_id,omitempty" cty:"source_security_group_id"`
-	PortRange       *string            `json:"port_range,omitempty" cty:"port_range"`
+	Name            *string                  `json:"name,omitempty" cty:"name"`
+	Type            *string                  `json:"type,omitempty" cty:"type"`
+	IpProtocol      *string                  `json:"ip_protocol,omitempty" cty:"ip_protocol"`
+	SourceCidrIp    *string                  `json:"cidr_ip,omitempty" cty:"cidr_ip"`
+	SecurityGroupId *terraformWriter.Literal `json:"security_group_id,omitempty" cty:"security_group_id"`
+	SourceGroupId   *terraformWriter.Literal `json:"source_security_group_id,omitempty" cty:"source_security_group_id"`
+	PortRange       *string                  `json:"port_range,omitempty" cty:"port_range"`
 }
 
 func (_ *SecurityGroupRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroupRule) error {
@@ -217,6 +218,6 @@ func (_ *SecurityGroupRule) RenderTerraform(t *terraform.TerraformTarget, a, e, 
 	return t.RenderResource("alicloud_security_group_rule", *e.Name, tf)
 }
 
-func (l *SecurityGroupRule) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("alicloud_security_group_rule", *l.Name, "id")
+func (l *SecurityGroupRule) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("alicloud_security_group_rule", *l.Name, "id")
 }

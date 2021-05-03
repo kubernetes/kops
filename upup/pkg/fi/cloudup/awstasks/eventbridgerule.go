@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -126,9 +127,9 @@ func (eb *EventBridgeRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Event
 }
 
 type terraformEventBridgeRule struct {
-	Name         *string            `json:"name" cty:"name"`
-	EventPattern *terraform.Literal `json:"event_pattern" cty:"event_pattern"`
-	Tags         map[string]string  `json:"tags,omitempty" cty:"tags"`
+	Name         *string                  `json:"name" cty:"name"`
+	EventPattern *terraformWriter.Literal `json:"event_pattern" cty:"event_pattern"`
+	Tags         map[string]string        `json:"tags,omitempty" cty:"tags"`
 }
 
 func (_ *EventBridgeRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EventBridgeRule) error {
@@ -146,8 +147,8 @@ func (_ *EventBridgeRule) RenderTerraform(t *terraform.TerraformTarget, a, e, ch
 	return t.RenderResource("aws_cloudwatch_event_rule", *e.Name, tf)
 }
 
-func (eb *EventBridgeRule) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("aws_cloudwatch_event_rule", fi.StringValue(eb.Name), "id")
+func (eb *EventBridgeRule) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("aws_cloudwatch_event_rule", fi.StringValue(eb.Name), "id")
 }
 
 type cloudformationTarget struct {

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package terraform
+package terraformWriter
 
 import (
 	"testing"
@@ -27,7 +27,7 @@ func TestGetOutputs(t *testing.T) {
 	cases := []struct {
 		name        string
 		values      map[string]*terraformOutputVariable
-		expected    map[string]terraformOutputValue
+		expected    map[string]OutputValue
 		errExpected bool
 	}{
 		{
@@ -41,7 +41,7 @@ func TestGetOutputs(t *testing.T) {
 					Value: LiteralFromStringValue("value1"),
 				},
 			},
-			expected: map[string]terraformOutputValue{
+			expected: map[string]OutputValue{
 				"key1": {
 					Value: LiteralFromStringValue("value1"),
 				},
@@ -58,7 +58,7 @@ func TestGetOutputs(t *testing.T) {
 					},
 				},
 			},
-			expected: map[string]terraformOutputValue{
+			expected: map[string]OutputValue{
 				"key1": {
 					ValueArray: []*Literal{
 						LiteralFromStringValue("value1"),
@@ -93,7 +93,7 @@ func TestGetOutputs(t *testing.T) {
 					},
 				},
 			},
-			expected: map[string]terraformOutputValue{
+			expected: map[string]OutputValue{
 				"key1": {
 					ValueArray: []*Literal{
 						LiteralFromStringValue("value1"),
@@ -105,10 +105,10 @@ func TestGetOutputs(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			target := TerraformTarget{
+			target := TerraformWriter{
 				outputs: tc.values,
 			}
-			actual, err := target.getOutputs()
+			actual, err := target.GetOutputs()
 			if tc.errExpected {
 				assert.Error(t, err)
 				return

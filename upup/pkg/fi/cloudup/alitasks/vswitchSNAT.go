@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
@@ -183,8 +184,8 @@ func (_ *VSwitchSNAT) RenderALI(t *aliup.ALIAPITarget, a, e, changes *VSwitchSNA
 }
 
 type terraformVSwitchSNAT struct {
-	SnatTableId *string            `json:"snat_table_id,omitempty" cty:"snat_table_id"`
-	VSwitchId   *terraform.Literal `json:"source_vswitch_id,omitempty" cty:"source_vswitch_id"`
+	SnatTableId *string                  `json:"snat_table_id,omitempty" cty:"snat_table_id"`
+	VSwitchId   *terraformWriter.Literal `json:"source_vswitch_id,omitempty" cty:"source_vswitch_id"`
 }
 
 func (_ *VSwitchSNAT) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VSwitchSNAT) error {
