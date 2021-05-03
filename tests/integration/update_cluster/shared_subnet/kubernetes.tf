@@ -238,18 +238,6 @@ resource "aws_iam_instance_profile" "nodes-sharedsubnet-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "masters-sharedsubnet-example-com" {
-  name   = "masters.sharedsubnet.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.sharedsubnet.example.com_policy")
-  role   = aws_iam_role.masters-sharedsubnet-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-sharedsubnet-example-com" {
-  name   = "nodes.sharedsubnet.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.sharedsubnet.example.com_policy")
-  role   = aws_iam_role.nodes-sharedsubnet-example-com.name
-}
-
 resource "aws_iam_role" "masters-sharedsubnet-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.sharedsubnet.example.com_policy")
   name               = "masters.sharedsubnet.example.com"
@@ -268,6 +256,18 @@ resource "aws_iam_role" "nodes-sharedsubnet-example-com" {
     "Name"                                           = "nodes.sharedsubnet.example.com"
     "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "masters-sharedsubnet-example-com" {
+  name   = "masters.sharedsubnet.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.sharedsubnet.example.com_policy")
+  role   = aws_iam_role.masters-sharedsubnet-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-sharedsubnet-example-com" {
+  name   = "nodes.sharedsubnet.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.sharedsubnet.example.com_policy")
+  role   = aws_iam_role.nodes-sharedsubnet-example-com.name
 }
 
 resource "aws_key_pair" "kubernetes-sharedsubnet-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {
@@ -429,6 +429,28 @@ resource "aws_launch_template" "nodes-sharedsubnet-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.sharedsubnet.example.com_user_data")
 }
 
+resource "aws_security_group" "masters-sharedsubnet-example-com" {
+  description = "Security group for masters"
+  name        = "masters.sharedsubnet.example.com"
+  tags = {
+    "KubernetesCluster"                              = "sharedsubnet.example.com"
+    "Name"                                           = "masters.sharedsubnet.example.com"
+    "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
+resource "aws_security_group" "nodes-sharedsubnet-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.sharedsubnet.example.com"
+  tags = {
+    "KubernetesCluster"                              = "sharedsubnet.example.com"
+    "Name"                                           = "nodes.sharedsubnet.example.com"
+    "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-masters-sharedsubnet-example-com" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 22
@@ -535,28 +557,6 @@ resource "aws_security_group_rule" "from-nodes-sharedsubnet-example-com-ingress-
   source_security_group_id = aws_security_group.nodes-sharedsubnet-example-com.id
   to_port                  = 65535
   type                     = "ingress"
-}
-
-resource "aws_security_group" "masters-sharedsubnet-example-com" {
-  description = "Security group for masters"
-  name        = "masters.sharedsubnet.example.com"
-  tags = {
-    "KubernetesCluster"                              = "sharedsubnet.example.com"
-    "Name"                                           = "masters.sharedsubnet.example.com"
-    "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
-}
-
-resource "aws_security_group" "nodes-sharedsubnet-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.sharedsubnet.example.com"
-  tags = {
-    "KubernetesCluster"                              = "sharedsubnet.example.com"
-    "Name"                                           = "nodes.sharedsubnet.example.com"
-    "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
 }
 
 terraform {

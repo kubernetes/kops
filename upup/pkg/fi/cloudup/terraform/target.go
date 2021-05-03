@@ -75,7 +75,7 @@ type byTypeAndName []*terraformResource
 
 func (a byTypeAndName) Len() int { return len(a) }
 func (a byTypeAndName) Less(i, j int) bool {
-	return a[i].ResourceType+a[i].ResourceName < a[j].ResourceType+a[j].ResourceName
+	return a[i].ResourceType+" "+tfSanitize(a[i].ResourceName) < a[j].ResourceType+" "+tfSanitize(a[j].ResourceName)
 }
 func (a byTypeAndName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 

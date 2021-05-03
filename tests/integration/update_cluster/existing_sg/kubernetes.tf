@@ -472,18 +472,6 @@ resource "aws_iam_instance_profile" "nodes-existingsg-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "masters-existingsg-example-com" {
-  name   = "masters.existingsg.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.existingsg.example.com_policy")
-  role   = aws_iam_role.masters-existingsg-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-existingsg-example-com" {
-  name   = "nodes.existingsg.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.existingsg.example.com_policy")
-  role   = aws_iam_role.nodes-existingsg-example-com.name
-}
-
 resource "aws_iam_role" "masters-existingsg-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.existingsg.example.com_policy")
   name               = "masters.existingsg.example.com"
@@ -502,6 +490,18 @@ resource "aws_iam_role" "nodes-existingsg-example-com" {
     "Name"                                         = "nodes.existingsg.example.com"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "masters-existingsg-example-com" {
+  name   = "masters.existingsg.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.existingsg.example.com_policy")
+  role   = aws_iam_role.masters-existingsg-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-existingsg-example-com" {
+  name   = "nodes.existingsg.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.existingsg.example.com_policy")
+  role   = aws_iam_role.nodes-existingsg-example-com.name
 }
 
 resource "aws_internet_gateway" "existingsg-example-com" {
@@ -834,6 +834,12 @@ resource "aws_launch_template" "nodes-existingsg-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.existingsg.example.com_user_data")
 }
 
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.existingsg-example-com.id
+  route_table_id         = aws_route_table.existingsg-example-com.id
+}
+
 resource "aws_route53_record" "api-existingsg-example-com" {
   alias {
     evaluate_target_health = false
@@ -843,6 +849,16 @@ resource "aws_route53_record" "api-existingsg-example-com" {
   name    = "api.existingsg.example.com"
   type    = "A"
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
+}
+
+resource "aws_route_table" "existingsg-example-com" {
+  tags = {
+    "KubernetesCluster"                            = "existingsg.example.com"
+    "Name"                                         = "existingsg.example.com"
+    "kubernetes.io/cluster/existingsg.example.com" = "owned"
+    "kubernetes.io/kops/role"                      = "public"
+  }
+  vpc_id = aws_vpc.existingsg-example-com.id
 }
 
 resource "aws_route_table_association" "us-test-1a-existingsg-example-com" {
@@ -860,20 +876,15 @@ resource "aws_route_table_association" "us-test-1c-existingsg-example-com" {
   subnet_id      = aws_subnet.us-test-1c-existingsg-example-com.id
 }
 
-resource "aws_route_table" "existingsg-example-com" {
+resource "aws_security_group" "masters-existingsg-example-com" {
+  description = "Security group for masters"
+  name        = "masters.existingsg.example.com"
   tags = {
     "KubernetesCluster"                            = "existingsg.example.com"
-    "Name"                                         = "existingsg.example.com"
+    "Name"                                         = "masters.existingsg.example.com"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
-    "kubernetes.io/kops/role"                      = "public"
   }
   vpc_id = aws_vpc.existingsg-example-com.id
-}
-
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.existingsg-example-com.id
-  route_table_id         = aws_route_table.existingsg-example-com.id
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-masters-existingsg-example-com" {
@@ -1227,17 +1238,6 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   type              = "ingress"
 }
 
-resource "aws_security_group" "masters-existingsg-example-com" {
-  description = "Security group for masters"
-  name        = "masters.existingsg.example.com"
-  tags = {
-    "KubernetesCluster"                            = "existingsg.example.com"
-    "Name"                                         = "masters.existingsg.example.com"
-    "kubernetes.io/cluster/existingsg.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.existingsg-example-com.id
-}
-
 resource "aws_subnet" "us-test-1a-existingsg-example-com" {
   availability_zone = "us-test-1a"
   cidr_block        = "172.20.32.0/19"
@@ -1277,9 +1277,15 @@ resource "aws_subnet" "us-test-1c-existingsg-example-com" {
   vpc_id = aws_vpc.existingsg-example-com.id
 }
 
-resource "aws_vpc_dhcp_options_association" "existingsg-example-com" {
-  dhcp_options_id = aws_vpc_dhcp_options.existingsg-example-com.id
-  vpc_id          = aws_vpc.existingsg-example-com.id
+resource "aws_vpc" "existingsg-example-com" {
+  cidr_block           = "172.20.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = {
+    "KubernetesCluster"                            = "existingsg.example.com"
+    "Name"                                         = "existingsg.example.com"
+    "kubernetes.io/cluster/existingsg.example.com" = "owned"
+  }
 }
 
 resource "aws_vpc_dhcp_options" "existingsg-example-com" {
@@ -1292,15 +1298,9 @@ resource "aws_vpc_dhcp_options" "existingsg-example-com" {
   }
 }
 
-resource "aws_vpc" "existingsg-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  tags = {
-    "KubernetesCluster"                            = "existingsg.example.com"
-    "Name"                                         = "existingsg.example.com"
-    "kubernetes.io/cluster/existingsg.example.com" = "owned"
-  }
+resource "aws_vpc_dhcp_options_association" "existingsg-example-com" {
+  dhcp_options_id = aws_vpc_dhcp_options.existingsg-example-com.id
+  vpc_id          = aws_vpc.existingsg-example-com.id
 }
 
 terraform {

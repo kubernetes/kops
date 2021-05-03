@@ -301,28 +301,6 @@ resource "aws_iam_instance_profile" "nodes-externalpolicies-example-com" {
   }
 }
 
-resource "aws_iam_role_policy_attachment" "master-policyoverride-1242070525" {
-  policy_arn = "arn:aws:iam::123456789000:policy/test-policy"
-  role       = aws_iam_role.masters-externalpolicies-example-com.name
-}
-
-resource "aws_iam_role_policy_attachment" "node-policyoverride-1242070525" {
-  policy_arn = "arn:aws:iam::123456789000:policy/test-policy"
-  role       = aws_iam_role.nodes-externalpolicies-example-com.name
-}
-
-resource "aws_iam_role_policy" "masters-externalpolicies-example-com" {
-  name   = "masters.externalpolicies.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.externalpolicies.example.com_policy")
-  role   = aws_iam_role.masters-externalpolicies-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-externalpolicies-example-com" {
-  name   = "nodes.externalpolicies.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.externalpolicies.example.com_policy")
-  role   = aws_iam_role.nodes-externalpolicies-example-com.name
-}
-
 resource "aws_iam_role" "masters-externalpolicies-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.externalpolicies.example.com_policy")
   name               = "masters.externalpolicies.example.com"
@@ -345,6 +323,28 @@ resource "aws_iam_role" "nodes-externalpolicies-example-com" {
     "foo/bar"                                            = "fib+baz"
     "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "masters-externalpolicies-example-com" {
+  name   = "masters.externalpolicies.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.externalpolicies.example.com_policy")
+  role   = aws_iam_role.masters-externalpolicies-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-externalpolicies-example-com" {
+  name   = "nodes.externalpolicies.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.externalpolicies.example.com_policy")
+  role   = aws_iam_role.nodes-externalpolicies-example-com.name
+}
+
+resource "aws_iam_role_policy_attachment" "master-policyoverride-1242070525" {
+  policy_arn = "arn:aws:iam::123456789000:policy/test-policy"
+  role       = aws_iam_role.masters-externalpolicies-example-com.name
+}
+
+resource "aws_iam_role_policy_attachment" "node-policyoverride-1242070525" {
+  policy_arn = "arn:aws:iam::123456789000:policy/test-policy"
+  role       = aws_iam_role.nodes-externalpolicies-example-com.name
 }
 
 resource "aws_internet_gateway" "externalpolicies-example-com" {
@@ -534,6 +534,12 @@ resource "aws_launch_template" "nodes-externalpolicies-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.externalpolicies.example.com_user_data")
 }
 
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.externalpolicies-example-com.id
+  route_table_id         = aws_route_table.externalpolicies-example-com.id
+}
+
 resource "aws_route53_record" "api-externalpolicies-example-com" {
   alias {
     evaluate_target_health = false
@@ -543,11 +549,6 @@ resource "aws_route53_record" "api-externalpolicies-example-com" {
   name    = "api.externalpolicies.example.com"
   type    = "A"
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
-}
-
-resource "aws_route_table_association" "us-test-1a-externalpolicies-example-com" {
-  route_table_id = aws_route_table.externalpolicies-example-com.id
-  subnet_id      = aws_subnet.us-test-1a-externalpolicies-example-com.id
 }
 
 resource "aws_route_table" "externalpolicies-example-com" {
@@ -562,10 +563,48 @@ resource "aws_route_table" "externalpolicies-example-com" {
   vpc_id = aws_vpc.externalpolicies-example-com.id
 }
 
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.externalpolicies-example-com.id
-  route_table_id         = aws_route_table.externalpolicies-example-com.id
+resource "aws_route_table_association" "us-test-1a-externalpolicies-example-com" {
+  route_table_id = aws_route_table.externalpolicies-example-com.id
+  subnet_id      = aws_subnet.us-test-1a-externalpolicies-example-com.id
+}
+
+resource "aws_security_group" "api-elb-externalpolicies-example-com" {
+  description = "Security group for api ELB"
+  name        = "api-elb.externalpolicies.example.com"
+  tags = {
+    "KubernetesCluster"                                  = "externalpolicies.example.com"
+    "Name"                                               = "api-elb.externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
+    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.externalpolicies-example-com.id
+}
+
+resource "aws_security_group" "masters-externalpolicies-example-com" {
+  description = "Security group for masters"
+  name        = "masters.externalpolicies.example.com"
+  tags = {
+    "KubernetesCluster"                                  = "externalpolicies.example.com"
+    "Name"                                               = "masters.externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
+    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.externalpolicies-example-com.id
+}
+
+resource "aws_security_group" "nodes-externalpolicies-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.externalpolicies.example.com"
+  tags = {
+    "KubernetesCluster"                                  = "externalpolicies.example.com"
+    "Name"                                               = "nodes.externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
+    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.externalpolicies-example-com.id
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-masters-externalpolicies-example-com" {
@@ -739,45 +778,6 @@ resource "aws_security_group_rule" "nodeport-udp-external-to-node-10-20-30-0--24
   type              = "ingress"
 }
 
-resource "aws_security_group" "api-elb-externalpolicies-example-com" {
-  description = "Security group for api ELB"
-  name        = "api-elb.externalpolicies.example.com"
-  tags = {
-    "KubernetesCluster"                                  = "externalpolicies.example.com"
-    "Name"                                               = "api-elb.externalpolicies.example.com"
-    "Owner"                                              = "John Doe"
-    "foo/bar"                                            = "fib+baz"
-    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.externalpolicies-example-com.id
-}
-
-resource "aws_security_group" "masters-externalpolicies-example-com" {
-  description = "Security group for masters"
-  name        = "masters.externalpolicies.example.com"
-  tags = {
-    "KubernetesCluster"                                  = "externalpolicies.example.com"
-    "Name"                                               = "masters.externalpolicies.example.com"
-    "Owner"                                              = "John Doe"
-    "foo/bar"                                            = "fib+baz"
-    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.externalpolicies-example-com.id
-}
-
-resource "aws_security_group" "nodes-externalpolicies-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.externalpolicies.example.com"
-  tags = {
-    "KubernetesCluster"                                  = "externalpolicies.example.com"
-    "Name"                                               = "nodes.externalpolicies.example.com"
-    "Owner"                                              = "John Doe"
-    "foo/bar"                                            = "fib+baz"
-    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.externalpolicies-example-com.id
-}
-
 resource "aws_subnet" "us-test-1a-externalpolicies-example-com" {
   availability_zone = "us-test-1a"
   cidr_block        = "172.20.32.0/19"
@@ -793,9 +793,17 @@ resource "aws_subnet" "us-test-1a-externalpolicies-example-com" {
   vpc_id = aws_vpc.externalpolicies-example-com.id
 }
 
-resource "aws_vpc_dhcp_options_association" "externalpolicies-example-com" {
-  dhcp_options_id = aws_vpc_dhcp_options.externalpolicies-example-com.id
-  vpc_id          = aws_vpc.externalpolicies-example-com.id
+resource "aws_vpc" "externalpolicies-example-com" {
+  cidr_block           = "172.20.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = {
+    "KubernetesCluster"                                  = "externalpolicies.example.com"
+    "Name"                                               = "externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
+    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+  }
 }
 
 resource "aws_vpc_dhcp_options" "externalpolicies-example-com" {
@@ -810,17 +818,9 @@ resource "aws_vpc_dhcp_options" "externalpolicies-example-com" {
   }
 }
 
-resource "aws_vpc" "externalpolicies-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  tags = {
-    "KubernetesCluster"                                  = "externalpolicies.example.com"
-    "Name"                                               = "externalpolicies.example.com"
-    "Owner"                                              = "John Doe"
-    "foo/bar"                                            = "fib+baz"
-    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
-  }
+resource "aws_vpc_dhcp_options_association" "externalpolicies-example-com" {
+  dhcp_options_id = aws_vpc_dhcp_options.externalpolicies-example-com.id
+  vpc_id          = aws_vpc.externalpolicies-example-com.id
 }
 
 terraform {

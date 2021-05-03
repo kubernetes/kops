@@ -374,24 +374,6 @@ resource "aws_iam_instance_profile" "nodes-private-shared-subnet-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-private-shared-subnet-example-com" {
-  name   = "bastions.private-shared-subnet.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.private-shared-subnet.example.com_policy")
-  role   = aws_iam_role.bastions-private-shared-subnet-example-com.name
-}
-
-resource "aws_iam_role_policy" "masters-private-shared-subnet-example-com" {
-  name   = "masters.private-shared-subnet.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.private-shared-subnet.example.com_policy")
-  role   = aws_iam_role.masters-private-shared-subnet-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-private-shared-subnet-example-com" {
-  name   = "nodes.private-shared-subnet.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.private-shared-subnet.example.com_policy")
-  role   = aws_iam_role.nodes-private-shared-subnet-example-com.name
-}
-
 resource "aws_iam_role" "bastions-private-shared-subnet-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.private-shared-subnet.example.com_policy")
   name               = "bastions.private-shared-subnet.example.com"
@@ -420,6 +402,24 @@ resource "aws_iam_role" "nodes-private-shared-subnet-example-com" {
     "Name"                                                    = "nodes.private-shared-subnet.example.com"
     "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "bastions-private-shared-subnet-example-com" {
+  name   = "bastions.private-shared-subnet.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_bastions.private-shared-subnet.example.com_policy")
+  role   = aws_iam_role.bastions-private-shared-subnet-example-com.name
+}
+
+resource "aws_iam_role_policy" "masters-private-shared-subnet-example-com" {
+  name   = "masters.private-shared-subnet.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.private-shared-subnet.example.com_policy")
+  role   = aws_iam_role.masters-private-shared-subnet-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-private-shared-subnet-example-com" {
+  name   = "nodes.private-shared-subnet.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.private-shared-subnet.example.com_policy")
+  role   = aws_iam_role.nodes-private-shared-subnet-example-com.name
 }
 
 resource "aws_key_pair" "kubernetes-private-shared-subnet-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {
@@ -659,6 +659,61 @@ resource "aws_route53_record" "api-private-shared-subnet-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
+resource "aws_security_group" "api-elb-private-shared-subnet-example-com" {
+  description = "Security group for api ELB"
+  name        = "api-elb.private-shared-subnet.example.com"
+  tags = {
+    "KubernetesCluster"                                       = "private-shared-subnet.example.com"
+    "Name"                                                    = "api-elb.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
+resource "aws_security_group" "bastion-elb-private-shared-subnet-example-com" {
+  description = "Security group for bastion ELB"
+  name        = "bastion-elb.private-shared-subnet.example.com"
+  tags = {
+    "KubernetesCluster"                                       = "private-shared-subnet.example.com"
+    "Name"                                                    = "bastion-elb.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
+resource "aws_security_group" "bastion-private-shared-subnet-example-com" {
+  description = "Security group for bastion"
+  name        = "bastion.private-shared-subnet.example.com"
+  tags = {
+    "KubernetesCluster"                                       = "private-shared-subnet.example.com"
+    "Name"                                                    = "bastion.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
+resource "aws_security_group" "masters-private-shared-subnet-example-com" {
+  description = "Security group for masters"
+  name        = "masters.private-shared-subnet.example.com"
+  tags = {
+    "KubernetesCluster"                                       = "private-shared-subnet.example.com"
+    "Name"                                                    = "masters.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
+resource "aws_security_group" "nodes-private-shared-subnet-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.private-shared-subnet.example.com"
+  tags = {
+    "KubernetesCluster"                                       = "private-shared-subnet.example.com"
+    "Name"                                                    = "nodes.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-elb-private-shared-subnet-example-com" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 22
@@ -828,61 +883,6 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   security_group_id = aws_security_group.api-elb-private-shared-subnet-example-com.id
   to_port           = 4
   type              = "ingress"
-}
-
-resource "aws_security_group" "api-elb-private-shared-subnet-example-com" {
-  description = "Security group for api ELB"
-  name        = "api-elb.private-shared-subnet.example.com"
-  tags = {
-    "KubernetesCluster"                                       = "private-shared-subnet.example.com"
-    "Name"                                                    = "api-elb.private-shared-subnet.example.com"
-    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
-}
-
-resource "aws_security_group" "bastion-elb-private-shared-subnet-example-com" {
-  description = "Security group for bastion ELB"
-  name        = "bastion-elb.private-shared-subnet.example.com"
-  tags = {
-    "KubernetesCluster"                                       = "private-shared-subnet.example.com"
-    "Name"                                                    = "bastion-elb.private-shared-subnet.example.com"
-    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
-}
-
-resource "aws_security_group" "bastion-private-shared-subnet-example-com" {
-  description = "Security group for bastion"
-  name        = "bastion.private-shared-subnet.example.com"
-  tags = {
-    "KubernetesCluster"                                       = "private-shared-subnet.example.com"
-    "Name"                                                    = "bastion.private-shared-subnet.example.com"
-    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
-}
-
-resource "aws_security_group" "masters-private-shared-subnet-example-com" {
-  description = "Security group for masters"
-  name        = "masters.private-shared-subnet.example.com"
-  tags = {
-    "KubernetesCluster"                                       = "private-shared-subnet.example.com"
-    "Name"                                                    = "masters.private-shared-subnet.example.com"
-    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
-}
-
-resource "aws_security_group" "nodes-private-shared-subnet-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.private-shared-subnet.example.com"
-  tags = {
-    "KubernetesCluster"                                       = "private-shared-subnet.example.com"
-    "Name"                                                    = "nodes.private-shared-subnet.example.com"
-    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
 }
 
 terraform {

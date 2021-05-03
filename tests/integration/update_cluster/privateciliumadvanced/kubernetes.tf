@@ -409,24 +409,6 @@ resource "aws_iam_instance_profile" "nodes-privateciliumadvanced-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-privateciliumadvanced-example-com" {
-  name   = "bastions.privateciliumadvanced.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privateciliumadvanced.example.com_policy")
-  role   = aws_iam_role.bastions-privateciliumadvanced-example-com.name
-}
-
-resource "aws_iam_role_policy" "masters-privateciliumadvanced-example-com" {
-  name   = "masters.privateciliumadvanced.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.privateciliumadvanced.example.com_policy")
-  role   = aws_iam_role.masters-privateciliumadvanced-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-privateciliumadvanced-example-com" {
-  name   = "nodes.privateciliumadvanced.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.privateciliumadvanced.example.com_policy")
-  role   = aws_iam_role.nodes-privateciliumadvanced-example-com.name
-}
-
 resource "aws_iam_role" "bastions-privateciliumadvanced-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privateciliumadvanced.example.com_policy")
   name               = "bastions.privateciliumadvanced.example.com"
@@ -455,6 +437,24 @@ resource "aws_iam_role" "nodes-privateciliumadvanced-example-com" {
     "Name"                                                    = "nodes.privateciliumadvanced.example.com"
     "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "bastions-privateciliumadvanced-example-com" {
+  name   = "bastions.privateciliumadvanced.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privateciliumadvanced.example.com_policy")
+  role   = aws_iam_role.bastions-privateciliumadvanced-example-com.name
+}
+
+resource "aws_iam_role_policy" "masters-privateciliumadvanced-example-com" {
+  name   = "masters.privateciliumadvanced.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.privateciliumadvanced.example.com_policy")
+  role   = aws_iam_role.masters-privateciliumadvanced-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-privateciliumadvanced-example-com" {
+  name   = "nodes.privateciliumadvanced.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.privateciliumadvanced.example.com_policy")
+  role   = aws_iam_role.nodes-privateciliumadvanced-example-com.name
 }
 
 resource "aws_internet_gateway" "privateciliumadvanced-example-com" {
@@ -702,6 +702,18 @@ resource "aws_nat_gateway" "us-test-1a-privateciliumadvanced-example-com" {
   }
 }
 
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.privateciliumadvanced-example-com.id
+  route_table_id         = aws_route_table.privateciliumadvanced-example-com.id
+}
+
+resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.us-test-1a-privateciliumadvanced-example-com.id
+  route_table_id         = aws_route_table.private-us-test-1a-privateciliumadvanced-example-com.id
+}
+
 resource "aws_route53_record" "api-privateciliumadvanced-example-com" {
   alias {
     evaluate_target_health = false
@@ -711,16 +723,6 @@ resource "aws_route53_record" "api-privateciliumadvanced-example-com" {
   name    = "api.privateciliumadvanced.example.com"
   type    = "A"
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
-}
-
-resource "aws_route_table_association" "private-us-test-1a-privateciliumadvanced-example-com" {
-  route_table_id = aws_route_table.private-us-test-1a-privateciliumadvanced-example-com.id
-  subnet_id      = aws_subnet.us-test-1a-privateciliumadvanced-example-com.id
-}
-
-resource "aws_route_table_association" "utility-us-test-1a-privateciliumadvanced-example-com" {
-  route_table_id = aws_route_table.privateciliumadvanced-example-com.id
-  subnet_id      = aws_subnet.utility-us-test-1a-privateciliumadvanced-example-com.id
 }
 
 resource "aws_route_table" "private-us-test-1a-privateciliumadvanced-example-com" {
@@ -743,16 +745,69 @@ resource "aws_route_table" "privateciliumadvanced-example-com" {
   vpc_id = aws_vpc.privateciliumadvanced-example-com.id
 }
 
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.privateciliumadvanced-example-com.id
-  route_table_id         = aws_route_table.privateciliumadvanced-example-com.id
+resource "aws_route_table_association" "private-us-test-1a-privateciliumadvanced-example-com" {
+  route_table_id = aws_route_table.private-us-test-1a-privateciliumadvanced-example-com.id
+  subnet_id      = aws_subnet.us-test-1a-privateciliumadvanced-example-com.id
 }
 
-resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.us-test-1a-privateciliumadvanced-example-com.id
-  route_table_id         = aws_route_table.private-us-test-1a-privateciliumadvanced-example-com.id
+resource "aws_route_table_association" "utility-us-test-1a-privateciliumadvanced-example-com" {
+  route_table_id = aws_route_table.privateciliumadvanced-example-com.id
+  subnet_id      = aws_subnet.utility-us-test-1a-privateciliumadvanced-example-com.id
+}
+
+resource "aws_security_group" "api-elb-privateciliumadvanced-example-com" {
+  description = "Security group for api ELB"
+  name        = "api-elb.privateciliumadvanced.example.com"
+  tags = {
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "api-elb.privateciliumadvanced.example.com"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privateciliumadvanced-example-com.id
+}
+
+resource "aws_security_group" "bastion-elb-privateciliumadvanced-example-com" {
+  description = "Security group for bastion ELB"
+  name        = "bastion-elb.privateciliumadvanced.example.com"
+  tags = {
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "bastion-elb.privateciliumadvanced.example.com"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privateciliumadvanced-example-com.id
+}
+
+resource "aws_security_group" "bastion-privateciliumadvanced-example-com" {
+  description = "Security group for bastion"
+  name        = "bastion.privateciliumadvanced.example.com"
+  tags = {
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "bastion.privateciliumadvanced.example.com"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privateciliumadvanced-example-com.id
+}
+
+resource "aws_security_group" "masters-privateciliumadvanced-example-com" {
+  description = "Security group for masters"
+  name        = "masters.privateciliumadvanced.example.com"
+  tags = {
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "masters.privateciliumadvanced.example.com"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privateciliumadvanced-example-com.id
+}
+
+resource "aws_security_group" "nodes-privateciliumadvanced-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.privateciliumadvanced.example.com"
+  tags = {
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "nodes.privateciliumadvanced.example.com"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privateciliumadvanced-example-com.id
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-elb-privateciliumadvanced-example-com" {
@@ -926,61 +981,6 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   type              = "ingress"
 }
 
-resource "aws_security_group" "api-elb-privateciliumadvanced-example-com" {
-  description = "Security group for api ELB"
-  name        = "api-elb.privateciliumadvanced.example.com"
-  tags = {
-    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
-    "Name"                                                    = "api-elb.privateciliumadvanced.example.com"
-    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privateciliumadvanced-example-com.id
-}
-
-resource "aws_security_group" "bastion-elb-privateciliumadvanced-example-com" {
-  description = "Security group for bastion ELB"
-  name        = "bastion-elb.privateciliumadvanced.example.com"
-  tags = {
-    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
-    "Name"                                                    = "bastion-elb.privateciliumadvanced.example.com"
-    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privateciliumadvanced-example-com.id
-}
-
-resource "aws_security_group" "bastion-privateciliumadvanced-example-com" {
-  description = "Security group for bastion"
-  name        = "bastion.privateciliumadvanced.example.com"
-  tags = {
-    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
-    "Name"                                                    = "bastion.privateciliumadvanced.example.com"
-    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privateciliumadvanced-example-com.id
-}
-
-resource "aws_security_group" "masters-privateciliumadvanced-example-com" {
-  description = "Security group for masters"
-  name        = "masters.privateciliumadvanced.example.com"
-  tags = {
-    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
-    "Name"                                                    = "masters.privateciliumadvanced.example.com"
-    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privateciliumadvanced-example-com.id
-}
-
-resource "aws_security_group" "nodes-privateciliumadvanced-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.privateciliumadvanced.example.com"
-  tags = {
-    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
-    "Name"                                                    = "nodes.privateciliumadvanced.example.com"
-    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privateciliumadvanced-example-com.id
-}
-
 resource "aws_subnet" "us-test-1a-privateciliumadvanced-example-com" {
   availability_zone = "us-test-1a"
   cidr_block        = "172.20.32.0/19"
@@ -1007,9 +1007,15 @@ resource "aws_subnet" "utility-us-test-1a-privateciliumadvanced-example-com" {
   vpc_id = aws_vpc.privateciliumadvanced-example-com.id
 }
 
-resource "aws_vpc_dhcp_options_association" "privateciliumadvanced-example-com" {
-  dhcp_options_id = aws_vpc_dhcp_options.privateciliumadvanced-example-com.id
-  vpc_id          = aws_vpc.privateciliumadvanced-example-com.id
+resource "aws_vpc" "privateciliumadvanced-example-com" {
+  cidr_block           = "172.20.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = {
+    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
+    "Name"                                                    = "privateciliumadvanced.example.com"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
+  }
 }
 
 resource "aws_vpc_dhcp_options" "privateciliumadvanced-example-com" {
@@ -1022,15 +1028,9 @@ resource "aws_vpc_dhcp_options" "privateciliumadvanced-example-com" {
   }
 }
 
-resource "aws_vpc" "privateciliumadvanced-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  tags = {
-    "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
-    "Name"                                                    = "privateciliumadvanced.example.com"
-    "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
-  }
+resource "aws_vpc_dhcp_options_association" "privateciliumadvanced-example-com" {
+  dhcp_options_id = aws_vpc_dhcp_options.privateciliumadvanced-example-com.id
+  vpc_id          = aws_vpc.privateciliumadvanced-example-com.id
 }
 
 terraform {

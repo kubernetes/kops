@@ -323,17 +323,17 @@ resource "google_compute_network" "default" {
   name                    = "default"
 }
 
+resource "google_compute_router" "nat-minimal-gce-private-example-com" {
+  name    = "nat-minimal-gce-private-example-com"
+  network = "https://www.googleapis.com/compute/v1/projects/testproject/global/networks/default"
+}
+
 resource "google_compute_router_nat" "nat-minimal-gce-private-example-com" {
   name                               = "nat-minimal-gce-private-example-com"
   nat_ip_allocate_option             = "AUTO_ONLY"
   region                             = "us-test1"
   router                             = "nat-minimal-gce-private-example-com"
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
-}
-
-resource "google_compute_router" "nat-minimal-gce-private-example-com" {
-  name    = "nat-minimal-gce-private-example-com"
-  network = "https://www.googleapis.com/compute/v1/projects/testproject/global/networks/default"
 }
 
 terraform {

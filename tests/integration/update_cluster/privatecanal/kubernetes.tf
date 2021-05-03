@@ -393,24 +393,6 @@ resource "aws_iam_instance_profile" "nodes-privatecanal-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-privatecanal-example-com" {
-  name   = "bastions.privatecanal.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatecanal.example.com_policy")
-  role   = aws_iam_role.bastions-privatecanal-example-com.name
-}
-
-resource "aws_iam_role_policy" "masters-privatecanal-example-com" {
-  name   = "masters.privatecanal.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.privatecanal.example.com_policy")
-  role   = aws_iam_role.masters-privatecanal-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-privatecanal-example-com" {
-  name   = "nodes.privatecanal.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.privatecanal.example.com_policy")
-  role   = aws_iam_role.nodes-privatecanal-example-com.name
-}
-
 resource "aws_iam_role" "bastions-privatecanal-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privatecanal.example.com_policy")
   name               = "bastions.privatecanal.example.com"
@@ -439,6 +421,24 @@ resource "aws_iam_role" "nodes-privatecanal-example-com" {
     "Name"                                           = "nodes.privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "bastions-privatecanal-example-com" {
+  name   = "bastions.privatecanal.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatecanal.example.com_policy")
+  role   = aws_iam_role.bastions-privatecanal-example-com.name
+}
+
+resource "aws_iam_role_policy" "masters-privatecanal-example-com" {
+  name   = "masters.privatecanal.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.privatecanal.example.com_policy")
+  role   = aws_iam_role.masters-privatecanal-example-com.name
+}
+
+resource "aws_iam_role_policy" "nodes-privatecanal-example-com" {
+  name   = "nodes.privatecanal.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.privatecanal.example.com_policy")
+  role   = aws_iam_role.nodes-privatecanal-example-com.name
 }
 
 resource "aws_internet_gateway" "privatecanal-example-com" {
@@ -686,6 +686,18 @@ resource "aws_nat_gateway" "us-test-1a-privatecanal-example-com" {
   }
 }
 
+resource "aws_route" "route-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.privatecanal-example-com.id
+  route_table_id         = aws_route_table.privatecanal-example-com.id
+}
+
+resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.us-test-1a-privatecanal-example-com.id
+  route_table_id         = aws_route_table.private-us-test-1a-privatecanal-example-com.id
+}
+
 resource "aws_route53_record" "api-privatecanal-example-com" {
   alias {
     evaluate_target_health = false
@@ -695,16 +707,6 @@ resource "aws_route53_record" "api-privatecanal-example-com" {
   name    = "api.privatecanal.example.com"
   type    = "A"
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
-}
-
-resource "aws_route_table_association" "private-us-test-1a-privatecanal-example-com" {
-  route_table_id = aws_route_table.private-us-test-1a-privatecanal-example-com.id
-  subnet_id      = aws_subnet.us-test-1a-privatecanal-example-com.id
-}
-
-resource "aws_route_table_association" "utility-us-test-1a-privatecanal-example-com" {
-  route_table_id = aws_route_table.privatecanal-example-com.id
-  subnet_id      = aws_subnet.utility-us-test-1a-privatecanal-example-com.id
 }
 
 resource "aws_route_table" "private-us-test-1a-privatecanal-example-com" {
@@ -727,16 +729,69 @@ resource "aws_route_table" "privatecanal-example-com" {
   vpc_id = aws_vpc.privatecanal-example-com.id
 }
 
-resource "aws_route" "route-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.privatecanal-example-com.id
-  route_table_id         = aws_route_table.privatecanal-example-com.id
+resource "aws_route_table_association" "private-us-test-1a-privatecanal-example-com" {
+  route_table_id = aws_route_table.private-us-test-1a-privatecanal-example-com.id
+  subnet_id      = aws_subnet.us-test-1a-privatecanal-example-com.id
 }
 
-resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.us-test-1a-privatecanal-example-com.id
-  route_table_id         = aws_route_table.private-us-test-1a-privatecanal-example-com.id
+resource "aws_route_table_association" "utility-us-test-1a-privatecanal-example-com" {
+  route_table_id = aws_route_table.privatecanal-example-com.id
+  subnet_id      = aws_subnet.utility-us-test-1a-privatecanal-example-com.id
+}
+
+resource "aws_security_group" "api-elb-privatecanal-example-com" {
+  description = "Security group for api ELB"
+  name        = "api-elb.privatecanal.example.com"
+  tags = {
+    "KubernetesCluster"                              = "privatecanal.example.com"
+    "Name"                                           = "api-elb.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatecanal-example-com.id
+}
+
+resource "aws_security_group" "bastion-elb-privatecanal-example-com" {
+  description = "Security group for bastion ELB"
+  name        = "bastion-elb.privatecanal.example.com"
+  tags = {
+    "KubernetesCluster"                              = "privatecanal.example.com"
+    "Name"                                           = "bastion-elb.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatecanal-example-com.id
+}
+
+resource "aws_security_group" "bastion-privatecanal-example-com" {
+  description = "Security group for bastion"
+  name        = "bastion.privatecanal.example.com"
+  tags = {
+    "KubernetesCluster"                              = "privatecanal.example.com"
+    "Name"                                           = "bastion.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatecanal-example-com.id
+}
+
+resource "aws_security_group" "masters-privatecanal-example-com" {
+  description = "Security group for masters"
+  name        = "masters.privatecanal.example.com"
+  tags = {
+    "KubernetesCluster"                              = "privatecanal.example.com"
+    "Name"                                           = "masters.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatecanal-example-com.id
+}
+
+resource "aws_security_group" "nodes-privatecanal-example-com" {
+  description = "Security group for nodes"
+  name        = "nodes.privatecanal.example.com"
+  tags = {
+    "KubernetesCluster"                              = "privatecanal.example.com"
+    "Name"                                           = "nodes.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatecanal-example-com.id
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-elb-privatecanal-example-com" {
@@ -910,61 +965,6 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   type              = "ingress"
 }
 
-resource "aws_security_group" "api-elb-privatecanal-example-com" {
-  description = "Security group for api ELB"
-  name        = "api-elb.privatecanal.example.com"
-  tags = {
-    "KubernetesCluster"                              = "privatecanal.example.com"
-    "Name"                                           = "api-elb.privatecanal.example.com"
-    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatecanal-example-com.id
-}
-
-resource "aws_security_group" "bastion-elb-privatecanal-example-com" {
-  description = "Security group for bastion ELB"
-  name        = "bastion-elb.privatecanal.example.com"
-  tags = {
-    "KubernetesCluster"                              = "privatecanal.example.com"
-    "Name"                                           = "bastion-elb.privatecanal.example.com"
-    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatecanal-example-com.id
-}
-
-resource "aws_security_group" "bastion-privatecanal-example-com" {
-  description = "Security group for bastion"
-  name        = "bastion.privatecanal.example.com"
-  tags = {
-    "KubernetesCluster"                              = "privatecanal.example.com"
-    "Name"                                           = "bastion.privatecanal.example.com"
-    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatecanal-example-com.id
-}
-
-resource "aws_security_group" "masters-privatecanal-example-com" {
-  description = "Security group for masters"
-  name        = "masters.privatecanal.example.com"
-  tags = {
-    "KubernetesCluster"                              = "privatecanal.example.com"
-    "Name"                                           = "masters.privatecanal.example.com"
-    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatecanal-example-com.id
-}
-
-resource "aws_security_group" "nodes-privatecanal-example-com" {
-  description = "Security group for nodes"
-  name        = "nodes.privatecanal.example.com"
-  tags = {
-    "KubernetesCluster"                              = "privatecanal.example.com"
-    "Name"                                           = "nodes.privatecanal.example.com"
-    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.privatecanal-example-com.id
-}
-
 resource "aws_subnet" "us-test-1a-privatecanal-example-com" {
   availability_zone = "us-test-1a"
   cidr_block        = "172.20.32.0/19"
@@ -991,9 +991,15 @@ resource "aws_subnet" "utility-us-test-1a-privatecanal-example-com" {
   vpc_id = aws_vpc.privatecanal-example-com.id
 }
 
-resource "aws_vpc_dhcp_options_association" "privatecanal-example-com" {
-  dhcp_options_id = aws_vpc_dhcp_options.privatecanal-example-com.id
-  vpc_id          = aws_vpc.privatecanal-example-com.id
+resource "aws_vpc" "privatecanal-example-com" {
+  cidr_block           = "172.20.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = {
+    "KubernetesCluster"                              = "privatecanal.example.com"
+    "Name"                                           = "privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+  }
 }
 
 resource "aws_vpc_dhcp_options" "privatecanal-example-com" {
@@ -1006,15 +1012,9 @@ resource "aws_vpc_dhcp_options" "privatecanal-example-com" {
   }
 }
 
-resource "aws_vpc" "privatecanal-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  tags = {
-    "KubernetesCluster"                              = "privatecanal.example.com"
-    "Name"                                           = "privatecanal.example.com"
-    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
-  }
+resource "aws_vpc_dhcp_options_association" "privatecanal-example-com" {
+  dhcp_options_id = aws_vpc_dhcp_options.privatecanal-example-com.id
+  vpc_id          = aws_vpc.privatecanal-example-com.id
 }
 
 terraform {
