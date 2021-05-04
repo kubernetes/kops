@@ -497,7 +497,7 @@ func (x *ConvertKubeupCluster) Upgrade(ctx context.Context) error {
 	if oldCACertPool.Primary != nil {
 		fi.AddCert(keyset, oldCACertPool.Primary)
 	}
-	err = newKeyStore.StoreKeypair(fi.CertificateIDCA, keyset)
+	err = newKeyStore.StoreKeyset(fi.CertificateIDCA, keyset)
 	if err != nil {
 		return fmt.Errorf("error importing old CA certs: %v", err)
 	}

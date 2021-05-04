@@ -45,8 +45,8 @@ func (k fakeKeyStore) CreateKeypair(signer string, name string, template *x509.C
 	panic("fakeKeyStore does not implement CreateKeypair")
 }
 
-func (k fakeKeyStore) StoreKeypair(id string, keyset *fi.Keyset) error {
-	panic("fakeKeyStore does not implement StoreKeypair")
+func (k fakeKeyStore) StoreKeyset(name string, keyset *fi.Keyset) error {
+	panic("fakeKeyStore does not implement StoreKeyset")
 }
 
 func (k fakeKeyStore) MirrorTo(basedir vfs.Path) error {

@@ -257,8 +257,8 @@ func (c *ClientsetCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
 	return items, nil
 }
 
-// StoreKeypair implements CAStore::StoreKeypair
-func (c *ClientsetCAStore) StoreKeypair(name string, keyset *Keyset) error {
+// StoreKeyset implements CAStore::StoreKeyset
+func (c *ClientsetCAStore) StoreKeyset(name string, keyset *Keyset) error {
 	ctx := context.TODO()
 	return c.storeKeyset(ctx, name, keyset, kops.SecretTypeKeypair)
 }
