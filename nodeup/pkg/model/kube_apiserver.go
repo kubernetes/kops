@@ -17,10 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"bytes"
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/pem"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -30,7 +26,6 @@ import (
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/kubemanifest"
-	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
@@ -87,7 +82,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 	{
-		keyset, err := b.KeyStore.FindPrivateKeyset("service-account")
+		keyset, err := b.KeyStore.FindKeyset("service-account")
 		if err != nil {
 			return err
 		}
@@ -96,25 +91,14 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("service-account keyset not found")
 		}
 
-		buf := new(bytes.Buffer)
-		for _, keyItem := range keyset.Spec.Keys {
-			privateKey, err := pki.ParsePEMPrivateKey(keyItem.PrivateMaterial)
-			if err != nil {
-				return fmt.Errorf("error loading service-account private key %s: %v", keyItem.Id, err)
-			}
-			pkData, err := x509.MarshalPKIXPublicKey(privateKey.Key.(*rsa.PrivateKey).Public())
-			if err != nil {
-				return fmt.Errorf("marshalling public key: %v", err)
-			}
-			err = pem.Encode(buf, &pem.Block{Type: "RSA PUBLIC KEY", Bytes: pkData})
-			if err != nil {
-				return fmt.Errorf("encoding public key: %v", err)
-			}
+		buf, err := keyset.ToPublicKeyBytes()
+		if err != nil {
+			return err
 		}
 
 		c.AddTask(&nodetasks.File{
 			Path:     filepath.Join(b.PathSrvKubernetes(), "service-account.pub"),
-			Contents: fi.NewBytesResource(buf.Bytes()),
+			Contents: fi.NewBytesResource(buf),
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0600"),
 		})
