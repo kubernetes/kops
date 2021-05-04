@@ -520,7 +520,7 @@ func mirrorSSHCredential(cluster *kops.Cluster, basedir vfs.Path, sshCredential 
 	return nil
 }
 
-func (c *VFSCAStore) StoreKeypair(name string, keyset *Keyset) error {
+func (c *VFSCAStore) StoreKeyset(name string, keyset *Keyset) error {
 	{
 		p := c.buildPrivateKeyPoolPath(name)
 		if err := c.writeKeysetBundle(p, name, keyset, true); err != nil {

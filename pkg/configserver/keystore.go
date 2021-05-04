@@ -53,9 +53,9 @@ func (s *configserverKeyStore) CreateKeypair(signer string, name string, templat
 	return nil, fmt.Errorf("CreateKeypair not supported by configserverKeyStore")
 }
 
-// StoreKeypair implements fi.Keystore
-func (s *configserverKeyStore) StoreKeypair(id string, keyset *fi.Keyset) error {
-	return fmt.Errorf("StoreKeypair not supported by configserverKeyStore")
+// StoreKeyset implements fi.Keystore
+func (s *configserverKeyStore) StoreKeyset(name string, keyset *fi.Keyset) error {
+	return fmt.Errorf("StoreKeyset not supported by configserverKeyStore")
 }
 
 // MirrorTo implements fi.Keystore

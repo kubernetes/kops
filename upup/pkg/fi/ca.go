@@ -66,8 +66,8 @@ type Keystore interface {
 	// FindKeyset finds a Keyset.
 	FindKeyset(name string) (*Keyset, error)
 
-	// StoreKeypair writes the keyset to the store.
-	StoreKeypair(id string, keyset *Keyset) error
+	// StoreKeyset writes a Keyset to the store.
+	StoreKeyset(name string, keyset *Keyset) error
 
 	// MirrorTo will copy secrets to a vfs.Path, which is often easier for a machine to read
 	MirrorTo(basedir vfs.Path) error

@@ -140,7 +140,7 @@ func RunCreateSecretCaCert(ctx context.Context, f *util.Factory, out io.Writer, 
 		PrivateKey:  privateKey,
 	}
 
-	err = keyStore.StoreKeypair(fi.CertificateIDCA, &fi.Keyset{
+	err = keyStore.StoreKeyset(fi.CertificateIDCA, &fi.Keyset{
 		LegacyFormat: false,
 		Items: map[string]*fi.KeysetItem{
 			serialString: ki,

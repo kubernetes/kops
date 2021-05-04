@@ -239,7 +239,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			},
 			Primary: ki,
 		}
-		err = c.Keystore.StoreKeypair(name, keyset)
+		err = c.Keystore.StoreKeyset(name, keyset)
 		if err != nil {
 			return err
 		}
@@ -267,7 +267,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			return err
 		}
 		keyset.LegacyFormat = false
-		err = c.Keystore.StoreKeypair(name, keyset)
+		err = c.Keystore.StoreKeyset(name, keyset)
 		if err != nil {
 			return err
 		}
