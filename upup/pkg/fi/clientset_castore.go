@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"sort"
 
 	"golang.org/x/crypto/ssh"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -312,7 +313,17 @@ func (c *ClientsetCAStore) storeKeyset(ctx context.Context, name string, keyset 
 
 	kopsKeyset.Spec.Keys = nil
 	kopsKeyset.Spec.PrimaryId = keyset.Primary.Id
-	for _, item := range keyset.Items {
+
+	keys := make([]string, 0, len(keyset.Items))
+	for k := range keyset.Items {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return KeysetItemIdOlder(keyset.Items[keys[i]].Id, keyset.Items[keys[j]].Id)
+	})
+
+	for _, key := range keys {
+		item := keyset.Items[key]
 		var publicMaterial bytes.Buffer
 		if _, err := item.Certificate.WriteTo(&publicMaterial); err != nil {
 			return err
