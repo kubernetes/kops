@@ -180,7 +180,9 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			return err
 		}
 		if keyset == nil {
-			keyset = &fi.Keyset{}
+			keyset = &fi.Keyset{
+				Items: map[string]*fi.KeysetItem{},
+			}
 		}
 
 		// We always reuse the private key if it exists,
@@ -232,13 +234,9 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			PrivateKey:  privateKey,
 		}
 
-		keyset = &fi.Keyset{
-			LegacyFormat: false,
-			Items: map[string]*fi.KeysetItem{
-				serialString: ki,
-			},
-			Primary: ki,
-		}
+		keyset.LegacyFormat = false
+		keyset.Items[ki.Id] = ki
+		keyset.Primary = ki
 		err = c.Keystore.StoreKeyset(name, keyset)
 		if err != nil {
 			return err
