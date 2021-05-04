@@ -664,9 +664,11 @@ spec:
           readOnly: true
         - mountPath: /run/xtables.lock
           name: xtables-lock
+{{ if WithDefaultBool .Hubble.Enabled false }}
         - mountPath: /var/lib/cilium/tls/hubble
           name: hubble-tls
           readOnly: true
+{{ end }}
 {{ if CiliumSecret }}
         - mountPath: /etc/ipsec
           name: cilium-ipsec-secrets
@@ -781,10 +783,12 @@ spec:
         secret:
           secretName: cilium-ipsec-keys
 {{ end }}
+{{ if WithDefaultBool .Hubble.Enabled false }}
       - name: hubble-tls
         secret:
           secretName: hubble-server-certs
           optional: true
+{{ end }}
 ---
 apiVersion: apps/v1
 kind: Deployment
