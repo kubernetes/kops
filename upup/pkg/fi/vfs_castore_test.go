@@ -81,8 +81,8 @@ func TestVFSCAStoreRoundTrip(t *testing.T) {
 		},
 		Primary: item,
 	}
-	if err := s.StoreKeypair("ca", keyset); err != nil {
-		t.Fatalf("error from StoreKeypair: %v", err)
+	if err := s.StoreKeyset("ca", keyset); err != nil {
+		t.Fatalf("error from StoreKeyset: %v", err)
 	}
 
 	paths, err := basePath.ReadTree()
@@ -244,8 +244,8 @@ func TestVFSCAStoreRoundTripWithVault(t *testing.T) {
 		},
 		Primary: item,
 	}
-	if err := s.StoreKeypair("ca", keyset); err != nil {
-		t.Fatalf("error from StoreKeypair: %v", err)
+	if err := s.StoreKeyset("ca", keyset); err != nil {
+		t.Fatalf("error from StoreKeyset: %v", err)
 	}
 
 	paths, err := basePath.ReadTree()
