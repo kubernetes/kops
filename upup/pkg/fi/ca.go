@@ -19,6 +19,7 @@ package fi
 import (
 	"bytes"
 	"fmt"
+	"math/big"
 	"strconv"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -180,5 +181,22 @@ func AddCert(keyset *Keyset, cert *pki.Certificate) {
 	keyset.Items[strconv.Itoa(serial)] = &KeysetItem{
 		Id:          strconv.Itoa(serial),
 		Certificate: cert,
+	}
+}
+
+// KeysetItemIdOlder returns whether the KeysetItem Id a is older than b.
+func KeysetItemIdOlder(a, b string) bool {
+	aVersion, aOk := big.NewInt(0).SetString(a, 10)
+	bVersion, bOk := big.NewInt(0).SetString(b, 10)
+	if aOk {
+		if !bOk {
+			return false
+		}
+		return aVersion.Cmp(bVersion) < 0
+	} else {
+		if bOk {
+			return true
+		}
+		return a < b
 	}
 }
