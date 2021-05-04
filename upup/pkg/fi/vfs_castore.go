@@ -216,8 +216,8 @@ func removePrivateKeyMaterial(o *kops.Keyset) *kops.Keyset {
 	return c
 }
 
-func (c *VFSCAStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
-	return FindKeypair(c, name)
+func (c *VFSCAStore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	return FindPrimaryKeypair(c, name)
 }
 
 func (c *VFSCAStore) FindKeyset(id string) (*Keyset, error) {

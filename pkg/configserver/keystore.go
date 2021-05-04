@@ -38,9 +38,9 @@ func NewKeyStore(nodeConfig *nodeup.NodeConfig) fi.CAStore {
 	}
 }
 
-// FindKeypair implements pki.Keystore
-func (s *configserverKeyStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
-	return nil, nil, fmt.Errorf("FindKeypair %q not supported by configserverKeyStore", name)
+// FindPrimaryKeypair implements pki.Keystore
+func (s *configserverKeyStore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	return nil, nil, fmt.Errorf("FindPrimaryKeypair %q not supported by configserverKeyStore", name)
 }
 
 // FindKeyset implements fi.Keystore
