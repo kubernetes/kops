@@ -24,30 +24,30 @@ export KOPS_FEATURE_FLAGS="SpecOverrideFlag,${KOPS_FEATURE_FLAGS:-}"
 REPO_ROOT=$(git rev-parse --show-toplevel);
 PATH=$REPO_ROOT/bazel-bin/cmd/kops/$(go env GOOS)-$(go env GOARCH):$PATH
 
-KUBETEST2_COMMON_ARGS="-v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-} --kops-binary-path=${REPO_ROOT}/bazel-bin/cmd/kops/linux-amd64/kops"
-KUBETEST2_COMMON_ARGS="${KUBETEST2_COMMON_ARGS} --admin-access=${ADMIN_ACCESS:-}"
+KUBETEST2="kubetest2 kops -v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-}"
+KUBETEST2="${KUBETEST2} --kops-binary-path=${REPO_ROOT}/bazel-bin/cmd/kops/linux-amd64/kops --admin-access=${ADMIN_ACCESS:-}"
 
 export GO111MODULE=on
 
-cd ${REPO_ROOT}/tests/e2e
+cd "${REPO_ROOT}/tests/e2e"
 go install sigs.k8s.io/kubetest2
 go install ./kubetest2-kops
 go install ./kubetest2-tester-kops
 
-kubetest2 kops ${KUBETEST2_COMMON_ARGS} --build --kops-root=${REPO_ROOT} --stage-location=${STAGE_LOCATION:-}
+${KUBETEST2} --build --kops-root="${REPO_ROOT}" --stage-location="${STAGE_LOCATION:-}"
 
 # Always tear-down the cluster when we're done
 function finish {
-  kubetest2 kops ${KUBETEST2_COMMON_ARGS} --down || echo "kubetest2 down failed"
+  ${KUBETEST2} --down || echo "kubetest2 down failed"
 }
 trap finish EXIT
 
-kubetest2 kops ${KUBETEST2_COMMON_ARGS} \
+${KUBETEST2} \
 		--up \
-		--kubernetes-version=v1.18.15 \
+		--kubernetes-version=v1.19.10 \
     --create-args="--networking calico"
 
-kops set cluster ${CLUSTER_NAME} cluster.spec.kubernetesVersion=v1.19.7
+kops set cluster "${CLUSTER_NAME}" cluster.spec.kubernetesVersion=v1.20.6
 kops update cluster
 kops update cluster --admin --yes
 
@@ -56,26 +56,11 @@ kops rolling-update cluster --yes --validation-timeout 30m
 
 kops validate cluster
 
-KUBECONFIG=${HOME}/.kube/config
-TEST_ARGS="--kubeconfig=${KUBECONFIG}"
-if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
-  ZONES=`kops get cluster ${CLUSTER_NAME} -ojson | jq -r .spec.subnets[].zone`
-  CLUSTER_TAG="${CLUSTER_NAME}"
-  TEST_ARGS="${TEST_ARGS} --provider=aws --cluster-tag=${CLUSTER_TAG}"
-  # For historical reasons, the flag name for e2e tests on AWS is --gce-zone
-  TEST_ARGS="${TEST_ARGS} --gce-zone=${ZONES[0]}"
-fi
-if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
-  ZONES=`kops get ig --name ${CLUSTER_NAME} -ojson | jq -r .[0].spec.zones[]`
-  GCE_PROJECT=`kops get cluster ${CLUSTER_NAME} -ojson |jq -r .spec.project`
-  TEST_ARGS="${TEST_ARGS} --provider=gce --gce-zone=${ZONES[0]} --gce-project=${GCE_PROJECT}"
-fi
-
-kubetest2 kops ${KUBETEST2_COMMON_ARGS} \
-		--cloud-provider=${CLOUD_PROVIDER} \
+${KUBETEST2} \
+		--cloud-provider="${CLOUD_PROVIDER}" \
 		--test=kops \
 		-- \
-		--test-package-version=v1.18.15 \
+		--test-package-version=v1.20.6 \
 		--parallel 25 \
 		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|TCP.CLOSE_WAIT|Projected.configMap.optional.updates" \
 		--test-args="${TEST_ARGS}"
