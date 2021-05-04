@@ -18,8 +18,11 @@ package fi
 
 import (
 	"bytes"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"math/big"
+	"sort"
 	"strconv"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -199,4 +202,27 @@ func KeysetItemIdOlder(a, b string) bool {
 		}
 		return a < b
 	}
+}
+
+func (k *Keyset) ToPublicKeyBytes() ([]byte, error) {
+	keys := make([]string, 0, len(k.Items))
+	for k := range k.Items {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return KeysetItemIdOlder(k.Items[keys[i]].Id, k.Items[keys[j]].Id)
+	})
+
+	buf := new(bytes.Buffer)
+	for _, key := range keys {
+		item := k.Items[key]
+		publicKeyData, err := x509.MarshalPKIXPublicKey(item.Certificate.PublicKey)
+		if err != nil {
+			return nil, fmt.Errorf("marshalling public key %s: %v", item.Id, err)
+		}
+		if err = pem.Encode(buf, &pem.Block{Type: "RSA PUBLIC KEY", Bytes: publicKeyData}); err != nil {
+			return nil, fmt.Errorf("encoding public key %s: %v", item.Id, err)
+		}
+	}
+	return buf.Bytes(), nil
 }
