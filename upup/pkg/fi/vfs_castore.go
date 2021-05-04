@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"sort"
 	"strings"
 	"sync"
 
@@ -138,7 +139,16 @@ func (k *Keyset) ToAPIObject(name string, includePrivateKeyMaterial bool) (*kops
 	o.Name = name
 	o.Spec.Type = kops.SecretTypeKeypair
 
-	for _, ki := range k.Items {
+	keys := make([]string, 0, len(k.Items))
+	for k := range k.Items {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return KeysetItemIdOlder(k.Items[keys[i]].Id, k.Items[keys[j]].Id)
+	})
+
+	for _, key := range keys {
+		ki := k.Items[key]
 		oki := kops.KeysetItem{
 			Id: ki.Id,
 		}
