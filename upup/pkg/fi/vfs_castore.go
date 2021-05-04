@@ -233,7 +233,7 @@ func (c *VFSCAStore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.Pri
 func (c *VFSCAStore) FindKeyset(id string) (*Keyset, error) {
 	certs, err := c.loadKeyset(c.buildCertificatePoolPath(id))
 
-	if (cert == nil || os.IsNotExist(err)) && id == "service-account" {
+	if (certs == nil || os.IsNotExist(err)) && id == "service-account" {
 		// The strange name is because Kops prior to 1.19 used the api-server TLS key for this.
 		id = "master"
 		certs, err = c.loadKeyset(c.buildCertificatePoolPath(id))
