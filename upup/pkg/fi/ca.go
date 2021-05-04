@@ -157,8 +157,8 @@ func (c *CertificatePool) AsString() (string, error) {
 	return data.String(), nil
 }
 
-// FindKeypair is a common implementation of pki.FindKeypair.
-func FindKeypair(c Keystore, name string) (*pki.Certificate, *pki.PrivateKey, error) {
+// FindPrimaryKeypair is a common implementation of pki.FindPrimaryKeypair.
+func FindPrimaryKeypair(c Keystore, name string) (*pki.Certificate, *pki.PrivateKey, error) {
 	keyset, err := c.FindKeyset(name)
 	if err != nil {
 		return nil, nil, err
