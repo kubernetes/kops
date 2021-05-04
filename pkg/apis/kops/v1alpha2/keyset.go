@@ -68,7 +68,7 @@ type KeysetSpec struct {
 	// Type is the type of the Keyset (PKI keypair, or secret token)
 	Type KeysetType `json:"type,omitempty"`
 
-	// PrimaryId is the id of the key used to mint new things.
+	// PrimaryId is the id of the key used to make new signatures.
 	PrimaryId string `json:"primaryId,omitempty"`
 
 	// Keys is the set of keys that make up the keyset

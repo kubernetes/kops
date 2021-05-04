@@ -60,7 +60,7 @@ spec:
                   type: object
                 type: array
               primaryId:
-                description: PrimaryId is the id of the key used to mint new things.
+                description: PrimaryId is the id of the key used to make new signatures.
                 type: string
               type:
                 description: Type is the type of the Keyset (PKI keypair, or secret
