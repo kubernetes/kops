@@ -35,7 +35,7 @@ type keystoreEntry struct {
 
 var _ pki.Keystore = keystore{}
 
-func (k keystore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
+func (k keystore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
 	entry, ok := k.keys[name]
 	if !ok {
 		return nil, nil, fmt.Errorf("unknown CA %q", name)

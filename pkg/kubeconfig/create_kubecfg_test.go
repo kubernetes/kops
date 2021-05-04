@@ -94,8 +94,8 @@ type fakeKeyStore struct {
 	MirrorToFn func(basedir vfs.Path) error
 }
 
-func (f fakeKeyStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
-	return fi.FindKeypair(f, name)
+func (f fakeKeyStore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	return fi.FindPrimaryKeypair(f, name)
 }
 
 func (f fakeKeyStore) FindKeyset(name string) (*fi.Keyset, error) {

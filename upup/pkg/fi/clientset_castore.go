@@ -145,9 +145,9 @@ func FindPrimary(keyset *kops.Keyset) *kops.KeysetItem {
 	return primary
 }
 
-// FindKeypair implements PKI::FindKeypair
-func (c *ClientsetCAStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
-	return FindKeypair(c, name)
+// FindPrimaryKeypair implements PKI::FindPrimaryKeypair
+func (c *ClientsetCAStore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	return FindPrimaryKeypair(c, name)
 }
 
 // FindKeyset implements CAStore::FindKeyset
