@@ -1,0 +1,188 @@
+{{ with .NodeProblemDetector }}
+# Sourced from https://github.com/kubernetes/node-problem-detector/tree/v0.8.8
+---
+# Source: node-problem-detector/deployment/node-problem-detector.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-problem-detector
+  namespace: kube-system
+  labels:
+    app: node-problem-detector
+spec:
+  selector:
+    matchLabels:
+      app: node-problem-detector
+  template:
+    metadata:
+      labels:
+        app: node-problem-detector
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                      - linux
+      containers:
+      - name: node-problem-detector
+        command:
+        - /node-problem-detector
+        - --logtostderr
+        - --config.system-log-monitor=/config/kernel-monitor.json,/config/docker-monitor.json
+        image: {{ .Image }}
+        resources:
+          limits:
+            cpu: {{ .CPULimit }}
+            memory: {{ .MemoryLimit }}
+          requests:
+            cpu: {{ .CPURequest }}
+            memory: {{ .MemoryRequest }}
+        securityContext:
+          privileged: true
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - name: log
+          mountPath: /var/log
+          readOnly: true
+        - name: kmsg
+          mountPath: /dev/kmsg
+          readOnly: true
+        # Make sure node problem detector is in the same timezone
+        # with the host.
+        - name: localtime
+          mountPath: /etc/localtime
+          readOnly: true
+        - name: config
+          mountPath: /config
+          readOnly: true
+      volumes:
+      - name: log
+        # Config `log` to your system log directory
+        hostPath:
+          path: /var/log/
+      - name: kmsg
+        hostPath:
+          path: /dev/kmsg
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
+      - name: config
+        configMap:
+          name: node-problem-detector-config
+          items:
+          - key: kernel-monitor.json
+            path: kernel-monitor.json
+          - key: docker-monitor.json
+            path: docker-monitor.json
+      priorityClassName: system-node-critical
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+        - effect: NoExecute
+          operator: Exists
+---
+# Source: node-problem-detector/deployment/node-problem-detector-config.yaml
+apiVersion: v1
+data:
+  kernel-monitor.json: |
+    {
+        "plugin": "kmsg",
+        "logPath": "/dev/kmsg",
+        "lookback": "5m",
+        "bufferSize": 10,
+        "source": "kernel-monitor",
+        "conditions": [
+            {
+                "type": "KernelDeadlock",
+                "reason": "KernelHasNoDeadlock",
+                "message": "kernel has no deadlock"
+            },
+            {
+                "type": "ReadonlyFilesystem",
+                "reason": "FilesystemIsNotReadOnly",
+                "message": "Filesystem is not read-only"
+            }
+        ],
+        "rules": [
+            {
+                "type": "temporary",
+                "reason": "OOMKilling",
+                "pattern": "Kill process \\d+ (.+) score \\d+ or sacrifice child\\nKilled process \\d+ (.+) total-vm:\\d+kB, anon-rss:\\d+kB, file-rss:\\d+kB.*"
+            },
+            {
+                "type": "temporary",
+                "reason": "TaskHung",
+                "pattern": "task \\S+:\\w+ blocked for more than \\w+ seconds\\."
+            },
+            {
+                "type": "temporary",
+                "reason": "UnregisterNetDevice",
+                "pattern": "unregister_netdevice: waiting for \\w+ to become free. Usage count = \\d+"
+            },
+            {
+                "type": "temporary",
+                "reason": "KernelOops",
+                "pattern": "BUG: unable to handle kernel NULL pointer dereference at .*"
+            },
+            {
+                "type": "temporary",
+                "reason": "KernelOops",
+                "pattern": "divide error: 0000 \\[#\\d+\\] SMP"
+            },
+            {
+    			"type": "temporary",
+    			"reason": "MemoryReadError",
+    			"pattern": "CE memory read error .*"
+            },
+            {
+                "type": "permanent",
+                "condition": "KernelDeadlock",
+                "reason": "AUFSUmountHung",
+                "pattern": "task umount\\.aufs:\\w+ blocked for more than \\w+ seconds\\."
+            },
+            {
+                "type": "permanent",
+                "condition": "KernelDeadlock",
+                "reason": "DockerHung",
+                "pattern": "task docker:\\w+ blocked for more than \\w+ seconds\\."
+            },
+            {
+                "type": "permanent",
+                "condition": "ReadonlyFilesystem",
+                "reason": "FilesystemIsReadOnly",
+                "pattern": "Remounting filesystem read-only"
+            }
+        ]
+    }
+  docker-monitor.json: |
+    {
+        "plugin": "journald",
+        "pluginConfig": {
+            "source": "dockerd"
+        },
+        "logPath": "/var/log/journal",
+        "lookback": "5m",
+        "bufferSize": 10,
+        "source": "docker-monitor",
+        "conditions": [],
+        "rules": [
+            {
+                "type": "temporary",
+                "reason": "CorruptDockerImage",
+                "pattern": "Error trying v2 registry: failed to register layer: rename /var/lib/docker/image/(.+) /var/lib/docker/image/(.+): directory not empty.*"
+            }
+        ]
+    }
+kind: ConfigMap
+metadata:
+  name: node-problem-detector-config
+  namespace: kube-system
+{{ end }}

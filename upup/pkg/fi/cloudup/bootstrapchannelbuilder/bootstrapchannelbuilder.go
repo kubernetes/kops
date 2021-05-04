@@ -594,6 +594,27 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 	}
 
+	npd := b.Cluster.Spec.NodeProblemDetector
+
+	if npd != nil && fi.BoolValue(npd.Enabled) {
+
+		key := "node-problem-detector.addons.k8s.io"
+		version := "0.8.8"
+
+		{
+			location := key + "/k8s-1.17.yaml"
+			id := "k8s-1.17"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:     fi.String(key),
+				Version:  fi.String(version),
+				Selector: map[string]string{"k8s-addon": key},
+				Manifest: fi.String(location),
+				Id:       id,
+			})
+		}
+	}
+
 	if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
 
 		key := "aws-load-balancer-controller.addons.k8s.io"
