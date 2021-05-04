@@ -161,6 +161,8 @@ type ClusterSpec struct {
 
 	// NodeTerminationHandler determines the node termination handler configuration.
 	NodeTerminationHandler *NodeTerminationHandlerConfig `json:"nodeTerminationHandler,omitempty"`
+	// NodeProblemDetector determines the node problem detector configuration.
+	NodeProblemDetector *NodeProblemDetectorConfig `json:"nodeProblemDetector,omitempty"`
 	// MetricsServer determines the metrics server configuration.
 	MetricsServer *MetricsServerConfig `json:"metricsServer,omitempty"`
 	// CertManager determines the metrics server configuration.
