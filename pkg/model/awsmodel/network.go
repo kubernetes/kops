@@ -193,7 +193,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				c.AddTask(&awstasks.Route{
 					Name:            fi.String("ipv6-0.0.0.0/0"),
 					Lifecycle:       b.Lifecycle,
-					IPv6CIDR:        fi.String("::/0"),
+					CIDR:            fi.String("::/0"),
 					RouteTable:      publicRouteTable,
 					InternetGateway: igw,
 				})
@@ -238,10 +238,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			CIDR:             fi.String(subnetSpec.CIDR),
 			Shared:           fi.Bool(sharedSubnet),
 			Tags:             tags,
-		}
-
-		if ipv6Enabled {
-			subnet.AwsIpv6SubnetNum = fi.Int(subnetSpec.AwsIpv6SubnetNum)
+			AwsIpv6SubnetNum: subnetSpec.AwsIpv6SubnetNum,
 		}
 
 		if subnetSpec.ProviderID != "" {

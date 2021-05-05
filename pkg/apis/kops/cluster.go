@@ -640,7 +640,7 @@ type ClusterSubnetSpec struct {
 	// PublicIP to attach to NatGateway
 	PublicIP string `json:"publicIP,omitempty"`
 	// define aws subnet number in decimanl
-	AwsIpv6SubnetNum int `json:"awsIpv6SubnetNum,omitempty"`
+	AwsIpv6SubnetNum *int `json:"awsIpv6SubnetNum,omitempty"`
 }
 
 type EgressProxySpec struct {

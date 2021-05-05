@@ -19,6 +19,8 @@ package awstasks
 import (
 	"fmt"
 
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
@@ -37,7 +39,6 @@ type Route struct {
 	RouteTable *RouteTable
 	Instance   *Instance
 	CIDR       *string
-	IPv6CIDR   *string
 
 	// Exactly one of the below fields
 	// MUST be provided.
@@ -124,7 +125,7 @@ func (s *Route) CheckChanges(a, e, changes *Route) error {
 		if e.RouteTable == nil {
 			return fi.RequiredField("RouteTable")
 		}
-		if e.CIDR == nil && e.IPv6CIDR == nil {
+		if e.CIDR == nil {
 			return fi.RequiredField("CIDR")
 		}
 		targetCount := 0
@@ -252,10 +253,10 @@ func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rou
 		RouteTableID: e.RouteTable.TerraformLink(),
 	}
 
-	if e.CIDR != nil {
+	if strings.Contains(*e.CIDR, ".") {
 		tf.CIDR = e.CIDR
 	} else {
-		tf.IPv6CIDR = e.IPv6CIDR
+		tf.IPv6CIDR = e.CIDR
 	}
 
 	if e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil {
