@@ -28,7 +28,7 @@ if [ -z "$FIRST_VERSION" ] || [ -z "$K8S_VERSION" ]; then
   exit 1
 fi
 
-FIRST_KOPS=$(mktemp -t kops)
+FIRST_KOPS=$(mktemp -t kops.XXXXXXXXX)
 wget -o "${FIRST_KOPS}" "https://github.com/kubernetes/kops/releases/download/$FIRST_VERSION/kops-$(go env GOOS)-$(go env GOARCH)"
 chmod +x "${FIRST_KOPS}"
 
