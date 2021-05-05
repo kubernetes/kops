@@ -1,0 +1,327 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: kube-dns.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: kube-dns.addons.k8s.io
+    k8s-app: kube-dns-autoscaler
+    kubernetes.io/cluster-service: "true"
+  name: kube-dns-autoscaler
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: kube-dns-autoscaler
+  template:
+    metadata:
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+      labels:
+        k8s-app: kube-dns-autoscaler
+    spec:
+      containers:
+      - command:
+        - /cluster-proportional-autoscaler
+        - --namespace=kube-system
+        - --configmap=kube-dns-autoscaler
+        - --target=Deployment/kube-dns
+        - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}}
+        - --logtostderr=true
+        - --v=2
+        image: k8s.gcr.io/cpa/cluster-proportional-autoscaler:1.8.3
+        name: autoscaler
+        resources:
+          requests:
+            cpu: 20m
+            memory: 10Mi
+      priorityClassName: system-cluster-critical
+      serviceAccountName: kube-dns-autoscaler
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: kube-dns.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: kube-dns.addons.k8s.io
+    k8s-app: kube-dns
+    kubernetes.io/cluster-service: "true"
+  name: kube-dns
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: kube-dns
+  strategy:
+    rollingUpdate:
+      maxSurge: 10%
+      maxUnavailable: 0
+  template:
+    metadata:
+      annotations:
+        prometheus.io/port: "10055"
+        prometheus.io/scrape: "true"
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+      labels:
+        k8s-app: kube-dns
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: k8s-app
+                  operator: In
+                  values:
+                  - kube-dns
+              topologyKey: kubernetes.io/hostname
+            weight: 1
+      containers:
+      - args:
+        - --config-dir=/kube-dns-config
+        - --dns-port=10053
+        - --domain=cluster.local.
+        - --v=2
+        env:
+        - name: PROMETHEUS_PORT
+          value: "10055"
+        image: k8s.gcr.io/k8s-dns-kube-dns:1.15.13
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /healthcheck/kubedns
+            port: 10054
+            scheme: HTTP
+          initialDelaySeconds: 60
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: kubedns
+        ports:
+        - containerPort: 10053
+          name: dns-local
+          protocol: UDP
+        - containerPort: 10053
+          name: dns-tcp-local
+          protocol: TCP
+        - containerPort: 10055
+          name: metrics
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            port: 8081
+            scheme: HTTP
+          initialDelaySeconds: 3
+          timeoutSeconds: 5
+        resources:
+          limits:
+            memory: 170Mi
+          requests:
+            cpu: 100m
+            memory: 70Mi
+        volumeMounts:
+        - mountPath: /kube-dns-config
+          name: kube-dns-config
+      - args:
+        - -v=2
+        - -logtostderr
+        - -configDir=/etc/k8s/dns/dnsmasq-nanny
+        - -restartDnsmasq=true
+        - --
+        - -k
+        - --cache-size=1000
+        - --dns-forward-max=150
+        - --no-negcache
+        - --log-facility=-
+        - --server=/cluster.local/127.0.0.1#10053
+        - --server=/in-addr.arpa/127.0.0.1#10053
+        - --server=/in6.arpa/127.0.0.1#10053
+        - --min-port=1024
+        image: k8s.gcr.io/k8s-dns-dnsmasq-nanny:1.15.13
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /healthcheck/dnsmasq
+            port: 10054
+            scheme: HTTP
+          initialDelaySeconds: 60
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: dnsmasq
+        ports:
+        - containerPort: 53
+          name: dns
+          protocol: UDP
+        - containerPort: 53
+          name: dns-tcp
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 150m
+            memory: 20Mi
+        volumeMounts:
+        - mountPath: /etc/k8s/dns/dnsmasq-nanny
+          name: kube-dns-config
+      - args:
+        - --v=2
+        - --logtostderr
+        - --probe=kubedns,127.0.0.1:10053,kubernetes.default.svc.cluster.local,5,A
+        - --probe=dnsmasq,127.0.0.1:53,kubernetes.default.svc.cluster.local,5,A
+        image: k8s.gcr.io/k8s-dns-sidecar:1.15.13
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /metrics
+            port: 10054
+            scheme: HTTP
+          initialDelaySeconds: 60
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: sidecar
+        ports:
+        - containerPort: 10054
+          name: metrics
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 10m
+            memory: 20Mi
+      dnsPolicy: Default
+      priorityClassName: system-cluster-critical
+      serviceAccountName: kube-dns
+      volumes:
+      - configMap:
+          name: kube-dns
+          optional: true
+        name: kube-dns-config
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: kube-dns.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: kube-dns.addons.k8s.io
+    k8s-app: kube-dns
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: KubeDNS
+  name: kube-dns
+  namespace: kube-system
+  resourceVersion: "0"
+spec:
+  clusterIP: 100.64.0.10
+  ports:
+  - name: dns
+    port: 53
+    protocol: UDP
+  - name: dns-tcp
+    port: 53
+    protocol: TCP
+  selector:
+    k8s-app: kube-dns
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: kube-dns.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: kube-dns.addons.k8s.io
+  name: kube-dns-autoscaler
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: kube-dns.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: kube-dns.addons.k8s.io
+  name: kube-dns-autoscaler
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - replicationcontrollers/scale
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - extensions
+  - apps
+  resources:
+  - deployments/scale
+  - replicasets/scale
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - create
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: kube-dns.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: kube-dns.addons.k8s.io
+  name: kube-dns-autoscaler
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kube-dns-autoscaler
+subjects:
+- kind: ServiceAccount
+  name: kube-dns-autoscaler
+  namespace: kube-system
+
+---
+
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: kube-dns.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: kube-dns.addons.k8s.io
+  name: kube-dns
+  namespace: kube-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      k8s-app: kube-dns

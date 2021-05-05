@@ -1,0 +1,60 @@
+kind: Addons
+metadata:
+  creationTimestamp: null
+  name: bootstrap
+spec:
+  addons:
+  - id: k8s-1.16
+    manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
+    manifestHash: 67314e85b0078a9fb171a50c8c2196cb2edc2f3f
+    name: kops-controller.addons.k8s.io
+    needsRollingUpdate: control-plane
+    selector:
+      k8s-addon: kops-controller.addons.k8s.io
+  - manifest: core.addons.k8s.io/v1.4.0.yaml
+    manifestHash: 9283cd74e74b10e441d3f1807c49c1bef8fac8c8
+    name: core.addons.k8s.io
+    selector:
+      k8s-addon: core.addons.k8s.io
+  - id: k8s-1.12
+    manifest: kube-dns.addons.k8s.io/k8s-1.12.yaml
+    manifestHash: 470684b80af41aa53c25bc5ac1a78b259c93336b
+    name: kube-dns.addons.k8s.io
+    selector:
+      k8s-addon: kube-dns.addons.k8s.io
+  - id: k8s-1.8
+    manifest: rbac.addons.k8s.io/k8s-1.8.yaml
+    manifestHash: 38ba4e0078bb1225421114f76f121c2277ca92ac
+    name: rbac.addons.k8s.io
+    selector:
+      k8s-addon: rbac.addons.k8s.io
+  - id: k8s-1.9
+    manifest: kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml
+    manifestHash: 8ee090e41be5e8bcd29ee799b1608edcd2dd8b65
+    name: kubelet-api.rbac.addons.k8s.io
+    selector:
+      k8s-addon: kubelet-api.rbac.addons.k8s.io
+  - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
+    manifestHash: 6ed889ae6a8d83dd6e5b511f831b3ac65950cf9d
+    name: limit-range.addons.k8s.io
+    selector:
+      k8s-addon: limit-range.addons.k8s.io
+  - id: k8s-1.12
+    manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
+    manifestHash: f38cb2b94a5c260e04499ce71c2ce6b6f4e0bea2
+    name: dns-controller.addons.k8s.io
+    selector:
+      k8s-addon: dns-controller.addons.k8s.io
+  - id: v1.15.0
+    manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
+    manifestHash: d474dbcc9b9c5cd2e87b41a7755851811f5f48aa
+    name: storage-aws.addons.k8s.io
+    selector:
+      k8s-addon: storage-aws.addons.k8s.io
+  - id: k8s-1.12
+    manifest: networking.cilium.io/k8s-1.12-v1.8.yaml
+    manifestHash: 89773466c5bff25483956f2c479b928234585ed0
+    name: networking.cilium.io
+    needsRollingUpdate: all
+    selector:
+      role.kubernetes.io/networking: "1"
