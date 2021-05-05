@@ -306,12 +306,12 @@ func (e *VPC) TerraformLink() *terraformWriter.Literal {
 	return terraformWriter.LiteralProperty("aws_vpc", *e.Name, "id")
 }
 
-func (e *VPC) TerraformIpv6CidrLink() *terraform.Literal {
+func (e *VPC) TerraformIpv6CidrLink() *terraformWriter.Literal {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		klog.Fatalf("only kops managed VPC is supported: %s", e)
 	}
-	return terraform.LiteralProperty("aws_vpc", *e.Name, "ipv6_cidr_block")
+	return terraformWriter.LiteralProperty("aws_vpc", *e.Name, "ipv6_cidr_block")
 }
 
 type cloudformationVPC struct {

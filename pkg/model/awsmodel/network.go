@@ -191,9 +191,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			})
 			if ipv6Enabled {
 				c.AddTask(&awstasks.Route{
-					Name:            s("ipv6-0.0.0.0/0"),
+					Name:            fi.String("ipv6-0.0.0.0/0"),
 					Lifecycle:       b.Lifecycle,
-					IPv6CIDR:        s("::/0"),
+					IPv6CIDR:        fi.String("::/0"),
 					RouteTable:      publicRouteTable,
 					InternetGateway: igw,
 				})

@@ -111,11 +111,11 @@ func writeLiteral(body *hclwrite.Body, key string, literal *terraformWriter.Lite
 			},
 		}
 		body.SetAttributeRaw(key, tokens)
-	} else if literal.Netnum > 0 {
+	} else if literal.Netnum != nil {
 		tokens := hclwrite.Tokens{
 			{
 				Type:  hclsyntax.TokenIdent,
-				Bytes: []byte(fmt.Sprintf("%v(%s,%d,%d)", literal.CidrSubnetFn, literal.CidrLink, literal.SubnetBits, literal.Netnum)),
+				Bytes: []byte(fmt.Sprintf("%v(%s,%d,%d)", literal.CIDRSubnetFn, literal.CIDRLink, *literal.SubnetBits, *literal.Netnum)),
 			},
 		}
 		body.SetAttributeRaw(key, tokens)

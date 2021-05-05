@@ -50,13 +50,13 @@ type Literal struct {
 	// FileFn represents the function used to reference the file
 	FileFn fileFn `cty:"file_fn"`
 	// CidrSubnetFn represents the function used calculate the subnetMask for ipv6 aws vpc
-	CidrSubnetFn string `cty:"cidrsubnet_fn"`
+	CIDRSubnetFn string `cty:"cidrsubnet_fn"`
 	// terraform link for vpc ipv6 cidr block
-	CidrLink string `cty:"vpc_ipv6_cidr_link"`
+	CIDRLink string `cty:"vpc_ipv6_cidr_link"`
 	// subnet bits. for ipv6 this value mostly will be 8 i.e /64 ipv6 subnet
-	SubnetBits int `cty:"subnet_bits"`
+	SubnetBits *int `cty:"subnet_bits"`
 	// decimal representation of subnet number
-	Netnum int `cty:"netnum"`
+	Netnum *int `cty:"netnum"`
 }
 
 var _ json.Marshaler = &Literal{}
@@ -65,13 +65,13 @@ func (l *Literal) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&l.Value)
 }
 
-func LiteralCidrsubnetExpression(vpcCidrProp *Literal, subnetBits, netnum int) *Literal {
+func LiteralCidrsubnetExpression(vpcCidrProp *Literal, subnetBits, netnum *int) *Literal {
 	cidrLink := vpcCidrProp.ResourceType + "." + vpcCidrProp.ResourceName + "." + vpcCidrProp.ResourceProp
 	return &Literal{
 		// value used for Terraform 0.11
 		Value:        fmt.Sprintf("${cidrsubnet(%s,%d,%d)}", cidrLink, subnetBits, netnum),
-		CidrLink:     cidrLink,
-		CidrSubnetFn: cidrSubnetFn,
+		CIDRLink:     cidrLink,
+		CIDRSubnetFn: cidrSubnetFn,
 		SubnetBits:   subnetBits,
 		Netnum:       netnum,
 	}
