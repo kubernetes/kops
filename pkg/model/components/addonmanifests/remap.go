@@ -25,6 +25,7 @@ import (
 	"k8s.io/klog/v2"
 	addonsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components/addonmanifests/awsloadbalancercontroller"
@@ -78,6 +79,10 @@ func RemapAddonManifest(addon *addonsapi.AddonSpec, context *model.KopsModelCont
 }
 
 func addServiceAccountRole(context *model.KopsModelContext, objects kubemanifest.ObjectList) error {
+	if !featureflag.UseServiceAccountIAM.Enabled() {
+		return nil
+	}
+
 	for _, object := range objects {
 		if object.Kind() != "Deployment" {
 			continue
