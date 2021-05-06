@@ -17,8 +17,6 @@ limitations under the License.
 package components
 
 import (
-	"strings"
-
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/iam"
@@ -64,14 +62,9 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 			kubeAPIServer.FeatureGates = make(map[string]string)
 		}
 		kubeAPIServer.FeatureGates["ServiceAccountIssuerDiscovery"] = "true"
+	}
 
-		if kubeAPIServer.ServiceAccountJWKSURI == nil {
-			jwksURL := *kubeAPIServer.ServiceAccountIssuer
-			jwksURL = strings.TrimSuffix(jwksURL, "/") + "/keys.json"
-
-			kubeAPIServer.ServiceAccountJWKSURI = &jwksURL
-		}
-	} else if kubeAPIServer.ServiceAccountJWKSURI == nil {
+	if kubeAPIServer.ServiceAccountJWKSURI == nil {
 		jwksURI, err := iam.ServiceAccountIssuer(clusterSpec)
 		if err != nil {
 			return err
