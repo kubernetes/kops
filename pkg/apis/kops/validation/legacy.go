@@ -374,7 +374,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	}
 
 	said := c.Spec.ServiceAccountIssuerDiscovery
-	if said != nil {
+	if said != nil && said.DiscoveryStore != "" {
 		saidStore := said.DiscoveryStore
 		saidStoreField := fieldSpec.Child("serviceAccountIssuerDiscovery", "discoveryStore")
 		base, err := vfs.Context.BuildVfsPath(saidStore)
