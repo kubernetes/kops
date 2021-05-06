@@ -320,11 +320,11 @@ func TestVFSServiceAccountIssuerDiscovery(t *testing.T) {
 
 }
 
-// TestAWSLBController runs a simple configuration, but with AWS LB controller, UseServiceAccountIAM and PublicJWKS enabled
+// TestAWSLBController runs a simple configuration, but with AWS LB controller and UseServiceAccountIAM enabled
 func TestAWSLBController(t *testing.T) {
-	featureflag.ParseFlags("+UseServiceAccountIAM,+PublicJWKS")
+	featureflag.ParseFlags("+UseServiceAccountIAM")
 	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-UseServiceAccountIAM,-PublicJWKS")
+		featureflag.ParseFlags("-UseServiceAccountIAM")
 	}
 	defer unsetFeatureFlags()
 
