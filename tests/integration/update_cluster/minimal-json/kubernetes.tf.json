@@ -1,6 +1,7 @@
 {
   "locals": {
     "cluster_name": "minimal-json.example.com",
+    "ipv6_vpc_cidr_block": "${aws_vpc.minimal-json-example-com.ipv6_cidr_block}",
     "master_autoscaling_group_ids": [
       "${aws_autoscaling_group.master-us-test-1a-masters-minimal-json-example-com.id}"
     ],
@@ -29,6 +30,9 @@
   "output": {
     "cluster_name": {
       "value": "minimal-json.example.com"
+    },
+    "ipv6_vpc_cidr_block": {
+      "value": "${aws_vpc.minimal-json-example-com.ipv6_cidr_block}"
     },
     "master_autoscaling_group_ids": {
       "value": [
@@ -509,6 +513,11 @@
         "route_table_id": "${aws_route_table.minimal-json-example-com.id}",
         "destination_cidr_block": "0.0.0.0/0",
         "gateway_id": "${aws_internet_gateway.minimal-json-example-com.id}"
+      },
+      "route-ipv6-default": {
+        "route_table_id": "${aws_route_table.minimal-json-example-com.id}",
+        "destination_ipv6_cidr_block": "::/0",
+        "gateway_id": "${aws_internet_gateway.minimal-json-example-com.id}"
       }
     },
     "aws_route_table": {
@@ -681,7 +690,8 @@
           "KubernetesCluster": "minimal-json.example.com",
           "Name": "minimal-json.example.com",
           "kubernetes.io/cluster/minimal-json.example.com": "owned"
-        }
+        },
+        "assign_generated_ipv6_cidr_block": true
       }
     },
     "aws_vpc_dhcp_options": {

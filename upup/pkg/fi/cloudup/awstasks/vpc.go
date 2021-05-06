@@ -36,11 +36,10 @@ type VPC struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
 
-	ID                          *string
-	CIDR                        *string
-	EnableDNSHostnames          *bool
-	EnableDNSSupport            *bool
-	AmazonProvidedIpv6CidrBlock *bool
+	ID                 *string
+	CIDR               *string
+	EnableDNSHostnames *bool
+	EnableDNSSupport   *bool
 
 	// Shared is set if this is a shared VPC
 	Shared *bool
@@ -164,9 +163,8 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 		klog.V(2).Infof("Creating VPC with CIDR: %q", *e.CIDR)
 
 		request := &ec2.CreateVpcInput{
-			CidrBlock:                   e.CIDR,
-			TagSpecifications:           awsup.EC2TagSpecification(ec2.ResourceTypeVpc, e.Tags),
-			AmazonProvidedIpv6CidrBlock: e.AmazonProvidedIpv6CidrBlock,
+			CidrBlock:         e.CIDR,
+			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeVpc, e.Tags),
 		}
 
 		response, err := t.Cloud.EC2().CreateVpc(request)
@@ -263,17 +261,16 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 	if err := t.AddOutputVariable("vpc_id", e.TerraformLink()); err != nil {
 		return err
 	}
-	if fi.BoolValue(e.AmazonProvidedIpv6CidrBlock) {
-		if err := t.AddOutputVariable("ipv6_vpc_cidr_block", e.TerraformIpv6CidrLink()); err != nil {
-			return err
-		}
-	}
 
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not terraform owned / managed
 		// We won't apply changes, but our validation (kops update) will still warn
 		return nil
+	}
+
+	if err := t.AddOutputVariable("ipv6_vpc_cidr_block", e.TerraformIpv6CidrLink()); err != nil {
+		return err
 	}
 
 	if err := t.AddOutputVariable("vpc_cidr_block", terraformWriter.LiteralProperty("aws_vpc", *e.Name, "cidr_block")); err != nil {
@@ -286,7 +283,7 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 		Tags:                        e.Tags,
 		EnableDNSHostnames:          e.EnableDNSHostnames,
 		EnableDNSSupport:            e.EnableDNSSupport,
-		AmazonProvidedIpv6CidrBlock: e.AmazonProvidedIpv6CidrBlock,
+		AmazonProvidedIpv6CidrBlock: fi.Bool(true),
 	}
 
 	return t.RenderResource("aws_vpc", *e.Name, tf)

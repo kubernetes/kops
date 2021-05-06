@@ -1,5 +1,6 @@
 locals {
   cluster_name                 = "externalpolicies.example.com"
+  ipv6_vpc_cidr_block          = aws_vpc.externalpolicies-example-com.ipv6_cidr_block
   master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-externalpolicies-example-com.id]
   master_security_group_ids    = [aws_security_group.masters-externalpolicies-example-com.id]
   masters_role_arn             = aws_iam_role.masters-externalpolicies-example-com.arn
@@ -18,6 +19,10 @@ locals {
 
 output "cluster_name" {
   value = "externalpolicies.example.com"
+}
+
+output "ipv6_vpc_cidr_block" {
+  value = aws_vpc.externalpolicies-example-com.ipv6_cidr_block
 }
 
 output "master_autoscaling_group_ids" {
@@ -540,6 +545,12 @@ resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = aws_route_table.externalpolicies-example-com.id
 }
 
+resource "aws_route" "route-ipv6-default" {
+  destination_ipv6_cidr_block = "::/0"
+  gateway_id                  = aws_internet_gateway.externalpolicies-example-com.id
+  route_table_id              = aws_route_table.externalpolicies-example-com.id
+}
+
 resource "aws_route53_record" "api-externalpolicies-example-com" {
   alias {
     evaluate_target_health = false
@@ -794,9 +805,10 @@ resource "aws_subnet" "us-test-1a-externalpolicies-example-com" {
 }
 
 resource "aws_vpc" "externalpolicies-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
+  assign_generated_ipv6_cidr_block = true
+  cidr_block                       = "172.20.0.0/16"
+  enable_dns_hostnames             = true
+  enable_dns_support               = true
   tags = {
     "KubernetesCluster"                                  = "externalpolicies.example.com"
     "Name"                                               = "externalpolicies.example.com"

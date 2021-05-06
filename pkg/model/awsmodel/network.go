@@ -47,7 +47,6 @@ func isUnmanaged(subnet *kops.ClusterSubnetSpec) bool {
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	sharedVPC := b.Cluster.SharedVPC()
 	vpcName := b.ClusterName()
-	ipv6Enabled := b.Cluster.Spec.AmazonProvidedIpv6CidrBlock
 	tags := b.CloudTags(vpcName, sharedVPC)
 
 	// VPC that holds everything for the cluster
@@ -83,10 +82,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		if b.Cluster.Spec.NetworkCIDR != "" {
 			t.CIDR = fi.String(b.Cluster.Spec.NetworkCIDR)
-		}
-
-		if ipv6Enabled {
-			t.AmazonProvidedIpv6CidrBlock = fi.Bool(true)
 		}
 
 		c.AddTask(t)
@@ -162,7 +157,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		igw.Tags = b.CloudTags(*igw.Name, *igw.Shared)
 		c.AddTask(igw)
-
 		if !allSubnetsShared {
 			// The route table is not shared if we're creating a subnet for our cluster
 			// That subnet will be owned, and will be associated with our RouteTable.
@@ -189,15 +183,13 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				RouteTable:      publicRouteTable,
 				InternetGateway: igw,
 			})
-			if ipv6Enabled {
-				c.AddTask(&awstasks.Route{
-					Name:            fi.String("ipv6-0.0.0.0/0"),
-					Lifecycle:       b.Lifecycle,
-					CIDR:            fi.String("::/0"),
-					RouteTable:      publicRouteTable,
-					InternetGateway: igw,
-				})
-			}
+			c.AddTask(&awstasks.Route{
+				Name:            fi.String("ipv6-default"),
+				Lifecycle:       b.Lifecycle,
+				CIDR:            fi.String("::/0"),
+				RouteTable:      publicRouteTable,
+				InternetGateway: igw,
+			})
 		}
 	}
 

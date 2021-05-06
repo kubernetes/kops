@@ -435,6 +435,12 @@ resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = aws_route_table.sharedvpc-example-com.id
 }
 
+resource "aws_route" "route-ipv6-default" {
+  destination_ipv6_cidr_block = "::/0"
+  gateway_id                  = "igw-1"
+  route_table_id              = aws_route_table.sharedvpc-example-com.id
+}
+
 resource "aws_route_table" "sharedvpc-example-com" {
   tags = {
     "KubernetesCluster"                           = "sharedvpc.example.com"

@@ -1,5 +1,6 @@
 locals {
   cluster_name                 = "mixedinstances.example.com"
+  ipv6_vpc_cidr_block          = aws_vpc.mixedinstances-example-com.ipv6_cidr_block
   master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-mixedinstances-example-com.id, aws_autoscaling_group.master-us-test-1b-masters-mixedinstances-example-com.id, aws_autoscaling_group.master-us-test-1c-masters-mixedinstances-example-com.id]
   master_security_group_ids    = [aws_security_group.masters-mixedinstances-example-com.id]
   masters_role_arn             = aws_iam_role.masters-mixedinstances-example-com.arn
@@ -20,6 +21,10 @@ locals {
 
 output "cluster_name" {
   value = "mixedinstances.example.com"
+}
+
+output "ipv6_vpc_cidr_block" {
+  value = aws_vpc.mixedinstances-example-com.ipv6_cidr_block
 }
 
 output "master_autoscaling_group_ids" {
@@ -829,6 +834,12 @@ resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = aws_route_table.mixedinstances-example-com.id
 }
 
+resource "aws_route" "route-ipv6-default" {
+  destination_ipv6_cidr_block = "::/0"
+  gateway_id                  = aws_internet_gateway.mixedinstances-example-com.id
+  route_table_id              = aws_route_table.mixedinstances-example-com.id
+}
+
 resource "aws_route_table" "mixedinstances-example-com" {
   tags = {
     "KubernetesCluster"                                = "mixedinstances.example.com"
@@ -1024,9 +1035,10 @@ resource "aws_subnet" "us-test-1c-mixedinstances-example-com" {
 }
 
 resource "aws_vpc" "mixedinstances-example-com" {
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
+  assign_generated_ipv6_cidr_block = true
+  cidr_block                       = "10.0.0.0/16"
+  enable_dns_hostnames             = true
+  enable_dns_support               = true
   tags = {
     "KubernetesCluster"                                = "mixedinstances.example.com"
     "Name"                                             = "mixedinstances.example.com"

@@ -73,10 +73,6 @@ type ClusterSpec struct {
 	// This is a real CIDR, not the internal k8s network
 	// On AWS, it maps to the VPC CIDR.  It is not required on GCE.
 	NetworkCIDR string `json:"networkCIDR,omitempty"`
-	// IPv6NetworkCIDR is the IPv6 CIDR used for the AWS VPC
-	// This is a real CIDR, not the internal k8s network
-	// On AWS, it maps to the VPC CIDR.  It is not required on GCE.
-	AmazonProvidedIpv6CidrBlock bool `json:"amazonProvidedIpv6CidrBlock,omitempty"`
 	// AdditionalNetworkCIDRs is a list of additional CIDR used for the AWS VPC
 	// or otherwise allocated to k8s. This is a real CIDR, not the internal k8s network
 	// On AWS, it maps to any additional CIDRs added to a VPC.

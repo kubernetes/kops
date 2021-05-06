@@ -706,6 +706,18 @@
         ]
       }
     },
+    "AWSEC2Routeipv6default": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableminimalexamplecom"
+        },
+        "DestinationCidrBlock": "::/0",
+        "GatewayId": {
+          "Ref": "AWSEC2InternetGatewayminimalexamplecom"
+        }
+      }
+    },
     "AWSEC2SecurityGroupEgressfrommastersminimalexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {

@@ -678,6 +678,12 @@ resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = aws_route_table.privatedns2-example-com.id
 }
 
+resource "aws_route" "route-ipv6-default" {
+  destination_ipv6_cidr_block = "::/0"
+  gateway_id                  = "igw-1"
+  route_table_id              = aws_route_table.privatedns2-example-com.id
+}
+
 resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.us-test-1a-privatedns2-example-com.id

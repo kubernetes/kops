@@ -1,5 +1,6 @@
 locals {
   cluster_name                                       = "minimal.example.com"
+  ipv6_vpc_cidr_block                                = aws_vpc.minimal-example-com.ipv6_cidr_block
   kube-system-aws-load-balancer-controller_role_arn  = aws_iam_role.aws-load-balancer-controller-kube-system-sa-minimal-example-com.arn
   kube-system-aws-load-balancer-controller_role_name = aws_iam_role.aws-load-balancer-controller-kube-system-sa-minimal-example-com.name
   kube-system-dns-controller_role_arn                = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.arn
@@ -22,6 +23,10 @@ locals {
 
 output "cluster_name" {
   value = "minimal.example.com"
+}
+
+output "ipv6_vpc_cidr_block" {
+  value = aws_vpc.minimal-example-com.ipv6_cidr_block
 }
 
 output "kube-system-aws-load-balancer-controller_role_arn" {
@@ -512,6 +517,12 @@ resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = aws_route_table.minimal-example-com.id
 }
 
+resource "aws_route" "route-ipv6-default" {
+  destination_ipv6_cidr_block = "::/0"
+  gateway_id                  = aws_internet_gateway.minimal-example-com.id
+  route_table_id              = aws_route_table.minimal-example-com.id
+}
+
 resource "aws_route_table" "minimal-example-com" {
   tags = {
     "KubernetesCluster"                         = "minimal.example.com"
@@ -671,9 +682,10 @@ resource "aws_subnet" "us-test-1a-minimal-example-com" {
 }
 
 resource "aws_vpc" "minimal-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
+  assign_generated_ipv6_cidr_block = true
+  cidr_block                       = "172.20.0.0/16"
+  enable_dns_hostnames             = true
+  enable_dns_support               = true
   tags = {
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "minimal.example.com"

@@ -503,6 +503,18 @@
         ]
       }
     },
+    "AWSEC2Routeipv6default": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTablecontainerdexamplecom"
+        },
+        "DestinationCidrBlock": "::/0",
+        "GatewayId": {
+          "Ref": "AWSEC2InternetGatewaycontainerdexamplecom"
+        }
+      }
+    },
     "AWSEC2SecurityGroupEgressfrommasterscontainerdexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
