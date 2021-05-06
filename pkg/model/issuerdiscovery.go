@@ -53,7 +53,7 @@ type oidcDiscovery struct {
 
 func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	said := b.Cluster.Spec.ServiceAccountIssuerDiscovery
-	if said == nil {
+	if said == nil || said.DiscoveryStore == "" {
 		return nil
 	}
 
