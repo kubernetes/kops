@@ -93,8 +93,6 @@ var (
 	ClusterAddons = New("ClusterAddons", Bool(false))
 	// UseServiceAccountIAM controls whether we use pod-level IAM permissions for our system pods and kOps addons.
 	UseServiceAccountIAM = New("UseServiceAccountIAM", Bool(false))
-	// PublicJWKS enables public jwks access.
-	PublicJWKS = New("PublicJWKS", Bool(false))
 	// Azure toggles the Azure support.
 	Azure = New("Azure", Bool(false))
 	// KopsControllerStateStore enables fetching the kops state from kops-controller, instead of requiring access to S3/GCS/etc.
