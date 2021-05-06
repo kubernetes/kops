@@ -69,9 +69,6 @@ ${KUBETEST2} \
 
 "${SECOND_KOPS}" validate cluster
 
-KUBECONFIG=${HOME}/.kube/config
-TEST_ARGS="--kubeconfig=${KUBECONFIG}"
-
 ${KUBETEST2} \
 		--cloud-provider="${CLOUD_PROVIDER}" \
 		--kops-binary-path="${SECOND_KOPS}" \
@@ -79,6 +76,4 @@ ${KUBETEST2} \
 		-- \
 		--test-package-version="${K8S_VERSION}" \
 		--parallel 25 \
-		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|TCP.CLOSE_WAIT|Projected.configMap.optional.updates" \
-		--test-args="${TEST_ARGS}"
-
+		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|TCP.CLOSE_WAIT|Projected.configMap.optional.updates"
