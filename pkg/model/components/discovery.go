@@ -18,7 +18,6 @@ package components
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -34,9 +33,13 @@ var _ loader.OptionsBuilder = &DiscoveryOptionsBuilder{}
 func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
-	useJWKS := featureflag.PublicJWKS.Enabled()
-	if !useJWKS && b.IsKubernetesLT("1.20") {
-		return nil
+	if b.IsKubernetesLT("1.20") {
+		if clusterSpec.KubeAPIServer.FeatureGates == nil {
+			return nil
+		}
+		if _, ok := clusterSpec.KubeAPIServer.FeatureGates["ServiceAccountIssuerDiscovery"]; !ok {
+			return nil
+		}
 	}
 
 	if clusterSpec.KubeAPIServer == nil {
@@ -56,13 +59,6 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 	kubeAPIServer.ServiceAccountIssuer = &serviceAccountIssuer
 
 	// We set apiserver ServiceAccountKey and ServiceAccountSigningKeyFile in nodeup
-
-	if useJWKS {
-		if kubeAPIServer.FeatureGates == nil {
-			kubeAPIServer.FeatureGates = make(map[string]string)
-		}
-		kubeAPIServer.FeatureGates["ServiceAccountIssuerDiscovery"] = "true"
-	}
 
 	if kubeAPIServer.ServiceAccountJWKSURI == nil {
 		jwksURI, err := iam.ServiceAccountIssuer(clusterSpec)
