@@ -295,11 +295,11 @@ func TestPrivateDns2(t *testing.T) {
 	newIntegrationTest("privatedns2.example.com", "privatedns2").withPrivate().runTestTerraformAWS(t)
 }
 
-// TestPublicJWKS runs a simple configuration, but with UseServiceAccountIAM and PublicJWKS enabled
-func TestPublicJWKSAPIServer(t *testing.T) {
-	featureflag.ParseFlags("+UseServiceAccountIAM,+PublicJWKS")
+// TestDiscoveryFeatureGate runs a simple configuration, but with UseServiceAccountIAM and the ServiceAccountIssuerDiscovery feature gate enabled
+func TestDiscoveryFeatureGate(t *testing.T) {
+	featureflag.ParseFlags("+UseServiceAccountIAM")
 	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-UseServiceAccountIAM,-PublicJWKS")
+		featureflag.ParseFlags("-UseServiceAccountIAM")
 	}
 	defer unsetFeatureFlags()
 
