@@ -121,6 +121,7 @@
         "elasticloadbalancing:DescribeRules",
         "elasticloadbalancing:DescribeTargetHealth",
         "elasticloadbalancing:DescribeListenerCertificates",
+        "elasticloadbalancing:ModifyTargetGroupAttributes",
         "elasticloadbalancing:CreateRule"
       ],
       "Effect": "Allow",
