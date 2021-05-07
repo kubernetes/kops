@@ -5,7 +5,6 @@ go_library(
     srcs = ["vfs.go"],
     embedsrcs = [
         "cloudup/resources/addons/OWNERS",
-        "cloudup/resources/addons/anonymous-issuer-discovery.addons.k8s.io/k8s-1.16.yaml.template",
         "cloudup/resources/addons/authentication.aws/k8s-1.12.yaml.template",
         "cloudup/resources/addons/authentication.kope.io/k8s-1.12.yaml",
         "cloudup/resources/addons/aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml.template",
