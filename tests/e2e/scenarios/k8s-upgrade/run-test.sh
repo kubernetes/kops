@@ -47,6 +47,9 @@ ${KUBETEST2} \
 		--kubernetes-version=v1.19.10 \
     --create-args="--networking calico"
 
+cd "${REPO_ROOT}/tests/e2e"
+go test ./tests/... --test.count=1 -v
+
 kops set cluster "${CLUSTER_NAME}" cluster.spec.kubernetesVersion=v1.20.6
 kops update cluster
 kops update cluster --admin --yes
@@ -63,3 +66,6 @@ ${KUBETEST2} \
 		--test-package-version=v1.20.6 \
 		--parallel 25 \
 		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|TCP.CLOSE_WAIT|Projected.configMap.optional.updates"
+
+cd "${REPO_ROOT}/tests/e2e"
+go test ./tests/... --test.count=1 -v

@@ -61,6 +61,9 @@ ${KUBETEST2} \
 		--kubernetes-version="${K8S_VERSION}" \
 		--create-args="--networking calico"
 
+cd "${REPO_ROOT}/tests/e2e"
+go test ./tests/... --test.count=1 -v
+
 "${SECOND_KOPS}" update cluster
 "${SECOND_KOPS}" update cluster --admin --yes
 
@@ -77,3 +80,6 @@ ${KUBETEST2} \
 		--test-package-version="${K8S_VERSION}" \
 		--parallel 25 \
 		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|TCP.CLOSE_WAIT|Projected.configMap.optional.updates"
+
+cd "${REPO_ROOT}/tests/e2e"
+go test ./tests/... --test.count=1 -v
