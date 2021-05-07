@@ -74,6 +74,18 @@ func (m *MockEC2) CreateSubnetWithId(request *ec2.CreateSubnetInput, id string) 
 		AvailabilityZone: request.AvailabilityZone,
 	}
 
+	if request.Ipv6CidrBlock != nil {
+		subnet.Ipv6CidrBlockAssociationSet = []*ec2.SubnetIpv6CidrBlockAssociation{
+			{
+				AssociationId: aws.String("subnet-cidr-assoc-ipv6-" + id),
+				Ipv6CidrBlock: request.Ipv6CidrBlock,
+				Ipv6CidrBlockState: &ec2.SubnetCidrBlockState{
+					State: aws.String(ec2.SubnetCidrBlockStateCodeAssociated),
+				},
+			},
+		}
+	}
+
 	if m.subnets == nil {
 		m.subnets = make(map[string]*subnetInfo)
 	}

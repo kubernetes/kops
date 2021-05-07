@@ -243,18 +243,33 @@ func (m *MockEC2) AssociateVpcCidrBlock(request *ec2.AssociateVpcCidrBlockInput)
 	if !ok {
 		return nil, fmt.Errorf("VPC %q not found", id)
 	}
-	association := &ec2.VpcCidrBlockAssociation{
-		CidrBlock:     request.CidrBlock,
-		AssociationId: aws.String(fmt.Sprintf("%v-%v", id, len(vpc.main.CidrBlockAssociationSet))),
-		CidrBlockState: &ec2.VpcCidrBlockState{
-			State: aws.String(ec2.VpcCidrBlockStateCodeAssociated),
-		},
+	var ipv4association *ec2.VpcCidrBlockAssociation
+	var ipv6association *ec2.VpcIpv6CidrBlockAssociation
+	if aws.BoolValue(request.AmazonProvidedIpv6CidrBlock) {
+		ipv6association = &ec2.VpcIpv6CidrBlockAssociation{
+			Ipv6Pool:      aws.String("Amazon"),
+			Ipv6CidrBlock: aws.String("2001:db8::/56"),
+			AssociationId: aws.String(fmt.Sprintf("%v-%v", id, len(vpc.main.Ipv6CidrBlockAssociationSet))),
+			Ipv6CidrBlockState: &ec2.VpcCidrBlockState{
+				State: aws.String(ec2.VpcCidrBlockStateCodeAssociated),
+			},
+		}
+		vpc.main.Ipv6CidrBlockAssociationSet = append(vpc.main.Ipv6CidrBlockAssociationSet, ipv6association)
+	} else {
+		ipv4association = &ec2.VpcCidrBlockAssociation{
+			CidrBlock:     request.CidrBlock,
+			AssociationId: aws.String(fmt.Sprintf("%v-%v", id, len(vpc.main.CidrBlockAssociationSet))),
+			CidrBlockState: &ec2.VpcCidrBlockState{
+				State: aws.String(ec2.VpcCidrBlockStateCodeAssociated),
+			},
+		}
+		vpc.main.CidrBlockAssociationSet = append(vpc.main.CidrBlockAssociationSet, ipv4association)
 	}
-	vpc.main.CidrBlockAssociationSet = append(vpc.main.CidrBlockAssociationSet, association)
 
 	return &ec2.AssociateVpcCidrBlockOutput{
-		CidrBlockAssociation: association,
-		VpcId:                request.VpcId,
+		CidrBlockAssociation:     ipv4association,
+		Ipv6CidrBlockAssociation: ipv6association,
+		VpcId:                    request.VpcId,
 	}, nil
 }
 

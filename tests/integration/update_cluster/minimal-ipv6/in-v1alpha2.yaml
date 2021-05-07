@@ -10,8 +10,10 @@ spec:
       class: Network
   kubernetesApiAccess:
   - 0.0.0.0/0
+  - ::/0
   sshAccess:
   - 0.0.0.0/0
+  - ::/0
   channel: stable
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal-ipv6.example.com
@@ -39,6 +41,7 @@ spec:
     nodes: public
   subnets:
   - cidr: 172.20.32.0/19
+    ipv6CIDR: 2001:db8:0:111::/64
     name: us-test-1a
     type: Public
     zone: us-test-1a

@@ -183,6 +183,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		InstanceInterruptionBehavior: ig.Spec.InstanceInterruptionBehavior,
 		InstanceMonitoring:           ig.Spec.DetailedInstanceMonitoring,
 		InstanceType:                 fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
+		IPv6AddressCount:             fi.Int64(0),
 		RootVolumeIops:               fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops))),
 		RootVolumeOptimization:       ig.Spec.RootVolumeOptimization,
 		RootVolumeSize:               fi.Int64(int64(rootVolumeSize)),
@@ -210,6 +211,14 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 			}
 		case kops.SubnetTypePrivate:
 			lt.AssociatePublicIP = fi.Bool(false)
+		}
+
+		// @step: add an IPv6 address
+		for _, subnet := range subnets {
+			if subnet.IPv6CIDR != "" {
+				lt.IPv6AddressCount = fi.Int64(1)
+				break
+			}
 		}
 	}
 
