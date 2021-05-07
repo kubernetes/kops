@@ -759,6 +759,7 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy, resource stringorslice.S
 				"elasticloadbalancing:DescribeRules",
 				"elasticloadbalancing:DescribeTargetHealth",
 				"elasticloadbalancing:DescribeListenerCertificates",
+				"elasticloadbalancing:ModifyTargetGroupAttributes",
 				"elasticloadbalancing:CreateRule",
 			),
 			Resource: resource,
