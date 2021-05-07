@@ -41,6 +41,13 @@ spec:
     selector:
       k8s-addon: rbac.addons.k8s.io
     version: 1.8.0
+  - id: k8s-1.20
+    manifest: csr-approver.addons.k8s.io/k8s-1.20.yaml
+    manifestHash: ed5707ec49fabe9c6b781670992d37d79620676d
+    name: csr-approver.addons.k8s.io
+    selector:
+      k8s-addon: csr-approver.addons.k8s.io
+    version: v0.0.1
   - id: k8s-1.9
     manifest: kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml
     manifestHash: 1dbad74e01965afc2c32ca822d16c204d015db82
