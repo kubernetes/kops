@@ -155,9 +155,42 @@ func TestValidateSubnets(t *testing.T) {
 			},
 			ExpectedErrors: []string{"Invalid value::subnets[0].cidr"},
 		},
+		{
+			Input: []kops.ClusterSubnetSpec{
+				{Name: "a", IPv6CIDR: "2001:db8::/56"},
+			},
+		},
+		{
+			Input: []kops.ClusterSubnetSpec{
+				{Name: "a", IPv6CIDR: "10.0.0.0/8"},
+			},
+			ExpectedErrors: []string{"Invalid value::subnets[0].ipv6CIDR"},
+		},
+		{
+			Input: []kops.ClusterSubnetSpec{
+				{Name: "a", IPv6CIDR: "::ffff:10.128.0.0"},
+			},
+			ExpectedErrors: []string{"Invalid value::subnets[0].ipv6CIDR"},
+		},
+		{
+			Input: []kops.ClusterSubnetSpec{
+				{Name: "a", IPv6CIDR: "::ffff:10.128.0.0/8"},
+			},
+			ExpectedErrors: []string{"Invalid value::subnets[0].ipv6CIDR"},
+		},
+		{
+			Input: []kops.ClusterSubnetSpec{
+				{Name: "a", CIDR: "::ffff:10.128.0.0/8"},
+			},
+			ExpectedErrors: []string{"Invalid value::subnets[0].cidr"},
+		},
 	}
 	for _, g := range grid {
-		errs := validateSubnets(g.Input, field.NewPath("subnets"))
+		cluster := &kops.ClusterSpec{
+			CloudProvider: "aws",
+			Subnets:       g.Input,
+		}
+		errs := validateSubnets(cluster, field.NewPath("subnets"))
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}

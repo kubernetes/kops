@@ -39,6 +39,7 @@ import (
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 func newValidateCluster(cluster *kops.Cluster) field.ErrorList {
@@ -78,7 +79,7 @@ func newValidateCluster(cluster *kops.Cluster) field.ErrorList {
 func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	allErrs = append(allErrs, validateSubnets(spec.Subnets, fieldPath.Child("subnets"))...)
+	allErrs = append(allErrs, validateSubnets(spec, fieldPath.Child("subnets"))...)
 
 	// SSHAccess
 	for i, cidr := range spec.SSHAccess {
@@ -312,7 +313,11 @@ func validateCIDR(cidr string, fieldPath *field.Path) field.ErrorList {
 		if !strings.Contains(cidr, "/") {
 			ip := net.ParseIP(cidr)
 			if ip != nil {
-				detail += fmt.Sprintf(" (did you mean \"%s/32\")", cidr)
+				if ip.To4() != nil && !strings.Contains(cidr, ":") {
+					detail += fmt.Sprintf(" (did you mean \"%s/32\")", cidr)
+				} else {
+					detail += fmt.Sprintf(" (did you mean \"%s/64\")", cidr)
+				}
 			}
 		}
 		allErrs = append(allErrs, field.Invalid(fieldPath, cidr, detail))
@@ -321,6 +326,16 @@ func validateCIDR(cidr string, fieldPath *field.Path) field.ErrorList {
 		detail := fmt.Sprintf("Network contains bits outside prefix (did you mean \"%s/%d\")", ipNet.IP, maskSize)
 		allErrs = append(allErrs, field.Invalid(fieldPath, cidr, detail))
 	}
+	return allErrs
+}
+
+func validateIPv6CIDR(cidr string, fieldPath *field.Path) field.ErrorList {
+	allErrs := validateCIDR(cidr, fieldPath)
+
+	if !utils.IsIPv6CIDR(cidr) {
+		allErrs = append(allErrs, field.Invalid(fieldPath, cidr, "Network is not an IPv6 CIDR"))
+	}
+
 	return allErrs
 }
 
@@ -360,8 +375,10 @@ func validateTopology(topology *kops.TopologySpec, fieldPath *field.Path) field.
 	return allErrs
 }
 
-func validateSubnets(subnets []kops.ClusterSubnetSpec, fieldPath *field.Path) field.ErrorList {
+func validateSubnets(cluster *kops.ClusterSpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
+
+	subnets := cluster.Subnets
 
 	// cannot be empty
 	if len(subnets) == 0 {
@@ -395,6 +412,14 @@ func validateSubnets(subnets []kops.ClusterSubnetSpec, fieldPath *field.Path) fi
 		}
 	}
 
+	if kops.CloudProviderID(cluster.CloudProvider) != kops.CloudProviderAWS {
+		for i := range subnets {
+			if subnets[i].IPv6CIDR != "" {
+				allErrs = append(allErrs, field.Forbidden(fieldPath.Child("ipv6CIDR"), "ipv6CIDR can only be specified for AWS"))
+			}
+		}
+	}
+
 	return allErrs
 }
 
@@ -409,6 +434,10 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, fieldPath *field.Path) field
 	// CIDR
 	if subnet.CIDR != "" {
 		allErrs = append(allErrs, validateCIDR(subnet.CIDR, fieldPath.Child("cidr"))...)
+	}
+	// IPv6CIDR
+	if subnet.IPv6CIDR != "" {
+		allErrs = append(allErrs, validateIPv6CIDR(subnet.IPv6CIDR, fieldPath.Child("ipv6CIDR"))...)
 	}
 
 	if subnet.Egress != "" {

@@ -78,11 +78,21 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) ([]Secu
 		// Allow full egress
 		{
 			t := &awstasks.SecurityGroupRule{
-				Name:          fi.String("node-egress" + src.Suffix),
+				Name:          fi.String("ipv4-node-egress" + src.Suffix),
 				Lifecycle:     b.Lifecycle,
 				SecurityGroup: src.Task,
 				Egress:        fi.Bool(true),
 				CIDR:          fi.String("0.0.0.0/0"),
+			}
+			AddDirectionalGroupRule(c, t)
+		}
+		{
+			t := &awstasks.SecurityGroupRule{
+				Name:          fi.String("ipv6-node-egress" + src.Suffix),
+				Lifecycle:     b.Lifecycle,
+				SecurityGroup: src.Task,
+				Egress:        fi.Bool(true),
+				IPv6CIDR:      fi.String("::/0"),
 			}
 			AddDirectionalGroupRule(c, t)
 		}
@@ -238,11 +248,21 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeG
 		// Allow full egress
 		{
 			t := &awstasks.SecurityGroupRule{
-				Name:          fi.String("master-egress" + src.Suffix),
+				Name:          fi.String("ipv4-master-egress" + src.Suffix),
 				Lifecycle:     b.Lifecycle,
 				SecurityGroup: src.Task,
 				Egress:        fi.Bool(true),
 				CIDR:          fi.String("0.0.0.0/0"),
+			}
+			AddDirectionalGroupRule(c, t)
+		}
+		{
+			t := &awstasks.SecurityGroupRule{
+				Name:          fi.String("ipv6-master-egress" + src.Suffix),
+				Lifecycle:     b.Lifecycle,
+				SecurityGroup: src.Task,
+				Egress:        fi.Bool(true),
+				IPv6CIDR:      fi.String("::/0"),
 			}
 			AddDirectionalGroupRule(c, t)
 		}
@@ -420,8 +440,10 @@ func generateName(o *awstasks.SecurityGroupRule) string {
 	var target, dst, src, direction, proto string
 	if o.SourceGroup != nil {
 		target = fi.StringValue(o.SourceGroup.Name)
-	} else if o.CIDR != nil && fi.StringValue(o.CIDR) != "" {
+	} else if o.CIDR != nil {
 		target = fi.StringValue(o.CIDR)
+	} else if o.IPv6CIDR != nil {
+		target = fi.StringValue(o.IPv6CIDR)
 	} else {
 		target = "0.0.0.0/0"
 	}
