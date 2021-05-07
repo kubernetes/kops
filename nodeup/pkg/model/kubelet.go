@@ -524,9 +524,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	// As of 1.16 we can no longer set critical labels.
 	// kops-controller will set these labels.
 	// For bootstrapping reasons, protokube sets the critical labels for kops-controller to run.
-	if b.Cluster.IsKubernetesGTE("1.16") {
-		c.NodeLabels = nil
-	}
+	c.NodeLabels = nil
 
 	if c.AuthorizationMode == "" && b.Cluster.IsKubernetesGTE("1.19") {
 		c.AuthorizationMode = "Webhook"
