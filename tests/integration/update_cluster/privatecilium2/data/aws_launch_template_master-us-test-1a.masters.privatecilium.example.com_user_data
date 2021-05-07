@@ -152,13 +152,13 @@ docker:
   - max-size=10m
   - max-file=5
   storage: overlay2,overlay,aufs
-  version: 18.09.9
+  version: 19.03.15
 encryptionConfig: null
 etcdClusters:
   events:
-    version: 3.3.10
+    version: 3.4.3
   main:
-    version: 3.3.10
+    version: 3.4.3
 kubeAPIServer:
   allowPrivileged: true
   anonymousAuth: false
@@ -181,9 +181,7 @@ kubeAPIServer:
   - http://127.0.0.1:4001
   etcdServersOverrides:
   - /events#http://127.0.0.1:4002
-  image: k8s.gcr.io/kube-apiserver:v1.16.15
-  insecureBindAddress: 127.0.0.1
-  insecurePort: 8080
+  image: k8s.gcr.io/kube-apiserver:v1.17.15
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -207,7 +205,7 @@ kubeControllerManager:
   clusterCIDR: 100.96.0.0/11
   clusterName: privatecilium.example.com
   configureCloudRoutes: false
-  image: k8s.gcr.io/kube-controller-manager:v1.16.15
+  image: k8s.gcr.io/kube-controller-manager:v1.17.15
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -216,10 +214,10 @@ kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
   hostnameOverride: '@aws'
-  image: k8s.gcr.io/kube-proxy:v1.16.15
+  image: k8s.gcr.io/kube-proxy:v1.17.15
   logLevel: 2
 kubeScheduler:
-  image: k8s.gcr.io/kube-scheduler:v1.16.15
+  image: k8s.gcr.io/kube-scheduler:v1.17.15
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -265,17 +263,17 @@ __EOF_IG_SPEC
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 Assets:
   amd64:
-  - 498e9576617b1846956f73a2da3ddc430eb728d469e62fbbd629e54cf33e5882@https://storage.googleapis.com/kubernetes-release/release/v1.16.15/bin/linux/amd64/kubelet
-  - e8913069293156ddf55f243814a22d2384fc18b165efb6200606fdeaad146605@https://storage.googleapis.com/kubernetes-release/release/v1.16.15/bin/linux/amd64/kubectl
+  - 090a2a9829f1c5913672b679bfa24a97d434cbf4bc1edd05f4a3a37f97dfeb75@https://storage.googleapis.com/kubernetes-release/release/v1.17.15/bin/linux/amd64/kubelet
+  - a94f33ab8c5c68a2d9f177ad1e6654bbbd7ea52e80ed7ed9938fe6d6ca1f7d26@https://storage.googleapis.com/kubernetes-release/release/v1.17.15/bin/linux/amd64/kubectl
   - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
-  - 82a362af7689038c51573e0fd0554da8703f0d06f4dfe95dd5bda5acf0ae45fb@https://download.docker.com/linux/static/stable/x86_64/docker-18.09.9.tgz
+  - 5504d190eef37355231325c176686d51ade6e0cabe2da526d561a38d8611506f@https://download.docker.com/linux/static/stable/x86_64/docker-19.03.15.tgz
   - f90ed6dcef534e6d1ae17907dc7eb40614b8945ad4af7f0e98d2be7cde8165c6@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-amd64,https://kubeupv2.s3.amazonaws.com/kops/1.21.0-alpha.1/linux/amd64/protokube
   - 9992e7eb2a2e93f799e5a9e98eb718637433524bc65f630357201a79f49b13d0@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-amd64,https://kubeupv2.s3.amazonaws.com/kops/1.21.0-alpha.1/linux/amd64/channels
   arm64:
-  - 3d8337e2e0b613688d3828803988adeafedc9451c785478951002bf627beb36b@https://storage.googleapis.com/kubernetes-release/release/v1.16.15/bin/linux/arm64/kubelet
-  - 74719f137dc6d589a3b8a667bcb0f3c57eebd8f050dd2f7ad5b59ceb892a7b99@https://storage.googleapis.com/kubernetes-release/release/v1.16.15/bin/linux/arm64/kubectl
+  - 3515d2ec6698371f1dcaeb3ff79829a0e04a277d738a33d844249b33678306c6@https://storage.googleapis.com/kubernetes-release/release/v1.17.15/bin/linux/arm64/kubelet
+  - a75af21eae2913aacd521cc8a052f7b9f1cb8b195f7bffbab478833abe024b0e@https://storage.googleapis.com/kubernetes-release/release/v1.17.15/bin/linux/arm64/kubectl
   - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
-  - c6f4cfe1bef71c339d5127c6c79169479bcb7830c6fb0185139d32ab726e038e@https://download.docker.com/linux/static/stable/aarch64/docker-18.09.9.tgz
+  - 264f3396630507606a8646fda6a28a98d3ced8927df84be8ee9a74ab73cc1566@https://download.docker.com/linux/static/stable/aarch64/docker-19.03.15.tgz
   - 2f599c3d54f4c4bdbcc95aaf0c7b513a845d8f9503ec5b34c9f86aa1bc34fc0c@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-arm64,https://kubeupv2.s3.amazonaws.com/kops/1.21.0-alpha.1/linux/arm64/protokube
   - 9d842e3636a95de2315cdea2be7a282355aac0658ef0b86d5dc2449066538f13@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-arm64,https://kubeupv2.s3.amazonaws.com/kops/1.21.0-alpha.1/linux/arm64/channels
 ClusterName: privatecilium.example.com
@@ -309,6 +307,9 @@ channels:
 etcdManifests:
 - memfs://clusters.example.com/privatecilium.example.com/manifests/etcd/main.yaml
 - memfs://clusters.example.com/privatecilium.example.com/manifests/etcd/events.yaml
+staticManifests:
+- key: kube-apiserver-healthcheck
+  path: manifests/static/kube-apiserver-healthcheck.yaml
 
 __EOF_KUBE_ENV
 
