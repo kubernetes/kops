@@ -181,7 +181,7 @@ etcdClusters:
 
 The etcd version used by kOps follows the recommended etcd version for the given kubernetes version. It is possible to override this by adding the `version` key to each of the etcd clusters.
 
-By default, the Volumes created for the etcd clusters are `gp2` and 20GB each. The volume size, type and Iops( for `io1`) can be configured via their parameters. Conversion between `gp2` and `io1` is not supported, nor are size changes.
+By default, the Volumes created for the etcd clusters are `gp3` and 20GB each. The volume size, type (`gp2`, `gp3`, `io1`, `io2`), iops( for `io1`, `io2`, `gp3`) and throughput (`gp3`) can be configured via their parameters.
 
 As of kOps 1.12.0 it is also possible to modify the requests for your etcd cluster members using the `cpuRequest` and `memoryRequest` parameters.
 
@@ -190,7 +190,7 @@ etcdClusters:
 - etcdMembers:
   - instanceGroup: master-us-east-1a
     name: a
-    volumeType: gp2
+    volumeType: gp3
     volumeSize: 20
   name: main
 - etcdMembers:
