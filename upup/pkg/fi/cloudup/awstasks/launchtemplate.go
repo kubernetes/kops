@@ -56,6 +56,8 @@ type LaunchTemplate struct {
 	InstanceMonitoring *bool
 	// InstanceType is the type of instance we are using
 	InstanceType *string
+	// Ipv6AddressCount is the number of IPv6 addresses to assign with the primary network interface.
+	IPv6AddressCount *int64
 	// RootVolumeIops is the provisioned IOPS when the volume type is io1, io2 or gp3
 	RootVolumeIops *int64
 	// RootVolumeOptimization enables EBS optimization for an instance

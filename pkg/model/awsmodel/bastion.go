@@ -23,6 +23,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 const (
@@ -77,14 +78,26 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	for _, src := range bastionGroups {
 		// Allow traffic from bastion instances to egress freely
-		t := &awstasks.SecurityGroupRule{
-			Name:          fi.String("bastion-egress" + src.Suffix),
-			Lifecycle:     b.SecurityLifecycle,
-			SecurityGroup: src.Task,
-			Egress:        fi.Bool(true),
-			CIDR:          fi.String("0.0.0.0/0"),
+		{
+			t := &awstasks.SecurityGroupRule{
+				Name:          fi.String("ipv4-bastion-egress" + src.Suffix),
+				Lifecycle:     b.SecurityLifecycle,
+				SecurityGroup: src.Task,
+				Egress:        fi.Bool(true),
+				CIDR:          fi.String("0.0.0.0/0"),
+			}
+			AddDirectionalGroupRule(c, t)
 		}
-		AddDirectionalGroupRule(c, t)
+		{
+			t := &awstasks.SecurityGroupRule{
+				Name:          fi.String("ipv6-bastion-egress" + src.Suffix),
+				Lifecycle:     b.SecurityLifecycle,
+				SecurityGroup: src.Task,
+				Egress:        fi.Bool(true),
+				IPv6CIDR:      fi.String("::/0"),
+			}
+			AddDirectionalGroupRule(c, t)
+		}
 	}
 
 	// Allow incoming SSH traffic to bastions, through the ELB
@@ -137,9 +150,8 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Create security group for bastion ELB
 	{
 		t := &awstasks.SecurityGroup{
-			Name:      fi.String(b.ELBSecurityGroupName(BastionELBSecurityGroupPrefix)),
-			Lifecycle: b.SecurityLifecycle,
-
+			Name:             fi.String(b.ELBSecurityGroupName(BastionELBSecurityGroupPrefix)),
+			Lifecycle:        b.SecurityLifecycle,
 			VPC:              b.LinkToVPC(),
 			Description:      fi.String("Security group for bastion ELB"),
 			RemoveExtraRules: []string{"port=22"},
@@ -151,28 +163,40 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow traffic from ELB to egress freely
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name:      fi.String("bastion-elb-egress"),
-			Lifecycle: b.SecurityLifecycle,
-
+			Name:          fi.String("ipv4-bastion-elb-egress"),
+			Lifecycle:     b.SecurityLifecycle,
 			SecurityGroup: b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
 			Egress:        fi.Bool(true),
 			CIDR:          fi.String("0.0.0.0/0"),
 		}
-
+		AddDirectionalGroupRule(c, t)
+	}
+	{
+		t := &awstasks.SecurityGroupRule{
+			Name:          fi.String("ipv6-bastion-elb-egress"),
+			Lifecycle:     b.SecurityLifecycle,
+			SecurityGroup: b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
+			Egress:        fi.Bool(true),
+			IPv6CIDR:      fi.String("::/0"),
+		}
 		AddDirectionalGroupRule(c, t)
 	}
 
 	// Allow external access to ELB
 	for _, sshAccess := range b.Cluster.Spec.SSHAccess {
 		t := &awstasks.SecurityGroupRule{
-			Name:      fi.String("ssh-external-to-bastion-elb-" + sshAccess),
-			Lifecycle: b.SecurityLifecycle,
-
+			Name:          fi.String("ssh-external-to-bastion-elb-" + sshAccess),
+			Lifecycle:     b.SecurityLifecycle,
 			SecurityGroup: b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
 			Protocol:      fi.String("tcp"),
 			FromPort:      fi.Int64(22),
 			ToPort:        fi.Int64(22),
 			CIDR:          fi.String(sshAccess),
+		}
+		if utils.IsIPv6CIDR(sshAccess) {
+			t.IPv6CIDR = fi.String(sshAccess)
+		} else {
+			t.CIDR = fi.String(sshAccess)
 		}
 		AddDirectionalGroupRule(c, t)
 	}

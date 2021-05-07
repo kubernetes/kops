@@ -4103,6 +4103,7 @@ spec:
                 items:
                   properties:
                     cidr:
+                      description: CIDR is the IPv4 CIDR block assigned to the subnet.
                       type: string
                     egress:
                       description: Egress defines the method of traffic egress for
@@ -4111,6 +4112,10 @@ spec:
                     id:
                       description: ProviderID is the cloud provider id for the objects
                         associated with the zone (the subnet on AWS)
+                      type: string
+                    ipv6CIDR:
+                      description: IPv6CIDR is the IPv6 CIDR block assigned to the
+                        subnet.
                       type: string
                     name:
                       type: string

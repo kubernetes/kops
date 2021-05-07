@@ -621,8 +621,10 @@ const (
 type ClusterSubnetSpec struct {
 	// Name is the name of the subnet
 	Name string `json:"name,omitempty"`
-	// CIDR is the network cidr of the subnet
+	// CIDR is the IPv4 CIDR block assigned to the subnet.
 	CIDR string `json:"cidr,omitempty"`
+	// IPv6CIDR is the IPv6 CIDR block assigned to the subnet.
+	IPv6CIDR string `json:"ipv6CIDR,omitempty"`
 	// Zone is the zone the subnet is in, set for subnets that are zonally scoped
 	Zone string `json:"zone,omitempty"`
 	// Region is the region the subnet is in, set for subnets that are regionally scoped

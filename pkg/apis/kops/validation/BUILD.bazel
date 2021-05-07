@@ -24,6 +24,7 @@ go_library(
         "//pkg/util/subnet:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
+        "//upup/pkg/fi/utils:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/arn:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
