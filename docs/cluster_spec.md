@@ -1304,3 +1304,53 @@ spec:
     managed: false
 ```
 
+## Service Account Issuer Discovery and AWS IAM Roles for Service Accounts (IRSA)
+
+{{ kops_feature_table(kops_added_default='1.21') }}
+
+kOps can publish the Kubernetes service account token issuer and configure AWS to trust it
+to authenticate Kubernetes service accounts:
+
+```yaml
+spec:
+  serviceAccountIssuerDiscovery:
+    discoveryStore: s3://publicly-readable-store
+    enableAWSOIDCProvider: true
+```
+
+The `discoveryStore` option causes kOps to publish an OIDC-compatible discovery document
+to a path in an S3 bucket. This would ordinarily be a different bucket than the state store.
+kOps will automatically configure `spec.kubeAPIServer.serviceAccountIssuer` and default
+`spec.kubeAPIServer.serviceAccountJWKSURI` to the corresponding
+HTTPS URL. 
+
+The `enableAWSOIDCProvider` configures AWS to trust the service account issuer to
+authenticate service accounts for IAM Roles for Service Accounts (IRSA). In order for this to work,
+the service account issuer discovery URL must be publicly readable.
+
+kOps can provision AWS permissions for use by service accounts:
+
+```yaml
+spec:
+  iam:
+    serviceAccountExternalPermissions:
+      - name: someServiceAccount
+        namespace: someNamespace
+        aws:
+          policyARNs:
+            - arn:aws:iam::000000000000:policy/somePolicy
+      - name: anotherServiceAccount
+        namespace: anotherNamespace
+        aws:
+          inlinePolicy: |-
+            {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "s3:ListAllMyBuckets",
+                  "Resource": "*"
+                }
+              ]
+            }
+```
