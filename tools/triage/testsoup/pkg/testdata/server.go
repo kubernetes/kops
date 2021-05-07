@@ -18,7 +18,7 @@ func (s *Server) ListTestJobs(request *ListTestJobsRequest, stream TestData_List
 	if err != nil {
 		return err
 	}
-	for _, job := range jobs {
+	for _, job := range jobs.Jobs {
 		if err := stream.Send(job); err != nil {
 			return err
 		}
@@ -32,7 +32,7 @@ func (s *Server) ListTestJobRuns(request *ListTestJobRunsRequest, stream TestDat
 	if err != nil {
 		return err
 	}
-	for _, run := range runs {
+	for _, run := range runs.Runs {
 		if err := stream.Send(run); err != nil {
 			return err
 		}

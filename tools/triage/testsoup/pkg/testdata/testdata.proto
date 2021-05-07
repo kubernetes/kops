@@ -2,10 +2,19 @@ syntax = "proto3";
 
 option go_package="pkg/testdata";
 
+
+message TestJobList {
+  repeated TestJob jobs = 1;
+}
+
 message TestJob {
   string name = 1;
   string bucket = 2;
   string prefix = 3;
+}
+
+message TestJobRunList {
+  repeated TestJobRun runs = 1;
 }
 
 message TestJobRun {

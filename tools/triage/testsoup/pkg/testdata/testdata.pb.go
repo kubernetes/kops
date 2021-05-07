@@ -25,6 +25,53 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
+type TestJobList struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Jobs []*TestJob `protobuf:"bytes,1,rep,name=jobs,proto3" json:"jobs,omitempty"`
+}
+
+func (x *TestJobList) Reset() {
+	*x = TestJobList{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_testdata_testdata_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *TestJobList) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TestJobList) ProtoMessage() {}
+
+func (x *TestJobList) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_testdata_testdata_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TestJobList.ProtoReflect.Descriptor instead.
+func (*TestJobList) Descriptor() ([]byte, []int) {
+	return file_pkg_testdata_testdata_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *TestJobList) GetJobs() []*TestJob {
+	if x != nil {
+		return x.Jobs
+	}
+	return nil
+}
+
 type TestJob struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -38,7 +85,7 @@ type TestJob struct {
 func (x *TestJob) Reset() {
 	*x = TestJob{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_testdata_testdata_proto_msgTypes[0]
+		mi := &file_pkg_testdata_testdata_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -51,7 +98,7 @@ func (x *TestJob) String() string {
 func (*TestJob) ProtoMessage() {}
 
 func (x *TestJob) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_testdata_testdata_proto_msgTypes[0]
+	mi := &file_pkg_testdata_testdata_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64,7 +111,7 @@ func (x *TestJob) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestJob.ProtoReflect.Descriptor instead.
 func (*TestJob) Descriptor() ([]byte, []int) {
-	return file_pkg_testdata_testdata_proto_rawDescGZIP(), []int{0}
+	return file_pkg_testdata_testdata_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *TestJob) GetName() string {
@@ -88,6 +135,53 @@ func (x *TestJob) GetPrefix() string {
 	return ""
 }
 
+type TestJobRunList struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Runs []*TestJobRun `protobuf:"bytes,1,rep,name=runs,proto3" json:"runs,omitempty"`
+}
+
+func (x *TestJobRunList) Reset() {
+	*x = TestJobRunList{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_testdata_testdata_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *TestJobRunList) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TestJobRunList) ProtoMessage() {}
+
+func (x *TestJobRunList) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_testdata_testdata_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TestJobRunList.ProtoReflect.Descriptor instead.
+func (*TestJobRunList) Descriptor() ([]byte, []int) {
+	return file_pkg_testdata_testdata_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *TestJobRunList) GetRuns() []*TestJobRun {
+	if x != nil {
+		return x.Runs
+	}
+	return nil
+}
+
 type TestJobRun struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -102,7 +196,7 @@ type TestJobRun struct {
 func (x *TestJobRun) Reset() {
 	*x = TestJobRun{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_testdata_testdata_proto_msgTypes[1]
+		mi := &file_pkg_testdata_testdata_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -115,7 +209,7 @@ func (x *TestJobRun) String() string {
 func (*TestJobRun) ProtoMessage() {}
 
 func (x *TestJobRun) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_testdata_testdata_proto_msgTypes[1]
+	mi := &file_pkg_testdata_testdata_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -128,7 +222,7 @@ func (x *TestJobRun) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestJobRun.ProtoReflect.Descriptor instead.
 func (*TestJobRun) Descriptor() ([]byte, []int) {
-	return file_pkg_testdata_testdata_proto_rawDescGZIP(), []int{1}
+	return file_pkg_testdata_testdata_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *TestJobRun) GetJobName() string {
@@ -175,7 +269,7 @@ type TestJobRunResults struct {
 func (x *TestJobRunResults) Reset() {
 	*x = TestJobRunResults{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_testdata_testdata_proto_msgTypes[2]
+		mi := &file_pkg_testdata_testdata_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -188,7 +282,7 @@ func (x *TestJobRunResults) String() string {
 func (*TestJobRunResults) ProtoMessage() {}
 
 func (x *TestJobRunResults) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_testdata_testdata_proto_msgTypes[2]
+	mi := &file_pkg_testdata_testdata_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -201,7 +295,7 @@ func (x *TestJobRunResults) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestJobRunResults.ProtoReflect.Descriptor instead.
 func (*TestJobRunResults) Descriptor() ([]byte, []int) {
-	return file_pkg_testdata_testdata_proto_rawDescGZIP(), []int{2}
+	return file_pkg_testdata_testdata_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *TestJobRunResults) GetJobName() string {
@@ -258,7 +352,7 @@ type TestJobFeature struct {
 func (x *TestJobFeature) Reset() {
 	*x = TestJobFeature{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_testdata_testdata_proto_msgTypes[3]
+		mi := &file_pkg_testdata_testdata_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -271,7 +365,7 @@ func (x *TestJobFeature) String() string {
 func (*TestJobFeature) ProtoMessage() {}
 
 func (x *TestJobFeature) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_testdata_testdata_proto_msgTypes[3]
+	mi := &file_pkg_testdata_testdata_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -284,7 +378,7 @@ func (x *TestJobFeature) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestJobFeature.ProtoReflect.Descriptor instead.
 func (*TestJobFeature) Descriptor() ([]byte, []int) {
-	return file_pkg_testdata_testdata_proto_rawDescGZIP(), []int{3}
+	return file_pkg_testdata_testdata_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *TestJobFeature) GetKey() string {
@@ -310,7 +404,7 @@ type ListTestJobsRequest struct {
 func (x *ListTestJobsRequest) Reset() {
 	*x = ListTestJobsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_testdata_testdata_proto_msgTypes[4]
+		mi := &file_pkg_testdata_testdata_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -323,7 +417,7 @@ func (x *ListTestJobsRequest) String() string {
 func (*ListTestJobsRequest) ProtoMessage() {}
 
 func (x *ListTestJobsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_testdata_testdata_proto_msgTypes[4]
+	mi := &file_pkg_testdata_testdata_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -336,7 +430,7 @@ func (x *ListTestJobsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTestJobsRequest.ProtoReflect.Descriptor instead.
 func (*ListTestJobsRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_testdata_testdata_proto_rawDescGZIP(), []int{4}
+	return file_pkg_testdata_testdata_proto_rawDescGZIP(), []int{6}
 }
 
 type ListTestJobRunsRequest struct {
@@ -350,7 +444,7 @@ type ListTestJobRunsRequest struct {
 func (x *ListTestJobRunsRequest) Reset() {
 	*x = ListTestJobRunsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_testdata_testdata_proto_msgTypes[5]
+		mi := &file_pkg_testdata_testdata_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -363,7 +457,7 @@ func (x *ListTestJobRunsRequest) String() string {
 func (*ListTestJobRunsRequest) ProtoMessage() {}
 
 func (x *ListTestJobRunsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_testdata_testdata_proto_msgTypes[5]
+	mi := &file_pkg_testdata_testdata_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -376,7 +470,7 @@ func (x *ListTestJobRunsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTestJobRunsRequest.ProtoReflect.Descriptor instead.
 func (*ListTestJobRunsRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_testdata_testdata_proto_rawDescGZIP(), []int{5}
+	return file_pkg_testdata_testdata_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ListTestJobRunsRequest) GetJob() *TestJob {
@@ -397,7 +491,7 @@ type GetTestJobRunResultsRequest struct {
 func (x *GetTestJobRunResultsRequest) Reset() {
 	*x = GetTestJobRunResultsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_testdata_testdata_proto_msgTypes[6]
+		mi := &file_pkg_testdata_testdata_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -410,7 +504,7 @@ func (x *GetTestJobRunResultsRequest) String() string {
 func (*GetTestJobRunResultsRequest) ProtoMessage() {}
 
 func (x *GetTestJobRunResultsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_testdata_testdata_proto_msgTypes[6]
+	mi := &file_pkg_testdata_testdata_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -423,7 +517,7 @@ func (x *GetTestJobRunResultsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTestJobRunResultsRequest.ProtoReflect.Descriptor instead.
 func (*GetTestJobRunResultsRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_testdata_testdata_proto_rawDescGZIP(), []int{6}
+	return file_pkg_testdata_testdata_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetTestJobRunResultsRequest) GetRun() *TestJobRun {
@@ -437,12 +531,18 @@ var File_pkg_testdata_testdata_proto protoreflect.FileDescriptor
 
 var file_pkg_testdata_testdata_proto_rawDesc = []byte{
 	0x0a, 0x1b, 0x70, 0x6b, 0x67, 0x2f, 0x74, 0x65, 0x73, 0x74, 0x64, 0x61, 0x74, 0x61, 0x2f, 0x74,
-	0x65, 0x73, 0x74, 0x64, 0x61, 0x74, 0x61, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x4d, 0x0a,
-	0x07, 0x54, 0x65, 0x73, 0x74, 0x4a, 0x6f, 0x62, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06,
-	0x62, 0x75, 0x63, 0x6b, 0x65, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x62, 0x75,
-	0x63, 0x6b, 0x65, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x70, 0x72, 0x65, 0x66, 0x69, 0x78, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x70, 0x72, 0x65, 0x66, 0x69, 0x78, 0x22, 0x72, 0x0a, 0x0a,
+	0x65, 0x73, 0x74, 0x64, 0x61, 0x74, 0x61, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x2b, 0x0a,
+	0x0b, 0x54, 0x65, 0x73, 0x74, 0x4a, 0x6f, 0x62, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x04,
+	0x6a, 0x6f, 0x62, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x08, 0x2e, 0x54, 0x65, 0x73,
+	0x74, 0x4a, 0x6f, 0x62, 0x52, 0x04, 0x6a, 0x6f, 0x62, 0x73, 0x22, 0x4d, 0x0a, 0x07, 0x54, 0x65,
+	0x73, 0x74, 0x4a, 0x6f, 0x62, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x62, 0x75, 0x63,
+	0x6b, 0x65, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x62, 0x75, 0x63, 0x6b, 0x65,
+	0x74, 0x12, 0x16, 0x0a, 0x06, 0x70, 0x72, 0x65, 0x66, 0x69, 0x78, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x06, 0x70, 0x72, 0x65, 0x66, 0x69, 0x78, 0x22, 0x31, 0x0a, 0x0e, 0x54, 0x65, 0x73,
+	0x74, 0x4a, 0x6f, 0x62, 0x52, 0x75, 0x6e, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x1f, 0x0a, 0x04, 0x72,
+	0x75, 0x6e, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0b, 0x2e, 0x54, 0x65, 0x73, 0x74,
+	0x4a, 0x6f, 0x62, 0x52, 0x75, 0x6e, 0x52, 0x04, 0x72, 0x75, 0x6e, 0x73, 0x22, 0x72, 0x0a, 0x0a,
 	0x54, 0x65, 0x73, 0x74, 0x4a, 0x6f, 0x62, 0x52, 0x75, 0x6e, 0x12, 0x19, 0x0a, 0x08, 0x6a, 0x6f,
 	0x62, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6a, 0x6f,
 	0x62, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x72, 0x75, 0x6e, 0x5f, 0x6e, 0x61, 0x6d,
@@ -503,31 +603,35 @@ func file_pkg_testdata_testdata_proto_rawDescGZIP() []byte {
 	return file_pkg_testdata_testdata_proto_rawDescData
 }
 
-var file_pkg_testdata_testdata_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_pkg_testdata_testdata_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_pkg_testdata_testdata_proto_goTypes = []interface{}{
-	(*TestJob)(nil),                     // 0: TestJob
-	(*TestJobRun)(nil),                  // 1: TestJobRun
-	(*TestJobRunResults)(nil),           // 2: TestJobRunResults
-	(*TestJobFeature)(nil),              // 3: TestJobFeature
-	(*ListTestJobsRequest)(nil),         // 4: ListTestJobsRequest
-	(*ListTestJobRunsRequest)(nil),      // 5: ListTestJobRunsRequest
-	(*GetTestJobRunResultsRequest)(nil), // 6: GetTestJobRunResultsRequest
+	(*TestJobList)(nil),                 // 0: TestJobList
+	(*TestJob)(nil),                     // 1: TestJob
+	(*TestJobRunList)(nil),              // 2: TestJobRunList
+	(*TestJobRun)(nil),                  // 3: TestJobRun
+	(*TestJobRunResults)(nil),           // 4: TestJobRunResults
+	(*TestJobFeature)(nil),              // 5: TestJobFeature
+	(*ListTestJobsRequest)(nil),         // 6: ListTestJobsRequest
+	(*ListTestJobRunsRequest)(nil),      // 7: ListTestJobRunsRequest
+	(*GetTestJobRunResultsRequest)(nil), // 8: GetTestJobRunResultsRequest
 }
 var file_pkg_testdata_testdata_proto_depIdxs = []int32{
-	3, // 0: TestJobRunResults.features:type_name -> TestJobFeature
-	0, // 1: ListTestJobRunsRequest.job:type_name -> TestJob
-	1, // 2: GetTestJobRunResultsRequest.run:type_name -> TestJobRun
-	4, // 3: TestData.ListTestJobs:input_type -> ListTestJobsRequest
-	5, // 4: TestData.ListTestJobRuns:input_type -> ListTestJobRunsRequest
-	6, // 5: TestData.GetTestJobRunResults:input_type -> GetTestJobRunResultsRequest
-	0, // 6: TestData.ListTestJobs:output_type -> TestJob
-	1, // 7: TestData.ListTestJobRuns:output_type -> TestJobRun
-	2, // 8: TestData.GetTestJobRunResults:output_type -> TestJobRunResults
-	6, // [6:9] is the sub-list for method output_type
-	3, // [3:6] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	1, // 0: TestJobList.jobs:type_name -> TestJob
+	3, // 1: TestJobRunList.runs:type_name -> TestJobRun
+	5, // 2: TestJobRunResults.features:type_name -> TestJobFeature
+	1, // 3: ListTestJobRunsRequest.job:type_name -> TestJob
+	3, // 4: GetTestJobRunResultsRequest.run:type_name -> TestJobRun
+	6, // 5: TestData.ListTestJobs:input_type -> ListTestJobsRequest
+	7, // 6: TestData.ListTestJobRuns:input_type -> ListTestJobRunsRequest
+	8, // 7: TestData.GetTestJobRunResults:input_type -> GetTestJobRunResultsRequest
+	1, // 8: TestData.ListTestJobs:output_type -> TestJob
+	3, // 9: TestData.ListTestJobRuns:output_type -> TestJobRun
+	4, // 10: TestData.GetTestJobRunResults:output_type -> TestJobRunResults
+	8, // [8:11] is the sub-list for method output_type
+	5, // [5:8] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_pkg_testdata_testdata_proto_init() }
@@ -537,7 +641,7 @@ func file_pkg_testdata_testdata_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_pkg_testdata_testdata_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TestJob); i {
+			switch v := v.(*TestJobList); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -549,7 +653,7 @@ func file_pkg_testdata_testdata_proto_init() {
 			}
 		}
 		file_pkg_testdata_testdata_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TestJobRun); i {
+			switch v := v.(*TestJob); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -561,7 +665,7 @@ func file_pkg_testdata_testdata_proto_init() {
 			}
 		}
 		file_pkg_testdata_testdata_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TestJobRunResults); i {
+			switch v := v.(*TestJobRunList); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -573,7 +677,7 @@ func file_pkg_testdata_testdata_proto_init() {
 			}
 		}
 		file_pkg_testdata_testdata_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TestJobFeature); i {
+			switch v := v.(*TestJobRun); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -585,7 +689,7 @@ func file_pkg_testdata_testdata_proto_init() {
 			}
 		}
 		file_pkg_testdata_testdata_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListTestJobsRequest); i {
+			switch v := v.(*TestJobRunResults); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -597,7 +701,7 @@ func file_pkg_testdata_testdata_proto_init() {
 			}
 		}
 		file_pkg_testdata_testdata_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListTestJobRunsRequest); i {
+			switch v := v.(*TestJobFeature); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -609,6 +713,30 @@ func file_pkg_testdata_testdata_proto_init() {
 			}
 		}
 		file_pkg_testdata_testdata_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListTestJobsRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_testdata_testdata_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListTestJobRunsRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_testdata_testdata_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetTestJobRunResultsRequest); i {
 			case 0:
 				return &v.state
@@ -627,7 +755,7 @@ func file_pkg_testdata_testdata_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_testdata_testdata_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

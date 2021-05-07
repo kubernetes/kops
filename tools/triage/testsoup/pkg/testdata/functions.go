@@ -6,42 +6,49 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/kops/tools/triage/testsoup/pkg/caching"
 	"k8s.io/kops/tools/triage/testsoup/pkg/gcs"
 )
 
 const TestBucketName = "kubernetes-jenkins"
 
-func ListTestJobs() ([]*TestJob, error) {
-	prefixes, err := gcs.ListPrefixes(TestBucketName, "logs/e2e-kops-grid-")
-	if err != nil {
-		return nil, err
-	}
-	var tests []*TestJob
-	for _, prefix := range prefixes {
-		tests = append(tests, &TestJob{
-			Bucket: TestBucketName,
-			Prefix: prefix,
-			Name:   strings.TrimPrefix(prefix, "logs/e2e-"),
-		})
-	}
-	return tests, nil
+func ListTestJobs() (*TestJobList, error) {
+	var result TestJobList
+	err := caching.Default.Get("ListTestJobs").GetOrEval(&result, func() error {
+		prefixes, err := gcs.ListPrefixes(TestBucketName, "logs/e2e-kops-grid-")
+		if err != nil {
+			return err
+		}
+		for _, prefix := range prefixes {
+			result.Jobs = append(result.Jobs, &TestJob{
+				Bucket: TestBucketName,
+				Prefix: prefix,
+				Name:   strings.TrimPrefix(prefix, "logs/e2e-"),
+			})
+		}
+		return nil
+	})
+	return &result, err
 }
 
-func ListTestJobRuns(test *TestJob) ([]*TestJobRun, error) {
-	prefixes, err := gcs.ListPrefixes(test.Bucket, test.Prefix)
-	if err != nil {
-		return nil, err
-	}
-	var runs []*TestJobRun
-	for _, prefix := range prefixes {
-		runs = append(runs, &TestJobRun{
-			Bucket:  test.Bucket,
-			Prefix:  prefix,
-			JobName: test.Name,
-			RunName: strings.TrimPrefix(prefix, test.Prefix),
-		})
-	}
-	return runs, nil
+func ListTestJobRuns(test *TestJob) (*TestJobRunList, error) {
+	var result TestJobRunList
+	err := caching.Default.Get("ListTestJobRuns", test.Bucket, test.Prefix).GetOrEval(&result, func() error {
+		prefixes, err := gcs.ListPrefixes(test.Bucket, test.Prefix)
+		if err != nil {
+			return err
+		}
+		for _, prefix := range prefixes {
+			result.Runs = append(result.Runs, &TestJobRun{
+				Bucket:  test.Bucket,
+				Prefix:  prefix,
+				JobName: test.Name,
+				RunName: strings.TrimPrefix(prefix, test.Prefix),
+			})
+		}
+		return nil
+	})
+	return &result, err
 }
 
 func GetJobRunFile(run *TestJobRun, name string) ([]byte, error) {
