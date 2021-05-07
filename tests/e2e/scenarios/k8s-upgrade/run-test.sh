@@ -50,6 +50,7 @@ ${KUBETEST2} \
 kops set cluster "${CLUSTER_NAME}" cluster.spec.kubernetesVersion=v1.20.6
 kops update cluster
 kops update cluster --admin --yes
+kops update cluster
 
 kops rolling-update cluster
 kops rolling-update cluster --yes --validation-timeout 30m
