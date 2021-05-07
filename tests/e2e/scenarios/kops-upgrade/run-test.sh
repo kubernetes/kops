@@ -63,6 +63,7 @@ ${KUBETEST2} \
 
 "${SECOND_KOPS}" update cluster
 "${SECOND_KOPS}" update cluster --admin --yes
+"${SECOND_KOPS}" update cluster
 
 "${SECOND_KOPS}" rolling-update cluster
 "${SECOND_KOPS}" rolling-update cluster --yes --validation-timeout 30m
