@@ -229,6 +229,15 @@ spec:
               image:
                 description: Image is the instance (ami etc) we should use
                 type: string
+              imageFamily:
+                description: ImageFamily defines the Image's family. Only required
+                  for certain images - see allowed values.
+                properties:
+                  bottlerocket:
+                    description: Bottlerocket indicates the instances use AWS Bottlerocket
+                      OS
+                    type: object
+                type: object
               instanceInterruptionBehavior:
                 description: InstanceInterruptionBehavior defines if a spot instance
                   should be terminated, hibernated, or stopped after interruption
