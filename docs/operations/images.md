@@ -81,14 +81,14 @@ Be aware of the following limitations:
 * Only nodes are supported, masters and bastions are not
 * Many node customizations are not supported such as `additionalUserdata` and will fail API validation
 * Gossip clusters are not supported
-* Certain networking configurations are not supported such as Kubenet, Kuberouter, and Cilium in EtcdManaged mode  
+* Certain networking configurations are not supported such as Kubenet, Kuberouter, and Cilium in EtcdManaged mode
 * Clusters must have the [AWS IAM Authenticator](../authentication.md#aws-iam-authenticator) enabled with version >= 0.5.1 and the CRD Backend mode enabled
 
 To use Bottlerocket, find the available image (note that the Owner IDs vary per region)
 ```bash
 aws ec2 describe-images --output table \
   --owners amazon \
-  --query "sort_by(Images, &CreationDate)[*].[CreationDate,OwnerId,Name,ImageId]" \
+  --query "reverse(sort_by(Images, &CreationDate))[*].[CreationDate,OwnerId,Name,ImageId]" \
   --filters Name=name,Values="bottlerocket-aws-k8s*"
 ```
 

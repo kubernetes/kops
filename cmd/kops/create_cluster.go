@@ -485,7 +485,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			klog.Fatal("unsupported region, try again")
 		}
 		for _, group := range nodes {
-			group.Spec.Image = fmt.Sprintf("%v/bottlerocket-aws-k8s-1.18-x86_64-v1.0.4-cef8dbd2", owner)
+			group.Spec.Image = fmt.Sprintf("%v/bottlerocket-aws-k8s-1.19-x86_64-v1.0.8-fee7e752", owner)
 			group.Spec.ImageFamily = &api.ImageFamily{
 				Bottlerocket: &api.Bottlerocket{},
 			}
