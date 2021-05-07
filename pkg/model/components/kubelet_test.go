@@ -58,22 +58,9 @@ func buildOptions(cluster *kops.Cluster) error {
 	return nil
 }
 
-func TestFeatureGates(t *testing.T) {
-	cluster := buildKubeletTestCluster()
-	err := buildOptions(cluster)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	gates := cluster.Spec.Kubelet.FeatureGates
-	if gates["ExperimentalCriticalPodAnnotation"] != "true" {
-		t.Errorf("ExperimentalCriticalPodAnnotation feature gate should be enabled by default")
-	}
-}
-
 func TestFeatureGatesKubernetesVersion(t *testing.T) {
 	cluster := buildKubeletTestCluster()
-	cluster.Spec.KubernetesVersion = "1.16.0"
+	cluster.Spec.KubernetesVersion = "1.17.0"
 	err := buildOptions(cluster)
 	if err != nil {
 		t.Fatal(err)

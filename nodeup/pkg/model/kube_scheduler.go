@@ -29,7 +29,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/exec"
 	"k8s.io/kops/util/pkg/proxy"
 
 	v1 "k8s.io/api/core/v1"
@@ -202,21 +201,14 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 
 	// Log both to docker and to the logfile
 	addHostPathMapping(pod, container, "logfile", "/var/log/kube-scheduler.log").ReadOnly = false
-	if b.IsKubernetesGTE("1.15") {
-		// From k8s 1.15, we use lighter containers that don't include shells
-		// But they have richer logging support via klog
-		container.Command = []string{"/usr/local/bin/kube-scheduler"}
-		container.Args = append(
-			sortedStrings(flags),
-			"--logtostderr=false", //https://github.com/kubernetes/klog/issues/60
-			"--alsologtostderr",
-			"--log-file=/var/log/kube-scheduler.log")
-	} else {
-		container.Command = exec.WithTee(
-			"/usr/local/bin/kube-scheduler",
-			sortedStrings(flags),
-			"/var/log/kube-scheduler.log")
-	}
+	// We use lighter containers that don't include shells
+	// But they have richer logging support via klog
+	container.Command = []string{"/usr/local/bin/kube-scheduler"}
+	container.Args = append(
+		sortedStrings(flags),
+		"--logtostderr=false", //https://github.com/kubernetes/klog/issues/60
+		"--alsologtostderr",
+		"--log-file=/var/log/kube-scheduler.log")
 
 	if c.MaxPersistentVolumes != nil {
 		maxPDV := v1.EnvVar{

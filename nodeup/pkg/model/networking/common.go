@@ -44,14 +44,10 @@ func (b *CommonBuilder) Build(c *fi.ModelBuilderContext) error {
 		"ptp",
 		"tuning",
 		"vlan",
-	}
-
-	// Additions in https://github.com/containernetworking/plugins/releases/tag/v0.8.6
-	if b.IsKubernetesGTE("1.15") {
-		assets = append(assets, "bandwidth")
-		assets = append(assets, "firewall")
-		assets = append(assets, "sbr")
-		assets = append(assets, "static")
+		"bandwidth",
+		"firewall",
+		"sbr",
+		"static",
 	}
 
 	if err := b.AddCNIBinAssets(c, assets); err != nil {

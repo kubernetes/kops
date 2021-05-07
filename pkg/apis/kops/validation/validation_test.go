@@ -261,7 +261,7 @@ func TestValidateKubeAPIServer(t *testing.T) {
 		if g.Cluster == nil {
 			g.Cluster = &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					KubernetesVersion: "1.16.0",
+					KubernetesVersion: "1.20.0",
 				},
 			}
 		}
@@ -809,32 +809,9 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Version: "v1.7.0",
-			},
-			Spec: kops.ClusterSpec{
-				KubernetesVersion: "1.18.0",
-			},
-			ExpectedErrors: []string{"Forbidden::cilium.version"},
-		},
-		{
-			Cilium: kops.CiliumNetworkingSpec{
-				Version: "v1.7.0",
-			},
-		},
-		{
-			Cilium: kops.CiliumNetworkingSpec{
 				Version: "1.7.0",
 			},
 			ExpectedErrors: []string{"Invalid value::cilium.version"},
-		},
-		{
-			Cilium: kops.CiliumNetworkingSpec{
-				Version: "v1.7.0",
-				Hubble: &kops.HubbleSpec{
-					Enabled: fi.Bool(true),
-				},
-			},
-			ExpectedErrors: []string{"Forbidden::cilium.hubble.enabled"},
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
@@ -864,7 +841,7 @@ func Test_Validate_Cilium(t *testing.T) {
 			Cilium: &g.Cilium,
 		}
 		if g.Spec.KubernetesVersion == "" {
-			g.Spec.KubernetesVersion = "1.15.0"
+			g.Spec.KubernetesVersion = "1.17.0"
 		}
 		cluster := &kops.Cluster{
 			Spec: g.Spec,
