@@ -1338,9 +1338,19 @@ spec:
         namespace: someNamespace
         aws:
           policyARNs:
-            - "need an example"
+            - arn:aws:iam::000000000000:policy/somePolicy
       - name: anotherServiceAccount
         namespace: anotherNamespace
         aws:
-          inlinePolicy: "need an example"
+          inlinePolicy: |-
+            {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "s3:ListAllMyBuckets",
+                  "Resource": "*"
+                }
+              ]
+            }
 ```
