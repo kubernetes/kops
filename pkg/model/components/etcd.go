@@ -34,8 +34,6 @@ type EtcdOptionsBuilder struct {
 var _ loader.OptionsBuilder = &EtcdOptionsBuilder{}
 
 const (
-	DefaultEtcd3Version_1_14 = "3.3.10"
-
 	DefaultEtcd3Version_1_17 = "3.4.3"
 
 	DefaultEtcd3Version_1_19 = "3.4.13"
@@ -56,10 +54,8 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 			// We run the k8s-recommended versions of etcd
 			if b.IsKubernetesGTE("1.19") {
 				c.Version = DefaultEtcd3Version_1_19
-			} else if b.IsKubernetesGTE("1.17") {
-				c.Version = DefaultEtcd3Version_1_17
 			} else {
-				c.Version = DefaultEtcd3Version_1_14
+				c.Version = DefaultEtcd3Version_1_17
 			}
 		}
 

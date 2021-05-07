@@ -777,28 +777,13 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Could not parse as semantic version"))
 		}
 
-		if !(version.Minor >= 6 && version.Minor <= 10) {
-			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only versions 1.6 through 1.10 are supported"))
-		}
-
-		if version.Minor == 6 && cluster.IsKubernetesGTE("1.16") {
-			allErrs = append(allErrs, field.Forbidden(versionFld, "Version 1.6 requires kubernetesVersion before 1.16"))
-		}
-
-		if version.Minor == 7 && cluster.IsKubernetesGTE("1.17") {
-			allErrs = append(allErrs, field.Forbidden(versionFld, "Version 1.7 requires kubernetesVersion before 1.17"))
-		}
-
-		if version.Minor == 10 && cluster.IsKubernetesLT("1.16") {
-			allErrs = append(allErrs, field.Forbidden(versionFld, "Version 1.10 requires kubernetesVersion 1.16 or newer"))
+		if !(version.Minor >= 8 && version.Minor <= 10) {
+			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only versions 1.8 through 1.10 are supported"))
 		}
 
 		if v.Hubble != nil && fi.BoolValue(v.Hubble.Enabled) {
 			if !components.IsCertManagerEnabled(cluster) {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("hubble", "enabled"), "Hubble requires that cert manager is enabled"))
-			}
-			if version.Minor < 8 {
-				allErrs = append(allErrs, field.Forbidden(fldPath.Child("hubble", "enabled"), "Hubble requires Cilium 1.8 or newer"))
 			}
 		}
 	}
@@ -997,7 +982,7 @@ func validateEtcdVersion(spec kops.EtcdClusterSpec, fieldPath *field.Path, minim
 
 	version := spec.Version
 	if spec.Version == "" {
-		version = components.DefaultEtcd3Version_1_14
+		version = components.DefaultEtcd3Version_1_17
 	}
 
 	sem, err := semver.Parse(strings.TrimPrefix(version, "v"))
