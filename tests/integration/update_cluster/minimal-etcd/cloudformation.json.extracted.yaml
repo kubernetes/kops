@@ -138,6 +138,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimaletcdexamplecom.Propert
 
   cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig:
+    awsEBSCSIDriver: {}
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
@@ -483,6 +484,7 @@ Resources.AWSEC2LaunchTemplatenodesminimaletcdexamplecom.Properties.LaunchTempla
 
   cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig:
+    awsEBSCSIDriver: {}
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:

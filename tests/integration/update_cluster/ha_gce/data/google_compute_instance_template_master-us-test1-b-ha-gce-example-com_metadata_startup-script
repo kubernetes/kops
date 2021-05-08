@@ -136,6 +136,7 @@ ensure-install-dir
 
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
+  awsEBSCSIDriver: {}
   gceServiceAccount: default
   manageStorageClasses: true
   multizone: true

@@ -138,6 +138,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersmixedinstancesexamplecom.Prop
 
   cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig:
+    awsEBSCSIDriver: {}
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
@@ -467,6 +468,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1bmastersmixedinstancesexamplecom.Prop
 
   cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig:
+    awsEBSCSIDriver: {}
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
@@ -796,6 +798,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1cmastersmixedinstancesexamplecom.Prop
 
   cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig:
+    awsEBSCSIDriver: {}
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
@@ -1125,6 +1128,7 @@ Resources.AWSEC2LaunchTemplatenodesmixedinstancesexamplecom.Properties.LaunchTem
 
   cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig:
+    awsEBSCSIDriver: {}
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:

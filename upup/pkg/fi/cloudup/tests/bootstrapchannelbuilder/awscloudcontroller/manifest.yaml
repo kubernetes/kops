@@ -47,11 +47,11 @@ spec:
     version: 1.22.0-alpha.1
   - id: v1.15.0
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
-    manifestHash: cc7393f22cb59dc4e23b9220ee962243334f47f1
+    manifestHash: b232235952d7340c716ffbf30ecc695b8f0538ce
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
-    version: 1.17.0
+    version: 1.21.0
   - id: k8s-1.18
     kubernetesVersion: '>=1.18.0'
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
