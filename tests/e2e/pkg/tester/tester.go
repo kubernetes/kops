@@ -157,8 +157,9 @@ func (t *Tester) addProviderFlag() error {
 	switch cluster.Spec.CloudProvider {
 	case "aws", "gce":
 		provider = cluster.Spec.CloudProvider
+	case "digitalocean":
 	default:
-		return fmt.Errorf("unhandled cluster.spec.cloudProvider %q for determining ginkgo Provider", cluster.Spec.CloudProvider)
+		klog.Warningf("unhandled cluster.spec.cloudProvider %q for determining ginkgo Provider", cluster.Spec.CloudProvider)
 	}
 
 	klog.Infof("Setting --provider=%s", provider)
@@ -223,7 +224,7 @@ func (t *Tester) addRegionFlag() error {
 	case "gce":
 		region = cluster.Spec.Subnets[0].Region
 	default:
-		return fmt.Errorf("unhandled region detection for cloud provider: %v", cluster.Spec.CloudProvider)
+		klog.Warningf("unhandled region detection for cloud provider: %v", cluster.Spec.CloudProvider)
 	}
 
 	klog.Infof("Setting --gce-region=%s", region)
@@ -295,7 +296,8 @@ func (t *Tester) getZones() ([]string, error) {
 	zoneNames := zones.List()
 
 	if len(zoneNames) == 0 {
-		return nil, fmt.Errorf("no zones found in instance groups")
+		klog.Warningf("no zones found in instance groups")
+		return nil, nil
 	}
 	return zoneNames, nil
 }

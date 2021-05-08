@@ -28,6 +28,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dns-controller/pkg/dns"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -81,6 +82,7 @@ func listDroplets(cloud fi.Cloud, clusterName string) ([]*resources.Resource, er
 			ID:      strconv.Itoa(droplet.ID),
 			Type:    resourceTypeDroplet,
 			Deleter: deleteDroplet,
+			Dumper:  dumpDroplet,
 			Obj:     droplet,
 		}
 
@@ -409,4 +411,44 @@ func waitForDetach(cloud *Cloud, action *godo.Action) error {
 			}
 		}
 	}
+}
+
+func dumpDroplet(op *resources.DumpOperation, r *resources.Resource) error {
+	data := make(map[string]interface{})
+	data["id"] = r.ID
+	data["type"] = godo.DropletResourceType
+	data["raw"] = r.Obj
+	op.Dump.Resources = append(op.Dump.Resources, data)
+
+	droplet := r.Obj.(godo.Droplet)
+	i := &resources.Instance{
+		Name: r.ID,
+	}
+	if ip, err := droplet.PublicIPv4(); err == nil {
+		i.PublicAddresses = append(i.PublicAddresses, ip)
+	}
+	if ip, err := droplet.PublicIPv6(); err == nil {
+		i.PublicAddresses = append(i.PublicAddresses, ip)
+	}
+	if img := droplet.Image; img != nil {
+		switch img.Distribution {
+		case "Ubuntu":
+			i.SSHUser = "root"
+		default:
+			klog.Warningf("unrecognized droplet image distribution: %v", img.Distribution)
+		}
+	}
+	for _, tag := range droplet.Tags {
+		if strings.HasPrefix(tag, "KubernetesCluster-Master") {
+			i.Roles = []string{string(kops.InstanceGroupRoleMaster)}
+			break
+		}
+	}
+	if len(i.Roles) == 0 {
+		i.Roles = []string{string(kops.InstanceGroupRoleNode)}
+	}
+
+	op.Dump.Instances = append(op.Dump.Instances, i)
+
+	return nil
 }
