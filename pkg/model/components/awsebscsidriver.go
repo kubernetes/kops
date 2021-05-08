@@ -37,7 +37,7 @@ func (b *AWSEBSCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.Version == nil {
-		version := "v0.10.1"
+		version := "v1.0.0"
 		c.Version = fi.String(version)
 	}
 
