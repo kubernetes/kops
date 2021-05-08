@@ -25,20 +25,20 @@ if [ -z "$KOPS_VERSION_A" ] || [ -z "$K8S_VERSION_A" ] || [ -z "$KOPS_VERSION_B"
   exit 1
 fi
 
-WORKDIR=$(mktemp)
+export KOPS_FEATURE_FLAGS="SpecOverrideFlag,${KOPS_FEATURE_FLAGS:-}"
+REPO_ROOT=$(git rev-parse --show-toplevel);
+
+WORKDIR=$(mktemp -d)
 
 KOPS_A=${WORKDIR}/kops-${KOPS_VERSION_A}
-wget -O "${KOPS_A}" "https://github.com/kubernetes/kops/releases/download/$KOPS_VERSION_A/kops-$(go env GOOS)-$(go env GOARCH)"
+wget -O "${KOPS_A}" "https://github.com/kubernetes/kops/releases/download/v$KOPS_VERSION_A/kops-$(go env GOOS)-$(go env GOARCH)"
 chmod +x "${KOPS_A}"
 
 KOPS_B=${WORKDIR}/kops-${KOPS_VERSION_B}
 if [[ "${KOPS_VERSION_B}" == "source" ]]; then
-  export KOPS_FEATURE_FLAGS="SpecOverrideFlag,${KOPS_FEATURE_FLAGS:-}"
-  REPO_ROOT=$(git rev-parse --show-toplevel);
-
   cp "${REPO_ROOT}/bazel-bin/cmd/kops/linux-amd64/kops" "${KOPS_B}"
 else
-  wget -O "${KOPS_B}" "https://github.com/kubernetes/kops/releases/download/$KOPS_VERSION_B/kops-$(go env GOOS)-$(go env GOARCH)"
+  wget -O "${KOPS_B}" "https://github.com/kubernetes/kops/releases/download/v$KOPS_VERSION_B/kops-$(go env GOOS)-$(go env GOARCH)"
   chmod +x "${KOPS_B}"
 fi
 
