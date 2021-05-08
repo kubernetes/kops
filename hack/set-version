@@ -17,12 +17,10 @@
 # This script helps with updating versions across the repo, updating the
 # multiple places where we encode a kops version number.
 
-# Use: hack/set-version <new-release-version> <new-ci-version>
+# Use: hack/set-version <new-release-version>
 
 # new-release-version is the version you are releasing.
 
-# new-ci-version is the version you are releasing + 1;
-# this is used to avoid CI jobs being out of semver order.
 #
 # Examples:
 # new-release-version  new-ci-version
@@ -34,11 +32,22 @@ set -e
 set -x
 
 NEW_RELEASE_VERSION=$1
-NEW_CI_VERSION=$2
 
-if [[ -z "${NEW_CI_VERSION}" ]]; then
-  echo "syntax $0 <new-release-version> <new-ci-version>"
+if [[ ! "${NEW_RELEASE_VERSION}" =~ ^([0-9]+[.][0-9]+)[.]([0-9]+)(-(alpha|beta)[.]([0-9]+))?$ ]]; then
+  echo "syntax $0 <new-release-version>"
+  echo "<new-relese-version> must be 'X.Y.Z', 'X.Y.Z-alpha.N', or 'X.Y.Z-beta.N'"
   exit 1
+fi
+
+MINOR=${BASH_REMATCH[1]}
+PATCH=${BASH_REMATCH[2]}
+PRERELEASE=${BASH_REMATCH[4]}
+PRERELEASE_SEQUENCE=${BASH_REMATCH[5]}
+
+if [[ -z "$PRERELEASE" ]]; then
+  NEW_CI_VERSION="${MINOR}."$(($PATCH + 1))
+else
+  NEW_CI_VERSION="${MINOR}.${PATCH}-${PRERELEASE}."$(($PRERELEASE_SEQUENCE + 1))
 fi
 
 KOPS_RELEASE_VERSION=`grep 'KOPS_RELEASE_VERSION\s*=' version.go  | awk '{print $3}' | sed -e 's_"__g'`
