@@ -211,6 +211,45 @@ roleRef:
   name: ebs-external-snapshotter-role
   apiGroup: rbac.authorization.k8s.io
 ---
+# Source: aws-ebs-csi-driver/templates/clusterrolebinding-csi-node.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ebs-csi-node-binding
+  labels:
+    app.kubernetes.io/name: aws-ebs-csi-driver
+subjects:
+  - kind: ServiceAccount
+    name: ebs-csi-node-sa
+    namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: ebs-external-attacher-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: aws-ebs-csi-driver/templates/clusterrole-csi-node.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ebs-csi-node-role
+  labels:
+    app.kubernetes.io/name: aws-ebs-csi-driver
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get"]
+---
+# Source: aws-ebs-csi-driver/templates/serviceaccount-csi-node.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ebs-csi-node-sa
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: aws-ebs-csi-driver
+    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/version: {{ .Version }}
+---
 # Source: aws-ebs-csi-driver/templates/node.yaml
 # Node Service
 kind: DaemonSet
@@ -239,6 +278,7 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
       hostNetwork: true
+      serviceAccountName: ebs-csi-node-sa
       priorityClassName: system-node-critical
       tolerations:
         - operator: Exists
@@ -258,6 +298,10 @@ spec:
           env:
             - name: CSI_ENDPOINT
               value: unix:/csi/csi.sock
+            - name: CSI_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
           volumeMounts:
             - name: kubelet-dir
               mountPath: /var/lib/kubelet
