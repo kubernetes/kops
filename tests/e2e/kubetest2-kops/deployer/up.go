@@ -133,7 +133,8 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 		}
 		args = appendIfUnset(args, "--vpc", strings.Split(d.ClusterName, ".")[0])
 	case "digitalocean":
-		args = appendIfUnset(args, "--master-size", "s-8vcpu-16gb")
+		args = appendIfUnset(args, "--master-size", "s-4vcpu-8gb")
+		args = appendIfUnset(args, "--node-size", "s-4vcpu-8gb")
 	}
 
 	if d.terraform != nil {

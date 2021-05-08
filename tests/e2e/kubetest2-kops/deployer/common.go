@@ -75,6 +75,14 @@ func (d *deployer) initialize() error {
 		if d.SSHPublicKeyPath == "" {
 			d.SSHPublicKeyPath = os.Getenv("AWS_SSH_PUBLIC_KEY_FILE")
 		}
+	case "digitalocean":
+		if d.SSHPrivateKeyPath == "" {
+			d.SSHPrivateKeyPath = os.Getenv("DO_SSH_PRIVATE_KEY_FILE")
+		}
+		if d.SSHPublicKeyPath == "" {
+			d.SSHPublicKeyPath = os.Getenv("DO_SSH_PUBLIC_KEY_FILE")
+		}
+		d.SSHUser = "root"
 	case "gce":
 		if d.GCPProject == "" {
 			klog.V(1).Info("No GCP project provided, acquiring from Boskos")
@@ -109,6 +117,7 @@ func (d *deployer) initialize() error {
 			d.createBucket = true
 		}
 	}
+
 	if d.SSHUser == "" {
 		d.SSHUser = os.Getenv("KUBE_SSH_USER")
 	}
@@ -175,6 +184,16 @@ func (d *deployer) env() []string {
 			v := os.Getenv(k)
 			if v != "" {
 				vars = append(vars, k+"="+v)
+			}
+		}
+	} else if d.CloudProvider == "digitalocean" {
+		// Pass through some env vars if set
+		for _, k := range []string{"DIGITALOCEAN_ACCESS_TOKEN", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY"} {
+			v := os.Getenv(k)
+			if v != "" {
+				vars = append(vars, k+"="+v)
+			} else {
+				klog.Warningf("DO env var %s is empty..", k)
 			}
 		}
 	}
@@ -244,6 +263,8 @@ func (d *deployer) stateStore() string {
 		case "gce":
 			d.createBucket = true
 			ss = "gs://" + gce.GCSBucketName(d.GCPProject)
+		case "digitalocean":
+			ss = "do://e2e-kops-space"
 		}
 	}
 	return ss
