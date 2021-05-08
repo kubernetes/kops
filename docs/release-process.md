@@ -2,52 +2,56 @@
 onwards.  For the process used for versions up to kOps 1.18, please
 see [the old release process](development/release.md)**
 
-# Release Process
+# Release process
 
 The kOps project is released on an as-needed basis. The process is as follows:
 
-1. An issue is proposing a new release with a changelog since the last release
-1. All [OWNERS](https://github.com/kubernetes/kops/blob/master/OWNERS) must LGTM this release
-1. An OWNER runs `git tag -s $VERSION` and inserts the changelog and pushes the tag with `git push $VERSION`
-1. The release issue is closed
-1. An announcement email is sent to `kubernetes-dev@googlegroups.com` with the subject `[ANNOUNCE] kOps $VERSION is released`
+## Release branches
 
-## Branches
-
-We maintain a `release-1.17` branch for kOps 1.17.X, `release-1.18` for kOps 1.18.X
+We maintain a `release-1.17` branch for kOps 1.17.X, `release-1.18` for kOps 1.18.X,
 etc.
 
-`master` is where development happens.  We create new branches from master as a
-new kOps version is released, or in preparation for a new release.  As we are
-preparing for a new kubernetes release, we will try to advance the master branch
-to focus on the new functionality, and start cherry-picking back more selectively
+`master` is where development happens.  We create new branches from master as we
+prepare for a new minor release.  As we are
+preparing for a new Kubernetes release, we will try to advance the master branch
+to focus on the new functionality and cherry-pick back
 to the release branches only as needed.
 
 Generally we don't encourage users to run older kOps versions, or older
 branches, because newer versions of kOps should remain compatible with older
 versions of Kubernetes.
 
-Releases should be done from the `release-1.X` branch.  The tags should be made
-on the release branches.
+Beta and stable releases should be made from the `release-1.X` branch.
+The tags should be made on the release branches. Alpha releases may be made on
+either `master` or a release branch.
 
-We do currently maintain a `release` branch which should point to the same tag as
-the current `release-1.X` tag.
+## Creating new release branches
 
-## New Kubernetes versions and release branches
-
-Typically kOps alpha releases are created off the master branch and beta and stable releases are created off of release branches.
+Typically, kOps alpha releases are created off the master branch and beta and stable releases are created off of release branches.
 In order to create a new release branch off of master prior to a beta release, perform the following steps:
 
-1. Create a new periodic E2E prow job for the "next" kubernetes minor version.
-   * All kOps prow jobs are defined [here](https://github.com/kubernetes/test-infra/tree/master/config/jobs/kubernetes/kops)
-2. Create a new presubmit E2E prow job for the new release branch.
+1. Update the periodic E2E Prow jobs for the "next" kOps/Kubernetes minor version.
+   * Edit [build_jobs.py](https://github.com/kubernetes/test-infra/tree/master/config/jobs/kubernetes/kops/build_jobs.py)
+   to add the new minor version to `k8s_versions` and `kops_versions`. 
+   * Remove the oldest minor version from each of those lists.
+   * Run the `build_jobs.py` script.
+2. Edit [kops-presubmits.yaml](https://github.com/kubernetes/test-infra/tree/master/config/jobs/kubernetes/kops/kops-presubmits.yaml)
+   to create a new `pull-kops-e2e-kubernetes-aws-1-X` presubmit E2E prow job for the new release branch.
 3. Create a new milestone in the GitHub repo.
-4. Update [prow's milestone_applier config](https://github.com/kubernetes/test-infra/blob/dc99617c881805981b85189da232d29747f87004/config/prow/plugins.yaml#L309-L313) to update master to use the new milestone and add an entry for the new branch that targets master's old milestone.
+4. Update [prow's milestone_applier config](https://github.com/kubernetes/test-infra/blob/dc99617c881805981b85189da232d29747f87004/config/prow/plugins.yaml#L309-L313)
+   to update master to use the new milestone and add an entry for the new feature branch. 
+   Create this as a separate PR as it will require separate review.
 5. Create the new release branch in git and push it to the GitHub repo.
+6. On the master branch, create a PR to update to the next minor version:
+   * Update `OldestSupportedKubernetesVersion` and `OldestRecommendedKubernetesVersion` in
+   [apply_cluster.go](https://github.com/kubernetes/kops/tree/master/upup/pkg/fi/cloudup/apply_cluster.go)
+   * Add a row for the new minor version to [upgrade_k8s.md](https://github.com/kubernetes/kops/tree/master/permalinks/upgrade_k8s.md)
+   * Fix any tests broken by the now-unsupported versions.
+6. Off of master, create the first alpha release for the minor release.
 
 ## Update versions
 
-See [1.19.0-alpha.1 PR](https://github.com/kubernetes/kops/pull/9494) for example
+See [1.19.0-alpha.1 PR](https://github.com/kubernetes/kops/pull/9494) for an example.
 
 * Use the hack/set-version script to update versions:  `hack/set-version 1.20.0`
 
@@ -59,7 +63,9 @@ The syntax is `hack/set-version <new-release-version>`
 
 * Commit the changes (without pushing yet): `git add -p && git commit -m "Release 1.X.Y"`
 
-## Check builds OK
+* This is the "release commit".
+
+## Check builds are OK
 
 ```
 rm -rf .build/ .bazelbuild/
@@ -73,19 +79,14 @@ git push $USER
 hub pull-request
 ```
 
-Wait for the PR to merge
+Wait for the PR to merge.
 
-## Tag the branch
+## Tag the release commit
 
 (TODO: Can we automate this?  Maybe we should have a tags.yaml file)
 
-```
-git checkout master
-git fetch origin
-git reset --hard origin/master
-```
-
-Make sure you are on the correct commit, and not a newer one!
+Check out the release commit.
+Make sure you are not on a newer one! Do not tag the merge commit!
 
 ```
 VERSION=$(tools/get_version.sh | grep VERSION | awk '{print $2}')
@@ -93,11 +94,11 @@ echo ${VERSION}
 ```
 
 ```
-git tag v${VERSION}
+git tag -a -m "Release ${VERSION}" v${VERSION}
 git show v${VERSION}
 ```
 
-Double check it is the correct commit!
+Double check it is the release commit!
 
 ```
 git push git@github.com:kubernetes/kops v${VERSION}
@@ -138,13 +139,6 @@ git commit -m "Release notes for ${VERSION}"
 git push ${USER}
 hub pull-request
 ```
-
-## Update release branch
-
-For the time being, we are also maintaining a release branch.  We push released
-versions to that.
-
-`git push git@github.com:kubernetes/kops release-1.17:release`
 
 ## Propose promotion of artifacts
 
@@ -299,3 +293,9 @@ Once we are satisfied the release is stable:
 ## Update conformance results with CNCF
 
 Use the following instructions: https://github.com/cncf/k8s-conformance/blob/master/instructions.md
+
+## Update the kOps version matrix
+
+If the release was a first stable minor release (a ".0"), then update the
+version matrix in both [releases.md](https://github.com/kubernetes/kops/tree/master/docs/welcome/releases.md)
+and [README-ES.md](https://github.com/kubernetes/kops/tree/master/README-ES.md).
