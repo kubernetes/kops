@@ -219,11 +219,6 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 			}
 		}
 	}
-	if _, found := clusterSpec.Kubelet.FeatureGates["ExperimentalCriticalPodAnnotation"]; !found {
-		if b.IsKubernetesLT("1.16") {
-			clusterSpec.Kubelet.FeatureGates["ExperimentalCriticalPodAnnotation"] = "true"
-		}
-	}
 
 	// Set systemd as the default cgroup driver for kubelet from k8s 1.20
 	if b.IsKubernetesGTE("1.20") && clusterSpec.Kubelet.CgroupDriver == "" {

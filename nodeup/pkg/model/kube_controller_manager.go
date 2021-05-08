@@ -29,7 +29,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/distributions"
-	"k8s.io/kops/util/pkg/exec"
 	"k8s.io/kops/util/pkg/proxy"
 
 	v1 "k8s.io/api/core/v1"
@@ -191,21 +190,14 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 
 	// Log both to docker and to the logfile
 	addHostPathMapping(pod, container, "logfile", "/var/log/kube-controller-manager.log").ReadOnly = false
-	if b.IsKubernetesGTE("1.15") {
-		// From k8s 1.15, we use lighter containers that don't include shells
-		// But they have richer logging support via klog
-		container.Command = []string{"/usr/local/bin/kube-controller-manager"}
-		container.Args = append(
-			sortedStrings(flags),
-			"--logtostderr=false", //https://github.com/kubernetes/klog/issues/60
-			"--alsologtostderr",
-			"--log-file=/var/log/kube-controller-manager.log")
-	} else {
-		container.Command = exec.WithTee(
-			"/usr/local/bin/kube-controller-manager",
-			sortedStrings(flags),
-			"/var/log/kube-controller-manager.log")
-	}
+	// We use lighter containers that don't include shells
+	// But they have richer logging support via klog
+	container.Command = []string{"/usr/local/bin/kube-controller-manager"}
+	container.Args = append(
+		sortedStrings(flags),
+		"--logtostderr=false", //https://github.com/kubernetes/klog/issues/60
+		"--alsologtostderr",
+		"--log-file=/var/log/kube-controller-manager.log")
 
 	for _, path := range b.SSLHostPaths() {
 		name := strings.Replace(path, "/", "", -1)

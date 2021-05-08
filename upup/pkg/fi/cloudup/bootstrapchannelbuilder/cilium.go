@@ -34,22 +34,7 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) error {
 		}
 
 		key := "networking.cilium.io"
-		if ver.Minor < 8 {
-			version := "1.7.3-kops.1"
-
-			{
-				id := "k8s-1.12"
-				location := key + "/" + id + ".yaml"
-
-				addons.Spec.Addons = append(addons.Spec.Addons, &api.AddonSpec{
-					Name:     fi.String(key),
-					Version:  fi.String(version),
-					Selector: networkingSelector(),
-					Manifest: fi.String(location),
-					Id:       id,
-				})
-			}
-		} else if ver.Minor == 8 {
+		if ver.Minor < 9 {
 			version := "1.8.0-kops.1"
 			{
 				id := "k8s-1.12"

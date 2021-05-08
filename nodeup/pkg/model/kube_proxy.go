@@ -20,6 +20,10 @@ import (
 	"fmt"
 	"strings"
 
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
@@ -28,12 +32,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/exec"
-
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/klog/v2"
 )
 
 // KubeProxyBuilder installs kube-proxy
@@ -182,11 +180,6 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		"--kubeconfig=/var/lib/kube-proxy/kubeconfig",
 		"--oom-score-adj=-998"}...)
 
-	if !b.IsKubernetesGTE("1.16") {
-		// Removed in 1.16: https://github.com/kubernetes/kubernetes/pull/78294
-		flags = append(flags, `--resource-container=""`)
-	}
-
 	image := kubeProxyImage(b.NodeupModelContext)
 	container := &v1.Container{
 		Name:  "kube-proxy",
@@ -217,21 +210,14 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 
 	// Log both to docker and to the logfile
 	addHostPathMapping(pod, container, "logfile", "/var/log/kube-proxy.log").ReadOnly = false
-	if b.IsKubernetesGTE("1.15") {
-		// From k8s 1.15, we use lighter containers that don't include shells
-		// But they have richer logging support via klog
-		container.Command = []string{"/usr/local/bin/kube-proxy"}
-		container.Args = append(
-			sortedStrings(flags),
-			"--logtostderr=false", //https://github.com/kubernetes/klog/issues/60
-			"--alsologtostderr",
-			"--log-file=/var/log/kube-proxy.log")
-	} else {
-		container.Command = exec.WithTee(
-			"/usr/local/bin/kube-proxy",
-			sortedStrings(flags),
-			"/var/log/kube-proxy.log")
-	}
+	// We use lighter containers that don't include shells
+	// But they have richer logging support via klog
+	container.Command = []string{"/usr/local/bin/kube-proxy"}
+	container.Args = append(
+		sortedStrings(flags),
+		"--logtostderr=false", //https://github.com/kubernetes/klog/issues/60
+		"--alsologtostderr",
+		"--log-file=/var/log/kube-proxy.log")
 
 	{
 		addHostPathMapping(pod, container, "kubeconfig", "/var/lib/kube-proxy/kubeconfig")
