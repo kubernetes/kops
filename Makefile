@@ -20,7 +20,7 @@ UPLOAD_DEST?=$(S3_BUCKET)
 GCS_LOCATION?=gs://must-override
 GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
-GOPATH_1ST:=$(shell go env | grep GOPATH | cut -f 2 -d \")
+GOPATH_1ST:=$(shell go env | grep GOPATH | cut -f 2 -d '"' | sed 's/ /\\ /g')
 UNIQUE:=$(shell date +%s)
 BUILD=$(KOPS_ROOT)/.build
 LOCAL=$(BUILD)/local
@@ -150,9 +150,11 @@ ${KOPS}:
 
 .PHONY: codegen
 codegen:
-	go install k8s.io/kops/upup/tools/generators/...
-	${GOPATH_1ST}/bin/fitask --input-dirs k8s.io/kops/upup/pkg/fi/... \
-	    --go-header-file "hack/boilerplate/boilerplate.generatego.txt"
+	go build -o ${KOPS_ROOT}/_output/bin k8s.io/kops/upup/tools/generators/...
+	${KOPS_ROOT}/_output/bin/fitask \
+		--input-dirs k8s.io/kops/upup/pkg/fi/... \
+		--go-header-file hack/boilerplate/boilerplate.generatego.txt \
+		--output-base ${KOPS_ROOT}
 
 .PHONY: protobuf
 protobuf:
