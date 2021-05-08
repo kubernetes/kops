@@ -51,22 +51,11 @@ An example set of PRs are linked from [this](https://github.com/kubernetes/kops/
 
 See [1.5.0-alpha4 commit](https://github.com/kubernetes/kops/commit/a60d7982e04c273139674edebcb03c9608ba26a0) for example
 
-* Use the hack/set-version script to update versions:  `hack/set-version 1.20.0 1.20.1`
+* Use the hack/set-version script to update versions:  `hack/set-version 1.20.0`
 
-The syntax is `hack/set-version <new-release-version> <new-ci-version>`
+The syntax is `hack/set-version <new-release-version>`
 
 `new-release-version` is the version you are releasing.
-
-`new-ci-version` is the version you are releasing "plus one"; this is used to avoid CI jobs being out of semver order.
-
-Examples:
-
-| new-release-version  | new-ci-version
-| ---------------------| ---------------
-| 1.20.1               | 1.20.2
-| 1.21.0-alpha.1       | 1.21.0-alpha.2
-| 1.21.0-beta.1        | 1.21.0-beta.2
-
 
 * Update the golden tests: `hack/update-expected.sh`
 
