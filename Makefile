@@ -460,13 +460,13 @@ verify-hashes:
 # ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
 .PHONY: ci
-ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-staticcheck verify-terraform nodeup examples test | verify-gendocs verify-apimachinery
+ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerplate verify-bazel verify-versions verify-misspelling verify-shellcheck verify-staticcheck verify-terraform nodeup examples test | verify-gendocs verify-apimachinery
 	echo "Done!"
 
 # we skip tasks that rely on bazel and are covered by other jobs
 # verify-gofmt: uses bazel, covered by pull-kops-verify
 .PHONY: quick-ci
-quick-ci: verify-crds verify-goimports govet verify-boilerplate verify-bazel verify-misspelling verify-shellcheck | verify-gendocs verify-apimachinery
+quick-ci: verify-crds verify-goimports govet verify-boilerplate verify-bazel verify-versions verify-misspelling verify-shellcheck | verify-gendocs verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
@@ -538,6 +538,10 @@ verify-generate: verify-crds
 .PHONY: verify-crds
 verify-crds:
 	hack/verify-crds.sh
+
+.PHONY: verify-versions
+verify-versions:
+	hack/verify-versions.sh
 
 # -----------------------------------------------------
 # bazel targets
