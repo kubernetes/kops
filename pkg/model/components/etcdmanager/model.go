@@ -242,18 +242,6 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 		}
 	}
 
-	// With etcd-manager the hosts changes are self-contained, so
-	// we don't need to share /etc/hosts.  By not sharing we avoid
-	// (1) the temptation to address etcd directly and (2)
-	// problems of concurrent updates to /etc/hosts being hard
-	// from within a container (because locking is very difficult
-	// across bind mounts).
-	//
-	// Introduced with 1.17 to avoid changing existing versions.
-	if b.IsKubernetesLT("1.17") {
-		kubemanifest.MapEtcHosts(pod, container, false)
-	}
-
 	// Remap image via AssetBuilder
 	{
 		remapped, err := b.AssetBuilder.RemapImage(container.Image)

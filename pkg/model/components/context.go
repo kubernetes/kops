@@ -139,22 +139,17 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 		return image, nil
 	}
 
-	// The simple name is valid when pulling (before 1.16 it was
-	// only amd64, as of 1.16 it is a manifest list).  But if we
+	// The simple name is valid when pulling.  But if we
 	// are loading from a tarfile then the image is tagged with
 	// the architecture suffix.
 	//
-	// i.e. k8s.gcr.io/kube-apiserver:v1.16.0 is a manifest list
+	// i.e. k8s.gcr.io/kube-apiserver:v1.20.0 is a manifest list
 	// and we _can_ also pull
-	// k8s.gcr.io/kube-apiserver-amd64:v1.16.0 directly.  But if
-	// we load https://.../v1.16.0/amd64/kube-apiserver.tar then
+	// k8s.gcr.io/kube-apiserver-amd64:v1.20.0 directly.  But if
+	// we load https://.../v1.20.0/amd64/kube-apiserver.tar then
 	// the image inside that tar file is named
-	// "k8s.gcr.io/kube-apiserver-amd64:v1.16.0"
-	//
-	// But ... this is only the case from 1.16 on...
-	if kubernetesVersion.IsGTE("1.16") {
-		imageName += "-amd64"
-	}
+	// "k8s.gcr.io/kube-apiserver-amd64:v1.20.0"
+	imageName += "-amd64"
 
 	baseURL := clusterSpec.KubernetesVersion
 	baseURL = strings.TrimSuffix(baseURL, "/")

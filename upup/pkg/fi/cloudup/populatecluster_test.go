@@ -350,7 +350,7 @@ func TestPopulateCluster_APIServerCount(t *testing.T) {
 
 func TestPopulateCluster_AnonymousAuth(t *testing.T) {
 	cloud, c := buildMinimalCluster()
-	c.Spec.KubernetesVersion = "1.15.0"
+	c.Spec.KubernetesVersion = "1.20.0"
 
 	err := PerformAssignments(c, cloud)
 	if err != nil {
@@ -376,18 +376,6 @@ func TestPopulateCluster_DockerVersion(t *testing.T) {
 		KubernetesVersion string
 		DockerVersion     string
 	}{
-		{
-			KubernetesVersion: "1.13.0",
-			DockerVersion:     "18.06.3",
-		},
-		{
-			KubernetesVersion: "1.15.6",
-			DockerVersion:     "18.06.3",
-		},
-		{
-			KubernetesVersion: "1.16.0",
-			DockerVersion:     "18.09.9",
-		},
 		{
 			KubernetesVersion: "1.17.0",
 			DockerVersion:     "19.03.15",

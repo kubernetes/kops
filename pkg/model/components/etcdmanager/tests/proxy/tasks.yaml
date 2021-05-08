@@ -107,8 +107,6 @@ Contents: |
         name: run
       - mountPath: /etc/kubernetes/pki/etcd-manager
         name: pki
-      - mountPath: /etc/hosts
-        name: hosts
       - mountPath: /var/log/etcd.log
         name: varlogetcd
     hostNetwork: true
@@ -130,10 +128,6 @@ Contents: |
         path: /etc/kubernetes/pki/etcd-manager-events
         type: DirectoryOrCreate
       name: pki
-    - hostPath:
-        path: /etc/hosts
-        type: File
-      name: hosts
     - hostPath:
         path: /var/log/etcd-events.log
         type: FileOrCreate
@@ -193,8 +187,6 @@ Contents: |
         name: run
       - mountPath: /etc/kubernetes/pki/etcd-manager
         name: pki
-      - mountPath: /etc/hosts
-        name: hosts
       - mountPath: /var/log/etcd.log
         name: varlogetcd
     hostNetwork: true
@@ -216,10 +208,6 @@ Contents: |
         path: /etc/kubernetes/pki/etcd-manager-main
         type: DirectoryOrCreate
       name: pki
-    - hostPath:
-        path: /etc/hosts
-        type: File
-      name: hosts
     - hostPath:
         path: /var/log/etcd.log
         type: FileOrCreate
