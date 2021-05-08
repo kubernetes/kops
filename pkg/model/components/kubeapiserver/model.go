@@ -38,25 +38,9 @@ type KubeApiserverBuilder struct {
 
 var _ fi.ModelBuilder = &KubeApiserverBuilder{}
 
-func (b *KubeApiserverBuilder) useHealthCheckSidecar(c *fi.ModelBuilderContext) bool {
-	// Should we use our health-check proxy, which allows us to
-	// query the secure port without enabling anonymous auth?
-	useHealthCheckSidecar := true
-	// We only turn on the proxy in k8s 1.17 and above
-	if b.IsKubernetesLT("1.17") {
-		useHealthCheckSidecar = false
-	}
-
-	return useHealthCheckSidecar
-}
-
 // Build creates the tasks relating to kube-apiserver
 // Currently we only build the kube-apiserver-healthcheck sidecar
 func (b *KubeApiserverBuilder) Build(c *fi.ModelBuilderContext) error {
-	if !b.useHealthCheckSidecar(c) {
-		return nil
-	}
-
 	manifest, err := b.buildManifest()
 	if err != nil {
 		return err

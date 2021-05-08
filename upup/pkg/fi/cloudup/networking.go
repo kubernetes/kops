@@ -23,7 +23,6 @@ import (
 
 	"k8s.io/klog/v2"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/hashing"
@@ -35,10 +34,6 @@ import (
 // https://github.com/kubernetes/kubernetes/issues/30338
 
 const (
-	// defaultCNIAssetAmd64K8s_11 is the CNI tarball for k8s >= 1.11
-	defaultCNIAssetAmd64K8s_11 = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz"
-	defaultCNIAssetArm64K8s_11 = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-arm64-v0.7.5.tgz"
-
 	// defaultCNIAssetAmd64K8s_15 is the CNI tarball for k8s >= 1.15
 	defaultCNIAssetAmd64K8s_15 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz"
 	defaultCNIAssetArm64K8s_15 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz"
@@ -85,25 +80,12 @@ func findCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch a
 		return u, h, nil
 	}
 
-	sv, err := util.ParseKubernetesVersion(c.Spec.KubernetesVersion)
-	if err != nil {
-		return nil, nil, fmt.Errorf("unable to find Kubernetes version: %v", err)
-	}
-
 	switch arch {
 	case architectures.ArchitectureAmd64:
-		if util.IsKubernetesGTE("1.15", *sv) {
-			cniAssetURL = defaultCNIAssetAmd64K8s_15
-		} else {
-			cniAssetURL = defaultCNIAssetAmd64K8s_11
-		}
+		cniAssetURL = defaultCNIAssetAmd64K8s_15
 		klog.V(2).Infof("Adding default ARM64 CNI plugin binaries asset: %s", cniAssetURL)
 	case architectures.ArchitectureArm64:
-		if util.IsKubernetesGTE("1.15", *sv) {
-			cniAssetURL = defaultCNIAssetArm64K8s_15
-		} else {
-			cniAssetURL = defaultCNIAssetArm64K8s_11
-		}
+		cniAssetURL = defaultCNIAssetArm64K8s_15
 		klog.V(2).Infof("Adding default AMD64 CNI plugin binaries asset: %s", cniAssetURL)
 	default:
 		return nil, nil, fmt.Errorf("unknown arch for CNI plugin binaries asset: %s", arch)

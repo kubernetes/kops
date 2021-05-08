@@ -238,7 +238,7 @@ spec:
           path: /etc/cni/net.d
         name: cni-net-dir
       - hostPath:
-          path: /var/run/dockershim.sock
+          path: /run/containerd/containerd.sock
         name: dockershim
       - hostPath:
           path: /run/xtables.lock
