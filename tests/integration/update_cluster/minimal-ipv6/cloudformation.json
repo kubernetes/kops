@@ -1,16 +1,16 @@
 {
   "Resources": {
-    "AWSAutoScalingAutoScalingGroupmasterustest1amasterscomplexexamplecom": {
+    "AWSAutoScalingAutoScalingGroupmasterustest1amastersminimalipv6examplecom": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
-        "AutoScalingGroupName": "master-us-test-1a.masters.complex.example.com",
+        "AutoScalingGroupName": "master-us-test-1a.masters.minimal-ipv6.example.com",
         "LaunchTemplate": {
           "LaunchTemplateId": {
-            "Ref": "AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom"
+            "Ref": "AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom"
           },
           "Version": {
             "Fn::GetAtt": [
-              "AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom",
+              "AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom",
               "LatestVersionNumber"
             ]
           }
@@ -19,28 +19,18 @@
         "MinSize": "1",
         "VPCZoneIdentifier": [
           {
-            "Ref": "AWSEC2Subnetustest1acomplexexamplecom"
+            "Ref": "AWSEC2Subnetustest1aminimalipv6examplecom"
           }
         ],
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "complex.example.com",
+            "Value": "minimal-ipv6.example.com",
             "PropagateAtLaunch": true
           },
           {
             "Key": "Name",
-            "Value": "master-us-test-1a.masters.complex.example.com",
-            "PropagateAtLaunch": true
-          },
-          {
-            "Key": "Owner",
-            "Value": "John Doe",
-            "PropagateAtLaunch": true
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz",
+            "Value": "master-us-test-1a.masters.minimal-ipv6.example.com",
             "PropagateAtLaunch": true
           },
           {
@@ -79,7 +69,7 @@
             "PropagateAtLaunch": true
           },
           {
-            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
             "Value": "owned",
             "PropagateAtLaunch": true
           }
@@ -99,30 +89,24 @@
             ]
           }
         ],
-        "LoadBalancerNames": [
-          "my-external-lb-1"
-        ],
         "TargetGroupARNs": [
           {
-            "Ref": "AWSElasticLoadBalancingV2TargetGrouptcpcomplexexamplecomvpjolq"
-          },
-          {
-            "Ref": "AWSElasticLoadBalancingV2TargetGrouptlscomplexexamplecom5nursn"
+            "Ref": "AWSElasticLoadBalancingV2TargetGrouptcpminimalipv6examplebne5ih"
           }
         ]
       }
     },
-    "AWSAutoScalingAutoScalingGroupnodescomplexexamplecom": {
+    "AWSAutoScalingAutoScalingGroupnodesminimalipv6examplecom": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
-        "AutoScalingGroupName": "nodes.complex.example.com",
+        "AutoScalingGroupName": "nodes.minimal-ipv6.example.com",
         "LaunchTemplate": {
           "LaunchTemplateId": {
-            "Ref": "AWSEC2LaunchTemplatenodescomplexexamplecom"
+            "Ref": "AWSEC2LaunchTemplatenodesminimalipv6examplecom"
           },
           "Version": {
             "Fn::GetAtt": [
-              "AWSEC2LaunchTemplatenodescomplexexamplecom",
+              "AWSEC2LaunchTemplatenodesminimalipv6examplecom",
               "LatestVersionNumber"
             ]
           }
@@ -131,28 +115,18 @@
         "MinSize": "2",
         "VPCZoneIdentifier": [
           {
-            "Ref": "AWSEC2Subnetustest1acomplexexamplecom"
+            "Ref": "AWSEC2Subnetustest1aminimalipv6examplecom"
           }
         ],
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "complex.example.com",
+            "Value": "minimal-ipv6.example.com",
             "PropagateAtLaunch": true
           },
           {
             "Key": "Name",
-            "Value": "nodes.complex.example.com",
-            "PropagateAtLaunch": true
-          },
-          {
-            "Key": "Owner",
-            "Value": "John Doe",
-            "PropagateAtLaunch": true
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz",
+            "Value": "nodes.minimal-ipv6.example.com",
             "PropagateAtLaunch": true
           },
           {
@@ -176,7 +150,7 @@
             "PropagateAtLaunch": true
           },
           {
-            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
             "Value": "owned",
             "PropagateAtLaunch": true
           }
@@ -195,13 +169,10 @@
               "GroupTotalInstances"
             ]
           }
-        ],
-        "LoadBalancerNames": [
-          "my-external-lb-1"
         ]
       }
     },
-    "AWSEC2DHCPOptionscomplexexamplecom": {
+    "AWSEC2DHCPOptionsminimalipv6examplecom": {
       "Type": "AWS::EC2::DHCPOptions",
       "Properties": {
         "DomainName": "us-test-1.compute.internal",
@@ -211,58 +182,42 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
             "Key": "Name",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
-            "Key": "Owner",
-            "Value": "John Doe"
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
-          },
-          {
-            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2InternetGatewaycomplexexamplecom": {
+    "AWSEC2InternetGatewayminimalipv6examplecom": {
       "Type": "AWS::EC2::InternetGateway",
       "Properties": {
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
             "Key": "Name",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
-            "Key": "Owner",
-            "Value": "John Doe"
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
-          },
-          {
-            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom": {
+    "AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom": {
       "Type": "AWS::EC2::LaunchTemplate",
       "Properties": {
-        "LaunchTemplateName": "master-us-test-1a.masters.complex.example.com",
+        "LaunchTemplateName": "master-us-test-1a.masters.minimal-ipv6.example.com",
         "LaunchTemplateData": {
           "BlockDeviceMappings": [
             {
@@ -273,8 +228,7 @@
                 "Iops": 3000,
                 "Throughput": 125,
                 "DeleteOnTermination": true,
-                "Encrypted": true,
-                "KmsKeyId": "arn:aws:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+                "Encrypted": true
               }
             },
             {
@@ -284,14 +238,15 @@
           ],
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilemasterscomplexexamplecom"
+              "Ref": "AWSIAMInstanceProfilemastersminimalipv6examplecom"
             }
           },
           "ImageId": "ami-12345678",
           "InstanceType": "m3.medium",
+          "KeyName": "kubernetes.minimal-ipv6.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
           "MetadataOptions": {
             "HttpPutResponseHopLimit": 1,
-            "HttpTokens": "required"
+            "HttpTokens": "optional"
           },
           "NetworkInterfaces": [
             {
@@ -300,10 +255,8 @@
               "DeviceIndex": 0,
               "Groups": [
                 {
-                  "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
-                },
-                "sg-exampleid5",
-                "sg-exampleid6"
+                  "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
+                }
               ]
             }
           ],
@@ -313,19 +266,11 @@
               "Tags": [
                 {
                   "Key": "KubernetesCluster",
-                  "Value": "complex.example.com"
+                  "Value": "minimal-ipv6.example.com"
                 },
                 {
                   "Key": "Name",
-                  "Value": "master-us-test-1a.masters.complex.example.com"
-                },
-                {
-                  "Key": "Owner",
-                  "Value": "John Doe"
-                },
-                {
-                  "Key": "foo/bar",
-                  "Value": "fib+baz"
+                  "Value": "master-us-test-1a.masters.minimal-ipv6.example.com"
                 },
                 {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
@@ -356,7 +301,7 @@
                   "Value": "master-us-test-1a"
                 },
                 {
-                  "Key": "kubernetes.io/cluster/complex.example.com",
+                  "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
                   "Value": "owned"
                 }
               ]
@@ -366,19 +311,11 @@
               "Tags": [
                 {
                   "Key": "KubernetesCluster",
-                  "Value": "complex.example.com"
+                  "Value": "minimal-ipv6.example.com"
                 },
                 {
                   "Key": "Name",
-                  "Value": "master-us-test-1a.masters.complex.example.com"
-                },
-                {
-                  "Key": "Owner",
-                  "Value": "John Doe"
-                },
-                {
-                  "Key": "foo/bar",
-                  "Value": "fib+baz"
+                  "Value": "master-us-test-1a.masters.minimal-ipv6.example.com"
                 },
                 {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
@@ -409,7 +346,7 @@
                   "Value": "master-us-test-1a"
                 },
                 {
-                  "Key": "kubernetes.io/cluster/complex.example.com",
+                  "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
                   "Value": "owned"
                 }
               ]
@@ -419,10 +356,10 @@
         }
       }
     },
-    "AWSEC2LaunchTemplatenodescomplexexamplecom": {
+    "AWSEC2LaunchTemplatenodesminimalipv6examplecom": {
       "Type": "AWS::EC2::LaunchTemplate",
       "Properties": {
-        "LaunchTemplateName": "nodes.complex.example.com",
+        "LaunchTemplateName": "nodes.minimal-ipv6.example.com",
         "LaunchTemplateData": {
           "BlockDeviceMappings": [
             {
@@ -435,34 +372,19 @@
                 "DeleteOnTermination": true,
                 "Encrypted": true
               }
-            },
-            {
-              "DeviceName": "/dev/xvdd",
-              "Ebs": {
-                "VolumeType": "gp2",
-                "VolumeSize": 20,
-                "DeleteOnTermination": true,
-                "Encrypted": true,
-                "KmsKeyId": "arn:aws:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab"
-              }
             }
           ],
-          "CreditSpecification": {
-            "CpuCredits": "standard"
-          },
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilenodescomplexexamplecom"
+              "Ref": "AWSIAMInstanceProfilenodesminimalipv6examplecom"
             }
           },
           "ImageId": "ami-12345678",
           "InstanceType": "t2.medium",
+          "KeyName": "kubernetes.minimal-ipv6.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
           "MetadataOptions": {
             "HttpPutResponseHopLimit": 1,
             "HttpTokens": "optional"
-          },
-          "Monitoring": {
-            "Enabled": true
           },
           "NetworkInterfaces": [
             {
@@ -471,10 +393,8 @@
               "DeviceIndex": 0,
               "Groups": [
                 {
-                  "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
-                },
-                "sg-exampleid3",
-                "sg-exampleid4"
+                  "Ref": "AWSEC2SecurityGroupnodesminimalipv6examplecom"
+                }
               ]
             }
           ],
@@ -484,19 +404,11 @@
               "Tags": [
                 {
                   "Key": "KubernetesCluster",
-                  "Value": "complex.example.com"
+                  "Value": "minimal-ipv6.example.com"
                 },
                 {
                   "Key": "Name",
-                  "Value": "nodes.complex.example.com"
-                },
-                {
-                  "Key": "Owner",
-                  "Value": "John Doe"
-                },
-                {
-                  "Key": "foo/bar",
-                  "Value": "fib+baz"
+                  "Value": "nodes.minimal-ipv6.example.com"
                 },
                 {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
@@ -515,7 +427,7 @@
                   "Value": "nodes"
                 },
                 {
-                  "Key": "kubernetes.io/cluster/complex.example.com",
+                  "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
                   "Value": "owned"
                 }
               ]
@@ -525,19 +437,11 @@
               "Tags": [
                 {
                   "Key": "KubernetesCluster",
-                  "Value": "complex.example.com"
+                  "Value": "minimal-ipv6.example.com"
                 },
                 {
                   "Key": "Name",
-                  "Value": "nodes.complex.example.com"
-                },
-                {
-                  "Key": "Owner",
-                  "Value": "John Doe"
-                },
-                {
-                  "Key": "foo/bar",
-                  "Value": "fib+baz"
+                  "Value": "nodes.minimal-ipv6.example.com"
                 },
                 {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
@@ -556,7 +460,7 @@
                   "Value": "nodes"
                 },
                 {
-                  "Key": "kubernetes.io/cluster/complex.example.com",
+                  "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
                   "Value": "owned"
                 }
               ]
@@ -570,39 +474,31 @@
       "Type": "AWS::EC2::Route",
       "Properties": {
         "RouteTableId": {
-          "Ref": "AWSEC2RouteTablecomplexexamplecom"
+          "Ref": "AWSEC2RouteTableminimalipv6examplecom"
         },
         "DestinationCidrBlock": "0.0.0.0/0",
         "GatewayId": {
-          "Ref": "AWSEC2InternetGatewaycomplexexamplecom"
+          "Ref": "AWSEC2InternetGatewayminimalipv6examplecom"
         }
       }
     },
-    "AWSEC2RouteTablecomplexexamplecom": {
+    "AWSEC2RouteTableminimalipv6examplecom": {
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCcomplexexamplecom"
+          "Ref": "AWSEC2VPCminimalipv6examplecom"
         },
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
             "Key": "Name",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
-            "Key": "Owner",
-            "Value": "John Doe"
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
-          },
-          {
-            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
             "Value": "owned"
           },
           {
@@ -612,55 +508,11 @@
         ]
       }
     },
-    "AWSEC2RouteTableprivateustest1acomplexexamplecom": {
-      "Type": "AWS::EC2::RouteTable",
-      "Properties": {
-        "VpcId": {
-          "Ref": "AWSEC2VPCcomplexexamplecom"
-        },
-        "Tags": [
-          {
-            "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
-          },
-          {
-            "Key": "Name",
-            "Value": "private-us-test-1a.complex.example.com"
-          },
-          {
-            "Key": "Owner",
-            "Value": "John Doe"
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
-          },
-          {
-            "Key": "kubernetes.io/cluster/complex.example.com",
-            "Value": "owned"
-          },
-          {
-            "Key": "kubernetes.io/kops/role",
-            "Value": "private-us-test-1a"
-          }
-        ]
-      }
-    },
-    "AWSEC2Routeprivateustest1a00000": {
-      "Type": "AWS::EC2::Route",
-      "Properties": {
-        "RouteTableId": {
-          "Ref": "AWSEC2RouteTableprivateustest1acomplexexamplecom"
-        },
-        "DestinationCidrBlock": "0.0.0.0/0",
-        "TransitGatewayId": "tgw-123456"
-      }
-    },
-    "AWSEC2SecurityGroupEgressfrommasterscomplexexamplecomegressall0to000000": {
+    "AWSEC2SecurityGroupEgressfrommastersminimalipv6examplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
@@ -668,11 +520,11 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupEgressfromnodescomplexexamplecomegressall0to000000": {
+    "AWSEC2SecurityGroupEgressfromnodesminimalipv6examplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesminimalipv6examplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
@@ -680,134 +532,134 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressfrom111024ingresstcp443to443masterscomplexexamplecom": {
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22mastersminimalipv6examplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22nodesminimalipv6examplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalipv6examplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp443to443mastersminimalipv6examplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
         },
         "FromPort": 443,
         "ToPort": 443,
         "IpProtocol": "tcp",
-        "CidrIp": "1.1.1.0/24"
+        "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressfrom111132ingresstcp22to22masterscomplexexamplecom": {
+    "AWSEC2SecurityGroupIngressfrommastersminimalipv6examplecomingressall0to0mastersminimalipv6examplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
-        },
-        "FromPort": 22,
-        "ToPort": 22,
-        "IpProtocol": "tcp",
-        "CidrIp": "1.1.1.1/32"
-      }
-    },
-    "AWSEC2SecurityGroupIngressfrom111132ingresstcp22to22nodescomplexexamplecom": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
-        },
-        "FromPort": 22,
-        "ToPort": 22,
-        "IpProtocol": "tcp",
-        "CidrIp": "1.1.1.1/32"
-      }
-    },
-    "AWSEC2SecurityGroupIngressfrommasterscomplexexamplecomingressall0to0masterscomplexexamplecom": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
         "IpProtocol": "-1"
       }
     },
-    "AWSEC2SecurityGroupIngressfrommasterscomplexexamplecomingressall0to0nodescomplexexamplecom": {
+    "AWSEC2SecurityGroupIngressfrommastersminimalipv6examplecomingressall0to0nodesminimalipv6examplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesminimalipv6examplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
         "IpProtocol": "-1"
       }
     },
-    "AWSEC2SecurityGroupIngressfromnodescomplexexamplecomingressall0to0nodescomplexexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesminimalipv6examplecomingressall0to0nodesminimalipv6examplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesminimalipv6examplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesminimalipv6examplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
         "IpProtocol": "-1"
       }
     },
-    "AWSEC2SecurityGroupIngressfromnodescomplexexamplecomingresstcp1to2379masterscomplexexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesminimalipv6examplecomingresstcp1to2379mastersminimalipv6examplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesminimalipv6examplecom"
         },
         "FromPort": 1,
         "ToPort": 2379,
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressfromnodescomplexexamplecomingresstcp2382to4000masterscomplexexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesminimalipv6examplecomingresstcp2382to4000mastersminimalipv6examplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesminimalipv6examplecom"
         },
         "FromPort": 2382,
         "ToPort": 4000,
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressfromnodescomplexexamplecomingresstcp4003to65535masterscomplexexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesminimalipv6examplecomingresstcp4003to65535mastersminimalipv6examplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesminimalipv6examplecom"
         },
         "FromPort": 4003,
         "ToPort": 65535,
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressfromnodescomplexexamplecomingressudp1to65535masterscomplexexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesminimalipv6examplecomingressudp1to65535mastersminimalipv6examplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesminimalipv6examplecom"
         },
         "FromPort": 1,
         "ToPort": 65535,
@@ -818,7 +670,7 @@
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
         },
         "FromPort": 443,
         "ToPort": 443,
@@ -826,346 +678,124 @@
         "CidrIp": "172.20.0.0/16"
       }
     },
-    "AWSEC2SecurityGroupIngresshttpslbtomaster1010016": {
+    "AWSEC2SecurityGroupIngressicmppmtuapielb00000": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
-        },
-        "FromPort": 443,
-        "ToPort": 443,
-        "IpProtocol": "tcp",
-        "CidrIp": "10.1.0.0/16"
-      }
-    },
-    "AWSEC2SecurityGroupIngresshttpslbtomaster1020016": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
-        },
-        "FromPort": 443,
-        "ToPort": 443,
-        "IpProtocol": "tcp",
-        "CidrIp": "10.2.0.0/16"
-      }
-    },
-    "AWSEC2SecurityGroupIngressicmppmtuapielb111024": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
         },
         "FromPort": 3,
         "ToPort": 4,
         "IpProtocol": "icmp",
-        "CidrIp": "1.1.1.0/24"
+        "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressnodeporttcpexternaltonode102030024": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
-        },
-        "FromPort": 28000,
-        "ToPort": 32767,
-        "IpProtocol": "tcp",
-        "CidrIp": "10.20.30.0/24"
-      }
-    },
-    "AWSEC2SecurityGroupIngressnodeporttcpexternaltonode123432": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
-        },
-        "FromPort": 28000,
-        "ToPort": 32767,
-        "IpProtocol": "tcp",
-        "CidrIp": "1.2.3.4/32"
-      }
-    },
-    "AWSEC2SecurityGroupIngressnodeportudpexternaltonode102030024": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
-        },
-        "FromPort": 28000,
-        "ToPort": 32767,
-        "IpProtocol": "udp",
-        "CidrIp": "10.20.30.0/24"
-      }
-    },
-    "AWSEC2SecurityGroupIngressnodeportudpexternaltonode123432": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
-        },
-        "FromPort": 28000,
-        "ToPort": 32767,
-        "IpProtocol": "udp",
-        "CidrIp": "1.2.3.4/32"
-      }
-    },
-    "AWSEC2SecurityGroupIngresstcpapi111024": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
-        },
-        "FromPort": 8443,
-        "ToPort": 8443,
-        "IpProtocol": "tcp",
-        "CidrIp": "1.1.1.0/24"
-      }
-    },
-    "AWSEC2SecurityGroupapielbcomplexexamplecom": {
+    "AWSEC2SecurityGroupapielbminimalipv6examplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupName": "api-elb.complex.example.com",
+        "GroupName": "api-elb.minimal-ipv6.example.com",
         "VpcId": {
-          "Ref": "AWSEC2VPCcomplexexamplecom"
+          "Ref": "AWSEC2VPCminimalipv6examplecom"
         },
         "GroupDescription": "Security group for api ELB",
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
             "Key": "Name",
-            "Value": "api-elb.complex.example.com"
+            "Value": "api-elb.minimal-ipv6.example.com"
           },
           {
-            "Key": "Owner",
-            "Value": "John Doe"
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
-          },
-          {
-            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2SecurityGroupmasterscomplexexamplecom": {
+    "AWSEC2SecurityGroupmastersminimalipv6examplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupName": "masters.complex.example.com",
+        "GroupName": "masters.minimal-ipv6.example.com",
         "VpcId": {
-          "Ref": "AWSEC2VPCcomplexexamplecom"
+          "Ref": "AWSEC2VPCminimalipv6examplecom"
         },
         "GroupDescription": "Security group for masters",
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
             "Key": "Name",
-            "Value": "masters.complex.example.com"
+            "Value": "masters.minimal-ipv6.example.com"
           },
           {
-            "Key": "Owner",
-            "Value": "John Doe"
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
-          },
-          {
-            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2SecurityGroupnodescomplexexamplecom": {
+    "AWSEC2SecurityGroupnodesminimalipv6examplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupName": "nodes.complex.example.com",
+        "GroupName": "nodes.minimal-ipv6.example.com",
         "VpcId": {
-          "Ref": "AWSEC2VPCcomplexexamplecom"
+          "Ref": "AWSEC2VPCminimalipv6examplecom"
         },
         "GroupDescription": "Security group for nodes",
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
             "Key": "Name",
-            "Value": "nodes.complex.example.com"
+            "Value": "nodes.minimal-ipv6.example.com"
           },
           {
-            "Key": "Owner",
-            "Value": "John Doe"
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
-          },
-          {
-            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2SubnetRouteTableAssociationprivateuseast1aprivatecomplexexamplecom": {
+    "AWSEC2SubnetRouteTableAssociationustest1aminimalipv6examplecom": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
         "SubnetId": {
-          "Ref": "AWSEC2Subnetuseast1aprivatecomplexexamplecom"
+          "Ref": "AWSEC2Subnetustest1aminimalipv6examplecom"
         },
         "RouteTableId": {
-          "Ref": "AWSEC2RouteTableprivateustest1acomplexexamplecom"
+          "Ref": "AWSEC2RouteTableminimalipv6examplecom"
         }
       }
     },
-    "AWSEC2SubnetRouteTableAssociationuseast1autilitycomplexexamplecom": {
-      "Type": "AWS::EC2::SubnetRouteTableAssociation",
-      "Properties": {
-        "SubnetId": {
-          "Ref": "AWSEC2Subnetuseast1autilitycomplexexamplecom"
-        },
-        "RouteTableId": {
-          "Ref": "AWSEC2RouteTablecomplexexamplecom"
-        }
-      }
-    },
-    "AWSEC2SubnetRouteTableAssociationustest1acomplexexamplecom": {
-      "Type": "AWS::EC2::SubnetRouteTableAssociation",
-      "Properties": {
-        "SubnetId": {
-          "Ref": "AWSEC2Subnetustest1acomplexexamplecom"
-        },
-        "RouteTableId": {
-          "Ref": "AWSEC2RouteTablecomplexexamplecom"
-        }
-      }
-    },
-    "AWSEC2Subnetuseast1aprivatecomplexexamplecom": {
+    "AWSEC2Subnetustest1aminimalipv6examplecom": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCcomplexexamplecom"
-        },
-        "CidrBlock": "172.20.64.0/19",
-        "AvailabilityZone": "us-test-1a",
-        "Tags": [
-          {
-            "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
-          },
-          {
-            "Key": "Name",
-            "Value": "us-east-1a-private.complex.example.com"
-          },
-          {
-            "Key": "Owner",
-            "Value": "John Doe"
-          },
-          {
-            "Key": "SubnetType",
-            "Value": "Private"
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
-          },
-          {
-            "Key": "kubernetes.io/cluster/complex.example.com",
-            "Value": "owned"
-          },
-          {
-            "Key": "kubernetes.io/role/internal-elb",
-            "Value": "1"
-          }
-        ]
-      }
-    },
-    "AWSEC2Subnetuseast1autilitycomplexexamplecom": {
-      "Type": "AWS::EC2::Subnet",
-      "Properties": {
-        "VpcId": {
-          "Ref": "AWSEC2VPCcomplexexamplecom"
-        },
-        "CidrBlock": "172.20.96.0/19",
-        "AvailabilityZone": "us-test-1a",
-        "Tags": [
-          {
-            "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
-          },
-          {
-            "Key": "Name",
-            "Value": "us-east-1a-utility.complex.example.com"
-          },
-          {
-            "Key": "Owner",
-            "Value": "John Doe"
-          },
-          {
-            "Key": "SubnetType",
-            "Value": "Utility"
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
-          },
-          {
-            "Key": "kubernetes.io/cluster/complex.example.com",
-            "Value": "owned"
-          },
-          {
-            "Key": "kubernetes.io/role/elb",
-            "Value": "1"
-          },
-          {
-            "Key": "kubernetes.io/role/internal-elb",
-            "Value": "1"
-          }
-        ]
-      }
-    },
-    "AWSEC2Subnetustest1acomplexexamplecom": {
-      "Type": "AWS::EC2::Subnet",
-      "Properties": {
-        "VpcId": {
-          "Ref": "AWSEC2VPCcomplexexamplecom"
+          "Ref": "AWSEC2VPCminimalipv6examplecom"
         },
         "CidrBlock": "172.20.32.0/19",
         "AvailabilityZone": "us-test-1a",
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
             "Key": "Name",
-            "Value": "us-test-1a.complex.example.com"
-          },
-          {
-            "Key": "Owner",
-            "Value": "John Doe"
+            "Value": "us-test-1a.minimal-ipv6.example.com"
           },
           {
             "Key": "SubnetType",
             "Value": "Public"
           },
           {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
-          },
-          {
-            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
             "Value": "owned"
           },
           {
@@ -1179,47 +809,29 @@
         ]
       }
     },
-    "AWSEC2VPCCidrBlock1010016": {
-      "Type": "AWS::EC2::VPCCidrBlock",
-      "Properties": {
-        "VpcId": {
-          "Ref": "AWSEC2VPCcomplexexamplecom"
-        },
-        "CidrBlock": "10.1.0.0/16"
-      }
-    },
-    "AWSEC2VPCCidrBlock1020016": {
-      "Type": "AWS::EC2::VPCCidrBlock",
-      "Properties": {
-        "VpcId": {
-          "Ref": "AWSEC2VPCcomplexexamplecom"
-        },
-        "CidrBlock": "10.2.0.0/16"
-      }
-    },
-    "AWSEC2VPCDHCPOptionsAssociationcomplexexamplecom": {
+    "AWSEC2VPCDHCPOptionsAssociationminimalipv6examplecom": {
       "Type": "AWS::EC2::VPCDHCPOptionsAssociation",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCcomplexexamplecom"
+          "Ref": "AWSEC2VPCminimalipv6examplecom"
         },
         "DhcpOptionsId": {
-          "Ref": "AWSEC2DHCPOptionscomplexexamplecom"
+          "Ref": "AWSEC2DHCPOptionsminimalipv6examplecom"
         }
       }
     },
-    "AWSEC2VPCGatewayAttachmentcomplexexamplecom": {
+    "AWSEC2VPCGatewayAttachmentminimalipv6examplecom": {
       "Type": "AWS::EC2::VPCGatewayAttachment",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCcomplexexamplecom"
+          "Ref": "AWSEC2VPCminimalipv6examplecom"
         },
         "InternetGatewayId": {
-          "Ref": "AWSEC2InternetGatewaycomplexexamplecom"
+          "Ref": "AWSEC2InternetGatewayminimalipv6examplecom"
         }
       }
     },
-    "AWSEC2VPCcomplexexamplecom": {
+    "AWSEC2VPCminimalipv6examplecom": {
       "Type": "AWS::EC2::VPC",
       "Properties": {
         "CidrBlock": "172.20.0.0/16",
@@ -1228,28 +840,20 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
             "Key": "Name",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
-            "Key": "Owner",
-            "Value": "John Doe"
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
-          },
-          {
-            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2Volumeaetcdeventscomplexexamplecom": {
+    "AWSEC2Volumeustest1aetcdeventsminimalipv6examplecom": {
       "Type": "AWS::EC2::Volume",
       "Properties": {
         "AvailabilityZone": "us-test-1a",
@@ -1261,36 +865,28 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
             "Key": "Name",
-            "Value": "a.etcd-events.complex.example.com"
-          },
-          {
-            "Key": "Owner",
-            "Value": "John Doe"
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
+            "Value": "us-test-1a.etcd-events.minimal-ipv6.example.com"
           },
           {
             "Key": "k8s.io/etcd/events",
-            "Value": "a/a"
+            "Value": "us-test-1a/us-test-1a"
           },
           {
             "Key": "k8s.io/role/master",
             "Value": "1"
           },
           {
-            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2Volumeaetcdmaincomplexexamplecom": {
+    "AWSEC2Volumeustest1aetcdmainminimalipv6examplecom": {
       "Type": "AWS::EC2::Volume",
       "Properties": {
         "AvailabilityZone": "us-test-1a",
@@ -1302,143 +898,94 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
             "Key": "Name",
-            "Value": "a.etcd-main.complex.example.com"
-          },
-          {
-            "Key": "Owner",
-            "Value": "John Doe"
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
+            "Value": "us-test-1a.etcd-main.minimal-ipv6.example.com"
           },
           {
             "Key": "k8s.io/etcd/main",
-            "Value": "a/a"
+            "Value": "us-test-1a/us-test-1a"
           },
           {
             "Key": "k8s.io/role/master",
             "Value": "1"
           },
           {
-            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSElasticLoadBalancingV2Listenerapicomplexexamplecom443": {
+    "AWSElasticLoadBalancingV2Listenerapiminimalipv6examplecom443": {
       "Type": "AWS::ElasticLoadBalancingV2::Listener",
       "Properties": {
-        "Certificates": [
-          {
-            "CertificateArn": "arn:aws:acm:us-test-1:000000000000:certificate/123456789012-1234-1234-1234-12345678"
-          }
-        ],
         "DefaultActions": [
           {
             "Type": "forward",
             "TargetGroupArn": {
-              "Ref": "AWSElasticLoadBalancingV2TargetGrouptlscomplexexamplecom5nursn"
+              "Ref": "AWSElasticLoadBalancingV2TargetGrouptcpminimalipv6examplebne5ih"
             }
           }
         ],
         "LoadBalancerArn": {
-          "Ref": "AWSElasticLoadBalancingV2LoadBalancerapicomplexexamplecom"
+          "Ref": "AWSElasticLoadBalancingV2LoadBalancerapiminimalipv6examplecom"
         },
         "Port": 443,
-        "Protocol": "TLS",
-        "SslPolicy": "ELBSecurityPolicy-2016-08"
-      }
-    },
-    "AWSElasticLoadBalancingV2Listenerapicomplexexamplecom8443": {
-      "Type": "AWS::ElasticLoadBalancingV2::Listener",
-      "Properties": {
-        "DefaultActions": [
-          {
-            "Type": "forward",
-            "TargetGroupArn": {
-              "Ref": "AWSElasticLoadBalancingV2TargetGrouptcpcomplexexamplecomvpjolq"
-            }
-          }
-        ],
-        "LoadBalancerArn": {
-          "Ref": "AWSElasticLoadBalancingV2LoadBalancerapicomplexexamplecom"
-        },
-        "Port": 8443,
         "Protocol": "TCP"
       }
     },
-    "AWSElasticLoadBalancingV2LoadBalancerapicomplexexamplecom": {
+    "AWSElasticLoadBalancingV2LoadBalancerapiminimalipv6examplecom": {
       "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
       "Properties": {
-        "Name": "api-complex-example-com-vd3t5n",
+        "Name": "api-minimal-ipv6-example--jhj9te",
         "Scheme": "internet-facing",
         "SubnetMappings": [
           {
             "SubnetId": {
-              "Ref": "AWSEC2Subnetustest1acomplexexamplecom"
-            },
-            "AllocationId": "eipalloc-012345a678b9cdefa"
+              "Ref": "AWSEC2Subnetustest1aminimalipv6examplecom"
+            }
           }
         ],
         "Type": "network",
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
             "Key": "Name",
-            "Value": "api.complex.example.com"
+            "Value": "api.minimal-ipv6.example.com"
           },
           {
-            "Key": "Owner",
-            "Value": "John Doe"
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
-          },
-          {
-            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSElasticLoadBalancingV2TargetGrouptcpcomplexexamplecomvpjolq": {
+    "AWSElasticLoadBalancingV2TargetGrouptcpminimalipv6examplebne5ih": {
       "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
       "Properties": {
-        "Name": "tcp-complex-example-com-vpjolq",
+        "Name": "tcp-minimal-ipv6-example--bne5ih",
         "Port": 443,
         "Protocol": "TCP",
         "VpcId": {
-          "Ref": "AWSEC2VPCcomplexexamplecom"
+          "Ref": "AWSEC2VPCminimalipv6examplecom"
         },
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
             "Key": "Name",
-            "Value": "tcp-complex-example-com-vpjolq"
+            "Value": "tcp-minimal-ipv6-example--bne5ih"
           },
           {
-            "Key": "Owner",
-            "Value": "John Doe"
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
-          },
-          {
-            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
             "Value": "owned"
           }
         ],
@@ -1447,71 +994,35 @@
         "UnhealthyThresholdCount": 2
       }
     },
-    "AWSElasticLoadBalancingV2TargetGrouptlscomplexexamplecom5nursn": {
-      "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
-      "Properties": {
-        "Name": "tls-complex-example-com-5nursn",
-        "Port": 443,
-        "Protocol": "TLS",
-        "VpcId": {
-          "Ref": "AWSEC2VPCcomplexexamplecom"
-        },
-        "Tags": [
-          {
-            "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
-          },
-          {
-            "Key": "Name",
-            "Value": "tls-complex-example-com-5nursn"
-          },
-          {
-            "Key": "Owner",
-            "Value": "John Doe"
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
-          },
-          {
-            "Key": "kubernetes.io/cluster/complex.example.com",
-            "Value": "owned"
-          }
-        ],
-        "HealthCheckProtocol": "TLS",
-        "HealthyThresholdCount": 2,
-        "UnhealthyThresholdCount": 2
-      }
-    },
-    "AWSIAMInstanceProfilemasterscomplexexamplecom": {
+    "AWSIAMInstanceProfilemastersminimalipv6examplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "masters.complex.example.com",
+        "InstanceProfileName": "masters.minimal-ipv6.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemasterscomplexexamplecom"
+            "Ref": "AWSIAMRolemastersminimalipv6examplecom"
           }
         ]
       }
     },
-    "AWSIAMInstanceProfilenodescomplexexamplecom": {
+    "AWSIAMInstanceProfilenodesminimalipv6examplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "nodes.complex.example.com",
+        "InstanceProfileName": "nodes.minimal-ipv6.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolenodescomplexexamplecom"
+            "Ref": "AWSIAMRolenodesminimalipv6examplecom"
           }
         ]
       }
     },
-    "AWSIAMPolicymasterscomplexexamplecom": {
+    "AWSIAMPolicymastersminimalipv6examplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "masters.complex.example.com",
+        "PolicyName": "masters.minimal-ipv6.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemasterscomplexexamplecom"
+            "Ref": "AWSIAMRolemastersminimalipv6examplecom"
           }
         ],
         "PolicyDocument": {
@@ -1559,7 +1070,7 @@
               ],
               "Condition": {
                 "StringEquals": {
-                  "ec2:ResourceTag/KubernetesCluster": "complex.example.com"
+                  "ec2:ResourceTag/KubernetesCluster": "minimal-ipv6.example.com"
                 }
               },
               "Effect": "Allow",
@@ -1571,7 +1082,7 @@
               "Action": "autoscaling:CompleteLifecycleAction",
               "Condition": {
                 "StringEquals": {
-                  "autoscaling:ResourceTag/KubernetesCluster": "complex.example.com"
+                  "autoscaling:ResourceTag/KubernetesCluster": "minimal-ipv6.example.com"
                 }
               },
               "Effect": "Allow",
@@ -1613,7 +1124,7 @@
               ],
               "Condition": {
                 "StringEquals": {
-                  "autoscaling:ResourceTag/KubernetesCluster": "complex.example.com"
+                  "autoscaling:ResourceTag/KubernetesCluster": "minimal-ipv6.example.com"
                 }
               },
               "Effect": "Allow",
@@ -1628,7 +1139,7 @@
               ],
               "Condition": {
                 "StringEquals": {
-                  "autoscaling:ResourceTag/KubernetesCluster": "complex.example.com"
+                  "autoscaling:ResourceTag/KubernetesCluster": "minimal-ipv6.example.com"
                 }
               },
               "Effect": "Allow",
@@ -1727,13 +1238,13 @@
         }
       }
     },
-    "AWSIAMPolicynodescomplexexamplecom": {
+    "AWSIAMPolicynodesminimalipv6examplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "nodes.complex.example.com",
+        "PolicyName": "nodes.minimal-ipv6.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolenodescomplexexamplecom"
+            "Ref": "AWSIAMRolenodesminimalipv6examplecom"
           }
         ],
         "PolicyDocument": {
@@ -1760,10 +1271,10 @@
         }
       }
     },
-    "AWSIAMRolemasterscomplexexamplecom": {
+    "AWSIAMRolemastersminimalipv6examplecom": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "masters.complex.example.com",
+        "RoleName": "masters.minimal-ipv6.example.com",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -1776,35 +1287,26 @@
           ],
           "Version": "2012-10-17"
         },
-        "PermissionsBoundary": "arn:aws:iam:00000000000:policy/boundaries",
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
             "Key": "Name",
-            "Value": "masters.complex.example.com"
+            "Value": "masters.minimal-ipv6.example.com"
           },
           {
-            "Key": "Owner",
-            "Value": "John Doe"
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
-          },
-          {
-            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSIAMRolenodescomplexexamplecom": {
+    "AWSIAMRolenodesminimalipv6examplecom": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "nodes.complex.example.com",
+        "RoleName": "nodes.minimal-ipv6.example.com",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -1817,46 +1319,37 @@
           ],
           "Version": "2012-10-17"
         },
-        "PermissionsBoundary": "arn:aws:iam:00000000000:policy/boundaries",
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "complex.example.com"
+            "Value": "minimal-ipv6.example.com"
           },
           {
             "Key": "Name",
-            "Value": "nodes.complex.example.com"
+            "Value": "nodes.minimal-ipv6.example.com"
           },
           {
-            "Key": "Owner",
-            "Value": "John Doe"
-          },
-          {
-            "Key": "foo/bar",
-            "Value": "fib+baz"
-          },
-          {
-            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSRoute53RecordSetapicomplexexamplecom": {
+    "AWSRoute53RecordSetapiminimalipv6examplecom": {
       "Type": "AWS::Route53::RecordSet",
       "Properties": {
-        "Name": "api.complex.example.com",
+        "Name": "api.minimal-ipv6.example.com",
         "Type": "A",
         "AliasTarget": {
           "DNSName": {
             "Fn::GetAtt": [
-              "AWSElasticLoadBalancingV2LoadBalancerapicomplexexamplecom",
+              "AWSElasticLoadBalancingV2LoadBalancerapiminimalipv6examplecom",
               "DNSName"
             ]
           },
           "HostedZoneId": {
             "Fn::GetAtt": [
-              "AWSElasticLoadBalancingV2LoadBalancerapicomplexexamplecom",
+              "AWSElasticLoadBalancingV2LoadBalancerapiminimalipv6examplecom",
               "CanonicalHostedZoneID"
             ]
           },
