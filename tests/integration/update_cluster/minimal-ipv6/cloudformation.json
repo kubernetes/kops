@@ -253,6 +253,7 @@
               "AssociatePublicIpAddress": true,
               "DeleteOnTermination": true,
               "DeviceIndex": 0,
+              "Ipv6AddressCount": 1,
               "Groups": [
                 {
                   "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
@@ -391,6 +392,7 @@
               "AssociatePublicIpAddress": true,
               "DeleteOnTermination": true,
               "DeviceIndex": 0,
+              "Ipv6AddressCount": 1,
               "Groups": [
                 {
                   "Ref": "AWSEC2SecurityGroupnodesminimalipv6examplecom"
@@ -470,6 +472,18 @@
         }
       }
     },
+    "AWSEC2Route0": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableminimalipv6examplecom"
+        },
+        "DestinationIpv6CidrBlock": "::/0",
+        "GatewayId": {
+          "Ref": "AWSEC2InternetGatewayminimalipv6examplecom"
+        }
+      }
+    },
     "AWSEC2Route00000": {
       "Type": "AWS::EC2::Route",
       "Properties": {
@@ -508,6 +522,18 @@
         ]
       }
     },
+    "AWSEC2SecurityGroupEgressfrommastersminimalipv6examplecomegressall0to00": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIpv6": "::/0"
+      }
+    },
     "AWSEC2SecurityGroupEgressfrommastersminimalipv6examplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
@@ -518,6 +544,18 @@
         "ToPort": 0,
         "IpProtocol": "-1",
         "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressfromnodesminimalipv6examplecomegressall0to00": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalipv6examplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIpv6": "::/0"
       }
     },
     "AWSEC2SecurityGroupEgressfromnodesminimalipv6examplecomegressall0to000000": {
@@ -566,6 +604,42 @@
         "ToPort": 443,
         "IpProtocol": "tcp",
         "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom0ingresstcp22to22mastersminimalipv6examplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIpv6": "::/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom0ingresstcp22to22nodesminimalipv6examplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalipv6examplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIpv6": "::/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom0ingresstcp443to443mastersminimalipv6examplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp",
+        "CidrIpv6": "::/0"
       }
     },
     "AWSEC2SecurityGroupIngressfrommastersminimalipv6examplecomingressall0to0mastersminimalipv6examplecom": {
@@ -690,6 +764,18 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
+    "AWSEC2SecurityGroupIngressicmpv6pmtuapielb0": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
+        },
+        "FromPort": -1,
+        "ToPort": -1,
+        "IpProtocol": "icmpv6",
+        "CidrIpv6": "::/0"
+      }
+    },
     "AWSEC2SecurityGroupapielbminimalipv6examplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -780,6 +866,7 @@
           "Ref": "AWSEC2VPCminimalipv6examplecom"
         },
         "CidrBlock": "172.20.32.0/19",
+        "Ipv6CidrBlock": "2001:db8:0:111::/64",
         "AvailabilityZone": "us-test-1a",
         "Tags": [
           {
@@ -807,6 +894,15 @@
             "Value": "1"
           }
         ]
+      }
+    },
+    "AWSEC2VPCCidrBlockAmazonIPv6": {
+      "Type": "AWS::EC2::VPCCidrBlock",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCminimalipv6examplecom"
+        },
+        "AmazonProvidedIpv6CidrBlock": true
       }
     },
     "AWSEC2VPCDHCPOptionsAssociationminimalipv6examplecom": {
