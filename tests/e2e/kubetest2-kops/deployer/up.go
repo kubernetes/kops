@@ -46,11 +46,6 @@ func (d *deployer) Up() error {
 		_ = d.Down()
 	}
 
-	publicIP, err := util.ExternalIPRange()
-	if err != nil {
-		return err
-	}
-
 	if d.CloudProvider == "gce" && d.createBucket {
 		if err := gce.EnsureGCSBucket(d.stateStore(), d.GCPProject); err != nil {
 			return err
@@ -59,6 +54,11 @@ func (d *deployer) Up() error {
 
 	adminAccess := d.AdminAccess
 	if adminAccess == "" {
+		publicIP, err := util.ExternalIPRange()
+		if err != nil {
+			return err
+		}
+
 		adminAccess = publicIP
 	}
 
