@@ -21,7 +21,7 @@ set -o pipefail
 . "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 # Terraform versions
-TF_TAG=0.14.3
+TF_TAG=0.14.11
 
 PROVIDER_CACHE="${KOPS_ROOT}/.cache/terraform"
 
