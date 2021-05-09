@@ -47,9 +47,13 @@ In order to create a new release branch off of master prior to a beta release, p
    [apply_cluster.go](https://github.com/kubernetes/kops/tree/master/upup/pkg/fi/cloudup/apply_cluster.go)
    * Add a row for the new minor version to [upgrade_k8s.md](https://github.com/kubernetes/kops/tree/master/permalinks/upgrade_k8s.md)
    * Fix any tests broken by the now-unsupported versions.
-6. Off of master, create the first alpha release for the minor release.
+   * Create release notes for the next minor version. The release notes should mention the
+   Kubernetes support removal and deprecation.
+6. On master, off of the branch point, create the first alpha release for the new minor release.
 
-## Update versions
+## Creating releases
+
+### Update versions
 
 See [1.19.0-alpha.1 PR](https://github.com/kubernetes/kops/pull/9494) for an example.
 
@@ -65,14 +69,14 @@ The syntax is `hack/set-version <new-release-version>`
 
 * This is the "release commit".
 
-## Check builds are OK
+### Check builds are OK
 
 ```
 rm -rf .build/ .bazelbuild/
 make ci
 ```
 
-## Send Pull Request to propose a release
+### Send Pull Request to propose a release
 
 ```
 git push $USER
@@ -81,7 +85,17 @@ hub pull-request
 
 Wait for the PR to merge.
 
-## Tag the release commit
+### Reviewing the release commit PR
+
+To review someone else's release commit, verify that:
+
+* A release at that point is desired. (For example, there are no unfixed blocking bugs.)
+* There is nothing in the commit besides version number updates and golden outputs.
+
+The "verify-versions" CI task will ensure that the versions have been updated in all the
+expected places.
+
+### Tag the release commit
 
 (TODO: Can we automate this?  Maybe we should have a tags.yaml file)
 
@@ -106,7 +120,7 @@ git fetch origin
 ```
 
 
-## Wait for CI job to complete
+### Wait for CI job to complete
 
 The staging CI job should now see the tag, and build it (from the trusted prow cluster, using Google Cloud Build).
 
@@ -116,9 +130,12 @@ It (currently) takes about 10 minutes to run.
 
 In the meantime, you can compile the release notes...
 
-## Compile release notes
+### Compile release notes
 
-e.g.
+This step is not necessary for an ".0-alpha.1" release as these are made off
+of the branch point for the previous minor release.
+
+For example:
 
 ```
 git checkout -b relnotes_${VERSION}
@@ -140,7 +157,7 @@ git push ${USER}
 hub pull-request
 ```
 
-## Propose promotion of artifacts
+### Propose promotion of artifacts
 
 Create container promotion PR:
 
@@ -199,7 +216,7 @@ hub pull-request -b main
 ```
 
 
-## Promote to dockerhub / S3 / github (legacy)
+### Promote to dockerhub / S3 / github (legacy)
 
 We are in the process of moving to k8s.gcr.io for all images and to
 artifacts.k8s.io for all non-image artifacts.
@@ -254,7 +271,7 @@ After validation of the dry-run output:
 promobot-files --filestores /tmp/thin/artifacts/filestores/k8s-staging-kops/filepromoter-manifest.yaml --files /tmp/thin/artifacts/manifests/k8s-staging-kops/ --dry-run=false --use-service-account
 ```
 
-## Smoketesting the release
+### Smoke test the release
 
 ```
 wget https://artifacts.k8s.io/binaries/kops/${VERSION}/linux/amd64/kops
@@ -268,19 +285,36 @@ chmod +x ko
 Also run through a `kops create cluster` flow, ideally verifying that
 everything is pulling from the new locations.
 
-## On github
+### Publish to GitHub
 
 * Download release
 * Validate it
 * Add notes
 * Publish it
 
-## Release kOps to homebrew
+### Release to Homebrew
+
+This step is only necessary for stable releases in the latest stable minor version.
 
 * Following the [documentation](homebrew.md) we must release a compatible homebrew formulae with the release.
 * This should be done at the same time as the release, and we will iterate on how to improve timing of this.
 
-## Update the alpha channel and/or stable channel
+### Update conformance results with CNCF
+
+Use the following instructions: https://github.com/cncf/k8s-conformance/blob/master/instructions.md
+
+### Update for new stable minor releases
+
+If the release was a first stable minor release (a ".0"), then create a PR that
+updates the following documents:
+
+* Rotate the new version into the version matrix in both
+[releases.md](https://github.com/kubernetes/kops/tree/master/docs/welcome/releases.md)
+and [README-ES.md](https://github.com/kubernetes/kops/tree/master/README-ES.md).
+* Remove the "has not been released yet" header in the version's release notes.
+* Add a reference to the version's release notes in [mkdocs.yml](https://github.com/kubernetes/kops/tree/master/mkdocs.yml)
+
+### Update the alpha channel and/or stable channel
 
 Once we are satisfied the release is sound:
 
@@ -289,13 +323,3 @@ Once we are satisfied the release is sound:
 Once we are satisfied the release is stable:
 
 * Bump the kOps recommended version in the stable channel
-
-## Update conformance results with CNCF
-
-Use the following instructions: https://github.com/cncf/k8s-conformance/blob/master/instructions.md
-
-## Update the kOps version matrix
-
-If the release was a first stable minor release (a ".0"), then update the
-version matrix in both [releases.md](https://github.com/kubernetes/kops/tree/master/docs/welcome/releases.md)
-and [README-ES.md](https://github.com/kubernetes/kops/tree/master/README-ES.md).
