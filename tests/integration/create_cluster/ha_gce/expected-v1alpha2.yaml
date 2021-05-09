@@ -13,7 +13,6 @@ spec:
     gceServiceAccount: default
   cloudProvider: gce
   configBase: memfs://tests/ha-gce.example.com
-  containerRuntime: containerd
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
