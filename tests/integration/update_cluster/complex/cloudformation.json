@@ -298,6 +298,7 @@
               "AssociatePublicIpAddress": true,
               "DeleteOnTermination": true,
               "DeviceIndex": 0,
+              "Ipv6AddressCount": 0,
               "Groups": [
                 {
                   "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
@@ -469,6 +470,7 @@
               "AssociatePublicIpAddress": true,
               "DeleteOnTermination": true,
               "DeviceIndex": 0,
+              "Ipv6AddressCount": 0,
               "Groups": [
                 {
                   "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
@@ -566,6 +568,18 @@
         }
       }
     },
+    "AWSEC2Route0": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTablecomplexexamplecom"
+        },
+        "DestinationIpv6CidrBlock": "::/0",
+        "GatewayId": {
+          "Ref": "AWSEC2InternetGatewaycomplexexamplecom"
+        }
+      }
+    },
     "AWSEC2Route00000": {
       "Type": "AWS::EC2::Route",
       "Properties": {
@@ -656,6 +670,18 @@
         "TransitGatewayId": "tgw-123456"
       }
     },
+    "AWSEC2SecurityGroupEgressfrommasterscomplexexamplecomegressall0to00": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIpv6": "::/0"
+      }
+    },
     "AWSEC2SecurityGroupEgressfrommasterscomplexexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
@@ -666,6 +692,18 @@
         "ToPort": 0,
         "IpProtocol": "-1",
         "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressfromnodescomplexexamplecomegressall0to00": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIpv6": "::/0"
       }
     },
     "AWSEC2SecurityGroupEgressfromnodescomplexexamplecomegressall0to000000": {
@@ -1195,6 +1233,15 @@
           "Ref": "AWSEC2VPCcomplexexamplecom"
         },
         "CidrBlock": "10.2.0.0/16"
+      }
+    },
+    "AWSEC2VPCCidrBlockAmazonIPv6": {
+      "Type": "AWS::EC2::VPCCidrBlock",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCcomplexexamplecom"
+        },
+        "AmazonProvidedIpv6CidrBlock": true
       }
     },
     "AWSEC2VPCDHCPOptionsAssociationcomplexexamplecom": {

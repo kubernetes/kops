@@ -496,6 +496,7 @@ resource "aws_launch_template" "bastion-privatekopeio-example-com" {
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
+    ipv6_address_count          = 0
     security_groups             = [aws_security_group.bastion-privatekopeio-example-com.id]
   }
   tag_specifications {
@@ -567,6 +568,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatekopeio-example-
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
+    ipv6_address_count          = 0
     security_groups             = [aws_security_group.masters-privatekopeio-example-com.id]
   }
   tag_specifications {
@@ -644,6 +646,7 @@ resource "aws_launch_template" "nodes-privatekopeio-example-com" {
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
+    ipv6_address_count          = 0
     security_groups             = [aws_security_group.nodes-privatekopeio-example-com.id]
   }
   tag_specifications {
@@ -686,6 +689,12 @@ resource "aws_route" "route-0-0-0-0--0" {
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.privatekopeio-example-com.id
   route_table_id         = aws_route_table.privatekopeio-example-com.id
+}
+
+resource "aws_route" "route-__--0" {
+  destination_ipv6_cidr_block = "::/0"
+  gateway_id                  = aws_internet_gateway.privatekopeio-example-com.id
+  route_table_id              = aws_route_table.privatekopeio-example-com.id
 }
 
 resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
@@ -843,9 +852,27 @@ resource "aws_security_group_rule" "from-api-elb-privatekopeio-example-com-egres
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "from-api-elb-privatekopeio-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
+  protocol          = "-1"
+  security_group_id = aws_security_group.api-elb-privatekopeio-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
 resource "aws_security_group_rule" "from-bastion-elb-privatekopeio-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.bastion-elb-privatekopeio-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-bastion-elb-privatekopeio-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   security_group_id = aws_security_group.bastion-elb-privatekopeio-example-com.id
   to_port           = 0
@@ -864,6 +891,15 @@ resource "aws_security_group_rule" "from-bastion-elb-privatekopeio-example-com-i
 resource "aws_security_group_rule" "from-bastion-privatekopeio-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.bastion-privatekopeio-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-bastion-privatekopeio-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   security_group_id = aws_security_group.bastion-privatekopeio-example-com.id
   to_port           = 0
@@ -897,6 +933,15 @@ resource "aws_security_group_rule" "from-masters-privatekopeio-example-com-egres
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "from-masters-privatekopeio-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
+  protocol          = "-1"
+  security_group_id = aws_security_group.masters-privatekopeio-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
 resource "aws_security_group_rule" "from-masters-privatekopeio-example-com-ingress-all-0to0-masters-privatekopeio-example-com" {
   from_port                = 0
   protocol                 = "-1"
@@ -918,6 +963,15 @@ resource "aws_security_group_rule" "from-masters-privatekopeio-example-com-ingre
 resource "aws_security_group_rule" "from-nodes-privatekopeio-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.nodes-privatekopeio-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-nodes-privatekopeio-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   security_group_id = aws_security_group.nodes-privatekopeio-example-com.id
   to_port           = 0
@@ -1040,9 +1094,10 @@ resource "aws_subnet" "utility-us-test-1b-privatekopeio-example-com" {
 }
 
 resource "aws_vpc" "privatekopeio-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
+  assign_generated_ipv6_cidr_block = true
+  cidr_block                       = "172.20.0.0/16"
+  enable_dns_hostnames             = true
+  enable_dns_support               = true
   tags = {
     "KubernetesCluster"                               = "privatekopeio.example.com"
     "Name"                                            = "privatekopeio.example.com"

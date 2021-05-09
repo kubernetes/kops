@@ -329,6 +329,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-ipv6-example-c
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
+    ipv6_address_count          = 1
     security_groups             = [aws_security_group.masters-minimal-ipv6-example-com.id]
   }
   tag_specifications {
@@ -406,6 +407,7 @@ resource "aws_launch_template" "nodes-minimal-ipv6-example-com" {
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
+    ipv6_address_count          = 1
     security_groups             = [aws_security_group.nodes-minimal-ipv6-example-com.id]
   }
   tag_specifications {
@@ -490,6 +492,12 @@ resource "aws_route" "route-0-0-0-0--0" {
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.minimal-ipv6-example-com.id
   route_table_id         = aws_route_table.minimal-ipv6-example-com.id
+}
+
+resource "aws_route" "route-__--0" {
+  destination_ipv6_cidr_block = "::/0"
+  gateway_id                  = aws_internet_gateway.minimal-ipv6-example-com.id
+  route_table_id              = aws_route_table.minimal-ipv6-example-com.id
 }
 
 resource "aws_route53_record" "api-minimal-ipv6-example-com" {
@@ -578,9 +586,45 @@ resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-443to443-masters
   type              = "ingress"
 }
 
+resource "aws_security_group_rule" "from-__--0-ingress-tcp-22to22-masters-minimal-ipv6-example-com" {
+  from_port         = 22
+  ipv6_cidr_blocks  = ["::/0"]
+  protocol          = "tcp"
+  security_group_id = aws_security_group.masters-minimal-ipv6-example-com.id
+  to_port           = 22
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "from-__--0-ingress-tcp-22to22-nodes-minimal-ipv6-example-com" {
+  from_port         = 22
+  ipv6_cidr_blocks  = ["::/0"]
+  protocol          = "tcp"
+  security_group_id = aws_security_group.nodes-minimal-ipv6-example-com.id
+  to_port           = 22
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "from-__--0-ingress-tcp-443to443-masters-minimal-ipv6-example-com" {
+  from_port         = 443
+  ipv6_cidr_blocks  = ["::/0"]
+  protocol          = "tcp"
+  security_group_id = aws_security_group.masters-minimal-ipv6-example-com.id
+  to_port           = 443
+  type              = "ingress"
+}
+
 resource "aws_security_group_rule" "from-masters-minimal-ipv6-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.masters-minimal-ipv6-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-masters-minimal-ipv6-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   security_group_id = aws_security_group.masters-minimal-ipv6-example-com.id
   to_port           = 0
@@ -608,6 +652,15 @@ resource "aws_security_group_rule" "from-masters-minimal-ipv6-example-com-ingres
 resource "aws_security_group_rule" "from-nodes-minimal-ipv6-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.nodes-minimal-ipv6-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-nodes-minimal-ipv6-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   security_group_id = aws_security_group.nodes-minimal-ipv6-example-com.id
   to_port           = 0
@@ -677,9 +730,19 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   type              = "ingress"
 }
 
+resource "aws_security_group_rule" "icmpv6-pmtu-api-elb-__--0" {
+  from_port         = -1
+  ipv6_cidr_blocks  = ["::/0"]
+  protocol          = "icmpv6"
+  security_group_id = aws_security_group.masters-minimal-ipv6-example-com.id
+  to_port           = -1
+  type              = "ingress"
+}
+
 resource "aws_subnet" "us-test-1a-minimal-ipv6-example-com" {
   availability_zone = "us-test-1a"
   cidr_block        = "172.20.32.0/19"
+  ipv6_cidr_block   = "2001:db8:0:111::/64"
   tags = {
     "KubernetesCluster"                              = "minimal-ipv6.example.com"
     "Name"                                           = "us-test-1a.minimal-ipv6.example.com"
@@ -692,9 +755,10 @@ resource "aws_subnet" "us-test-1a-minimal-ipv6-example-com" {
 }
 
 resource "aws_vpc" "minimal-ipv6-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
+  assign_generated_ipv6_cidr_block = true
+  cidr_block                       = "172.20.0.0/16"
+  enable_dns_hostnames             = true
+  enable_dns_support               = true
   tags = {
     "KubernetesCluster"                              = "minimal-ipv6.example.com"
     "Name"                                           = "minimal-ipv6.example.com"

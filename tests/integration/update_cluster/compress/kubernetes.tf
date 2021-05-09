@@ -317,6 +317,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-compress-example-com" 
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
+    ipv6_address_count          = 0
     security_groups             = [aws_security_group.masters-compress-example-com.id]
   }
   tag_specifications {
@@ -393,6 +394,7 @@ resource "aws_launch_template" "nodes-compress-example-com" {
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
+    ipv6_address_count          = 0
     security_groups             = [aws_security_group.nodes-compress-example-com.id]
   }
   tag_specifications {
@@ -435,6 +437,12 @@ resource "aws_route" "route-0-0-0-0--0" {
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.compress-example-com.id
   route_table_id         = aws_route_table.compress-example-com.id
+}
+
+resource "aws_route" "route-__--0" {
+  destination_ipv6_cidr_block = "::/0"
+  gateway_id                  = aws_internet_gateway.compress-example-com.id
+  route_table_id              = aws_route_table.compress-example-com.id
 }
 
 resource "aws_route_table" "compress-example-com" {
@@ -510,6 +518,15 @@ resource "aws_security_group_rule" "from-masters-compress-example-com-egress-all
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "from-masters-compress-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
+  protocol          = "-1"
+  security_group_id = aws_security_group.masters-compress-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
 resource "aws_security_group_rule" "from-masters-compress-example-com-ingress-all-0to0-masters-compress-example-com" {
   from_port                = 0
   protocol                 = "-1"
@@ -531,6 +548,15 @@ resource "aws_security_group_rule" "from-masters-compress-example-com-ingress-al
 resource "aws_security_group_rule" "from-nodes-compress-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.nodes-compress-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-nodes-compress-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   security_group_id = aws_security_group.nodes-compress-example-com.id
   to_port           = 0
@@ -597,9 +623,10 @@ resource "aws_subnet" "us-test-1a-compress-example-com" {
 }
 
 resource "aws_vpc" "compress-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
+  assign_generated_ipv6_cidr_block = true
+  cidr_block                       = "172.20.0.0/16"
+  enable_dns_hostnames             = true
+  enable_dns_support               = true
   tags = {
     "KubernetesCluster"                          = "compress.example.com"
     "Name"                                       = "compress.example.com"
