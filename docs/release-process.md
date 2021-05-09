@@ -49,22 +49,11 @@ In order to create a new release branch off of master prior to a beta release, p
 
 See [1.19.0-alpha.1 PR](https://github.com/kubernetes/kops/pull/9494) for example
 
-* Use the hack/set-version script to update versions:  `hack/set-version 1.20.0 1.20.1`
+* Use the hack/set-version script to update versions:  `hack/set-version 1.20.0`
 
-The syntax is `hack/set-version <new-release-version> <new-ci-version>`
+The syntax is `hack/set-version <new-release-version>`
 
 `new-release-version` is the version you are releasing.
-
-`new-ci-version` is the version you are releasing "plus one"; this is used to avoid CI jobs being out of semver order.
-
-Examples:
-
-| new-release-version  | new-ci-version
-| ---------------------| ---------------
-| 1.20.1               | 1.20.2
-| 1.21.0-alpha.1       | 1.21.0-alpha.2
-| 1.21.0-beta.1        | 1.21.0-beta.2
-
 
 * Update the golden tests: `hack/update-expected.sh`
 
