@@ -156,6 +156,14 @@ codegen:
 		--go-header-file hack/boilerplate/boilerplate.generatego.txt \
 		--output-base ${KOPS_ROOT}
 
+.PHONY: verify-codegen
+verify-codegen:
+	go build -o ${KOPS_ROOT}/_output/bin k8s.io/kops/upup/tools/generators/...
+	${KOPS_ROOT}/_output/bin/fitask --verify-only \
+		--input-dirs k8s.io/kops/upup/pkg/fi/... \
+		--go-header-file hack/boilerplate/boilerplate.generatego.txt \
+		--output-base ${KOPS_ROOT}
+
 .PHONY: protobuf
 protobuf:
 	cd ${GOPATH_1ST}/src; protoc --gogo_out=. k8s.io/kops/protokube/pkg/gossip/mesh/mesh.proto
@@ -462,13 +470,13 @@ verify-hashes:
 # ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
 .PHONY: ci
-ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerplate verify-bazel verify-versions verify-misspelling verify-shellcheck verify-staticcheck verify-terraform nodeup examples test | verify-gendocs verify-apimachinery
+ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerplate verify-bazel verify-versions verify-misspelling verify-shellcheck verify-staticcheck verify-terraform nodeup examples test | verify-gendocs verify-apimachinery verify-codegen
 	echo "Done!"
 
 # we skip tasks that rely on bazel and are covered by other jobs
 # verify-gofmt: uses bazel, covered by pull-kops-verify
 .PHONY: quick-ci
-quick-ci: verify-crds verify-goimports govet verify-boilerplate verify-bazel verify-versions verify-misspelling verify-shellcheck | verify-gendocs verify-apimachinery
+quick-ci: verify-crds verify-goimports govet verify-boilerplate verify-bazel verify-versions verify-misspelling verify-shellcheck | verify-gendocs verify-apimachinery verify-codegen
 	echo "Done!"
 
 .PHONY: pr
