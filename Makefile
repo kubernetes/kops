@@ -480,14 +480,14 @@ verify-hashes:
 # verify-package has to be after verify-gendocs, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendocs generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-staticcheck verify-terraform verify-bindata nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boilerplate verify-bazel verify-versions verify-misspelling verify-shellcheck verify-staticcheck verify-terraform verify-bindata nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 # we skip tasks that rely on bazel and are covered by other jobs
 # verify-gofmt: uses bazel, covered by pull-kops-verify
 # govet needs to be after verify-goimports because it generates bindata.go
 .PHONY: quick-ci
-quick-ci: verify-generate verify-goimports govet verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-bindata | verify-gendocs verify-packages verify-apimachinery
+quick-ci: verify-generate verify-goimports govet verify-boilerplate verify-bazel verify-versions verify-misspelling verify-shellcheck verify-bindata | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
@@ -554,6 +554,10 @@ verify-apimachinery:
 .PHONY: verify-generate
 verify-generate:
 	hack/verify-generate.sh
+
+.PHONY: verify-versions
+verify-versions:
+	hack/verify-versions.sh
 
 # -----------------------------------------------------
 # bazel targets
