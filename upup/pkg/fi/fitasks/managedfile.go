@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"os"
 
+	"k8s.io/kops/pkg/featureflag"
+
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/upup/pkg/fi"
@@ -151,6 +153,10 @@ func getBasePath(c *fi.Context, e *ManagedFile) (vfs.Path, error) {
 
 // RenderTerraform is responsible for rendering the terraform json.
 func (f *ManagedFile) RenderTerraform(c *fi.Context, t *terraform.TerraformTarget, a, e, changes *ManagedFile) error {
+	if !featureflag.TerraformManagedFiles.Enabled() {
+		return f.Render(c, a, e, changes)
+	}
+
 	location := fi.StringValue(e.Location)
 	if location == "" {
 		return fi.RequiredField("Location")
