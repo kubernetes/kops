@@ -33,6 +33,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -208,11 +209,15 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["CsiExtraTags"] = func() string {
-		s := fmt.Sprintf("KubernetesCluster=%s", cluster.ObjectMeta.Name)
-		for n, v := range cluster.Spec.CloudLabels {
-			s += fmt.Sprintf(",%s=%s", n, v)
+		labels := []string{
+			fmt.Sprintf("KubernetesCluster=%s", cluster.ObjectMeta.Name),
 		}
-		return s
+		for n, v := range cluster.Spec.CloudLabels {
+			labels = append(labels, fmt.Sprintf("%s=%s", n, v))
+		}
+		// ensure stable sorting of tags
+		sort.Strings(labels)
+		return strings.Join(labels, ",")
 	}
 
 	dest["UseServiceAccountIAM"] = tf.UseServiceAccountIAM
