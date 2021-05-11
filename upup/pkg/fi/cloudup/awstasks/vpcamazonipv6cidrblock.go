@@ -32,8 +32,7 @@ type VPCAmazonIPv6CIDRBlock struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	VPC       *VPC
-	CIDRBlock *string
+	VPC *VPC
 
 	// Shared is set if this is a shared VPC
 	Shared *bool
@@ -47,42 +46,21 @@ func (e *VPCAmazonIPv6CIDRBlock) Find(c *fi.Context) (*VPCAmazonIPv6CIDRBlock, e
 		return nil, nil
 	}
 
-	vpc, err := cloud.DescribeVPC(aws.StringValue(e.VPC.ID))
+	vpcIPv6CIDR, err := findVPCIPv6CIDR(cloud, e.VPC.ID)
 	if err != nil {
 		return nil, err
 	}
-
-	var cidr *string
-	for _, association := range vpc.Ipv6CidrBlockAssociationSet {
-		if association == nil || association.Ipv6CidrBlockState == nil {
-			continue
-		}
-
-		state := aws.StringValue(association.Ipv6CidrBlockState.State)
-		if state != ec2.VpcCidrBlockStateCodeAssociated && state != ec2.VpcCidrBlockStateCodeAssociating {
-			continue
-		}
-
-		if aws.StringValue(association.Ipv6Pool) == "Amazon" {
-			cidr = association.Ipv6CidrBlock
-			break
-		}
-	}
-	if cidr == nil {
+	if vpcIPv6CIDR == nil {
 		return nil, nil
 	}
 
 	actual := &VPCAmazonIPv6CIDRBlock{
-		VPC:       &VPC{ID: vpc.VpcId},
-		CIDRBlock: cidr,
+		VPC: &VPC{ID: e.VPC.ID},
 	}
 
-	// Expose the Amazon provided IPv6 CIDR block to other tasks
-	e.CIDRBlock = cidr
-
 	// Prevent spurious changes
-	actual.Shared = e.Shared
 	actual.Name = e.Name
+	actual.Shared = e.Shared
 	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
@@ -119,6 +97,7 @@ func (_ *VPCAmazonIPv6CIDRBlock) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 		AmazonProvidedIpv6CidrBlock: aws.Bool(true),
 	}
 
+	// Response doesn't contain the new CIDR block
 	_, err := t.Cloud.EC2().AssociateVpcCidrBlock(request)
 	if err != nil {
 		return fmt.Errorf("error associating Amazon IPv6 provided CIDR block to VPC: %v", err)
@@ -151,4 +130,28 @@ func (_ *VPCAmazonIPv6CIDRBlock) RenderCloudformation(t *cloudformation.Cloudfor
 	}
 
 	return t.RenderResource("AWS::EC2::VPCCidrBlock", *e.Name, cf)
+}
+
+func findVPCIPv6CIDR(cloud awsup.AWSCloud, vpcID *string) (*string, error) {
+	vpc, err := cloud.DescribeVPC(aws.StringValue(vpcID))
+	if err != nil {
+		return nil, err
+	}
+
+	for _, association := range vpc.Ipv6CidrBlockAssociationSet {
+		if association == nil || association.Ipv6CidrBlockState == nil {
+			continue
+		}
+
+		// Ipv6CidrBlock is available only when state is "associated"
+		if aws.StringValue(association.Ipv6CidrBlockState.State) != ec2.VpcCidrBlockStateCodeAssociated {
+			continue
+		}
+
+		if aws.StringValue(association.Ipv6Pool) == "Amazon" {
+			return association.Ipv6CidrBlock, nil
+		}
+	}
+
+	return nil, nil
 }
