@@ -143,7 +143,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	lt := &awstasks.LaunchTemplate{
 		Name:                    fi.String(name),
 		Lifecycle:               b.Lifecycle,
-		AssociatePublicIP:       lc.AssociatePublicIP,
 		BlockDeviceMappings:     lc.BlockDeviceMappings,
 		IAMInstanceProfile:      lc.IAMInstanceProfile,
 		ImageID:                 lc.ImageID,
@@ -162,6 +161,26 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		HTTPTokens:              lc.HTTPTokens,
 		HTTPPutResponseHopLimit: lc.HTTPPutResponseHopLimit,
 	}
+
+	{
+		// @step: check the subnets are ok and pull together an array for us
+		subnets, err := b.GatherSubnets(ig)
+		if err != nil {
+			return nil, err
+		}
+
+		// @step: check if we can add an public ip to this subnet
+		switch subnets[0].Type {
+		case kops.SubnetTypePublic, kops.SubnetTypeUtility:
+			lt.AssociatePublicIP = fi.Bool(true)
+			if ig.Spec.AssociatePublicIP != nil {
+				lt.AssociatePublicIP = ig.Spec.AssociatePublicIP
+			}
+		case kops.SubnetTypePrivate:
+			lt.AssociatePublicIP = fi.Bool(false)
+		}
+	}
+
 	// When using a MixedInstances ASG, AWS requires the SpotPrice be defined on the ASG
 	// rather than the LaunchTemplate or else it returns this error:
 	//   You cannot use a launch template that is set to request Spot Instances (InstanceMarketOptions)
@@ -359,23 +378,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 	// @step: add the instancegroup userdata
 	if t.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig); err != nil {
 		return nil, err
-	}
-
-	// @step: check the subnets are ok and pull together an array for us
-	subnets, err := b.GatherSubnets(ig)
-	if err != nil {
-		return nil, err
-	}
-
-	// @step: check if we can add an public ip to this subnet
-	switch subnets[0].Type {
-	case kops.SubnetTypePublic, kops.SubnetTypeUtility:
-		t.AssociatePublicIP = fi.Bool(true)
-		if ig.Spec.AssociatePublicIP != nil {
-			t.AssociatePublicIP = ig.Spec.AssociatePublicIP
-		}
-	case kops.SubnetTypePrivate:
-		t.AssociatePublicIP = fi.Bool(false)
 	}
 
 	return t, nil
