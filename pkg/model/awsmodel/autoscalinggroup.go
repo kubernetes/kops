@@ -161,7 +161,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		InstanceMonitoring:           ig.Spec.DetailedInstanceMonitoring,
 		InstanceType:                 fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
 		RootVolumeIops:               fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops))),
-		RootVolumeOptimization:       lc.RootVolumeOptimization,
+		RootVolumeOptimization:       ig.Spec.RootVolumeOptimization,
 		RootVolumeSize:               lc.RootVolumeSize,
 		RootVolumeType:               fi.String(rootVolumeType),
 		RootVolumeEncryption:         lc.RootVolumeEncryption,
@@ -305,12 +305,11 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 	}
 
 	t := &awstasks.LaunchTemplate{
-		Name:                   fi.String(name),
-		Lifecycle:              b.Lifecycle,
-		RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
-		RootVolumeSize:         fi.Int64(int64(volumeSize)),
-		RootVolumeEncryption:   fi.Bool(rootVolumeEncryption),
-		SecurityGroups:         []*awstasks.SecurityGroup{sgLink},
+		Name:                 fi.String(name),
+		Lifecycle:            b.Lifecycle,
+		RootVolumeSize:       fi.Int64(int64(volumeSize)),
+		RootVolumeEncryption: fi.Bool(rootVolumeEncryption),
+		SecurityGroups:       []*awstasks.SecurityGroup{sgLink},
 	}
 
 	if ig.HasAPIServer() &&
