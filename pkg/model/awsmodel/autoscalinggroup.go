@@ -145,6 +145,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		Lifecycle:               b.Lifecycle,
 		CPUCredits:              fi.String(fi.StringValue(ig.Spec.CPUCredits)),
 		HTTPPutResponseHopLimit: fi.Int64(1),
+		HTTPTokens:              fi.String(ec2.LaunchTemplateHttpTokensStateOptional),
 		IAMInstanceProfile:      lc.IAMInstanceProfile,
 		ImageID:                 lc.ImageID,
 		InstanceMonitoring:      lc.InstanceMonitoring,
@@ -159,7 +160,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		Tags:                    tags,
 		Tenancy:                 lc.Tenancy,
 		UserData:                lc.UserData,
-		HTTPTokens:              lc.HTTPTokens,
 	}
 
 	{
@@ -223,6 +223,10 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 
 	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit != nil {
 		lt.HTTPPutResponseHopLimit = ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit
+	}
+
+	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPTokens != nil {
+		lt.HTTPTokens = ig.Spec.InstanceMetadata.HTTPTokens
 	}
 
 	// When using a MixedInstances ASG, AWS requires the SpotPrice be defined on the ASG
@@ -314,11 +318,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 		RootVolumeType:         fi.String(volumeType),
 		RootVolumeEncryption:   fi.Bool(rootVolumeEncryption),
 		SecurityGroups:         []*awstasks.SecurityGroup{sgLink},
-	}
-
-	t.HTTPTokens = fi.String(ec2.LaunchTemplateHttpTokensStateOptional)
-	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPTokens != nil {
-		t.HTTPTokens = ig.Spec.InstanceMetadata.HTTPTokens
 	}
 
 	if ig.HasAPIServer() &&
