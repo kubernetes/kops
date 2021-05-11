@@ -135,6 +135,12 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		return nil, err
 	}
 
+	// @step: add the iam instance profile
+	link, err := b.LinkToIAMInstanceProfile(ig)
+	if err != nil {
+		return nil, fmt.Errorf("unable to find IAM profile link for instance group %q: %w", ig.ObjectMeta.Name, err)
+	}
+
 	tags, err := b.CloudTagsForInstanceGroup(ig)
 	if err != nil {
 		return nil, fmt.Errorf("error building cloud tags: %v", err)
@@ -146,7 +152,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		CPUCredits:              fi.String(fi.StringValue(ig.Spec.CPUCredits)),
 		HTTPPutResponseHopLimit: fi.Int64(1),
 		HTTPTokens:              fi.String(ec2.LaunchTemplateHttpTokensStateOptional),
-		IAMInstanceProfile:      lc.IAMInstanceProfile,
+		IAMInstanceProfile:      link,
 		ImageID:                 lc.ImageID,
 		InstanceMonitoring:      lc.InstanceMonitoring,
 		InstanceType:            lc.InstanceType,
@@ -300,16 +306,9 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 		}
 	}
 
-	// @step: add the iam instance profile
-	link, err := b.LinkToIAMInstanceProfile(ig)
-	if err != nil {
-		return nil, fmt.Errorf("unable to find IAM profile link for instance group %q: %w", ig.ObjectMeta.Name, err)
-	}
-
 	t := &awstasks.LaunchTemplate{
 		Name:                   fi.String(name),
 		Lifecycle:              b.Lifecycle,
-		IAMInstanceProfile:     link,
 		ImageID:                fi.String(ig.Spec.Image),
 		InstanceMonitoring:     ig.Spec.DetailedInstanceMonitoring,
 		InstanceType:           fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
