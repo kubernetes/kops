@@ -147,25 +147,26 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	}
 
 	lt := &awstasks.LaunchTemplate{
-		Name:                    fi.String(name),
-		Lifecycle:               b.Lifecycle,
-		CPUCredits:              fi.String(fi.StringValue(ig.Spec.CPUCredits)),
-		HTTPPutResponseHopLimit: fi.Int64(1),
-		HTTPTokens:              fi.String(ec2.LaunchTemplateHttpTokensStateOptional),
-		IAMInstanceProfile:      link,
-		ImageID:                 fi.String(ig.Spec.Image),
-		InstanceMonitoring:      lc.InstanceMonitoring,
-		InstanceType:            lc.InstanceType,
-		RootVolumeOptimization:  lc.RootVolumeOptimization,
-		RootVolumeSize:          lc.RootVolumeSize,
-		RootVolumeIops:          lc.RootVolumeIops,
-		RootVolumeType:          lc.RootVolumeType,
-		RootVolumeEncryption:    lc.RootVolumeEncryption,
-		SSHKey:                  lc.SSHKey,
-		SecurityGroups:          lc.SecurityGroups,
-		Tags:                    tags,
-		Tenancy:                 lc.Tenancy,
-		UserData:                lc.UserData,
+		Name:                         fi.String(name),
+		Lifecycle:                    b.Lifecycle,
+		CPUCredits:                   fi.String(fi.StringValue(ig.Spec.CPUCredits)),
+		HTTPPutResponseHopLimit:      fi.Int64(1),
+		HTTPTokens:                   fi.String(ec2.LaunchTemplateHttpTokensStateOptional),
+		IAMInstanceProfile:           link,
+		ImageID:                      fi.String(ig.Spec.Image),
+		InstanceInterruptionBehavior: ig.Spec.InstanceInterruptionBehavior,
+		InstanceMonitoring:           lc.InstanceMonitoring,
+		InstanceType:                 lc.InstanceType,
+		RootVolumeOptimization:       lc.RootVolumeOptimization,
+		RootVolumeSize:               lc.RootVolumeSize,
+		RootVolumeIops:               lc.RootVolumeIops,
+		RootVolumeType:               lc.RootVolumeType,
+		RootVolumeEncryption:         lc.RootVolumeEncryption,
+		SSHKey:                       lc.SSHKey,
+		SecurityGroups:               lc.SecurityGroups,
+		Tags:                         tags,
+		Tenancy:                      lc.Tenancy,
+		UserData:                     lc.UserData,
 	}
 
 	{
@@ -246,9 +247,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	}
 	if ig.Spec.SpotDurationInMinutes != nil {
 		lt.SpotDurationInMinutes = ig.Spec.SpotDurationInMinutes
-	}
-	if ig.Spec.InstanceInterruptionBehavior != nil {
-		lt.InstanceInterruptionBehavior = ig.Spec.InstanceInterruptionBehavior
 	}
 	if fi.BoolValue(ig.Spec.RootVolumeEncryption) && ig.Spec.RootVolumeEncryptionKey != nil {
 		lt.RootVolumeKmsKey = ig.Spec.RootVolumeEncryptionKey
