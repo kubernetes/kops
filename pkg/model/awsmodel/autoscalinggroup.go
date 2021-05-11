@@ -128,11 +128,6 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 // buildLaunchTemplateTask is responsible for creating the template task into the aws model
 func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchTemplate, error) {
-	lc, err := b.buildLaunchTemplateHelper(c, name, ig)
-	if err != nil {
-		return nil, err
-	}
-
 	// @step: add the iam instance profile
 	link, err := b.LinkToIAMInstanceProfile(ig)
 	if err != nil {
@@ -162,6 +157,11 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		rootVolumeKmsKey = *ig.Spec.RootVolumeEncryptionKey
 	}
 
+	securityGroups, err := b.buildSecurityGroups(c, ig)
+	if err != nil {
+		return nil, err
+	}
+
 	tags, err := b.CloudTagsForInstanceGroup(ig)
 	if err != nil {
 		return nil, fmt.Errorf("error building cloud tags: %v", err)
@@ -189,7 +189,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		RootVolumeType:               fi.String(rootVolumeType),
 		RootVolumeEncryption:         fi.Bool(rootVolumeEncryption),
 		RootVolumeKmsKey:             fi.String(rootVolumeKmsKey),
-		SecurityGroups:               lc.SecurityGroups,
+		SecurityGroups:               securityGroups,
 		Tags:                         tags,
 		UserData:                     userData,
 	}
@@ -304,8 +304,8 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	return lt, nil
 }
 
-// buildLaunchTemplateHelper is responsible for building a launch configuration task into the model
-func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchTemplate, error) {
+// buildSecurityGroups is responsible for building security groups for a launch template.
+func (b *AutoscalingGroupModelBuilder) buildSecurityGroups(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) ([]*awstasks.SecurityGroup, error) {
 	// @step: if required we add the override for the security group for this instancegroup
 	sgLink := b.LinkToSecurityGroup(ig.Spec.Role)
 	if ig.Spec.SecurityGroupOverride != nil {
@@ -317,11 +317,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 		}
 	}
 
-	t := &awstasks.LaunchTemplate{
-		Name:           fi.String(name),
-		Lifecycle:      b.Lifecycle,
-		SecurityGroups: []*awstasks.SecurityGroup{sgLink},
-	}
+	securityGroups := []*awstasks.SecurityGroup{sgLink}
 
 	if ig.HasAPIServer() &&
 		b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
@@ -335,7 +331,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 			if err := c.EnsureTask(sgTask); err != nil {
 				return nil, err
 			}
-			t.SecurityGroups = append(t.SecurityGroups, sgTask)
+			securityGroups = append(securityGroups, sgTask)
 		}
 	}
 
@@ -350,10 +346,10 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 		if err := c.EnsureTask(sgTask); err != nil {
 			return nil, err
 		}
-		t.SecurityGroups = append(t.SecurityGroups, sgTask)
+		securityGroups = append(securityGroups, sgTask)
 	}
 
-	return t, nil
+	return securityGroups, nil
 }
 
 // buildAutoscalingGroupTask is responsible for building the autoscaling task into the model
