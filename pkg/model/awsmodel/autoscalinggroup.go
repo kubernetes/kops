@@ -157,6 +157,11 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		rootVolumeEncryption = fi.BoolValue(ig.Spec.RootVolumeEncryption)
 	}
 
+	rootVolumeKmsKey := ""
+	if fi.BoolValue(ig.Spec.RootVolumeEncryption) && ig.Spec.RootVolumeEncryptionKey != nil {
+		rootVolumeKmsKey = *ig.Spec.RootVolumeEncryptionKey
+	}
+
 	tags, err := b.CloudTagsForInstanceGroup(ig)
 	if err != nil {
 		return nil, fmt.Errorf("error building cloud tags: %v", err)
@@ -178,6 +183,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		RootVolumeSize:               fi.Int64(int64(rootVolumeSize)),
 		RootVolumeType:               fi.String(rootVolumeType),
 		RootVolumeEncryption:         fi.Bool(rootVolumeEncryption),
+		RootVolumeKmsKey:             fi.String(rootVolumeKmsKey),
 		SSHKey:                       lc.SSHKey,
 		SecurityGroups:               lc.SecurityGroups,
 		Tags:                         tags,
@@ -280,11 +286,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	}
 	if ig.Spec.SpotDurationInMinutes != nil {
 		lt.SpotDurationInMinutes = ig.Spec.SpotDurationInMinutes
-	}
-	if fi.BoolValue(ig.Spec.RootVolumeEncryption) && ig.Spec.RootVolumeEncryptionKey != nil {
-		lt.RootVolumeKmsKey = ig.Spec.RootVolumeEncryptionKey
-	} else {
-		lt.RootVolumeKmsKey = fi.String("")
 	}
 
 	return lt, nil
