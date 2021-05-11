@@ -17,10 +17,17 @@ limitations under the License.
 package utils
 
 import (
+	"fmt"
+	"math/big"
 	"net"
+	"regexp"
+	"strconv"
 	"strings"
+
+	"github.com/apparentlymart/go-cidr/cidr"
 )
 
+// IsIPv4CIDR checks if a string is a valid IPv4 CIDR.
 func IsIPv4CIDR(cidr string) bool {
 	ip, _, err := net.ParseCIDR(cidr)
 	if err != nil {
@@ -39,6 +46,7 @@ func IsIPv4CIDR(cidr string) bool {
 	return true
 }
 
+// IsIPv6CIDR checks if a string is a valid IPv6 CIDR.
 func IsIPv6CIDR(cidr string) bool {
 	ip, _, err := net.ParseCIDR(cidr)
 	if err != nil {
@@ -55,4 +63,48 @@ func IsIPv6CIDR(cidr string) bool {
 	}
 
 	return true
+}
+
+// ParseCidrSubnet parses a string in the format "/<newSize>#<netNum>"
+// and returns the values of <newSize> and <netNum>.
+func ParseCidrSubnet(subnet string) (int, int64, error) {
+	re := regexp.MustCompile(`^/(\d+)#([a-f0-9]+)$`)
+	s := re.FindStringSubmatch(subnet)
+	if len(s) != 3 {
+		return 0, 0, fmt.Errorf("unable to parse CIDR subnet string %q using %q", subnet, re)
+	}
+
+	newSize, err := strconv.Atoi(s[1])
+	if err != nil {
+		return 0, 0, fmt.Errorf("unable to convert CIDR subnet new bits to int: %q: %v", s[1], err)
+	}
+
+	netNum, err := strconv.ParseInt(s[2], 16, 64)
+	if err != nil {
+		return 0, 0, fmt.Errorf("unable to convert CIDR subnet net num to int: %q: %v", s[2], err)
+	}
+
+	return newSize, netNum, nil
+}
+
+// CidrSubnet calculates a subnet address within given IP network address prefix.
+// Inspired by the Terraform implementation of the "cidrsubnet" function
+// https://www.terraform.io/docs/language/functions/cidrsubnet.html
+func CidrSubnet(prefix string, newSize int, netNum int64) (string, error) {
+	_, baseCIDR, err := net.ParseCIDR(prefix)
+	if err != nil {
+		return "", fmt.Errorf("unable to parse CIDR for %q: %v", prefix, err)
+	}
+
+	oldSize, totalSize := baseCIDR.Mask.Size()
+	if oldSize == 0 && totalSize == 0 {
+		return "", fmt.Errorf("unable to calculate CIDR mask size for %q: %q", prefix, baseCIDR.Mask)
+	}
+
+	newNetwork, err := cidr.SubnetBig(baseCIDR, newSize-oldSize, big.NewInt(netNum))
+	if err != nil {
+		return "", fmt.Errorf("unable to calculate subnet CIDR for %q -> /%d#%d : %v", prefix, newSize, netNum, err)
+	}
+
+	return newNetwork.String(), nil
 }
