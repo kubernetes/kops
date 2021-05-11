@@ -143,7 +143,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	lt := &awstasks.LaunchTemplate{
 		Name:                    fi.String(name),
 		Lifecycle:               b.Lifecycle,
-		BlockDeviceMappings:     lc.BlockDeviceMappings,
 		IAMInstanceProfile:      lc.IAMInstanceProfile,
 		ImageID:                 lc.ImageID,
 		InstanceMonitoring:      lc.InstanceMonitoring,
@@ -179,6 +178,46 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		case kops.SubnetTypePrivate:
 			lt.AssociatePublicIP = fi.Bool(false)
 		}
+	}
+
+	// @step: add any additional block devices
+	for i := range ig.Spec.Volumes {
+		x := &ig.Spec.Volumes[i]
+		if x.Type == "" {
+			x.Type = DefaultVolumeType
+		}
+		if x.Type == ec2.VolumeTypeIo1 || x.Type == ec2.VolumeTypeIo2 {
+			if x.Iops == nil {
+				x.Iops = fi.Int64(DefaultVolumeIonIops)
+			}
+		} else if x.Type == ec2.VolumeTypeGp3 {
+			if x.Iops == nil {
+				x.Iops = fi.Int64(DefaultVolumeGp3Iops)
+			}
+			if x.Throughput == nil {
+				x.Throughput = fi.Int64(DefaultVolumeGp3Throughput)
+			}
+		} else {
+			x.Iops = nil
+		}
+		deleteOnTermination := DefaultVolumeDeleteOnTermination
+		if x.DeleteOnTermination != nil {
+			deleteOnTermination = fi.BoolValue(x.DeleteOnTermination)
+		}
+		encryption := DefaultVolumeEncryption
+		if x.Encrypted != nil {
+			encryption = fi.BoolValue(x.Encrypted)
+		}
+		lt.BlockDeviceMappings = append(lt.BlockDeviceMappings, &awstasks.BlockDeviceMapping{
+			DeviceName:             fi.String(x.Device),
+			EbsDeleteOnTermination: fi.Bool(deleteOnTermination),
+			EbsEncrypted:           fi.Bool(encryption),
+			EbsKmsKey:              x.Key,
+			EbsVolumeIops:          x.Iops,
+			EbsVolumeSize:          fi.Int64(x.Size),
+			EbsVolumeThroughput:    x.Throughput,
+			EbsVolumeType:          fi.String(x.Type),
+		})
 	}
 
 	// When using a MixedInstances ASG, AWS requires the SpotPrice be defined on the ASG
@@ -327,46 +366,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 			return nil, err
 		}
 		t.SecurityGroups = append(t.SecurityGroups, sgTask)
-	}
-
-	// @step: add any additional block devices to the launch configuration
-	for i := range ig.Spec.Volumes {
-		x := &ig.Spec.Volumes[i]
-		if x.Type == "" {
-			x.Type = DefaultVolumeType
-		}
-		if x.Type == ec2.VolumeTypeIo1 || x.Type == ec2.VolumeTypeIo2 {
-			if x.Iops == nil {
-				x.Iops = fi.Int64(DefaultVolumeIonIops)
-			}
-		} else if x.Type == ec2.VolumeTypeGp3 {
-			if x.Iops == nil {
-				x.Iops = fi.Int64(DefaultVolumeGp3Iops)
-			}
-			if x.Throughput == nil {
-				x.Throughput = fi.Int64(DefaultVolumeGp3Throughput)
-			}
-		} else {
-			x.Iops = nil
-		}
-		deleteOnTermination := DefaultVolumeDeleteOnTermination
-		if x.DeleteOnTermination != nil {
-			deleteOnTermination = fi.BoolValue(x.DeleteOnTermination)
-		}
-		encryption := DefaultVolumeEncryption
-		if x.Encrypted != nil {
-			encryption = fi.BoolValue(x.Encrypted)
-		}
-		t.BlockDeviceMappings = append(t.BlockDeviceMappings, &awstasks.BlockDeviceMapping{
-			DeviceName:             fi.String(x.Device),
-			EbsDeleteOnTermination: fi.Bool(deleteOnTermination),
-			EbsEncrypted:           fi.Bool(encryption),
-			EbsKmsKey:              x.Key,
-			EbsVolumeIops:          x.Iops,
-			EbsVolumeSize:          fi.Int64(x.Size),
-			EbsVolumeThroughput:    x.Throughput,
-			EbsVolumeType:          fi.String(x.Type),
-		})
 	}
 
 	if b.AWSModelContext.UseSSHKey() {
