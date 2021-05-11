@@ -35,7 +35,7 @@ type LaunchTemplate struct {
 	// Lifecycle is the resource lifecycle
 	Lifecycle *fi.Lifecycle
 
-	// AssociatePublicIP indicates if a public ip address is assigned to instabces
+	// AssociatePublicIP indicates if a public ip address is assigned to instances
 	AssociatePublicIP *bool
 	// BlockDeviceMappings is a block device mappings
 	BlockDeviceMappings []*BlockDeviceMapping
