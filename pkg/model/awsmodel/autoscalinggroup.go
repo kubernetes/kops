@@ -160,9 +160,9 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		InstanceInterruptionBehavior: ig.Spec.InstanceInterruptionBehavior,
 		InstanceMonitoring:           ig.Spec.DetailedInstanceMonitoring,
 		InstanceType:                 fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
+		RootVolumeIops:               fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops))),
 		RootVolumeOptimization:       lc.RootVolumeOptimization,
 		RootVolumeSize:               lc.RootVolumeSize,
-		RootVolumeIops:               lc.RootVolumeIops,
 		RootVolumeType:               fi.String(rootVolumeType),
 		RootVolumeEncryption:         lc.RootVolumeEncryption,
 		SSHKey:                       lc.SSHKey,
@@ -242,20 +242,18 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	if rootVolumeType == ec2.VolumeTypeIo1 || rootVolumeType == ec2.VolumeTypeIo2 {
 		if fi.Int32Value(ig.Spec.RootVolumeIops) < 100 {
 			lt.RootVolumeIops = fi.Int64(int64(DefaultVolumeIonIops))
-		} else {
-			lt.RootVolumeIops = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops)))
 		}
 	} else if rootVolumeType == ec2.VolumeTypeGp3 {
 		if fi.Int32Value(ig.Spec.RootVolumeIops) < 3000 {
 			lt.RootVolumeIops = fi.Int64(int64(DefaultVolumeGp3Iops))
-		} else {
-			lt.RootVolumeIops = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops)))
 		}
 		if fi.Int32Value(ig.Spec.RootVolumeThroughput) < 125 {
 			lt.RootVolumeThroughput = fi.Int64(int64(DefaultVolumeGp3Throughput))
 		} else {
 			lt.RootVolumeThroughput = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeThroughput)))
 		}
+	} else {
+		lt.RootVolumeIops = nil
 	}
 
 	// When using a MixedInstances ASG, AWS requires the SpotPrice be defined on the ASG
