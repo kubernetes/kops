@@ -20,7 +20,7 @@ UPLOAD_DEST?=$(S3_BUCKET)
 GCS_LOCATION?=gs://must-override
 GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
-GOPATH_1ST:=$(shell go env | grep GOPATH | cut -f 2 -d \")
+GOPATH_1ST:=$(shell go env | grep GOPATH | cut -f 2 -d '"' | sed 's/ /\\ /g')
 UNIQUE:=$(shell date +%s)
 BUILD=$(KOPS_ROOT)/.build
 LOCAL=$(BUILD)/local
@@ -150,9 +150,19 @@ ${KOPS}:
 
 .PHONY: codegen
 codegen:
-	go install k8s.io/kops/upup/tools/generators/...
-	${GOPATH_1ST}/bin/fitask --input-dirs k8s.io/kops/upup/pkg/fi/... \
-	    --go-header-file "hack/boilerplate/boilerplate.generatego.txt"
+	go build -o ${KOPS_ROOT}/_output/bin k8s.io/kops/upup/tools/generators/...
+	${KOPS_ROOT}/_output/bin/fitask \
+		--input-dirs k8s.io/kops/upup/pkg/fi/... \
+		--go-header-file hack/boilerplate/boilerplate.generatego.txt \
+		--output-base ${KOPS_ROOT}
+
+.PHONY: verify-codegen
+verify-codegen:
+	go build -o ${KOPS_ROOT}/_output/bin k8s.io/kops/upup/tools/generators/...
+	${KOPS_ROOT}/_output/bin/fitask --verify-only \
+		--input-dirs k8s.io/kops/upup/pkg/fi/... \
+		--go-header-file hack/boilerplate/boilerplate.generatego.txt \
+		--output-base ${KOPS_ROOT}
 
 .PHONY: protobuf
 protobuf:
@@ -460,13 +470,13 @@ verify-hashes:
 # ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
 .PHONY: ci
-ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerplate verify-bazel verify-versions verify-misspelling verify-shellcheck verify-staticcheck verify-terraform nodeup examples test | verify-gendocs verify-apimachinery
+ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerplate verify-bazel verify-versions verify-misspelling verify-shellcheck verify-staticcheck verify-terraform nodeup examples test | verify-gendocs verify-apimachinery verify-codegen
 	echo "Done!"
 
 # we skip tasks that rely on bazel and are covered by other jobs
 # verify-gofmt: uses bazel, covered by pull-kops-verify
 .PHONY: quick-ci
-quick-ci: verify-crds verify-goimports govet verify-boilerplate verify-bazel verify-versions verify-misspelling verify-shellcheck | verify-gendocs verify-apimachinery
+quick-ci: verify-crds verify-goimports govet verify-boilerplate verify-bazel verify-versions verify-misspelling verify-shellcheck | verify-gendocs verify-apimachinery verify-codegen
 	echo "Done!"
 
 .PHONY: pr
