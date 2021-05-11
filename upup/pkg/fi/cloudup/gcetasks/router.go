@@ -97,7 +97,7 @@ func (r *Router) Find(c *fi.Context) (*Router, error) {
 		Name:                          &found.Name,
 		Lifecycle:                     r.Lifecycle,
 		Network:                       &found.Network,
-		Region:                        &found.Region,
+		Region:                        fi.String(lastComponent(found.Region)),
 		NATIPAllocationOption:         &nat.NatIpAllocateOption,
 		SourceSubnetworkIPRangesToNAT: &nat.SourceSubnetworkIpRangesToNat,
 	}, nil
