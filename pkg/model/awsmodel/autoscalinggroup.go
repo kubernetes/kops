@@ -155,7 +155,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		IAMInstanceProfile:           link,
 		ImageID:                      fi.String(ig.Spec.Image),
 		InstanceInterruptionBehavior: ig.Spec.InstanceInterruptionBehavior,
-		InstanceMonitoring:           lc.InstanceMonitoring,
+		InstanceMonitoring:           ig.Spec.DetailedInstanceMonitoring,
 		InstanceType:                 lc.InstanceType,
 		RootVolumeOptimization:       lc.RootVolumeOptimization,
 		RootVolumeSize:               lc.RootVolumeSize,
@@ -307,7 +307,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 	t := &awstasks.LaunchTemplate{
 		Name:                   fi.String(name),
 		Lifecycle:              b.Lifecycle,
-		InstanceMonitoring:     ig.Spec.DetailedInstanceMonitoring,
 		InstanceType:           fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
 		RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
 		RootVolumeSize:         fi.Int64(int64(volumeSize)),
