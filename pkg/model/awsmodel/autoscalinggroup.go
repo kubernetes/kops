@@ -186,7 +186,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		RootVolumeKmsKey:             fi.String(rootVolumeKmsKey),
 		SecurityGroups:               lc.SecurityGroups,
 		Tags:                         tags,
-		Tenancy:                      lc.Tenancy,
 		UserData:                     lc.UserData,
 	}
 
@@ -293,6 +292,10 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		lt.SpotDurationInMinutes = ig.Spec.SpotDurationInMinutes
 	}
 
+	if ig.Spec.Tenancy != "" {
+		lt.Tenancy = fi.String(ig.Spec.Tenancy)
+	}
+
 	return lt, nil
 }
 
@@ -331,10 +334,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 			}
 			t.SecurityGroups = append(t.SecurityGroups, sgTask)
 		}
-	}
-
-	if ig.Spec.Tenancy != "" {
-		t.Tenancy = fi.String(ig.Spec.Tenancy)
 	}
 
 	// @step: add any additional security groups to the instancegroup
