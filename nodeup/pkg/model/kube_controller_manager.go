@@ -173,9 +173,10 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{
 				HTTPGet: &v1.HTTPGetAction{
-					Host: "127.0.0.1",
-					Path: "/healthz",
-					Port: intstr.FromInt(10252),
+					Host:   "127.0.0.1",
+					Path:   "/healthz",
+					Port:   intstr.FromInt(10257),
+					Scheme: "HTTPS",
 				},
 			},
 			InitialDelaySeconds: 15,
