@@ -184,7 +184,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		RootVolumeType:               fi.String(rootVolumeType),
 		RootVolumeEncryption:         fi.Bool(rootVolumeEncryption),
 		RootVolumeKmsKey:             fi.String(rootVolumeKmsKey),
-		SSHKey:                       lc.SSHKey,
 		SecurityGroups:               lc.SecurityGroups,
 		Tags:                         tags,
 		Tenancy:                      lc.Tenancy,
@@ -275,6 +274,12 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		lt.RootVolumeIops = nil
 	}
 
+	if b.AWSModelContext.UseSSHKey() {
+		if lt.SSHKey, err = b.LinkToSSHKey(); err != nil {
+			return nil, err
+		}
+	}
+
 	// When using a MixedInstances ASG, AWS requires the SpotPrice be defined on the ASG
 	// rather than the LaunchTemplate or else it returns this error:
 	//   You cannot use a launch template that is set to request Spot Instances (InstanceMarketOptions)
@@ -344,12 +349,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 			return nil, err
 		}
 		t.SecurityGroups = append(t.SecurityGroups, sgTask)
-	}
-
-	if b.AWSModelContext.UseSSHKey() {
-		if t.SSHKey, err = b.LinkToSSHKey(); err != nil {
-			return nil, err
-		}
 	}
 
 	// @step: add the instancegroup userdata
