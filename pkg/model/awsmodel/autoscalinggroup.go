@@ -153,7 +153,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		HTTPPutResponseHopLimit: fi.Int64(1),
 		HTTPTokens:              fi.String(ec2.LaunchTemplateHttpTokensStateOptional),
 		IAMInstanceProfile:      link,
-		ImageID:                 lc.ImageID,
+		ImageID:                 fi.String(ig.Spec.Image),
 		InstanceMonitoring:      lc.InstanceMonitoring,
 		InstanceType:            lc.InstanceType,
 		RootVolumeOptimization:  lc.RootVolumeOptimization,
@@ -309,7 +309,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 	t := &awstasks.LaunchTemplate{
 		Name:                   fi.String(name),
 		Lifecycle:              b.Lifecycle,
-		ImageID:                fi.String(ig.Spec.Image),
 		InstanceMonitoring:     ig.Spec.DetailedInstanceMonitoring,
 		InstanceType:           fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
 		RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
