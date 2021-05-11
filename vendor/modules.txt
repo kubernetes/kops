@@ -100,6 +100,9 @@ github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests
 github.com/aliyun/alibaba-cloud-sdk-go/sdk/responses
 github.com/aliyun/alibaba-cloud-sdk-go/sdk/utils
 github.com/aliyun/alibaba-cloud-sdk-go/services/slb
+# github.com/apparentlymart/go-cidr v1.1.0
+## explicit
+github.com/apparentlymart/go-cidr/cidr
 # github.com/apparentlymart/go-textseg/v13 v13.0.0
 github.com/apparentlymart/go-textseg/v13/textseg
 # github.com/armon/go-metrics v0.3.0
