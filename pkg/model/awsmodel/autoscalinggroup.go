@@ -139,6 +139,14 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		return nil, fmt.Errorf("unable to find IAM profile link for instance group %q: %w", ig.ObjectMeta.Name, err)
 	}
 
+	rootVolumeSize, err := defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+	if err != nil {
+		return nil, err
+	}
+	if fi.Int32Value(ig.Spec.RootVolumeSize) > 0 {
+		rootVolumeSize = fi.Int32Value(ig.Spec.RootVolumeSize)
+	}
+
 	rootVolumeType := fi.StringValue(ig.Spec.RootVolumeType)
 	if rootVolumeType == "" {
 		rootVolumeType = DefaultVolumeType
@@ -162,7 +170,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		InstanceType:                 fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
 		RootVolumeIops:               fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops))),
 		RootVolumeOptimization:       ig.Spec.RootVolumeOptimization,
-		RootVolumeSize:               lc.RootVolumeSize,
+		RootVolumeSize:               fi.Int64(int64(rootVolumeSize)),
 		RootVolumeType:               fi.String(rootVolumeType),
 		RootVolumeEncryption:         lc.RootVolumeEncryption,
 		SSHKey:                       lc.SSHKey,
@@ -279,14 +287,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 
 // buildLaunchTemplateHelper is responsible for building a launch configuration task into the model
 func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchTemplate, error) {
-	// @step: lets add the root volume settings
-	volumeSize, err := defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
-	if err != nil {
-		return nil, err
-	}
-	if fi.Int32Value(ig.Spec.RootVolumeSize) > 0 {
-		volumeSize = fi.Int32Value(ig.Spec.RootVolumeSize)
-	}
+	var err error
 
 	rootVolumeEncryption := DefaultVolumeEncryption
 	if ig.Spec.RootVolumeEncryption != nil {
@@ -307,7 +308,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 	t := &awstasks.LaunchTemplate{
 		Name:                 fi.String(name),
 		Lifecycle:            b.Lifecycle,
-		RootVolumeSize:       fi.Int64(int64(volumeSize)),
 		RootVolumeEncryption: fi.Bool(rootVolumeEncryption),
 		SecurityGroups:       []*awstasks.SecurityGroup{sgLink},
 	}
