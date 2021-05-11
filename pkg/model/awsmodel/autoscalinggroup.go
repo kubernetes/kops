@@ -144,6 +144,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		Name:                    fi.String(name),
 		Lifecycle:               b.Lifecycle,
 		CPUCredits:              fi.String(fi.StringValue(ig.Spec.CPUCredits)),
+		HTTPPutResponseHopLimit: fi.Int64(1),
 		IAMInstanceProfile:      lc.IAMInstanceProfile,
 		ImageID:                 lc.ImageID,
 		InstanceMonitoring:      lc.InstanceMonitoring,
@@ -159,7 +160,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		Tenancy:                 lc.Tenancy,
 		UserData:                lc.UserData,
 		HTTPTokens:              lc.HTTPTokens,
-		HTTPPutResponseHopLimit: lc.HTTPPutResponseHopLimit,
 	}
 
 	{
@@ -219,6 +219,10 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 			EbsVolumeThroughput:    x.Throughput,
 			EbsVolumeType:          fi.String(x.Type),
 		})
+	}
+
+	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit != nil {
+		lt.HTTPPutResponseHopLimit = ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit
 	}
 
 	// When using a MixedInstances ASG, AWS requires the SpotPrice be defined on the ASG
@@ -315,10 +319,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 	t.HTTPTokens = fi.String(ec2.LaunchTemplateHttpTokensStateOptional)
 	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPTokens != nil {
 		t.HTTPTokens = ig.Spec.InstanceMetadata.HTTPTokens
-	}
-	t.HTTPPutResponseHopLimit = fi.Int64(1)
-	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit != nil {
-		t.HTTPPutResponseHopLimit = ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit
 	}
 
 	if ig.HasAPIServer() &&
