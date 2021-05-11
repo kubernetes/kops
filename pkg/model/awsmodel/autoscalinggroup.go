@@ -152,6 +152,11 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		rootVolumeType = DefaultVolumeType
 	}
 
+	rootVolumeEncryption := DefaultVolumeEncryption
+	if ig.Spec.RootVolumeEncryption != nil {
+		rootVolumeEncryption = fi.BoolValue(ig.Spec.RootVolumeEncryption)
+	}
+
 	tags, err := b.CloudTagsForInstanceGroup(ig)
 	if err != nil {
 		return nil, fmt.Errorf("error building cloud tags: %v", err)
@@ -172,7 +177,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		RootVolumeOptimization:       ig.Spec.RootVolumeOptimization,
 		RootVolumeSize:               fi.Int64(int64(rootVolumeSize)),
 		RootVolumeType:               fi.String(rootVolumeType),
-		RootVolumeEncryption:         lc.RootVolumeEncryption,
+		RootVolumeEncryption:         fi.Bool(rootVolumeEncryption),
 		SSHKey:                       lc.SSHKey,
 		SecurityGroups:               lc.SecurityGroups,
 		Tags:                         tags,
@@ -289,11 +294,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchTemplate, error) {
 	var err error
 
-	rootVolumeEncryption := DefaultVolumeEncryption
-	if ig.Spec.RootVolumeEncryption != nil {
-		rootVolumeEncryption = fi.BoolValue(ig.Spec.RootVolumeEncryption)
-	}
-
 	// @step: if required we add the override for the security group for this instancegroup
 	sgLink := b.LinkToSecurityGroup(ig.Spec.Role)
 	if ig.Spec.SecurityGroupOverride != nil {
@@ -306,10 +306,9 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 	}
 
 	t := &awstasks.LaunchTemplate{
-		Name:                 fi.String(name),
-		Lifecycle:            b.Lifecycle,
-		RootVolumeEncryption: fi.Bool(rootVolumeEncryption),
-		SecurityGroups:       []*awstasks.SecurityGroup{sgLink},
+		Name:           fi.String(name),
+		Lifecycle:      b.Lifecycle,
+		SecurityGroups: []*awstasks.SecurityGroup{sgLink},
 	}
 
 	if ig.HasAPIServer() &&
