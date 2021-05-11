@@ -167,6 +167,11 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		return nil, fmt.Errorf("error building cloud tags: %v", err)
 	}
 
+	userData, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
+	if err != nil {
+		return nil, err
+	}
+
 	lt := &awstasks.LaunchTemplate{
 		Name:                         fi.String(name),
 		Lifecycle:                    b.Lifecycle,
@@ -186,7 +191,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		RootVolumeKmsKey:             fi.String(rootVolumeKmsKey),
 		SecurityGroups:               lc.SecurityGroups,
 		Tags:                         tags,
-		UserData:                     lc.UserData,
+		UserData:                     userData,
 	}
 
 	{
@@ -301,8 +306,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 
 // buildLaunchTemplateHelper is responsible for building a launch configuration task into the model
 func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchTemplate, error) {
-	var err error
-
 	// @step: if required we add the override for the security group for this instancegroup
 	sgLink := b.LinkToSecurityGroup(ig.Spec.Role)
 	if ig.Spec.SecurityGroupOverride != nil {
@@ -348,11 +351,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 			return nil, err
 		}
 		t.SecurityGroups = append(t.SecurityGroups, sgTask)
-	}
-
-	// @step: add the instancegroup userdata
-	if t.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig); err != nil {
-		return nil, err
 	}
 
 	return t, nil
