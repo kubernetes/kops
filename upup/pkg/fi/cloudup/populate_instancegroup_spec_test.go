@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/util/pkg/architectures"
 )
 
 func buildMinimalNodeInstanceGroup(subnets ...string) *kopsapi.InstanceGroup {
@@ -75,5 +76,49 @@ func expectErrorFromPopulateInstanceGroup(t *testing.T, cluster *kopsapi.Cluster
 	actualMessage := fmt.Sprintf("%v", err)
 	if !strings.Contains(actualMessage, message) {
 		t.Fatalf("Expected error %q, got %q", message, actualMessage)
+	}
+}
+
+func TestMachineArchitecture(t *testing.T) {
+	tests := []struct {
+		machineType string
+		arch        architectures.Architecture
+		err         error
+	}{
+		{
+			machineType: "t2.micro",
+			arch:        architectures.ArchitectureAmd64,
+			err:         nil,
+		},
+		{
+			machineType: "t3.micro",
+			arch:        architectures.ArchitectureAmd64,
+			err:         nil,
+		},
+		{
+			machineType: "a1.large",
+			arch:        architectures.ArchitectureArm64,
+			err:         nil,
+		},
+	}
+	for _, test := range tests {
+		t.Run(fmt.Sprintf("%s-%s", test.machineType, test.arch), func(t *testing.T) {
+			_, cluster := buildMinimalCluster()
+			cloud, err := BuildCloud(cluster)
+			if err != nil {
+				t.Fatalf("error from BuildCloud: %v", err)
+			}
+
+			arch, err := MachineArchitecture(cloud, test.machineType)
+			if err != test.err {
+				t.Errorf("actual error %q differs from expected error %q", err, test.err)
+				return
+			}
+
+			if arch != test.arch {
+				t.Errorf("actual architecture %q differs from expected architecture %q", arch, test.arch)
+				return
+			}
+		})
 	}
 }
