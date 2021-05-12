@@ -36,8 +36,6 @@ import (
 const (
 	// DefaultVolumeType is the default volume type
 	DefaultVolumeType = ec2.VolumeTypeGp3
-	// DefaultLegacyVolumeType is the default volume type when using LaunchConfigurations
-	DefaultLegacyVolumeType = ec2.VolumeTypeGp2
 	// DefaultVolumeIonIops is the default volume IOPS when volume type is io1 or io2
 	DefaultVolumeIonIops = 100
 	// DefaultVolumeGp3Iops is the default volume IOPS when volume type is gp3
@@ -130,20 +128,48 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 // buildLaunchTemplateTask is responsible for creating the template task into the aws model
 func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchTemplate, error) {
-	lc, err := b.buildLaunchTemplateHelper(c, name, ig)
-	if err != nil {
-		return nil, err
-	}
-
 	// @step: add the iam instance profile
 	link, err := b.LinkToIAMInstanceProfile(ig)
 	if err != nil {
 		return nil, fmt.Errorf("unable to find IAM profile link for instance group %q: %w", ig.ObjectMeta.Name, err)
 	}
 
+	rootVolumeSize, err := defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+	if err != nil {
+		return nil, err
+	}
+	if fi.Int32Value(ig.Spec.RootVolumeSize) > 0 {
+		rootVolumeSize = fi.Int32Value(ig.Spec.RootVolumeSize)
+	}
+
+	rootVolumeType := fi.StringValue(ig.Spec.RootVolumeType)
+	if rootVolumeType == "" {
+		rootVolumeType = DefaultVolumeType
+	}
+
+	rootVolumeEncryption := DefaultVolumeEncryption
+	if ig.Spec.RootVolumeEncryption != nil {
+		rootVolumeEncryption = fi.BoolValue(ig.Spec.RootVolumeEncryption)
+	}
+
+	rootVolumeKmsKey := ""
+	if fi.BoolValue(ig.Spec.RootVolumeEncryption) && ig.Spec.RootVolumeEncryptionKey != nil {
+		rootVolumeKmsKey = *ig.Spec.RootVolumeEncryptionKey
+	}
+
+	securityGroups, err := b.buildSecurityGroups(c, ig)
+	if err != nil {
+		return nil, err
+	}
+
 	tags, err := b.CloudTagsForInstanceGroup(ig)
 	if err != nil {
 		return nil, fmt.Errorf("error building cloud tags: %v", err)
+	}
+
+	userData, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
+	if err != nil {
+		return nil, err
 	}
 
 	lt := &awstasks.LaunchTemplate{
@@ -157,16 +183,15 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		InstanceInterruptionBehavior: ig.Spec.InstanceInterruptionBehavior,
 		InstanceMonitoring:           ig.Spec.DetailedInstanceMonitoring,
 		InstanceType:                 fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
-		RootVolumeOptimization:       lc.RootVolumeOptimization,
-		RootVolumeSize:               lc.RootVolumeSize,
-		RootVolumeIops:               lc.RootVolumeIops,
-		RootVolumeType:               lc.RootVolumeType,
-		RootVolumeEncryption:         lc.RootVolumeEncryption,
-		SSHKey:                       lc.SSHKey,
-		SecurityGroups:               lc.SecurityGroups,
+		RootVolumeIops:               fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops))),
+		RootVolumeOptimization:       ig.Spec.RootVolumeOptimization,
+		RootVolumeSize:               fi.Int64(int64(rootVolumeSize)),
+		RootVolumeType:               fi.String(rootVolumeType),
+		RootVolumeEncryption:         fi.Bool(rootVolumeEncryption),
+		RootVolumeKmsKey:             fi.String(rootVolumeKmsKey),
+		SecurityGroups:               securityGroups,
 		Tags:                         tags,
-		Tenancy:                      lc.Tenancy,
-		UserData:                     lc.UserData,
+		UserData:                     userData,
 	}
 
 	{
@@ -236,6 +261,29 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		lt.HTTPTokens = ig.Spec.InstanceMetadata.HTTPTokens
 	}
 
+	if rootVolumeType == ec2.VolumeTypeIo1 || rootVolumeType == ec2.VolumeTypeIo2 {
+		if fi.Int32Value(ig.Spec.RootVolumeIops) < 100 {
+			lt.RootVolumeIops = fi.Int64(int64(DefaultVolumeIonIops))
+		}
+	} else if rootVolumeType == ec2.VolumeTypeGp3 {
+		if fi.Int32Value(ig.Spec.RootVolumeIops) < 3000 {
+			lt.RootVolumeIops = fi.Int64(int64(DefaultVolumeGp3Iops))
+		}
+		if fi.Int32Value(ig.Spec.RootVolumeThroughput) < 125 {
+			lt.RootVolumeThroughput = fi.Int64(int64(DefaultVolumeGp3Throughput))
+		} else {
+			lt.RootVolumeThroughput = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeThroughput)))
+		}
+	} else {
+		lt.RootVolumeIops = nil
+	}
+
+	if b.AWSModelContext.UseSSHKey() {
+		if lt.SSHKey, err = b.LinkToSSHKey(); err != nil {
+			return nil, err
+		}
+	}
+
 	// When using a MixedInstances ASG, AWS requires the SpotPrice be defined on the ASG
 	// rather than the LaunchTemplate or else it returns this error:
 	//   You cannot use a launch template that is set to request Spot Instances (InstanceMarketOptions)
@@ -248,51 +296,16 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	if ig.Spec.SpotDurationInMinutes != nil {
 		lt.SpotDurationInMinutes = ig.Spec.SpotDurationInMinutes
 	}
-	if fi.BoolValue(ig.Spec.RootVolumeEncryption) && ig.Spec.RootVolumeEncryptionKey != nil {
-		lt.RootVolumeKmsKey = ig.Spec.RootVolumeEncryptionKey
-	} else {
-		lt.RootVolumeKmsKey = fi.String("")
-	}
-	if fi.StringValue(ig.Spec.RootVolumeType) == "" {
-		lt.RootVolumeType = fi.String(DefaultVolumeType)
-	}
-	if fi.StringValue(lt.RootVolumeType) == ec2.VolumeTypeGp3 {
-		if fi.Int32Value(ig.Spec.RootVolumeIops) < 3000 {
-			lt.RootVolumeIops = fi.Int64(int64(DefaultVolumeGp3Iops))
-		} else {
-			lt.RootVolumeIops = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops)))
-		}
-		if fi.Int32Value(ig.Spec.RootVolumeThroughput) < 125 {
-			lt.RootVolumeThroughput = fi.Int64(int64(DefaultVolumeGp3Throughput))
-		} else {
-			lt.RootVolumeThroughput = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeThroughput)))
-		}
+
+	if ig.Spec.Tenancy != "" {
+		lt.Tenancy = fi.String(ig.Spec.Tenancy)
 	}
 
 	return lt, nil
 }
 
-// buildLaunchTemplateHelper is responsible for building a launch configuration task into the model
-func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchTemplate, error) {
-	// @step: lets add the root volume settings
-	volumeSize, err := defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
-	if err != nil {
-		return nil, err
-	}
-	if fi.Int32Value(ig.Spec.RootVolumeSize) > 0 {
-		volumeSize = fi.Int32Value(ig.Spec.RootVolumeSize)
-	}
-
-	volumeType := fi.StringValue(ig.Spec.RootVolumeType)
-	if volumeType == "" {
-		volumeType = DefaultLegacyVolumeType
-	}
-
-	rootVolumeEncryption := DefaultVolumeEncryption
-	if ig.Spec.RootVolumeEncryption != nil {
-		rootVolumeEncryption = fi.BoolValue(ig.Spec.RootVolumeEncryption)
-	}
-
+// buildSecurityGroups is responsible for building security groups for a launch template.
+func (b *AutoscalingGroupModelBuilder) buildSecurityGroups(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) ([]*awstasks.SecurityGroup, error) {
 	// @step: if required we add the override for the security group for this instancegroup
 	sgLink := b.LinkToSecurityGroup(ig.Spec.Role)
 	if ig.Spec.SecurityGroupOverride != nil {
@@ -304,15 +317,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 		}
 	}
 
-	t := &awstasks.LaunchTemplate{
-		Name:                   fi.String(name),
-		Lifecycle:              b.Lifecycle,
-		RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
-		RootVolumeSize:         fi.Int64(int64(volumeSize)),
-		RootVolumeType:         fi.String(volumeType),
-		RootVolumeEncryption:   fi.Bool(rootVolumeEncryption),
-		SecurityGroups:         []*awstasks.SecurityGroup{sgLink},
-	}
+	securityGroups := []*awstasks.SecurityGroup{sgLink}
 
 	if ig.HasAPIServer() &&
 		b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
@@ -326,20 +331,8 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 			if err := c.EnsureTask(sgTask); err != nil {
 				return nil, err
 			}
-			t.SecurityGroups = append(t.SecurityGroups, sgTask)
+			securityGroups = append(securityGroups, sgTask)
 		}
-	}
-
-	if volumeType == ec2.VolumeTypeIo1 || volumeType == ec2.VolumeTypeIo2 {
-		if fi.Int32Value(ig.Spec.RootVolumeIops) < 100 {
-			t.RootVolumeIops = fi.Int64(int64(DefaultVolumeIonIops))
-		} else {
-			t.RootVolumeIops = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops)))
-		}
-	}
-
-	if ig.Spec.Tenancy != "" {
-		t.Tenancy = fi.String(ig.Spec.Tenancy)
 	}
 
 	// @step: add any additional security groups to the instancegroup
@@ -353,21 +346,10 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 		if err := c.EnsureTask(sgTask); err != nil {
 			return nil, err
 		}
-		t.SecurityGroups = append(t.SecurityGroups, sgTask)
+		securityGroups = append(securityGroups, sgTask)
 	}
 
-	if b.AWSModelContext.UseSSHKey() {
-		if t.SSHKey, err = b.LinkToSSHKey(); err != nil {
-			return nil, err
-		}
-	}
-
-	// @step: add the instancegroup userdata
-	if t.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig); err != nil {
-		return nil, err
-	}
-
-	return t, nil
+	return securityGroups, nil
 }
 
 // buildAutoscalingGroupTask is responsible for building the autoscaling task into the model
