@@ -23,6 +23,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
@@ -136,6 +137,9 @@ func ServiceAccountIssuer(clusterSpec *kops.ClusterSpec) (string, error) {
 			return "", fmt.Errorf("locationStore=%q is of unexpected type %T", store, base)
 		}
 	} else {
+		if dns.IsGossipHostname(clusterSpec.MasterInternalName) {
+			return "https://kubernetes.default", nil
+		}
 		if supportsPublicJWKS(clusterSpec) {
 			return "https://" + clusterSpec.MasterPublicName, nil
 		}
