@@ -1,7 +1,3 @@
-** This file documents the new release process, as used from kOps 1.19
-onwards.  For the process used for versions up to kOps 1.18, please
-see [the old release process](development/release.md)**
-
 # Release process
 
 The kOps project is released on an as-needed basis. The process is as follows:
@@ -219,37 +215,23 @@ hub pull-request -b main
 ```
 
 
-### Promote to dockerhub / S3 / github (legacy)
-
-We are in the process of moving to k8s.gcr.io for all images and to
-artifacts.k8s.io for all non-image artifacts.
-
-In the meantime (and for compatibility), we must also promote to the old locations:
-
-Images to dockerhub:
-
-```
-crane cp gcr.io/k8s-staging-kops/kube-apiserver-healthcheck:${VERSION} kope/kube-apiserver-healthcheck:${VERSION}
-crane cp gcr.io/k8s-staging-kops/dns-controller:${VERSION} kope/dns-controller:${VERSION}
-crane cp gcr.io/k8s-staging-kops/kops-controller:${VERSION} kope/kops-controller:${VERSION}
-```
+### Promote to GitHub / S3 (legacy) / artifacts.k8s.io
 
 
-Binaries to S3 bucket:
-
-```
-aws s3 sync --acl public-read k8s-staging-kops/kops/releases/${VERSION}/ s3://kubeupv2/kops/${VERSION}/
-```
-
-Binaries to github:
+Binaries to github (both pre-releases (alpha & beta) and releases):
 
 ```
 cd ${GOPATH}/src/k8s.io/kops/
 shipbot -tag v${VERSION} -config .shipbot.yaml -src ${GOPATH}/src/k8s.io/k8s.io/k8s-staging-kops/kops/releases/${VERSION}/
 ```
 
+Binaries to S3 bucket (only for releases < 1.22):
 
-Until the binary promoter is automatic, we also need to promote the binary artifacts manually:
+```
+aws s3 sync --acl public-read k8s-staging-kops/kops/releases/${VERSION}/ s3://kubeupv2/kops/${VERSION}/
+```
+
+Until the binary promoter is automatic, we also need to promote the binary artifacts manually (only for releases):
 
 ```
 mkdir -p /tmp/thin/artifacts/filestores/k8s-staging-kops/
