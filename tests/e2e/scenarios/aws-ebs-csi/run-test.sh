@@ -55,6 +55,9 @@ ${KUBETEST2} \
 ZONE=$(${KOPS} get ig -o json | jq -r '[.[] | select(.spec.role=="Node") | .spec.subnets[0]][0]')
 
 cd "$(mktemp -dt kops.XXXXXXXXX)"
+go get github.com/onsi/ginkgo/ginkgo
+
 git clone --branch v1.0.0 https://github.com/kubernetes-sigs/aws-ebs-csi-driver.git .
 cd tests/e2e-kubernetes/
-go test -v -timeout 0 ./... -ginkgo.skip="\[Disruptive\]" -report-dir="${REPORT_DIR}" -gce-zone="${ZONE}"
+
+ginkgo --nodes=25 ./... -- -ginkgo.skip="\[Disruptive\]" -report-dir="${REPORT_DIR}" -gce-zone="${ZONE}"
