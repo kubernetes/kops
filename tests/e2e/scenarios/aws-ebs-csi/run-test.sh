@@ -20,7 +20,7 @@ set -o pipefail
 
 echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
 
-REPORT_DIR="$(pwd)/artifacts/aws-ebs-csi-driver/"
+REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/aws-ebs-csi-driver/"
 
 export KOPS_FEATURE_FLAGS="SpecOverrideFlag,${KOPS_FEATURE_FLAGS:-}"
 REPO_ROOT=$(git rev-parse --show-toplevel);
@@ -52,7 +52,9 @@ ${KUBETEST2} \
 		--create-args="--networking calico --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true"
 
 
+ZONE=$(${KOPS} get ig -o json | jq -r '[.[] | select(.spec.role=="Node") | .spec.subnets[0]][0]')
+
 cd "$(mktemp -dt kops.XXXXXXXXX)"
 git clone --branch v1.0.0 https://github.com/kubernetes-sigs/aws-ebs-csi-driver.git .
 cd tests/e2e-kubernetes/
-go test -v -timeout 0 ./... -ginkgo.skip="\[Disruptive\]" -report-dir="${REPORT_DIR}"
+go test -v -timeout 0 ./... -ginkgo.skip="\[Disruptive\]" -report-dir="${REPORT_DIR}" -gce-zone="${ZONE}"
