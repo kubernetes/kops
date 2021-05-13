@@ -31,7 +31,7 @@ import (
 )
 
 const (
-	defaultKopsBaseURL = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
+	defaultKopsBaseURL = "https://artifacts.k8s.io/binaries/kops/%s/"
 )
 
 var kopsBaseURL *url.URL

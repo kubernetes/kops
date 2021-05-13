@@ -34,35 +34,31 @@ func Test_BuildMirroredAsset(t *testing.T) {
 		expected []string
 	}{
 		{
-			url: "https://kubeupv2.s3.amazonaws.com/kops/%s/images/protokube-linux-amd64",
+			url: "https://artifacts.k8s.io/binaries/kops/%s/images/protokube-linux-amd64",
 			expected: []string{
 				"https://artifacts.k8s.io/binaries/kops/1.21.0-beta.2/images/protokube-linux-amd64",
 				"https://github.com/kubernetes/kops/releases/download/v1.21.0-beta.2/images-protokube-linux-amd64",
-				"https://kubeupv2.s3.amazonaws.com/kops/1.21.0-beta.2/images/protokube-linux-amd64",
 			},
 		},
 		{
-			url: "https://kubeupv2.s3.amazonaws.com/kops/%s/images/protokube-linux-arm64",
+			url: "https://artifacts.k8s.io/binaries/kops/%s/images/protokube-linux-arm64",
 			expected: []string{
 				"https://artifacts.k8s.io/binaries/kops/1.21.0-beta.2/images/protokube-linux-arm64",
 				"https://github.com/kubernetes/kops/releases/download/v1.21.0-beta.2/images-protokube-linux-arm64",
-				"https://kubeupv2.s3.amazonaws.com/kops/1.21.0-beta.2/images/protokube-linux-arm64",
 			},
 		},
 		{
-			url: "https://kubeupv2.s3.amazonaws.com/kops/%s/linux/amd64/nodeup",
+			url: "https://artifacts.k8s.io/binaries/kops/%s/linux/amd64/nodeup",
 			expected: []string{
 				"https://artifacts.k8s.io/binaries/kops/1.21.0-beta.2/linux/amd64/nodeup",
 				"https://github.com/kubernetes/kops/releases/download/v1.21.0-beta.2/nodeup-linux-amd64",
-				"https://kubeupv2.s3.amazonaws.com/kops/1.21.0-beta.2/linux/amd64/nodeup",
 			},
 		},
 		{
-			url: "https://kubeupv2.s3.amazonaws.com/kops/%s/linux/arm64/nodeup",
+			url: "https://artifacts.k8s.io/binaries/kops/%s/linux/arm64/nodeup",
 			expected: []string{
 				"https://artifacts.k8s.io/binaries/kops/1.21.0-beta.2/linux/arm64/nodeup",
 				"https://github.com/kubernetes/kops/releases/download/v1.21.0-beta.2/nodeup-linux-arm64",
-				"https://kubeupv2.s3.amazonaws.com/kops/1.21.0-beta.2/linux/arm64/nodeup",
 			},
 		},
 	}
