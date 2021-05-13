@@ -57,4 +57,4 @@ ZONE=$(${KOPS} get ig -o json | jq -r '[.[] | select(.spec.role=="Node") | .spec
 cd "$(mktemp -dt kops.XXXXXXXXX)"
 git clone --branch v1.0.0 https://github.com/kubernetes-sigs/aws-ebs-csi-driver.git .
 cd tests/e2e-kubernetes/
-go test -v -timeout 0 ./... -ginkgo.skip="\[Disruptive\]" -report-dir="${REPORT_DIR}" -gce-zone=${ZONE}
+go test -v -timeout 0 ./... -ginkgo.skip="\[Disruptive\]" -report-dir="${REPORT_DIR}" -gce-zone="${ZONE}"
