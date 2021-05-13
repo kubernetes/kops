@@ -25,23 +25,23 @@ import (
 
 const (
 	// defaultKopsMirrorBase will be detected and automatically set to pull from the defaultKopsMirrors
-	defaultKopsMirrorBase    = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
-	githubKopsMirrorBase     = "https://github.com/kubernetes/kops/releases/download/v%s/"
-	kubernetesKopsMirrorBase = "https://artifacts.k8s.io/binaries/kops/%s/"
+	defaultKopsMirrorBase = "https://artifacts.k8s.io/binaries/kops/%s/"
+	githubKopsMirrorBase  = "https://github.com/kubernetes/kops/releases/download/v%s/"
 )
 
 func FindUrlMirrors(u string) []string {
+	// Use the canonical URL as the first mirror
+	mirrors := []string{u}
+
 	// Use the mirrors to also find hashes.
 	baseURLString := fmt.Sprintf(defaultKopsMirrorBase, kops.Version)
 	if !strings.HasSuffix(baseURLString, "/") {
 		baseURLString += "/"
 	}
 
-	var mirrors []string
+	// Use mirrors when the URL is not a custom one
 	if strings.HasPrefix(u, baseURLString) {
 		suffix := strings.TrimPrefix(u, baseURLString)
-		// artifacts.k8s.io is the official and preferred mirror.
-		mirrors = append(mirrors, fmt.Sprintf(kubernetesKopsMirrorBase, kops.Version)+suffix)
 		// GitHub artifact names are quite different, because the suffix path is collapsed.
 		githubSuffix := strings.ReplaceAll(suffix, "/", "-")
 		githubSuffix = strings.ReplaceAll(githubSuffix, "linux-amd64-nodeup", "nodeup-linux-amd64")
@@ -50,13 +50,8 @@ func FindUrlMirrors(u string) []string {
 		githubSuffix = strings.ReplaceAll(githubSuffix, "linux-arm64-protokube", "protokube-linux-arm64")
 		githubSuffix = strings.ReplaceAll(githubSuffix, "linux-amd64-channels", "channels-linux-amd64")
 		githubSuffix = strings.ReplaceAll(githubSuffix, "linux-arm64-channels", "channels-linux-arm64")
-
 		mirrors = append(mirrors, fmt.Sprintf(githubKopsMirrorBase, kops.Version)+githubSuffix)
 	}
-	// Finally append the original URL to the list of mirrored URLs.
-	// In case this is a custom URL, there won't be any mirrors before it,
-	// otherwise it will be the last mirror URL, because it's now a legacy location.
-	mirrors = append(mirrors, u)
 
 	return mirrors
 }
