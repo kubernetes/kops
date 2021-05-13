@@ -152,6 +152,8 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 					return nil, fmt.Errorf("unexpected access type in template %q: %s", *actual.Name, acs[0].Type)
 				}
 				actual.HasExternalIP = fi.Bool(true)
+			} else {
+				actual.HasExternalIP = fi.Bool(false)
 			}
 		}
 
