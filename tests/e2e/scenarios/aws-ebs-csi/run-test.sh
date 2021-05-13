@@ -60,4 +60,4 @@ go get github.com/onsi/ginkgo/ginkgo
 git clone --branch v1.0.0 https://github.com/kubernetes-sigs/aws-ebs-csi-driver.git .
 cd tests/e2e-kubernetes/
 
-ginkgo --nodes=25 ./... -- -ginkgo.skip="\[Disruptive\]" -report-dir="${REPORT_DIR}" -gce-zone="${ZONE}"
+ginkgo --nodes=25 ./... -- -cluster-tag="${CLUSTER_NAME}" -ginkgo.skip="\[Disruptive\]" -report-dir="${REPORT_DIR}" -gce-zone="${ZONE}"
