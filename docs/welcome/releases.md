@@ -2,7 +2,7 @@
 
 kOps intends to be backward compatible.  It is always recommended using the
 latest version of kOps with whatever version of Kubernetes you are using.  We suggest
-kOps users run one of the [3 minor versions](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/release/versioning.md#supported-releases-and-component-skew) Kubernetes is supporting however we
+kOps users run one of the [3 minor versions](https://kubernetes.io/releases/version-skew-policy/#supported-versions) Kubernetes is supporting however we
 do our best to support previous releases for some period.
 
 kOps does not, however, support Kubernetes releases that have either a greater major
@@ -17,7 +17,7 @@ support Kubernetes 1.16.5, 1.15.2, and several previous Kubernetes versions.
 |---------------|------------|------------|------------|------------|------------|
 | 1.20.0        | ✔          | ✔          | ✔          | ✔          | ✔          |
 | 1.19.x        | ✔          | ✔          | ✔          | ✔          | ⚫         |
-| 1.18.x        | ✔          | ✔          | ✔          | ⚫         | ⚫         |
+| ~~1.18.x~~    | ✔          | ✔          | ✔          | ⚫         | ⚫         |
 | ~~1.17.x~~    | ✔          | ✔          | ⚫         | ⚫         | ⚫         |
 | ~~1.16.x~~    | ✔          | ⚫         | ⚫         | ⚫         | ⚫         |
 
