@@ -218,7 +218,7 @@ hub pull-request -b main
 ### Promote to GitHub / S3 (legacy) / artifacts.k8s.io
 
 
-Binaries to github (both pre-releases (alpha & beta) and releases):
+Binaries to github (all releases):
 
 ```
 cd ${GOPATH}/src/k8s.io/kops/
@@ -231,7 +231,7 @@ Binaries to S3 bucket (only for releases < 1.22):
 aws s3 sync --acl public-read k8s-staging-kops/kops/releases/${VERSION}/ s3://kubeupv2/kops/${VERSION}/
 ```
 
-Until the binary promoter is automatic, we also need to promote the binary artifacts manually (only for releases):
+Until the binary promoter is automatic, we also need to promote the binary artifacts manually (only for stable releases):
 
 ```
 mkdir -p /tmp/thin/artifacts/filestores/k8s-staging-kops/
@@ -288,6 +288,13 @@ This step is only necessary for stable releases in the latest stable minor versi
 
 Use the following instructions: https://github.com/cncf/k8s-conformance/blob/master/instructions.md
 
+### Update for new beta minor releases
+
+If the release was a first beta minor release (a ".0-beta.1"), then create a PR that
+updates the following document:
+
+* Add a reference to the version's release notes in [mkdocs.yml](https://github.com/kubernetes/kops/tree/master/mkdocs.yml)
+
 ### Update for new stable minor releases
 
 If the release was a first stable minor release (a ".0"), then create a PR that
@@ -297,7 +304,6 @@ updates the following documents:
 [releases.md](https://github.com/kubernetes/kops/tree/master/docs/welcome/releases.md)
 and [README-ES.md](https://github.com/kubernetes/kops/tree/master/README-ES.md).
 * Remove the "has not been released yet" header in the version's release notes.
-* Add a reference to the version's release notes in [mkdocs.yml](https://github.com/kubernetes/kops/tree/master/mkdocs.yml)
 
 ### Update the alpha channel and/or stable channel
 
