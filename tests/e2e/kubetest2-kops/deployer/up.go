@@ -163,9 +163,10 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 func (d *deployer) IsUp() (bool, error) {
 	wait := d.ValidationWait
 	if wait == 0 {
-		if d.TerraformVersion != "" {
+		if d.TerraformVersion != "" || d.CloudProvider == "digitalocean" {
 			// `--target terraform` doesn't precreate the API DNS records,
-			// so kops is more likely to hit negative TTLs during validation
+			// so kops is more likely to hit negative TTLs during validation.
+			// Digital Ocean also occasionally takes longer to validate.
 			wait = time.Duration(20) * time.Minute
 		} else {
 			wait = time.Duration(15) * time.Minute
