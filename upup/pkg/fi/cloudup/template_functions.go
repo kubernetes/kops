@@ -97,6 +97,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["GetInstanceGroup"] = tf.GetInstanceGroup
 	dest["GetNodeInstanceGroups"] = tf.GetNodeInstanceGroups
+	dest["HasHighlyAvailableControlPlane"] = tf.HasHighlyAvailableControlPlane
+	dest["ControlPlaneControllerReplicas"] = tf.ControlPlaneControllerReplicas
+
 	dest["CloudTags"] = tf.CloudTagsForInstanceGroup
 	dest["KubeDNS"] = func() *kops.KubeDNSConfig {
 		return cluster.Spec.KubeDNS
@@ -270,6 +273,29 @@ func (tf *TemplateFunctions) GetInstanceGroup(name string) (*kops.InstanceGroup,
 		return nil, fmt.Errorf("InstanceGroup %q not found", name)
 	}
 	return ig, nil
+}
+
+// ControlPlaneControllerReplicas returns the amount of replicas for a controllers that should run in the cluster
+// If the cluster has a highly available control plane, this function will return 2, if it has 1 control plane node, it will return 1
+func (tf *TemplateFunctions) ControlPlaneControllerReplicas() int {
+	if tf.HasHighlyAvailableControlPlane() {
+		return 2
+	}
+	return 1
+}
+
+// HasHighlyAvailableControlPlane returns true of the cluster has more than one control plane node. False otherwise.
+func (tf *TemplateFunctions) HasHighlyAvailableControlPlane() bool {
+	cp := 0
+	for _, ig := range tf.InstanceGroups {
+		if ig.Spec.Role == kops.InstanceGroupRoleMaster {
+			cp++
+			if cp > 1 {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // CloudControllerConfigArgv returns the args to external cloud controller
