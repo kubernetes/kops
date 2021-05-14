@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
@@ -76,9 +75,9 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 			clusterTagIndex := do.TagKubernetesClusterIndex + ":" + "etcd-" + strconv.Itoa(masterIndexCount)
 			droplet.Tags = append(droplet.Tags, clusterTagIndex)
 			droplet.Tags = append(droplet.Tags, clusterMasterTag)
-			droplet.Tags = append(droplet.Tags, digitalocean.TagKubernetesInstanceGroup+":"+ig.Name)
+			droplet.Tags = append(droplet.Tags, do.TagKubernetesInstanceGroup+":"+ig.Name)
 		} else {
-			droplet.Tags = append(droplet.Tags, digitalocean.TagKubernetesInstanceGroup+":"+ig.Name)
+			droplet.Tags = append(droplet.Tags, do.TagKubernetesInstanceGroup+":"+ig.Name)
 		}
 
 		userData, err := d.BootstrapScriptBuilder.ResourceNodeUp(c, ig)

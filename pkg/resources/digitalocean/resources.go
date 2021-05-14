@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 )
 
 const (
@@ -42,7 +43,7 @@ const (
 
 type listFn func(fi.Cloud, string) ([]*resources.Resource, error)
 
-func ListResources(cloud *Cloud, clusterName string) (map[string]*resources.Resource, error) {
+func ListResources(cloud do.DOCloud, clusterName string) (map[string]*resources.Resource, error) {
 	resourceTrackers := make(map[string]*resources.Resource)
 
 	listFunctions := []listFn{
@@ -65,13 +66,12 @@ func ListResources(cloud *Cloud, clusterName string) (map[string]*resources.Reso
 	return resourceTrackers, nil
 }
 
-func listDroplets(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
-	c := cloud.(*Cloud)
+func listDroplets(cloud do.DOCloud, clusterName string) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
 
 	clusterTag := "KubernetesCluster:" + strings.Replace(clusterName, ".", "-", -1)
 
-	droplets, err := getAllDropletsByTag(c, clusterTag)
+	droplets, err := cloud.GetAllDropletsByTag(clusterTag)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list droplets: %v", err)
 	}
@@ -92,40 +92,12 @@ func listDroplets(cloud fi.Cloud, clusterName string) ([]*resources.Resource, er
 	return resourceTrackers, nil
 }
 
-func getAllDropletsByTag(cloud *Cloud, tag string) ([]godo.Droplet, error) {
-	allDroplets := []godo.Droplet{}
-
-	opt := &godo.ListOptions{}
-	for {
-		droplets, resp, err := cloud.Droplets().ListByTag(context.TODO(), tag, opt)
-		if err != nil {
-			return nil, err
-		}
-
-		allDroplets = append(allDroplets, droplets...)
-
-		if resp.Links == nil || resp.Links.IsLastPage() {
-			break
-		}
-
-		page, err := resp.Links.CurrentPage()
-		if err != nil {
-			return nil, err
-		}
-
-		opt.Page = page + 1
-	}
-
-	return allDroplets, nil
-}
-
-func listVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
-	c := cloud.(*Cloud)
+func listVolumes(cloud do.DOCloud, clusterName string) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
 
 	volumeMatch := strings.Replace(clusterName, ".", "-", -1)
 
-	volumes, err := getAllVolumesByRegion(c, c.Region())
+	volumes, err := cloud.GetAllVolumesByRegion()
 	if err != nil {
 		return nil, fmt.Errorf("failed to list volumes: %s", err)
 	}
@@ -153,41 +125,8 @@ func listVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 	return resourceTrackers, nil
 }
 
-func getAllVolumesByRegion(cloud *Cloud, region string) ([]godo.Volume, error) {
-	allVolumes := []godo.Volume{}
-
-	opt := &godo.ListOptions{}
-	for {
-		volumes, resp, err := cloud.Volumes().ListVolumes(context.TODO(), &godo.ListVolumeParams{
-			Region:      region,
-			ListOptions: opt,
-		})
-
-		if err != nil {
-			return nil, err
-		}
-
-		allVolumes = append(allVolumes, volumes...)
-
-		if resp.Links == nil || resp.Links.IsLastPage() {
-			break
-		}
-
-		page, err := resp.Links.CurrentPage()
-		if err != nil {
-			return nil, err
-		}
-
-		opt.Page = page + 1
-	}
-
-	return allVolumes, nil
-}
-
-func listDNS(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
-	c := cloud.(*Cloud)
-
-	domains, _, err := c.Client.Domains.List(context.TODO(), &godo.ListOptions{})
+func listDNS(cloud do.DOCloud, clusterName string) ([]*resources.Resource, error) {
+	domains, _, err := cloud.DomainService.List(context.TODO(), &godo.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list domains: %s", err)
 	}
@@ -242,12 +181,12 @@ func listDNS(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) 
 	return resourceTrackers, nil
 }
 
-func getAllRecordsByDomain(cloud *Cloud, domain string) ([]godo.DomainRecord, error) {
+func getAllRecordsByDomain(cloud do.DOCloud, domain string) ([]godo.DomainRecord, error) {
 	allRecords := []godo.DomainRecord{}
 
 	opt := &godo.ListOptions{}
 	for {
-		records, resp, err := cloud.Client.Domains.Records(context.TODO(), domain, opt)
+		records, resp, err := cloud.DomainService.Records(context.TODO(), domain, opt)
 		if err != nil {
 			return nil, err
 		}
@@ -269,13 +208,12 @@ func getAllRecordsByDomain(cloud *Cloud, domain string) ([]godo.DomainRecord, er
 	return allRecords, nil
 }
 
-func listLoadBalancers(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
-	c := cloud.(*Cloud)
+func listLoadBalancers(cloud do.DOCloud, clusterName string) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
 
 	clusterTag := "KubernetesCluster-Master:" + strings.Replace(clusterName, ".", "-", -1)
 
-	lbs, err := getAllLoadBalancers(c)
+	lbs, err := cloud.GetAllLoadBalancers()
 	if err != nil {
 		return nil, fmt.Errorf("failed to list lbs: %v", err)
 	}
@@ -303,42 +241,13 @@ func listLoadBalancers(cloud fi.Cloud, clusterName string) ([]*resources.Resourc
 	return resourceTrackers, nil
 }
 
-func getAllLoadBalancers(cloud *Cloud) ([]godo.LoadBalancer, error) {
-	allLoadBalancers := []godo.LoadBalancer{}
-
-	opt := &godo.ListOptions{}
-	for {
-		lbs, resp, err := cloud.LoadBalancers().List(context.TODO(), opt)
-		if err != nil {
-			return nil, err
-		}
-
-		allLoadBalancers = append(allLoadBalancers, lbs...)
-
-		if resp.Links == nil || resp.Links.IsLastPage() {
-			break
-		}
-
-		page, err := resp.Links.CurrentPage()
-		if err != nil {
-			return nil, err
-		}
-
-		opt.Page = page + 1
-	}
-
-	return allLoadBalancers, nil
-}
-
-func deleteDroplet(cloud fi.Cloud, t *resources.Resource) error {
-	c := cloud.(*Cloud)
-
+func deleteDroplet(cloud do.DOCloud, t *resources.Resource) error {
 	dropletID, err := strconv.Atoi(t.ID)
 	if err != nil {
 		return fmt.Errorf("failed to convert droplet ID to int: %s", err)
 	}
 
-	_, err = c.Droplets().Delete(context.TODO(), dropletID)
+	_, err = cloud.DropletsService().Delete(context.TODO(), dropletID)
 	if err != nil {
 		return fmt.Errorf("failed to delete droplet: %d, err: %s", dropletID, err)
 	}
@@ -346,12 +255,10 @@ func deleteDroplet(cloud fi.Cloud, t *resources.Resource) error {
 	return nil
 }
 
-func deleteVolume(cloud fi.Cloud, t *resources.Resource) error {
-	c := cloud.(*Cloud)
-
+func deleteVolume(cloud do.DOCloud, t *resources.Resource) error {
 	volume := t.Obj.(godo.Volume)
 	for _, dropletID := range volume.DropletIDs {
-		action, _, err := c.VolumeActions().DetachByDropletID(context.TODO(), volume.ID, dropletID)
+		action, _, err := cloud.VolumeActionService().DetachByDropletID(context.TODO(), volume.ID, dropletID)
 		if err != nil {
 			return fmt.Errorf("failed to detach volume: %s, err: %s", volume.ID, err)
 		}
@@ -360,7 +267,7 @@ func deleteVolume(cloud fi.Cloud, t *resources.Resource) error {
 		}
 	}
 
-	_, err := c.Volumes().DeleteVolume(context.TODO(), t.ID)
+	_, err := cloud.VolumeService().DeleteVolume(context.TODO(), t.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete volume: %s, err: %s", t.ID, err)
 	}
@@ -368,11 +275,10 @@ func deleteVolume(cloud fi.Cloud, t *resources.Resource) error {
 	return nil
 }
 
-func deleteRecord(cloud fi.Cloud, domain string, t *resources.Resource) error {
-	c := cloud.(*Cloud)
+func deleteRecord(cloud do.DOCloud, domain string, t *resources.Resource) error {
 	record := t.Obj.(godo.DomainRecord)
 
-	_, err := c.Client.Domains.DeleteRecord(context.TODO(), domain, record.ID)
+	_, err := cloud.DomainService.DeleteRecord(context.TODO(), domain, record.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete record for domain %s: %d", domain, record.ID)
 	}
@@ -380,10 +286,9 @@ func deleteRecord(cloud fi.Cloud, domain string, t *resources.Resource) error {
 	return nil
 }
 
-func deleteLoadBalancer(cloud fi.Cloud, t *resources.Resource) error {
-	c := cloud.(*Cloud)
+func deleteLoadBalancer(cloud do.DOCloud, t *resources.Resource) error {
 	lb := t.Obj.(godo.LoadBalancer)
-	_, err := c.Client.LoadBalancers.Delete(context.TODO(), lb.ID)
+	_, err := cloud.LoadBalancersService.Delete(context.TODO(), lb.ID)
 
 	if err != nil {
 		return fmt.Errorf("failed to delete load balancer with name %s %v", lb.Name, err)
