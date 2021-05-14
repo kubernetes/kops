@@ -173,6 +173,16 @@ rules:
   verbs:
   - list
   - watch
+- apiGroups:
+  - ""
+  resourceNames:
+  - node-controller
+  - service-controller
+  - route-controller
+  resources:
+  - serviceaccounts/token
+  verbs:
+  - create
 
 ---
 
