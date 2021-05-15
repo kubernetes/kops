@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/endpoints"
+	awsIam "github.com/aws/aws-sdk-go/service/iam"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -31,6 +32,7 @@ import (
 	"k8s.io/kops/pkg/util/stringorslice"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 // IAMModelBuilder configures IAM objects
@@ -41,6 +43,7 @@ type IAMModelBuilder struct {
 }
 
 var _ fi.ModelBuilder = &IAMModelBuilder{}
+var _ fi.HasDeletions = &IAMModelBuilder{}
 
 const NodeRolePolicyTemplate = `{
   "Version": "2012-10-17",
@@ -440,4 +443,42 @@ func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role iam.Subject) (fi.Resource, 
 	}
 
 	return fi.NewStringResource(policy), nil
+}
+
+func (b *IAMModelBuilder) FindDeletions(context *fi.ModelBuilderContext, cloud fi.Cloud) error {
+	iamapi := cloud.(awsup.AWSCloud).IAM()
+	ownershipTag := "kubernetes.io/cluster/" + b.Cluster.ObjectMeta.Name
+	request := &awsIam.ListRolesInput{}
+	var getRoleErr error
+	err := iamapi.ListRolesPages(request, func(p *awsIam.ListRolesOutput, lastPage bool) bool {
+		for _, role := range p.Roles {
+			if !strings.HasSuffix(fi.StringValue(role.RoleName), "."+b.Cluster.ObjectMeta.Name) {
+				continue
+			}
+			getRequest := &awsIam.GetRoleInput{RoleName: role.RoleName}
+			roleOutput, err := iamapi.GetRole(getRequest)
+			if err != nil {
+				getRoleErr = fmt.Errorf("calling IAM GetRole on %s: %w", fi.StringValue(role.RoleName), err)
+				return false
+			}
+			for _, tag := range roleOutput.Role.Tags {
+				if fi.StringValue(tag.Key) == ownershipTag && fi.StringValue(tag.Value) == "owned" {
+					if _, ok := context.Tasks["IAMRole/"+fi.StringValue(role.RoleName)]; !ok {
+						context.AddTask(&awstasks.IAMRole{
+							ID:   role.RoleId,
+							Name: role.RoleName,
+						})
+					}
+				}
+			}
+		}
+		return true
+	})
+	if getRoleErr != nil {
+		return getRoleErr
+	}
+	if err != nil {
+		return fmt.Errorf("listing IAM roles: %w", err)
+	}
+	return nil
 }
