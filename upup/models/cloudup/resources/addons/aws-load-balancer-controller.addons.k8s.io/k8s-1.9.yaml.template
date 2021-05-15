@@ -517,6 +517,7 @@ spec:
       nodeSelector:
         node-role.kubernetes.io/master: ""
       {{ end }}
+      priorityClassName: system-cluster-critical
       securityContext:
         fsGroup: 1337
       serviceAccountName: aws-load-balancer-controller
