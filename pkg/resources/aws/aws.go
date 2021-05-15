@@ -1938,40 +1938,45 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 
-	remove := make(map[string]bool)
-	remove["masters."+clusterName] = true
-	remove["nodes."+clusterName] = true
-	remove["bastions."+clusterName] = true
-
-	var roles []*iam.Role
-	// Find roles matching remove map
+	var resourceTrackers []*resources.Resource
+	// Find roles owned by the cluster
 	{
+		var getRoleErr error
+		ownershipTag := "kubernetes.io/cluster/" + clusterName
 		request := &iam.ListRolesInput{}
 		err := c.IAM().ListRolesPages(request, func(p *iam.ListRolesOutput, lastPage bool) bool {
 			for _, r := range p.Roles {
 				name := aws.StringValue(r.RoleName)
-				if remove[name] {
-					roles = append(roles, r)
+				if !strings.HasSuffix(name, "."+clusterName) {
+					continue
+				}
+
+				getRequest := &iam.GetRoleInput{RoleName: r.RoleName}
+				roleOutput, err := c.IAM().GetRole(getRequest)
+				if err != nil {
+					getRoleErr = fmt.Errorf("calling IAM GetRole on %s: %w", name, err)
+					return false
+				}
+				for _, tag := range roleOutput.Role.Tags {
+					if fi.StringValue(tag.Key) == ownershipTag && fi.StringValue(tag.Value) == "owned" {
+						resourceTracker := &resources.Resource{
+							Name:    name,
+							ID:      name,
+							Type:    "iam-role",
+							Deleter: DeleteIAMRole,
+						}
+						resourceTrackers = append(resourceTrackers, resourceTracker)
+					}
 				}
 			}
 			return true
 		})
+		if getRoleErr != nil {
+			return nil, getRoleErr
+		}
 		if err != nil {
 			return nil, fmt.Errorf("error listing IAM roles: %v", err)
 		}
-	}
-
-	var resourceTrackers []*resources.Resource
-
-	for _, role := range roles {
-		name := aws.StringValue(role.RoleName)
-		resourceTracker := &resources.Resource{
-			Name:    name,
-			ID:      name,
-			Type:    "iam-role",
-			Deleter: DeleteIAMRole,
-		}
-		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
 
 	return resourceTrackers, nil
