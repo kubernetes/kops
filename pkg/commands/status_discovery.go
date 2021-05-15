@@ -17,17 +17,8 @@ limitations under the License.
 package commands
 
 import (
-	"fmt"
-
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
-	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
 // CloudDiscoveryStatusStore implements status.Store by inspecting cloud objects.
@@ -43,39 +34,7 @@ func (s *CloudDiscoveryStatusStore) GetApiIngressStatus(cluster *kops.Cluster) (
 		return nil, err
 	}
 
-	if aliCloud, ok := cloud.(aliup.ALICloud); ok {
-		return aliCloud.GetApiIngressStatus(cluster)
-	}
-
-	if gceCloud, ok := cloud.(gce.GCECloud); ok {
-		return gceCloud.GetApiIngressStatus(cluster)
-	}
-
-	if awsCloud, ok := cloud.(awsup.AWSCloud); ok {
-
-		var ingresses []kops.ApiIngressStatus
-		if lbDnsName, err := awstasks.FindDNSName(awsCloud, cluster); err != nil {
-			return nil, fmt.Errorf("error finding aws DNSName: %v", err)
-		} else if lbDnsName != "" {
-			ingresses = append(ingresses, kops.ApiIngressStatus{Hostname: lbDnsName})
-		}
-
-		return ingresses, nil
-	}
-
-	if azureCloud, ok := cloud.(azure.AzureCloud); ok {
-		return azureCloud.GetApiIngressStatus(cluster)
-	}
-
-	if osCloud, ok := cloud.(openstack.OpenstackCloud); ok {
-		return osCloud.GetApiIngressStatus(cluster)
-	}
-
-	if doCloud, ok := cloud.(*digitalocean.Cloud); ok {
-		return doCloud.GetApiIngressStatus(cluster)
-	}
-
-	return nil, fmt.Errorf("API Ingress Status not implemented for %T", cloud)
+	return cloud.GetApiIngressStatus(cluster)
 }
 
 // FindClusterStatus discovers the status of the cluster, by inspecting the cloud objects
@@ -85,28 +44,5 @@ func (s *CloudDiscoveryStatusStore) FindClusterStatus(cluster *kops.Cluster) (*k
 		return nil, err
 	}
 
-	if gceCloud, ok := cloud.(gce.GCECloud); ok {
-		return gceCloud.FindClusterStatus(cluster)
-	}
-
-	if awsCloud, ok := cloud.(awsup.AWSCloud); ok {
-		return awsCloud.FindClusterStatus(cluster)
-	}
-
-	if aliCloud, ok := cloud.(aliup.ALICloud); ok {
-		return aliCloud.FindClusterStatus(cluster)
-	}
-
-	if azureCloud, ok := cloud.(azure.AzureCloud); ok {
-		return azureCloud.FindClusterStatus(cluster)
-	}
-
-	if osCloud, ok := cloud.(openstack.OpenstackCloud); ok {
-		return osCloud.FindClusterStatus(cluster)
-	}
-
-	if doCloud, ok := cloud.(*digitalocean.Cloud); ok {
-		return doCloud.FindClusterStatus(cluster)
-	}
-	return nil, fmt.Errorf("etcd Status not implemented for %T", cloud)
+	return cloud.FindClusterStatus(cluster)
 }

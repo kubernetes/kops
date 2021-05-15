@@ -1868,6 +1868,42 @@ func findVPCInfo(c AWSCloud, vpcID string) (*fi.VPCInfo, error) {
 	return vpcInfo, nil
 }
 
+func (c *awsCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+	return getApiIngressStatus(c, cluster)
+}
+
+func getApiIngressStatus(c AWSCloud, cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+	var ingresses []kops.ApiIngressStatus
+	if lbDnsName, err := findDNSName(c, cluster); err != nil {
+		return nil, fmt.Errorf("error finding aws DNSName: %v", err)
+	} else if lbDnsName != "" {
+		ingresses = append(ingresses, kops.ApiIngressStatus{Hostname: lbDnsName})
+	}
+
+	return ingresses, nil
+}
+
+func findDNSName(c AWSCloud, cluster *kops.Cluster) (string, error) {
+	name := "api." + cluster.Name
+	if cluster.Spec.API == nil || cluster.Spec.API.LoadBalancer == nil {
+		return "", nil
+	}
+	if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {
+		if lb, err := c.FindELBByNameTag(name); err != nil {
+			return "", fmt.Errorf("error looking for AWS ELB: %v", err)
+		} else if lb != nil {
+			return aws.StringValue(lb.DNSName), nil
+		}
+	} else if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
+		if lb, err := c.FindELBV2ByNameTag(name); err != nil {
+			return "", fmt.Errorf("error looking for AWS NLB: %v", err)
+		} else if lb != nil {
+			return aws.StringValue(lb.DNSName), nil
+		}
+	}
+	return "", nil
+}
+
 // DefaultInstanceType determines an instance type for the specified cluster & instance group
 func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
 	var candidates []string
