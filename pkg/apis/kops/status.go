@@ -16,10 +16,6 @@ limitations under the License.
 
 package kops
 
-import (
-	"k8s.io/klog/v2"
-)
-
 // StatusStore abstracts the key status functions; and lets us introduce status gradually
 type StatusStore interface {
 	// FindClusterStatus discovers the status of the cluster, by inspecting the cloud objects
@@ -61,22 +57,4 @@ type ApiIngressStatus struct {
 	// (typically AWS load-balancers)
 	// +optional
 	Hostname string `json:"hostname,omitempty" protobuf:"bytes,2,opt,name=hostname"`
-}
-
-// NoopStatusStore is a stub implementation that returns empty status
-// It is a temporary hackaround while we introduce status
-type NoopStatusStore struct {
-}
-
-var _ StatusStore = &NoopStatusStore{}
-
-// FindClusterStatus discovers the status of the cluster, by inspecting the cloud objects
-func (s *NoopStatusStore) FindClusterStatus(cluster *Cluster) (*ClusterStatus, error) {
-	klog.Warningf("FindClusterStatus called on NoopStore")
-	return nil, nil
-}
-
-func (s *NoopStatusStore) GetApiIngressStatus(cluster *Cluster) ([]ApiIngressStatus, error) {
-	klog.Warningf("GetApiIngressStatus called on NoopStore")
-	return nil, nil
 }
