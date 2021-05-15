@@ -158,13 +158,13 @@ func FindElasticLoadBalancerByNameTag(awsCloud awsup.AWSCloud, cluster *kops.Clu
 		return nil, nil
 	}
 	if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {
-		if lb, err := FindLoadBalancerByNameTag(awsCloud, name); err != nil {
+		if lb, err := awsCloud.FindELBByNameTag(name); err != nil {
 			return nil, fmt.Errorf("error looking for AWS ELB: %v", err)
 		} else if lb != nil {
 			return &ClassicLoadBalancer{Name: fi.String(name), DNSName: lb.DNSName}, nil
 		}
 	} else if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
-		if lb, err := FindNetworkLoadBalancerByNameTag(awsCloud, name); err != nil {
+		if lb, err := awsCloud.FindELBV2ByNameTag(name); err != nil {
 			return nil, fmt.Errorf("error looking for AWS NLB: %v", err)
 		} else if lb != nil {
 			return &NetworkLoadBalancer{Name: fi.String(name), DNSName: lb.DNSName}, nil
@@ -198,7 +198,7 @@ func findDNSTargetNLB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dn
 	if lb != nil {
 		loadBalancerName := aws.StringValue(lb.LoadBalancerName) //TOOD: can we keep these on object
 		loadBalancerArn := aws.StringValue(lb.LoadBalancerArn)   //TODO: can we keep these on object
-		tagMap, err := describeNetworkLoadBalancerTags(cloud, []string{loadBalancerArn})
+		tagMap, err := cloud.DescribeELBV2Tags([]string{loadBalancerArn})
 		if err != nil {
 			return nil, err
 		}
@@ -220,7 +220,7 @@ func findDNSTargetELB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dn
 	}
 	if lb != nil {
 		loadBalancerName := aws.StringValue(lb.LoadBalancerName)
-		tagMap, err := describeLoadBalancerTags(cloud, []string{loadBalancerName})
+		tagMap, err := cloud.DescribeELBTags([]string{loadBalancerName})
 		if err != nil {
 			return nil, err
 		}

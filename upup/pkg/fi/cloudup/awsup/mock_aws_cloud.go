@@ -19,6 +19,8 @@ package awsup
 import (
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/eventbridge/eventbridgeiface"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 
@@ -189,6 +191,22 @@ func (c *MockAWSCloud) CreateELBV2Tags(ResourceArn string, tags map[string]strin
 
 func (c *MockAWSCloud) RemoveELBV2Tags(ResourceArn string, tags map[string]string) error {
 	return removeELBV2Tags(c, ResourceArn, tags)
+}
+
+func (c *MockAWSCloud) FindELBByNameTag(findNameTag string) (*elb.LoadBalancerDescription, error) {
+	return findELBByNameTag(c, findNameTag)
+}
+
+func (c *MockAWSCloud) DescribeELBTags(loadBalancerNames []string) (map[string][]*elb.Tag, error) {
+	return describeELBTags(c, loadBalancerNames)
+}
+
+func (c *MockAWSCloud) FindELBV2ByNameTag(findNameTag string) (*elbv2.LoadBalancer, error) {
+	return findELBV2ByNameTag(c, findNameTag)
+}
+
+func (c *MockAWSCloud) DescribeELBV2Tags(loadBalancerArns []string) (map[string][]*elbv2.Tag, error) {
+	return describeELBV2Tags(c, loadBalancerArns)
 }
 
 func (c *MockAWSCloud) DescribeInstance(instanceID string) (*ec2.Instance, error) {
