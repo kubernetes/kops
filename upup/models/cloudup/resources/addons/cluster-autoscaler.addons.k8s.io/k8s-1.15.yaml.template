@@ -138,6 +138,7 @@ spec:
         prometheus.io/port: "8085"
         prometheus.io/scrape: "true"
     spec:
+      priorityClassName: system-cluster-critical
       serviceAccountName: cluster-autoscaler
       tolerations:
       - operator: "Exists"
