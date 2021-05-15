@@ -243,8 +243,7 @@ func RunEditCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, ar
 		}
 
 		// Retrieve the current status of the cluster.  This will eventually be part of the cluster object.
-		statusDiscovery := &commands.CloudDiscoveryStatusStore{}
-		status, err := statusDiscovery.FindClusterStatus(oldCluster)
+		status, err := cloud.FindClusterStatus(oldCluster)
 		if err != nil {
 			return err
 		}

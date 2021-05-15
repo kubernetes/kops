@@ -301,7 +301,7 @@ func (c *MockAWSCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	return findVPCInfo(c, id)
 }
 
-func (c *MockAWSCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+func (c *MockAWSCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	return getApiIngressStatus(c, cluster)
 }
 

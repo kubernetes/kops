@@ -132,7 +132,7 @@ func (c *MockGCECloud) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterSt
 }
 
 // GetApiIngressStatus implements GCECloud::GetApiIngressStatus
-func (c *MockGCECloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+func (c *MockGCECloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	return nil, fmt.Errorf("MockGCECloud::GetApiIngressStatus not implemented")
 }
 

@@ -177,9 +177,6 @@ type AWSCloud interface {
 	// DescribeInstanceType calls ec2.DescribeInstanceType to get information for a particular instance type
 	DescribeInstanceType(instanceType string) (*ec2.InstanceTypeInfo, error)
 
-	// FindClusterStatus gets the status of the cluster as it exists in AWS, inferred from volumes
-	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
-
 	// AccountInfo returns the AWS account ID and AWS partition that we are deploying into
 	AccountInfo() (string, string, error)
 }
@@ -1868,16 +1865,16 @@ func findVPCInfo(c AWSCloud, vpcID string) (*fi.VPCInfo, error) {
 	return vpcInfo, nil
 }
 
-func (c *awsCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+func (c *awsCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	return getApiIngressStatus(c, cluster)
 }
 
-func getApiIngressStatus(c AWSCloud, cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
-	var ingresses []kops.ApiIngressStatus
+func getApiIngressStatus(c AWSCloud, cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
+	var ingresses []fi.ApiIngressStatus
 	if lbDnsName, err := findDNSName(c, cluster); err != nil {
 		return nil, fmt.Errorf("error finding aws DNSName: %v", err)
 	} else if lbDnsName != "" {
-		ingresses = append(ingresses, kops.ApiIngressStatus{Hostname: lbDnsName})
+		ingresses = append(ingresses, fi.ApiIngressStatus{Hostname: lbDnsName})
 	}
 
 	return ingresses, nil

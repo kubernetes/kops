@@ -34,7 +34,7 @@ import (
 
 const DefaultKubecfgAdminLifetime = 18 * time.Hour
 
-func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, status kops.StatusStore, admin time.Duration, configUser string, internal bool, kopsStateStore string, useKopsAuthenticationPlugin bool) (*KubeconfigBuilder, error) {
+func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, cloud fi.Cloud, admin time.Duration, configUser string, internal bool, kopsStateStore string, useKopsAuthenticationPlugin bool) (*KubeconfigBuilder, error) {
 	clusterName := cluster.ObjectMeta.Name
 
 	var master string
@@ -71,7 +71,7 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 	}
 
 	if useELBName {
-		ingresses, err := status.GetApiIngressStatus(cluster)
+		ingresses, err := cloud.GetApiIngressStatus(cluster)
 		if err != nil {
 			return nil, fmt.Errorf("error getting ingress status: %v", err)
 		}
