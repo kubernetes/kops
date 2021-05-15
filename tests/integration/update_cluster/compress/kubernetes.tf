@@ -591,6 +591,7 @@ resource "aws_subnet" "us-test-1a-compress-example-com" {
     "SubnetType"                                 = "Public"
     "kubernetes.io/cluster/compress.example.com" = "owned"
     "kubernetes.io/role/elb"                     = "1"
+    "kubernetes.io/role/internal-elb"            = "1"
   }
   vpc_id = aws_vpc.compress-example-com.id
 }

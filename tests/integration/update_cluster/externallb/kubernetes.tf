@@ -607,6 +607,7 @@ resource "aws_subnet" "us-test-1a-externallb-example-com" {
     "SubnetType"                                   = "Public"
     "kubernetes.io/cluster/externallb.example.com" = "owned"
     "kubernetes.io/role/elb"                       = "1"
+    "kubernetes.io/role/internal-elb"              = "1"
   }
   vpc_id = aws_vpc.externallb-example-com.id
 }

@@ -207,6 +207,12 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			case kops.SubnetTypePublic, kops.SubnetTypeUtility:
 				tags[aws.TagNameSubnetPublicELB] = "1"
 
+				// AWS ALB contoller won't provision any internal ELBs unless this tag is set.
+				// So we add this to public subnets as well if we do not expect any private subnets.
+				if b.Cluster.Spec.Topology.Nodes == kops.TopologyPublic {
+					tags[aws.TagNameSubnetInternalELB] = "1"
+				}
+
 			case kops.SubnetTypePrivate:
 				tags[aws.TagNameSubnetInternalELB] = "1"
 
