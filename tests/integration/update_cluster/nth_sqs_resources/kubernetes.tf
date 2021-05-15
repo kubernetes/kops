@@ -691,6 +691,7 @@ resource "aws_subnet" "us-test-1a-nthsqsresources-example-com" {
     "SubnetType"                                        = "Public"
     "kubernetes.io/cluster/nthsqsresources.example.com" = "owned"
     "kubernetes.io/role/elb"                            = "1"
+    "kubernetes.io/role/internal-elb"                   = "1"
   }
   vpc_id = aws_vpc.nthsqsresources-example-com.id
 }
