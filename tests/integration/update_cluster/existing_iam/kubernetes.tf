@@ -903,6 +903,7 @@ resource "aws_subnet" "us-test-1a-existing-iam-example-com" {
     "SubnetType"                                     = "Public"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
     "kubernetes.io/role/elb"                         = "1"
+    "kubernetes.io/role/internal-elb"                = "1"
   }
   vpc_id = aws_vpc.existing-iam-example-com.id
 }
@@ -916,6 +917,7 @@ resource "aws_subnet" "us-test-1b-existing-iam-example-com" {
     "SubnetType"                                     = "Public"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
     "kubernetes.io/role/elb"                         = "1"
+    "kubernetes.io/role/internal-elb"                = "1"
   }
   vpc_id = aws_vpc.existing-iam-example-com.id
 }
@@ -929,6 +931,7 @@ resource "aws_subnet" "us-test-1c-existing-iam-example-com" {
     "SubnetType"                                     = "Public"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
     "kubernetes.io/role/elb"                         = "1"
+    "kubernetes.io/role/internal-elb"                = "1"
   }
   vpc_id = aws_vpc.existing-iam-example-com.id
 }

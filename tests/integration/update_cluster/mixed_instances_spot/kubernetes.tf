@@ -993,6 +993,7 @@ resource "aws_subnet" "us-test-1a-mixedinstances-example-com" {
     "SubnetType"                                       = "Public"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
     "kubernetes.io/role/elb"                           = "1"
+    "kubernetes.io/role/internal-elb"                  = "1"
   }
   vpc_id = aws_vpc.mixedinstances-example-com.id
 }
@@ -1006,6 +1007,7 @@ resource "aws_subnet" "us-test-1b-mixedinstances-example-com" {
     "SubnetType"                                       = "Public"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
     "kubernetes.io/role/elb"                           = "1"
+    "kubernetes.io/role/internal-elb"                  = "1"
   }
   vpc_id = aws_vpc.mixedinstances-example-com.id
 }
@@ -1019,6 +1021,7 @@ resource "aws_subnet" "us-test-1c-mixedinstances-example-com" {
     "SubnetType"                                       = "Public"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
     "kubernetes.io/role/elb"                           = "1"
+    "kubernetes.io/role/internal-elb"                  = "1"
   }
   vpc_id = aws_vpc.mixedinstances-example-com.id
 }
