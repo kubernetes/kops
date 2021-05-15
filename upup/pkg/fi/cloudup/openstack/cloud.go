@@ -264,10 +264,6 @@ type OpenstackCloud interface {
 	// DeleteLB will delete loadbalancer
 	DeleteLB(lbID string, opt loadbalancers.DeleteOpts) error
 
-	GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error)
-
-	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
-
 	// DefaultInstanceType determines a suitable instance type for the specified instance group
 	DefaultInstanceType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error)
 
@@ -664,11 +660,11 @@ type Address struct {
 	Addr   string
 }
 
-func (c *openstackCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+func (c *openstackCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	return getApiIngressStatus(c, cluster)
 }
 
-func getApiIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+func getApiIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	if cluster.Spec.CloudConfig.Openstack.Loadbalancer != nil {
 		return getLoadBalancerIngressStatus(c, cluster)
 	} else {
@@ -676,8 +672,8 @@ func getApiIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]kops.ApiIng
 	}
 }
 
-func getLoadBalancerIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
-	var ingresses []kops.ApiIngressStatus
+func getLoadBalancerIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
+	var ingresses []fi.ApiIngressStatus
 	if cluster.Spec.MasterPublicName != "" {
 		// Note that this must match OpenstackModel lb name
 		klog.V(2).Infof("Querying Openstack to find Loadbalancers for API (%q)", cluster.Name)
@@ -697,7 +693,7 @@ func getLoadBalancerIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]ko
 			}
 			for _, fip := range fips {
 				if fip.PortID == lb.VipPortID {
-					ingresses = append(ingresses, kops.ApiIngressStatus{
+					ingresses = append(ingresses, fi.ApiIngressStatus{
 						IP: fip.FloatingIP,
 					})
 				}
@@ -707,7 +703,7 @@ func getLoadBalancerIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]ko
 	return ingresses, nil
 }
 
-func getIPIngressStatus(c OpenstackCloud, cluster *kops.Cluster) (ingresses []kops.ApiIngressStatus, err error) {
+func getIPIngressStatus(c OpenstackCloud, cluster *kops.Cluster) (ingresses []fi.ApiIngressStatus, err error) {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
 		instances, err := c.ListInstances(servers.ListOpts{})
 		if err != nil {
@@ -725,7 +721,7 @@ func getIPIngressStatus(c OpenstackCloud, cluster *kops.Cluster) (ingresses []ko
 						if err != nil {
 							return false, fmt.Errorf("failed to get interface address: %v", err)
 						}
-						ingresses = append(ingresses, kops.ApiIngressStatus{
+						ingresses = append(ingresses, fi.ApiIngressStatus{
 							IP: address,
 						})
 					} else {
@@ -734,7 +730,7 @@ func getIPIngressStatus(c OpenstackCloud, cluster *kops.Cluster) (ingresses []ko
 							return false, err
 						}
 						for _, ip := range ips {
-							ingresses = append(ingresses, kops.ApiIngressStatus{
+							ingresses = append(ingresses, fi.ApiIngressStatus{
 								IP: fi.StringValue(ip),
 							})
 						}

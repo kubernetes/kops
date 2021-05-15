@@ -42,8 +42,6 @@ type AzureCloud interface {
 	fi.Cloud
 
 	AddClusterTags(tags map[string]*string)
-	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
-	GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error)
 
 	SubscriptionID() string
 	ResourceGroup() ResourceGroupsClient
@@ -138,8 +136,8 @@ func (c *azureCloudImplementation) AddClusterTags(tags map[string]*string) {
 	}
 }
 
-func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
-	var ingresses []kops.ApiIngressStatus
+func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
+	var ingresses []fi.ApiIngressStatus
 	var rg string = cluster.AzureResourceGroupName()
 
 	lbSpec := cluster.Spec.API.LoadBalancer
@@ -167,7 +165,7 @@ func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([
 					if i.FrontendIPConfigurationPropertiesFormat.PrivateIPAddress == nil {
 						continue
 					}
-					ingresses = append(ingresses, kops.ApiIngressStatus{
+					ingresses = append(ingresses, fi.ApiIngressStatus{
 						IP: *i.FrontendIPConfigurationPropertiesFormat.PrivateIPAddress,
 					})
 				case kops.LoadBalancerTypePublic:
@@ -176,7 +174,7 @@ func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([
 						i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.PublicIPAddressPropertiesFormat.IPAddress == nil {
 						continue
 					}
-					ingresses = append(ingresses, kops.ApiIngressStatus{
+					ingresses = append(ingresses, fi.ApiIngressStatus{
 						IP: *i.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.PublicIPAddressPropertiesFormat.IPAddress,
 					})
 				default:
@@ -213,7 +211,7 @@ func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([
 				continue
 			}
 			for _, i := range *ni.IPConfigurations {
-				ingresses = append(ingresses, kops.ApiIngressStatus{
+				ingresses = append(ingresses, fi.ApiIngressStatus{
 					IP: *i.PrivateIPAddress,
 				})
 			}

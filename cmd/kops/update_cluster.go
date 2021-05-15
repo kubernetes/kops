@@ -32,7 +32,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -318,7 +317,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 			cluster,
 			keyStore,
 			secretStore,
-			&commands.CloudDiscoveryStatusStore{},
+			cloud,
 			c.admin,
 			c.user,
 			c.internal,

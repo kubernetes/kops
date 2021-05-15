@@ -31,6 +31,7 @@ import (
 	l3floatingips "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
@@ -41,7 +42,7 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 		l3FloatingIPs        []l3floatingips.FloatingIP
 		instances            serverList
 		cloudFloatingEnabled bool
-		expectedAPIIngress   []kops.ApiIngressStatus
+		expectedAPIIngress   []fi.ApiIngressStatus
 		expectedError        error
 	}{
 		{
@@ -74,7 +75,7 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 					FloatingIP: "8.8.8.8",
 				},
 			},
-			expectedAPIIngress: []kops.ApiIngressStatus{
+			expectedAPIIngress: []fi.ApiIngressStatus{
 				{
 					IP: "8.8.8.8",
 				},
@@ -122,7 +123,7 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 					FloatingIP: "9.9.9.9",
 				},
 			},
-			expectedAPIIngress: []kops.ApiIngressStatus{
+			expectedAPIIngress: []fi.ApiIngressStatus{
 				{IP: "8.8.8.8"},
 			},
 		},
@@ -200,7 +201,7 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 					},
 				},
 			},
-			expectedAPIIngress: []kops.ApiIngressStatus{
+			expectedAPIIngress: []fi.ApiIngressStatus{
 				{IP: "1.2.3.4"},
 				{IP: "2.3.4.5"},
 				{IP: "3.4.5.6"},
@@ -273,7 +274,7 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 				},
 			},
 			cloudFloatingEnabled: true,
-			expectedAPIIngress: []kops.ApiIngressStatus{
+			expectedAPIIngress: []fi.ApiIngressStatus{
 				{IP: "1.2.3.4"},
 				{IP: "4.5.6.7"},
 				{IP: "40.50.60.70"},
@@ -390,7 +391,7 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 	}
 }
 
-type sortByIP []kops.ApiIngressStatus
+type sortByIP []fi.ApiIngressStatus
 
 // Len is the number of elements in the collection.
 func (s sortByIP) Len() int {
