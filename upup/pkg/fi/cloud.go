@@ -24,6 +24,8 @@ import (
 )
 
 type Cloud interface {
+	kops.StatusStore
+
 	ProviderID() kops.CloudProviderID
 
 	DNS() (dnsprovider.Interface, error)
