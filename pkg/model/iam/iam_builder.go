@@ -736,21 +736,35 @@ func addCalicoSrcDstCheckPermissions(p *Policy) {
 func AddAWSLoadbalancerControllerPermissions(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {
 	addMasterEC2Policies(p, resource, false, clusterName)
 	addMasterELBPolicies(p, resource, false)
-	p.Statement = append(p.Statement, &Statement{
-		Effect: StatementEffectAllow,
-		Action: stringorslice.Of(
-			"ec2:AuthorizeSecurityGroupIngress", // aws.go
-			"ec2:DeleteSecurityGroup",           // aws.go
-			"ec2:RevokeSecurityGroupIngress",    // aws.go
-		),
-		Resource: resource,
-		Condition: Condition{
-			"StringEquals": map[string]string{
-				"ec2:ResourceTag/elbv2.k8s.aws/cluster": clusterName,
+	p.Statement = append(p.Statement,
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Of(
+				"ec2:DescribeAvailabilityZones",
+			),
+			Resource: stringorslice.Slice([]string{"*"}),
+		},
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Of(
+				"ec2:AuthorizeSecurityGroupIngress", // aws.go
+				"ec2:DeleteSecurityGroup",           // aws.go
+				"ec2:RevokeSecurityGroupIngress",    // aws.go
+
+				"elasticloadbalancing:ModifyTargetGroupAttributes",
+				"elasticloadbalancing:ModifyRule",
+				"elasticloadbalancing:DeleteRule",
+
+				"elasticloadbalancing:AddTags",
+				"elasticloadbalancing:RemoveTags",
+			),
+			Resource: resource,
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"aws:ResourceTag/elbv2.k8s.aws/cluster": clusterName,
+				},
 			},
 		},
-	},
-
 		&Statement{
 			Effect: StatementEffectAllow,
 			Action: stringorslice.Of(
@@ -759,11 +773,11 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy, resource stringorslice.S
 				"elasticloadbalancing:DescribeRules",
 				"elasticloadbalancing:DescribeTargetHealth",
 				"elasticloadbalancing:DescribeListenerCertificates",
-				"elasticloadbalancing:ModifyTargetGroupAttributes",
 				"elasticloadbalancing:CreateRule",
 			),
 			Resource: resource,
-		})
+		},
+	)
 }
 
 // addLegacyDNSControllerPermissions adds legacy IAM permissions used by the node roles.
