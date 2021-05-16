@@ -76,6 +76,15 @@ oldFormat: false
 subject: cn=kubernetes
 type: ca
 ---
+Base: null
+Contents:
+  task:
+    Name: node
+Lifecycle: null
+Location: igconfig/node/node/auxconfig.yaml
+Name: auxconfig-node
+Public: null
+---
 AdditionalSecurityGroups:
 - additional-sg
 ID: null

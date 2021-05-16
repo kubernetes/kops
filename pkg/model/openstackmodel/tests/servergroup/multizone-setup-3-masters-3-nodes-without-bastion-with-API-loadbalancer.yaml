@@ -537,6 +537,60 @@ Loadbalancer:
   VipSubnet: null
 Name: master-public-name-https
 ---
+Base: null
+Contents:
+  task:
+    Name: master-a
+Lifecycle: null
+Location: igconfig/master/master-a/auxconfig.yaml
+Name: auxconfig-master-a
+Public: null
+---
+Base: null
+Contents:
+  task:
+    Name: master-b
+Lifecycle: null
+Location: igconfig/master/master-b/auxconfig.yaml
+Name: auxconfig-master-b
+Public: null
+---
+Base: null
+Contents:
+  task:
+    Name: master-c
+Lifecycle: null
+Location: igconfig/master/master-c/auxconfig.yaml
+Name: auxconfig-master-c
+Public: null
+---
+Base: null
+Contents:
+  task:
+    Name: node-a
+Lifecycle: null
+Location: igconfig/node/node-a/auxconfig.yaml
+Name: auxconfig-node-a
+Public: null
+---
+Base: null
+Contents:
+  task:
+    Name: node-b
+Lifecycle: null
+Location: igconfig/node/node-b/auxconfig.yaml
+Name: auxconfig-node-b
+Public: null
+---
+Base: null
+Contents:
+  task:
+    Name: node-c
+Lifecycle: null
+Location: igconfig/node/node-c/auxconfig.yaml
+Name: auxconfig-node-c
+Public: null
+---
 ID: null
 InterfaceName: cluster
 Lifecycle: Sync
