@@ -1,1 +1,18 @@
-{}
+Hooks:
+- - before:
+    - update-engine.service
+    - kubelet.service
+    manifest: |-
+      Type=oneshot
+      ExecStart=/usr/bin/systemctl stop update-engine.service
+    name: disable-update-engine.service
+  - manifest: |-
+      Type=oneshot
+      ExecStart=/usr/bin/systemctl start apply-to-all.service
+    name: apply-to-all.service
+- - execContainer:
+      command:
+      - sh
+      - -c
+      - apt-get update
+      image: busybox
