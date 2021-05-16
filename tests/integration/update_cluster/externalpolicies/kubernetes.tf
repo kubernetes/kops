@@ -789,6 +789,7 @@ resource "aws_subnet" "us-test-1a-externalpolicies-example-com" {
     "foo/bar"                                            = "fib+baz"
     "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
     "kubernetes.io/role/elb"                             = "1"
+    "kubernetes.io/role/internal-elb"                    = "1"
   }
   vpc_id = aws_vpc.externalpolicies-example-com.id
 }
