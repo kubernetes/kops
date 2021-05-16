@@ -268,11 +268,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom.Properties.
 
   __EOF_CLUSTER_SPEC
 
-  cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
-  {}
-
-  __EOF_IG_SPEC
-
   cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
   Assets:
     amd64:
@@ -522,11 +517,6 @@ Resources.AWSEC2LaunchTemplatenodescomplexexamplecom.Properties.LaunchTemplateDa
     podManifestPath: /etc/kubernetes/manifests
 
   __EOF_CLUSTER_SPEC
-
-  cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
-  {}
-
-  __EOF_IG_SPEC
 
   cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
   Assets:
