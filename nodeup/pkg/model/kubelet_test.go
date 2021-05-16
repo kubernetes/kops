@@ -44,11 +44,13 @@ func Test_InstanceGroupKubeletMerge(t *testing.T) {
 	instanceGroup.Spec.Kubelet.NvidiaGPUs = 1
 	instanceGroup.Spec.Role = kops.InstanceGroupRoleNode
 
+	config, auxConfig := nodeup.NewConfig(cluster, instanceGroup)
 	b := &KubeletBuilder{
 		&NodeupModelContext{
-			Cluster:       cluster,
-			InstanceGroup: instanceGroup,
-			NodeupConfig:  nodeup.NewConfig(cluster, instanceGroup),
+			Cluster:         cluster,
+			InstanceGroup:   instanceGroup,
+			NodeupConfig:    config,
+			NodeupAuxConfig: auxConfig,
 		},
 	}
 	if err := b.Init(); err != nil {
@@ -89,11 +91,13 @@ func TestTaintsApplied(t *testing.T) {
 		cluster := &kops.Cluster{Spec: kops.ClusterSpec{KubernetesVersion: g.version}}
 		ig := &kops.InstanceGroup{Spec: kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleMaster, Taints: g.taints}}
 
+		config, auxConfig := nodeup.NewConfig(cluster, ig)
 		b := &KubeletBuilder{
 			&NodeupModelContext{
-				Cluster:       cluster,
-				InstanceGroup: ig,
-				NodeupConfig:  nodeup.NewConfig(cluster, ig),
+				Cluster:         cluster,
+				InstanceGroup:   ig,
+				NodeupConfig:    config,
+				NodeupAuxConfig: auxConfig,
 			},
 		}
 		if err := b.Init(); err != nil {
@@ -239,7 +243,7 @@ func BuildNodeupModelContext(basedir string) (*NodeupModelContext, error) {
 		// We tolerate this - not all tests need an instance group
 	} else if len(model.InstanceGroups) == 1 {
 		nodeUpModelContext.InstanceGroup = model.InstanceGroups[0]
-		nodeUpModelContext.NodeupConfig = nodeup.NewConfig(model.Cluster, nodeUpModelContext.InstanceGroup)
+		nodeUpModelContext.NodeupConfig, nodeUpModelContext.NodeupAuxConfig = nodeup.NewConfig(model.Cluster, nodeUpModelContext.InstanceGroup)
 	} else {
 		return nil, fmt.Errorf("unexpected number of instance groups in %s, found %d", basedir, len(model.InstanceGroups))
 	}
