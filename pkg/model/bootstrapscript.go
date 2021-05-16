@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -43,7 +44,7 @@ import (
 )
 
 type NodeUpConfigBuilder interface {
-	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, ca fi.Resource) (*nodeup.Config, error)
+	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, ca fi.Resource) (*nodeup.Config, *nodeup.AuxConfig, error)
 }
 
 // BootstrapScriptBuilder creates the bootstrap script
@@ -89,10 +90,17 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context, ca fi.R
 	}
 
 	sort.Strings(alternateNames)
-	config, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames, ca)
+	config, auxConfig, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames, ca)
 	if err != nil {
 		return "", err
 	}
+
+	auxData, err := utils.YamlMarshal(auxConfig)
+	if err != nil {
+		return "", fmt.Errorf("error converting nodeup auxiliary config to yaml: %v", err)
+	}
+	sum256 := sha256.Sum256(auxData)
+	config.AuxConfigHash = base64.StdEncoding.EncodeToString(sum256[:])
 
 	data, err := utils.YamlMarshal(config)
 	if err != nil {
@@ -246,6 +254,11 @@ func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 }
 
 func (b *BootstrapScript) Run(c *fi.Context) error {
+	config, err := b.kubeEnv(b.ig, c, b.ca)
+	if err != nil {
+		return err
+	}
+
 	functions := template.FuncMap{
 		"NodeUpSourceAmd64": func() string {
 			if b.builder.NodeUpAssets[architectures.ArchitectureAmd64] != nil {
@@ -271,8 +284,8 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 			}
 			return ""
 		},
-		"KubeEnv": func() (string, error) {
-			return b.kubeEnv(b.ig, c, b.ca)
+		"KubeEnv": func() string {
+			return config
 		},
 
 		"EnvironmentVariables": func() (string, error) {

@@ -67,6 +67,12 @@ type Config struct {
 
 	// ConfigServer holds the configuration for the configuration server
 	ConfigServer *ConfigServerOptions `json:"configServer,omitempty"`
+	// AuxConfigHash holds a secure hash of the nodeup.AuxConfig.
+	AuxConfigHash string
+}
+
+// AuxConfig is the configuration for the nodeup binary that might be too big to fit in userdata.
+type AuxConfig struct {
 }
 
 type ConfigServerOptions struct {
