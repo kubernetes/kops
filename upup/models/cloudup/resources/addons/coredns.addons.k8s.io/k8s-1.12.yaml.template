@@ -1,3 +1,6 @@
+# CoreDNS
+# Source: https://github.com/coredns/deployment/blob/master/kubernetes/coredns.yaml.sed
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -74,6 +77,7 @@ data:
         health {
           lameduck 5s
         }
+        ready
         kubernetes {{ KubeDNS.Domain }}. in-addr.arpa ip6.arpa {
           pods insecure
           fallthrough in-addr.arpa ip6.arpa
@@ -89,6 +93,195 @@ data:
         reload
     }
   {{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coredns
+  namespace: kube-system
+  labels:
+    k8s-app: kube-dns
+    kubernetes.io/name: "CoreDNS"
+    k8s-addon: coredns.addons.k8s.io
+    kubernetes.io/cluster-service: "true"
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 10%
+  selector:
+    matchLabels:
+      k8s-app: kube-dns
+  template:
+    metadata:
+      labels:
+        k8s-app: kube-dns
+    spec:
+      priorityClassName: system-cluster-critical
+      serviceAccountName: coredns
+      tolerations:
+        - key: "CriticalAddonsOnly"
+          operator: "Exists"
+      nodeSelector:
+          beta.kubernetes.io/os: linux
+      affinity:
+        podAntiAffinity:
+           preferredDuringSchedulingIgnoredDuringExecution:
+           - weight: 100
+             podAffinityTerm:
+               labelSelector:
+                 matchExpressions:
+                   - key: k8s-app
+                     operator: In
+                     values: ["kube-dns"]
+               topologyKey: kubernetes.io/hostname
+      containers:
+      - name: coredns
+        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}coredns/coredns:1.8.3{{ end }}
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: {{ KubeDNS.MemoryLimit }}
+          requests:
+            cpu: {{ KubeDNS.CPURequest }}
+            memory: {{ KubeDNS.MemoryRequest }}
+        args: [ "-conf", "/etc/coredns/Corefile" ]
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/coredns
+          readOnly: true
+        ports:
+        - containerPort: 53
+          name: dns
+          protocol: UDP
+        - containerPort: 53
+          name: dns-tcp
+          protocol: TCP
+        - containerPort: 9153
+          name: metrics
+          protocol: TCP
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            add:
+            - NET_BIND_SERVICE
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8181
+            scheme: HTTP
+      dnsPolicy: Default
+      volumes:
+        - name: config-volume
+          configMap:
+            name: coredns
+            items:
+            - key: Corefile
+              path: Corefile
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-dns
+  namespace: kube-system
+  annotations:
+    prometheus.io/port: "9153"
+    prometheus.io/scrape: "true"
+  labels:
+    k8s-addon: coredns.addons.k8s.io
+    k8s-app: kube-dns
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "CoreDNS"
+  # Without this resourceVersion value, an update of the Service between versions will yield:
+  #   Service "kube-dns" is invalid: metadata.resourceVersion: Invalid value: "": must be specified for an update
+  resourceVersion: "0"
+spec:
+  selector:
+    k8s-app: kube-dns
+  clusterIP: {{ KubeDNS.ServerIP }}
+  ports:
+  - name: dns
+    port: 53
+    protocol: UDP
+  - name: dns-tcp
+    port: 53
+    protocol: TCP
+  - name: metrics
+    port: 9153
+    protocol: TCP
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: kube-dns
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: kube-dns
+  minAvailable: 1
+---
+
+# CoreDNS Autoscaler
+# Source: https://github.com/kubernetes-sigs/cluster-proportional-autoscaler/tree/master/
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: coredns-autoscaler
+  namespace: kube-system
+  labels:
+    k8s-addon: coredns.addons.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    k8s-addon: coredns.addons.k8s.io
+  name: coredns-autoscaler
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["list","watch"]
+  - apiGroups: [""]
+    resources: ["replicationcontrollers/scale"]
+    verbs: ["get", "update"]
+  - apiGroups: ["extensions", "apps"]
+    resources: ["deployments/scale", "replicasets/scale"]
+    verbs: ["get", "update"]
+# Remove the configmaps rule once below issue is fixed:
+# kubernetes-incubator/cluster-proportional-autoscaler#16
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    k8s-addon: coredns.addons.k8s.io
+  name: coredns-autoscaler
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: coredns-autoscaler
+subjects:
+- kind: ServiceAccount
+  name: coredns-autoscaler
+  namespace: kube-system
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -133,197 +326,3 @@ spec:
         operator: "Exists"
       serviceAccountName: coredns-autoscaler
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: coredns
-  namespace: kube-system
-  labels:
-    k8s-app: kube-dns
-    k8s-addon: coredns.addons.k8s.io
-    kubernetes.io/cluster-service: "true"
-spec:
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 10%
-  selector:
-    matchLabels:
-      k8s-app: kube-dns
-  template:
-    metadata:
-      labels:
-        k8s-app: kube-dns
-    spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 1
-              podAffinityTerm:
-                labelSelector:
-                  matchExpressions:
-                    - key: k8s-app
-                      operator: In
-                      values:
-                        - kube-dns
-                topologyKey: kubernetes.io/hostname
-      priorityClassName: system-cluster-critical
-      serviceAccountName: coredns
-      tolerations:
-        - key: "CriticalAddonsOnly"
-          operator: "Exists"
-      nodeSelector:
-          beta.kubernetes.io/os: linux
-      containers:
-      - name: coredns
-        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}k8s.gcr.io/coredns:1.7.0{{ end }}
-        imagePullPolicy: IfNotPresent
-        resources:
-          limits:
-            memory: {{ KubeDNS.MemoryLimit }}
-          requests:
-            cpu: {{ KubeDNS.CPURequest }}
-            memory: {{ KubeDNS.MemoryRequest }}
-        args: [ "-conf", "/etc/coredns/Corefile" ]
-        volumeMounts:
-        - name: config-volume
-          mountPath: /etc/coredns
-          readOnly: true
-        ports:
-        - containerPort: 53
-          name: dns
-          protocol: UDP
-        - containerPort: 53
-          name: dns-tcp
-          protocol: TCP
-        - containerPort: 9153
-          name: metrics
-          protocol: TCP
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            add:
-            - NET_BIND_SERVICE
-            drop:
-            - all
-          readOnlyRootFilesystem: true
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-            scheme: HTTP
-          initialDelaySeconds: 60
-          timeoutSeconds: 5
-          successThreshold: 1
-          failureThreshold: 5
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-            scheme: HTTP
-      dnsPolicy: Default
-      volumes:
-        - name: config-volume
-          configMap:
-            name: coredns
-            items:
-            - key: Corefile
-              path: Corefile
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: kube-dns
-  namespace: kube-system
-  annotations:
-    prometheus.io/port: "9153"
-    prometheus.io/scrape: "true"
-  labels:
-    k8s-addon: coredns.addons.k8s.io
-    k8s-app: kube-dns
-    kubernetes.io/cluster-service: "true"
-    kubernetes.io/name: "CoreDNS"
-  # Without this resourceVersion value, an update of the Service between versions will yield:
-  #   Service "kube-dns" is invalid: metadata.resourceVersion: Invalid value: "": must be specified for an update
-  resourceVersion: "0"
-spec:
-  selector:
-    k8s-app: kube-dns
-  clusterIP: {{ KubeDNS.ServerIP }}
-  ports:
-  - name: dns
-    port: 53
-    protocol: UDP
-  - name: dns-tcp
-    port: 53
-    protocol: TCP
-  - name: metrics
-    port: 9153
-    protocol: TCP
-
----
-
-
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: coredns-autoscaler
-  namespace: kube-system
-  labels:
-    k8s-addon: coredns.addons.k8s.io
-
----
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  labels:
-    k8s-addon: coredns.addons.k8s.io
-  name: coredns-autoscaler
-rules:
-  - apiGroups: [""]
-    resources: ["nodes"]
-    verbs: ["list","watch"]
-  - apiGroups: [""]
-    resources: ["replicationcontrollers/scale"]
-    verbs: ["get", "update"]
-  - apiGroups: ["extensions", "apps"]
-    resources: ["deployments/scale", "replicasets/scale"]
-    verbs: ["get", "update"]
-# Remove the configmaps rule once below issue is fixed:
-# kubernetes-incubator/cluster-proportional-autoscaler#16
-  - apiGroups: [""]
-    resources: ["configmaps"]
-    verbs: ["get", "create"]
-
----
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  labels:
-    k8s-addon: coredns.addons.k8s.io
-  name: coredns-autoscaler
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: coredns-autoscaler
-subjects:
-- kind: ServiceAccount
-  name: coredns-autoscaler
-  namespace: kube-system
-
----
-
-apiVersion: policy/v1beta1
-kind: PodDisruptionBudget
-metadata:
-  name: kube-dns
-  namespace: kube-system
-spec:
-  selector:
-    matchLabels:
-      k8s-app: kube-dns
-  minAvailable: 1
-
