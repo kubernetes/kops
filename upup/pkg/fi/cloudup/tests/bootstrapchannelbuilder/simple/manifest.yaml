@@ -21,11 +21,11 @@ spec:
     version: 1.4.0
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 90405232658fa6c7989802391ffcecf7e9df1cf1
+    manifestHash: 48af055a4d74db801f75bec7d7574d6f471f1be0
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
-    version: 1.7.0-kops.3
+    version: 1.8.3-kops.3
   - id: k8s-1.9
     manifest: kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml
     manifestHash: 1dbad74e01965afc2c32ca822d16c204d015db82
