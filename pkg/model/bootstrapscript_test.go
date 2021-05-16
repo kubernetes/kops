@@ -63,8 +63,8 @@ type nodeupConfigBuilder struct {
 	cluster *kops.Cluster
 }
 
-func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, ca fi.Resource) (*nodeup.Config, error) {
-	return nodeup.NewConfig(n.cluster, ig), nil
+func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, ca fi.Resource) (*nodeup.Config, *nodeup.AuxConfig, error) {
+	return nodeup.NewConfig(n.cluster, ig), &nodeup.AuxConfig{}, nil
 }
 
 func TestBootstrapUserData(t *testing.T) {
