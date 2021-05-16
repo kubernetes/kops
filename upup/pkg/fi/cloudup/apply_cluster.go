@@ -1310,7 +1310,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	useGossip := dns.IsGossipHostname(cluster.Spec.MasterInternalName)
 	isMaster := role == kops.InstanceGroupRoleMaster
 
-	config := nodeup.NewConfig(cluster, ig)
+	config, auxConfig := nodeup.NewConfig(cluster, ig)
 	config.Assets = make(map[architectures.Architecture][]string)
 	for _, arch := range architectures.GetSupported() {
 		config.Assets[arch] = []string{}
@@ -1386,5 +1386,5 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	config.Channels = n.channels
 	config.EtcdManifests = n.etcdManifests[role]
 
-	return config, &nodeup.AuxConfig{}, nil
+	return config, auxConfig, nil
 }
