@@ -24,14 +24,19 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 )
 
 func TestVMScaleSetModelBuilder_Build(t *testing.T) {
+	lifecycle := fi.LifecycleSync
 	b := VMScaleSetModelBuilder{
 		AzureModelContext: newTestAzureModelContext(),
+		BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
+			Lifecycle: &lifecycle,
+		},
 	}
 	c := &fi.ModelBuilderContext{
 		Tasks: make(map[string]fi.Task),

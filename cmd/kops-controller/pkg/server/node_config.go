@@ -61,6 +61,16 @@ func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest
 		nodeConfig.InstanceGroupConfig = string(b)
 	}
 
+	{
+		p := s.configBase.Join("igconfig", "node", instanceGroupName, "auxconfig.yaml")
+
+		b, err := p.ReadFile()
+		if err != nil {
+			return nil, fmt.Errorf("error loading AuxConfig %q: %v", p, err)
+		}
+		nodeConfig.AuxConfig = string(b)
+	}
+
 	// We populate some certificates that we know the node will need.
 	for _, name := range []string{"ca"} {
 		cert, _, _, err := s.keystore.FindKeypair(name)

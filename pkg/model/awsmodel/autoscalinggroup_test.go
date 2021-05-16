@@ -60,6 +60,7 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 	igs := []*kops.InstanceGroup{}
 	igs = append(igs, ig)
 
+	lifecycle := fi.LifecycleSync
 	b := AutoscalingGroupModelBuilder{
 		AWSModelContext: &AWSModelContext{
 			KopsModelContext: &model.KopsModelContext{
@@ -67,6 +68,9 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 				SSHPublicKeys:   k,
 				InstanceGroups:  igs,
 			},
+		},
+		BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
+			Lifecycle: &lifecycle,
 		},
 		Cluster: cluster,
 	}
@@ -146,6 +150,7 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 		},
 	}
 
+	lifecycle := fi.LifecycleSync
 	b := AutoscalingGroupModelBuilder{
 		AWSModelContext: &AWSModelContext{
 			KopsModelContext: &model.KopsModelContext{
@@ -153,6 +158,9 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 				SSHPublicKeys:   [][]byte{[]byte(sshPublicKeyEntry)},
 				InstanceGroups:  igs,
 			},
+		},
+		BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
+			Lifecycle: &lifecycle,
 		},
 		Cluster: cluster,
 	}
