@@ -184,6 +184,7 @@ hooks:
 __EOF_IG_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
+AuxConfigHash: yj0WO6sFU4GCciYUBWjzvvfqrBh869doeOC2Pp5EI1Y=
 InstanceGroupRole: Node
 KubeletConfig:
   kubeconfigPath: /etc/kubernetes/igconfig.txt
