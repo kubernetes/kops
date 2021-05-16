@@ -40,6 +40,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//pkg/apis/kops:go_default_library",
+        "//pkg/model:go_default_library",
         "//pkg/model/defaults:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/azuretasks:go_default_library",
