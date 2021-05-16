@@ -26688,6 +26688,7 @@ spec:
         imagePullPolicy: IfNotPresent
         name: cert-manager
         resources: {}
+      priorityClassName: system-cluster-critical
       serviceAccountName: cert-manager-cainjector
 ---
 apiVersion: apps/v1
@@ -26744,6 +26745,7 @@ spec:
         resources: {}
       nodeSelector:
         node-role.kubernetes.io/master: ""
+      priorityClassName: system-cluster-critical
       serviceAccountName: cert-manager
       tolerations:
       - key: node-role.kubernetes.io/master
@@ -26813,6 +26815,7 @@ spec:
           successThreshold: 1
           timeoutSeconds: 1
         resources: {}
+      priorityClassName: system-cluster-critical
       serviceAccountName: cert-manager-webhook
 ---
 apiVersion: admissionregistration.k8s.io/v1
