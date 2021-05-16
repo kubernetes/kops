@@ -103,7 +103,7 @@ type StaticManifest struct {
 	Path string `json:"path,omitempty"`
 }
 
-func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config {
+func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Config, *AuxConfig) {
 	role := instanceGroup.Spec.Role
 	isMaster := role == kops.InstanceGroupRoleMaster
 
@@ -144,5 +144,5 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config
 		config.DefaultMachineType = fi.String(strings.Split(instanceGroup.Spec.MachineType, ",")[0])
 	}
 
-	return &config
+	return &config, &AuxConfig{}
 }
