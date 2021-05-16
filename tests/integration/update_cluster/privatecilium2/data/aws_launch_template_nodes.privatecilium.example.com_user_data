@@ -194,6 +194,7 @@ Assets:
   - a75af21eae2913aacd521cc8a052f7b9f1cb8b195f7bffbab478833abe024b0e@https://storage.googleapis.com/kubernetes-release/release/v1.17.15/bin/linux/arm64/kubectl
   - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
   - 264f3396630507606a8646fda6a28a98d3ced8927df84be8ee9a74ab73cc1566@https://download.docker.com/linux/static/stable/aarch64/docker-19.03.15.tgz
+AuxConfigHash: yj0WO6sFU4GCciYUBWjzvvfqrBh869doeOC2Pp5EI1Y=
 ClusterName: privatecilium.example.com
 ConfigBase: memfs://clusters.example.com/privatecilium.example.com
 InstanceGroupName: nodes
