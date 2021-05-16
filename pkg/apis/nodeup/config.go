@@ -53,6 +53,8 @@ type Config struct {
 
 	// DefaultMachineType is the first-listed instance machine type, used if querying instance metadata fails.
 	DefaultMachineType *string `json:",omitempty"`
+	// EnableLifecycleHook defines whether we need to complete a lifecycle hook.
+	EnableLifecycleHook bool `json:",omitempty"`
 	// StaticManifests describes generic static manifests
 	// Using this allows us to keep complex logic out of nodeup
 	StaticManifests []*StaticManifest `json:"staticManifests,omitempty"`
@@ -125,6 +127,11 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	auxConfig := AuxConfig{
 		FileAssets: append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
 		Hooks:      [][]kops.HookSpec{igHooks, clusterHooks},
+	}
+
+	warmPool := cluster.Spec.WarmPool.ResolveDefaults(instanceGroup)
+	if warmPool.IsEnabled() && warmPool.EnableLifecycleHook {
+		config.EnableLifecycleHook = true
 	}
 
 	if isMaster {

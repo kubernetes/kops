@@ -390,8 +390,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		klog.Exitf("error closing target: %v", err)
 	}
 
-	warmPool := c.cluster.Spec.WarmPool.ResolveDefaults(modelContext.InstanceGroup)
-	if warmPool.IsEnabled() && warmPool.EnableLifecycleHook {
+	if c.config.EnableLifecycleHook {
 		if api.CloudProviderID(c.cluster.Spec.CloudProvider) == api.CloudProviderAWS {
 			err := completeWarmingLifecycleAction(cloud.(awsup.AWSCloud), modelContext)
 			if err != nil {
