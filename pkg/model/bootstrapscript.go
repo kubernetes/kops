@@ -49,6 +49,7 @@ type NodeUpConfigBuilder interface {
 
 // BootstrapScriptBuilder creates the bootstrap script
 type BootstrapScriptBuilder struct {
+	Lifecycle           fi.Lifecycle
 	NodeUpAssets        map[architectures.Architecture]*mirrors.MirroredAsset
 	NodeUpConfigBuilder NodeUpConfigBuilder
 }
@@ -66,6 +67,9 @@ type BootstrapScript struct {
 
 	// caTask holds the CA task, for dependency analysis.
 	caTask fi.Task
+
+	// auxConfig contains the nodeup auxiliary config.
+	auxConfig fi.TaskDependentResource
 }
 
 var _ fi.Task = &BootstrapScript{}
@@ -101,6 +105,7 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context, ca fi.R
 	}
 	sum256 := sha256.Sum256(auxData)
 	config.AuxConfigHash = base64.StdEncoding.EncodeToString(sum256[:])
+	b.auxConfig.Resource = fi.NewBytesResource(auxData)
 
 	data, err := utils.YamlMarshal(config)
 	if err != nil {
@@ -230,7 +235,15 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 		ca:      caTask.Certificate(),
 	}
 	task.resource.Task = task
+	task.auxConfig.Task = task
 	c.AddTask(task)
+
+	c.AddTask(&fitasks.ManagedFile{
+		Name:      fi.String("auxconfig-" + ig.Name),
+		Lifecycle: b.Lifecycle,
+		Location:  fi.String("igconfig/" + strings.ToLower(string(ig.Spec.Role)) + "/" + ig.Name + "/auxconfig.yaml"),
+		Contents:  &task.auxConfig,
+	})
 	return &task.resource, nil
 }
 

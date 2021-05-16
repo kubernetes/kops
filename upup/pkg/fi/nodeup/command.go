@@ -18,6 +18,8 @@ package nodeup
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -64,6 +66,7 @@ type NodeUpCommand struct {
 	Target         string
 	cluster        *api.Cluster
 	config         *nodeup.Config
+	auxConfig      *nodeup.AuxConfig
 	instanceGroup  *api.InstanceGroup
 }
 
@@ -152,11 +155,18 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 	}
 
+	var auxConfigHash [32]byte
 	if nodeConfig != nil {
 		c.instanceGroup = &api.InstanceGroup{}
 		if err := utils.YamlUnmarshal([]byte(nodeConfig.InstanceGroupConfig), c.instanceGroup); err != nil {
 			return fmt.Errorf("error parsing InstanceGroup config response: %v", err)
 		}
+
+		c.auxConfig = &nodeup.AuxConfig{}
+		if err := utils.YamlUnmarshal([]byte(nodeConfig.AuxConfig), c.auxConfig); err != nil {
+			return fmt.Errorf("error parsing AuxConfig config response: %v", err)
+		}
+		auxConfigHash = sha256.Sum256([]byte(nodeConfig.AuxConfig))
 	} else if c.config.InstanceGroupName != "" {
 		instanceGroupLocation := configBase.Join("instancegroup", c.config.InstanceGroupName)
 
@@ -169,8 +179,25 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		if err = utils.YamlUnmarshal(b, c.instanceGroup); err != nil {
 			return fmt.Errorf("error parsing InstanceGroup %q: %v", instanceGroupLocation, err)
 		}
+
+		auxConfigLocation := configBase.Join("igconfig", strings.ToLower(string(c.instanceGroup.Spec.Role)), c.config.InstanceGroupName, "auxconfig.yaml")
+
+		c.auxConfig = &nodeup.AuxConfig{}
+		b, err = auxConfigLocation.ReadFile()
+		if err != nil {
+			return fmt.Errorf("error loading AuxConfig %q: %v", auxConfigLocation, err)
+		}
+
+		if err = utils.YamlUnmarshal(b, c.auxConfig); err != nil {
+			return fmt.Errorf("error parsing AuxConfig %q: %v", auxConfigLocation, err)
+		}
+		auxConfigHash = sha256.Sum256(b)
 	} else {
-		klog.Warningf("No instance group defined in nodeup config")
+		return fmt.Errorf("no instance group defined in nodeup config")
+	}
+
+	if c.config.AuxConfigHash != base64.StdEncoding.EncodeToString(auxConfigHash[:]) {
+		return fmt.Errorf("auxiliary config hash mismatch")
 	}
 
 	err := evaluateSpec(c)
@@ -212,14 +239,15 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	modelContext := &model.NodeupModelContext{
-		Cloud:         cloud,
-		Architecture:  architecture,
-		Assets:        assetStore,
-		Cluster:       c.cluster,
-		ConfigBase:    configBase,
-		Distribution:  distribution,
-		InstanceGroup: c.instanceGroup,
-		NodeupConfig:  c.config,
+		Cloud:           cloud,
+		Architecture:    architecture,
+		Assets:          assetStore,
+		Cluster:         c.cluster,
+		ConfigBase:      configBase,
+		Distribution:    distribution,
+		InstanceGroup:   c.instanceGroup,
+		NodeupConfig:    c.config,
+		NodeupAuxConfig: c.auxConfig,
 	}
 
 	var secretStore fi.SecretStore

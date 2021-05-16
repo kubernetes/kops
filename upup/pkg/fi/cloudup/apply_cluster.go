@@ -499,6 +499,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return err
 	}
 	bootstrapScriptBuilder := &model.BootstrapScriptBuilder{
+		Lifecycle:           clusterLifecycle,
 		NodeUpConfigBuilder: configBuilder,
 		NodeUpAssets:        c.NodeUpAssets,
 	}
