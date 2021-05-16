@@ -99,14 +99,26 @@
       ]
     },
     {
+      "Action": "ec2:DescribeAvailabilityZones",
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
       "Action": [
         "ec2:AuthorizeSecurityGroupIngress",
         "ec2:DeleteSecurityGroup",
-        "ec2:RevokeSecurityGroupIngress"
+        "ec2:RevokeSecurityGroupIngress",
+        "elasticloadbalancing:ModifyTargetGroupAttributes",
+        "elasticloadbalancing:ModifyRule",
+        "elasticloadbalancing:DeleteRule",
+        "elasticloadbalancing:AddTags",
+        "elasticloadbalancing:RemoveTags"
       ],
       "Condition": {
         "StringEquals": {
-          "ec2:ResourceTag/elbv2.k8s.aws/cluster": "minimal.example.com"
+          "aws:ResourceTag/elbv2.k8s.aws/cluster": "minimal.example.com"
         }
       },
       "Effect": "Allow",
@@ -121,7 +133,6 @@
         "elasticloadbalancing:DescribeRules",
         "elasticloadbalancing:DescribeTargetHealth",
         "elasticloadbalancing:DescribeListenerCertificates",
-        "elasticloadbalancing:ModifyTargetGroupAttributes",
         "elasticloadbalancing:CreateRule"
       ],
       "Effect": "Allow",
