@@ -161,6 +161,9 @@ func DeleteAllClusterState(basePath vfs.Path) error {
 		if strings.HasPrefix(relativePath, "instancegroup/") {
 			continue
 		}
+		if strings.HasPrefix(relativePath, "igconfig/") {
+			continue
+		}
 		if strings.HasPrefix(relativePath, "manifests/") {
 			continue
 		}
