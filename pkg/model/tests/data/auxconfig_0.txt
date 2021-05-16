@@ -1,3 +1,7 @@
+FileAssets:
+- content: user,token
+  name: tokens
+  path: /kube/tokens.csv
 Hooks:
 - - manifest: |-
       Type=oneshot

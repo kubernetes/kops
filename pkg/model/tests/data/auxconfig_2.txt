@@ -1,3 +1,13 @@
+FileAssets:
+- content: blah blah
+  name: iptables-restore
+  path: /var/lib/iptables/rules-save
+- content: user,token
+  name: tokens
+  path: /kube/tokens.csv
+- content: blah blah
+  name: iptables-restore
+  path: /var/lib/iptables/rules-save
 Hooks:
 - - before:
     - update-engine.service
