@@ -801,6 +801,7 @@ spec:
         - --enable-wafv2=false
         - --enable-shield=false
         - --ingress-class=alb
+        - "--default-tags={{ CloudLabels }}"
         image: amazon/aws-alb-ingress-controller:{{ or .AWSLoadBalancerController.Version "v2.2.0" }}
         livenessProbe:
           failureThreshold: 2

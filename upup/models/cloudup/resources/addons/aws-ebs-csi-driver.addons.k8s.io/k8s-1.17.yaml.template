@@ -409,7 +409,7 @@ spec:
             - --endpoint=$(CSI_ENDPOINT)
             - --logtostderr
             - --k8s-tag-cluster-id={{ ClusterName }}
-            - --extra-tags={{ CsiExtraTags }}
+            - "--extra-tags={{ CloudLabels }}"
             - --v=5
           env:
             - name: CSI_ENDPOINT
