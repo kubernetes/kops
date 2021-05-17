@@ -49,7 +49,7 @@ ${KUBETEST2} \
 		--up \
 		--kops-binary-path="${KOPS}" \
 		--kubernetes-version="1.21.0" \
-		--create-args="--networking amazonvpc --override=cluster.spec.cloudConfig.awsLoadBalancerController.enabled=true --override=cluster.spec.cloudConfig.certManager.enabled=true"
+		--create-args="--networking amazonvpc --override=cluster.spec.awsLoadBalancerController.enabled=true --override=cluster.spec.certManager.enabled=true"
 
 
 VPC=$(${KOPS} toolbox dump -o json | jq -r .vpc.id)
