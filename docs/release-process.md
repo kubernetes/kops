@@ -29,7 +29,7 @@ In order to create a new release branch off of master prior to a beta release, p
 1. Update the periodic E2E Prow jobs for the "next" kOps/Kubernetes minor version.
    * Edit [build_jobs.py](https://github.com/kubernetes/test-infra/tree/master/config/jobs/kubernetes/kops/build_jobs.py)
    to add the new minor version to `k8s_versions` and `kops_versions`.
-     Also update the list of minor versions in `generate_versions()`.
+     Also update the list of minor versions in `generate_versions()` and `generate_pipeline()`.
    * Edit the [testgrid config.yaml](https://github.com/kubernetes/test-infra/blob/master/config/testgrids/kubernetes/kops/config.yaml)
    to add the new minor version to both lists in the file, prefixed with `kops-k8s-`.
    * Remove the oldest minor version from each of those lists.
