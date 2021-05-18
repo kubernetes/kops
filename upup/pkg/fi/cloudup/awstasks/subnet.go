@@ -46,6 +46,7 @@ type Subnet struct {
 	AvailabilityZone *string
 	CIDR             *string
 	Shared           *bool
+	AwsIpv6SubnetNum *int
 
 	Tags map[string]string
 }
@@ -220,6 +221,7 @@ type terraformSubnet struct {
 	CIDR             *string                  `json:"cidr_block" cty:"cidr_block"`
 	AvailabilityZone *string                  `json:"availability_zone" cty:"availability_zone"`
 	Tags             map[string]string        `json:"tags,omitempty" cty:"tags"`
+	IPv6CIDR         *terraformWriter.Literal `json:"ipv6_cidr_block,omitempty" cty:"ipv6_cidr_block"`
 }
 
 func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
@@ -246,6 +248,11 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 		CIDR:             e.CIDR,
 		AvailabilityZone: e.AvailabilityZone,
 		Tags:             e.Tags,
+	}
+	netnum := e.AwsIpv6SubnetNum
+	if netnum != nil {
+		// newbits will always be 8 for aws subnet
+		tf.IPv6CIDR = terraformWriter.LiteralCidrsubnetExpression(e.VPC.TerraformIpv6CidrLink(), fi.Int(8), netnum)
 	}
 
 	return t.RenderResource("aws_subnet", *e.Name, tf)

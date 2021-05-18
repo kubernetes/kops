@@ -777,6 +777,18 @@
         ]
       }
     },
+    "AWSEC2Routeipv6default": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableprivatecalicoexamplecom"
+        },
+        "DestinationCidrBlock": "::/0",
+        "GatewayId": {
+          "Ref": "AWSEC2InternetGatewayprivatecalicoexamplecom"
+        }
+      }
+    },
     "AWSEC2Routeprivateustest1a00000": {
       "Type": "AWS::EC2::Route",
       "Properties": {

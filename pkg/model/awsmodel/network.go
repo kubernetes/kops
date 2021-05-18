@@ -157,7 +157,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		igw.Tags = b.CloudTags(*igw.Name, *igw.Shared)
 		c.AddTask(igw)
-
 		if !allSubnetsShared {
 			// The route table is not shared if we're creating a subnet for our cluster
 			// That subnet will be owned, and will be associated with our RouteTable.
@@ -181,6 +180,13 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Name:            fi.String("0.0.0.0/0"),
 				Lifecycle:       b.Lifecycle,
 				CIDR:            fi.String("0.0.0.0/0"),
+				RouteTable:      publicRouteTable,
+				InternetGateway: igw,
+			})
+			c.AddTask(&awstasks.Route{
+				Name:            fi.String("ipv6-default"),
+				Lifecycle:       b.Lifecycle,
+				CIDR:            fi.String("::/0"),
 				RouteTable:      publicRouteTable,
 				InternetGateway: igw,
 			})
@@ -230,6 +236,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			CIDR:             fi.String(subnetSpec.CIDR),
 			Shared:           fi.Bool(sharedSubnet),
 			Tags:             tags,
+			AwsIpv6SubnetNum: subnetSpec.AwsIpv6SubnetNum,
 		}
 
 		if subnetSpec.ProviderID != "" {

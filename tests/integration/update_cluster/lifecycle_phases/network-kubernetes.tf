@@ -1,5 +1,6 @@
 locals {
   cluster_name                      = "lifecyclephases.example.com"
+  ipv6_vpc_cidr_block               = aws_vpc.lifecyclephases-example-com.ipv6_cidr_block
   region                            = "us-test-1"
   route_table_private-us-test-1a_id = aws_route_table.private-us-test-1a-lifecyclephases-example-com.id
   route_table_public_id             = aws_route_table.lifecyclephases-example-com.id
@@ -11,6 +12,10 @@ locals {
 
 output "cluster_name" {
   value = "lifecyclephases.example.com"
+}
+
+output "ipv6_vpc_cidr_block" {
+  value = aws_vpc.lifecyclephases-example-com.ipv6_cidr_block
 }
 
 output "region" {
@@ -79,6 +84,12 @@ resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = aws_route_table.lifecyclephases-example-com.id
 }
 
+resource "aws_route" "route-ipv6-default" {
+  destination_ipv6_cidr_block = "::/0"
+  gateway_id                  = aws_internet_gateway.lifecyclephases-example-com.id
+  route_table_id              = aws_route_table.lifecyclephases-example-com.id
+}
+
 resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.us-test-1a-lifecyclephases-example-com.id
@@ -142,9 +153,10 @@ resource "aws_subnet" "utility-us-test-1a-lifecyclephases-example-com" {
 }
 
 resource "aws_vpc" "lifecyclephases-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
+  assign_generated_ipv6_cidr_block = true
+  cidr_block                       = "172.20.0.0/16"
+  enable_dns_hostnames             = true
+  enable_dns_support               = true
   tags = {
     "KubernetesCluster"                                 = "lifecyclephases.example.com"
     "Name"                                              = "lifecyclephases.example.com"

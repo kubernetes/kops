@@ -4,6 +4,7 @@ locals {
   bastions_role_arn                 = aws_iam_role.bastions-privateciliumadvanced-example-com.arn
   bastions_role_name                = aws_iam_role.bastions-privateciliumadvanced-example-com.name
   cluster_name                      = "privateciliumadvanced.example.com"
+  ipv6_vpc_cidr_block               = aws_vpc.privateciliumadvanced-example-com.ipv6_cidr_block
   master_autoscaling_group_ids      = [aws_autoscaling_group.master-us-test-1a-masters-privateciliumadvanced-example-com.id]
   master_security_group_ids         = [aws_security_group.masters-privateciliumadvanced-example-com.id]
   masters_role_arn                  = aws_iam_role.masters-privateciliumadvanced-example-com.arn
@@ -40,6 +41,10 @@ output "bastions_role_name" {
 
 output "cluster_name" {
   value = "privateciliumadvanced.example.com"
+}
+
+output "ipv6_vpc_cidr_block" {
+  value = aws_vpc.privateciliumadvanced-example-com.ipv6_cidr_block
 }
 
 output "master_autoscaling_group_ids" {
@@ -708,6 +713,12 @@ resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = aws_route_table.privateciliumadvanced-example-com.id
 }
 
+resource "aws_route" "route-ipv6-default" {
+  destination_ipv6_cidr_block = "::/0"
+  gateway_id                  = aws_internet_gateway.privateciliumadvanced-example-com.id
+  route_table_id              = aws_route_table.privateciliumadvanced-example-com.id
+}
+
 resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.us-test-1a-privateciliumadvanced-example-com.id
@@ -1008,9 +1019,10 @@ resource "aws_subnet" "utility-us-test-1a-privateciliumadvanced-example-com" {
 }
 
 resource "aws_vpc" "privateciliumadvanced-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
+  assign_generated_ipv6_cidr_block = true
+  cidr_block                       = "172.20.0.0/16"
+  enable_dns_hostnames             = true
+  enable_dns_support               = true
   tags = {
     "KubernetesCluster"                                       = "privateciliumadvanced.example.com"
     "Name"                                                    = "privateciliumadvanced.example.com"

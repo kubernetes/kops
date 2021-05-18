@@ -19,6 +19,8 @@ package awstasks
 import (
 	"fmt"
 
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
@@ -239,6 +241,7 @@ func checkNotNil(s *string) *string {
 type terraformRoute struct {
 	RouteTableID      *terraformWriter.Literal `json:"route_table_id" cty:"route_table_id"`
 	CIDR              *string                  `json:"destination_cidr_block,omitempty" cty:"destination_cidr_block"`
+	IPv6CIDR          *string                  `json:"destination_ipv6_cidr_block,omitempty" cty:"destination_ipv6_cidr_block"`
 	InternetGatewayID *terraformWriter.Literal `json:"gateway_id,omitempty" cty:"gateway_id"`
 	NATGatewayID      *terraformWriter.Literal `json:"nat_gateway_id,omitempty" cty:"nat_gateway_id"`
 	TransitGatewayID  *string                  `json:"transit_gateway_id,omitempty" cty:"transit_gateway_id"`
@@ -247,8 +250,13 @@ type terraformRoute struct {
 
 func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Route) error {
 	tf := &terraformRoute{
-		CIDR:         e.CIDR,
 		RouteTableID: e.RouteTable.TerraformLink(),
+	}
+
+	if strings.Contains(*e.CIDR, ".") {
+		tf.CIDR = e.CIDR
+	} else {
+		tf.IPv6CIDR = e.CIDR
 	}
 
 	if e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil {

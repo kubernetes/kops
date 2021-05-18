@@ -29,6 +29,7 @@ type fileFn string
 const (
 	fileFnFile       fileFn = "file"
 	fileFnFileBase64 fileFn = "filebase64"
+	cidrSubnetFn     string = "cidrsubnet"
 )
 
 // Literal represents a literal in terraform syntax
@@ -48,12 +49,32 @@ type Literal struct {
 	FilePath string `cty:"file_path"`
 	// FileFn represents the function used to reference the file
 	FileFn fileFn `cty:"file_fn"`
+	// CidrSubnetFn represents the function used calculate the subnetMask for ipv6 aws vpc
+	CIDRSubnetFn string `cty:"cidrsubnet_fn"`
+	// terraform link for vpc ipv6 cidr block
+	CIDRLink string `cty:"vpc_ipv6_cidr_link"`
+	// subnet bits. for ipv6 this value mostly will be 8 i.e /64 ipv6 subnet
+	SubnetBits *int `cty:"subnet_bits"`
+	// decimal representation of subnet number
+	Netnum *int `cty:"netnum"`
 }
 
 var _ json.Marshaler = &Literal{}
 
 func (l *Literal) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&l.Value)
+}
+
+func LiteralCidrsubnetExpression(vpcCidrProp *Literal, subnetBits, netnum *int) *Literal {
+	cidrLink := vpcCidrProp.ResourceType + "." + vpcCidrProp.ResourceName + "." + vpcCidrProp.ResourceProp
+	return &Literal{
+		// value used for Terraform 0.11
+		Value:        fmt.Sprintf("${cidrsubnet(%s,%d,%d)}", cidrLink, subnetBits, netnum),
+		CIDRLink:     cidrLink,
+		CIDRSubnetFn: cidrSubnetFn,
+		SubnetBits:   subnetBits,
+		Netnum:       netnum,
+	}
 }
 
 func LiteralFileExpression(modulePath string, base64 bool) *Literal {

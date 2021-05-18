@@ -250,10 +250,11 @@ func (e *VPC) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 }
 
 type terraformVPC struct {
-	CIDR               *string           `json:"cidr_block,omitempty" cty:"cidr_block"`
-	EnableDNSHostnames *bool             `json:"enable_dns_hostnames,omitempty" cty:"enable_dns_hostnames"`
-	EnableDNSSupport   *bool             `json:"enable_dns_support,omitempty" cty:"enable_dns_support"`
-	Tags               map[string]string `json:"tags,omitempty" cty:"tags"`
+	CIDR                        *string           `json:"cidr_block,omitempty" cty:"cidr_block"`
+	EnableDNSHostnames          *bool             `json:"enable_dns_hostnames,omitempty" cty:"enable_dns_hostnames"`
+	EnableDNSSupport            *bool             `json:"enable_dns_support,omitempty" cty:"enable_dns_support"`
+	Tags                        map[string]string `json:"tags,omitempty" cty:"tags"`
+	AmazonProvidedIpv6CidrBlock *bool             `json:"assign_generated_ipv6_cidr_block,omitempty" cty:"assign_generated_ipv6_cidr_block"`
 }
 
 func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) error {
@@ -268,16 +269,21 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 		return nil
 	}
 
+	if err := t.AddOutputVariable("ipv6_vpc_cidr_block", e.TerraformIpv6CidrLink()); err != nil {
+		return err
+	}
+
 	if err := t.AddOutputVariable("vpc_cidr_block", terraformWriter.LiteralProperty("aws_vpc", *e.Name, "cidr_block")); err != nil {
 		// TODO: Should we try to output vpc_cidr_block for shared vpcs?
 		return err
 	}
 
 	tf := &terraformVPC{
-		CIDR:               e.CIDR,
-		Tags:               e.Tags,
-		EnableDNSHostnames: e.EnableDNSHostnames,
-		EnableDNSSupport:   e.EnableDNSSupport,
+		CIDR:                        e.CIDR,
+		Tags:                        e.Tags,
+		EnableDNSHostnames:          e.EnableDNSHostnames,
+		EnableDNSSupport:            e.EnableDNSSupport,
+		AmazonProvidedIpv6CidrBlock: fi.Bool(true),
 	}
 
 	return t.RenderResource("aws_vpc", *e.Name, tf)
@@ -295,6 +301,14 @@ func (e *VPC) TerraformLink() *terraformWriter.Literal {
 	}
 
 	return terraformWriter.LiteralProperty("aws_vpc", *e.Name, "id")
+}
+
+func (e *VPC) TerraformIpv6CidrLink() *terraformWriter.Literal {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		klog.Fatalf("only kops managed VPC is supported: %s", e)
+	}
+	return terraformWriter.LiteralProperty("aws_vpc", *e.Name, "ipv6_cidr_block")
 }
 
 type cloudformationVPC struct {

@@ -24,6 +24,7 @@ import (
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
@@ -135,6 +136,11 @@ func TestWriteLiteral(t *testing.T) {
 			name:     "file",
 			literal:  terraformWriter.LiteralFileExpression("${path.module}/foo", false),
 			expected: `foo = file("${path.module}/foo")`,
+		},
+		{
+			name:     "cidrsubnet",
+			literal:  terraformWriter.LiteralCidrsubnetExpression(terraformWriter.LiteralProperty("aws_vpc", "test", "ipv6_cidr_block"), fi.Int(8), fi.Int(1)),
+			expected: `foo = cidrsubnet(aws_vpc.test.ipv6_cidr_block,8,1)`,
 		},
 	}
 	for _, tc := range cases {

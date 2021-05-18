@@ -4102,6 +4102,9 @@ spec:
                 description: Configuration of subnets we are targeting
                 items:
                   properties:
+                    awsIpv6SubnetNum:
+                      description: define aws subnet number in decimanl
+                      type: integer
                     cidr:
                       type: string
                     egress:
