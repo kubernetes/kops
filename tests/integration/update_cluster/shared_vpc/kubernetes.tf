@@ -589,6 +589,7 @@ resource "aws_subnet" "us-test-1a-sharedvpc-example-com" {
     "SubnetType"                                  = "Public"
     "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
     "kubernetes.io/role/elb"                      = "1"
+    "kubernetes.io/role/internal-elb"             = "1"
   }
   vpc_id = "vpc-12345678"
 }
