@@ -671,7 +671,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		{
 			id := "v1.14.0"
 			location := key + "/" + id + ".yaml"
-			version := "1.0.74"
+			version := "1.0.75"
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
