@@ -34,6 +34,7 @@ type LBListener struct {
 	Pool         *LBPool
 	Lifecycle    *fi.Lifecycle
 	AllowedCIDRs []string
+	ConnLimit    *int
 }
 
 // GetDependencies returns the dependencies of the Instance task
@@ -63,6 +64,7 @@ func NewLBListenerTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Li
 		ID:           fi.String(lb.ID),
 		Name:         fi.String(lb.Name),
 		AllowedCIDRs: lb.AllowedCIDRs,
+		ConnLimit:    fi.Int(lb.ConnLimit),
 		Lifecycle:    lifecycle,
 	}
 
@@ -136,6 +138,7 @@ func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 			DefaultPoolID:  *e.Pool.ID,
 			LoadbalancerID: *e.Pool.Loadbalancer.ID,
 			Protocol:       listeners.ProtocolTCP,
+			ConnLimit:      e.ConnLimit,
 			ProtocolPort:   443,
 		}
 
@@ -149,17 +152,19 @@ func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 		}
 		e.ID = fi.String(listener.ID)
 		return nil
-	} else if len(changes.AllowedCIDRs) > 0 {
+	} else if len(changes.AllowedCIDRs) > 0 || changes.ConnLimit != nil {
+		opts := listeners.UpdateOpts{}
 		if openstackutil.IsOctaviaFeatureSupported(t.Cloud.LoadBalancerClient(), openstackutil.OctaviaFeatureVIPACL) {
-			opts := listeners.UpdateOpts{
-				AllowedCIDRs: &changes.AllowedCIDRs,
-			}
-			_, err := listeners.Update(t.Cloud.LoadBalancerClient(), fi.StringValue(a.ID), opts).Extract()
-			if err != nil {
-				return fmt.Errorf("error updating LB listener: %v", err)
-			}
+			opts.AllowedCIDRs = &changes.AllowedCIDRs
 		} else {
 			klog.V(2).Infof("Openstack Octavia VIPACLs not supported")
+		}
+		if changes.ConnLimit != nil {
+			opts.ConnLimit = changes.ConnLimit
+		}
+		_, err := listeners.Update(t.Cloud.LoadBalancerClient(), fi.StringValue(a.ID), opts).Extract()
+		if err != nil {
+			return fmt.Errorf("error updating LB listener: %v", err)
 		}
 		return nil
 	}

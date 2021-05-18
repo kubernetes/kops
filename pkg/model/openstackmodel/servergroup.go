@@ -288,6 +288,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:      lbTask.Name,
 			Lifecycle: b.Lifecycle,
 			Pool:      poolTask,
+			ConnLimit: fi.Int(500000),
 		}
 		if useVIPACL {
 			// sort for consistent comparison
