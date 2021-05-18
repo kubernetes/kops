@@ -19,40 +19,38 @@ package kubeconfig
 import (
 	"fmt"
 
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/klog/v2"
 )
 
-// KubeconfigBuilder builds a kubecfg file
-// This logic previously lives in the bash scripts (create-kubeconfig in cluster/common.sh)
-type KubeconfigBuilder struct {
-	Server string
+// Config writes cluster configuration to a kubeconfig file, typically ~/.kube/config
+type Config struct {
+	// CurrentContext is the new CurrentContext to set.
+	CurrentContext string
 
-	Context   string
-	Namespace string
+	// Contexts contains Context data to insert.
+	// Context data replaces any existing values with the same key.
+	Contexts map[string]*clientcmdapi.Context
 
-	User         string
-	KubeUser     string
-	KubePassword string
+	// Clusters contains Cluster data to insert.
+	// Cluster data is merged into any existing values with the same key.
+	Clusters map[string]*clientcmdapi.Cluster
 
-	CACert     []byte
-	ClientCert []byte
-	ClientKey  []byte
-
-	AuthenticationExec []string
+	// AuthInfos contains AuthInfo data to insert.
+	// AuthInfo data replaces any existing values with the same key.
+	AuthInfos map[string]*clientcmdapi.AuthInfo
 }
 
-// Create new KubeconfigBuilder
-func NewKubeconfigBuilder() *KubeconfigBuilder {
-	return &KubeconfigBuilder{}
-}
+// DeleteClusterConfig removes the configuration for a cluster, done to cleanup ~/.kube/config after kops delete cluster.
+func DeleteClusterConfig(configAccess clientcmd.ConfigAccess, context string) error {
+	if context != "" {
+		return fmt.Errorf("context must be provided")
+	}
 
-func (b *KubeconfigBuilder) DeleteKubeConfig(configAccess clientcmd.ConfigAccess) error {
 	config, err := configAccess.GetStartingConfig()
 	if err != nil {
-		return fmt.Errorf("error loading kubeconfig: %v", err)
+		return fmt.Errorf("error loading kubeconfig: %w", err)
 	}
 
 	if config == nil || clientcmdapi.IsConfigEmpty(config) {
@@ -60,145 +58,90 @@ func (b *KubeconfigBuilder) DeleteKubeConfig(configAccess clientcmd.ConfigAccess
 		return nil
 	}
 
-	delete(config.Clusters, b.Context)
-	delete(config.AuthInfos, b.Context)
-	delete(config.AuthInfos, fmt.Sprintf("%s-basic-auth", b.Context))
-	delete(config.Contexts, b.Context)
+	delete(config.Clusters, context)
+	delete(config.AuthInfos, context)
+	delete(config.AuthInfos, fmt.Sprintf("%s-basic-auth", context))
+	delete(config.Contexts, context)
 
-	if config.CurrentContext == b.Context {
+	if config.CurrentContext == context {
 		config.CurrentContext = ""
 	}
 
 	if err := clientcmd.ModifyConfig(configAccess, *config, false); err != nil {
-		return fmt.Errorf("error writing kubeconfig: %v", err)
+		return fmt.Errorf("error writing kubeconfig: %w", err)
 	}
 
-	fmt.Printf("Deleted kubectl config for %s\n", b.Context)
+	fmt.Printf("Deleted kubectl config for %s\n", context)
 	return nil
 }
 
-// Create new Rest Client
-func (c *KubeconfigBuilder) BuildRestConfig() (*rest.Config, error) {
-	restConfig := &rest.Config{
-		Host: c.Server,
-	}
-	restConfig.CAData = c.CACert
-	restConfig.CertData = c.ClientCert
-	restConfig.KeyData = c.ClientKey
-	restConfig.Username = c.KubeUser
-	restConfig.Password = c.KubePassword
-
-	return restConfig, nil
-}
-
-// Write out a new kubeconfig
-func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) error {
+// WriteKubecfg adds the configuration to the kube configuration specified by configAccess, typically ~/.kube/config
+func (b *Config) WriteKubecfg(configAccess clientcmd.ConfigAccess) error {
 	config, err := configAccess.GetStartingConfig()
 	if err != nil {
-		return fmt.Errorf("error reading kubeconfig: %v", err)
+		return fmt.Errorf("error reading kubeconfig: %w", err)
 	}
 
 	if config == nil {
 		config = &clientcmdapi.Config{}
 	}
 
-	{
-		cluster := config.Clusters[b.Context]
+	for k, want := range b.Clusters {
+		cluster := config.Clusters[k]
 		if cluster == nil {
 			cluster = clientcmdapi.NewCluster()
 		}
-		cluster.Server = b.Server
-		cluster.CertificateAuthorityData = b.CACert
+		cluster.Server = want.Server
+		cluster.CertificateAuthorityData = want.CertificateAuthorityData
 
 		if config.Clusters == nil {
 			config.Clusters = make(map[string]*clientcmdapi.Cluster)
 		}
-		config.Clusters[b.Context] = cluster
+		config.Clusters[k] = cluster
 	}
 
-	// If the user has the same name as the context, it is the admin user
-	if b.User == b.Context {
-		authInfo := config.AuthInfos[b.Context]
-		if authInfo == nil {
-			authInfo = clientcmdapi.NewAuthInfo()
-		}
-
-		if b.KubeUser != "" && b.KubePassword != "" {
-			authInfo.Username = b.KubeUser
-			authInfo.Password = b.KubePassword
-		}
-
-		if b.ClientCert != nil && b.ClientKey != nil {
-			authInfo.ClientCertificate = ""
-			authInfo.ClientCertificateData = b.ClientCert
-			authInfo.ClientKey = ""
-			authInfo.ClientKeyData = b.ClientKey
-		}
-
-		if len(b.AuthenticationExec) != 0 {
-			authInfo.Exec = &clientcmdapi.ExecConfig{
-				APIVersion: "client.authentication.k8s.io/v1beta1",
-				Command:    b.AuthenticationExec[0],
-				Args:       b.AuthenticationExec[1:],
-			}
-		}
-
+	for k, authInfo := range b.AuthInfos {
 		if config.AuthInfos == nil {
 			config.AuthInfos = make(map[string]*clientcmdapi.AuthInfo)
 		}
-		config.AuthInfos[b.Context] = authInfo
-	} else if b.User != "" {
-		if config.AuthInfos[b.User] == nil {
-			return fmt.Errorf("could not find user %q", b.User)
+		config.AuthInfos[k] = authInfo
+
+		// If we have a bearer token, also create a credential entry with basic auth
+		// so that it is easy to discover the basic auth password for your cluster
+		// to use in a web browser.
+		// This is deprecated behaviour along with the deprecation of basic auth.
+		// We can likely remove when we no longer support basic auth.
+		if k == b.CurrentContext && authInfo.Username != "" && authInfo.Password != "" {
+			baiName := k + "-basic-auth"
+			bai := config.AuthInfos[baiName]
+
+			bai.Username = authInfo.Username
+			bai.Password = authInfo.Password
+
+			config.AuthInfos[baiName] = bai
 		}
 	}
 
-	// If we have a bearer token, also create a credential entry with basic auth
-	// so that it is easy to discover the basic auth password for your cluster
-	// to use in a web browser.
-	if b.KubeUser != "" && b.KubePassword != "" {
-		name := b.Context + "-basic-auth"
-		authInfo := config.AuthInfos[name]
-		if authInfo == nil {
-			authInfo = clientcmdapi.NewAuthInfo()
-		}
-
-		authInfo.Username = b.KubeUser
-		authInfo.Password = b.KubePassword
-
-		if config.AuthInfos == nil {
-			config.AuthInfos = make(map[string]*clientcmdapi.AuthInfo)
-		}
-		config.AuthInfos[name] = authInfo
-	}
-
-	{
-		context := config.Contexts[b.Context]
-		if context == nil {
-			context = clientcmdapi.NewContext()
-		}
-
-		context.Cluster = b.Context
-		if b.User != "" {
-			context.AuthInfo = b.User
-		}
-
-		if b.Namespace != "" {
-			context.Namespace = b.Namespace
+	for k, context := range b.Contexts {
+		// Verify AuthInfo, in particular for manually passed user configs.
+		if context.AuthInfo != "" && config.AuthInfos[context.AuthInfo] == nil {
+			return fmt.Errorf("could not find user %q", context.AuthInfo)
 		}
 
 		if config.Contexts == nil {
 			config.Contexts = make(map[string]*clientcmdapi.Context)
 		}
-		config.Contexts[b.Context] = context
+		config.Contexts[k] = context
 	}
 
-	config.CurrentContext = b.Context
+	if b.CurrentContext == "" {
+		config.CurrentContext = b.CurrentContext
+	}
 
 	if err := clientcmd.ModifyConfig(configAccess, *config, true); err != nil {
 		return err
 	}
 
-	fmt.Printf("kops has set your kubectl context to %s\n", b.Context)
+	fmt.Printf("kops has set your kubectl context to %s\n", b.CurrentContext)
 	return nil
 }

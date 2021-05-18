@@ -58,8 +58,13 @@ type ExportKubecfgOptions struct {
 	KubeConfigPath string
 	all            bool
 	admin          time.Duration
-	user           string
-	internal       bool
+
+	// userKey specifies that we should use the named user section of the kubeconfig file for auth.
+	// We will not write a user/credentials section.
+	userKey string
+
+	// internal exports a kubeconfig using the internal endpoint.
+	internal bool
 
 	// UseKopsAuthenticationPlugin controls whether we should use the kOps auth helper instead of a static credential
 	UseKopsAuthenticationPlugin bool
@@ -103,7 +108,7 @@ func RunExportKubecfg(ctx context.Context, f *util.Factory, out io.Writer, optio
 			return fmt.Errorf("cannot use both --all flag and positional arguments")
 		}
 	}
-	if options.admin != 0 && options.user != "" {
+	if options.admin != 0 && options.userKey != "" {
 		return fmt.Errorf("cannot use both --admin and --user")
 	}
 
@@ -145,7 +150,7 @@ func RunExportKubecfg(ctx context.Context, f *util.Factory, out io.Writer, optio
 			secretStore,
 			&commands.CloudDiscoveryStatusStore{},
 			options.admin,
-			options.user,
+			options.userKey,
 			options.internal,
 			f.KopsStateStore(),
 			options.UseKopsAuthenticationPlugin)

@@ -444,7 +444,7 @@ func hasKubecfg(contextName string) (bool, error) {
 
 	config, err := kubectl.GetConfig(false)
 	if err != nil {
-		return false, fmt.Errorf("error getting config from kubectl: %v", err)
+		return false, fmt.Errorf("error getting config from kubectl: %w", err)
 	}
 
 	for _, context := range config.Contexts {
