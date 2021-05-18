@@ -34,7 +34,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel);
 WORKDIR=$(mktemp -d)
 
 KOPS_A=${WORKDIR}/kops-${KOPS_VERSION_A}
-wget -O "${KOPS_A}" "https://github.com/kubernetes/kops/releases/download/$KOPS_VERSION_A/kops-$(go env GOOS)-$(go env GOARCH)"
+wget -qO "${KOPS_A}" "https://github.com/kubernetes/kops/releases/download/$KOPS_VERSION_A/kops-$(go env GOOS)-$(go env GOARCH)"
 chmod +x "${KOPS_A}"
 
 
