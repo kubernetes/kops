@@ -17,6 +17,7 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -o xtrace
 
 echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
 
@@ -29,7 +30,7 @@ if [ -z "$FIRST_VERSION" ] || [ -z "$K8S_VERSION" ]; then
 fi
 
 FIRST_KOPS=$(mktemp -t kops.XXXXXXXXX)
-wget -O "${FIRST_KOPS}" "https://github.com/kubernetes/kops/releases/download/$FIRST_VERSION/kops-$(go env GOOS)-$(go env GOARCH)"
+wget -qO "${FIRST_KOPS}" "https://github.com/kubernetes/kops/releases/download/$FIRST_VERSION/kops-$(go env GOOS)-$(go env GOARCH)"
 chmod +x "${FIRST_KOPS}"
 
 export KOPS_FEATURE_FLAGS="SpecOverrideFlag,${KOPS_FEATURE_FLAGS:-}"
