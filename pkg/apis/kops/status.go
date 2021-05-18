@@ -16,18 +16,6 @@ limitations under the License.
 
 package kops
 
-import (
-	"k8s.io/klog/v2"
-)
-
-// StatusStore abstracts the key status functions; and lets us introduce status gradually
-type StatusStore interface {
-	// FindClusterStatus discovers the status of the cluster, by inspecting the cloud objects
-	FindClusterStatus(cluster *Cluster) (*ClusterStatus, error)
-
-	GetApiIngressStatus(cluster *Cluster) ([]ApiIngressStatus, error)
-}
-
 type ClusterStatus struct {
 	// EtcdClusters stores the status for each cluster
 	EtcdClusters []EtcdClusterStatus `json:"etcdClusters,omitempty"`
@@ -47,36 +35,4 @@ type EtcdMemberStatus struct {
 
 	// volumeId is the id of the cloud volume (e.g. the AWS volume id)
 	VolumeId string `json:"volumeId,omitempty"`
-}
-
-// ApiIngressStatus represents the status of an ingress point:
-// traffic intended for the service should be sent to an ingress point.
-type ApiIngressStatus struct {
-	// IP is set for load-balancer ingress points that are IP based
-	// (typically GCE or OpenStack load-balancers)
-	// +optional
-	IP string `json:"ip,omitempty" protobuf:"bytes,1,opt,name=ip"`
-
-	// Hostname is set for load-balancer ingress points that are DNS based
-	// (typically AWS load-balancers)
-	// +optional
-	Hostname string `json:"hostname,omitempty" protobuf:"bytes,2,opt,name=hostname"`
-}
-
-// NoopStatusStore is a stub implementation that returns empty status
-// It is a temporary hackaround while we introduce status
-type NoopStatusStore struct {
-}
-
-var _ StatusStore = &NoopStatusStore{}
-
-// FindClusterStatus discovers the status of the cluster, by inspecting the cloud objects
-func (s *NoopStatusStore) FindClusterStatus(cluster *Cluster) (*ClusterStatus, error) {
-	klog.Warningf("FindClusterStatus called on NoopStore")
-	return nil, nil
-}
-
-func (s *NoopStatusStore) GetApiIngressStatus(cluster *Cluster) ([]ApiIngressStatus, error) {
-	klog.Warningf("GetApiIngressStatus called on NoopStore")
-	return nil, nil
 }

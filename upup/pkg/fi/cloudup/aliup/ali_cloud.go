@@ -70,8 +70,6 @@ type ALICloud interface {
 	CreateTags(resourceId string, resourceType string, tags map[string]string) error
 	RemoveTags(resourceId string, resourceType string, tags map[string]string) error
 	GetClusterTags() map[string]string
-	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
-	GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error)
 }
 
 type aliCloudImplementation struct {
@@ -342,8 +340,8 @@ func (c *aliCloudImplementation) GetClusterTags() map[string]string {
 	return c.tags
 }
 
-func (c *aliCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
-	var ingresses []kops.ApiIngressStatus
+func (c *aliCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
+	var ingresses []fi.ApiIngressStatus
 	name := "api." + cluster.Name
 
 	describeLoadBalancersArgs := &slb.DescribeLoadBalancersArgs{
@@ -364,7 +362,7 @@ func (c *aliCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]k
 	}
 
 	address := responseLoadBalancers[0].Address
-	ingresses = append(ingresses, kops.ApiIngressStatus{IP: address})
+	ingresses = append(ingresses, fi.ApiIngressStatus{IP: address})
 
 	return ingresses, nil
 }

@@ -353,8 +353,7 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 					if e.LoadBalancer != nil &&
 						fi.StringValue(name) != fi.StringValue(e.LoadBalancer.Name) {
 
-						nlb, err := awstasks.FindNetworkLoadBalancerByNameTag(
-							cloud, fi.StringValue(e.LoadBalancer.Name))
+						nlb, err := cloud.FindELBV2ByNameTag(fi.StringValue(e.LoadBalancer.Name))
 						if err != nil {
 							return nil, err
 						}
@@ -362,8 +361,7 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 							actual.LoadBalancer = e.LoadBalancer
 						}
 
-						elb, err := awstasks.FindLoadBalancerByNameTag(
-							cloud, fi.StringValue(e.LoadBalancer.Name))
+						elb, err := cloud.FindELBByNameTag(fi.StringValue(e.LoadBalancer.Name))
 						if err != nil {
 							return nil, err
 						}
@@ -642,7 +640,7 @@ func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 			// Load balancer.
 			{
 				if e.LoadBalancer != nil {
-					elb, err := awstasks.FindLoadBalancerByNameTag(cloud, fi.StringValue(e.LoadBalancer.Name))
+					elb, err := cloud.FindELBByNameTag(fi.StringValue(e.LoadBalancer.Name))
 					if err != nil {
 						return err
 					}
@@ -659,7 +657,7 @@ func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 
 					//TODO: Verify using NLB functionality
 					//TODO: Consider using DNSTarget Interface and adding .getLoadBalancerName() .getLoadBalancerArn
-					nlb, err := awstasks.FindNetworkLoadBalancerByNameTag(cloud, fi.StringValue(e.LoadBalancer.Name))
+					nlb, err := cloud.FindELBV2ByNameTag(fi.StringValue(e.LoadBalancer.Name))
 					if err != nil {
 						return err
 					}
@@ -1159,8 +1157,7 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 					var name, typ *string
 					var lb interface{}
 
-					lb, err = awstasks.FindLoadBalancerByNameTag(
-						cloud, fi.StringValue(e.LoadBalancer.Name))
+					lb, err = cloud.FindELBByNameTag(fi.StringValue(e.LoadBalancer.Name))
 					if err != nil {
 						return fmt.Errorf("spotinst: error looking for aws/elb: %v", err)
 					}
@@ -1168,8 +1165,7 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 						typ = fi.String("CLASSIC")
 						name = lb.(*elb.LoadBalancerDescription).LoadBalancerName
 					} else {
-						lb, err = awstasks.FindNetworkLoadBalancerByNameTag(
-							cloud, fi.StringValue(e.LoadBalancer.Name))
+						lb, err = cloud.FindELBV2ByNameTag(fi.StringValue(e.LoadBalancer.Name))
 						if err != nil {
 							return fmt.Errorf("spotinst: error looking for aws/nlb: %v", err)
 						}
