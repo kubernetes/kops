@@ -507,7 +507,7 @@ spec:
         # https://docs.cilium.io/en/v1.9/operations/metrics/#installation
         {{ if .EnablePrometheusMetrics }}
         prometheus.io/scrape: "true"
-        prometheus.io/port: {{ .AgentPrometheusPort | quote }}
+        prometheus.io/port: {{ printf "%q" .AgentPrometheusPort }}
         {{ end }}
       labels:
         k8s-app: cilium
