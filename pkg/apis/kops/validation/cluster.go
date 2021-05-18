@@ -91,7 +91,7 @@ func validateEtcdClusterUpdate(fp *field.Path, obj kops.EtcdClusterSpec, status 
 			fp := fp.Child("etcdMembers").Key(k)
 
 			if oldMember, ok := oldMembers[k]; ok {
-				allErrs = append(allErrs, validateEtcdMemberUpdate(fp, newMember, etcdClusterStatus, oldMember)...)
+				allErrs = append(allErrs, validateEtcdMemberUpdate(fp, newMember, oldMember)...)
 			}
 		}
 	}
@@ -99,7 +99,7 @@ func validateEtcdClusterUpdate(fp *field.Path, obj kops.EtcdClusterSpec, status 
 	return allErrs
 }
 
-func validateEtcdMemberUpdate(fp *field.Path, obj kops.EtcdMemberSpec, status *kops.EtcdClusterStatus, old kops.EtcdMemberSpec) field.ErrorList {
+func validateEtcdMemberUpdate(fp *field.Path, obj kops.EtcdMemberSpec, old kops.EtcdMemberSpec) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if obj.Name != old.Name {

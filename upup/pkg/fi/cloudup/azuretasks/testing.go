@@ -158,7 +158,7 @@ func (c *MockAzureCloud) FindClusterStatus(cluster *kops.Cluster) (*kops.Cluster
 }
 
 // GetApiIngressStatus returns the status of API ingress.
-func (c *MockAzureCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+func (c *MockAzureCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	return nil, nil
 }
 

@@ -19,18 +19,19 @@ package awsup
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/service/eventbridge/eventbridgeiface"
-	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elb/elbiface"
+	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
+	"github.com/aws/aws-sdk-go/service/eventbridge/eventbridgeiface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
+	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -191,6 +192,22 @@ func (c *MockAWSCloud) RemoveELBV2Tags(ResourceArn string, tags map[string]strin
 	return removeELBV2Tags(c, ResourceArn, tags)
 }
 
+func (c *MockAWSCloud) FindELBByNameTag(findNameTag string) (*elb.LoadBalancerDescription, error) {
+	return findELBByNameTag(c, findNameTag)
+}
+
+func (c *MockAWSCloud) DescribeELBTags(loadBalancerNames []string) (map[string][]*elb.Tag, error) {
+	return describeELBTags(c, loadBalancerNames)
+}
+
+func (c *MockAWSCloud) FindELBV2ByNameTag(findNameTag string) (*elbv2.LoadBalancer, error) {
+	return findELBV2ByNameTag(c, findNameTag)
+}
+
+func (c *MockAWSCloud) DescribeELBV2Tags(loadBalancerArns []string) (map[string][]*elbv2.Tag, error) {
+	return describeELBV2Tags(c, loadBalancerArns)
+}
+
 func (c *MockAWSCloud) DescribeInstance(instanceID string) (*ec2.Instance, error) {
 	return nil, fmt.Errorf("MockAWSCloud DescribeInstance not implemented")
 }
@@ -282,6 +299,10 @@ func (c *MockAWSCloud) EventBridge() eventbridgeiface.EventBridgeAPI {
 
 func (c *MockAWSCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	return findVPCInfo(c, id)
+}
+
+func (c *MockAWSCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
+	return getApiIngressStatus(c, cluster)
 }
 
 // DefaultInstanceType determines an instance type for the specified cluster & instance group

@@ -143,7 +143,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 			}
 		}
 		if apiLBTask != nil && len(actual.LoadBalancers) > 0 {
-			apiLBDesc, err := FindLoadBalancerByNameTag(c.Cloud.(awsup.AWSCloud), fi.StringValue(apiLBTask.Name))
+			apiLBDesc, err := c.Cloud.(awsup.AWSCloud).FindELBByNameTag(fi.StringValue(apiLBTask.Name))
 			if err != nil {
 				return nil, err
 			}
@@ -335,7 +335,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 
 		for _, k := range e.LoadBalancers {
 			if k.LoadBalancerName == nil {
-				lbDesc, err := FindLoadBalancerByNameTag(t.Cloud, fi.StringValue(k.GetName()))
+				lbDesc, err := t.Cloud.FindELBByNameTag(fi.StringValue(k.GetName()))
 				if err != nil {
 					return err
 				}

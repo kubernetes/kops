@@ -47,6 +47,11 @@ type Cloud interface {
 	// Region returns the cloud region bound to the cloud instance.
 	// If the region concept does not apply, returns "".
 	Region() string
+
+	// FindClusterStatus discovers the status of the cluster, by inspecting the cloud objects
+	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
+
+	GetApiIngressStatus(cluster *kops.Cluster) ([]ApiIngressStatus, error)
 }
 
 type VPCInfo struct {
@@ -61,6 +66,20 @@ type SubnetInfo struct {
 	ID   string
 	Zone string
 	CIDR string
+}
+
+// ApiIngressStatus represents the status of an ingress point:
+// traffic intended for the service should be sent to an ingress point.
+type ApiIngressStatus struct {
+	// IP is set for load-balancer ingress points that are IP based
+	// (typically GCE or OpenStack load-balancers)
+	// +optional
+	IP string `json:"ip,omitempty" protobuf:"bytes,1,opt,name=ip"`
+
+	// Hostname is set for load-balancer ingress points that are DNS based
+	// (typically AWS load-balancers)
+	// +optional
+	Hostname string `json:"hostname,omitempty" protobuf:"bytes,2,opt,name=hostname"`
 }
 
 // zonesToCloud allows us to infer from certain well-known zones to a cloud

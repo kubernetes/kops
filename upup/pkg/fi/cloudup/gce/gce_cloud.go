@@ -45,11 +45,7 @@ type GCECloud interface {
 
 	Project() string
 	WaitForOp(op *compute.Operation) error
-	GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error)
 	Labels() map[string]string
-
-	// FindClusterStatus gets the status of the cluster as it exists in GCE, inferred from volumes
-	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
 
 	Zones() ([]string, error)
 
@@ -288,8 +284,8 @@ func (c *gceCloudImplementation) WaitForOp(op *compute.Operation) error {
 	return WaitForOp(c.compute.srv, op)
 }
 
-func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
-	var ingresses []kops.ApiIngressStatus
+func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
+	var ingresses []fi.ApiIngressStatus
 
 	// Note that this must match GCEModelContext::NameForForwardingRule
 	name := SafeObjectName("api", cluster.ObjectMeta.Name)
@@ -309,7 +305,7 @@ func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]k
 			return nil, fmt.Errorf("found forward rule %q, but it did not have an IPAddress", name)
 		}
 
-		ingresses = append(ingresses, kops.ApiIngressStatus{
+		ingresses = append(ingresses, fi.ApiIngressStatus{
 			IP: forwardingRule.IPAddress,
 		})
 	}

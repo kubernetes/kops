@@ -24,7 +24,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -130,49 +129,6 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 	return actual, nil
 }
 
-func FindDNSName(awsCloud awsup.AWSCloud, cluster *kops.Cluster) (string, error) {
-	name := "api." + cluster.Name
-
-	lb, err := FindElasticLoadBalancerByNameTag(awsCloud, cluster)
-
-	if err != nil {
-		return "", fmt.Errorf("error looking for AWS ELB: %v", err)
-	}
-
-	if lb == nil {
-		return "", nil
-	}
-
-	lbDnsName := aws.StringValue(lb.getDNSName())
-
-	if lbDnsName == "" {
-		return "", fmt.Errorf("found ELB %q, but it did not have a DNSName", name)
-	}
-
-	return lbDnsName, nil
-}
-
-func FindElasticLoadBalancerByNameTag(awsCloud awsup.AWSCloud, cluster *kops.Cluster) (DNSTarget, error) {
-	name := "api." + cluster.Name
-	if cluster.Spec.API == nil || cluster.Spec.API.LoadBalancer == nil {
-		return nil, nil
-	}
-	if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {
-		if lb, err := FindLoadBalancerByNameTag(awsCloud, name); err != nil {
-			return nil, fmt.Errorf("error looking for AWS ELB: %v", err)
-		} else if lb != nil {
-			return &ClassicLoadBalancer{Name: fi.String(name), DNSName: lb.DNSName}, nil
-		}
-	} else if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
-		if lb, err := FindNetworkLoadBalancerByNameTag(awsCloud, name); err != nil {
-			return nil, fmt.Errorf("error looking for AWS NLB: %v", err)
-		} else if lb != nil {
-			return &NetworkLoadBalancer{Name: fi.String(name), DNSName: lb.DNSName}, nil
-		}
-	}
-	return nil, nil
-}
-
 func findDNSTarget(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dnsName string, targetDNSName *string) (DNSTarget, error) {
 	//TODO: I would like to search dnsName for presence of ".elb" or ".nlb" to simply searching, however both nlb and elb have .elb. in the name at present
 	if ELB, err := findDNSTargetELB(cloud, aliasTarget, dnsName, targetDNSName); err != nil {
@@ -198,7 +154,7 @@ func findDNSTargetNLB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dn
 	if lb != nil {
 		loadBalancerName := aws.StringValue(lb.LoadBalancerName) //TOOD: can we keep these on object
 		loadBalancerArn := aws.StringValue(lb.LoadBalancerArn)   //TODO: can we keep these on object
-		tagMap, err := describeNetworkLoadBalancerTags(cloud, []string{loadBalancerArn})
+		tagMap, err := cloud.DescribeELBV2Tags([]string{loadBalancerArn})
 		if err != nil {
 			return nil, err
 		}
@@ -220,7 +176,7 @@ func findDNSTargetELB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dn
 	}
 	if lb != nil {
 		loadBalancerName := aws.StringValue(lb.LoadBalancerName)
-		tagMap, err := describeLoadBalancerTags(cloud, []string{loadBalancerName})
+		tagMap, err := cloud.DescribeELBTags([]string{loadBalancerName})
 		if err != nil {
 			return nil, err
 		}

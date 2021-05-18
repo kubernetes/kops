@@ -52,8 +52,7 @@ func UpdateCluster(ctx context.Context, clientset simple.Clientset, cluster *kop
 	}
 
 	// Retrieve the current status of the cluster.  This will eventually be part of the cluster object.
-	statusDiscovery := &CloudDiscoveryStatusStore{}
-	status, err := statusDiscovery.FindClusterStatus(cluster)
+	status, err := cloud.FindClusterStatus(cluster)
 	if err != nil {
 		return err
 	}
