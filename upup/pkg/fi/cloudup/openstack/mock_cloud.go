@@ -303,7 +303,7 @@ func (c *MockCloud) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatu
 func (c *MockCloud) FindNetworkBySubnetID(subnetID string) (*networks.Network, error) {
 	return findNetworkBySubnetID(c, subnetID)
 }
-func (c *MockCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+func (c *MockCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	return getApiIngressStatus(c, cluster)
 }
 func (c *MockCloud) GetCloudTags() map[string]string {

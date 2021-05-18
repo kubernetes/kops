@@ -27,8 +27,8 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/kopscodecs"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/text"
 	"k8s.io/kops/util/pkg/vfs"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
@@ -120,8 +120,11 @@ func RunReplace(ctx context.Context, f *util.Factory, cmd *cobra.Command, out io
 			case *kopsapi.Cluster:
 				{
 					// Retrieve the current status of the cluster.  This will eventually be part of the cluster object.
-					statusDiscovery := &commands.CloudDiscoveryStatusStore{}
-					status, err := statusDiscovery.FindClusterStatus(v)
+					cloud, err := cloudup.BuildCloud(v)
+					if err != nil {
+						return err
+					}
+					status, err := cloud.FindClusterStatus(v)
 					if err != nil {
 						return err
 					}

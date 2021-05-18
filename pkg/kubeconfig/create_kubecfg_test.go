@@ -21,6 +21,9 @@ import (
 	"testing"
 	"time"
 
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/testutils"
 
 	"github.com/google/go-cmp/cmp"
@@ -34,17 +37,50 @@ const certData = "-----BEGIN CERTIFICATE-----\nMIIC2DCCAcCgAwIBAgIRALJXAkVj964tq
 const privatekeyData = "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA4JwpEprZ5n8RIEt6jT2lAh+UDgRgx/4px21gjgywQivYHVxH\nAZexVb/E9pBa9Q2G9B1Q7TCO7YsUVRQy4JMDZVt+McFnWVwexnqBYFNcVjkEmDgA\ngvCYGE0P9d/RwRL4KuLHo+u6fv7P0jXMN+CpOxyLhYZZNa0ZOZDHsSiJSQSj9WGF\nGHrbCf0KVDpKieR1uBqHrRO+mLR5zkX2L58m74kjK4dsBhmjeq/7OAoTmiG2QgJ/\nP2IjyhiA2mRqY+hl55lwEUV/0yHYEkJC8LdGkwwZz2eF77aSPGmi/A2CSKgMwDTx\n9m+P7jcpWreYw6NG9BueGoDIve/tgFKwvVFF6QIDAQABAoIBAA0ktjaTfyrAxsTI\nBezb7Zr5NBW55dvuII299cd6MJo+rI/TRYhvUv48kY8IFXp/hyUjzgeDLunxmIf9\n/Zgsoic9Ol44/g45mMduhcGYPzAAeCdcJ5OB9rR9VfDCXyjYLlN8H8iU0734tTqM\n0V13tQ9zdSqkGPZOIcq/kR/pylbOZaQMe97BTlsAnOMSMKDgnftY4122Lq3GYy+t\nvpr+bKVaQZwvkLoSU3rECCaKaghgwCyX7jft9aEkhdJv+KlwbsGY6WErvxOaLWHd\ncuMQjGapY1Fa/4UD00mvrA260NyKfzrp6+P46RrVMwEYRJMIQ8YBAk6N6Hh7dc0G\n8Z6i1m0CgYEA9HeCJR0TSwbIQ1bDXUrzpftHuidG5BnSBtax/ND9qIPhR/FBW5nj\n22nwLc48KkyirlfIULd0ae4qVXJn7wfYcuX/cJMLDmSVtlM5Dzmi/91xRiFgIzx1\nAsbBzaFjISP2HpSgL+e9FtSXaaqeZVrflitVhYKUpI/AKV31qGHf04sCgYEA6zTV\n99Sb49Wdlns5IgsfnXl6ToRttB18lfEKcVfjAM4frnkk06JpFAZeR+9GGKUXZHqs\nz2qcplw4d/moCC6p3rYPBMLXsrGNEUFZqBlgz72QA6BBq3X0Cg1Bc2ZbK5VIzwkg\nST2SSux6ccROfgULmN5ZiLOtdUKNEZpFF3i3qtsCgYADT/s7dYFlatobz3kmMnXK\nsfTu2MllHdRys0YGHu7Q8biDuQkhrJwhxPW0KS83g4JQym+0aEfzh36bWcl+u6R7\nKhKj+9oSf9pndgk345gJz35RbPJYh+EuAHNvzdgCAvK6x1jETWeKf6btj5pF1U1i\nQ4QNIw/QiwIXjWZeubTGsQKBgQCbduLu2rLnlyyAaJZM8DlHZyH2gAXbBZpxqU8T\nt9mtkJDUS/KRiEoYGFV9CqS0aXrayVMsDfXY6B/S/UuZjO5u7LtklDzqOf1aKG3Q\ndGXPKibknqqJYH+bnUNjuYYNerETV57lijMGHuSYCf8vwLn3oxBfERRX61M/DU8Z\nworz/QKBgQDCTJI2+jdXg26XuYUmM4XXfnocfzAXhXBULt1nENcogNf1fcptAVtu\nBAiz4/HipQKqoWVUYmxfgbbLRKKLK0s0lOWKbYdVjhEm/m2ZU8wtXTagNwkIGoyq\nY/C1Lox4f1ROJnCjc/hfcOjcxX5M8A8peecHWlVtUPKTJgxQ7oMKcw==\n-----END RSA PRIVATE KEY-----\n"
 
 // mock a fake status store.
-type fakeStatusStore struct {
-	FindClusterStatusFn   func(cluster *kops.Cluster) (*kops.ClusterStatus, error)
-	GetApiIngressStatusFn func(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error)
+type fakeStatusCloud struct {
+	GetApiIngressStatusFn func(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error)
 }
 
-func (f fakeStatusStore) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error) {
-	return f.FindClusterStatusFn(cluster)
-}
+var _ fi.Cloud = &fakeStatusCloud{}
 
-func (f fakeStatusStore) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+func (f fakeStatusCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	return f.GetApiIngressStatusFn(cluster)
+}
+
+func (f fakeStatusCloud) ProviderID() kops.CloudProviderID {
+	panic("not implemented")
+}
+
+func (f fakeStatusCloud) DNS() (dnsprovider.Interface, error) {
+	panic("not implemented")
+}
+
+func (f fakeStatusCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
+	panic("not implemented")
+}
+
+func (f fakeStatusCloud) DeleteInstance(instance *cloudinstances.CloudInstance) error {
+	panic("not implemented")
+}
+
+func (f fakeStatusCloud) DeleteGroup(group *cloudinstances.CloudInstanceGroup) error {
+	panic("not implemented")
+}
+
+func (f fakeStatusCloud) DetachInstance(instance *cloudinstances.CloudInstance) error {
+	panic("not implemented")
+}
+
+func (f fakeStatusCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	panic("not implemented")
+}
+
+func (f fakeStatusCloud) Region() string {
+	panic("not implemented")
+}
+
+func (f fakeStatusCloud) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error) {
+	panic("not implemented")
 }
 
 // mock a fake key store
@@ -110,7 +146,7 @@ func TestBuildKubecfg(t *testing.T) {
 	type args struct {
 		cluster                     *kops.Cluster
 		secretStore                 fi.SecretStore
-		status                      fakeStatusStore
+		status                      fakeStatusCloud
 		admin                       time.Duration
 		user                        string
 		internal                    bool
@@ -135,7 +171,7 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For Public DNS with admin",
 			args: args{
 				cluster: publicCluster,
-				status:  fakeStatusStore{},
+				status:  fakeStatusCloud{},
 				admin:   DefaultKubecfgAdminLifetime,
 				user:    "",
 			},
@@ -151,7 +187,7 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For Public DNS with admin and secondary NLB port",
 			args: args{
 				cluster: certNLBCluster,
-				status:  fakeStatusStore{},
+				status:  fakeStatusCloud{},
 				admin:   DefaultKubecfgAdminLifetime,
 			},
 			want: &KubeconfigBuilder{
@@ -166,7 +202,7 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For Public DNS with admin and CLB ACM Certificate",
 			args: args{
 				cluster: certCluster,
-				status:  fakeStatusStore{},
+				status:  fakeStatusCloud{},
 				admin:   DefaultKubecfgAdminLifetime,
 			},
 			want: &KubeconfigBuilder{
@@ -181,7 +217,7 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For Public DNS without admin and with ACM certificate",
 			args: args{
 				cluster: certNLBCluster,
-				status:  fakeStatusStore{},
+				status:  fakeStatusCloud{},
 				admin:   0,
 			},
 			want: &KubeconfigBuilder{
@@ -196,7 +232,7 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For Public DNS without admin",
 			args: args{
 				cluster: publicCluster,
-				status:  fakeStatusStore{},
+				status:  fakeStatusCloud{},
 				admin:   0,
 				user:    "myuser",
 			},
@@ -212,7 +248,7 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For Public DNS with Empty Master Name",
 			args: args{
 				cluster: emptyMasterPublicNameCluster,
-				status:  fakeStatusStore{},
+				status:  fakeStatusCloud{},
 				admin:   0,
 				user:    "",
 			},
@@ -228,9 +264,9 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For Gossip cluster",
 			args: args{
 				cluster: gossipCluster,
-				status: fakeStatusStore{
-					GetApiIngressStatusFn: func(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
-						return []kops.ApiIngressStatus{
+				status: fakeStatusCloud{
+					GetApiIngressStatusFn: func(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
+						return []fi.ApiIngressStatus{
 							{
 								Hostname: "elbHostName",
 							},
@@ -250,7 +286,7 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Public DNS with kops auth plugin",
 			args: args{
 				cluster:                     publicCluster,
-				status:                      fakeStatusStore{},
+				status:                      fakeStatusCloud{},
 				admin:                       0,
 				useKopsAuthenticationPlugin: true,
 			},
@@ -273,7 +309,7 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For internal DNS name with admin",
 			args: args{
 				cluster:  publicCluster,
-				status:   fakeStatusStore{},
+				status:   fakeStatusCloud{},
 				admin:    DefaultKubecfgAdminLifetime,
 				internal: true,
 			},
@@ -289,9 +325,9 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For Gossip cluster with admin and secondary NLB port",
 			args: args{
 				cluster: certGossipNLBCluster,
-				status: fakeStatusStore{
-					GetApiIngressStatusFn: func(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
-						return []kops.ApiIngressStatus{
+				status: fakeStatusCloud{
+					GetApiIngressStatusFn: func(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
+						return []fi.ApiIngressStatus{
 							{
 								Hostname: "nlbHostName",
 							},

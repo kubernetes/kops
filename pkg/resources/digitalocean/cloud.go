@@ -199,8 +199,8 @@ func (c *Cloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	return nil, errors.New("not implemented")
 }
 
-func (c *Cloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
-	var ingresses []kops.ApiIngressStatus
+func (c *Cloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
+	var ingresses []fi.ApiIngressStatus
 	if cluster.Spec.MasterPublicName != "" {
 		// Note that this must match Digital Ocean's lb name
 		klog.V(2).Infof("Querying DO to find Loadbalancers for API (%q)", cluster.Name)
@@ -221,7 +221,7 @@ func (c *Cloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressSta
 				}
 
 				address := lb.IP
-				ingresses = append(ingresses, kops.ApiIngressStatus{IP: address})
+				ingresses = append(ingresses, fi.ApiIngressStatus{IP: address})
 
 				return ingresses, nil
 			}
