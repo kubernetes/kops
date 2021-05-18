@@ -503,7 +503,7 @@ spec:
         # gets priority scheduling.
         # https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
         scheduler.alpha.kubernetes.io/critical-pod: ""
-        # Annotation required for prometheus auto-discovery scrapping
+        # Annotation required for prometheus auto-discovery scraping
         # https://docs.cilium.io/en/v1.9/operations/metrics/#installation
         {{ if .EnablePrometheusMetrics }}
         prometheus.io/scrape: "true"
