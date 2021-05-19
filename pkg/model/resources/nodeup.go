@@ -74,15 +74,11 @@ download-or-bust() {
           echo "== Download failed with ${cmd} =="
           continue
         fi
-        if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
+        if ! validate-hash "${file}" "${hash}"; then
           echo "== Hash validation of ${url} failed. Retrying. =="
           rm -f "${file}"
         else
-          if [[ -n "${hash}" ]]; then
-            echo "== Downloaded ${url} (SHA1 = ${hash}) =="
-          else
-            echo "== Downloaded ${url} =="
-          fi
+          echo "== Downloaded ${url} (SHA256 = ${hash}) =="
           return
         fi
       done
@@ -111,17 +107,9 @@ function split-commas() {
 
 function try-download-release() {
   local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
-  if [[ -n "${NODEUP_HASH:-}" ]]; then
-    local -r nodeup_hash="${NODEUP_HASH}"
-  else
-  # TODO: Remove?
-    echo "Downloading sha256 (not found in env)"
-    download-or-bust nodeup.sha256 "" "${nodeup_urls[@]/%/.sha256}"
-    local -r nodeup_hash=$(cat nodeup.sha256)
-  fi
 
   echo "Downloading nodeup (${nodeup_urls[@]})"
-  download-or-bust nodeup "${nodeup_hash}" "${nodeup_urls[@]}"
+  download-or-bust nodeup "${NODEUP_HASH}" "${nodeup_urls[@]}"
 
   chmod +x nodeup
 }
@@ -142,12 +130,8 @@ function download-release() {
     ;;
   esac
 
-  # In case of failure checking integrity of release, retry.
   cd ${INSTALL_DIR}/bin
-  until try-download-release; do
-    sleep 15
-    echo "Couldn't download release. Retrying..."
-  done
+  try-download-release
 
   echo "Running nodeup"
   # We can't run in the foreground because of https://github.com/docker/docker/issues/23793
