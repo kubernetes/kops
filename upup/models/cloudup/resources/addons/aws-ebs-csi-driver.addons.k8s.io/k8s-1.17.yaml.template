@@ -449,6 +449,7 @@ spec:
             - --feature-gates=Topology=true
             - --leader-election=true
             - --extra-create-metadata=true
+            - --default-fstype=ext4
           env:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
