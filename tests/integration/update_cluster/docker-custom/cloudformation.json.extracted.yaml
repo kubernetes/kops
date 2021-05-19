@@ -36,15 +36,15 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
   --v=8  )\n}\n\n####################################################################################\n\n/bin/systemd-machine-id-setup
   || echo \"failed to set up ensure machine-id configured\"\n\necho \"== nodeup node
   config starting ==\"\nensure-install-dir\n\ncat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'\ncloudConfig:\n
-  \ manageStorageClasses: true\ncontainerRuntime: docker\ncontainerd:\n  configOverride:
-  |\n    disabled_plugins = [\"cri\"]\n  logLevel: info\ndocker:\n  execOpt:\n  -
-  native.cgroupdriver=systemd\n  ipMasq: false\n  ipTables: false\n  logDriver: json-file\n
-  \ logLevel: info\n  logOpt:\n  - max-size=10m\n  - max-file=5\n  packages:\n    hashAmd64:
-  000000000000000000000000000000000000000000000000000000000000000a\n    hashArm64:
-  000000000000000000000000000000000000000000000000000000000000000b\n    urlAmd64:
-  https://download.docker.com/linux/static/stable/x86_64/docker-20.10.1.tgz\n    urlArm64:
-  https://download.docker.com/linux/static/stable/aarch64/docker-20.10.1.tgz\n  storage:
-  overlay2,overlay,aufs\n  version: 20.10.5\nencryptionConfig: null\netcdClusters:\n
+  \ awsEBSCSIDriver:\n    enabled: false\n  manageStorageClasses: true\ncontainerRuntime:
+  docker\ncontainerd:\n  configOverride: |\n    disabled_plugins = [\"cri\"]\n  logLevel:
+  info\ndocker:\n  execOpt:\n  - native.cgroupdriver=systemd\n  ipMasq: false\n  ipTables:
+  false\n  logDriver: json-file\n  logLevel: info\n  logOpt:\n  - max-size=10m\n  -
+  max-file=5\n  packages:\n    hashAmd64: 000000000000000000000000000000000000000000000000000000000000000a\n
+  \   hashArm64: 000000000000000000000000000000000000000000000000000000000000000b\n
+  \   urlAmd64: https://download.docker.com/linux/static/stable/x86_64/docker-20.10.1.tgz\n
+  \   urlArm64: https://download.docker.com/linux/static/stable/aarch64/docker-20.10.1.tgz\n
+  \ storage: overlay2,overlay,aufs\n  version: 20.10.5\nencryptionConfig: null\netcdClusters:\n
   \ events:\n    version: 3.4.13\n  main:\n    version: 3.4.13\nkubeAPIServer:\n  allowPrivileged:
   true\n  anonymousAuth: false\n  apiAudiences:\n  - kubernetes.svc.default\n  apiServerCount:
   1\n  authorizationMode: AlwaysAllow\n  bindAddress: 0.0.0.0\n  cloudProvider: aws\n
@@ -144,16 +144,16 @@ Resources.AWSEC2LaunchTemplatenodesdockerexamplecom.Properties.LaunchTemplateDat
   --v=8  )\n}\n\n####################################################################################\n\n/bin/systemd-machine-id-setup
   || echo \"failed to set up ensure machine-id configured\"\n\necho \"== nodeup node
   config starting ==\"\nensure-install-dir\n\ncat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'\ncloudConfig:\n
-  \ manageStorageClasses: true\ncontainerRuntime: docker\ncontainerd:\n  configOverride:
-  |\n    disabled_plugins = [\"cri\"]\n  logLevel: info\ndocker:\n  execOpt:\n  -
-  native.cgroupdriver=systemd\n  ipMasq: false\n  ipTables: false\n  logDriver: json-file\n
-  \ logLevel: info\n  logOpt:\n  - max-size=10m\n  - max-file=5\n  packages:\n    hashAmd64:
-  000000000000000000000000000000000000000000000000000000000000000a\n    hashArm64:
-  000000000000000000000000000000000000000000000000000000000000000b\n    urlAmd64:
-  https://download.docker.com/linux/static/stable/x86_64/docker-20.10.1.tgz\n    urlArm64:
-  https://download.docker.com/linux/static/stable/aarch64/docker-20.10.1.tgz\n  storage:
-  overlay2,overlay,aufs\n  version: 20.10.5\nkubeProxy:\n  clusterCIDR: 100.96.0.0/11\n
-  \ cpuRequest: 100m\n  hostnameOverride: '@aws'\n  image: k8s.gcr.io/kube-proxy:v1.21.0\n
+  \ awsEBSCSIDriver:\n    enabled: false\n  manageStorageClasses: true\ncontainerRuntime:
+  docker\ncontainerd:\n  configOverride: |\n    disabled_plugins = [\"cri\"]\n  logLevel:
+  info\ndocker:\n  execOpt:\n  - native.cgroupdriver=systemd\n  ipMasq: false\n  ipTables:
+  false\n  logDriver: json-file\n  logLevel: info\n  logOpt:\n  - max-size=10m\n  -
+  max-file=5\n  packages:\n    hashAmd64: 000000000000000000000000000000000000000000000000000000000000000a\n
+  \   hashArm64: 000000000000000000000000000000000000000000000000000000000000000b\n
+  \   urlAmd64: https://download.docker.com/linux/static/stable/x86_64/docker-20.10.1.tgz\n
+  \   urlArm64: https://download.docker.com/linux/static/stable/aarch64/docker-20.10.1.tgz\n
+  \ storage: overlay2,overlay,aufs\n  version: 20.10.5\nkubeProxy:\n  clusterCIDR:
+  100.96.0.0/11\n  cpuRequest: 100m\n  hostnameOverride: '@aws'\n  image: k8s.gcr.io/kube-proxy:v1.21.0\n
   \ logLevel: 2\nkubelet:\n  anonymousAuth: false\n  cgroupDriver: systemd\n  cgroupRoot:
   /\n  cloudProvider: aws\n  clusterDNS: 100.64.0.10\n  clusterDomain: cluster.local\n
   \ enableDebuggingHandlers: true\n  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%\n
