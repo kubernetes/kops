@@ -823,12 +823,28 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
+				EnableL7Proxy:          fi.Bool(true),
+				IPTablesRulesNoinstall: true,
+			},
+			Spec: kops.ClusterSpec{
+				CloudProvider: "aws",
+			},
+			ExpectedErrors: []string{"Forbidden::cilium.enableL7Proxy"},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
 				Ipam: "eni",
 			},
 			Spec: kops.ClusterSpec{
 				CloudProvider: "gce",
 			},
 			ExpectedErrors: []string{"Forbidden::cilium.ipam"},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				IdentityAllocationMode: "kvstore",
+			},
+			ExpectedErrors: []string{"Forbidden::cilium.identityAllocationMode"},
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
