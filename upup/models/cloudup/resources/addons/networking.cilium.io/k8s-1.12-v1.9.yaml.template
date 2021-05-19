@@ -61,7 +61,9 @@ data:
   #   backend. Upgrades from these older cilium versions should continue using
   #   the kvstore by commenting out the identity-allocation-mode below, or
   #   setting it to "kvstore".
-  identity-allocation-mode: crd
+  # (default crd)
+  identity-allocation-mode: "{{ .IdentityAllocationMode }}"
+
   # If you want to run cilium in debug mode change this value to true
   debug: "{{ .Debug }}"
   {{ if .EnablePrometheusMetrics }}
@@ -102,6 +104,32 @@ data:
   # during the upgrade process, comment out these options.
   bpf-ct-global-tcp-max: "{{ .BPFCTGlobalTCPMax }}"
   bpf-ct-global-any-max: "{{ .BPFCTGlobalAnyMax }}"
+
+  # BPF load balancing algorithm ("random", "maglev") (default "random")
+  bpf-lb-algorithm: "{{ .BPFLBAlgorithm }}"
+
+  # Maglev per service backend table size (parameter M) (default 16381)
+  bpf-lb-maglev-table-size: "{{ .BPFLBMaglevTableSize }}"
+
+  # bpf-nat-global-max specified the maximum number of entries in the
+  # BPF NAT table. (default 524288)
+  bpf-nat-global-max: "{{ .BPFNATGlobalMax }}"
+
+  # bpf-neigh-global-max specified the maximum number of entries in the
+  # BPF neighbor table. (default 524288)
+  bpf-neigh-global-max: "{{ .BPFNeighGlobalMax }}"
+
+  # bpf-policy-map-max specifies the maximum number of entries in endpoint
+  # policy map (per endpoint) (default 16384)
+  bpf-policy-map-max: "{{ .BPFPolicyMapMax }}"
+
+  # bpf-lb-map-max specifies the maximum number of entries in bpf lb service,
+  # backend and affinity maps. (default 65536)
+  bpf-lb-map-max: "{{ .BPFLBMapMax }}"
+
+  # enable-bpf-masquerade enables masquerading packets from endpoints leaving
+  # the host with BPF instead of iptables. (default false)
+  enable-bpf-masquerade: "{{ .EnableBPFMasquerade }}"
 
   # Pre-allocation of map entries allows per-packet latency to be reduced, at
   # the expense of up-front memory allocation for the entries in the maps. The
@@ -178,7 +206,7 @@ data:
   {{ end }}
   enable-node-port: "{{ .EnableNodePort }}"
   kube-proxy-replacement: "{{- if .EnableNodePort -}}strict{{- else -}}partial{{- end -}}"
-  enable-remote-node-identity: "{{ .EnableRemoteNodeIdentity -}}"
+
   {{ with .Ipam }}
   ipam: {{ . }}
   {{ if eq . "eni" }}
@@ -187,6 +215,18 @@ data:
   blacklist-conflicting-routes: "false"
   {{ end }}
   {{ end }}
+
+  # Disables usage of CiliumEndpoint CRD
+  disable-endpoint-crd: "{{ .DisableEndpointCRD }}"
+
+  # Enable connectivity health checking between virtual endpoints (default true)
+  enable-endpoint-health-checking: "{{ .EnableEndpointHealthChecking }}"
+
+  # Enable use of remote node identity (default false)
+  enable-remote-node-identity: "{{ .EnableRemoteNodeIdentity }}"
+
+  # enable-l7-proxy enables L7 proxy for L7 policy enforcement. (default true)
+  enable-l7-proxy: "{{ .EnableL7Proxy }}"
 
   {{ if WithDefaultBool .Hubble.Enabled false }}
   # Enable Hubble gRPC service.
