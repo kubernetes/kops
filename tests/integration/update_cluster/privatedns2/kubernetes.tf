@@ -476,6 +476,7 @@ resource "aws_launch_template" "bastion-privatedns2-example-com" {
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
+    ipv6_address_count          = 0
     security_groups             = [aws_security_group.bastion-privatedns2-example-com.id]
   }
   tag_specifications {
@@ -547,6 +548,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatedns2-example-co
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
+    ipv6_address_count          = 0
     security_groups             = [aws_security_group.masters-privatedns2-example-com.id]
   }
   tag_specifications {
@@ -624,6 +626,7 @@ resource "aws_launch_template" "nodes-privatedns2-example-com" {
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
+    ipv6_address_count          = 0
     security_groups             = [aws_security_group.nodes-privatedns2-example-com.id]
   }
   tag_specifications {
@@ -676,6 +679,12 @@ resource "aws_route" "route-0-0-0-0--0" {
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = "igw-1"
   route_table_id         = aws_route_table.privatedns2-example-com.id
+}
+
+resource "aws_route" "route-__--0" {
+  destination_ipv6_cidr_block = "::/0"
+  gateway_id                  = "igw-1"
+  route_table_id              = aws_route_table.privatedns2-example-com.id
 }
 
 resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
@@ -807,9 +816,27 @@ resource "aws_security_group_rule" "from-api-elb-privatedns2-example-com-egress-
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "from-api-elb-privatedns2-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
+  protocol          = "-1"
+  security_group_id = aws_security_group.api-elb-privatedns2-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
 resource "aws_security_group_rule" "from-bastion-elb-privatedns2-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.bastion-elb-privatedns2-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-bastion-elb-privatedns2-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   security_group_id = aws_security_group.bastion-elb-privatedns2-example-com.id
   to_port           = 0
@@ -828,6 +855,15 @@ resource "aws_security_group_rule" "from-bastion-elb-privatedns2-example-com-ing
 resource "aws_security_group_rule" "from-bastion-privatedns2-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.bastion-privatedns2-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-bastion-privatedns2-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   security_group_id = aws_security_group.bastion-privatedns2-example-com.id
   to_port           = 0
@@ -861,6 +897,15 @@ resource "aws_security_group_rule" "from-masters-privatedns2-example-com-egress-
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "from-masters-privatedns2-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
+  protocol          = "-1"
+  security_group_id = aws_security_group.masters-privatedns2-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
 resource "aws_security_group_rule" "from-masters-privatedns2-example-com-ingress-all-0to0-masters-privatedns2-example-com" {
   from_port                = 0
   protocol                 = "-1"
@@ -882,6 +927,15 @@ resource "aws_security_group_rule" "from-masters-privatedns2-example-com-ingress
 resource "aws_security_group_rule" "from-nodes-privatedns2-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.nodes-privatedns2-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-nodes-privatedns2-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   security_group_id = aws_security_group.nodes-privatedns2-example-com.id
   to_port           = 0

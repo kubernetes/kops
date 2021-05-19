@@ -325,6 +325,9 @@ func (d *deleteSecurityGroupRule) Item() string {
 	for _, r := range p.IpRanges {
 		s += fmt.Sprintf(" ip=%s", aws.StringValue(r.CidrIp))
 	}
+	for _, r := range p.Ipv6Ranges {
+		s += fmt.Sprintf(" ipv6=%s", aws.StringValue(r.CidrIpv6))
+	}
 	//permissionString := fi.DebugAsJsonString(d.permission)
 	//s += permissionString
 
@@ -344,6 +347,13 @@ func expandPermissions(sgID *string, permission *ec2.IpPermission, egress bool) 
 		a := &ec2.IpPermission{}
 		*a = *master
 		a.IpRanges = []*ec2.IpRange{ipRange}
+		rules = append(rules, a)
+	}
+
+	for _, ipv6Range := range permission.Ipv6Ranges {
+		a := &ec2.IpPermission{}
+		*a = *master
+		a.Ipv6Ranges = []*ec2.Ipv6Range{ipv6Range}
 		rules = append(rules, a)
 	}
 

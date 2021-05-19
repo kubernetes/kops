@@ -62,8 +62,8 @@ func (o *LifecycleTestOptions) AddDefaults() {
 	o.SrcDir = "../../tests/integration/update_cluster/" + o.SrcDir
 }
 
-// TestLifecycleMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
-func TestLifecycleMinimal(t *testing.T) {
+// TestLifecycleMinimalAWS runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
+func TestLifecycleMinimalAWS(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
 		t:      t,
 		SrcDir: "minimal",
@@ -108,6 +108,14 @@ func TestLifecyclePrivateKopeio(t *testing.T) {
 		t:      t,
 		SrcDir: "privatekopeio",
 		Shared: []string{"nat-a2345678", "nat-b2345678"},
+	})
+}
+
+// TestLifecycleIPv6 runs the test on a IPv6 topology
+func TestLifecycleIPv6(t *testing.T) {
+	runLifecycleTestAWS(&LifecycleTestOptions{
+		t:      t,
+		SrcDir: "minimal-ipv6",
 	})
 }
 

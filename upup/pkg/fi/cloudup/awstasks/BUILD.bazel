@@ -78,6 +78,8 @@ go_library(
         "vpc.go",
         "vpc_dhcpoptions_association.go",
         "vpc_fitask.go",
+        "vpcamazonipv6cidrblock.go",
+        "vpcamazonipv6cidrblock_fitask.go",
         "vpccidrblock.go",
         "vpccidrblock_fitask.go",
         "vpcdhcpoptionsassociation_fitask.go",

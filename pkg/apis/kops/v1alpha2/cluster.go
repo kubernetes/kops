@@ -606,7 +606,10 @@ type ClusterSubnetSpec struct {
 	// Region is the region the subnet is in, set for subnets that are regionally scoped
 	Region string `json:"region,omitempty"`
 
+	// CIDR is the IPv4 CIDR block assigned to the subnet.
 	CIDR string `json:"cidr,omitempty"`
+	// IPv6CIDR is the IPv6 CIDR block assigned to the subnet.
+	IPv6CIDR string `json:"ipv6CIDR,omitempty"`
 
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
 	ProviderID string `json:"id,omitempty"`
