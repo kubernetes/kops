@@ -288,6 +288,7 @@
               "AssociatePublicIpAddress": true,
               "DeleteOnTermination": true,
               "DeviceIndex": 0,
+              "Ipv6AddressCount": 0,
               "Groups": [
                 {
                   "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
@@ -406,6 +407,7 @@
               "AssociatePublicIpAddress": false,
               "DeleteOnTermination": true,
               "DeviceIndex": 0,
+              "Ipv6AddressCount": 0,
               "Groups": [
                 {
                   "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
@@ -544,6 +546,7 @@
               "AssociatePublicIpAddress": false,
               "DeleteOnTermination": true,
               "DeviceIndex": 0,
+              "Ipv6AddressCount": 0,
               "Groups": [
                 {
                   "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
@@ -646,6 +649,16 @@
         ]
       }
     },
+    "AWSEC2Route0": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableprivatesharedipexamplecom"
+        },
+        "DestinationIpv6CidrBlock": "::/0",
+        "GatewayId": "igw-1"
+      }
+    },
     "AWSEC2Route00000": {
       "Type": "AWS::EC2::Route",
       "Properties": {
@@ -716,6 +729,18 @@
         }
       }
     },
+    "AWSEC2SecurityGroupEgressfromapielbprivatesharedipexamplecomegressall0to00": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivatesharedipexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIpv6": "::/0"
+      }
+    },
     "AWSEC2SecurityGroupEgressfromapielbprivatesharedipexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
@@ -726,6 +751,18 @@
         "ToPort": 0,
         "IpProtocol": "-1",
         "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressfrombastionelbprivatesharedipexamplecomegressall0to00": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionelbprivatesharedipexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIpv6": "::/0"
       }
     },
     "AWSEC2SecurityGroupEgressfrombastionelbprivatesharedipexamplecomegressall0to000000": {
@@ -740,6 +777,18 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
+    "AWSEC2SecurityGroupEgressfrombastionprivatesharedipexamplecomegressall0to00": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIpv6": "::/0"
+      }
+    },
     "AWSEC2SecurityGroupEgressfrombastionprivatesharedipexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
@@ -752,6 +801,18 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
+    "AWSEC2SecurityGroupEgressfrommastersprivatesharedipexamplecomegressall0to00": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIpv6": "::/0"
+      }
+    },
     "AWSEC2SecurityGroupEgressfrommastersprivatesharedipexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
@@ -762,6 +823,18 @@
         "ToPort": 0,
         "IpProtocol": "-1",
         "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressfromnodesprivatesharedipexamplecomegressall0to00": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIpv6": "::/0"
       }
     },
     "AWSEC2SecurityGroupEgressfromnodesprivatesharedipexamplecomegressall0to000000": {

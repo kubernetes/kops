@@ -39,6 +39,7 @@ type SecurityGroupRule struct {
 
 	SecurityGroup *SecurityGroup
 	CIDR          *string
+	IPv6CIDR      *string
 	Protocol      *string
 
 	// FromPort is the lower-bound (inclusive) of the port-range
@@ -113,6 +114,9 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 		if e.CIDR != nil {
 			actual.CIDR = e.CIDR
 		}
+		if e.IPv6CIDR != nil {
+			actual.IPv6CIDR = e.IPv6CIDR
+		}
 		if e.SourceGroup != nil {
 			actual.SourceGroup = &SecurityGroup{ID: e.SourceGroup.ID}
 		}
@@ -143,7 +147,6 @@ func (e *SecurityGroupRule) matches(rule *ec2.IpPermission) bool {
 	}
 
 	if e.CIDR != nil {
-		// TODO: Only if len 1?
 		match := false
 		for _, ipRange := range rule.IpRanges {
 			if aws.StringValue(ipRange.CidrIp) == *e.CIDR {
@@ -156,8 +159,20 @@ func (e *SecurityGroupRule) matches(rule *ec2.IpPermission) bool {
 		}
 	}
 
+	if e.IPv6CIDR != nil {
+		match := false
+		for _, ipv6Range := range rule.Ipv6Ranges {
+			if aws.StringValue(ipv6Range.CidrIpv6) == *e.IPv6CIDR {
+				match = true
+				break
+			}
+		}
+		if !match {
+			return false
+		}
+	}
+
 	if e.SourceGroup != nil {
-		// TODO: Only if len 1?
 		match := false
 		for _, spec := range rule.UserIdGroupPairs {
 			if e.SourceGroup == nil {
@@ -189,6 +204,9 @@ func (_ *SecurityGroupRule) CheckChanges(a, e, changes *SecurityGroupRule) error
 	if a == nil {
 		if e.SecurityGroup == nil {
 			return field.Required(field.NewPath("SecurityGroup"), "")
+		}
+		if e.CIDR != nil && e.IPv6CIDR != nil {
+			return field.Forbidden(field.NewPath("CIDR/IPv6CIDR"), "Cannot set more than 1 CIDR or IPv6CIDR")
 		}
 	}
 
@@ -226,6 +244,10 @@ func (e *SecurityGroupRule) Description() string {
 		description = append(description, fmt.Sprintf("cidr=%s", *e.CIDR))
 	}
 
+	if e.IPv6CIDR != nil {
+		description = append(description, fmt.Sprintf("ipv6cidr=%s", *e.IPv6CIDR))
+	}
+
 	return strings.Join(description, " ")
 }
 
@@ -250,11 +272,19 @@ func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Secu
 					GroupId: e.SourceGroup.ID,
 				},
 			}
-		} else {
+		} else if e.IPv6CIDR != nil {
+			IPv6CIDR := e.IPv6CIDR
+			ipPermission.Ipv6Ranges = []*ec2.Ipv6Range{
+				{CidrIpv6: IPv6CIDR},
+			}
+		} else if e.CIDR != nil {
 			CIDR := e.CIDR
-			// Default to 0.0.0.0/0 ?
 			ipPermission.IpRanges = []*ec2.IpRange{
 				{CidrIp: CIDR},
+			}
+		} else {
+			ipPermission.IpRanges = []*ec2.IpRange{
+				{CidrIp: aws.String("0.0.0.0/0")},
 			}
 		}
 
@@ -300,8 +330,9 @@ type terraformSecurityGroupIngress struct {
 	FromPort *int64 `json:"from_port,omitempty" cty:"from_port"`
 	ToPort   *int64 `json:"to_port,omitempty" cty:"to_port"`
 
-	Protocol   *string  `json:"protocol,omitempty" cty:"protocol"`
-	CIDRBlocks []string `json:"cidr_blocks,omitempty" cty:"cidr_blocks"`
+	Protocol       *string  `json:"protocol,omitempty" cty:"protocol"`
+	CIDRBlocks     []string `json:"cidr_blocks,omitempty" cty:"cidr_blocks"`
+	IPv6CIDRBlocks []string `json:"ipv6_cidr_blocks,omitempty" cty:"ipv6_cidr_blocks"`
 }
 
 func (_ *SecurityGroupRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroupRule) error {
@@ -338,6 +369,10 @@ func (_ *SecurityGroupRule) RenderTerraform(t *terraform.TerraformTarget, a, e, 
 	if e.CIDR != nil {
 		tf.CIDRBlocks = append(tf.CIDRBlocks, *e.CIDR)
 	}
+	if e.IPv6CIDR != nil {
+		tf.IPv6CIDRBlocks = append(tf.IPv6CIDRBlocks, *e.IPv6CIDR)
+	}
+
 	return t.RenderResource("aws_security_group_rule", *e.Name, tf)
 }
 
@@ -386,11 +421,10 @@ func (_ *SecurityGroupRule) RenderCloudformation(t *cloudformation.Cloudformatio
 	}
 
 	if e.CIDR != nil {
-		if strings.Contains(fi.StringValue(e.CIDR), ":") {
-			tf.CidrIpv6 = e.CIDR
-		} else {
-			tf.CidrIp = e.CIDR
-		}
+		tf.CidrIp = e.CIDR
+	}
+	if e.IPv6CIDR != nil {
+		tf.CidrIpv6 = e.IPv6CIDR
 	}
 
 	return t.RenderResource(cfType, *e.Name, tf)

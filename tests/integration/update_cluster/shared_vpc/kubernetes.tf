@@ -314,6 +314,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-sharedvpc-example-com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
+    ipv6_address_count          = 0
     security_groups             = [aws_security_group.masters-sharedvpc-example-com.id]
   }
   tag_specifications {
@@ -391,6 +392,7 @@ resource "aws_launch_template" "nodes-sharedvpc-example-com" {
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
+    ipv6_address_count          = 0
     security_groups             = [aws_security_group.nodes-sharedvpc-example-com.id]
   }
   tag_specifications {
@@ -433,6 +435,12 @@ resource "aws_route" "route-0-0-0-0--0" {
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = "igw-1"
   route_table_id         = aws_route_table.sharedvpc-example-com.id
+}
+
+resource "aws_route" "route-__--0" {
+  destination_ipv6_cidr_block = "::/0"
+  gateway_id                  = "igw-1"
+  route_table_id              = aws_route_table.sharedvpc-example-com.id
 }
 
 resource "aws_route_table" "sharedvpc-example-com" {
@@ -508,6 +516,15 @@ resource "aws_security_group_rule" "from-masters-sharedvpc-example-com-egress-al
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "from-masters-sharedvpc-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
+  protocol          = "-1"
+  security_group_id = aws_security_group.masters-sharedvpc-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
 resource "aws_security_group_rule" "from-masters-sharedvpc-example-com-ingress-all-0to0-masters-sharedvpc-example-com" {
   from_port                = 0
   protocol                 = "-1"
@@ -529,6 +546,15 @@ resource "aws_security_group_rule" "from-masters-sharedvpc-example-com-ingress-a
 resource "aws_security_group_rule" "from-nodes-sharedvpc-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.nodes-sharedvpc-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-nodes-sharedvpc-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   security_group_id = aws_security_group.nodes-sharedvpc-example-com.id
   to_port           = 0
