@@ -218,11 +218,17 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	var masters []*openstacktasks.ServerGroup
 	for _, ig := range b.InstanceGroups {
 		klog.V(2).Infof("Found instance group with name %s and role %v.", ig.Name, ig.Spec.Role)
+		affinityPolicies := []string{}
+		if v, ok := ig.ObjectMeta.Annotations[openstack.OS_ANNOTATION+openstack.SERVER_GROUP_AFFINITY]; ok {
+			affinityPolicies = append(affinityPolicies, v)
+		} else {
+			affinityPolicies = append(affinityPolicies, "anti-affinity")
+		}
 		sgTask := &openstacktasks.ServerGroup{
 			Name:        s(fmt.Sprintf("%s-%s", clusterName, ig.Name)),
 			ClusterName: s(clusterName),
 			IGName:      s(ig.Name),
-			Policies:    []string{"anti-affinity"},
+			Policies:    affinityPolicies,
 			Lifecycle:   b.Lifecycle,
 			MaxSize:     ig.Spec.MaxSize,
 		}

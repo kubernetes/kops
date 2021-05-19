@@ -948,6 +948,45 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 				},
 			},
 		},
+		{
+			desc: "configures server group affinity with annotations",
+			cluster: &kops.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "cluster",
+				},
+				Spec: kops.ClusterSpec{
+					MasterPublicName: "master-public-name",
+					CloudConfig: &kops.CloudConfiguration{
+						Openstack: &kops.OpenstackConfiguration{},
+					},
+					Subnets: []kops.ClusterSubnetSpec{
+						{
+							Name:   "subnet",
+							Region: "region",
+						},
+					},
+				},
+			},
+			instanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node",
+						Annotations: map[string]string{
+							"openstack.kops.io/serverGroupAffinity": "soft-anti-affinity",
+						},
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleNode,
+						Image:       "image-node",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.2-4",
+						Subnets:     []string{"subnet"},
+						Zones:       []string{"zone-1"},
+					},
+				},
+			},
+		},
 	}
 }
 
