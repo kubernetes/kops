@@ -1,0 +1,111 @@
+Name: node
+---
+AvailabilityZone: zone-1
+Flavor: blc.2-4
+FloatingIP: null
+ForAPIServer: false
+GroupName: node
+ID: null
+Image: image-node
+Lifecycle: null
+Metadata:
+  KopsInstanceGroup: node
+  KopsName: node-1-cluster
+  KopsNetwork: cluster
+  KopsRole: Node
+  KubernetesCluster: cluster
+  cluster_generation: "0"
+  ig_generation: "0"
+  k8s: cluster
+  k8s.io_cluster-autoscaler_node-template_label_kubernetes.io_role: node
+  k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_node: ""
+  k8s.io_role_node: "1"
+  kops.k8s.io_instancegroup: node
+Name: node-1-cluster
+Port:
+  AdditionalSecurityGroups: null
+  ID: null
+  Lifecycle: Sync
+  Name: port-node-1-cluster
+  Network:
+    AvailabilityZoneHints: null
+    ID: null
+    Lifecycle: null
+    Name: cluster
+    Tag: null
+  SecurityGroups:
+  - Description: null
+    ID: null
+    Lifecycle: null
+    Name: nodes.cluster
+    RemoveExtraRules: null
+    RemoveGroup: false
+  Subnets:
+  - CIDR: null
+    DNSServers: null
+    ID: null
+    Lifecycle: null
+    Name: subnet.cluster
+    Network: null
+    Tag: null
+  Tag: cluster
+Region: region
+Role: Node
+SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
+SecurityGroups: null
+ServerGroup:
+  ClusterName: cluster
+  ID: null
+  IGName: node
+  Lifecycle: Sync
+  MaxSize: 1
+  Name: cluster-node
+  Policies:
+  - soft-anti-affinity
+UserData:
+  task:
+    Name: node
+---
+Lifecycle: null
+Name: ca
+Signer: null
+alternateNames: null
+oldFormat: false
+subject: cn=kubernetes
+type: ca
+---
+AdditionalSecurityGroups: null
+ID: null
+Lifecycle: Sync
+Name: port-node-1-cluster
+Network:
+  AvailabilityZoneHints: null
+  ID: null
+  Lifecycle: null
+  Name: cluster
+  Tag: null
+SecurityGroups:
+- Description: null
+  ID: null
+  Lifecycle: null
+  Name: nodes.cluster
+  RemoveExtraRules: null
+  RemoveGroup: false
+Subnets:
+- CIDR: null
+  DNSServers: null
+  ID: null
+  Lifecycle: null
+  Name: subnet.cluster
+  Network: null
+  Tag: null
+Tag: cluster
+---
+ClusterName: cluster
+ID: null
+IGName: node
+Lifecycle: Sync
+MaxSize: 1
+Name: cluster-node
+Policies:
+- soft-anti-affinity
