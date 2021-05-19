@@ -208,7 +208,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		dest["WeaveSecret"] = func() string { return weavesecretString }
 	}
 
-	dest["CsiExtraTags"] = func() string {
+	dest["CloudLabels"] = func() string {
 		labels := []string{
 			fmt.Sprintf("KubernetesCluster=%s", cluster.ObjectMeta.Name),
 		}
