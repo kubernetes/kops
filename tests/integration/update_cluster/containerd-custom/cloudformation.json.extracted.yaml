@@ -48,7 +48,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
   \ packages:\n    hashAmd64: \"0000000000000000000000000000000000000000000000000000000000000000\"\n
   \   urlAmd64: https://github.com/containerd/containerd/releases/download/v1.3.9/cri-containerd-cni-1.3.9-linux-amd64.tar.gz\n
   \ registryMirrors:\n    '*':\n    - http://HostIP2:Port2\n    docker.io:\n    -
-  https://registry-1.docker.io\n  version: 1.4.4\ndocker:\n  skipInstall: true\nencryptionConfig:
+  https://registry-1.docker.io\n  version: 1.4.6\ndocker:\n  skipInstall: true\nencryptionConfig:
   null\netcdClusters:\n  events:\n    version: 3.4.13\n  main:\n    version: 3.4.13\nkubeAPIServer:\n
   \ allowPrivileged: true\n  anonymousAuth: false\n  apiAudiences:\n  - kubernetes.svc.default\n
   \ apiServerCount: 1\n  authorizationMode: AlwaysAllow\n  bindAddress: 0.0.0.0\n
@@ -159,7 +159,7 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
   \ packages:\n    hashAmd64: \"0000000000000000000000000000000000000000000000000000000000000000\"\n
   \   urlAmd64: https://github.com/containerd/containerd/releases/download/v1.3.9/cri-containerd-cni-1.3.9-linux-amd64.tar.gz\n
   \ registryMirrors:\n    '*':\n    - http://HostIP2:Port2\n    docker.io:\n    -
-  https://registry-1.docker.io\n  version: 1.4.4\ndocker:\n  skipInstall: true\nkubeProxy:\n
+  https://registry-1.docker.io\n  version: 1.4.6\ndocker:\n  skipInstall: true\nkubeProxy:\n
   \ clusterCIDR: 100.96.0.0/11\n  cpuRequest: 100m\n  hostnameOverride: '@aws'\n  image:
   k8s.gcr.io/kube-proxy:v1.21.0\n  logLevel: 2\nkubelet:\n  anonymousAuth: false\n
   \ cgroupDriver: systemd\n  cgroupRoot: /\n  cloudProvider: aws\n  clusterDNS: 100.64.0.10\n
