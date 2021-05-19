@@ -39,6 +39,7 @@ const (
 	OS_ANNOTATION             = "openstack.kops.io/"
 	BOOT_FROM_VOLUME          = "osVolumeBoot"
 	BOOT_VOLUME_SIZE          = "osVolumeSize"
+	SERVER_GROUP_AFFINITY     = "serverGroupAffinity"
 )
 
 // floatingBackoff is the backoff strategy for listing openstack floatingips
