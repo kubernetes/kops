@@ -604,6 +604,21 @@ func (in *CiliumNetworkingSpec) DeepCopyInto(out *CiliumNetworkingSpec) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.EnableL7Proxy != nil {
+		in, out := &in.EnableL7Proxy, &out.EnableL7Proxy
+		*out = new(bool)
+		**out = **in
+	}
+	if in.EnableBPFMasquerade != nil {
+		in, out := &in.EnableBPFMasquerade, &out.EnableBPFMasquerade
+		*out = new(bool)
+		**out = **in
+	}
+	if in.EnableEndpointHealthChecking != nil {
+		in, out := &in.EnableEndpointHealthChecking, &out.EnableEndpointHealthChecking
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Labels != nil {
 		in, out := &in.Labels, &out.Labels
 		*out = make([]string, len(*in))

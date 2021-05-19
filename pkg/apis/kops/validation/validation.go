@@ -827,6 +827,22 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("containerRuntimeLabels"), &v.ContainerRuntimeLabels, []string{"none", "containerd", "crio", "docker", "auto"})...)
 	}
 
+	if v.IdentityAllocationMode != "" {
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("identityAllocationMode"), &v.IdentityAllocationMode, []string{"crd", "kvstore"})...)
+
+		if v.IdentityAllocationMode == "kvstore" && !v.EtcdManaged {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("identityAllocationMode"), "Cilium requires managed etcd to allocate identities on kvstore mode"))
+		}
+	}
+
+	if v.BPFLBAlgorithm != "" {
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("bpfLBAlgorithm"), &v.BPFLBAlgorithm, []string{"random", "maglev"})...)
+	}
+
+	if fi.BoolValue(v.EnableL7Proxy) && v.IPTablesRulesNoinstall {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableL7Proxy"), "Cilium L7 Proxy requires IPTablesRules to be installed"))
+	}
+
 	if v.Ipam != "" {
 		// "azure" not supported by kops
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("ipam"), &v.Ipam, []string{"hostscope", "kubernetes", "crd", "eni"})...)
