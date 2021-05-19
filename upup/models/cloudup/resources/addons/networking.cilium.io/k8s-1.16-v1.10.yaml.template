@@ -37,6 +37,20 @@ metadata:
   namespace: kube-system
 data:
 
+  # ExtraConfiguration is a block that allow users to add their additional
+  # key-value pairs that represent proper configuration blocks. Cilium is a
+  # component with higly attribution on configuration, so there are chances
+  # that not all these fields are supported by Kops specs at a given time but
+  # they can be defined in here.
+  #
+  # Important Note: This block is totally defined by users so Kops cannot include
+  # it on the networking validation phase.
+  {{- if .extraConfiguration }}
+  {{- range $key, $value := .extraConfiguration }}
+    {{ printf "%s:%s" $key $value }}
+  {{- end }}
+  {{- end }}
+  
 {{- if .EtcdManaged }}
   kvstore: etcd
   kvstore-opt: '{"etcd.config": "/var/lib/etcd-config/etcd.config"}'
@@ -557,7 +571,7 @@ spec:
               value: "true"
           failureThreshold: 24
           periodSeconds: 2
-          successThreshold: 
+          successThreshold:
         livenessProbe:
           httpGet:
             host: '127.0.0.1'
