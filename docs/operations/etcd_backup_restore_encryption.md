@@ -68,7 +68,7 @@ on the master that is the leader of the cluster (you can find this out by checki
 Note that the leader might be different for the `main` and `events` clusters.
 
 After the restore, you will probably face an intermittent connection to apiserver.
-If you look at your kubernetes endpoint, you should have more address than masters. The restore bring back the address of the old masters and you should clean this up.
+If you look at your kubernetes endpoint, you should have more addresses than masters. The restore brings back the addresses of the old masters and you should clean this up.
 
 To verify this, check the endpoints resource of the kubernetes apiserver, like this:
 ```
