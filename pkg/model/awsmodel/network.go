@@ -71,8 +71,11 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		} else {
 			// In theory we don't need to enable it for >= 1.5,
 			// but seems safer to stick with existing behaviour
-
 			t.EnableDNSHostnames = fi.Bool(true)
+
+			// Used only for Terraform rendering.
+			// Direct and CloudFormation rendering is handled via the VPCAmazonIPv6CIDRBlock task
+			t.AmazonIPv6 = fi.Bool(true)
 			t.AssociateExtraCIDRBlocks = b.Cluster.Spec.AdditionalNetworkCIDRs
 		}
 
@@ -88,12 +91,21 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if !sharedVPC {
+		// Associate an Amazon-provided IPv6 CIDR block with the VPC
+		c.AddTask(&awstasks.VPCAmazonIPv6CIDRBlock{
+			Name:      fi.String("AmazonIPv6"),
+			Lifecycle: b.Lifecycle,
+			VPC:       b.LinkToVPC(),
+			Shared:    fi.Bool(false),
+		})
+
+		// Associate additional CIDR blocks with the VPC
 		for _, cidr := range b.Cluster.Spec.AdditionalNetworkCIDRs {
 			c.AddTask(&awstasks.VPCCIDRBlock{
 				Name:      fi.String(cidr),
 				Lifecycle: b.Lifecycle,
 				VPC:       b.LinkToVPC(),
-				Shared:    fi.Bool(sharedVPC),
+				Shared:    fi.Bool(false),
 				CIDRBlock: fi.String(cidr),
 			})
 		}
@@ -184,6 +196,13 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				RouteTable:      publicRouteTable,
 				InternetGateway: igw,
 			})
+			c.AddTask(&awstasks.Route{
+				Name:            fi.String("::/0"),
+				Lifecycle:       b.Lifecycle,
+				IPv6CIDR:        fi.String("::/0"),
+				RouteTable:      publicRouteTable,
+				InternetGateway: igw,
+			})
 		}
 	}
 
@@ -232,6 +251,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Tags:             tags,
 		}
 
+		if subnetSpec.IPv6CIDR != "" {
+			subnet.IPv6CIDR = fi.String(subnetSpec.IPv6CIDR)
+		}
 		if subnetSpec.ProviderID != "" {
 			subnet.ID = fi.String(subnetSpec.ProviderID)
 		}

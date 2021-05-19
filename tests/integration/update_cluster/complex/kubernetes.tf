@@ -373,6 +373,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
+    ipv6_address_count          = 0
     security_groups             = [aws_security_group.masters-complex-example-com.id, "sg-exampleid5", "sg-exampleid6"]
   }
   tag_specifications {
@@ -471,6 +472,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
+    ipv6_address_count          = 0
     security_groups             = [aws_security_group.nodes-complex-example-com.id, "sg-exampleid3", "sg-exampleid4"]
   }
   tag_specifications {
@@ -599,6 +601,12 @@ resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = aws_route_table.complex-example-com.id
 }
 
+resource "aws_route" "route-__--0" {
+  destination_ipv6_cidr_block = "::/0"
+  gateway_id                  = aws_internet_gateway.complex-example-com.id
+  route_table_id              = aws_route_table.complex-example-com.id
+}
+
 resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
   destination_cidr_block = "0.0.0.0/0"
   route_table_id         = aws_route_table.private-us-test-1a-complex-example-com.id
@@ -721,36 +729,18 @@ resource "aws_security_group_rule" "from-1-1-1-1--32-ingress-tcp-22to22-nodes-co
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "from-2001_0_8500__--40-ingress-tcp-443to443-masters-complex-example-com" {
-  cidr_blocks       = ["2001:0:8500::/40"]
-  from_port         = 443
-  protocol          = "tcp"
-  security_group_id = aws_security_group.masters-complex-example-com.id
-  to_port           = 443
-  type              = "ingress"
-}
-
-resource "aws_security_group_rule" "from-2001_0_85a3__--48-ingress-tcp-22to22-masters-complex-example-com" {
-  cidr_blocks       = ["2001:0:85a3::/48"]
-  from_port         = 22
-  protocol          = "tcp"
-  security_group_id = aws_security_group.masters-complex-example-com.id
-  to_port           = 22
-  type              = "ingress"
-}
-
-resource "aws_security_group_rule" "from-2001_0_85a3__--48-ingress-tcp-22to22-nodes-complex-example-com" {
-  cidr_blocks       = ["2001:0:85a3::/48"]
-  from_port         = 22
-  protocol          = "tcp"
-  security_group_id = aws_security_group.nodes-complex-example-com.id
-  to_port           = 22
-  type              = "ingress"
-}
-
 resource "aws_security_group_rule" "from-masters-complex-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.masters-complex-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-masters-complex-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   security_group_id = aws_security_group.masters-complex-example-com.id
   to_port           = 0
@@ -778,6 +768,15 @@ resource "aws_security_group_rule" "from-masters-complex-example-com-ingress-all
 resource "aws_security_group_rule" "from-nodes-complex-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.nodes-complex-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-nodes-complex-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   security_group_id = aws_security_group.nodes-complex-example-com.id
   to_port           = 0
@@ -865,15 +864,6 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-1-1-1-0--24" {
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "icmp-pmtu-api-elb-2001_0_8500__--40" {
-  cidr_blocks       = ["2001:0:8500::/40"]
-  from_port         = 3
-  protocol          = "icmp"
-  security_group_id = aws_security_group.masters-complex-example-com.id
-  to_port           = 4
-  type              = "ingress"
-}
-
 resource "aws_security_group_rule" "nodeport-tcp-external-to-node-1-2-3-4--32" {
   cidr_blocks       = ["1.2.3.4/32"]
   from_port         = 28000
@@ -912,15 +902,6 @@ resource "aws_security_group_rule" "nodeport-udp-external-to-node-10-20-30-0--24
 
 resource "aws_security_group_rule" "tcp-api-1-1-1-0--24" {
   cidr_blocks       = ["1.1.1.0/24"]
-  from_port         = 8443
-  protocol          = "tcp"
-  security_group_id = aws_security_group.masters-complex-example-com.id
-  to_port           = 8443
-  type              = "ingress"
-}
-
-resource "aws_security_group_rule" "tcp-api-2001_0_8500__--40" {
-  cidr_blocks       = ["2001:0:8500::/40"]
   from_port         = 8443
   protocol          = "tcp"
   security_group_id = aws_security_group.masters-complex-example-com.id
@@ -976,9 +957,10 @@ resource "aws_subnet" "us-test-1a-complex-example-com" {
 }
 
 resource "aws_vpc" "complex-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
+  assign_generated_ipv6_cidr_block = true
+  cidr_block                       = "172.20.0.0/16"
+  enable_dns_hostnames             = true
+  enable_dns_support               = true
   tags = {
     "KubernetesCluster"                         = "complex.example.com"
     "Name"                                      = "complex.example.com"

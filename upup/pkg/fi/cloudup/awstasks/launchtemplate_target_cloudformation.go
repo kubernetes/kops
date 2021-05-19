@@ -32,6 +32,8 @@ type cloudformationLaunchTemplateNetworkInterface struct {
 	DeleteOnTermination *bool `json:"DeleteOnTermination,omitempty"`
 	// DeviceIndex is the device index for the network interface attachment.
 	DeviceIndex *int `json:"DeviceIndex,omitempty"`
+	// Ipv6AddressCount is the number of IPv6 addresses to assign with the primary network interface.
+	Ipv6AddressCount *int64 `json:"Ipv6AddressCount,omitempty"`
 	// SecurityGroups is a list of security group ids.
 	SecurityGroups []*cloudformation.Literal `json:"Groups,omitempty"`
 }
@@ -200,6 +202,7 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 				AssociatePublicIPAddress: e.AssociatePublicIP,
 				DeleteOnTermination:      fi.Bool(true),
 				DeviceIndex:              fi.Int(0),
+				Ipv6AddressCount:         e.IPv6AddressCount,
 			},
 		},
 	}

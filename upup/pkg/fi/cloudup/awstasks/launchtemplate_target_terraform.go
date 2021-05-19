@@ -31,6 +31,8 @@ type terraformLaunchTemplateNetworkInterface struct {
 	AssociatePublicIPAddress *bool `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
 	// DeleteOnTermination indicates whether the network interface should be destroyed on instance termination.
 	DeleteOnTermination *bool `json:"delete_on_termination,omitempty" cty:"delete_on_termination"`
+	// Ipv6AddressCount is the number of IPv6 addresses to assign with the primary network interface.
+	Ipv6AddressCount *int64 `json:"ipv6_address_count,omitempty" cty:"ipv6_address_count"`
 	// SecurityGroups is a list of security group ids.
 	SecurityGroups []*terraformWriter.Literal `json:"security_groups,omitempty" cty:"security_groups"`
 }
@@ -205,6 +207,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 			{
 				AssociatePublicIPAddress: e.AssociatePublicIP,
 				DeleteOnTermination:      fi.Bool(true),
+				Ipv6AddressCount:         e.IPv6AddressCount,
 			},
 		},
 	}

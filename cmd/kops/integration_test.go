@@ -145,6 +145,7 @@ func (i *integrationTest) withNTH() *integrationTest {
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimal(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal").runTestTerraformAWS(t)
+	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
 }
 
 // TestMinimal runs the test on a minimum gossip configuration
@@ -190,9 +191,10 @@ func TestExternalPolicies(t *testing.T) {
 	newIntegrationTest("externalpolicies.example.com", "externalpolicies").runTestTerraformAWS(t)
 }
 
-// TestMinimalCloudformation runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
-func TestMinimalCloudformation(t *testing.T) {
-	newIntegrationTest("minimal.example.com", "minimal-cloudformation").runTestCloudformation(t)
+// TestMinimalIPv6 runs the test on a minimum IPv6 configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
+func TestMinimalIPv6(t *testing.T) {
+	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6").runTestTerraformAWS(t)
+	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6").runTestCloudformation(t)
 }
 
 // TestMinimalEtcd runs the test on a minimum configuration using custom etcd config, similar to kops create cluster minimal.example.com --zones us-west-1a

@@ -467,6 +467,7 @@ resource "aws_launch_template" "bastion-unmanaged-example-com" {
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
+    ipv6_address_count          = 0
     security_groups             = [aws_security_group.bastion-unmanaged-example-com.id]
   }
   tag_specifications {
@@ -538,6 +539,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-unmanaged-example-com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
+    ipv6_address_count          = 0
     security_groups             = [aws_security_group.masters-unmanaged-example-com.id]
   }
   tag_specifications {
@@ -615,6 +617,7 @@ resource "aws_launch_template" "nodes-unmanaged-example-com" {
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
+    ipv6_address_count          = 0
     security_groups             = [aws_security_group.nodes-unmanaged-example-com.id]
   }
   tag_specifications {
@@ -746,9 +749,27 @@ resource "aws_security_group_rule" "from-api-elb-unmanaged-example-com-egress-al
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "from-api-elb-unmanaged-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
+  protocol          = "-1"
+  security_group_id = aws_security_group.api-elb-unmanaged-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
 resource "aws_security_group_rule" "from-bastion-elb-unmanaged-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.bastion-elb-unmanaged-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-bastion-elb-unmanaged-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   security_group_id = aws_security_group.bastion-elb-unmanaged-example-com.id
   to_port           = 0
@@ -767,6 +788,15 @@ resource "aws_security_group_rule" "from-bastion-elb-unmanaged-example-com-ingre
 resource "aws_security_group_rule" "from-bastion-unmanaged-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.bastion-unmanaged-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-bastion-unmanaged-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   security_group_id = aws_security_group.bastion-unmanaged-example-com.id
   to_port           = 0
@@ -800,6 +830,15 @@ resource "aws_security_group_rule" "from-masters-unmanaged-example-com-egress-al
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "from-masters-unmanaged-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
+  protocol          = "-1"
+  security_group_id = aws_security_group.masters-unmanaged-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
 resource "aws_security_group_rule" "from-masters-unmanaged-example-com-ingress-all-0to0-masters-unmanaged-example-com" {
   from_port                = 0
   protocol                 = "-1"
@@ -821,6 +860,15 @@ resource "aws_security_group_rule" "from-masters-unmanaged-example-com-ingress-a
 resource "aws_security_group_rule" "from-nodes-unmanaged-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.nodes-unmanaged-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-nodes-unmanaged-example-com-egress-all-0to0-__--0" {
+  from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   security_group_id = aws_security_group.nodes-unmanaged-example-com.id
   to_port           = 0

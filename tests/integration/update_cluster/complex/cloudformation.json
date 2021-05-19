@@ -298,6 +298,7 @@
               "AssociatePublicIpAddress": true,
               "DeleteOnTermination": true,
               "DeviceIndex": 0,
+              "Ipv6AddressCount": 0,
               "Groups": [
                 {
                   "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
@@ -469,6 +470,7 @@
               "AssociatePublicIpAddress": true,
               "DeleteOnTermination": true,
               "DeviceIndex": 0,
+              "Ipv6AddressCount": 0,
               "Groups": [
                 {
                   "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
@@ -566,6 +568,18 @@
         }
       }
     },
+    "AWSEC2Route0": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTablecomplexexamplecom"
+        },
+        "DestinationIpv6CidrBlock": "::/0",
+        "GatewayId": {
+          "Ref": "AWSEC2InternetGatewaycomplexexamplecom"
+        }
+      }
+    },
     "AWSEC2Route00000": {
       "Type": "AWS::EC2::Route",
       "Properties": {
@@ -656,6 +670,18 @@
         "TransitGatewayId": "tgw-123456"
       }
     },
+    "AWSEC2SecurityGroupEgressfrommasterscomplexexamplecomegressall0to00": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIpv6": "::/0"
+      }
+    },
     "AWSEC2SecurityGroupEgressfrommasterscomplexexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
@@ -666,6 +692,18 @@
         "ToPort": 0,
         "IpProtocol": "-1",
         "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressfromnodescomplexexamplecomegressall0to00": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIpv6": "::/0"
       }
     },
     "AWSEC2SecurityGroupEgressfromnodescomplexexamplecomegressall0to000000": {
@@ -714,42 +752,6 @@
         "ToPort": 22,
         "IpProtocol": "tcp",
         "CidrIp": "1.1.1.1/32"
-      }
-    },
-    "AWSEC2SecurityGroupIngressfrom20010850040ingresstcp443to443masterscomplexexamplecom": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
-        },
-        "FromPort": 443,
-        "ToPort": 443,
-        "IpProtocol": "tcp",
-        "CidrIpv6": "2001:0:8500::/40"
-      }
-    },
-    "AWSEC2SecurityGroupIngressfrom2001085a348ingresstcp22to22masterscomplexexamplecom": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
-        },
-        "FromPort": 22,
-        "ToPort": 22,
-        "IpProtocol": "tcp",
-        "CidrIpv6": "2001:0:85a3::/48"
-      }
-    },
-    "AWSEC2SecurityGroupIngressfrom2001085a348ingresstcp22to22nodescomplexexamplecom": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
-        },
-        "FromPort": 22,
-        "ToPort": 22,
-        "IpProtocol": "tcp",
-        "CidrIpv6": "2001:0:85a3::/48"
       }
     },
     "AWSEC2SecurityGroupIngressfrommasterscomplexexamplecomingressall0to0masterscomplexexamplecom": {
@@ -898,18 +900,6 @@
         "CidrIp": "1.1.1.0/24"
       }
     },
-    "AWSEC2SecurityGroupIngressicmppmtuapielb20010850040": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
-        },
-        "FromPort": 3,
-        "ToPort": 4,
-        "IpProtocol": "icmp",
-        "CidrIpv6": "2001:0:8500::/40"
-      }
-    },
     "AWSEC2SecurityGroupIngressnodeporttcpexternaltonode102030024": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -968,18 +958,6 @@
         "ToPort": 8443,
         "IpProtocol": "tcp",
         "CidrIp": "1.1.1.0/24"
-      }
-    },
-    "AWSEC2SecurityGroupIngresstcpapi20010850040": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
-        },
-        "FromPort": 8443,
-        "ToPort": 8443,
-        "IpProtocol": "tcp",
-        "CidrIpv6": "2001:0:8500::/40"
       }
     },
     "AWSEC2SecurityGroupapielbcomplexexamplecom": {
@@ -1255,6 +1233,15 @@
           "Ref": "AWSEC2VPCcomplexexamplecom"
         },
         "CidrBlock": "10.2.0.0/16"
+      }
+    },
+    "AWSEC2VPCCidrBlockAmazonIPv6": {
+      "Type": "AWS::EC2::VPCCidrBlock",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCcomplexexamplecom"
+        },
+        "AmazonProvidedIpv6CidrBlock": true
       }
     },
     "AWSEC2VPCDHCPOptionsAssociationcomplexexamplecom": {

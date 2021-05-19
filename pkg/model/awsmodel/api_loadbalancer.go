@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // LoadBalancerDefaultIdleTimeout is the default idle time for the ELB
@@ -301,40 +302,70 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Allow traffic from ELB to egress freely
 	if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
-		t := &awstasks.SecurityGroupRule{
-			Name:          fi.String("api-elb-egress"),
-			Lifecycle:     b.SecurityLifecycle,
-			CIDR:          fi.String("0.0.0.0/0"),
-			Egress:        fi.Bool(true),
-			SecurityGroup: lbSG,
+		{
+			t := &awstasks.SecurityGroupRule{
+				Name:          fi.String("ipv4-api-elb-egress"),
+				Lifecycle:     b.SecurityLifecycle,
+				CIDR:          fi.String("0.0.0.0/0"),
+				Egress:        fi.Bool(true),
+				SecurityGroup: lbSG,
+			}
+			AddDirectionalGroupRule(c, t)
 		}
-		AddDirectionalGroupRule(c, t)
+		{
+			t := &awstasks.SecurityGroupRule{
+				Name:          fi.String("ipv6-api-elb-egress"),
+				Lifecycle:     b.SecurityLifecycle,
+				IPv6CIDR:      fi.String("::/0"),
+				Egress:        fi.Bool(true),
+				SecurityGroup: lbSG,
+			}
+			AddDirectionalGroupRule(c, t)
+		}
 	}
 
 	// Allow traffic into the ELB from KubernetesAPIAccess CIDRs
 	if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
 		for _, cidr := range b.Cluster.Spec.KubernetesAPIAccess {
-			t := &awstasks.SecurityGroupRule{
-				Name:          fi.String("https-api-elb-" + cidr),
-				Lifecycle:     b.SecurityLifecycle,
-				CIDR:          fi.String(cidr),
-				FromPort:      fi.Int64(443),
-				Protocol:      fi.String("tcp"),
-				SecurityGroup: lbSG,
-				ToPort:        fi.Int64(443),
+			{
+				t := &awstasks.SecurityGroupRule{
+					Name:          fi.String("https-api-elb-" + cidr),
+					Lifecycle:     b.SecurityLifecycle,
+					FromPort:      fi.Int64(443),
+					Protocol:      fi.String("tcp"),
+					SecurityGroup: lbSG,
+					ToPort:        fi.Int64(443),
+				}
+				if utils.IsIPv6CIDR(cidr) {
+					t.IPv6CIDR = fi.String(cidr)
+				} else {
+					t.CIDR = fi.String(cidr)
+				}
+				AddDirectionalGroupRule(c, t)
 			}
-			AddDirectionalGroupRule(c, t)
 
 			// Allow ICMP traffic required for PMTU discovery
-			c.AddTask(&awstasks.SecurityGroupRule{
-				Name:          fi.String("icmp-pmtu-api-elb-" + cidr),
-				Lifecycle:     b.SecurityLifecycle,
-				CIDR:          fi.String(cidr),
-				FromPort:      fi.Int64(3),
-				Protocol:      fi.String("icmp"),
-				SecurityGroup: lbSG,
-				ToPort:        fi.Int64(4),
-			})
+			if utils.IsIPv6CIDR(cidr) {
+				c.AddTask(&awstasks.SecurityGroupRule{
+					Name:          fi.String("icmpv6-pmtu-api-elb-" + cidr),
+					Lifecycle:     b.SecurityLifecycle,
+					IPv6CIDR:      fi.String(cidr),
+					FromPort:      fi.Int64(-1),
+					Protocol:      fi.String("icmpv6"),
+					SecurityGroup: lbSG,
+					ToPort:        fi.Int64(-1),
+				})
+			} else {
+				c.AddTask(&awstasks.SecurityGroupRule{
+					Name:          fi.String("icmp-pmtu-api-elb-" + cidr),
+					Lifecycle:     b.SecurityLifecycle,
+					CIDR:          fi.String(cidr),
+					FromPort:      fi.Int64(3),
+					Protocol:      fi.String("icmp"),
+					SecurityGroup: lbSG,
+					ToPort:        fi.Int64(4),
+				})
+			}
 		}
 	}
 
@@ -347,39 +378,62 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		for _, cidr := range b.Cluster.Spec.KubernetesAPIAccess {
 
 			for _, masterGroup := range masterGroups {
-				t := &awstasks.SecurityGroupRule{
-					Name:          fi.String(fmt.Sprintf("https-api-elb-%s", cidr)),
-					Lifecycle:     b.SecurityLifecycle,
-					CIDR:          fi.String(cidr),
-					FromPort:      fi.Int64(443),
-					Protocol:      fi.String("tcp"),
-					SecurityGroup: masterGroup.Task,
-					ToPort:        fi.Int64(443),
+				{
+					t := &awstasks.SecurityGroupRule{
+						Name:          fi.String(fmt.Sprintf("https-api-elb-%s", cidr)),
+						Lifecycle:     b.SecurityLifecycle,
+						FromPort:      fi.Int64(443),
+						Protocol:      fi.String("tcp"),
+						SecurityGroup: masterGroup.Task,
+						ToPort:        fi.Int64(443),
+					}
+					if utils.IsIPv6CIDR(cidr) {
+						t.IPv6CIDR = fi.String(cidr)
+					} else {
+						t.CIDR = fi.String(cidr)
+					}
+					AddDirectionalGroupRule(c, t)
 				}
-				AddDirectionalGroupRule(c, t)
 
 				// Allow ICMP traffic required for PMTU discovery
-				c.AddTask(&awstasks.SecurityGroupRule{
-					Name:          fi.String("icmp-pmtu-api-elb-" + cidr),
-					Lifecycle:     b.SecurityLifecycle,
-					CIDR:          fi.String(cidr),
-					FromPort:      fi.Int64(3),
-					Protocol:      fi.String("icmp"),
-					SecurityGroup: masterGroup.Task,
-					ToPort:        fi.Int64(4),
-				})
+				if utils.IsIPv6CIDR(cidr) {
+					c.AddTask(&awstasks.SecurityGroupRule{
+						Name:          fi.String("icmpv6-pmtu-api-elb-" + cidr),
+						Lifecycle:     b.SecurityLifecycle,
+						IPv6CIDR:      fi.String(cidr),
+						FromPort:      fi.Int64(-1),
+						Protocol:      fi.String("icmpv6"),
+						SecurityGroup: masterGroup.Task,
+						ToPort:        fi.Int64(-1),
+					})
+				} else {
+					c.AddTask(&awstasks.SecurityGroupRule{
+						Name:          fi.String("icmp-pmtu-api-elb-" + cidr),
+						Lifecycle:     b.SecurityLifecycle,
+						CIDR:          fi.String(cidr),
+						FromPort:      fi.Int64(3),
+						Protocol:      fi.String("icmp"),
+						SecurityGroup: masterGroup.Task,
+						ToPort:        fi.Int64(4),
+					})
+				}
 
 				if b.Cluster.Spec.API != nil && b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
 					// Allow access to masters on secondary port through NLB
-					c.AddTask(&awstasks.SecurityGroupRule{
+					t := &awstasks.SecurityGroupRule{
 						Name:          fi.String(fmt.Sprintf("tcp-api-%s", cidr)),
 						Lifecycle:     b.SecurityLifecycle,
-						CIDR:          fi.String(cidr),
 						FromPort:      fi.Int64(8443),
 						Protocol:      fi.String("tcp"),
 						SecurityGroup: masterGroup.Task,
 						ToPort:        fi.Int64(8443),
-					})
+					}
+					if utils.IsIPv6CIDR(cidr) {
+						t.IPv6CIDR = fi.String(cidr)
+					} else {
+						t.CIDR = fi.String(cidr)
+					}
+					c.AddTask(t)
 				}
 			}
 		}
