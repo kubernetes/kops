@@ -759,6 +759,8 @@ bazel-version-dist: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm6
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha256
 	cp bazel-bin/cmd/kops/windows-amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha256
+	tar cfvz ${BAZELUPLOAD}/kops/${VERSION}/images/images.tar.gz -C ${BAZELIMAGES} --exclude "*.sha256" .
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/images.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/images.tar.gz.sha256
 	cp -fr ${BAZELUPLOAD}/kops/${VERSION}/* ${BAZELDIST}/
 
 .PHONY: bazel-upload
