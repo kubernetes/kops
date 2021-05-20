@@ -49,7 +49,7 @@ ${KUBETEST2} \
 		--up \
 		--kops-binary-path="${KOPS}" \
 		--kubernetes-version="1.21.0" \
-		--create-args="--networking calico --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true"
+		--create-args="--networking calico --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true --override=cluster.spec.snapshotController.enabled=true"
 
 
 ZONE=$(${KOPS} get ig -o json | jq -r '[.[] | select(.spec.role=="Node") | .spec.subnets[0]][0]')
@@ -60,4 +60,4 @@ go get github.com/onsi/ginkgo/ginkgo
 git clone --branch v1.0.0 https://github.com/kubernetes-sigs/aws-ebs-csi-driver.git .
 cd tests/e2e-kubernetes/
 
-ginkgo --nodes=25 ./... -- -cluster-tag="${CLUSTER_NAME}" -ginkgo.skip="\[Disruptive\]|\[Feature:.+\]" -report-dir="${REPORT_DIR}" -gce-zone="${ZONE}"
+ginkgo --nodes=25 ./... -- -cluster-tag="${CLUSTER_NAME}" -ginkgo.skip="\[Disruptive\]" -report-dir="${REPORT_DIR}" -gce-zone="${ZONE}"
