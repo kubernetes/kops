@@ -181,3 +181,19 @@ func (l *Loader) processDeferrals() error {
 
 	return nil
 }
+
+func (l *Loader) FindDeletions(cloud fi.Cloud, lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
+	for _, builder := range l.Builders {
+		if hasDeletions, ok := builder.(fi.HasDeletions); ok {
+			context := &fi.ModelBuilderContext{
+				Tasks:              l.tasks,
+				LifecycleOverrides: lifecycleOverrides,
+			}
+			if err := hasDeletions.FindDeletions(context, cloud); err != nil {
+				return nil, err
+			}
+			l.tasks = context.Tasks
+		}
+	}
+	return l.tasks, nil
+}
