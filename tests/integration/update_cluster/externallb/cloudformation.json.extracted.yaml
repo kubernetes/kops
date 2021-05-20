@@ -49,8 +49,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersexternallbexamplecom.Properti
   \ enableAdmissionPlugins:\n  - NamespaceLifecycle\n  - LimitRanger\n  - ServiceAccount\n
   \ - PersistentVolumeLabel\n  - DefaultStorageClass\n  - DefaultTolerationSeconds\n
   \ - MutatingAdmissionWebhook\n  - ValidatingAdmissionWebhook\n  - NodeRestriction\n
-  \ - ResourceQuota\n  etcdServers:\n  - http://127.0.0.1:4001\n  etcdServersOverrides:\n
-  \ - /events#http://127.0.0.1:4002\n  image: k8s.gcr.io/kube-apiserver:v1.21.0\n
+  \ - ResourceQuota\n  etcdServers:\n  - https://127.0.0.1:4001\n  etcdServersOverrides:\n
+  \ - /events#https://127.0.0.1:4002\n  image: k8s.gcr.io/kube-apiserver:v1.21.0\n
   \ kubeletPreferredAddressTypes:\n  - InternalIP\n  - Hostname\n  - ExternalIP\n
   \ logLevel: 2\n  requestheaderAllowedNames:\n  - aggregator\n  requestheaderExtraHeaderPrefixes:\n
   \ - X-Remote-Extra-\n  requestheaderGroupHeaders:\n  - X-Remote-Group\n  requestheaderUsernameHeaders:\n
