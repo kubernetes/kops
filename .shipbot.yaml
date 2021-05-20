@@ -41,27 +41,7 @@ assets:
     githubName: channels-linux-arm64
   - source: linux/arm64/channels.sha256
     githubName: channels-linux-arm64.sha256
-  - source: images/dns-controller-amd64.tar.gz
-    githubName: images-dns-controller-amd64.tar.gz
-  - source: images/dns-controller-amd64.tar.gz.sha256
-    githubName: images-dns-controller-amd64.tar.gz.sha256
-  - source: images/dns-controller-arm64.tar.gz
-    githubName: images-dns-controller-arm64.tar.gz
-  - source: images/dns-controller-arm64.tar.gz.sha256
-    githubName: images-dns-controller-arm64.tar.gz.sha256
-  - source: images/kops-controller-amd64.tar.gz
-    githubName: images-kops-controller-amd64.tar.gz
-  - source: images/kops-controller-amd64.tar.gz.sha256
-    githubName: images-kops-controller-amd64.tar.gz.sha256
-  - source: images/kops-controller-arm64.tar.gz
-    githubName: images-kops-controller-arm64.tar.gz
-  - source: images/kops-controller-arm64.tar.gz.sha256
-    githubName: images-kops-controller-arm64.tar.gz.sha256
-  - source: images/kube-apiserver-healthcheck-amd64.tar.gz
-    githubName: images-kube-apiserver-healthcheck-amd64.tar.gz
-  - source: images/kube-apiserver-healthcheck-amd64.tar.gz.sha256
-    githubName: images-kube-apiserver-healthcheck-amd64.tar.gz.sha256
-  - source: images/kube-apiserver-healthcheck-arm64.tar.gz
-    githubName: images-kube-apiserver-healthcheck-arm64.tar.gz
-  - source: images/kube-apiserver-healthcheck-arm64.tar.gz.sha256
-    githubName: images-kube-apiserver-healthcheck-arm64.tar.gz.sha256
+  - source: images/images.tar.gz
+    githubName: images.tar.gz
+  - source: images/images.tar.gz.sha256
+    githubName: images.tar.gz.sha256
