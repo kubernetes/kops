@@ -20,15 +20,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strings"
 
 	"k8s.io/klog/v2"
-)
-
-type fileFn string
-
-const (
-	fileFnFile       fileFn = "file"
-	fileFnFileBase64 fileFn = "filebase64"
 )
 
 // Literal represents a literal in terraform syntax
@@ -43,10 +37,12 @@ type Literal struct {
 	ResourceName string `cty:"resource_name"`
 	// ResourceProp represents the property of a resource in a literal reference
 	ResourceProp string `cty:"resource_prop"`
-	// FilePath represents the path for a file reference
-	FilePath string `cty:"file_path"`
-	// FileFn represents the function used to reference the file
-	FileFn fileFn `cty:"file_fn"`
+
+	// FnName represents the name of a terraform function.
+	FnName string `cty:"fn_name"`
+	// FnArgs contains string representations of arguments to the function call.
+	// Any string arguments must be quoted.
+	FnArgs []string `cty:"fn_arg"`
 }
 
 var _ json.Marshaler = &Literal{}
@@ -55,15 +51,11 @@ func (l *Literal) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&l.Value)
 }
 
-func LiteralFileExpression(modulePath string, base64 bool) *Literal {
-	fn := fileFnFile
-	if base64 {
-		fn = fileFnFileBase64
-	}
+func LiteralFunctionExpression(functionName string, args []string) *Literal {
 	return &Literal{
-		Value:    fmt.Sprintf("${%v(%q)}", fn, modulePath),
-		FilePath: modulePath,
-		FileFn:   fn,
+		Value:  fmt.Sprintf("${%v(%v)}", functionName, strings.Join(args, ", ")),
+		FnName: functionName,
+		FnArgs: args,
 	}
 }
 

@@ -75,9 +75,12 @@ func (t *TerraformWriter) AddFileBytes(resourceType string, resourceName string,
 	p := path.Join("data", id)
 	t.Files[p] = data
 
-	modulePath := path.Join("${path.module}", p)
-	l := LiteralFileExpression(modulePath, base64)
-	return l, nil
+	modulePath := fmt.Sprintf("%q", path.Join("${path.module}", p))
+	fn := "file"
+	if base64 {
+		fn = "filebase64"
+	}
+	return LiteralFunctionExpression(fn, []string{modulePath}), nil
 }
 
 func (t *TerraformWriter) RenderResource(resourceType string, resourceName string, e interface{}) error {
