@@ -33,11 +33,10 @@ const (
 
 // Literal represents a literal in terraform syntax
 type Literal struct {
-	// Value is only used in terraform 0.11 and represents the literal string to use as a value.
+	// Value is only used in JSON output via the TerraformJSON feature flag
 	// "${}" interpolation is supported.
 	Value string `cty:"value"`
 
-	// The below fields are only used in terraform 0.12.
 	// ResourceType represents the type of a resource in a literal reference
 	ResourceType string `cty:"resource_type"`
 	// ResourceName represents the name of a resource in a literal reference
@@ -62,9 +61,7 @@ func LiteralFileExpression(modulePath string, base64 bool) *Literal {
 		fn = fileFnFileBase64
 	}
 	return &Literal{
-		// file() is hardcoded here because this field is
-		// used for Terraform 0.11 which does not have filebase64()
-		Value:    fmt.Sprintf("${file(%q)}", modulePath),
+		Value:    fmt.Sprintf("${%v(%q)}", fn, modulePath),
 		FilePath: modulePath,
 		FileFn:   fn,
 	}
