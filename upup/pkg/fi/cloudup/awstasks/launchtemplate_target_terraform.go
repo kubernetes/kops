@@ -17,9 +17,6 @@ limitations under the License.
 package awstasks
 
 import (
-	"encoding/base64"
-
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -257,20 +254,9 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 			return err
 		}
 		if d != nil {
-			if featureflag.TerraformJSON.Enabled() {
-				b64d := make([]byte, base64.StdEncoding.EncodedLen(len(d)))
-				base64.StdEncoding.Encode(b64d, d)
-				if len(b64d) != 0 {
-					tf.UserData, err = target.AddFileBytes("aws_launch_template", fi.StringValue(e.Name), "user_data", b64d, false)
-					if err != nil {
-						return err
-					}
-				}
-			} else {
-				tf.UserData, err = target.AddFileBytes("aws_launch_template", fi.StringValue(e.Name), "user_data", d, true)
-				if err != nil {
-					return err
-				}
+			tf.UserData, err = target.AddFileBytes("aws_launch_template", fi.StringValue(e.Name), "user_data", d, true)
+			if err != nil {
+				return err
 			}
 		}
 	}
