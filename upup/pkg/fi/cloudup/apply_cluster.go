@@ -664,12 +664,10 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 		}
 	}
-	taskMap, err := l.BuildTasks(assetBuilder, &stageAssetsLifecycle, c.LifecycleOverrides)
+	c.TaskMap, err = l.BuildTasks(assetBuilder, &stageAssetsLifecycle, c.LifecycleOverrides)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
-
-	c.TaskMap = taskMap
 
 	var target fi.Target
 	dryRun := false
@@ -739,6 +737,19 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 	c.Target = target
 
+	if checkExisting {
+		c.TaskMap, err = l.FindDeletions(cloud, c.LifecycleOverrides)
+		if err != nil {
+			return fmt.Errorf("error finding deletions: %w", err)
+		}
+	}
+
+	context, err := fi.NewContext(target, cluster, cloud, keyStore, secretStore, configBase, checkExisting, c.TaskMap)
+	if err != nil {
+		return fmt.Errorf("error building context: %v", err)
+	}
+	defer context.Close()
+
 	if !dryRun {
 		acl, err := acls.GetACL(configBase, cluster)
 		if err != nil {
@@ -770,12 +781,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	context, err := fi.NewContext(target, cluster, cloud, keyStore, secretStore, configBase, checkExisting, taskMap)
-	if err != nil {
-		return fmt.Errorf("error building context: %v", err)
-	}
-	defer context.Close()
-
 	var options fi.RunTasksOptions
 	if c.RunTasksOptions != nil {
 		options = *c.RunTasksOptions
@@ -798,7 +803,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	err = target.Finish(taskMap) //This will finish the apply, and print the changes
+	err = target.Finish(c.TaskMap) //This will finish the apply, and print the changes
 	if err != nil {
 		return fmt.Errorf("error closing target: %v", err)
 	}
