@@ -36,11 +36,11 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
   --v=8  )\n}\n\n####################################################################################\n\n/bin/systemd-machine-id-setup
   || echo \"failed to set up ensure machine-id configured\"\n\necho \"== nodeup node
   config starting ==\"\nensure-install-dir\n\ncat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'\ncloudConfig:\n
-  \ manageStorageClasses: true\ncontainerRuntime: containerd\ncontainerd:\n  configOverride:
-  |\n    version = 2\n\n    [plugins]\n\n      [plugins.\"io.containerd.grpc.v1.cri\"]\n\n
-  \       [plugins.\"io.containerd.grpc.v1.cri\".containerd]\n\n          [plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes]\n\n
-  \           [plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes.runc]\n              runtime_type
-  = \"io.containerd.runc.v2\"\n\n              [plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes.runc.options]\n
+  \ awsEBSCSIDriver:\n    enabled: false\n  manageStorageClasses: true\ncontainerRuntime:
+  containerd\ncontainerd:\n  configOverride: |\n    version = 2\n\n    [plugins]\n\n
+  \     [plugins.\"io.containerd.grpc.v1.cri\"]\n\n        [plugins.\"io.containerd.grpc.v1.cri\".containerd]\n\n
+  \         [plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes]\n\n            [plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes.runc]\n
+  \             runtime_type = \"io.containerd.runc.v2\"\n\n              [plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes.runc.options]\n
   \               SystemdCgroup = true\n\n        [plugins.\"io.containerd.grpc.v1.cri\".registry]\n\n
   \         [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors]\n\n            [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors.\"*\"]\n
   \             endpoint = [\"http://HostIP2:Port2\"]\n\n            [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors.\"docker.io\"]\n
@@ -147,11 +147,11 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
   --v=8  )\n}\n\n####################################################################################\n\n/bin/systemd-machine-id-setup
   || echo \"failed to set up ensure machine-id configured\"\n\necho \"== nodeup node
   config starting ==\"\nensure-install-dir\n\ncat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'\ncloudConfig:\n
-  \ manageStorageClasses: true\ncontainerRuntime: containerd\ncontainerd:\n  configOverride:
-  |\n    version = 2\n\n    [plugins]\n\n      [plugins.\"io.containerd.grpc.v1.cri\"]\n\n
-  \       [plugins.\"io.containerd.grpc.v1.cri\".containerd]\n\n          [plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes]\n\n
-  \           [plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes.runc]\n              runtime_type
-  = \"io.containerd.runc.v2\"\n\n              [plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes.runc.options]\n
+  \ awsEBSCSIDriver:\n    enabled: false\n  manageStorageClasses: true\ncontainerRuntime:
+  containerd\ncontainerd:\n  configOverride: |\n    version = 2\n\n    [plugins]\n\n
+  \     [plugins.\"io.containerd.grpc.v1.cri\"]\n\n        [plugins.\"io.containerd.grpc.v1.cri\".containerd]\n\n
+  \         [plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes]\n\n            [plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes.runc]\n
+  \             runtime_type = \"io.containerd.runc.v2\"\n\n              [plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes.runc.options]\n
   \               SystemdCgroup = true\n\n        [plugins.\"io.containerd.grpc.v1.cri\".registry]\n\n
   \         [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors]\n\n            [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors.\"*\"]\n
   \             endpoint = [\"http://HostIP2:Port2\"]\n\n            [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors.\"docker.io\"]\n
