@@ -139,6 +139,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
 
   cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig:
+    awsEBSCSIDriver:
+      enabled: false
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
@@ -468,6 +470,8 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumexamplecom.Properties.LaunchTemp
 
   cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig:
+    awsEBSCSIDriver:
+      enabled: false
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
