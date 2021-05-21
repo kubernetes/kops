@@ -188,9 +188,9 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersmixedinstancesexamplecom.Prop
     - NodeRestriction
     - ResourceQuota
     etcdServers:
-    - http://127.0.0.1:4001
+    - https://127.0.0.1:4001
     etcdServersOverrides:
-    - /events#http://127.0.0.1:4002
+    - /events#https://127.0.0.1:4002
     image: k8s.gcr.io/kube-apiserver:v1.21.0
     kubeletPreferredAddressTypes:
     - InternalIP
@@ -517,9 +517,9 @@ Resources.AWSEC2LaunchTemplatemasterustest1bmastersmixedinstancesexamplecom.Prop
     - NodeRestriction
     - ResourceQuota
     etcdServers:
-    - http://127.0.0.1:4001
+    - https://127.0.0.1:4001
     etcdServersOverrides:
-    - /events#http://127.0.0.1:4002
+    - /events#https://127.0.0.1:4002
     image: k8s.gcr.io/kube-apiserver:v1.21.0
     kubeletPreferredAddressTypes:
     - InternalIP
@@ -846,9 +846,9 @@ Resources.AWSEC2LaunchTemplatemasterustest1cmastersmixedinstancesexamplecom.Prop
     - NodeRestriction
     - ResourceQuota
     etcdServers:
-    - http://127.0.0.1:4001
+    - https://127.0.0.1:4001
     etcdServersOverrides:
-    - /events#http://127.0.0.1:4002
+    - /events#https://127.0.0.1:4002
     image: k8s.gcr.io/kube-apiserver:v1.21.0
     kubeletPreferredAddressTypes:
     - InternalIP
