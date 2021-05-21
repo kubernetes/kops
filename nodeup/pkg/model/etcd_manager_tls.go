@@ -41,7 +41,8 @@ func (b *EtcdManagerTLSBuilder) Build(ctx *fi.ModelBuilderContext) error {
 		return err
 	}
 
-	for _, k := range []string{"main", "events"} {
+	for _, etcdCluster := range b.Cluster.Spec.EtcdClusters {
+		k := etcdCluster.Name
 		d := "/etc/kubernetes/pki/etcd-manager-" + k
 
 		keys := make(map[string]string)
