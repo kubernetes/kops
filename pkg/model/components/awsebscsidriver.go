@@ -31,8 +31,15 @@ var _ loader.OptionsBuilder = &AWSEBSCSIDriverOptionsBuilder{}
 
 func (b *AWSEBSCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
-	c := clusterSpec.CloudConfig.AWSEBSCSIDriver
-	if c == nil {
+	cc := clusterSpec.CloudConfig
+	if cc.AWSEBSCSIDriver == nil {
+		cc.AWSEBSCSIDriver = &kops.AWSEBSCSIDriver{
+			Enabled: fi.Bool(false),
+		}
+	}
+	c := cc.AWSEBSCSIDriver
+
+	if !fi.BoolValue(c.Enabled) {
 		return nil
 	}
 

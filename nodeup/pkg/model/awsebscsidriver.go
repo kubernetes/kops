@@ -31,7 +31,7 @@ var _ fi.ModelBuilder = &AWSEBSCSIDriverBuilder{}
 func (b *AWSEBSCSIDriverBuilder) Build(c *fi.ModelBuilderContext) error {
 	csi := b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver
 
-	if csi == nil {
+	if csi == nil || !fi.BoolValue(csi.Enabled) {
 		return nil
 	}
 
