@@ -149,6 +149,23 @@ As of kOps 1.20, it is possible to choose your own values for Cilium Agents + Op
       memoryRequest: "128Mi"
 ```
 
+## Hubble
+{{ kops_feature_table(kops_added_default='1.20.1', k8s_min='1.20') }}
+
+Hubble is the observability layer of Cilium and can be used to obtain cluster-wide visibility into the network and security layer of your Kubernetes cluster. See the [Hubble documentation](https://docs.cilium.io/en/v1.10/gettingstarted/hubble_setup/) for more information.
+
+Hubble can be enabled by adding the following to the spec:
+```yaml
+  networking:
+    cilium:
+      hubble:
+        enabled: true
+```
+
+This will enable Hubble in the Cilium agent as well as install hubble-relay. kOps will also configure mTLS between the Cilium agent and relay. Note that since the Hubble UI does not support TLS, the relay is not configured to listen on a secure port.
+
+The Hubble UI has to be installed separatly.
+
 ## Getting help
 
 For problems with deploying Cilium please post an issue to Github:
