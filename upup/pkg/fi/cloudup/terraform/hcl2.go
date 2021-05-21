@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strings"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
@@ -103,11 +104,11 @@ func writeValue(body *hclwrite.Body, key string, value cty.Value) {
 // key = res_type.res_name.res_prop
 // key = file("${module.path}/foo")
 func writeLiteral(body *hclwrite.Body, key string, literal *terraformWriter.Literal) {
-	if literal.FilePath != "" {
+	if literal.FnName != "" {
 		tokens := hclwrite.Tokens{
 			{
 				Type:  hclsyntax.TokenIdent,
-				Bytes: []byte(fmt.Sprintf("%v(%q)", literal.FileFn, literal.FilePath)),
+				Bytes: []byte(fmt.Sprintf("%v(%v)", literal.FnName, strings.Join(literal.FnArgs, ", "))),
 			},
 		}
 		body.SetAttributeRaw(key, tokens)
@@ -193,8 +194,11 @@ func writeMap(body *hclwrite.Body, key string, values map[string]cty.Value) {
 		if literal, ok := refLiteral.Interface().(*terraformWriter.Literal); err == nil && ok {
 			// For maps of literals we currently only support file references
 			// If we ever need to support a map of strings to resource property references that can be added here
-			if literal.FilePath != "" {
-				tokens = append(tokens, &hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte(fmt.Sprintf("%v(%q)", literal.FileFn, literal.FilePath))})
+			if literal.FnName != "" {
+				tokens = append(tokens, &hclwrite.Token{
+					Type:  hclsyntax.TokenIdent,
+					Bytes: []byte(fmt.Sprintf("%v(%v)", literal.FnName, strings.Join(literal.FnArgs, ", "))),
+				})
 			} else if literal.Value != "" {
 				tokens = append(tokens, []*hclwrite.Token{
 					{Type: hclsyntax.TokenOQuote, Bytes: []byte{'"'}, SpacesBefore: 1},
