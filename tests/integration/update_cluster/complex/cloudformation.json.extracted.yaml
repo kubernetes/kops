@@ -53,7 +53,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom.Properties.
   \ - NamespaceLifecycle\n  - LimitRanger\n  - ServiceAccount\n  - PersistentVolumeLabel\n
   \ - DefaultStorageClass\n  - DefaultTolerationSeconds\n  - MutatingAdmissionWebhook\n
   \ - ValidatingAdmissionWebhook\n  - NodeRestriction\n  - ResourceQuota\n  etcdServers:\n
-  \ - http://127.0.0.1:4001\n  etcdServersOverrides:\n  - /events#http://127.0.0.1:4002\n
+  \ - https://127.0.0.1:4001\n  etcdServersOverrides:\n  - /events#https://127.0.0.1:4002\n
   \ image: k8s.gcr.io/kube-apiserver:v1.21.0\n  kubeletPreferredAddressTypes:\n  -
   InternalIP\n  - Hostname\n  - ExternalIP\n  logLevel: 2\n  memoryLimit: 1000Mi\n
   \ memoryRequest: 800Mi\n  requestheaderAllowedNames:\n  - aggregator\n  requestheaderExtraHeaderPrefixes:\n
