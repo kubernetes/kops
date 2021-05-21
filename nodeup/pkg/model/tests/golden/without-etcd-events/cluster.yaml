@@ -18,15 +18,6 @@ spec:
     provider: Manager
     backups:
       backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd-main
-  - cpuRequest: 100m
-    etcdMembers:
-    - instanceGroup: master-us-test-1a
-      name: us-test-1a
-    memoryRequest: 100Mi
-    name: events
-    provider: Manager
-    backups:
-      backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd-events
   iam: {}
   kubelet:
     anonymousAuth: false
