@@ -26,8 +26,8 @@ contents: |
       - --etcd-cafile=/etc/kubernetes/pki/kube-apiserver/etcd-ca.crt
       - --etcd-certfile=/etc/kubernetes/pki/kube-apiserver/etcd-client.crt
       - --etcd-keyfile=/etc/kubernetes/pki/kube-apiserver/etcd-client.key
-      - --etcd-servers-overrides=/events#https://127.0.0.1:4002
-      - --etcd-servers=https://127.0.0.1:4001
+      - --etcd-servers-overrides=/events#https://events.etcd.minimal.example.com:4002
+      - --etcd-servers=https://main.etcd.minimal.example.com:4001
       - --insecure-port=0
       - --kubelet-client-certificate=/srv/kubernetes/kubelet-api.crt
       - --kubelet-client-key=/srv/kubernetes/kubelet-api.key
