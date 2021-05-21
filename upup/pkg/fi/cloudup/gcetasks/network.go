@@ -132,6 +132,11 @@ func (_ *Network) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Network) error {
 
 		case "custom":
 			network.AutoCreateSubnetworks = false
+			// The boolean default value of "false" is omitted when the struct
+			// is serialized, which results in the network being created with
+			// the auto-create subnetworks default of "true". Explicitly send
+			// the default value.
+			network.ForceSendFields = []string{"AutoCreateSubnetworks"}
 		}
 		_, err := t.Cloud.Compute().Networks.Insert(t.Cloud.Project(), network).Do()
 		if err != nil {
