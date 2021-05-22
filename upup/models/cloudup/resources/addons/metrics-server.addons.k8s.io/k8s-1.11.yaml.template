@@ -139,7 +139,7 @@ spec:
 {{ else }}
           - --cert-dir=/tmp
 {{ end }}
-{{ if not UseKopsControllerForNodeBootstrap }}
+{{ if and UseKopsControllerForNodeBootstrap (not (WithDefaultBool .MetricsServer.Insecure true)) }}
           - --kubelet-insecure-tls
 {{ end }} 
         image: {{ or .MetricsServer.Image "k8s.gcr.io/metrics-server/metrics-server:v0.4.2" }}
