@@ -1040,7 +1040,25 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 				})
 			}
 		}
+	}
 
+	if b.Cluster.Spec.SnapshotController != nil && fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled) {
+		key := "snapshot-controller.addons.k8s.io"
+
+		version := "4.0.0-kops.1"
+		{
+			id := "k8s-1.20"
+			location := key + "/" + id + ".yaml"
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Manifest:          fi.String(location),
+				Selector:          map[string]string{"k8s-addon": key},
+				KubernetesVersion: ">=1.20.0",
+				NeedsPKI:          true,
+				Id:                id,
+			})
+		}
 	}
 
 	if b.Cluster.Spec.KubeScheduler.UsePolicyConfigMap != nil {
