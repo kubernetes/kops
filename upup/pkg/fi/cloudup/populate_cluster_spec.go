@@ -281,6 +281,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 			codeModels = append(codeModels, &components.ClusterAutoscalerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.NodeTerminationHandlerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.AWSEBSCSIDriverOptionsBuilder{OptionsContext: optionsContext})
+			codeModels = append(codeModels, &components.AWSCloudControllerManagerOptionsBuilder{OptionsContext: optionsContext})
 		}
 	}
 
