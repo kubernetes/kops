@@ -167,6 +167,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 
 	if spec.AWSLoadBalancerController != nil {
 		allErrs = append(allErrs, validateAWSLoadBalancerController(c, spec.AWSLoadBalancerController, fieldPath.Child("awsLoadBalanceController"))...)
+	}
+
+	if spec.SnapshotController != nil {
+		allErrs = append(allErrs, validateSnapshotController(c, spec.SnapshotController, fieldPath.Child("snapshotController"))...)
 
 	}
 
@@ -1428,6 +1432,21 @@ func validateWarmPool(warmPool *kops.WarmPoolSpec, fldPath *field.Path) (allErrs
 	}
 	if warmPool.MinSize < 0 {
 		allErrs = append(allErrs, field.Invalid(fldPath.Child("minSize"), warmPool.MinSize, "warm pool minSize cannot be negative"))
+	}
+	return allErrs
+}
+
+func validateSnapshotController(cluster *kops.Cluster, spec *kops.SnapshotControllerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
+	if spec != nil && fi.BoolValue(spec.Enabled) {
+		if !cluster.IsKubernetesGTE("1.20") {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("enabled"), "Snapshot controller requires kubernetes 1.20+"))
+		}
+		if !components.IsCertManagerEnabled(cluster) {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("enabled"), "Snapshot controller requires that cert manager is enabled"))
+		}
+		if cluster.Spec.CloudConfig == nil || cluster.Spec.CloudConfig.AWSEBSCSIDriver == nil || !fi.BoolValue(cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("enabled"), "Snapshot controller requires external CSI Driver"))
+		}
 	}
 	return allErrs
 }

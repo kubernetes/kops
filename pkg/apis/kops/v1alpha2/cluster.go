@@ -207,6 +207,9 @@ type ClusterSpec struct {
 
 	// ServiceAccountIssuerDiscovery configures the OIDC Issuer for ServiceAccounts.
 	ServiceAccountIssuerDiscovery *ServiceAccountIssuerDiscoveryConfig `json:"serviceAccountIssuerDiscovery,omitempty"`
+
+	// SnapshotController defines the CSI Snapshot Controller configuration.
+	SnapshotController *SnapshotControllerConfig `json:"snapshotController,omitempty"`
 }
 
 // ServiceAccountIssuerDiscoveryConfig configures an OIDC Issuer.
