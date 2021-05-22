@@ -498,7 +498,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 	if b.Cluster.Spec.MetricsServer != nil && fi.BoolValue(b.Cluster.Spec.MetricsServer.Enabled) {
 		{
 			key := "metrics-server.addons.k8s.io"
-			version := "0.3.7"
+			version := "0.4.4"
 
 			{
 				location := key + "/k8s-1.11.yaml"
