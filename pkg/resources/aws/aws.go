@@ -1909,7 +1909,7 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 
 	// Detach Managed Policies
 	for _, policy := range attachedPolicies {
-		klog.V(2).Infof("Deleting IAM role policy %q %q", roleName, policy)
+		klog.V(2).Infof("Detaching IAM role policy %q %q", roleName, policy)
 		request := &iam.DetachRolePolicyInput{
 			RoleName:  aws.String(r.Name),
 			PolicyArn: policy.PolicyArn,
