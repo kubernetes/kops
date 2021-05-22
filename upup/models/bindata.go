@@ -30393,7 +30393,7 @@ func cloudupResourcesAddonsMetadataProxyAddonsK8sIoV0112Yaml() (*asset, error) {
 	return a, nil
 }
 
-var _cloudupResourcesAddonsMetricsServerAddonsK8sIoK8s111YamlTemplate = []byte(`# sourced from https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.3.7/components.yaml
+var _cloudupResourcesAddonsMetricsServerAddonsK8sIoK8s111YamlTemplate = []byte(`# sourced from https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.4.4/components.yaml
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -30474,7 +30474,6 @@ subjects:
   name: metrics-server
   namespace: kube-system
 ---
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -30489,8 +30488,6 @@ subjects:
 - kind: ServiceAccount
   name: metrics-server
   namespace: kube-system
----
-
 ---
 apiVersion: v1
 kind: Service
@@ -30528,16 +30525,17 @@ spec:
       containers:
       - args:
           - --secure-port=4443
+          - --kubelet-use-node-status-port
 {{ if not (WithDefaultBool .MetricsServer.Insecure true) }}
           - --tls-cert-file=/srv/tls.crt
           - --tls-private-key-file=/srv/tls.key
 {{ else }}
           - --cert-dir=/tmp
 {{ end }}
-{{ if not UseKopsControllerForNodeBootstrap }}
+{{ if and UseKopsControllerForNodeBootstrap (not (WithDefaultBool .MetricsServer.Insecure true)) }}
           - --kubelet-insecure-tls
-{{ end }} 
-        image: {{ or .MetricsServer.Image "k8s.gcr.io/metrics-server/metrics-server:v0.4.2" }}
+{{ end }}
+        image: {{ or .MetricsServer.Image "k8s.gcr.io/metrics-server/metrics-server:v0.4.4" }}
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -30569,6 +30567,10 @@ spec:
 {{ end }}
         - mountPath: /tmp
           name: tmp-dir
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
       nodeSelector:
         kubernetes.io/os: linux
       priorityClassName: system-cluster-critical
@@ -30634,7 +30636,8 @@ spec:
   issuerRef:
     name: metrics-server.addons.k8s.io
     kind: Issuer
-{{ end }}`)
+{{ end }}
+`)
 
 func cloudupResourcesAddonsMetricsServerAddonsK8sIoK8s111YamlTemplateBytes() ([]byte, error) {
 	return _cloudupResourcesAddonsMetricsServerAddonsK8sIoK8s111YamlTemplate, nil
