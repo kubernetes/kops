@@ -343,6 +343,9 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addNodeTerminationHandlerSQSPermissions(p, resource)
 	}
 
+	if b.Cluster.Spec.SnapshotController != nil && fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled) {
+		addSnapshotPersmissions(p)
+	}
 	return p, nil
 }
 
@@ -778,6 +781,19 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy, resource stringorslice.S
 			Resource: resource,
 		},
 	)
+}
+
+func addSnapshotPersmissions(p *Policy) {
+	p.Statement = append(p.Statement, &Statement{
+		Effect: StatementEffectAllow,
+		Action: stringorslice.Of(
+			"ec2:CreateSnapshot",
+			"ec2:DeleteSnapshot",
+			"ec2:DescribeAvailabilityZones",
+			"ec2:DescribeSnapshots",
+		),
+		Resource: stringorslice.Slice([]string{"*"}),
+	})
 }
 
 // addLegacyDNSControllerPermissions adds legacy IAM permissions used by the node roles.
