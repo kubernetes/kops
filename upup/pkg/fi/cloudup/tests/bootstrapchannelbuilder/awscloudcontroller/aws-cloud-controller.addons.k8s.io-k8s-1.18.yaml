@@ -21,7 +21,6 @@ spec:
     spec:
       containers:
       - args:
-        - --master=https://127.0.0.1
         - --v=2
         - --cloud-provider=aws
         - --cluster-name=minimal.example.com
