@@ -42,6 +42,11 @@ type VPCAmazonIPv6CIDRBlock struct {
 func (e *VPCAmazonIPv6CIDRBlock) Find(c *fi.Context) (*VPCAmazonIPv6CIDRBlock, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
+	// If the VPC doesn't (yet) exist, there is no association
+	if e.VPC.ID == nil {
+		return nil, nil
+	}
+
 	vpc, err := cloud.DescribeVPC(aws.StringValue(e.VPC.ID))
 	if err != nil {
 		return nil, err
