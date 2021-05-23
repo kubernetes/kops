@@ -21,8 +21,13 @@ spec:
     spec:
       containers:
       - args:
+        - --master=https://127.0.0.1
         - --v=2
         - --cloud-provider=aws
+        - --cluster-name=minimal.example.com
+        - --cluster-cidr=100.64.0.0/10
+        - --allocate-node-cidrs=true
+        - --configure-cloud-routes=false
         - --use-service-account-credentials=true
         image: gcr.io/k8s-staging-provider-aws/cloud-controller-manager:latest
         name: aws-cloud-controller-manager
