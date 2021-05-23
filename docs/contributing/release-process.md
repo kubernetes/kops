@@ -134,6 +134,8 @@ In the meantime, you can compile the release notes...
 This step is not necessary for an ".0-alpha.1" release as these are made off
 of the branch point for the previous minor release.
 
+The `relnotes` tool is from [kopeio/shipbot](https://github.com/kopeio/shipbot).
+
 For example:
 
 ```
@@ -160,6 +162,9 @@ hub pull-request
 
 ### Propose promotion of artifacts
 
+The `cip` tool is from [kubernetes-sigs/k8s-container-image-promoter](https://github.com/kubernetes-sigs/k8s-container-image-promoter).
+The `gsutil` tool may be obtained from `pip3`.
+
 Create container promotion PR:
 
 ```
@@ -172,14 +177,14 @@ git checkout -b kops_images_${VERSION}
 cd k8s.gcr.io/images/k8s-staging-kops
 echo "" >> images.yaml
 echo "# ${VERSION}" >> images.yaml
-k8s-container-image-promoter --snapshot gcr.io/k8s-staging-kops --snapshot-tag ${VERSION} >> images.yaml
+cip run --snapshot gcr.io/k8s-staging-kops --snapshot-tag ${VERSION} >> images.yaml
 ```
 
 You can dry-run the promotion with 
 
 ```
 cd ${GOPATH}/src/k8s.io/k8s.io
-k8s-container-image-promoter --thin-manifest-dir k8s.gcr.io
+cip run --thin-manifest-dir k8s.gcr.io
 ```
 
 Currently we send the image and non-image artifact promotion PRs separately.
@@ -220,6 +225,7 @@ hub pull-request -b main
 
 ### Promote to GitHub / S3 (legacy) / artifacts.k8s.io
 
+The `shipbot` tool is from [kopeio/shipbot](https://github.com/kopeio/shipbot).
 
 Binaries to github (all releases):
 
@@ -229,13 +235,13 @@ git checkout v$VERSION
 shipbot -tag v${VERSION} -config .shipbot.yaml -src ${GOPATH}/src/k8s.io/k8s.io/k8s-staging-kops/kops/releases/${VERSION}/
 ```
 
-Binaries to S3 bucket (only for releases < 1.22):
+Binaries to S3 bucket (only for stable releases < 1.22):
 
 ```
 aws s3 sync --acl public-read k8s-staging-kops/kops/releases/${VERSION}/ s3://kubeupv2/kops/${VERSION}/
 ```
 
-Until the binary promoter is automatic, we also need to promote the binary artifacts manually (only for stable releases):
+Until the binary promoter is automatic, we also need to promote the binary artifacts manually (only for stable releases, requires elevated permissions):
 
 ```
 mkdir -p /tmp/thin/artifacts/filestores/k8s-staging-kops/
@@ -261,6 +267,8 @@ promobot-files --filestores /tmp/thin/artifacts/filestores/k8s-staging-kops/file
 ```
 
 ### Smoke test the release
+
+This step is only necessary for stable releases (as binary artifacts are not otherwise promoted to artifacts.k8s.io).
 
 ```
 wget https://artifacts.k8s.io/binaries/kops/${VERSION}/linux/amd64/kops
