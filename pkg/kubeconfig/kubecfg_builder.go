@@ -116,6 +116,10 @@ func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) er
 		config.Clusters[b.Context] = cluster
 	}
 
+	// We avoid changing the user unless we're actually writing something
+	// Issue #11537
+	haveUserInfo := false
+
 	// If the user has the same name as the context, it is the admin user
 	if b.User == b.Context {
 		authInfo := config.AuthInfos[b.Context]
@@ -126,6 +130,8 @@ func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) er
 		if b.KubeUser != "" && b.KubePassword != "" {
 			authInfo.Username = b.KubeUser
 			authInfo.Password = b.KubePassword
+
+			haveUserInfo = true
 		}
 
 		if b.ClientCert != nil && b.ClientKey != nil {
@@ -133,6 +139,8 @@ func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) er
 			authInfo.ClientCertificateData = b.ClientCert
 			authInfo.ClientKey = ""
 			authInfo.ClientKeyData = b.ClientKey
+
+			haveUserInfo = true
 		}
 
 		if len(b.AuthenticationExec) != 0 {
@@ -141,12 +149,16 @@ func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) er
 				Command:    b.AuthenticationExec[0],
 				Args:       b.AuthenticationExec[1:],
 			}
+
+			haveUserInfo = true
 		}
 
-		if config.AuthInfos == nil {
-			config.AuthInfos = make(map[string]*clientcmdapi.AuthInfo)
+		if haveUserInfo {
+			if config.AuthInfos == nil {
+				config.AuthInfos = make(map[string]*clientcmdapi.AuthInfo)
+			}
+			config.AuthInfos[b.Context] = authInfo
 		}
-		config.AuthInfos[b.Context] = authInfo
 	} else if b.User != "" {
 		if config.AuthInfos[b.User] == nil {
 			return fmt.Errorf("could not find user %q", b.User)
@@ -179,8 +191,10 @@ func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) er
 		}
 
 		context.Cluster = b.Context
-		if b.User != "" {
-			context.AuthInfo = b.User
+		if haveUserInfo {
+			if b.User != "" {
+				context.AuthInfo = b.User
+			}
 		}
 
 		if b.Namespace != "" {
@@ -199,6 +213,6 @@ func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) er
 		return err
 	}
 
-	fmt.Printf("kops has set your kubectl context to %s\n", b.Context)
+	fmt.Printf("kOps has set your kubectl context to %s\n", b.Context)
 	return nil
 }
