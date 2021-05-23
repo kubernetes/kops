@@ -50,6 +50,14 @@ type ModelBuilder interface {
 	Build(context *ModelBuilderContext) error
 }
 
+// HasDeletions is a ModelBuilder that creates tasks to delete cloud objects that no longer exist in the model.
+type HasDeletions interface {
+	ModelBuilder
+	// FindDeletions finds cloud objects that are owned by the cluster but no longer in the model and creates tasks to delete them.
+	// It is not called for the Terraform or Cloudformation targets.
+	FindDeletions(context *ModelBuilderContext, cloud Cloud) error
+}
+
 // ModelBuilderContext is a context object that holds state we want to pass to ModelBuilder
 type ModelBuilderContext struct {
 	Tasks              map[string]Task
