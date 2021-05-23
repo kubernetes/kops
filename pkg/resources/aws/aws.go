@@ -2021,23 +2021,35 @@ func DeleteIAMInstanceProfile(cloud fi.Cloud, r *resources.Resource) error {
 func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 
-	remove := make(map[string]bool)
-	remove["masters."+clusterName] = true
-	remove["nodes."+clusterName] = true
-	remove["bastions."+clusterName] = true
-
+	var getProfileErr error
 	var profiles []*iam.InstanceProfile
+	ownershipTag := "kubernetes.io/cluster/" + clusterName
 
 	request := &iam.ListInstanceProfilesInput{}
 	err := c.IAM().ListInstanceProfilesPages(request, func(p *iam.ListInstanceProfilesOutput, lastPage bool) bool {
 		for _, p := range p.InstanceProfiles {
 			name := aws.StringValue(p.InstanceProfileName)
-			if remove[name] {
-				profiles = append(profiles, p)
+			if !strings.HasSuffix(name, "."+clusterName) {
+				continue
+			}
+
+			getRequest := &iam.GetInstanceProfileInput{InstanceProfileName: p.InstanceProfileName}
+			profileOutput, err := c.IAM().GetInstanceProfile(getRequest)
+			if err != nil {
+				getProfileErr = fmt.Errorf("calling IAM GetInstanceProfile on %s: %w", name, err)
+				return false
+			}
+			for _, tag := range profileOutput.InstanceProfile.Tags {
+				if fi.StringValue(tag.Key) == ownershipTag && fi.StringValue(tag.Value) == "owned" {
+					profiles = append(profiles, p)
+				}
 			}
 		}
 		return true
 	})
+	if getProfileErr != nil {
+		return nil, getProfileErr
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error listing IAM instance profiles: %v", err)
 	}
