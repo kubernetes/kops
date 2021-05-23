@@ -73,7 +73,5 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 		return fmt.Errorf("no networking mode set")
 	}
 
-	eccm.Master = "https://127.0.0.1"
-
 	return nil
 }
