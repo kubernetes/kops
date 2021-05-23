@@ -45,11 +45,16 @@ function finish {
 }
 trap finish EXIT
 
+OVERRIDES="--override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true"
+OVERRIDES="$OVERRIDES --override=cluster.spec.snapshotController.enabled=true"
+OVERRIDES="$OVERRIDES --override=cluster.spec.certManager.enabled=true"
+
+
 ${KUBETEST2} \
 		--up \
 		--kops-binary-path="${KOPS}" \
 		--kubernetes-version="1.21.0" \
-		--create-args="--networking calico --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true --override=cluster.spec.snapshotController.enabled=true"
+		--create-args="--networking calico $OVERRIDES"
 
 
 ZONE=$(${KOPS} get ig -o json | jq -r '[.[] | select(.spec.role=="Node") | .spec.subnets[0]][0]')
