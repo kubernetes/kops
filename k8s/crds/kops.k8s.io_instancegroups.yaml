@@ -470,6 +470,10 @@ spec:
                     description: KubeletCgroups is the absolute name of cgroups to
                       isolate the kubelet in.
                     type: string
+                  logFormat:
+                    description: 'LogFormat is the logging format of the kubelet.
+                      Supported values: text, json. Default: text'
+                    type: string
                   logLevel:
                     description: LogLevel is the logging level of the kubelet
                     format: int32
