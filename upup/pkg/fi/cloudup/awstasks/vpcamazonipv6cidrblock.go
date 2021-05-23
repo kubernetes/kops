@@ -114,15 +114,15 @@ func (_ *VPCAmazonIPv6CIDRBlock) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 		return fmt.Errorf("IPv6 CIDR block provided by Amazon not found")
 	}
 
-	request := &ec2.AssociateVpcCidrBlockInput{
-		VpcId:                       e.VPC.ID,
-		AmazonProvidedIpv6CidrBlock: aws.Bool(true),
-	}
+	// request := &ec2.AssociateVpcCidrBlockInput{
+	// 	VpcId:                       e.VPC.ID,
+	// 	AmazonProvidedIpv6CidrBlock: aws.Bool(true),
+	// }
 
-	_, err := t.Cloud.EC2().AssociateVpcCidrBlock(request)
-	if err != nil {
-		return fmt.Errorf("error associating Amazon IPv6 provided CIDR block to VPC: %v", err)
-	}
+	// _, err := t.Cloud.EC2().AssociateVpcCidrBlock(request)
+	// if err != nil {
+	// 	return fmt.Errorf("error associating Amazon IPv6 provided CIDR block to VPC: %v", err)
+	// }
 
 	return nil // no tags
 }

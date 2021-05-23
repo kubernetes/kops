@@ -18,11 +18,15 @@ package awstasks
 
 import (
 	"fmt"
+	"net"
+	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/util/subnet"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -108,6 +112,10 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 	actual.ShortName = e.ShortName // Not materialized in AWS
 	actual.Name = e.Name           // Name is part of Tags
 
+	if isAutoAssignIPv6CIDR(e) {
+		e.IPv6CIDR = actual.IPv6CIDR
+	}
+
 	return actual, nil
 }
 
@@ -187,6 +195,61 @@ func (s *Subnet) CheckChanges(a, e, changes *Subnet) error {
 	return nil
 }
 
+var autoAssignCIDRLock sync.Mutex
+
+func autoAssignCIDR(ec2Client ec2iface.EC2API, vpc *VPC, spec string) (*net.IPNet, error) {
+	autoAssignCIDRLock.Lock()
+	defer autoAssignCIDRLock.Unlock()
+
+	vpcID := fi.StringValue(vpc.ID)
+	_, vpcCIDR, err := net.ParseCIDR(fi.StringValue(vpc.IPv6CIDR))
+	if err != nil {
+		return nil, fmt.Errorf("VPC %q did not have valid ipv6CIDR %q", vpcID, fi.StringValue(vpc.IPv6CIDR))
+	}
+
+	request := &ec2.DescribeSubnetsInput{}
+	request.Filters = append(request.Filters, &ec2.Filter{
+		Name:   aws.String("vpc-id"),
+		Values: aws.StringSlice([]string{vpcID}),
+	})
+
+	response, err := ec2Client.DescribeSubnets(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing Subnets: %v", err)
+	}
+
+	var inUse subnet.CIDRMap
+
+	for _, subnet := range response.Subnets {
+		for _, block := range subnet.Ipv6CidrBlockAssociationSet {
+			cidrString := aws.StringValue(block.Ipv6CidrBlock)
+			if cidrString == "" {
+				continue
+			}
+			if err := inUse.MarkInUse(cidrString); err != nil {
+				return nil, fmt.Errorf("invalid CIDR %q found for subnet %q", cidrString, aws.StringValue(subnet.SubnetId))
+			}
+		}
+	}
+
+	_, specCIDR, err := net.ParseCIDR(spec)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse CIDR %q", spec)
+	}
+
+	allocated, err := inUse.Allocate(vpcCIDR.String(), specCIDR.Mask)
+	if err != nil {
+		return nil, fmt.Errorf("unable to allocate subnet of size %q in VPC %q: %w", spec, vpcID, err)
+	}
+
+	return allocated, nil
+}
+
+func isAutoAssignIPv6CIDR(e *Subnet) bool {
+	// A hack ... should we just recognize /64 ?
+	return fi.StringValue(e.IPv6CIDR) == "::/64"
+}
+
 func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
@@ -197,15 +260,30 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 	}
 
 	if a == nil {
+
+		ipv6CIDR := e.IPv6CIDR
+
+		// Special case: auto IPAM
+		if isAutoAssignIPv6CIDR(e) {
+			cidr, err := autoAssignCIDR(t.Cloud.EC2(), e.VPC, fi.StringValue(ipv6CIDR))
+			if err != nil {
+				return err
+			}
+			klog.Infof("assigned cidr %v", cidr)
+			ipv6CIDR = fi.String(cidr.String())
+		}
+
 		klog.V(2).Infof("Creating Subnet with CIDR: %q", *e.CIDR)
 
 		request := &ec2.CreateSubnetInput{
 			CidrBlock:         e.CIDR,
-			Ipv6CidrBlock:     e.IPv6CIDR,
+			Ipv6CidrBlock:     ipv6CIDR,
 			AvailabilityZone:  e.AvailabilityZone,
 			VpcId:             e.VPC.ID,
 			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeSubnet, e.Tags),
 		}
+
+		klog.Infof("creating subnet %+v", request)
 
 		response, err := t.Cloud.EC2().CreateSubnet(request)
 		if err != nil {
@@ -213,19 +291,22 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 		}
 
 		e.ID = response.Subnet.SubnetId
-	} else {
-		if changes.IPv6CIDR != nil {
-			request := &ec2.AssociateSubnetCidrBlockInput{
-				Ipv6CidrBlock: e.IPv6CIDR,
-				SubnetId:      e.ID,
-			}
-
-			_, err := t.Cloud.EC2().AssociateSubnetCidrBlock(request)
-			if err != nil {
-				return fmt.Errorf("error associating subnet cidr block: %v", err)
-			}
-		}
 	}
+
+	// We can't support this..
+	// else {
+	// 	if changes.IPv6CIDR != nil {
+	// 		request := &ec2.AssociateSubnetCidrBlockInput{
+	// 			Ipv6CidrBlock: ipv6CIDR,
+	// 			SubnetId:      e.ID,
+	// 		}
+
+	// 		_, err := t.Cloud.EC2().AssociateSubnetCidrBlock(request)
+	// 		if err != nil {
+	// 			return fmt.Errorf("error associating subnet cidr block: %v", err)
+	// 		}
+	// 	}
+	// }
 
 	return t.AddAWSTags(*e.ID, e.Tags)
 }
@@ -371,6 +452,11 @@ func (e *Subnet) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 			continue
 		}
 
+		if isAutoAssignIPv6CIDR(e) {
+			continue
+		}
+
+		// Otherwise remove it!
 		removals = append(removals, &deleteSubnetIPv6CIDRBlock{
 			vpcID:         subnet.VpcId,
 			ipv6CidrBlock: association.Ipv6CidrBlock,
@@ -398,6 +484,8 @@ func (d *deleteSubnetIPv6CIDRBlock) Delete(t fi.Target) error {
 	request := &ec2.DisassociateSubnetCidrBlockInput{
 		AssociationId: d.associationID,
 	}
+	klog.Infof("DisassociateSubnetCidrBlock: %+v", request)
+
 	_, err := awsTarget.Cloud.EC2().DisassociateSubnetCidrBlock(request)
 	return err
 }
