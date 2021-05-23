@@ -125,26 +125,30 @@ func awsValidateAdditionalSecurityGroups(fieldPath *field.Path, groups []string)
 	return allErrs
 }
 
-func awsValidateInstanceTypeAndImage(instanceTypeFieldPath *field.Path, imageFieldPath *field.Path, instanceType string, image string, cloud awsup.AWSCloud) field.ErrorList {
+func awsValidateInstanceTypeAndImage(instanceTypeFieldPath *field.Path, imageFieldPath *field.Path, instanceTypes string, image string, cloud awsup.AWSCloud) field.ErrorList {
+	if cloud == nil || instanceTypes == "" {
+		return nil
+	}
+
 	allErrs := field.ErrorList{}
 
-	if cloud != nil && instanceType != "" {
-		imageInfo, err := cloud.ResolveImage(image)
-		if err != nil {
-			return append(allErrs, field.Invalid(imageFieldPath, image,
-				fmt.Sprintf("image specified is invalid: %q", image)))
-		}
+	imageInfo, err := cloud.ResolveImage(image)
+	if err != nil {
+		return append(allErrs, field.Invalid(imageFieldPath, image,
+			fmt.Sprintf("image specified is invalid: %q", image)))
+	}
+	imageArch := fi.StringValue(imageInfo.Architecture)
 
-		imageArch := fi.StringValue(imageInfo.Architecture)
-
+	// Spotinst uses the instance type field to keep a "," separated list of instance types
+	for _, instanceType := range strings.Split(instanceTypes, ",") {
 		machineInfo, err := cloud.DescribeInstanceType(instanceType)
 		if err != nil {
-			return append(allErrs, field.Invalid(instanceTypeFieldPath, instanceType,
-				fmt.Sprintf("machine type specified is invalid: %q", instanceType)))
+			allErrs = append(allErrs, field.Invalid(instanceTypeFieldPath, instanceTypes, fmt.Sprintf("machine type specified is invalid: %q", instanceType)))
+			continue
 		}
 
 		found := false
-		if machineInfo.ProcessorInfo != nil {
+		if machineInfo != nil && machineInfo.ProcessorInfo != nil {
 			for _, machineArch := range machineInfo.ProcessorInfo.SupportedArchitectures {
 				if imageArch == fi.StringValue(machineArch) {
 					found = true
@@ -152,8 +156,12 @@ func awsValidateInstanceTypeAndImage(instanceTypeFieldPath *field.Path, imageFie
 			}
 		}
 		if !found {
-			allErrs = append(allErrs, field.Invalid(instanceTypeFieldPath, instanceType,
-				fmt.Sprintf("machine type architecture does not match image architecture: %s - %s", strings.Join(fi.StringSliceValue(machineInfo.ProcessorInfo.SupportedArchitectures), ","), imageArch)))
+			var machineArch []string
+			if machineInfo != nil && machineInfo.ProcessorInfo != nil && machineInfo.ProcessorInfo.SupportedArchitectures != nil {
+				machineArch = fi.StringSliceValue(machineInfo.ProcessorInfo.SupportedArchitectures)
+			}
+			allErrs = append(allErrs, field.Invalid(instanceTypeFieldPath, instanceTypes,
+				fmt.Sprintf("machine type architecture does not match image architecture: %q - %q", strings.Join(machineArch, ","), imageArch)))
 		}
 	}
 
