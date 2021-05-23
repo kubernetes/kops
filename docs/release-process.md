@@ -137,6 +137,8 @@ of the branch point for the previous minor release.
 For example:
 
 ```
+git checkout master
+git pull
 git checkout -b relnotes_${VERSION}
 
 FROM=1.21.0-alpha.2
@@ -183,6 +185,7 @@ k8s-container-image-promoter --thin-manifest-dir k8s.gcr.io
 Currently we send the image and non-image artifact promotion PRs separately.
 
 ```
+cd ${GOPATH}/src/k8s.io/k8s.io
 git add -p k8s.gcr.io/images/k8s-staging-kops/images.yaml
 git commit -m "Promote kOps $VERSION images"
 git push ${USER}
@@ -222,6 +225,7 @@ Binaries to github (all releases):
 
 ```
 cd ${GOPATH}/src/k8s.io/kops/
+git checkout v$VERSION
 shipbot -tag v${VERSION} -config .shipbot.yaml -src ${GOPATH}/src/k8s.io/k8s.io/k8s-staging-kops/kops/releases/${VERSION}/
 ```
 
