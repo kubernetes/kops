@@ -344,7 +344,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	if b.Cluster.Spec.SnapshotController != nil && fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled) {
-		addSnapshotPersmissions(p)
+		addSnapshotPersmissions(p, b.Cluster.GetName())
 	}
 	return p, nil
 }
@@ -783,17 +783,29 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy, resource stringorslice.S
 	)
 }
 
-func addSnapshotPersmissions(p *Policy) {
+func addSnapshotPersmissions(p *Policy, clusterName string) {
 	p.Statement = append(p.Statement, &Statement{
 		Effect: StatementEffectAllow,
 		Action: stringorslice.Of(
 			"ec2:CreateSnapshot",
-			"ec2:DeleteSnapshot",
 			"ec2:DescribeAvailabilityZones",
 			"ec2:DescribeSnapshots",
 		),
 		Resource: stringorslice.Slice([]string{"*"}),
 	})
+	p.Statement = append(p.Statement, &Statement{
+		Effect: StatementEffectAllow,
+		Action: stringorslice.Of(
+			"ec2:DeleteSnapshot",
+		),
+		Resource: stringorslice.Slice([]string{"*"}),
+		Condition: Condition{
+			"StringEquals": map[string]string{
+				"aws:ResourceTag/KubernetesCluster": clusterName,
+			},
+		},
+	})
+
 }
 
 // addLegacyDNSControllerPermissions adds legacy IAM permissions used by the node roles.
