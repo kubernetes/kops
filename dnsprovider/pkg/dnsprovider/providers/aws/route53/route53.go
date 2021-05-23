@@ -66,7 +66,9 @@ func newRoute53(config io.Reader) (*Interface, error) {
 	// To avoid API throttling on busier accounts
 	awsConfig = awsConfig.WithMaxRetries(5)
 
-	sess, err := session.NewSession()
+	sess, err := session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	})
 	if err != nil {
 		return nil, err
 	}
