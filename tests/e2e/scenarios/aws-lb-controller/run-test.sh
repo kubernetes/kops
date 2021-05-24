@@ -32,12 +32,7 @@ KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS:-}"
 
 export GO111MODULE=on
 
-cd "${REPO_ROOT}/tests/e2e"
-go install sigs.k8s.io/kubetest2
-go install ./kubetest2-kops
-go install ./kubetest2-tester-kops
-
-${KUBETEST2} --build --kops-root="${REPO_ROOT}" --stage-location="${STAGE_LOCATION:-}" --kops-binary-path="${KOPS}"
+make test-e2e-install
 
 # Always tear-down the cluster when we're done
 function finish {
@@ -46,10 +41,11 @@ function finish {
 trap finish EXIT
 
 ${KUBETEST2} \
-		--up \
-		--kops-binary-path="${KOPS}" \
-		--kubernetes-version="1.21.0" \
-		--create-args="--networking amazonvpc --override=cluster.spec.awsLoadBalancerController.enabled=true --override=cluster.spec.certManager.enabled=true --zones=eu-west-1a,eu-west-1b,eu-west-1c"
+    --up \
+    --kops-binary-path="${KOPS}" \
+    --kubernetes-version="1.21.0" \
+    --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+    --create-args="--networking amazonvpc --override=cluster.spec.awsLoadBalancerController.enabled=true --override=cluster.spec.certManager.enabled=true --zones=eu-west-1a,eu-west-1b,eu-west-1c"
 
 
 VPC=$(${KOPS} toolbox dump -o json | jq -r .vpc.id)
