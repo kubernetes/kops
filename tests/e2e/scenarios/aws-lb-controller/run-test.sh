@@ -18,15 +18,15 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+env
+pwd
+
 echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
 
 REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/aws-lb-controller/"
+KOPS="${ARTIFACTS}/${PROW_JOB_ID}/kops"
 
 export KOPS_FEATURE_FLAGS="SpecOverrideFlag,${KOPS_FEATURE_FLAGS:-}"
-REPO_ROOT=$(git rev-parse --show-toplevel);
-
-KOPS="${REPO_ROOT}/bazel-bin/cmd/kops/linux-amd64/kops"
-
 KUBETEST2="kubetest2 kops -v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-}"
 KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS:-}"
 
@@ -42,7 +42,6 @@ trap finish EXIT
 
 ${KUBETEST2} \
     --up \
-    --kops-binary-path="${KOPS}" \
     --kubernetes-version="1.21.0" \
     --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
     --create-args="--networking amazonvpc --override=cluster.spec.awsLoadBalancerController.enabled=true --override=cluster.spec.certManager.enabled=true --zones=eu-west-1a,eu-west-1b,eu-west-1c"
