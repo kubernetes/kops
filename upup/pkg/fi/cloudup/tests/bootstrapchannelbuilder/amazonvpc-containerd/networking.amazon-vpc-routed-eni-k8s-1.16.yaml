@@ -229,9 +229,7 @@ spec:
           type: DirectoryOrCreate
         name: run-dir
   updateStrategy:
-    rollingUpdate:
-      maxUnavailable: 10%
-    type: RollingUpdate
+    type: OnDelete
 
 ---
 

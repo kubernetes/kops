@@ -31045,9 +31045,7 @@ var _cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s116YamlTemplate = []by
           "type": "DirectoryOrCreate"
         "name": "run-dir"
   "updateStrategy":
-    "rollingUpdate":
-      "maxUnavailable": "10%"
-    "type": "RollingUpdate"
+    "type": "OnDelete"
 ---
 "apiVersion": "v1"
 "kind": "ServiceAccount"
