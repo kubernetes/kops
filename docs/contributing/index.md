@@ -2,7 +2,7 @@
 
 Are you interested in contributing to kOps? We, the maintainers and community,
 would love your suggestions, contributions, and help! We have a quick-start
-guide on [adding a feature](../development/adding_a_feature.md). Also, the
+guide on [adding a feature](adding_a_feature.md). Also, the
 maintainers can be contacted at any time to learn more about how to get
 involved.
 
@@ -41,7 +41,7 @@ https://go.k8s.io/bot-commands).
 
 kOps maintainers set aside one hour every other week for **public** office hours. This time is used to gather with community members interested in kOps. This session is open to both developers and users.
 
-For more information, checkout the [office hours page.](office_hours.md)
+For more information, checkout the [office hours page.](../welcome/office_hours.md)
 
 ### Other Ways to Communicate with the Contributors
 

@@ -8,7 +8,7 @@ From Homebrew:
 brew update && brew install kops
 ```
 
-Developers can also easily install [development releases](development/homebrew.md).
+Developers can also easily install [development releases](contributing/homebrew.md).
 
 From Github:
 
@@ -18,7 +18,7 @@ chmod +x ./kops
 sudo mv ./kops /usr/local/bin/
 ```
 
-You can also [install from source](development/building.md).
+You can also [install from source](contributing/building.md).
 
 ## Linux
 
@@ -30,7 +30,7 @@ chmod +x ./kops
 sudo mv ./kops /usr/local/bin/
 ```
 
-You can also [install from source](development/building.md).
+You can also [install from source](contributing/building.md).
 
 # Installing Other Dependencies
 

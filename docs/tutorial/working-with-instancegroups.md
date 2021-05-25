@@ -12,7 +12,7 @@ By default, a cluster has:
   because we need to force the cloud to run an instance in every zone, so we can mount the master volumes - we
   cannot do that across zones.
 
-This page explains some common instance group operations. For more detailed documentation of the various configuration keys, see the [InstanceGroup Resource](instancegroups_spec.md). 
+This page explains some common instance group operations. For more detailed documentation of the various configuration keys, see the [InstanceGroup Resource](../instance_groups.md). 
 
 
 ## Instance Groups Disclaimer
@@ -469,7 +469,7 @@ If you're running Kubernetes 1.6.0 or later, you can also control taints in the 
 The taints property takes a list of strings. The following example would add two taints to an IG,
 using the same `edit` -> `update` -> `rolling-update` process as above.
 
-Additionally, `nodeLabels` can be added to an IG in order to take advantage of Pod Affinity. Every node in the IG will be assigned the desired labels. For more information see the [labels](./labels.md) documentation.
+Additionally, `nodeLabels` can be added to an IG in order to take advantage of Pod Affinity. Every node in the IG will be assigned the desired labels. For more information see the [labels](../labels.md) documentation.
 
 ```YAML
 metadata:
