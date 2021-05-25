@@ -1594,7 +1594,9 @@ func autoConvert_v1alpha2_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *
 	out.EncapsulationMode = in.EncapsulationMode
 	out.IPIPMode = in.IPIPMode
 	out.IPv4AutoDetectionMethod = in.IPv4AutoDetectionMethod
+	out.IPv4Support = in.IPv4Support
 	out.IPv6AutoDetectionMethod = in.IPv6AutoDetectionMethod
+	out.IPv6Support = in.IPv6Support
 	out.IptablesBackend = in.IptablesBackend
 	out.LogSeverityScreen = in.LogSeverityScreen
 	out.MTU = in.MTU
@@ -1629,7 +1631,9 @@ func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha2_CalicoNetworkingSpec(in *
 	out.EncapsulationMode = in.EncapsulationMode
 	out.IPIPMode = in.IPIPMode
 	out.IPv4AutoDetectionMethod = in.IPv4AutoDetectionMethod
+	out.IPv4Support = in.IPv4Support
 	out.IPv6AutoDetectionMethod = in.IPv6AutoDetectionMethod
+	out.IPv6Support = in.IPv6Support
 	out.IptablesBackend = in.IptablesBackend
 	out.LogSeverityScreen = in.LogSeverityScreen
 	out.MTU = in.MTU

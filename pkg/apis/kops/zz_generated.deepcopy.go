@@ -389,6 +389,16 @@ func (in *CalicoNetworkingSpec) DeepCopyInto(out *CalicoNetworkingSpec) {
 		x := (*in).DeepCopy()
 		*out = &x
 	}
+	if in.IPv4Support != nil {
+		in, out := &in.IPv4Support, &out.IPv4Support
+		*out = new(bool)
+		**out = **in
+	}
+	if in.IPv6Support != nil {
+		in, out := &in.IPv6Support, &out.IPv6Support
+		*out = new(bool)
+		**out = **in
+	}
 	if in.MTU != nil {
 		in, out := &in.MTU, &out.MTU
 		*out = new(int32)

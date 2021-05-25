@@ -52,6 +52,8 @@ data:
           "nodename": "__KUBERNETES_NODE_NAME__",
           "mtu": __CNI_MTU__,
           "ipam": {
+              "assign_ipv4": "{{ WithDefaultBool .Networking.Calico.IPv4Support true }}",
+              "assign_ipv6": "{{ WithDefaultBool .Networking.Calico.IPv6Support false }}",
               "type": "calico-ipam"
           },
           "policy": {
@@ -3825,7 +3827,9 @@ spec:
               value: "kops,bgp"
             # Auto-detect the BGP IP address.
             - name: IP
-              value: "autodetect"
+              value: "{{- if (WithDefaultBool .Networking.Calico.IPv4Support true) -}}autodetect{{- else -}}none{{- end -}}"
+            - name: IP6
+              value: "{{- if (WithDefaultBool .Networking.Calico.IPv6Support false) -}}autodetect{{- else -}}none{{- end -}}"
             - name: IP_AUTODETECTION_METHOD
               value: "{{- or .Networking.Calico.IPv4AutoDetectionMethod "first-found" }}"
             - name: IP6_AUTODETECTION_METHOD
@@ -3857,8 +3861,17 @@ spec:
             # The default IPv4 pool to create on startup if none exists. Pod IPs will be
             # chosen from this range. Changing this value after installation will have
             # no effect. This should fall within `--cluster-cidr`.
+            {{- if (WithDefaultBool .Networking.Calico.IPv6Support false) }}
+            - name: CALICO_IPV6POOL_CIDR
+              value: "{{ .KubeControllerManager.ClusterCIDR }}"
+            - name: CALICO_IPV6POOL_NAT_OUTGOING
+              value: "true"
+            - name: CALICO_ROUTER_ID
+              value: "hash"
+            {{- else if (WithDefaultBool .Networking.Calico.IPv4Support true) }}
             - name: CALICO_IPV4POOL_CIDR
               value: "{{ .KubeControllerManager.ClusterCIDR }}"
+            {{- end }}
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
@@ -3867,7 +3880,7 @@ spec:
               value: "ACCEPT"
             # Disable IPv6 on Kubernetes.
             - name: FELIX_IPV6SUPPORT
-              value: "false"
+              value: "{{ WithDefaultBool .Networking.Calico.IPv6Support false }}"
             - name: FELIX_HEALTHENABLED
               value: "true"
 
@@ -3924,6 +3937,9 @@ spec:
               {{- if eq .Networking.Calico.EncapsulationMode "ipip" }}
               - -bird-live
               {{- end }}
+              {{- if (WithDefaultBool .Networking.Calico.IPv6Support false) }}
+              - -bird6-live
+              {{- end }}
             periodSeconds: 10
             initialDelaySeconds: 10
             failureThreshold: 6
@@ -3934,6 +3950,9 @@ spec:
               - -felix-ready
               {{- if eq .Networking.Calico.EncapsulationMode "ipip" }}
               - -bird-ready
+              {{- end }}
+              {{- if (WithDefaultBool .Networking.Calico.IPv6Support false) }}
+              - -bird6-ready
               {{- end }}
             periodSeconds: 10
           {{- if .Networking.Calico.PrometheusMetricsEnabled }}
