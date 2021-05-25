@@ -816,11 +816,12 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			location := key + "/" + id + ".yaml"
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:     fi.String(key),
-				Version:  fi.String(versions[id]),
-				Selector: networkingSelector(),
-				Manifest: fi.String(location),
-				Id:       id,
+				Name:               fi.String(key),
+				Version:            fi.String(versions[id]),
+				Selector:           networkingSelector(),
+				Manifest:           fi.String(location),
+				Id:                 id,
+				NeedsRollingUpdate: "all",
 			})
 		}
 	}
