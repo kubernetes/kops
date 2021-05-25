@@ -99,6 +99,8 @@ var (
 	KopsControllerStateStore = New("KopsControllerStateStore", Bool(false))
 	// APIServerNodes enables ability to provision nodes that only run the kube-apiserver
 	APIServerNodes = New("APIServerNodes", Bool(false))
+	// UseAddonOperators activates experimental addon operator support
+	UseAddonOperators = New("UseAddonOperators", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
