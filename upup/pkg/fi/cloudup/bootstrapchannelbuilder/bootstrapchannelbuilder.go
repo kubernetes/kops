@@ -747,8 +747,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 	if b.Cluster.Spec.Networking.Calico != nil {
 		key := "networking.projectcalico.org"
 		versions := map[string]string{
-			"k8s-1.12": "3.9.6-kops.2",
-			"k8s-1.16": "3.19.0-kops.1",
+			"k8s-1.16": "3.19.1-kops.1",
 		}
 
 		{
