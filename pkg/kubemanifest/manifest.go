@@ -31,6 +31,11 @@ type Object struct {
 	data map[string]interface{}
 }
 
+// NewObject returns an Object wrapping the provided data
+func NewObject(data map[string]interface{}) *Object {
+	return &Object{data: data}
+}
+
 // ObjectList describes a list of objects, allowing us to add bulk-methods
 type ObjectList []*Object
 

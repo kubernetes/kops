@@ -48,6 +48,10 @@ type Visitor interface {
 }
 
 func visit(visitor Visitor, data interface{}, path []string, mutator func(interface{})) error {
+	if data == nil {
+		return nil
+	}
+
 	switch data := data.(type) {
 	case string:
 		err := visitor.VisitString(path, data, func(v string) {
