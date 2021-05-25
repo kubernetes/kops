@@ -236,9 +236,6 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	if spec.API != nil && spec.API.LoadBalancer != nil && spec.CloudProvider == "aws" {
 		value := string(spec.API.LoadBalancer.Class)
 		allErrs = append(allErrs, IsValidValue(fieldPath.Child("class"), &value, kops.SupportedLoadBalancerClasses)...)
-		if featureflag.Spotinst.Enabled() && spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
-			allErrs = append(allErrs, field.Forbidden(fieldPath, "cannot use NLB together with spotinst"))
-		}
 		if spec.API.LoadBalancer.SSLCertificate != "" && spec.API.LoadBalancer.Class != kops.LoadBalancerClassNetwork && c.IsKubernetesGTE("1.19") {
 			allErrs = append(allErrs, field.Forbidden(fieldPath, "sslCertificate requires network loadbalancer for K8s 1.19+ see https://github.com/kubernetes/kops/blob/master/permalinks/acm_nlb.md"))
 		}
