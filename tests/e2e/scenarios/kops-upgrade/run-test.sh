@@ -34,33 +34,37 @@ wget -qO "${FIRST_KOPS}" "https://github.com/kubernetes/kops/releases/download/$
 chmod +x "${FIRST_KOPS}"
 
 export KOPS_FEATURE_FLAGS="SpecOverrideFlag,${KOPS_FEATURE_FLAGS:-}"
-REPO_ROOT=$(git rev-parse --show-toplevel);
-
-SECOND_KOPS="${REPO_ROOT}/bazel-bin/cmd/kops/linux-amd64/kops"
 
 KUBETEST2="kubetest2 kops -v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-}"
 KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS:-}"
 
 export GO111MODULE=on
 
-cd "${REPO_ROOT}/tests/e2e"
-go install sigs.k8s.io/kubetest2
-go install ./kubetest2-kops
-go install ./kubetest2-tester-kops
+make test-e2e-install
 
-${KUBETEST2} --build --kops-root="${REPO_ROOT}" --stage-location="${STAGE_LOCATION:-}" --kops-binary-path="${SECOND_KOPS}"
+KOPS="${FIRST_KOPS}"
 
 # Always tear-down the cluster when we're done
 function finish {
-  ${KUBETEST2} --kops-binary-path="${SECOND_KOPS}" --down || echo "kubetest2 down failed"
+  ${KUBETEST2} --kops-binary-path="${KOPS}" --down || echo "kubetest2 down failed"
 }
 trap finish EXIT
 
 ${KUBETEST2} \
-		--up \
-		--kops-binary-path="${FIRST_KOPS}" \
-		--kubernetes-version="${K8S_VERSION}" \
-		--create-args="--networking calico"
+	--up \
+	--kubernetes-version="${K8S_VERSION}" \
+	--kops-binary-path="${FIRST_KOPS}" \
+	--create-args="--networking calico"
+
+export KOPS_BASE_URL
+KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
+
+
+SECOND_KOPS=$(mktemp -t kops.XXXXXXXXX)
+wget -qO "${SECOND_KOPS}" "$KOPS_BASE_URL/$(go env GOOS)/$(go env GOARCH)/kops"
+chmod +x "${SECOND_KOPS}"
+
+KOPS="${SECOND_KOPS}"
 
 "${SECOND_KOPS}" update cluster
 "${SECOND_KOPS}" update cluster --admin --yes
