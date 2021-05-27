@@ -17,16 +17,12 @@ limitations under the License.
 package designate
 
 import (
-	"crypto/tls"
 	"fmt"
 	"io"
-	"net/http"
 
-	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
-	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
-	"k8s.io/kops/util/pkg/vfs"
+	osauth "k8s.io/kops/upup/pkg/fi/cloudup/openstackauth"
 )
 
 const (
@@ -36,53 +32,21 @@ const (
 
 func init() {
 	dnsprovider.RegisterDNSProvider(ProviderName, func(config io.Reader) (dnsprovider.Interface, error) {
-		return newDesignate(config)
+		return NewDesignateClient(config)
 	})
 }
 
-func newDesignate(_ io.Reader) (*Interface, error) {
-	oc := vfs.OpenstackConfig{}
-	ao, err := oc.GetCredential()
+func NewDesignateClient(_ io.Reader) (*Interface, error) {
+	InsecureSkipVerify := true
+	provider, err := osauth.NewOpenStackProvider(InsecureSkipVerify)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to authenticate to OpenStack: %v", err)
 	}
 
-	/*
-		pc, err := openstack.AuthenticatedClient(ao)
-		if err != nil {
-			return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
-		}*/
-
-	provider, err := openstack.NewClient(ao.IdentityEndpoint)
+	client, err := openstack.NewDNSV2(provider, osauth.GetOpenStackEndpointOpts())
 	if err != nil {
-		return nil, fmt.Errorf("error building openstack provider client: %v", err)
-	}
-	ua := gophercloud.UserAgent{}
-	ua.Prepend("kops/designate")
-	provider.UserAgent = ua
-	klog.V(4).Infof("Using user-agent %s", ua.Join())
-
-	tlsconfig := &tls.Config{}
-	tlsconfig.InsecureSkipVerify = true
-	transport := &http.Transport{TLSClientConfig: tlsconfig}
-	provider.HTTPClient = http.Client{
-		Transport: transport,
+		return nil, fmt.Errorf("error building dns client: %v", err)
 	}
 
-	klog.V(2).Info("authenticating to keystone")
-
-	err = openstack.Authenticate(provider, ao)
-	if err != nil {
-		return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
-	}
-
-	endpointOpt, err := oc.GetServiceConfig("Designate")
-	if err != nil {
-		return nil, err
-	}
-	sc, err := openstack.NewDNSV2(provider, endpointOpt)
-	if err != nil {
-		return nil, fmt.Errorf("error creating a ServiceClient: %v", err)
-	}
-	return New(sc), nil
+	return New(client), nil
 }

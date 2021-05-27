@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "requests.go",
+        "results.go",
+        "utils.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/gophercloud/utils/openstack/clientconfig",
+    importpath = "github.com/gophercloud/utils/openstack/clientconfig",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/gophercloud/gophercloud:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack:go_default_library",
+        "//vendor/github.com/gophercloud/utils/env:go_default_library",
+        "//vendor/gopkg.in/yaml.v2:go_default_library",
+    ],
+)

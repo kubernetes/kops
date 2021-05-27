@@ -310,9 +310,6 @@ github.com/fsnotify/fsnotify
 github.com/ghodss/yaml
 # github.com/go-errors/errors v1.0.1
 github.com/go-errors/errors
-# github.com/go-ini/ini v1.62.0
-## explicit
-github.com/go-ini/ini
 # github.com/go-logr/logr v0.4.0
 ## explicit
 github.com/go-logr/logr
@@ -408,6 +405,10 @@ github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers
 github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects
 github.com/gophercloud/gophercloud/openstack/utils
 github.com/gophercloud/gophercloud/pagination
+# github.com/gophercloud/utils v0.0.0-20200423144003-7c72efc7435d
+## explicit
+github.com/gophercloud/utils/env
+github.com/gophercloud/utils/openstack/clientconfig
 # github.com/gorilla/mux v1.8.0
 github.com/gorilla/mux
 # github.com/gosuri/uitable v0.0.4
@@ -770,6 +771,7 @@ golang.org/x/sys/windows/registry
 golang.org/x/term
 # golang.org/x/text v0.3.6
 golang.org/x/text/encoding
+golang.org/x/text/encoding/charmap
 golang.org/x/text/encoding/internal
 golang.org/x/text/encoding/internal/identifier
 golang.org/x/text/encoding/unicode

@@ -17,16 +17,15 @@ limitations under the License.
 package openstack
 
 import (
-	"crypto/tls"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
 
 	"github.com/gophercloud/gophercloud"
-	os "github.com/gophercloud/gophercloud/openstack"
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	az "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
@@ -56,6 +55,7 @@ import (
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
+	osauth "k8s.io/kops/upup/pkg/fi/cloudup/openstackauth"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -332,96 +332,46 @@ var _ fi.Cloud = &openstackCloud{}
 var openstackCloudInstances map[string]OpenstackCloud = make(map[string]OpenstackCloud)
 
 func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent string) (OpenstackCloud, error) {
-
-	config := vfs.OpenstackConfig{}
-
-	region, err := config.GetRegion()
-	if err != nil {
-		return nil, fmt.Errorf("error finding openstack region: %v", err)
-	}
-
-	raw := openstackCloudInstances[region]
-	if raw != nil {
-		return raw, nil
-	}
-
-	authOption, err := config.GetCredential()
-	if err != nil {
-		return nil, err
-	}
-
-	provider, err := os.NewClient(authOption.IdentityEndpoint)
-	if err != nil {
-		return nil, fmt.Errorf("error building openstack provider client: %v", err)
-	}
-	ua := gophercloud.UserAgent{}
-	ua.Prepend(fmt.Sprintf("kops/%s", uagent))
-	provider.UserAgent = ua
-	klog.V(4).Infof("Using user-agent %s", ua.Join())
-
+	InsecureSkipVerify := false
 	if spec != nil && spec.CloudConfig != nil && spec.CloudConfig.Openstack != nil && spec.CloudConfig.Openstack.InsecureSkipVerify != nil {
-		tlsconfig := &tls.Config{}
-		tlsconfig.InsecureSkipVerify = fi.BoolValue(spec.CloudConfig.Openstack.InsecureSkipVerify)
-		transport := &http.Transport{TLSClientConfig: tlsconfig}
-		provider.HTTPClient = http.Client{
-			Transport: transport,
-		}
+		InsecureSkipVerify = fi.BoolValue(spec.CloudConfig.Openstack.InsecureSkipVerify)
 	}
-
-	klog.V(2).Info("authenticating to keystone")
-
-	err = os.Authenticate(provider, authOption)
+	provider, err := osauth.NewOpenStackProvider(InsecureSkipVerify)
 	if err != nil {
-		return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
+		return nil, fmt.Errorf("failed to authenticate to OpenStack: %v", err)
 	}
 
-	cinderClient, err := os.NewBlockStorageV3(provider, gophercloud.EndpointOpts{
-		Type:   "volumev3",
-		Region: region,
-	})
+	cinderClient, err := openstack.NewBlockStorageV3(provider, osauth.GetOpenStackEndpointOpts())
 	if err != nil {
 		return nil, fmt.Errorf("error building cinder client: %v", err)
 	}
 
-	neutronClient, err := os.NewNetworkV2(provider, gophercloud.EndpointOpts{
-		Type:   "network",
-		Region: region,
-	})
+	neutronClient, err := openstack.NewNetworkV2(provider, osauth.GetOpenStackEndpointOpts())
 	if err != nil {
 		return nil, fmt.Errorf("error building neutron client: %v", err)
 	}
 
-	novaClient, err := os.NewComputeV2(provider, gophercloud.EndpointOpts{
-		Type:   "compute",
-		Region: region,
-	})
+	novaClient, err := openstack.NewComputeV2(provider, osauth.GetOpenStackEndpointOpts())
 	if err != nil {
 		return nil, fmt.Errorf("error building nova client: %v", err)
 	}
 	// 2.47 is the minimum version where the compute API /server/details returns flavor names
 	novaClient.Microversion = "2.47"
 
-	glanceClient, err := os.NewImageServiceV2(provider, gophercloud.EndpointOpts{
-		Type:   "image",
-		Region: region,
-	})
+	glanceClient, err := openstack.NewImageServiceV2(provider, osauth.GetOpenStackEndpointOpts())
 	if err != nil {
 		return nil, fmt.Errorf("error building glance client: %v", err)
 	}
 
 	var dnsClient *gophercloud.ServiceClient
 	if !dns.IsGossipHostname(tags[TagClusterName]) {
-		//TODO: This should be replaced with the environment variable methods as done above
-		endpointOpt, err := config.GetServiceConfig("Designate")
-		if err != nil {
-			return nil, err
-		}
-
-		dnsClient, err = os.NewDNSV2(provider, endpointOpt)
+		dnsClient, err = openstack.NewDNSV2(provider, osauth.GetOpenStackEndpointOpts())
 		if err != nil {
 			return nil, fmt.Errorf("error building dns client: %v", err)
 		}
 	}
+
+	region := osauth.GetOpenStackRegion()
 
 	c := &openstackCloud{
 		cinderClient:  cinderClient,
@@ -474,17 +424,13 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 	if spec != nil && spec.CloudConfig != nil && spec.CloudConfig.Openstack != nil {
 		if spec.CloudConfig.Openstack.Loadbalancer != nil && octavia {
 			klog.V(2).Infof("Openstack using Octavia lbaasv2 api")
-			lbClient, err = os.NewLoadBalancerV2(provider, gophercloud.EndpointOpts{
-				Region: region,
-			})
+			lbClient, err = openstack.NewLoadBalancerV2(provider, osauth.GetOpenStackEndpointOpts())
 			if err != nil {
 				return nil, fmt.Errorf("error building lb client: %v", err)
 			}
 		} else if spec.CloudConfig.Openstack.Loadbalancer != nil {
 			klog.V(2).Infof("Openstack using deprecated lbaasv2 api")
-			lbClient, err = os.NewNetworkV2(provider, gophercloud.EndpointOpts{
-				Region: region,
-			})
+			lbClient, err = openstack.NewNetworkV2(provider, osauth.GetOpenStackEndpointOpts())
 			if err != nil {
 				return nil, fmt.Errorf("error building lb client: %v", err)
 			}

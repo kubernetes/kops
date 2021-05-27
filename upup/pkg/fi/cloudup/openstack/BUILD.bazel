@@ -39,6 +39,7 @@ go_library(
         "//pkg/dns:go_default_library",
         "//protokube/pkg/etcd:go_default_library",
         "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/openstackauth:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack:go_default_library",
