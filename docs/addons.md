@@ -190,6 +190,30 @@ The kOps CLI requires additional IAM permissions to manage the requisite EventBr
 
 **Warning: If you switch between the two operating modes on an existing cluster, the old resources have to be manually deleted. For IMDS to Queue Processor, this means deleting the k8s nth daemonset. For Queue Processor to IMDS, this means deleting the k8s nth deployment and the AWS resources: the SQS queue, EventBridge rules, and ASG Lifecycle hooks.**
 
+#### Snapshot controller
+
+{{ kops_feature_table(kops_added_default='1.21', k8s_min='1.20') }}
+
+Snapshot controller implements the [volume snapshot features](https://kubernetes.io/docs/concepts/storage/volume-snapshots/) of the Container Storage Interface (CSI).
+
+You can enable the snapshot controller by adding the following to the cluster spec:
+
+```yaml
+spec:
+  snapshotController:
+    enabled: true
+```
+
+Note that the in-tree volume drivers do not support this feature. If you are running a cluster on AWS, you can enable the EBS CSI driver by adding the following:
+
+```yaml
+spec:
+  cloudConfig:
+    awsEBSCSIDriver:
+      enabled: true
+```
+
+
 ## Static addons
 
 The command `kops create cluster` does not support specifying addons to be added to the cluster when it is created. Instead they can be added after cluster creation using kubectl. Alternatively when creating a cluster from a yaml manifest, addons can be specified using `spec.addons`.
