@@ -33,11 +33,11 @@ download-or-bust() {
   local -r urls=( $(split-commas "$3") )
 
   if [[ -f "${file}" ]]; then
-	if ! validate-hash "${file}" "${hash}"; then
-	  rm -f "${file}"
-	else
-	  return
-	fi
+    if ! validate-hash "${file}" "${hash}"; then
+      rm -f "${file}"
+    else
+      return
+    fi
   fi
 
   while true; do
