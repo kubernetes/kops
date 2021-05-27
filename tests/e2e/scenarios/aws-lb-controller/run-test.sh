@@ -18,9 +18,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-env
-pwd
-
 echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
 
 REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/aws-lb-controller/"
