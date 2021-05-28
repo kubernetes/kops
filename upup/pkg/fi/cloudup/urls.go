@@ -83,20 +83,6 @@ func copyBaseURL(base *url.URL) (*url.URL, error) {
 	return u, nil
 }
 
-// SetKopsAssetsLocations sets the kops assets locations
-// This func adds kops binary to the list of file assets, and stages the binary in the assets file repository
-func SetKopsAssetsLocations(assetsBuilder *assets.AssetBuilder) error {
-	for _, s := range []string{
-		"linux/amd64/kops", "darwin/amd64/kops",
-	} {
-		_, _, err := KopsFileURL(s, assetsBuilder)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // NodeUpAsset returns the asset for where nodeup should be downloaded
 func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
 	if nodeUpAsset == nil {
