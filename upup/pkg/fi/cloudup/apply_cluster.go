@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net"
 	"net/url"
 	"os"
@@ -135,8 +136,16 @@ type ApplyClusterCmd struct {
 	// that is re-mapped.
 	LifecycleOverrides map[string]fi.Lifecycle
 
+	// Quiet suppresses most output
+	Quiet bool
+
 	// TaskMap is the map of tasks that we built (output)
 	TaskMap map[string]fi.Task
+
+	// ContainerAssets are the container assets we use (output).
+	ContainerAssets []*assets.ContainerAsset
+	// FileAssets are the file assets we use (output).
+	FileAssets []*assets.FileAsset
 }
 
 func (c *ApplyClusterCmd) Run(ctx context.Context) error {
@@ -719,7 +728,11 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		shouldPrecreateDNS = false
 
 	case TargetDryRun:
-		target = fi.NewDryRunTarget(assetBuilder, os.Stdout)
+		var out io.Writer = os.Stdout
+		if c.Quiet {
+			out = io.Discard
+		}
+		target = fi.NewDryRunTarget(assetBuilder, out)
 		dryRun = true
 
 		// Avoid making changes on a dry-run
@@ -800,6 +813,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("error closing target: %v", err)
 	}
+
+	c.ContainerAssets = assetBuilder.ContainerAssets
+	c.FileAssets = assetBuilder.FileAssets
 
 	return nil
 }
