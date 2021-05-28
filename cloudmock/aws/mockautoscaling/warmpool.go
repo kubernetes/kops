@@ -28,3 +28,7 @@ func (m *MockAutoscaling) DescribeWarmPool(input *autoscaling.DescribeWarmPoolIn
 	}
 	return ret, nil
 }
+
+func (m *MockAutoscaling) DeleteWarmPool(*autoscaling.DeleteWarmPoolInput) (*autoscaling.DeleteWarmPoolOutput, error) {
+	return &autoscaling.DeleteWarmPoolOutput{}, nil
+}
