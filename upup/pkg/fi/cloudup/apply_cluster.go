@@ -53,7 +53,6 @@ import (
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/model/openstackmodel"
-	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/models"
@@ -681,7 +680,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		case kops.CloudProviderAWS:
 			target = awsup.NewAWSAPITarget(cloud.(awsup.AWSCloud))
 		case kops.CloudProviderDO:
-			target = do.NewDOAPITarget(cloud.(*digitalocean.Cloud))
+			target = do.NewDOAPITarget(cloud.(do.DOCloud))
 		case kops.CloudProviderOpenstack:
 			target = openstack.NewOpenstackAPITarget(cloud.(openstack.OpenstackCloud))
 		case kops.CloudProviderALI:

@@ -21,14 +21,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/digitalocean/godo"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/protokube/pkg/gossip"
 )
 
 type SeedProvider struct {
-	cloud *digitalocean.Cloud
-	tag   string
+	godoClient *godo.Client
+	tag        string
 }
 
 var _ gossip.SeedProvider = &SeedProvider{}
@@ -36,7 +36,7 @@ var _ gossip.SeedProvider = &SeedProvider{}
 func (p *SeedProvider) GetSeeds() ([]string, error) {
 	var seeds []string
 
-	droplets, _, err := p.cloud.Droplets().List(context.TODO(), nil)
+	droplets, _, err := p.godoClient.Droplets.List(context.TODO(), nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("Droplets.ListByTag returned error: %v", err)
@@ -64,11 +64,11 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 	return seeds, nil
 }
 
-func NewSeedProvider(cloud *digitalocean.Cloud, tag string) (*SeedProvider, error) {
+func NewSeedProvider(godoClient *godo.Client, tag string) (*SeedProvider, error) {
 	klog.V(4).Infof("Trying new seed provider with cluster tag:%s", tag)
 
 	return &SeedProvider{
-		cloud: cloud,
-		tag:   tag,
+		godoClient: godoClient,
+		tag:        tag,
 	}, nil
 }
