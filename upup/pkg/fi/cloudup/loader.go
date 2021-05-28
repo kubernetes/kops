@@ -116,7 +116,9 @@ func (l *Loader) addAssetFileCopyTasks(assets []*assets.FileAsset, lifecycle *fi
 				Lifecycle:  lifecycle,
 			}
 
-			context.AddTask(copyFileTask)
+			if err := context.EnsureTask(copyFileTask); err != nil {
+				return fmt.Errorf("error adding asset-copy task: %v", err)
+			}
 			l.tasks = context.Tasks
 
 		}
