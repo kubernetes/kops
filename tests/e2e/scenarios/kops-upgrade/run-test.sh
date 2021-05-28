@@ -46,9 +46,19 @@ KOPS="${FIRST_KOPS}"
 
 # Always tear-down the cluster when we're done
 function finish {
+ 
+  KOPS_LOG_DIR="${ARTIFACTS}/logs"
+  mkdir -p "${KOPS_LOG_DIR}"
+
+  KOPS_CP=$(${KOPS} toolbox dump -o json | jq -r '.instances[] | select( .roles | index("master" )) | .publicAddresses[0]')
+
+  ssh -i "${AWS_SSH_PRIVATE_KEY_FILE}" "ubuntu@${KOPS_CP}" sudo chmod -R a+r /var/log
+  scp -i "${AWS_SSH_PRIVATE_KEY_FILE}" -r "ubuntu@${KOPS_CP}:/var/log/" "${KOPS_LOG_DIR}"
+
   ${KUBETEST2} --kops-binary-path="${KOPS}" --down || echo "kubetest2 down failed"
 }
 trap finish EXIT
+
 
 ${KUBETEST2} \
 	--up \
