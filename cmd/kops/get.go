@@ -106,6 +106,7 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&options.output, "output", "o", options.output, "output format.  One of: table, yaml, json")
 
 	// create subcommands
+	cmd.AddCommand(NewCmdGetAssets(f, out, options))
 	cmd.AddCommand(NewCmdGetCluster(f, out, options))
 	cmd.AddCommand(NewCmdGetInstanceGroups(f, out, options))
 	cmd.AddCommand(NewCmdGetSecrets(f, out, options))
