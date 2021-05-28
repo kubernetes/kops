@@ -59,16 +59,18 @@ func (e *WarmPool) Find(c *fi.Context) (*WarmPool, error) {
 	}
 	if warmPool.WarmPoolConfiguration == nil {
 		return &WarmPool{
-			Name:    e.Name,
-			Enabled: fi.Bool(false),
+			Name:      e.Name,
+			Lifecycle: e.Lifecycle,
+			Enabled:   fi.Bool(false),
 		}, nil
 	}
 
 	actual := &WarmPool{
-		Name:    e.Name,
-		Enabled: fi.Bool(true),
-		MaxSize: warmPool.WarmPoolConfiguration.MaxGroupPreparedCapacity,
-		MinSize: fi.Int64Value(warmPool.WarmPoolConfiguration.MinSize),
+		Name:      e.Name,
+		Lifecycle: e.Lifecycle,
+		Enabled:   fi.Bool(true),
+		MaxSize:   warmPool.WarmPoolConfiguration.MaxGroupPreparedCapacity,
+		MinSize:   fi.Int64Value(warmPool.WarmPoolConfiguration.MinSize),
 	}
 	return actual, nil
 }
