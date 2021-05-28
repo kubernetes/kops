@@ -363,13 +363,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return err
 	}
 
-	// Only setup transfer of kops assets if using a FileRepository
-	if c.Cluster.Spec.Assets != nil && c.Cluster.Spec.Assets.FileRepository != nil {
-		if err := SetKopsAssetsLocations(assetBuilder); err != nil {
-			return err
-		}
-	}
-
 	checkExisting := true
 
 	project := ""
