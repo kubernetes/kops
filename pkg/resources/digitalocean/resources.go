@@ -66,12 +66,13 @@ func ListResources(cloud do.DOCloud, clusterName string) (map[string]*resources.
 	return resourceTrackers, nil
 }
 
-func listDroplets(cloud do.DOCloud, clusterName string) ([]*resources.Resource, error) {
+func listDroplets(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	c := cloud.(do.DOCloud)
 	var resourceTrackers []*resources.Resource
 
 	clusterTag := "KubernetesCluster:" + strings.Replace(clusterName, ".", "-", -1)
 
-	droplets, err := cloud.GetAllDropletsByTag(clusterTag)
+	droplets, err := c.GetAllDropletsByTag(clusterTag)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list droplets: %v", err)
 	}
@@ -92,12 +93,13 @@ func listDroplets(cloud do.DOCloud, clusterName string) ([]*resources.Resource, 
 	return resourceTrackers, nil
 }
 
-func listVolumes(cloud do.DOCloud, clusterName string) ([]*resources.Resource, error) {
+func listVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	c := cloud.(do.DOCloud)
 	var resourceTrackers []*resources.Resource
 
 	volumeMatch := strings.Replace(clusterName, ".", "-", -1)
 
-	volumes, err := cloud.GetAllVolumesByRegion()
+	volumes, err := c.GetAllVolumesByRegion()
 	if err != nil {
 		return nil, fmt.Errorf("failed to list volumes: %s", err)
 	}
@@ -125,8 +127,9 @@ func listVolumes(cloud do.DOCloud, clusterName string) ([]*resources.Resource, e
 	return resourceTrackers, nil
 }
 
-func listDNS(cloud do.DOCloud, clusterName string) ([]*resources.Resource, error) {
-	domains, _, err := cloud.DomainService.List(context.TODO(), &godo.ListOptions{})
+func listDNS(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	c := cloud.(do.DOCloud)
+	domains, _, err := c.DomainService().List(context.TODO(), &godo.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list domains: %s", err)
 	}
@@ -186,7 +189,7 @@ func getAllRecordsByDomain(cloud do.DOCloud, domain string) ([]godo.DomainRecord
 
 	opt := &godo.ListOptions{}
 	for {
-		records, resp, err := cloud.DomainService.Records(context.TODO(), domain, opt)
+		records, resp, err := cloud.DomainService().Records(context.TODO(), domain, opt)
 		if err != nil {
 			return nil, err
 		}
@@ -208,12 +211,13 @@ func getAllRecordsByDomain(cloud do.DOCloud, domain string) ([]godo.DomainRecord
 	return allRecords, nil
 }
 
-func listLoadBalancers(cloud do.DOCloud, clusterName string) ([]*resources.Resource, error) {
+func listLoadBalancers(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	c := cloud.(do.DOCloud)
 	var resourceTrackers []*resources.Resource
 
 	clusterTag := "KubernetesCluster-Master:" + strings.Replace(clusterName, ".", "-", -1)
 
-	lbs, err := cloud.GetAllLoadBalancers()
+	lbs, err := c.GetAllLoadBalancers()
 	if err != nil {
 		return nil, fmt.Errorf("failed to list lbs: %v", err)
 	}
@@ -241,13 +245,14 @@ func listLoadBalancers(cloud do.DOCloud, clusterName string) ([]*resources.Resou
 	return resourceTrackers, nil
 }
 
-func deleteDroplet(cloud do.DOCloud, t *resources.Resource) error {
+func deleteDroplet(cloud fi.Cloud, t *resources.Resource) error {
+	c := cloud.(do.DOCloud)
 	dropletID, err := strconv.Atoi(t.ID)
 	if err != nil {
 		return fmt.Errorf("failed to convert droplet ID to int: %s", err)
 	}
 
-	_, err = cloud.DropletsService().Delete(context.TODO(), dropletID)
+	_, err = c.DropletsService().Delete(context.TODO(), dropletID)
 	if err != nil {
 		return fmt.Errorf("failed to delete droplet: %d, err: %s", dropletID, err)
 	}
@@ -255,10 +260,11 @@ func deleteDroplet(cloud do.DOCloud, t *resources.Resource) error {
 	return nil
 }
 
-func deleteVolume(cloud do.DOCloud, t *resources.Resource) error {
+func deleteVolume(cloud fi.Cloud, t *resources.Resource) error {
+	c := cloud.(do.DOCloud)
 	volume := t.Obj.(godo.Volume)
 	for _, dropletID := range volume.DropletIDs {
-		action, _, err := cloud.VolumeActionService().DetachByDropletID(context.TODO(), volume.ID, dropletID)
+		action, _, err := c.VolumeActionService().DetachByDropletID(context.TODO(), volume.ID, dropletID)
 		if err != nil {
 			return fmt.Errorf("failed to detach volume: %s, err: %s", volume.ID, err)
 		}
@@ -267,7 +273,7 @@ func deleteVolume(cloud do.DOCloud, t *resources.Resource) error {
 		}
 	}
 
-	_, err := cloud.VolumeService().DeleteVolume(context.TODO(), t.ID)
+	_, err := c.VolumeService().DeleteVolume(context.TODO(), t.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete volume: %s, err: %s", t.ID, err)
 	}
@@ -275,10 +281,11 @@ func deleteVolume(cloud do.DOCloud, t *resources.Resource) error {
 	return nil
 }
 
-func deleteRecord(cloud do.DOCloud, domain string, t *resources.Resource) error {
+func deleteRecord(cloud fi.Cloud, domain string, t *resources.Resource) error {
+	c := cloud.(do.DOCloud)
 	record := t.Obj.(godo.DomainRecord)
 
-	_, err := cloud.DomainService.DeleteRecord(context.TODO(), domain, record.ID)
+	_, err := c.DomainService().DeleteRecord(context.TODO(), domain, record.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete record for domain %s: %d", domain, record.ID)
 	}
@@ -286,9 +293,10 @@ func deleteRecord(cloud do.DOCloud, domain string, t *resources.Resource) error 
 	return nil
 }
 
-func deleteLoadBalancer(cloud do.DOCloud, t *resources.Resource) error {
+func deleteLoadBalancer(cloud fi.Cloud, t *resources.Resource) error {
+	c := cloud.(do.DOCloud)
 	lb := t.Obj.(godo.LoadBalancer)
-	_, err := cloud.LoadBalancersService.Delete(context.TODO(), lb.ID)
+	_, err := c.LoadBalancersService().Delete(context.TODO(), lb.ID)
 
 	if err != nil {
 		return fmt.Errorf("failed to delete load balancer with name %s %v", lb.Name, err)
@@ -297,7 +305,7 @@ func deleteLoadBalancer(cloud do.DOCloud, t *resources.Resource) error {
 	return nil
 }
 
-func waitForDetach(cloud *Cloud, action *godo.Action) error {
+func waitForDetach(cloud do.DOCloud, action *godo.Action) error {
 	timeout := time.After(10 * time.Second)
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
@@ -306,7 +314,7 @@ func waitForDetach(cloud *Cloud, action *godo.Action) error {
 		case <-timeout:
 			return errors.New("timed out waiting for volume to detach")
 		case <-ticker.C:
-			updatedAction, _, err := cloud.Client.Actions.Get(context.TODO(), action.ID)
+			updatedAction, _, err := cloud.ActionsService().Get(context.TODO(), action.ID)
 			if err != nil {
 				return err
 			}

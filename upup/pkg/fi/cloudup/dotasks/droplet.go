@@ -23,7 +23,6 @@ import (
 	"github.com/digitalocean/godo"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	_ "k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -53,7 +52,7 @@ func (d *Droplet) CompareWithID() *string {
 }
 
 func (d *Droplet) Find(c *fi.Context) (*Droplet, error) {
-	cloud := c.Cloud.(*digitalocean.Cloud)
+	cloud := c.Cloud.(do.DOCloud)
 
 	droplets, err := listDroplets(cloud)
 	if err != nil {
@@ -88,12 +87,12 @@ func (d *Droplet) Find(c *fi.Context) (*Droplet, error) {
 	}, nil
 }
 
-func listDroplets(cloud *digitalocean.Cloud) ([]godo.Droplet, error) {
+func listDroplets(cloud do.DOCloud) ([]godo.Droplet, error) {
 	allDroplets := []godo.Droplet{}
 
 	opt := &godo.ListOptions{}
 	for {
-		droplets, resp, err := cloud.Droplets().List(context.TODO(), opt)
+		droplets, resp, err := cloud.DropletsService().List(context.TODO(), opt)
 		if err != nil {
 			return nil, err
 		}
@@ -145,7 +144,7 @@ func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
 	}
 
 	for i := 0; i < newDropletCount; i++ {
-		_, _, err = t.Cloud.Droplets().Create(context.TODO(), &godo.DropletCreateRequest{
+		_, _, err = t.Cloud.DropletsService().Create(context.TODO(), &godo.DropletCreateRequest{
 			Name:              fi.StringValue(e.Name),
 			Region:            fi.StringValue(e.Region),
 			Size:              fi.StringValue(e.Size),

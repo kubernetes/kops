@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package digitalocean
+package do
 
 import (
 	"context"
@@ -27,9 +27,8 @@ import (
 
 	"github.com/digitalocean/godo"
 	"golang.org/x/oauth2"
-	"k8s.io/klog/v2"
-
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
@@ -39,12 +38,52 @@ import (
 )
 
 const TagKubernetesClusterIndex = "k8s-index"
+const TagNameEtcdClusterPrefix = "etcdCluster-"
+const TagNameRolePrefix = "k8s.io/role/"
 const TagKubernetesClusterNamePrefix = "KubernetesCluster"
+const TagKubernetesClusterMasterPrefix = "KubernetesCluster-Master"
 const TagKubernetesInstanceGroup = "kops-instancegroup"
+
+type DOInstanceGroup struct {
+	ClusterName       string
+	InstanceGroupName string
+	GroupType         string   // will be either "master" or "worker"
+	Members           []string // will store the droplet names that matches.
+}
 
 // TokenSource implements oauth2.TokenSource
 type TokenSource struct {
 	AccessToken string
+}
+
+// DOCloud exposes all the interfaces required to operate on DigitalOcean resources
+type DOCloud interface {
+	fi.Cloud
+	//Client() *godo.Client
+	DropletsService() godo.DropletsService
+	DropletActionService() godo.DropletActionsService
+	VolumeService() godo.StorageService
+	VolumeActionService() godo.StorageActionsService
+	LoadBalancersService() godo.LoadBalancersService
+	DomainService() godo.DomainsService
+	ActionsService() godo.ActionsService
+	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
+	GetAllLoadBalancers() ([]godo.LoadBalancer, error)
+	GetAllDropletsByTag(tag string) ([]godo.Droplet, error)
+	GetAllVolumesByRegion() ([]godo.Volume, error)
+}
+
+// static compile time check to validate DOCloud's fi.Cloud Interface.
+var _ fi.Cloud = &doCloudImplementation{}
+
+// doCloudImplementation holds the godo client object to interact with DO resources.
+type doCloudImplementation struct {
+	Client *godo.Client
+
+	dns dnsprovider.Interface
+
+	// region holds the DO region
+	region string
 }
 
 // Token() returns oauth2.Token
@@ -55,28 +94,9 @@ func (t *TokenSource) Token() (*oauth2.Token, error) {
 	return token, nil
 }
 
-// Cloud exposes all the interfaces required to operate on DigitalOcean resources
-type Cloud struct {
-	Client *godo.Client
-
-	dns dnsprovider.Interface
-
-	// RegionName holds the region, renamed to avoid conflict with Region()
-	RegionName string
-}
-
-type DOInstanceGroup struct {
-	ClusterName       string
-	InstanceGroupName string
-	GroupType         string   // will be either "master" or "worker"
-	Members           []string // will store the droplet names that matches.
-}
-
-var _ fi.Cloud = &Cloud{}
-
 // NewCloud returns a Cloud, expecting the env var DIGITALOCEAN_ACCESS_TOKEN
 // NewCloud will return an err if DIGITALOCEAN_ACCESS_TOKEN is not defined
-func NewCloud(region string) (*Cloud, error) {
+func NewDOCloud(region string) (DOCloud, error) {
 	accessToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 	if accessToken == "" {
 		return nil, errors.New("DIGITALOCEAN_ACCESS_TOKEN is required")
@@ -89,24 +109,24 @@ func NewCloud(region string) (*Cloud, error) {
 	oauthClient := oauth2.NewClient(context.TODO(), tokenSource)
 	client := godo.NewClient(oauthClient)
 
-	return &Cloud{
-		Client:     client,
-		dns:        dns.NewProvider(client),
-		RegionName: region,
+	return &doCloudImplementation{
+		Client: client,
+		dns:    dns.NewProvider(client),
+		region: region,
 	}, nil
 }
 
-func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+func (c *doCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
 }
 
 // DeleteGroup is not implemented yet, is a func that needs to delete a DO instance group.
-func (c *Cloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
+func (c *doCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 	klog.V(8).Info("digitalocean cloud provider DeleteGroup not implemented yet")
 	return fmt.Errorf("digital ocean cloud provider does not support deleting cloud groups at this time")
 }
 
-func (c *Cloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
+func (c *doCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance) error {
 	dropletID, err := strconv.Atoi(i.ID)
 	if err != nil {
 		return fmt.Errorf("failed to convert droplet ID to int: %s", err)
@@ -148,64 +168,69 @@ func (c *Cloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
 }
 
 // DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
-func (c *Cloud) DetachInstance(i *cloudinstances.CloudInstance) error {
+func (c *doCloudImplementation) DetachInstance(i *cloudinstances.CloudInstance) error {
 	klog.V(8).Info("digitalocean cloud provider DetachInstance not implemented yet")
 	return fmt.Errorf("digital ocean cloud provider does not support surging")
 }
 
 // ProviderID returns the kops api identifier for DigitalOcean cloud provider
-func (c *Cloud) ProviderID() kops.CloudProviderID {
+func (c *doCloudImplementation) ProviderID() kops.CloudProviderID {
 	return kops.CloudProviderDO
 }
 
 // Region returns the DO region we will target
-func (c *Cloud) Region() string {
-	return c.RegionName
+func (c *doCloudImplementation) Region() string {
+	return c.region
 }
 
-// DNS returns a DO implementation for dnsprovider.Interface
-func (c *Cloud) DNS() (dnsprovider.Interface, error) {
-	return c.dns, nil
+func (c *doCloudImplementation) DNS() (dnsprovider.Interface, error) {
+	provider := dns.NewProvider(c.Client)
+	return provider, nil
 }
 
 // Volumes returns an implementation of godo.StorageService
-func (c *Cloud) Volumes() godo.StorageService {
+func (c *doCloudImplementation) VolumeService() godo.StorageService {
 	return c.Client.Storage
 }
 
 // VolumeActions returns an implementation of godo.StorageActionsService
-func (c *Cloud) VolumeActions() godo.StorageActionsService {
+func (c *doCloudImplementation) VolumeActionService() godo.StorageActionsService {
 	return c.Client.StorageActions
 }
 
-func (c *Cloud) Droplets() godo.DropletsService {
+// DropletsService returns the droplets client interface.
+func (c *doCloudImplementation) DropletsService() godo.DropletsService {
 	return c.Client.Droplets
 }
 
-func (c *Cloud) DropletActions() godo.DropletActionsService {
+func (c *doCloudImplementation) DropletActionService() godo.DropletActionsService {
 	return c.Client.DropletActions
 }
 
-func (c *Cloud) LoadBalancers() godo.LoadBalancersService {
+func (c *doCloudImplementation) LoadBalancersService() godo.LoadBalancersService {
 	return c.Client.LoadBalancers
 }
 
-func (c *Cloud) GetAllLoadBalancers() ([]godo.LoadBalancer, error) {
-	return getAllLoadBalancers(c)
+func (c *doCloudImplementation) DomainService() godo.DomainsService {
+	return c.Client.Domains
+}
+
+func (c *doCloudImplementation) ActionsService() godo.ActionsService {
+	return c.Client.Actions
 }
 
 // FindVPCInfo is not implemented, it's only here to satisfy the fi.Cloud interface
-func (c *Cloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
-	return nil, errors.New("not implemented")
+func (c *doCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
+	return nil, errors.New("Not implemented")
 }
 
-func (c *Cloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
+func (c *doCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	var ingresses []fi.ApiIngressStatus
 	if cluster.Spec.MasterPublicName != "" {
 		// Note that this must match Digital Ocean's lb name
 		klog.V(2).Infof("Querying DO to find Loadbalancers for API (%q)", cluster.Name)
 
-		loadBalancers, err := getAllLoadBalancers(c)
+		loadBalancers, err := c.GetAllLoadBalancers()
 		if err != nil {
 			return nil, fmt.Errorf("LoadBalancers.List returned error: %v", err)
 		}
@@ -232,7 +257,7 @@ func (c *Cloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatu
 }
 
 // FindClusterStatus discovers the status of the cluster, by looking for the tagged etcd volumes
-func (c *Cloud) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error) {
+func (c *doCloudImplementation) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error) {
 	etcdStatus, err := findEtcdStatus(c, cluster)
 	if err != nil {
 		return nil, err
@@ -245,12 +270,12 @@ func (c *Cloud) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, e
 }
 
 // findEtcdStatus discovers the status of etcd, by looking for the tagged etcd volumes
-func findEtcdStatus(c *Cloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, error) {
+func findEtcdStatus(c *doCloudImplementation, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, error) {
 	statusMap := make(map[string]*kops.EtcdClusterStatus)
-	volumes, err := getAllVolumesByRegion(c, c.RegionName)
+	volumes, err := c.GetAllVolumesByRegion()
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to get all volumes by region from %s: %v", c.RegionName, err)
+		return nil, fmt.Errorf("failed to get all volumes by region from %s: %v", c.Region(), err)
 	}
 
 	for _, volume := range volumes {
@@ -309,7 +334,7 @@ func findEtcdStatus(c *Cloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, 
 	return status, nil
 }
 
-func (c *Cloud) getEtcdClusterSpec(volumeName string, dropletName string) (*etcd.EtcdClusterSpec, error) {
+func (c *doCloudImplementation) getEtcdClusterSpec(volumeName string, dropletName string) (*etcd.EtcdClusterSpec, error) {
 	var clusterKey string
 	if strings.Contains(volumeName, "etcd-main") {
 		clusterKey = "main"
@@ -326,11 +351,11 @@ func (c *Cloud) getEtcdClusterSpec(volumeName string, dropletName string) (*etcd
 	}, nil
 }
 
-func getCloudGroups(c *Cloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+func getCloudGroups(c *doCloudImplementation, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
-	instanceGroups, err := FindInstanceGroups(c, cluster.ObjectMeta.Name)
+	instanceGroups, err := findInstanceGroups(c, cluster.ObjectMeta.Name)
 	if err != nil {
 		return nil, fmt.Errorf("unable to find autoscale groups: %v", err)
 	}
@@ -360,13 +385,13 @@ func getCloudGroups(c *Cloud, cluster *kops.Cluster, instancegroups []*kops.Inst
 
 }
 
-// FindInstanceGroups finds instance groups matching the specified tags
-func FindInstanceGroups(c *Cloud, clusterName string) ([]DOInstanceGroup, error) {
+// findInstanceGroups finds instance groups matching the specified tags
+func findInstanceGroups(c *doCloudImplementation, clusterName string) ([]DOInstanceGroup, error) {
 	var result []DOInstanceGroup
 	instanceGroupMap := make(map[string][]string) // map of instance group name with droplet ids
 
 	clusterTag := "KubernetesCluster:" + strings.Replace(clusterName, ".", "-", -1)
-	droplets, err := getAllDropletsByTag(c, clusterTag)
+	droplets, err := c.GetAllDropletsByTag(clusterTag)
 	if err != nil {
 		return nil, fmt.Errorf("get all droplets for tag %s returned error. Error=%v", clusterTag, err)
 	}
@@ -434,7 +459,7 @@ func matchInstanceGroup(name string, clusterName string, instancegroups []*kops.
 	return instancegroup, nil
 }
 
-func buildCloudInstanceGroup(c *Cloud, ig *kops.InstanceGroup, g DOInstanceGroup, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+func buildCloudInstanceGroup(c *doCloudImplementation, ig *kops.InstanceGroup, g DOInstanceGroup, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
 	cg := &cloudinstances.CloudInstanceGroup{
 		HumanName:     g.InstanceGroupName,
 		InstanceGroup: ig,
@@ -454,4 +479,89 @@ func buildCloudInstanceGroup(c *Cloud, ig *kops.InstanceGroup, g DOInstanceGroup
 	}
 
 	return cg, nil
+}
+
+func (c *doCloudImplementation) GetAllLoadBalancers() ([]godo.LoadBalancer, error) {
+	allLoadBalancers := []godo.LoadBalancer{}
+
+	opt := &godo.ListOptions{}
+	for {
+		lbs, resp, err := c.LoadBalancersService().List(context.TODO(), opt)
+		if err != nil {
+			return nil, err
+		}
+
+		allLoadBalancers = append(allLoadBalancers, lbs...)
+
+		if resp.Links == nil || resp.Links.IsLastPage() {
+			break
+		}
+
+		page, err := resp.Links.CurrentPage()
+		if err != nil {
+			return nil, err
+		}
+
+		opt.Page = page + 1
+	}
+
+	return allLoadBalancers, nil
+}
+
+func (c *doCloudImplementation) GetAllDropletsByTag(tag string) ([]godo.Droplet, error) {
+	allDroplets := []godo.Droplet{}
+
+	opt := &godo.ListOptions{}
+	for {
+		droplets, resp, err := c.DropletsService().ListByTag(context.TODO(), tag, opt)
+		if err != nil {
+			return nil, err
+		}
+
+		allDroplets = append(allDroplets, droplets...)
+
+		if resp.Links == nil || resp.Links.IsLastPage() {
+			break
+		}
+
+		page, err := resp.Links.CurrentPage()
+		if err != nil {
+			return nil, err
+		}
+
+		opt.Page = page + 1
+	}
+
+	return allDroplets, nil
+}
+
+func (c *doCloudImplementation) GetAllVolumesByRegion() ([]godo.Volume, error) {
+	allVolumes := []godo.Volume{}
+
+	opt := &godo.ListOptions{}
+	for {
+		volumes, resp, err := c.VolumeService().ListVolumes(context.TODO(), &godo.ListVolumeParams{
+			Region:      c.Region(),
+			ListOptions: opt,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		allVolumes = append(allVolumes, volumes...)
+
+		if resp.Links == nil || resp.Links.IsLastPage() {
+			break
+		}
+
+		page, err := resp.Links.CurrentPage()
+		if err != nil {
+			return nil, err
+		}
+
+		opt.Page = page + 1
+	}
+
+	return allVolumes, nil
 }
