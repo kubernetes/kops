@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"helm.sh/helm/v3/pkg/strvals"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
@@ -101,10 +102,17 @@ func NewCmdToolboxTemplate(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringSliceVar(&options.templatePath, "template", options.templatePath, "Path to template file or directory of templates to render")
 	cmd.Flags().StringSliceVar(&options.snippetsPath, "snippets", options.snippetsPath, "Path to directory containing snippets used for templating")
 	cmd.Flags().StringVar(&options.channel, "channel", options.channel, "Channel to use for the channel* functions")
-	cmd.Flags().StringVar(&options.outputPath, "output", options.outputPath, "Path to output file, otherwise defaults to stdout")
+	cmd.Flags().StringVar(&options.outputPath, "out", options.outputPath, "Path to output file, otherwise defaults to stdout")
 	cmd.Flags().StringVar(&options.configValue, "config-value", "", "Show the value of a specific configuration value")
 	cmd.Flags().BoolVar(&options.failOnMissing, "fail-on-missing", true, "Fail on referencing unset variables in templates")
 	cmd.Flags().BoolVar(&options.formatYAML, "format-yaml", false, "Attempt to format the generated yaml content before output")
+	cmd.Flags().SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
+		// Old flag name for outputPath
+		if name == "output" {
+			name = "out"
+		}
+		return pflag.NormalizedName(name)
+	})
 
 	return cmd
 }
