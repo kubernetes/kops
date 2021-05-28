@@ -23,8 +23,8 @@ import (
 	"testing"
 
 	"github.com/digitalocean/godo"
-	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 )
 
 type fakeStorageClient struct {
@@ -68,13 +68,6 @@ func (f fakeStorageClient) CreateSnapshot(ctx context.Context, req *godo.Snapsho
 
 func (f fakeStorageClient) DeleteSnapshot(ctx context.Context, id string) (*godo.Response, error) {
 	return f.deleteSnapshotFn(ctx, id)
-}
-
-func newCloud(client *godo.Client) *digitalocean.Cloud {
-	return &digitalocean.Cloud{
-		Client:     client,
-		RegionName: "nyc1",
-	}
 }
 
 func newContext(cloud fi.Cloud) *fi.Context {
@@ -155,7 +148,7 @@ func Test_Find(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			cloud := newCloud(godo.NewClient(nil))
+			cloud := do.BuildMockDOCloud("nyc1")
 			cloud.Client.Storage = tc.storage
 			ctx := newContext(cloud)
 

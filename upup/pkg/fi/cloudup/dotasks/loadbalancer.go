@@ -27,7 +27,6 @@ import (
 	"github.com/digitalocean/godo"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 )
@@ -58,8 +57,8 @@ func (lb *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 		return nil, nil
 	}
 
-	cloud := c.Cloud.(*digitalocean.Cloud)
-	lbService := cloud.LoadBalancers()
+	cloud := c.Cloud.(do.DOCloud)
+	lbService := cloud.LoadBalancersService()
 	loadbalancer, _, err := lbService.Get(context.TODO(), fi.StringValue(lb.ID))
 
 	if err != nil {
@@ -150,7 +149,7 @@ func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) 
 	// load balancer doesn't exist. Create one.
 	klog.V(10).Infof("Creating load balancer for DO")
 
-	loadBalancerService := t.Cloud.LoadBalancers()
+	loadBalancerService := t.Cloud.LoadBalancersService()
 	loadbalancer, _, err := loadBalancerService.Create(context.TODO(), &godo.LoadBalancerRequest{
 		Name:            fi.StringValue(e.Name),
 		Region:          fi.StringValue(e.Region),
@@ -175,8 +174,8 @@ func (lb *LoadBalancer) IsForAPIServer() bool {
 }
 
 func (lb *LoadBalancer) FindIPAddress(c *fi.Context) (*string, error) {
-	cloud := c.Cloud.(*digitalocean.Cloud)
-	loadBalancerService := cloud.LoadBalancers()
+	cloud := c.Cloud.(do.DOCloud)
+	loadBalancerService := cloud.LoadBalancersService()
 
 	if len(fi.StringValue(lb.ID)) > 0 {
 		// able to retrieve ID.
