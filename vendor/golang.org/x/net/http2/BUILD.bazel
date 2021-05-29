@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "ascii.go",
         "ciphers.go",
         "client_conn_pool.go",
         "databuffer.go",
@@ -10,10 +11,12 @@ go_library(
         "flow.go",
         "frame.go",
         "go111.go",
+        "go115.go",
         "gotrack.go",
         "headermap.go",
         "http2.go",
         "not_go111.go",
+        "not_go115.go",
         "pipe.go",
         "server.go",
         "transport.go",
