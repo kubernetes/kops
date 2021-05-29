@@ -64,16 +64,9 @@ The syntax is `hack/set-version <new-release-version>`
 
 * Update the golden tests: `hack/update-expected.sh`
 
-* Commit the changes (without pushing yet): `git add -p && git commit -m "Release 1.X.Y"`
+* Commit the changes (without pushing yet): `git add . && git commit -m "Release 1.X.Y"`
 
 * This is the "release commit".
-
-### Check builds are OK
-
-```
-rm -rf .build/ .bazelbuild/
-make ci
-```
 
 ### Send Pull Request to propose a release
 
@@ -180,13 +173,6 @@ echo "# ${VERSION}" >> images.yaml
 cip run --snapshot gcr.io/k8s-staging-kops --snapshot-tag ${VERSION} >> images.yaml
 ```
 
-You can dry-run the promotion with 
-
-```
-cd ${GOPATH}/src/k8s.io/k8s.io
-cip run --thin-manifest-dir k8s.gcr.io
-```
-
 Currently we send the image and non-image artifact promotion PRs separately.
 
 ```
@@ -276,7 +262,7 @@ wget https://artifacts.k8s.io/binaries/kops/${VERSION}/linux/amd64/kops
 mv kops ko
 chmod +x ko
 
-./kops version
+./ko version
 ```
 
 Also run through a `kops create cluster` flow, ideally verifying that
