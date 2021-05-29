@@ -67,7 +67,7 @@ func (l *Loader) BuildTasks(assetBuilder *assets.AssetBuilder, lifecycle *fi.Lif
 
 func (l *Loader) addAssetCopyTasks(assets []*assets.ContainerAsset, lifecycle *fi.Lifecycle) error {
 	for _, asset := range assets {
-		if asset.CanonicalLocation != "" && asset.DockerImage != asset.CanonicalLocation {
+		if asset.DockerImage != asset.CanonicalLocation {
 			context := &fi.ModelBuilderContext{
 				Tasks: l.tasks,
 			}
@@ -100,7 +100,7 @@ func (l *Loader) addAssetFileCopyTasks(assets []*assets.FileAsset, lifecycle *fi
 		}
 
 		// test if the asset needs to be copied
-		if asset.CanonicalURL != nil && asset.DownloadURL.String() != asset.CanonicalURL.String() {
+		if asset.DownloadURL.String() != asset.CanonicalURL.String() {
 			klog.V(10).Infof("processing asset: %q, %q", asset.DownloadURL.String(), asset.CanonicalURL.String())
 			context := &fi.ModelBuilderContext{
 				Tasks: l.tasks,

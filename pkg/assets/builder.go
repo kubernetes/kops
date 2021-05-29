@@ -120,9 +120,10 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 
 // RemapImage normalizes a containers location if a user sets the AssetsLocation ContainerRegistry location.
 func (a *AssetBuilder) RemapImage(image string) (string, error) {
-	asset := &ContainerAsset{}
-
-	asset.DockerImage = image
+	asset := &ContainerAsset{
+		DockerImage:       image,
+		CanonicalLocation: image,
+	}
 
 	if strings.HasPrefix(image, "k8s.gcr.io/kops/dns-controller:") {
 		// To use user-defined DNS Controller:
@@ -167,7 +168,6 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		}
 
 		asset.DockerImage = normalized
-		asset.CanonicalLocation = image
 
 		// Run the new image
 		image = asset.DockerImage
@@ -192,8 +192,6 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 			asset.DockerImage = registryMirror + "/" + normalized
 		}
 
-		asset.CanonicalLocation = image
-
 		// Run the new image
 		image = asset.DockerImage
 	}
@@ -210,11 +208,11 @@ func (a *AssetBuilder) RemapFileAndSHA(fileURL *url.URL) (*url.URL, *hashing.Has
 	}
 
 	fileAsset := &FileAsset{
-		DownloadURL: fileURL,
+		DownloadURL:  fileURL,
+		CanonicalURL: fileURL,
 	}
 
 	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
-		fileAsset.CanonicalURL = fileURL
 
 		normalizedFileURL, err := a.remapURL(fileURL)
 		if err != nil {
@@ -245,13 +243,12 @@ func (a *AssetBuilder) RemapFileAndSHAValue(fileURL *url.URL, shaValue string) (
 	}
 
 	fileAsset := &FileAsset{
-		DownloadURL: fileURL,
-		SHAValue:    shaValue,
+		DownloadURL:  fileURL,
+		CanonicalURL: fileURL,
+		SHAValue:     shaValue,
 	}
 
 	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
-		fileAsset.CanonicalURL = fileURL
-
 		normalizedFile, err := a.remapURL(fileURL)
 		if err != nil {
 			return nil, err
@@ -283,7 +280,7 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 	// rest of the time. If not we get a chicken and the egg problem where we are reading the sha file
 	// before it exists.
 	u := file.DownloadURL
-	if a.Phase == "assets" && file.CanonicalURL != nil {
+	if a.Phase == "assets" {
 		u = file.CanonicalURL
 	}
 
