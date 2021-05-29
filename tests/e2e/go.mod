@@ -7,12 +7,16 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/octago/sflags v0.2.0
 	github.com/spf13/pflag v1.0.5
+	golang.org/x/crypto v0.0.0-20210506145944-38f3c27a63bf // indirect
 	gopkg.in/yaml.v2 v2.4.0
+	k8s.io/api v0.21.0
 	k8s.io/apimachinery v0.21.0
+	k8s.io/client-go v9.0.0+incompatible
 	k8s.io/klog/v2 v2.8.0
 	k8s.io/kops v0.0.0-00010101000000-000000000000
 	sigs.k8s.io/boskos v0.0.0-20200710214748-f5935686c7fc
 	sigs.k8s.io/kubetest2 v0.0.0-20210423234514-1c731a5d2283
+	sigs.k8s.io/yaml v1.2.0
 )
 
 replace k8s.io/kops => ../../.
