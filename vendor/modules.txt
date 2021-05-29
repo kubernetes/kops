@@ -703,13 +703,14 @@ go.starlark.net/resolve
 go.starlark.net/starlark
 go.starlark.net/starlarkstruct
 go.starlark.net/syntax
-# golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b
+# golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 ## explicit
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blake2b
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/chacha20
 golang.org/x/crypto/curve25519
+golang.org/x/crypto/curve25519/internal/field
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/crypto/internal/subtle
@@ -727,7 +728,7 @@ golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 ## explicit
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20210428140749-89ef3d95e781
+# golang.org/x/net v0.0.0-20210525063256-abc453219eb5
 ## explicit
 golang.org/x/net/bpf
 golang.org/x/net/context
@@ -745,7 +746,7 @@ golang.org/x/net/ipv4
 golang.org/x/net/ipv6
 golang.org/x/net/proxy
 golang.org/x/net/trace
-# golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
+# golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
 ## explicit
 golang.org/x/oauth2
 golang.org/x/oauth2/authhandler
@@ -757,7 +758,7 @@ golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.0.0-20210426230700-d19ff857e887
+# golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea
 ## explicit
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
