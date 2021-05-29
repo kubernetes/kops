@@ -51,7 +51,7 @@ func (l *Loader) BuildTasks(assetBuilder *assets.AssetBuilder, lifecycle *fi.Lif
 		l.tasks = context.Tasks
 	}
 
-	if err := l.addAssetCopyTasks(assetBuilder.ContainerAssets, lifecycle); err != nil {
+	if err := l.addAssetCopyTasks(assetBuilder.ImageAssets, lifecycle); err != nil {
 		return nil, err
 	}
 
@@ -65,7 +65,7 @@ func (l *Loader) BuildTasks(assetBuilder *assets.AssetBuilder, lifecycle *fi.Lif
 	return l.tasks, nil
 }
 
-func (l *Loader) addAssetCopyTasks(assets []*assets.ContainerAsset, lifecycle *fi.Lifecycle) error {
+func (l *Loader) addAssetCopyTasks(assets []*assets.ImageAsset, lifecycle *fi.Lifecycle) error {
 	for _, asset := range assets {
 		if asset.DockerImage != asset.CanonicalLocation {
 			context := &fi.ModelBuilderContext{
