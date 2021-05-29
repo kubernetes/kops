@@ -107,10 +107,10 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 	}
 
 	seen := map[string]bool{}
-	for _, containerAsset := range updateClusterResults.ImageAssets {
+	for _, imageAsset := range updateClusterResults.ImageAssets {
 		image := Image{
-			Image:  containerAsset.CanonicalLocation,
-			Mirror: containerAsset.DownloadLocation,
+			Image:  imageAsset.CanonicalLocation,
+			Mirror: imageAsset.DownloadLocation,
 		}
 		if !seen[image.Image] {
 			result.Images = append(result.Images, &image)
@@ -132,7 +132,7 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 
 	switch options.output {
 	case OutputTable:
-		if err = containerOutputTable(result.Images, out); err != nil {
+		if err = imageOutputTable(result.Images, out); err != nil {
 			return err
 		}
 		return fileOutputTable(result.Files, out)
@@ -159,7 +159,7 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 	return nil
 }
 
-func containerOutputTable(images []*Image, out io.Writer) error {
+func imageOutputTable(images []*Image, out io.Writer) error {
 	fmt.Println("")
 	t := &tables.Table{}
 	t.AddColumn("IMAGE", func(i *Image) string {
