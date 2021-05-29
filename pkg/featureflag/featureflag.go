@@ -99,6 +99,8 @@ var (
 	APIServerNodes = New("APIServerNodes", Bool(false))
 	// UseAddonOperators activates experimental addon operator support
 	UseAddonOperators = New("UseAddonOperators", Bool(false))
+	// AWSIPv6 activates experimental AWS IPv6 support.
+	AWSIPv6 = New("AWSIPv6", Bool(false))
 )
 
 // FeatureFlag defines a feature flag

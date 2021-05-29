@@ -4,3 +4,4 @@ Zones:
 CloudProvider: aws
 Networking: calico
 KubernetesVersion: v1.22.0
+IPv6: true
