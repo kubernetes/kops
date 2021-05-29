@@ -65,9 +65,9 @@ type StaticManifest struct {
 
 // ImageAsset models an image's location.
 type ImageAsset struct {
-	// DockerImage will be the name of the image we should run.
-	// This is used to copy a container to a ContainerRegistry.
-	DockerImage string
+	// DownloadLocation will be the name of the image we should run.
+	// This is used to copy an image to a ContainerRegistry.
+	DownloadLocation string
 	// CanonicalLocation will be the source location of the image.
 	CanonicalLocation string
 }
@@ -121,7 +121,7 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 // RemapImage normalizes a containers location if a user sets the AssetsLocation ContainerRegistry location.
 func (a *AssetBuilder) RemapImage(image string) (string, error) {
 	asset := &ImageAsset{
-		DockerImage:       image,
+		DownloadLocation:  image,
 		CanonicalLocation: image,
 	}
 
@@ -167,10 +167,10 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 			normalized = re.ReplaceAllString(normalized, containerProxy)
 		}
 
-		asset.DockerImage = normalized
+		asset.DownloadLocation = normalized
 
 		// Run the new image
-		image = asset.DockerImage
+		image = asset.DownloadLocation
 	}
 
 	if a.AssetsLocation != nil && a.AssetsLocation.ContainerRegistry != nil {
@@ -189,11 +189,11 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 			// We can't nest arbitrarily
 			// Some risk of collisions, but also -- and __ in the names appear to be blocked by docker hub
 			normalized = strings.Replace(normalized, "/", "-", -1)
-			asset.DockerImage = registryMirror + "/" + normalized
+			asset.DownloadLocation = registryMirror + "/" + normalized
 		}
 
 		// Run the new image
-		image = asset.DockerImage
+		image = asset.DownloadLocation
 	}
 
 	a.ImageAssets = append(a.ImageAssets, asset)
