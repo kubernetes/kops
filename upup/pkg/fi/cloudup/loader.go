@@ -67,15 +67,15 @@ func (l *Loader) BuildTasks(assetBuilder *assets.AssetBuilder, lifecycle *fi.Lif
 
 func (l *Loader) addAssetCopyTasks(assets []*assets.ImageAsset, lifecycle *fi.Lifecycle) error {
 	for _, asset := range assets {
-		if asset.DockerImage != asset.CanonicalLocation {
+		if asset.DownloadLocation != asset.CanonicalLocation {
 			context := &fi.ModelBuilderContext{
 				Tasks: l.tasks,
 			}
 
 			copyImageTask := &assettasks.CopyDockerImage{
-				Name:        fi.String(asset.DockerImage),
+				Name:        fi.String(asset.DownloadLocation),
 				SourceImage: fi.String(asset.CanonicalLocation),
-				TargetImage: fi.String(asset.DockerImage),
+				TargetImage: fi.String(asset.DownloadLocation),
 				Lifecycle:   lifecycle,
 			}
 

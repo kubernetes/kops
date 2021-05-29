@@ -110,7 +110,7 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 	for _, containerAsset := range updateClusterResults.ImageAssets {
 		image := Image{
 			Image:  containerAsset.CanonicalLocation,
-			Mirror: containerAsset.DockerImage,
+			Mirror: containerAsset.DownloadLocation,
 		}
 		if !seen[image.Image] {
 			result.Images = append(result.Images, &image)
