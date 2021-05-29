@@ -45,7 +45,7 @@ type File struct {
 }
 
 type AssetResult struct {
-	// ContainerAssets are the container assets we use (output).
+	// Images are the image assets we use (output).
 	Images []*Image `json:"images,omitempty"`
 	// FileAssets are the file assets we use (output).
 	Files []*File `json:"files,omitempty"`
@@ -102,12 +102,12 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 	}
 
 	result := AssetResult{
-		Images: make([]*Image, 0, len(updateClusterResults.ContainerAssets)),
+		Images: make([]*Image, 0, len(updateClusterResults.ImageAssets)),
 		Files:  make([]*File, 0, len(updateClusterResults.FileAssets)),
 	}
 
 	seen := map[string]bool{}
-	for _, containerAsset := range updateClusterResults.ContainerAssets {
+	for _, containerAsset := range updateClusterResults.ImageAssets {
 		image := Image{
 			Image:  containerAsset.CanonicalLocation,
 			Mirror: containerAsset.DockerImage,

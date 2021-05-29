@@ -39,9 +39,9 @@ import (
 
 // AssetBuilder discovers and remaps assets.
 type AssetBuilder struct {
-	ContainerAssets []*ContainerAsset
-	FileAssets      []*FileAsset
-	AssetsLocation  *kops.Assets
+	ImageAssets    []*ImageAsset
+	FileAssets     []*FileAsset
+	AssetsLocation *kops.Assets
 	// TODO we'd like to use cloudup.Phase here, but that introduces a go cyclic dependency
 	Phase string
 
@@ -63,12 +63,12 @@ type StaticManifest struct {
 	Roles []kops.InstanceGroupRole
 }
 
-// ContainerAsset models a container's location.
-type ContainerAsset struct {
-	// DockerImage will be the name of the container we should run.
+// ImageAsset models an image's location.
+type ImageAsset struct {
+	// DockerImage will be the name of the image we should run.
 	// This is used to copy a container to a ContainerRegistry.
 	DockerImage string
-	// CanonicalLocation will be the source location of the container.
+	// CanonicalLocation will be the source location of the image.
 	CanonicalLocation string
 }
 
@@ -120,7 +120,7 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 
 // RemapImage normalizes a containers location if a user sets the AssetsLocation ContainerRegistry location.
 func (a *AssetBuilder) RemapImage(image string) (string, error) {
-	asset := &ContainerAsset{
+	asset := &ImageAsset{
 		DockerImage:       image,
 		CanonicalLocation: image,
 	}
@@ -196,7 +196,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		image = asset.DockerImage
 	}
 
-	a.ContainerAssets = append(a.ContainerAssets, asset)
+	a.ImageAssets = append(a.ImageAssets, asset)
 	return image, nil
 }
 
