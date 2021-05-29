@@ -142,8 +142,8 @@ type UpdateClusterResults struct {
 	// TaskMap is the map of tasks that we built (output)
 	TaskMap map[string]fi.Task
 
-	// ContainerAssets are the container assets we use (output).
-	ContainerAssets []*assets.ContainerAsset
+	// ImageAssets are the image assets we use (output).
+	ImageAssets []*assets.ImageAsset
 	// FileAssets are the file assets we use (output).
 	FileAssets []*assets.FileAsset
 }
@@ -296,7 +296,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 
 	results.Target = applyCmd.Target
 	results.TaskMap = applyCmd.TaskMap
-	results.ContainerAssets = applyCmd.ContainerAssets
+	results.ImageAssets = applyCmd.ImageAssets
 	results.FileAssets = applyCmd.FileAssets
 
 	if isDryrun && !c.Quiet {

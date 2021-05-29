@@ -252,9 +252,9 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 		}
 	}
 
-	if len(t.assetBuilder.ContainerAssets) != 0 {
-		klog.V(4).Infof("ContainerAssets:")
-		for _, a := range t.assetBuilder.ContainerAssets {
+	if len(t.assetBuilder.ImageAssets) != 0 {
+		klog.V(4).Infof("ImageAssets:")
+		for _, a := range t.assetBuilder.ImageAssets {
 			klog.V(4).Infof("  %s %s", a.DockerImage, a.CanonicalLocation)
 		}
 	}
