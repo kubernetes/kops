@@ -700,3 +700,7 @@ func (c *NodeupModelContext) CNIBinDir() string {
 func (c *NodeupModelContext) CNIConfDir() string {
 	return "/etc/cni/net.d/"
 }
+
+func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
+	return c.NodeupConfig.Nvidia != nil && fi.BoolValue(c.NodeupConfig.Nvidia.Enabled)
+}

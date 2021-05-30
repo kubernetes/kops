@@ -30,6 +30,8 @@ import (
 	"k8s.io/kops/util/pkg/hashing"
 )
 
+// DownloadURL will download the file at the given url and store it as dest.
+// If hash is non-nil, it will also verify that it matches the hash of the downloaded file.
 func DownloadURL(url string, dest string, hash *hashing.Hash) (*hashing.Hash, error) {
 	if hash != nil {
 		match, err := fileHasHash(dest, hash)

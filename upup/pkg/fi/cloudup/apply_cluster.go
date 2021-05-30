@@ -1429,6 +1429,10 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		config.ContainerdConfig = cluster.Spec.Containerd
 	}
 
+	if cluster.Spec.Nvidia != nil {
+		config.Nvidia = cluster.Spec.Nvidia
+	}
+
 	if ig.Spec.WarmPool != nil || cluster.Spec.WarmPool != nil {
 		config.WarmPoolImages = n.buildWarmPoolImages(ig)
 	}
