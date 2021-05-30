@@ -78,7 +78,9 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// If there are containerd configuration overrides, apply them
-	b.buildConfigFile(c)
+	if err := b.buildConfigFile(c); err != nil {
+		return err
+	}
 
 	if installContainerd {
 		if err := b.installContainerd(c); err != nil {
@@ -300,19 +302,24 @@ func (b *ContainerdBuilder) buildSysconfigFile(c *fi.ModelBuilderContext) error 
 }
 
 // buildConfigFile is responsible for creating the containerd configuration file
-func (b *ContainerdBuilder) buildConfigFile(c *fi.ModelBuilderContext) {
+func (b *ContainerdBuilder) buildConfigFile(c *fi.ModelBuilderContext) error {
 	var config string
 
 	if b.NodeupConfig.ContainerdConfig != nil && b.NodeupConfig.ContainerdConfig.ConfigOverride != nil {
 		config = fi.StringValue(b.NodeupConfig.ContainerdConfig.ConfigOverride)
 	} else {
-		config = b.buildContainerdConfig()
+		if cc, err := b.buildContainerdConfig(); err != nil {
+			return err
+		} else {
+			config = cc
+		}
 	}
 	c.AddTask(&nodetasks.File{
 		Path:     b.containerdConfigFilePath(),
 		Contents: fi.NewStringResource(config),
 		Type:     nodetasks.FileType_File,
 	})
+	return nil
 }
 
 // skipInstall determines if kops should skip the installation and configuration of containerd
@@ -430,16 +437,16 @@ func (b *ContainerdBuilder) buildCNIConfigTemplateFile(c *fi.ModelBuilderContext
 	})
 }
 
-func (b *ContainerdBuilder) buildContainerdConfig() string {
+func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 	cluster := b.Cluster
 
 	if cluster.Spec.ContainerRuntime != "containerd" {
-		return ""
+		return "", nil
 	}
 
 	containerd := b.NodeupConfig.ContainerdConfig
 	if fi.StringValue(containerd.ConfigOverride) != "" {
-		return *containerd.ConfigOverride
+		return *containerd.ConfigOverride, nil
 	}
 
 	// Build config file for containerd running in CRI mode
@@ -458,5 +465,35 @@ func (b *ContainerdBuilder) buildContainerdConfig() string {
 		// https://github.com/containerd/containerd/blob/master/docs/cri/config.md#cni-config-template
 		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "cni", "conf_template"}, "/etc/containerd/config-cni.template")
 	}
-	return config.String()
+
+	if b.InstallNvidiaRuntime() {
+		if err := appendNvidiaGPURuntimeConfig(config); err != nil {
+			return "", err
+		}
+	}
+	return config.String(), nil
+}
+
+func appendNvidiaGPURuntimeConfig(config *toml.Tree) error {
+
+	gpuConfig, err := toml.TreeFromMap(
+		map[string]interface{}{
+			"privileged_without_host_devices": false,
+			"runtime_engine":                  "",
+			"runtime_root":                    "",
+			"runtime_type":                    "io.containerd.runc.v1",
+			"options": map[string]interface{}{
+				"SystemdCgroup": true,
+				"BinaryName":    "/usr/bin/nvidia-container-runtime",
+			},
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "nvidia"}, gpuConfig)
+	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "default_runtime_name"}, "runc")
+
+	return nil
 }
