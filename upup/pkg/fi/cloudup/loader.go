@@ -51,7 +51,7 @@ func (l *Loader) BuildTasks(assetBuilder *assets.AssetBuilder, lifecycle *fi.Lif
 		l.tasks = context.Tasks
 	}
 
-	if err := l.addAssetCopyTasks(assetBuilder.ContainerAssets, lifecycle); err != nil {
+	if err := l.addAssetCopyTasks(assetBuilder.ImageAssets, lifecycle); err != nil {
 		return nil, err
 	}
 
@@ -65,17 +65,17 @@ func (l *Loader) BuildTasks(assetBuilder *assets.AssetBuilder, lifecycle *fi.Lif
 	return l.tasks, nil
 }
 
-func (l *Loader) addAssetCopyTasks(assets []*assets.ContainerAsset, lifecycle *fi.Lifecycle) error {
+func (l *Loader) addAssetCopyTasks(assets []*assets.ImageAsset, lifecycle *fi.Lifecycle) error {
 	for _, asset := range assets {
-		if asset.CanonicalLocation != "" && asset.DockerImage != asset.CanonicalLocation {
+		if asset.DownloadLocation != asset.CanonicalLocation {
 			context := &fi.ModelBuilderContext{
 				Tasks: l.tasks,
 			}
 
 			copyImageTask := &assettasks.CopyDockerImage{
-				Name:        fi.String(asset.DockerImage),
+				Name:        fi.String(asset.DownloadLocation),
 				SourceImage: fi.String(asset.CanonicalLocation),
-				TargetImage: fi.String(asset.DockerImage),
+				TargetImage: fi.String(asset.DownloadLocation),
 				Lifecycle:   lifecycle,
 			}
 
@@ -100,7 +100,7 @@ func (l *Loader) addAssetFileCopyTasks(assets []*assets.FileAsset, lifecycle *fi
 		}
 
 		// test if the asset needs to be copied
-		if asset.CanonicalURL != nil && asset.DownloadURL.String() != asset.CanonicalURL.String() {
+		if asset.DownloadURL.String() != asset.CanonicalURL.String() {
 			klog.V(10).Infof("processing asset: %q, %q", asset.DownloadURL.String(), asset.CanonicalURL.String())
 			context := &fi.ModelBuilderContext{
 				Tasks: l.tasks,
