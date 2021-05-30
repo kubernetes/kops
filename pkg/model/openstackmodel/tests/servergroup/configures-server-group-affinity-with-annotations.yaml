@@ -7,7 +7,7 @@ ForAPIServer: false
 GroupName: node
 ID: null
 Image: image-node
-Lifecycle: null
+Lifecycle: Sync
 Metadata:
   KopsInstanceGroup: node
   KopsName: node-1-cluster
