@@ -32,6 +32,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -65,6 +66,7 @@ type UpdateClusterOptions struct {
 	SSHPublicKey       string
 	RunTasksOptions    fi.RunTasksOptions
 	AllowKopsDowngrade bool
+	Quiet              bool
 
 	CreateKubecfg bool
 	admin         time.Duration
@@ -139,6 +141,11 @@ type UpdateClusterResults struct {
 
 	// TaskMap is the map of tasks that we built (output)
 	TaskMap map[string]fi.Task
+
+	// ImageAssets are the image assets we use (output).
+	ImageAssets []*assets.ImageAsset
+	// FileAssets are the file assets we use (output).
+	FileAssets []*assets.FileAsset
 }
 
 func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, out io.Writer, c *UpdateClusterOptions) (*UpdateClusterResults, error) {
@@ -280,6 +287,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 		Phase:              phase,
 		TargetName:         targetName,
 		LifecycleOverrides: lifecycleOverrideMap,
+		Quiet:              c.Quiet,
 	}
 
 	if err := applyCmd.Run(ctx); err != nil {
@@ -288,8 +296,10 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 
 	results.Target = applyCmd.Target
 	results.TaskMap = applyCmd.TaskMap
+	results.ImageAssets = applyCmd.ImageAssets
+	results.FileAssets = applyCmd.FileAssets
 
-	if isDryrun {
+	if isDryrun && !c.Quiet {
 		target := applyCmd.Target.(*fi.DryRunTarget)
 		if target.HasChanges() {
 			fmt.Fprintf(out, "Must specify --yes to apply changes\n")

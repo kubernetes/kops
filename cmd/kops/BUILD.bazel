@@ -30,6 +30,7 @@ go_library(
         "export_kubecfg.go",
         "gen_help_docs.go",
         "get.go",
+        "get_assets.go",
         "get_cluster.go",
         "get_instancegroups.go",
         "get_instances.go",
