@@ -212,7 +212,6 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 
 	cluster.Spec.IAM = &api.IAMSpec{
 		AllowContainerRegistry: true,
-		Legacy:                 false,
 	}
 	cluster.Spec.Kubelet = &api.KubeletConfigSpec{
 		AnonymousAuth: fi.Bool(false),
