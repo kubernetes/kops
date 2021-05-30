@@ -55,12 +55,14 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	targetPool := &gcetasks.TargetPool{
-		Name: s(b.NameForTargetPool("api")),
+		Name:      s(b.NameForTargetPool("api")),
+		Lifecycle: b.Lifecycle,
 	}
 	c.AddTask(targetPool)
 
 	ipAddress := &gcetasks.Address{
-		Name: s(b.NameForIPAddress("api")),
+		Name:      s(b.NameForIPAddress("api")),
+		Lifecycle: b.Lifecycle,
 	}
 	c.AddTask(ipAddress)
 
