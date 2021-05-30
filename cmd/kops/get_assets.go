@@ -34,14 +34,14 @@ import (
 )
 
 type Image struct {
-	Image  string `json:"image"`
-	Mirror string `json:"mirror"`
+	Canonical string `json:"canonical"`
+	Download  string `json:"download"`
 }
 
 type File struct {
-	File   string `json:"file"`
-	Mirror string `json:"mirror"`
-	SHA    string `json:"sha"`
+	Canonical string `json:"canonical"`
+	Download  string `json:"download"`
+	SHA       string `json:"sha"`
 }
 
 type AssetResult struct {
@@ -109,24 +109,24 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 	seen := map[string]bool{}
 	for _, imageAsset := range updateClusterResults.ImageAssets {
 		image := Image{
-			Image:  imageAsset.CanonicalLocation,
-			Mirror: imageAsset.DownloadLocation,
+			Canonical: imageAsset.CanonicalLocation,
+			Download:  imageAsset.DownloadLocation,
 		}
-		if !seen[image.Image] {
+		if !seen[image.Canonical] {
 			result.Images = append(result.Images, &image)
-			seen[image.Image] = true
+			seen[image.Canonical] = true
 		}
 	}
 	seen = map[string]bool{}
 	for _, fileAsset := range updateClusterResults.FileAssets {
 		file := File{
-			File:   fileAsset.CanonicalURL.String(),
-			Mirror: fileAsset.DownloadURL.String(),
-			SHA:    fileAsset.SHAValue,
+			Canonical: fileAsset.CanonicalURL.String(),
+			Download:  fileAsset.DownloadURL.String(),
+			SHA:       fileAsset.SHAValue,
 		}
-		if !seen[file.File] {
+		if !seen[file.Canonical] {
 			result.Files = append(result.Files, &file)
-			seen[file.File] = true
+			seen[file.Canonical] = true
 		}
 	}
 
@@ -162,30 +162,30 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 func imageOutputTable(images []*Image, out io.Writer) error {
 	fmt.Println("")
 	t := &tables.Table{}
-	t.AddColumn("IMAGE", func(i *Image) string {
-		return i.Image
+	t.AddColumn("CANONICAL", func(i *Image) string {
+		return i.Canonical
 	})
-	t.AddColumn("MIRROR", func(i *Image) string {
-		return i.Mirror
+	t.AddColumn("DOWNLOAD", func(i *Image) string {
+		return i.Download
 	})
 
-	columns := []string{"IMAGE", "MIRROR"}
+	columns := []string{"CANONICAL", "DOWNLOAD"}
 	return t.Render(images, out, columns...)
 }
 
 func fileOutputTable(files []*File, out io.Writer) error {
 	fmt.Println("")
 	t := &tables.Table{}
-	t.AddColumn("FILE", func(f *File) string {
-		return f.File
+	t.AddColumn("CANONICAL", func(f *File) string {
+		return f.Canonical
 	})
-	t.AddColumn("MIRROR", func(f *File) string {
-		return f.Mirror
+	t.AddColumn("DOWNLOAD", func(f *File) string {
+		return f.Download
 	})
 	t.AddColumn("SHA", func(f *File) string {
 		return f.SHA
 	})
 
-	columns := []string{"FILE", "MIRROR", "SHA"}
+	columns := []string{"CANONICAL", "DOWNLOAD", "SHA"}
 	return t.Render(files, out, columns...)
 }
