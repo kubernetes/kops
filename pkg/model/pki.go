@@ -205,6 +205,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		t := &fitasks.MirrorSecrets{
 			Name:       fi.String("mirror-secrets"),
+			Lifecycle:  b.Lifecycle,
 			MirrorPath: mirrorPath,
 		}
 		c.AddTask(t)
@@ -219,6 +220,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Keypair used by the kubelet
 		t := &fitasks.MirrorKeystore{
 			Name:       fi.String("mirror-keystore"),
+			Lifecycle:  b.Lifecycle,
 			MirrorPath: mirrorPath,
 		}
 		c.AddTask(t)
