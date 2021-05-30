@@ -117,61 +117,36 @@ func TestRoundTrip(t *testing.T) {
 func TestPolicyGeneration(t *testing.T) {
 	grid := []struct {
 		Role                   Subject
-		LegacyIAM              bool
 		AllowContainerRegistry bool
 		Policy                 string
 	}{
 		{
 			Role:                   &NodeRoleMaster{},
-			LegacyIAM:              true,
-			AllowContainerRegistry: false,
-			Policy:                 "tests/iam_builder_master_legacy.json",
-		},
-		{
-			Role:                   &NodeRoleMaster{},
-			LegacyIAM:              false,
 			AllowContainerRegistry: false,
 			Policy:                 "tests/iam_builder_master_strict.json",
 		},
 		{
 			Role:                   &NodeRoleMaster{},
-			LegacyIAM:              false,
 			AllowContainerRegistry: true,
 			Policy:                 "tests/iam_builder_master_strict_ecr.json",
 		},
 		{
 			Role:                   &NodeRoleNode{},
-			LegacyIAM:              true,
-			AllowContainerRegistry: false,
-			Policy:                 "tests/iam_builder_node_legacy.json",
-		},
-		{
-			Role:                   &NodeRoleNode{},
-			LegacyIAM:              false,
 			AllowContainerRegistry: false,
 			Policy:                 "tests/iam_builder_node_strict.json",
 		},
 		{
 			Role:                   &NodeRoleNode{},
-			LegacyIAM:              false,
 			AllowContainerRegistry: true,
 			Policy:                 "tests/iam_builder_node_strict_ecr.json",
 		},
 		{
 			Role:                   &NodeRoleBastion{},
-			LegacyIAM:              true,
 			AllowContainerRegistry: false,
 			Policy:                 "tests/iam_builder_bastion.json",
 		},
 		{
 			Role:                   &NodeRoleBastion{},
-			LegacyIAM:              false,
-			AllowContainerRegistry: false,
-			Policy:                 "tests/iam_builder_bastion.json",
-		},
-		{
-			Role:                   &NodeRoleBastion{},
-			LegacyIAM:              false,
 			AllowContainerRegistry: true,
 			Policy:                 "tests/iam_builder_bastion.json",
 		},
@@ -183,7 +158,6 @@ func TestPolicyGeneration(t *testing.T) {
 				Spec: kops.ClusterSpec{
 					ConfigStore: "s3://kops-tests/iam-builder-test.k8s.local",
 					IAM: &kops.IAMSpec{
-						Legacy:                 x.LegacyIAM,
 						AllowContainerRegistry: x.AllowContainerRegistry,
 					},
 					EtcdClusters: []kops.EtcdClusterSpec{

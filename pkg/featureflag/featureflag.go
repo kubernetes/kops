@@ -87,8 +87,6 @@ var (
 	SkipEtcdVersionCheck = New("SkipEtcdVersionCheck", Bool(false))
 	// TerraformJSON outputs terraform in JSON instead of hcl output. JSON output can be also parsed by terraform 0.12
 	TerraformJSON = New("TerraformJSON", Bool(false))
-	// LegacyIAM will permit use of legacy IAM permissions.
-	LegacyIAM = New("LegacyIAM", Bool(false))
 	// ClusterAddons activates experimental cluster-addons support
 	ClusterAddons = New("ClusterAddons", Bool(false))
 	// UseServiceAccountIAM controls whether we use pod-level IAM permissions for our system pods and kOps addons.

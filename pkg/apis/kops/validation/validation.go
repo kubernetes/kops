@@ -221,12 +221,8 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		}
 	}
 
-	if (spec.IAM == nil || spec.IAM.Legacy) && !featureflag.LegacyIAM.Enabled() {
+	if spec.IAM == nil || spec.IAM.Legacy {
 		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("iam", "legacy"), "legacy IAM permissions are no longer supported"))
-	}
-
-	if (spec.IAM == nil || spec.IAM.Legacy) && featureflag.UseServiceAccountIAM.Enabled() {
-		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("iam", "legacy"), "legacy IAM permissions are not supported with UseServiceAccountIAM"))
 	}
 
 	if spec.RollingUpdate != nil {
