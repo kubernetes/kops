@@ -2,6 +2,7 @@
 name: Bug report
 about: Create a report to help us improve
 ---
+/kind bug
 
 **1. What `kops` version are you running? The command `kops version`, will display
  this information.**
