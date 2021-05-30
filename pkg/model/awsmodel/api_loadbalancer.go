@@ -243,6 +243,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			tg := &awstasks.TargetGroup{
 				Name:               fi.String(tcpGroupName),
+				Lifecycle:          b.Lifecycle,
 				VPC:                b.LinkToVPC(),
 				Tags:               tcpGroupTags,
 				Protocol:           fi.String("TCP"),
@@ -264,6 +265,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				tlsGroupTags["Name"] = tlsGroupName
 				secondaryTG := &awstasks.TargetGroup{
 					Name:               fi.String(tlsGroupName),
+					Lifecycle:          b.Lifecycle,
 					VPC:                b.LinkToVPC(),
 					Tags:               tlsGroupTags,
 					Protocol:           fi.String("TLS"),
