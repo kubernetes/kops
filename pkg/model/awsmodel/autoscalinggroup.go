@@ -90,8 +90,9 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		{
 			enabled := fi.Bool(warmPool.IsEnabled())
 			warmPoolTask := &awstasks.WarmPool{
-				Name:    &name,
-				Enabled: enabled,
+				Name:      &name,
+				Lifecycle: b.Lifecycle,
+				Enabled:   enabled,
 			}
 			if warmPool.IsEnabled() {
 				warmPoolTask.MinSize = warmPool.MinSize
