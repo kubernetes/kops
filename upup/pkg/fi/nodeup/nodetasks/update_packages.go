@@ -41,7 +41,13 @@ func NewUpdatePackages() *UpdatePackages {
 }
 
 func (p *UpdatePackages) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	return []fi.Task{}
+	deps := []fi.Task{}
+	for _, v := range tasks {
+		if _, ok := v.(*AptSource); ok {
+			deps = append(deps, v)
+		}
+	}
+	return deps
 }
 
 func (p *UpdatePackages) String() string {
