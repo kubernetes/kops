@@ -23,23 +23,23 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-// CopyDockerImage copies a docker image from a source registry, to a target registry,
+// CopyImage copies a docker image from a source registry, to a target registry,
 // typically used for highly secure clusters.
 // +kops:fitask
-type CopyDockerImage struct {
+type CopyImage struct {
 	Name        *string
 	SourceImage *string
 	TargetImage *string
 	Lifecycle   *fi.Lifecycle
 }
 
-var _ fi.CompareWithID = &CopyDockerImage{}
+var _ fi.CompareWithID = &CopyImage{}
 
-func (e *CopyDockerImage) CompareWithID() *string {
+func (e *CopyImage) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *CopyDockerImage) Find(c *fi.Context) (*CopyDockerImage, error) {
+func (e *CopyImage) Find(c *fi.Context) (*CopyImage, error) {
 	return nil, nil
 
 	// The problem here is that we can tag a local image with the remote tag, but there is no way to know
@@ -80,7 +80,7 @@ func (e *CopyDockerImage) Find(c *fi.Context) (*CopyDockerImage, error) {
 	//}
 	//
 	//if sourceImage.ID == targetImage.ID {
-	//	actual := &CopyDockerImage{}
+	//	actual := &CopyImage{}
 	//	actual.Name = e.Name
 	//	actual.SourceImage = e.SourceImage
 	//	actual.TargetImage = e.TargetImage
@@ -95,11 +95,11 @@ func (e *CopyDockerImage) Find(c *fi.Context) (*CopyDockerImage, error) {
 	//return nil, nil
 }
 
-func (e *CopyDockerImage) Run(c *fi.Context) error {
+func (e *CopyImage) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-func (s *CopyDockerImage) CheckChanges(a, e, changes *CopyDockerImage) error {
+func (s *CopyImage) CheckChanges(a, e, changes *CopyImage) error {
 	if fi.StringValue(e.Name) == "" {
 		return fi.RequiredField("Name")
 	}
@@ -112,7 +112,7 @@ func (s *CopyDockerImage) CheckChanges(a, e, changes *CopyDockerImage) error {
 	return nil
 }
 
-func (_ *CopyDockerImage) Render(c *fi.Context, a, e, changes *CopyDockerImage) error {
+func (_ *CopyImage) Render(c *fi.Context, a, e, changes *CopyImage) error {
 	api, err := newDockerAPI()
 	if err != nil {
 		return err
