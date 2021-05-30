@@ -2,6 +2,7 @@
 name: Feature Request
 about: Help us identify features you need
 ---
+/kind feature
 
 **1. Describe IN DETAIL the feature/behavior/change you would like to see.**
 
