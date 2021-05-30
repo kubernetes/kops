@@ -9,7 +9,7 @@ ForAPIServer: false
 GroupName: master
 ID: null
 Image: image-master
-Lifecycle: null
+Lifecycle: Sync
 Metadata:
   KopsInstanceGroup: master
   KopsName: master-1-cluster
@@ -84,7 +84,7 @@ ForAPIServer: false
 GroupName: node
 ID: null
 Image: image-node
-Lifecycle: null
+Lifecycle: Sync
 Metadata:
   KopsInstanceGroup: node
   KopsName: node-1-cluster
