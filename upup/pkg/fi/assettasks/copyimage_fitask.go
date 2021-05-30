@@ -24,28 +24,28 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-// CopyDockerImage
+// CopyImage
 
-var _ fi.HasLifecycle = &CopyDockerImage{}
+var _ fi.HasLifecycle = &CopyImage{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
-func (o *CopyDockerImage) GetLifecycle() *fi.Lifecycle {
+func (o *CopyImage) GetLifecycle() *fi.Lifecycle {
 	return o.Lifecycle
 }
 
 // SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
-func (o *CopyDockerImage) SetLifecycle(lifecycle fi.Lifecycle) {
+func (o *CopyImage) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = &lifecycle
 }
 
-var _ fi.HasName = &CopyDockerImage{}
+var _ fi.HasName = &CopyImage{}
 
 // GetName returns the Name of the object, implementing fi.HasName
-func (o *CopyDockerImage) GetName() *string {
+func (o *CopyImage) GetName() *string {
 	return o.Name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString
-func (o *CopyDockerImage) String() string {
+func (o *CopyImage) String() string {
 	return fi.TaskAsString(o)
 }
