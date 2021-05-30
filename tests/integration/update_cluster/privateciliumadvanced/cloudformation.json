@@ -1805,6 +1805,7 @@
                 "ec2:CreateTags",
                 "ec2:DeleteNetworkInterface",
                 "ec2:DescribeAccountAttributes",
+                "ec2:DescribeInstanceTypes",
                 "ec2:DescribeInstances",
                 "ec2:DescribeNetworkInterfaces",
                 "ec2:DescribeRegions",
@@ -1934,6 +1935,7 @@
             {
               "Action": [
                 "autoscaling:DescribeAutoScalingInstances",
+                "ec2:DescribeInstanceTypes",
                 "ec2:DescribeInstances",
                 "iam:GetServerCertificate",
                 "iam:ListServerCertificates",
