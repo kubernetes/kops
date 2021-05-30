@@ -27,7 +27,6 @@ import (
 
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/util/pkg/reflectutils"
 )
 
@@ -41,10 +40,6 @@ type SetInstanceGroupOptions struct {
 
 // RunSetInstancegroup implements the set instancegroup command logic.
 func RunSetInstancegroup(ctx context.Context, f *util.Factory, cmd *cobra.Command, out io.Writer, options *SetInstanceGroupOptions) error {
-	if !featureflag.SpecOverrideFlag.Enabled() {
-		return fmt.Errorf("set instancegroup is currently feature gated; set `export KOPS_FEATURE_FLAGS=SpecOverrideFlag`")
-	}
-
 	if options.ClusterName == "" {
 		return field.Required(field.NewPath("clusterName"), "Cluster name is required")
 	}

@@ -19,7 +19,6 @@ go_library(
         "//pkg/assets:go_default_library",
         "//pkg/client/simple:go_default_library",
         "//pkg/commands/helpers:go_default_library",
-        "//pkg/featureflag:go_default_library",
         "//upup/pkg/fi/cloudup:go_default_library",
         "//util/pkg/reflectutils:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",

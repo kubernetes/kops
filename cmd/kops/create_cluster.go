@@ -295,9 +295,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.DryRun, "dry-run", options.DryRun, "If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.")
 	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "Output format. One of json|yaml. Used with the --dry-run flag.")
 
-	if featureflag.SpecOverrideFlag.Enabled() {
-		cmd.Flags().StringSliceVar(&options.Overrides, "override", options.Overrides, "Directly configure values in the spec")
-	}
+	cmd.Flags().StringSliceVar(&options.Overrides, "override", options.Overrides, "Directly configure values in the spec")
 
 	// GCE flags
 	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")

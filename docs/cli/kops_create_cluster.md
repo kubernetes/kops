@@ -112,6 +112,7 @@ kops create cluster [flags]
       --os-octavia                       If true octavia loadbalancer api will be used
       --out string                       Path to write any local output
   -o, --output string                    Output format. One of json|yaml. Used with the --dry-run flag.
+      --override strings                 Directly configure values in the spec
       --project string                   Project to use (must be set on GCE)
       --ssh-access strings               Restrict SSH access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0])
       --ssh-public-key string            SSH public key to use (defaults to ~/.ssh/id_rsa.pub on AWS)

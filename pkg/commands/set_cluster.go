@@ -27,7 +27,6 @@ import (
 
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/util/pkg/reflectutils"
 )
 
@@ -38,10 +37,6 @@ type SetClusterOptions struct {
 
 // RunSetCluster implements the set cluster command logic
 func RunSetCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, out io.Writer, options *SetClusterOptions) error {
-	if !featureflag.SpecOverrideFlag.Enabled() {
-		return fmt.Errorf("set cluster command is current feature gated; set `export KOPS_FEATURE_FLAGS=SpecOverrideFlag`")
-	}
-
 	if options.ClusterName == "" {
 		return field.Required(field.NewPath("clusterName"), "Cluster name is required")
 	}
