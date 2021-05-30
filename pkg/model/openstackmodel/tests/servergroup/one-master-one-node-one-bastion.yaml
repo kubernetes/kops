@@ -31,7 +31,7 @@ ForAPIServer: false
 GroupName: bastion
 ID: null
 Image: image
-Lifecycle: null
+Lifecycle: Sync
 Metadata:
   KopsInstanceGroup: bastion
   KopsName: bastion-1-cluster
@@ -102,7 +102,7 @@ ForAPIServer: false
 GroupName: master
 ID: null
 Image: image
-Lifecycle: null
+Lifecycle: Sync
 Metadata:
   KopsInstanceGroup: master
   KopsName: master-1-cluster
@@ -177,7 +177,7 @@ ForAPIServer: false
 GroupName: node
 ID: null
 Image: image
-Lifecycle: null
+Lifecycle: Sync
 Metadata:
   KopsInstanceGroup: node
   KopsName: node-1-cluster
