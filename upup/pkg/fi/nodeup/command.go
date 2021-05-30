@@ -53,6 +53,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -269,6 +270,28 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		if err != nil {
 			return err
 		}
+
+		modelContext.MachineType, err = getMachineType()
+		if err != nil {
+			return fmt.Errorf("failed to get machine type: %w", err)
+		}
+
+		// If Nvidia is enabled in the cluster, check if this instance has support for it.
+		nvidia := c.cluster.Spec.Nvidia
+		if nvidia != nil && fi.BoolValue(nvidia.Enabled) {
+			awsCloud := cloud.(awsup.AWSCloud)
+			// Get the instance type's detailed information.
+			instanceType, err := awsup.GetMachineTypeInfo(awsCloud, modelContext.MachineType)
+			if err != nil {
+				return err
+			}
+
+			if instanceType.GPU {
+				klog.Info("instance supports GPU acceleration")
+				modelContext.GPUVendor = architectures.GPUVendorNvidia
+			}
+		}
+
 	}
 
 	if err := loadKernelModules(modelContext); err != nil {
@@ -372,6 +395,22 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 	}
 	return nil
+}
+
+func getMachineType() (string, error) {
+
+	config := aws.NewConfig()
+	config = config.WithCredentialsChainVerboseErrors(true)
+
+	sess := session.Must(session.NewSession(config))
+	metadata := ec2metadata.New(sess)
+
+	// Get the actual instance type by querying the EC2 instance metadata service.
+	instanceTypeName, err := metadata.GetMetadata("instance-type")
+	if err != nil {
+		return "", fmt.Errorf("failed to get instance metadata type: %w", err)
+	}
+	return instanceTypeName, err
 }
 
 func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.NodeupModelContext) error {

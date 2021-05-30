@@ -50,6 +50,7 @@ const (
 type NodeupModelContext struct {
 	Cloud        fi.Cloud
 	Architecture architectures.Architecture
+	GPUVendor    architectures.GPUVendor
 	Assets       *fi.AssetStore
 	Cluster      *kops.Cluster
 	ConfigBase   vfs.Path
@@ -72,6 +73,7 @@ type NodeupModelContext struct {
 	// ConfigurationMode determines if we are prewarming an instance or running it live
 	ConfigurationMode string
 	InstanceID        string
+	MachineType       string
 }
 
 // Init completes initialization of the object, for example pre-parsing the kubernetes version
@@ -702,5 +704,7 @@ func (c *NodeupModelContext) CNIConfDir() string {
 }
 
 func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
-	return c.NodeupConfig.Nvidia != nil && fi.BoolValue(c.NodeupConfig.Nvidia.Enabled)
+	return c.NodeupConfig.Nvidia != nil &&
+		fi.BoolValue(c.NodeupConfig.Nvidia.Enabled) &&
+		c.GPUVendor == architectures.GPUVendorNvidia
 }
