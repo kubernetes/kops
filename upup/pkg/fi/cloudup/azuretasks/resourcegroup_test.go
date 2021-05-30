@@ -149,8 +149,10 @@ func TestResourceGroupRun(t *testing.T) {
 		key = "key"
 		val = "val"
 	)
+	lifecycle := fi.LifecycleSync
 	rg := &ResourceGroup{
-		Name: to.StringPtr("rg"),
+		Name:      to.StringPtr("rg"),
+		Lifecycle: &lifecycle,
 		Tags: map[string]*string{
 			key: to.StringPtr(val),
 		},
