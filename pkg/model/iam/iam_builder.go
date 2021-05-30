@@ -244,7 +244,7 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		Version: PolicyDefaultVersion,
 	}
 
-	addMasterEC2Policies(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+	addMasterEC2Policies(p, resource, b.Cluster.GetName())
 	addASLifecyclePolicies(p, resource, b.Cluster.GetName(), r.warmPool)
 	addCertIAMPolicies(p, resource)
 
@@ -254,27 +254,23 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	if b.KMSKeys != nil && len(b.KMSKeys) != 0 {
-		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys), b.Cluster.Spec.IAM.Legacy)
+		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys))
 	}
 
-	if b.Cluster.Spec.IAM.Legacy {
-		addLegacyDNSControllerPermissions(b, p)
-	}
-
-	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {
+	if b.Cluster.Spec.IAM.AllowContainerRegistry {
 		addECRPermissions(p)
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName(), b.IAMPrefix())
+		addAmazonVPCCNIPermissions(p, resource, b.Cluster.GetName(), b.IAMPrefix())
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
-		addLyftVPCPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+		addLyftVPCPermissions(p, resource, b.Cluster.GetName())
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.Ipam == kops.CiliumIpamEni {
-		addCiliumEniPermissions(p, resource, b.Cluster.Spec.IAM.Legacy)
+		addCiliumEniPermissions(p, resource)
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && (b.Cluster.Spec.Networking.Calico.CrossSubnet || b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "") {
@@ -292,10 +288,10 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		Version: PolicyDefaultVersion,
 	}
 
-	addMasterEC2Policies(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+	addMasterEC2Policies(p, resource, b.Cluster.GetName())
 	addASLifecyclePolicies(p, resource, b.Cluster.GetName(), true)
-	addMasterASPolicies(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
-	addMasterELBPolicies(p, resource, b.Cluster.Spec.IAM.Legacy)
+	addMasterASPolicies(p, resource, b.Cluster.GetName())
+	addMasterELBPolicies(p, resource)
 	addCertIAMPolicies(p, resource)
 
 	var err error
@@ -304,13 +300,10 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	if b.KMSKeys != nil && len(b.KMSKeys) != 0 {
-		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys), b.Cluster.Spec.IAM.Legacy)
+		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys))
 	}
 
 	if !b.UseServiceAccountIAM {
-		if b.Cluster.Spec.IAM.Legacy {
-			addLegacyDNSControllerPermissions(b, p)
-		}
 		AddDNSControllerPermissions(b, p)
 
 		if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
@@ -318,20 +311,20 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		}
 	}
 
-	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {
+	if b.Cluster.Spec.IAM.AllowContainerRegistry {
 		addECRPermissions(p)
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName(), b.IAMPrefix())
+		addAmazonVPCCNIPermissions(p, resource, b.Cluster.GetName(), b.IAMPrefix())
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
-		addLyftVPCPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+		addLyftVPCPermissions(p, resource, b.Cluster.GetName())
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.Ipam == kops.CiliumIpamEni {
-		addCiliumEniPermissions(p, resource, b.Cluster.Spec.IAM.Legacy)
+		addCiliumEniPermissions(p, resource)
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && (b.Cluster.Spec.Networking.Calico.CrossSubnet || b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "") {
@@ -365,21 +358,16 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 	}
 
-	if !b.UseServiceAccountIAM && b.Cluster.Spec.IAM.Legacy {
-		addLegacyDNSControllerPermissions(b, p)
-		AddDNSControllerPermissions(b, p)
-	}
-
-	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {
+	if b.Cluster.Spec.IAM.AllowContainerRegistry {
 		addECRPermissions(p)
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName(), b.IAMPrefix())
+		addAmazonVPCCNIPermissions(p, resource, b.Cluster.GetName(), b.IAMPrefix())
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
-		addLyftVPCPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+		addLyftVPCPermissions(p, resource, b.Cluster.GetName())
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && (b.Cluster.Spec.Networking.Calico.CrossSubnet || b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "") {
@@ -479,34 +467,24 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 
 			s3Buckets.Insert(s3Path.Bucket())
 
-			if b.Cluster.Spec.IAM.Legacy {
+			resources, err := ReadableStatePaths(b.Cluster, b.Role)
+			if err != nil {
+				return nil, err
+			}
+
+			if len(resources) != 0 {
+				sort.Strings(resources)
+
+				// Add the prefix for IAM
+				for i, r := range resources {
+					resources[i] = b.IAMPrefix() + ":s3:::" + iamS3Path + r
+				}
+
 				p.Statement = append(p.Statement, &Statement{
-					Effect: StatementEffectAllow,
-					Action: stringorslice.Slice([]string{"s3:*"}),
-					Resource: stringorslice.Of(
-						strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/*"}, ""),
-					),
+					Effect:   StatementEffectAllow,
+					Action:   stringorslice.Slice([]string{"s3:Get*"}),
+					Resource: stringorslice.Of(resources...),
 				})
-			} else {
-				resources, err := ReadableStatePaths(b.Cluster, b.Role)
-				if err != nil {
-					return nil, err
-				}
-
-				if len(resources) != 0 {
-					sort.Strings(resources)
-
-					// Add the prefix for IAM
-					for i, r := range resources {
-						resources[i] = b.IAMPrefix() + ":s3:::" + iamS3Path + r
-					}
-
-					p.Statement = append(p.Statement, &Statement{
-						Effect:   StatementEffectAllow,
-						Action:   stringorslice.Slice([]string{"s3:Get*"}),
-						Resource: stringorslice.Of(resources...),
-					})
-				}
 			}
 		} else if _, ok := vfsPath.(*vfs.MemFSPath); ok {
 			// Tests -ignore - nothing we can do in terms of IAM policy
@@ -737,8 +715,8 @@ func addCalicoSrcDstCheckPermissions(p *Policy) {
 
 // AddAWSLoadbalancerControllerPermissions adds the permissions needed for the aws load balancer controller to the givnen policy
 func AddAWSLoadbalancerControllerPermissions(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {
-	addMasterEC2Policies(p, resource, false, clusterName)
-	addMasterELBPolicies(p, resource, false)
+	addMasterEC2Policies(p, resource, clusterName)
+	addMasterELBPolicies(p, resource)
 	p.Statement = append(p.Statement,
 		&Statement{
 			Effect: StatementEffectAllow,
@@ -808,17 +786,6 @@ func addSnapshotPersmissions(p *Policy, clusterName string) {
 
 }
 
-// addLegacyDNSControllerPermissions adds legacy IAM permissions used by the node roles.
-func addLegacyDNSControllerPermissions(b *PolicyBuilder, p *Policy) {
-	// Legacy IAM permissions for node roles
-	wildcard := stringorslice.Slice([]string{"*"})
-	p.Statement = append(p.Statement, &Statement{
-		Effect:   StatementEffectAllow,
-		Action:   stringorslice.Slice([]string{"route53:ListHostedZones"}),
-		Resource: wildcard,
-	})
-}
-
 // AddDNSControllerPermissions adds IAM permissions used by the dns-controller.
 // TODO: Move this to dnscontroller, but it requires moving a lot of code around.
 func AddDNSControllerPermissions(b *PolicyBuilder, p *Policy) {
@@ -854,18 +821,7 @@ func AddDNSControllerPermissions(b *PolicyBuilder, p *Policy) {
 	})
 }
 
-func addKMSIAMPolicies(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool) {
-	if legacyIAM {
-		p.Statement = append(p.Statement, &Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
-				"kms:ListGrants",
-				"kms:RevokeGrant",
-			),
-			Resource: resource,
-		})
-	}
-
+func addKMSIAMPolicies(p *Policy, resource stringorslice.StringOrSlice) {
 	// TODO could use "kms:ViaService" Condition Key here?
 	p.Statement = append(p.Statement, &Statement{
 		Effect: StatementEffectAllow,
@@ -890,194 +846,157 @@ func addNodeEC2Policies(p *Policy, resource stringorslice.StringOrSlice) {
 	})
 }
 
-func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string) {
-	// The legacy IAM policy grants full ec2 API access
-	if legacyIAM {
-		p.Statement = append(p.Statement,
-			&Statement{
-				Effect:   StatementEffectAllow,
-				Action:   stringorslice.Slice([]string{"ec2:*"}),
-				Resource: resource,
-			},
-		)
-	} else {
+func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {
+	// Describe* calls don't support any additional IAM restrictions
+	// The non-Describe* ec2 calls support different types of filtering:
+	// http://docs.aws.amazon.com/AWSEC2/latest/APIReference/ec2-api-permissions.html
+	// We try to lock down the permissions here in non-legacy mode,
+	// but there are still some improvements we can make:
 
-		// Describe* calls don't support any additional IAM restrictions
-		// The non-Describe* ec2 calls support different types of filtering:
-		// http://docs.aws.amazon.com/AWSEC2/latest/APIReference/ec2-api-permissions.html
-		// We try to lock down the permissions here in non-legacy mode,
-		// but there are still some improvements we can make:
+	// CreateVolume - supports filtering on tags, but we need to switch to pass tags to CreateVolume
+	// CreateTags - supports filtering on existing tags. Also supports filtering on VPC for some resources (e.g. security groups)
+	// Network Routing Permissions - May not be required with the CNI Networking provider
 
-		// CreateVolume - supports filtering on tags, but we need to switch to pass tags to CreateVolume
-		// CreateTags - supports filtering on existing tags. Also supports filtering on VPC for some resources (e.g. security groups)
-		// Network Routing Permissions - May not be required with the CNI Networking provider
-
-		// Comments are which cloudprovider code file makes the call
-		p.Statement = append(p.Statement,
-			&Statement{
-				Effect: StatementEffectAllow,
-				Action: stringorslice.Slice([]string{
-					"ec2:DescribeAccountAttributes", // aws.go
-					"ec2:DescribeInstances",         // aws.go
-					"ec2:DescribeInternetGateways",  // aws.go
-					"ec2:DescribeRegions",           // s3context.go
-					"ec2:DescribeRouteTables",       // aws.go
-					"ec2:DescribeSecurityGroups",    // aws.go
-					"ec2:DescribeSubnets",           // aws.go
-					"ec2:DescribeVolumes",           // aws.go
-				}),
-				Resource: resource,
-			},
-			&Statement{
-				Effect: StatementEffectAllow,
-				Action: stringorslice.Slice([]string{
-					"ec2:CreateSecurityGroup",          // aws.go
-					"ec2:CreateTags",                   // aws.go, tag.go
-					"ec2:CreateVolume",                 // aws.go
-					"ec2:DescribeVolumesModifications", // aws.go
-					"ec2:ModifyInstanceAttribute",      // aws.go
-					"ec2:ModifyVolume",                 // aws.go
-				}),
-				Resource: resource,
-			},
-			&Statement{
-				Effect: StatementEffectAllow,
-				Action: stringorslice.Of(
-					"ec2:AttachVolume",                  // aws.go
-					"ec2:AuthorizeSecurityGroupIngress", // aws.go
-					"ec2:CreateRoute",                   // aws.go
-					"ec2:DeleteRoute",                   // aws.go
-					"ec2:DeleteSecurityGroup",           // aws.go
-					"ec2:DeleteVolume",                  // aws.go
-					"ec2:DetachVolume",                  // aws.go
-					"ec2:RevokeSecurityGroupIngress",    // aws.go
-				),
-				Resource: resource,
-				Condition: Condition{
-					"StringEquals": map[string]string{
-						"ec2:ResourceTag/KubernetesCluster": clusterName,
-					},
-				},
-			},
-		)
-	}
-}
-
-func addMasterELBPolicies(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool) {
-	if legacyIAM {
-		p.Statement = append(p.Statement, &Statement{
-			Effect:   StatementEffectAllow,
-			Action:   stringorslice.Slice([]string{"elasticloadbalancing:*"}),
-			Resource: resource,
-		})
-	} else {
-		// Comments are which cloudprovider code file makes the call
-		p.Statement = append(p.Statement, &Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
-				"elasticloadbalancing:AddTags",                                 // aws_loadbalancer.go
-				"elasticloadbalancing:AttachLoadBalancerToSubnets",             // aws_loadbalancer.go
-				"elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",       // aws_loadbalancer.go
-				"elasticloadbalancing:CreateLoadBalancer",                      // aws_loadbalancer.go
-				"elasticloadbalancing:CreateLoadBalancerPolicy",                // aws_loadbalancer.go
-				"elasticloadbalancing:CreateLoadBalancerListeners",             // aws_loadbalancer.go
-				"elasticloadbalancing:ConfigureHealthCheck",                    // aws_loadbalancer.go
-				"elasticloadbalancing:DeleteLoadBalancer",                      // aws.go
-				"elasticloadbalancing:DeleteLoadBalancerListeners",             // aws_loadbalancer.go
-				"elasticloadbalancing:DescribeLoadBalancers",                   // aws.go
-				"elasticloadbalancing:DescribeLoadBalancerAttributes",          // aws.go
-				"elasticloadbalancing:DetachLoadBalancerFromSubnets",           // aws_loadbalancer.go
-				"elasticloadbalancing:DeregisterInstancesFromLoadBalancer",     // aws_loadbalancer.go
-				"elasticloadbalancing:ModifyLoadBalancerAttributes",            // aws_loadbalancer.go
-				"elasticloadbalancing:RegisterInstancesWithLoadBalancer",       // aws_loadbalancer.go
-				"elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer", // aws_loadbalancer.go
-			),
-			Resource: resource,
-		})
-
-		p.Statement = append(p.Statement, &Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
-				"ec2:DescribeVpcs",                                       // aws_loadbalancer.go
-				"elasticloadbalancing:AddTags",                           // aws_loadbalancer.go
-				"elasticloadbalancing:CreateListener",                    // aws_loadbalancer.go
-				"elasticloadbalancing:CreateTargetGroup",                 // aws_loadbalancer.go
-				"elasticloadbalancing:DeleteListener",                    // aws_loadbalancer.go
-				"elasticloadbalancing:DeleteTargetGroup",                 // aws_loadbalancer.go
-				"elasticloadbalancing:DeregisterTargets",                 // aws_loadbalancer.go
-				"elasticloadbalancing:DescribeListeners",                 // aws_loadbalancer.go
-				"elasticloadbalancing:DescribeLoadBalancerPolicies",      // aws_loadbalancer.go
-				"elasticloadbalancing:DescribeTargetGroups",              // aws_loadbalancer.go
-				"elasticloadbalancing:DescribeTargetHealth",              // aws_loadbalancer.go
-				"elasticloadbalancing:ModifyListener",                    // aws_loadbalancer.go
-				"elasticloadbalancing:ModifyTargetGroup",                 // aws_loadbalancer.go
-				"elasticloadbalancing:RegisterTargets",                   // aws_loadbalancer.go
-				"elasticloadbalancing:SetLoadBalancerPoliciesOfListener", // aws_loadbalancer.go
-			),
-			Resource: resource,
-		})
-	}
-}
-
-func addMasterASPolicies(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string) {
-	if legacyIAM {
-		p.Statement = append(p.Statement, &Statement{
+	// Comments are which cloudprovider code file makes the call
+	p.Statement = append(p.Statement,
+		&Statement{
 			Effect: StatementEffectAllow,
 			Action: stringorslice.Slice([]string{
-				"autoscaling:DescribeAutoScalingGroups",
-				"autoscaling:DescribeAutoScalingInstances",
-				"autoscaling:DescribeLaunchConfigurations",
-				"autoscaling:DescribeTags",
-				"autoscaling:SetDesiredCapacity",
-				"autoscaling:TerminateInstanceInAutoScalingGroup",
-				"autoscaling:UpdateAutoScalingGroup",
-				"ec2:DescribeLaunchTemplateVersions",
+				"ec2:DescribeAccountAttributes", // aws.go
+				"ec2:DescribeInstances",         // aws.go
+				"ec2:DescribeInternetGateways",  // aws.go
+				"ec2:DescribeRegions",           // s3context.go
+				"ec2:DescribeRouteTables",       // aws.go
+				"ec2:DescribeSecurityGroups",    // aws.go
+				"ec2:DescribeSubnets",           // aws.go
+				"ec2:DescribeVolumes",           // aws.go
 			}),
 			Resource: resource,
-		})
-	} else {
-		// Comments are which cloudprovider / autoscaler code file makes the call
-		// TODO: Make optional only if using autoscalers
-		p.Statement = append(p.Statement,
-			&Statement{
-				Effect: StatementEffectAllow,
-				Action: stringorslice.Of(
-					"autoscaling:DescribeAutoScalingGroups",    // aws_instancegroups.go
-					"autoscaling:DescribeLaunchConfigurations", // aws.go
-					"autoscaling:DescribeTags",                 // auto_scaling.go
-					"ec2:DescribeLaunchTemplateVersions",
-				),
-				Resource: resource,
-			},
-			&Statement{
-				Effect: StatementEffectAllow,
-				Action: stringorslice.Of(
-					"autoscaling:SetDesiredCapacity",                  // aws_manager.go
-					"autoscaling:TerminateInstanceInAutoScalingGroup", // aws_manager.go
-					"autoscaling:UpdateAutoScalingGroup",              // aws_instancegroups.go
-				),
-				Resource: resource,
-				Condition: Condition{
-					"StringEquals": map[string]string{
-						"autoscaling:ResourceTag/KubernetesCluster": clusterName,
-					},
+		},
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
+				"ec2:CreateSecurityGroup",          // aws.go
+				"ec2:CreateTags",                   // aws.go, tag.go
+				"ec2:CreateVolume",                 // aws.go
+				"ec2:DescribeVolumesModifications", // aws.go
+				"ec2:ModifyInstanceAttribute",      // aws.go
+				"ec2:ModifyVolume",                 // aws.go
+			}),
+			Resource: resource,
+		},
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Of(
+				"ec2:AttachVolume",                  // aws.go
+				"ec2:AuthorizeSecurityGroupIngress", // aws.go
+				"ec2:CreateRoute",                   // aws.go
+				"ec2:DeleteRoute",                   // aws.go
+				"ec2:DeleteSecurityGroup",           // aws.go
+				"ec2:DeleteVolume",                  // aws.go
+				"ec2:DetachVolume",                  // aws.go
+				"ec2:RevokeSecurityGroupIngress",    // aws.go
+			),
+			Resource: resource,
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"ec2:ResourceTag/KubernetesCluster": clusterName,
 				},
 			},
-			&Statement{
-				Effect: StatementEffectAllow,
-				Action: stringorslice.Of(
-					"autoscaling:CompleteLifecycleAction",      // aws_manager.go
-					"autoscaling:DescribeAutoScalingInstances", // aws_instancegroups.go
-				),
-				Resource: resource,
-				Condition: Condition{
-					"StringEquals": map[string]string{
-						"autoscaling:ResourceTag/KubernetesCluster": clusterName,
-					},
+		},
+	)
+}
+
+func addMasterELBPolicies(p *Policy, resource stringorslice.StringOrSlice) {
+	// Comments are which cloudprovider code file makes the call
+	p.Statement = append(p.Statement, &Statement{
+		Effect: StatementEffectAllow,
+		Action: stringorslice.Of(
+			"elasticloadbalancing:AddTags",                                 // aws_loadbalancer.go
+			"elasticloadbalancing:AttachLoadBalancerToSubnets",             // aws_loadbalancer.go
+			"elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",       // aws_loadbalancer.go
+			"elasticloadbalancing:CreateLoadBalancer",                      // aws_loadbalancer.go
+			"elasticloadbalancing:CreateLoadBalancerPolicy",                // aws_loadbalancer.go
+			"elasticloadbalancing:CreateLoadBalancerListeners",             // aws_loadbalancer.go
+			"elasticloadbalancing:ConfigureHealthCheck",                    // aws_loadbalancer.go
+			"elasticloadbalancing:DeleteLoadBalancer",                      // aws.go
+			"elasticloadbalancing:DeleteLoadBalancerListeners",             // aws_loadbalancer.go
+			"elasticloadbalancing:DescribeLoadBalancers",                   // aws.go
+			"elasticloadbalancing:DescribeLoadBalancerAttributes",          // aws.go
+			"elasticloadbalancing:DetachLoadBalancerFromSubnets",           // aws_loadbalancer.go
+			"elasticloadbalancing:DeregisterInstancesFromLoadBalancer",     // aws_loadbalancer.go
+			"elasticloadbalancing:ModifyLoadBalancerAttributes",            // aws_loadbalancer.go
+			"elasticloadbalancing:RegisterInstancesWithLoadBalancer",       // aws_loadbalancer.go
+			"elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer", // aws_loadbalancer.go
+		),
+		Resource: resource,
+	})
+
+	p.Statement = append(p.Statement, &Statement{
+		Effect: StatementEffectAllow,
+		Action: stringorslice.Of(
+			"ec2:DescribeVpcs",                                       // aws_loadbalancer.go
+			"elasticloadbalancing:AddTags",                           // aws_loadbalancer.go
+			"elasticloadbalancing:CreateListener",                    // aws_loadbalancer.go
+			"elasticloadbalancing:CreateTargetGroup",                 // aws_loadbalancer.go
+			"elasticloadbalancing:DeleteListener",                    // aws_loadbalancer.go
+			"elasticloadbalancing:DeleteTargetGroup",                 // aws_loadbalancer.go
+			"elasticloadbalancing:DeregisterTargets",                 // aws_loadbalancer.go
+			"elasticloadbalancing:DescribeListeners",                 // aws_loadbalancer.go
+			"elasticloadbalancing:DescribeLoadBalancerPolicies",      // aws_loadbalancer.go
+			"elasticloadbalancing:DescribeTargetGroups",              // aws_loadbalancer.go
+			"elasticloadbalancing:DescribeTargetHealth",              // aws_loadbalancer.go
+			"elasticloadbalancing:ModifyListener",                    // aws_loadbalancer.go
+			"elasticloadbalancing:ModifyTargetGroup",                 // aws_loadbalancer.go
+			"elasticloadbalancing:RegisterTargets",                   // aws_loadbalancer.go
+			"elasticloadbalancing:SetLoadBalancerPoliciesOfListener", // aws_loadbalancer.go
+		),
+		Resource: resource,
+	})
+}
+
+func addMasterASPolicies(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {
+	// Comments are which cloudprovider / autoscaler code file makes the call
+	// TODO: Make optional only if using autoscalers
+	p.Statement = append(p.Statement,
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Of(
+				"autoscaling:DescribeAutoScalingGroups",    // aws_instancegroups.go
+				"autoscaling:DescribeLaunchConfigurations", // aws.go
+				"autoscaling:DescribeTags",                 // auto_scaling.go
+				"ec2:DescribeLaunchTemplateVersions",
+			),
+			Resource: resource,
+		},
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Of(
+				"autoscaling:SetDesiredCapacity",                  // aws_manager.go
+				"autoscaling:TerminateInstanceInAutoScalingGroup", // aws_manager.go
+				"autoscaling:UpdateAutoScalingGroup",              // aws_instancegroups.go
+			),
+			Resource: resource,
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"autoscaling:ResourceTag/KubernetesCluster": clusterName,
 				},
 			},
-		)
-	}
+		},
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Of(
+				"autoscaling:CompleteLifecycleAction",      // aws_manager.go
+				"autoscaling:DescribeAutoScalingInstances", // aws_instancegroups.go
+			),
+			Resource: resource,
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"autoscaling:ResourceTag/KubernetesCluster": clusterName,
+				},
+			},
+		},
+	)
 }
 
 func addASLifecyclePolicies(p *Policy, resource stringorslice.StringOrSlice, clusterName string, enableHookSupport bool) {
@@ -1127,12 +1046,7 @@ func addCertIAMPolicies(p *Policy, resource stringorslice.StringOrSlice) {
 	})
 }
 
-func addLyftVPCPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string) {
-	if legacyIAM {
-		// Legacy IAM provides ec2:*, so no additional permissions required
-		return
-	}
-
+func addLyftVPCPermissions(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {
 	p.Statement = append(p.Statement,
 		&Statement{
 			Effect: StatementEffectAllow,
@@ -1156,12 +1070,7 @@ func addLyftVPCPermissions(p *Policy, resource stringorslice.StringOrSlice, lega
 	)
 }
 
-func addCiliumEniPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool) {
-	if legacyIAM {
-		// Legacy IAM provides ec2:*, so no additional permissions required
-		return
-	}
-
+func addCiliumEniPermissions(p *Policy, resource stringorslice.StringOrSlice) {
 	p.Statement = append(p.Statement,
 		&Statement{
 			Effect: StatementEffectAllow,
@@ -1184,12 +1093,7 @@ func addCiliumEniPermissions(p *Policy, resource stringorslice.StringOrSlice, le
 	)
 }
 
-func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string, iamPrefix string) {
-	if legacyIAM {
-		// Legacy IAM provides ec2:*, so no additional permissions required
-		return
-	}
-
+func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, clusterName string, iamPrefix string) {
 	p.Statement = append(p.Statement,
 		&Statement{
 			Effect: StatementEffectAllow,
