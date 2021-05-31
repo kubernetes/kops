@@ -449,6 +449,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 		if extLB.LoadBalancerName != nil {
 			lb := &awstasks.ClassicLoadBalancer{
 				Name:             extLB.LoadBalancerName,
+				Lifecycle:        b.Lifecycle,
 				LoadBalancerName: extLB.LoadBalancerName,
 				Shared:           fi.Bool(true),
 			}
@@ -462,9 +463,10 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 				return nil, err
 			}
 			tg := &awstasks.TargetGroup{
-				Name:   fi.String(name + "-" + targetGroupName),
-				ARN:    extLB.TargetGroupARN,
-				Shared: fi.Bool(true),
+				Name:      fi.String(name + "-" + targetGroupName),
+				Lifecycle: b.Lifecycle,
+				ARN:       extLB.TargetGroupARN,
+				Shared:    fi.Bool(true),
 			}
 			t.TargetGroups = append(t.TargetGroups, tg)
 			c.AddTask(tg)

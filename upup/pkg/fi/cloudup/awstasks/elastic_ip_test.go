@@ -41,22 +41,26 @@ func TestElasticIPCreate(t *testing.T) {
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	c := &mockec2.MockEC2{}
 	cloud.MockEC2 = c
+	lifecycle := fi.LifecycleSync
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
 	buildTasks := func() map[string]fi.Task {
 		vpc1 := &VPC{
-			Name: s("vpc1"),
-			CIDR: s("172.20.0.0/16"),
-			Tags: map[string]string{"Name": "vpc1"},
+			Name:      s("vpc1"),
+			Lifecycle: &lifecycle,
+			CIDR:      s("172.20.0.0/16"),
+			Tags:      map[string]string{"Name": "vpc1"},
 		}
 		subnet1 := &Subnet{
-			Name: s("subnet1"),
-			VPC:  vpc1,
-			CIDR: s("172.20.1.0/24"),
-			Tags: map[string]string{"Name": "subnet1"},
+			Name:      s("subnet1"),
+			Lifecycle: &lifecycle,
+			VPC:       vpc1,
+			CIDR:      s("172.20.1.0/24"),
+			Tags:      map[string]string{"Name": "subnet1"},
 		}
 		eip1 := &ElasticIP{
 			Name:        s("eip1"),
+			Lifecycle:   &lifecycle,
 			TagOnSubnet: subnet1,
 			Tags:        map[string]string{"Name": "eip1"},
 		}
