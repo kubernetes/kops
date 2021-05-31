@@ -114,12 +114,7 @@ are built by `BuildAWSPolicyMaster()` in pkg/model/iam/iam_builder.go:
 ```
 
 ```go
-func addCiliumEniPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool) {
-	if legacyIAM {
-		// Legacy IAM provides ec2:*, so no additional permissions required
-		return
-	}
-
+func addCiliumEniPermissions(p *Policy, resource stringorslice.StringOrSlice) {
 	p.Statement = append(p.Statement,
 		&Statement{
 			Effect: StatementEffectAllow,
