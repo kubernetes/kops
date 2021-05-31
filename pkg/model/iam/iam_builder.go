@@ -303,9 +303,10 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys))
 	}
 
-	if !b.UseServiceAccountIAM {
-		AddDNSControllerPermissions(b, p)
+	// Protokube needs dns-controller permissions in instance role even if UseServiceAccountIAM.
+	AddDNSControllerPermissions(b, p)
 
+	if !b.UseServiceAccountIAM {
 		if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
 			AddAWSLoadbalancerControllerPermissions(p, resource, b.Cluster.GetName())
 		}
