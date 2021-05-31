@@ -25,8 +25,6 @@ REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/aws-ebs-csi-driver/"
 export KOPS_FEATURE_FLAGS="SpecOverrideFlag,${KOPS_FEATURE_FLAGS:-}"
 REPO_ROOT=$(git rev-parse --show-toplevel);
 
-KOPS="${REPO_ROOT}/bazel-bin/cmd/kops/linux-amd64/kops"
-
 KUBETEST2="kubetest2 kops -v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-}"
 KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS:-}"
 
@@ -37,32 +35,26 @@ go install sigs.k8s.io/kubetest2
 go install ./kubetest2-kops
 go install ./kubetest2-tester-kops
 
-${KUBETEST2} --build --kops-root="${REPO_ROOT}" --stage-location="${STAGE_LOCATION:-}" --kops-binary-path="${KOPS}"
-
 # Always tear-down the cluster when we're done
 function finish {
-  ${KUBETEST2} --kops-binary-path="${KOPS}" --down || echo "kubetest2 down failed"
+  ${KUBETEST2} --down || echo "kubetest2 down failed"
 }
 trap finish EXIT
 
-OVERRIDES="--override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true"
-OVERRIDES="$OVERRIDES --override=cluster.spec.snapshotController.enabled=true"
-OVERRIDES="$OVERRIDES --override=cluster.spec.certManager.enabled=true"
 
+export KUBE_TEST_REPO_LIST="${REPO_ROOT}/tests/e2e/scenarios/aws-ebs-csi/repos.yaml"
 
 ${KUBETEST2} \
-		--up \
-		--kops-binary-path="${KOPS}" \
-		--kubernetes-version="1.21.0" \
-		--create-args="--networking calico $OVERRIDES"
-
-
-ZONE=$(${KOPS} get ig -o json | jq -r '[.[] | select(.spec.role=="Node") | .spec.subnets[0]][0]')
-
-cd "$(mktemp -dt kops.XXXXXXXXX)"
-go get github.com/onsi/ginkgo/ginkgo
-
-git clone --branch v1.0.0 https://github.com/kubernetes-sigs/aws-ebs-csi-driver.git .
-cd tests/e2e-kubernetes/
-
-ginkgo --nodes=25 ./... -- -cluster-tag="${CLUSTER_NAME}" -ginkgo.skip="\[Disruptive\]" -report-dir="${REPORT_DIR}" -gce-zone="${ZONE}"
+	--up --down \
+	--cloud-provider=aws \
+	--create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210518' --channel=alpha --networking=calico --container-runtime=containerd" \
+	--kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+	--kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
+	--test=kops \
+	-- \
+	--ginkgo-args="--debug" \
+	--test-args="-test.timeout=60m -num-nodes=0" \
+	--test-package-marker=stable-1.21.txt \
+	--parallel=25 \
+	--focus-regex="In-tree.Volumes.*nfs" \
+	--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
