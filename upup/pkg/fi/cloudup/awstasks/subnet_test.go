@@ -69,17 +69,20 @@ func TestSubnetCreate(t *testing.T) {
 	cloud.MockEC2 = c
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
+	lifecycle := fi.LifecycleSync
 	buildTasks := func() map[string]fi.Task {
 		vpc1 := &VPC{
-			Name: s("vpc1"),
-			CIDR: s("172.20.0.0/16"),
-			Tags: map[string]string{"Name": "vpc1"},
+			Name:      s("vpc1"),
+			Lifecycle: &lifecycle,
+			CIDR:      s("172.20.0.0/16"),
+			Tags:      map[string]string{"Name": "vpc1"},
 		}
 		subnet1 := &Subnet{
-			Name: s("subnet1"),
-			VPC:  vpc1,
-			CIDR: s("172.20.1.0/24"),
-			Tags: map[string]string{"Name": "subnet1"},
+			Name:      s("subnet1"),
+			Lifecycle: &lifecycle,
+			VPC:       vpc1,
+			CIDR:      s("172.20.1.0/24"),
+			Tags:      map[string]string{"Name": "subnet1"},
 		}
 
 		return map[string]fi.Task{
@@ -181,21 +184,24 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 	}
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
+	lifecycle := fi.LifecycleSync
 	buildTasks := func() map[string]fi.Task {
 		vpc1 := &VPC{
-			Name:   s("vpc1"),
-			CIDR:   s("172.20.0.0/16"),
-			Tags:   map[string]string{"kubernetes.io/cluster/cluster.example.com": "shared"},
-			Shared: fi.Bool(true),
-			ID:     vpc.Vpc.VpcId,
+			Name:      s("vpc1"),
+			Lifecycle: &lifecycle,
+			CIDR:      s("172.20.0.0/16"),
+			Tags:      map[string]string{"kubernetes.io/cluster/cluster.example.com": "shared"},
+			Shared:    fi.Bool(true),
+			ID:        vpc.Vpc.VpcId,
 		}
 		subnet1 := &Subnet{
-			Name:   s("subnet1"),
-			VPC:    vpc1,
-			CIDR:   s("172.20.1.0/24"),
-			Tags:   map[string]string{"kubernetes.io/cluster/cluster.example.com": "shared"},
-			Shared: fi.Bool(true),
-			ID:     subnet.Subnet.SubnetId,
+			Name:      s("subnet1"),
+			Lifecycle: &lifecycle,
+			VPC:       vpc1,
+			CIDR:      s("172.20.1.0/24"),
+			Tags:      map[string]string{"kubernetes.io/cluster/cluster.example.com": "shared"},
+			Shared:    fi.Bool(true),
+			ID:        subnet.Subnet.SubnetId,
 		}
 
 		return map[string]fi.Task{

@@ -57,7 +57,7 @@ ForAPIServer: false
 GroupName: master
 ID: null
 Image: image
-Lifecycle: null
+Lifecycle: Sync
 Metadata:
   KopsInstanceGroup: master
   KopsName: master-1-cluster
@@ -138,7 +138,7 @@ ForAPIServer: false
 GroupName: master
 ID: null
 Image: image
-Lifecycle: null
+Lifecycle: Sync
 Metadata:
   KopsInstanceGroup: master
   KopsName: master-2-cluster
@@ -219,7 +219,7 @@ ForAPIServer: false
 GroupName: master
 ID: null
 Image: image
-Lifecycle: null
+Lifecycle: Sync
 Metadata:
   KopsInstanceGroup: master
   KopsName: master-3-cluster
@@ -300,7 +300,7 @@ ForAPIServer: false
 GroupName: node
 ID: null
 Image: image
-Lifecycle: null
+Lifecycle: Sync
 Metadata:
   KopsInstanceGroup: node
   KopsName: node-1-cluster
@@ -372,7 +372,7 @@ ForAPIServer: false
 GroupName: node
 ID: null
 Image: image
-Lifecycle: null
+Lifecycle: Sync
 Metadata:
   KopsInstanceGroup: node
   KopsName: node-2-cluster
@@ -444,7 +444,7 @@ ForAPIServer: false
 GroupName: node
 ID: null
 Image: image
-Lifecycle: null
+Lifecycle: Sync
 Metadata:
   KopsInstanceGroup: node
   KopsName: node-3-cluster
