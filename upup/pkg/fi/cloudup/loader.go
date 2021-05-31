@@ -72,7 +72,7 @@ func (l *Loader) addAssetCopyTasks(assets []*assets.ImageAsset, lifecycle *fi.Li
 				Tasks: l.tasks,
 			}
 
-			copyImageTask := &assettasks.CopyDockerImage{
+			copyImageTask := &assettasks.CopyImage{
 				Name:        fi.String(asset.DownloadLocation),
 				SourceImage: fi.String(asset.CanonicalLocation),
 				TargetImage: fi.String(asset.DownloadLocation),
