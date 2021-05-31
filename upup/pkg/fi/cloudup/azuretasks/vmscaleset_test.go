@@ -62,8 +62,10 @@ func TestLoadBalancerIDParse(t *testing.T) {
 }
 
 func newTestVMScaleSet() *VMScaleSet {
+	lifecycle := fi.LifecycleSync
 	return &VMScaleSet{
-		Name: to.StringPtr("vmss"),
+		Name:      to.StringPtr("vmss"),
+		Lifecycle: &lifecycle,
 		ResourceGroup: &ResourceGroup{
 			Name: to.StringPtr("rg"),
 		},
