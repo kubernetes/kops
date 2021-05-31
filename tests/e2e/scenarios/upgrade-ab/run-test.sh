@@ -50,10 +50,12 @@ go install ./kubetest2-tester-kops
 
 KOPS_B=${WORKDIR}/kops-${KOPS_VERSION_B}
 if [[ "${KOPS_VERSION_B}" == "source" ]]; then
-  ${KUBETEST2} --build --kops-root="${REPO_ROOT}" --stage-location="${STAGE_LOCATION:-}" --kops-binary-path="${KOPS_B}"
+	KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
+	wget -qO "${KOPS_B}" "$KOPS_BASE_URL/$(go env GOOS)/$(go env GOARCH)/kops"
+	chmod +x "${KOPS_B}"
 else
-  wget -O "${KOPS_B}" "https://github.com/kubernetes/kops/releases/download/$KOPS_VERSION_B/kops-$(go env GOOS)-$(go env GOARCH)"
-  chmod +x "${KOPS_B}"
+	wget -O "${KOPS_B}" "https://github.com/kubernetes/kops/releases/download/$KOPS_VERSION_B/kops-$(go env GOOS)-$(go env GOARCH)"
+	chmod +x "${KOPS_B}"
 fi
 
 # Always tear-down the cluster when we're done
@@ -95,6 +97,8 @@ KUBECONFIG="${KUBECONFIG_A}" kubectl get nodes -owide
 
 # Verify kubeconfig-a still works
 KUBECONFIG="${KUBECONFIG_A}" kubectl get nodes -owide
+
+cp "${KOPS_B}" "${WORKSPACE}/kops"
 
 ${KUBETEST2} \
 		--cloud-provider="${CLOUD_PROVIDER}" \
