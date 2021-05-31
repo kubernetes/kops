@@ -1,12 +1,3 @@
 Some services, such as Istio and Envoy's Secret Discovery Service (SDS), take advantage of a new feature in Kubernetes 1.12+, [Service Account Token Volume Projection](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection).
 
-
-1. In order to enable this feature for Kubernetes 1.12+, add the following config to your cluster spec:
-
-```yaml
-    kubeAPIServer:
-        apiAudiences:
-        - api
-        - istio-ca
-        serviceAccountIssuer: kubernetes.default.svc
-```
+As of kOps 1.20, the API servers will have the ServiceAccount issuers configured correctly and you should not do any custom configuration. The API server will be used for discovery by default. As of kOps 1.21, you can also publish issuer discovery metadata publically. See [the relevant section in the cluster spec](/cluster_spec/#service-account-issuer-discovery-and-aws-iam-roles-for-service-accounts-irsa).
