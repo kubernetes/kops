@@ -14,12 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
-set -o xtrace
-
-echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
+REPO_ROOT=$(git rev-parse --show-toplevel);
+source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
 FIRST_VERSION=$1
 K8S_VERSION=$2
@@ -29,54 +25,28 @@ if [ -z "$FIRST_VERSION" ] || [ -z "$K8S_VERSION" ]; then
   exit 1
 fi
 
-FIRST_KOPS=$(mktemp -t kops.XXXXXXXXX)
-wget -qO "${FIRST_KOPS}" "https://github.com/kubernetes/kops/releases/download/$FIRST_VERSION/kops-$(go env GOOS)-$(go env GOARCH)"
-chmod +x "${FIRST_KOPS}"
-
-export KOPS_FEATURE_FLAGS="SpecOverrideFlag,${KOPS_FEATURE_FLAGS:-}"
-
-KUBETEST2="kubetest2 kops -v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-}"
-KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS:-}"
-
-export GO111MODULE=on
-
-make test-e2e-install
-
-KOPS="${FIRST_KOPS}"
-
-# Always tear-down the cluster when we're done
-function finish {
-  ${KUBETEST2} --kops-binary-path="${KOPS}" --down || echo "kubetest2 down failed"
-}
-trap finish EXIT
-
+KOPS=$(kops-download-release "${FIRST_VERSION}")
 
 ${KUBETEST2} \
 	--up \
 	--kubernetes-version="${K8S_VERSION}" \
-	--kops-binary-path="${FIRST_KOPS}" \
+	--kops-binary-path="${KOPS}" \
 	--create-args="--networking calico"
 
 export KOPS_BASE_URL
 KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
+KOPS=$(kops-download-from-base)
 
+"${KOPS}" update cluster
+"${KOPS}" update cluster --admin --yes
+"${KOPS}" update cluster
 
-SECOND_KOPS=$(mktemp -t kops.XXXXXXXXX)
-wget -qO "${SECOND_KOPS}" "$KOPS_BASE_URL/$(go env GOOS)/$(go env GOARCH)/kops"
-chmod +x "${SECOND_KOPS}"
+"${KOPS}" rolling-update cluster
+"${KOPS}" rolling-update cluster --yes --validation-timeout 30m
 
-KOPS="${SECOND_KOPS}"
+"${KOPS}" validate cluster
 
-"${SECOND_KOPS}" update cluster
-"${SECOND_KOPS}" update cluster --admin --yes
-"${SECOND_KOPS}" update cluster
-
-"${SECOND_KOPS}" rolling-update cluster
-"${SECOND_KOPS}" rolling-update cluster --yes --validation-timeout 30m
-
-"${SECOND_KOPS}" validate cluster
-
-cp "${SECOND_KOPS}" "${WORKSPACE}/kops"
+cp "${KOPS}" "${WORKSPACE}/kops"
 
 ${KUBETEST2} \
 		--test=kops \
