@@ -4,12 +4,12 @@
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {
         "StringEquals": {
-          "discovery.example.com/minimal.example.com/oidc:sub": "system:serviceaccount:kube-system:aws-load-balancer-controller"
+          "discovery.example.com/minimal.example.com:sub": "system:serviceaccount:kube-system:aws-load-balancer-controller"
         }
       },
       "Effect": "Allow",
       "Principal": {
-        "Federated": "arn:aws:iam::123456789012:oidc-provider/discovery.example.com/minimal.example.com/oidc"
+        "Federated": "arn:aws:iam::123456789012:oidc-provider/discovery.example.com/minimal.example.com"
       }
     }
   ],
