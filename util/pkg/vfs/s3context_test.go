@@ -30,6 +30,11 @@ func Test_VFSPath(t *testing.T) {
 			ExpectError:    false,
 		},
 		{
+			Input:          "s3.amazonaws.com/bucket/path",
+			ExpectedResult: "s3://bucket/path",
+			ExpectError:    false,
+		},
+		{
 			Input:          "s3-bucket.amazonaws.com",
 			ExpectedResult: "s3://bucket",
 			ExpectError:    false,
@@ -45,13 +50,23 @@ func Test_VFSPath(t *testing.T) {
 			ExpectError:    false,
 		},
 		{
+			Input:          "s3.bucket.amazonaws.com/path",
+			ExpectedResult: "s3://bucket/path",
+			ExpectError:    false,
+		},
+		{
+			Input:          "s3.bucket_foo-bar.abc.amazonaws.com",
+			ExpectedResult: "s3://bucket_foo-bar.abc",
+			ExpectError:    false,
+		},
+		{
 			Input:          "s3.bucket_foo-bar.abc.amazonaws.com/path",
 			ExpectedResult: "s3://bucket_foo-bar.abc/path",
 			ExpectError:    false,
 		},
 		{
-			Input:          "s3-us-west-2.amazonaws.com/bucket/path",
-			ExpectedResult: "s3://bucket/path",
+			Input:          "s3-us-west-2.amazonaws.com/bucket",
+			ExpectedResult: "s3://bucket",
 			ExpectError:    false,
 		},
 		{
@@ -75,12 +90,37 @@ func Test_VFSPath(t *testing.T) {
 			ExpectError:    false,
 		},
 		{
+			Input:          "https://s3.amazonaws.com/bucket/path",
+			ExpectedResult: "s3://bucket/path",
+			ExpectError:    false,
+		},
+		{
 			Input:          "http://s3.amazonaws.com/bucket",
 			ExpectedResult: "s3://bucket",
 			ExpectError:    false,
 		},
 		{
+			Input:          "http://s3.amazonaws.com/bucket/path",
+			ExpectedResult: "s3://bucket/path",
+			ExpectError:    false,
+		},
+		{
+			Input:          "https://bucket-name.s3.us-east-1.amazonaws.com",
+			ExpectedResult: "s3://bucket-name",
+			ExpectError:    false,
+		},
+		{
 			Input:          "https://bucket-name.s3.us-east-1.amazonaws.com/path",
+			ExpectedResult: "s3://bucket-name/path",
+			ExpectError:    false,
+		},
+		{
+			Input:          "https://bucket-name.s3.amazonaws.com",
+			ExpectedResult: "s3://bucket-name",
+			ExpectError:    false,
+		},
+		{
+			Input:          "https://bucket-name.s3.amazonaws.com/path",
 			ExpectedResult: "s3://bucket-name/path",
 			ExpectError:    false,
 		},
