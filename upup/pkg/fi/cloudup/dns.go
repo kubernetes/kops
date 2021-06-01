@@ -94,7 +94,7 @@ func validateDNS(cluster *kops.Cluster, cloud fi.Cloud) error {
 	}
 
 	if kopsModelContext.UsePrivateDNS() {
-		klog.Infof("Private DNS: skipping DNS validation")
+		klog.V(2).Infof("Private DNS: skipping DNS validation")
 		return nil
 	}
 
@@ -150,11 +150,11 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 	}
 
 	if len(dnsHostnames) == 0 {
-		klog.Infof("No DNS records to pre-create")
+		klog.V(2).Infof("No DNS records to pre-create")
 		return nil
 	}
 
-	klog.Infof("Checking DNS records")
+	klog.V(2).Infof("Checking DNS records")
 
 	zone, err := findZone(cluster, cloud)
 	if err != nil {
