@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,26 +16,10 @@ limitations under the License.
 
 package do
 
-import (
-	"k8s.io/kops/upup/pkg/fi"
-)
+import "strings"
 
-type DOAPITarget struct {
-	Cloud DOCloud
-}
-
-var _ fi.Target = &DOAPITarget{}
-
-func NewDOAPITarget(cloud DOCloud) *DOAPITarget {
-	return &DOAPITarget{
-		Cloud: cloud,
-	}
-}
-
-func (t *DOAPITarget) Finish(taskMap map[string]fi.Task) error {
-	return nil
-}
-
-func (t *DOAPITarget) ProcessDeletions() bool {
-	return true
+func SafeClusterName(clusterName string) string {
+	// DO does not support . in tags / names
+	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
+	return safeClusterName
 }
