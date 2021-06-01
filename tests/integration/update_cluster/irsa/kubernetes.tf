@@ -271,7 +271,7 @@ resource "aws_iam_openid_connect_provider" "minimal-example-com" {
     "kubernetes.io/cluster/minimal.example.com" = "owned"
   }
   thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280", "a9d53002e97e00e043244f3d170d6f4c414104fd"]
-  url             = "https://discovery.example.com/minimal.example.com/oidc"
+  url             = "https://discovery.example.com/minimal.example.com"
 }
 
 resource "aws_iam_role" "masters-minimal-example-com" {
