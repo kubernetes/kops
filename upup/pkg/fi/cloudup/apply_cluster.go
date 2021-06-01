@@ -756,7 +756,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 	defer context.Close()
 
-	if !dryRun {
+	if !dryRun && clusterLifecycle != fi.LifecycleIgnore {
 		acl, err := acls.GetACL(configBase, cluster)
 		if err != nil {
 			return err
@@ -803,7 +803,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		shouldPrecreateDNS = false
 	}
 
-	if shouldPrecreateDNS {
+	if shouldPrecreateDNS && clusterLifecycle != fi.LifecycleIgnore {
 		if err := precreateDNS(ctx, cluster, cloud); err != nil {
 			klog.Warningf("unable to pre-create DNS records - cluster startup may be slower: %v", err)
 		}
