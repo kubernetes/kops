@@ -34,6 +34,10 @@ import (
 // This is used by the gce nodeidentifier to securely identify the node instancegroup
 const MetadataKeyInstanceGroupName = "kops-k8s-io-instance-group-name"
 
+// MetadataKeyClusterName is the key for the metadata that specifies the cluster name
+// This is used by the gce nodeidentifier to securely identify the node
+const MetadataKeyClusterName = "cluster-name"
+
 // nodeIdentifier identifies a node from GCE
 type nodeIdentifier struct {
 	// computeService is the GCE client
@@ -41,10 +45,13 @@ type nodeIdentifier struct {
 
 	// project is our GCE project; we require that instances be in this project
 	project string
+
+	// clusterName is our cluster name; if set we require that instances be tagged with this cluster name
+	clusterName string
 }
 
-// New creates and returns a nodeidentity.LegacyIdentifier for Nodes running on GCE
-func New() (nodeidentity.LegacyIdentifier, error) {
+// NewLegacyIdentifier creates and returns a nodeidentity.LegacyIdentifier for Nodes running on GCE
+func NewLegacyIdentifier() (nodeidentity.LegacyIdentifier, error) {
 	ctx := context.Background()
 
 	computeService, err := compute.NewService(ctx)
@@ -93,8 +100,12 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	zone := tokens[1]
 	instanceName := tokens[2]
 
+	return i.verifyInstance(ctx, project, zone, instanceName)
+}
+
+func (i *nodeIdentifier) verifyInstance(ctx context.Context, project string, zone string, instanceName string) (*nodeidentity.LegacyInfo, error) {
 	if project != i.project {
-		return nil, fmt.Errorf("providerID %q did not match our project %q", providerID, i.project)
+		return nil, fmt.Errorf("project %q did not match expected project %q", project, i.project)
 	}
 
 	instance, err := i.getInstance(zone, instanceName)
@@ -102,12 +113,34 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		return nil, err
 	}
 
+	clusterName := getMetadataValue(instance.Metadata, MetadataKeyClusterName)
+	if clusterName == "" {
+		return nil, fmt.Errorf("%q not set on instance %s", MetadataKeyClusterName, instance.Name)
+	}
+
+	if i.clusterName != "" && clusterName != i.clusterName {
+		return nil, fmt.Errorf("instance %q was tagged with a different cluster %q", instance.Name, clusterName)
+	}
+
 	instanceStatus := instance.Status
 	if instanceStatus != "RUNNING" {
 		return nil, fmt.Errorf("found instance %q, but status is %q", instanceName, instanceStatus)
 	}
 
-	// The metadata itself is potentially mutable from the instance
+	// TODO(justinsb): Remove the paraonid mode
+	paranoid := false
+	if !paranoid {
+		igName := getMetadataValue(instance.Metadata, MetadataKeyInstanceGroupName)
+		if igName == "" {
+			return nil, fmt.Errorf("%q not set on instance %s", MetadataKeyInstanceGroupName, instance.Name)
+		}
+
+		info := &nodeidentity.LegacyInfo{}
+		info.InstanceGroup = igName
+		return info, nil
+	}
+
+	// The metadata itself could potentially be mutable from the instance (though this is likely paranoid)
 	// We instead look at the MIG configuration
 	createdBy := getMetadataValue(instance.Metadata, "created-by")
 	if createdBy == "" {
