@@ -14,53 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
-set -o xtrace
-
-echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
+REPO_ROOT=$(git rev-parse --show-toplevel);
+source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
 if [ -z "$KOPS_VERSION_A" ] || [ -z "$K8S_VERSION_A" ] || [ -z "$KOPS_VERSION_B" ] || [ -z "$K8S_VERSION_B" ]; then
   >&2 echo "must set all of KOPS_VERSION_A, K8S_VERSION_A, KOPS_VERSION_B, K8S_VERSION_B env vars"
   exit 1
 fi
 
-export KOPS_FEATURE_FLAGS="SpecOverrideFlag,${KOPS_FEATURE_FLAGS:-}"
-REPO_ROOT=$(git rev-parse --show-toplevel);
-
-WORKDIR=$(mktemp -d)
-
-KOPS_A=${WORKDIR}/kops-${KOPS_VERSION_A}
-wget -qO "${KOPS_A}" "https://github.com/kubernetes/kops/releases/download/$KOPS_VERSION_A/kops-$(go env GOOS)-$(go env GOARCH)"
-chmod +x "${KOPS_A}"
-
-
-KUBETEST2="kubetest2 kops -v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-}"
-KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS:-}"
-
-export GO111MODULE=on
-
-cd "${REPO_ROOT}/tests/e2e"
-go install sigs.k8s.io/kubetest2
-go install ./kubetest2-kops
-go install ./kubetest2-tester-kops
-
-KOPS_B=${WORKDIR}/kops-${KOPS_VERSION_B}
-if [[ "${KOPS_VERSION_B}" == "source" ]]; then
-	KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
-	wget -qO "${KOPS_B}" "$KOPS_BASE_URL/$(go env GOOS)/$(go env GOARCH)/kops"
-	chmod +x "${KOPS_B}"
-else
-	wget -qO "${KOPS_B}" "https://github.com/kubernetes/kops/releases/download/$KOPS_VERSION_B/kops-$(go env GOOS)-$(go env GOARCH)"
-	chmod +x "${KOPS_B}"
-fi
-
-# Always tear-down the cluster when we're done
-function finish {
-  ${KUBETEST2} --kops-binary-path="${KOPS_B}" --down || echo "kubetest2 down failed"
-}
-trap finish EXIT
+KOPS_A=$(kops-download-release "${KOPS_VERSION_A}")
+KOPS="${KOPS_A}"
 
 ${KUBETEST2} \
 		--up \
@@ -69,13 +32,22 @@ ${KUBETEST2} \
 		--create-args="--networking calico"
 
 # Export kubeconfig-a
-KUBECONFIG_A="${WORKDIR}/kubeconfig-a"
-# TODO: Add --admin if 1.19 or higher...
+KUBECONFIG_A=$(mktemp -t kops.XXXXXXXXX)
 # Note: --kubeconfig flag not in 1.18
-KUBECONFIG="${KUBECONFIG_A}" "${KOPS_A}" export kubecfg --name "${CLUSTER_NAME}"
+KUBECONFIG="${KUBECONFIG_A}" "${KOPS_A}" export kubecfg --name "${CLUSTER_NAME}" --admin
 
 # Verify kubeconfig-a
 KUBECONFIG="${KUBECONFIG_A}" kubectl get nodes -owide
+
+if [[ "${KOPS_VERSION_B}" == "source" ]]; then
+	export KOPS_BASE_URL
+	KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
+	KOPS_B=$(kops-download-from-base)
+else
+	KOPS_B=$(kops-download-release "${KOPS_VERSION_B}")
+fi
+
+KOPS="${KOPS_B}"
 
 "${KOPS_B}" set cluster "${CLUSTER_NAME}" "cluster.spec.kubernetesVersion=${K8S_VERSION_B}"
 
@@ -100,7 +72,7 @@ cp "${KOPS_B}" "${WORKSPACE}/kops"
 
 ${KUBETEST2} \
 		--cloud-provider="${CLOUD_PROVIDER}" \
-		--kops-binary-path="${KOPS_B}" \
+		--kops-binary-path="${KOPS}" \
 		--test=kops \
 		-- \
 		--test-package-version="${K8S_VERSION_B}" \
