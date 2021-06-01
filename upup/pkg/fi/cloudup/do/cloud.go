@@ -59,7 +59,6 @@ type TokenSource struct {
 // DOCloud exposes all the interfaces required to operate on DigitalOcean resources
 type DOCloud interface {
 	fi.Cloud
-	//Client() *godo.Client
 	DropletsService() godo.DropletsService
 	DropletActionService() godo.DropletActionsService
 	VolumeService() godo.StorageService
@@ -82,7 +81,7 @@ type doCloudImplementation struct {
 
 	dns dnsprovider.Interface
 
-	// region holds the DO region
+	// region holds the DO region.
 	region string
 }
 
@@ -184,8 +183,7 @@ func (c *doCloudImplementation) Region() string {
 }
 
 func (c *doCloudImplementation) DNS() (dnsprovider.Interface, error) {
-	provider := dns.NewProvider(c.Client)
-	return provider, nil
+	return c.dns, nil
 }
 
 // Volumes returns an implementation of godo.StorageService
@@ -221,7 +219,7 @@ func (c *doCloudImplementation) ActionsService() godo.ActionsService {
 
 // FindVPCInfo is not implemented, it's only here to satisfy the fi.Cloud interface
 func (c *doCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
-	return nil, errors.New("Not implemented")
+	return nil, errors.New("not implemented")
 }
 
 func (c *doCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
