@@ -31,17 +31,6 @@ import (
 
 var _ fi.Cloud = (*doCloudMockImplementation)(nil)
 
-// Cloud exposes all the interfaces required to operate on DigitalOcean resources
-// type MockDOCloudService struct {
-// 	MockDroplets      godo.DropletsService
-// 	MockDropletAction godo.DropletActionsService
-// 	MockVolume        godo.StorageService
-// 	MockVolumeAction  godo.StorageActionsService
-// 	MockLoadBalancers godo.LoadBalancersService
-// 	MockDomain        godo.DomainsService
-// 	MockActions       godo.ActionsService
-// }
-
 type doCloudMockImplementation struct {
 	Client *godo.Client
 
@@ -68,7 +57,7 @@ func (c *doCloudMockImplementation) DNS() (dnsprovider.Interface, error) {
 
 // FindVPCInfo is not implemented, it's only here to satisfy the fi.Cloud interface
 func (c *doCloudMockImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
-	return nil, errors.New("Not implemented")
+	return nil, errors.New("not implemented")
 }
 
 // DeleteGroup is not implemented yet, is a func that needs to delete a DO instance group.
@@ -77,7 +66,7 @@ func (c *doCloudMockImplementation) DeleteGroup(g *cloudinstances.CloudInstanceG
 }
 
 func (c *doCloudMockImplementation) DeleteInstance(instance *cloudinstances.CloudInstance) error {
-	return errors.New("Not tested")
+	return errors.New("not tested")
 }
 
 // DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
@@ -86,16 +75,16 @@ func (c *doCloudMockImplementation) DetachInstance(i *cloudinstances.CloudInstan
 }
 
 func (c *doCloudMockImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return nil, errors.New("Not tested")
+	return nil, errors.New("not tested")
 }
 
 // FindClusterStatus discovers the status of the cluster, by inspecting the cloud objects
 func (c *doCloudMockImplementation) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error) {
-	return nil, errors.New("Not tested")
+	return nil, errors.New("not tested")
 }
 
 func (c *doCloudMockImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
-	return nil, errors.New("Not tested")
+	return nil, errors.New("not tested")
 }
 
 func (c *doCloudMockImplementation) DropletsService() godo.DropletsService {
