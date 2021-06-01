@@ -122,17 +122,13 @@ func ServiceAccountIssuer(clusterSpec *kops.ClusterSpec) (string, error) {
 		}
 		switch base := base.(type) {
 		case *vfs.S3Path:
-			baseURL, err := base.GetHTTPsUrl()
-			if err != nil {
-				return "", err
-			}
-			return baseURL + "/oidc", nil
+			return base.GetHTTPsUrl()
 		case *vfs.MemFSPath:
 			if !base.IsClusterReadable() {
 				// If this _is_ a test, we should call MarkClusterReadable
 				return "", fmt.Errorf("locationStore=%q is only supported in tests", store)
 			}
-			return strings.Replace(base.Path(), "memfs://", "https://", 1) + "/oidc", nil
+			return strings.Replace(base.Path(), "memfs://", "https://", 1), nil
 		default:
 			return "", fmt.Errorf("locationStore=%q is of unexpected type %T", store, base)
 		}

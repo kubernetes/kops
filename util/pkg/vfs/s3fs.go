@@ -447,7 +447,8 @@ func (p *S3Path) GetHTTPsUrl() (string, error) {
 		}
 		p.bucketDetails = bucketDetails
 	}
-	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", p.bucketDetails.name, p.bucketDetails.region, p.Key()), nil
+	url := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", p.bucketDetails.name, p.bucketDetails.region, p.Key())
+	return strings.TrimSuffix(url, "/"), nil
 }
 
 // AWSErrorCode returns the aws error code, if it is an awserr.Error, otherwise ""
