@@ -47,7 +47,7 @@ export KUBE_TEST_REPO_LIST="${REPO_ROOT}/tests/e2e/scenarios/aws-ebs-csi/repos.y
 ${KUBETEST2} \
 	--up --down \
 	--cloud-provider=aws \
-	--create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210518' --channel=alpha --networking=calico --container-runtime=containerd" \
+	--create-args="--node-size=m6g.large --master-size=m6g.large --image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210510' --channel=alpha --networking=calico --container-runtime=containerd" \
 	--kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
 	--kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
 	--test=kops \
