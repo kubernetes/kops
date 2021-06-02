@@ -17,6 +17,7 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -o xtrace
 
 echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
 
@@ -28,7 +29,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel);
 KOPS="${REPO_ROOT}/bazel-bin/cmd/kops/linux-amd64/kops"
 
 KUBETEST2="kubetest2 kops -v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-}"
-KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS:-}"
+KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS:-} --kops-binary-path=${KOPS}"
 
 export GO111MODULE=on
 
@@ -37,11 +38,11 @@ go install sigs.k8s.io/kubetest2
 go install ./kubetest2-kops
 go install ./kubetest2-tester-kops
 
-${KUBETEST2} --build --kops-root="${REPO_ROOT}" --stage-location="${STAGE_LOCATION:-}" --kops-binary-path="${KOPS}"
+${KUBETEST2} --build --kops-root="${REPO_ROOT}" --stage-location="${STAGE_LOCATION:-}"
 
 # Always tear-down the cluster when we're done
 function finish {
-  ${KUBETEST2} --kops-binary-path="${KOPS}" --down || echo "kubetest2 down failed"
+  ${KUBETEST2} --down || echo "kubetest2 down failed"
 }
 trap finish EXIT
 
@@ -52,7 +53,6 @@ OVERRIDES="$OVERRIDES --override=cluster.spec.certManager.enabled=true"
 
 ${KUBETEST2} \
 		--up \
-		--kops-binary-path="${KOPS}" \
 		--kubernetes-version="1.21.0" \
 		--create-args="--networking calico $OVERRIDES"
 
