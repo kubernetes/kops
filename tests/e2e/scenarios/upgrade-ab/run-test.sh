@@ -52,7 +52,7 @@ if [[ "${KOPS_VERSION_B}" == "source" ]]; then
 	wget -qO "${KOPS_B}" "$KOPS_BASE_URL/$(go env GOOS)/$(go env GOARCH)/kops"
 	chmod +x "${KOPS_B}"
 else
-	wget -O "${KOPS_B}" "https://github.com/kubernetes/kops/releases/download/$KOPS_VERSION_B/kops-$(go env GOOS)-$(go env GOARCH)"
+	wget -qO "${KOPS_B}" "https://github.com/kubernetes/kops/releases/download/$KOPS_VERSION_B/kops-$(go env GOOS)-$(go env GOARCH)"
 	chmod +x "${KOPS_B}"
 fi
 
