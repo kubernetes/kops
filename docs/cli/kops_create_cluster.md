@@ -75,7 +75,7 @@ kops create cluster [flags]
       --bastion                          Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.
       --channel string                   Channel for default versions and configuration to use (default "stable")
       --cloud string                     Cloud provider to use - gce, aws, openstack
-      --cloud-labels string              A list of KV pairs used to tag all instance groups in AWS (e.g. "Owner=John Doe,Team=Some Team").
+      --cloud-labels string              A list of key/value pairs used to tag all instance groups (for example "Owner=John Doe,Team=Some Team").
       --container-runtime string         Container runtime to use: containerd, docker
       --disable-subnet-tags              Set to disable automatic subnet tagging
       --dns string                       DNS hosted zone to use: public|private. (default "Public")
