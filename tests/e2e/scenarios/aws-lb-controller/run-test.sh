@@ -54,8 +54,7 @@ REGION=${ZONE::-1}
 cd "$(mktemp -dt kops.XXXXXXXXX)"
 go get github.com/onsi/ginkgo/ginkgo
 
-# Using a custom fork until https://github.com/kubernetes-sigs/aws-load-balancer-controller/pull/2012 has merged
-git clone --branch e2e-filter-non-eligible-targets https://github.com/olemarkus/aws-load-balancer-controller .
+git clone https://github.com/kubernetes-sigs/aws-load-balancer-controller .
 
 ginkgo -v -r test/e2e/ingress -- \
     -cluster-name="${CLUSTER_NAME}" \
