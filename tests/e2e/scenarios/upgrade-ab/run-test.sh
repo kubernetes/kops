@@ -17,8 +17,6 @@
 set -o errexit
 set -o nounset
 set -o pipefail
-
-# Print all commands
 set -o xtrace
 
 echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
