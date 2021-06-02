@@ -506,9 +506,10 @@ func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContex
 	ig, igOcean *kops.InstanceGroup, ocean *spotinsttasks.Ocean) (err error) {
 	klog.V(4).Infof("Building instance group as LaunchSpec: %q", b.AutoscalingGroupName(ig))
 	launchSpec := &spotinsttasks.LaunchSpec{
-		Name:    fi.String(b.AutoscalingGroupName(ig)),
-		ImageID: fi.String(ig.Spec.Image),
-		Ocean:   ocean, // link to Ocean
+		Name:      fi.String(b.AutoscalingGroupName(ig)),
+		Lifecycle: b.Lifecycle,
+		ImageID:   fi.String(ig.Spec.Image),
+		Ocean:     ocean, // link to Ocean
 	}
 
 	// Instance types and strategy.
