@@ -14,34 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
-set -o xtrace
-
-echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
+REPO_ROOT=$(git rev-parse --show-toplevel);
+source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
 REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/aws-lb-controller/"
-KOPS="${ARTIFACTS}/${PROW_JOB_ID}/kops"
 
-export KOPS_FEATURE_FLAGS="SpecOverrideFlag,${KOPS_FEATURE_FLAGS:-}"
-KUBETEST2="kubetest2 kops -v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-}"
-KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS:-}"
+export KOPS_BASE_URL
+KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
+KOPS=$(kops-download-from-base)
 
-export GO111MODULE=on
-
-make test-e2e-install
-
-# Always tear-down the cluster when we're done
-function finish {
-  ${KUBETEST2} --kops-binary-path="${KOPS}" --down || echo "kubetest2 down failed"
-}
-trap finish EXIT
 
 ${KUBETEST2} \
     --up \
     --kubernetes-version="1.21.0" \
-    --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+    --kops-binary-path="${KOPS}" \
     --create-args="--networking amazonvpc --override=cluster.spec.awsLoadBalancerController.enabled=true --override=cluster.spec.certManager.enabled=true --zones=eu-west-1a,eu-west-1b,eu-west-1c"
 
 
@@ -51,6 +37,7 @@ ZONE=$(${KOPS} get ig -o json | jq -r '[.[] | select(.spec.role=="Node") | .spec
 
 REGION=${ZONE::-1}
 
+# shellcheck disable=SC2164
 cd "$(mktemp -dt kops.XXXXXXXXX)"
 go get github.com/onsi/ginkgo/ginkgo
 
