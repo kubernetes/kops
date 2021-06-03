@@ -37,7 +37,7 @@ type FloatingIP struct {
 	ID           *string
 	LB           *LB
 	IP           *string
-	Lifecycle    *fi.Lifecycle
+	Lifecycle    fi.Lifecycle
 	ForAPIServer bool
 }
 

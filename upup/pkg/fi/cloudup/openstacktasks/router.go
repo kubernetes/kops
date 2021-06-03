@@ -29,7 +29,7 @@ import (
 type Router struct {
 	ID                    *string
 	Name                  *string
-	Lifecycle             *fi.Lifecycle
+	Lifecycle             fi.Lifecycle
 	AvailabilityZoneHints []*string
 }
 
@@ -40,7 +40,7 @@ func (n *Router) CompareWithID() *string {
 }
 
 //NewRouterTaskFromCloud initializes and returns a new Router
-func NewRouterTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, router *routers.Router, find *Router) (*Router, error) {
+func NewRouterTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, router *routers.Router, find *Router) (*Router, error) {
 	actual := &Router{
 		ID:                    fi.String(router.ID),
 		Name:                  fi.String(router.Name),

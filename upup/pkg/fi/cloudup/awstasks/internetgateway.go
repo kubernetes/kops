@@ -31,7 +31,7 @@ import (
 // +kops:fitask
 type InternetGateway struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	ID  *string
 	VPC *VPC

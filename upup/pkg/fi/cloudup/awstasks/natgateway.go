@@ -34,7 +34,7 @@ import (
 // +kops:fitask
 type NatGateway struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	ElasticIP *ElasticIP
 	Subnet    *Subnet

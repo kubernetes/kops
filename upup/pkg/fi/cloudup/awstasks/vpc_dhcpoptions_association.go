@@ -31,7 +31,7 @@ import (
 // +kops:fitask
 type VPCDHCPOptionsAssociation struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	VPC         *VPC
 	DHCPOptions *DHCPOptions

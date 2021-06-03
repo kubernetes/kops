@@ -1005,7 +1005,7 @@ func createBuilderForCluster(cluster *kops.Cluster, instanceGroups []*kops.Insta
 	return &ServerGroupModelBuilder{
 		OpenstackModelContext:  openstackModelContext,
 		BootstrapScriptBuilder: bootstrapScriptBuilder,
-		Lifecycle:              &clusterLifecycle,
+		Lifecycle:              clusterLifecycle,
 	}
 }
 

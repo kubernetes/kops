@@ -32,7 +32,7 @@ import (
 // +kops:fitask
 type Route struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	RouteTable *RouteTable
 	Instance   *Instance

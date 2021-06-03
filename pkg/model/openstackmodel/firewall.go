@@ -41,7 +41,7 @@ const (
 // FirewallModelBuilder configures firewall network objects
 type FirewallModelBuilder struct {
 	*OpenstackModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 	Rules     map[string]*openstacktasks.SecurityGroupRule
 }
 

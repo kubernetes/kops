@@ -33,7 +33,7 @@ import (
 type VMScaleSetModelBuilder struct {
 	*AzureModelContext
 	BootstrapScriptBuilder *model.BootstrapScriptBuilder
-	Lifecycle              *fi.Lifecycle
+	Lifecycle              fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &VMScaleSetModelBuilder{}

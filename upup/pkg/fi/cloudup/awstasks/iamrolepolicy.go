@@ -38,7 +38,7 @@ import (
 // +kops:fitask
 type IAMRolePolicy struct {
 	ID        *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	Name *string
 	Role *IAMRole

@@ -31,7 +31,7 @@ import (
 // +kops:fitask
 type TargetPool struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.CompareWithID = &TargetPool{}

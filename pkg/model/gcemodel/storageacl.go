@@ -34,7 +34,7 @@ import (
 type StorageAclBuilder struct {
 	*GCEModelContext
 	Cloud     gce.GCECloud
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &NetworkModelBuilder{}

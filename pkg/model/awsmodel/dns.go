@@ -29,7 +29,7 @@ import (
 // DNSModelBuilder builds DNS related model objects
 type DNSModelBuilder struct {
 	*AWSModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &DNSModelBuilder{}

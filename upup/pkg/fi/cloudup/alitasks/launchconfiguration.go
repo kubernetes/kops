@@ -54,7 +54,7 @@ func RetainLaunchConfigurationCount() int {
 // LaunchConfiguration is the specification for a launch configuration
 // +kops:fitask
 type LaunchConfiguration struct {
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 	ID        *string
 	Name      *string
 

@@ -29,13 +29,12 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 	var a Task
 	var err error
 
-	var lifecycle Lifecycle = LifecycleSync
+	lifecycle := LifecycleSync
 	if hl, ok := e.(HasLifecycle); ok {
-		l := hl.GetLifecycle()
-		if l == nil || *l == "" {
+		lifecycle = hl.GetLifecycle()
+		if lifecycle == "" {
 			return fmt.Errorf("task does not have a lifecycle set")
 		}
-		lifecycle = *l
 	}
 
 	if lifecycle == LifecycleIgnore {

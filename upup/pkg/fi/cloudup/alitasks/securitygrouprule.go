@@ -37,7 +37,7 @@ type SecurityGroupRule struct {
 	SourceCidrIp  *string
 	SecurityGroup *SecurityGroup
 	SourceGroup   *SecurityGroup
-	Lifecycle     *fi.Lifecycle
+	Lifecycle     fi.Lifecycle
 	PortRange     *string
 	In            *bool
 }

@@ -36,7 +36,7 @@ type Keypair struct {
 	// AlternateNames a list of alternative names for this certificate
 	AlternateNames []string `json:"alternateNames"`
 	// Lifecycle is context for a task
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 	// Signer is the keypair to use to sign, for when we want to use an alternative CA
 	Signer *Keypair
 	// Subject is the certificate subject

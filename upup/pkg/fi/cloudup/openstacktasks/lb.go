@@ -37,7 +37,7 @@ type LB struct {
 	Name          *string
 	Subnet        *string
 	VipSubnet     *string
-	Lifecycle     *fi.Lifecycle
+	Lifecycle     fi.Lifecycle
 	PortID        *string
 	SecurityGroup *SecurityGroup
 }
@@ -106,7 +106,7 @@ func (s *LB) CompareWithID() *string {
 	return s.ID
 }
 
-func NewLBTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, lb *loadbalancers.LoadBalancer, find *LB) (*LB, error) {
+func NewLBTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, lb *loadbalancers.LoadBalancer, find *LB) (*LB, error) {
 	osCloud := cloud.(openstack.OpenstackCloud)
 	sub, err := subnets.Get(osCloud.NetworkingClient(), lb.VipSubnetID).Extract()
 	if err != nil {

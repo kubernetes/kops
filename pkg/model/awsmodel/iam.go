@@ -38,7 +38,7 @@ import (
 // IAMModelBuilder configures IAM objects
 type IAMModelBuilder struct {
 	*AWSModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 	Cluster   *kops.Cluster
 }
 

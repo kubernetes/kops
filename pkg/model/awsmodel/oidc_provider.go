@@ -26,7 +26,7 @@ import (
 type OIDCProviderBuilder struct {
 	*AWSModelContext
 	KeyStore  fi.CAStore
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &OIDCProviderBuilder{}

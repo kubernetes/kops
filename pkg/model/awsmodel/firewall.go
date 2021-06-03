@@ -36,7 +36,7 @@ const (
 // FirewallModelBuilder configures firewall network objects
 type FirewallModelBuilder struct {
 	*AWSModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &FirewallModelBuilder{}

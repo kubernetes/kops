@@ -38,7 +38,7 @@ type LoadBalancer struct {
 	AddressType         *string
 	VSwitchId           *string
 	LoadBalancerAddress *string
-	Lifecycle           *fi.Lifecycle
+	Lifecycle           fi.Lifecycle
 	Tags                map[string]string
 	ForAPIServer        bool
 }

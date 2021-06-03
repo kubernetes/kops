@@ -37,7 +37,7 @@ type LoadBalancerACL struct {
 	LoadBalancer         *LoadBalancer
 	LoadBalancerListener *LoadBalancerListener
 	SourceItems          []*string
-	Lifecycle            *fi.Lifecycle
+	Lifecycle            fi.Lifecycle
 }
 
 type AclEntry struct {

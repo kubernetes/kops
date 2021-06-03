@@ -40,7 +40,7 @@ type Subnet struct {
 	// so it is typically set to the name of the Subnet, in the cluster spec.
 	ShortName *string
 
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	ID               *string
 	VPC              *VPC

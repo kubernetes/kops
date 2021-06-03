@@ -33,7 +33,7 @@ import (
 
 // +kops:fitask
 type IAMOIDCProvider struct {
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	ClientIDs   []*string
 	Thumbprints []*string

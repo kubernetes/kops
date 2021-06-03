@@ -38,7 +38,7 @@ import (
 // +kops:fitask
 type LaunchSpec struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	ID                 *string
 	SpotPercentage     *int64

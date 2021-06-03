@@ -93,7 +93,7 @@ func parseLoadBalancerID(lb string) (*loadBalancerID, error) {
 // +kops:fitask
 type VMScaleSet struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	ResourceGroup  *ResourceGroup
 	VirtualNetwork *VirtualNetwork
