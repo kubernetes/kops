@@ -89,9 +89,8 @@ func parseLoadBalancerID(lb string) (*loadBalancerID, error) {
 	}, nil
 }
 
-//go:generate fitask -type=VMScaleSet
-
 // VMScaleSet is an Azure VM Scale Set.
+// +kops:fitask
 type VMScaleSet struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
