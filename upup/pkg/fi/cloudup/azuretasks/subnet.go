@@ -25,9 +25,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
 
-//go:generate fitask -type=Subnet
-
 // Subnet is an Azure subnet.
+// +kops:fitask
 type Subnet struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

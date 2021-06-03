@@ -27,9 +27,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
 
-//go:generate fitask -type=VirtualNetwork
-
 // VirtualNetwork is an Azure Virtual Network.
+// +kops:fitask
 type VirtualNetwork struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
