@@ -83,19 +83,19 @@ Port:
   Network:
     AvailabilityZoneHints: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: cluster
     Tag: null
   SecurityGroups:
   - Description: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: masters.cluster
     RemoveExtraRules: null
     RemoveGroup: false
   - Description: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: master-public-name
     RemoveExtraRules: null
     RemoveGroup: false
@@ -103,7 +103,7 @@ Port:
   - CIDR: null
     DNSServers: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: subnet-a.cluster
     Network: null
     Tag: null
@@ -164,19 +164,19 @@ Port:
   Network:
     AvailabilityZoneHints: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: cluster
     Tag: null
   SecurityGroups:
   - Description: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: masters.cluster
     RemoveExtraRules: null
     RemoveGroup: false
   - Description: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: master-public-name
     RemoveExtraRules: null
     RemoveGroup: false
@@ -184,7 +184,7 @@ Port:
   - CIDR: null
     DNSServers: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: subnet-b.cluster
     Network: null
     Tag: null
@@ -245,19 +245,19 @@ Port:
   Network:
     AvailabilityZoneHints: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: cluster
     Tag: null
   SecurityGroups:
   - Description: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: masters.cluster
     RemoveExtraRules: null
     RemoveGroup: false
   - Description: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: master-public-name
     RemoveExtraRules: null
     RemoveGroup: false
@@ -265,7 +265,7 @@ Port:
   - CIDR: null
     DNSServers: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: subnet-c.cluster
     Network: null
     Tag: null
@@ -323,13 +323,13 @@ Port:
   Network:
     AvailabilityZoneHints: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: cluster
     Tag: null
   SecurityGroups:
   - Description: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: nodes.cluster
     RemoveExtraRules: null
     RemoveGroup: false
@@ -337,7 +337,7 @@ Port:
   - CIDR: null
     DNSServers: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: subnet-a.cluster
     Network: null
     Tag: null
@@ -395,13 +395,13 @@ Port:
   Network:
     AvailabilityZoneHints: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: cluster
     Tag: null
   SecurityGroups:
   - Description: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: nodes.cluster
     RemoveExtraRules: null
     RemoveGroup: false
@@ -409,7 +409,7 @@ Port:
   - CIDR: null
     DNSServers: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: subnet-b.cluster
     Network: null
     Tag: null
@@ -467,13 +467,13 @@ Port:
   Network:
     AvailabilityZoneHints: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: cluster
     Tag: null
   SecurityGroups:
   - Description: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: nodes.cluster
     RemoveExtraRules: null
     RemoveGroup: false
@@ -481,7 +481,7 @@ Port:
   - CIDR: null
     DNSServers: null
     ID: null
-    Lifecycle: null
+    Lifecycle: ""
     Name: subnet-c.cluster
     Network: null
     Tag: null
@@ -503,7 +503,7 @@ UserData:
   task:
     Name: node
 ---
-Lifecycle: null
+Lifecycle: ""
 Name: ca
 Signer: null
 alternateNames: null
@@ -518,19 +518,19 @@ Name: port-master-1-cluster
 Network:
   AvailabilityZoneHints: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: cluster
   Tag: null
 SecurityGroups:
 - Description: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: masters.cluster
   RemoveExtraRules: null
   RemoveGroup: false
 - Description: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: master-public-name
   RemoveExtraRules: null
   RemoveGroup: false
@@ -538,7 +538,7 @@ Subnets:
 - CIDR: null
   DNSServers: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: subnet-a.cluster
   Network: null
   Tag: null
@@ -551,19 +551,19 @@ Name: port-master-2-cluster
 Network:
   AvailabilityZoneHints: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: cluster
   Tag: null
 SecurityGroups:
 - Description: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: masters.cluster
   RemoveExtraRules: null
   RemoveGroup: false
 - Description: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: master-public-name
   RemoveExtraRules: null
   RemoveGroup: false
@@ -571,7 +571,7 @@ Subnets:
 - CIDR: null
   DNSServers: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: subnet-b.cluster
   Network: null
   Tag: null
@@ -584,19 +584,19 @@ Name: port-master-3-cluster
 Network:
   AvailabilityZoneHints: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: cluster
   Tag: null
 SecurityGroups:
 - Description: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: masters.cluster
   RemoveExtraRules: null
   RemoveGroup: false
 - Description: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: master-public-name
   RemoveExtraRules: null
   RemoveGroup: false
@@ -604,7 +604,7 @@ Subnets:
 - CIDR: null
   DNSServers: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: subnet-c.cluster
   Network: null
   Tag: null
@@ -617,13 +617,13 @@ Name: port-node-1-cluster
 Network:
   AvailabilityZoneHints: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: cluster
   Tag: null
 SecurityGroups:
 - Description: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: nodes.cluster
   RemoveExtraRules: null
   RemoveGroup: false
@@ -631,7 +631,7 @@ Subnets:
 - CIDR: null
   DNSServers: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: subnet-a.cluster
   Network: null
   Tag: null
@@ -644,13 +644,13 @@ Name: port-node-2-cluster
 Network:
   AvailabilityZoneHints: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: cluster
   Tag: null
 SecurityGroups:
 - Description: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: nodes.cluster
   RemoveExtraRules: null
   RemoveGroup: false
@@ -658,7 +658,7 @@ Subnets:
 - CIDR: null
   DNSServers: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: subnet-b.cluster
   Network: null
   Tag: null
@@ -671,13 +671,13 @@ Name: port-node-3-cluster
 Network:
   AvailabilityZoneHints: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: cluster
   Tag: null
 SecurityGroups:
 - Description: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: nodes.cluster
   RemoveExtraRules: null
   RemoveGroup: false
@@ -685,7 +685,7 @@ Subnets:
 - CIDR: null
   DNSServers: null
   ID: null
-  Lifecycle: null
+  Lifecycle: ""
   Name: subnet-c.cluster
   Network: null
   Tag: null
