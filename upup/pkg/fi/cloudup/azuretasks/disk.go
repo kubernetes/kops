@@ -26,9 +26,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
 
-//go:generate fitask -type=Disk
-
 // Disk is an Azure Managed Disk.
+// +kops:fitask
 type Disk struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

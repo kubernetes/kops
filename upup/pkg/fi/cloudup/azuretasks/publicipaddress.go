@@ -26,9 +26,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
 
-//go:generate fitask -type=PublicIPAddress
-
 // PublicIPAddress is an Azure Cloud Public IP Address
+// +kops:fitask
 type PublicIPAddress struct {
 	Name          *string
 	Lifecycle     *fi.Lifecycle
