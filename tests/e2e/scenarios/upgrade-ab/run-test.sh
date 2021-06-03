@@ -22,7 +22,9 @@ if [ -z "$KOPS_VERSION_A" ] || [ -z "$K8S_VERSION_A" ] || [ -z "$KOPS_VERSION_B"
   exit 1
 fi
 
-KOPS_A=$(kops-download-release "${KOPS_VERSION_A}")
+export KOPS_BASE_URL
+KOPS_BASE_URL=$(kops-base-from-marker "${KOPS_VERSION_B}")
+KOPS_A=$(kops-download-from-base)
 KOPS="${KOPS_A}"
 
 ${KUBETEST2} \
@@ -33,18 +35,13 @@ ${KUBETEST2} \
 
 # Export kubeconfig-a
 KUBECONFIG_A=$(mktemp -t kops.XXXXXXXXX)
-"{KOPS_A}" export kubecfg --name "${CLUSTER_NAME}" --admin --kubeconfig "{KUBECONFIG_A}"
+"${KOPS_A}" export kubecfg --name "${CLUSTER_NAME}" --admin --kubeconfig "${KUBECONFIG_A}"
 
 # Verify kubeconfig-a
 kubectl get nodes -owide --kubeconfig="${KUBECONFIG_A}"
 
-if [[ "${KOPS_VERSION_B}" == "source" ]]; then
-	export KOPS_BASE_URL
-	KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
-	KOPS_B=$(kops-download-from-base)
-else
-	KOPS_B=$(kops-download-release "${KOPS_VERSION_B}")
-fi
+KOPS_BASE_URL=$(kops-base-from-marker "${KOPS_VERSION_B}")
+KOPS_B=$(kops-download-from-base)
 
 KOPS="${KOPS_B}"
 
@@ -55,7 +52,6 @@ KOPS="${KOPS_B}"
 # Verify no additional changes
 "${KOPS_B}" update cluster
 
-sleep 300
 # Verify kubeconfig-a still works
 kubectl get nodes -owide --kubeconfig "${KUBECONFIG_A}"
 
@@ -69,7 +65,7 @@ kubectl get nodes -owide --kubeconfig="${KUBECONFIG_A}"
 
 cp "${KOPS_B}" "${WORKSPACE}/kops"
 
-"{KOPS_B}" export kubecfg --name "${CLUSTER_NAME}" --admin
+"${KOPS_B}" export kubecfg --name "${CLUSTER_NAME}" --admin
 
 ${KUBETEST2} \
 		--cloud-provider="${CLOUD_PROVIDER}" \
