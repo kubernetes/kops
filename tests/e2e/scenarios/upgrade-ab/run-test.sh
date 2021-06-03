@@ -33,11 +33,10 @@ ${KUBETEST2} \
 
 # Export kubeconfig-a
 KUBECONFIG_A=$(mktemp -t kops.XXXXXXXXX)
-# Note: --kubeconfig flag not in 1.18
-KUBECONFIG="${KUBECONFIG_A}" "${KOPS_A}" export kubecfg --name "${CLUSTER_NAME}" --admin
+"{KOPS_A}" export kubecfg --name "${CLUSTER_NAME}" --admin --kubeconfig "{KUBECONFIG_A}"
 
 # Verify kubeconfig-a
-KUBECONFIG="${KUBECONFIG_A}" kubectl get nodes -owide
+kubectl get nodes -owide --kubeconfig="${KUBECONFIG_A}"
 
 if [[ "${KOPS_VERSION_B}" == "source" ]]; then
 	export KOPS_BASE_URL
@@ -58,7 +57,7 @@ KOPS="${KOPS_B}"
 
 sleep 300
 # Verify kubeconfig-a still works
-KUBECONFIG="${KUBECONFIG_A}" kubectl get nodes -owide
+kubectl get nodes -owide --kubeconfig "${KUBECONFIG_A}"
 
 "${KOPS_B}" rolling-update cluster
 "${KOPS_B}" rolling-update cluster --yes --validation-timeout 30m
@@ -66,9 +65,11 @@ KUBECONFIG="${KUBECONFIG_A}" kubectl get nodes -owide
 "${KOPS_B}" validate cluster
 
 # Verify kubeconfig-a still works
-KUBECONFIG="${KUBECONFIG_A}" kubectl get nodes -owide
+kubectl get nodes -owide --kubeconfig="${KUBECONFIG_A}"
 
 cp "${KOPS_B}" "${WORKSPACE}/kops"
+
+"{KOPS_B}" export kubecfg --name "${CLUSTER_NAME}" --admin
 
 ${KUBETEST2} \
 		--cloud-provider="${CLOUD_PROVIDER}" \
