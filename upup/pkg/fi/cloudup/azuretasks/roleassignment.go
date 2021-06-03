@@ -35,9 +35,8 @@ import (
 	"github.com/google/uuid"
 )
 
-//go:generate fitask -type=RoleAssignment
-
 // RoleAssignment is an Azure Role Assignment.
+// +kops:fitask
 type RoleAssignment struct {
 	// Name is the name of the RoleAssignment task. This is
 	// different from a name of Role Assignment, which is GUID.
