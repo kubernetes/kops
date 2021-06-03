@@ -23,7 +23,7 @@ if [ -z "$KOPS_VERSION_A" ] || [ -z "$K8S_VERSION_A" ] || [ -z "$KOPS_VERSION_B"
 fi
 
 export KOPS_BASE_URL
-KOPS_BASE_URL=$(kops-base-from-marker "${KOPS_VERSION_B}")
+KOPS_BASE_URL=$(kops-base-from-marker "${KOPS_VERSION_A}")
 KOPS_A=$(kops-download-from-base)
 KOPS="${KOPS_A}"
 
