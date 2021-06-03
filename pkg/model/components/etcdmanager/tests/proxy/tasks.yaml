@@ -1,4 +1,4 @@
-Lifecycle: null
+Lifecycle: ""
 Name: etcd-clients-ca
 Signer: null
 alternateNames: null
@@ -6,7 +6,7 @@ oldFormat: false
 subject: cn=etcd-clients-ca
 type: ca
 ---
-Lifecycle: null
+Lifecycle: ""
 Name: etcd-manager-ca-events
 Signer: null
 alternateNames: null
@@ -14,7 +14,7 @@ oldFormat: false
 subject: cn=etcd-manager-ca-events
 type: ca
 ---
-Lifecycle: null
+Lifecycle: ""
 Name: etcd-manager-ca-main
 Signer: null
 alternateNames: null
@@ -22,7 +22,7 @@ oldFormat: false
 subject: cn=etcd-manager-ca-main
 type: ca
 ---
-Lifecycle: null
+Lifecycle: ""
 Name: etcd-peers-ca-events
 Signer: null
 alternateNames: null
@@ -30,7 +30,7 @@ oldFormat: false
 subject: cn=etcd-peers-ca-events
 type: ca
 ---
-Lifecycle: null
+Lifecycle: ""
 Name: etcd-peers-ca-main
 Signer: null
 alternateNames: null
@@ -43,7 +43,7 @@ Contents: |-
   {
     "memberCount": 1
   }
-Lifecycle: null
+Lifecycle: ""
 Location: /control/etcd-cluster-spec
 Name: etcd-cluster-spec-events
 Public: null
@@ -53,7 +53,7 @@ Contents: |-
   {
     "memberCount": 1
   }
-Lifecycle: null
+Lifecycle: ""
 Location: /control/etcd-cluster-spec
 Name: etcd-cluster-spec-main
 Public: null
@@ -133,7 +133,7 @@ Contents: |
         type: FileOrCreate
       name: varlogetcd
   status: {}
-Lifecycle: null
+Lifecycle: ""
 Location: manifests/etcd/events.yaml
 Name: manifests-etcdmanager-events
 Public: null
@@ -213,7 +213,7 @@ Contents: |
         type: FileOrCreate
       name: varlogetcd
   status: {}
-Lifecycle: null
+Lifecycle: ""
 Location: manifests/etcd/main.yaml
 Name: manifests-etcdmanager-main
 Public: null
