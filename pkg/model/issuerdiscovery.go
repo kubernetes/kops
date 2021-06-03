@@ -102,7 +102,7 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 func buildDiscoveryJSON(issuerURL string) ([]byte, error) {
 	d := oidcDiscovery{
-		Issuer:                fmt.Sprintf("%v", issuerURL),
+		Issuer:                issuerURL,
 		JWKSURI:               fmt.Sprintf("%v/openid/v1/jwks", issuerURL),
 		AuthorizationEndpoint: "urn:kubernetes:programmatic_authorization",
 		ResponseTypes:         []string{"id_token"},
