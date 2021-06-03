@@ -30,6 +30,7 @@ OVERRIDES="$OVERRIDES --override=cluster.spec.certManager.enabled=true"
 
 ${KUBETEST2} \
 		--up \
+		--kops-binary-path="${KOPS}" \
 		--kubernetes-version="1.21.0" \
 		--create-args="--networking calico $OVERRIDES"
 
