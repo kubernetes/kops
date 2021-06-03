@@ -35,7 +35,7 @@ spec:
     enabled: true
     expander: least-waste
     balanceSimilarNodeGroups: false
-    scaleDownUtilizationThreshold: 0.5
+    scaleDownUtilizationThreshold: "0.5"
     skipNodesWithLocalStorage: true
     skipNodesWithSystemPods: true
     newPodScaleUpDelay: 0s
