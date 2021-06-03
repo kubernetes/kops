@@ -33,7 +33,7 @@ import (
 // +kops:fitask
 type Droplet struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	Region   *string
 	Size     *string

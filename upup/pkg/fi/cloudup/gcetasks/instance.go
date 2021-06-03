@@ -34,7 +34,7 @@ var scopeAliases map[string]string
 // +kops:fitask
 type Instance struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	Network        *Network
 	Tags           []string

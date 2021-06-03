@@ -33,7 +33,7 @@ type WarmPool struct {
 	// Name is the name of the ASG.
 	Name *string
 	// Lifecycle is the resource lifecycle.
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	Enabled *bool
 	// MaxSize is the max number of nodes in the warm pool.

@@ -31,7 +31,7 @@ import (
 // +kops:fitask
 type Network struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 	Mode      string
 
 	CIDR *string

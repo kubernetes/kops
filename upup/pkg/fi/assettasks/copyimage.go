@@ -30,7 +30,7 @@ type CopyImage struct {
 	Name        *string
 	SourceImage *string
 	TargetImage *string
-	Lifecycle   *fi.Lifecycle
+	Lifecycle   fi.Lifecycle
 }
 
 var _ fi.CompareWithID = &CopyImage{}

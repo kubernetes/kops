@@ -44,7 +44,7 @@ import (
 // +kops:fitask
 type Elastigroup struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	ID                       *string
 	Region                   *string

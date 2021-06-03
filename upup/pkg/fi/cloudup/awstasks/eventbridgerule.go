@@ -34,7 +34,7 @@ import (
 type EventBridgeRule struct {
 	ID        *string
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	EventPattern *string
 	TargetArn    *string // required for cloudformation rendering

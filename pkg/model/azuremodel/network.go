@@ -24,7 +24,7 @@ import (
 // NetworkModelBuilder configures a Virtual Network and subnets.
 type NetworkModelBuilder struct {
 	*AzureModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &NetworkModelBuilder{}

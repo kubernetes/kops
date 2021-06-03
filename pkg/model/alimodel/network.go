@@ -25,7 +25,7 @@ import (
 // NetworkModelBuilder configures VPC network objects
 type NetworkModelBuilder struct {
 	*ALIModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &NetworkModelBuilder{}

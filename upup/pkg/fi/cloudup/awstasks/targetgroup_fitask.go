@@ -29,13 +29,13 @@ import (
 var _ fi.HasLifecycle = &TargetGroup{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
-func (o *TargetGroup) GetLifecycle() *fi.Lifecycle {
+func (o *TargetGroup) GetLifecycle() fi.Lifecycle {
 	return o.Lifecycle
 }
 
 // SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
 func (o *TargetGroup) SetLifecycle(lifecycle fi.Lifecycle) {
-	o.Lifecycle = &lifecycle
+	o.Lifecycle = lifecycle
 }
 
 var _ fi.HasName = &TargetGroup{}

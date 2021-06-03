@@ -35,7 +35,7 @@ import (
 type ServerGroupModelBuilder struct {
 	*OpenstackModelContext
 	BootstrapScriptBuilder *model.BootstrapScriptBuilder
-	Lifecycle              *fi.Lifecycle
+	Lifecycle              fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &ServerGroupModelBuilder{}

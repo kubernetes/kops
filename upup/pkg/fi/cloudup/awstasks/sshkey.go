@@ -36,7 +36,7 @@ import (
 type SSHKey struct {
 	ID        *string
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 	Shared    bool
 
 	PublicKey fi.Resource

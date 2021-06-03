@@ -32,7 +32,7 @@ import (
 // KubeApiserverBuilder builds the static manifest for kube-apiserver-healthcheck sidecar
 type KubeApiserverBuilder struct {
 	*model.KopsModelContext
-	Lifecycle    *fi.Lifecycle
+	Lifecycle    fi.Lifecycle
 	AssetBuilder *assets.AssetBuilder
 }
 

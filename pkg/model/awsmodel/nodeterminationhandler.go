@@ -70,7 +70,7 @@ var (
 type NodeTerminationHandlerBuilder struct {
 	*AWSModelContext
 
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 func (b *NodeTerminationHandlerBuilder) Build(c *fi.ModelBuilderContext) error {

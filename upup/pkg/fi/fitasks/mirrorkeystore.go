@@ -25,7 +25,7 @@ import (
 // +kops:fitask
 type MirrorKeystore struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	MirrorPath vfs.Path
 }

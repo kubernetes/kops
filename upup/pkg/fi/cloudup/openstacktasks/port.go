@@ -34,7 +34,7 @@ type Port struct {
 	Subnets                  []*Subnet
 	SecurityGroups           []*SecurityGroup
 	AdditionalSecurityGroups []string
-	Lifecycle                *fi.Lifecycle
+	Lifecycle                fi.Lifecycle
 	Tag                      *string
 }
 
@@ -61,7 +61,7 @@ func (s *Port) CompareWithID() *string {
 	return s.ID
 }
 
-func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, port *ports.Port, find *Port) (*Port, error) {
+func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, port *ports.Port, find *Port) (*Port, error) {
 	additionalSecurityGroupIDs := map[string]struct{}{}
 	if find != nil {
 		for _, sg := range find.AdditionalSecurityGroups {

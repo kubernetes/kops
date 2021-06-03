@@ -29,7 +29,7 @@ import (
 type Network struct {
 	ID                    *string
 	Name                  *string
-	Lifecycle             *fi.Lifecycle
+	Lifecycle             fi.Lifecycle
 	Tag                   *string
 	AvailabilityZoneHints []*string
 }
@@ -40,7 +40,7 @@ func (n *Network) CompareWithID() *string {
 	return n.ID
 }
 
-func NewNetworkTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, network *networks.Network, networkName *string) (*Network, error) {
+func NewNetworkTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, network *networks.Network, networkName *string) (*Network, error) {
 	tag := ""
 	if networkName != nil && fi.ArrayContains(network.Tags, fi.StringValue(networkName)) {
 		tag = fi.StringValue(networkName)

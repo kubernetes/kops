@@ -39,8 +39,8 @@ const (
 
 type BastionModelBuilder struct {
 	*AWSModelContext
-	Lifecycle         *fi.Lifecycle
-	SecurityLifecycle *fi.Lifecycle
+	Lifecycle         fi.Lifecycle
+	SecurityLifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &BastionModelBuilder{}

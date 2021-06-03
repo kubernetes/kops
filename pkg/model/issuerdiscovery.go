@@ -37,7 +37,7 @@ import (
 type IssuerDiscoveryModelBuilder struct {
 	*KopsModelContext
 
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 	Cluster   *kops.Cluster
 }
 

@@ -32,7 +32,7 @@ import (
 type AutoscalingLifecycleHook struct {
 	ID        *string
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	// HookName is the name of the lifecycle hook.
 	// It needs to be unique within the autoscaling group.
