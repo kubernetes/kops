@@ -34,7 +34,7 @@ import (
 // +kops:fitask
 type ScalingGroup struct {
 	Name           *string
-	Lifecycle      *fi.Lifecycle
+	Lifecycle      fi.Lifecycle
 	ScalingGroupId *string
 	LoadBalancer   *LoadBalancer
 	VSwitchs       []*VSwitch

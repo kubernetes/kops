@@ -31,7 +31,7 @@ import (
 // +kops:fitask
 type LoadBalancer struct {
 	Name          *string
-	Lifecycle     *fi.Lifecycle
+	Lifecycle     fi.Lifecycle
 	ResourceGroup *ResourceGroup
 	Subnet        *Subnet
 

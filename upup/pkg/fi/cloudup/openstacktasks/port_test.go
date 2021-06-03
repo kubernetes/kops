@@ -58,7 +58,6 @@ func Test_Port_GetDependencies(t *testing.T) {
 }
 
 func Test_NewPortTaskFromCloud(t *testing.T) {
-	syncLifecycle := fi.LifecycleSync
 	tests := []struct {
 		desc              string
 		lifecycle         fi.Lifecycle
@@ -83,7 +82,7 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 				SecurityGroups: []*SecurityGroup{},
 				Subnets:        []*Subnet{},
 				Tag:            fi.String(""),
-				Lifecycle:      &syncLifecycle,
+				Lifecycle:      fi.LifecycleSync,
 			},
 			expectedError: nil,
 		},
@@ -101,7 +100,7 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 				SecurityGroups: []*SecurityGroup{},
 				Subnets:        []*Subnet{},
 				Tag:            fi.String(""),
-				Lifecycle:      &syncLifecycle,
+				Lifecycle:      fi.LifecycleSync,
 			},
 			expectedError: nil,
 		},
@@ -129,14 +128,14 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 				Name:    fi.String("name"),
 				Network: &Network{ID: fi.String("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.String("sg-1"), Lifecycle: &syncLifecycle},
-					{ID: fi.String("sg-2"), Lifecycle: &syncLifecycle},
+					{ID: fi.String("sg-1"), Lifecycle: fi.LifecycleSync},
+					{ID: fi.String("sg-2"), Lifecycle: fi.LifecycleSync},
 				},
 				Subnets: []*Subnet{
-					{ID: fi.String("subnet-a"), Lifecycle: &syncLifecycle},
-					{ID: fi.String("subnet-b"), Lifecycle: &syncLifecycle},
+					{ID: fi.String("subnet-a"), Lifecycle: fi.LifecycleSync},
+					{ID: fi.String("subnet-b"), Lifecycle: fi.LifecycleSync},
 				},
-				Lifecycle: &syncLifecycle,
+				Lifecycle: fi.LifecycleSync,
 				Tag:       fi.String(""),
 			},
 			expectedError: nil,
@@ -187,18 +186,18 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 				Name:    fi.String("name"),
 				Network: &Network{ID: fi.String("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.String("sg-1"), Lifecycle: &syncLifecycle},
-					{ID: fi.String("sg-2"), Lifecycle: &syncLifecycle},
+					{ID: fi.String("sg-1"), Lifecycle: fi.LifecycleSync},
+					{ID: fi.String("sg-2"), Lifecycle: fi.LifecycleSync},
 				},
 				AdditionalSecurityGroups: []string{
 					"add-1",
 					"add-2",
 				},
 				Subnets: []*Subnet{
-					{ID: fi.String("subnet-a"), Lifecycle: &syncLifecycle},
-					{ID: fi.String("subnet-b"), Lifecycle: &syncLifecycle},
+					{ID: fi.String("subnet-a"), Lifecycle: fi.LifecycleSync},
+					{ID: fi.String("subnet-b"), Lifecycle: fi.LifecycleSync},
 				},
-				Lifecycle: &syncLifecycle,
+				Lifecycle: fi.LifecycleSync,
 				Tag:       fi.String(""),
 			},
 			expectedError: nil,
@@ -207,7 +206,7 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 
 	for _, testCase := range tests {
 		t.Run(testCase.desc, func(t *testing.T) {
-			actual, err := newPortTaskFromCloud(testCase.cloud, &testCase.lifecycle, testCase.cloudPort, testCase.foundPort)
+			actual, err := newPortTaskFromCloud(testCase.cloud, testCase.lifecycle, testCase.cloudPort, testCase.foundPort)
 
 			if !reflect.DeepEqual(err, testCase.expectedError) {
 				t.Errorf("Error differs:\n%v\n\tinstead of\n%v", err, testCase.expectedError)
@@ -225,7 +224,6 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 }
 
 func Test_Port_Find(t *testing.T) {
-	syncLifecycle := fi.LifecycleSync
 	tests := []struct {
 		desc             string
 		context          *fi.Context
@@ -240,7 +238,7 @@ func Test_Port_Find(t *testing.T) {
 			},
 			port: &Port{
 				Name:      fi.String("name"),
-				Lifecycle: &syncLifecycle,
+				Lifecycle: fi.LifecycleSync,
 			},
 			expectedPortTask: nil,
 			expectedError:    nil,
@@ -268,22 +266,22 @@ func Test_Port_Find(t *testing.T) {
 			},
 			port: &Port{
 				Name:      fi.String("name"),
-				Lifecycle: &syncLifecycle,
+				Lifecycle: fi.LifecycleSync,
 			},
 			expectedPortTask: &Port{
 				ID:      fi.String("id"),
 				Name:    fi.String("name"),
 				Network: &Network{ID: fi.String("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.String("sg-1"), Lifecycle: &syncLifecycle},
-					{ID: fi.String("sg-2"), Lifecycle: &syncLifecycle},
+					{ID: fi.String("sg-1"), Lifecycle: fi.LifecycleSync},
+					{ID: fi.String("sg-2"), Lifecycle: fi.LifecycleSync},
 				},
 				Subnets: []*Subnet{
-					{ID: fi.String("subnet-a"), Lifecycle: &syncLifecycle},
-					{ID: fi.String("subnet-b"), Lifecycle: &syncLifecycle},
+					{ID: fi.String("subnet-a"), Lifecycle: fi.LifecycleSync},
+					{ID: fi.String("subnet-b"), Lifecycle: fi.LifecycleSync},
 				},
 				Tag:       fi.String(""),
-				Lifecycle: &syncLifecycle,
+				Lifecycle: fi.LifecycleSync,
 			},
 			expectedError: nil,
 		},
@@ -305,7 +303,7 @@ func Test_Port_Find(t *testing.T) {
 			},
 			port: &Port{
 				Name:      fi.String("name"),
-				Lifecycle: &syncLifecycle,
+				Lifecycle: fi.LifecycleSync,
 			},
 			expectedPortTask: nil,
 			expectedError:    fmt.Errorf("found multiple ports with name: name"),
@@ -325,7 +323,7 @@ func Test_Port_Find(t *testing.T) {
 			},
 			port: &Port{
 				Name:      fi.String("name"),
-				Lifecycle: &syncLifecycle,
+				Lifecycle: fi.LifecycleSync,
 			},
 			expectedPortTask: nil,
 			expectedError:    fmt.Errorf("list error"),

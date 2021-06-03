@@ -30,7 +30,7 @@ import (
 // +kops:fitask
 type Address struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	IPAddress    *string
 	ForAPIServer bool

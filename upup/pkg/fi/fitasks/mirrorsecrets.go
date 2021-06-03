@@ -26,7 +26,7 @@ import (
 // +kops:fitask
 type MirrorSecrets struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	MirrorPath vfs.Path
 }

@@ -30,7 +30,7 @@ import (
 // +kops:fitask
 type RouteTable struct {
 	Name          *string
-	Lifecycle     *fi.Lifecycle
+	Lifecycle     fi.Lifecycle
 	ResourceGroup *ResourceGroup
 	Tags          map[string]*string
 	Shared        *bool

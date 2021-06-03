@@ -34,7 +34,7 @@ import (
 // +kops:fitask
 type IAMInstanceProfile struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	Tags map[string]string
 

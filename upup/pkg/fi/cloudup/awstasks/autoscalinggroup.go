@@ -42,7 +42,7 @@ type AutoscalingGroup struct {
 	// Name is the name of the ASG
 	Name *string
 	// Lifecycle is the resource lifecycle
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	// Granularity specifys the granularity of the metrics
 	Granularity *string

@@ -34,7 +34,7 @@ type VSwitch struct {
 	Name      *string
 	VSwitchId *string
 
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 	ZoneId    *string
 
 	CidrBlock *string

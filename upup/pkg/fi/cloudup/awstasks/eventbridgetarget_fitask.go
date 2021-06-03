@@ -29,13 +29,13 @@ import (
 var _ fi.HasLifecycle = &EventBridgeTarget{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
-func (o *EventBridgeTarget) GetLifecycle() *fi.Lifecycle {
+func (o *EventBridgeTarget) GetLifecycle() fi.Lifecycle {
 	return o.Lifecycle
 }
 
 // SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
 func (o *EventBridgeTarget) SetLifecycle(lifecycle fi.Lifecycle) {
-	o.Lifecycle = &lifecycle
+	o.Lifecycle = lifecycle
 }
 
 var _ fi.HasName = &EventBridgeTarget{}

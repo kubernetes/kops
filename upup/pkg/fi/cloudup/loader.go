@@ -38,7 +38,7 @@ func (l *Loader) Init() {
 	l.tasks = make(map[string]fi.Task)
 }
 
-func (l *Loader) BuildTasks(assetBuilder *assets.AssetBuilder, lifecycle *fi.Lifecycle, lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
+func (l *Loader) BuildTasks(assetBuilder *assets.AssetBuilder, lifecycle fi.Lifecycle, lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
 	for _, builder := range l.Builders {
 		context := &fi.ModelBuilderContext{
 			Tasks:              l.tasks,
@@ -65,7 +65,7 @@ func (l *Loader) BuildTasks(assetBuilder *assets.AssetBuilder, lifecycle *fi.Lif
 	return l.tasks, nil
 }
 
-func (l *Loader) addAssetCopyTasks(assets []*assets.ImageAsset, lifecycle *fi.Lifecycle) error {
+func (l *Loader) addAssetCopyTasks(assets []*assets.ImageAsset, lifecycle fi.Lifecycle) error {
 	for _, asset := range assets {
 		if asset.DownloadLocation != asset.CanonicalLocation {
 			context := &fi.ModelBuilderContext{
@@ -92,7 +92,7 @@ func (l *Loader) addAssetCopyTasks(assets []*assets.ImageAsset, lifecycle *fi.Li
 }
 
 // addAssetFileCopyTasks creates the new tasks for copying files.
-func (l *Loader) addAssetFileCopyTasks(assets []*assets.FileAsset, lifecycle *fi.Lifecycle) error {
+func (l *Loader) addAssetFileCopyTasks(assets []*assets.FileAsset, lifecycle fi.Lifecycle) error {
 	for _, asset := range assets {
 
 		if asset.DownloadURL == nil {

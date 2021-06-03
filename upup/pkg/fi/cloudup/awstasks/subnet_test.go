@@ -69,17 +69,16 @@ func TestSubnetCreate(t *testing.T) {
 	cloud.MockEC2 = c
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
-	lifecycle := fi.LifecycleSync
 	buildTasks := func() map[string]fi.Task {
 		vpc1 := &VPC{
 			Name:      s("vpc1"),
-			Lifecycle: &lifecycle,
+			Lifecycle: fi.LifecycleSync,
 			CIDR:      s("172.20.0.0/16"),
 			Tags:      map[string]string{"Name": "vpc1"},
 		}
 		subnet1 := &Subnet{
 			Name:      s("subnet1"),
-			Lifecycle: &lifecycle,
+			Lifecycle: fi.LifecycleSync,
 			VPC:       vpc1,
 			CIDR:      s("172.20.1.0/24"),
 			Tags:      map[string]string{"Name": "subnet1"},
@@ -184,11 +183,10 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 	}
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
-	lifecycle := fi.LifecycleSync
 	buildTasks := func() map[string]fi.Task {
 		vpc1 := &VPC{
 			Name:      s("vpc1"),
-			Lifecycle: &lifecycle,
+			Lifecycle: fi.LifecycleSync,
 			CIDR:      s("172.20.0.0/16"),
 			Tags:      map[string]string{"kubernetes.io/cluster/cluster.example.com": "shared"},
 			Shared:    fi.Bool(true),
@@ -196,7 +194,7 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 		}
 		subnet1 := &Subnet{
 			Name:      s("subnet1"),
-			Lifecycle: &lifecycle,
+			Lifecycle: fi.LifecycleSync,
 			VPC:       vpc1,
 			CIDR:      s("172.20.1.0/24"),
 			Tags:      map[string]string{"kubernetes.io/cluster/cluster.example.com": "shared"},

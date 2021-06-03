@@ -115,22 +115,22 @@ var typeContextPtr = reflect.TypeOf((*Context)(nil))
 // it is typically called after we have checked the existing state of the Task and determined that is different
 // from the desired state.
 func (c *Context) Render(a, e, changes Task) error {
-	var lifecycle *Lifecycle
+	var lifecycle Lifecycle
 	if hl, ok := e.(HasLifecycle); ok {
 		lifecycle = hl.GetLifecycle()
 	}
 
-	if lifecycle != nil {
+	if lifecycle != "" {
 		if reflect.ValueOf(a).IsNil() {
 
-			switch *lifecycle {
+			switch lifecycle {
 			case LifecycleExistsAndValidates:
 				return fmt.Errorf("lifecycle set to ExistsAndValidates, but object was not found")
 			case LifecycleExistsAndWarnIfChanges:
 				return NewExistsAndWarnIfChangesError("Lifecycle set to ExistsAndWarnIfChanges and object was not found.")
 			}
 		} else {
-			switch *lifecycle {
+			switch lifecycle {
 			case LifecycleExistsAndValidates, LifecycleExistsAndWarnIfChanges:
 
 				out := os.Stderr
@@ -157,7 +157,7 @@ func (c *Context) Render(a, e, changes Task) error {
 				fmt.Fprintf(b, "\n")
 				b.WriteTo(out)
 
-				if *lifecycle == LifecycleExistsAndValidates {
+				if lifecycle == LifecycleExistsAndValidates {
 					return fmt.Errorf("lifecycle set to ExistsAndValidates, but object did not match")
 				}
 				// Warn, but then we continue

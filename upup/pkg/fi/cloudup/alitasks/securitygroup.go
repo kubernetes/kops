@@ -36,7 +36,7 @@ const SecurityResource = "securitygroup"
 type SecurityGroup struct {
 	Name            *string
 	SecurityGroupId *string
-	Lifecycle       *fi.Lifecycle
+	Lifecycle       fi.Lifecycle
 	VPC             *VPC
 	Tags            map[string]string
 }

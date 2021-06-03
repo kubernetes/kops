@@ -37,7 +37,7 @@ type LoadBalancerListener struct {
 	Name              *string
 	ListenerPort      *int
 	BackendServerPort *int
-	Lifecycle         *fi.Lifecycle
+	Lifecycle         fi.Lifecycle
 	ListenerStatus    *string
 	Bandwidth         *int
 }

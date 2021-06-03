@@ -128,8 +128,8 @@ const (
 type SpotInstanceGroupModelBuilder struct {
 	*AWSModelContext
 	BootstrapScriptBuilder *model.BootstrapScriptBuilder
-	Lifecycle              *fi.Lifecycle
-	SecurityLifecycle      *fi.Lifecycle
+	Lifecycle              fi.Lifecycle
+	SecurityLifecycle      fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &SpotInstanceGroupModelBuilder{}

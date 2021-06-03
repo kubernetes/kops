@@ -25,7 +25,7 @@ import (
 // +kops:fitask
 type Secret struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.HasCheckExisting = &Secret{}

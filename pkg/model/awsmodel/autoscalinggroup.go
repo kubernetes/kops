@@ -53,8 +53,8 @@ type AutoscalingGroupModelBuilder struct {
 	*AWSModelContext
 
 	BootstrapScriptBuilder *model.BootstrapScriptBuilder
-	Lifecycle              *fi.Lifecycle
-	SecurityLifecycle      *fi.Lifecycle
+	Lifecycle              fi.Lifecycle
+	SecurityLifecycle      fi.Lifecycle
 	Cluster                *kops.Cluster
 }
 

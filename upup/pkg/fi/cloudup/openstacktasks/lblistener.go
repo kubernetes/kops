@@ -32,7 +32,7 @@ type LBListener struct {
 	ID           *string
 	Name         *string
 	Pool         *LBPool
-	Lifecycle    *fi.Lifecycle
+	Lifecycle    fi.Lifecycle
 	AllowedCIDRs []string
 }
 
@@ -56,7 +56,7 @@ func (s *LBListener) CompareWithID() *string {
 	return s.ID
 }
 
-func NewLBListenerTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, lb *listeners.Listener, find *LBListener) (*LBListener, error) {
+func NewLBListenerTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, lb *listeners.Listener, find *LBListener) (*LBListener, error) {
 	// sort for consistent comparison
 	sort.Strings(lb.AllowedCIDRs)
 	listenerTask := &LBListener{

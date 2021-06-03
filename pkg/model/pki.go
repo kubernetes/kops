@@ -30,7 +30,7 @@ import (
 // PKIModelBuilder configures PKI keypairs, as well as tokens
 type PKIModelBuilder struct {
 	*KopsModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &PKIModelBuilder{}

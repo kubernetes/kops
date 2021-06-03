@@ -35,7 +35,7 @@ type SecurityGroup struct {
 	Description      *string
 	RemoveExtraRules []string
 	RemoveGroup      bool
-	Lifecycle        *fi.Lifecycle
+	Lifecycle        fi.Lifecycle
 }
 
 var _ fi.CompareWithID = &SecurityGroup{}
