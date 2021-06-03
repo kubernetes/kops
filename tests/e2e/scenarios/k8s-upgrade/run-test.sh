@@ -40,7 +40,7 @@ kops validate cluster
 
 ${KUBETEST2} \
 		--cloud-provider="${CLOUD_PROVIDER}" \
-		--kops-binary-path="{KOPS}" \
+		--kops-binary-path="${KOPS}" \
 		--test=kops \
 		-- \
 		--test-package-version=v1.20.6 \
