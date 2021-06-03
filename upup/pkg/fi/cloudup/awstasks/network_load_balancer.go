@@ -37,7 +37,7 @@ import (
 // NetworkLoadBalancer manages an NLB.  We find the existing NLB using the Name tag.
 var _ DNSTarget = &NetworkLoadBalancer{}
 
-//go:generate fitask -type=NetworkLoadBalancer
+// +kops:fitask
 type NetworkLoadBalancer struct {
 	// We use the Name tag to find the existing NLB, because we are (more or less) unrestricted when
 	// it comes to tag values, but the LoadBalancerName is length limited

@@ -26,9 +26,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
 
-//go:generate fitask -type=ResourceGroup
-
 // ResourceGroup is an Azure resource group.
+// +kops:fitask
 type ResourceGroup struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
