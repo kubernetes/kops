@@ -1,8 +1,8 @@
 # git mergetool
 *.orig
 
-# Go embed files?
-*.go-e
+# Droppings from hack/set-version
+*.bak
 
 # Compiled python files
 *.pyc
