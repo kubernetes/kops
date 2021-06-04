@@ -31,7 +31,7 @@ import (
 // +kops:fitask
 type VirtualNetwork struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	ResourceGroup *ResourceGroup
 	CIDR          *string

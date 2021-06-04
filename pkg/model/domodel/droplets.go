@@ -31,7 +31,7 @@ type DropletBuilder struct {
 	*DOModelContext
 
 	BootstrapScriptBuilder *model.BootstrapScriptBuilder
-	Lifecycle              *fi.Lifecycle
+	Lifecycle              fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &DropletBuilder{}

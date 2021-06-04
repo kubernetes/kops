@@ -26,7 +26,7 @@ import (
 // FirewallModelBuilder configures firewall network objects
 type FirewallModelBuilder struct {
 	*GCEModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &FirewallModelBuilder{}

@@ -30,7 +30,7 @@ import (
 // +kops:fitask
 type ResourceGroup struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 	Tags      map[string]*string
 	// Shared is set to true if the resource group is not solely
 	// owned by kops. The resource group will not be deleted when

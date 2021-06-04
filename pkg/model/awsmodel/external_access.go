@@ -30,7 +30,7 @@ import (
 // (SSHAccess, KubernetesAPIAccess)
 type ExternalAccessModelBuilder struct {
 	*AWSModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &ExternalAccessModelBuilder{}

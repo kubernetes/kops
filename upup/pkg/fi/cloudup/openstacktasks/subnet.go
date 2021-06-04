@@ -34,7 +34,7 @@ type Subnet struct {
 	CIDR       *string
 	DNSServers []*string
 	Tag        *string
-	Lifecycle  *fi.Lifecycle
+	Lifecycle  fi.Lifecycle
 }
 
 // GetDependencies returns the dependencies of the Port task
@@ -54,7 +54,7 @@ func (s *Subnet) CompareWithID() *string {
 	return s.ID
 }
 
-func NewSubnetTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, subnet *subnets.Subnet, find *Subnet) (*Subnet, error) {
+func NewSubnetTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, subnet *subnets.Subnet, find *Subnet) (*Subnet, error) {
 	network, err := cloud.GetNetwork(subnet.NetworkID)
 	if err != nil {
 		return nil, fmt.Errorf("NewSubnetTaskFromCloud: Failed to get network with ID %s: %v", subnet.NetworkID, err)

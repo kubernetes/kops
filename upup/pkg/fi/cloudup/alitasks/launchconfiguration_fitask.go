@@ -29,13 +29,13 @@ import (
 var _ fi.HasLifecycle = &LaunchConfiguration{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
-func (o *LaunchConfiguration) GetLifecycle() *fi.Lifecycle {
+func (o *LaunchConfiguration) GetLifecycle() fi.Lifecycle {
 	return o.Lifecycle
 }
 
 // SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
 func (o *LaunchConfiguration) SetLifecycle(lifecycle fi.Lifecycle) {
-	o.Lifecycle = &lifecycle
+	o.Lifecycle = lifecycle
 }
 
 var _ fi.HasName = &LaunchConfiguration{}

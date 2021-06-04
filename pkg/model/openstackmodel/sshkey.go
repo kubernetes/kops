@@ -24,7 +24,7 @@ import (
 // SSHKeyModelBuilder configures SSH objects
 type SSHKeyModelBuilder struct {
 	*OpenstackModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &SSHKeyModelBuilder{}

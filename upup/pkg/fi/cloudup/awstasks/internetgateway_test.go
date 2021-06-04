@@ -79,11 +79,10 @@ func TestSharedInternetGatewayDoesNotRename(t *testing.T) {
 	}
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
-	lifecycle := fi.LifecycleSync
 	buildTasks := func() map[string]fi.Task {
 		vpc1 := &VPC{
 			Name:      s("vpc1"),
-			Lifecycle: &lifecycle,
+			Lifecycle: fi.LifecycleSync,
 			CIDR:      s("172.20.0.0/16"),
 			Tags:      map[string]string{"kubernetes.io/cluster/cluster.example.com": "shared"},
 			Shared:    fi.Bool(true),
@@ -91,7 +90,7 @@ func TestSharedInternetGatewayDoesNotRename(t *testing.T) {
 		}
 		igw1 := &InternetGateway{
 			Name:      s("igw1"),
-			Lifecycle: &lifecycle,
+			Lifecycle: fi.LifecycleSync,
 			VPC:       vpc1,
 			Shared:    fi.Bool(true),
 			ID:        internetGateway.InternetGateway.InternetGatewayId,

@@ -43,7 +43,7 @@ import (
 type BootstrapChannelBuilder struct {
 	*model.KopsModelContext
 	ClusterAddons kubemanifest.ObjectList
-	Lifecycle     *fi.Lifecycle
+	Lifecycle     fi.Lifecycle
 	templates     *templates.Templates
 	assetBuilder  *assets.AssetBuilder
 }
@@ -75,7 +75,7 @@ func networkingSelector() map[string]string {
 
 // NewBootstrapChannelBuilder creates a new BootstrapChannelBuilder
 func NewBootstrapChannelBuilder(modelContext *model.KopsModelContext,
-	clusterLifecycle *fi.Lifecycle, assetBuilder *assets.AssetBuilder,
+	clusterLifecycle fi.Lifecycle, assetBuilder *assets.AssetBuilder,
 	templates *templates.Templates,
 	addons kubemanifest.ObjectList,
 ) *BootstrapChannelBuilder {

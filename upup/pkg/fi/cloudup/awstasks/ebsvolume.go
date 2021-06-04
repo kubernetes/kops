@@ -33,7 +33,7 @@ import (
 // +kops:fitask
 type EBSVolume struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	AvailabilityZone *string
 	Encrypted        *bool

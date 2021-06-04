@@ -36,7 +36,7 @@ const (
 // Disk represents an ALI Cloud Disk.
 // +kops:fitask
 type Disk struct {
-	Lifecycle    *fi.Lifecycle
+	Lifecycle    fi.Lifecycle
 	Name         *string
 	DiskId       *string
 	ZoneId       *string

@@ -33,7 +33,7 @@ import (
 type PoolAssociation struct {
 	ID            *string
 	Name          *string
-	Lifecycle     *fi.Lifecycle
+	Lifecycle     fi.Lifecycle
 	Pool          *LBPool
 	ServerGroup   *ServerGroup
 	InterfaceName *string

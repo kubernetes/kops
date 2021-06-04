@@ -28,7 +28,7 @@ import (
 // NetworkModelBuilder configures network objects
 type NetworkModelBuilder struct {
 	*GCEModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &NetworkModelBuilder{}

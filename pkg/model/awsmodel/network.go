@@ -31,7 +31,7 @@ import (
 // NetworkModelBuilder configures network objects
 type NetworkModelBuilder struct {
 	*AWSModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &NetworkModelBuilder{}

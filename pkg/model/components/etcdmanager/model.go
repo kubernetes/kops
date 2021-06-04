@@ -48,7 +48,7 @@ import (
 // EtcdManagerBuilder builds the manifest for the etcd-manager
 type EtcdManagerBuilder struct {
 	*model.KopsModelContext
-	Lifecycle    *fi.Lifecycle
+	Lifecycle    fi.Lifecycle
 	AssetBuilder *assets.AssetBuilder
 }
 

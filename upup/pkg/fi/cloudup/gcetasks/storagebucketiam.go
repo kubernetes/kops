@@ -30,7 +30,7 @@ import (
 // +kops:fitask
 type StorageBucketIam struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	Bucket *string
 	Entity *string

@@ -30,7 +30,7 @@ import (
 // +kops:fitask
 type VPCAmazonIPv6CIDRBlock struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	VPC       *VPC
 	CIDRBlock *string

@@ -29,13 +29,13 @@ import (
 var _ fi.HasLifecycle = &ResourceGroup{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
-func (o *ResourceGroup) GetLifecycle() *fi.Lifecycle {
+func (o *ResourceGroup) GetLifecycle() fi.Lifecycle {
 	return o.Lifecycle
 }
 
 // SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
 func (o *ResourceGroup) SetLifecycle(lifecycle fi.Lifecycle) {
-	o.Lifecycle = &lifecycle
+	o.Lifecycle = lifecycle
 }
 
 var _ fi.HasName = &ResourceGroup{}

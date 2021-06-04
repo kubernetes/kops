@@ -56,7 +56,7 @@ const (
 // Router is a Router task.
 type Router struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	Network *string
 	Region  *string

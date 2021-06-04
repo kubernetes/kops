@@ -33,7 +33,7 @@ import (
 // +kops:fitask
 type RAMRole struct {
 	ID                       *string
-	Lifecycle                *fi.Lifecycle
+	Lifecycle                fi.Lifecycle
 	Name                     *string
 	AssumeRolePolicyDocument *string
 }
