@@ -27,7 +27,7 @@ import (
 // APILoadBalancerBuilder builds a LoadBalancer for accessing the API
 type APILoadBalancerBuilder struct {
 	*GCEModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &APILoadBalancerBuilder{}

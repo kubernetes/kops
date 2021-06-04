@@ -27,7 +27,7 @@ import (
 // (SSHAccess, KubernetesAPIAccess)
 type ExternalAccessModelBuilder struct {
 	*GCEModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &ExternalAccessModelBuilder{}

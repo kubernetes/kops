@@ -31,7 +31,7 @@ import (
 // +kops:fitask
 type ForwardingRule struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	PortRange  string
 	TargetPool *TargetPool

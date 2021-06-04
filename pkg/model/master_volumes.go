@@ -52,7 +52,7 @@ const (
 // MasterVolumeBuilder builds master EBS volumes
 type MasterVolumeBuilder struct {
 	*KopsModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &MasterVolumeBuilder{}

@@ -30,7 +30,7 @@ import (
 // +kops:fitask
 type StorageBucketAcl struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	Bucket *string
 	Entity *string

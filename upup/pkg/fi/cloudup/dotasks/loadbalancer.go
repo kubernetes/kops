@@ -35,7 +35,7 @@ import (
 type LoadBalancer struct {
 	Name      *string
 	ID        *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	Region       *string
 	DropletTag   *string

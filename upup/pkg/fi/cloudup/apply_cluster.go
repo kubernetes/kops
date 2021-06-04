@@ -516,7 +516,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 		bcb := bootstrapchannelbuilder.NewBootstrapChannelBuilder(
 			modelContext,
-			&clusterLifecycle,
+			clusterLifecycle,
 			assetBuilder,
 			templates,
 			addons,
@@ -527,24 +527,24 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			bcb,
 			&model.PKIModelBuilder{
 				KopsModelContext: modelContext,
-				Lifecycle:        &clusterLifecycle,
+				Lifecycle:        clusterLifecycle,
 			},
 			&model.IssuerDiscoveryModelBuilder{
 				KopsModelContext: modelContext,
-				Lifecycle:        &clusterLifecycle,
+				Lifecycle:        clusterLifecycle,
 				Cluster:          cluster,
 			},
 			&kubeapiserver.KubeApiserverBuilder{
 				AssetBuilder:     assetBuilder,
 				KopsModelContext: modelContext,
-				Lifecycle:        &clusterLifecycle,
+				Lifecycle:        clusterLifecycle,
 			},
 			&etcdmanager.EtcdManagerBuilder{
 				AssetBuilder:     assetBuilder,
 				KopsModelContext: modelContext,
-				Lifecycle:        &clusterLifecycle,
+				Lifecycle:        clusterLifecycle,
 			},
-			&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+			&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 		)
 
 		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -554,22 +554,22 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 
 			l.Builders = append(l.Builders,
-				&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
-				&awsmodel.BastionModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
-				&awsmodel.DNSModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &clusterLifecycle},
-				&awsmodel.ExternalAccessModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle},
-				&awsmodel.FirewallModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle},
-				&awsmodel.SSHKeyModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle},
-				&awsmodel.NetworkModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &networkLifecycle},
-				&awsmodel.IAMModelBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle, Cluster: cluster},
-				&awsmodel.OIDCProviderBuilder{AWSModelContext: awsModelContext, Lifecycle: &securityLifecycle, KeyStore: keyStore},
+				&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: clusterLifecycle, SecurityLifecycle: securityLifecycle},
+				&awsmodel.BastionModelBuilder{AWSModelContext: awsModelContext, Lifecycle: clusterLifecycle, SecurityLifecycle: securityLifecycle},
+				&awsmodel.DNSModelBuilder{AWSModelContext: awsModelContext, Lifecycle: clusterLifecycle},
+				&awsmodel.ExternalAccessModelBuilder{AWSModelContext: awsModelContext, Lifecycle: securityLifecycle},
+				&awsmodel.FirewallModelBuilder{AWSModelContext: awsModelContext, Lifecycle: securityLifecycle},
+				&awsmodel.SSHKeyModelBuilder{AWSModelContext: awsModelContext, Lifecycle: securityLifecycle},
+				&awsmodel.NetworkModelBuilder{AWSModelContext: awsModelContext, Lifecycle: networkLifecycle},
+				&awsmodel.IAMModelBuilder{AWSModelContext: awsModelContext, Lifecycle: securityLifecycle, Cluster: cluster},
+				&awsmodel.OIDCProviderBuilder{AWSModelContext: awsModelContext, Lifecycle: securityLifecycle, KeyStore: keyStore},
 			)
 
 			awsModelBuilder := &awsmodel.AutoscalingGroupModelBuilder{
 				AWSModelContext:        awsModelContext,
 				BootstrapScriptBuilder: bootstrapScriptBuilder,
-				Lifecycle:              &clusterLifecycle,
-				SecurityLifecycle:      &securityLifecycle,
+				Lifecycle:              clusterLifecycle,
+				SecurityLifecycle:      securityLifecycle,
 				Cluster:                cluster,
 			}
 
@@ -577,8 +577,8 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				l.Builders = append(l.Builders, &awsmodel.SpotInstanceGroupModelBuilder{
 					AWSModelContext:        awsModelContext,
 					BootstrapScriptBuilder: bootstrapScriptBuilder,
-					Lifecycle:              &clusterLifecycle,
-					SecurityLifecycle:      &securityLifecycle,
+					Lifecycle:              clusterLifecycle,
+					SecurityLifecycle:      securityLifecycle,
 				})
 
 				if featureflag.SpotinstHybrid.Enabled() {
@@ -592,7 +592,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSQSTerminationDraining) {
 				l.Builders = append(l.Builders, &awsmodel.NodeTerminationHandlerBuilder{
 					AWSModelContext: awsModelContext,
-					Lifecycle:       &clusterLifecycle,
+					Lifecycle:       clusterLifecycle,
 				})
 			}
 
@@ -601,8 +601,8 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				KopsModelContext: modelContext,
 			}
 			l.Builders = append(l.Builders,
-				&domodel.APILoadBalancerModelBuilder{DOModelContext: doModelContext, Lifecycle: &securityLifecycle},
-				&domodel.DropletBuilder{DOModelContext: doModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: &clusterLifecycle},
+				&domodel.APILoadBalancerModelBuilder{DOModelContext: doModelContext, Lifecycle: securityLifecycle},
+				&domodel.DropletBuilder{DOModelContext: doModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 			)
 		case kops.CloudProviderGCE:
 			gceModelContext := &gcemodel.GCEModelContext{
@@ -617,25 +617,25 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 			l.Builders = append(l.Builders,
 
-				&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext, Lifecycle: &securityLifecycle},
-				&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &securityLifecycle},
-				&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &securityLifecycle},
-				&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &networkLifecycle},
-				&gcemodel.StorageAclBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: &storageACLLifecycle},
-				&gcemodel.AutoscalingGroupModelBuilder{GCEModelContext: gceModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: &clusterLifecycle},
+				&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext, Lifecycle: securityLifecycle},
+				&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext, Lifecycle: securityLifecycle},
+				&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext, Lifecycle: securityLifecycle},
+				&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
+				&gcemodel.StorageAclBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: storageACLLifecycle},
+				&gcemodel.AutoscalingGroupModelBuilder{GCEModelContext: gceModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 			)
 		case kops.CloudProviderALI:
 			aliModelContext := &alimodel.ALIModelContext{
 				KopsModelContext: modelContext,
 			}
 			l.Builders = append(l.Builders,
-				&alimodel.APILoadBalancerModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
-				&alimodel.NetworkModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
-				&alimodel.RAMModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
-				&alimodel.SSHKeyModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
-				&alimodel.FirewallModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
-				&alimodel.ExternalAccessModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
-				&alimodel.ScalingGroupModelBuilder{ALIModelContext: aliModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: &clusterLifecycle},
+				&alimodel.APILoadBalancerModelBuilder{ALIModelContext: aliModelContext, Lifecycle: clusterLifecycle},
+				&alimodel.NetworkModelBuilder{ALIModelContext: aliModelContext, Lifecycle: clusterLifecycle},
+				&alimodel.RAMModelBuilder{ALIModelContext: aliModelContext, Lifecycle: clusterLifecycle},
+				&alimodel.SSHKeyModelBuilder{ALIModelContext: aliModelContext, Lifecycle: clusterLifecycle},
+				&alimodel.FirewallModelBuilder{ALIModelContext: aliModelContext, Lifecycle: clusterLifecycle},
+				&alimodel.ExternalAccessModelBuilder{ALIModelContext: aliModelContext, Lifecycle: clusterLifecycle},
+				&alimodel.ScalingGroupModelBuilder{ALIModelContext: aliModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 			)
 
 		case kops.CloudProviderAzure:
@@ -643,11 +643,11 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				KopsModelContext: modelContext,
 			}
 			l.Builders = append(l.Builders,
-				&azuremodel.APILoadBalancerModelBuilder{AzureModelContext: azureModelContext, Lifecycle: &clusterLifecycle},
-				&azuremodel.NetworkModelBuilder{AzureModelContext: azureModelContext, Lifecycle: &clusterLifecycle},
-				&azuremodel.ResourceGroupModelBuilder{AzureModelContext: azureModelContext, Lifecycle: &clusterLifecycle},
+				&azuremodel.APILoadBalancerModelBuilder{AzureModelContext: azureModelContext, Lifecycle: clusterLifecycle},
+				&azuremodel.NetworkModelBuilder{AzureModelContext: azureModelContext, Lifecycle: clusterLifecycle},
+				&azuremodel.ResourceGroupModelBuilder{AzureModelContext: azureModelContext, Lifecycle: clusterLifecycle},
 
-				&azuremodel.VMScaleSetModelBuilder{AzureModelContext: azureModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: &clusterLifecycle},
+				&azuremodel.VMScaleSetModelBuilder{AzureModelContext: azureModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 			)
 		case kops.CloudProviderOpenstack:
 			openstackModelContext := &openstackmodel.OpenstackModelContext{
@@ -655,17 +655,17 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 
 			l.Builders = append(l.Builders,
-				&openstackmodel.NetworkModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &networkLifecycle},
-				&openstackmodel.SSHKeyModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &securityLifecycle},
-				&openstackmodel.FirewallModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &securityLifecycle},
-				&openstackmodel.ServerGroupModelBuilder{OpenstackModelContext: openstackModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: &clusterLifecycle},
+				&openstackmodel.NetworkModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: networkLifecycle},
+				&openstackmodel.SSHKeyModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: securityLifecycle},
+				&openstackmodel.FirewallModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: securityLifecycle},
+				&openstackmodel.ServerGroupModelBuilder{OpenstackModelContext: openstackModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 			)
 
 		default:
 			return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 		}
 	}
-	c.TaskMap, err = l.BuildTasks(assetBuilder, &stageAssetsLifecycle, c.LifecycleOverrides)
+	c.TaskMap, err = l.BuildTasks(assetBuilder, stageAssetsLifecycle, c.LifecycleOverrides)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}

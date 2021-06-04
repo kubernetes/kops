@@ -24,7 +24,7 @@ import (
 // ResourceGroupModelBuilder configures a Resource Group.
 type ResourceGroupModelBuilder struct {
 	*AzureModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &ResourceGroupModelBuilder{}

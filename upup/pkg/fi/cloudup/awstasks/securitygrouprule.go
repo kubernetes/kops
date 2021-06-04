@@ -35,7 +35,7 @@ import (
 // +kops:fitask
 type SecurityGroupRule struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	SecurityGroup *SecurityGroup
 	CIDR          *string

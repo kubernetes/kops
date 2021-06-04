@@ -32,7 +32,7 @@ type RouterInterface struct {
 	Name      *string
 	Router    *Router
 	Subnet    *Subnet
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 // GetDependencies returns the dependencies of the RouterInterface task

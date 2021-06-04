@@ -30,8 +30,8 @@ import (
 type APILoadBalancerModelBuilder struct {
 	*AzureModelContext
 
-	Lifecycle         *fi.Lifecycle
-	SecurityLifecycle *fi.Lifecycle
+	Lifecycle         fi.Lifecycle
+	SecurityLifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &APILoadBalancerModelBuilder{}

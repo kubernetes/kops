@@ -38,7 +38,7 @@ import (
 // +kops:fitask
 type DNSZone struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	DNSName *string
 	ZoneID  *string

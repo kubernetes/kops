@@ -37,7 +37,7 @@ import (
 // +kops:fitask
 type SQS struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	URL                    *string
 	MessageRetentionPeriod int

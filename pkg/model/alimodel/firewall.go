@@ -27,7 +27,7 @@ const IpProtocolAll = "all"
 // FirewallModelBuilder configures firewall network objects
 type FirewallModelBuilder struct {
 	*ALIModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &FirewallModelBuilder{}

@@ -26,7 +26,7 @@ import (
 // NetworkModelBuilder configures network objects
 type NetworkModelBuilder struct {
 	*OpenstackModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &NetworkModelBuilder{}

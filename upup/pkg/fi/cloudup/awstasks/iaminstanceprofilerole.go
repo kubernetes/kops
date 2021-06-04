@@ -33,7 +33,7 @@ import (
 // +kops:fitask
 type IAMInstanceProfileRole struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	InstanceProfile *IAMInstanceProfile
 	Role            *IAMRole

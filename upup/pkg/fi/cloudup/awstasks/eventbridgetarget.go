@@ -34,7 +34,7 @@ import (
 type EventBridgeTarget struct {
 	ID        *string
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	Rule      *EventBridgeRule
 	TargetArn *string

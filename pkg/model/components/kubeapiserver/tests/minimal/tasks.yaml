@@ -32,7 +32,7 @@ Contents: |
         type: Directory
       name: healthcheck-secrets
   status: {}
-Lifecycle: null
+Lifecycle: ""
 Location: manifests/static/kube-apiserver-healthcheck.yaml
 Name: manifests-static-kube-apiserver-healthcheck
 Public: null

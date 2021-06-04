@@ -30,7 +30,7 @@ import (
 // +kops:fitask
 type ManagedFile struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	Base     *string
 	Location *string

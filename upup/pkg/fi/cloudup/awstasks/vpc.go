@@ -34,7 +34,7 @@ import (
 // +kops:fitask
 type VPC struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	ID   *string
 	CIDR *string

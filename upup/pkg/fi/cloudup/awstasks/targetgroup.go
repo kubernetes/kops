@@ -33,7 +33,7 @@ import (
 // +kops:fitask
 type TargetGroup struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 	VPC       *VPC
 	Tags      map[string]string
 	Port      *int64

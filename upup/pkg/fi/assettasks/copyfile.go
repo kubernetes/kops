@@ -38,7 +38,7 @@ type CopyFile struct {
 	SourceFile *string
 	TargetFile *string
 	SHA        *string
-	Lifecycle  *fi.Lifecycle
+	Lifecycle  fi.Lifecycle
 }
 
 var _ fi.CompareWithID = &CopyFile{}

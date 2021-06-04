@@ -42,7 +42,7 @@ type NetworkLoadBalancer struct {
 	// We use the Name tag to find the existing NLB, because we are (more or less) unrestricted when
 	// it comes to tag values, but the LoadBalancerName is length limited
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	// LoadBalancerName is the name in NLB, possibly different from our name
 	// (NLB is restricted as to names, so we have limited choices!)

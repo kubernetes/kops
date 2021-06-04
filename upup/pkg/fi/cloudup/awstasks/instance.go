@@ -37,7 +37,7 @@ const MaxUserDataSize = 16384
 // +kops:fitask
 type Instance struct {
 	ID        *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	UserData fi.Resource
 

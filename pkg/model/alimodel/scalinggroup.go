@@ -34,8 +34,8 @@ type ScalingGroupModelBuilder struct {
 	*ALIModelContext
 
 	BootstrapScriptBuilder *model.BootstrapScriptBuilder
-	Lifecycle              *fi.Lifecycle
-	SecurityLifecycle      *fi.Lifecycle
+	Lifecycle              fi.Lifecycle
+	SecurityLifecycle      fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &ScalingGroupModelBuilder{}

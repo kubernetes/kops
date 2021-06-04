@@ -32,7 +32,7 @@ import (
 type Volume struct {
 	Name      *string
 	ID        *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	SizeGB *int64
 	Region *string

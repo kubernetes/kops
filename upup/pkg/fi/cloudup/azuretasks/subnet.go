@@ -29,7 +29,7 @@ import (
 // +kops:fitask
 type Subnet struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	ResourceGroup  *ResourceGroup
 	VirtualNetwork *VirtualNetwork

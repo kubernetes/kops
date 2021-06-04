@@ -39,7 +39,7 @@ import (
 // +kops:fitask
 type Ocean struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	ID                       *string
 	MinSize                  *int64

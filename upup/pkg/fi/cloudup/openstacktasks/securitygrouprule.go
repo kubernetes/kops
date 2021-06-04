@@ -47,7 +47,7 @@ type SecurityGroupRule struct {
 	Protocol       *string
 	RemoteIPPrefix *string
 	RemoteGroup    *SecurityGroup
-	Lifecycle      *fi.Lifecycle
+	Lifecycle      fi.Lifecycle
 	Delete         *bool
 }
 
@@ -181,13 +181,13 @@ func (*SecurityGroupRule) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 var _ fi.HasLifecycle = &SecurityGroupRule{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
-func (o *SecurityGroupRule) GetLifecycle() *fi.Lifecycle {
+func (o *SecurityGroupRule) GetLifecycle() fi.Lifecycle {
 	return o.Lifecycle
 }
 
 // SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
 func (o *SecurityGroupRule) SetLifecycle(lifecycle fi.Lifecycle) {
-	o.Lifecycle = &lifecycle
+	o.Lifecycle = lifecycle
 }
 
 var _ fi.HasLifecycle = &SecurityGroupRule{}

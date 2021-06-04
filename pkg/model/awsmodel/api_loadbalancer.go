@@ -37,8 +37,8 @@ const LoadBalancerDefaultIdleTimeout = 5 * time.Minute
 type APILoadBalancerBuilder struct {
 	*AWSModelContext
 
-	Lifecycle         *fi.Lifecycle
-	SecurityLifecycle *fi.Lifecycle
+	Lifecycle         fi.Lifecycle
+	SecurityLifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &APILoadBalancerBuilder{}

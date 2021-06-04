@@ -51,7 +51,7 @@ type Instance struct {
 	SecurityGroups   []string
 	FloatingIP       *FloatingIP
 
-	Lifecycle    *fi.Lifecycle
+	Lifecycle    fi.Lifecycle
 	ForAPIServer bool
 }
 
