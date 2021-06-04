@@ -39,7 +39,7 @@ const (
 
 // HasLifecycle indicates that the task has a Lifecycle
 type HasLifecycle interface {
-	GetLifecycle() *Lifecycle
+	GetLifecycle() Lifecycle
 	// SetLifecycle is used to override a tasks lifecycle. If a lifecycle override exists for a specific task name, then the
 	// lifecycle is modified.
 	SetLifecycle(lifecycle Lifecycle)

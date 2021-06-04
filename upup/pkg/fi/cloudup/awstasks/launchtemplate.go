@@ -33,7 +33,7 @@ type LaunchTemplate struct {
 	// Name is the name of the configuration
 	Name *string
 	// Lifecycle is the resource lifecycle
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	// AssociatePublicIP indicates if a public ip address is assigned to instances
 	AssociatePublicIP *bool

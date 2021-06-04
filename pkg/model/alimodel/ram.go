@@ -31,7 +31,7 @@ const PolicyType = string(ram.Custom)
 type RAMModelBuilder struct {
 	*ALIModelContext
 
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 type AssumeRolePolicyDocument struct {

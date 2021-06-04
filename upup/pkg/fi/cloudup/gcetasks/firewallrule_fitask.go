@@ -29,13 +29,13 @@ import (
 var _ fi.HasLifecycle = &FirewallRule{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
-func (o *FirewallRule) GetLifecycle() *fi.Lifecycle {
+func (o *FirewallRule) GetLifecycle() fi.Lifecycle {
 	return o.Lifecycle
 }
 
 // SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
 func (o *FirewallRule) SetLifecycle(lifecycle fi.Lifecycle) {
-	o.Lifecycle = &lifecycle
+	o.Lifecycle = lifecycle
 }
 
 var _ fi.HasName = &FirewallRule{}

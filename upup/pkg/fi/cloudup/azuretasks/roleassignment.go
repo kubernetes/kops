@@ -44,7 +44,7 @@ type RoleAssignment struct {
 	// name generated from kops cluster config, we keep a task
 	// name and a Role Assignment name separate.
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	ResourceGroup *ResourceGroup
 	VMScaleSet    *VMScaleSet

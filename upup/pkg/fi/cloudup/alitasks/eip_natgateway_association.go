@@ -35,7 +35,7 @@ const (
 // +kops:fitask
 type EIP struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	Region     *string
 	ID         *string

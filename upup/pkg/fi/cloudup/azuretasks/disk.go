@@ -30,7 +30,7 @@ import (
 // +kops:fitask
 type Disk struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	ResourceGroup *ResourceGroup
 	SizeGB        *int32

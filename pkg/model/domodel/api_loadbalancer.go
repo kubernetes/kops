@@ -30,7 +30,7 @@ import (
 // APILoadBalancerModelBuilder builds a LoadBalancer for accessing the API
 type APILoadBalancerModelBuilder struct {
 	*DOModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &APILoadBalancerModelBuilder{}

@@ -29,13 +29,13 @@ import (
 var _ fi.HasLifecycle = &TargetPool{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
-func (o *TargetPool) GetLifecycle() *fi.Lifecycle {
+func (o *TargetPool) GetLifecycle() fi.Lifecycle {
 	return o.Lifecycle
 }
 
 // SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
 func (o *TargetPool) SetLifecycle(lifecycle fi.Lifecycle) {
-	o.Lifecycle = &lifecycle
+	o.Lifecycle = lifecycle
 }
 
 var _ fi.HasName = &TargetPool{}

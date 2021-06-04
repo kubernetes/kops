@@ -34,7 +34,7 @@ import (
 // +kops:fitask
 type ElasticIP struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	ID       *string
 	PublicIP *string

@@ -39,7 +39,7 @@ import (
 // +kops:fitask
 type IAMRole struct {
 	ID        *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	Name                *string
 	RolePolicyDocument  fi.Resource // "inline" IAM policy

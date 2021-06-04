@@ -36,7 +36,7 @@ type ServerGroup struct {
 	IGName      *string
 	Policies    []string
 	MaxSize     *int32
-	Lifecycle   *fi.Lifecycle
+	Lifecycle   fi.Lifecycle
 
 	mutex sync.Mutex
 

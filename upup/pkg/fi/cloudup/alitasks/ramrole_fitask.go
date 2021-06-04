@@ -29,13 +29,13 @@ import (
 var _ fi.HasLifecycle = &RAMRole{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
-func (o *RAMRole) GetLifecycle() *fi.Lifecycle {
+func (o *RAMRole) GetLifecycle() fi.Lifecycle {
 	return o.Lifecycle
 }
 
 // SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
 func (o *RAMRole) SetLifecycle(lifecycle fi.Lifecycle) {
-	o.Lifecycle = &lifecycle
+	o.Lifecycle = lifecycle
 }
 
 var _ fi.HasName = &RAMRole{}

@@ -29,7 +29,7 @@ import (
 type LBPool struct {
 	ID           *string
 	Name         *string
-	Lifecycle    *fi.Lifecycle
+	Lifecycle    fi.Lifecycle
 	Loadbalancer *LB
 }
 
@@ -50,7 +50,7 @@ func (s *LBPool) CompareWithID() *string {
 	return s.ID
 }
 
-func NewLBPoolTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, pool *v2pools.Pool, find *LBPool) (*LBPool, error) {
+func NewLBPoolTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, pool *v2pools.Pool, find *LBPool) (*LBPool, error) {
 
 	if len(pool.Loadbalancers) > 1 {
 		return nil, fmt.Errorf("Openstack cloud pools with multiple loadbalancers not yet supported!")

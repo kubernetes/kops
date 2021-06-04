@@ -31,7 +31,7 @@ import (
 // +kops:fitask
 type Subnet struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	GCEName *string
 	Network *Network

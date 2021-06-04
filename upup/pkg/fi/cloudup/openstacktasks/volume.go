@@ -33,7 +33,7 @@ type Volume struct {
 	VolumeType       *string
 	SizeGB           *int64
 	Tags             map[string]string
-	Lifecycle        *fi.Lifecycle
+	Lifecycle        fi.Lifecycle
 }
 
 var _ fi.CompareWithID = &Volume{}

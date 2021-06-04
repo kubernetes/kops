@@ -29,13 +29,13 @@ import (
 var _ fi.HasLifecycle = &VMScaleSet{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
-func (o *VMScaleSet) GetLifecycle() *fi.Lifecycle {
+func (o *VMScaleSet) GetLifecycle() fi.Lifecycle {
 	return o.Lifecycle
 }
 
 // SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
 func (o *VMScaleSet) SetLifecycle(lifecycle fi.Lifecycle) {
-	o.Lifecycle = &lifecycle
+	o.Lifecycle = lifecycle
 }
 
 var _ fi.HasName = &VMScaleSet{}

@@ -30,7 +30,7 @@ import (
 // +kops:fitask
 type InstanceGroupManager struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	Zone             *string
 	BaseInstanceName *string

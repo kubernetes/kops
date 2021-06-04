@@ -31,7 +31,7 @@ import (
 // +kops:fitask
 type SSHKey struct {
 	Name      *string
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	PublicKey fi.Resource
 

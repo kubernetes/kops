@@ -49,7 +49,7 @@ type InstanceTemplate struct {
 	// NamePrefix is used as the prefix for the names; we add a timestamp.  Max = InstanceTemplateNamePrefixMaxLength
 	NamePrefix *string
 
-	Lifecycle *fi.Lifecycle
+	Lifecycle fi.Lifecycle
 
 	Network *Network
 	Tags    []string
