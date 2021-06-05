@@ -47,7 +47,7 @@ func Test_RunKubeApiserverBuilder(t *testing.T) {
 
 			builder := KubeApiserverBuilder{
 				KopsModelContext: kopsModelContext,
-				AssetBuilder:     assets.NewAssetBuilder(kopsModelContext.Cluster, ""),
+				AssetBuilder:     assets.NewAssetBuilder(kopsModelContext.Cluster, false),
 			}
 
 			if err := builder.Build(context); err != nil {

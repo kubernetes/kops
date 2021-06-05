@@ -43,7 +43,7 @@ func Test_Build_Containerd_Supported_Version(t *testing.T) {
 
 		c := buildContainerdCluster(v)
 		c.Spec.ContainerRuntime = "containerd"
-		b := assets.NewAssetBuilder(c, "")
+		b := assets.NewAssetBuilder(c, false)
 
 		version, err := util.ParseKubernetesVersion(v)
 		if err != nil {
@@ -78,7 +78,7 @@ func Test_Build_Containerd_Unneeded_Runtime(t *testing.T) {
 		c.Spec.Docker = &kopsapi.DockerConfig{
 			Version: &v,
 		}
-		b := assets.NewAssetBuilder(c, "")
+		b := assets.NewAssetBuilder(c, false)
 
 		ob := &ContainerdOptionsBuilder{
 			&OptionsContext{
@@ -107,7 +107,7 @@ func Test_Build_Containerd_Needed_Runtime(t *testing.T) {
 		c.Spec.Docker = &kopsapi.DockerConfig{
 			Version: &v,
 		}
-		b := assets.NewAssetBuilder(c, "")
+		b := assets.NewAssetBuilder(c, false)
 
 		ob := &ContainerdOptionsBuilder{
 			&OptionsContext{

@@ -40,7 +40,7 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 	cluster := &api.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.18.0"
 
-	assetBuilder := assets.NewAssetBuilder(cluster, "")
+	assetBuilder := assets.NewAssetBuilder(cluster, false)
 	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
 
 	if err != nil {
@@ -64,7 +64,7 @@ func Test_FindCNIAssetFromDefaults(t *testing.T) {
 	cluster := &api.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.18.0"
 
-	assetBuilder := assets.NewAssetBuilder(cluster, "")
+	assetBuilder := assets.NewAssetBuilder(cluster, false)
 	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
 
 	if err != nil {
@@ -95,7 +95,7 @@ func Test_FindLyftAssetFromEnvironmentVariable(t *testing.T) {
 	cluster := &api.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.18.0"
 
-	assetBuilder := assets.NewAssetBuilder(cluster, "")
+	assetBuilder := assets.NewAssetBuilder(cluster, false)
 	lyftAsset, lyftAssetHash, err := findLyftVPCAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
 
 	if err != nil {
@@ -119,7 +119,7 @@ func Test_FindLyftAssetFromDefaults(t *testing.T) {
 	cluster := &api.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.18.0"
 
-	assetBuilder := assets.NewAssetBuilder(cluster, "")
+	assetBuilder := assets.NewAssetBuilder(cluster, false)
 	lyftAsset, lyftAssetHash, err := findLyftVPCAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
 
 	if err != nil {

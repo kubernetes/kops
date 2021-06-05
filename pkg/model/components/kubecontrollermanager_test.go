@@ -42,7 +42,7 @@ func Test_Build_KCM_Builder(t *testing.T) {
 
 		c := buildCluster()
 		c.Spec.KubernetesVersion = v
-		b := assets.NewAssetBuilder(c, "")
+		b := assets.NewAssetBuilder(c, false)
 
 		kcm := &KubeControllerManagerOptionsBuilder{
 			OptionsContext: &OptionsContext{
@@ -65,7 +65,7 @@ func Test_Build_KCM_Builder(t *testing.T) {
 func Test_Build_KCM_Builder_Change_Duration(t *testing.T) {
 
 	c := buildCluster()
-	b := assets.NewAssetBuilder(c, "")
+	b := assets.NewAssetBuilder(c, false)
 
 	kcm := &KubeControllerManagerOptionsBuilder{
 		OptionsContext: &OptionsContext{
