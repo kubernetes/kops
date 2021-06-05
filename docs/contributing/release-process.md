@@ -136,11 +136,10 @@ git checkout master
 git pull
 git checkout -b relnotes_${VERSION}
 
-FROM=1.21.0-alpha.2
-TO=1.21.0-alpha.3
-DOC=1.21
-git log v${FROM}..v${TO} --oneline | grep Merge.pull | grep -v Revert..Merge.pull | cut -f 5 -d ' ' | tac  > /tmp/prs
-echo -e "\n## ${FROM} to ${TO}\n"  >> docs/releases/${DOC}-NOTES.md
+FROM=1.21.0-alpha.2 # Replace "1.21.0-alpha.2" with the previous version
+DOC=$(expr ${VERSION} : '\([^.]*.[^.]*\)')
+git log v${FROM}..v${VERSION} --oneline | grep Merge.pull | grep -v Revert..Merge.pull | cut -f 5 -d ' ' | tac  > /tmp/prs
+echo -e "\n## ${FROM} to ${VERSION}\n"  >> docs/releases/${DOC}-NOTES.md
 relnotes  -config .shipbot.yaml  < /tmp/prs  >> docs/releases/${DOC}-NOTES.md
 ```
 
@@ -156,6 +155,7 @@ hub pull-request
 ### Propose promotion of artifacts
 
 The `cip` tool is from [kubernetes-sigs/k8s-container-image-promoter](https://github.com/kubernetes-sigs/k8s-container-image-promoter).
+The `kpromo` tool is from [kubernetes/release/](https://github.com/kubernetes/release/tree/master/cmd/kpromo).
 The `gsutil` tool may be obtained from `pip3`.
 
 Create container promotion PR:
@@ -193,10 +193,11 @@ git checkout main
 git pull
 git checkout -b kops_artifacts_${VERSION}
 
+rm -rf ./k8s-staging-kops/kops/releases
 mkdir -p ./k8s-staging-kops/kops/releases/${VERSION}/
 gsutil rsync -r  gs://k8s-staging-kops/kops/releases/${VERSION}/ ./k8s-staging-kops/kops/releases/${VERSION}/
 
-promobot-generate-manifest --src k8s-staging-kops/kops/releases/ >> artifacts/manifests/k8s-staging-kops/${VERSION}.yaml
+kpromo manifest files --src k8s-staging-kops/kops/releases/ >> artifacts/manifests/k8s-staging-kops/${VERSION}.yaml
 ```
 
 Verify, then send a PR:
