@@ -156,6 +156,7 @@ hub pull-request
 ### Propose promotion of artifacts
 
 The `cip` tool is from [kubernetes-sigs/k8s-container-image-promoter](https://github.com/kubernetes-sigs/k8s-container-image-promoter).
+The `kpromo` tool is from [kubernetes/release/](https://github.com/kubernetes/release/tree/master/cmd/kpromo).
 The `gsutil` tool may be obtained from `pip3`.
 
 Create container promotion PR:
@@ -193,10 +194,11 @@ git checkout main
 git pull
 git checkout -b kops_artifacts_${VERSION}
 
+rm -rf ./k8s-staging-kops/kops/releases
 mkdir -p ./k8s-staging-kops/kops/releases/${VERSION}/
 gsutil rsync -r  gs://k8s-staging-kops/kops/releases/${VERSION}/ ./k8s-staging-kops/kops/releases/${VERSION}/
 
-promobot-generate-manifest --src k8s-staging-kops/kops/releases/ >> artifacts/manifests/k8s-staging-kops/${VERSION}.yaml
+kpromo  manifest files --src k8s-staging-kops/kops/releases/ >> artifacts/manifests/k8s-staging-kops/${VERSION}.yaml
 ```
 
 Verify, then send a PR:
