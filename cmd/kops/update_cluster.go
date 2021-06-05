@@ -66,7 +66,8 @@ type UpdateClusterOptions struct {
 	SSHPublicKey       string
 	RunTasksOptions    fi.RunTasksOptions
 	AllowKopsDowngrade bool
-	Quiet              bool
+	// GetAssets is whether this is invoked from the CmdGetAssets.
+	GetAssets bool
 
 	CreateKubecfg bool
 	admin         time.Duration
@@ -146,6 +147,8 @@ type UpdateClusterResults struct {
 	ImageAssets []*assets.ImageAsset
 	// FileAssets are the file assets we use (output).
 	FileAssets []*assets.FileAsset
+	// Cluster is the cluster spec (output).
+	Cluster *kops.Cluster
 }
 
 func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, out io.Writer, c *UpdateClusterOptions) (*UpdateClusterResults, error) {
@@ -239,8 +242,6 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 	var phase cloudup.Phase
 	if c.Phase != "" {
 		switch strings.ToLower(c.Phase) {
-		case string(cloudup.PhaseStageAssets):
-			phase = cloudup.PhaseStageAssets
 		case string(cloudup.PhaseNetwork):
 			phase = cloudup.PhaseNetwork
 		case string(cloudup.PhaseSecurity), "iam": // keeping IAM for backwards compatibility
@@ -287,7 +288,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 		Phase:              phase,
 		TargetName:         targetName,
 		LifecycleOverrides: lifecycleOverrideMap,
-		Quiet:              c.Quiet,
+		GetAssets:          c.GetAssets,
 	}
 
 	if err := applyCmd.Run(ctx); err != nil {
@@ -298,8 +299,9 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 	results.TaskMap = applyCmd.TaskMap
 	results.ImageAssets = applyCmd.ImageAssets
 	results.FileAssets = applyCmd.FileAssets
+	results.Cluster = cluster
 
-	if isDryrun && !c.Quiet {
+	if isDryrun && !c.GetAssets {
 		target := applyCmd.Target.(*fi.DryRunTarget)
 		if target.HasChanges() {
 			fmt.Fprintf(out, "Must specify --yes to apply changes\n")

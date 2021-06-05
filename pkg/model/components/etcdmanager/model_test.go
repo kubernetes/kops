@@ -50,7 +50,7 @@ func Test_RunEtcdManagerBuilder(t *testing.T) {
 
 			builder := EtcdManagerBuilder{
 				KopsModelContext: kopsModelContext,
-				AssetBuilder:     assets.NewAssetBuilder(kopsModelContext.Cluster, ""),
+				AssetBuilder:     assets.NewAssetBuilder(kopsModelContext.Cluster, false),
 			}
 
 			if err := builder.Build(context); err != nil {
