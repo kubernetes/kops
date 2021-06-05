@@ -17,8 +17,13 @@ limitations under the License.
 package fi
 
 import (
+	"bytes"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/assets"
 )
 
 func Test_tryResourceAsString(t *testing.T) {
@@ -47,4 +52,46 @@ func Test_tryResourceAsString(t *testing.T) {
 			t.Errorf("unexpected result from %d.  Expected=%q, got %q", i, g.Expected, actual)
 		}
 	}
+}
+
+type testTask struct {
+	Name      *string
+	Lifecycle Lifecycle
+	Tags      map[string]string
+}
+
+var _ Task = &testTask{}
+
+func (*testTask) Run(_ *Context) error {
+	panic("not implemented")
+}
+
+func Test_DryrunTarget_PrintReport(t *testing.T) {
+	builder := assets.NewAssetBuilder(&api.Cluster{
+		Spec: api.ClusterSpec{
+			KubernetesVersion: "1.17.3",
+		},
+	}, "'")
+	var stdout bytes.Buffer
+	target := NewDryRunTarget(builder, &stdout)
+	tasks := map[string]Task{}
+	a := &testTask{
+		Name:      String("TestName"),
+		Lifecycle: LifecycleSync,
+		Tags:      map[string]string{"key": "value"},
+	}
+	e := &testTask{
+		Name:      String("TestName"),
+		Lifecycle: LifecycleSync,
+		Tags:      map[string]string{"key": "value"},
+	}
+	changes := reflect.New(reflect.TypeOf(e).Elem()).Interface().(Task)
+	_ = BuildChanges(a, e, changes)
+	err := target.Render(a, e, changes)
+	tasks[*e.Name] = e
+	assert.NoError(t, err, "target.Render()")
+
+	var out bytes.Buffer
+	err = target.PrintReport(tasks, &out)
+	assert.NoError(t, err, "target.PrintReport()")
 }

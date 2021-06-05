@@ -312,14 +312,9 @@ func buildChangeList(a, e, changes Task) ([]change, error) {
 				}
 
 			case reflect.String:
-				changed = fieldValC.Interface().(string) != ""
+				changed = fieldValC.Convert(reflect.TypeOf("")).Interface() != ""
 			}
 			if !changed {
-				continue
-			}
-
-			if fieldValC.Kind() == reflect.String && fieldValC.Interface().(string) == "" {
-				// No change
 				continue
 			}
 
