@@ -136,11 +136,10 @@ git checkout master
 git pull
 git checkout -b relnotes_${VERSION}
 
-FROM=1.21.0-alpha.2
-TO=1.21.0-alpha.3
-DOC=1.21
-git log v${FROM}..v${TO} --oneline | grep Merge.pull | grep -v Revert..Merge.pull | cut -f 5 -d ' ' | tac  > /tmp/prs
-echo -e "\n## ${FROM} to ${TO}\n"  >> docs/releases/${DOC}-NOTES.md
+FROM=1.21.0-alpha.2 # Replace "1.21.0-alpha.2" with the previous version
+DOC=$(expr ${VERSION} : '\([^.]*.[^.]*\)')
+git log v${FROM}..v${VERSION} --oneline | grep Merge.pull | grep -v Revert..Merge.pull | cut -f 5 -d ' ' | tac  > /tmp/prs
+echo -e "\n## ${FROM} to ${VERSION}\n"  >> docs/releases/${DOC}-NOTES.md
 relnotes  -config .shipbot.yaml  < /tmp/prs  >> docs/releases/${DOC}-NOTES.md
 ```
 
