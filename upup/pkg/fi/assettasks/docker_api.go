@@ -19,6 +19,7 @@ package assettasks
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -60,6 +61,7 @@ func newDockerAPI() (*dockerAPI, error) {
 
 // findImage does a `docker images` via the API, and finds the specified image
 func (d *dockerAPI) findImage(name string) (*types.ImageSummary, error) {
+	name = strings.TrimPrefix(name, "docker.io/")
 	klog.V(4).Infof("docker query for image %q", name)
 	filter := filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: name})
 	options := types.ImageListOptions{
