@@ -74,7 +74,7 @@ func TestImage(t *testing.T) {
 			}
 		}
 
-		assetBuilder := assets.NewAssetBuilder(g.Cluster, "")
+		assetBuilder := assets.NewAssetBuilder(g.Cluster, false)
 		actual, err := Image(g.Component, &g.Cluster.Spec, assetBuilder)
 		if err != nil {
 			t.Errorf("unexpected error from image %q %v: %v",

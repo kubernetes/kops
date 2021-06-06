@@ -334,7 +334,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			CacheDir: c.CacheDir,
 		}
 	case "dryrun":
-		assetBuilder := assets.NewAssetBuilder(c.cluster, "")
+		assetBuilder := assets.NewAssetBuilder(c.cluster, false)
 		target = fi.NewDryRunTarget(assetBuilder, out)
 	case "cloudinit":
 		checkExisting = false

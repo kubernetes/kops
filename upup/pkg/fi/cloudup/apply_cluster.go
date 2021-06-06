@@ -135,8 +135,8 @@ type ApplyClusterCmd struct {
 	// that is re-mapped.
 	LifecycleOverrides map[string]fi.Lifecycle
 
-	// Quiet suppresses most output
-	Quiet bool
+	// GetAssets is whether this is called just to obtain the list of assets.
+	GetAssets bool
 
 	// TaskMap is the map of tasks that we built (output)
 	TaskMap map[string]fi.Task
@@ -179,7 +179,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 	c.channel = channel
 
-	stageAssetsLifecycle := fi.LifecycleSync
 	securityLifecycle := fi.LifecycleSync
 	networkLifecycle := fi.LifecycleSync
 	clusterLifecycle := fi.LifecycleSync
@@ -188,30 +187,19 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	case Phase(""):
 		// Everything ... the default
 
-		// until we implement finding assets we need to Ignore them
-		stageAssetsLifecycle = fi.LifecycleIgnore
-	case PhaseStageAssets:
-		networkLifecycle = fi.LifecycleIgnore
-		securityLifecycle = fi.LifecycleIgnore
-		clusterLifecycle = fi.LifecycleIgnore
-
 	case PhaseNetwork:
-		stageAssetsLifecycle = fi.LifecycleIgnore
 		securityLifecycle = fi.LifecycleIgnore
 		clusterLifecycle = fi.LifecycleIgnore
 
 	case PhaseSecurity:
-		stageAssetsLifecycle = fi.LifecycleIgnore
 		networkLifecycle = fi.LifecycleExistsAndWarnIfChanges
 		clusterLifecycle = fi.LifecycleIgnore
 
 	case PhaseCluster:
 		if c.TargetName == TargetDryRun {
-			stageAssetsLifecycle = fi.LifecycleIgnore
 			securityLifecycle = fi.LifecycleExistsAndWarnIfChanges
 			networkLifecycle = fi.LifecycleExistsAndWarnIfChanges
 		} else {
-			stageAssetsLifecycle = fi.LifecycleIgnore
 			networkLifecycle = fi.LifecycleExistsAndValidates
 			securityLifecycle = fi.LifecycleExistsAndValidates
 		}
@@ -219,11 +207,13 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	default:
 		return fmt.Errorf("unknown phase %q", c.Phase)
 	}
+	if c.GetAssets {
+		networkLifecycle = fi.LifecycleIgnore
+		securityLifecycle = fi.LifecycleIgnore
+		clusterLifecycle = fi.LifecycleIgnore
+	}
 
-	// This is kinda a hack.  Need to move phases out of fi.  If we use Phase here we introduce a circular
-	// go dependency.
-	phase := string(c.Phase)
-	assetBuilder := assets.NewAssetBuilder(c.Cluster, phase)
+	assetBuilder := assets.NewAssetBuilder(c.Cluster, c.GetAssets)
 	err = c.upgradeSpecs(assetBuilder)
 	if err != nil {
 		return err
@@ -665,7 +655,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 		}
 	}
-	c.TaskMap, err = l.BuildTasks(assetBuilder, stageAssetsLifecycle, c.LifecycleOverrides)
+	c.TaskMap, err = l.BuildTasks(c.LifecycleOverrides)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
@@ -728,7 +718,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	case TargetDryRun:
 		var out io.Writer = os.Stdout
-		if c.Quiet {
+		if c.GetAssets {
 			out = io.Discard
 		}
 		target = fi.NewDryRunTarget(assetBuilder, out)
@@ -869,7 +859,7 @@ func (c *ApplyClusterCmd) validateKopsVersion() error {
 		klog.Warningf("unable to parse version requirement for kops version %q in channel", kopsVersion)
 	}
 
-	if recommended != nil && !required {
+	if recommended != nil && !required && !c.GetAssets {
 		fmt.Printf("\n")
 		fmt.Printf("%s\n", starline)
 		fmt.Printf("\n")
@@ -947,7 +937,7 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 		fmt.Printf("\n")
 		return fmt.Errorf("kubernetes upgrade is required")
 	}
-	if !util.IsKubernetesGTE(OldestRecommendedKubernetesVersion, *parsed) {
+	if !util.IsKubernetesGTE(OldestRecommendedKubernetesVersion, *parsed) && !c.GetAssets {
 		fmt.Printf("\n")
 		fmt.Printf("%s\n", starline)
 		fmt.Printf("\n")
@@ -986,7 +976,7 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 		klog.Warningf("unable to parse version requirement for kubernetes version %q in channel", kubernetesVersion)
 	}
 
-	if recommended != nil && !required {
+	if recommended != nil && !required && !c.GetAssets {
 		fmt.Printf("\n")
 		fmt.Printf("%s\n", starline)
 		fmt.Printf("\n")

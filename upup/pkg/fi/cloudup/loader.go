@@ -22,9 +22,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/assettasks"
 	"k8s.io/kops/util/pkg/reflectutils"
 )
 
@@ -38,7 +36,7 @@ func (l *Loader) Init() {
 	l.tasks = make(map[string]fi.Task)
 }
 
-func (l *Loader) BuildTasks(assetBuilder *assets.AssetBuilder, lifecycle fi.Lifecycle, lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
+func (l *Loader) BuildTasks(lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
 	for _, builder := range l.Builders {
 		context := &fi.ModelBuilderContext{
 			Tasks:              l.tasks,
@@ -51,80 +49,11 @@ func (l *Loader) BuildTasks(assetBuilder *assets.AssetBuilder, lifecycle fi.Life
 		l.tasks = context.Tasks
 	}
 
-	if err := l.addAssetCopyTasks(assetBuilder.ImageAssets, lifecycle); err != nil {
-		return nil, err
-	}
-
-	if err := l.addAssetFileCopyTasks(assetBuilder.FileAssets, lifecycle); err != nil {
-		return nil, err
-	}
 	err := l.processDeferrals()
 	if err != nil {
 		return nil, err
 	}
 	return l.tasks, nil
-}
-
-func (l *Loader) addAssetCopyTasks(assets []*assets.ImageAsset, lifecycle fi.Lifecycle) error {
-	for _, asset := range assets {
-		if asset.DownloadLocation != asset.CanonicalLocation {
-			context := &fi.ModelBuilderContext{
-				Tasks: l.tasks,
-			}
-
-			copyImageTask := &assettasks.CopyImage{
-				Name:        fi.String(asset.DownloadLocation),
-				SourceImage: fi.String(asset.CanonicalLocation),
-				TargetImage: fi.String(asset.DownloadLocation),
-				Lifecycle:   lifecycle,
-			}
-
-			if err := context.EnsureTask(copyImageTask); err != nil {
-				return fmt.Errorf("error adding asset-copy task: %v", err)
-			}
-
-			l.tasks = context.Tasks
-
-		}
-	}
-
-	return nil
-}
-
-// addAssetFileCopyTasks creates the new tasks for copying files.
-func (l *Loader) addAssetFileCopyTasks(assets []*assets.FileAsset, lifecycle fi.Lifecycle) error {
-	for _, asset := range assets {
-
-		if asset.DownloadURL == nil {
-			return fmt.Errorf("asset file url cannot be nil")
-		}
-
-		// test if the asset needs to be copied
-		if asset.DownloadURL.String() != asset.CanonicalURL.String() {
-			klog.V(10).Infof("processing asset: %q, %q", asset.DownloadURL.String(), asset.CanonicalURL.String())
-			context := &fi.ModelBuilderContext{
-				Tasks: l.tasks,
-			}
-
-			klog.V(10).Infof("adding task: %q", asset.DownloadURL.String())
-
-			copyFileTask := &assettasks.CopyFile{
-				Name:       fi.String(asset.CanonicalURL.String()),
-				TargetFile: fi.String(asset.DownloadURL.String()),
-				SourceFile: fi.String(asset.CanonicalURL.String()),
-				SHA:        fi.String(asset.SHAValue),
-				Lifecycle:  lifecycle,
-			}
-
-			if err := context.EnsureTask(copyFileTask); err != nil {
-				return fmt.Errorf("error adding asset-copy task: %v", err)
-			}
-			l.tasks = context.Tasks
-
-		}
-	}
-
-	return nil
 }
 
 func (l *Loader) processDeferrals() error {
