@@ -25,7 +25,7 @@ ARGS="--override=cluster.spec.networking.cilium.hubble.enabled=true --override=c
 
 if [[ $1 == "kube-proxy" ]]; then
     ARGS="${ARGS} --override=cluster.spec.networking.cilium.enableNodePort=false --override=cluster.spec.kubeProxy.enabled=true"
-# This test requires public topology, which kubetest2 does not support.
+# This test requires private topology, which kubetest2 does not support.
 #elif [[ $1 == "eni"]]
 #    ARGS="${ARGS} --override=cluster.spec.cilium.ipam=eni --override=cluster.spec.cilium.disable-masquerade"
 #    ARGS="${ARGS} --topology private"
