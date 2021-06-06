@@ -22,8 +22,6 @@ import "k8s.io/apimachinery/pkg/util/sets"
 type Phase string
 
 const (
-	// PhaseStageAssets uploads various assets such as containers in a private registry
-	PhaseStageAssets Phase = "assets"
 	// PhaseNetwork creates network infrastructure.
 	PhaseNetwork Phase = "network"
 	// PhaseSecurity creates IAM profiles and roles, security groups and firewalls
@@ -34,7 +32,6 @@ const (
 
 // Phases are used for validation and cli help.
 var Phases = sets.NewString(
-	string(PhaseStageAssets),
 	string(PhaseSecurity),
 	string(PhaseNetwork),
 	string(PhaseCluster),

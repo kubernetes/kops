@@ -254,7 +254,7 @@ func BuildNodeupModelContext(basedir string) (*NodeupModelContext, error) {
 func mockedPopulateClusterSpec(c *kops.Cluster, cloud fi.Cloud) (*kops.Cluster, error) {
 	vfs.Context.ResetMemfsContext(true)
 
-	assetBuilder := assets.NewAssetBuilder(c, "")
+	assetBuilder := assets.NewAssetBuilder(c, false)
 	basePath, err := vfs.Context.BuildVfsPath("memfs://tests")
 	if err != nil {
 		return nil, fmt.Errorf("error building vfspath: %v", err)

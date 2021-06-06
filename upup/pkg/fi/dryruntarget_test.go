@@ -71,7 +71,7 @@ func Test_DryrunTarget_PrintReport(t *testing.T) {
 		Spec: api.ClusterSpec{
 			KubernetesVersion: "1.17.3",
 		},
-	}, "'")
+	}, false)
 	var stdout bytes.Buffer
 	target := NewDryRunTarget(builder, &stdout)
 	tasks := map[string]Task{}

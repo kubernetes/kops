@@ -161,7 +161,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 	bcb := bootstrapchannelbuilder.NewBootstrapChannelBuilder(
 		&kopsModel,
 		fi.LifecycleSync,
-		assets.NewAssetBuilder(cluster, ""),
+		assets.NewAssetBuilder(cluster, false),
 		templates,
 		nil,
 	)
