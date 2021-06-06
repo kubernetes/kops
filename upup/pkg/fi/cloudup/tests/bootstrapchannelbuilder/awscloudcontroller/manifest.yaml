@@ -73,8 +73,8 @@ spec:
   - id: k8s-1.17
     kubernetesVersion: '>=1.17.0'
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: 7ccbed99da6bb0409268c07fd1ab079f04dc6140
+    manifestHash: e336aa3bcfabca58bee05b313feadbc6fb8aad7a
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
-    version: 0.10.1-kops.2
+    version: 1.0.0-kops.1
