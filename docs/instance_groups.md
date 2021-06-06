@@ -47,7 +47,9 @@ spec:
 
 ## instanceMetadata
 
-By default, both IMDSv1 and IMDSv2 are enabled. The instance metadata service can be configured to allow only IMDSv2.
+By default IMDSv2 are enabled as of kOps 1.22 on new clusters using Kubernetes 1.22. The default hop limit is 3 on control plane nodes, and 1 on other roles.
+
+On other versions, you can enable IMDSv2 like this:
 
 ```YAML
 spec:
