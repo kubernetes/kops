@@ -17,13 +17,16 @@ limitations under the License.
 package channels
 
 import (
+	"bytes"
 	"context"
 	"crypto/x509/pkix"
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"path"
 
 	"k8s.io/kops/pkg/pki"
+	"k8s.io/kops/util/pkg/vfs"
 
 	certmanager "github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -167,7 +170,17 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 		}
 		klog.Infof("Applying update from %q", manifestURL)
 
-		err = Apply(manifestURL.String())
+		manifestPath, err := vfs.Context.BuildVfsPath(manifestURL.String())
+		if err != nil {
+			return nil, fmt.Errorf("failed to build manifest path: %w", err)
+		}
+
+		manifest, err := manifestPath.ReadFile()
+		if err != nil {
+			return nil, fmt.Errorf("error reading manifest: %v", err)
+		}
+
+		err = Apply(manifest)
 		if err != nil {
 			return nil, fmt.Errorf("error applying update from %q: %v", manifestURL, err)
 		}
@@ -181,6 +194,18 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 		if err != nil {
 			return nil, fmt.Errorf("error applying annotation to record addon installation: %v", err)
 		}
+
+		appliedUrl, _ := path.Split(manifestPath.Path())
+		appliedUrl = appliedUrl + "applied.yaml"
+		appliedPath, err := vfs.Context.BuildVfsPath(appliedUrl)
+		if err != nil {
+			return nil, fmt.Errorf("failed to build applied manifest path: %w", err)
+		}
+		klog.Infof("writing applied manifest to %q", appliedPath.Path())
+		if err := appliedPath.WriteFile(bytes.NewReader(manifest), nil); err != nil {
+			return nil, fmt.Errorf("failed to write applied manifest: %w", err)
+		}
+
 	}
 	if required.InstallPKI {
 		err := a.installPKI(ctx, k8sClient, cmClient)
