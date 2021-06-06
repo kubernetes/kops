@@ -1026,7 +1026,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		if b.Cluster.Spec.CloudConfig != nil && b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {
 			key := "aws-ebs-csi-driver.addons.k8s.io"
 
-			version := "0.10.1-kops.2"
+			version := "1.0.0-kops.1"
 			{
 				id := "k8s-1.17"
 				location := key + "/" + id + ".yaml"
