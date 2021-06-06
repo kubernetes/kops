@@ -42,8 +42,7 @@ type AssetBuilder struct {
 	ImageAssets    []*ImageAsset
 	FileAssets     []*FileAsset
 	AssetsLocation *kops.Assets
-	// TODO we'd like to use cloudup.Phase here, but that introduces a go cyclic dependency
-	Phase string
+	GetAssets      bool
 
 	// KubernetesVersion is the version of kubernetes we are installing
 	KubernetesVersion semver.Version
@@ -83,10 +82,10 @@ type FileAsset struct {
 }
 
 // NewAssetBuilder creates a new AssetBuilder.
-func NewAssetBuilder(cluster *kops.Cluster, phase string) *AssetBuilder {
+func NewAssetBuilder(cluster *kops.Cluster, getAssets bool) *AssetBuilder {
 	a := &AssetBuilder{
 		AssetsLocation: cluster.Spec.Assets,
-		Phase:          phase,
+		GetAssets:      getAssets,
 	}
 
 	version, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
@@ -280,7 +279,7 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 	// rest of the time. If not we get a chicken and the egg problem where we are reading the sha file
 	// before it exists.
 	u := file.DownloadURL
-	if a.Phase == "assets" {
+	if a.GetAssets {
 		u = file.CanonicalURL
 	}
 
@@ -327,7 +326,7 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 	}
 
 	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
-		return nil, fmt.Errorf("you may have not staged your files correctly, please execute kops update cluster using the assets phase")
+		return nil, fmt.Errorf("you might have not staged your files correctly, please execute 'kops get assets --copy'")
 	}
 	return nil, fmt.Errorf("cannot determine hash for %q (have you specified a valid file location?)", u)
 }

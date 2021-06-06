@@ -23,6 +23,7 @@ kops get assets [flags]
 ### Options
 
 ```
+      --copy   copy assets to local repository
   -h, --help   help for assets
 ```
 
