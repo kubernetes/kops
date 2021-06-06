@@ -485,7 +485,7 @@ ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerpl
 # verify-gofmt: uses bazel, covered by pull-kops-verify
 # govet needs to be after verify-goimports because it generates bindata.go
 .PHONY: quick-ci
-quick-ci: verify-crds verify-goimports govet verify-boilerplate verify-bazel verify-versions verify-misspelling verify-shellcheck verify-bindata | verify-gendocs verify-apimachinery
+quick-ci: verify-crds verify-goimports govet verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-bindata verify-versions | verify-gendocs verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
