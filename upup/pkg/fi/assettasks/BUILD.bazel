@@ -5,9 +5,7 @@ go_library(
     srcs = [
         "copy.go",
         "copyfile.go",
-        "copyfile_fitask.go",
         "copyimage.go",
-        "copyimage_fitask.go",
         "docker_api.go",
         "docker_cli.go",
     ],
