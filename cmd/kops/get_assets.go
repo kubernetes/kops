@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"io"
 
-	"k8s.io/kops/upup/pkg/fi/assettasks"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 	"sigs.k8s.io/yaml"
@@ -143,7 +143,7 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 	}
 
 	if options.Copy {
-		err := assettasks.Copy(updateClusterResults.ImageAssets, updateClusterResults.FileAssets, updateClusterResults.Cluster)
+		err := assets.Copy(updateClusterResults.ImageAssets, updateClusterResults.FileAssets, updateClusterResults.Cluster)
 		if err != nil {
 			return err
 		}

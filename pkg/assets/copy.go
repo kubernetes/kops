@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package assettasks
+package assets
 
 import (
 	"fmt"
@@ -22,14 +22,13 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/assets"
 )
 
 type assetTask interface {
 	Run() error
 }
 
-func Copy(imageAssets []*assets.ImageAsset, fileAssets []*assets.FileAsset, cluster *kops.Cluster) error {
+func Copy(imageAssets []*ImageAsset, fileAssets []*FileAsset, cluster *kops.Cluster) error {
 	tasks := map[string]assetTask{}
 
 	for _, imageAsset := range imageAssets {
