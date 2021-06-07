@@ -2,8 +2,11 @@
 
 By default kOps creates two IAM roles for the cluster: one for the masters, and one for the nodes.
 
-> Please note that currently all Pods running on your cluster have access to the instance IAM role.
-> Consider using projects such as [kube2iam](https://github.com/jtblin/kube2iam) to prevent that.
+> As of kOps 1.22, new clusters running Kubernetes 1.22 on AWS will restrict Pod access to the instance metadata service.
+> This means that Pods will also be prevented from directly assuming instance roles.
+> See [IAM Roles for ServiceAccounts](/cluster_spec/#service-account-issuer-discovery-and-aws-iam-roles-for-service-accounts-irsa) and [instance metadata](/instance_groups/#instancemetadata) documentation.
+> Before this, all Pods running on your cluster have access to the instance IAM role.
+> Consider enabling the protection mentioned above and use IRSA for your own workloads.
 
 ## Access to AWS EC2 Container Registry (ECR)
 
