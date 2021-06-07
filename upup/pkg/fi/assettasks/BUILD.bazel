@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
+        "copy.go",
         "copyfile.go",
         "copyfile_fitask.go",
         "copyimage.go",
@@ -14,6 +15,8 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/acls:go_default_library",
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/assets:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//util/pkg/hashing:go_default_library",
         "//util/pkg/vfs:go_default_library",
