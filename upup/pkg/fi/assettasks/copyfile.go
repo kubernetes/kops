@@ -32,20 +32,11 @@ import (
 
 // CopyFile copies an from a source file repository, to a target repository,
 // typically used for highly secure clusters.
-// +kops:fitask
 type CopyFile struct {
 	Name       *string
 	SourceFile *string
 	TargetFile *string
 	SHA        *string
-	Lifecycle  fi.Lifecycle
-}
-
-var _ fi.CompareWithID = &CopyFile{}
-
-func (e *CopyFile) CompareWithID() *string {
-	// or should this be the SHA?
-	return e.Name
 }
 
 // fileExtensionForSHA returns the expected extension for the given hash
@@ -61,13 +52,12 @@ func fileExtensionForSHA(sha string) (string, error) {
 	}
 }
 
-// Find attempts to find a file.
-func (e *CopyFile) Find(c *fi.Context) (*CopyFile, error) {
+func (e *CopyFile) Run(c *fi.Context) error {
 	expectedSHA := strings.TrimSpace(fi.StringValue(e.SHA))
 
 	shaExtension, err := fileExtensionForSHA(expectedSHA)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	targetSHAFile := fi.StringValue(e.TargetFile) + shaExtension
@@ -77,50 +67,19 @@ func (e *CopyFile) Find(c *fi.Context) (*CopyFile, error) {
 		if os.IsNotExist(err) {
 			klog.V(4).Infof("unable to download: %q, assuming target file is not present, and if not present may not be an error: %v",
 				targetSHAFile, err)
-			return nil, nil
+		} else {
+			klog.V(4).Infof("unable to download: %q, %v", targetSHAFile, err)
 		}
-		klog.V(4).Infof("unable to download: %q, %v", targetSHAFile, err)
-		// TODO should we throw err here?
-		return nil, nil
-	}
-	targetSHA := string(targetSHABytes)
+	} else {
+		targetSHA := string(targetSHABytes)
 
-	if strings.TrimSpace(targetSHA) == expectedSHA {
-		actual := &CopyFile{
-			Name:       e.Name,
-			TargetFile: e.TargetFile,
-			SHA:        e.SHA,
-			SourceFile: e.SourceFile,
-			Lifecycle:  e.Lifecycle,
+		if strings.TrimSpace(targetSHA) == expectedSHA {
+			klog.V(8).Infof("found matching target sha for file: %q", fi.StringValue(e.TargetFile))
+			return nil
 		}
-		klog.V(8).Infof("found matching target sha1 for file: %q", fi.StringValue(e.TargetFile))
-		return actual, nil
+
+		klog.V(8).Infof("did not find same file, found mismatching target sha1 for file: %q", fi.StringValue(e.TargetFile))
 	}
-
-	klog.V(8).Infof("did not find same file, found mismatching target sha1 for file: %q", fi.StringValue(e.TargetFile))
-	return nil, nil
-
-}
-
-// Run is the default run method.
-func (e *CopyFile) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
-}
-
-func (s *CopyFile) CheckChanges(a, e, changes *CopyFile) error {
-	if fi.StringValue(e.Name) == "" {
-		return fi.RequiredField("Name")
-	}
-	if fi.StringValue(e.SourceFile) == "" {
-		return fi.RequiredField("SourceFile")
-	}
-	if fi.StringValue(e.TargetFile) == "" {
-		return fi.RequiredField("TargetFile")
-	}
-	return nil
-}
-
-func (_ *CopyFile) Render(c *fi.Context, a, e, changes *CopyFile) error {
 
 	source := fi.StringValue(e.SourceFile)
 	target := fi.StringValue(e.TargetFile)
