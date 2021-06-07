@@ -18,7 +18,9 @@ package assettasks
 
 import (
 	"fmt"
+	"sort"
 
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
@@ -90,10 +92,44 @@ func Copy(imageAssets []*assets.ImageAsset, fileAssets []*assets.FileAsset, clus
 	}
 	defer context.Close()
 
-	err = context.RunTasks(options)
-	if err != nil {
-		return fmt.Errorf("error running tasks: %v", err)
+	ch := make(chan error, 5)
+	for i := 0; i < cap(ch); i++ {
+		ch <- nil
 	}
 
+	gotError := false
+	names := make([]string, 0, len(tasks))
+	for name := range tasks {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	for _, name := range names {
+		task := tasks[name]
+		err := <-ch
+		if err != nil {
+			klog.Warning(err)
+			gotError = true
+		}
+		go func(n string, t fi.Task) {
+			err := t.Run(context)
+			if err != nil {
+				err = fmt.Errorf("%s: %v", n, err)
+			}
+			ch <- err
+		}(name, task)
+	}
+
+	for i := 0; i < cap(ch); i++ {
+		err = <-ch
+		if err != nil {
+			klog.Warning(err)
+			gotError = true
+		}
+	}
+
+	close(ch)
+	if gotError {
+		return fmt.Errorf("not all assets copied successfully")
+	}
 	return nil
 }
