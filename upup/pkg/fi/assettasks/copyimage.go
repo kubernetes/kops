@@ -25,94 +25,13 @@ import (
 
 // CopyImage copies a docker image from a source registry, to a target registry,
 // typically used for highly secure clusters.
-// +kops:fitask
 type CopyImage struct {
 	Name        *string
 	SourceImage *string
 	TargetImage *string
-	Lifecycle   fi.Lifecycle
-}
-
-var _ fi.CompareWithID = &CopyImage{}
-
-func (e *CopyImage) CompareWithID() *string {
-	return e.Name
-}
-
-func (e *CopyImage) Find(c *fi.Context) (*CopyImage, error) {
-	return nil, nil
-
-	// The problem here is that we can tag a local image with the remote tag, but there is no way to know
-	// if that has actually been pushed to the remote registry without doing a docker push
-
-	// The solution is probably to query the registries directly, but that is a little bit more code...
-
-	// For now, we just always do the copy; it isn't _too_ slow when things have already been pushed
-
-	//d, err := newDocker()
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//source := fi.StringValue(e.SourceImage)
-	//target := fi.StringValue(e.TargetImage)
-	//
-	//targetImage, err := d.findImage(target)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//if targetImage == nil {
-	//	klog.V(4).Infof("target image %q not found", target)
-	//	return nil, nil
-	//}
-	//
-	//// We want to verify that the target image matches
-	//if err := d.pullImage(source); err != nil {
-	//	return nil, err
-	//}
-	//
-	//sourceImage, err := d.findImage(source)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//if sourceImage == nil {
-	//	return nil, fmt.Errorf("source image %q not found", source)
-	//}
-	//
-	//if sourceImage.ID == targetImage.ID {
-	//	actual := &CopyImage{}
-	//	actual.Name = e.Name
-	//	actual.SourceImage = e.SourceImage
-	//	actual.TargetImage = e.TargetImage
-	//	klog.Infof("Found image %q = %s", target, sourceImage.ID)
-	//	return actual, nil
-	//}
-	//
-	//klog.V(2).Infof("Target image %q does not match source %q: %q vs %q",
-	//	target, source,
-	//	targetImage.ID, sourceImage.ID)
-	//
-	//return nil, nil
 }
 
 func (e *CopyImage) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
-}
-
-func (s *CopyImage) CheckChanges(a, e, changes *CopyImage) error {
-	if fi.StringValue(e.Name) == "" {
-		return fi.RequiredField("Name")
-	}
-	if fi.StringValue(e.SourceImage) == "" {
-		return fi.RequiredField("SourceImage")
-	}
-	if fi.StringValue(e.TargetImage) == "" {
-		return fi.RequiredField("TargetImage")
-	}
-	return nil
-}
-
-func (_ *CopyImage) Render(c *fi.Context, a, e, changes *CopyImage) error {
 	api, err := newDockerAPI()
 	if err != nil {
 		return err

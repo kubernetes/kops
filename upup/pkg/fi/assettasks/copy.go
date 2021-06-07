@@ -42,44 +42,45 @@ func Copy(imageAssets []*assets.ImageAsset, fileAssets []*assets.FileAsset, clus
 
 	for _, imageAsset := range imageAssets {
 		if imageAsset.DownloadLocation != imageAsset.CanonicalLocation {
-			ctx := &fi.ModelBuilderContext{
-				Tasks: tasks,
-			}
-
 			copyImageTask := &CopyImage{
 				Name:        fi.String(imageAsset.DownloadLocation),
 				SourceImage: fi.String(imageAsset.CanonicalLocation),
 				TargetImage: fi.String(imageAsset.DownloadLocation),
-				Lifecycle:   fi.LifecycleSync,
 			}
 
-			if err := ctx.EnsureTask(copyImageTask); err != nil {
-				return fmt.Errorf("error adding image-copy task: %v", err)
+			if existing, ok := tasks[*copyImageTask.Name]; ok {
+				if *existing.(*CopyImage).SourceImage != *copyImageTask.SourceImage {
+					return fmt.Errorf("different sources for same image target %s: %s vs %s", *copyImageTask.Name, *copyImageTask.SourceImage, *existing.(*CopyImage).SourceImage)
+				}
 			}
-			tasks = ctx.Tasks
+
+			tasks[*copyImageTask.Name] = copyImageTask
 		}
 	}
 
 	for _, fileAsset := range fileAssets {
-
-		// test if the asset needs to be copied
 		if fileAsset.DownloadURL.String() != fileAsset.CanonicalURL.String() {
-			ctx := &fi.ModelBuilderContext{
-				Tasks: tasks,
-			}
-
 			copyFileTask := &CopyFile{
 				Name:       fi.String(fileAsset.CanonicalURL.String()),
 				TargetFile: fi.String(fileAsset.DownloadURL.String()),
 				SourceFile: fi.String(fileAsset.CanonicalURL.String()),
 				SHA:        fi.String(fileAsset.SHAValue),
-				Lifecycle:  fi.LifecycleSync,
 			}
 
-			if err := ctx.EnsureTask(copyFileTask); err != nil {
-				return fmt.Errorf("error adding file-copy task: %v", err)
+			if existing, ok := tasks[*copyFileTask.Name]; ok {
+				e, ok := existing.(*CopyFile)
+				if !ok {
+					return fmt.Errorf("different types for copy target %s", *copyFileTask.Name)
+				}
+				if *e.TargetFile != *copyFileTask.TargetFile {
+					return fmt.Errorf("different targets for same file %s: %s vs %s", *copyFileTask.Name, *copyFileTask.TargetFile, *e.TargetFile)
+				}
+				if *e.SHA != *copyFileTask.SHA {
+					return fmt.Errorf("different sha for same file %s: %s vs %s", *copyFileTask.Name, *copyFileTask.SHA, *e.SHA)
+				}
 			}
-			tasks = ctx.Tasks
+
+			tasks[*copyFileTask.Name] = copyFileTask
 		}
 	}
 
