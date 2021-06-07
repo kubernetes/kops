@@ -39588,6 +39588,11 @@ spec:
             # Enable WireGuard encryption for all on-the-wire pod-to-pod traffic
             - name: FELIX_WIREGUARDENABLED
               value: "{{ .Networking.Calico.WireguardEnabled }}"
+            # Enable support for HTTP forward proxy
+            {{ range $name, $value := ProxyEnv }}
+            - name: {{ $name }}
+              value: {{ $value }}
+            {{ end }}
           securityContext:
             privileged: true
           resources:
@@ -39790,7 +39795,6 @@ spec:
 
 ---
 # Source: calico/templates/configure-canal.yaml
-
 
 `)
 
