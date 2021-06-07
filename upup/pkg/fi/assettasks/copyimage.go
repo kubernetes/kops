@@ -20,18 +20,17 @@ import (
 	"fmt"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 // CopyImage copies a docker image from a source registry, to a target registry,
 // typically used for highly secure clusters.
 type CopyImage struct {
-	Name        *string
-	SourceImage *string
-	TargetImage *string
+	Name        string
+	SourceImage string
+	TargetImage string
 }
 
-func (e *CopyImage) Run(c *fi.Context) error {
+func (e *CopyImage) Run() error {
 	api, err := newDockerAPI()
 	if err != nil {
 		return err
@@ -43,8 +42,8 @@ func (e *CopyImage) Run(c *fi.Context) error {
 
 	}
 
-	source := fi.StringValue(e.SourceImage)
-	target := fi.StringValue(e.TargetImage)
+	source := e.SourceImage
+	target := e.TargetImage
 
 	klog.Infof("copying docker image from %q to %q", source, target)
 
