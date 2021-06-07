@@ -953,6 +953,7 @@ gopkg.in/yaml.v3
 helm.sh/helm/v3/internal/experimental/registry
 helm.sh/helm/v3/internal/ignore
 helm.sh/helm/v3/internal/sympath
+helm.sh/helm/v3/internal/third_party/k8s.io/kubernetes/deployment/util
 helm.sh/helm/v3/internal/tlsutil
 helm.sh/helm/v3/internal/urlutil
 helm.sh/helm/v3/internal/version
@@ -964,6 +965,7 @@ helm.sh/helm/v3/pkg/cli/values
 helm.sh/helm/v3/pkg/getter
 helm.sh/helm/v3/pkg/helmpath
 helm.sh/helm/v3/pkg/helmpath/xdg
+helm.sh/helm/v3/pkg/kube
 helm.sh/helm/v3/pkg/plugin
 helm.sh/helm/v3/pkg/strvals
 # k8s.io/api v0.21.1 => k8s.io/api v0.21.1
@@ -1353,6 +1355,7 @@ k8s.io/client-go/tools/record
 k8s.io/client-go/tools/record/util
 k8s.io/client-go/tools/reference
 k8s.io/client-go/tools/remotecommand
+k8s.io/client-go/tools/watch
 k8s.io/client-go/transport
 k8s.io/client-go/transport/spdy
 k8s.io/client-go/util/cert
