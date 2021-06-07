@@ -23,75 +23,59 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
-type copyAssetsTarget struct {
-}
-
-func (c copyAssetsTarget) Finish(taskMap map[string]fi.Task) error {
-	return nil
-}
-
-func (c copyAssetsTarget) ProcessDeletions() bool {
-	return false
+type assetTask interface {
+	Run() error
 }
 
 func Copy(imageAssets []*assets.ImageAsset, fileAssets []*assets.FileAsset, cluster *kops.Cluster) error {
-	tasks := map[string]fi.Task{}
+	tasks := map[string]assetTask{}
 
 	for _, imageAsset := range imageAssets {
 		if imageAsset.DownloadLocation != imageAsset.CanonicalLocation {
 			copyImageTask := &CopyImage{
-				Name:        fi.String(imageAsset.DownloadLocation),
-				SourceImage: fi.String(imageAsset.CanonicalLocation),
-				TargetImage: fi.String(imageAsset.DownloadLocation),
+				Name:        imageAsset.DownloadLocation,
+				SourceImage: imageAsset.CanonicalLocation,
+				TargetImage: imageAsset.DownloadLocation,
 			}
 
-			if existing, ok := tasks[*copyImageTask.Name]; ok {
-				if *existing.(*CopyImage).SourceImage != *copyImageTask.SourceImage {
-					return fmt.Errorf("different sources for same image target %s: %s vs %s", *copyImageTask.Name, *copyImageTask.SourceImage, *existing.(*CopyImage).SourceImage)
+			if existing, ok := tasks[copyImageTask.Name]; ok {
+				if existing.(*CopyImage).SourceImage != copyImageTask.SourceImage {
+					return fmt.Errorf("different sources for same image target %s: %s vs %s", copyImageTask.Name, copyImageTask.SourceImage, existing.(*CopyImage).SourceImage)
 				}
 			}
 
-			tasks[*copyImageTask.Name] = copyImageTask
+			tasks[copyImageTask.Name] = copyImageTask
 		}
 	}
 
 	for _, fileAsset := range fileAssets {
 		if fileAsset.DownloadURL.String() != fileAsset.CanonicalURL.String() {
 			copyFileTask := &CopyFile{
-				Name:       fi.String(fileAsset.CanonicalURL.String()),
-				TargetFile: fi.String(fileAsset.DownloadURL.String()),
-				SourceFile: fi.String(fileAsset.CanonicalURL.String()),
-				SHA:        fi.String(fileAsset.SHAValue),
+				Name:       fileAsset.CanonicalURL.String(),
+				TargetFile: fileAsset.DownloadURL.String(),
+				SourceFile: fileAsset.CanonicalURL.String(),
+				SHA:        fileAsset.SHAValue,
+				Cluster:    cluster,
 			}
 
-			if existing, ok := tasks[*copyFileTask.Name]; ok {
+			if existing, ok := tasks[copyFileTask.Name]; ok {
 				e, ok := existing.(*CopyFile)
 				if !ok {
-					return fmt.Errorf("different types for copy target %s", *copyFileTask.Name)
+					return fmt.Errorf("different types for copy target %s", copyFileTask.Name)
 				}
-				if *e.TargetFile != *copyFileTask.TargetFile {
-					return fmt.Errorf("different targets for same file %s: %s vs %s", *copyFileTask.Name, *copyFileTask.TargetFile, *e.TargetFile)
+				if e.TargetFile != copyFileTask.TargetFile {
+					return fmt.Errorf("different targets for same file %s: %s vs %s", copyFileTask.Name, copyFileTask.TargetFile, e.TargetFile)
 				}
-				if *e.SHA != *copyFileTask.SHA {
-					return fmt.Errorf("different sha for same file %s: %s vs %s", *copyFileTask.Name, *copyFileTask.SHA, *e.SHA)
+				if e.SHA != copyFileTask.SHA {
+					return fmt.Errorf("different sha for same file %s: %s vs %s", copyFileTask.Name, copyFileTask.SHA, e.SHA)
 				}
 			}
 
-			tasks[*copyFileTask.Name] = copyFileTask
+			tasks[copyFileTask.Name] = copyFileTask
 		}
 	}
-
-	var options fi.RunTasksOptions
-	options.InitDefaults()
-
-	context, err := fi.NewContext(&copyAssetsTarget{}, cluster, nil, nil, nil, nil, true, tasks)
-	if err != nil {
-		return fmt.Errorf("error building context: %v", err)
-	}
-	defer context.Close()
 
 	ch := make(chan error, 5)
 	for i := 0; i < cap(ch); i++ {
@@ -111,8 +95,8 @@ func Copy(imageAssets []*assets.ImageAsset, fileAssets []*assets.FileAsset, clus
 			klog.Warning(err)
 			gotError = true
 		}
-		go func(n string, t fi.Task) {
-			err := t.Run(context)
+		go func(n string, t assetTask) {
+			err := t.Run()
 			if err != nil {
 				err = fmt.Errorf("%s: %v", n, err)
 			}
@@ -121,7 +105,7 @@ func Copy(imageAssets []*assets.ImageAsset, fileAssets []*assets.FileAsset, clus
 	}
 
 	for i := 0; i < cap(ch); i++ {
-		err = <-ch
+		err := <-ch
 		if err != nil {
 			klog.Warning(err)
 			gotError = true
