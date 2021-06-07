@@ -173,13 +173,8 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 			return nil, fmt.Errorf("error applying update from %q: %v", manifestURL, err)
 		}
 
-		if required.ExistingVersion != nil {
-			if a.Spec.NeedsRollingUpdate != "" {
-				err = a.AddNeedsUpdateLabel(ctx, k8sClient)
-				if err != nil {
-					return nil, fmt.Errorf("error adding needs-update label: %v", err)
-				}
-			}
+		if err := a.AddNeedsUpdateLabel(ctx, k8sClient, required); err != nil {
+			return nil, fmt.Errorf("error adding needs-update label: %v", err)
 		}
 
 		channel := a.buildChannel()
@@ -197,7 +192,19 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 	return required, nil
 }
 
-func (a *Addon) AddNeedsUpdateLabel(ctx context.Context, k8sClient kubernetes.Interface) error {
+func (a *Addon) AddNeedsUpdateLabel(ctx context.Context, k8sClient kubernetes.Interface, required *AddonUpdate) error {
+	if required.ExistingVersion != nil {
+		if a.Spec.NeedsRollingUpdate != "" {
+			err := a.patchNeedsUpdateLabel(ctx, k8sClient)
+			if err != nil {
+				return fmt.Errorf("error patching needs-update label: %v", err)
+			}
+		}
+	}
+	return nil
+}
+
+func (a *Addon) patchNeedsUpdateLabel(ctx context.Context, k8sClient kubernetes.Interface) error {
 	klog.Infof("addon %v wants to update %v nodes", a.Name, a.Spec.NeedsRollingUpdate)
 	selector := ""
 	switch a.Spec.NeedsRollingUpdate {
