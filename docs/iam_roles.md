@@ -5,28 +5,9 @@ By default kOps creates two IAM roles for the cluster: one for the masters, and 
 > Please note that currently all Pods running on your cluster have access to the instance IAM role.
 > Consider using projects such as [kube2iam](https://github.com/jtblin/kube2iam) to prevent that.
 
-Work has been done on scoping permissions to the minimum required for a functional Kubernetes Cluster, resulting in a fully revised set of IAM policies for both master & compute nodes.
+## Access to AWS EC2 Container Registry (ECR)
 
-An example of the new IAM policies can be found here:
-
-- Master Nodes: https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_master_strict.json
-- Compute Nodes: https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_node_strict.json
-
-On provisioning a new cluster with kOps v1.8.0 or above, by default you will be using the new stricter IAM policies. Upgrading an existing cluster will use the legacy IAM privileges to reduce risk of potential regression.
-
-In order to update your cluster to use the strict IAM privileges, add the following within your Cluster Spec:
-```yaml
-iam:
-  legacy: false
-```
-
-Following this, run a cluster update to have the changes take effect:
-
-```shell
-kops update cluster ${CLUSTER_NAME} --yes
-```
-
-The Strict IAM flag by default will not grant nodes access to the AWS EC2 Container Registry (ECR), as can be seen by the above example policy documents. To grant access to ECR, update your Cluster Spec with the following and then perform a cluster update:
+The default IAM roles will not grant nodes access to the AWS EC2 Container Registry (ECR). To grant access to ECR, update your Cluster Spec with the following and then perform a cluster update:
 ```yaml
 iam:
   allowContainerRegistry: true
