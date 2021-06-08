@@ -27,7 +27,6 @@ go_library(
         "//vendor/github.com/evanphx/json-patch:go_default_library",
         "//vendor/github.com/imdario/mergo:go_default_library",
         "//vendor/github.com/pkg/errors:go_default_library",
-        "//vendor/sigs.k8s.io/kustomize/api/filesys:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/filters/annotations:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/filters/imagetag:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/filters/labels:go_default_library",
