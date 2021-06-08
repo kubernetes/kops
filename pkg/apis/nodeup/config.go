@@ -49,6 +49,8 @@ type Config struct {
 	Channels []string `json:"channels,omitempty"`
 	// ApiserverAdditionalIPs are additional IP address to put in the apiserver server cert.
 	ApiserverAdditionalIPs []string `json:",omitempty"`
+	// WarmPoolImages are the container images to pre-pull during instance pre-initialization
+	WarmPoolImages []string `json:"warmPoolImages,omitempty"`
 
 	// Manifests for running etcd
 	EtcdManifests []string `json:"etcdManifests,omitempty"`

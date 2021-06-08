@@ -35,6 +35,7 @@ go_library(
         "sysctls.go",
         "update_service.go",
         "volumes.go",
+        "warm_pool.go",
     ],
     importpath = "k8s.io/kops/nodeup/pkg/model",
     visibility = ["//visibility:public"],

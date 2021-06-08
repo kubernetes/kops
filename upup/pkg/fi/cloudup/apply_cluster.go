@@ -25,6 +25,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -1385,13 +1386,18 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	config.Channels = n.channels
 	config.EtcdManifests = n.etcdManifests[role]
 
-	if cluster.Spec.Containerd == nil {
-		cluster.Spec.Containerd = &kops.ContainerdConfig{}
+	if cluster.Spec.ContainerRuntime == "containerd" {
+		if cluster.Spec.Containerd == nil {
+			cluster.Spec.Containerd = &kops.ContainerdConfig{}
+		}
+		config.ContainerdConfig = buildContainerdConfig(cluster)
 	}
-	config.ContainerdConfig = buildContainerdConfig(cluster)
+
+	if ig.Spec.WarmPool != nil || cluster.Spec.WarmPool != nil {
+		config.WarmPoolImages = n.buildWarmPoolImages(ig)
+	}
 
 	return config, auxConfig, nil
-
 }
 
 func buildContainerdConfig(cluster *kops.Cluster) string {
@@ -1421,4 +1427,50 @@ func buildContainerdConfig(cluster *kops.Cluster) string {
 		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "cni", "conf_template"}, "/etc/containerd/config-cni.template")
 	}
 	return config.String()
+}
+
+// buildWarmPoolImages returns a list of container images that should be pre-pulled during instance pre-initialization
+func (n *nodeUpConfigBuilder) buildWarmPoolImages(ig *kops.InstanceGroup) []string {
+	if ig == nil || ig.Spec.Role == kops.InstanceGroupRoleMaster {
+		return nil
+	}
+
+	images := map[string]bool{}
+
+	// Add component and addon images that impact startup time
+	// TODO: Exclude images that only run on control-plane nodes in a generic way
+	desiredImagePrefixes := []string{
+		"602401143452.dkr.ecr.us-west-2.amazonaws.com/", // Amazon VPC CNI
+		// Ignore images hosted on docker.io until a solution for rate limiting is implemented
+		//"docker.io/calico/",
+		//"docker.io/cilium/",
+		//"docker.io/cloudnativelabs/kube-router:",
+		//"docker.io/weaveworks/",
+		"k8s.gcr.io/kube-proxy:",
+		"k8s.gcr.io/provider-aws/",
+		"k8s.gcr.io/sig-storage/csi-node-driver-registrar:",
+		"k8s.gcr.io/sig-storage/livenessprobe:",
+		"quay.io/calico/",
+		"quay.io/cilium/",
+		"quay.io/coreos/flannel:",
+		"quay.io/weaveworks/",
+	}
+	assetBuilder := n.assetBuilder
+	if assetBuilder != nil {
+		for _, image := range assetBuilder.ImageAssets {
+			for _, prefix := range desiredImagePrefixes {
+				if strings.HasPrefix(image.DownloadLocation, prefix) {
+					images[image.DownloadLocation] = true
+				}
+			}
+		}
+	}
+
+	var unique []string
+	for image := range images {
+		unique = append(unique, image)
+	}
+	sort.Strings(unique)
+
+	return unique
 }
