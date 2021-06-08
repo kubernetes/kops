@@ -9,9 +9,6 @@ spec:
   authorization:
     rbac: {}
   channel: stable
-  cloudConfig:
-    awsEBSCSIDriver:
-      enabled: true
   cloudProvider: aws
   configBase: memfs://tests/minimal.example.com
   etcdClusters:
