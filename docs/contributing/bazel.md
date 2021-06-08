@@ -2,7 +2,7 @@
 
 ## Overview
 
-Building with Bazel offers a deterministic, faster build, including creating smaller docker images.
+Building with Bazel offers a deterministic, faster build, including creating smaller container images.
 
 While bazel works well for small projects, building with kubernetes still has a few challenges. We take the following approach:
 
