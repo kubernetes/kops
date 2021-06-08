@@ -230,6 +230,10 @@ type StandaloneOptions struct {
 // and instrumenting the webhook with metrics.
 //
 // Use this to attach your webhook to an arbitrary HTTP server or mux.
+//
+// Note that you are responsible for terminating TLS if you use StandaloneWebhook
+// in your own server/mux. In order to be accessed by a kubernetes cluster,
+// all webhook servers require TLS.
 func StandaloneWebhook(hook *Webhook, opts StandaloneOptions) (http.Handler, error) {
 	if opts.Scheme == nil {
 		opts.Scheme = scheme.Scheme

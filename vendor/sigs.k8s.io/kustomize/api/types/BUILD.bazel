@@ -19,6 +19,7 @@ go_library(
         "inventory.go",
         "kustomization.go",
         "kvpairsources.go",
+        "labels.go",
         "loadrestrictions.go",
         "loadrestrictions_string.go",
         "objectmeta.go",

@@ -24,8 +24,6 @@
 SHELL:=/usr/bin/env bash
 .DEFAULT_GOAL:=help
 
-export WHAT ?= ./...
-
 # Use GOPROXY environment variable if set
 GOPROXY := $(shell go env GOPROXY)
 ifeq ($(GOPROXY),)
@@ -56,8 +54,12 @@ help:  ## Display this help
 ## --------------------------------------
 
 .PHONY: test
-test: ## Run the script check-everything.sh which will check all.
+test: test-tools ## Run the script check-everything.sh which will check all.
 	TRACE=1 ./hack/check-everything.sh
+
+.PHONY: test-tools
+test-tools: ## tests the tools codebase (setup-envtest)
+	cd tools/setup-envtest && go test ./...
 
 ## --------------------------------------
 ## Binaries
@@ -76,9 +78,16 @@ $(CONTROLLER_GEN): $(TOOLS_DIR)/go.mod # Build controller-gen from tools folder.
 ## Linting
 ## --------------------------------------
 
-.PHONY: lint
-lint: $(GOLANGCI_LINT) ## Lint codebase.
+.PHONY: lint-libs
+lint-libs: $(GOLANGCI_LINT) ## Lint library codebase.
 	$(GOLANGCI_LINT) run -v
+
+.PHONY: lint-tools
+lint-tools: $(GOLANGCI_LINT) ## Lint tools codebase.
+	cd tools/setup-envtest && $(GOLANGCI_LINT) run -v
+
+.PHONY: lint
+lint: lint-libs lint-tools
 
 ## --------------------------------------
 ## Generate

@@ -3,7 +3,6 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "conflictdetector.go",
         "doc.go",
         "factory.go",
         "idset.go",
@@ -15,12 +14,11 @@ go_library(
     deps = [
         "//vendor/sigs.k8s.io/kustomize/api/filters/patchstrategicmerge:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/ifc:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/api/internal/generators:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/internal/kusterr:go_default_library",
-        "//vendor/sigs.k8s.io/kustomize/api/internal/wrappy:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/konfig:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/resid:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/types:go_default_library",
-        "//vendor/sigs.k8s.io/kustomize/kyaml/filtersutil:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/kio:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",
         "//vendor/sigs.k8s.io/yaml:go_default_library",
