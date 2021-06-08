@@ -1,0 +1,29 @@
+{
+  "Statement": [
+    {
+      "Action": [
+        "ec2:DescribeInstances",
+        "ec2:DescribeRegions"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Action": "autoscaling:DescribeAutoScalingInstances",
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Action": "kms:GenerateRandom",
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    }
+  ],
+  "Version": "2012-10-17"
+}
