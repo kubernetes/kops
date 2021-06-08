@@ -7,6 +7,9 @@ spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   channel: stable
+  cloudConfig:
+    awsEBSCSIDriver:
+      enabled: true
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal-warmpool.example.com
   etcdClusters:
@@ -26,7 +29,7 @@ spec:
   masterPublicName: api.minimal-warmpool.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    cni: {}
+    cilium: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
     - 0.0.0.0/0
