@@ -309,6 +309,20 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, f Mu
 	if (hasBeforeStatus || hasAfterStatus) && !reflect.DeepEqual(beforeStatus, afterStatus) {
 		// Only issue a Status Patch if the resource has a status and the beforeStatus
 		// and afterStatus copies differ
+		if result == OperationResultUpdated {
+			// If Status was replaced by Patch before, set it to afterStatus
+			objectAfterPatch, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
+			if err != nil {
+				return result, err
+			}
+			if err = unstructured.SetNestedField(objectAfterPatch, afterStatus, "status"); err != nil {
+				return result, err
+			}
+			// If Status was replaced by Patch before, restore patched structure to the obj
+			if err = runtime.DefaultUnstructuredConverter.FromUnstructured(objectAfterPatch, obj); err != nil {
+				return result, err
+			}
+		}
 		if err := c.Status().Patch(ctx, obj, statusPatch); err != nil {
 			return result, err
 		}
