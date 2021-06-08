@@ -50,7 +50,7 @@ type Cluster interface {
 
 	// GetClient returns a client configured with the Config. This client may
 	// not be a fully "direct" client -- it may read from a cache, for
-	// instance.  See Options.ClientBuilder for more information on how the default
+	// instance.  See Options.NewClient for more information on how the default
 	// implementation works.
 	GetClient() client.Client
 

@@ -51,16 +51,17 @@ func (wh *Webhook) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var reviewResponse Response
-	if r.Body != nil {
-		if body, err = ioutil.ReadAll(r.Body); err != nil {
-			wh.log.Error(err, "unable to read the body from the incoming request")
-			reviewResponse = Errored(http.StatusBadRequest, err)
-			wh.writeResponse(w, reviewResponse)
-			return
-		}
-	} else {
+	if r.Body == nil {
 		err = errors.New("request body is empty")
 		wh.log.Error(err, "bad request")
+		reviewResponse = Errored(http.StatusBadRequest, err)
+		wh.writeResponse(w, reviewResponse)
+		return
+	}
+
+	defer r.Body.Close()
+	if body, err = ioutil.ReadAll(r.Body); err != nil {
+		wh.log.Error(err, "unable to read the body from the incoming request")
 		reviewResponse = Errored(http.StatusBadRequest, err)
 		wh.writeResponse(w, reviewResponse)
 		return
@@ -96,7 +97,6 @@ func (wh *Webhook) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	wh.log.V(1).Info("received request", "UID", req.UID, "kind", req.Kind, "resource", req.Resource)
 
-	// TODO: add panic-recovery for Handle
 	reviewResponse = wh.Handle(ctx, req)
 	wh.writeResponseTyped(w, reviewResponse, actualAdmRevGVK)
 }
