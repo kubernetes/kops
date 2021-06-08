@@ -594,7 +594,7 @@ ccflags="$@"
 		$2 == "HID_MAX_DESCRIPTOR_SIZE" ||
 		$2 ~ /^_?HIDIOC/ ||
 		$2 ~ /^BUS_(USB|HIL|BLUETOOTH|VIRTUAL)$/ ||
-		$2 ~ /^MTD_/ ||
+		$2 ~ /^MTD/ ||
 		$2 ~ /^OTP/ ||
 		$2 ~ /^MEM/ ||
 		$2 ~ /^BLK[A-Z]*(GET$|SET$|BUF$|PART$|SIZE)/ {printf("\t%s = C.%s\n", $2, $2)}

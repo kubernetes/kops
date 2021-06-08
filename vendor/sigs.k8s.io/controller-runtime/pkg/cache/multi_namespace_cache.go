@@ -29,14 +29,19 @@ import (
 	"k8s.io/client-go/rest"
 	toolscache "k8s.io/client-go/tools/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/internal/objectutil"
 )
 
 // NewCacheFunc - Function for creating a new cache from the options and a rest config
 type NewCacheFunc func(config *rest.Config, opts Options) (Cache, error)
 
+// a new global namespaced cache to handle cluster scoped resources
+const globalCache = "_cluster-scope"
+
 // MultiNamespacedCacheBuilder - Builder function to create a new multi-namespaced cache.
 // This will scope the cache to a list of namespaces. Listing for all namespaces
-// will list for all the namespaces that this knows about. Note that this is not intended
+// will list for all the namespaces that this knows about. By default this will create
+// a global cache for cluster scoped resource. Note that this is not intended
 // to be used for excluding namespaces, this is better done via a Predicate. Also note that
 // you may face performance issues when using this with a high number of namespaces.
 func MultiNamespacedCacheBuilder(namespaces []string) NewCacheFunc {
@@ -45,7 +50,15 @@ func MultiNamespacedCacheBuilder(namespaces []string) NewCacheFunc {
 		if err != nil {
 			return nil, err
 		}
+
 		caches := map[string]Cache{}
+
+		// create a cache for cluster scoped resources
+		gCache, err := New(config, opts)
+		if err != nil {
+			return nil, fmt.Errorf("error creating global cache %v", err)
+		}
+
 		for _, ns := range namespaces {
 			opts.Namespace = ns
 			c, err := New(config, opts)
@@ -54,7 +67,7 @@ func MultiNamespacedCacheBuilder(namespaces []string) NewCacheFunc {
 			}
 			caches[ns] = c
 		}
-		return &multiNamespaceCache{namespaceToCache: caches, Scheme: opts.Scheme}, nil
+		return &multiNamespaceCache{namespaceToCache: caches, Scheme: opts.Scheme, RESTMapper: opts.Mapper, clusterCache: gCache}, nil
 	}
 }
 
@@ -65,6 +78,8 @@ func MultiNamespacedCacheBuilder(namespaces []string) NewCacheFunc {
 type multiNamespaceCache struct {
 	namespaceToCache map[string]Cache
 	Scheme           *runtime.Scheme
+	RESTMapper       meta.RESTMapper
+	clusterCache     Cache
 }
 
 var _ Cache = &multiNamespaceCache{}
@@ -72,6 +87,23 @@ var _ Cache = &multiNamespaceCache{}
 // Methods for multiNamespaceCache to conform to the Informers interface
 func (c *multiNamespaceCache) GetInformer(ctx context.Context, obj client.Object) (Informer, error) {
 	informers := map[string]Informer{}
+
+	// If the object is clusterscoped, get the informer from clusterCache,
+	// if not use the namespaced caches.
+	isNamespaced, err := objectutil.IsAPINamespaced(obj, c.Scheme, c.RESTMapper)
+	if err != nil {
+		return nil, err
+	}
+	if !isNamespaced {
+		clusterCacheInf, err := c.clusterCache.GetInformer(ctx, obj)
+		if err != nil {
+			return nil, err
+		}
+		informers[globalCache] = clusterCacheInf
+
+		return &multiNamespaceInformer{namespaceToInformer: informers}, nil
+	}
+
 	for ns, cache := range c.namespaceToCache {
 		informer, err := cache.GetInformer(ctx, obj)
 		if err != nil {
@@ -79,11 +111,29 @@ func (c *multiNamespaceCache) GetInformer(ctx context.Context, obj client.Object
 		}
 		informers[ns] = informer
 	}
+
 	return &multiNamespaceInformer{namespaceToInformer: informers}, nil
 }
 
 func (c *multiNamespaceCache) GetInformerForKind(ctx context.Context, gvk schema.GroupVersionKind) (Informer, error) {
 	informers := map[string]Informer{}
+
+	// If the object is clusterscoped, get the informer from clusterCache,
+	// if not use the namespaced caches.
+	isNamespaced, err := objectutil.IsAPINamespacedWithGVK(gvk, c.Scheme, c.RESTMapper)
+	if err != nil {
+		return nil, err
+	}
+	if !isNamespaced {
+		clusterCacheInf, err := c.clusterCache.GetInformerForKind(ctx, gvk)
+		if err != nil {
+			return nil, err
+		}
+		informers[globalCache] = clusterCacheInf
+
+		return &multiNamespaceInformer{namespaceToInformer: informers}, nil
+	}
+
 	for ns, cache := range c.namespaceToCache {
 		informer, err := cache.GetInformerForKind(ctx, gvk)
 		if err != nil {
@@ -91,10 +141,20 @@ func (c *multiNamespaceCache) GetInformerForKind(ctx context.Context, gvk schema
 		}
 		informers[ns] = informer
 	}
+
 	return &multiNamespaceInformer{namespaceToInformer: informers}, nil
 }
 
 func (c *multiNamespaceCache) Start(ctx context.Context) error {
+	// start global cache
+	go func() {
+		err := c.clusterCache.Start(ctx)
+		if err != nil {
+			log.Error(err, "cluster scoped cache failed to start")
+		}
+	}()
+
+	// start namespaced caches
 	for ns, cache := range c.namespaceToCache {
 		go func(ns string, cache Cache) {
 			err := cache.Start(ctx)
@@ -103,6 +163,7 @@ func (c *multiNamespaceCache) Start(ctx context.Context) error {
 			}
 		}(ns, cache)
 	}
+
 	<-ctx.Done()
 	return nil
 }
@@ -114,10 +175,24 @@ func (c *multiNamespaceCache) WaitForCacheSync(ctx context.Context) bool {
 			synced = s
 		}
 	}
+
+	// check if cluster scoped cache has synced
+	if !c.clusterCache.WaitForCacheSync(ctx) {
+		synced = false
+	}
 	return synced
 }
 
 func (c *multiNamespaceCache) IndexField(ctx context.Context, obj client.Object, field string, extractValue client.IndexerFunc) error {
+	isNamespaced, err := objectutil.IsAPINamespaced(obj, c.Scheme, c.RESTMapper)
+	if err != nil {
+		return nil
+	}
+
+	if !isNamespaced {
+		return c.clusterCache.IndexField(ctx, obj, field, extractValue)
+	}
+
 	for _, cache := range c.namespaceToCache {
 		if err := cache.IndexField(ctx, obj, field, extractValue); err != nil {
 			return err
@@ -127,6 +202,16 @@ func (c *multiNamespaceCache) IndexField(ctx context.Context, obj client.Object,
 }
 
 func (c *multiNamespaceCache) Get(ctx context.Context, key client.ObjectKey, obj client.Object) error {
+	isNamespaced, err := objectutil.IsAPINamespaced(obj, c.Scheme, c.RESTMapper)
+	if err != nil {
+		return err
+	}
+
+	if !isNamespaced {
+		// Look into the global cache to fetch the object
+		return c.clusterCache.Get(ctx, key, obj)
+	}
+
 	cache, ok := c.namespaceToCache[key.Namespace]
 	if !ok {
 		return fmt.Errorf("unable to get: %v because of unknown namespace for the cache", key)
@@ -138,6 +223,17 @@ func (c *multiNamespaceCache) Get(ctx context.Context, key client.ObjectKey, obj
 func (c *multiNamespaceCache) List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error {
 	listOpts := client.ListOptions{}
 	listOpts.ApplyOptions(opts)
+
+	isNamespaced, err := objectutil.IsAPINamespaced(list, c.Scheme, c.RESTMapper)
+	if err != nil {
+		return err
+	}
+
+	if !isNamespaced {
+		// Look at the global cache to get the objects with the specified GVK
+		return c.clusterCache.List(ctx, list, opts...)
+	}
+
 	if listOpts.Namespace != corev1.NamespaceAll {
 		cache, ok := c.namespaceToCache[listOpts.Namespace]
 		if !ok {
@@ -155,10 +251,13 @@ func (c *multiNamespaceCache) List(ctx context.Context, list client.ObjectList, 
 	if err != nil {
 		return err
 	}
+
+	limitSet := listOpts.Limit > 0
+
 	var resourceVersion string
 	for _, cache := range c.namespaceToCache {
 		listObj := list.DeepCopyObject().(client.ObjectList)
-		err = cache.List(ctx, listObj, opts...)
+		err = cache.List(ctx, listObj, &listOpts)
 		if err != nil {
 			return err
 		}
@@ -173,6 +272,17 @@ func (c *multiNamespaceCache) List(ctx context.Context, list client.ObjectList, 
 		allItems = append(allItems, items...)
 		// The last list call should have the most correct resource version.
 		resourceVersion = accessor.GetResourceVersion()
+		if limitSet {
+			// decrement Limit by the number of items
+			// fetched from the current namespace.
+			listOpts.Limit -= int64(len(items))
+			// if a Limit was set and the number of
+			// items read has reached this set limit,
+			// then stop reading.
+			if listOpts.Limit == 0 {
+				break
+			}
+		}
 	}
 	listAccessor.SetResourceVersion(resourceVersion)
 

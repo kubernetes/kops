@@ -7585,7 +7585,10 @@ func (m *NamedAny) ToRawInfo() *yaml.Node {
 		info.Content = append(info.Content, compiler.NewScalarNodeForString("name"))
 		info.Content = append(info.Content, compiler.NewScalarNodeForString(m.Name))
 	}
-	// &{Name:value Type:Any StringEnumValues:[] MapType: Repeated:false Pattern: Implicit:false Description:Mapped value}
+	if m.Value != nil {
+		info.Content = append(info.Content, compiler.NewScalarNodeForString("value"))
+		info.Content = append(info.Content, m.Value.ToRawInfo())
+	}
 	return info
 }
 
