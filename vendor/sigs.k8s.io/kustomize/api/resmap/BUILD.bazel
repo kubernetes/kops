@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "factory.go",
         "idslice.go",
-        "merginator.go",
         "resmap.go",
         "reswrangler.go",
     ],
@@ -20,6 +19,5 @@ go_library(
         "//vendor/sigs.k8s.io/kustomize/api/resource:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/types:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",
-        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )

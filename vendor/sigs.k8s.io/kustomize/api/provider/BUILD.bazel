@@ -7,11 +7,9 @@ go_library(
     importpath = "sigs.k8s.io/kustomize/api/provider",
     visibility = ["//visibility:public"],
     deps = [
+        "//vendor/sigs.k8s.io/kustomize/api/hasher:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/ifc:go_default_library",
-        "//vendor/sigs.k8s.io/kustomize/api/internal/conflict:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/internal/validate:go_default_library",
-        "//vendor/sigs.k8s.io/kustomize/api/internal/wrappy:go_default_library",
-        "//vendor/sigs.k8s.io/kustomize/api/konfig:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/resource:go_default_library",
     ],
 )
