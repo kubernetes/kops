@@ -57,6 +57,7 @@ func (n *namespacedClient) RESTMapper() meta.RESTMapper {
 
 // isNamespaced returns true if the object is namespace scoped.
 // For unstructured objects the gvk is found from the object itself.
+// TODO: this is repetitive code. Remove this and use ojectutil.IsNamespaced.
 func isNamespaced(c Client, obj runtime.Object) (bool, error) {
 	var gvk schema.GroupVersionKind
 	var err error
