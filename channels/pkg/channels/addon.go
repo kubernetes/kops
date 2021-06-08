@@ -26,7 +26,7 @@ import (
 	"os"
 	"path"
 
-	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/util/pkg/vfs"
 
@@ -158,7 +158,7 @@ func (a *Addon) GetManifestFullUrl() (*url.URL, error) {
 	return manifestURL, nil
 }
 
-func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interface, cmClient certmanager.Interface) (*AddonUpdate, error) {
+func (a *Addon) EnsureUpdated(ctx context.Context, kube helmkube.Interface, k8sClient kubernetes.Interface, cmClient certmanager.Interface) (*AddonUpdate, error) {
 	required, err := a.GetRequiredUpdates(ctx, k8sClient, cmClient)
 	if err != nil {
 		return nil, err
@@ -168,9 +168,6 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 	}
 
 	if required.NewVersion != nil {
-		getter := genericclioptions.NewConfigFlags(true)
-		kube := helmkube.New(getter)
-		kube.Log = klog.Infof
 
 		manifestURL, err := a.GetManifestFullUrl()
 		if err != nil {
@@ -201,34 +198,60 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 		}
 
 		currentManifest, err := appliedPath.ReadFile()
-
 		if err != nil {
 			if os.IsNotExist(err) {
-				_, err := kube.Create(target)
-				if err != nil {
-					return nil, err
-				}
+				klog.Infof("installing new addon %q", required.Name)
+				currentManifest = []byte{}
 			} else {
 				return nil, err
 			}
-		} else {
-			current, err := kube.Build(bytes.NewBuffer(currentManifest), true)
-			if err != nil {
-				return nil, err
-			}
-
-			if _, err := kube.Update(current, target, true); err != nil {
-				return nil, err
-			}
-
 		}
 
-		/*
-			//		err = Apply(manifest)
+		current, err := kube.Build(bytes.NewBuffer(currentManifest), true)
+		if err != nil {
+			return nil, err
+		}
+
+		existingResources := make(map[string]bool)
+		for _, r := range current {
+			existingResources[objectKey(r)] = true
+		}
+
+		var toBeUpdated helmkube.ResourceList
+		{
+			err := target.Visit(func(info *resource.Info, err error) error {
+				{
+					helper := resource.NewHelper(info.Client, info.Mapping)
+					_, err := helper.Get(info.Namespace, info.Name)
+					if err != nil {
+						if errors.IsNotFound(err) {
+							// This is the happy path. Resource does not exist already.
+							return nil
+						}
+						return err
+					}
+
+					toBeUpdated.Append(info)
+					return nil
+				}
+			})
+
 			if err != nil {
-				return nil, fmt.Errorf("error applying update from %q: %v", manifestURL, err)
+				return nil, fmt.Errorf("unable to get information about existing resources: %w ", err)
 			}
-		*/
+		}
+
+		for _, r := range toBeUpdated {
+			current.Append(r)
+		}
+
+		klog.Infof("applying addon %q", required.Name)
+		{
+			_, err := kube.Update(current, target, false)
+			if err != nil {
+				return nil, fmt.Errorf("error applying addon update: %w", err)
+			}
+		}
 		if err := a.AddNeedsUpdateLabel(ctx, k8sClient, required); err != nil {
 			return nil, fmt.Errorf("error adding needs-update label: %v", err)
 		}
@@ -360,4 +383,9 @@ func (a *Addon) installPKI(ctx context.Context, k8sClient kubernetes.Interface, 
 		return err
 	}
 	return nil
+}
+
+func objectKey(r *resource.Info) string {
+	gvk := r.Object.GetObjectKind().GroupVersionKind()
+	return fmt.Sprintf("%s/%s/%s/%s", gvk.GroupVersion().String(), gvk.Kind, r.Namespace, r.Name)
 }

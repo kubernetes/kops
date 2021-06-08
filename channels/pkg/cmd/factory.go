@@ -19,23 +19,28 @@ package cmd
 import (
 	"fmt"
 
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog/v2"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	certmanager "github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
+	helmkube "helm.sh/helm/v3/pkg/kube"
 )
 
 type Factory interface {
 	KubernetesClient() (kubernetes.Interface, error)
 	CertManagerClient() (certmanager.Interface, error)
+	HelmKubeClient() helmkube.Interface
 }
 
 type DefaultFactory struct {
 	kubernetesClient  kubernetes.Interface
 	certManagerClient certmanager.Interface
+	helmKubeClient    helmkube.Interface
 }
 
 var _ Factory = &DefaultFactory{}
@@ -83,4 +88,15 @@ func (f *DefaultFactory) CertManagerClient() (certmanager.Interface, error) {
 	}
 
 	return f.certManagerClient, nil
+}
+
+func (f *DefaultFactory) HelmKubeClient() helmkube.Interface {
+
+	if f.helmKubeClient == nil {
+		getter := genericclioptions.NewConfigFlags(true)
+		kube := helmkube.New(getter)
+		kube.Log = klog.Infof
+		f.helmKubeClient = kube
+	}
+	return f.helmKubeClient
 }
