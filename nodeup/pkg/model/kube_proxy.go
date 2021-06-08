@@ -59,8 +59,6 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	b.WarmPullImage(c, kubeProxyImage(b.NodeupModelContext))
-
 	{
 		pod, err := b.buildPod()
 		if err != nil {
