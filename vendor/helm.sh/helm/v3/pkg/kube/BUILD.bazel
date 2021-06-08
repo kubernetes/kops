@@ -8,6 +8,7 @@ go_library(
         "converter.go",
         "factory.go",
         "interface.go",
+        "ready.go",
         "resource.go",
         "resource_policy.go",
         "result.go",
