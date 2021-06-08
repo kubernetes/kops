@@ -10,7 +10,6 @@ go_library(
     importpath = "sigs.k8s.io/kustomize/api/filters/patchstrategicmerge",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/sigs.k8s.io/kustomize/api/konfig:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/kio:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/yaml/merge2:go_default_library",

@@ -17,7 +17,6 @@ go_library(
         "//vendor/sigs.k8s.io/kustomize/api/resmap:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/resource:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/types:go_default_library",
-        "//vendor/sigs.k8s.io/kustomize/kyaml/filtersutil:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/kio:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",
     ],

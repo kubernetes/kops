@@ -41,6 +41,12 @@ var DefaultPort = 9443
 
 // Server is an admission webhook server that can serve traffic and
 // generates related k8s resources for deploying.
+//
+// TLS is required for a webhook to be accessed by kubernetes, so
+// you must provide a CertName and KeyName or have valid cert/key
+// at the default locations (tls.crt and tls.key). If you do not
+// want to configure TLS (i.e for testing purposes) run an
+// admission.StandaloneWebhook in your own server.
 type Server struct {
 	// Host is the address that the server will listen on.
 	// Defaults to "" - all addresses.
