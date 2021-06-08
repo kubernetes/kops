@@ -31,6 +31,10 @@ var _ loader.OptionsBuilder = &AWSEBSCSIDriverOptionsBuilder{}
 
 func (b *AWSEBSCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
+	if kops.CloudProviderID(clusterSpec.CloudProvider) != kops.CloudProviderAWS {
+		return nil
+	}
+
 	cc := clusterSpec.CloudConfig
 	if cc.AWSEBSCSIDriver == nil {
 		cc.AWSEBSCSIDriver = &kops.AWSEBSCSIDriver{
