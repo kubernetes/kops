@@ -104,6 +104,8 @@ func (mc *metadataClient) Patch(ctx context.Context, obj Object, patch Patch, op
 	}
 
 	patchOpts := &PatchOptions{}
+	patchOpts.ApplyOptions(opts)
+
 	res, err := resInt.Patch(ctx, metadata.Name, patch.Type(), data, *patchOpts.AsPatchOptions())
 	if err != nil {
 		return err
