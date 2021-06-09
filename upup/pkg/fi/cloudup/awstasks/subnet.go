@@ -45,6 +45,7 @@ type Subnet struct {
 
 	ID               *string
 	VPC              *VPC
+	AmazonIPv6CIDR   *VPCAmazonIPv6CIDRBlock
 	AvailabilityZone *string
 	CIDR             *string
 	IPv6CIDR         *string
@@ -116,6 +117,8 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 	actual.Lifecycle = e.Lifecycle // Not materialized in AWS
 	actual.ShortName = e.ShortName // Not materialized in AWS
 	actual.Name = e.Name           // Name is part of Tags
+	// Task dependencies
+	actual.AmazonIPv6CIDR = e.AmazonIPv6CIDR
 
 	return actual, nil
 }
