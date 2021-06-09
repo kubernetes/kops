@@ -137,7 +137,7 @@ This function returns the recommended image for the given cloud provider and kub
 
 #### Sprig functions
 
-The entire set of https://github.com/Masterminds/sprig functions are available within the templates for you. Note if you want to use the 'defaults' functions switch off the verification check on the command line by `--fail-on-missing=false`;
+The entire set of [Sprig functions](https://masterminds.github.io/sprig/) are available within the templates for you. Note if you want to use the 'defaults' functions switch off the verification check on the command line by `--fail-on-missing=false`;
 
 ```YAML
 image: {{ '{{ default $image $node.image }}' }}
