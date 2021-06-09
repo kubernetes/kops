@@ -905,6 +905,25 @@ func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, clust
 				},
 			},
 		},
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Of(
+				"ec2:AttachVolume",                  // aws.go
+				"ec2:AuthorizeSecurityGroupIngress", // aws.go
+				"ec2:CreateRoute",                   // aws.go
+				"ec2:DeleteRoute",                   // aws.go
+				"ec2:DeleteSecurityGroup",           // aws.go
+				"ec2:DeleteVolume",                  // aws.go
+				"ec2:DetachVolume",                  // aws.go
+				"ec2:RevokeSecurityGroupIngress",    // aws.go
+			),
+			Resource: resource,
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"ec2:ResourceTag/kubernetes.io/cluster/" + clusterName: "owned",
+				},
+			},
+		},
 	)
 }
 
