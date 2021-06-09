@@ -150,18 +150,12 @@ type CalicoNetworkingSpec struct {
 	// Options: "first-found" (default), "can-reach=DESTINATION",
 	// "interface=INTERFACE-REGEX", or "skip-interface=INTERFACE-REGEX"
 	IPv4AutoDetectionMethod string `json:"ipv4AutoDetectionMethod,omitempty"`
-	// IPv4Support enables Calico networking and security for IPv4 traffic.
-	// Default: "true"
-	IPv4Support *bool `json:"ipv4Support,omitempty"`
 	// IPv6AutoDetectionMethod configures how Calico chooses the IP address used to route
 	// between nodes.  This should be set when the host has multiple interfaces
 	// and it is important to select the interface used.
 	// Options: "first-found" (default), "can-reach=DESTINATION",
 	// "interface=INTERFACE-REGEX", or "skip-interface=INTERFACE-REGEX"
 	IPv6AutoDetectionMethod string `json:"ipv6AutoDetectionMethod,omitempty"`
-	// IPv6Support enables Calico networking and security for IPv6 traffic.
-	// Default: "false"
-	IPv6Support *bool `json:"ipv6Support,omitempty"`
 	// IptablesBackend controls which variant of iptables binary Felix uses
 	// Default: Auto (other options: Legacy, NFT)
 	IptablesBackend string `json:"iptablesBackend,omitempty"`
