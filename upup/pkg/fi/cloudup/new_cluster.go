@@ -249,18 +249,6 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		}
 	}
 
-	if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS && cluster.IsKubernetesGTE("1.22") {
-		if cluster.Spec.CloudConfig == nil {
-			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
-		}
-		if cluster.Spec.CloudConfig.AWSEBSCSIDriver == nil {
-			cluster.Spec.CloudConfig.AWSEBSCSIDriver = &api.AWSEBSCSIDriver{}
-		}
-		if cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled == nil {
-			cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled = fi.Bool(true)
-		}
-	}
-
 	err = setupVPC(opt, &cluster)
 	if err != nil {
 		return nil, err

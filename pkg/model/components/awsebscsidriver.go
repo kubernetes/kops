@@ -38,7 +38,7 @@ func (b *AWSEBSCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
 	cc := clusterSpec.CloudConfig
 	if cc.AWSEBSCSIDriver == nil {
 		cc.AWSEBSCSIDriver = &kops.AWSEBSCSIDriver{
-			Enabled: fi.Bool(false),
+			Enabled: fi.Bool(b.IsKubernetesGTE("1.22")),
 		}
 	}
 	c := cc.AWSEBSCSIDriver
