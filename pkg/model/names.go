@@ -123,6 +123,10 @@ func (b *KopsModelContext) LinkToVPC() *awstasks.VPC {
 	return &awstasks.VPC{Name: &name}
 }
 
+func (b *KopsModelContext) LinkToAmazonVPCIPv6CIDR() *awstasks.VPCAmazonIPv6CIDRBlock {
+	return &awstasks.VPCAmazonIPv6CIDRBlock{Name: fi.String("AmazonIPv6")}
+}
+
 func (b *KopsModelContext) LinkToDNSZone() *awstasks.DNSZone {
 	name := b.NameForDNSZone()
 	return &awstasks.DNSZone{Name: &name}
