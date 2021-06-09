@@ -53,7 +53,7 @@ func (b *CiliumBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
-	image := "docker.io/cilium/cilium:" + cilium.Version
+	image := "quay.io/cilium/cilium:" + cilium.Version
 
 	b.WarmPullImage(c, image)
 
