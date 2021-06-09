@@ -67,9 +67,34 @@ func TestPopulateCluster_Subnets(t *testing.T) {
 			ExpectedServiceClusterIPRange: "100.64.0.0/13",
 		},
 		{
-			NonMasqueradeCIDR:             "10.100.0.0/16",
-			ExpectedClusterCIDR:           "10.100.128.0/17",
-			ExpectedServiceClusterIPRange: "10.100.0.0/19",
+			NonMasqueradeCIDR:             "10.0.0.0/9",
+			ExpectedClusterCIDR:           "10.64.0.0/10",
+			ExpectedServiceClusterIPRange: "10.0.0.0/12",
+		},
+		{
+			NonMasqueradeCIDR:             "10.0.0.0/8",
+			ExpectedClusterCIDR:           "10.128.0.0/9",
+			ExpectedServiceClusterIPRange: "10.0.0.0/12",
+		},
+		{
+			NonMasqueradeCIDR:             "fd00:10:96::/64",
+			ExpectedClusterCIDR:           "fd00:10:96:0:8000::/65",
+			ExpectedServiceClusterIPRange: "fd00:10:96::/108",
+		},
+		{
+			NonMasqueradeCIDR:             "fd00:10:96::/63",
+			ExpectedClusterCIDR:           "fd00:10:96:1::/64",
+			ExpectedServiceClusterIPRange: "fd00:10:96::/108",
+		},
+		{
+			NonMasqueradeCIDR:             "fd00:10:96::/62",
+			ExpectedClusterCIDR:           "fd00:10:96:1::/64",
+			ExpectedServiceClusterIPRange: "fd00:10:96::/108",
+		},
+		{
+			NonMasqueradeCIDR:             "fd00:10:96::/106",
+			ExpectedClusterCIDR:           "fd00:10:96::20:0/107",
+			ExpectedServiceClusterIPRange: "fd00:10:96::/109",
 		},
 	}
 	for _, tc := range tests {
