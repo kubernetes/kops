@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/pkg/model/defaults"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/spotinsttasks"
 )
 
@@ -268,18 +269,10 @@ func (b *SpotInstanceGroupModelBuilder) buildElastigroup(c *fi.ModelBuilderConte
 		return fmt.Errorf("error building ssh key: %v", err)
 	}
 
-	// Load balancer.
-	var lb *awstasks.ClassicLoadBalancer
-	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleMaster:
-		if b.UseLoadBalancerForAPI() {
-			lb = b.LinkToCLB("api")
-		}
-	case kops.InstanceGroupRoleBastion:
-		lb = b.LinkToCLB(BastionELBSecurityGroupPrefix)
-	}
-	if lb != nil {
-		group.LoadBalancer = lb
+	// Load balancers.
+	group.LoadBalancers, group.TargetGroups, err = b.buildLoadBalancers(c, ig)
+	if err != nil {
+		return fmt.Errorf("error building load balancers: %v", err)
 	}
 
 	// User data.
@@ -754,6 +747,54 @@ func (b *SpotInstanceGroupModelBuilder) buildCapacity(ig *kops.InstanceGroup) (*
 	}
 
 	return fi.Int64(int64(minSize)), fi.Int64(int64(maxSize))
+}
+
+func (b *SpotInstanceGroupModelBuilder) buildLoadBalancers(c *fi.ModelBuilderContext,
+	ig *kops.InstanceGroup) ([]*awstasks.ClassicLoadBalancer, []*awstasks.TargetGroup, error) {
+	var loadBalancers []*awstasks.ClassicLoadBalancer
+	var targetGroups []*awstasks.TargetGroup
+
+	if b.UseLoadBalancerForAPI() && ig.HasAPIServer() {
+		if b.UseNetworkLoadBalancer() {
+			targetGroups = append(targetGroups, b.LinkToTargetGroup("tcp"))
+			if b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
+				targetGroups = append(targetGroups, b.LinkToTargetGroup("tls"))
+			}
+		} else {
+			loadBalancers = append(loadBalancers, b.LinkToCLB("api"))
+		}
+	}
+
+	if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+		loadBalancers = append(loadBalancers, b.LinkToCLB("bastion"))
+	}
+
+	for _, extLB := range ig.Spec.ExternalLoadBalancers {
+		if extLB.LoadBalancerName != nil {
+			lb := &awstasks.ClassicLoadBalancer{
+				Name:             extLB.LoadBalancerName,
+				LoadBalancerName: extLB.LoadBalancerName,
+				Shared:           fi.Bool(true),
+			}
+			loadBalancers = append(loadBalancers, lb)
+			c.EnsureTask(lb)
+		}
+		if extLB.TargetGroupARN != nil {
+			targetGroupName, err := awsup.GetTargetGroupNameFromARN(fi.StringValue(extLB.TargetGroupARN))
+			if err != nil {
+				return nil, nil, err
+			}
+			tg := &awstasks.TargetGroup{
+				Name:   fi.String(ig.Name + "-" + targetGroupName),
+				ARN:    extLB.TargetGroupARN,
+				Shared: fi.Bool(true),
+			}
+			targetGroups = append(targetGroups, tg)
+			c.AddTask(tg)
+		}
+	}
+
+	return loadBalancers, targetGroups, nil
 }
 
 func (b *SpotInstanceGroupModelBuilder) buildTags(ig *kops.InstanceGroup) (map[string]string, error) {
