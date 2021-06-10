@@ -465,12 +465,12 @@ func calculateSubnetCIDR(vpcCIDR, subnetCIDR *string) (*string, error) {
 		return nil, fmt.Errorf("expecting subnet cidr to start with %q: %q", "/", aws.StringValue(subnetCIDR))
 	}
 
-	newSize, netNum, err := utils.ParseCidrSubnet(aws.StringValue(subnetCIDR))
+	newSize, netNum, err := utils.ParseCIDRNotation(aws.StringValue(subnetCIDR))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing CIDR subnet: %v", err)
 	}
 
-	newCIDR, err := utils.CidrSubnet(aws.StringValue(vpcCIDR), newSize, netNum)
+	newCIDR, err := utils.CIDRSubnet(aws.StringValue(vpcCIDR), newSize, netNum)
 	if err != nil {
 		return nil, fmt.Errorf("error calculating CIDR subnet: %v", err)
 	}

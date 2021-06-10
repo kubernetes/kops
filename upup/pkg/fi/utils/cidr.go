@@ -65,9 +65,9 @@ func IsIPv6CIDR(cidr string) bool {
 	return true
 }
 
-// ParseCidrSubnet parses a string in the format "/<newSize>#<netNum>"
+// ParseCIDRNotation parses a string in the format "/<newSize>#<netNum>"
 // and returns the values of <newSize> and <netNum>.
-func ParseCidrSubnet(subnet string) (int, int64, error) {
+func ParseCIDRNotation(subnet string) (int, int64, error) {
 	re := regexp.MustCompile(`^/(\d+)#([a-f0-9]+)$`)
 	s := re.FindStringSubmatch(subnet)
 	if len(s) != 3 {
@@ -87,10 +87,10 @@ func ParseCidrSubnet(subnet string) (int, int64, error) {
 	return newSize, netNum, nil
 }
 
-// CidrSubnet calculates a subnet address within given IP network address prefix.
+// CIDRSubnet calculates a subnet address within given IP network address prefix.
 // Inspired by the Terraform implementation of the "cidrsubnet" function
 // https://www.terraform.io/docs/language/functions/cidrsubnet.html
-func CidrSubnet(prefix string, newSize int, netNum int64) (string, error) {
+func CIDRSubnet(prefix string, newSize int, netNum int64) (string, error) {
 	_, baseCIDR, err := net.ParseCIDR(prefix)
 	if err != nil {
 		return "", fmt.Errorf("unable to parse CIDR for %q: %v", prefix, err)
