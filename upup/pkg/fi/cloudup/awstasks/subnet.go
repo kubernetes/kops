@@ -100,7 +100,7 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 		}
 
 		actual.IPv6CIDR = association.Ipv6CidrBlock
-		if e.IPv6CIDR != nil && strings.HasPrefix(aws.StringValue(e.IPv6CIDR), "/") {
+		if e.VPC.IPv6CIDR != nil && strings.HasPrefix(aws.StringValue(e.IPv6CIDR), "/") {
 			subnetIPv6CIDR, err := calculateSubnetCIDR(e.VPC.IPv6CIDR, e.IPv6CIDR)
 			if err != nil {
 				return nil, err
@@ -208,13 +208,17 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 		}
 	}
 
-	if e.IPv6CIDR != nil && strings.HasPrefix(aws.StringValue(e.IPv6CIDR), "/") {
-		vpcIPv6CIDR, err := findVPCIPv6CIDR(t.Cloud, e.VPC.ID)
-		if err != nil {
-			return err
-		}
+	if strings.HasPrefix(aws.StringValue(e.IPv6CIDR), "/") {
+		vpcIPv6CIDR := e.VPC.IPv6CIDR
 		if vpcIPv6CIDR == nil {
-			return fi.NewTryAgainLaterError("waiting for the VPC IPv6 CIDR to be assigned")
+			cidr, err := findVPCIPv6CIDR(t.Cloud, e.VPC.ID)
+			if err != nil {
+				return err
+			}
+			if cidr == nil {
+				return fi.NewTryAgainLaterError("waiting for the VPC IPv6 CIDR to be assigned")
+			}
+			vpcIPv6CIDR = cidr
 		}
 
 		subnetIPv6CIDR, err := calculateSubnetCIDR(vpcIPv6CIDR, e.IPv6CIDR)
