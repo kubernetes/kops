@@ -1615,6 +1615,27 @@
               ]
             },
             {
+              "Action": [
+                "ec2:AttachVolume",
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:CreateRoute",
+                "ec2:DeleteRoute",
+                "ec2:DeleteSecurityGroup",
+                "ec2:DeleteVolume",
+                "ec2:DetachVolume",
+                "ec2:RevokeSecurityGroupIngress"
+              ],
+              "Condition": {
+                "StringEquals": {
+                  "ec2:ResourceTag/kubernetes.io/cluster/complex.example.com": "owned"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
               "Action": "autoscaling:CompleteLifecycleAction",
               "Condition": {
                 "StringEquals": {
