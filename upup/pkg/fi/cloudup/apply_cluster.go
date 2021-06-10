@@ -716,6 +716,14 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		// Can cause conflicts with cloudformation management
 		shouldPrecreateDNS = false
 
+		fmt.Printf("\n")
+		fmt.Printf("%s\n", starline)
+		fmt.Printf("\n")
+		fmt.Printf("Kops support for CloudFormation is deprecated and will be removed in a future release.\n")
+		fmt.Printf("\n")
+		fmt.Printf("%s\n", starline)
+		fmt.Printf("\n")
+
 	case TargetDryRun:
 		var out io.Writer = os.Stdout
 		if c.GetAssets {
