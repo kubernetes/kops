@@ -29,19 +29,17 @@ In order to create a new release branch off of master prior to a beta release, p
 1. Update the periodic E2E Prow jobs for the "next" kOps/Kubernetes minor version.
    * Edit [build_jobs.py](https://github.com/kubernetes/test-infra/tree/master/config/jobs/kubernetes/kops/build_jobs.py)
    to add the new minor version to `k8s_versions` and `kops_versions`.
-     Also update the list of minor versions in `generate_versions()` and `generate_pipeline()`.
+     Also update the list of minor versions in `generate_versions()`, `generate_pipeline()`, and `generate_presubmits_e2e()`.
    * Edit the [testgrid config.yaml](https://github.com/kubernetes/test-infra/blob/master/config/testgrids/kubernetes/kops/config.yaml)
    to add the new minor version to both lists in the file, prefixed with `kops-k8s-`.
    * Remove the oldest minor version from each of those lists.
    * Run the `build_jobs.py` script.
-2. Edit [kops-presubmits.yaml](https://github.com/kubernetes/test-infra/tree/master/config/jobs/kubernetes/kops/kops-presubmits.yaml)
-   to create a new `pull-kops-e2e-kubernetes-aws-1-X` presubmit E2E prow job for the new release branch.
-3. Create a new milestone in the GitHub repo.
-4. Update [prow's milestone_applier config](https://github.com/kubernetes/test-infra/blob/dc99617c881805981b85189da232d29747f87004/config/prow/plugins.yaml#L309-L313)
+2. Create a new milestone in the GitHub repo.
+3. Update [prow's milestone_applier config](https://github.com/kubernetes/test-infra/blob/dc99617c881805981b85189da232d29747f87004/config/prow/plugins.yaml#L309-L313)
    to update master to use the new milestone and add an entry for the new feature branch. 
    Create this as a separate PR as it will require separate review.
-5. Create the new release branch in git and push it to the GitHub repo.
-6. On the master branch, create a PR to update to the next minor version:
+4. Create the new release branch in git and push it to the GitHub repo.
+5. On the master branch, create a PR to update to the next minor version:
    * Update `OldestSupportedKubernetesVersion` and `OldestRecommendedKubernetesVersion` in
    [apply_cluster.go](https://github.com/kubernetes/kops/tree/master/upup/pkg/fi/cloudup/apply_cluster.go)
    * Add a row for the new minor version to [upgrade_k8s.md](https://github.com/kubernetes/kops/tree/master/permalinks/upgrade_k8s.md)
