@@ -17,7 +17,6 @@ limitations under the License.
 package cloudup
 
 import (
-	"encoding/binary"
 	"fmt"
 	"net"
 	"strings"
@@ -329,17 +328,12 @@ func (c *populateClusterSpec) assignSubnets(cluster *kopsapi.Cluster) error {
 	if cluster.Spec.KubeControllerManager.ClusterCIDR == "" {
 		// Allocate as big a range as possible: the NonMasqueradeCIDR mask + 1, with a '1' in the extra bit
 		ip := nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask)
-
-		ip4 := ip.To4()
-		if ip4 != nil {
-			n := binary.BigEndian.Uint32(ip4)
-			n += uint32(1 << uint(nmBits-nmOnes-1))
-			ip = make(net.IP, len(ip4))
-			binary.BigEndian.PutUint32(ip, n)
-		} else {
-			return fmt.Errorf("IPV6 subnet computations not yet implements")
+		if nmBits > 32 && nmOnes < 63 {
+			// Max size of IPv6 network is 64
+			// Technically, the max size of IPv4 network is 24, but nobody has a /7 to allocate.
+			nmOnes = 63
 		}
-
+		ip[nmOnes/8] |= 128 >> (nmOnes % 8)
 		cidr := net.IPNet{IP: ip, Mask: net.CIDRMask(nmOnes+1, nmBits)}
 		cluster.Spec.KubeControllerManager.ClusterCIDR = cidr.String()
 		klog.V(2).Infof("Defaulted KubeControllerManager.ClusterCIDR to %v", cluster.Spec.KubeControllerManager.ClusterCIDR)
@@ -347,7 +341,12 @@ func (c *populateClusterSpec) assignSubnets(cluster *kopsapi.Cluster) error {
 
 	if cluster.Spec.ServiceClusterIPRange == "" {
 		// Allocate from the '0' subnet; but only carve off 1/4 of that (i.e. add 1 + 2 bits to the netmask)
-		cidr := net.IPNet{IP: nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask), Mask: net.CIDRMask(nmOnes+3, nmBits)}
+		serviceOnes := nmOnes + 3
+		// Max size of network is 20 bits
+		if nmBits-serviceOnes > 20 {
+			serviceOnes = nmBits - 20
+		}
+		cidr := net.IPNet{IP: nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask), Mask: net.CIDRMask(serviceOnes, nmBits)}
 		cluster.Spec.ServiceClusterIPRange = cidr.String()
 		klog.V(2).Infof("Defaulted ServiceClusterIPRange to %v", cluster.Spec.ServiceClusterIPRange)
 	}
