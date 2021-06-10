@@ -333,7 +333,7 @@ func validateIPv6CIDR(cidr string, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if strings.HasPrefix(cidr, "/") {
-		newSize, _, err := utils.ParseCidrSubnet(cidr)
+		newSize, _, err := utils.ParseCIDRNotation(cidr)
 		if err != nil {
 			allErrs = append(allErrs, field.Invalid(fieldPath, cidr, fmt.Sprintf("IPv6 CIDR subnet is not parsable: %v", err)))
 			return allErrs
