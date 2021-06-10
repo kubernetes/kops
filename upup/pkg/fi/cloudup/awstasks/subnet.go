@@ -100,18 +100,20 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 		}
 
 		actual.IPv6CIDR = association.Ipv6CidrBlock
-		if e.VPC.IPv6CIDR != nil && strings.HasPrefix(aws.StringValue(e.IPv6CIDR), "/") {
-			subnetIPv6CIDR, err := calculateSubnetCIDR(e.VPC.IPv6CIDR, e.IPv6CIDR)
-			if err != nil {
-				return nil, err
-			}
-			e.IPv6CIDR = subnetIPv6CIDR
-		}
 		break
 	}
 
 	klog.V(2).Infof("found matching subnet %q", *actual.ID)
 	e.ID = actual.ID
+
+	// Calculate expected IPv6 CIDR if possible and in the "/64#N" format
+	if e.VPC.IPv6CIDR != nil && strings.HasPrefix(aws.StringValue(e.IPv6CIDR), "/") {
+		subnetIPv6CIDR, err := calculateSubnetCIDR(e.VPC.IPv6CIDR, e.IPv6CIDR)
+		if err != nil {
+			return nil, err
+		}
+		e.IPv6CIDR = subnetIPv6CIDR
+	}
 
 	// Prevent spurious changes
 	actual.Lifecycle = e.Lifecycle // Not materialized in AWS
