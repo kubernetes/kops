@@ -17,9 +17,16 @@
 REPO_ROOT=$(git rev-parse --show-toplevel);
 source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
-if [ -z "$KOPS_VERSION_A" ] || [ -z "$K8S_VERSION_A" ] || [ -z "$KOPS_VERSION_B" ] || [ -z "$K8S_VERSION_B" ]; then
+if [ -z "${KOPS_VERSION_A-}" ] || [ -z "${K8S_VERSION_A-}" ] || [ -z "${KOPS_VERSION_B-}" ] || [ -z "${K8S_VERSION_B-}" ]; then
   >&2 echo "must set all of KOPS_VERSION_A, K8S_VERSION_A, KOPS_VERSION_B, K8S_VERSION_B env vars"
   exit 1
+fi
+
+if [[ "$K8S_VERSION_A" == "latest" ]]; then
+	K8S_VERSION_A=$(curl https://storage.googleapis.com/kubernetes-release/release/latest.txt)
+fi
+if [[ "$K8S_VERSION_B" == "latest" ]]; then
+	K8S_VERSION_B=$(curl https://storage.googleapis.com/kubernetes-release/release/latest.txt)
 fi
 
 export KOPS_BASE_URL
