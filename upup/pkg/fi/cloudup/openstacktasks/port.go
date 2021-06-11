@@ -18,6 +18,7 @@ package openstacktasks
 
 import (
 	"fmt"
+	"sort"
 
 	secgroup "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
@@ -88,6 +89,10 @@ func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycl
 			Lifecycle: lifecycle,
 		})
 	}
+
+	// sort for consistent comparison
+	sort.Sort(SecurityGroupsByID(sgs))
+
 	subnets := make([]*Subnet, len(port.FixedIPs))
 	for i, subn := range port.FixedIPs {
 		subnets[i] = &Subnet{
@@ -131,6 +136,10 @@ func (s *Port) Find(context *fi.Context) (*Port, error) {
 	} else if len(rs) != 1 {
 		return nil, fmt.Errorf("found multiple ports with name: %s", fi.StringValue(s.Name))
 	}
+
+	// sort for consistent comparison
+	sort.Sort(SecurityGroupsByID(s.SecurityGroups))
+
 	return newPortTaskFromCloud(cloud, s.Lifecycle, &rs[0], s)
 }
 
