@@ -91,8 +91,14 @@ NOTE: You will need to run it multiple times for each old IP, regarding the size
 After that, you can check again the endpoint and everything should be fixed.
 
 After the restore is complete, api server should come back up, and you should have a working cluster.
-Note that the api server might be very busy for a while as it changes the cluster back to the state of the backup.
-It's a good idea to temporarily increase the instance size of your masters and roll your worker nodes.
+Note that the api server might be very busy for a while as it changes the cluster back to the state of the backup. 
+You might consider temporarily increasing the instance size of your control plane.
+
+Because the state on each of the Nodes may differ from the state in etcd, it is also a good idea to do a rolling-update of the entire cluster:
+
+```sh
+kops rolling-update cluster --force --yes
+```
 
 For more information and troubleshooting, please check the [etcd-manager documentation](https://github.com/kopeio/etcd-manager).
 
