@@ -148,7 +148,7 @@ func supportsPublicJWKS(clusterSpec *kops.ClusterSpec) bool {
 		return false
 	}
 	for _, cidr := range clusterSpec.KubernetesAPIAccess {
-		if cidr == "0.0.0.0/0" {
+		if cidr == "0.0.0.0/0" || cidr == "::/0" {
 			return true
 		}
 	}

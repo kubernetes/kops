@@ -23,6 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // +genclient
@@ -791,6 +792,10 @@ func (c *Cluster) AzureResourceGroupName() string {
 // IsSharedAzureRouteTable returns true if the route table is shared.
 func (c *Cluster) IsSharedAzureRouteTable() bool {
 	return c.Spec.CloudConfig.Azure.RouteTableName != ""
+}
+
+func (c *ClusterSpec) IsIPv6Only() bool {
+	return utils.IsIPv6CIDR(c.NonMasqueradeCIDR)
 }
 
 // EnvVar represents an environment variable present in a Container.
