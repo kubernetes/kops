@@ -252,6 +252,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		if subnetSpec.IPv6CIDR != "" {
+			subnet.AmazonIPv6CIDR = b.LinkToAmazonVPCIPv6CIDR()
 			subnet.IPv6CIDR = fi.String(subnetSpec.IPv6CIDR)
 		}
 		if subnetSpec.ProviderID != "" {
