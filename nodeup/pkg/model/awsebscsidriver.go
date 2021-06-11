@@ -41,10 +41,6 @@ func (b *AWSEBSCSIDriverBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Pulling CSI sidecars images
 	sidecars := []string{
-		"csi-provisioner:v2.2.0",
-		"csi-attacher:v3.2.0",
-		"csi-snapshotter:v4.0.0",
-		"csi-resizer:v1.1.0",
 		"csi-node-driver-registrar:v2.1.0",
 		"livenessprobe:v2.2.0",
 	}
