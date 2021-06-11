@@ -92,7 +92,7 @@ After that, you can check again the endpoint and everything should be fixed.
 
 After the restore is complete, api server should come back up, and you should have a working cluster.
 Note that the api server might be very busy for a while as it changes the cluster back to the state of the backup. 
-You can consider temporarily increase the instance size of your masters and roll your worker nodes.
+You might consider temporarily increasing the instance size of your control plane.
 
 Because the state on each of the Nodes may differ from the state in etcd, it is also a good idea to do a rolling-update of the entire cluster:
 
