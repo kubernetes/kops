@@ -327,10 +327,23 @@ func validateCIDR(cidr string, fieldPath *field.Path) field.ErrorList {
 }
 
 func validateIPv6CIDR(cidr string, fieldPath *field.Path) field.ErrorList {
-	allErrs := validateCIDR(cidr, fieldPath)
+	allErrs := field.ErrorList{}
 
-	if !utils.IsIPv6CIDR(cidr) {
-		allErrs = append(allErrs, field.Invalid(fieldPath, cidr, "Network is not an IPv6 CIDR"))
+	if strings.HasPrefix(cidr, "/") {
+		newSize, _, err := utils.ParseCIDRNotation(cidr)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(fieldPath, cidr, fmt.Sprintf("IPv6 CIDR subnet is not parsable: %v", err)))
+			return allErrs
+		}
+		if newSize < 0 || newSize > 128 {
+			allErrs = append(allErrs, field.Invalid(fieldPath, cidr, "IPv6 CIDR subnet size must be a value between 0 and 128"))
+		}
+	} else {
+		allErrs = append(allErrs, validateCIDR(cidr, fieldPath)...)
+
+		if !utils.IsIPv6CIDR(cidr) {
+			allErrs = append(allErrs, field.Invalid(fieldPath, cidr, "Network is not an IPv6 CIDR"))
+		}
 	}
 
 	return allErrs
