@@ -22,9 +22,9 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
 	"io"
+	"sort"
 
 	"gopkg.in/square/go-jose.v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -128,38 +128,32 @@ func (o *OIDCKeys) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	}
 }
 func (o *OIDCKeys) Open() (io.Reader, error) {
+	keyset := o.SigningKey.Keyset()
+	var keys []jose.JSONWebKey
 
-	certBytes, err := fi.ResourceAsBytes(o.SigningKey.Certificate())
-	if err != nil {
-		return nil, fmt.Errorf("failed to get cert: %w", err)
-	}
-	block, _ := pem.Decode(certBytes)
-	cert, err := x509.ParseCertificate(block.Bytes)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse cert: %w", err)
-	}
+	for _, item := range keyset.Items {
+		publicKey := item.Certificate.PublicKey
+		publicKeyDERBytes, err := x509.MarshalPKIXPublicKey(publicKey)
+		if err != nil {
+			return nil, fmt.Errorf("failed to serialize public key to DER format: %v", err)
+		}
 
-	publicKey := cert.PublicKey
+		hasher := crypto.SHA256.New()
+		hasher.Write(publicKeyDERBytes)
+		publicKeyDERHash := hasher.Sum(nil)
 
-	publicKeyDERBytes, err := x509.MarshalPKIXPublicKey(publicKey)
-	if err != nil {
-		return nil, fmt.Errorf("failed to serialize public key to DER format: %v", err)
-	}
+		keyID := base64.RawURLEncoding.EncodeToString(publicKeyDERHash)
 
-	hasher := crypto.SHA256.New()
-	hasher.Write(publicKeyDERBytes)
-	publicKeyDERHash := hasher.Sum(nil)
-
-	keyID := base64.RawURLEncoding.EncodeToString(publicKeyDERHash)
-
-	keys := []jose.JSONWebKey{
-		{
+		keys = append(keys, jose.JSONWebKey{
 			Key:       publicKey,
 			KeyID:     keyID,
 			Algorithm: string(jose.RS256),
 			Use:       "sig",
-		},
+		})
 	}
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i].KeyID < keys[j].KeyID
+	})
 
 	keyResponse := KeyResponse{Keys: keys}
 	jsonBytes, err := json.MarshalIndent(keyResponse, "", "")

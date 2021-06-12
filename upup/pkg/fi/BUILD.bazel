@@ -67,7 +67,6 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    size = "small",
     srcs = [
         "dryruntarget_test.go",
         "files_test.go",
