@@ -68,6 +68,9 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 				InstanceGroups:  igs,
 			},
 		},
+		BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
+			Lifecycle: fi.LifecycleSync,
+		},
 		Cluster: cluster,
 	}
 
@@ -153,6 +156,9 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 				SSHPublicKeys:   [][]byte{[]byte(sshPublicKeyEntry)},
 				InstanceGroups:  igs,
 			},
+		},
+		BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
+			Lifecycle: fi.LifecycleSync,
 		},
 		Cluster: cluster,
 	}

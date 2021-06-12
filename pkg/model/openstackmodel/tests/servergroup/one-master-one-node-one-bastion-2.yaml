@@ -218,6 +218,33 @@ oldFormat: false
 subject: cn=kubernetes
 type: ca
 ---
+Base: null
+Contents:
+  task:
+    Name: bastion
+Lifecycle: ""
+Location: igconfig/bastion/bastion/auxconfig.yaml
+Name: auxconfig-bastion
+Public: null
+---
+Base: null
+Contents:
+  task:
+    Name: master
+Lifecycle: ""
+Location: igconfig/master/master/auxconfig.yaml
+Name: auxconfig-master
+Public: null
+---
+Base: null
+Contents:
+  task:
+    Name: node
+Lifecycle: ""
+Location: igconfig/node/node/auxconfig.yaml
+Name: auxconfig-node
+Public: null
+---
 AdditionalSecurityGroups: null
 ID: null
 Lifecycle: Sync
