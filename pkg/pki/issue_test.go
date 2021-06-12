@@ -38,11 +38,11 @@ type mockKeystore struct {
 	invoked bool
 }
 
-func (m *mockKeystore) FindKeypair(name string) (*Certificate, *PrivateKey, bool, error) {
+func (m *mockKeystore) FindPrimaryKeypair(name string) (*Certificate, *PrivateKey, error) {
 	assert.False(m.t, m.invoked, "invoked already")
 	m.invoked = true
 	assert.Equal(m.t, m.signer, name, "name argument")
-	return m.cert, m.key, false, nil
+	return m.cert, m.key, nil
 }
 
 func TestIssueCert(t *testing.T) {

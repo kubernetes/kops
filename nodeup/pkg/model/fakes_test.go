@@ -18,6 +18,7 @@ package model
 
 import (
 	"crypto/x509"
+	"fmt"
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -26,39 +27,68 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-// fakeKeyStore mocks out some of fi.KeyStore, for our tests.
-type fakeKeyStore struct {
-	T *testing.T
-}
-
-var _ fi.Keystore = &fakeKeyStore{}
-
-func (k fakeKeyStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
-	panic("fakeKeyStore does not implement FindKeypair")
-}
-
-func (k fakeKeyStore) CreateKeypair(signer string, name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
-	panic("fakeKeyStore does not implement CreateKeypair")
-}
-
-func (k fakeKeyStore) StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
-	panic("fakeKeyStore does not implement StoreKeypair")
-}
-
-func (k fakeKeyStore) MirrorTo(basedir vfs.Path) error {
-	panic("fakeKeyStore does not implement MirrorTo")
-}
-
 // fakeCAStore mocks out some of fi.CAStore, for our tests.
-// Although CAStore currently embeds KeyStore, we maintain the split here in the hope we can clean this up in future.
 type fakeCAStore struct {
-	fakeKeyStore
-
-	privateKeys map[string]*pki.PrivateKey
-	certs       map[string]*pki.Certificate
+	T              *testing.T
+	privateKeysets map[string]*kops.Keyset
+	certs          map[string]*pki.Certificate
 }
 
 var _ fi.CAStore = &fakeCAStore{}
+
+func (k fakeCAStore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	panic("fakeCAStore does not implement FindPrimaryKeypair")
+}
+
+func (k fakeCAStore) FindKeyset(name string) (*fi.Keyset, error) {
+	kopsKeyset := k.privateKeysets[name]
+	if kopsKeyset == nil {
+		return nil, nil
+	}
+
+	keyset := &fi.Keyset{
+		Items: make(map[string]*fi.KeysetItem),
+	}
+
+	for _, key := range kopsKeyset.Spec.Keys {
+		ki := &fi.KeysetItem{
+			Id: key.Id,
+		}
+		if len(key.PublicMaterial) != 0 {
+			cert, err := pki.ParsePEMCertificate(key.PublicMaterial)
+			if err != nil {
+				return nil, fmt.Errorf("error loading certificate %s/%s: %v", name, key.Id, err)
+			}
+			ki.Certificate = cert
+		}
+
+		if len(key.PrivateMaterial) != 0 {
+			privateKey, err := pki.ParsePEMPrivateKey(key.PrivateMaterial)
+			if err != nil {
+				return nil, fmt.Errorf("error loading private key %s/%s: %v", name, key.Id, err)
+			}
+			ki.PrivateKey = privateKey
+		}
+
+		keyset.Items[key.Id] = ki
+	}
+
+	keyset.Primary = keyset.Items[fi.FindPrimary(kopsKeyset).Id]
+
+	return keyset, nil
+}
+
+func (k fakeCAStore) CreateKeypair(signer string, name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
+	panic("fakeCAStore does not implement CreateKeypair")
+}
+
+func (k fakeCAStore) StoreKeyset(name string, keyset *fi.Keyset) error {
+	panic("fakeCAStore does not implement StoreKeyset")
+}
+
+func (k fakeCAStore) MirrorTo(basedir vfs.Path) error {
+	panic("fakeCAStore does not implement MirrorTo")
+}
 
 func (k fakeCAStore) FindCertificatePool(name string) (*fi.CertificatePool, error) {
 	panic("fakeCAStore does not implement FindCertificatePool")
@@ -69,11 +99,17 @@ func (k fakeCAStore) FindCertificateKeyset(name string) (*kops.Keyset, error) {
 }
 
 func (k fakeCAStore) FindPrivateKey(name string) (*pki.PrivateKey, error) {
-	return k.privateKeys[name], nil
+	primaryId := k.privateKeysets[name].Spec.PrimaryId
+	for _, item := range k.privateKeysets[name].Spec.Keys {
+		if item.Id == primaryId {
+			return pki.ParsePEMPrivateKey(item.PrivateMaterial)
+		}
+	}
+	return nil, nil
 }
 
 func (k fakeCAStore) FindPrivateKeyset(name string) (*kops.Keyset, error) {
-	panic("fakeCAStore does not implement FindPrivateKeyset")
+	return k.privateKeysets[name], nil
 }
 
 func (k fakeCAStore) FindCert(name string) (*pki.Certificate, error) {
@@ -82,10 +118,6 @@ func (k fakeCAStore) FindCert(name string) (*pki.Certificate, error) {
 
 func (k fakeCAStore) ListKeysets() ([]*kops.Keyset, error) {
 	panic("fakeCAStore does not implement ListKeysets")
-}
-
-func (k fakeCAStore) AddCert(name string, cert *pki.Certificate) error {
-	panic("fakeCAStore does not implement AddCert")
 }
 
 func (k fakeCAStore) DeleteKeysetItem(item *kops.Keyset, id string) error {

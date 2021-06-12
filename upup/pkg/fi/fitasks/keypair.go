@@ -17,7 +17,6 @@ limitations under the License.
 package fitasks
 
 import (
-	"crypto/sha1"
 	"crypto/x509/pkix"
 	"fmt"
 	"sort"
@@ -46,8 +45,8 @@ type Keypair struct {
 	// LegacyFormat is whether the keypair is stored in a legacy format.
 	LegacyFormat bool `json:"oldFormat"`
 
-	certificate                *fi.TaskDependentResource
-	certificateSHA1Fingerprint *fi.TaskDependentResource
+	certificate *fi.TaskDependentResource
+	keyset      *fi.Keyset
 }
 
 var _ fi.HasCheckExisting = &Keypair{}
@@ -70,14 +69,15 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 		return nil, nil
 	}
 
-	cert, key, legacyFormat, err := c.Keystore.FindKeypair(name)
+	keyset, err := c.Keystore.FindKeyset(name)
 	if err != nil {
 		return nil, err
 	}
-	if cert == nil {
+	if keyset == nil || keyset.Primary == nil || keyset.Primary.Certificate == nil {
 		return nil, nil
 	}
-	if key == nil {
+	cert := keyset.Primary.Certificate
+	if keyset.Primary.PrivateKey == nil {
 		return nil, fmt.Errorf("found cert in store, but did not find private key: %q", name)
 	}
 
@@ -94,7 +94,7 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 		AlternateNames: alternateNames,
 		Subject:        pki.PkixNameToString(&cert.Subject),
 		Type:           pki.BuildTypeDescription(cert.Certificate),
-		LegacyFormat:   legacyFormat,
+		LegacyFormat:   keyset.LegacyFormat,
 	}
 
 	actual.Signer = &Keypair{Subject: pki.PkixNameToString(&cert.Certificate.Issuer)}
@@ -102,7 +102,7 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 	// Avoid spurious changes
 	actual.Lifecycle = e.Lifecycle
 
-	if err := e.setResources(cert); err != nil {
+	if err := e.setResources(keyset); err != nil {
 		return nil, fmt.Errorf("error setting resources: %v", err)
 	}
 
@@ -175,14 +175,23 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	if createCertificate {
 		klog.V(2).Infof("Creating PKI keypair %q", name)
 
-		_, privateKey, _, err := c.Keystore.FindKeypair(name)
+		keyset, err := c.Keystore.FindKeyset(name)
 		if err != nil {
 			return err
+		}
+		if keyset == nil {
+			keyset = &fi.Keyset{
+				Items: map[string]*fi.KeysetItem{},
+			}
 		}
 
 		// We always reuse the private key if it exists,
 		// if we change keys we often have to regenerate e.g. the service accounts
 		// TODO: Eventually rotate keys / don't always reuse?
+		var privateKey *pki.PrivateKey
+		if keyset.Primary != nil {
+			privateKey = keyset.Primary.PrivateKey
+		}
 		if privateKey == nil {
 			klog.V(2).Infof("Creating privateKey %q", name)
 		}
@@ -217,17 +226,28 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		if err != nil {
 			return err
 		}
-		err = c.Keystore.StoreKeypair(name, cert, privateKey)
+
+		serialString := cert.Certificate.SerialNumber.String()
+		ki := &fi.KeysetItem{
+			Id:          serialString,
+			Certificate: cert,
+			PrivateKey:  privateKey,
+		}
+
+		keyset.LegacyFormat = false
+		keyset.Items[ki.Id] = ki
+		keyset.Primary = ki
+		err = c.Keystore.StoreKeyset(name, keyset)
 		if err != nil {
 			return err
 		}
 
-		if err := e.setResources(cert); err != nil {
+		if err := e.setResources(keyset); err != nil {
 			return fmt.Errorf("error setting resources: %v", err)
 		}
 
 		// Make double-sure it round-trips
-		_, _, _, err = c.Keystore.FindKeypair(name)
+		_, err = c.Keystore.FindKeyset(name)
 		if err != nil {
 			return err
 		}
@@ -240,11 +260,12 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	if changeStoredFormat {
 		// We fetch and reinsert the same keypair, forcing an update to our preferred format
 		// TODO: We're assuming that we want to save in the preferred format
-		cert, privateKey, _, err := c.Keystore.FindKeypair(name)
+		keyset, err := c.Keystore.FindKeyset(name)
 		if err != nil {
 			return err
 		}
-		err = c.Keystore.StoreKeypair(name, cert, privateKey)
+		keyset.LegacyFormat = false
+		err = c.Keystore.StoreKeyset(name, keyset)
 		if err != nil {
 			return err
 		}
@@ -285,30 +306,23 @@ func (e *Keypair) ensureResources() {
 	if e.certificate == nil {
 		e.certificate = &fi.TaskDependentResource{Task: e}
 	}
-	if e.certificateSHA1Fingerprint == nil {
-		e.certificateSHA1Fingerprint = &fi.TaskDependentResource{Task: e}
-	}
 }
 
-func (e *Keypair) setResources(cert *pki.Certificate) error {
+func (e *Keypair) setResources(keyset *fi.Keyset) error {
 	e.ensureResources()
 
-	s, err := cert.AsString()
+	s, err := keyset.Primary.Certificate.AsString()
 	if err != nil {
 		return err
 	}
 	e.certificate.Resource = fi.NewStringResource(s)
 
-	fingerprint := sha1.Sum(cert.Certificate.Raw)
-	hex := fmt.Sprintf("%x", fingerprint)
-	e.certificateSHA1Fingerprint.Resource = fi.NewStringResource(hex)
-
+	e.keyset = keyset
 	return nil
 }
 
-func (e *Keypair) CertificateSHA1Fingerprint() fi.Resource {
-	e.ensureResources()
-	return e.certificateSHA1Fingerprint
+func (e *Keypair) Keyset() *fi.Keyset {
+	return e.keyset
 }
 
 func (e *Keypair) Certificate() fi.Resource {

@@ -82,6 +82,28 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 	{
+		keyset, err := b.KeyStore.FindKeyset("service-account")
+		if err != nil {
+			return err
+		}
+
+		if keyset == nil {
+			return fmt.Errorf("service-account keyset not found")
+		}
+
+		buf, err := keyset.ToPublicKeyBytes()
+		if err != nil {
+			return err
+		}
+
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join(b.PathSrvKubernetes(), "service-account.pub"),
+			Contents: fi.NewBytesResource(buf),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0600"),
+		})
+	}
+	{
 		pod, err := b.buildPod()
 		if err != nil {
 			return fmt.Errorf("error building kube-apiserver manifest: %v", err)
@@ -282,8 +304,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	kubeAPIServer := b.Cluster.Spec.KubeAPIServer
 
-	// TODO pass the public key instead. We would first need to segregate the secrets better.
-	kubeAPIServer.ServiceAccountKeyFile = append(kubeAPIServer.ServiceAccountKeyFile, filepath.Join(b.PathSrvKubernetes(), "service-account.key"))
+	kubeAPIServer.ServiceAccountKeyFile = append(kubeAPIServer.ServiceAccountKeyFile, filepath.Join(b.PathSrvKubernetes(), "service-account.pub"))
 
 	// Set the signing key if we're using Service Account Token VolumeProjection
 	if kubeAPIServer.ServiceAccountSigningKeyFile == nil {

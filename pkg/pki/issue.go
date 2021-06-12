@@ -56,12 +56,9 @@ type IssueCertRequest struct {
 }
 
 type Keystore interface {
-	// FindKeypair finds a cert & private key, returning nil where either is not found
+	// FindPrimaryKeypair finds a cert & private key, returning nil where either is not found
 	// (if the certificate is found but not keypair, that is not an error: only the cert will be returned).
-	// This func returns a cert, private key and a bool.  The bool value is whether the keypair is stored
-	// in a legacy format. This bool is used by a keypair
-	// task to convert a Legacy Keypair to the new Keypair API format.
-	FindKeypair(name string) (*Certificate, *PrivateKey, bool, error)
+	FindPrimaryKeypair(name string) (*Certificate, *PrivateKey, error)
 }
 
 // IssueCert issues a certificate, either a self-signed CA or from a CA in a keystore.
@@ -119,7 +116,7 @@ func IssueCert(request *IssueCertRequest, keystore Keystore) (issuedCertificate 
 	var signer *x509.Certificate
 	if !template.IsCA {
 		var err error
-		caCertificate, caPrivateKey, _, err = keystore.FindKeypair(request.Signer)
+		caCertificate, caPrivateKey, err = keystore.FindPrimaryKeypair(request.Signer)
 		if err != nil {
 			return nil, nil, nil, err
 		}
