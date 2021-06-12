@@ -96,18 +96,16 @@ func addServiceAccountRole(context *model.KopsModelContext, objects kubemanifest
 		if err := object.Reparse(podSpec, "spec", "template", "spec"); err != nil {
 			return fmt.Errorf("failed to parse spec.template.spec from Deployment: %v", err)
 		}
-		containers := podSpec.Containers
 		sa := podSpec.ServiceAccountName
 		subject := getWellknownServiceAccount(sa)
 		if subject == nil {
 			continue
 		}
-		for k, container := range containers {
-			if err := iam.AddServiceAccountRole(&context.IAMModelContext, podSpec, &container, subject); err != nil {
-				return err
-			}
-			containers[k] = container
+
+		if err := iam.AddServiceAccountRole(&context.IAMModelContext, podSpec, subject); err != nil {
+			return err
 		}
+
 		if err := object.Set(podSpec, "spec", "template", "spec"); err != nil {
 			return fmt.Errorf("failed to set object: %w", err)
 		}
