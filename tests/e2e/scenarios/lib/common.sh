@@ -23,8 +23,12 @@ echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
 echo "CLUSTER_NAME=${CLUSTER_NAME}"
 
 if [[ -n "${KOPS_BASE_URL-}" ]]; then
-    echo "KOPS_BASE_URL was unexpectedly set. Please unset."
-    exit 1
+    unset KOPS_BASE_URL
+fi
+
+if [[ -z "${WORKSPACE-}" ]]; then
+    export WORKSPACE
+    WORKSPACE=$(mktemp -dt kops.XXXXXXXXX)
 fi
 
 export KOPS_FEATURE_FLAGS="SpecOverrideFlag,${KOPS_FEATURE_FLAGS:-}"
