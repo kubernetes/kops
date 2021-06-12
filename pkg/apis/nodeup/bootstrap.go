@@ -47,6 +47,9 @@ type NodeConfig struct {
 	// ClusterFullConfig holds the configuration for the cluster
 	ClusterFullConfig string `json:"clusterFullConfig,omitempty"`
 
+	// AuxConfig holds the nodeup.AuxConfig for the node's instance group.
+	AuxConfig string `json:"auxConfig,omitempty"`
+
 	// Certificates holds certificates that are already issued
 	Certificates []*NodeConfigCertificate `json:"certificates,omitempty"`
 }

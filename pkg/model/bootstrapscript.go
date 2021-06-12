@@ -19,7 +19,7 @@ package model
 import (
 	"bytes"
 	"compress/gzip"
-	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -43,11 +43,12 @@ import (
 )
 
 type NodeUpConfigBuilder interface {
-	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, ca fi.Resource) (*nodeup.Config, error)
+	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, ca fi.Resource) (*nodeup.Config, *nodeup.AuxConfig, error)
 }
 
 // BootstrapScriptBuilder creates the bootstrap script
 type BootstrapScriptBuilder struct {
+	Lifecycle           fi.Lifecycle
 	NodeUpAssets        map[architectures.Architecture]*mirrors.MirroredAsset
 	NodeUpConfigBuilder NodeUpConfigBuilder
 }
@@ -65,6 +66,9 @@ type BootstrapScript struct {
 
 	// caTask holds the CA task, for dependency analysis.
 	caTask fi.Task
+
+	// auxConfig contains the nodeup auxiliary config.
+	auxConfig fi.TaskDependentResource
 }
 
 var _ fi.Task = &BootstrapScript{}
@@ -89,10 +93,18 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context, ca fi.R
 	}
 
 	sort.Strings(alternateNames)
-	config, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames, ca)
+	config, auxConfig, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames, ca)
 	if err != nil {
 		return "", err
 	}
+
+	auxData, err := utils.YamlMarshal(auxConfig)
+	if err != nil {
+		return "", fmt.Errorf("error converting nodeup auxiliary config to yaml: %v", err)
+	}
+	sum256 := sha256.Sum256(auxData)
+	config.AuxConfigHash = base64.StdEncoding.EncodeToString(sum256[:])
+	b.auxConfig.Resource = fi.NewBytesResource(auxData)
 
 	data, err := utils.YamlMarshal(config)
 	if err != nil {
@@ -222,7 +234,15 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 		ca:      caTask.Certificate(),
 	}
 	task.resource.Task = task
+	task.auxConfig.Task = task
 	c.AddTask(task)
+
+	c.AddTask(&fitasks.ManagedFile{
+		Name:      fi.String("auxconfig-" + ig.Name),
+		Lifecycle: b.Lifecycle,
+		Location:  fi.String("igconfig/" + strings.ToLower(string(ig.Spec.Role)) + "/" + ig.Name + "/auxconfig.yaml"),
+		Contents:  &task.auxConfig,
+	})
 	return &task.resource, nil
 }
 
@@ -246,6 +266,11 @@ func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 }
 
 func (b *BootstrapScript) Run(c *fi.Context) error {
+	config, err := b.kubeEnv(b.ig, c, b.ca)
+	if err != nil {
+		return err
+	}
+
 	functions := template.FuncMap{
 		"NodeUpSourceAmd64": func() string {
 			if b.builder.NodeUpAssets[architectures.ArchitectureAmd64] != nil {
@@ -271,8 +296,8 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 			}
 			return ""
 		},
-		"KubeEnv": func() (string, error) {
-			return b.kubeEnv(b.ig, c, b.ca)
+		"KubeEnv": func() string {
+			return config
 		},
 
 		"EnvironmentVariables": func() (string, error) {
@@ -345,51 +370,9 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 				}
 			}
 
-			hooks, err := b.getRelevantHooks(cs.Hooks, b.ig.Spec.Role)
-			if err != nil {
-				return "", err
-			}
-			if len(hooks) > 0 {
-				spec["hooks"] = hooks
-			}
-
-			fileAssets, err := b.getRelevantFileAssets(cs.FileAssets, b.ig.Spec.Role)
-			if err != nil {
-				return "", err
-			}
-			if len(fileAssets) > 0 {
-				spec["fileAssets"] = fileAssets
-			}
-
 			content, err := yaml.Marshal(spec)
 			if err != nil {
 				return "", fmt.Errorf("error converting cluster spec to yaml for inclusion within bootstrap script: %v", err)
-			}
-			return string(content), nil
-		},
-
-		"IGSpec": func() (string, error) {
-			spec := make(map[string]interface{})
-
-			hooks, err := b.getRelevantHooks(b.ig.Spec.Hooks, b.ig.Spec.Role)
-			if err != nil {
-				return "", err
-			}
-			if len(hooks) > 0 {
-				spec["hooks"] = hooks
-			}
-
-			fileAssets, err := b.getRelevantFileAssets(b.ig.Spec.FileAssets, b.ig.Spec.Role)
-			if err != nil {
-				return "", err
-			}
-			if len(fileAssets) > 0 {
-				spec["fileAssets"] = fileAssets
-			}
-
-			content, err := yaml.Marshal(spec)
-			if err != nil {
-				return "", fmt.Errorf("error converting instancegroup spec to yaml for inclusion within bootstrap script: %v", err)
 			}
 			return string(content), nil
 		},
@@ -421,103 +404,6 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 
 	b.resource.Resource = templateResource
 	return nil
-}
-
-// getRelevantHooks returns a list of hooks to be applied to the instance group,
-// with the Manifest and ExecContainer Commands fingerprinted to reduce size
-func (b *BootstrapScript) getRelevantHooks(allHooks []kops.HookSpec, role kops.InstanceGroupRole) ([]kops.HookSpec, error) {
-	relevantHooks := []kops.HookSpec{}
-	for _, hook := range allHooks {
-		if len(hook.Roles) == 0 {
-			relevantHooks = append(relevantHooks, hook)
-			continue
-		}
-		for _, hookRole := range hook.Roles {
-			if role == hookRole {
-				relevantHooks = append(relevantHooks, hook)
-				break
-			}
-		}
-	}
-
-	hooks := []kops.HookSpec{}
-	if len(relevantHooks) > 0 {
-		for _, hook := range relevantHooks {
-			if hook.Manifest != "" {
-				manifestFingerprint, err := b.computeFingerprint(hook.Manifest)
-				if err != nil {
-					return nil, err
-				}
-				hook.Manifest = manifestFingerprint + " (fingerprint)"
-			}
-
-			if hook.ExecContainer != nil && hook.ExecContainer.Command != nil {
-				execContainerCommandFingerprint, err := b.computeFingerprint(strings.Join(hook.ExecContainer.Command[:], " "))
-				if err != nil {
-					return nil, err
-				}
-
-				execContainerAction := &kops.ExecContainerAction{
-					Command:     []string{execContainerCommandFingerprint + " (fingerprint)"},
-					Environment: hook.ExecContainer.Environment,
-					Image:       hook.ExecContainer.Image,
-				}
-				hook.ExecContainer = execContainerAction
-			}
-
-			hook.Roles = nil
-			hooks = append(hooks, hook)
-		}
-	}
-
-	return hooks, nil
-}
-
-// getRelevantFileAssets returns a list of file assets to be applied to the
-// instance group, with the Content fingerprinted to reduce size
-func (b *BootstrapScript) getRelevantFileAssets(allFileAssets []kops.FileAssetSpec, role kops.InstanceGroupRole) ([]kops.FileAssetSpec, error) {
-	relevantFileAssets := []kops.FileAssetSpec{}
-	for _, fileAsset := range allFileAssets {
-		if len(fileAsset.Roles) == 0 {
-			relevantFileAssets = append(relevantFileAssets, fileAsset)
-			continue
-		}
-		for _, fileAssetRole := range fileAsset.Roles {
-			if role == fileAssetRole {
-				relevantFileAssets = append(relevantFileAssets, fileAsset)
-				break
-			}
-		}
-	}
-
-	fileAssets := []kops.FileAssetSpec{}
-	if len(relevantFileAssets) > 0 {
-		for _, fileAsset := range relevantFileAssets {
-			if fileAsset.Content != "" {
-				contentFingerprint, err := b.computeFingerprint(fileAsset.Content)
-				if err != nil {
-					return nil, err
-				}
-				fileAsset.Content = contentFingerprint + " (fingerprint)"
-			}
-
-			fileAsset.Roles = nil
-			fileAssets = append(fileAssets, fileAsset)
-		}
-	}
-
-	return fileAssets, nil
-}
-
-// computeFingerprint takes a string and returns a base64 encoded fingerprint
-func (b *BootstrapScript) computeFingerprint(content string) (string, error) {
-	hasher := sha1.New()
-
-	if _, err := hasher.Write([]byte(content)); err != nil {
-		return "", fmt.Errorf("error computing fingerprint hash: %v", err)
-	}
-
-	return base64.StdEncoding.EncodeToString(hasher.Sum(nil)), nil
 }
 
 func (b *BootstrapScript) createProxyEnv(ps *kops.EgressProxySpec) string {

@@ -53,6 +53,8 @@ type Config struct {
 
 	// DefaultMachineType is the first-listed instance machine type, used if querying instance metadata fails.
 	DefaultMachineType *string `json:",omitempty"`
+	// EnableLifecycleHook defines whether we need to complete a lifecycle hook.
+	EnableLifecycleHook bool `json:",omitempty"`
 	// StaticManifests describes generic static manifests
 	// Using this allows us to keep complex logic out of nodeup
 	StaticManifests []*StaticManifest `json:"staticManifests,omitempty"`
@@ -62,11 +64,23 @@ type Config struct {
 	// specified, each parameter must follow the form variable=value, the way
 	// it would appear in sysctl.conf.
 	SysctlParameters []string `json:",omitempty"`
+	// UpdatePolicy determines the policy for applying upgrades automatically.
+	UpdatePolicy string
 	// VolumeMounts are a collection of volume mounts.
 	VolumeMounts []kops.VolumeMountSpec `json:",omitempty"`
 
 	// ConfigServer holds the configuration for the configuration server
 	ConfigServer *ConfigServerOptions `json:"configServer,omitempty"`
+	// AuxConfigHash holds a secure hash of the nodeup.AuxConfig.
+	AuxConfigHash string
+}
+
+// AuxConfig is the configuration for the nodeup binary that might be too big to fit in userdata.
+type AuxConfig struct {
+	// FileAssets are a collection of file assets for this instance group.
+	FileAssets []kops.FileAssetSpec `json:",omitempty"`
+	// Hooks are for custom actions, for example on first installation.
+	Hooks [][]kops.HookSpec
 }
 
 type ConfigServerOptions struct {
@@ -97,7 +111,7 @@ type StaticManifest struct {
 	Path string `json:"path,omitempty"`
 }
 
-func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config {
+func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Config, *AuxConfig) {
 	role := instanceGroup.Spec.Role
 	isMaster := role == kops.InstanceGroupRoleMaster
 
@@ -105,6 +119,19 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config
 		InstanceGroupRole: role,
 		SysctlParameters:  instanceGroup.Spec.SysctlParameters,
 		VolumeMounts:      instanceGroup.Spec.VolumeMounts,
+	}
+
+	clusterHooks := filterHooks(cluster.Spec.Hooks, instanceGroup.Spec.Role)
+	igHooks := filterHooks(instanceGroup.Spec.Hooks, instanceGroup.Spec.Role)
+
+	auxConfig := AuxConfig{
+		FileAssets: append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
+		Hooks:      [][]kops.HookSpec{igHooks, clusterHooks},
+	}
+
+	warmPool := cluster.Spec.WarmPool.ResolveDefaults(instanceGroup)
+	if warmPool.IsEnabled() && warmPool.EnableLifecycleHook {
+		config.EnableLifecycleHook = true
 	}
 
 	if isMaster {
@@ -134,9 +161,51 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config
 
 	config.KubeletConfig.Taints = append(config.KubeletConfig.Taints, instanceGroup.Spec.Taints...)
 
+	if instanceGroup.Spec.UpdatePolicy != nil {
+		config.UpdatePolicy = *instanceGroup.Spec.UpdatePolicy
+	} else if cluster.Spec.UpdatePolicy != nil {
+		config.UpdatePolicy = *cluster.Spec.UpdatePolicy
+	} else {
+		config.UpdatePolicy = kops.UpdatePolicyAutomatic
+	}
+
 	if cluster.Spec.Networking != nil && cluster.Spec.Networking.AmazonVPC != nil {
 		config.DefaultMachineType = fi.String(strings.Split(instanceGroup.Spec.MachineType, ",")[0])
 	}
 
-	return &config
+	return &config, &auxConfig
+}
+
+func filterFileAssets(f []kops.FileAssetSpec, role kops.InstanceGroupRole) []kops.FileAssetSpec {
+	var fileAssets []kops.FileAssetSpec
+	for _, fileAsset := range f {
+		if len(fileAsset.Roles) > 0 && !containsRole(role, fileAsset.Roles) {
+			continue
+		}
+		fileAsset.Roles = nil
+		fileAssets = append(fileAssets, fileAsset)
+	}
+	return fileAssets
+}
+
+func filterHooks(h []kops.HookSpec, role kops.InstanceGroupRole) []kops.HookSpec {
+	var hooks []kops.HookSpec
+	for _, hook := range h {
+		if len(hook.Roles) > 0 && !containsRole(role, hook.Roles) {
+			continue
+		}
+		hook.Roles = nil
+		hooks = append(hooks, hook)
+	}
+	return hooks
+}
+
+func containsRole(v kops.InstanceGroupRole, list []kops.InstanceGroupRole) bool {
+	for _, x := range list {
+		if v == x {
+			return true
+		}
+	}
+
+	return false
 }

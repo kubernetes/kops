@@ -489,6 +489,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return err
 	}
 	bootstrapScriptBuilder := &model.BootstrapScriptBuilder{
+		Lifecycle:           clusterLifecycle,
 		NodeUpConfigBuilder: configBuilder,
 		NodeUpAssets:        c.NodeUpAssets,
 	}
@@ -1291,23 +1292,23 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 	return &configBuilder, nil
 }
 
-// BuildNodeUpConfig returns the NodeUp config, in YAML format
-func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caResource fi.Resource) (*nodeup.Config, error) {
+// BuildConfig returns the NodeUp config and auxiliary config.
+func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caResource fi.Resource) (*nodeup.Config, *nodeup.AuxConfig, error) {
 	cluster := n.cluster
 
 	if ig == nil {
-		return nil, fmt.Errorf("instanceGroup cannot be nil")
+		return nil, nil, fmt.Errorf("instanceGroup cannot be nil")
 	}
 
 	role := ig.Spec.Role
 	if role == "" {
-		return nil, fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
+		return nil, nil, fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
 	}
 
 	useGossip := dns.IsGossipHostname(cluster.Spec.MasterInternalName)
 	isMaster := role == kops.InstanceGroupRoleMaster
 
-	config := nodeup.NewConfig(cluster, ig)
+	config, auxConfig := nodeup.NewConfig(cluster, ig)
 	config.Assets = make(map[architectures.Architecture][]string)
 	for _, arch := range architectures.GetSupported() {
 		config.Assets[arch] = []string{}
@@ -1343,7 +1344,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		ca, err := fi.ResourceAsString(caResource)
 		if err != nil {
 			// CA task may not have run yet; we'll retry
-			return nil, fmt.Errorf("failed to read CA certificate: %w", err)
+			return nil, nil, fmt.Errorf("failed to read CA certificate: %w", err)
 		}
 
 		configServer := &nodeup.ConfigServerOptions{
@@ -1383,5 +1384,5 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	config.Channels = n.channels
 	config.EtcdManifests = n.etcdManifests[role]
 
-	return config, nil
+	return config, auxConfig, nil
 }
