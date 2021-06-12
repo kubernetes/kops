@@ -112,22 +112,6 @@
     },
     {
       "Action": [
-        "autoscaling:SetDesiredCapacity",
-        "autoscaling:TerminateInstanceInAutoScalingGroup",
-        "autoscaling:UpdateAutoScalingGroup"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "autoscaling:ResourceTag/KubernetesCluster": "minimal.example.com"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
         "autoscaling:CompleteLifecycleAction",
         "autoscaling:DescribeAutoScalingInstances"
       ],
