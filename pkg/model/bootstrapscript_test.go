@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -63,62 +64,63 @@ type nodeupConfigBuilder struct {
 	cluster *kops.Cluster
 }
 
-func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, ca fi.Resource) (*nodeup.Config, error) {
-	return nodeup.NewConfig(n.cluster, ig), nil
+func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, ca fi.Resource) (*nodeup.Config, *nodeup.AuxConfig, error) {
+	config, auxConfig := nodeup.NewConfig(n.cluster, ig)
+	return config, auxConfig, nil
 }
 
 func TestBootstrapUserData(t *testing.T) {
 	cs := []struct {
 		Role               kops.InstanceGroupRole
-		ExpectedFilePath   string
+		ExpectedFileIndex  int
 		HookSpecRoles      []kops.InstanceGroupRole
 		FileAssetSpecRoles []kops.InstanceGroupRole
 	}{
 		{
 			Role:               "Master",
-			ExpectedFilePath:   "tests/data/bootstrapscript_0.txt",
+			ExpectedFileIndex:  0,
 			HookSpecRoles:      []kops.InstanceGroupRole{""},
 			FileAssetSpecRoles: []kops.InstanceGroupRole{""},
 		},
 		{
 			Role:               "Master",
-			ExpectedFilePath:   "tests/data/bootstrapscript_0.txt",
+			ExpectedFileIndex:  0,
 			HookSpecRoles:      []kops.InstanceGroupRole{"Node"},
 			FileAssetSpecRoles: []kops.InstanceGroupRole{"Node"},
 		},
 		{
 			Role:               "Master",
-			ExpectedFilePath:   "tests/data/bootstrapscript_1.txt",
+			ExpectedFileIndex:  1,
 			HookSpecRoles:      []kops.InstanceGroupRole{"Master"},
 			FileAssetSpecRoles: []kops.InstanceGroupRole{"Master"},
 		},
 		{
 			Role:               "Master",
-			ExpectedFilePath:   "tests/data/bootstrapscript_2.txt",
+			ExpectedFileIndex:  2,
 			HookSpecRoles:      []kops.InstanceGroupRole{"Master", "Node"},
 			FileAssetSpecRoles: []kops.InstanceGroupRole{"Master", "Node"},
 		},
 		{
 			Role:               "Node",
-			ExpectedFilePath:   "tests/data/bootstrapscript_3.txt",
+			ExpectedFileIndex:  3,
 			HookSpecRoles:      []kops.InstanceGroupRole{""},
 			FileAssetSpecRoles: []kops.InstanceGroupRole{""},
 		},
 		{
 			Role:               "Node",
-			ExpectedFilePath:   "tests/data/bootstrapscript_4.txt",
+			ExpectedFileIndex:  4,
 			HookSpecRoles:      []kops.InstanceGroupRole{"Node"},
 			FileAssetSpecRoles: []kops.InstanceGroupRole{"Node"},
 		},
 		{
 			Role:               "Node",
-			ExpectedFilePath:   "tests/data/bootstrapscript_3.txt",
+			ExpectedFileIndex:  3,
 			HookSpecRoles:      []kops.InstanceGroupRole{"Master"},
 			FileAssetSpecRoles: []kops.InstanceGroupRole{"Master"},
 		},
 		{
 			Role:               "Node",
-			ExpectedFilePath:   "tests/data/bootstrapscript_5.txt",
+			ExpectedFileIndex:  5,
 			HookSpecRoles:      []kops.InstanceGroupRole{"Master", "Node"},
 			FileAssetSpecRoles: []kops.InstanceGroupRole{"Master", "Node"},
 		},
@@ -168,7 +170,16 @@ func TestBootstrapUserData(t *testing.T) {
 			continue
 		}
 
-		golden.AssertMatchesFile(t, actual, x.ExpectedFilePath)
+		golden.AssertMatchesFile(t, actual, fmt.Sprintf("tests/data/bootstrapscript_%d.txt", x.ExpectedFileIndex))
+
+		require.Contains(t, c.Tasks, "ManagedFile/auxconfig-testIG")
+		actual, err = fi.ResourceAsString(c.Tasks["ManagedFile/auxconfig-testIG"].(*fitasks.ManagedFile).Contents)
+		if err != nil {
+			t.Errorf("case %d failed to render auxconfig resource. error: %s", i, err)
+			continue
+		}
+
+		golden.AssertMatchesFile(t, actual, fmt.Sprintf("tests/data/auxconfig_%d.txt", x.ExpectedFileIndex))
 	}
 }
 
