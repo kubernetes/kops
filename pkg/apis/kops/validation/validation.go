@@ -820,6 +820,10 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only versions 1.8 through 1.10 are supported"))
 		}
 
+		if version.Minor < 10 && c.IsIPv6Only() {
+			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "kOps only supports IPv6 on version 1.10 or later"))
+		}
+
 		if v.Hubble != nil && fi.BoolValue(v.Hubble.Enabled) {
 			if !components.IsCertManagerEnabled(cluster) {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("hubble", "enabled"), "Hubble requires that cert manager is enabled"))
@@ -857,6 +861,9 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			}
 			if !v.DisableMasquerade {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("disableMasquerade"), "Masquerade must be disabled when ENI IPAM is used"))
+			}
+			if c.IsIPv6Only() {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("ipam"), "Cilium ENI IPAM does not support IPv6"))
 			}
 		}
 	}
