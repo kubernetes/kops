@@ -51,11 +51,6 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
-	cert, err := b.GetCert(fi.CertificateIDCA)
-	if err != nil {
-		return err
-	}
-
 	baseURL := url.URL{
 		Scheme: "https",
 		Host:   net.JoinHostPort("kops-controller.internal."+b.Cluster.ObjectMeta.Name, strconv.Itoa(wellknownports.KopsControllerPort)),
@@ -64,7 +59,7 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	bootstrapClient := &nodetasks.KopsBootstrapClient{
 		Authenticator: authenticator,
-		CA:            cert,
+		CAs:           []byte(b.NodeupConfig.CAs[fi.CertificateIDCA]),
 		BaseURL:       baseURL,
 	}
 

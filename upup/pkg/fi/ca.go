@@ -184,6 +184,27 @@ func KeysetItemIdOlder(a, b string) bool {
 	}
 }
 
+func (k *Keyset) ToCertificateBytes() ([]byte, error) {
+	keys := make([]string, 0, len(k.Items))
+	for k := range k.Items {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return KeysetItemIdOlder(k.Items[keys[i]].Id, k.Items[keys[j]].Id)
+	})
+
+	buf := new(bytes.Buffer)
+	for _, key := range keys {
+		item := k.Items[key]
+		certificate, err := item.Certificate.AsBytes()
+		if err != nil {
+			return nil, fmt.Errorf("public key %s: %v", item.Id, err)
+		}
+		buf.Write(certificate)
+	}
+	return buf.Bytes(), nil
+}
+
 func (k *Keyset) ToPublicKeyBytes() ([]byte, error) {
 	keys := make([]string, 0, len(k.Items))
 	for k := range k.Items {
