@@ -156,18 +156,18 @@ func supportsPublicJWKS(clusterSpec *kops.ClusterSpec) bool {
 }
 
 // AddServiceAccountRole adds the appropriate mounts / env vars to enable a pod to use a service-account role
-func AddServiceAccountRole(context *IAMModelContext, podSpec *corev1.PodSpec, container *corev1.Container, serviceAccountRole Subject) error {
+func AddServiceAccountRole(context *IAMModelContext, podSpec *corev1.PodSpec, serviceAccountRole Subject) error {
 	cloudProvider := kops.CloudProviderID(context.Cluster.Spec.CloudProvider)
 
 	switch cloudProvider {
 	case kops.CloudProviderAWS:
-		return addServiceAccountRoleForAWS(context, podSpec, container, serviceAccountRole)
+		return addServiceAccountRoleForAWS(context, podSpec, serviceAccountRole)
 	default:
 		return fmt.Errorf("ServiceAccount-level IAM is not yet supported on cloud %T", cloudProvider)
 	}
 }
 
-func addServiceAccountRoleForAWS(context *IAMModelContext, podSpec *corev1.PodSpec, container *corev1.Container, serviceAccountRole Subject) error {
+func addServiceAccountRoleForAWS(context *IAMModelContext, podSpec *corev1.PodSpec, serviceAccountRole Subject) error {
 	roleName, err := context.IAMNameForServiceAccountRole(serviceAccountRole)
 	if err != nil {
 		return err

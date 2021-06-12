@@ -20,10 +20,8 @@
       "Action": [
         "ec2:CreateSecurityGroup",
         "ec2:CreateTags",
-        "ec2:CreateVolume",
         "ec2:DescribeVolumesModifications",
-        "ec2:ModifyInstanceAttribute",
-        "ec2:ModifyVolume"
+        "ec2:ModifyInstanceAttribute"
       ],
       "Effect": "Allow",
       "Resource": [
@@ -37,8 +35,6 @@
         "ec2:CreateRoute",
         "ec2:DeleteRoute",
         "ec2:DeleteSecurityGroup",
-        "ec2:DeleteVolume",
-        "ec2:DetachVolume",
         "ec2:RevokeSecurityGroupIngress"
       ],
       "Condition": {
@@ -55,11 +51,7 @@
       "Action": [
         "ec2:AttachVolume",
         "ec2:AuthorizeSecurityGroupIngress",
-        "ec2:CreateRoute",
-        "ec2:DeleteRoute",
         "ec2:DeleteSecurityGroup",
-        "ec2:DeleteVolume",
-        "ec2:DetachVolume",
         "ec2:RevokeSecurityGroupIngress"
       ],
       "Condition": {
