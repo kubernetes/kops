@@ -197,21 +197,26 @@ func addServiceAccountRoleForAWS(context *IAMModelContext, podSpec *corev1.PodSp
 	}
 	podSpec.Volumes = append(podSpec.Volumes, volume)
 
-	container.VolumeMounts = append(container.VolumeMounts, corev1.VolumeMount{
-		MountPath: tokenDir,
-		Name:      volume.Name,
-		ReadOnly:  true,
-	})
+	containers := podSpec.Containers
+	for k, container := range containers {
 
-	container.Env = append(container.Env, corev1.EnvVar{
-		Name:  "AWS_ROLE_ARN",
-		Value: awsRoleARN,
-	})
+		container.VolumeMounts = append(container.VolumeMounts, corev1.VolumeMount{
+			MountPath: tokenDir,
+			Name:      volume.Name,
+			ReadOnly:  true,
+		})
 
-	container.Env = append(container.Env, corev1.EnvVar{
-		Name:  "AWS_WEB_IDENTITY_TOKEN_FILE",
-		Value: tokenDir + tokenName,
-	})
+		container.Env = append(container.Env, corev1.EnvVar{
+			Name:  "AWS_ROLE_ARN",
+			Value: awsRoleARN,
+		})
+
+		container.Env = append(container.Env, corev1.EnvVar{
+			Name:  "AWS_WEB_IDENTITY_TOKEN_FILE",
+			Value: tokenDir + tokenName,
+		})
+		containers[k] = container
+	}
 
 	// Set securityContext.fsGroup to enable file to be read
 	// background: https://github.com/kubernetes/enhancements/pull/1598
