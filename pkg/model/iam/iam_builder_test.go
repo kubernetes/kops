@@ -182,6 +182,11 @@ func TestPolicyGeneration(t *testing.T) {
 							},
 						},
 					},
+					CloudConfig: &kops.CloudConfiguration{
+						AWSEBSCSIDriver: &kops.AWSEBSCSIDriver{
+							Enabled: fi.Bool(true),
+						},
+					},
 				},
 			},
 			Role: x.Role,

@@ -395,11 +395,15 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/os: linux
+        {{ if not UseServiceAccountIAM }}
         node-role.kubernetes.io/master: ""
+        {{ end }}
       serviceAccountName: ebs-csi-controller-sa
       priorityClassName: system-cluster-critical
+      {{ if not UseServiceAccountIAM }}
       tolerations:
         - operator: Exists
+      {{ end }}
       containers:
         - name: ebs-plugin
           image: k8s.gcr.io/provider-aws/aws-ebs-csi-driver:{{ .Version }}
@@ -412,6 +416,11 @@ spec:
             - "--extra-tags={{ CloudLabels }}"
             - --v=5
           env:
+            - name: CSI_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
             - name: CSI_ENDPOINT
               value: unix:///var/lib/csi/sockets/pluginproxy/csi.sock
             - name: AWS_ACCESS_KEY_ID
