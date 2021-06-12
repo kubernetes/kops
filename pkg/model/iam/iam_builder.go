@@ -310,6 +310,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
 			AddAWSLoadbalancerControllerPermissions(p, resource, b.Cluster.GetName())
 		}
+		AddClusterAutoscalerPermissions(p, b.Cluster.GetName())
 	}
 
 	if b.Cluster.Spec.IAM.AllowContainerRegistry {
@@ -761,6 +762,34 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy, resource stringorslice.S
 	)
 }
 
+func AddClusterAutoscalerPermissions(p *Policy, clusterName string) {
+	resource := stringorslice.Slice([]string{"*"})
+	p.Statement = append(p.Statement,
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Of(
+				"autoscaling:SetDesiredCapacity",
+				"autoscaling:TerminateInstanceInAutoScalingGroup",
+			),
+			Resource: resource,
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"autoscaling:ResourceTag/KubernetesCluster": clusterName,
+				},
+			},
+		},
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Of(
+				"autoscaling:DescribeAutoScalingGroups",
+				"autoscaling:DescribeAutoScalingInstances",
+				"autoscaling:DescribeLaunchConfigurations",
+			),
+			Resource: resource,
+		},
+	)
+}
+
 func addSnapshotPersmissions(p *Policy, clusterName string) {
 	p.Statement = append(p.Statement, &Statement{
 		Effect: StatementEffectAllow,
@@ -987,20 +1016,6 @@ func addMasterASPolicies(p *Policy, resource stringorslice.StringOrSlice, cluste
 				"ec2:DescribeLaunchTemplateVersions",
 			),
 			Resource: resource,
-		},
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
-				"autoscaling:SetDesiredCapacity",                  // aws_manager.go
-				"autoscaling:TerminateInstanceInAutoScalingGroup", // aws_manager.go
-				"autoscaling:UpdateAutoScalingGroup",              // aws_instancegroups.go
-			),
-			Resource: resource,
-			Condition: Condition{
-				"StringEquals": map[string]string{
-					"autoscaling:ResourceTag/KubernetesCluster": clusterName,
-				},
-			},
 		},
 		&Statement{
 			Effect: StatementEffectAllow,

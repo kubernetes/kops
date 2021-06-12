@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components/addonmanifests/awsloadbalancercontroller"
+	"k8s.io/kops/pkg/model/components/addonmanifests/clusterautoscaler"
 	"k8s.io/kops/pkg/model/components/addonmanifests/dnscontroller"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
@@ -119,6 +120,8 @@ func getWellknownServiceAccount(name string) iam.Subject {
 	switch name {
 	case "aws-load-balancer-controller":
 		return &awsloadbalancercontroller.ServiceAccount{}
+	case "cluster-autoscaler":
+		return &clusterautoscaler.ServiceAccount{}
 	default:
 		return nil
 	}
