@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,29 +26,28 @@ import (
 )
 
 var (
-	setLong = templates.LongDesc(i18n.T(`Set a configuration field.
+	unsetLong = templates.LongDesc(i18n.T(`Unset a configuration field.
 
-        kops set does not update the cloud resources; to apply the changes use "kops update cluster".
+        kops unset does not update the cloud resources; to apply the changes use "kops update cluster".
     `))
 
-	setExample = templates.Examples(i18n.T(`
-    # Set cluster to run kubernetes version 1.17.0
-	kops set cluster k8s-cluster.example.com spec.kubernetesVersion=1.17.0
-	kops set instancegroup --name k8s-cluster.example.com nodes-1a spec.maxSize=4
+	unsetExample = templates.Examples(i18n.T(`
+	kops unset cluster k8s-cluster.example.com spec.iam.allowContainerRegistry
+	kops unset instancegroup --name k8s-cluster.example.com nodes-1a spec.maxSize
 	`))
 )
 
-func NewCmdSet(f *util.Factory, out io.Writer) *cobra.Command {
+func NewCmdUnset(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "set",
-		Short:   i18n.T("Set fields on clusters and other resources."),
-		Long:    setLong,
-		Example: setExample,
+		Use:     "unset",
+		Short:   i18n.T("Unset fields on clusters and other resources."),
+		Long:    unsetLong,
+		Example: unsetExample,
 	}
 
 	// create subcommands
-	cmd.AddCommand(NewCmdSetCluster(f, out))
-	cmd.AddCommand(NewCmdSetInstancegroup(f, out))
+	cmd.AddCommand(NewCmdUnsetCluster(f, out))
+	cmd.AddCommand(NewCmdUnsetInstancegroup(f, out))
 
 	return cmd
 }
