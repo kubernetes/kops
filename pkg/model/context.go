@@ -367,6 +367,10 @@ func (b *KopsModelContext) IsKubernetesLT(version string) bool {
 	return !b.IsKubernetesGTE(version)
 }
 
+func (b *KopsModelContext) IsIPv6Only() bool {
+	return b.Cluster.Spec.IsIPv6Only()
+}
+
 // WellKnownServiceIP returns a service ip with the service cidr
 func (b *KopsModelContext) WellKnownServiceIP(id int) (net.IP, error) {
 	return components.WellKnownServiceIP(&b.Cluster.Spec, id)
