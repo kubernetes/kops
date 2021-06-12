@@ -85,21 +85,25 @@ func (f fakeStatusCloud) FindClusterStatus(cluster *kops.Cluster) (*kops.Cluster
 
 // mock a fake key store
 type fakeKeyStore struct {
-	FindKeypairFn func(name string) (*pki.Certificate, *pki.PrivateKey, bool, error)
+	FindKeysetFn func(name string) (*fi.Keyset, error)
 
-	// StoreKeypair writes the keypair to the store
-	StoreKeypairFn func(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error
+	// StoreKeysetFn writes the keyset to the store.
+	StoreKeysetFn func(name string, keyset *fi.Keyset) error
 
 	// MirrorTo will copy secrets to a vfs.Path, which is often easier for a machine to read
 	MirrorToFn func(basedir vfs.Path) error
 }
 
-func (f fakeKeyStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
-	return f.FindKeypairFn(name)
+func (f fakeKeyStore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	return fi.FindPrimaryKeypair(f, name)
 }
 
-func (f fakeKeyStore) StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
-	return f.StoreKeypairFn(id, cert, privateKey)
+func (f fakeKeyStore) FindKeyset(name string) (*fi.Keyset, error) {
+	return f.FindKeysetFn(name)
+}
+
+func (f fakeKeyStore) StoreKeyset(name string, keyset *fi.Keyset) error {
+	return f.StoreKeysetFn(name, keyset)
 }
 
 func (f fakeKeyStore) MirrorTo(basedir vfs.Path) error {
@@ -124,16 +128,22 @@ func buildMinimalCluster(clusterName string, masterPublicName string, lbCert boo
 	return cluster
 }
 
-// create a fake certificate
-func fakeCertificate() *pki.Certificate {
+// create a fake keyset
+func fakeKeyset() *fi.Keyset {
 	cert, _ := pki.ParsePEMCertificate([]byte(certData))
-	return cert
-}
-
-// create a fake private key
-func fakePrivateKey() *pki.PrivateKey {
 	key, _ := pki.ParsePEMPrivateKey([]byte(privatekeyData))
-	return key
+	keysetItem := &fi.KeysetItem{
+		Id:          "99",
+		Certificate: cert,
+		PrivateKey:  key,
+	}
+	return &fi.Keyset{
+		LegacyFormat: true,
+		Items: map[string]*fi.KeysetItem{
+			"99": keysetItem,
+		},
+		Primary: keysetItem,
+	}
 }
 
 func TestBuildKubecfg(t *testing.T) {
@@ -350,10 +360,8 @@ func TestBuildKubecfg(t *testing.T) {
 			kopsStateStore := "memfs://example-state-store"
 
 			keyStore := fakeKeyStore{
-				FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
-					return fakeCertificate(),
-						fakePrivateKey(),
-						true,
+				FindKeysetFn: func(name string) (*fi.Keyset, error) {
+					return fakeKeyset(),
 						nil
 				},
 			}

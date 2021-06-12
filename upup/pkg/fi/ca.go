@@ -18,7 +18,12 @@ package fi
 
 import (
 	"bytes"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
+	"math/big"
+	"sort"
+	"strconv"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
@@ -43,17 +48,30 @@ type KeystoreItem struct {
 	Data []byte
 }
 
+// Keyset is a parsed api.Keyset.
+type Keyset struct {
+	// LegacyFormat instructs a keypair task to convert a Legacy Keyset to the new Keyset API format.
+	LegacyFormat bool
+	Items        map[string]*KeysetItem
+	Primary      *KeysetItem
+}
+
+// KeysetItem is a certificate/key pair in a Keyset.
+type KeysetItem struct {
+	Id          string
+	Certificate *pki.Certificate
+	PrivateKey  *pki.PrivateKey
+}
+
 // Keystore contains just the functions we need to issue keypairs, not to list / manage them
 type Keystore interface {
-	// FindKeypair finds a cert & private key, returning nil where either is not found
-	// (if the certificate is found but not keypair, that is not an error: only the cert will be returned).
-	// This func returns a cert, private key and a bool.  The bool value is whether the keypair is stored
-	// in a legacy format. This bool is used by a keypair
-	// task to convert a Legacy Keypair to the new Keypair API format.
-	FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error)
+	pki.Keystore
 
-	// StoreKeypair writes the keypair to the store
-	StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error
+	// FindKeyset finds a Keyset.
+	FindKeyset(name string) (*Keyset, error)
+
+	// StoreKeyset writes a Keyset to the store.
+	StoreKeyset(name string, keyset *Keyset) error
 
 	// MirrorTo will copy secrets to a vfs.Path, which is often easier for a machine to read
 	MirrorTo(basedir vfs.Path) error
@@ -85,9 +103,6 @@ type CAStore interface {
 	// ListKeysets will return all the KeySets
 	// The key material is not guaranteed to be populated - metadata like the name will be.
 	ListKeysets() ([]*kops.Keyset, error)
-
-	// AddCert adds an alternative certificate to the pool (primarily useful for CAs)
-	AddCert(name string, cert *pki.Certificate) error
 
 	// DeleteKeysetItem will delete the specified item from the Keyset
 	DeleteKeysetItem(item *kops.Keyset, id string) error
@@ -144,4 +159,70 @@ func (c *CertificatePool) AsString() (string, error) {
 		}
 	}
 	return data.String(), nil
+}
+
+// FindPrimaryKeypair is a common implementation of pki.FindPrimaryKeypair.
+func FindPrimaryKeypair(c Keystore, name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	keyset, err := c.FindKeyset(name)
+	if err != nil {
+		return nil, nil, err
+	}
+	if keyset == nil || keyset.Primary == nil {
+		return nil, nil, nil
+	}
+	return keyset.Primary.Certificate, keyset.Primary.PrivateKey, nil
+}
+
+// AddCert adds an alternative certificate to the keyset (primarily useful for CAs)
+func AddCert(keyset *Keyset, cert *pki.Certificate) {
+	serial := 0
+
+	for keyset.Items[strconv.Itoa(serial)] != nil {
+		serial++
+	}
+
+	keyset.Items[strconv.Itoa(serial)] = &KeysetItem{
+		Id:          strconv.Itoa(serial),
+		Certificate: cert,
+	}
+}
+
+// KeysetItemIdOlder returns whether the KeysetItem Id a is older than b.
+func KeysetItemIdOlder(a, b string) bool {
+	aVersion, aOk := big.NewInt(0).SetString(a, 10)
+	bVersion, bOk := big.NewInt(0).SetString(b, 10)
+	if aOk {
+		if !bOk {
+			return false
+		}
+		return aVersion.Cmp(bVersion) < 0
+	} else {
+		if bOk {
+			return true
+		}
+		return a < b
+	}
+}
+
+func (k *Keyset) ToPublicKeyBytes() ([]byte, error) {
+	keys := make([]string, 0, len(k.Items))
+	for k := range k.Items {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return KeysetItemIdOlder(k.Items[keys[i]].Id, k.Items[keys[j]].Id)
+	})
+
+	buf := new(bytes.Buffer)
+	for _, key := range keys {
+		item := k.Items[key]
+		publicKeyData, err := x509.MarshalPKIXPublicKey(item.Certificate.PublicKey)
+		if err != nil {
+			return nil, fmt.Errorf("marshalling public key %s: %v", item.Id, err)
+		}
+		if err = pem.Encode(buf, &pem.Block{Type: "RSA PUBLIC KEY", Bytes: publicKeyData}); err != nil {
+			return nil, fmt.Errorf("encoding public key %s: %v", item.Id, err)
+		}
+	}
+	return buf.Bytes(), nil
 }

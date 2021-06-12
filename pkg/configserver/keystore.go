@@ -38,22 +38,27 @@ func NewKeyStore(nodeConfig *nodeup.NodeConfig) fi.CAStore {
 	}
 }
 
-// FindKeypair implements fi.Keystore
-func (s *configserverKeyStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
-	return nil, nil, false, fmt.Errorf("FindKeypair %q not supported by configserverKeyStore", name)
+// FindPrimaryKeypair implements pki.Keystore
+func (s *configserverKeyStore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	return nil, nil, fmt.Errorf("FindPrimaryKeypair %q not supported by configserverKeyStore", name)
 }
 
-// FindKeypair implements fi.Keystore
+// FindKeyset implements fi.Keystore
+func (s *configserverKeyStore) FindKeyset(name string) (*fi.Keyset, error) {
+	return nil, fmt.Errorf("FindKeyset %q not supported by configserverKeyStore", name)
+}
+
+// CreateKeypair implements fi.Keystore
 func (s *configserverKeyStore) CreateKeypair(signer string, name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
 	return nil, fmt.Errorf("CreateKeypair not supported by configserverKeyStore")
 }
 
-// FindKeypair implements fi.Keystore
-func (s *configserverKeyStore) StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
-	return fmt.Errorf("StoreKeypair not supported by configserverKeyStore")
+// StoreKeyset implements fi.Keystore
+func (s *configserverKeyStore) StoreKeyset(name string, keyset *fi.Keyset) error {
+	return fmt.Errorf("StoreKeyset not supported by configserverKeyStore")
 }
 
-// FindKeypair implements fi.Keystore
+// MirrorTo implements fi.Keystore
 func (s *configserverKeyStore) MirrorTo(basedir vfs.Path) error {
 	return fmt.Errorf("MirrorTo not supported by configserverKeyStore")
 }
@@ -102,11 +107,6 @@ func (s *configserverKeyStore) FindCert(name string) (*pki.Certificate, error) {
 // ListKeysets implements fi.CAStore
 func (s *configserverKeyStore) ListKeysets() ([]*kops.Keyset, error) {
 	return nil, fmt.Errorf("ListKeysets not supported by configserverKeyStore")
-}
-
-// AddCert implements fi.CAStore
-func (s *configserverKeyStore) AddCert(name string, cert *pki.Certificate) error {
-	return fmt.Errorf("AddCert not supported by configserverKeyStore")
 }
 
 // DeleteKeysetItem implements fi.CAStore
