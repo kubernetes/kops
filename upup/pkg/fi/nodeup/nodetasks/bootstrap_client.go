@@ -134,8 +134,8 @@ func (b *BootstrapClientTask) Run(c *fi.Context) error {
 type KopsBootstrapClient struct {
 	// Authenticator generates authentication credentials for requests.
 	Authenticator fi.Authenticator
-	// CA is the CA certificate for kops-controller.
-	CA []byte
+	// CAs are the CA certificates for kops-controller.
+	CAs []byte
 
 	// BaseURL is the base URL for the server
 	BaseURL url.URL
@@ -146,7 +146,7 @@ type KopsBootstrapClient struct {
 func (b *KopsBootstrapClient) QueryBootstrap(ctx context.Context, req *nodeup.BootstrapRequest) (*nodeup.BootstrapResponse, error) {
 	if b.httpClient == nil {
 		certPool := x509.NewCertPool()
-		certPool.AppendCertsFromPEM(b.CA)
+		certPool.AppendCertsFromPEM(b.CAs)
 
 		b.httpClient = &http.Client{
 			Timeout: time.Duration(15) * time.Second,

@@ -1294,7 +1294,7 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 }
 
 // BuildConfig returns the NodeUp config and auxiliary config.
-func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caResource fi.Resource) (*nodeup.Config, *nodeup.AuxConfig, error) {
+func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caCertificates fi.Resource) (*nodeup.Config, *nodeup.AuxConfig, error) {
 	cluster := n.cluster
 
 	if ig == nil {
@@ -1321,6 +1321,13 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	config.InstanceGroupName = ig.ObjectMeta.Name
 	config.CloudProvider = cluster.Spec.CloudProvider
 
+	cas, err := fi.ResourceAsString(caCertificates)
+	if err != nil {
+		// CA task may not have run yet; we'll retry
+		return nil, nil, fmt.Errorf("failed to read CA certificates: %w", err)
+	}
+	config.CAs[fi.CertificateIDCA] = cas
+
 	if isMaster || useGossip {
 		for _, arch := range architectures.GetSupported() {
 			for _, a := range n.protokubeAsset[arch] {
@@ -1343,15 +1350,8 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 			Path:   "/",
 		}
 
-		ca, err := fi.ResourceAsString(caResource)
-		if err != nil {
-			// CA task may not have run yet; we'll retry
-			return nil, nil, fmt.Errorf("failed to read CA certificate: %w", err)
-		}
-
 		configServer := &nodeup.ConfigServerOptions{
 			Server: baseURL.String(),
-			CA:     ca,
 		}
 
 		config.ConfigServer = configServer
