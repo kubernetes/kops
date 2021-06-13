@@ -52,16 +52,6 @@ func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest
 	}
 
 	{
-		p := s.configBase.Join("instancegroup", instanceGroupName)
-
-		b, err := p.ReadFile()
-		if err != nil {
-			return nil, fmt.Errorf("error loading InstanceGroup %q: %v", p, err)
-		}
-		nodeConfig.InstanceGroupConfig = string(b)
-	}
-
-	{
 		p := s.configBase.Join("igconfig", "node", instanceGroupName, "auxconfig.yaml")
 
 		b, err := p.ReadFile()
