@@ -320,25 +320,6 @@ func (c *VFSCAStore) FindCertificatePool(name string) (*CertificatePool, error) 
 	return pool, nil
 }
 
-func (c *VFSCAStore) FindCertificateKeyset(name string) (*kops.Keyset, error) {
-	p := c.buildCertificatePoolPath(name)
-	certs, err := c.loadKeyset(p)
-	if err != nil {
-		return nil, fmt.Errorf("error in 'FindCertificatePool' attempting to load cert %q: %v", name, err)
-	}
-
-	if certs == nil {
-		return nil, nil
-	}
-
-	o, err := certs.ToAPIObject(name, false)
-	if err != nil {
-		return nil, err
-	}
-
-	return o, nil
-}
-
 // ListKeysets implements CAStore::ListKeysets
 func (c *VFSCAStore) ListKeysets() ([]*kops.Keyset, error) {
 	keysets := make(map[string]*kops.Keyset)
@@ -604,20 +585,6 @@ func (c *VFSCAStore) FindPrivateKey(id string) (*pki.PrivateKey, error) {
 		key = keys.Primary.PrivateKey
 	}
 	return key, nil
-}
-
-func (c *VFSCAStore) FindPrivateKeyset(name string) (*kops.Keyset, error) {
-	keys, err := c.findPrivateKeyset(name)
-	if err != nil {
-		return nil, err
-	}
-
-	o, err := keys.ToAPIObject(name, true)
-	if err != nil {
-		return nil, err
-	}
-
-	return o, nil
 }
 
 func (c *VFSCAStore) deletePrivateKey(name string, id string) (bool, error) {
