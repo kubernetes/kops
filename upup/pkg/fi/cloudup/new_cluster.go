@@ -91,6 +91,8 @@ type NewClusterOptions struct {
 	UtilitySubnetIDs []string
 	// Egress defines the method of traffic egress for subnets.
 	Egress string
+	// IPv6 adds IPv6 CIDRs to subnets
+	IPv6 bool
 
 	// OpenstackExternalNet is the name of the external network for the openstack router.
 	OpenstackExternalNet     string
@@ -940,6 +942,19 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 
 		for i := range cluster.Spec.Subnets {
 			cluster.Spec.Subnets[i].Type = api.SubnetTypePublic
+		}
+
+		if opt.IPv6 {
+			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+				klog.Warningf("IPv6 support is EXPERIMENTAL and can be changed or removed at any time in the future!!!")
+				for i := range cluster.Spec.Subnets {
+					// Start IPv6 CIDR numbering from "1" to reserve /64#0 for later use
+					// with NonMasqueradeCIDR, ClusterCIDR and ServiceClusterIPRange
+					cluster.Spec.Subnets[i].IPv6CIDR = fmt.Sprintf("/64#%x", i+1)
+				}
+			} else {
+				klog.Errorf("IPv6 support is available only on AWS")
+			}
 		}
 
 	case api.TopologyPrivate:
