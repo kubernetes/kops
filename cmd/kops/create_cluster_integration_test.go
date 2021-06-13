@@ -128,6 +128,11 @@ func TestCreateClusterPrivateSharedSubnets(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private_shared_subnets", "v1alpha2")
 }
 
+// TestCreateClusterIPv6 runs kops create cluster --zones us-test-1a --master-zones us-test-1a --ipv6
+func TestCreateClusterIPv6(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ipv6", "v1alpha2")
+}
+
 func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string) {
 	ctx := context.Background()
 
