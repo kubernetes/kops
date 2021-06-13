@@ -73,19 +73,9 @@ func (s *configserverKeyStore) FindCertificatePool(name string) (*fi.Certificate
 	return nil, fmt.Errorf("FindCertificatePool not supported by configserverKeyStore")
 }
 
-// FindCertificateKeyset implements fi.CAStore
-func (s *configserverKeyStore) FindCertificateKeyset(name string) (*kops.Keyset, error) {
-	return nil, fmt.Errorf("FindCertificateKeyset not supported by configserverKeyStore")
-}
-
 // FindPrivateKey implements fi.CAStore
 func (s *configserverKeyStore) FindPrivateKey(name string) (*pki.PrivateKey, error) {
 	return nil, fmt.Errorf("FindPrivateKey not supported by configserverKeyStore")
-}
-
-// FindPrivateKeyset implements fi.CAStore
-func (s *configserverKeyStore) FindPrivateKeyset(name string) (*kops.Keyset, error) {
-	return nil, fmt.Errorf("FindPrivateKeyset not supported by configserverKeyStore")
 }
 
 // FindCert implements fi.CAStore
