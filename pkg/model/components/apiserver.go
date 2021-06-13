@@ -129,7 +129,11 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	c.LogLevel = 2
 	c.SecurePort = 443
 
-	c.BindAddress = "0.0.0.0"
+	if clusterSpec.IsIPv6Only() {
+		c.BindAddress = "::"
+	} else {
+		c.BindAddress = "0.0.0.0"
+	}
 
 	c.AllowPrivileged = fi.Bool(true)
 	c.ServiceClusterIPRange = clusterSpec.ServiceClusterIPRange
