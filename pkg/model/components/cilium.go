@@ -85,6 +85,10 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
+	if c.DisableMasquerade == nil {
+		c.DisableMasquerade = fi.Bool(c.Ipam == "eni")
+	}
+
 	if c.Tunnel == "" {
 		if c.Ipam == "eni" {
 			c.Tunnel = "disabled"
