@@ -127,32 +127,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
-    configOverride: |
-      version = 2
-
-      [plugins]
-
-        [plugins."io.containerd.grpc.v1.cri"]
-
-          [plugins."io.containerd.grpc.v1.cri".containerd]
-
-            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
-
-              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-                runtime_type = "io.containerd.runc.v2"
-
-                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-                  SystemdCgroup = true
-
-          [plugins."io.containerd.grpc.v1.cri".registry]
-
-            [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-
-              [plugins."io.containerd.grpc.v1.cri".registry.mirrors."*"]
-                endpoint = ["http://HostIP2:Port2"]
-
-              [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-                endpoint = ["https://registry-1.docker.io"]
     logLevel: info
     packages:
       hashAmd64: "0000000000000000000000000000000000000000000000000000000000000000"
@@ -317,6 +291,32 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
   UpdatePolicy: automatic
   channels:
   - memfs://clusters.example.com/containerd.example.com/addons/bootstrap-channel.yaml
+  containerdConfig: |
+    version = 2
+
+    [plugins]
+
+      [plugins."io.containerd.grpc.v1.cri"]
+
+        [plugins."io.containerd.grpc.v1.cri".containerd]
+
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+              runtime_type = "io.containerd.runc.v2"
+
+              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                SystemdCgroup = true
+
+        [plugins."io.containerd.grpc.v1.cri".registry]
+
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+
+            [plugins."io.containerd.grpc.v1.cri".registry.mirrors."*"]
+              endpoint = ["http://HostIP2:Port2"]
+
+            [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+              endpoint = ["https://registry-1.docker.io"]
   etcdManifests:
   - memfs://clusters.example.com/containerd.example.com/manifests/etcd/main.yaml
   - memfs://clusters.example.com/containerd.example.com/manifests/etcd/events.yaml
@@ -457,32 +457,6 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
-    configOverride: |
-      version = 2
-
-      [plugins]
-
-        [plugins."io.containerd.grpc.v1.cri"]
-
-          [plugins."io.containerd.grpc.v1.cri".containerd]
-
-            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
-
-              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-                runtime_type = "io.containerd.runc.v2"
-
-                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-                  SystemdCgroup = true
-
-          [plugins."io.containerd.grpc.v1.cri".registry]
-
-            [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-
-              [plugins."io.containerd.grpc.v1.cri".registry.mirrors."*"]
-                endpoint = ["http://HostIP2:Port2"]
-
-              [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-                endpoint = ["https://registry-1.docker.io"]
     logLevel: info
     packages:
       hashAmd64: "0000000000000000000000000000000000000000000000000000000000000000"
@@ -557,6 +531,32 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
   UpdatePolicy: automatic
   channels:
   - memfs://clusters.example.com/containerd.example.com/addons/bootstrap-channel.yaml
+  containerdConfig: |
+    version = 2
+
+    [plugins]
+
+      [plugins."io.containerd.grpc.v1.cri"]
+
+        [plugins."io.containerd.grpc.v1.cri".containerd]
+
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+              runtime_type = "io.containerd.runc.v2"
+
+              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                SystemdCgroup = true
+
+        [plugins."io.containerd.grpc.v1.cri".registry]
+
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+
+            [plugins."io.containerd.grpc.v1.cri".registry.mirrors."*"]
+              endpoint = ["http://HostIP2:Port2"]
+
+            [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+              endpoint = ["https://registry-1.docker.io"]
 
   __EOF_KUBE_ENV
 
