@@ -790,8 +790,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				DisableMasquerade: true,
-				Ipam:              "eni",
+				Ipam: "eni",
 			},
 			Spec: kops.ClusterSpec{
 				CloudProvider: "aws",
@@ -799,7 +798,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				DisableMasquerade: true,
+				DisableMasquerade: fi.Bool(true),
 				Ipam:              "eni",
 			},
 			Spec: kops.ClusterSpec{
@@ -814,7 +813,8 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Ipam: "eni",
+				DisableMasquerade: fi.Bool(false),
+				Ipam:              "eni",
 			},
 			Spec: kops.ClusterSpec{
 				CloudProvider: "aws",
@@ -823,8 +823,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				DisableMasquerade: true,
-				Ipam:              "eni",
+				Ipam: "eni",
 			},
 			Spec: kops.ClusterSpec{
 				CloudProvider: "gce",

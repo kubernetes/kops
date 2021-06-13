@@ -394,7 +394,7 @@ type CiliumNetworkingSpec struct {
 	// Setting this has no effect.
 	LogstashProbeTimer uint32 `json:"logstashProbeTimer,omitempty"`
 	// DisableMasquerade disables masquerading traffic to external destinations behind the node IP.
-	DisableMasquerade bool `json:"disableMasquerade,omitempty"`
+	DisableMasquerade *bool `json:"disableMasquerade,omitempty"`
 	// Nat6Range is not implemented and may be removed in the future.
 	// Setting this has no effect.
 	Nat46Range string `json:"nat46Range,omitempty"`
