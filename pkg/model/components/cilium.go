@@ -17,7 +17,6 @@ limitations under the License.
 package components
 
 import (
-	"github.com/blang/semver/v4"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/wellknownports"
@@ -42,8 +41,6 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	if c.Version == "" {
 		c.Version = "v1.10.0"
 	}
-
-	version, _ := semver.ParseTolerant(c.Version)
 
 	if c.BPFCTGlobalAnyMax == 0 {
 		c.BPFCTGlobalAnyMax = 262144
@@ -78,11 +75,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.Ipam == "" {
-		if version.Minor >= 8 {
-			c.Ipam = "kubernetes"
-		} else {
-			c.Ipam = "hostscope"
-		}
+		c.Ipam = "kubernetes"
 	}
 
 	if c.DisableMasquerade == nil {
