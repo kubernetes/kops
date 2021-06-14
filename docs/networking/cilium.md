@@ -103,11 +103,19 @@ kops rolling-update cluster --yes
 
 ### Enabling Cilium ENI IPAM
 
-This feature is in beta state as of kOps 1.18.
+{{ kops_feature_table(kops_added_default='1.18') }}
 
-As of kOps 1.18, you can have Cilium provision AWS managed addresses and attach them directly to Pods much like Lyft VPC and AWS VPC. See [the Cilium docs for more information](https://docs.cilium.io/en/v1.6/concepts/ipam/eni/)
+This feature is in beta state.
 
-When using ENI IPAM you need to disable masquerading in Cilium as well.
+You can have Cilium provision AWS managed addresses and attach them directly to Pods much like Lyft VPC and AWS VPC. See [the Cilium docs for more information](https://docs.cilium.io/en/v1.6/concepts/ipam/eni/)
+
+```yaml
+  networking:
+    cilium:
+      ipam: eni
+```
+
+In kOps versions before 1.22, when using ENI IPAM you need to explicitly disable masquerading in Cilium as well.
 
 ```yaml
   networking:

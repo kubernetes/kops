@@ -855,7 +855,7 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			if c.CloudProvider != string(kops.CloudProviderAWS) {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("ipam"), "Cilum ENI IPAM is supported only in AWS"))
 			}
-			if !v.DisableMasquerade {
+			if v.DisableMasquerade != nil && !*v.DisableMasquerade {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("disableMasquerade"), "Masquerade must be disabled when ENI IPAM is used"))
 			}
 		}
