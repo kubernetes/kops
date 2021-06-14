@@ -116,6 +116,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 
 	kcm.AllocateNodeCIDRs = fi.Bool(true)
 	kcm.ConfigureCloudRoutes = fi.Bool(false)
+	kcm.ClusterCIDR = clusterSpec.PodCIDR
 
 	networking := clusterSpec.Networking
 	if networking == nil {
@@ -125,10 +126,6 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	} else if networking.GCE != nil {
 		kcm.ConfigureCloudRoutes = fi.Bool(false)
 		kcm.CIDRAllocatorType = fi.String("CloudAllocator")
-
-		if kcm.ClusterCIDR == "" {
-			kcm.ClusterCIDR = clusterSpec.PodCIDR
-		}
 	} else if networking.External != nil {
 		kcm.ConfigureCloudRoutes = fi.Bool(false)
 	} else if UsesCNI(networking) {
