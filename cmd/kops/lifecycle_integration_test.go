@@ -181,12 +181,6 @@ func TestLifecycleNodeTerminationHandlerQueueProcessor(t *testing.T) {
 func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptions, cloud *awsup.MockAWSCloud) {
 	ctx := context.Background()
 
-	featureflag.ParseFlags("+SpecOverrideFlag")
-	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-SpecOverrideFlag")
-	}
-	defer unsetFeatureFlags()
-
 	t := o.t
 
 	t.Logf("running lifecycle test for cluster %s", o.ClusterName)

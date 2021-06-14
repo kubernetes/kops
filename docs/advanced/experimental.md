@@ -11,7 +11,6 @@ The following experimental features are currently available:
 * `+SkipTerraformFormat` - Do not `terraform fmt` the generated terraform files.
 * `+EnableExternalCloudController` - Enables the use of cloud-controller-manager introduced in v1.7.
 * `+EnableSeparateConfigBase` - Allow a config-base that is different from the state store.
-* `+SpecOverrideFlag` - Allow setting spec values on `kops create`.
 * `+ExperimentalClusterDNS` - Turns off validation of the kubelet cluster dns flag.
 * `+EnableNodeAuthorization` - Enable support of Node Authorization, see [node_authorization.md](../node_authorization.md).
 * `+GoogleCloudBucketAcl` - Enables setting the ACL on the state store bucket when using GCS

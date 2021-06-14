@@ -70,7 +70,7 @@ var (
 	// It allows for experiments with alternative DNS configurations - in particular local proxies.
 	SkipTerraformFormat = New("SkipTerraformFormat", Bool(false))
 	// SpecOverrideFlag allows setting spec values on create
-	SpecOverrideFlag = New("SpecOverrideFlag", Bool(false))
+	SpecOverrideFlag = New("SpecOverrideFlag", Bool(true))
 	// Spotinst toggles the use of Spotinst integration.
 	Spotinst = New("Spotinst", Bool(false))
 	// SpotinstOcean toggles the use of Spotinst Ocean instance group implementation.
