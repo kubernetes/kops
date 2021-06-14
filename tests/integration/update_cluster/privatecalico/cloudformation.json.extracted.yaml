@@ -46,10 +46,10 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom.Prope
     while true; do
       for url in "${urls[@]}"; do
         commands=(
-          "curl -f --ipv4 --compressed -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
-          "wget --inet4-only --compression=auto -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
-          "curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
-          "wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
+          "curl -f --compressed -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
+          "wget --compression=auto -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
+          "curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
+          "wget -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
         )
         for cmd in "${commands[@]}"; do
           echo "Attempting download with: ${cmd} {url}"
@@ -358,10 +358,10 @@ Resources.AWSEC2LaunchTemplatenodesprivatecalicoexamplecom.Properties.LaunchTemp
     while true; do
       for url in "${urls[@]}"; do
         commands=(
-          "curl -f --ipv4 --compressed -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
-          "wget --inet4-only --compression=auto -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
-          "curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
-          "wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
+          "curl -f --compressed -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
+          "wget --compression=auto -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
+          "curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
+          "wget -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
         )
         for cmd in "${commands[@]}"; do
           echo "Attempting download with: ${cmd} {url}"
