@@ -19,21 +19,15 @@ source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
 REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/aws-ebs-csi-driver/"
 
-KOPS="${REPO_ROOT}/bazel-bin/cmd/kops/linux-amd64/kops"
+export KOPS_BASE_URL
+KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
+KOPS=$(kops-download-from-base)
 
-${KUBETEST2} --build --kops-root="${REPO_ROOT}" --stage-location="${STAGE_LOCATION:-}" --kops-binary-path="${KOPS}"
-
-OVERRIDES="--override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true"
+OVERRIDES="${OVERRIDES-} --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true"
 OVERRIDES="$OVERRIDES --override=cluster.spec.snapshotController.enabled=true"
 OVERRIDES="$OVERRIDES --override=cluster.spec.certManager.enabled=true"
 
-
-${KUBETEST2} \
-		--up \
-		--kops-binary-path="${KOPS}" \
-		--kubernetes-version="1.21.0" \
-		--create-args="--networking calico $OVERRIDES"
-
+kops-up
 
 ZONE=$(${KOPS} get ig -o json | jq -r '[.[] | select(.spec.role=="Node") | .spec.subnets[0]][0]')
 
