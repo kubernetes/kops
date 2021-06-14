@@ -4,5 +4,5 @@ Zones:
 CloudProvider: aws
 Networking: cni
 KubernetesVersion: v1.21.0
-Overrides:
+Sets:
 - cluster.spec.nodePortAccess=1.2.3.4/32,10.20.30.0/24
