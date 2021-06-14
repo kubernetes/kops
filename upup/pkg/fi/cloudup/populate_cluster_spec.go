@@ -325,7 +325,7 @@ func (c *populateClusterSpec) assignSubnets(cluster *kopsapi.Cluster) error {
 		cluster.Spec.KubeControllerManager = &kopsapi.KubeControllerManagerConfig{}
 	}
 
-	if cluster.Spec.KubeControllerManager.ClusterCIDR == "" {
+	if cluster.Spec.PodCIDR == "" {
 		// Allocate as big a range as possible: the NonMasqueradeCIDR mask + 1, with a '1' in the extra bit
 		ip := nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask)
 		if nmBits > 32 && nmOnes < 63 {
@@ -335,8 +335,8 @@ func (c *populateClusterSpec) assignSubnets(cluster *kopsapi.Cluster) error {
 		}
 		ip[nmOnes/8] |= 128 >> (nmOnes % 8)
 		cidr := net.IPNet{IP: ip, Mask: net.CIDRMask(nmOnes+1, nmBits)}
-		cluster.Spec.KubeControllerManager.ClusterCIDR = cidr.String()
-		klog.V(2).Infof("Defaulted KubeControllerManager.ClusterCIDR to %v", cluster.Spec.KubeControllerManager.ClusterCIDR)
+		cluster.Spec.PodCIDR = cidr.String()
+		klog.V(2).Infof("Defaulted PodCIDR to %v", cluster.Spec.PodCIDR)
 	}
 
 	if cluster.Spec.ServiceClusterIPRange == "" {
