@@ -70,8 +70,10 @@ type CreateClusterOptions struct {
 	// SSHPublicKeys is a map of the SSH public keys we should configure; required on AWS, not required on GCE
 	SSHPublicKeys map[string][]byte
 
-	// Overrides allows settings values direct in the spec
+	// Overrides allows setting values directly in the spec.
 	Overrides []string
+	// Unsets allows unsetting values directly in the spec.
+	Unsets []string
 
 	// CloudLabels are cloud-provider-level tags for instance groups and volumes.
 	CloudLabels string
@@ -301,6 +303,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	if featureflag.SpecOverrideFlag.Enabled() {
 		cmd.Flags().StringSliceVar(&options.Overrides, "override", options.Overrides, "Directly configure values in the spec")
+		cmd.Flags().StringSliceVar(&options.Unsets, "unset", options.Unsets, "Directly unset values in the spec")
 	}
 
 	// GCE flags
@@ -510,6 +513,9 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		cluster.Spec.MasterPublicName = c.MasterPublicName
 	}
 
+	if err := commands.UnsetClusterFields(c.Unsets, cluster); err != nil {
+		return err
+	}
 	if err := commands.SetClusterFields(c.Overrides, cluster); err != nil {
 		return err
 	}

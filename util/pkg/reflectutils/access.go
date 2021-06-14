@@ -169,3 +169,43 @@ func setPrimitive(v reflect.Value, newValue string) error {
 	v.Set(newV)
 	return nil
 }
+
+func Unset(target interface{}, targetPath string) error {
+	targetValue := reflect.ValueOf(target)
+
+	targetFieldPath, err := ParseFieldPath(targetPath)
+	if err != nil {
+		return fmt.Errorf("cannot parse field path %q: %w", targetPath, err)
+	}
+
+	var fieldUnset = false
+
+	visitor := func(path *FieldPath, field *reflect.StructField, v reflect.Value) error {
+		if !targetFieldPath.HasPrefixMatch(path) {
+			return nil
+		}
+
+		if targetFieldPath.Matches(path) {
+			if !v.CanSet() {
+				return fmt.Errorf("cannot unset field %q (marked immutable)", path)
+			}
+
+			v.Set(reflect.Zero(v.Type()))
+			fieldUnset = true
+			return nil
+		}
+
+		return nil
+	}
+
+	err = ReflectRecursive(targetValue, visitor, &ReflectOptions{JSONNames: true})
+	if err != nil {
+		return err
+	}
+
+	if !fieldUnset {
+		return fmt.Errorf("field %s not found in %s", targetPath, BuildTypeName(reflect.TypeOf(target)))
+	}
+
+	return nil
+}
