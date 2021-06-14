@@ -223,6 +223,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return strings.Join(labels, ",")
 	}
 
+	dest["IsIPv6Only"] = tf.IsIPv6Only
 	dest["UseServiceAccountIAM"] = tf.UseServiceAccountIAM
 
 	if cluster.Spec.NodeTerminationHandler != nil {
