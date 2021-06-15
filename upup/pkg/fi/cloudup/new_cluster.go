@@ -59,7 +59,7 @@ type NewClusterOptions struct {
 	ConfigBase string
 	// KubernetesVersion is the version of Kubernetes to deploy. It defaults to the version recommended by the channel.
 	KubernetesVersion string
-	// AdminAccess is the set of CIDR blocks permitted to connect to the Kubernetes API. It defaults to "0.0.0.0/0".
+	// AdminAccess is the set of CIDR blocks permitted to connect to the Kubernetes API. It defaults to "0.0.0.0/0" and "::/0".
 	AdminAccess []string
 	// SSHAccess is the set of CIDR blocks permitted to connect to SSH on the nodes. It defaults to the value of AdminAccess.
 	SSHAccess []string
@@ -145,7 +145,7 @@ type NewClusterOptions struct {
 func (o *NewClusterOptions) InitDefaults() {
 	o.Channel = api.DefaultChannel
 	o.Authorization = AuthorizationFlagRBAC
-	o.AdminAccess = []string{"0.0.0.0/0"}
+	o.AdminAccess = []string{"0.0.0.0/0", "::/0"}
 	o.Networking = "kubenet"
 	o.Topology = api.TopologyPublic
 	o.DNSType = string(api.DNSTypePublic)
@@ -220,7 +220,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	}
 
 	if len(opt.AdminAccess) == 0 {
-		opt.AdminAccess = []string{"0.0.0.0/0"}
+		opt.AdminAccess = []string{"0.0.0.0/0", "::/0"}
 	}
 	cluster.Spec.KubernetesAPIAccess = opt.AdminAccess
 	if len(opt.SSHAccess) != 0 {
