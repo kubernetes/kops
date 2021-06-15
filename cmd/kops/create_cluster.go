@@ -27,6 +27,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/klog/v2"
@@ -70,8 +71,8 @@ type CreateClusterOptions struct {
 	// SSHPublicKeys is a map of the SSH public keys we should configure; required on AWS, not required on GCE
 	SSHPublicKeys map[string][]byte
 
-	// Overrides allows setting values directly in the spec.
-	Overrides []string
+	// Sets allows setting values directly in the spec.
+	Sets []string
 	// Unsets allows unsetting values directly in the spec.
 	Unsets []string
 
@@ -302,7 +303,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "Output format. One of json|yaml. Used with the --dry-run flag.")
 
 	if featureflag.SpecOverrideFlag.Enabled() {
-		cmd.Flags().StringSliceVar(&options.Overrides, "override", options.Overrides, "Directly configure values in the spec")
+		cmd.Flags().StringSliceVar(&options.Sets, "set", options.Sets, "Directly set values in the spec")
 		cmd.Flags().StringSliceVar(&options.Unsets, "unset", options.Unsets, "Directly unset values in the spec")
 	}
 
@@ -336,6 +337,15 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.OpenstackLBOctavia, "os-octavia", options.OpenstackLBOctavia, "If true octavia loadbalancer api will be used")
 	cmd.Flags().StringVar(&options.OpenstackDNSServers, "os-dns-servers", options.OpenstackDNSServers, "comma separated list of DNS Servers which is used in network")
 	cmd.Flags().StringVar(&options.OpenstackNetworkID, "os-network", options.OpenstackNetworkID, "The ID of the existing OpenStack network to use")
+
+	cmd.Flags().SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
+		switch name {
+		case "override":
+			name = "set"
+		}
+		return pflag.NormalizedName(name)
+	})
+
 	return cmd
 }
 
@@ -516,7 +526,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	if err := commands.UnsetClusterFields(c.Unsets, cluster); err != nil {
 		return err
 	}
-	if err := commands.SetClusterFields(c.Overrides, cluster); err != nil {
+	if err := commands.SetClusterFields(c.Sets, cluster); err != nil {
 		return err
 	}
 
