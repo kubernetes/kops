@@ -57,6 +57,7 @@ spec:
     anonymousAuth: false
   kubernetesApiAccess:
   - 0.0.0.0/0
+  - ::/0
   kubernetesVersion: v1.21.0
   masterPublicName: api.ha.example.com
   networkCIDR: 172.20.0.0/16
@@ -65,6 +66,7 @@ spec:
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
+  - ::/0
   subnets:
   - cidr: 172.20.32.0/19
     name: us-test-1a
