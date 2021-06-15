@@ -77,7 +77,7 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// If there are containerd configuration overrides, apply them
-	b.buildOverrideConfigFile(c)
+	b.buildConfigFile(c)
 
 	if installContainerd {
 		if err := b.installContainerd(c); err != nil {
@@ -296,16 +296,11 @@ func (b *ContainerdBuilder) buildSysconfigFile(c *fi.ModelBuilderContext) error 
 	return nil
 }
 
-// buildOverrideConfigFile is responsible for creating the containerd configuration file
-func (b *ContainerdBuilder) buildOverrideConfigFile(c *fi.ModelBuilderContext) {
-	containerdConfigOverride := ""
-	if b.Cluster.Spec.Containerd != nil {
-		containerdConfigOverride = fi.StringValue(b.Cluster.Spec.Containerd.ConfigOverride)
-	}
-
+// buildConfigFile is responsible for creating the containerd configuration file
+func (b *ContainerdBuilder) buildConfigFile(c *fi.ModelBuilderContext) {
 	c.AddTask(&nodetasks.File{
 		Path:     b.containerdConfigFilePath(),
-		Contents: fi.NewStringResource(containerdConfigOverride),
+		Contents: fi.NewStringResource(b.NodeupConfig.ContainerdConfig),
 		Type:     nodetasks.FileType_File,
 	})
 }
