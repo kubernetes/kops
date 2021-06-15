@@ -34,6 +34,8 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/model/awsmodel"
 )
 
 // ValidationCluster uses a cluster to validate.
@@ -369,6 +371,11 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 	}
 
 	for _, ig := range groups {
+		if featureflag.SpotinstHybrid.Enabled() && awsmodel.HybridInstanceGroup(ig) {
+			klog.Warningf("skipping validation of %q InstanceGroup as it's marked as Spot", ig.Name)
+			continue
+		}
+
 		if !groupsSeen[ig.Name] {
 			v.addError(&ValidationError{
 				Kind:          "InstanceGroup",

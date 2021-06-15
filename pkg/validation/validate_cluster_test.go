@@ -28,6 +28,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -159,6 +160,37 @@ func Test_ValidateCloudGroupMissing(t *testing.T) {
 		}, v.Failures[0]) {
 		printDebug(t, v)
 	}
+}
+
+func Test_ValidateShouldSkipSpotHybridIG(t *testing.T) {
+	featureflag.ParseFlags("Spotinst,SpotinstOcean,SpotinstHybrid")
+	defer featureflag.ParseFlags("")
+
+	cluster := &kopsapi.Cluster{
+		ObjectMeta: metav1.ObjectMeta{Name: "testcluster.k8s.local"},
+	}
+
+	instanceGroups := []kopsapi.InstanceGroup{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "nodes-spot",
+				Labels: map[string]string{
+					"spotinst.io/hybrid": "true",
+				},
+			},
+			Spec: kopsapi.InstanceGroupSpec{
+				Role: kopsapi.InstanceGroupRoleNode,
+			},
+		},
+	}
+
+	mockcloud := BuildMockCloud(t, nil, cluster, instanceGroups)
+
+	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, "https://api.testcluster.k8s.local", fake.NewSimpleClientset())
+	require.NoError(t, err)
+	v, err := validator.Validate()
+	require.NoError(t, err)
+	assert.Len(t, v.Failures, 0)
 }
 
 func Test_ValidateNodesNotEnough(t *testing.T) {
