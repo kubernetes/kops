@@ -3236,10 +3236,6 @@ spec:
                           (default), "can-reach=DESTINATION", "interface=INTERFACE-REGEX",
                           or "skip-interface=INTERFACE-REGEX"'
                         type: string
-                      ipv4Support:
-                        description: 'IPv4Support enables Calico networking and security
-                          for IPv4 traffic. Default: "true"'
-                        type: boolean
                       ipv6AutoDetectionMethod:
                         description: 'IPv6AutoDetectionMethod configures how Calico
                           chooses the IP address used to route between nodes.  This
@@ -3248,10 +3244,6 @@ spec:
                           (default), "can-reach=DESTINATION", "interface=INTERFACE-REGEX",
                           or "skip-interface=INTERFACE-REGEX"'
                         type: string
-                      ipv6Support:
-                        description: 'IPv6Support enables Calico networking and security
-                          for IPv6 traffic. Default: "false"'
-                        type: boolean
                       logSeverityScreen:
                         description: 'LogSeverityScreen lets us set the desired log
                           level. (Default: info)'

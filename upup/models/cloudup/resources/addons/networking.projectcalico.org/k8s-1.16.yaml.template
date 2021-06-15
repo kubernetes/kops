@@ -52,8 +52,8 @@ data:
           "nodename": "__KUBERNETES_NODE_NAME__",
           "mtu": __CNI_MTU__,
           "ipam": {
-              "assign_ipv4": "{{ WithDefaultBool .Networking.Calico.IPv4Support true }}",
-              "assign_ipv6": "{{ WithDefaultBool .Networking.Calico.IPv6Support false }}",
+              "assign_ipv4": "{{ not IsIPv6Only }}",
+              "assign_ipv6": "{{ IsIPv6Only }}",
               "type": "calico-ipam"
           },
           "policy": {
@@ -3827,9 +3827,9 @@ spec:
               value: "kops,bgp"
             # Auto-detect the BGP IP address.
             - name: IP
-              value: "{{- if (WithDefaultBool .Networking.Calico.IPv4Support true) -}}autodetect{{- else -}}none{{- end -}}"
+              value: "{{- if not IsIPv6Only -}}autodetect{{- else -}}none{{- end -}}"
             - name: IP6
-              value: "{{- if (WithDefaultBool .Networking.Calico.IPv6Support false) -}}autodetect{{- else -}}none{{- end -}}"
+              value: "{{- if IsIPv6Only -}}autodetect{{- else -}}none{{- end -}}"
             - name: IP_AUTODETECTION_METHOD
               value: "{{- or .Networking.Calico.IPv4AutoDetectionMethod "first-found" }}"
             - name: IP6_AUTODETECTION_METHOD
@@ -3861,14 +3861,14 @@ spec:
             # The default IPv4 pool to create on startup if none exists. Pod IPs will be
             # chosen from this range. Changing this value after installation will have
             # no effect. This should fall within `--cluster-cidr`.
-            {{- if (WithDefaultBool .Networking.Calico.IPv6Support false) }}
+            {{- if IsIPv6Only }}
             - name: CALICO_IPV6POOL_CIDR
               value: "{{ .KubeControllerManager.ClusterCIDR }}"
             - name: CALICO_IPV6POOL_NAT_OUTGOING
               value: "true"
             - name: CALICO_ROUTER_ID
               value: "hash"
-            {{- else if (WithDefaultBool .Networking.Calico.IPv4Support true) }}
+            {{- else }}
             - name: CALICO_IPV4POOL_CIDR
               value: "{{ .KubeControllerManager.ClusterCIDR }}"
             {{- end }}
@@ -3878,9 +3878,8 @@ spec:
             # Set Felix endpoint to host default action to ACCEPT.
             - name: FELIX_DEFAULTENDPOINTTOHOSTACTION
               value: "ACCEPT"
-            # Disable IPv6 on Kubernetes.
             - name: FELIX_IPV6SUPPORT
-              value: "{{ WithDefaultBool .Networking.Calico.IPv6Support false }}"
+              value: "{{ IsIPv6Only }}"
             - name: FELIX_HEALTHENABLED
               value: "true"
 
@@ -3942,7 +3941,7 @@ spec:
               {{- if eq .Networking.Calico.EncapsulationMode "ipip" }}
               - -bird-live
               {{- end }}
-              {{- if (WithDefaultBool .Networking.Calico.IPv6Support false) }}
+              {{- if IsIPv6Only }}
               - -bird6-live
               {{- end }}
             periodSeconds: 10
@@ -3956,7 +3955,7 @@ spec:
               {{- if eq .Networking.Calico.EncapsulationMode "ipip" }}
               - -bird-ready
               {{- end }}
-              {{- if (WithDefaultBool .Networking.Calico.IPv6Support false) }}
+              {{- if IsIPv6Only }}
               - -bird6-ready
               {{- end }}
             periodSeconds: 10
