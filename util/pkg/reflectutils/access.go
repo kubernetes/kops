@@ -95,12 +95,12 @@ func setPrimitive(v reflect.Value, newValue string) error {
 	}
 
 	if v.Type().Kind() == reflect.Slice {
-		// Because this function generally sets values, we overwrite instead of appending.
-		// Then to support multiple values, we split on commas.
+		// To support multiple values, we split on commas.
 		// We have no way to escape a comma currently; but in general we prefer having a slice in the schema,
 		// rather than having values that need to be parsed, so we may not need it.
 		tokens := strings.Split(newValue, ",")
-		valueArray := reflect.MakeSlice(v.Type(), 0, len(tokens))
+		valueArray := reflect.MakeSlice(v.Type(), 0, v.Len()+len(tokens))
+		valueArray = reflect.AppendSlice(valueArray, v)
 		for _, s := range tokens {
 			valueItem := reflect.New(v.Type().Elem())
 			if err := setPrimitive(valueItem.Elem(), s); err != nil {
