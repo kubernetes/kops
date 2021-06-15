@@ -44,7 +44,7 @@ func (b *EtcdManagerTLSBuilder) Build(ctx *fi.ModelBuilderContext) error {
 	for _, etcdCluster := range b.Cluster.Spec.EtcdClusters {
 		k := etcdCluster.Name
 
-		// The certs for cilium etcd is managed by CiliumBuilder
+		// The certs for cilium etcd are managed by CiliumBuilder
 		if k == "cilium" {
 			continue
 		}
