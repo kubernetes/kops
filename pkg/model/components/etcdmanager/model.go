@@ -327,6 +327,9 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 		peerPort = 2382
 		grpcPort = wellknownports.EtcdCiliumGRPC
 		quarantinedClientPort = wellknownports.EtcdCiliumQuarantinedClientPort
+		if !featureflag.APIServerNodes.Enabled() {
+			clientHost = b.Cluster.Spec.MasterInternalName
+		}
 	default:
 		return nil, fmt.Errorf("unknown etcd cluster key %q", etcdCluster.Name)
 	}
