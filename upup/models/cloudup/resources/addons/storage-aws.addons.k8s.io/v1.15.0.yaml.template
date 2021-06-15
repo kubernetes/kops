@@ -30,7 +30,7 @@ kind: StorageClass
 metadata:
   name: kops-ssd-1-17
   annotations:
-    storageclass.kubernetes.io/is-default-class: "{{ not .CloudConfig.AWSEBSCSIDriver.Enabled }}"
+    storageclass.kubernetes.io/is-default-class: "{{ not ( WithDefaultBool .CloudConfig.AWSEBSCSIDriver.Enabled true ) }}"
   labels:
     k8s-addon: storage-aws.addons.k8s.io
 provisioner: kubernetes.io/aws-ebs
