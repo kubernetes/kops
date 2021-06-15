@@ -29,6 +29,7 @@ import (
 	"strings"
 
 	"github.com/blang/semver/v4"
+	"github.com/pelletier/go-toml"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	kopsbase "k8s.io/kops"
@@ -1384,5 +1385,40 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	config.Channels = n.channels
 	config.EtcdManifests = n.etcdManifests[role]
 
+	if cluster.Spec.Containerd == nil {
+		cluster.Spec.Containerd = &kops.ContainerdConfig{}
+	}
+	config.ContainerdConfig = buildContainerdConfig(cluster)
+
 	return config, auxConfig, nil
+
+}
+
+func buildContainerdConfig(cluster *kops.Cluster) string {
+	if cluster.Spec.ContainerRuntime != "containerd" {
+		return ""
+	}
+
+	containerd := cluster.Spec.Containerd
+	if fi.StringValue(containerd.ConfigOverride) != "" {
+		return *cluster.Spec.Containerd.ConfigOverride
+	}
+
+	// Build config file for containerd running in CRI mode
+
+	config, _ := toml.Load("")
+	config.SetPath([]string{"version"}, int64(2))
+	for name, endpoints := range containerd.RegistryMirrors {
+		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "registry", "mirrors", name, "endpoint"}, endpoints)
+	}
+	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "runtime_type"}, "io.containerd.runc.v2")
+	// only enable systemd cgroups for kubernetes >= 1.20
+	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "options", "SystemdCgroup"}, cluster.IsKubernetesGTE("1.20"))
+	if components.UsesKubenet(cluster.Spec.Networking) {
+		// Using containerd with Kubenet requires special configuration.
+		// This is a temporary backwards-compatible solution for kubenet users and will be deprecated when Kubenet is deprecated:
+		// https://github.com/containerd/containerd/blob/master/docs/cri/config.md#cni-config-template
+		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "cni", "conf_template"}, "/etc/containerd/config-cni.template")
+	}
+	return config.String()
 }

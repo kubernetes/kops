@@ -127,22 +127,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersmixedinstancesexamplecom.Prop
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
-    configOverride: |
-      version = 2
-
-      [plugins]
-
-        [plugins."io.containerd.grpc.v1.cri"]
-
-          [plugins."io.containerd.grpc.v1.cri".containerd]
-
-            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
-
-              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-                runtime_type = "io.containerd.runc.v2"
-
-                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-                  SystemdCgroup = true
     logLevel: info
     version: 1.4.6
   docker:
@@ -299,6 +283,22 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersmixedinstancesexamplecom.Prop
   UpdatePolicy: automatic
   channels:
   - memfs://clusters.example.com/mixedinstances.example.com/addons/bootstrap-channel.yaml
+  containerdConfig: |
+    version = 2
+
+    [plugins]
+
+      [plugins."io.containerd.grpc.v1.cri"]
+
+        [plugins."io.containerd.grpc.v1.cri".containerd]
+
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+              runtime_type = "io.containerd.runc.v2"
+
+              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                SystemdCgroup = true
   etcdManifests:
   - memfs://clusters.example.com/mixedinstances.example.com/manifests/etcd/main.yaml
   - memfs://clusters.example.com/mixedinstances.example.com/manifests/etcd/events.yaml
@@ -439,22 +439,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1bmastersmixedinstancesexamplecom.Prop
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
-    configOverride: |
-      version = 2
-
-      [plugins]
-
-        [plugins."io.containerd.grpc.v1.cri"]
-
-          [plugins."io.containerd.grpc.v1.cri".containerd]
-
-            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
-
-              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-                runtime_type = "io.containerd.runc.v2"
-
-                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-                  SystemdCgroup = true
     logLevel: info
     version: 1.4.6
   docker:
@@ -611,6 +595,22 @@ Resources.AWSEC2LaunchTemplatemasterustest1bmastersmixedinstancesexamplecom.Prop
   UpdatePolicy: automatic
   channels:
   - memfs://clusters.example.com/mixedinstances.example.com/addons/bootstrap-channel.yaml
+  containerdConfig: |
+    version = 2
+
+    [plugins]
+
+      [plugins."io.containerd.grpc.v1.cri"]
+
+        [plugins."io.containerd.grpc.v1.cri".containerd]
+
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+              runtime_type = "io.containerd.runc.v2"
+
+              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                SystemdCgroup = true
   etcdManifests:
   - memfs://clusters.example.com/mixedinstances.example.com/manifests/etcd/main.yaml
   - memfs://clusters.example.com/mixedinstances.example.com/manifests/etcd/events.yaml
@@ -751,22 +751,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1cmastersmixedinstancesexamplecom.Prop
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
-    configOverride: |
-      version = 2
-
-      [plugins]
-
-        [plugins."io.containerd.grpc.v1.cri"]
-
-          [plugins."io.containerd.grpc.v1.cri".containerd]
-
-            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
-
-              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-                runtime_type = "io.containerd.runc.v2"
-
-                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-                  SystemdCgroup = true
     logLevel: info
     version: 1.4.6
   docker:
@@ -923,6 +907,22 @@ Resources.AWSEC2LaunchTemplatemasterustest1cmastersmixedinstancesexamplecom.Prop
   UpdatePolicy: automatic
   channels:
   - memfs://clusters.example.com/mixedinstances.example.com/addons/bootstrap-channel.yaml
+  containerdConfig: |
+    version = 2
+
+    [plugins]
+
+      [plugins."io.containerd.grpc.v1.cri"]
+
+        [plugins."io.containerd.grpc.v1.cri".containerd]
+
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+              runtime_type = "io.containerd.runc.v2"
+
+              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                SystemdCgroup = true
   etcdManifests:
   - memfs://clusters.example.com/mixedinstances.example.com/manifests/etcd/main.yaml
   - memfs://clusters.example.com/mixedinstances.example.com/manifests/etcd/events.yaml
@@ -1063,22 +1063,6 @@ Resources.AWSEC2LaunchTemplatenodesmixedinstancesexamplecom.Properties.LaunchTem
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
-    configOverride: |
-      version = 2
-
-      [plugins]
-
-        [plugins."io.containerd.grpc.v1.cri"]
-
-          [plugins."io.containerd.grpc.v1.cri".containerd]
-
-            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
-
-              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-                runtime_type = "io.containerd.runc.v2"
-
-                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-                  SystemdCgroup = true
     logLevel: info
     version: 1.4.6
   docker:
@@ -1145,6 +1129,22 @@ Resources.AWSEC2LaunchTemplatenodesmixedinstancesexamplecom.Properties.LaunchTem
   UpdatePolicy: automatic
   channels:
   - memfs://clusters.example.com/mixedinstances.example.com/addons/bootstrap-channel.yaml
+  containerdConfig: |
+    version = 2
+
+    [plugins]
+
+      [plugins."io.containerd.grpc.v1.cri"]
+
+        [plugins."io.containerd.grpc.v1.cri".containerd]
+
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+              runtime_type = "io.containerd.runc.v2"
+
+              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                SystemdCgroup = true
 
   __EOF_KUBE_ENV
 
