@@ -105,7 +105,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		}
 	} else {
 		if ig.IsAPIServerOnly() && !featureflag.APIServerNodes.Enabled() {
-			return nil, fmt.Errorf("apiserver nodes requires the APIServrNodes feature flag to be enabled")
+			return nil, fmt.Errorf("apiserver nodes requires the APIServerNodes feature flag to be enabled")
 		}
 		if ig.Spec.MachineType == "" {
 			ig.Spec.MachineType, err = defaultMachineType(cloud, cluster, ig)
