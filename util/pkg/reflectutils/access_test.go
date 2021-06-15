@@ -163,6 +163,13 @@ func TestSet(t *testing.T) {
 			Path:     "spec.containers[0].enumSlice",
 			Value:    "ABC,DEF",
 		},
+		{
+			Name:     "append enum slice",
+			Input:    "{ 'spec': { 'containers': [ { 'enumSlice': [ 'ABC', 'DEF' ] } ] } }",
+			Expected: "{ 'spec': { 'containers': [ { 'enumSlice': [ 'ABC', 'DEF', 'GHI', 'JKL' ] } ] } }",
+			Path:     "spec.containers[0].enumSlice",
+			Value:    "GHI,JKL",
+		},
 		// Not sure if we should do this...
 		// {
 		// 	Name:     "creating missing array elements",
