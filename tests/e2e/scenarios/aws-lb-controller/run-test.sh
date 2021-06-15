@@ -24,12 +24,16 @@ KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-up
 KOPS=$(kops-download-from-base)
 
 
-${KUBETEST2} \
-    --up \
-    --kubernetes-version="1.21.0" \
-    --kops-binary-path="${KOPS}" \
-    --create-args="--networking amazonvpc --override=cluster.spec.awsLoadBalancerController.enabled=true --override=cluster.spec.certManager.enabled=true --zones=eu-west-1a,eu-west-1b,eu-west-1c"
+# shellcheck disable=SC2034
+NETWORKING="amazonvpc"
 
+OVERRIDES="${OVERRIDES-} --override=cluster.spec.awsLoadBalancerController.enabled=true"
+OVERRIDES="${OVERRIDES} --override=cluster.spec.certManager.enabled=true"
+
+# shellcheck disable=SC2034
+ZONES="eu-west-1a,eu-west-1b,eu-west-1c"
+
+kops-up
 
 VPC=$(${KOPS} toolbox dump -o json | jq -r .vpc.id)
 

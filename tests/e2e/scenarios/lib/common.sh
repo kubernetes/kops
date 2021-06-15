@@ -31,7 +31,27 @@ if [[ -z "${WORKSPACE-}" ]]; then
     WORKSPACE=$(mktemp -dt kops.XXXXXXXXX)
 fi
 
-export KOPS_FEATURE_FLAGS="SpecOverrideFlag,${KOPS_FEATURE_FLAGS:-}"
+if [[ -z "${WORKSPACE-}" ]]; then
+    export WORKSPACE
+    WORKSPACE=$(mktemp -dt kops.XXXXXXXXX)
+fi
+
+if [[ -z "${NETWORKING-}" ]]; then
+    export NETWORKING="calico"
+fi
+
+export KOPS_FEATURE_FLAGS="SpecOverrideFlag"
+
+if [[ -z "${DISCOVERY_STORE-}" ]]; then 
+    DISCOVERY_STORE="${KOPS_STATE_STORE}"
+fi
+
+if [[ ${KOPS_IRSA-} = true ]]; then
+    OVERRIDES="${OVERRIDES-} --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=${DISCOVERY_STORE}/${CLUSTER_NAME}/discovery"
+    OVERRIDES="${OVERRIDES} --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true"
+    KOPS_FEATURE_FLAGS="UseServiceAccountIAM,${KOPS_FEATURE_FLAGS}"
+fi
+
 export GO111MODULE=on
 
 if [[ -z "${AWS_SSH_PRIVATE_KEY_FILE-}" ]]; then
@@ -42,12 +62,12 @@ if [[ -z "${AWS_SSH_PUBLIC_KEY_FILE-}" ]]; then
 fi
 
 KUBETEST2="kubetest2 kops -v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-}"
-KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS:-}"
+KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS:-} --env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
 
 # Always tear-down the cluster when we're done
 function kops-finish {
-  # shellcheck disable=SC2153
-  ${KUBETEST2} --kops-binary-path="${KOPS}" --down || echo "kubetest2 down failed"
+    # shellcheck disable=SC2153
+    ${KUBETEST2} --kops-binary-path="${KOPS}" --down || echo "kubetest2 down failed"
 }
 trap kops-finish EXIT
 
@@ -75,4 +95,17 @@ function kops-base-from-marker() {
     else
         curl -s "https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-${1}/latest-ci.txt"
     fi
+}
+
+function kops-up() {
+    local create_args
+    create_args="--networking ${NETWORKING} ${OVERRIDES-}"
+    if [[ -n "${ZONES-}" ]]; then
+        create_args="${create_args} --zones=${ZONES}"
+    fi
+    ${KUBETEST2} \
+		--up \
+		--kops-binary-path="${KOPS}" \
+		--kubernetes-version="1.21.0" \
+		--create-args="${create_args}"
 }
