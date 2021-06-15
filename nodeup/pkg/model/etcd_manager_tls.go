@@ -43,6 +43,12 @@ func (b *EtcdManagerTLSBuilder) Build(ctx *fi.ModelBuilderContext) error {
 
 	for _, etcdCluster := range b.Cluster.Spec.EtcdClusters {
 		k := etcdCluster.Name
+
+		// The certs for cilium etcd is managed by CiliumBuilder
+		if k == "cilium" {
+			continue
+		}
+
 		d := "/etc/kubernetes/pki/etcd-manager-" + k
 
 		keys := make(map[string]string)
