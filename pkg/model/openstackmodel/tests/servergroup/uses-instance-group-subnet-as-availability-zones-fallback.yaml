@@ -1,6 +1,7 @@
 Name: node
 ---
 AvailabilityZone: subnet
+ConfigDrive: false
 Flavor: blc.2-4
 FloatingIP: null
 ForAPIServer: false
