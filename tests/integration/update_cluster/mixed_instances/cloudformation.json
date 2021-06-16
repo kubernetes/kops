@@ -1842,6 +1842,13 @@
               ]
             },
             {
+              "Action": "kms:GenerateRandom",
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
               "Action": [
                 "route53:ChangeResourceRecordSets",
                 "route53:ListResourceRecordSets",
@@ -1924,6 +1931,13 @@
             },
             {
               "Action": "autoscaling:DescribeAutoScalingInstances",
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": "kms:GenerateRandom",
               "Effect": "Allow",
               "Resource": [
                 "*"
