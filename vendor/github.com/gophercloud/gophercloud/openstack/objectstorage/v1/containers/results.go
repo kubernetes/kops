@@ -72,7 +72,7 @@ func ExtractNames(page pagination.Page) ([]string, error) {
 			names = append(names, container.Name)
 		}
 		return names, nil
-	case strings.HasPrefix(ct, "text/plain"):
+	case strings.HasPrefix(ct, "text/plain") || ct == "":
 		names := make([]string, 0, 50)
 
 		body := string(page.(ContainerPage).Body.([]uint8))
