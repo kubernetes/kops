@@ -42,12 +42,49 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 		c.Version = "v1.10.0"
 	}
 
+	if c.EnableEndpointHealthChecking == nil {
+		c.EnableEndpointHealthChecking = fi.Bool(true)
+	}
+
+	if c.IdentityAllocationMode == "" {
+		c.IdentityAllocationMode = "crd"
+	}
+
+	if c.IdentityChangeGracePeriod == "" {
+		c.IdentityChangeGracePeriod = "5s"
+	}
+
 	if c.BPFCTGlobalAnyMax == 0 {
 		c.BPFCTGlobalAnyMax = 262144
 
 	}
+
 	if c.BPFCTGlobalTCPMax == 0 {
 		c.BPFCTGlobalTCPMax = 524288
+	}
+
+	if c.BPFLBAlgorithm == "" {
+		c.BPFLBAlgorithm = "random"
+	}
+
+	if c.BPFLBMaglevTableSize == "" {
+		c.BPFLBMaglevTableSize = "16381"
+	}
+
+	if c.BPFNATGlobalMax == 0 {
+		c.BPFNATGlobalMax = 524288
+	}
+
+	if c.BPFNeighGlobalMax == 0 {
+		c.BPFNeighGlobalMax = 524288
+	}
+
+	if c.BPFPolicyMapMax == 0 {
+		c.BPFPolicyMapMax = 16384
+	}
+
+	if c.BPFLBMapMax == 0 {
+		c.BPFLBMapMax = 65536
 	}
 
 	if c.ClusterName == "" {
@@ -92,6 +129,14 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if c.EnableRemoteNodeIdentity == nil {
 		c.EnableRemoteNodeIdentity = fi.Bool(true)
+	}
+
+	if c.EnableBPFMasquerade == nil {
+		c.EnableBPFMasquerade = fi.Bool(false)
+	}
+
+	if c.EnableL7Proxy == nil {
+		c.EnableL7Proxy = fi.Bool(true)
 	}
 
 	if c.CPURequest == nil {
