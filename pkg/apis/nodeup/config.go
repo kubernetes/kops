@@ -43,6 +43,8 @@ type Config struct {
 	InstanceGroupRole kops.InstanceGroupRole
 	// ClusterName is the name of the cluster
 	ClusterName string `json:",omitempty"`
+	// CloudProvider is the cloud provider in use.
+	CloudProvider string
 	// Channels is a list of channels that we should apply
 	Channels []string `json:"channels,omitempty"`
 	// ApiserverAdditionalIPs are additional IP address to put in the apiserver server cert.
@@ -91,9 +93,6 @@ type ConfigServerOptions struct {
 	Server string `json:"server,omitempty"`
 	// CA is the ca-certificate to require for the configuration server
 	CA string `json:"ca,omitempty"`
-
-	// CloudProvider is the cloud provider in use (needed for authentication)
-	CloudProvider string `json:"cloudProvider,omitempty"`
 }
 
 // Image is a docker image we should pre-load
