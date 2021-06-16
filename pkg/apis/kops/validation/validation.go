@@ -867,6 +867,10 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 		allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableL7Proxy"), "Cilium L7 Proxy requires IPTablesRules to be installed"))
 	}
 
+	if v.IPTablesRulesNoinstall && !fi.BoolValue(v.EnableBPFMasquerade) {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("IPTablesRulesNoinstall"), "Cilium without IPTables in place, require switching Masquerade to BPF mode. Configure enableBPFMasquerade key."))
+	}
+
 	if v.Ipam != "" {
 		// "azure" not supported by kops
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("ipam"), &v.Ipam, []string{"hostscope", "kubernetes", "crd", "eni"})...)

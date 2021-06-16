@@ -833,6 +833,13 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
+				EnableBPFMasquerade:    fi.Bool(false),
+				IPTablesRulesNoinstall: true,
+			},
+			ExpectedErrors: []string{"Forbidden::cilium.IPTablesRulesNoinstall"},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
 				Ipam: "eni",
 			},
 			Spec: kops.ClusterSpec{
