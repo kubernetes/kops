@@ -52,6 +52,13 @@ func (b *OpenStackOptionsBulder) BuildOptions(o interface{}) error {
 		clusterSpec.CloudConfig.Openstack.BlockStorage.CreateStorageClass = fi.Bool(true)
 	}
 
+	if clusterSpec.CloudConfig.Openstack.Metadata == nil {
+		clusterSpec.CloudConfig.Openstack.Metadata = &kops.OpenstackMetadata{}
+	}
+	if clusterSpec.CloudConfig.Openstack.Metadata.ConfigDrive == nil {
+		clusterSpec.CloudConfig.Openstack.Metadata.ConfigDrive = fi.Bool(false)
+	}
+
 	if clusterSpec.ExternalCloudControllerManager == nil {
 		clusterSpec.ExternalCloudControllerManager = &kops.CloudControllerManagerConfig{}
 	}
