@@ -477,7 +477,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 	if b.Cluster.Spec.ClusterAutoscaler != nil && fi.BoolValue(b.Cluster.Spec.ClusterAutoscaler.Enabled) {
 		{
 			key := "cluster-autoscaler.addons.k8s.io"
-			version := "1.19.0"
+			version := "1.19.2"
 
 			{
 				location := key + "/k8s-1.15.yaml"
