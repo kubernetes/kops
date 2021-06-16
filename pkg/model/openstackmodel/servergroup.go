@@ -162,6 +162,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			Metadata:         metaWithName,
 			SecurityGroups:   ig.Spec.AdditionalSecurityGroups,
 			AvailabilityZone: az,
+			ConfigDrive:      b.Cluster.Spec.CloudConfig.Openstack.Metadata.ConfigDrive,
 		}
 		c.AddTask(instanceTask)
 
