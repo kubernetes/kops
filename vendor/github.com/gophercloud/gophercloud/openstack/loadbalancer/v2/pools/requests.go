@@ -71,6 +71,10 @@ const (
 	ProtocolPROXY Protocol = "PROXY"
 	ProtocolHTTP  Protocol = "HTTP"
 	ProtocolHTTPS Protocol = "HTTPS"
+	// Protocol PROXYV2 requires octavia microversion 2.22
+	ProtocolPROXYV2 Protocol = "PROXYV2"
+	// Protocol SCTP requires octavia microversion 2.23
+	ProtocolSCTP Protocol = "SCTP"
 )
 
 // CreateOptsBuilder allows extensions to add additional parameters to the
@@ -88,7 +92,8 @@ type CreateOpts struct {
 	LBMethod LBMethod `json:"lb_algorithm" required:"true"`
 
 	// The protocol used by the pool members, you can use either
-	// ProtocolTCP, ProtocolUDP, ProtocolPROXY, ProtocolHTTP, or ProtocolHTTPS.
+	// ProtocolTCP, ProtocolUDP, ProtocolPROXY, ProtocolHTTP, ProtocolHTTPS,
+	// ProtocolSCTP or ProtocolPROXYV2.
 	Protocol Protocol `json:"protocol" required:"true"`
 
 	// The Loadbalancer on which the members of the pool will be associated with.
