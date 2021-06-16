@@ -12,12 +12,25 @@ type Protocol string
 
 // Supported attributes for create/update operations.
 const (
-	ProtocolTCP             Protocol = "TCP"
-	ProtocolUDP             Protocol = "UDP"
-	ProtocolPROXY           Protocol = "PROXY"
-	ProtocolHTTP            Protocol = "HTTP"
-	ProtocolHTTPS           Protocol = "HTTPS"
+	ProtocolTCP   Protocol = "TCP"
+	ProtocolUDP   Protocol = "UDP"
+	ProtocolPROXY Protocol = "PROXY"
+	ProtocolHTTP  Protocol = "HTTP"
+	ProtocolHTTPS Protocol = "HTTPS"
+	// Protocol SCTP requires octavia microversion 2.23
+	ProtocolSCTP            Protocol = "SCTP"
 	ProtocolTerminatedHTTPS Protocol = "TERMINATED_HTTPS"
+)
+
+// Type TLSVersion represents a tls version
+type TLSVersion string
+
+const (
+	TLSVersionSSLv3   TLSVersion = "SSLv3"
+	TLSVersionTLSv1   TLSVersion = "TLSv1"
+	TLSVersionTLSv1_1 TLSVersion = "TLSv1.1"
+	TLSVersionTLSv1_2 TLSVersion = "TLSv1.2"
+	TLSVersionTLSv1_3 TLSVersion = "TLSv1.3"
 )
 
 // ListOptsBuilder allows extensions to add additional parameters to the
@@ -88,7 +101,7 @@ type CreateOpts struct {
 	// The load balancer on which to provision this listener.
 	LoadbalancerID string `json:"loadbalancer_id,omitempty"`
 
-	// The protocol - can either be TCP, HTTP, HTTPS or TERMINATED_HTTPS.
+	// The protocol - can either be TCP, SCTP, HTTP, HTTPS or TERMINATED_HTTPS.
 	Protocol Protocol `json:"protocol" required:"true"`
 
 	// The port on which to listen for client traffic.
@@ -151,6 +164,9 @@ type CreateOpts struct {
 
 	// A list of IPv4, IPv6 or mix of both CIDRs
 	AllowedCIDRs []string `json:"allowed_cidrs,omitempty"`
+
+	// A list of TLS protocol versions. Available from microversion 2.17
+	TLSVersions []TLSVersion `json:"tls_versions,omitempty"`
 }
 
 // ToListenerCreateMap builds a request body from CreateOpts.
@@ -230,6 +246,9 @@ type UpdateOpts struct {
 
 	// A list of IPv4, IPv6 or mix of both CIDRs
 	AllowedCIDRs *[]string `json:"allowed_cidrs,omitempty"`
+
+	// A list of TLS protocol versions. Available from microversion 2.17
+	TLSVersions *[]TLSVersion `json:"tls_versions,omitempty"`
 }
 
 // ToListenerUpdateMap builds a request body from UpdateOpts.
