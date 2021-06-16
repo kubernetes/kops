@@ -761,6 +761,12 @@ type OpenstackNetwork struct {
 	AvailabilityZoneHints []*string `json:"availabilityZoneHints,omitempty"`
 }
 
+// OpenstackMetadata defines config for metadata service related settings
+type OpenstackMetadata struct {
+	// ConfigDrive specifies to use config drive for retrieving user data instead of the metadata service when launching instances
+	ConfigDrive *bool `json:"configDrive,omitempty"`
+}
+
 // OpenstackConfiguration defines cloud config elements for the openstack cloud provider
 type OpenstackConfiguration struct {
 	Loadbalancer       *OpenstackLoadbalancerConfig `json:"loadbalancer,omitempty"`
@@ -769,6 +775,7 @@ type OpenstackConfiguration struct {
 	BlockStorage       *OpenstackBlockStorageConfig `json:"blockStorage,omitempty"`
 	InsecureSkipVerify *bool                        `json:"insecureSkipVerify,omitempty"`
 	Network            *OpenstackNetwork            `json:"network,omitempty"`
+	Metadata           *OpenstackMetadata           `json:"metadata,omitempty"`
 }
 
 // AzureConfiguration defines Azure specific cluster configuration.
