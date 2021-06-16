@@ -303,6 +303,9 @@ type CiliumNetworkingSpec struct {
 	// DisableConntrack is not implemented and may be removed in the future.
 	// Setting this has no effect.
 	DisableConntrack bool `json:"disableConntrack,omitempty"`
+	// DisableEndpointCRD disables usage of CiliumEndpoint CRD.
+	// Default: false
+	DisableEndpointCRD bool `json:"disableEndpointCRD,omitempty"`
 	// DisableIpv4 is deprecated: Use EnableIpv4 instead.
 	// Setting this flag has no effect.
 	DisableIpv4 bool `json:"disableIpv4,omitempty"`
@@ -315,6 +318,15 @@ type CiliumNetworkingSpec struct {
 	// "never": Cilium allows all traffic regardless of policies in place.
 	// If unspecified, "default" policy mode will be used.
 	EnablePolicy string `json:"enablePolicy,omitempty"`
+	// EnableL7Proxy enables L7 proxy for L7 policy enforcement.
+	// Default: true
+	EnableL7Proxy *bool `json:"enableL7Proxy,omitempty"`
+	// EnableBPFMasquerade enables masquerading packets from endpoints leaving the host with BPF instead of iptables.
+	// Default: false
+	EnableBPFMasquerade *bool `json:"enableBPFMasquerade,omitempty"`
+	// EnableEndpointHealthChecking enables connectivity health checking between virtual endpoints.
+	// Default: true
+	EnableEndpointHealthChecking *bool `json:"enableEndpointHealthChecking,omitempty"`
 	// EnableTracing is not implemented and may be removed in the future.
 	// Setting this has no effect.
 	EnableTracing bool `json:"enableTracing,omitempty"`
@@ -326,6 +338,12 @@ type CiliumNetworkingSpec struct {
 	// EnvoyLog is not implemented and may be removed in the future.
 	// Setting this has no effect.
 	EnvoyLog string `json:"envoyLog,omitempty"`
+	// IdentityAllocationMode specifies in which backend identities are stored ("crd", "kvstore").
+	// Default: crd
+	IdentityAllocationMode string `json:"identityAllocationMode,omitempty"`
+	// IdentityChangeGracePeriod specifies the duration to wait before using a changed identity.
+	// Default: 5s
+	IdentityChangeGracePeriod string `json:"identityChangeGracePeriod,omitempty"`
 	// Ipv4ClusterCIDRMaskSize is not implemented and may be removed in the future.
 	// Setting this has no effect.
 	Ipv4ClusterCIDRMaskSize int `json:"ipv4ClusterCidrMaskSize,omitempty"`
@@ -436,6 +454,24 @@ type CiliumNetworkingSpec struct {
 	// BPFCTGlobalAnyMax is the maximum number of entries in the non-TCP CT table.
 	// Default: 262144
 	BPFCTGlobalAnyMax int `json:"bpfCTGlobalAnyMax,omitempty"`
+	// BPFLBAlgorithm is the load balancing algorithm ("random", "maglev").
+	// Default: random
+	BPFLBAlgorithm string `json:"bpfLBAlgorithm,omitempty"`
+	// BPFLBMaglevTableSize is the per service backend table size when going with Maglev (parameter M).
+	// Default: 16381
+	BPFLBMaglevTableSize string `json:"bpfLBMaglevTableSize,omitempty"`
+	// BPFNATGlobalMax is the the maximum number of entries in the BPF NAT table.
+	// Default: 524288
+	BPFNATGlobalMax int `json:"bpfNATGlobalMax,omitempty"`
+	// BPFNeighGlobalMax is the the maximum number of entries in the BPF Neighbor table.
+	// Default: 524288
+	BPFNeighGlobalMax int `json:"bpfNeighGlobalMax,omitempty"`
+	// BPFPolicyMapMax is the maximum number of entries in endpoint policy map.
+	// Default: 16384
+	BPFPolicyMapMax int `json:"bpfPolicyMapMax,omitempty"`
+	// BPFLBMapMax is the maximum number of entries in bpf lb service, backend and affinity maps.
+	// Default: 65536
+	BPFLBMapMax int `json:"bpfLBMapMax,omitempty"`
 	// PreallocateBPFMaps reduces the per-packet latency at the expense of up-front memory allocation.
 	// Default: true
 	PreallocateBPFMaps bool `json:"preallocateBPFMaps,omitempty"`
