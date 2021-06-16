@@ -328,10 +328,11 @@ func (c *populateClusterSpec) assignSubnets(cluster *kopsapi.Cluster) error {
 	if cluster.Spec.PodCIDR == "" {
 		// Allocate as big a range as possible: the NonMasqueradeCIDR mask + 1, with a '1' in the extra bit
 		ip := nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask)
-		if nmBits > 32 && nmOnes < 63 {
-			// Max size of IPv6 network is 64
-			// Technically, the max size of IPv4 network is 24, but nobody has a /7 to allocate.
-			nmOnes = 63
+		if nmBits > 32 && nmOnes < 95 {
+			// The maximum size of an IPv6 ClusterCIDR is /64, but a /112 node CIDR gives far more addresses
+			// than Kubernetes can handle on a node and is more visually pleasing.
+			// Technically, the maximum size of an IPv4 ClusterCIDR is /8, but nobody has a /7 to allocate.
+			nmOnes = 95
 		}
 		ip[nmOnes/8] |= 128 >> (nmOnes % 8)
 		cidr := net.IPNet{IP: ip, Mask: net.CIDRMask(nmOnes+1, nmBits)}
