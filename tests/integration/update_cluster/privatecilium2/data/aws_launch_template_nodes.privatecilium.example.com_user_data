@@ -176,6 +176,7 @@ Assets:
   - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
   - 264f3396630507606a8646fda6a28a98d3ced8927df84be8ee9a74ab73cc1566@https://download.docker.com/linux/static/stable/aarch64/docker-19.03.15.tgz
 AuxConfigHash: /O5IS/dGo83lv2DbWn4k91OYfuOqtO79vjf5pD1DQlI=
+CloudProvider: aws
 ClusterName: privatecilium.example.com
 ConfigBase: memfs://clusters.example.com/privatecilium.example.com
 InstanceGroupName: nodes

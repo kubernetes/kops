@@ -183,6 +183,13 @@
       ]
     },
     {
+      "Action": "kms:GenerateRandom",
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
       "Action": [
         "autoscaling:SetDesiredCapacity",
         "autoscaling:TerminateInstanceInAutoScalingGroup"
