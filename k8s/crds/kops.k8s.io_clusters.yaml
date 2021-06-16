@@ -3427,6 +3427,31 @@ spec:
                         description: 'BPFCTGlobalTCPMax is the maximum number of entries
                           in the TCP CT table. Default: 524288'
                         type: integer
+                      bpfLBAlgorithm:
+                        description: 'BPFLBAlgorithm is the load balancing algorithm
+                          ("random", "maglev"). Default: random'
+                        type: string
+                      bpfLBMaglevTableSize:
+                        description: 'BPFLBMaglevTableSize is the per service backend
+                          table size when going with Maglev (parameter M). Default:
+                          16381'
+                        type: string
+                      bpfLBMapMax:
+                        description: 'BPFLBMapMax is the maximum number of entries
+                          in bpf lb service, backend and affinity maps. Default: 65536'
+                        type: integer
+                      bpfNATGlobalMax:
+                        description: 'BPFNATGlobalMax is the the maximum number of
+                          entries in the BPF NAT table. Default: 524288'
+                        type: integer
+                      bpfNeighGlobalMax:
+                        description: 'BPFNeighGlobalMax is the the maximum number
+                          of entries in the BPF Neighbor table. Default: 524288'
+                        type: integer
+                      bpfPolicyMapMax:
+                        description: 'BPFPolicyMapMax is the maximum number of entries
+                          in endpoint policy map. Default: 16384'
+                        type: integer
                       bpfRoot:
                         description: BPFRoot is not implemented and may be removed
                           in the future. Setting this has no effect.
@@ -3484,6 +3509,10 @@ spec:
                         description: DisableConntrack is not implemented and may be
                           removed in the future. Setting this has no effect.
                         type: boolean
+                      disableEndpointCRD:
+                        description: 'DisableEndpointCRD disables usage of CiliumEndpoint
+                          CRD. Default: false'
+                        type: boolean
                       disableIpv4:
                         description: 'DisableIpv4 is deprecated: Use EnableIpv4 instead.
                           Setting this flag has no effect.'
@@ -3496,15 +3525,28 @@ spec:
                         description: DisableMasquerade disables masquerading traffic
                           to external destinations behind the node IP.
                         type: boolean
+                      enableBPFMasquerade:
+                        description: 'EnableBPFMasquerade enables masquerading packets
+                          from endpoints leaving the host with BPF instead of iptables.
+                          Default: false'
+                        type: boolean
                       enableEncryption:
                         description: 'EnableEncryption enables Cilium Encryption.
                           Default: false'
+                        type: boolean
+                      enableEndpointHealthChecking:
+                        description: 'EnableEndpointHealthChecking enables connectivity
+                          health checking between virtual endpoints. Default: true'
                         type: boolean
                       enableHostReachableServices:
                         description: 'EnableHostReachableServices configures Cilium
                           to enable services to be reached from the host namespace
                           in addition to pod namespaces. https://docs.cilium.io/en/v1.9/gettingstarted/host-services/
                           Default: false'
+                        type: boolean
+                      enableL7Proxy:
+                        description: 'EnableL7Proxy enables L7 proxy for L7 policy
+                          enforcement. Default: true'
                         type: boolean
                       enableNodePort:
                         description: 'EnableNodePort replaces kube-proxy with Cilium''s
@@ -3553,8 +3595,8 @@ spec:
                           agent.
                         properties:
                           enabled:
-                            description: Enabled specifies whether Hubble is enabled
-                              on the agent.
+                            description: Enabled decides if Hubble is enabled on the
+                              agent or not
                             type: boolean
                           metrics:
                             description: Metrics is a list of metrics to collect.
@@ -3563,6 +3605,14 @@ spec:
                               type: string
                             type: array
                         type: object
+                      identityAllocationMode:
+                        description: 'IdentityAllocationMode specifies in which backend
+                          identities are stored ("crd", "kvstore"). Default: crd'
+                        type: string
+                      identityChangeGracePeriod:
+                        description: 'IdentityChangeGracePeriod specifies the duration
+                          to wait before using a changed identity. Default: 5s'
+                        type: string
                       ipam:
                         description: Ipam specifies the IP address allocation mode
                           to use. Possible values are "crd" and "eni". "eni" will
@@ -3570,7 +3620,8 @@ spec:
                           to be set to false. "crd" will use CRDs for controlling
                           IP address management. "hostscope" will use hostscope IPAM
                           mode. "kubernetes" will use addersing based on node pod
-                          CIDR. Empty value will use host-scope address management.
+                          CIDR. Empty value will use hostscope for cilum <= 1.7 and
+                          "kubernetes" otherwise.
                         type: string
                       ipv4ClusterCidrMaskSize:
                         description: Ipv4ClusterCIDRMaskSize is not implemented and
@@ -3760,7 +3811,7 @@ spec:
                   classic:
                     description: ClassicNetworkingSpec is the specification of classic
                       networking mode, integrated into kubernetes. Support been removed
-                      since kubernetes 1.4.
+                      since Kubernetes 1.4.
                     type: object
                   cni:
                     description: CNINetworkingSpec is the specification for networking
@@ -3811,7 +3862,7 @@ spec:
                     type: object
                   lyftvpc:
                     description: LyftVPCNetworkingSpec declares that we want to use
-                      the cni-ipvlan-vpc-k8s CNI networking
+                      the cni-ipvlan-vpc-k8s CNI networking.
                     properties:
                       subnetTags:
                         additionalProperties:
