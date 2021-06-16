@@ -43,11 +43,7 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 	var err error
 	switch kops.CloudProviderID(b.Cluster.Spec.CloudProvider) {
 	case kops.CloudProviderAWS:
-		region, regionErr := awsup.FindRegion(b.Cluster)
-		if regionErr != nil {
-			return fmt.Errorf("querying AWS region: %v", regionErr)
-		}
-		authenticator, err = awsup.NewAWSAuthenticator(region)
+		authenticator, err = awsup.NewAWSAuthenticator(b.Cloud.Region())
 	default:
 		return fmt.Errorf("unsupported cloud provider %s", b.Cluster.Spec.CloudProvider)
 	}

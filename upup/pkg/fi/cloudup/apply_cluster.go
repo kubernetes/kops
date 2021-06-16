@@ -1319,6 +1319,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	}
 	config.ClusterName = cluster.ObjectMeta.Name
 	config.InstanceGroupName = ig.ObjectMeta.Name
+	config.CloudProvider = cluster.Spec.CloudProvider
 
 	if isMaster || useGossip {
 		for _, arch := range architectures.GetSupported() {
@@ -1349,9 +1350,8 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		}
 
 		configServer := &nodeup.ConfigServerOptions{
-			Server:        baseURL.String(),
-			CloudProvider: cluster.Spec.CloudProvider,
-			CA:            ca,
+			Server: baseURL.String(),
+			CA:     ca,
 		}
 
 		config.ConfigServer = configServer

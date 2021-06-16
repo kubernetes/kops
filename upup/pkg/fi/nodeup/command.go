@@ -26,11 +26,13 @@ import (
 	"io/ioutil"
 	"net"
 	"net/url"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/service/kms"
 	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/nodeup/pkg/model/networking"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -91,13 +93,21 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("CacheDir is required")
 	}
 
+	region, err := getRegion(ctx, c.config)
+	if err != nil {
+		return err
+	}
+	if err = seedRNG(ctx, c.config, region); err != nil {
+		return err
+	}
+
 	var configBase vfs.Path
 
 	// If we're using a config server instead of vfs, nodeConfig will hold our configuration
 	var nodeConfig *nodeup.NodeConfig
 
 	if c.config.ConfigServer != nil {
-		response, err := getNodeConfigFromServer(ctx, c.config.ConfigServer)
+		response, err := getNodeConfigFromServer(ctx, c.config, region)
 		if err != nil {
 			return err
 		}
@@ -182,7 +192,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("auxiliary config hash mismatch")
 	}
 
-	err := evaluateSpec(c)
+	err = evaluateSpec(c)
 	if err != nil {
 		return err
 	}
@@ -209,10 +219,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	var cloud fi.Cloud
 
 	if api.CloudProviderID(c.cluster.Spec.CloudProvider) == api.CloudProviderAWS {
-		region, err := awsup.FindRegion(c.cluster)
-		if err != nil {
-			return err
-		}
 		awsCloud, err := awsup.NewAWSCloud(region, nil)
 		if err != nil {
 			return err
@@ -674,16 +680,60 @@ func loadKernelModules(context *model.NodeupModelContext) error {
 	return nil
 }
 
-// getNodeConfigFromServer queries kops-controller for our node's configuration.
-func getNodeConfigFromServer(ctx context.Context, config *nodeup.ConfigServerOptions) (*nodeup.BootstrapResponse, error) {
-	var authenticator fi.Authenticator
-
+// getRegionAndSeedRNG queries the cloud provider for the region and adds entropy to the random number generator.
+func getRegion(ctx context.Context, config *nodeup.Config) (string, error) {
 	switch api.CloudProviderID(config.CloudProvider) {
 	case api.CloudProviderAWS:
 		region, err := awsup.RegionFromMetadata(ctx)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
+
+		return region, nil
+	}
+
+	return "", nil
+}
+
+// seedRNG adds entropy to the random number generator.
+func seedRNG(ctx context.Context, config *nodeup.Config, region string) error {
+	switch api.CloudProviderID(config.CloudProvider) {
+	case api.CloudProviderAWS:
+		config := aws.NewConfig().WithCredentialsChainVerboseErrors(true).WithRegion(region)
+		sess, err := session.NewSession(config)
+		if err != nil {
+			return err
+		}
+
+		random, err := kms.New(sess, config).GenerateRandom(&kms.GenerateRandomInput{
+			NumberOfBytes: aws.Int64(64),
+		})
+		if err != nil {
+			return fmt.Errorf("generating random seed: %v", err)
+		}
+
+		f, err := os.OpenFile("/dev/urandom", os.O_WRONLY, 0)
+		if err != nil {
+			return fmt.Errorf("opening /dev/urandom: %v", err)
+		}
+		_, err = f.Write(random.Plaintext)
+		if err1 := f.Close(); err1 != nil && err == nil {
+			err = err1
+		}
+		if err != nil {
+			return fmt.Errorf("writing /dev/urandom: %v", err)
+		}
+	}
+
+	return nil
+}
+
+// getNodeConfigFromServer queries kops-controller for our node's configuration.
+func getNodeConfigFromServer(ctx context.Context, config *nodeup.Config, region string) (*nodeup.BootstrapResponse, error) {
+	var authenticator fi.Authenticator
+
+	switch api.CloudProviderID(config.CloudProvider) {
+	case api.CloudProviderAWS:
 		a, err := awsup.NewAWSAuthenticator(region)
 		if err != nil {
 			return nil, err
@@ -697,13 +747,13 @@ func getNodeConfigFromServer(ctx context.Context, config *nodeup.ConfigServerOpt
 		Authenticator: authenticator,
 	}
 
-	if config.CA != "" {
-		client.CA = []byte(config.CA)
+	if config.ConfigServer.CA != "" {
+		client.CA = []byte(config.ConfigServer.CA)
 	}
 
-	u, err := url.Parse(config.Server)
+	u, err := url.Parse(config.ConfigServer.Server)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse configuration server url %q: %w", config.Server, err)
+		return nil, fmt.Errorf("unable to parse configuration server url %q: %w", config.ConfigServer.Server, err)
 	}
 	client.BaseURL = *u
 
