@@ -12,6 +12,7 @@ go_library(
     deps = [
         "//vendor/google.golang.org/grpc/balancer/grpclb/state:go_default_library",
         "//vendor/google.golang.org/grpc/grpclog:go_default_library",
+        "//vendor/google.golang.org/grpc/internal/backoff:go_default_library",
         "//vendor/google.golang.org/grpc/internal/envconfig:go_default_library",
         "//vendor/google.golang.org/grpc/internal/grpcrand:go_default_library",
         "//vendor/google.golang.org/grpc/resolver:go_default_library",
