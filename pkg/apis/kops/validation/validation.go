@@ -1473,7 +1473,7 @@ func validateSnapshotController(cluster *kops.Cluster, spec *kops.SnapshotContro
 		if !components.IsCertManagerEnabled(cluster) {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("enabled"), "Snapshot controller requires that cert manager is enabled"))
 		}
-		if cluster.Spec.CloudConfig == nil || cluster.Spec.CloudConfig.AWSEBSCSIDriver == nil || !fi.BoolValue(cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+		if !hasAWSEBSCSIDriver(cluster.Spec) {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("enabled"), "Snapshot controller requires external CSI Driver"))
 		}
 	}
