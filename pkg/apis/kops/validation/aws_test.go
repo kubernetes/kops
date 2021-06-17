@@ -38,6 +38,11 @@ func TestAWSValidateExternalCloudConfig(t *testing.T) {
 		{
 			Input: kops.ClusterSpec{
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{},
+				CloudConfig: &kops.CloudConfiguration{
+					AWSEBSCSIDriver: &kops.AWSEBSCSIDriver{
+						Enabled: fi.Bool(false),
+					},
+				},
 			},
 			ExpectedErrors: []string{"Forbidden::spec.externalCloudControllerManager"},
 		},
