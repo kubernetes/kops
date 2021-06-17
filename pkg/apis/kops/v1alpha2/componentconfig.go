@@ -887,6 +887,28 @@ type NodeTerminationHandlerConfig struct {
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 }
 
+// NodeProblemDetector determines the node problem detector configuration.
+type NodeProblemDetectorConfig struct {
+	// Enabled enables the NodeProblemDetector.
+	// Default: false
+	Enabled *bool `json:"enabled,omitempty"`
+	// Image is the NodeProblemDetector docker container used.
+	Image *string `json:"image,omitempty"`
+
+	// MemoryRequest of NodeProblemDetector container.
+	// Default: 80Mi
+	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
+	// CPURequest of NodeProblemDetector container.
+	// Default: 10m
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
+	// MemoryLimit of NodeProblemDetector container.
+	// Default: 80Mi
+	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
+	// CPULimit of NodeProblemDetector container.
+	// Default: 10m
+	CPULimit *resource.Quantity `json:"cpuLimit,omitempty"`
+}
+
 // ClusterAutoscalerConfig determines the cluster autoscaler configuration.
 type ClusterAutoscalerConfig struct {
 	// Enabled enables the cluster autoscaler.
