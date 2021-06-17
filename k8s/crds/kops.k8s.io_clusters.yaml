@@ -4016,6 +4016,51 @@ spec:
                 items:
                   type: string
                 type: array
+              nodeProblemDetector:
+                description: NodeProblemDetector determines the node problem detector
+                  configuration.
+                properties:
+                  cpuLimit:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: 'CPULimit of NodeProblemDetector container. Default:
+                      10m'
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  cpuRequest:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: 'CPURequest of NodeProblemDetector container. Default:
+                      10m'
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  enabled:
+                    description: 'Enabled enables the NodeProblemDetector. Default:
+                      false'
+                    type: boolean
+                  image:
+                    description: Image is the NodeProblemDetector docker container
+                      used.
+                    type: string
+                  memoryLimit:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: 'MemoryLimit of NodeProblemDetector container. Default:
+                      80Mi'
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  memoryRequest:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: 'MemoryRequest of NodeProblemDetector container.
+                      Default: 80Mi'
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                type: object
               nodeTerminationHandler:
                 description: NodeTerminationHandler determines the cluster autoscaler
                   configuration.
