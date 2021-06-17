@@ -22,6 +22,7 @@ go_library(
         "kubeproxy.go",
         "kubescheduler.go",
         "networking.go",
+        "nodeproblemdetector.go",
         "nodeterminationhandler.go",
         "openstack.go",
     ],

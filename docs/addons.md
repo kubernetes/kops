@@ -190,6 +190,19 @@ The kOps CLI requires additional IAM permissions to manage the requisite EventBr
 
 **Warning: If you switch between the two operating modes on an existing cluster, the old resources have to be manually deleted. For IMDS to Queue Processor, this means deleting the k8s nth daemonset. For Queue Processor to IMDS, this means deleting the k8s nth deployment and the AWS resources: the SQS queue, EventBridge rules, and ASG Lifecycle hooks.**
 
+#### Node Problem Detector
+
+{{ kops_feature_table(kops_added_default='1.22') }}
+
+[Node Problem Detector](https://github.com/kubernetes/node-problem-detector) aims to make various node problems visible to the upstream layers in the cluster management stack. It is a daemon that runs on each node, detects node problems and reports them to apiserver.
+
+```yaml
+spec:
+  nodeProblemDetector:
+    enabled: true
+    memoryRequest: 32Mi
+    cpuRequest: 10m
+```
 #### Snapshot controller
 
 {{ kops_feature_table(kops_added_default='1.21', k8s_min='1.20') }}
