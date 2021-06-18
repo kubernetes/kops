@@ -152,22 +152,6 @@ func (r *ClusterVFS) Update(c *api.Cluster, status *api.ClusterStatus) (*api.Clu
 	return c, nil
 }
 
-func (r *ClusterVFS) UpdateCompleted(c *api.Cluster) error {
-	clusterName := c.ObjectMeta.Name
-	if clusterName == "" {
-		return field.Required(field.NewPath("objectMeta", "name"), "clusterName is required")
-	}
-
-	if err := r.writeConfig(c, r.basePath.Join(clusterName, registry.PathClusterCompleted), c); err != nil {
-		if os.IsNotExist(err) {
-			return err
-		}
-		return fmt.Errorf("error writing Cluster: %v", err)
-	}
-
-	return nil
-}
-
 // List returns a slice containing all the cluster names
 // It skips directories that don't look like clusters
 func (r *ClusterVFS) listNames() ([]string, error) {
