@@ -1772,22 +1772,6 @@
             },
             {
               "Action": [
-                "autoscaling:SetDesiredCapacity",
-                "autoscaling:TerminateInstanceInAutoScalingGroup",
-                "autoscaling:UpdateAutoScalingGroup"
-              ],
-              "Condition": {
-                "StringEquals": {
-                  "autoscaling:ResourceTag/KubernetesCluster": "mixedinstances.example.com"
-                }
-              },
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Action": [
                 "autoscaling:CompleteLifecycleAction",
                 "autoscaling:DescribeAutoScalingInstances"
               ],
@@ -1881,6 +1865,32 @@
             {
               "Action": [
                 "route53:ListHostedZones"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup"
+              ],
+              "Condition": {
+                "StringEquals": {
+                  "autoscaling:ResourceTag/KubernetesCluster": "mixedinstances.example.com"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLaunchConfigurations"
               ],
               "Effect": "Allow",
               "Resource": [

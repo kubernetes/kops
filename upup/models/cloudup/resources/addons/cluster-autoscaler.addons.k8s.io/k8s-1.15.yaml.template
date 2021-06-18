@@ -264,11 +264,13 @@ spec:
               topologyKey: topology.kubernetes.io/zone
       priorityClassName: system-cluster-critical
       serviceAccountName: cluster-autoscaler
+      {{ if not UseServiceAccountIAM }}
       tolerations:
       - operator: "Exists"
         key: node-role.kubernetes.io/master
       nodeSelector:
         node-role.kubernetes.io/master: ""
+      {{ end }}
       containers:
         - image: {{ .Image }}
           name: cluster-autoscaler
@@ -293,6 +295,9 @@ spec:
             - --new-pod-scale-up-delay={{ .NewPodScaleUpDelay }}
             - --stderrthreshold=info
             - --v=2
+          env:
+            - name: AWS_REGION
+              value: {{ Region }}
           ports:
           - containerPort: 8085
             protocol: TCP
