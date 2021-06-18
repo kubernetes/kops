@@ -283,6 +283,7 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 // BuildAWSPolicy generates a custom policy for a Kubernetes master.
 func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	resource := createResource(b)
+	clusterName := b.Cluster.GetName()
 
 	p := &Policy{
 		Version: PolicyDefaultVersion,
@@ -301,6 +302,12 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 	if b.KMSKeys != nil && len(b.KMSKeys) != 0 {
 		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys))
+	}
+
+	if !fi.BoolValue(b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+		esc := b.Cluster.Spec.SnapshotController != nil &&
+			fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled)
+		AddAWSEBSCSIDriverPermissions(p, clusterName, esc)
 	}
 
 	// Protokube needs dns-controller permissions in instance role even if UseServiceAccountIAM.
@@ -790,6 +797,117 @@ func AddClusterAutoscalerPermissions(p *Policy, clusterName string) {
 	)
 }
 
+// AddAWSEBSCSIDriverPermissions appens policy statements that the AWS EBS CSI Driver needs to operate.
+func AddAWSEBSCSIDriverPermissions(p *Policy, clusterName string, appendSnapshotPermissions bool) {
+
+	everything := stringorslice.String("*")
+
+	if appendSnapshotPermissions {
+		addSnapshotPersmissions(p, clusterName)
+	}
+
+	p.Statement = append(p.Statement,
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
+				"ec2:DescribeAccountAttributes",    // aws.go
+				"ec2:DescribeInstances",            // aws.go
+				"ec2:DescribeVolumes",              // aws.go
+				"ec2:DescribeVolumesModifications", // aws.go
+				"ec2:DescribeTags",                 // aws.go
+			}),
+			Resource: everything,
+		},
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
+				"ec2:CreateVolume", // aws.go
+			}),
+
+			Resource: everything,
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"aws:RequestTag/KubernetesCluster": clusterName,
+				},
+			},
+		},
+
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
+				"ec2:ModifyVolume",            // aws.go
+				"ec2:ModifyInstanceAttribute", // aws.go
+				"ec2:AttachVolume",            // aws.go
+				"ec2:DeleteVolume",            // aws.go
+				"ec2:DetachVolume",            // aws.go
+			}),
+
+			Resource: everything,
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"aws:ResourceTag/KubernetesCluster": clusterName,
+				},
+			},
+		},
+
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.String(
+				"ec2:CreateTags", // aws.go, tag.go
+			),
+
+			Resource: stringorslice.Slice(
+				[]string{
+					"arn:aws:ec2:*:*:volume/*",
+					"arn:aws:ec2:*:*:snapshot/*",
+				},
+			),
+			Condition: Condition{
+				"StringEquals": map[string]interface{}{
+					"ec2:CreateAction": []string{
+						"CreateVolume",
+						"CreateSnapshot",
+					},
+				},
+			},
+		},
+
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.String(
+				"ec2:DeleteTags", // aws.go, tag.go
+			),
+			Resource: stringorslice.Slice(
+				[]string{
+					"arn:aws:ec2:*:*:volume/*",
+					"arn:aws:ec2:*:*:snapshot/*",
+				},
+			),
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"ec2:ResourceTag/KubernetesCluster": clusterName,
+				},
+			},
+		},
+
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Of(
+				"ec2:AttachVolume",               // aws.go
+				"ec2:DeleteVolume",               // aws.go
+				"ec2:DetachVolume",               // aws.go
+				"ec2:RevokeSecurityGroupIngress", // aws.go
+			),
+			Resource: everything,
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"ec2:ResourceTag/KubernetesCluster": clusterName,
+				},
+			},
+		},
+	)
+}
+
 func addSnapshotPersmissions(p *Policy, clusterName string) {
 	p.Statement = append(p.Statement, &Statement{
 		Effect: StatementEffectAllow,
@@ -907,10 +1025,8 @@ func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, clust
 			Action: stringorslice.Slice([]string{
 				"ec2:CreateSecurityGroup",          // aws.go
 				"ec2:CreateTags",                   // aws.go, tag.go
-				"ec2:CreateVolume",                 // aws.go
 				"ec2:DescribeVolumesModifications", // aws.go
 				"ec2:ModifyInstanceAttribute",      // aws.go
-				"ec2:ModifyVolume",                 // aws.go
 			}),
 			Resource: resource,
 		},
@@ -922,8 +1038,6 @@ func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, clust
 				"ec2:CreateRoute",                   // aws.go
 				"ec2:DeleteRoute",                   // aws.go
 				"ec2:DeleteSecurityGroup",           // aws.go
-				"ec2:DeleteVolume",                  // aws.go
-				"ec2:DetachVolume",                  // aws.go
 				"ec2:RevokeSecurityGroupIngress",    // aws.go
 			),
 			Resource: resource,
@@ -938,11 +1052,7 @@ func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, clust
 			Action: stringorslice.Of(
 				"ec2:AttachVolume",                  // aws.go
 				"ec2:AuthorizeSecurityGroupIngress", // aws.go
-				"ec2:CreateRoute",                   // aws.go
-				"ec2:DeleteRoute",                   // aws.go
 				"ec2:DeleteSecurityGroup",           // aws.go
-				"ec2:DeleteVolume",                  // aws.go
-				"ec2:DetachVolume",                  // aws.go
 				"ec2:RevokeSecurityGroupIngress",    // aws.go
 			),
 			Resource: resource,

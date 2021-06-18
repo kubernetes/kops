@@ -69,9 +69,8 @@ func Remap(context *model.KopsModelContext, addon *addonsapi.AddonSpec, objects 
 	if len(containers) != 1 {
 		return fmt.Errorf("expected exactly one container in dns-controller Deployment, found %d", len(containers))
 	}
-	container := &containers[0]
 
-	if err := iam.AddServiceAccountRole(&context.IAMModelContext, podSpec, container, &ServiceAccount{}); err != nil {
+	if err := iam.AddServiceAccountRole(&context.IAMModelContext, podSpec, &ServiceAccount{}); err != nil {
 		return err
 	}
 

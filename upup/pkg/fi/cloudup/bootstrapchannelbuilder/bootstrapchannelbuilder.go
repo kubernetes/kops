@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/awsmodel"
 	"k8s.io/kops/pkg/model/components/addonmanifests"
+	"k8s.io/kops/pkg/model/components/addonmanifests/awsebscsidriver"
 	"k8s.io/kops/pkg/model/components/addonmanifests/awsloadbalancercontroller"
 	"k8s.io/kops/pkg/model/components/addonmanifests/clusterautoscaler"
 	"k8s.io/kops/pkg/model/components/addonmanifests/dnscontroller"
@@ -258,7 +259,6 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*channelsapi.Addons, error) {
-
 	serviceAccountRoles := []iam.Subject{}
 
 	addons := &channelsapi.Addons{}
@@ -1017,6 +1017,11 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 					KubernetesVersion: ">=1.17.0",
 					Id:                id,
 				})
+			}
+
+			// Generate aws-load-balancer-controller ServiceAccount IAM permissions
+			if b.UseServiceAccountIAM() {
+				serviceAccountRoles = append(serviceAccountRoles, &awsebscsidriver.ServiceAccount{})
 			}
 		}
 	}
