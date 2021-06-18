@@ -42,8 +42,7 @@ ${KUBETEST2} \
 haveds
 
 # Upgrade to a version that should adopt existing resources and apply the change below
-KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
-KOPS=$(kops-download-from-base)
+KOPS=$(kops-acquire-latest)
 
 cp "${KOPS}" "${WORKSPACE}/kops"
 
