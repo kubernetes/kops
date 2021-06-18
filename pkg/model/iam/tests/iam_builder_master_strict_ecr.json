@@ -112,22 +112,6 @@
     },
     {
       "Action": [
-        "autoscaling:SetDesiredCapacity",
-        "autoscaling:TerminateInstanceInAutoScalingGroup",
-        "autoscaling:UpdateAutoScalingGroup"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "autoscaling:ResourceTag/KubernetesCluster": "iam-builder-test.k8s.local"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
         "autoscaling:CompleteLifecycleAction",
         "autoscaling:DescribeAutoScalingInstances"
       ],
@@ -231,6 +215,32 @@
         "key-id-1",
         "key-id-2",
         "key-id-3"
+      ]
+    },
+    {
+      "Action": [
+        "autoscaling:SetDesiredCapacity",
+        "autoscaling:TerminateInstanceInAutoScalingGroup"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "autoscaling:ResourceTag/KubernetesCluster": "iam-builder-test.k8s.local"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Action": [
+        "autoscaling:DescribeAutoScalingGroups",
+        "autoscaling:DescribeAutoScalingInstances",
+        "autoscaling:DescribeLaunchConfigurations"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "*"
       ]
     },
     {

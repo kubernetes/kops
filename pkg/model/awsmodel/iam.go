@@ -465,8 +465,9 @@ func (b *IAMModelBuilder) FindDeletions(context *fi.ModelBuilderContext, cloud f
 				if fi.StringValue(tag.Key) == ownershipTag && fi.StringValue(tag.Value) == "owned" {
 					if _, ok := context.Tasks["IAMRole/"+fi.StringValue(role.RoleName)]; !ok {
 						context.AddTask(&awstasks.IAMRole{
-							ID:   role.RoleId,
-							Name: role.RoleName,
+							ID:        role.RoleId,
+							Name:      role.RoleName,
+							Lifecycle: b.Lifecycle,
 						})
 					}
 				}
