@@ -201,6 +201,25 @@ func deleteAllPaths(basePath vfs.Path) error {
 	return nil
 }
 func (c *VFSClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster) error {
+	if cluster.Spec.ServiceAccountIssuerDiscovery != nil {
+		discoveryStore := cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryStore
+		if discoveryStore != "" {
+			path, err := vfs.Context.BuildVfsPath(discoveryStore)
+			if err != nil {
+				return err
+			}
+
+			err = path.Join("openid/v1/jwks").Remove()
+			if err != nil {
+				return err
+			}
+			err = path.Join(".well-known/openid-configuration").Remove()
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	secretStore := cluster.Spec.SecretStore
 	if secretStore != "" {
 		path, err := vfs.Context.BuildVfsPath(secretStore)
