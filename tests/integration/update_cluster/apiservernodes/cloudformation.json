@@ -1241,6 +1241,13 @@
               "Resource": [
                 "*"
               ]
+            },
+            {
+              "Action": "kms:GenerateRandom",
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
             }
           ],
           "Version": "2012-10-17"
@@ -1433,6 +1440,13 @@
               ]
             },
             {
+              "Action": "kms:GenerateRandom",
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
               "Action": [
                 "ec2:DescribeAccountAttributes",
                 "ec2:DescribeInstances",
@@ -1598,6 +1612,13 @@
             },
             {
               "Action": "autoscaling:DescribeAutoScalingInstances",
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": "kms:GenerateRandom",
               "Effect": "Allow",
               "Resource": [
                 "*"

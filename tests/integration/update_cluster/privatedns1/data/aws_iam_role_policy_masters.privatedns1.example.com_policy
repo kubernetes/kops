@@ -175,6 +175,13 @@
       ]
     },
     {
+      "Action": "kms:GenerateRandom",
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
       "Action": [
         "ec2:DescribeAccountAttributes",
         "ec2:DescribeInstances",

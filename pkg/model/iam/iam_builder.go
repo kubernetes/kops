@@ -247,6 +247,7 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	addMasterEC2Policies(p, resource, b.Cluster.GetName())
 	addASLifecyclePolicies(p, resource, b.Cluster.GetName(), r.warmPool)
 	addCertIAMPolicies(p, resource)
+	addKMSGenerateRandomPolicies(p)
 
 	var err error
 	if p, err = b.AddS3Permissions(p); err != nil {
@@ -294,6 +295,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	addMasterASPolicies(p, resource, b.Cluster.GetName())
 	addMasterELBPolicies(p, resource)
 	addCertIAMPolicies(p, resource)
+	addKMSGenerateRandomPolicies(p)
 
 	var err error
 	if p, err = b.AddS3Permissions(p); err != nil {
@@ -361,6 +363,7 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 	addNodeEC2Policies(p, resource)
 	addASLifecyclePolicies(p, resource, b.Cluster.GetName(), r.enableLifecycleHookPermissions)
+	addKMSGenerateRandomPolicies(p)
 
 	var err error
 	if p, err = b.AddS3Permissions(p); err != nil {
@@ -981,6 +984,17 @@ func addKMSIAMPolicies(p *Policy, resource stringorslice.StringOrSlice) {
 			"kms:ReEncrypt*",
 		),
 		Resource: resource,
+	})
+}
+
+func addKMSGenerateRandomPolicies(p *Policy) {
+	// For nodeup to seed the instance's random number generator.
+	p.Statement = append(p.Statement, &Statement{
+		Effect: StatementEffectAllow,
+		Action: stringorslice.Of(
+			"kms:GenerateRandom",
+		),
+		Resource: stringorslice.Slice([]string{"*"}),
 	})
 }
 
