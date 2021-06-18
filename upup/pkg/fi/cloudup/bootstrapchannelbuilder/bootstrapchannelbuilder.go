@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/model/awsmodel"
 	"k8s.io/kops/pkg/model/components/addonmanifests"
 	"k8s.io/kops/pkg/model/components/addonmanifests/awsloadbalancercontroller"
+	"k8s.io/kops/pkg/model/components/addonmanifests/clusterautoscaler"
 	"k8s.io/kops/pkg/model/components/addonmanifests/dnscontroller"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/templates"
@@ -257,6 +258,9 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*channelsapi.Addons, error) {
+
+	serviceAccountRoles := []iam.Subject{}
+
 	addons := &channelsapi.Addons{}
 	addons.Kind = "Addons"
 	addons.ObjectMeta.Name = "bootstrap"
@@ -455,19 +459,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 
 		// Generate dns-controller ServiceAccount IAM permissions
 		if b.UseServiceAccountIAM() {
-			awsModelContext := &awsmodel.AWSModelContext{
-				KopsModelContext: b.KopsModelContext,
-			}
-
-			serviceAccountRoles := []iam.Subject{&dnscontroller.ServiceAccount{}}
-			for _, serviceAccountRole := range serviceAccountRoles {
-				iamModelBuilder := &awsmodel.IAMModelBuilder{AWSModelContext: awsModelContext, Lifecycle: b.Lifecycle, Cluster: b.Cluster}
-
-				_, err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
-				if err != nil {
-					return nil, err
-				}
-			}
+			serviceAccountRoles = append(serviceAccountRoles, &dnscontroller.ServiceAccount{})
 		}
 	}
 
@@ -531,6 +523,11 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 				})
 			}
 		}
+
+		if b.UseServiceAccountIAM() {
+			serviceAccountRoles = append(serviceAccountRoles, &clusterautoscaler.ServiceAccount{})
+		}
+
 	}
 
 	if b.Cluster.Spec.MetricsServer != nil && fi.BoolValue(b.Cluster.Spec.MetricsServer.Enabled) {
@@ -637,19 +634,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 
 		// Generate aws-load-balancer-controller ServiceAccount IAM permissions
 		if b.UseServiceAccountIAM() {
-			awsModelContext := &awsmodel.AWSModelContext{
-				KopsModelContext: b.KopsModelContext,
-			}
-
-			serviceAccountRoles := []iam.Subject{&awsloadbalancercontroller.ServiceAccount{}}
-			for _, serviceAccountRole := range serviceAccountRoles {
-				iamModelBuilder := &awsmodel.IAMModelBuilder{AWSModelContext: awsModelContext, Lifecycle: b.Lifecycle, Cluster: b.Cluster}
-
-				_, err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
-				if err != nil {
-					return nil, err
-				}
-			}
+			serviceAccountRoles = append(serviceAccountRoles, &awsloadbalancercontroller.ServiceAccount{})
 		}
 	}
 
@@ -1068,5 +1053,19 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		})
 	}
 
+	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
+		awsModelContext := &awsmodel.AWSModelContext{
+			KopsModelContext: b.KopsModelContext,
+		}
+
+		for _, serviceAccountRole := range serviceAccountRoles {
+			iamModelBuilder := &awsmodel.IAMModelBuilder{AWSModelContext: awsModelContext, Lifecycle: b.Lifecycle, Cluster: b.Cluster}
+
+			_, err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
 	return addons, nil
 }
