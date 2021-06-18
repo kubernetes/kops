@@ -17,7 +17,6 @@ limitations under the License.
 package cloudup
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -34,7 +33,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	kopsbase "k8s.io/kops"
-	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -537,6 +535,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				Lifecycle:        clusterLifecycle,
 			},
 			&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
+			&model.ConfigBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 		)
 
 		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -663,7 +662,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	var target fi.Target
-	dryRun := false
 	shouldPrecreateDNS := true
 
 	switch c.TargetName {
@@ -732,7 +730,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			out = io.Discard
 		}
 		target = fi.NewDryRunTarget(assetBuilder, out)
-		dryRun = true
 
 		// Avoid making changes on a dry-run
 		shouldPrecreateDNS = false
@@ -754,22 +751,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return fmt.Errorf("error building context: %v", err)
 	}
 	defer context.Close()
-
-	if !dryRun && clusterLifecycle != fi.LifecycleIgnore {
-		acl, err := acls.GetACL(configBase, cluster)
-		if err != nil {
-			return err
-		}
-		err = configBase.Join(registry.PathKopsVersionUpdated).WriteFile(bytes.NewReader([]byte(kopsbase.Version)), acl)
-		if err != nil {
-			return fmt.Errorf("error writing kops version: %v", err)
-		}
-
-		err = c.Clientset.UpdateCompletedCluster(ctx, c.Cluster)
-		if err != nil {
-			return fmt.Errorf("error writing completed cluster spec: %v", err)
-		}
-	}
 
 	var options fi.RunTasksOptions
 	if c.RunTasksOptions != nil {

@@ -53,11 +53,6 @@ func (c *VFSClientset) UpdateCluster(ctx context.Context, cluster *kops.Cluster,
 	return c.clusters().Update(cluster, status)
 }
 
-// UpdateCompletedCluster implements the UpdateCluster method of simple.Clientset for a VFS-backed state store.
-func (c *VFSClientset) UpdateCompletedCluster(ctx context.Context, cluster *kops.Cluster) error {
-	return c.clusters().UpdateCompleted(cluster)
-}
-
 // CreateCluster implements the CreateCluster method of simple.Clientset for a VFS-backed state store
 func (c *VFSClientset) CreateCluster(ctx context.Context, cluster *kops.Cluster) (*kops.Cluster, error) {
 	return c.clusters().Create(cluster)
