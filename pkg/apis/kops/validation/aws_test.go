@@ -66,7 +66,11 @@ func TestAWSValidateExternalCloudConfig(t *testing.T) {
 		},
 	}
 	for _, g := range grid {
-		errs := awsValidateExternalCloudControllerManager(g.Input)
+		g.Input.KubernetesVersion = "1.21.0"
+		cluster := &kops.Cluster{
+			Spec: g.Input,
+		}
+		errs := awsValidateExternalCloudControllerManager(cluster)
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
