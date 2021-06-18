@@ -618,6 +618,11 @@ func WriteableVFSPaths(cluster *kops.Cluster, role Subject) ([]vfs.Path, error) 
 
 			backupStores.Insert(backupStore)
 		}
+		configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse VFS path %q: %v", configBase, err)
+		}
+		paths = append(paths, configBase.Join("addons"))
 	}
 
 	return paths, nil
