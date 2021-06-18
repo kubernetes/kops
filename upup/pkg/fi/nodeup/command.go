@@ -680,7 +680,7 @@ func loadKernelModules(context *model.NodeupModelContext) error {
 	return nil
 }
 
-// getRegionAndSeedRNG queries the cloud provider for the region and adds entropy to the random number generator.
+// getRegion queries the cloud provider for the region.
 func getRegion(ctx context.Context, config *nodeup.Config) (string, error) {
 	switch api.CloudProviderID(config.CloudProvider) {
 	case api.CloudProviderAWS:
