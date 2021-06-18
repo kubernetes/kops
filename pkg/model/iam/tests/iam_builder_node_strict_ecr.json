@@ -18,6 +18,13 @@
       ]
     },
     {
+      "Action": "kms:GenerateRandom",
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
       "Action": [
         "s3:Get*"
       ],

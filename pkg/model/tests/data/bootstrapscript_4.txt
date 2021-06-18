@@ -157,6 +157,7 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 AuxConfigHash: F6TisBT9tDbuqBlzMVgEkEvAa7tdDahjQ9pW4X5S49M=
+CloudProvider: ""
 InstanceGroupRole: Node
 KubeletConfig:
   kubeconfigPath: /etc/kubernetes/igconfig.txt
