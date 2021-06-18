@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/components/addonmanifests/awsebscsidriver"
 	"k8s.io/kops/pkg/model/components/addonmanifests/awsloadbalancercontroller"
 	"k8s.io/kops/pkg/model/components/addonmanifests/clusterautoscaler"
 	"k8s.io/kops/pkg/model/components/addonmanifests/dnscontroller"
@@ -96,18 +97,16 @@ func addServiceAccountRole(context *model.KopsModelContext, objects kubemanifest
 		if err := object.Reparse(podSpec, "spec", "template", "spec"); err != nil {
 			return fmt.Errorf("failed to parse spec.template.spec from Deployment: %v", err)
 		}
-		containers := podSpec.Containers
 		sa := podSpec.ServiceAccountName
 		subject := getWellknownServiceAccount(sa)
 		if subject == nil {
 			continue
 		}
-		for k, container := range containers {
-			if err := iam.AddServiceAccountRole(&context.IAMModelContext, podSpec, &container, subject); err != nil {
-				return err
-			}
-			containers[k] = container
+
+		if err := iam.AddServiceAccountRole(&context.IAMModelContext, podSpec, subject); err != nil {
+			return err
 		}
+
 		if err := object.Set(podSpec, "spec", "template", "spec"); err != nil {
 			return fmt.Errorf("failed to set object: %w", err)
 		}
@@ -122,6 +121,8 @@ func getWellknownServiceAccount(name string) iam.Subject {
 		return &awsloadbalancercontroller.ServiceAccount{}
 	case "cluster-autoscaler":
 		return &clusterautoscaler.ServiceAccount{}
+	case "ebs-csi-controller-sa":
+		return &awsebscsidriver.ServiceAccount{}
 	default:
 		return nil
 	}
