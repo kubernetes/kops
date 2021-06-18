@@ -27,6 +27,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/try:go_default_library",
+        "//upup/pkg/fi/cloudup/openstackauth:go_default_library",
         "//util/pkg/hashing:go_default_library",
         "//vendor/github.com/Azure/azure-pipeline-go/pipeline:go_default_library",
         "//vendor/github.com/Azure/azure-storage-blob-go/azblob:go_default_library",
@@ -41,7 +42,6 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/service/sts:go_default_library",
         "//vendor/github.com/denverdino/aliyungo/metadata:go_default_library",
         "//vendor/github.com/denverdino/aliyungo/oss:go_default_library",
-        "//vendor/github.com/go-ini/ini:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers:go_default_library",
@@ -55,7 +55,6 @@ go_library(
         "//vendor/google.golang.org/api/option:go_default_library",
         "//vendor/google.golang.org/api/storage/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
-        "//vendor/k8s.io/client-go/util/homedir:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
     ],
 )
