@@ -41,20 +41,25 @@ func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 		}
 	}
 
-	allErrs = append(allErrs, awsValidateExternalCloudControllerManager(c.Spec)...)
+	allErrs = append(allErrs, awsValidateExternalCloudControllerManager(c)...)
 
 	return allErrs
 }
 
-func awsValidateExternalCloudControllerManager(c kops.ClusterSpec) (allErrs field.ErrorList) {
+func awsValidateExternalCloudControllerManager(cluster *kops.Cluster) (allErrs field.ErrorList) {
+	c := cluster.Spec
 
 	if c.ExternalCloudControllerManager == nil {
 		return allErrs
 	}
+	fldPath := field.NewPath("spec", "externalCloudControllerManager")
+	if !cluster.IsKubernetesGTE("1.18") {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "AWS external CCM requires kubernetes 1.18+"))
+	}
 
 	if !hasAWSEBSCSIDriver(c) {
-		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "externalCloudControllerManager"),
-			"AWS external CCM cannot be used without enabling spec.cloudConfig.AWSEBSCSIDriver or setting spec.kubeControllerManaager.externalCloudVolumePlugin set to `aws`"))
+		allErrs = append(allErrs, field.Forbidden(fldPath,
+			"AWS external CCM cannot be used without enabling spec.cloudConfig.AWSEBSCSIDriver."))
 	}
 	return allErrs
 
