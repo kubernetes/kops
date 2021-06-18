@@ -22,10 +22,6 @@ set -o xtrace
 echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
 echo "CLUSTER_NAME=${CLUSTER_NAME}"
 
-if [[ -n "${KOPS_BASE_URL-}" ]]; then
-    unset KOPS_BASE_URL
-fi
-
 if [[ -z "${WORKSPACE-}" ]]; then
     export WORKSPACE
     WORKSPACE=$(mktemp -dt kops.XXXXXXXXX)
@@ -61,7 +57,7 @@ if [[ -z "${AWS_SSH_PUBLIC_KEY_FILE-}" ]]; then
     export AWS_SSH_PUBLIC_KEY_FILE="${HOME}/.ssh/id_rsa.pub"
 fi
 
-KUBETEST2="kubetest2 kops -v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-}"
+KUBETEST2="kubetest2 kops -v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-} --kops-root=${REPO_ROOT}"
 KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS:-} --env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
 
 # Always tear-down the cluster when we're done
@@ -94,6 +90,21 @@ function kops-base-from-marker() {
         curl -s "https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt"
     else
         curl -s "https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-${1}/latest-ci.txt"
+    fi
+}
+
+# This function will download the latest kops if in a periodic job, otherwise build from the current tree
+function kops-acquire-latest() {
+    if [[ "${JOB_TYPE-}" == "periodic" ]]; then
+        export KOPS_BASE_URL
+        KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
+        kops-download-from-base
+    else
+         if [[ -n "${KOPS_BASE_URL-}" ]]; then
+            unset KOPS_BASE_URL
+         fi
+         $KUBETEST2 --build >&2
+         echo .bazelbuild/dist/linux/amd64/kops
     fi
 }
 
