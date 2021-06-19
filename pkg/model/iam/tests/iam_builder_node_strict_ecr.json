@@ -31,7 +31,6 @@
       "Action": [
         "autoscaling:DescribeAutoScalingInstances",
         "ec2:DescribeInstances",
-        "ec2:DescribeRegions",
         "ecr:BatchCheckLayerAvailability",
         "ecr:BatchGetImage",
         "ecr:DescribeRepositories",
@@ -39,6 +38,8 @@
         "ecr:GetDownloadUrlForLayer",
         "ecr:GetRepositoryPolicy",
         "ecr:ListImages",
+        "iam:GetServerCertificate",
+        "iam:ListServerCertificates",
         "kms:GenerateRandom"
       ],
       "Effect": "Allow",
