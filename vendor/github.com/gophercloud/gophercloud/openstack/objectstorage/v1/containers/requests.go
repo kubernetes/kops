@@ -1,7 +1,6 @@
 package containers
 
 import (
-	"net/url"
 	"strings"
 
 	"github.com/gophercloud/gophercloud"
@@ -108,7 +107,7 @@ func Create(c *gophercloud.ServiceClient, containerName string, opts CreateOptsB
 			h[k] = v
 		}
 	}
-	resp, err := c.Request("PUT", createURL(c, url.QueryEscape(containerName)), &gophercloud.RequestOpts{
+	resp, err := c.Request("PUT", createURL(c, containerName), &gophercloud.RequestOpts{
 		MoreHeaders: h,
 		OkCodes:     []int{201, 202, 204},
 	})
@@ -123,7 +122,7 @@ func BulkDelete(c *gophercloud.ServiceClient, containers []string) (r BulkDelete
 	// https://github.com/openstack/swift/blob/stable/train/swift/common/swob.py#L302
 	encodedContainers := make([]string, len(containers))
 	for i, v := range containers {
-		encodedContainers[i] = url.QueryEscape(v)
+		encodedContainers[i] = v
 	}
 	b := strings.NewReader(strings.Join(encodedContainers, "\n") + "\n")
 	resp, err := c.Post(bulkDeleteURL(c), b, &r.Body, &gophercloud.RequestOpts{
@@ -139,7 +138,7 @@ func BulkDelete(c *gophercloud.ServiceClient, containers []string) (r BulkDelete
 
 // Delete is a function that deletes a container.
 func Delete(c *gophercloud.ServiceClient, containerName string) (r DeleteResult) {
-	resp, err := c.Delete(deleteURL(c, url.QueryEscape(containerName)), nil)
+	resp, err := c.Delete(deleteURL(c, containerName), nil)
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
@@ -202,7 +201,7 @@ func Update(c *gophercloud.ServiceClient, containerName string, opts UpdateOptsB
 			h[k] = v
 		}
 	}
-	resp, err := c.Request("POST", updateURL(c, url.QueryEscape(containerName)), &gophercloud.RequestOpts{
+	resp, err := c.Request("POST", updateURL(c, containerName), &gophercloud.RequestOpts{
 		MoreHeaders: h,
 		OkCodes:     []int{201, 202, 204},
 	})
@@ -242,7 +241,7 @@ func Get(c *gophercloud.ServiceClient, containerName string, opts GetOptsBuilder
 			h[k] = v
 		}
 	}
-	resp, err := c.Head(getURL(c, url.QueryEscape(containerName)), &gophercloud.RequestOpts{
+	resp, err := c.Head(getURL(c, containerName), &gophercloud.RequestOpts{
 		MoreHeaders: h,
 		OkCodes:     []int{200, 204},
 	})

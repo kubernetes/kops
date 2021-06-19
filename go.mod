@@ -57,7 +57,7 @@ require (
 	github.com/gogo/protobuf v1.3.2
 	github.com/google/go-cmp v0.5.5
 	github.com/google/uuid v1.2.0
-	github.com/gophercloud/gophercloud v0.17.0
+	github.com/gophercloud/gophercloud v0.18.0
 	github.com/hashicorp/hcl/v2 v2.10.0
 	github.com/hashicorp/vault/api v1.1.0
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
