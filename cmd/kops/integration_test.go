@@ -343,6 +343,12 @@ func TestAWSLBController(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+func TestManyAddons(t *testing.T) {
+	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
+	newIntegrationTest("minimal.example.com", "many-addons").
+		runTestTerraformAWS(t)
+}
+
 // TestSharedSubnet runs the test on a configuration with a shared subnet (and VPC)
 func TestSharedSubnet(t *testing.T) {
 	newIntegrationTest("sharedsubnet.example.com", "shared_subnet").runTestTerraformAWS(t)
