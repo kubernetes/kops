@@ -50,6 +50,3 @@ Test and make sure that the new release works.
 Rather than repeating documentation that might change, head over to
 [Homebrew documentation](https://github.com/Homebrew/brew/blob/master/docs/Formula-Cookbook.md#commit)
 for directions and conventions.
-
-
-The formula can be found in hacks/brew/kops.rb.
