@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"math/big"
 	"sort"
-	"strconv"
+	"time"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
@@ -173,20 +173,6 @@ func FindPrimaryKeypair(c Keystore, name string) (*pki.Certificate, *pki.Private
 	return keyset.Primary.Certificate, keyset.Primary.PrivateKey, nil
 }
 
-// AddCert adds an alternative certificate to the keyset (primarily useful for CAs)
-func AddCert(keyset *Keyset, cert *pki.Certificate) {
-	serial := 0
-
-	for keyset.Items[strconv.Itoa(serial)] != nil {
-		serial++
-	}
-
-	keyset.Items[strconv.Itoa(serial)] = &KeysetItem{
-		Id:          strconv.Itoa(serial),
-		Certificate: cert,
-	}
-}
-
 // KeysetItemIdOlder returns whether the KeysetItem Id a is older than b.
 func KeysetItemIdOlder(a, b string) bool {
 	aVersion, aOk := big.NewInt(0).SetString(a, 10)
@@ -225,4 +211,54 @@ func (k *Keyset) ToPublicKeyBytes() ([]byte, error) {
 		}
 	}
 	return buf.Bytes(), nil
+}
+
+// AddItem adds an item to the keyset
+func (k *Keyset) AddItem(cert *pki.Certificate, privateKey *pki.PrivateKey, primary bool) error {
+	if cert == nil {
+		return fmt.Errorf("no certificate provided")
+	}
+	if privateKey == nil && primary {
+		return fmt.Errorf("private key not provided for primary item")
+	}
+
+	if !primary && k.Primary == nil {
+		return fmt.Errorf("cannot add secondary item when no existing primary item")
+	}
+
+	highestId := big.NewInt(0)
+	for id := range k.Items {
+		itemId, ok := big.NewInt(0).SetString(id, 10)
+		if ok && highestId.Cmp(itemId) < 0 {
+			highestId = itemId
+		}
+	}
+
+	// Make sure any subsequently created items will have ids that compare higher.
+	// If setting a primary, make sure its id doesn't compare lower than existing items.
+	idNumber := pki.BuildPKISerial(time.Now().UnixNano())
+	if cert.Certificate.SerialNumber.Cmp(idNumber) <= 0 &&
+		(!primary || cert.Certificate.SerialNumber.Cmp(highestId) > 0) {
+		idNumber = cert.Certificate.SerialNumber
+	}
+
+	// If certificate only, ensure the ID comes before the primary.
+	if privateKey == nil && k.Primary.Certificate.Certificate.SerialNumber.Cmp(idNumber) <= 0 {
+		idNumber = big.NewInt(0)
+		for k.Items[idNumber.String()] != nil {
+			idNumber.Add(idNumber, big.NewInt(1))
+		}
+	}
+
+	ki := &KeysetItem{
+		Id:          idNumber.String(),
+		Certificate: cert,
+		PrivateKey:  privateKey,
+	}
+	k.Items[ki.Id] = ki
+	if primary {
+		k.Primary = ki
+	}
+
+	return nil
 }

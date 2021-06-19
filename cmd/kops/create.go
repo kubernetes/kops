@@ -45,9 +45,9 @@ var (
 	createLong = templates.LongDesc(i18n.T(`
 		Create a resource:` + validResources +
 		`
-	Create a cluster, instancegroup or secret using command line parameters,
+	Create a cluster, instancegroup, keypair, or secret using command line parameters,
 	YAML configuration specification files, or stdin.
-	(Note: secrets cannot be created from YAML config files yet).
+	(Note: keypairs and secrets cannot be created from YAML config files yet).
 	`))
 
 	createExample = templates.Examples(i18n.T(`
@@ -107,6 +107,7 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 	// create subcommands
 	cmd.AddCommand(NewCmdCreateCluster(f, out))
 	cmd.AddCommand(NewCmdCreateInstanceGroup(f, out))
+	cmd.AddCommand(NewCmdCreateKeypair(f, out))
 	cmd.AddCommand(NewCmdCreateSecret(f, out))
 	return cmd
 }
