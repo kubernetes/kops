@@ -256,16 +256,11 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Model
 	if c.UseKopsControllerForNodeBootstrap() {
 		cert, key := c.GetBootstrapCert(name)
 
-		ca, err := c.GetCert(fi.CertificateIDCA)
-		if err != nil {
-			return nil, err
-		}
-
 		kubeConfig := &nodetasks.KubeConfig{
 			Name: name,
 			Cert: cert,
 			Key:  key,
-			CA:   fi.NewBytesResource(ca),
+			CA:   fi.NewStringResource(c.NodeupConfig.CAs[fi.CertificateIDCA]),
 		}
 		if c.HasAPIServer {
 			// @note: use https even for local connections, so we can turn off the insecure port
@@ -274,24 +269,14 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Model
 			kubeConfig.ServerURL = "https://" + c.Cluster.Spec.MasterInternalName
 		}
 
-		err = ctx.EnsureTask(kubeConfig)
+		err := ctx.EnsureTask(kubeConfig)
 		if err != nil {
 			return nil, err
 		}
 
 		return kubeConfig.GetConfig(), nil
 	} else {
-		ca, err := c.GetCert(fi.CertificateIDCA)
-		if err != nil {
-			return nil, err
-		}
-
-		cert, err := c.GetCert(name)
-		if err != nil {
-			return nil, err
-		}
-
-		key, err := c.GetPrivateKey(name)
+		cert, key, err := c.GetPrimaryKeypair(name)
 		if err != nil {
 			return nil, err
 		}
@@ -300,7 +285,7 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Model
 			Name: name,
 			Cert: fi.NewBytesResource(cert),
 			Key:  fi.NewBytesResource(key),
-			CA:   fi.NewBytesResource(ca),
+			CA:   fi.NewStringResource(c.NodeupConfig.CAs[fi.CertificateIDCA]),
 		}
 		if c.HasAPIServer {
 			// @note: use https even for local connections, so we can turn off the insecure port
@@ -569,30 +554,30 @@ func EvaluateHostnameOverride(hostnameOverride string) (string, error) {
 	return *(result.Reservations[0].Instances[0].PrivateDnsName), nil
 }
 
-// GetCert is a helper method to retrieve a certificate from the store
-func (c *NodeupModelContext) GetCert(name string) ([]byte, error) {
-	cert, err := c.KeyStore.FindCert(name)
+// GetPrimaryKeypair is a helper method to retrieve a primary keypair from the store
+func (c *NodeupModelContext) GetPrimaryKeypair(name string) (cert []byte, key []byte, err error) {
+	certificate, privateKey, err := c.KeyStore.FindPrimaryKeypair(name)
 	if err != nil {
-		return []byte{}, fmt.Errorf("error fetching certificate: %v from keystore: %v", name, err)
+		return nil, nil, fmt.Errorf("error fetching certificate: %v from keystore: %v", name, err)
 	}
-	if cert == nil {
-		return []byte{}, fmt.Errorf("unable to find certificate: %s", name)
+	if certificate == nil {
+		return nil, nil, fmt.Errorf("unable to find certificate: %s", name)
+	}
+	if privateKey == nil {
+		return nil, nil, fmt.Errorf("unable to find key: %s", name)
 	}
 
-	return cert.AsBytes()
-}
-
-// GetPrivateKey is a helper method to retrieve a private key from the store
-func (c *NodeupModelContext) GetPrivateKey(name string) ([]byte, error) {
-	key, err := c.KeyStore.FindPrivateKey(name)
+	cert, err = certificate.AsBytes()
 	if err != nil {
-		return []byte{}, fmt.Errorf("error fetching private key: %v from keystore: %v", name, err)
-	}
-	if key == nil {
-		return []byte{}, fmt.Errorf("unable to find private key: %s", name)
+		return nil, nil, err
 	}
 
-	return key.AsBytes()
+	key, err = privateKey.AsBytes()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return cert, key, nil
 }
 
 func (b *NodeupModelContext) AddCNIBinAssets(c *fi.ModelBuilderContext, assetNames []string) error {
