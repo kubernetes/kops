@@ -54,10 +54,11 @@ type BootstrapScriptBuilder struct {
 }
 
 type BootstrapScript struct {
-	Name     string
-	ig       *kops.InstanceGroup
-	builder  *BootstrapScriptBuilder
-	resource fi.TaskDependentResource
+	Name      string
+	Lifecycle fi.Lifecycle
+	ig        *kops.InstanceGroup
+	builder   *BootstrapScriptBuilder
+	resource  fi.TaskDependentResource
 	// alternateNameTasks are tasks that contribute api-server IP addresses.
 	alternateNameTasks []fi.HasAddress
 
@@ -227,10 +228,11 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 	}
 
 	task := &BootstrapScript{
-		Name:    ig.Name,
-		ig:      ig,
-		builder: b,
-		caTask:  caTask,
+		Name:      ig.Name,
+		Lifecycle: b.Lifecycle,
+		ig:        ig,
+		builder:   b,
+		caTask:    caTask,
 		// TODO: use caTask.Keyset() and expose all CA certificates
 		ca: caTask.Certificate(),
 	}
@@ -267,6 +269,10 @@ func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 }
 
 func (b *BootstrapScript) Run(c *fi.Context) error {
+	if b.Lifecycle == fi.LifecycleIgnore {
+		return nil
+	}
+
 	config, err := b.kubeEnv(b.ig, c, b.ca)
 	if err != nil {
 		return err
