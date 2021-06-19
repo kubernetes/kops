@@ -35,27 +35,7 @@ func (b *CalicoOptionsBuilder) BuildOptions(o interface{}) error {
 		return nil
 	}
 
-	rebindIfEmpty := func(s *string, replacement string) bool {
-		if *s != "" {
-			return false
-		}
-		*s = replacement
-		return true
-	}
-
-	activeMode := "Always"
-	if c.CrossSubnet {
-		activeMode = "CrossSubnet"
-	}
-	switch c.EncapsulationMode {
-	case "":
-		c.EncapsulationMode = "ipip"
-		fallthrough
-	case "ipip":
-		rebindIfEmpty(&c.IPIPMode, activeMode)
-	case "vxlan":
-		rebindIfEmpty(&c.IPIPMode, "Never")
-	}
+	c.EncapsulationMode = "ipip"
 
 	return nil
 }
