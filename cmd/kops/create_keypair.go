@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,29 +26,29 @@ import (
 )
 
 var (
-	createSecretKeypairLong = templates.LongDesc(i18n.T(`
-	Create a secret keypair`))
+	createKeypairLong = templates.LongDesc(i18n.T(`
+	Create a keypair`))
 
-	createSecretKeypairExample = templates.Examples(i18n.T(`
-	Add a ca certificate and private key.
-	kops create secret keypair ca \
+	createKeypairExample = templates.Examples(i18n.T(`
+	Add a cluster CA certificate and private key.
+	kops create keypair ca \
 		--cert ~/ca.pem --key ~/ca-key.pem \
 		--name k8s-cluster.example.com --state s3://my-state-store
 	`))
 
-	createSecretKeypairShort = i18n.T(`Create a secret keypair.`)
+	createKeypairShort = i18n.T(`Create a keypair.`)
 )
 
-func NewCmdCreateKeypairSecret(f *util.Factory, out io.Writer) *cobra.Command {
+func NewCmdCreateKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "keypair",
-		Short:   createSecretKeypairShort,
-		Long:    createSecretKeypairLong,
-		Example: createSecretKeypairExample,
+		Short:   createKeypairShort,
+		Long:    createKeypairLong,
+		Example: createKeypairExample,
 	}
 
 	// create subcommands
-	cmd.AddCommand(NewCmdCreateSecretCaCert(f, out))
+	cmd.AddCommand(NewCmdCreateKeypairCa(f, out))
 
 	return cmd
 }
