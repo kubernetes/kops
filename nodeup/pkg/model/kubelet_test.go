@@ -234,7 +234,9 @@ func BuildNodeupModelContext(basedir string) (*NodeupModelContext, error) {
 	nodeUpModelContext := &NodeupModelContext{
 		Cluster:      model.Cluster,
 		Architecture: "amd64",
-		NodeupConfig: &nodeup.Config{},
+		NodeupConfig: &nodeup.Config{
+			CAs: map[string]string{},
+		},
 	}
 
 	if len(model.InstanceGroups) == 0 {
@@ -244,6 +246,8 @@ func BuildNodeupModelContext(basedir string) (*NodeupModelContext, error) {
 	} else {
 		return nil, fmt.Errorf("unexpected number of instance groups in %s, found %d", basedir, len(model.InstanceGroups))
 	}
+
+	nodeUpModelContext.NodeupConfig.CAs["ca"] = dummyCertificate + nextCertificate
 
 	if err := nodeUpModelContext.Init(); err != nil {
 		return nil, err
