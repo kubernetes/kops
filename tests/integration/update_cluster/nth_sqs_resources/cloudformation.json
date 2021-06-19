@@ -1076,7 +1076,6 @@
               "Action": [
                 "ec2:CreateSecurityGroup",
                 "ec2:CreateTags",
-                "ec2:DescribeVolumesModifications",
                 "ec2:ModifyInstanceAttribute"
               ],
               "Effect": "Allow",
