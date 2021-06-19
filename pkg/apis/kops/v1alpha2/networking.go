@@ -95,7 +95,7 @@ type WeaveNetworkingSpec struct {
 type FlannelNetworkingSpec struct {
 	// Backend is the backend overlay type we want to use (vxlan or udp)
 	Backend string `json:"backend,omitempty"`
-	// DisableTxChecksumOffloading is deprecated as of kops 1.19 and has no effect
+	// DisableTxChecksumOffloading is deprecated as of kOps 1.19 and has no effect.
 	DisableTxChecksumOffloading bool `json:"disableTxChecksumOffloading,omitempty"`
 	// IptablesResyncSeconds sets resync period for iptables rules, in seconds
 	IptablesResyncSeconds *int32 `json:"iptablesResyncSeconds,omitempty"`
@@ -109,7 +109,7 @@ type CalicoNetworkingSpec struct {
 	Version string `json:"version,omitempty"`
 
 	// AWSSrcDstCheck enables/disables ENI source/destination checks (AWS only)
-	// Options: DoNothing (default), Enable, or Disable
+	// Options: Disable (default), Enable, or DoNothing
 	AWSSrcDstCheck string `json:"awsSrcDstCheck,omitempty"`
 	// BPFEnabled enables the eBPF dataplane mode.
 	BPFEnabled bool `json:"bpfEnabled,omitempty"`
@@ -132,17 +132,19 @@ type CalicoNetworkingSpec struct {
 	ChainInsertMode string `json:"chainInsertMode,omitempty"`
 	// CPURequest CPU request of Calico container. Default: 100m
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
-	// CrossSubnet enables Calico's cross-subnet mode when set to true
-	CrossSubnet bool `json:"crossSubnet,omitempty"`
+	// CrossSubnet is deprecated as of kOps 1.22 and has no effect
+	CrossSubnet *bool `json:"crossSubnet,omitempty"`
 	// EncapsulationMode specifies the network packet encapsulation protocol for Calico to use,
 	// employing such encapsulation at the necessary scope per the related CrossSubnet field. In
 	// "ipip" mode, Calico will use IP-in-IP encapsulation as needed. In "vxlan" mode, Calico will
 	// encapsulate packets as needed using the VXLAN scheme.
 	// Options: ipip (default) or vxlan
 	EncapsulationMode string `json:"encapsulationMode,omitempty"`
-	// IPIPMode is the encapsulation mode to use for the default Calico IPv4 pool created at start
-	// up, determining when to use IP-in-IP encapsulation, conveyed to the "calico-node" daemon
-	// container via the CALICO_IPV4POOL_IPIP environment variable.
+	// IPIPMode determines when to use IP-in-IP encapsulation for the default Calico IPv4 pool.
+	// It is conveyed to the "calico-node" daemon container via the CALICO_IPV4POOL_IPIP
+	// environment variable. EncapsulationMode must be set to "ipip".
+	// Options: "CrossSubnet", "Always", or "Never".
+	// Default: "CrossSubnet" if EncapsulationMode is "ipip", "Never" otherwise.
 	IPIPMode string `json:"ipipMode,omitempty"`
 	// IPv4AutoDetectionMethod configures how Calico chooses the IP address used to route
 	// between nodes.  This should be set when the host has multiple interfaces
@@ -183,6 +185,12 @@ type CalicoNetworkingSpec struct {
 	TyphaPrometheusMetricsPort int32 `json:"typhaPrometheusMetricsPort,omitempty"`
 	// TyphaReplicas is the number of replicas of Typha to deploy
 	TyphaReplicas int32 `json:"typhaReplicas,omitempty"`
+	// VXLANMode determines when to use VXLAN encapsulation for the default Calico IPv4 pool.
+	// It is conveyed to the "calico-node" daemon container via the CALICO_IPV4POOL_VXLAN
+	// environment variable. EncapsulationMode must be set to "vxlan".
+	// Options: "CrossSubnet", "Always", or "Never".
+	// Default: "CrossSubnet" if EncapsulationMode is "vxlan", "Never" otherwise.
+	VXLANMode string `json:"vxlanMode,omitempty"`
 	// WireguardEnabled enables WireGuard encryption for all on-the-wire pod-to-pod traffic
 	// (default: false)
 	WireguardEnabled bool `json:"wireguardEnabled,omitempty"`
@@ -203,7 +211,7 @@ type CanalNetworkingSpec struct {
 	// DisableFlannelForwardRules configures Flannel to NOT add the
 	// default ACCEPT traffic rules to the iptables FORWARD chain
 	DisableFlannelForwardRules bool `json:"disableFlannelForwardRules,omitempty"`
-	// DisableTxChecksumOffloading is deprecated as of kops 1.19 and has no effect
+	// DisableTxChecksumOffloading is deprecated as of kOps 1.19 and has no effect.
 	DisableTxChecksumOffloading bool `json:"disableTxChecksumOffloading,omitempty"`
 	// IptablesBackend controls which variant of iptables binary Felix uses
 	// Default: Auto (other options: Legacy, NFT)
@@ -238,7 +246,7 @@ type KuberouterNetworkingSpec struct {
 }
 
 // RomanaNetworkingSpec declares that we want Romana networking
-// Romana is deprecated as of kops 1.18 and removed as of kops 1.19
+// Romana is deprecated as of kOps 1.18 and removed as of kOps 1.19.
 type RomanaNetworkingSpec struct {
 	// DaemonServiceIP is the Kubernetes Service IP for the romana-daemon pod
 	DaemonServiceIP string `json:"daemonServiceIP,omitempty"`

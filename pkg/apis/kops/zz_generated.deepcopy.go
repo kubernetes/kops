@@ -389,6 +389,11 @@ func (in *CalicoNetworkingSpec) DeepCopyInto(out *CalicoNetworkingSpec) {
 		x := (*in).DeepCopy()
 		*out = &x
 	}
+	if in.CrossSubnet != nil {
+		in, out := &in.CrossSubnet, &out.CrossSubnet
+		*out = new(bool)
+		**out = **in
+	}
 	if in.MTU != nil {
 		in, out := &in.MTU, &out.MTU
 		*out = new(int32)
