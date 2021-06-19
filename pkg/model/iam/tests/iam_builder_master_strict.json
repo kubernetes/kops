@@ -1,6 +1,15 @@
 {
   "Statement": [
     {
+      "Action": [
+        "ec2:DescribeVolumes"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
       "Action": "ec2:AttachVolume",
       "Condition": {
         "StringEquals": {
@@ -11,6 +20,25 @@
       "Effect": "Allow",
       "Resource": [
         "*"
+      ]
+    },
+    {
+      "Action": [
+        "s3:Get*"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/*"
+    },
+    {
+      "Action": [
+        "s3:GetBucketLocation",
+        "s3:GetEncryptionConfiguration",
+        "s3:ListBucket",
+        "s3:ListBucketVersions"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws:s3:::kops-tests"
       ]
     },
     {
@@ -47,25 +75,6 @@
       "Effect": "Allow",
       "Resource": [
         "*"
-      ]
-    },
-    {
-      "Action": [
-        "s3:Get*"
-      ],
-      "Effect": "Allow",
-      "Resource": "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/*"
-    },
-    {
-      "Action": [
-        "s3:GetBucketLocation",
-        "s3:GetEncryptionConfiguration",
-        "s3:ListBucket",
-        "s3:ListBucketVersions"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "arn:aws:s3:::kops-tests"
       ]
     },
     {
