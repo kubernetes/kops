@@ -210,7 +210,10 @@
       ]
     },
     {
-      "Action": "ec2:DescribeAvailabilityZones",
+      "Action": [
+        "ec2:DescribeAvailabilityZones",
+        "ec2:DescribeNetworkInterfaces"
+      ],
       "Effect": "Allow",
       "Resource": [
         "*"
