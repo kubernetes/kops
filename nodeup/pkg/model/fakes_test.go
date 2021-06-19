@@ -37,7 +37,12 @@ type fakeCAStore struct {
 var _ fi.CAStore = &fakeCAStore{}
 
 func (k fakeCAStore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
-	panic("fakeCAStore does not implement FindPrimaryKeypair")
+	keyset, err := k.FindKeyset(name)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return keyset.Primary.Certificate, keyset.Primary.PrivateKey, nil
 }
 
 func (k fakeCAStore) FindKeyset(name string) (*fi.Keyset, error) {

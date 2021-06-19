@@ -274,14 +274,15 @@ const previousKey = "-----BEGIN RSA PRIVATE KEY-----\nMIIBPQIBAAJBANiW3hfHTcKnxC
 const nextCertificate = "-----BEGIN CERTIFICATE-----\nMIIBZzCCARGgAwIBAgIBBDANBgkqhkiG9w0BAQsFADAaMRgwFgYDVQQDEw9zZXJ2\naWNlLWFjY291bnQwHhcNMjEwNTAyMjAzMjE3WhcNMzEwNTAyMjAzMjE3WjAaMRgw\nFgYDVQQDEw9zZXJ2aWNlLWFjY291bnQwXDANBgkqhkiG9w0BAQEFAANLADBIAkEA\no4Tridlsf4Yz3UAiup/scSTiG/OqxkUW3Fz7zGKvVcLeYj9GEIKuzoB1VFk1nboD\nq4cCuGLfdzaQdCQKPIsDuwIDAQABo0IwQDAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0T\nAQH/BAUwAwEB/zAdBgNVHQ4EFgQUhPbxEmUbwVOCa+fZgxreFhf67UEwDQYJKoZI\nhvcNAQELBQADQQALMsyK2Q7C/bk27eCvXyZKUfrLvor10hEjwGhv14zsKWDeTj/J\nA1LPYp7U9VtFfgFOkVbkLE9Rstc0ltNrPqxA\n-----END CERTIFICATE-----\n"
 const nextKey = "-----BEGIN RSA PRIVATE KEY-----\nMIIBOgIBAAJBAKOE64nZbH+GM91AIrqf7HEk4hvzqsZFFtxc+8xir1XC3mI/RhCC\nrs6AdVRZNZ26A6uHArhi33c2kHQkCjyLA7sCAwEAAQJAejInjmEzqmzQr0NxcIN4\nPukwK3FBKl+RAOZfqNIKcww14mfOn7Gc6lF2zEC4GnLiB3tthbSXoBGi54nkW4ki\nyQIhANZNne9UhQlwyjsd3WxDWWrl6OOZ3J8ppMOIQni9WRLlAiEAw1XEdxPOSOSO\nB6rucpTT1QivVvyEFIb/ukvPm769Mh8CIQDNQwKnHdlfNX0+KljPPaMD1LrAZbr/\naC+8aWLhqtsKUQIgF7gUcTkwdV17eabh6Xv09Qtm7zMefred2etWvFy+8JUCIECv\nFYOKQVWHX+Q7CHX2K1oTECVnZuW1UItdDYVlFYxQ\n-----END RSA PRIVATE KEY-----"
 
-func simplePrivateKeyset(s string) *kops.Keyset {
+func simplePrivateKeyset(cert, key string) *kops.Keyset {
 	return &kops.Keyset{
 		Spec: kops.KeysetSpec{
 			PrimaryId: "3",
 			Keys: []kops.KeysetItem{
 				{
 					Id:              "3",
-					PrivateMaterial: []byte(s),
+					PublicMaterial:  []byte(cert),
+					PrivateMaterial: []byte(key),
 				},
 			},
 		},
@@ -339,11 +340,11 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 	keystore := &fakeCAStore{}
 	keystore.T = t
 	keystore.privateKeysets = map[string]*kops.Keyset{
-		"ca":                      simplePrivateKeyset(dummyKey),
-		"apiserver-aggregator-ca": simplePrivateKeyset(dummyKey),
-		"kube-controller-manager": simplePrivateKeyset(dummyKey),
-		"kube-proxy":              simplePrivateKeyset(dummyKey),
-		"kube-scheduler":          simplePrivateKeyset(dummyKey),
+		"ca":                      simplePrivateKeyset(dummyCertificate, dummyKey),
+		"apiserver-aggregator-ca": simplePrivateKeyset(dummyCertificate, dummyKey),
+		"kube-controller-manager": simplePrivateKeyset(dummyCertificate, dummyKey),
+		"kube-proxy":              simplePrivateKeyset(dummyCertificate, dummyKey),
+		"kube-scheduler":          simplePrivateKeyset(dummyCertificate, dummyKey),
 		"service-account":         rotatingPrivateKeyset(),
 	}
 	keystore.certs = map[string]*pki.Certificate{
