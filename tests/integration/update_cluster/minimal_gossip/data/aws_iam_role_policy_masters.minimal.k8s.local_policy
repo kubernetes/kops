@@ -1,47 +1,20 @@
 {
   "Statement": [
     {
-      "Action": "ec2:AttachVolume",
-      "Condition": {
-        "StringEquals": {
-          "aws:ResourceTag/KubernetesCluster": "minimal.k8s.local",
-          "aws:ResourceTag/k8s.io/role/master": "1"
-        }
-      },
+      "Action": [
+        "ec2:DescribeVolumes"
+      ],
       "Effect": "Allow",
       "Resource": [
         "*"
       ]
     },
     {
-      "Action": "ec2:CreateTags",
+      "Action": "ec2:AttachVolume",
       "Condition": {
         "StringEquals": {
-          "ec2:CreateAction": [
-            "CreateVolume",
-            "CreateSnapshot"
-          ]
-        }
-      },
-      "Effect": "Allow",
-      "Resource": [
-        "arn:aws:ec2:*:*:volume/*",
-        "arn:aws:ec2:*:*:snapshot/*"
-      ]
-    },
-    {
-      "Action": [
-        "elasticloadbalancing:CreateLoadBalancer",
-        "elasticloadbalancing:CreateLoadBalancerPolicy",
-        "elasticloadbalancing:CreateLoadBalancerListeners",
-        "ec2:CreateSecurityGroup",
-        "ec2:CreateVolume",
-        "elasticloadbalancing:CreateListener",
-        "elasticloadbalancing:CreateTargetGroup"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "aws:RequestTag/KubernetesCluster": "minimal.k8s.local"
+          "aws:ResourceTag/KubernetesCluster": "minimal.k8s.local",
+          "aws:ResourceTag/k8s.io/role/master": "1"
         }
       },
       "Effect": "Allow",
@@ -98,6 +71,42 @@
       "Effect": "Allow",
       "Resource": [
         "arn:aws:s3:::placeholder-write-bucket"
+      ]
+    },
+    {
+      "Action": "ec2:CreateTags",
+      "Condition": {
+        "StringEquals": {
+          "ec2:CreateAction": [
+            "CreateVolume",
+            "CreateSnapshot"
+          ]
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws:ec2:*:*:volume/*",
+        "arn:aws:ec2:*:*:snapshot/*"
+      ]
+    },
+    {
+      "Action": [
+        "elasticloadbalancing:CreateLoadBalancer",
+        "elasticloadbalancing:CreateLoadBalancerPolicy",
+        "elasticloadbalancing:CreateLoadBalancerListeners",
+        "ec2:CreateSecurityGroup",
+        "ec2:CreateVolume",
+        "elasticloadbalancing:CreateListener",
+        "elasticloadbalancing:CreateTargetGroup"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/KubernetesCluster": "minimal.k8s.local"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "*"
       ]
     },
     {
