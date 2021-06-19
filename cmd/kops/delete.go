@@ -42,7 +42,7 @@ type DeleteOptions struct {
 
 var (
 	deleteLong = templates.LongDesc(i18n.T(`
-	Delete Kubernetes clusters, instancegroups, instances, and secrets, or a combination of the before mentioned.
+	Delete Kubernetes clusters, instancegroups, instances, keypairs, and secrets, or a combination of the before mentioned.
 	`))
 
 	deleteExample = templates.Examples(i18n.T(`
@@ -63,7 +63,7 @@ var (
 		kops delete ig --name=k8s-cluster.example.com node-example --yes
 	`))
 
-	deleteShort = i18n.T("Delete clusters,instancegroups, instances, or secrets.")
+	deleteShort = i18n.T("Delete clusters, instancegroups, instances, keypairs, or secrets.")
 )
 
 func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
@@ -92,6 +92,7 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 	// create subcommands
 	cmd.AddCommand(NewCmdDeleteCluster(f, out))
 	cmd.AddCommand(NewCmdDeleteInstanceGroup(f, out))
+	cmd.AddCommand(NewCmdDeleteKeypair(f, out))
 	cmd.AddCommand(NewCmdDeleteSecret(f, out))
 	cmd.AddCommand(NewCmdDeleteInstance(f, out))
 
