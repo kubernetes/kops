@@ -17,8 +17,6 @@
 REPO_ROOT=$(git rev-parse --show-toplevel);
 source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
-REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/aws-ebs-csi-driver/"
-
 export KOPS_BASE_URL
 KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
 KOPS=$(kops-download-from-base)
@@ -30,12 +28,13 @@ OVERRIDES="$OVERRIDES --override=cluster.spec.certManager.enabled=true"
 kops-up
 
 ZONE=$(${KOPS} get ig -o json | jq -r '[.[] | select(.spec.role=="Node") | .spec.subnets[0]][0]')
+REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/aws-ebs-csi-driver/"
 
 # shellcheck disable=SC2164
 cd "$(mktemp -dt kops.XXXXXXXXX)"
 go get github.com/onsi/ginkgo/ginkgo
 
-git clone --branch v1.0.0 https://github.com/kubernetes-sigs/aws-ebs-csi-driver.git .
+git clone --branch v1.1.0 https://github.com/kubernetes-sigs/aws-ebs-csi-driver.git .
 
 # shellcheck disable=SC2164
 cd tests/e2e-kubernetes/
