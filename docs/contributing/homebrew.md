@@ -15,12 +15,6 @@ Previously we could also ship development updates to homebrew but their [policy 
 
 Note: if you already have kOps installed, you need to substitute `upgrade` for `install`.
 
-You can switch between installed releases with:
-```bash
-brew switch kops 1.17.0
-brew switch kops 1.18.0
-```
-
 # Releasing kOps to Brew
 
 Submitting a new release of kOps to Homebrew is very simple.
@@ -33,9 +27,7 @@ More details on this script are located [here.](https://github.com/Homebrew/brew
 
 Example usage:
 ```bash
-brew bump-formula-pr kops \
-       --url=https://github.com/kubernetes/kops/archive/1.7.1.tar.gz \
-       --sha256=044c5c7a737ed3acf53517e64bb27d3da8f7517d2914df89efeeaf84bc8a722a
+brew bump-formula-pr kops --version=1.20.2
 ```
 
 * Update the URL variable to the tar.gz of the new release source code
