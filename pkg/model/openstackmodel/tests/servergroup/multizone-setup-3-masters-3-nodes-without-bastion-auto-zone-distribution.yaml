@@ -1,5 +1,7 @@
+Lifecycle: ""
 Name: master
 ---
+Lifecycle: ""
 Name: node
 ---
 ForAPIServer: true
@@ -123,6 +125,7 @@ ServerGroup:
   - anti-affinity
 UserData:
   task:
+    Lifecycle: ""
     Name: master
 ---
 AvailabilityZone: zone-2
@@ -204,6 +207,7 @@ ServerGroup:
   - anti-affinity
 UserData:
   task:
+    Lifecycle: ""
     Name: master
 ---
 AvailabilityZone: zone-3
@@ -285,6 +289,7 @@ ServerGroup:
   - anti-affinity
 UserData:
   task:
+    Lifecycle: ""
     Name: master
 ---
 AvailabilityZone: zone-1
@@ -357,6 +362,7 @@ ServerGroup:
   - anti-affinity
 UserData:
   task:
+    Lifecycle: ""
     Name: node
 ---
 AvailabilityZone: zone-2
@@ -429,6 +435,7 @@ ServerGroup:
   - anti-affinity
 UserData:
   task:
+    Lifecycle: ""
     Name: node
 ---
 AvailabilityZone: zone-3
@@ -501,6 +508,7 @@ ServerGroup:
   - anti-affinity
 UserData:
   task:
+    Lifecycle: ""
     Name: node
 ---
 Lifecycle: ""
@@ -514,6 +522,7 @@ type: ca
 Base: null
 Contents:
   task:
+    Lifecycle: ""
     Name: master
 Lifecycle: ""
 Location: igconfig/master/master/auxconfig.yaml
@@ -523,6 +532,7 @@ Public: null
 Base: null
 Contents:
   task:
+    Lifecycle: ""
     Name: node
 Lifecycle: ""
 Location: igconfig/node/node/auxconfig.yaml
