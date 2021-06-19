@@ -63,10 +63,8 @@ type integrationTest struct {
 	expectServiceAccountRolePolicies []string
 	lifecycleOverrides               []string
 	sshKey                           bool
-	// caKey is true if we should use a provided ca.crt & ca.key as our CA
-	caKey           bool
-	jsonOutput      bool
-	bastionUserData bool
+	jsonOutput                       bool
+	bastionUserData                  bool
 	// nth is true if we should check for files created by nth queue processor add on
 	nth bool
 }
@@ -82,12 +80,6 @@ func newIntegrationTest(clusterName, srcDir string) *integrationTest {
 	}
 }
 
-// withCAKey indicates that we should use a fixed ca.crt & ca.key from the source directory as our CA.
-// This is needed when the CA is exposed, for example when using AWS WebIdentity federation.
-func (i *integrationTest) withCAKey() *integrationTest {
-	i.caKey = true
-	return i
-}
 func (i *integrationTest) withVersion(version string) *integrationTest {
 	i.version = version
 	return i
@@ -312,7 +304,6 @@ func TestDiscoveryFeatureGate(t *testing.T) {
 
 	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
 	newIntegrationTest("minimal.example.com", "public-jwks-apiserver").
-		withCAKey().
 		withServiceAccountRole("dns-controller.kube-system", true).
 		runTestTerraformAWS(t)
 
@@ -322,7 +313,6 @@ func TestVFSServiceAccountIssuerDiscovery(t *testing.T) {
 
 	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
 	newIntegrationTest("minimal.example.com", "vfs-said").
-		withCAKey().
 		runTestTerraformAWS(t)
 
 }
@@ -337,7 +327,6 @@ func TestAWSLBController(t *testing.T) {
 
 	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
 	newIntegrationTest("minimal.example.com", "aws-lb-controller").
-		withCAKey().
 		withServiceAccountRole("dns-controller.kube-system", true).
 		withServiceAccountRole("aws-load-balancer-controller.kube-system", true).
 		runTestTerraformAWS(t)
@@ -485,16 +474,28 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 		}
 	}
 
-	if i.caKey {
+	{
 		options := &CreateKeypairCaOptions{}
 		options.ClusterName = i.clusterName
-		options.PrivateKeyPath = path.Join(i.srcDir, "ca.key")
-		options.CertPath = path.Join(i.srcDir, "ca.crt")
+		options.PrivateKeyPath = path.Join(i.srcDir, "../ca.key")
+		options.CertPath = path.Join(i.srcDir, "../ca.crt")
 		options.Primary = true
 
 		err := RunCreateKeypairCa(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running %q create CA keypair: %v", inputYAML, err)
+		}
+	}
+	{
+		options := &CreateKeypairCaOptions{}
+		options.ClusterName = i.clusterName
+		options.PrivateKeyPath = path.Join(i.srcDir, "../ca-next.key")
+		options.CertPath = path.Join(i.srcDir, "../ca-next.crt")
+		options.Primary = false
+
+		err := RunCreateKeypairCa(ctx, factory, &stdout, options)
+		if err != nil {
+			t.Fatalf("error running %q create next CA keypair: %v", inputYAML, err)
 		}
 	}
 
@@ -755,6 +756,31 @@ func (i *integrationTest) runTestCloudformation(t *testing.T) {
 		err := RunCreateSecretPublicKey(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running %q create: %v", inputYAML, err)
+		}
+	}
+
+	{
+		options := &CreateKeypairCaOptions{}
+		options.ClusterName = i.clusterName
+		options.PrivateKeyPath = path.Join(i.srcDir, "../ca.key")
+		options.CertPath = path.Join(i.srcDir, "../ca.crt")
+		options.Primary = true
+
+		err := RunCreateKeypairCa(ctx, factory, &stdout, options)
+		if err != nil {
+			t.Fatalf("error running %q create CA keypair: %v", inputYAML, err)
+		}
+	}
+	{
+		options := &CreateKeypairCaOptions{}
+		options.ClusterName = i.clusterName
+		options.PrivateKeyPath = path.Join(i.srcDir, "../ca-next.key")
+		options.CertPath = path.Join(i.srcDir, "../ca-next.crt")
+		options.Primary = false
+
+		err := RunCreateKeypairCa(ctx, factory, &stdout, options)
+		if err != nil {
+			t.Fatalf("error running %q create next CA keypair: %v", inputYAML, err)
 		}
 	}
 
