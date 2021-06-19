@@ -404,15 +404,52 @@ func (c *NodeupModelContext) KubectlPath() string {
 }
 
 // BuildCertificatePairTask creates the tasks to create the certificate and private key files.
-func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContext, key, path, filename string, owner *string) error {
-	certificateName := filepath.Join(path, filename+".pem")
-	keyName := filepath.Join(path, filename+"-key.pem")
+func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContext, name, path, filename string, owner *string) error {
+	p := filepath.Join(path, filename)
+	if !filepath.IsAbs(p) {
+		p = filepath.Join(c.PathSrvKubernetes(), p)
+	}
 
-	if err := c.BuildCertificateTask(ctx, key, certificateName, owner); err != nil {
+	certificate, privateKey, err := c.KeyStore.FindPrimaryKeypair(name)
+	if err != nil {
 		return err
 	}
 
-	return c.BuildPrivateKeyTask(ctx, key, keyName, owner)
+	if certificate == nil {
+		return fmt.Errorf("certificate %q not found", name)
+	}
+
+	cert, err := certificate.AsString()
+	if err != nil {
+		return err
+	}
+
+	ctx.AddTask(&nodetasks.File{
+		Path:     p + ".crt",
+		Contents: fi.NewStringResource(cert),
+		Type:     nodetasks.FileType_File,
+		Mode:     s("0600"),
+		Owner:    owner,
+	})
+
+	if privateKey == nil {
+		return fmt.Errorf("private key %q not found", name)
+	}
+
+	key, err := privateKey.AsString()
+	if err != nil {
+		return err
+	}
+
+	ctx.AddTask(&nodetasks.File{
+		Path:     p + ".key",
+		Contents: fi.NewStringResource(key),
+		Type:     nodetasks.FileType_File,
+		Mode:     s("0600"),
+		Owner:    owner,
+	})
+
+	return nil
 }
 
 // BuildCertificateTask builds a task to create a certificate file.
