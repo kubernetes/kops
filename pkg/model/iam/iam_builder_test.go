@@ -187,6 +187,9 @@ func TestPolicyGeneration(t *testing.T) {
 							Enabled: fi.Bool(true),
 						},
 					},
+					Networking: &kops.NetworkingSpec{
+						Kubenet: &kops.KubenetNetworkingSpec{},
+					},
 				},
 			},
 			Role: x.Role,
