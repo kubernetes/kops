@@ -34,8 +34,6 @@ func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, erro
 	p := iam.NewPolicy(clusterName)
 
 	iam.AddAWSLoadbalancerControllerPermissions(p)
-	iam.AddMasterEC2Policies(p)
-	iam.AddMasterELBPolicies(p)
 
 	return p, nil
 }
