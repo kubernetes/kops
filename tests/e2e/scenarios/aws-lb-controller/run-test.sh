@@ -39,7 +39,7 @@ VPC=$(${KOPS} toolbox dump -o json | jq -r .vpc.id)
 
 ZONE=$(${KOPS} get ig -o json | jq -r '[.[] | select(.spec.role=="Node") | .spec.subnets[0]][0]')
 
-REGION=${ZONE::-1}
+REGION=${ZONE%?}
 
 # shellcheck disable=SC2164
 cd "$(mktemp -dt kops.XXXXXXXXX)"
