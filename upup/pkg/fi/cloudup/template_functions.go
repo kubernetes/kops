@@ -149,6 +149,19 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		}
 	}
 
+	if cluster.Spec.Networking != nil && cluster.Spec.Networking.AmazonVPC != nil {
+		c := cluster.Spec.Networking.AmazonVPC
+		dest["AmazonVpcEnvVars"] = func() map[string]string {
+			envVars := map[string]string{
+				"AWS_VPC_K8S_CNI_CONFIGURE_RPFILTER": "false",
+			}
+			for _, e := range c.Env {
+				envVars[e.Name] = e.Value
+			}
+			return envVars
+		}
+	}
+
 	if cluster.Spec.Networking != nil && cluster.Spec.Networking.Calico != nil {
 		c := cluster.Spec.Networking.Calico
 		dest["CalicoIPv4PoolIPIPMode"] = func() string {
