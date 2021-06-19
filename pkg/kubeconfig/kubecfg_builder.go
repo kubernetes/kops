@@ -163,6 +163,7 @@ func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) er
 		if config.AuthInfos[b.User] == nil {
 			return fmt.Errorf("could not find user %q", b.User)
 		}
+		haveUserInfo = true
 	}
 
 	// If we have a bearer token, also create a credential entry with basic auth
