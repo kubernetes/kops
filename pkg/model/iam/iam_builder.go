@@ -315,8 +315,6 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 	addEtcdManagerPermissions(p)
 	addNodeupPermissions(p, false)
-	AddCCMPermissions(p, clusterName, b.Cluster.Spec.Networking.Kubenet != nil)
-	AddLegacyCCMPermissions(p)
 
 	var err error
 	if p, err = b.AddS3Permissions(p); err != nil {
@@ -330,10 +328,21 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	// Protokube needs dns-controller permissions in instance role even if UseServiceAccountIAM.
 	AddDNSControllerPermissions(b, p)
 
+	// If cluster does not use external CCM, the master IAM Role needs CCM permissions
+	if b.Cluster.Spec.ExternalCloudControllerManager == nil {
+		AddCCMPermissions(p, b.Cluster.Spec.Networking.Kubenet != nil)
+		AddLegacyCCMPermissions(p)
+	}
+
 	if !b.UseServiceAccountIAM {
 		esc := b.Cluster.Spec.SnapshotController != nil &&
 			fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled)
 		AddAWSEBSCSIDriverPermissions(p, esc)
+
+		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
+			AddCCMPermissions(p, b.Cluster.Spec.Networking.Kubenet != nil)
+			AddLegacyCCMPermissions(p)
+		}
 
 		if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
 			AddAWSLoadbalancerControllerPermissions(p)
@@ -766,6 +775,13 @@ func addEtcdManagerPermissions(p *Policy) {
 	p.Statement = append(p.Statement,
 		&Statement{
 			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
+				"ec2:DescribeVolumes", // aws.go
+			}),
+			Resource: resource,
+		},
+		&Statement{
+			Effect: StatementEffectAllow,
 			Action: stringorslice.Of(
 				"ec2:AttachVolume",
 			),
@@ -788,7 +804,7 @@ func AddLegacyCCMPermissions(p *Policy) {
 	)
 }
 
-func AddCCMPermissions(p *Policy, clusterName string, cloudRoutes bool) {
+func AddCCMPermissions(p *Policy, cloudRoutes bool) {
 	resource := stringorslice.Slice([]string{"*"})
 
 	p.unconditionalAction.Insert(
@@ -877,7 +893,7 @@ func AddCCMPermissions(p *Policy, clusterName string, cloudRoutes bool) {
 
 			Condition: Condition{
 				"StringEquals": map[string]string{
-					"aws:RequestTag/KubernetesCluster": clusterName,
+					"aws:RequestTag/KubernetesCluster": p.clusterName,
 				},
 			},
 		},
