@@ -731,6 +731,7 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy, resource stringorslice.S
 			Effect: StatementEffectAllow,
 			Action: stringorslice.Of(
 				"ec2:DescribeAvailabilityZones",
+				"ec2:DescribeNetworkInterfaces",
 			),
 			Resource: stringorslice.Slice([]string{"*"}),
 		},
