@@ -182,6 +182,35 @@
     },
     {
       "Action": [
+        "route53:ChangeResourceRecordSets",
+        "route53:ListResourceRecordSets",
+        "route53:GetHostedZone"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws:route53:::hostedzone/Z3AFAKE1ZOMORE"
+      ]
+    },
+    {
+      "Action": [
+        "route53:GetChange"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws:route53:::change/*"
+      ]
+    },
+    {
+      "Action": [
+        "route53:ListHostedZones"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Action": [
         "ec2:DescribeAccountAttributes",
         "ec2:DescribeInstances",
         "ec2:DescribeVolumes",
@@ -262,35 +291,6 @@
       },
       "Effect": "Allow",
       "Resource": "*"
-    },
-    {
-      "Action": [
-        "route53:ChangeResourceRecordSets",
-        "route53:ListResourceRecordSets",
-        "route53:GetHostedZone"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "arn:aws:route53:::hostedzone/Z3AFAKE1ZOMORE"
-      ]
-    },
-    {
-      "Action": [
-        "route53:GetChange"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "arn:aws:route53:::change/*"
-      ]
-    },
-    {
-      "Action": [
-        "route53:ListHostedZones"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
     },
     {
       "Action": [
