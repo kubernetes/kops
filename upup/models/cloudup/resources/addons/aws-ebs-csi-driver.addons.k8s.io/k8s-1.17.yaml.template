@@ -294,7 +294,7 @@ spec:
             - --volume-attach-limit={{ .VolumeAttachLimit }}
             {{- end }}
             - --logtostderr
-            - --v=5
+            - --v=2
           env:
             - name: CSI_ENDPOINT
               value: unix:/csi/csi.sock
@@ -379,7 +379,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/version: {{ .Version }}
 spec:
-  replicas: 2
+  replicas: {{ ControlPlaneControllerReplicas }}
   selector:
     matchLabels:
       app: ebs-csi-controller
@@ -393,6 +393,26 @@ spec:
         app.kubernetes.io/instance: aws-ebs-csi-driver
         app.kubernetes.io/version: {{ .Version }}
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - ebs-csi-controller
+            topologyKey: kubernetes.com/hostname
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100 
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - ebs-csi-controller
+              topologyKey: topology.kubernetes.io/zone
       nodeSelector:
         kubernetes.io/os: linux
         {{ if not UseServiceAccountIAM }}
@@ -523,4 +543,19 @@ metadata:
 spec:
   attachRequired: true
   podInfoOnMount: false
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: ebs-csi-controller
+  labels:
+    app.kubernetes.io/name: aws-ebs-csi-driver
+    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/version: {{ .Version }}
+spec:
+  selector:
+    matchLabels:
+      app: ebs-csi-controller
+      app.kubernetes.io/instance: aws-ebs-csi-driver
+  maxUnavailable: 1
 {{ end }}
