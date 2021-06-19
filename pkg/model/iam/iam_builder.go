@@ -244,7 +244,7 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		Version: PolicyDefaultVersion,
 	}
 
-	addMasterEC2Policies(p, resource, b.Cluster.GetName())
+	AddMasterEC2Policies(p, resource, b.Cluster.GetName())
 	addASLifecyclePolicies(p, resource, b.Cluster.GetName(), r.warmPool)
 	addCertIAMPolicies(p, resource)
 	addKMSGenerateRandomPolicies(p)
@@ -290,10 +290,10 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		Version: PolicyDefaultVersion,
 	}
 
-	addMasterEC2Policies(p, resource, b.Cluster.GetName())
+	AddMasterEC2Policies(p, resource, b.Cluster.GetName())
 	addASLifecyclePolicies(p, resource, b.Cluster.GetName(), true)
 	addMasterASPolicies(p, resource, b.Cluster.GetName())
-	addMasterELBPolicies(p, resource)
+	AddMasterELBPolicies(p, resource)
 	addCertIAMPolicies(p, resource)
 	addKMSGenerateRandomPolicies(p)
 
@@ -726,8 +726,6 @@ func addCalicoSrcDstCheckPermissions(p *Policy) {
 
 // AddAWSLoadbalancerControllerPermissions adds the permissions needed for the aws load balancer controller to the givnen policy
 func AddAWSLoadbalancerControllerPermissions(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {
-	addMasterEC2Policies(p, resource, clusterName)
-	addMasterELBPolicies(p, resource)
 	p.Statement = append(p.Statement,
 		&Statement{
 			Effect: StatementEffectAllow,
@@ -1007,7 +1005,7 @@ func addNodeEC2Policies(p *Policy, resource stringorslice.StringOrSlice) {
 	})
 }
 
-func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {
+func AddMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {
 	// Describe* calls don't support any additional IAM restrictions
 	// The non-Describe* ec2 calls support different types of filtering:
 	// http://docs.aws.amazon.com/AWSEC2/latest/APIReference/ec2-api-permissions.html
@@ -1037,10 +1035,9 @@ func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, clust
 		&Statement{
 			Effect: StatementEffectAllow,
 			Action: stringorslice.Slice([]string{
-				"ec2:CreateSecurityGroup",          // aws.go
-				"ec2:CreateTags",                   // aws.go, tag.go
-				"ec2:DescribeVolumesModifications", // aws.go
-				"ec2:ModifyInstanceAttribute",      // aws.go
+				"ec2:CreateSecurityGroup",     // aws.go
+				"ec2:CreateTags",              // aws.go, tag.go
+				"ec2:ModifyInstanceAttribute", // aws.go
 			}),
 			Resource: resource,
 		},
@@ -1079,7 +1076,7 @@ func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, clust
 	)
 }
 
-func addMasterELBPolicies(p *Policy, resource stringorslice.StringOrSlice) {
+func AddMasterELBPolicies(p *Policy, resource stringorslice.StringOrSlice) {
 	// Comments are which cloudprovider code file makes the call
 	p.Statement = append(p.Statement, &Statement{
 		Effect: StatementEffectAllow,
