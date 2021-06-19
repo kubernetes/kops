@@ -3160,8 +3160,8 @@ spec:
                     properties:
                       awsSrcDstCheck:
                         description: 'AWSSrcDstCheck enables/disables ENI source/destination
-                          checks (AWS only) Options: DoNothing (default), Enable,
-                          or Disable'
+                          checks (AWS only) Options: Disable (default), Enable, or
+                          DoNothing'
                         type: string
                       bpfEnabled:
                         description: BPFEnabled enables the eBPF dataplane mode.
@@ -3204,8 +3204,8 @@ spec:
                         pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                         x-kubernetes-int-or-string: true
                       crossSubnet:
-                        description: CrossSubnet enables Calico's cross-subnet mode
-                          when set to true
+                        description: CrossSubnet is deprecated as of kOps 1.22 and
+                          has no effect
                         type: boolean
                       encapsulationMode:
                         description: 'EncapsulationMode specifies the network packet
@@ -3217,11 +3217,12 @@ spec:
                           or vxlan'
                         type: string
                       ipipMode:
-                        description: IPIPMode is the encapsulation mode to use for
-                          the default Calico IPv4 pool created at start up, determining
-                          when to use IP-in-IP encapsulation, conveyed to the "calico-node"
-                          daemon container via the CALICO_IPV4POOL_IPIP environment
-                          variable.
+                        description: 'IPIPMode determines when to use IP-in-IP encapsulation
+                          for the default Calico IPv4 pool. It is conveyed to the
+                          "calico-node" daemon container via the CALICO_IPV4POOL_IPIP
+                          environment variable. EncapsulationMode must be set to "ipip".
+                          Options: "CrossSubnet", "Always", or "Never". Default: "CrossSubnet"
+                          if EncapsulationMode is "ipip", "Never" otherwise.'
                         type: string
                       iptablesBackend:
                         description: 'IptablesBackend controls which variant of iptables
@@ -3297,6 +3298,14 @@ spec:
                         description: Version overrides the Calico container image
                           tag.
                         type: string
+                      vxlanMode:
+                        description: 'VXLANMode determines when to use VXLAN encapsulation
+                          for the default Calico IPv4 pool. It is conveyed to the
+                          "calico-node" daemon container via the CALICO_IPV4POOL_VXLAN
+                          environment variable. EncapsulationMode must be set to "vxlan".
+                          Options: "CrossSubnet", "Always", or "Never". Default: "CrossSubnet"
+                          if EncapsulationMode is "vxlan", "Never" otherwise.'
+                        type: string
                       wireguardEnabled:
                         description: 'WireguardEnabled enables WireGuard encryption
                           for all on-the-wire pod-to-pod traffic (default: false)'
@@ -3333,7 +3342,7 @@ spec:
                         type: boolean
                       disableTxChecksumOffloading:
                         description: DisableTxChecksumOffloading is deprecated as
-                          of kops 1.19 and has no effect
+                          of kOps 1.19 and has no effect.
                         type: boolean
                       iptablesBackend:
                         description: 'IptablesBackend controls which variant of iptables
@@ -3836,7 +3845,7 @@ spec:
                         type: string
                       disableTxChecksumOffloading:
                         description: DisableTxChecksumOffloading is deprecated as
-                          of kops 1.19 and has no effect
+                          of kOps 1.19 and has no effect.
                         type: boolean
                       iptablesResyncSeconds:
                         description: IptablesResyncSeconds sets resync period for
@@ -3871,8 +3880,8 @@ spec:
                     type: object
                   romana:
                     description: RomanaNetworkingSpec declares that we want Romana
-                      networking Romana is deprecated as of kops 1.18 and removed
-                      as of kops 1.19
+                      networking Romana is deprecated as of kOps 1.18 and removed
+                      as of kOps 1.19.
                     properties:
                       daemonServiceIP:
                         description: DaemonServiceIP is the Kubernetes Service IP

@@ -158,19 +158,16 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			if c.IPIPMode != "" {
 				return c.IPIPMode
 			}
-			if c.CrossSubnet {
-				return "CrossSubnet"
-			}
-			return "Always"
+			return "CrossSubnet"
 		}
 		dest["CalicoIPv4PoolVXLANMode"] = func() string {
 			if c.EncapsulationMode != "vxlan" {
 				return "Never"
 			}
-			if c.CrossSubnet {
-				return "CrossSubnet"
+			if c.VXLANMode != "" {
+				return c.VXLANMode
 			}
-			return "Always"
+			return "CrossSubnet"
 		}
 	}
 
