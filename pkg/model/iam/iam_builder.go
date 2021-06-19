@@ -306,16 +306,14 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys))
 	}
 
-	if !fi.BoolValue(b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {
-		esc := b.Cluster.Spec.SnapshotController != nil &&
-			fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled)
-		AddAWSEBSCSIDriverPermissions(p, clusterName, esc)
-	}
-
 	// Protokube needs dns-controller permissions in instance role even if UseServiceAccountIAM.
 	AddDNSControllerPermissions(b, p)
 
 	if !b.UseServiceAccountIAM {
+		esc := b.Cluster.Spec.SnapshotController != nil &&
+			fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled)
+		AddAWSEBSCSIDriverPermissions(p, clusterName, esc)
+
 		if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
 			AddAWSLoadbalancerControllerPermissions(p, resource, b.Cluster.GetName())
 		}
