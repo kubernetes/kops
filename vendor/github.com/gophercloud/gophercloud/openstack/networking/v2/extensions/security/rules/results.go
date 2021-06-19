@@ -17,7 +17,7 @@ type SecGroupRule struct {
 	// instance. An egress rule is applied to traffic leaving the instance.
 	Direction string
 
-	// Descripton of the rule
+	// Description of the rule
 	Description string `json:"description"`
 
 	// Must be IPv4 or IPv6, and addresses represented in CIDR must match the
