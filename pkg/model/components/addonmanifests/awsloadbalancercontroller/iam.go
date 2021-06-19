@@ -36,7 +36,10 @@ func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, erro
 	}
 
 	resource := stringorslice.Slice([]string{"*"})
-	iam.AddAWSLoadbalancerControllerPermissions(p, resource, b.Cluster.ObjectMeta.Name)
+	clusterName := b.Cluster.ObjectMeta.Name
+	iam.AddAWSLoadbalancerControllerPermissions(p, resource, clusterName)
+	iam.AddMasterEC2Policies(p, resource, clusterName)
+	iam.AddMasterELBPolicies(p, resource)
 
 	return p, nil
 }

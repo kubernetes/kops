@@ -20,7 +20,6 @@
       "Action": [
         "ec2:CreateSecurityGroup",
         "ec2:CreateTags",
-        "ec2:DescribeVolumesModifications",
         "ec2:ModifyInstanceAttribute"
       ],
       "Effect": "Allow",
@@ -183,89 +182,6 @@
     },
     {
       "Action": [
-        "ec2:DescribeAccountAttributes",
-        "ec2:DescribeInstances",
-        "ec2:DescribeVolumes",
-        "ec2:DescribeVolumesModifications",
-        "ec2:DescribeTags"
-      ],
-      "Effect": "Allow",
-      "Resource": "*"
-    },
-    {
-      "Action": [
-        "ec2:CreateVolume"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "aws:RequestTag/KubernetesCluster": "minimal.example.com"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": "*"
-    },
-    {
-      "Action": [
-        "ec2:ModifyVolume",
-        "ec2:ModifyInstanceAttribute",
-        "ec2:AttachVolume",
-        "ec2:DeleteVolume",
-        "ec2:DetachVolume"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "aws:ResourceTag/KubernetesCluster": "minimal.example.com"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": "*"
-    },
-    {
-      "Action": "ec2:CreateTags",
-      "Condition": {
-        "StringEquals": {
-          "ec2:CreateAction": [
-            "CreateVolume",
-            "CreateSnapshot"
-          ]
-        }
-      },
-      "Effect": "Allow",
-      "Resource": [
-        "arn:aws:ec2:*:*:volume/*",
-        "arn:aws:ec2:*:*:snapshot/*"
-      ]
-    },
-    {
-      "Action": "ec2:DeleteTags",
-      "Condition": {
-        "StringEquals": {
-          "ec2:ResourceTag/KubernetesCluster": "minimal.example.com"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": [
-        "arn:aws:ec2:*:*:volume/*",
-        "arn:aws:ec2:*:*:snapshot/*"
-      ]
-    },
-    {
-      "Action": [
-        "ec2:AttachVolume",
-        "ec2:DeleteVolume",
-        "ec2:DetachVolume",
-        "ec2:RevokeSecurityGroupIngress"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "ec2:ResourceTag/KubernetesCluster": "minimal.example.com"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": "*"
-    },
-    {
-      "Action": [
         "route53:ChangeResourceRecordSets",
         "route53:ListResourceRecordSets",
         "route53:GetHostedZone"
@@ -287,6 +203,74 @@
     {
       "Action": [
         "route53:ListHostedZones"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Action": "ec2:DescribeAvailabilityZones",
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Action": [
+        "ec2:AuthorizeSecurityGroupIngress",
+        "ec2:DeleteSecurityGroup",
+        "ec2:RevokeSecurityGroupIngress",
+        "elasticloadbalancing:ModifyTargetGroupAttributes",
+        "elasticloadbalancing:ModifyRule",
+        "elasticloadbalancing:DeleteRule",
+        "elasticloadbalancing:AddTags",
+        "elasticloadbalancing:RemoveTags"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/elbv2.k8s.aws/cluster": "minimal.example.com"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Action": [
+        "elasticloadbalancing:DescribeTags",
+        "elasticloadbalancing:DescribeTargetGroupAttributes",
+        "elasticloadbalancing:DescribeRules",
+        "elasticloadbalancing:DescribeTargetHealth",
+        "elasticloadbalancing:DescribeListenerCertificates",
+        "elasticloadbalancing:CreateRule"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Action": [
+        "autoscaling:SetDesiredCapacity",
+        "autoscaling:TerminateInstanceInAutoScalingGroup"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "autoscaling:ResourceTag/KubernetesCluster": "minimal.example.com"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Action": [
+        "autoscaling:DescribeAutoScalingGroups",
+        "autoscaling:DescribeAutoScalingInstances",
+        "autoscaling:DescribeLaunchConfigurations"
       ],
       "Effect": "Allow",
       "Resource": [
@@ -319,6 +303,29 @@
       "Effect": "Allow",
       "Resource": [
         "arn:aws:ec2:*:*:network-interface/*"
+      ]
+    },
+    {
+      "Action": [
+        "ec2:CreateSnapshot",
+        "ec2:DescribeAvailabilityZones",
+        "ec2:DescribeSnapshots"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Action": "ec2:DeleteSnapshot",
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/KubernetesCluster": "minimal.example.com"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "*"
       ]
     }
   ],
