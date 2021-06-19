@@ -104,11 +104,6 @@ func RunDeleteSecret(ctx context.Context, f *util.Factory, out io.Writer, option
 		return err
 	}
 
-	keyStore, err := clientset.KeyStore(cluster)
-	if err != nil {
-		return err
-	}
-
 	secretStore, err := clientset.SecretStore(cluster)
 	if err != nil {
 		return err
@@ -119,7 +114,7 @@ func RunDeleteSecret(ctx context.Context, f *util.Factory, out io.Writer, option
 		return err
 	}
 
-	secrets, err := listSecrets(keyStore, secretStore, sshCredentialStore, options.SecretType, []string{options.SecretName})
+	secrets, err := listSecrets(secretStore, sshCredentialStore, options.SecretType, []string{options.SecretName})
 	if err != nil {
 		return err
 	}
@@ -153,11 +148,6 @@ func RunDeleteSecret(ctx context.Context, f *util.Factory, out io.Writer, option
 			sshCredential.Spec.PublicKey = string(secrets[0].Data)
 		}
 		err = sshCredentialStore.DeleteSSHCredential(sshCredential)
-	default:
-		keyset := &kops.Keyset{}
-		keyset.Name = secrets[0].Name
-		keyset.Spec.Type = secrets[0].Type
-		err = keyStore.DeleteKeysetItem(keyset, secrets[0].ID)
 	}
 	if err != nil {
 		return fmt.Errorf("error deleting secret: %v", err)

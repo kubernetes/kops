@@ -27,7 +27,6 @@ import (
 	"text/tabwriter"
 
 	"github.com/spf13/cobra"
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubectl/pkg/util/i18n"
@@ -35,33 +34,32 @@ import (
 )
 
 var (
-	describeSecretLong = templates.LongDesc(i18n.T(`
-	Get additional information about cluster secrets.
+	describeKeypairLong = templates.LongDesc(i18n.T(`
+	Get additional information about keypairs.
 	`))
 
-	describeSecretExample = templates.Examples(i18n.T(`
-	# Describe a secret
-	kops describe secrets admin
+	describeKeypairExample = templates.Examples(i18n.T(`
+	# Describe a keypair
+	kops describe keypairs ca
 	`))
-	describeSecretShort = i18n.T(`Describe a cluster secret`)
+	describeKeypairShort = i18n.T(`Describe a cluster keypair`)
 )
 
-type DescribeSecretsCommand struct {
-	Type string
+type DescribeKeypairsCommand struct {
 }
 
-var describeSecretsCommand DescribeSecretsCommand
+var describeKeypairsCommand DescribeKeypairsCommand
 
 func init() {
 	cmd := &cobra.Command{
-		Use:     "secrets",
-		Aliases: []string{"secret"},
-		Short:   describeSecretShort,
-		Long:    describeSecretLong,
-		Example: describeSecretExample,
+		Use:     "keypairs",
+		Aliases: []string{"keypair"},
+		Short:   describeKeypairShort,
+		Long:    describeKeypairLong,
+		Example: describeKeypairExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := context.TODO()
-			err := describeSecretsCommand.Run(ctx, args)
+			err := describeKeypairsCommand.Run(ctx, args)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -69,11 +67,9 @@ func init() {
 	}
 
 	describeCmd.cobraCommand.AddCommand(cmd)
-
-	cmd.Flags().StringVarP(&describeSecretsCommand.Type, "type", "", "", "Filter by secret type")
 }
 
-func (c *DescribeSecretsCommand) Run(ctx context.Context, args []string) error {
+func (c *DescribeKeypairsCommand) Run(ctx context.Context, args []string) error {
 	cluster, err := rootCommand.Cluster(ctx)
 	if err != nil {
 		return err
@@ -89,23 +85,13 @@ func (c *DescribeSecretsCommand) Run(ctx context.Context, args []string) error {
 		return err
 	}
 
-	secretStore, err := clientset.SecretStore(cluster)
-	if err != nil {
-		return err
-	}
-
-	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
-	if err != nil {
-		return err
-	}
-
-	items, err := listSecrets(keyStore, secretStore, sshCredentialStore, c.Type, args)
+	items, err := listKeypairs(keyStore, args)
 	if err != nil {
 		return err
 	}
 
 	if len(items) == 0 {
-		fmt.Fprintf(os.Stderr, "No secrets found\n")
+		fmt.Fprintf(os.Stderr, "No keypairs found\n")
 
 		return nil
 	}
@@ -121,24 +107,9 @@ func (c *DescribeSecretsCommand) Run(ctx context.Context, args []string) error {
 		fmt.Fprintf(w, "Type:\t%s\n", i.Type)
 		fmt.Fprintf(w, "Id:\t%s\n", i.ID)
 
-		switch i.Type {
-		case kops.SecretTypeKeypair:
-			err = describeKeypair(keyStore, i, &b)
-			if err != nil {
-				return err
-			}
-
-		case SecretTypeSSHPublicKey:
-			err = describeSSHPublicKey(i, &b)
-			if err != nil {
-				return err
-			}
-
-		case kops.SecretTypeSecret:
-			err = describeSecret(i, &b)
-			if err != nil {
-				return err
-			}
+		err = describeKeypair(keyStore, i, &b)
+		if err != nil {
+			return err
 		}
 
 		b.WriteString("\n")
@@ -198,13 +169,5 @@ func describeKeypair(keyStore fi.CAStore, item *fi.KeystoreItem, w *bytes.Buffer
 		}
 	}
 
-	return nil
-}
-
-func describeSecret(item *fi.KeystoreItem, w *bytes.Buffer) error {
-	return nil
-}
-
-func describeSSHPublicKey(item *fi.KeystoreItem, w *bytes.Buffer) error {
 	return nil
 }

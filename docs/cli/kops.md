@@ -39,7 +39,7 @@ kOps is Kubernetes Operations.
 
 * [kops completion](kops_completion.md)	 - Output shell completion code for the given shell (bash or zsh).
 * [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
-* [kops delete](kops_delete.md)	 - Delete clusters,instancegroups, instances, or secrets.
+* [kops delete](kops_delete.md)	 - Delete clusters, instancegroups, instances, keypairs, or secrets.
 * [kops describe](kops_describe.md)	 - Describe a resource.
 * [kops edit](kops_edit.md)	 - Edit clusters and other resources.
 * [kops export](kops_export.md)	 - Export configuration.
