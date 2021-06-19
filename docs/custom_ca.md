@@ -17,7 +17,7 @@ The following procedure will allow you to override the CA when creating a cluste
 
 ```bash
 kops create -f cluster.yaml
-kops create secret keypair ca --cert ca.crt --key ca.key --name cluster-name.com
+kops create secret ca --primary --cert ca.crt --key ca.key --name cluster-name.com
 kops update cluster --yes
 ```
 
