@@ -94,9 +94,8 @@ type CAStore interface {
 	// FindCert returns the specified certificate, if it exists, or nil if not found
 	FindCert(name string) (*pki.Certificate, error)
 
-	// ListKeysets will return all the KeySets
-	// The key material is not guaranteed to be populated - metadata like the name will be.
-	ListKeysets() ([]*kops.Keyset, error)
+	// ListKeysets will return all the KeySets.
+	ListKeysets() (map[string]*Keyset, error)
 
 	// DeleteKeysetItem will delete the specified item from the Keyset
 	DeleteKeysetItem(item *kops.Keyset, id string) error

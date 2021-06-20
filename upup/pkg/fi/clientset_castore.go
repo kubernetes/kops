@@ -198,9 +198,9 @@ func (c *ClientsetCAStore) FindCertificatePool(name string) (*CertificatePool, e
 }
 
 // ListKeysets implements CAStore::ListKeysets
-func (c *ClientsetCAStore) ListKeysets() ([]*kops.Keyset, error) {
+func (c *ClientsetCAStore) ListKeysets() (map[string]*Keyset, error) {
 	ctx := context.TODO()
-	var items []*kops.Keyset
+	items := map[string]*Keyset{}
 
 	{
 		list, err := c.clientset.Keysets(c.namespace).List(ctx, metav1.ListOptions{})
@@ -212,7 +212,12 @@ func (c *ClientsetCAStore) ListKeysets() ([]*kops.Keyset, error) {
 			keyset := &list.Items[i]
 			switch keyset.Spec.Type {
 			case kops.SecretTypeKeypair:
-				items = append(items, &list.Items[i])
+				item, err := parseKeyset(keyset)
+				if err != nil {
+					return nil, fmt.Errorf("parsing keyset %q: %w", keyset.Name, err)
+				}
+
+				items[keyset.Name] = item
 
 			case kops.SecretTypeSecret:
 				continue // Ignore - this is handled by ClientsetSecretStore
@@ -470,8 +475,8 @@ func (c *ClientsetCAStore) MirrorTo(basedir vfs.Path) error {
 		return err
 	}
 
-	for _, keyset := range keysets {
-		if err := mirrorKeyset(c.cluster, basedir, keyset); err != nil {
+	for name, keyset := range keysets {
+		if err := mirrorKeyset(c.cluster, basedir, name, keyset); err != nil {
 			return err
 		}
 	}

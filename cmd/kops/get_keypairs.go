@@ -20,10 +20,10 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubectl/pkg/util/i18n"
@@ -60,7 +60,7 @@ func NewCmdGetKeypairs(f *util.Factory, out io.Writer, getOptions *GetOptions) *
 		Example: getKeypairExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := context.TODO()
-			err := RunGetKeypairs(ctx, &options, args)
+			err := RunGetKeypairs(ctx, out, &options, args)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -70,46 +70,51 @@ func NewCmdGetKeypairs(f *util.Factory, out io.Writer, getOptions *GetOptions) *
 	return cmd
 }
 
-func listKeypairs(keyStore fi.CAStore, names []string) ([]*fi.KeystoreItem, error) {
-	var items []*fi.KeystoreItem
+type keypairItem struct {
+	Name          string
+	Id            string
+	IsPrimary     bool
+	Certificate   *pki.Certificate
+	HasPrivateKey bool
+}
 
-	{
-		l, err := keyStore.ListKeysets()
-		if err != nil {
-			return nil, fmt.Errorf("error listing Keysets: %v", err)
-		}
+func listKeypairs(keyStore fi.CAStore, names []string) ([]*keypairItem, error) {
+	var items []*keypairItem
 
-		for _, keyset := range l {
-			for _, key := range keyset.Spec.Keys {
-				item := &fi.KeystoreItem{
-					Name: keyset.Name,
-					Type: keyset.Spec.Type,
-					ID:   key.Id,
-				}
-				items = append(items, item)
-			}
-		}
+	l, err := keyStore.ListKeysets()
+	if err != nil {
+		return nil, fmt.Errorf("error listing Keysets: %v", err)
 	}
 
-	if len(names) != 0 {
-		var matches []*fi.KeystoreItem
-		for _, arg := range names {
-			var found []*fi.KeystoreItem
-			for _, i := range items {
-				if i.Name == arg {
-					found = append(found, i)
+	for name, keyset := range l {
+		if len(names) != 0 {
+			found := false
+			for _, n := range names {
+				if n == name {
+					found = true
+					break
 				}
 			}
-
-			matches = append(matches, found...)
+			if !found {
+				continue
+			}
 		}
-		items = matches
+
+		for _, item := range keyset.Items {
+			items = append(items, &keypairItem{
+				Name:          name,
+				Id:            item.Id,
+				IsPrimary:     item.Id == keyset.Primary.Id,
+				Certificate:   item.Certificate,
+				HasPrivateKey: item.PrivateKey != nil,
+			})
+		}
 	}
 
 	return items, nil
 }
 
-func RunGetKeypairs(ctx context.Context, options *GetKeypairsOptions, args []string) error {
+func RunGetKeypairs(ctx context.Context, out io.Writer, options *GetKeypairsOptions, args []string) error {
 	cluster, err := rootCommand.Cluster(ctx)
 	if err != nil {
 		return err
@@ -136,18 +141,26 @@ func RunGetKeypairs(ctx context.Context, options *GetKeypairsOptions, args []str
 	switch options.output {
 
 	case OutputTable:
-
 		t := &tables.Table{}
-		t.AddColumn("NAME", func(i *fi.KeystoreItem) string {
+		t.AddColumn("NAME", func(i *keypairItem) string {
 			return i.Name
 		})
-		t.AddColumn("ID", func(i *fi.KeystoreItem) string {
-			return i.ID
+		t.AddColumn("ID", func(i *keypairItem) string {
+			return i.Id
 		})
-		t.AddColumn("TYPE", func(i *fi.KeystoreItem) string {
-			return string(i.Type)
+		t.AddColumn("PRIMARY", func(i *keypairItem) string {
+			if i.IsPrimary {
+				return "*"
+			}
+			return ""
 		})
-		return t.Render(items, os.Stdout, "TYPE", "NAME", "ID")
+		t.AddColumn("HASPRIVATE", func(i *keypairItem) string {
+			if i.HasPrivateKey {
+				return "*"
+			}
+			return ""
+		})
+		return t.Render(items, out, "NAME", "ID", "PRIMARY", "HASPRIVATE")
 
 	case OutputYaml:
 		return fmt.Errorf("yaml output format is not (currently) supported for keypairs")
