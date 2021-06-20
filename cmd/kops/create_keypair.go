@@ -37,47 +37,61 @@ import (
 )
 
 var (
-	createKeypairCaLong = templates.LongDesc(i18n.T(`
-	Add a cluster CA certificate and private key.
+	createKeypairLong = templates.LongDesc(i18n.T(`
+	Add a CA certificate and private key to a keyset.
     `))
 
-	createKeypairCaExample = templates.Examples(i18n.T(`
-	Add a cluster CA certificate and private key.
+	createKeypairExample = templates.Examples(i18n.T(`
+	Add a CA certificate and private key to a keyset.
 	kops create keypair ca \
 		--cert ~/ca.pem --key ~/ca-key.pem \
 		--name k8s-cluster.example.com --state s3://my-state-store
 	`))
 
-	createKeypairCaShort = i18n.T(`Add a cluster CA cert and key`)
+	createKeypairShort = i18n.T(`Add a CA certificate and private key to a keyset.`)
 )
 
-type CreateKeypairCaOptions struct {
+type CreateKeypairOptions struct {
 	ClusterName    string
+	Keyset         string
 	PrivateKeyPath string
 	CertPath       string
 	Primary        bool
 }
 
-// NewCmdCreateKeypairCa returns create ca certificate command
-func NewCmdCreateKeypairCa(f *util.Factory, out io.Writer) *cobra.Command {
-	options := &CreateKeypairCaOptions{}
+var keysetCommonNames = map[string]string{
+	"ca":              "kubernetes",
+	"service-account": "service-account",
+}
+
+// NewCmdCreateKeypair returns a create keypair command.
+func NewCmdCreateKeypair(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &CreateKeypairOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "ca",
-		Short:   createKeypairCaShort,
-		Long:    createKeypairCaLong,
-		Example: createKeypairCaExample,
+		Use:     "keypair KEYSET",
+		Short:   createKeypairShort,
+		Long:    createKeypairLong,
+		Example: createKeypairExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := context.TODO()
 
-			err := rootCommand.ProcessArgs(args)
-			if err != nil {
-				exitWithError(err)
-			}
-
 			options.ClusterName = rootCommand.ClusterName()
 
-			err = RunCreateKeypairCa(ctx, f, out, options)
+			if options.ClusterName == "" {
+				exitWithError(fmt.Errorf("--name is required"))
+				return
+			}
+
+			if len(args) == 0 {
+				exitWithError(fmt.Errorf("must specify name of keyset to add keypair to"))
+			}
+			if len(args) != 1 {
+				exitWithError(fmt.Errorf("can only add to one keyset at a time"))
+			}
+			options.Keyset = args[0]
+
+			err := RunCreateKeypair(ctx, f, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -86,13 +100,18 @@ func NewCmdCreateKeypairCa(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.CertPath, "cert", options.CertPath, "Path to CA certificate")
 	cmd.Flags().StringVar(&options.PrivateKeyPath, "key", options.PrivateKeyPath, "Path to CA private key")
-	cmd.Flags().BoolVar(&options.Primary, "primary", options.Primary, "Make the CA used to issue certificates")
+	cmd.Flags().BoolVar(&options.Primary, "primary", options.Primary, "Make the keypair the one used to issue certificates")
 
 	return cmd
 }
 
-// RunCreateKeypairCa adds a custom ca certificate and private key
-func RunCreateKeypairCa(ctx context.Context, f *util.Factory, out io.Writer, options *CreateKeypairCaOptions) error {
+// RunCreateKeypair adds a custom CA certificate and private key.
+func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, options *CreateKeypairOptions) error {
+	commonName := keysetCommonNames[options.Keyset]
+	if commonName == "" {
+		return fmt.Errorf("adding keypair to %q is not supported", options.Keyset)
+	}
+
 	cluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
 		return fmt.Errorf("error getting cluster: %q: %v", options.ClusterName, err)
@@ -133,7 +152,7 @@ func RunCreateKeypairCa(ctx context.Context, f *util.Factory, out io.Writer, opt
 
 		req := pki.IssueCertRequest{
 			Type:       "ca",
-			Subject:    pkix.Name{CommonName: "cn=kubernetes"},
+			Subject:    pkix.Name{CommonName: "cn=" + commonName},
 			Serial:     pki.BuildPKISerial(time.Now().UnixNano()),
 			PrivateKey: privateKey,
 		}
@@ -154,7 +173,7 @@ func RunCreateKeypairCa(ctx context.Context, f *util.Factory, out io.Writer, opt
 		}
 	}
 
-	keyset, err := keyStore.FindKeyset(fi.CertificateIDCA)
+	keyset, err := keyStore.FindKeyset(options.Keyset)
 	if os.IsNotExist(err) || (err == nil && keyset == nil) {
 		keyset = &fi.Keyset{
 			Items: map[string]*fi.KeysetItem{},
@@ -168,7 +187,7 @@ func RunCreateKeypairCa(ctx context.Context, f *util.Factory, out io.Writer, opt
 		return err
 	}
 
-	err = keyStore.StoreKeyset(fi.CertificateIDCA, keyset)
+	err = keyStore.StoreKeyset(options.Keyset, keyset)
 	if err != nil {
 		return fmt.Errorf("error storing user provided keys %q %q: %v", options.CertPath, options.PrivateKeyPath, err)
 	}
