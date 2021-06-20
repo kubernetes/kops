@@ -1,13 +1,19 @@
+Lifecycle: ""
 Name: master-a
 ---
+Lifecycle: ""
 Name: master-b
 ---
+Lifecycle: ""
 Name: master-c
 ---
+Lifecycle: ""
 Name: node-a
 ---
+Lifecycle: ""
 Name: node-b
 ---
+Lifecycle: ""
 Name: node-c
 ---
 ForAPIServer: false
@@ -118,6 +124,7 @@ ServerGroup:
   - anti-affinity
 UserData:
   task:
+    Lifecycle: ""
     Name: master-a
 ---
 AvailabilityZone: zone-2
@@ -187,6 +194,7 @@ ServerGroup:
   - anti-affinity
 UserData:
   task:
+    Lifecycle: ""
     Name: master-b
 ---
 AvailabilityZone: zone-3
@@ -256,6 +264,7 @@ ServerGroup:
   - anti-affinity
 UserData:
   task:
+    Lifecycle: ""
     Name: master-c
 ---
 AvailabilityZone: zone-1
@@ -328,6 +337,7 @@ ServerGroup:
   - anti-affinity
 UserData:
   task:
+    Lifecycle: ""
     Name: node-a
 ---
 AvailabilityZone: zone-2
@@ -400,6 +410,7 @@ ServerGroup:
   - anti-affinity
 UserData:
   task:
+    Lifecycle: ""
     Name: node-b
 ---
 AvailabilityZone: zone-3
@@ -472,6 +483,7 @@ ServerGroup:
   - anti-affinity
 UserData:
   task:
+    Lifecycle: ""
     Name: node-c
 ---
 Lifecycle: ""
@@ -540,6 +552,7 @@ Name: master-public-name-https
 Base: null
 Contents:
   task:
+    Lifecycle: ""
     Name: master-a
 Lifecycle: ""
 Location: igconfig/master/master-a/auxconfig.yaml
@@ -549,6 +562,7 @@ Public: null
 Base: null
 Contents:
   task:
+    Lifecycle: ""
     Name: master-b
 Lifecycle: ""
 Location: igconfig/master/master-b/auxconfig.yaml
@@ -558,6 +572,7 @@ Public: null
 Base: null
 Contents:
   task:
+    Lifecycle: ""
     Name: master-c
 Lifecycle: ""
 Location: igconfig/master/master-c/auxconfig.yaml
@@ -567,6 +582,7 @@ Public: null
 Base: null
 Contents:
   task:
+    Lifecycle: ""
     Name: node-a
 Lifecycle: ""
 Location: igconfig/node/node-a/auxconfig.yaml
@@ -576,6 +592,7 @@ Public: null
 Base: null
 Contents:
   task:
+    Lifecycle: ""
     Name: node-b
 Lifecycle: ""
 Location: igconfig/node/node-b/auxconfig.yaml
@@ -585,6 +602,7 @@ Public: null
 Base: null
 Contents:
   task:
+    Lifecycle: ""
     Name: node-c
 Lifecycle: ""
 Location: igconfig/node/node-c/auxconfig.yaml

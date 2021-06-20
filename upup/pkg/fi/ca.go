@@ -88,14 +88,8 @@ type CAStore interface {
 	// FindCertificatePool returns the named CertificatePool, or (nil,nil) if not found
 	FindCertificatePool(name string) (*CertificatePool, error)
 
-	// FindCertificateKeyset will return the keyset for a certificate
-	FindCertificateKeyset(name string) (*kops.Keyset, error)
-
 	// FindPrivateKey returns the named private key, or (nil,nil) if not found
 	FindPrivateKey(name string) (*pki.PrivateKey, error)
-
-	// FindPrivateKeyset will return the keyset for a private key
-	FindPrivateKeyset(name string) (*kops.Keyset, error)
 
 	// FindCert returns the specified certificate, if it exists, or nil if not found
 	FindCert(name string) (*pki.Certificate, error)
@@ -188,6 +182,27 @@ func KeysetItemIdOlder(a, b string) bool {
 		}
 		return a < b
 	}
+}
+
+func (k *Keyset) ToCertificateBytes() ([]byte, error) {
+	keys := make([]string, 0, len(k.Items))
+	for k := range k.Items {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return KeysetItemIdOlder(k.Items[keys[i]].Id, k.Items[keys[j]].Id)
+	})
+
+	buf := new(bytes.Buffer)
+	for _, key := range keys {
+		item := k.Items[key]
+		certificate, err := item.Certificate.AsBytes()
+		if err != nil {
+			return nil, fmt.Errorf("public key %s: %v", item.Id, err)
+		}
+		buf.Write(certificate)
+	}
+	return buf.Bytes(), nil
 }
 
 func (k *Keyset) ToPublicKeyBytes() ([]byte, error) {

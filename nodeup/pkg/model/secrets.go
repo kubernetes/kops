@@ -49,10 +49,13 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("KeyStore not set")
 	}
 
-	// @step: retrieve the platform ca
-	if err := b.BuildCertificateTask(c, fi.CertificateIDCA, "ca.crt", nil); err != nil {
-		return err
-	}
+	// @step: write out the platform ca
+	c.AddTask(&nodetasks.File{
+		Path:     filepath.Join(b.PathSrvKubernetes(), "ca.crt"),
+		Contents: fi.NewStringResource(b.NodeupConfig.CAs[fi.CertificateIDCA]),
+		Type:     nodetasks.FileType_File,
+		Mode:     s("0600"),
+	})
 
 	// Write out docker auth secret, if exists
 	if b.SecretStore != nil {

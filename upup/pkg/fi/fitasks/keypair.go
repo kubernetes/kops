@@ -45,8 +45,8 @@ type Keypair struct {
 	// LegacyFormat is whether the keypair is stored in a legacy format.
 	LegacyFormat bool `json:"oldFormat"`
 
-	certificate *fi.TaskDependentResource
-	keyset      *fi.Keyset
+	certificates *fi.TaskDependentResource
+	keyset       *fi.Keyset
 }
 
 var _ fi.HasCheckExisting = &Keypair{}
@@ -303,19 +303,19 @@ func parsePkixName(s string) (*pkix.Name, error) {
 }
 
 func (e *Keypair) ensureResources() {
-	if e.certificate == nil {
-		e.certificate = &fi.TaskDependentResource{Task: e}
+	if e.certificates == nil {
+		e.certificates = &fi.TaskDependentResource{Task: e}
 	}
 }
 
 func (e *Keypair) setResources(keyset *fi.Keyset) error {
 	e.ensureResources()
 
-	s, err := keyset.Primary.Certificate.AsString()
+	s, err := keyset.ToCertificateBytes()
 	if err != nil {
 		return err
 	}
-	e.certificate.Resource = fi.NewStringResource(s)
+	e.certificates.Resource = fi.NewBytesResource(s)
 
 	e.keyset = keyset
 	return nil
@@ -325,7 +325,7 @@ func (e *Keypair) Keyset() *fi.Keyset {
 	return e.keyset
 }
 
-func (e *Keypair) Certificate() fi.Resource {
+func (e *Keypair) Certificates() *fi.TaskDependentResource {
 	e.ensureResources()
-	return e.certificate
+	return e.certificates
 }
