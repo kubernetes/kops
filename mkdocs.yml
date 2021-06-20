@@ -80,7 +80,6 @@ nav:
     - Instancegroup images: "operations/images.md"
     - Cluster configuration management: "changing_configuration.md"
     - Cluster Templating: "operations/cluster_template.md"
-    - Cluster upgrades and migrations: "operations/cluster_upgrades_and_migrations.md"
     - GPU setup: "gpu.md"
     - Label management: "labels.md"
     - Secret management: "secrets.md"

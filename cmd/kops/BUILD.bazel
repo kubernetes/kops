@@ -36,8 +36,6 @@ go_library(
         "get_instances.go",
         "get_keypairs.go",
         "get_secrets.go",
-        "import.go",
-        "import_cluster.go",
         "main.go",
         "replace.go",
         "rollingupdate.go",
