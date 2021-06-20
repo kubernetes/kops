@@ -48,7 +48,7 @@ func newKeystore(basePath string, cas []string) (pki.Keystore, error) {
 		keys: map[string]keystoreEntry{},
 	}
 	for _, name := range cas {
-		certBytes, err := ioutil.ReadFile(path.Join(basePath, name+".pem"))
+		certBytes, err := ioutil.ReadFile(path.Join(basePath, name+".crt"))
 		if err != nil {
 			return nil, fmt.Errorf("reading %q certificate: %v", name, err)
 		}
@@ -57,7 +57,7 @@ func newKeystore(basePath string, cas []string) (pki.Keystore, error) {
 			return nil, fmt.Errorf("parsing %q certificate: %v", name, err)
 		}
 
-		keyBytes, err := ioutil.ReadFile(path.Join(basePath, name+"-key.pem"))
+		keyBytes, err := ioutil.ReadFile(path.Join(basePath, name+".key"))
 		if err != nil {
 			return nil, fmt.Errorf("reading %q key: %v", name, err)
 		}

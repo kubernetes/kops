@@ -37,7 +37,12 @@ type fakeCAStore struct {
 var _ fi.CAStore = &fakeCAStore{}
 
 func (k fakeCAStore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
-	panic("fakeCAStore does not implement FindPrimaryKeypair")
+	keyset, err := k.FindKeyset(name)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return keyset.Primary.Certificate, keyset.Primary.PrivateKey, nil
 }
 
 func (k fakeCAStore) FindKeyset(name string) (*fi.Keyset, error) {
@@ -94,10 +99,6 @@ func (k fakeCAStore) FindCertificatePool(name string) (*fi.CertificatePool, erro
 	panic("fakeCAStore does not implement FindCertificatePool")
 }
 
-func (k fakeCAStore) FindCertificateKeyset(name string) (*kops.Keyset, error) {
-	panic("fakeCAStore does not implement FindCertificateKeyset")
-}
-
 func (k fakeCAStore) FindPrivateKey(name string) (*pki.PrivateKey, error) {
 	primaryId := k.privateKeysets[name].Spec.PrimaryId
 	for _, item := range k.privateKeysets[name].Spec.Keys {
@@ -106,10 +107,6 @@ func (k fakeCAStore) FindPrivateKey(name string) (*pki.PrivateKey, error) {
 		}
 	}
 	return nil, nil
-}
-
-func (k fakeCAStore) FindPrivateKeyset(name string) (*kops.Keyset, error) {
-	return k.privateKeysets[name], nil
 }
 
 func (k fakeCAStore) FindCert(name string) (*pki.Certificate, error) {
