@@ -18,7 +18,6 @@ package kutil
 
 import (
 	"fmt"
-	"io/ioutil"
 
 	"golang.org/x/crypto/ssh"
 	"k8s.io/kops/util/pkg/vfs"
@@ -37,15 +36,6 @@ func (m *NodeSSH) Root() (*vfs.SSHPath, error) {
 	}
 	sudo := true
 	return vfs.NewSSHPath(client, m.Hostname, "/", sudo), nil
-}
-
-func AddSSHIdentity(sshConfig *ssh.ClientConfig, p string) error {
-	a, err := parsePrivateKeyFile(p)
-	if err != nil {
-		return err
-	}
-	sshConfig.Auth = append(sshConfig.Auth, a)
-	return nil
 }
 
 func (m *NodeSSH) dial() (*ssh.Client, error) {
@@ -104,16 +94,3 @@ func (m *NodeSSH) GetSSHClient() (*ssh.Client, error) {
 //	}
 //	return b, nil
 //}
-
-func parsePrivateKeyFile(p string) (ssh.AuthMethod, error) {
-	buffer, err := ioutil.ReadFile(p)
-	if err != nil {
-		return nil, fmt.Errorf("error reading SSH key file %q: %v", p, err)
-	}
-
-	key, err := ssh.ParsePrivateKey(buffer)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing key file %q: %v", p, err)
-	}
-	return ssh.PublicKeys(key), nil
-}

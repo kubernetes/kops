@@ -95,10 +95,6 @@ func (k fakeCAStore) MirrorTo(basedir vfs.Path) error {
 	panic("fakeCAStore does not implement MirrorTo")
 }
 
-func (k fakeCAStore) FindCertificatePool(name string) (*fi.CertificatePool, error) {
-	panic("fakeCAStore does not implement FindCertificatePool")
-}
-
 func (k fakeCAStore) FindPrivateKey(name string) (*pki.PrivateKey, error) {
 	primaryId := k.privateKeysets[name].Spec.PrimaryId
 	for _, item := range k.privateKeysets[name].Spec.Keys {

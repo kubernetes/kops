@@ -63,16 +63,6 @@ func (s *configserverKeyStore) MirrorTo(basedir vfs.Path) error {
 	return fmt.Errorf("MirrorTo not supported by configserverKeyStore")
 }
 
-// CertificatePool implements fi.CAStore
-func (s *configserverKeyStore) CertificatePool(name string, createIfMissing bool) (*fi.CertificatePool, error) {
-	return nil, fmt.Errorf("CertificatePool not supported by configserverKeyStore")
-}
-
-// FindCertificatePool implements fi.CAStore
-func (s *configserverKeyStore) FindCertificatePool(name string) (*fi.CertificatePool, error) {
-	return nil, fmt.Errorf("FindCertificatePool not supported by configserverKeyStore")
-}
-
 // FindPrivateKey implements fi.CAStore
 func (s *configserverKeyStore) FindPrivateKey(name string) (*pki.PrivateKey, error) {
 	return nil, fmt.Errorf("FindPrivateKey not supported by configserverKeyStore")
