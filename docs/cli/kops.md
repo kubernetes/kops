@@ -44,7 +44,6 @@ kOps is Kubernetes Operations.
 * [kops edit](kops_edit.md)	 - Edit clusters and other resources.
 * [kops export](kops_export.md)	 - Export configuration.
 * [kops get](kops_get.md)	 - Get one or many resources.
-* [kops import](kops_import.md)	 - Import a cluster.
 * [kops replace](kops_replace.md)	 - Replace cluster resources.
 * [kops rolling-update](kops_rolling-update.md)	 - Rolling update a cluster.
 * [kops set](kops_set.md)	 - Set fields on clusters and other resources.
