@@ -37,6 +37,7 @@ import (
 	"time"
 
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/jsonutils"
 	"k8s.io/kops/pkg/pki"
@@ -530,7 +531,11 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 					break
 				}
 			}
-			t.Fatalf("unexpected data files.  actual=%q, expected=%q", actualDataFilenames, expectedDataFilenames)
+			actual := strings.Join(actualDataFilenames, "\n")
+			expected := strings.Join(expectedDataFilenames, "\n")
+			diff := diff.FormatDiff(actual, expected)
+			t.Log(diff)
+			t.Fatal("unexpected data files.")
 		}
 
 		// Some tests might provide _some_ tf data files (not necessarily all that
