@@ -80,38 +80,19 @@ func NewCmdGetSecrets(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 	return cmd
 }
 
-func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, sshCredentialStore fi.SSHCredentialStore, secretType string, names []string) ([]*fi.KeystoreItem, error) {
+func listSecrets(secretStore fi.SecretStore, sshCredentialStore fi.SSHCredentialStore, secretType string, names []string) ([]*fi.KeystoreItem, error) {
 	var items []*fi.KeystoreItem
 
 	findType := strings.ToLower(secretType)
 	switch findType {
 	case "":
 	// OK
-	case "sshpublickey", "keypair", "secret":
+	case "sshpublickey", "secret":
 	// OK
+	case "keypair":
+		return nil, fmt.Errorf("use 'kops get keypairs %s' instead", secretType)
 	default:
 		return nil, fmt.Errorf("unknown secret type %q", secretType)
-	}
-
-	{
-		l, err := keyStore.ListKeysets()
-		if err != nil {
-			return nil, fmt.Errorf("error listing Keysets: %v", err)
-		}
-
-		for _, keyset := range l {
-			if findType != "" && findType != strings.ToLower(string(keyset.Spec.Type)) {
-				continue
-			}
-			for _, key := range keyset.Spec.Keys {
-				item := &fi.KeystoreItem{
-					Name: keyset.Name,
-					Type: keyset.Spec.Type,
-					ID:   key.Id,
-				}
-				items = append(items, item)
-			}
-		}
 	}
 
 	if findType == "" || findType == strings.ToLower(string(kops.SecretTypeSecret)) {
@@ -194,11 +175,6 @@ func RunGetSecrets(ctx context.Context, options *GetSecretsOptions, args []strin
 		return err
 	}
 
-	keyStore, err := clientset.KeyStore(cluster)
-	if err != nil {
-		return err
-	}
-
 	secretStore, err := clientset.SecretStore(cluster)
 	if err != nil {
 		return err
@@ -209,7 +185,7 @@ func RunGetSecrets(ctx context.Context, options *GetSecretsOptions, args []strin
 		return err
 	}
 
-	items, err := listSecrets(keyStore, secretStore, sshCredentialStore, options.Type, args)
+	items, err := listSecrets(secretStore, sshCredentialStore, options.Type, args)
 	if err != nil {
 		return err
 	}
