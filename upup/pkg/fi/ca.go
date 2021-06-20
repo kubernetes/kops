@@ -228,6 +228,19 @@ func (k *Keyset) ToPublicKeyBytes() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// NewKeyset creates a Keyset.
+func NewKeyset(cert *pki.Certificate, privateKey *pki.PrivateKey) (*Keyset, error) {
+	keyset := &Keyset{
+		Items: map[string]*KeysetItem{},
+	}
+	err := keyset.AddItem(cert, privateKey, true)
+	if err != nil {
+		return nil, err
+	}
+
+	return keyset, nil
+}
+
 // AddItem adds an item to the keyset
 func (k *Keyset) AddItem(cert *pki.Certificate, privateKey *pki.PrivateKey, primary bool) error {
 	if cert == nil {
