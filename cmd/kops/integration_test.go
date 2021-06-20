@@ -189,6 +189,11 @@ func TestMinimalIPv6(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6").runTestCloudformation(t)
 }
 
+// TestMinimalWarmPool runs the test on a minimum Warm Pool configuration
+func TestMinimalWarmPool(t *testing.T) {
+	newIntegrationTest("minimal-warmpool.example.com", "minimal-warmpool").runTestTerraformAWS(t)
+}
+
 // TestMinimalEtcd runs the test on a minimum configuration using custom etcd config, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimalEtcd(t *testing.T) {
 	newIntegrationTest("minimal-etcd.example.com", "minimal-etcd").runTestCloudformation(t)
