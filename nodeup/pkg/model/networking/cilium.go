@@ -53,10 +53,6 @@ func (b *CiliumBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
-	image := "quay.io/cilium/cilium:" + cilium.Version
-
-	b.WarmPullImage(c, image)
-
 	return nil
 
 }
