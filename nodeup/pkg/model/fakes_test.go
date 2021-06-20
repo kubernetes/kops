@@ -113,7 +113,7 @@ func (k fakeCAStore) FindCert(name string) (*pki.Certificate, error) {
 	return k.certs[name], nil
 }
 
-func (k fakeCAStore) ListKeysets() ([]*kops.Keyset, error) {
+func (k fakeCAStore) ListKeysets() (map[string]*fi.Keyset, error) {
 	panic("fakeCAStore does not implement ListKeysets")
 }
 
