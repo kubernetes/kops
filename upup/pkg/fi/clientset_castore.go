@@ -172,31 +172,6 @@ func (c *ClientsetCAStore) FindCert(name string) (*pki.Certificate, error) {
 	return nil, nil
 }
 
-// FindCertificatePool implements CAStore::FindCertificatePool
-func (c *ClientsetCAStore) FindCertificatePool(name string) (*CertificatePool, error) {
-	ctx := context.TODO()
-	keyset, err := c.loadKeyset(ctx, name)
-	if err != nil {
-		return nil, err
-	}
-
-	pool := &CertificatePool{}
-
-	if keyset != nil {
-		if keyset.Primary != nil {
-			pool.Primary = keyset.Primary.Certificate
-		}
-
-		for id, item := range keyset.Items {
-			if id == keyset.Primary.Id {
-				continue
-			}
-			pool.Secondary = append(pool.Secondary, item.Certificate)
-		}
-	}
-	return pool, nil
-}
-
 // ListKeysets implements CAStore::ListKeysets
 func (c *ClientsetCAStore) ListKeysets() (map[string]*Keyset, error) {
 	ctx := context.TODO()

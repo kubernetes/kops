@@ -85,9 +85,6 @@ type HasVFSPath interface {
 type CAStore interface {
 	Keystore
 
-	// FindCertificatePool returns the named CertificatePool, or (nil,nil) if not found
-	FindCertificatePool(name string) (*CertificatePool, error)
-
 	// FindPrivateKey returns the named private key, or (nil,nil) if not found
 	FindPrivateKey(name string) (*pki.PrivateKey, error)
 
@@ -114,44 +111,6 @@ type SSHCredentialStore interface {
 
 	// FindSSHPublicKeys retrieves the SSH public keys with the specific name
 	FindSSHPublicKeys(name string) ([]*kops.SSHCredential, error)
-}
-
-type CertificatePool struct {
-	Secondary []*pki.Certificate
-	Primary   *pki.Certificate
-}
-
-func (c *CertificatePool) All() []*pki.Certificate {
-	var certs []*pki.Certificate
-	if c.Primary != nil {
-		certs = append(certs, c.Primary)
-	}
-	if len(c.Secondary) != 0 {
-		certs = append(certs, c.Secondary...)
-	}
-	return certs
-}
-
-func (c *CertificatePool) AsString() (string, error) {
-	// Nicer behaviour because this is called from templates
-	if c == nil {
-		return "", fmt.Errorf("AsString called on nil CertificatePool")
-	}
-
-	var data bytes.Buffer
-	if c.Primary != nil {
-		_, err := c.Primary.WriteTo(&data)
-		if err != nil {
-			return "", fmt.Errorf("error writing SSL certificate: %v", err)
-		}
-	}
-	for _, cert := range c.Secondary {
-		_, err := cert.WriteTo(&data)
-		if err != nil {
-			return "", fmt.Errorf("error writing SSL certificate: %v", err)
-		}
-	}
-	return data.String(), nil
 }
 
 // FindPrimaryKeypair is a common implementation of pki.FindPrimaryKeypair.

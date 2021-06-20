@@ -95,7 +95,7 @@ func (c *UpgradeClusterCmd) Run(ctx context.Context, args []string) error {
 	}
 
 	if cluster.ObjectMeta.Annotations[kopsapi.AnnotationNameManagement] == kopsapi.AnnotationValueManagementImported {
-		return fmt.Errorf("upgrade is not for use with imported clusters (did you mean `kops toolbox convert-imported`?)")
+		return fmt.Errorf("upgrade is not for use with imported clusters.)")
 	}
 
 	channelLocation := c.Channel

@@ -63,7 +63,6 @@ For a better viewing experience please check out our live documentation site at 
     * how to use other image for cluster nodes, and information on available/tested images
 * [`k8s` upgrading](operations/updates_and_upgrades.md#upgrading-kubernetes)
 * [`kops` updating](operations/updates_and_upgrades.md#updating-kops)
-* [`kube-up` to `kops` upgrade](upgrade_from_kubeup.md)
 * [Label management](labels.md)
     * for cluster nodes
 * [Secret management](secrets.md)
