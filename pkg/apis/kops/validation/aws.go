@@ -41,20 +41,25 @@ func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 		}
 	}
 
-	allErrs = append(allErrs, awsValidateExternalCloudControllerManager(c.Spec)...)
+	allErrs = append(allErrs, awsValidateExternalCloudControllerManager(c)...)
 
 	return allErrs
 }
 
-func awsValidateExternalCloudControllerManager(c kops.ClusterSpec) (allErrs field.ErrorList) {
+func awsValidateExternalCloudControllerManager(cluster *kops.Cluster) (allErrs field.ErrorList) {
+	c := cluster.Spec
 
-	if c.ExternalCloudControllerManager != nil {
-		if c.KubeControllerManager == nil || c.KubeControllerManager.ExternalCloudVolumePlugin != "aws" {
-			if c.CloudConfig == nil || c.CloudConfig.AWSEBSCSIDriver == nil || !fi.BoolValue(c.CloudConfig.AWSEBSCSIDriver.Enabled) {
-				allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "externalCloudControllerManager"),
-					"AWS external CCM cannot be used without enabling spec.cloudConfig.AWSEBSCSIDriver or setting spec.kubeControllerManaager.externalCloudVolumePlugin set to `aws`"))
-			}
-		}
+	if c.ExternalCloudControllerManager == nil {
+		return allErrs
+	}
+	fldPath := field.NewPath("spec", "externalCloudControllerManager")
+	if !cluster.IsKubernetesGTE("1.18") {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "AWS external CCM requires kubernetes 1.18+"))
+	}
+
+	if !hasAWSEBSCSIDriver(c) {
+		allErrs = append(allErrs, field.Forbidden(fldPath,
+			"AWS external CCM cannot be used without enabling spec.cloudConfig.AWSEBSCSIDriver."))
 	}
 	return allErrs
 
@@ -295,4 +300,13 @@ func awsValidateCPUCredits(fieldPath *field.Path, spec *kops.InstanceGroupSpec, 
 
 	allErrs = append(allErrs, IsValidValue(fieldPath.Child("cpuCredits"), spec.CPUCredits, []string{"standard", "unlimited"})...)
 	return allErrs
+}
+
+func hasAWSEBSCSIDriver(c kops.ClusterSpec) bool {
+	// AWSEBSCSIDriver will have a default value, so if this is all false, it will be populated on next pass
+	if c.CloudConfig == nil || c.CloudConfig.AWSEBSCSIDriver == nil || c.CloudConfig.AWSEBSCSIDriver.Enabled == nil {
+		return true
+	}
+
+	return *c.CloudConfig.AWSEBSCSIDriver.Enabled
 }
