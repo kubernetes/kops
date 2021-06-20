@@ -197,19 +197,6 @@ func (c *ClientsetCAStore) FindCertificatePool(name string) (*CertificatePool, e
 	return pool, nil
 }
 
-// FindCertificateKeyset implements CAStore::FindCertificateKeyset
-func (c *ClientsetCAStore) FindCertificateKeyset(name string) (*kops.Keyset, error) {
-	ctx := context.TODO()
-	o, err := c.clientset.Keysets(c.namespace).Get(ctx, name, metav1.GetOptions{})
-	if err != nil {
-		if errors.IsNotFound(err) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("error reading keyset %q: %v", name, err)
-	}
-	return o, nil
-}
-
 // ListKeysets implements CAStore::ListKeysets
 func (c *ClientsetCAStore) ListKeysets() ([]*kops.Keyset, error) {
 	ctx := context.TODO()
@@ -276,19 +263,6 @@ func (c *ClientsetCAStore) FindPrivateKey(name string) (*pki.PrivateKey, error) 
 		return keyset.Primary.PrivateKey, nil
 	}
 	return nil, nil
-}
-
-// FindPrivateKeyset implements CAStore::FindPrivateKeyset
-func (c *ClientsetCAStore) FindPrivateKeyset(name string) (*kops.Keyset, error) {
-	ctx := context.TODO()
-	o, err := c.clientset.Keysets(c.namespace).Get(ctx, name, metav1.GetOptions{})
-	if err != nil {
-		if errors.IsNotFound(err) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("error reading keyset %q: %v", name, err)
-	}
-	return o, nil
 }
 
 // storeKeyset saves the specified keyset to the registry.

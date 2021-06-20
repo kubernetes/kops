@@ -1,3 +1,4 @@
+Lifecycle: ""
 Name: node
 ---
 AvailabilityZone: zone-1
@@ -64,6 +65,7 @@ ServerGroup:
   - soft-anti-affinity
 UserData:
   task:
+    Lifecycle: ""
     Name: node
 ---
 Lifecycle: ""
@@ -77,6 +79,7 @@ type: ca
 Base: null
 Contents:
   task:
+    Lifecycle: ""
     Name: node
 Lifecycle: ""
 Location: igconfig/node/node/auxconfig.yaml

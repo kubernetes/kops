@@ -157,6 +157,7 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 AuxConfigHash: /0fgYG0lsuxVGuNdtGBZA0RYxOfvLD/xOFg1eJwyfcw=
+CAs: {}
 CloudProvider: ""
 InstanceGroupRole: Node
 KubeletConfig:

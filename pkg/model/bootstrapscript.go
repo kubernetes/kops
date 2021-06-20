@@ -43,7 +43,7 @@ import (
 )
 
 type NodeUpConfigBuilder interface {
-	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, ca fi.Resource) (*nodeup.Config, *nodeup.AuxConfig, error)
+	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caCertificates fi.Resource) (*nodeup.Config, *nodeup.AuxConfig, error)
 }
 
 // BootstrapScriptBuilder creates the bootstrap script
@@ -54,18 +54,16 @@ type BootstrapScriptBuilder struct {
 }
 
 type BootstrapScript struct {
-	Name     string
-	ig       *kops.InstanceGroup
-	builder  *BootstrapScriptBuilder
-	resource fi.TaskDependentResource
+	Name      string
+	Lifecycle fi.Lifecycle
+	ig        *kops.InstanceGroup
+	builder   *BootstrapScriptBuilder
+	resource  fi.TaskDependentResource
 	// alternateNameTasks are tasks that contribute api-server IP addresses.
 	alternateNameTasks []fi.HasAddress
 
-	// ca holds the CA certificate
-	ca fi.Resource
-
 	// caTask holds the CA task, for dependency analysis.
-	caTask fi.Task
+	caTask *fitasks.Keypair
 
 	// auxConfig contains the nodeup auxiliary config.
 	auxConfig fi.TaskDependentResource
@@ -76,7 +74,7 @@ var _ fi.HasName = &BootstrapScript{}
 var _ fi.HasDependencies = &BootstrapScript{}
 
 // kubeEnv returns the nodeup config for the instance group
-func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context, ca fi.Resource) (string, error) {
+func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (string, error) {
 	var alternateNames []string
 
 	for _, hasAddress := range b.alternateNameTasks {
@@ -93,7 +91,7 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context, ca fi.R
 	}
 
 	sort.Strings(alternateNames)
-	config, auxConfig, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames, ca)
+	config, auxConfig, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames, b.caTask.Certificates())
 	if err != nil {
 		return "", err
 	}
@@ -227,12 +225,11 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 	}
 
 	task := &BootstrapScript{
-		Name:    ig.Name,
-		ig:      ig,
-		builder: b,
-		caTask:  caTask,
-		// TODO: use caTask.Keyset() and expose all CA certificates
-		ca: caTask.Certificate(),
+		Name:      ig.Name,
+		Lifecycle: b.Lifecycle,
+		ig:        ig,
+		builder:   b,
+		caTask:    caTask,
 	}
 	task.resource.Task = task
 	task.auxConfig.Task = task
@@ -267,7 +264,11 @@ func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 }
 
 func (b *BootstrapScript) Run(c *fi.Context) error {
-	config, err := b.kubeEnv(b.ig, c, b.ca)
+	if b.Lifecycle == fi.LifecycleIgnore {
+		return nil
+	}
+
+	config, err := b.kubeEnv(b.ig, c)
 	if err != nil {
 		return err
 	}

@@ -167,6 +167,29 @@ Assets:
   - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
   - be8c9a5a06ebec8fb1d36e867cd00fb5777746a9812a0cae2966778ff899c525@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.7.tgz
 AuxConfigHash: /O5IS/dGo83lv2DbWn4k91OYfuOqtO79vjf5pD1DQlI=
+CAs:
+  ca: |
+    -----BEGIN CERTIFICATE-----
+    MIIBZzCCARGgAwIBAgIBBDANBgkqhkiG9w0BAQsFADAaMRgwFgYDVQQDEw9zZXJ2
+    aWNlLWFjY291bnQwHhcNMjEwNTAyMjAzMjE3WhcNMzEwNTAyMjAzMjE3WjAaMRgw
+    FgYDVQQDEw9zZXJ2aWNlLWFjY291bnQwXDANBgkqhkiG9w0BAQEFAANLADBIAkEA
+    o4Tridlsf4Yz3UAiup/scSTiG/OqxkUW3Fz7zGKvVcLeYj9GEIKuzoB1VFk1nboD
+    q4cCuGLfdzaQdCQKPIsDuwIDAQABo0IwQDAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0T
+    AQH/BAUwAwEB/zAdBgNVHQ4EFgQUhPbxEmUbwVOCa+fZgxreFhf67UEwDQYJKoZI
+    hvcNAQELBQADQQALMsyK2Q7C/bk27eCvXyZKUfrLvor10hEjwGhv14zsKWDeTj/J
+    A1LPYp7U9VtFfgFOkVbkLE9Rstc0ltNrPqxA
+    -----END CERTIFICATE-----
+    -----BEGIN CERTIFICATE-----
+    MIIBkTCCATugAwIBAgIUCpH+vP36aaPhoMAXYKNtGDRpO+0wDQYJKoZIhvcNAQEL
+    BQAwFTETMBEGA1UEAwwKa3ViZXJuZXRlczAeFw0yMDA5MTIyMDE3MjhaFw0zMDA5
+    MTAyMDE3MjhaMBUxEzARBgNVBAMMCmt1YmVybmV0ZXMwXDANBgkqhkiG9w0BAQEF
+    AANLADBIAkEA4WWjrM1cq9lYsgmBYOZyjDaVYwCgb1zW4Bf5FMbWiWNuMjHPlVW2
+    z17Q5ecKd0viUtF0A8/rrg3y7Lm0N3lIVwIDAQABo2MwYTAdBgNVHQ4EFgQU1d6Y
+    G7ISO0T1baFPjv6ecnRFtJkwHwYDVR0jBBgwFoAU1d6YG7ISO0T1baFPjv6ecnRF
+    tJkwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwDQYJKoZIhvcNAQEL
+    BQADQQBG1IGyIUyg1/1JcqJv97CQdu2N+J/Ktgw7NIDsGwvYp4OW0y3mXSxWoIFk
+    8l05a0McT3dLZawJ9VzpxMzJS4pG
+    -----END CERTIFICATE-----
 CloudProvider: aws
 ClusterName: minimal-json.example.com
 ConfigBase: memfs://clusters.example.com/minimal-json.example.com
