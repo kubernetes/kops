@@ -3,16 +3,20 @@
 
 ## kops create keypair
 
-Create a keypair.
+Add a CA certificate and private key to a keyset.
 
 ### Synopsis
 
-Create a keypair
+Add a CA certificate and private key to a keyset.
+
+```
+kops create keypair KEYSET [flags]
+```
 
 ### Examples
 
 ```
-  Add a cluster CA certificate and private key.
+  Add a CA certificate and private key to a keyset.
   kops create keypair ca \
   --cert ~/ca.pem --key ~/ca-key.pem \
   --name k8s-cluster.example.com --state s3://my-state-store
@@ -21,7 +25,10 @@ Create a keypair
 ### Options
 
 ```
-  -h, --help   help for keypair
+      --cert string   Path to CA certificate
+  -h, --help          help for keypair
+      --key string    Path to CA private key
+      --primary       Make the keypair the one used to issue certificates
 ```
 
 ### Options inherited from parent commands
@@ -48,5 +55,4 @@ Create a keypair
 ### SEE ALSO
 
 * [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
-* [kops create keypair ca](kops_create_keypair_ca.md)	 - Add a cluster CA cert and key
 
