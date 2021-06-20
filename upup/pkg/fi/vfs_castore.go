@@ -279,36 +279,6 @@ func (c *VFSCAStore) FindCert(name string) (*pki.Certificate, error) {
 	return cert, err
 }
 
-func (c *VFSCAStore) FindCertificatePool(name string) (*CertificatePool, error) {
-	var certs *Keyset
-
-	var err error
-	p := c.buildCertificatePoolPath(name)
-	certs, err = c.loadKeyset(p)
-	if err != nil {
-		return nil, fmt.Errorf("error in 'FindCertificatePool' attempting to load cert %q: %v", name, err)
-	}
-
-	pool := &CertificatePool{}
-
-	if certs != nil {
-		if certs.Primary != nil {
-			pool.Primary = certs.Primary.Certificate
-		}
-
-		for k, cert := range certs.Items {
-			if certs.Primary != nil && k == certs.Primary.Id {
-				continue
-			}
-			if cert.Certificate == nil {
-				continue
-			}
-			pool.Secondary = append(pool.Secondary, cert.Certificate)
-		}
-	}
-	return pool, nil
-}
-
 // ListKeysets implements CAStore::ListKeysets
 func (c *VFSCAStore) ListKeysets() (map[string]*Keyset, error) {
 	baseDir := c.basedir.Join("private")
