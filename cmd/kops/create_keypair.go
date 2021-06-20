@@ -175,14 +175,16 @@ func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 
 	keyset, err := keyStore.FindKeyset(options.Keyset)
 	if os.IsNotExist(err) || (err == nil && keyset == nil) {
-		keyset = &fi.Keyset{
-			Items: map[string]*fi.KeysetItem{},
+		if options.Primary {
+			keyset, err = fi.NewKeyset(cert, privateKey)
+		} else {
+			return fmt.Errorf("the first keypair added to a keyset must be primary")
 		}
 	} else if err != nil {
 		return fmt.Errorf("reading existing keyset: %v", err)
+	} else {
+		err = keyset.AddItem(cert, privateKey, options.Primary)
 	}
-
-	err = keyset.AddItem(cert, privateKey, options.Primary)
 	if err != nil {
 		return err
 	}
