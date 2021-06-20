@@ -341,51 +341,42 @@ func (c *VFSCAStore) FindCertificateKeyset(name string) (*kops.Keyset, error) {
 
 // ListKeysets implements CAStore::ListKeysets
 func (c *VFSCAStore) ListKeysets() ([]*kops.Keyset, error) {
-	keysets := make(map[string]*kops.Keyset)
+	baseDir := c.basedir.Join("private")
+	files, err := baseDir.ReadTree()
+	if err != nil {
+		return nil, fmt.Errorf("error reading directory %q: %v", baseDir, err)
+	}
 
-	{
-		baseDir := c.basedir.Join("issued")
-		files, err := baseDir.ReadTree()
+	var keysets []*kops.Keyset
+
+	for _, f := range files {
+		relativePath, err := vfs.RelativePath(baseDir, f)
 		if err != nil {
-			return nil, fmt.Errorf("error reading directory %q: %v", baseDir, err)
+			return nil, err
 		}
 
-		for _, f := range files {
-			relativePath, err := vfs.RelativePath(baseDir, f)
-			if err != nil {
-				return nil, err
-			}
-
-			tokens := strings.Split(relativePath, "/")
-			if len(tokens) != 2 {
-				klog.V(2).Infof("ignoring unexpected file in keystore: %q", f)
-				continue
-			}
-
-			name := tokens[0]
-			keyset := keysets[name]
-			if keyset == nil {
-				keyset = &kops.Keyset{}
-				keyset.Name = tokens[0]
-				keyset.Spec.Type = kops.SecretTypeKeypair
-				keysets[name] = keyset
-			}
-
-			if tokens[1] == "keyset.yaml" {
-				// TODO: Should we load the keyset to get the actual ids?
-			} else {
-				keyset.Spec.Keys = append(keyset.Spec.Keys, kops.KeysetItem{
-					Id: strings.TrimSuffix(tokens[1], ".crt"),
-				})
-			}
+		tokens := strings.Split(relativePath, "/")
+		if len(tokens) != 2 || tokens[1] != "keyset.yaml" {
+			klog.V(2).Infof("ignoring unexpected file in keystore: %q", f)
+			continue
 		}
+
+		name := tokens[0]
+		loadedKeyset, err := c.loadKeyset(baseDir.Join(name))
+		if err != nil {
+			klog.Warningf("ignoring keyset %q: %w", name, err)
+			continue
+		}
+
+		keyset, err := loadedKeyset.ToAPIObject(name, true)
+		if err != nil {
+			klog.Warningf("ignoring keyset %q: %w", name, err)
+			continue
+		}
+		keysets = append(keysets, keyset)
 	}
 
-	var items []*kops.Keyset
-	for _, v := range keysets {
-		items = append(items, v)
-	}
-	return items, nil
+	return keysets, nil
 }
 
 // ListSSHCredentials implements SSHCredentialStore::ListSSHCredentials

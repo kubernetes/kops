@@ -109,6 +109,7 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdGetAssets(f, out, options))
 	cmd.AddCommand(NewCmdGetCluster(f, out, options))
 	cmd.AddCommand(NewCmdGetInstanceGroups(f, out, options))
+	cmd.AddCommand(NewCmdGetKeypairs(f, out, options))
 	cmd.AddCommand(NewCmdGetSecrets(f, out, options))
 	cmd.AddCommand(NewCmdGetInstances(f, out, options))
 
