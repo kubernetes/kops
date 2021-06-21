@@ -74,7 +74,7 @@ either remove this installation prior to enabling this addon, or mark cert-mange
 As long as you are using v1 versions of the cert-manager resources, it is safe to remove existing installs and replace it with this addon**
 
 ##### Self-provisioned cert-manager
-{{ kops_feature_table(kops_added_default='1.21', k8s_min='1.16') }}
+{{ kops_feature_table(kops_added_default='1.20.2', k8s_min='1.16') }}
 
 The following cert-manager configuration allows provisioning cert-manager externally and allows all dependent plugins
 to be deployed. Please note that addons might run into errors until cert-manager is deployed.
