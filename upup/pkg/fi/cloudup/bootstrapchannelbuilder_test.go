@@ -73,11 +73,6 @@ func TestBootstrapChannelBuilder_AWSCloudController(t *testing.T) {
 
 	h.SetupMockAWS()
 
-	featureflag.ParseFlags("+EnableExternalCloudController")
-	unsetFeatureFlag := func() {
-		featureflag.ParseFlags("-EnableExternalCloudController")
-	}
-	defer unsetFeatureFlag()
 	runChannelBuilderTest(t, "awscloudcontroller", []string{"aws-cloud-controller.addons.k8s.io-k8s-1.18"})
 }
 
