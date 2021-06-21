@@ -194,6 +194,7 @@ ClusterName: minimal-ipv6.example.com
 ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
+KeypairIDs: {}
 KubeletConfig:
   anonymousAuth: false
   cgroupDriver: systemd

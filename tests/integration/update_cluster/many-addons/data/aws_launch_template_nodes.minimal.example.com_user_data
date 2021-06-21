@@ -198,6 +198,7 @@ ConfigBase: memfs://clusters.example.com/minimal.example.com
 DefaultMachineType: t2.medium
 InstanceGroupName: nodes
 InstanceGroupRole: Node
+KeypairIDs: {}
 KubeletConfig:
   anonymousAuth: false
   cgroupDriver: systemd

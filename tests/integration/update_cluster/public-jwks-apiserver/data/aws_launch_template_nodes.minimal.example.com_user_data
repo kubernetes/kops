@@ -203,6 +203,7 @@ ClusterName: minimal.example.com
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
+KeypairIDs: {}
 KubeletConfig:
   anonymousAuth: false
   cgroupRoot: /

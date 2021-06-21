@@ -194,6 +194,7 @@ ClusterName: privatecanal.example.com
 ConfigBase: memfs://clusters.example.com/privatecanal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
+KeypairIDs: {}
 KubeletConfig:
   anonymousAuth: false
   cgroupDriver: systemd

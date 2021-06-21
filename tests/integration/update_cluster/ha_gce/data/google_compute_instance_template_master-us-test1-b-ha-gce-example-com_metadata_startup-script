@@ -283,6 +283,8 @@ ClusterName: ha-gce.example.com
 ConfigBase: memfs://tests/ha-gce.example.com
 InstanceGroupName: master-us-test1-b
 InstanceGroupRole: Master
+KeypairIDs:
+  ca: "6976381481633145814258938760"
 KubeletConfig:
   anonymousAuth: false
   cgroupDriver: systemd

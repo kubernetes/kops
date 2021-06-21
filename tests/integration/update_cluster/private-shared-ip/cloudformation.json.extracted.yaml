@@ -282,6 +282,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatesharedipexamplecom.Pro
   ConfigBase: memfs://clusters.example.com/private-shared-ip.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
+  KeypairIDs:
+    ca: "6976381481633145814258938760"
   KubeletConfig:
     anonymousAuth: false
     cgroupDriver: systemd
@@ -531,6 +533,7 @@ Resources.AWSEC2LaunchTemplatenodesprivatesharedipexamplecom.Properties.LaunchTe
   ConfigBase: memfs://clusters.example.com/private-shared-ip.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
+  KeypairIDs: {}
   KubeletConfig:
     anonymousAuth: false
     cgroupDriver: systemd
