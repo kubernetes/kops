@@ -11,6 +11,7 @@ go_library(
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/registry:go_default_library",
+        "//pkg/kopscodecs:go_default_library",
         "//pkg/nodeidentity:go_default_library",
         "//pkg/nodelabels:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",

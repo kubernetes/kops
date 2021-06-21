@@ -29,7 +29,6 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/commands"
@@ -237,11 +236,6 @@ func RunEditCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, ar
 			continue
 		}
 
-		configBase, err := registry.ConfigBase(newCluster)
-		if err != nil {
-			return preservedFile(err, file, out)
-		}
-
 		// Retrieve the current status of the cluster.  This will eventually be part of the cluster object.
 		status, err := cloud.FindClusterStatus(oldCluster)
 		if err != nil {
@@ -252,11 +246,6 @@ func RunEditCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, ar
 		_, err = clientset.UpdateCluster(ctx, newCluster, status)
 		if err != nil {
 			return preservedFile(err, file, out)
-		}
-
-		err = registry.WriteConfigDeprecated(newCluster, configBase.Join(registry.PathClusterCompleted), fullCluster)
-		if err != nil {
-			return preservedFile(fmt.Errorf("error writing completed cluster spec: %v", err), file, out)
 		}
 
 		return nil
