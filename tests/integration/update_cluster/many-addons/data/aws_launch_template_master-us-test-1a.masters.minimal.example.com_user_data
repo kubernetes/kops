@@ -289,6 +289,8 @@ ConfigBase: memfs://clusters.example.com/minimal.example.com
 DefaultMachineType: m3.medium
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
+KeypairIDs:
+  ca: "6976381481633145814258938760"
 KubeletConfig:
   anonymousAuth: false
   cgroupDriver: systemd

@@ -299,6 +299,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
   ConfigBase: memfs://clusters.example.com/docker.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
+  KeypairIDs:
+    ca: "6976381481633145814258938760"
   KubeletConfig:
     anonymousAuth: false
     cgroupDriver: systemd
@@ -550,6 +552,7 @@ Resources.AWSEC2LaunchTemplatenodesdockerexamplecom.Properties.LaunchTemplateDat
   ConfigBase: memfs://clusters.example.com/docker.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
+  KeypairIDs: {}
   KubeletConfig:
     anonymousAuth: false
     cgroupDriver: systemd

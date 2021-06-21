@@ -194,6 +194,7 @@ ClusterName: unmanaged.example.com
 ConfigBase: memfs://clusters.example.com/unmanaged.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
+KeypairIDs: {}
 KubeletConfig:
   anonymousAuth: false
   cgroupDriver: systemd

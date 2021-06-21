@@ -195,6 +195,7 @@ Resources.AWSEC2LaunchTemplateapiserverapiserversminimalexamplecom.Properties.La
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: apiserver
   InstanceGroupRole: APIServer
+  KeypairIDs: {}
   KubeletConfig:
     anonymousAuth: false
     cgroupDriver: systemd
@@ -523,6 +524,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
+  KeypairIDs:
+    ca: "6976381481633145814258938760"
   KubeletConfig:
     anonymousAuth: false
     cgroupDriver: systemd
@@ -773,6 +776,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
+  KeypairIDs: {}
   KubeletConfig:
     anonymousAuth: false
     cgroupDriver: systemd

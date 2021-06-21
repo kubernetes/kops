@@ -281,6 +281,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom.Propert
   ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
+  KeypairIDs:
+    ca: "6976381481633145814258938760"
   KubeletConfig:
     anonymousAuth: false
     cgroupDriver: systemd
@@ -530,6 +532,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalipv6examplecom.Properties.LaunchTempla
   ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
+  KeypairIDs: {}
   KubeletConfig:
     anonymousAuth: false
     cgroupDriver: systemd
