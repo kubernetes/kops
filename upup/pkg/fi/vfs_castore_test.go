@@ -70,19 +70,21 @@ func TestVFSCAStoreRoundTrip(t *testing.T) {
 		t.Fatalf("error from ParsePEMCertificate: %v", err)
 	}
 
-	item := &KeysetItem{
-		Id:          "237054359138908419352140518924933177492",
-		Certificate: cert,
-		PrivateKey:  privateKey,
-	}
-	keyset := &Keyset{
-		Items: map[string]*KeysetItem{
-			"237054359138908419352140518924933177492": item,
-		},
-		Primary: item,
-	}
-	if err := s.StoreKeyset("ca", keyset); err != nil {
-		t.Fatalf("error from StoreKeyset: %v", err)
+	{
+		item := &KeysetItem{
+			Id:          "237054359138908419352140518924933177492",
+			Certificate: cert,
+			PrivateKey:  privateKey,
+		}
+		keyset := &Keyset{
+			Items: map[string]*KeysetItem{
+				"237054359138908419352140518924933177492": item,
+			},
+			Primary: item,
+		}
+		if err := s.StoreKeyset("ca", keyset); err != nil {
+			t.Fatalf("error from StoreKeyset: %v", err)
+		}
 	}
 
 	paths, err := basePath.ReadTree()
@@ -133,20 +135,16 @@ spec:
 			t.Fatalf("unexpected issued/ca/keyset.yaml: %q", string(issuedKeysetYaml))
 		}
 
-		pool, err := s.FindCertificatePool("ca")
+		keyset, err := s.FindKeyset("ca")
 		if err != nil {
-			t.Fatalf("error reading certificate pool: %v", err)
+			t.Fatalf("error reading certificate keyset: %v", err)
 		}
 
-		if len(pool.Secondary) != 0 {
-			t.Fatalf("unexpected secondary certificates: %v", pool)
+		if len(keyset.Items) != 1 {
+			t.Fatalf("unexpected secondary certificates: %v", keyset)
 		}
 
-		if pool.Primary == nil {
-			t.Fatalf("primary certificate was nil: %v", pool)
-		}
-
-		roundTrip, err := pool.Primary.AsString()
+		roundTrip, err := keyset.Primary.Certificate.AsString()
 		if err != nil {
 			t.Fatalf("error serializing primary cert: %v", err)
 		}
@@ -297,20 +295,16 @@ spec:
 			t.Fatalf("unexpected issued/ca/keyset.yaml: %q", string(issuedKeysetYaml))
 		}
 
-		pool, err := s.FindCertificatePool("ca")
+		keyset, err := s.FindKeyset("ca")
 		if err != nil {
-			t.Fatalf("error reading certificate pool: %v", err)
+			t.Fatalf("error reading certificate keyset: %v", err)
 		}
 
-		if len(pool.Secondary) != 0 {
-			t.Fatalf("unexpected secondary certificates: %v", pool)
+		if len(keyset.Items) != 1 {
+			t.Fatalf("unexpected secondary certificates: %v", keyset)
 		}
 
-		if pool.Primary == nil {
-			t.Fatalf("primary certificate was nil: %v", pool)
-		}
-
-		roundTrip, err := pool.Primary.AsString()
+		roundTrip, err := keyset.Primary.Certificate.AsString()
 		if err != nil {
 			t.Fatalf("error serializing primary cert: %v", err)
 		}
