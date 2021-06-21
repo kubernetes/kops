@@ -17,9 +17,7 @@
 REPO_ROOT=$(git rev-parse --show-toplevel);
 source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
-export KOPS_BASE_URL
-KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
-KOPS=$(kops-download-from-base)
+KOPS=$(kops-acquire-latest)
 
 OVERRIDES="${OVERRIDES-} --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true"
 OVERRIDES="$OVERRIDES --override=cluster.spec.snapshotController.enabled=true"
