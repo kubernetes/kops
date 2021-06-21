@@ -114,8 +114,8 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 		if err != nil {
 			return nil, fmt.Errorf("error fetching CA keypair: %v", err)
 		}
-		if keySet != nil && keySet.Primary != nil && keySet.Primary.Certificate != nil {
-			b.CACert, err = keySet.Primary.Certificate.AsBytes()
+		if keySet != nil {
+			b.CACerts, err = keySet.ToCertificateBytes()
 			if err != nil {
 				return nil, err
 			}
