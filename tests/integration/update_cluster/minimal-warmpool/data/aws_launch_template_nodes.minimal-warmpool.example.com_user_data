@@ -123,7 +123,7 @@ cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   awsEBSCSIDriver:
     enabled: true
-    version: v1.0.0
+    version: v1.1.0
   manageStorageClasses: true
 containerRuntime: containerd
 containerd:
@@ -241,7 +241,7 @@ containerdConfig: |
               SystemdCgroup = true
 warmPoolImages:
 - k8s.gcr.io/kube-proxy:v1.21.0
-- k8s.gcr.io/provider-aws/aws-ebs-csi-driver:v1.0.0
+- k8s.gcr.io/provider-aws/aws-ebs-csi-driver:v1.1.0
 - k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0
 - k8s.gcr.io/sig-storage/livenessprobe:v2.2.0
 - quay.io/cilium/cilium:v1.10.0
