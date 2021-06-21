@@ -41,6 +41,7 @@ import (
 	"k8s.io/kops/pkg/jsonutils"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/pkg/testutils/golden"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 
@@ -480,25 +481,27 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 	}
 
 	{
-		options := &CreateKeypairCaOptions{}
+		options := &CreateKeypairOptions{}
 		options.ClusterName = i.clusterName
+		options.Keyset = fi.CertificateIDCA
 		options.PrivateKeyPath = path.Join(i.srcDir, "../ca.key")
 		options.CertPath = path.Join(i.srcDir, "../ca.crt")
 		options.Primary = true
 
-		err := RunCreateKeypairCa(ctx, factory, &stdout, options)
+		err := RunCreateKeypair(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running %q create CA keypair: %v", inputYAML, err)
 		}
 	}
 	{
-		options := &CreateKeypairCaOptions{}
+		options := &CreateKeypairOptions{}
 		options.ClusterName = i.clusterName
+		options.Keyset = fi.CertificateIDCA
 		options.PrivateKeyPath = path.Join(i.srcDir, "../ca-next.key")
 		options.CertPath = path.Join(i.srcDir, "../ca-next.crt")
 		options.Primary = false
 
-		err := RunCreateKeypairCa(ctx, factory, &stdout, options)
+		err := RunCreateKeypair(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running %q create next CA keypair: %v", inputYAML, err)
 		}
@@ -765,25 +768,27 @@ func (i *integrationTest) runTestCloudformation(t *testing.T) {
 	}
 
 	{
-		options := &CreateKeypairCaOptions{}
+		options := &CreateKeypairOptions{}
 		options.ClusterName = i.clusterName
+		options.Keyset = fi.CertificateIDCA
 		options.PrivateKeyPath = path.Join(i.srcDir, "../ca.key")
 		options.CertPath = path.Join(i.srcDir, "../ca.crt")
 		options.Primary = true
 
-		err := RunCreateKeypairCa(ctx, factory, &stdout, options)
+		err := RunCreateKeypair(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running %q create CA keypair: %v", inputYAML, err)
 		}
 	}
 	{
-		options := &CreateKeypairCaOptions{}
+		options := &CreateKeypairOptions{}
 		options.ClusterName = i.clusterName
+		options.Keyset = fi.CertificateIDCA
 		options.PrivateKeyPath = path.Join(i.srcDir, "../ca-next.key")
 		options.CertPath = path.Join(i.srcDir, "../ca-next.crt")
 		options.Primary = false
 
-		err := RunCreateKeypairCa(ctx, factory, &stdout, options)
+		err := RunCreateKeypair(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running %q create next CA keypair: %v", inputYAML, err)
 		}
