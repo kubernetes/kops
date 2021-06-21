@@ -45,6 +45,10 @@ type KubeletConfigSpec struct {
 	KubeconfigPath string `json:"kubeconfigPath,omitempty" flag:"kubeconfig"`
 	// RequireKubeconfig indicates a kubeconfig is required
 	RequireKubeconfig *bool `json:"requireKubeconfig,omitempty" flag:"require-kubeconfig"`
+	// LogFormat is the logging format of the kubelet.
+	// Supported values: text, json.
+	// Default: text
+	LogFormat string `json:"logFormat,omitempty" flag:"logging-format" flag-empty:"text"`
 	// LogLevel is the logging level of the kubelet
 	LogLevel *int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
 	// config is the path to the config file or directory of files
@@ -269,6 +273,10 @@ type KubeAPIServerConfig struct {
 	Image string `json:"image,omitempty"`
 	// DisableBasicAuth removes the --basic-auth-file flag
 	DisableBasicAuth *bool `json:"disableBasicAuth,omitempty"`
+	// LogFormat is the logging format of the api.
+	// Supported values: text, json.
+	// Default: text
+	LogFormat string `json:"logFormat,omitempty" flag:"logging-format" flag-empty:"text"`
 	// LogLevel is the logging level of the api
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
 	// CloudProvider is the name of the cloudProvider we are using, aws, gce etcd
@@ -511,6 +519,10 @@ type KubeAPIServerConfig struct {
 type KubeControllerManagerConfig struct {
 	// Master is the url for the kube api master
 	Master string `json:"master,omitempty" flag:"master"`
+	// LogFormat is the logging format of the controler manager.
+	// Supported values: text, json.
+	// Default: text
+	LogFormat string `json:"logFormat,omitempty" flag:"logging-format" flag-empty:"text"`
 	// LogLevel is the defined logLevel
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
 	// ServiceAccountPrivateKeyFile is the location of the private key for service account token signing.
@@ -663,6 +675,10 @@ type CloudControllerManagerConfig struct {
 type KubeSchedulerConfig struct {
 	// Master is a url to the kube master
 	Master string `json:"master,omitempty" flag:"master"`
+	// LogFormat is the logging format of the scheduler.
+	// Supported values: text, json.
+	// Default: text
+	LogFormat string `json:"logFormat,omitempty" flag:"logging-format" flag-empty:"text"`
 	// LogLevel is the logging level
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v"`
 	// Image is the docker image to use

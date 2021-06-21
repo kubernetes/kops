@@ -574,6 +574,11 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath
 			}
 		}
 	}
+
+	if v.LogFormat != "" {
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("logFormat"), &v.LogFormat, []string{"text", "json"})...)
+	}
+
 	return allErrs
 }
 
@@ -635,6 +640,10 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 			if c.IsKubernetesLT("1.18") && c.IsKubernetesGTE("1.21") {
 				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("enableCadvisorJsonEndpoints"), "enableCadvisorJsonEndpoints requires Kubernetes 1.18-1.20"))
 			}
+		}
+
+		if k.LogFormat != "" {
+			allErrs = append(allErrs, IsValidValue(kubeletPath.Child("logFormat"), &k.LogFormat, []string{"text", "json"})...)
 		}
 
 	}

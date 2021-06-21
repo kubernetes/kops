@@ -554,6 +554,16 @@ spec:
     defaultUnreachableTolerationSeconds: 600
 ```
 
+### LogFormat
+
+Choose between log format. Permitted formats: "json", "text". Default: "text".
+
+```yaml
+spec:
+  kubeAPIServer:
+    logFormat: json
+```
+
 ## externalDns
 
 This block contains configuration options for your `external-DNS` provider.
@@ -698,6 +708,16 @@ spec:
     eventBurst: 10
 ```
 
+### LogFormat
+
+Choose between log format. Permitted formats: "json", "text". Default: "text".
+
+```yaml
+spec:
+  kubelet:
+    logFormat: json
+```
+
 ## kubeScheduler
 
 This block contains configurations for `kube-scheduler`.  See https://kubernetes.io/docs/admin/kube-scheduler/
@@ -712,6 +732,16 @@ spec:
 Will make kube-scheduler use the scheduler policy from configmap "scheduler-policy" in namespace kube-system.
 
 Note that as of Kubernetes 1.8.0 kube-scheduler does not reload its configuration from configmap automatically. You will need to ssh into the master instance and restart the Docker container manually.
+
+### LogFormat
+
+Choose between log format. Permitted formats: "json", "text". Default: "text".
+
+```yaml
+spec:
+  kubeScheduler:
+    logFormat: json
+```
 
 ## kubeDNS
 
@@ -794,6 +824,16 @@ spec:
 ```
 
 For more details on `horizontalPodAutoscaler` flags see the [official HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) and the [kOps guides on how to set it up](horizontal_pod_autoscaling.md).
+
+### LogFormat
+
+Choose between log format. Permitted formats: "json", "text". Default: "text".
+
+```yaml
+spec:
+  kubeControllerManager:
+    logFormat: json
+```
 
 ##  Feature Gates
 
@@ -1322,7 +1362,7 @@ The `discoveryStore` option causes kOps to publish an OIDC-compatible discovery 
 to a path in an S3 bucket. This would ordinarily be a different bucket than the state store.
 kOps will automatically configure `spec.kubeAPIServer.serviceAccountIssuer` and default
 `spec.kubeAPIServer.serviceAccountJWKSURI` to the corresponding
-HTTPS URL. 
+HTTPS URL.
 
 The `enableAWSOIDCProvider` configures AWS to trust the service account issuer to
 authenticate service accounts for IAM Roles for Service Accounts (IRSA). In order for this to work,
