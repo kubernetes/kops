@@ -10,7 +10,7 @@ Delete a keypair.
 Delete a keypair.
 
 ```
-kops delete keypair [flags]
+kops delete keypair KEYSET ID [flags]
 ```
 
 ### Examples
