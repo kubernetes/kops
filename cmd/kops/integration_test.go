@@ -453,59 +453,7 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 		actualTFPath = expectedTfFileName
 	}
 
-	factoryOptions := &util.FactoryOptions{}
-	factoryOptions.RegistryPath = "memfs://tests"
-
-	factory := util.NewFactory(factoryOptions)
-
-	{
-		options := &CreateOptions{}
-		options.Filenames = []string{path.Join(i.srcDir, inputYAML)}
-
-		err := RunCreate(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running %q create: %v", inputYAML, err)
-		}
-	}
-
-	if i.sshKey {
-		options := &CreateSecretPublickeyOptions{}
-		options.ClusterName = i.clusterName
-		options.Name = "admin"
-		options.PublicKeyPath = path.Join(i.srcDir, "id_rsa.pub")
-
-		err := RunCreateSecretPublicKey(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running %q create public key: %v", inputYAML, err)
-		}
-	}
-
-	{
-		options := &CreateKeypairOptions{}
-		options.ClusterName = i.clusterName
-		options.Keyset = fi.CertificateIDCA
-		options.PrivateKeyPath = path.Join(i.srcDir, "../ca.key")
-		options.CertPath = path.Join(i.srcDir, "../ca.crt")
-		options.Primary = true
-
-		err := RunCreateKeypair(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running %q create CA keypair: %v", inputYAML, err)
-		}
-	}
-	{
-		options := &CreateKeypairOptions{}
-		options.ClusterName = i.clusterName
-		options.Keyset = fi.CertificateIDCA
-		options.PrivateKeyPath = path.Join(i.srcDir, "../ca-next.key")
-		options.CertPath = path.Join(i.srcDir, "../ca-next.crt")
-		options.Primary = false
-
-		err := RunCreateKeypair(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running %q create next CA keypair: %v", inputYAML, err)
-		}
-	}
+	factory := i.setupCluster(t, inputYAML, ctx, stdout)
 
 	{
 		options := &UpdateClusterOptions{}
@@ -599,6 +547,63 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 			}
 		}
 	}
+}
+
+func (i *integrationTest) setupCluster(t *testing.T, inputYAML string, ctx context.Context, stdout bytes.Buffer) *util.Factory {
+	factoryOptions := &util.FactoryOptions{}
+	factoryOptions.RegistryPath = "memfs://tests"
+
+	factory := util.NewFactory(factoryOptions)
+
+	{
+		options := &CreateOptions{}
+		options.Filenames = []string{path.Join(i.srcDir, inputYAML)}
+
+		err := RunCreate(ctx, factory, &stdout, options)
+		if err != nil {
+			t.Fatalf("error running %q create: %v", inputYAML, err)
+		}
+	}
+
+	if i.sshKey {
+		options := &CreateSecretPublickeyOptions{}
+		options.ClusterName = i.clusterName
+		options.Name = "admin"
+		options.PublicKeyPath = path.Join(i.srcDir, "id_rsa.pub")
+
+		err := RunCreateSecretPublicKey(ctx, factory, &stdout, options)
+		if err != nil {
+			t.Fatalf("error running %q create public key: %v", inputYAML, err)
+		}
+	}
+
+	{
+		options := &CreateKeypairOptions{}
+		options.ClusterName = i.clusterName
+		options.Keyset = fi.CertificateIDCA
+		options.PrivateKeyPath = path.Join(i.srcDir, "../ca.key")
+		options.CertPath = path.Join(i.srcDir, "../ca.crt")
+		options.Primary = true
+
+		err := RunCreateKeypair(ctx, factory, &stdout, options)
+		if err != nil {
+			t.Fatalf("error running %q create CA keypair: %v", inputYAML, err)
+		}
+	}
+	{
+		options := &CreateKeypairOptions{}
+		options.ClusterName = i.clusterName
+		options.Keyset = fi.CertificateIDCA
+		options.PrivateKeyPath = path.Join(i.srcDir, "../ca-next.key")
+		options.CertPath = path.Join(i.srcDir, "../ca-next.crt")
+		options.Primary = false
+
+		err := RunCreateKeypair(ctx, factory, &stdout, options)
+		if err != nil {
+			t.Fatalf("error running %q create next CA keypair: %v", inputYAML, err)
+		}
+	}
+	return factory
 }
 
 func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
@@ -734,65 +739,13 @@ func (i *integrationTest) runTestCloudformation(t *testing.T) {
 	inputYAML := "in-" + i.version + ".yaml"
 	expectedCfPath := "cloudformation.json"
 
-	factoryOptions := &util.FactoryOptions{}
-	factoryOptions.RegistryPath = "memfs://tests"
-
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
 	h.MockKopsVersion("1.21.0-alpha.1")
 	h.SetupMockAWS()
 
-	factory := util.NewFactory(factoryOptions)
-
-	{
-		options := &CreateOptions{}
-		options.Filenames = []string{path.Join(i.srcDir, inputYAML)}
-
-		err := RunCreate(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running %q create: %v", inputYAML, err)
-		}
-	}
-
-	if i.sshKey {
-		options := &CreateSecretPublickeyOptions{}
-		options.ClusterName = i.clusterName
-		options.Name = "admin"
-		options.PublicKeyPath = path.Join(i.srcDir, "id_rsa.pub")
-
-		err := RunCreateSecretPublicKey(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running %q create: %v", inputYAML, err)
-		}
-	}
-
-	{
-		options := &CreateKeypairOptions{}
-		options.ClusterName = i.clusterName
-		options.Keyset = fi.CertificateIDCA
-		options.PrivateKeyPath = path.Join(i.srcDir, "../ca.key")
-		options.CertPath = path.Join(i.srcDir, "../ca.crt")
-		options.Primary = true
-
-		err := RunCreateKeypair(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running %q create CA keypair: %v", inputYAML, err)
-		}
-	}
-	{
-		options := &CreateKeypairOptions{}
-		options.ClusterName = i.clusterName
-		options.Keyset = fi.CertificateIDCA
-		options.PrivateKeyPath = path.Join(i.srcDir, "../ca-next.key")
-		options.CertPath = path.Join(i.srcDir, "../ca-next.crt")
-		options.Primary = false
-
-		err := RunCreateKeypair(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running %q create next CA keypair: %v", inputYAML, err)
-		}
-	}
+	factory := i.setupCluster(t, inputYAML, ctx, stdout)
 
 	{
 		options := &UpdateClusterOptions{}
