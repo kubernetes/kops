@@ -306,16 +306,14 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys))
 	}
 
-	if !fi.BoolValue(b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {
-		esc := b.Cluster.Spec.SnapshotController != nil &&
-			fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled)
-		AddAWSEBSCSIDriverPermissions(p, clusterName, esc)
-	}
-
 	// Protokube needs dns-controller permissions in instance role even if UseServiceAccountIAM.
 	AddDNSControllerPermissions(b, p)
 
 	if !b.UseServiceAccountIAM {
+		esc := b.Cluster.Spec.SnapshotController != nil &&
+			fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled)
+		AddAWSEBSCSIDriverPermissions(p, clusterName, esc)
+
 		if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
 			AddAWSLoadbalancerControllerPermissions(p, resource, b.Cluster.GetName())
 		}
@@ -1059,21 +1057,6 @@ func AddMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, clust
 				},
 			},
 		},
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
-				"ec2:AttachVolume",                  // aws.go
-				"ec2:AuthorizeSecurityGroupIngress", // aws.go
-				"ec2:DeleteSecurityGroup",           // aws.go
-				"ec2:RevokeSecurityGroupIngress",    // aws.go
-			),
-			Resource: resource,
-			Condition: Condition{
-				"StringEquals": map[string]string{
-					"ec2:ResourceTag/kubernetes.io/cluster/" + clusterName: "owned",
-				},
-			},
-		},
 	)
 }
 
@@ -1082,44 +1065,36 @@ func AddMasterELBPolicies(p *Policy, resource stringorslice.StringOrSlice) {
 	p.Statement = append(p.Statement, &Statement{
 		Effect: StatementEffectAllow,
 		Action: stringorslice.Of(
-			"elasticloadbalancing:AddTags",                                 // aws_loadbalancer.go
-			"elasticloadbalancing:AttachLoadBalancerToSubnets",             // aws_loadbalancer.go
-			"elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",       // aws_loadbalancer.go
+			"ec2:DescribeVpcs",                                             // aws_loadbalancer.go
+			"elasticloadbalancing:DescribeLoadBalancers",                   // aws.go
+			"elasticloadbalancing:DescribeLoadBalancerAttributes",          // aws.go
+			"elasticloadbalancing:DescribeListeners",                       // aws_loadbalancer.go
+			"elasticloadbalancing:DescribeLoadBalancerPolicies",            // aws_loadbalancer.go
+			"elasticloadbalancing:DescribeTargetGroups",                    // aws_loadbalancer.go
+			"elasticloadbalancing:DescribeTargetHealth",                    // aws_loadbalancer.go
+			"elasticloadbalancing:CreateListener",                          // aws_loadbalancer.go
+			"elasticloadbalancing:CreateTargetGroup",                       // aws_loadbalancer.go
 			"elasticloadbalancing:CreateLoadBalancer",                      // aws_loadbalancer.go
 			"elasticloadbalancing:CreateLoadBalancerPolicy",                // aws_loadbalancer.go
 			"elasticloadbalancing:CreateLoadBalancerListeners",             // aws_loadbalancer.go
-			"elasticloadbalancing:ConfigureHealthCheck",                    // aws_loadbalancer.go
 			"elasticloadbalancing:DeleteLoadBalancer",                      // aws.go
 			"elasticloadbalancing:DeleteLoadBalancerListeners",             // aws_loadbalancer.go
-			"elasticloadbalancing:DescribeLoadBalancers",                   // aws.go
-			"elasticloadbalancing:DescribeLoadBalancerAttributes",          // aws.go
+			"elasticloadbalancing:DeleteListener",                          // aws_loadbalancer.go
+			"elasticloadbalancing:DeleteTargetGroup",                       // aws_loadbalancer.go
+			"elasticloadbalancing:AddTags",                                 // aws_loadbalancer.go
+			"elasticloadbalancing:ModifyLoadBalancerAttributes",            // aws_loadbalancer.go
+			"elasticloadbalancing:ModifyListener",                          // aws_loadbalancer.go
+			"elasticloadbalancing:ModifyTargetGroup",                       // aws_loadbalancer.go
+			"elasticloadbalancing:AttachLoadBalancerToSubnets",             // aws_loadbalancer.go
+			"elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",       // aws_loadbalancer.go
+			"elasticloadbalancing:ConfigureHealthCheck",                    // aws_loadbalancer.go
 			"elasticloadbalancing:DetachLoadBalancerFromSubnets",           // aws_loadbalancer.go
 			"elasticloadbalancing:DeregisterInstancesFromLoadBalancer",     // aws_loadbalancer.go
-			"elasticloadbalancing:ModifyLoadBalancerAttributes",            // aws_loadbalancer.go
 			"elasticloadbalancing:RegisterInstancesWithLoadBalancer",       // aws_loadbalancer.go
 			"elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer", // aws_loadbalancer.go
-		),
-		Resource: resource,
-	})
-
-	p.Statement = append(p.Statement, &Statement{
-		Effect: StatementEffectAllow,
-		Action: stringorslice.Of(
-			"ec2:DescribeVpcs",                                       // aws_loadbalancer.go
-			"elasticloadbalancing:AddTags",                           // aws_loadbalancer.go
-			"elasticloadbalancing:CreateListener",                    // aws_loadbalancer.go
-			"elasticloadbalancing:CreateTargetGroup",                 // aws_loadbalancer.go
-			"elasticloadbalancing:DeleteListener",                    // aws_loadbalancer.go
-			"elasticloadbalancing:DeleteTargetGroup",                 // aws_loadbalancer.go
-			"elasticloadbalancing:DeregisterTargets",                 // aws_loadbalancer.go
-			"elasticloadbalancing:DescribeListeners",                 // aws_loadbalancer.go
-			"elasticloadbalancing:DescribeLoadBalancerPolicies",      // aws_loadbalancer.go
-			"elasticloadbalancing:DescribeTargetGroups",              // aws_loadbalancer.go
-			"elasticloadbalancing:DescribeTargetHealth",              // aws_loadbalancer.go
-			"elasticloadbalancing:ModifyListener",                    // aws_loadbalancer.go
-			"elasticloadbalancing:ModifyTargetGroup",                 // aws_loadbalancer.go
-			"elasticloadbalancing:RegisterTargets",                   // aws_loadbalancer.go
-			"elasticloadbalancing:SetLoadBalancerPoliciesOfListener", // aws_loadbalancer.go
+			"elasticloadbalancing:DeregisterTargets",                       // aws_loadbalancer.go
+			"elasticloadbalancing:RegisterTargets",                         // aws_loadbalancer.go
+			"elasticloadbalancing:SetLoadBalancerPoliciesOfListener",       // aws_loadbalancer.go
 		),
 		Resource: resource,
 	})
