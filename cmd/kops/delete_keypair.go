@@ -23,8 +23,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
@@ -52,21 +50,24 @@ func NewCmdDeleteKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &DeleteKeypairOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "keypair",
+		Use:     "keypair KEYSET ID",
 		Short:   deleteKeypairShort,
 		Long:    deleteKeypairLong,
 		Example: deleteKeypairExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := context.TODO()
 
-			if len(args) != 2 && len(args) != 3 {
-				exitWithError(fmt.Errorf("Syntax: <keyset> <id>"))
+			options.ClusterName = rootCommand.ClusterName()
+			if options.ClusterName == "" {
+				exitWithError(fmt.Errorf("--name is required"))
+				return
 			}
 
+			if len(args) != 2 {
+				exitWithError(fmt.Errorf("usage: kops delete keypair KEYSET ID"))
+			}
 			options.Keyset = args[0]
 			options.KeypairID = args[1]
-
-			options.ClusterName = rootCommand.ClusterName()
 
 			err := RunDeleteKeypair(ctx, f, out, options)
 			if err != nil {
@@ -104,36 +105,21 @@ func RunDeleteKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 		return err
 	}
 
-	keypairs, err := listKeypairs(keyStore, []string{options.Keyset})
+	keyset, err := keyStore.FindKeyset(options.Keyset)
 	if err != nil {
 		return err
 	}
 
-	{
-		var matches []*fi.KeystoreItem
-		for _, s := range keypairs {
-			if s.ID == options.KeypairID {
-				matches = append(matches, s)
-			}
-		}
-		keypairs = matches
+	if options.KeypairID == keyset.Primary.Id {
+		return fmt.Errorf("cannot delete the primary keypair")
 	}
-
-	if len(keypairs) == 0 {
+	if _, ok := keyset.Items[options.KeypairID]; !ok {
 		return fmt.Errorf("keypair not found")
 	}
+	delete(keyset.Items, options.KeypairID)
 
-	if len(keypairs) != 1 {
-		// TODO: it would be friendly to print the matching keys
-		return fmt.Errorf("found multiple matching keypairs; specify the id of the key")
-	}
-
-	keyset := &kops.Keyset{}
-	keyset.Name = keypairs[0].Name
-	keyset.Spec.Type = keypairs[0].Type
-	err = keyStore.DeleteKeysetItem(keyset, keypairs[0].ID)
-	if err != nil {
-		return fmt.Errorf("error deleting keypair: %v", err)
+	if err := keyStore.StoreKeyset(options.Keyset, keyset); err != nil {
+		return fmt.Errorf("error deleting keypair: %w", err)
 	}
 
 	return nil

@@ -28,7 +28,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/pkg/pki"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
@@ -104,10 +103,9 @@ func (c *DescribeKeypairsCommand) Run(ctx context.Context, args []string) error 
 
 	for _, i := range items {
 		fmt.Fprintf(w, "Name:\t%s\n", i.Name)
-		fmt.Fprintf(w, "Type:\t%s\n", i.Type)
-		fmt.Fprintf(w, "Id:\t%s\n", i.ID)
+		fmt.Fprintf(w, "Id:\t%s\n", i.Id)
 
-		err = describeKeypair(keyStore, i, &b)
+		err = describeKeypair(i, &b)
 		if err != nil {
 			return err
 		}
@@ -124,49 +122,30 @@ func (c *DescribeKeypairsCommand) Run(ctx context.Context, args []string) error 
 	return w.Flush()
 }
 
-func describeKeypair(keyStore fi.CAStore, item *fi.KeystoreItem, w *bytes.Buffer) error {
-	name := item.Name
+func describeKeypair(item *keypairItem, w *bytes.Buffer) error {
+	cert := item.Certificate
 
-	cert, err := keyStore.FindCert(name)
-	if err != nil {
-		return fmt.Errorf("error retrieving cert %q: %v", name, err)
-	}
-
-	key, err := keyStore.FindPrivateKey(name)
-	if err != nil {
-		return fmt.Errorf("error retrieving private key %q: %v", name, err)
-	}
-
-	var alternateNames []string
 	if cert != nil {
+		var alternateNames []string
 		alternateNames = append(alternateNames, cert.Certificate.DNSNames...)
 		alternateNames = append(alternateNames, cert.Certificate.EmailAddresses...)
 		for _, ip := range cert.Certificate.IPAddresses {
 			alternateNames = append(alternateNames, ip.String())
 		}
 		sort.Strings(alternateNames)
-	}
 
-	if cert != nil {
 		fmt.Fprintf(w, "Subject:\t%s\n", pki.PkixNameToString(&cert.Certificate.Subject))
 		fmt.Fprintf(w, "Issuer:\t%s\n", pki.PkixNameToString(&cert.Certificate.Issuer))
 		fmt.Fprintf(w, "AlternateNames:\t%s\n", strings.Join(alternateNames, ", "))
 		fmt.Fprintf(w, "CA:\t%v\n", cert.IsCA)
 		fmt.Fprintf(w, "NotAfter:\t%s\n", cert.Certificate.NotAfter)
 		fmt.Fprintf(w, "NotBefore:\t%s\n", cert.Certificate.NotBefore)
-
+		if rsaKey, ok := cert.PublicKey.(*rsa.PublicKey); ok {
+			fmt.Fprintf(w, "KeyLength:\t%v\n", rsaKey.N.BitLen())
+		}
 		// PublicKeyAlgorithm doesn't have a String() function.  Also, is this important information?
 		//fmt.Fprintf(w, "PublicKeyAlgorithm:\t%v\n", c.Certificate.PublicKeyAlgorithm)
 		//fmt.Fprintf(w, "SignatureAlgorithm:\t%v\n", c.Certificate.SignatureAlgorithm)
-	}
-
-	if key != nil {
-		if rsaPrivateKey, ok := key.Key.(*rsa.PrivateKey); ok {
-			fmt.Fprintf(w, "PrivateKeyType:\t%v\n", "rsa")
-			fmt.Fprintf(w, "KeyLength:\t%v\n", rsaPrivateKey.N.BitLen())
-		} else {
-			fmt.Fprintf(w, "PrivateKeyType:\tunknown (%T)\n", key.Key)
-		}
 	}
 
 	return nil

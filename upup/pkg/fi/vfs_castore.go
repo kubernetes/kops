@@ -179,7 +179,7 @@ func (k *Keyset) ToAPIObject(name string, includePrivateKeyMaterial bool) (*kops
 }
 
 // writeKeysetBundle writes a Keyset bundle to VFS.
-func (c *VFSCAStore) writeKeysetBundle(p vfs.Path, name string, keyset *Keyset, includePrivateKeyMaterial bool) error {
+func writeKeysetBundle(cluster *kops.Cluster, p vfs.Path, name string, keyset *Keyset, includePrivateKeyMaterial bool) error {
 	p = p.Join("keyset.yaml")
 
 	o, err := keyset.ToAPIObject(name, includePrivateKeyMaterial)
@@ -192,7 +192,7 @@ func (c *VFSCAStore) writeKeysetBundle(p vfs.Path, name string, keyset *Keyset, 
 		return err
 	}
 
-	acl, err := acls.GetACL(p, c.cluster)
+	acl, err := acls.GetACL(p, cluster)
 	if err != nil {
 		return err
 	}
@@ -213,17 +213,6 @@ func serializeKeysetBundle(o *kops.Keyset) ([]byte, error) {
 		return nil, fmt.Errorf("error serializing keyset: %v", err)
 	}
 	return objectData.Bytes(), nil
-}
-
-// removePrivateKeyMaterial returns a copy of the Keyset with the private key data removed
-func removePrivateKeyMaterial(o *kops.Keyset) *kops.Keyset {
-	c := o.DeepCopy()
-
-	for i := range c.Spec.Keys {
-		c.Spec.Keys[i].PrivateMaterial = nil
-	}
-
-	return c
 }
 
 func (c *VFSCAStore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
@@ -321,14 +310,14 @@ func (c *VFSCAStore) FindCertificatePool(name string) (*CertificatePool, error) 
 }
 
 // ListKeysets implements CAStore::ListKeysets
-func (c *VFSCAStore) ListKeysets() ([]*kops.Keyset, error) {
+func (c *VFSCAStore) ListKeysets() (map[string]*Keyset, error) {
 	baseDir := c.basedir.Join("private")
 	files, err := baseDir.ReadTree()
 	if err != nil {
 		return nil, fmt.Errorf("error reading directory %q: %v", baseDir, err)
 	}
 
-	var keysets []*kops.Keyset
+	keysets := map[string]*Keyset{}
 
 	for _, f := range files {
 		relativePath, err := vfs.RelativePath(baseDir, f)
@@ -349,12 +338,7 @@ func (c *VFSCAStore) ListKeysets() ([]*kops.Keyset, error) {
 			continue
 		}
 
-		keyset, err := loadedKeyset.ToAPIObject(name, true)
-		if err != nil {
-			klog.Warningf("ignoring keyset %q: %w", name, err)
-			continue
-		}
-		keysets = append(keysets, keyset)
+		keysets[name] = loadedKeyset
 	}
 
 	return keysets, nil
@@ -411,8 +395,8 @@ func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
 		return err
 	}
 
-	for _, keyset := range keysets {
-		if err := mirrorKeyset(c.cluster, basedir, keyset); err != nil {
+	for name, keyset := range keysets {
+		if err := mirrorKeyset(c.cluster, basedir, name, keyset); err != nil {
 			return err
 		}
 	}
@@ -432,50 +416,13 @@ func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
 }
 
 // mirrorKeyset writes Keyset bundles for the certificates & privatekeys.
-func mirrorKeyset(cluster *kops.Cluster, basedir vfs.Path, keyset *kops.Keyset) error {
-	primary := FindPrimary(keyset)
-	if primary == nil {
-		return fmt.Errorf("found keyset with no primary data: %s", keyset.Name)
+func mirrorKeyset(cluster *kops.Cluster, basedir vfs.Path, name string, keyset *Keyset) error {
+	if err := writeKeysetBundle(cluster, basedir.Join("private"), name, keyset, true); err != nil {
+		return fmt.Errorf("writing private bundle: %v", err)
 	}
 
-	switch keyset.Spec.Type {
-	case kops.SecretTypeKeypair:
-		{
-			data, err := serializeKeysetBundle(removePrivateKeyMaterial(keyset))
-			if err != nil {
-				return err
-			}
-			p := basedir.Join("issued", keyset.Name, "keyset.yaml")
-			acl, err := acls.GetACL(p, cluster)
-			if err != nil {
-				return err
-			}
-
-			err = p.WriteFile(bytes.NewReader(data), acl)
-			if err != nil {
-				return fmt.Errorf("error writing %q: %v", p, err)
-			}
-		}
-
-		{
-			data, err := serializeKeysetBundle(keyset)
-			if err != nil {
-				return err
-			}
-			p := basedir.Join("private", keyset.Name, "keyset.yaml")
-			acl, err := acls.GetACL(p, cluster)
-			if err != nil {
-				return err
-			}
-
-			err = p.WriteFile(bytes.NewReader(data), acl)
-			if err != nil {
-				return fmt.Errorf("error writing %q: %v", p, err)
-			}
-		}
-
-	default:
-		return fmt.Errorf("unknown secret type: %q", keyset.Spec.Type)
+	if err := writeKeysetBundle(cluster, basedir.Join("issued"), name, keyset, false); err != nil {
+		return fmt.Errorf("writing certificate bundle: %v", err)
 	}
 
 	return nil
@@ -516,14 +463,14 @@ func (c *VFSCAStore) StoreKeyset(name string, keyset *Keyset) error {
 
 	{
 		p := c.buildPrivateKeyPoolPath(name)
-		if err := c.writeKeysetBundle(p, name, keyset, true); err != nil {
+		if err := writeKeysetBundle(c.cluster, p, name, keyset, true); err != nil {
 			return fmt.Errorf("writing private bundle: %v", err)
 		}
 	}
 
 	{
 		p := c.buildCertificatePoolPath(name)
-		if err := c.writeKeysetBundle(p, name, keyset, false); err != nil {
+		if err := writeKeysetBundle(c.cluster, p, name, keyset, false); err != nil {
 			return fmt.Errorf("writing certificate bundle: %v", err)
 		}
 	}
@@ -604,7 +551,7 @@ func (c *VFSCAStore) deletePrivateKey(name string, id string) (bool, error) {
 			ks.Primary = nil
 		}
 
-		if err := c.writeKeysetBundle(p, name, ks, true); err != nil {
+		if err := writeKeysetBundle(c.cluster, p, name, ks, true); err != nil {
 			return false, fmt.Errorf("error writing bundle: %v", err)
 		}
 	}
@@ -637,7 +584,7 @@ func (c *VFSCAStore) deleteCertificate(name string, id string) (bool, error) {
 			ks.Primary = nil
 		}
 
-		if err := c.writeKeysetBundle(p, name, ks, false); err != nil {
+		if err := writeKeysetBundle(c.cluster, p, name, ks, false); err != nil {
 			return false, fmt.Errorf("error writing bundle: %v", err)
 		}
 	}
