@@ -39,6 +39,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/jsonutils"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/upup/pkg/fi"
@@ -577,32 +578,58 @@ func (i *integrationTest) setupCluster(t *testing.T, inputYAML string, ctx conte
 		}
 	}
 
-	{
-		options := &CreateKeypairOptions{}
-		options.ClusterName = i.clusterName
-		options.Keyset = fi.CertificateIDCA
-		options.PrivateKeyPath = path.Join(i.srcDir, "../ca.key")
-		options.CertPath = path.Join(i.srcDir, "../ca.crt")
-		options.Primary = true
+	cluster, err := GetCluster(ctx, factory, i.clusterName)
+	if err != nil {
+		t.Fatalf("error getting cluster: %v", err)
+	}
 
-		err := RunCreateKeypair(ctx, factory, &stdout, options)
+	clientSet, err := factory.Clientset()
+	if err != nil {
+		t.Fatalf("error getting clientset: %v", err)
+	}
+
+	keyStore, err := clientSet.KeyStore(cluster)
+	if err != nil {
+		t.Fatalf("error getting keystore: %v", err)
+	}
+
+	{
+		caKey := "-----BEGIN RSA PRIVATE KEY-----\nMIIBPQIBAAJBANiW3hfHTcKnxCig+uWhpVbOfH1pANKmXVSysPKgE80QSU4tZ6m4\n9pAEeIMsvwvDMaLsb2v6JvXe0qvCmueU+/sCAwEAAQJBAKt/gmpHqP3qA3u8RA5R\n2W6L360Z2Mnza1FmkI/9StCCkJGjuE5yDhxU4JcVnFyX/nMxm2ockEEQDqRSu7Oo\nxTECIQD2QsUsgFL4FnXWzTclySJ6ajE4Cte3gSDOIvyMNMireQIhAOEnsV8UaSI+\nZyL7NMLzMPLCgtsrPnlamr8gdrEHf9ITAiEAxCCLbpTI/4LL2QZZrINTLVGT34Fr\nKl/yI5pjrrp/M2kCIQDfOktQyRuzJ8t5kzWsUxCkntS+FxHJn1rtQ3Jp8dV4oQIh\nAOyiVWDyLZJvg7Y24Ycmp86BZjM9Wk/BfWpBXKnl9iDY\n-----END RSA PRIVATE KEY-----"
+		privateKey, err := pki.ParsePEMPrivateKey([]byte(caKey))
 		if err != nil {
-			t.Fatalf("error running %q create CA keypair: %v", inputYAML, err)
+			t.Fatalf("error loading private key %v", err)
+		}
+
+		caCertificate := "-----BEGIN CERTIFICATE-----\nMIIBaDCCARKgAwIBAgIMFoq6Pex4lTCM8fOIMA0GCSqGSIb3DQEBCwUAMBUxEzAR\nBgNVBAMTCmt1YmVybmV0ZXMwHhcNMjEwNjE5MjI0MzEwWhcNMzEwNjE5MjI0MzEw\nWjAVMRMwEQYDVQQDEwprdWJlcm5ldGVzMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJB\nANiW3hfHTcKnxCig+uWhpVbOfH1pANKmXVSysPKgE80QSU4tZ6m49pAEeIMsvwvD\nMaLsb2v6JvXe0qvCmueU+/sCAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgEGMA8GA1Ud\nEwEB/wQFMAMBAf8wHQYDVR0OBBYEFCOW3hR7ngBsk9aUOlEznWzH494EMA0GCSqG\nSIb3DQEBCwUAA0EAVnZzkiku07kQFGAEXzWI6aZnAbzSoClYskEzCBMrOmdadjVp\nVWcz76FwFlyd5jhzOJ49eMcVusSotKv2ZGimcA==\n-----END CERTIFICATE-----"
+		cert, err := pki.ParsePEMCertificate([]byte(caCertificate))
+		if err != nil {
+			t.Fatalf("error loading certificate %v", err)
+		}
+
+		keyset, err := fi.NewKeyset(cert, privateKey)
+		if err != nil {
+			t.Fatalf("error creating keyset: %v", err)
+		}
+
+		caKey = "-----BEGIN RSA PRIVATE KEY-----\nMIIBOgIBAAJBAKOE64nZbH+GM91AIrqf7HEk4hvzqsZFFtxc+8xir1XC3mI/RhCC\nrs6AdVRZNZ26A6uHArhi33c2kHQkCjyLA7sCAwEAAQJAejInjmEzqmzQr0NxcIN4\nPukwK3FBKl+RAOZfqNIKcww14mfOn7Gc6lF2zEC4GnLiB3tthbSXoBGi54nkW4ki\nyQIhANZNne9UhQlwyjsd3WxDWWrl6OOZ3J8ppMOIQni9WRLlAiEAw1XEdxPOSOSO\nB6rucpTT1QivVvyEFIb/ukvPm769Mh8CIQDNQwKnHdlfNX0+KljPPaMD1LrAZbr/\naC+8aWLhqtsKUQIgF7gUcTkwdV17eabh6Xv09Qtm7zMefred2etWvFy+8JUCIECv\nFYOKQVWHX+Q7CHX2K1oTECVnZuW1UItdDYVlFYxQ\n-----END RSA PRIVATE KEY-----\n"
+		privateKey, err = pki.ParsePEMPrivateKey([]byte(caKey))
+		if err != nil {
+			t.Fatalf("error loading private key %v", err)
+		}
+
+		caCertificate = "-----BEGIN CERTIFICATE-----\nMIIBaDCCARKgAwIBAgIMFoq6PeyECsgUTfc2MA0GCSqGSIb3DQEBCwUAMBUxEzAR\nBgNVBAMTCmt1YmVybmV0ZXMwHhcNMjEwNjE5MjI0MzEwWhcNMzEwNjE5MjI0MzEw\nWjAVMRMwEQYDVQQDEwprdWJlcm5ldGVzMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJB\nAKOE64nZbH+GM91AIrqf7HEk4hvzqsZFFtxc+8xir1XC3mI/RhCCrs6AdVRZNZ26\nA6uHArhi33c2kHQkCjyLA7sCAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgEGMA8GA1Ud\nEwEB/wQFMAMBAf8wHQYDVR0OBBYEFIT28RJlG8FTgmvn2YMa3hYX+u1BMA0GCSqG\nSIb3DQEBCwUAA0EAKuaE5wKMP26AyfxkWu83iHoTPFtdjabXF0JcyPy0ijQZxfJq\n9xc2CkttvgaDtT4H+E/ryQ3iq6kSfEYYPi8c0w==\n-----END CERTIFICATE-----"
+		cert, err = pki.ParsePEMCertificate([]byte(caCertificate))
+		if err != nil {
+			t.Fatalf("error loading certificate %v", err)
+		}
+
+		_ = keyset.AddItem(cert, privateKey, false)
+		err = keyStore.StoreKeyset(fi.CertificateIDCA, keyset)
+		if err != nil {
+			t.Fatalf("error storing user provided keys: %v", err)
 		}
 	}
-	{
-		options := &CreateKeypairOptions{}
-		options.ClusterName = i.clusterName
-		options.Keyset = fi.CertificateIDCA
-		options.PrivateKeyPath = path.Join(i.srcDir, "../ca-next.key")
-		options.CertPath = path.Join(i.srcDir, "../ca-next.crt")
-		options.Primary = false
 
-		err := RunCreateKeypair(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running %q create next CA keypair: %v", inputYAML, err)
-		}
-	}
 	return factory
 }
 
