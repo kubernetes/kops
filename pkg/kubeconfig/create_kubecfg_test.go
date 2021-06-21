@@ -35,6 +35,7 @@ import (
 
 const certData = "-----BEGIN CERTIFICATE-----\nMIIC2DCCAcCgAwIBAgIRALJXAkVj964tq67wMSI8oJQwDQYJKoZIhvcNAQELBQAw\nFTETMBEGA1UEAxMKa3ViZXJuZXRlczAeFw0xNzEyMjcyMzUyNDBaFw0yNzEyMjcy\nMzUyNDBaMBUxEzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUA\nA4IBDwAwggEKAoIBAQDgnCkSmtnmfxEgS3qNPaUCH5QOBGDH/inHbWCODLBCK9gd\nXEcBl7FVv8T2kFr1DYb0HVDtMI7tixRVFDLgkwNlW34xwWdZXB7GeoFgU1xWOQSY\nOACC8JgYTQ/139HBEvgq4sej67p+/s/SNcw34Kk7HIuFhlk1rRk5kMexKIlJBKP1\nYYUYetsJ/QpUOkqJ5HW4GoetE76YtHnORfYvnybviSMrh2wGGaN6r/s4ChOaIbZC\nAn8/YiPKGIDaZGpj6GXnmXARRX/TIdgSQkLwt0aTDBnPZ4XvtpI8aaL8DYJIqAzA\nNPH2b4/uNylat5jDo0b0G54agMi97+2AUrC9UUXpAgMBAAGjIzAhMA4GA1UdDwEB\n/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQBVGR2r\nhzXzRMU5wriPQAJScszNORvoBpXfZoZ09FIupudFxBVU3d4hV9StKnQgPSGA5XQO\nHE97+BxJDuA/rB5oBUsMBjc7y1cde/T6hmi3rLoEYBSnSudCOXJE4G9/0f8byAJe\nrN8+No1r2VgZvZh6p74TEkXv/l3HBPWM7IdUV0HO9JDhSgOVF1fyQKJxRuLJR8jt\nO6mPH2UX0vMwVa4jvwtkddqk2OAdYQvH9rbDjjbzaiW0KnmdueRo92KHAN7BsDZy\nVpXHpqo1Kzg7D3fpaXCf5si7lqqrdJVXH4JC72zxsPehqgi8eIuqOBkiDWmRxAxh\n8yGeRx9AbknHh4Ia\n-----END CERTIFICATE-----\n"
 const privatekeyData = "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA4JwpEprZ5n8RIEt6jT2lAh+UDgRgx/4px21gjgywQivYHVxH\nAZexVb/E9pBa9Q2G9B1Q7TCO7YsUVRQy4JMDZVt+McFnWVwexnqBYFNcVjkEmDgA\ngvCYGE0P9d/RwRL4KuLHo+u6fv7P0jXMN+CpOxyLhYZZNa0ZOZDHsSiJSQSj9WGF\nGHrbCf0KVDpKieR1uBqHrRO+mLR5zkX2L58m74kjK4dsBhmjeq/7OAoTmiG2QgJ/\nP2IjyhiA2mRqY+hl55lwEUV/0yHYEkJC8LdGkwwZz2eF77aSPGmi/A2CSKgMwDTx\n9m+P7jcpWreYw6NG9BueGoDIve/tgFKwvVFF6QIDAQABAoIBAA0ktjaTfyrAxsTI\nBezb7Zr5NBW55dvuII299cd6MJo+rI/TRYhvUv48kY8IFXp/hyUjzgeDLunxmIf9\n/Zgsoic9Ol44/g45mMduhcGYPzAAeCdcJ5OB9rR9VfDCXyjYLlN8H8iU0734tTqM\n0V13tQ9zdSqkGPZOIcq/kR/pylbOZaQMe97BTlsAnOMSMKDgnftY4122Lq3GYy+t\nvpr+bKVaQZwvkLoSU3rECCaKaghgwCyX7jft9aEkhdJv+KlwbsGY6WErvxOaLWHd\ncuMQjGapY1Fa/4UD00mvrA260NyKfzrp6+P46RrVMwEYRJMIQ8YBAk6N6Hh7dc0G\n8Z6i1m0CgYEA9HeCJR0TSwbIQ1bDXUrzpftHuidG5BnSBtax/ND9qIPhR/FBW5nj\n22nwLc48KkyirlfIULd0ae4qVXJn7wfYcuX/cJMLDmSVtlM5Dzmi/91xRiFgIzx1\nAsbBzaFjISP2HpSgL+e9FtSXaaqeZVrflitVhYKUpI/AKV31qGHf04sCgYEA6zTV\n99Sb49Wdlns5IgsfnXl6ToRttB18lfEKcVfjAM4frnkk06JpFAZeR+9GGKUXZHqs\nz2qcplw4d/moCC6p3rYPBMLXsrGNEUFZqBlgz72QA6BBq3X0Cg1Bc2ZbK5VIzwkg\nST2SSux6ccROfgULmN5ZiLOtdUKNEZpFF3i3qtsCgYADT/s7dYFlatobz3kmMnXK\nsfTu2MllHdRys0YGHu7Q8biDuQkhrJwhxPW0KS83g4JQym+0aEfzh36bWcl+u6R7\nKhKj+9oSf9pndgk345gJz35RbPJYh+EuAHNvzdgCAvK6x1jETWeKf6btj5pF1U1i\nQ4QNIw/QiwIXjWZeubTGsQKBgQCbduLu2rLnlyyAaJZM8DlHZyH2gAXbBZpxqU8T\nt9mtkJDUS/KRiEoYGFV9CqS0aXrayVMsDfXY6B/S/UuZjO5u7LtklDzqOf1aKG3Q\ndGXPKibknqqJYH+bnUNjuYYNerETV57lijMGHuSYCf8vwLn3oxBfERRX61M/DU8Z\nworz/QKBgQDCTJI2+jdXg26XuYUmM4XXfnocfzAXhXBULt1nENcogNf1fcptAVtu\nBAiz4/HipQKqoWVUYmxfgbbLRKKLK0s0lOWKbYdVjhEm/m2ZU8wtXTagNwkIGoyq\nY/C1Lox4f1ROJnCjc/hfcOjcxX5M8A8peecHWlVtUPKTJgxQ7oMKcw==\n-----END RSA PRIVATE KEY-----\n"
+const nextCertificate = "-----BEGIN CERTIFICATE-----\nMIIBZzCCARGgAwIBAgIBBDANBgkqhkiG9w0BAQsFADAaMRgwFgYDVQQDEw9zZXJ2\naWNlLWFjY291bnQwHhcNMjEwNTAyMjAzMjE3WhcNMzEwNTAyMjAzMjE3WjAaMRgw\nFgYDVQQDEw9zZXJ2aWNlLWFjY291bnQwXDANBgkqhkiG9w0BAQEFAANLADBIAkEA\no4Tridlsf4Yz3UAiup/scSTiG/OqxkUW3Fz7zGKvVcLeYj9GEIKuzoB1VFk1nboD\nq4cCuGLfdzaQdCQKPIsDuwIDAQABo0IwQDAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0T\nAQH/BAUwAwEB/zAdBgNVHQ4EFgQUhPbxEmUbwVOCa+fZgxreFhf67UEwDQYJKoZI\nhvcNAQELBQADQQALMsyK2Q7C/bk27eCvXyZKUfrLvor10hEjwGhv14zsKWDeTj/J\nA1LPYp7U9VtFfgFOkVbkLE9Rstc0ltNrPqxA\n-----END CERTIFICATE-----\n"
 
 // mock a fake status store.
 type fakeStatusCloud struct {
@@ -132,7 +133,9 @@ func buildMinimalCluster(clusterName string, masterPublicName string, lbCert boo
 func fakeKeyset() *fi.Keyset {
 	cert, _ := pki.ParsePEMCertificate([]byte(certData))
 	key, _ := pki.ParsePEMPrivateKey([]byte(privatekeyData))
+	nextCert, _ := pki.ParsePEMCertificate([]byte(nextCertificate))
 	keyset, _ := fi.NewKeyset(cert, key)
+	_ = keyset.AddItem(nextCert, nil, false)
 	return keyset
 }
 
@@ -178,7 +181,7 @@ func TestBuildKubecfg(t *testing.T) {
 			want: &KubeconfigBuilder{
 				Context: "testcluster",
 				Server:  "https://testcluster.test.com",
-				CACert:  []byte(certData),
+				CACerts: []byte(nextCertificate + certData),
 				User:    "testcluster",
 			},
 			wantClientCert: true,
@@ -193,7 +196,7 @@ func TestBuildKubecfg(t *testing.T) {
 			want: &KubeconfigBuilder{
 				Context: "testcluster",
 				Server:  "https://testcluster.test.com:8443",
-				CACert:  []byte(certData),
+				CACerts: []byte(nextCertificate + certData),
 				User:    "testcluster",
 			},
 			wantClientCert: true,
@@ -208,7 +211,7 @@ func TestBuildKubecfg(t *testing.T) {
 			want: &KubeconfigBuilder{
 				Context: "testcluster",
 				Server:  "https://testcluster.test.com",
-				CACert:  nil,
+				CACerts: nil,
 				User:    "testcluster",
 			},
 			wantClientCert: true,
@@ -223,7 +226,7 @@ func TestBuildKubecfg(t *testing.T) {
 			want: &KubeconfigBuilder{
 				Context: "testcluster",
 				Server:  "https://testcluster.test.com",
-				CACert:  []byte(certData),
+				CACerts: []byte(nextCertificate + certData),
 				User:    "testcluster",
 			},
 			wantClientCert: false,
@@ -239,7 +242,7 @@ func TestBuildKubecfg(t *testing.T) {
 			want: &KubeconfigBuilder{
 				Context: "testcluster",
 				Server:  "https://testcluster.test.com",
-				CACert:  []byte(certData),
+				CACerts: []byte(nextCertificate + certData),
 				User:    "myuser",
 			},
 			wantClientCert: false,
@@ -255,7 +258,7 @@ func TestBuildKubecfg(t *testing.T) {
 			want: &KubeconfigBuilder{
 				Context: "emptyMasterPublicNameCluster",
 				Server:  "https://api.emptyMasterPublicNameCluster",
-				CACert:  []byte(certData),
+				CACerts: []byte(nextCertificate + certData),
 				User:    "emptyMasterPublicNameCluster",
 			},
 			wantClientCert: false,
@@ -277,7 +280,7 @@ func TestBuildKubecfg(t *testing.T) {
 			want: &KubeconfigBuilder{
 				Context: "testgossipcluster.k8s.local",
 				Server:  "https://elbHostName",
-				CACert:  []byte(certData),
+				CACerts: []byte(nextCertificate + certData),
 				User:    "testgossipcluster.k8s.local",
 			},
 			wantClientCert: false,
@@ -293,7 +296,7 @@ func TestBuildKubecfg(t *testing.T) {
 			want: &KubeconfigBuilder{
 				Context: "testcluster",
 				Server:  "https://testcluster.test.com",
-				CACert:  []byte(certData),
+				CACerts: []byte(nextCertificate + certData),
 				User:    "testcluster",
 				AuthenticationExec: []string{
 					"kops",
@@ -316,7 +319,7 @@ func TestBuildKubecfg(t *testing.T) {
 			want: &KubeconfigBuilder{
 				Context: "testcluster",
 				Server:  "https://internal.testcluster.test.com",
-				CACert:  []byte(certData),
+				CACerts: []byte(nextCertificate + certData),
 				User:    "testcluster",
 			},
 			wantClientCert: true,
@@ -339,7 +342,7 @@ func TestBuildKubecfg(t *testing.T) {
 			want: &KubeconfigBuilder{
 				Context: "testgossipcluster.k8s.local",
 				Server:  "https://nlbHostName:8443",
-				CACert:  []byte(certData),
+				CACerts: []byte(nextCertificate + certData),
 				User:    "testgossipcluster.k8s.local",
 			},
 			wantClientCert: true,

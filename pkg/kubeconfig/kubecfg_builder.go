@@ -37,7 +37,7 @@ type KubeconfigBuilder struct {
 	KubeUser     string
 	KubePassword string
 
-	CACert     []byte
+	CACerts    []byte
 	ClientCert []byte
 	ClientKey  []byte
 
@@ -82,7 +82,7 @@ func (c *KubeconfigBuilder) BuildRestConfig() (*rest.Config, error) {
 	restConfig := &rest.Config{
 		Host: c.Server,
 	}
-	restConfig.CAData = c.CACert
+	restConfig.CAData = c.CACerts
 	restConfig.CertData = c.ClientCert
 	restConfig.KeyData = c.ClientKey
 	restConfig.Username = c.KubeUser
@@ -108,7 +108,7 @@ func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) er
 			cluster = clientcmdapi.NewCluster()
 		}
 		cluster.Server = b.Server
-		cluster.CertificateAuthorityData = b.CACert
+		cluster.CertificateAuthorityData = b.CACerts
 
 		if config.Clusters == nil {
 			config.Clusters = make(map[string]*clientcmdapi.Cluster)
