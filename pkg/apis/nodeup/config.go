@@ -57,6 +57,8 @@ type Config struct {
 
 	// CAs are the CA certificates to trust.
 	CAs map[string]string
+	// KeypairIDs are the IDs of keysets used to sign things.
+	KeypairIDs map[string]string
 	// DefaultMachineType is the first-listed instance machine type, used if querying instance metadata fails.
 	DefaultMachineType *string `json:",omitempty"`
 	// EnableLifecycleHook defines whether we need to complete a lifecycle hook.
@@ -122,6 +124,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	config := Config{
 		InstanceGroupRole: role,
 		CAs:               map[string]string{},
+		KeypairIDs:        map[string]string{},
 		SysctlParameters:  instanceGroup.Spec.SysctlParameters,
 		VolumeMounts:      instanceGroup.Spec.VolumeMounts,
 	}
