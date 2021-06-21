@@ -48,7 +48,6 @@ Para instalar un Kubernetes cluster en GCE por fabor siga esta [guide](/docs/get
 * [Templating](/docs/cluster_template.md) y ejecutar modos de simulacro para crear
  Manifiestos
 * Escoge de ocho proveedores CNI diferentes [Networking](/docs/networking.md)
-* Soporta Actualizarse desde [kube-up](/docs/upgrade_from_kubeup.md)
 * Capacidad para añadir contenedores, como enganches, y archivos a nodos vía [cluster manifest](/docs/cluster_spec.md)
 
 
