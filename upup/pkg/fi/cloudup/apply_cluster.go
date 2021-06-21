@@ -766,7 +766,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			return fmt.Errorf("error writing kops version: %v", err)
 		}
 
-		err = registry.WriteConfigDeprecated(cluster, configBase.Join(registry.PathClusterCompleted), c.Cluster)
+		err = c.Clientset.UpdateCompletedCluster(ctx, c.Cluster)
 		if err != nil {
 			return fmt.Errorf("error writing completed cluster spec: %v", err)
 		}

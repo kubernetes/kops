@@ -76,6 +76,12 @@ func (c *RESTClientset) UpdateCluster(ctx context.Context, cluster *kops.Cluster
 	return c.KopsClient.Clusters(namespace).Update(ctx, cluster, metav1.UpdateOptions{})
 }
 
+// UpdateCompletedCluster implements the UpdateCompletedCluster method of Clientset for a kubernetes-API state store
+func (c *RESTClientset) UpdateCompletedCluster(ctx context.Context, cluster *kops.Cluster) error {
+	// Not implemented
+	return nil
+}
+
 // ConfigBaseFor implements the ConfigBaseFor method of Clientset for a kubernetes-API state store
 func (c *RESTClientset) ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error) {
 	if cluster.Spec.ConfigBase != "" {
