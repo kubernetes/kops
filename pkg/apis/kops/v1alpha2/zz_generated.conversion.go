@@ -4587,6 +4587,7 @@ func Convert_kops_KopeioNetworkingSpec_To_v1alpha2_KopeioNetworkingSpec(in *kops
 func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *KubeAPIServerConfig, out *kops.KubeAPIServerConfig, s conversion.Scope) error {
 	out.Image = in.Image
 	out.DisableBasicAuth = in.DisableBasicAuth
+	out.LogFormat = in.LogFormat
 	out.LogLevel = in.LogLevel
 	out.CloudProvider = in.CloudProvider
 	out.SecurePort = in.SecurePort
@@ -4697,6 +4698,7 @@ func Convert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *KubeAP
 func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *kops.KubeAPIServerConfig, out *KubeAPIServerConfig, s conversion.Scope) error {
 	out.Image = in.Image
 	out.DisableBasicAuth = in.DisableBasicAuth
+	out.LogFormat = in.LogFormat
 	out.LogLevel = in.LogLevel
 	out.CloudProvider = in.CloudProvider
 	out.SecurePort = in.SecurePort
@@ -4806,6 +4808,7 @@ func Convert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *kops.K
 
 func autoConvert_v1alpha2_KubeControllerManagerConfig_To_kops_KubeControllerManagerConfig(in *KubeControllerManagerConfig, out *kops.KubeControllerManagerConfig, s conversion.Scope) error {
 	out.Master = in.Master
+	out.LogFormat = in.LogFormat
 	out.LogLevel = in.LogLevel
 	out.ServiceAccountPrivateKeyFile = in.ServiceAccountPrivateKeyFile
 	out.Image = in.Image
@@ -4872,6 +4875,7 @@ func Convert_v1alpha2_KubeControllerManagerConfig_To_kops_KubeControllerManagerC
 
 func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha2_KubeControllerManagerConfig(in *kops.KubeControllerManagerConfig, out *KubeControllerManagerConfig, s conversion.Scope) error {
 	out.Master = in.Master
+	out.LogFormat = in.LogFormat
 	out.LogLevel = in.LogLevel
 	out.ServiceAccountPrivateKeyFile = in.ServiceAccountPrivateKeyFile
 	out.Image = in.Image
@@ -5062,6 +5066,7 @@ func Convert_kops_KubeProxyConfig_To_v1alpha2_KubeProxyConfig(in *kops.KubeProxy
 
 func autoConvert_v1alpha2_KubeSchedulerConfig_To_kops_KubeSchedulerConfig(in *KubeSchedulerConfig, out *kops.KubeSchedulerConfig, s conversion.Scope) error {
 	out.Master = in.Master
+	out.LogFormat = in.LogFormat
 	out.LogLevel = in.LogLevel
 	out.Image = in.Image
 	if in.LeaderElection != nil {
@@ -5092,6 +5097,7 @@ func Convert_v1alpha2_KubeSchedulerConfig_To_kops_KubeSchedulerConfig(in *KubeSc
 
 func autoConvert_kops_KubeSchedulerConfig_To_v1alpha2_KubeSchedulerConfig(in *kops.KubeSchedulerConfig, out *KubeSchedulerConfig, s conversion.Scope) error {
 	out.Master = in.Master
+	out.LogFormat = in.LogFormat
 	out.LogLevel = in.LogLevel
 	out.Image = in.Image
 	if in.LeaderElection != nil {
@@ -5132,6 +5138,7 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.TLSMinVersion = in.TLSMinVersion
 	out.KubeconfigPath = in.KubeconfigPath
 	out.RequireKubeconfig = in.RequireKubeconfig
+	out.LogFormat = in.LogFormat
 	out.LogLevel = in.LogLevel
 	out.PodManifestPath = in.PodManifestPath
 	out.HostnameOverride = in.HostnameOverride
@@ -5226,6 +5233,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.TLSMinVersion = in.TLSMinVersion
 	out.KubeconfigPath = in.KubeconfigPath
 	out.RequireKubeconfig = in.RequireKubeconfig
+	out.LogFormat = in.LogFormat
 	out.LogLevel = in.LogLevel
 	out.PodManifestPath = in.PodManifestPath
 	out.HostnameOverride = in.HostnameOverride
