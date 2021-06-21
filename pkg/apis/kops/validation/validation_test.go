@@ -289,6 +289,12 @@ func TestValidateKubeAPIServer(t *testing.T) {
 				"Unsupported value::KubeAPIServer.authorizationMode",
 			},
 		},
+		{
+			Input: kops.KubeAPIServerConfig{
+				LogFormat: "no-json",
+			},
+			ExpectedErrors: []string{"Unsupported value::KubeAPIServer.logFormat"},
+		},
 	}
 	for _, g := range grid {
 		if g.Cluster == nil {
