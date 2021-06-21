@@ -132,18 +132,8 @@ func buildMinimalCluster(clusterName string, masterPublicName string, lbCert boo
 func fakeKeyset() *fi.Keyset {
 	cert, _ := pki.ParsePEMCertificate([]byte(certData))
 	key, _ := pki.ParsePEMPrivateKey([]byte(privatekeyData))
-	keysetItem := &fi.KeysetItem{
-		Id:          "99",
-		Certificate: cert,
-		PrivateKey:  key,
-	}
-	return &fi.Keyset{
-		LegacyFormat: true,
-		Items: map[string]*fi.KeysetItem{
-			"99": keysetItem,
-		},
-		Primary: keysetItem,
-	}
+	keyset, _ := fi.NewKeyset(cert, key)
+	return keyset
 }
 
 func TestBuildKubecfg(t *testing.T) {
