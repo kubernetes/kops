@@ -611,15 +611,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}
 
-	configBase, err := clientset.ConfigBaseFor(cluster)
-	if err != nil {
-		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
-	}
-	err = registry.WriteConfigDeprecated(cluster, configBase.Join(registry.PathClusterCompleted), fullCluster)
-	if err != nil {
-		return fmt.Errorf("error writing completed cluster spec: %v", err)
-	}
-
 	if len(c.SSHPublicKeys) == 0 {
 		autoloadSSHPublicKeys := true
 		switch c.CloudProvider {

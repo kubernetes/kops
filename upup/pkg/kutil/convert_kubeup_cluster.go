@@ -108,7 +108,7 @@ func (x *ConvertKubeupCluster) Upgrade(ctx context.Context) error {
 	}
 
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
-	fullCluster, err := cloudup.PopulateClusterSpec(x.Clientset, cluster, x.Cloud, assetBuilder)
+	_, err = cloudup.PopulateClusterSpec(x.Clientset, cluster, x.Cloud, assetBuilder)
 	if err != nil {
 		return err
 	}
@@ -468,16 +468,6 @@ func (x *ConvertKubeupCluster) Upgrade(ctx context.Context) error {
 	err = registry.CreateClusterConfig(ctx, x.Clientset, cluster, x.InstanceGroups, nil)
 	if err != nil {
 		return fmt.Errorf("error writing updated configuration: %v", err)
-	}
-
-	// TODO: No longer needed?
-	err = registry.WriteConfigDeprecated(cluster, newConfigBase.Join(registry.PathClusterCompleted), fullCluster)
-	if err != nil {
-		return fmt.Errorf("error writing completed cluster spec: %v", err)
-	}
-
-	if err != nil {
-		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}
 
 	oldCACertPool, err := oldKeyStore.FindCertificatePool(fi.CertificateIDCA)

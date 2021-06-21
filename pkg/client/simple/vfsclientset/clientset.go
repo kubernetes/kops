@@ -53,6 +53,11 @@ func (c *VFSClientset) UpdateCluster(ctx context.Context, cluster *kops.Cluster,
 	return c.clusters().Update(cluster, status)
 }
 
+// UpdateCompletedCluster implements the UpdateCluster method of simple.Clientset for a VFS-backed state store.
+func (c *VFSClientset) UpdateCompletedCluster(ctx context.Context, cluster *kops.Cluster) error {
+	return c.clusters().UpdateCompleted(cluster)
+}
+
 // CreateCluster implements the CreateCluster method of simple.Clientset for a VFS-backed state store
 func (c *VFSClientset) CreateCluster(ctx context.Context, cluster *kops.Cluster) (*kops.Cluster, error) {
 	return c.clusters().Create(cluster)
@@ -143,7 +148,8 @@ func DeleteAllClusterState(basePath vfs.Path) error {
 			continue
 		}
 
-		if relativePath == "config" || relativePath == "cluster.spec" || relativePath == registry.PathKopsVersionUpdated {
+		// "cluster.spec" was written by kOps 1.21 and earlier.
+		if relativePath == "config" || relativePath == "cluster.spec" || relativePath == "cluster-completed.spec" || relativePath == registry.PathKopsVersionUpdated {
 			continue
 		}
 		if strings.HasPrefix(relativePath, "addons/") {
