@@ -282,6 +282,8 @@ ClusterName: externalpolicies.example.com
 ConfigBase: memfs://clusters.example.com/externalpolicies.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
+KeypairIDs:
+  ca: "6976381481633145814258938760"
 KubeletConfig:
   anonymousAuth: false
   cgroupDriver: systemd

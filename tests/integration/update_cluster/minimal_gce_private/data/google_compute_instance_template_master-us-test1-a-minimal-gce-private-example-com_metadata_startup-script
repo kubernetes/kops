@@ -283,6 +283,8 @@ ClusterName: minimal-gce-private.example.com
 ConfigBase: memfs://tests/minimal-gce-private.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: Master
+KeypairIDs:
+  ca: "6976381481633145814258938760"
 KubeletConfig:
   anonymousAuth: false
   cgroupDriver: systemd

@@ -282,6 +282,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
   ConfigBase: memfs://clusters.example.com/privatecilium.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
+  KeypairIDs:
+    ca: "6976381481633145814258938760"
   KubeletConfig:
     anonymousAuth: false
     cgroupDriver: systemd
@@ -531,6 +533,7 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumexamplecom.Properties.LaunchTemp
   ConfigBase: memfs://clusters.example.com/privatecilium.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
+  KeypairIDs: {}
   KubeletConfig:
     anonymousAuth: false
     cgroupDriver: systemd
