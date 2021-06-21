@@ -95,7 +95,7 @@ func (s *configserverKeyStore) FindCert(name string) (*pki.Certificate, error) {
 }
 
 // ListKeysets implements fi.CAStore
-func (s *configserverKeyStore) ListKeysets() ([]*kops.Keyset, error) {
+func (s *configserverKeyStore) ListKeysets() (map[string]*fi.Keyset, error) {
 	return nil, fmt.Errorf("ListKeysets not supported by configserverKeyStore")
 }
 
