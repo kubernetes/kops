@@ -410,11 +410,26 @@ func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContex
 		p = filepath.Join(c.PathSrvKubernetes(), p)
 	}
 
-	certificate, privateKey, err := c.KeyStore.FindPrimaryKeypair(name)
+	// We use the keypair ID passed in nodeup.Config instead of the primary
+	// keypair so that the node will be updated when the primary keypair does
+	// not match the one that we are using.
+	keypairID := c.NodeupConfig.KeypairIDs[name]
+	if keypairID == "" {
+		// kOps bug where KeypairID was not populated for the node role.
+		return fmt.Errorf("no keypair ID for %q", name)
+	}
+
+	keyset, err := c.KeyStore.FindKeyset(name)
 	if err != nil {
 		return err
 	}
 
+	item := keyset.Items[keypairID]
+	if item == nil {
+		return fmt.Errorf("did not find keypair %s for %s", keypairID, name)
+	}
+
+	certificate := item.Certificate
 	if certificate == nil {
 		return fmt.Errorf("certificate %q not found", name)
 	}
@@ -432,6 +447,7 @@ func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContex
 		Owner:    owner,
 	})
 
+	privateKey := item.PrivateKey
 	if privateKey == nil {
 		return fmt.Errorf("private key %q not found", name)
 	}

@@ -235,7 +235,8 @@ func BuildNodeupModelContext(basedir string) (*NodeupModelContext, error) {
 		Cluster:      model.Cluster,
 		Architecture: "amd64",
 		NodeupConfig: &nodeup.Config{
-			CAs: map[string]string{},
+			CAs:        map[string]string{},
+			KeypairIDs: map[string]string{},
 		},
 	}
 
@@ -248,6 +249,7 @@ func BuildNodeupModelContext(basedir string) (*NodeupModelContext, error) {
 	}
 
 	nodeUpModelContext.NodeupConfig.CAs["ca"] = dummyCertificate + nextCertificate
+	nodeUpModelContext.NodeupConfig.KeypairIDs["ca"] = "3"
 
 	if err := nodeUpModelContext.Init(); err != nil {
 		return nil, err
