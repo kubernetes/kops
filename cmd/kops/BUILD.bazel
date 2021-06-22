@@ -91,7 +91,6 @@ go_library(
         "//pkg/util/templater:go_default_library",
         "//pkg/validation:go_default_library",
         "//upup/pkg/fi:go_default_library",
-        "//upup/pkg/fi/assettasks:go_default_library",
         "//upup/pkg/fi/cloudup:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",

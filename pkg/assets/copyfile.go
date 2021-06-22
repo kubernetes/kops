@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package assettasks
+package assets
 
 import (
 	"bytes"
@@ -25,27 +25,19 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/acls"
-	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
 // CopyFile copies an from a source file repository, to a target repository,
 // typically used for highly secure clusters.
-// +kops:fitask
 type CopyFile struct {
-	Name       *string
-	SourceFile *string
-	TargetFile *string
-	SHA        *string
-	Lifecycle  fi.Lifecycle
-}
-
-var _ fi.CompareWithID = &CopyFile{}
-
-func (e *CopyFile) CompareWithID() *string {
-	// or should this be the SHA?
-	return e.Name
+	Name       string
+	SourceFile string
+	TargetFile string
+	SHA        string
+	Cluster    *kops.Cluster
 }
 
 // fileExtensionForSHA returns the expected extension for the given hash
@@ -61,74 +53,42 @@ func fileExtensionForSHA(sha string) (string, error) {
 	}
 }
 
-// Find attempts to find a file.
-func (e *CopyFile) Find(c *fi.Context) (*CopyFile, error) {
-	expectedSHA := strings.TrimSpace(fi.StringValue(e.SHA))
+func (e *CopyFile) Run() error {
+	expectedSHA := strings.TrimSpace(e.SHA)
 
 	shaExtension, err := fileExtensionForSHA(expectedSHA)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	targetSHAFile := fi.StringValue(e.TargetFile) + shaExtension
+	targetSHAFile := e.TargetFile + shaExtension
 
 	targetSHABytes, err := vfs.Context.ReadFile(targetSHAFile)
 	if err != nil {
 		if os.IsNotExist(err) {
 			klog.V(4).Infof("unable to download: %q, assuming target file is not present, and if not present may not be an error: %v",
 				targetSHAFile, err)
-			return nil, nil
+		} else {
+			klog.V(4).Infof("unable to download: %q, %v", targetSHAFile, err)
 		}
-		klog.V(4).Infof("unable to download: %q, %v", targetSHAFile, err)
-		// TODO should we throw err here?
-		return nil, nil
-	}
-	targetSHA := string(targetSHABytes)
+	} else {
+		targetSHA := string(targetSHABytes)
 
-	if strings.TrimSpace(targetSHA) == expectedSHA {
-		actual := &CopyFile{
-			Name:       e.Name,
-			TargetFile: e.TargetFile,
-			SHA:        e.SHA,
-			SourceFile: e.SourceFile,
-			Lifecycle:  e.Lifecycle,
+		if strings.TrimSpace(targetSHA) == expectedSHA {
+			klog.V(8).Infof("found matching target sha for file: %q", e.TargetFile)
+			return nil
 		}
-		klog.V(8).Infof("found matching target sha1 for file: %q", fi.StringValue(e.TargetFile))
-		return actual, nil
+
+		klog.V(8).Infof("did not find same file, found mismatching target sha1 for file: %q", e.TargetFile)
 	}
 
-	klog.V(8).Infof("did not find same file, found mismatching target sha1 for file: %q", fi.StringValue(e.TargetFile))
-	return nil, nil
-
-}
-
-// Run is the default run method.
-func (e *CopyFile) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
-}
-
-func (s *CopyFile) CheckChanges(a, e, changes *CopyFile) error {
-	if fi.StringValue(e.Name) == "" {
-		return fi.RequiredField("Name")
-	}
-	if fi.StringValue(e.SourceFile) == "" {
-		return fi.RequiredField("SourceFile")
-	}
-	if fi.StringValue(e.TargetFile) == "" {
-		return fi.RequiredField("TargetFile")
-	}
-	return nil
-}
-
-func (_ *CopyFile) Render(c *fi.Context, a, e, changes *CopyFile) error {
-
-	source := fi.StringValue(e.SourceFile)
-	target := fi.StringValue(e.TargetFile)
-	sourceSha := fi.StringValue(e.SHA)
+	source := e.SourceFile
+	target := e.TargetFile
+	sourceSha := e.SHA
 
 	klog.V(2).Infof("copying bits from %q to %q", source, target)
 
-	if err := transferFile(c, source, target, sourceSha); err != nil {
+	if err := transferFile(e.Cluster, source, target, sourceSha); err != nil {
 		return fmt.Errorf("unable to transfer %q to %q: %v", source, target, err)
 	}
 
@@ -137,7 +97,7 @@ func (_ *CopyFile) Render(c *fi.Context, a, e, changes *CopyFile) error {
 
 // transferFile downloads a file from the source location, validates the file matches the SHA,
 // and uploads the file to the target location.
-func transferFile(c *fi.Context, source string, target string, sha string) error {
+func transferFile(cluster *kops.Cluster, source string, target string, sha string) error {
 
 	// TODO drop file to disk, as vfs reads file into memory.  We load kubelet into memory for instance.
 	// TODO in s3 can we do a copy file ... would need to test
@@ -188,21 +148,21 @@ func transferFile(c *fi.Context, source string, target string, sha string) error
 	}
 
 	klog.Infof("uploading %q to %q", source, objectStore)
-	if err := writeFile(c, uploadVFS, data); err != nil {
+	if err := writeFile(cluster, uploadVFS, data); err != nil {
 		return err
 	}
 
 	b := []byte(shaHash.Hex())
-	if err := writeFile(c, shaVFS, b); err != nil {
+	if err := writeFile(cluster, shaVFS, b); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func writeFile(c *fi.Context, p vfs.Path, data []byte) error {
+func writeFile(cluster *kops.Cluster, p vfs.Path, data []byte) error {
 
-	acl, err := acls.GetACL(p, c.Cluster)
+	acl, err := acls.GetACL(p, cluster)
 	if err != nil {
 		return err
 	}
