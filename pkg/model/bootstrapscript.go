@@ -43,7 +43,7 @@ import (
 )
 
 type NodeUpConfigBuilder interface {
-	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caCertificates fi.Resource) (*nodeup.Config, *nodeup.AuxConfig, error)
+	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTask *fitasks.Keypair) (*nodeup.Config, *nodeup.AuxConfig, error)
 }
 
 // BootstrapScriptBuilder creates the bootstrap script
@@ -91,7 +91,7 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (string
 	}
 
 	sort.Strings(alternateNames)
-	config, auxConfig, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames, b.caTask.Certificates())
+	config, auxConfig, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames, b.caTask)
 	if err != nil {
 		return "", err
 	}
