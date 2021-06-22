@@ -36,6 +36,9 @@ if [[ -z "${NETWORKING-}" ]]; then
     export NETWORKING="calico"
 fi
 
+export KOPS_BASE_URL
+export KOPS
+
 export KOPS_FEATURE_FLAGS="SpecOverrideFlag"
 
 if [[ -z "${DISCOVERY_STORE-}" ]]; then 
@@ -96,15 +99,14 @@ function kops-base-from-marker() {
 # This function will download the latest kops if in a periodic job, otherwise build from the current tree
 function kops-acquire-latest() {
     if [[ "${JOB_TYPE-}" == "periodic" ]]; then
-        export KOPS_BASE_URL
         KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
-        kops-download-from-base
+        KOPS=$(kops-download-from-base)
     else
          if [[ -n "${KOPS_BASE_URL-}" ]]; then
-            unset KOPS_BASE_URL
+            KOPS_BASE_URL=""
          fi
-         $KUBETEST2 --build >&2
-         echo .bazelbuild/dist/linux/amd64/kops
+         $KUBETEST2 --build
+         KOPS=".bazelbuild/dist/linux/amd64/kops"
     fi
 }
 
