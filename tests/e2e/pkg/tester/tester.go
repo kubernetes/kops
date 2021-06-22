@@ -351,6 +351,10 @@ func (t *Tester) execute() error {
 		return err
 	}
 
+	if err := t.setSkipRegexFlag(); err != nil {
+		return err
+	}
+
 	return t.Test()
 }
 
