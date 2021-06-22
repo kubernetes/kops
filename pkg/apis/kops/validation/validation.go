@@ -35,7 +35,6 @@ import (
 	utilvalidation "k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
@@ -121,12 +120,6 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 
 	if spec.KubeAPIServer != nil {
 		allErrs = append(allErrs, validateKubeAPIServer(spec.KubeAPIServer, c, fieldPath.Child("kubeAPIServer"))...)
-	}
-
-	if spec.ExternalCloudControllerManager != nil {
-		if kops.CloudProviderID(spec.CloudProvider) != kops.CloudProviderOpenstack && !featureflag.EnableExternalCloudController.Enabled() {
-			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("cloudControllerManager"), "external cloud controller manager is an experimental feature; set `export KOPS_FEATURE_FLAGS=EnableExternalCloudController`"))
-		}
 	}
 
 	if spec.KubeProxy != nil {
