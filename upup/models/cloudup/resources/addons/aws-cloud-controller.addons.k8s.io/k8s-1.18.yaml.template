@@ -37,6 +37,7 @@ spec:
             requests:
               cpu: 200m
       hostNetwork: true
+      priorityClassName: system-cluster-critical
 ---
 apiVersion: v1
 kind: ServiceAccount
