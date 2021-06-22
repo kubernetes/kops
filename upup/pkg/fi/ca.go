@@ -93,9 +93,6 @@ type CAStore interface {
 
 	// ListKeysets will return all the KeySets.
 	ListKeysets() (map[string]*Keyset, error)
-
-	// DeleteKeysetItem will delete the specified item from the Keyset
-	DeleteKeysetItem(item *kops.Keyset, id string) error
 }
 
 // SSHCredentialStore holds SSHCredential objects
