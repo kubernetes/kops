@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,8 +22,7 @@ import (
 	"fmt"
 	"io"
 
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/assettasks"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 	"sigs.k8s.io/yaml"
@@ -56,9 +55,6 @@ type AssetResult struct {
 	Images []*Image `json:"images,omitempty"`
 	// FileAssets are the file assets we use (output).
 	Files []*File `json:"files,omitempty"`
-}
-
-type copyAssetsTarget struct {
 }
 
 func NewCmdGetAssets(f *util.Factory, out io.Writer, getOptions *GetOptions) *cobra.Command {
@@ -120,7 +116,6 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 		Images: make([]*Image, 0, len(updateClusterResults.ImageAssets)),
 		Files:  make([]*File, 0, len(updateClusterResults.FileAssets)),
 	}
-	tasks := map[string]fi.Task{}
 
 	seen := map[string]bool{}
 	for _, imageAsset := range updateClusterResults.ImageAssets {
@@ -131,24 +126,6 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 		if !seen[image.Canonical] {
 			result.Images = append(result.Images, &image)
 			seen[image.Canonical] = true
-		}
-
-		if options.Copy && imageAsset.DownloadLocation != imageAsset.CanonicalLocation {
-			ctx := &fi.ModelBuilderContext{
-				Tasks: tasks,
-			}
-
-			copyImageTask := &assettasks.CopyImage{
-				Name:        fi.String(imageAsset.DownloadLocation),
-				SourceImage: fi.String(imageAsset.CanonicalLocation),
-				TargetImage: fi.String(imageAsset.DownloadLocation),
-				Lifecycle:   fi.LifecycleSync,
-			}
-
-			if err := ctx.EnsureTask(copyImageTask); err != nil {
-				return fmt.Errorf("error adding image-copy task: %v", err)
-			}
-			tasks = ctx.Tasks
 		}
 	}
 
@@ -163,41 +140,12 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 			result.Files = append(result.Files, &file)
 			seen[file.Canonical] = true
 		}
-
-		// test if the asset needs to be copied
-		if options.Copy && fileAsset.DownloadURL.String() != fileAsset.CanonicalURL.String() {
-			ctx := &fi.ModelBuilderContext{
-				Tasks: tasks,
-			}
-
-			copyFileTask := &assettasks.CopyFile{
-				Name:       fi.String(fileAsset.CanonicalURL.String()),
-				TargetFile: fi.String(fileAsset.DownloadURL.String()),
-				SourceFile: fi.String(fileAsset.CanonicalURL.String()),
-				SHA:        fi.String(fileAsset.SHAValue),
-				Lifecycle:  fi.LifecycleSync,
-			}
-
-			if err := ctx.EnsureTask(copyFileTask); err != nil {
-				return fmt.Errorf("error adding file-copy task: %v", err)
-			}
-			tasks = ctx.Tasks
-		}
 	}
 
 	if options.Copy {
-		var options fi.RunTasksOptions
-		options.InitDefaults()
-
-		context, err := fi.NewContext(&copyAssetsTarget{}, updateClusterResults.Cluster, nil, nil, nil, nil, true, tasks)
+		err := assets.Copy(updateClusterResults.ImageAssets, updateClusterResults.FileAssets, updateClusterResults.Cluster)
 		if err != nil {
-			return fmt.Errorf("error building context: %v", err)
-		}
-		defer context.Close()
-
-		err = context.RunTasks(options)
-		if err != nil {
-			return fmt.Errorf("error running tasks: %v", err)
+			return err
 		}
 	}
 
@@ -259,12 +207,4 @@ func fileOutputTable(files []*File, out io.Writer) error {
 
 	columns := []string{"CANONICAL", "DOWNLOAD", "SHA"}
 	return t.Render(files, out, columns...)
-}
-
-func (c copyAssetsTarget) Finish(taskMap map[string]fi.Task) error {
-	return nil
-}
-
-func (c copyAssetsTarget) ProcessDeletions() bool {
-	return false
 }
