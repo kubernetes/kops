@@ -1,9 +1,12 @@
 # Getting Started with kOps on Azure
 
 Azure support on kOps is currently in alpha. The original issue
-ticket is [#3957](https://github.com/kubernetes/kops/issues/3957) and
-the remaining items are tracked in
-[#10412](https://github.com/kubernetes/kops/issues/10412).
+ticket is [#3957](https://github.com/kubernetes/kops/issues/3957).
+
+Please see [#10412](https://github.com/kubernetes/kops/issues/10412)
+for the remaining items and limitations. For example, Azure DNS is not
+currently supported, and clusters need to be created with [Gossip
+DNS](https://kops.sigs.k8s.io/gossip/).
 
 # Create Creation Steps
 
