@@ -52,8 +52,6 @@ var (
 	CacheNodeidentityInfo = New("CacheNodeidentityInfo", Bool(false))
 	// DNSPreCreate controls whether we pre-create DNS records.
 	DNSPreCreate = New("DNSPreCreate", Bool(true))
-	//EnableExternalCloudController toggles the use of cloud-controller-manager introduced in v1.7
-	EnableExternalCloudController = New("EnableExternalCloudController", Bool(true))
 	// EnableExternalDNS enables external DNS
 	EnableExternalDNS = New("EnableExternalDNS", Bool(false))
 	// EnableSeparateConfigBase allows a config-base that is different from the state store
