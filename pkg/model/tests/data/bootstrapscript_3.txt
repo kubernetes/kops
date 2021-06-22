@@ -160,6 +160,7 @@ AuxConfigHash: /0fgYG0lsuxVGuNdtGBZA0RYxOfvLD/xOFg1eJwyfcw=
 CAs: {}
 CloudProvider: ""
 InstanceGroupRole: Node
+KeypairIDs: {}
 KubeletConfig:
   kubeconfigPath: /etc/kubernetes/igconfig.txt
   nodeLabels:

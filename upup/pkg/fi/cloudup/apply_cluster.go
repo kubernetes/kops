@@ -70,6 +70,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
+	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/mirrors"
@@ -1295,7 +1296,7 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 }
 
 // BuildConfig returns the NodeUp config and auxiliary config.
-func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caCertificates fi.Resource) (*nodeup.Config, *nodeup.AuxConfig, error) {
+func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTask *fitasks.Keypair) (*nodeup.Config, *nodeup.AuxConfig, error) {
 	cluster := n.cluster
 
 	if ig == nil {
@@ -1322,12 +1323,16 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	config.InstanceGroupName = ig.ObjectMeta.Name
 	config.CloudProvider = cluster.Spec.CloudProvider
 
-	cas, err := fi.ResourceAsString(caCertificates)
+	cas, err := fi.ResourceAsString(caTask.Certificates())
 	if err != nil {
 		// CA task may not have run yet; we'll retry
 		return nil, nil, fmt.Errorf("failed to read CA certificates: %w", err)
 	}
 	config.CAs[fi.CertificateIDCA] = cas
+
+	if isMaster {
+		config.KeypairIDs[fi.CertificateIDCA] = caTask.Keyset().Primary.Id
+	}
 
 	if isMaster || useGossip {
 		for _, arch := range architectures.GetSupported() {
