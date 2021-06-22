@@ -26,7 +26,8 @@ kops get keypairs [flags]
 ### Options
 
 ```
-  -h, --help   help for keypairs
+      --distrusted   Include distrusted keypairs
+  -h, --help         help for keypairs
 ```
 
 ### Options inherited from parent commands

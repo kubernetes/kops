@@ -132,6 +132,10 @@ func (o *OIDCKeys) Open() (io.Reader, error) {
 	var keys []jose.JSONWebKey
 
 	for _, item := range keyset.Items {
+		if item.DistrustTimestamp != nil {
+			continue
+		}
+
 		publicKey := item.Certificate.PublicKey
 		publicKeyDERBytes, err := x509.MarshalPKIXPublicKey(publicKey)
 		if err != nil {

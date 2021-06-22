@@ -58,9 +58,15 @@ type Keyset struct {
 
 // KeysetItem is a certificate/key pair in a Keyset.
 type KeysetItem struct {
-	Id          string
+	// Id is the identifier of this keypair.
+	Id string
+	// DistrustTimestamp is RFC 3339 date and time at which this keypair was distrusted.
+	// If not set, keypair is trusted.
+	DistrustTimestamp *time.Time
+	// Certificate is the keypair's certificate.
 	Certificate *pki.Certificate
-	PrivateKey  *pki.PrivateKey
+	// PrivateKey is a reference to the keypair's private key.
+	PrivateKey *pki.PrivateKey
 }
 
 // Keystore contains just the functions we need to issue keypairs, not to list / manage them
@@ -141,8 +147,10 @@ func KeysetItemIdOlder(a, b string) bool {
 
 func (k *Keyset) ToCertificateBytes() ([]byte, error) {
 	keys := make([]string, 0, len(k.Items))
-	for k := range k.Items {
-		keys = append(keys, k)
+	for k, item := range k.Items {
+		if item.DistrustTimestamp == nil {
+			keys = append(keys, k)
+		}
 	}
 	sort.Slice(keys, func(i, j int) bool {
 		return KeysetItemIdOlder(k.Items[keys[i]].Id, k.Items[keys[j]].Id)
@@ -162,8 +170,10 @@ func (k *Keyset) ToCertificateBytes() ([]byte, error) {
 
 func (k *Keyset) ToPublicKeyBytes() ([]byte, error) {
 	keys := make([]string, 0, len(k.Items))
-	for k := range k.Items {
-		keys = append(keys, k)
+	for k, item := range k.Items {
+		if item.DistrustTimestamp == nil {
+			keys = append(keys, k)
+		}
 	}
 	sort.Slice(keys, func(i, j int) bool {
 		return KeysetItemIdOlder(k.Items[keys[i]].Id, k.Items[keys[j]].Id)

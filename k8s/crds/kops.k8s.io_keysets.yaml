@@ -43,6 +43,12 @@ spec:
                   description: KeysetItem is an item (keypair or other secret material)
                     in a Keyset
                   properties:
+                    distrustTimestamp:
+                      description: DistrustTimestamp is RFC 3339 date and time at
+                        which this keypair was distrusted. If not set, keypair is
+                        trusted or is not a keypair.
+                      format: date-time
+                      type: string
                     id:
                       description: Id is the unique identifier for this key in the
                         keyset

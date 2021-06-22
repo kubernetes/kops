@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
@@ -113,10 +114,12 @@ func RunDeleteKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 	if options.KeypairID == keyset.Primary.Id {
 		return fmt.Errorf("cannot delete the primary keypair")
 	}
-	if _, ok := keyset.Items[options.KeypairID]; !ok {
+	item := keyset.Items[options.KeypairID]
+	if item == nil {
 		return fmt.Errorf("keypair not found")
 	}
-	delete(keyset.Items, options.KeypairID)
+	now := time.Now().UTC().Round(0)
+	item.DistrustTimestamp = &now
 
 	if err := keyStore.StoreKeyset(options.Keyset, keyset); err != nil {
 		return fmt.Errorf("error deleting keypair: %w", err)
