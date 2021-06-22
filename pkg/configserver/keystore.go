@@ -20,7 +20,6 @@ import (
 	"crypto/x509"
 	"fmt"
 
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
@@ -87,9 +86,4 @@ func (s *configserverKeyStore) FindCert(name string) (*pki.Certificate, error) {
 // ListKeysets implements fi.CAStore
 func (s *configserverKeyStore) ListKeysets() (map[string]*fi.Keyset, error) {
 	return nil, fmt.Errorf("ListKeysets not supported by configserverKeyStore")
-}
-
-// DeleteKeysetItem implements fi.CAStore
-func (s *configserverKeyStore) DeleteKeysetItem(item *kops.Keyset, id string) error {
-	return fmt.Errorf("DeleteKeysetItem not supported by configserverKeyStore")
 }
