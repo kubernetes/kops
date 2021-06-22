@@ -38,4 +38,4 @@ git clone --branch v1.1.0 https://github.com/kubernetes-sigs/aws-ebs-csi-driver.
 cd tests/e2e-kubernetes/
 
 # Skipping disruptive and flakes caused by https://github.com/kubernetes-sigs/aws-ebs-csi-driver/issues/911
-ginkgo --nodes=25 ./... -- -cluster-tag="${CLUSTER_NAME}" -ginkgo.skip="\[Disruptive\]|volume.snapshot.controller.should.check.snapshot.fields" -report-dir="${REPORT_DIR}" -gce-zone="${ZONE}"
+ginkgo --nodes=25 ./... -- -cluster-tag="${CLUSTER_NAME}" -ginkgo.skip="\[Disruptive\]|should.check.snapshot.fields" -report-dir="${REPORT_DIR}" -gce-zone="${ZONE}"
