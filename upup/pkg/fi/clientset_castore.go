@@ -307,47 +307,6 @@ func (c *ClientsetCAStore) storeKeyset(ctx context.Context, name string, keyset 
 	return nil
 }
 
-// deleteKeysetItem deletes the specified key from the registry; deleting the whole Keyset if it was the last one.
-func deleteKeysetItem(client kopsinternalversion.KeysetInterface, name string, keysetType kops.KeysetType, id string) error {
-	ctx := context.TODO()
-
-	keyset, err := client.Get(ctx, name, metav1.GetOptions{})
-	if err != nil {
-		if errors.IsNotFound(err) {
-			return nil
-		}
-		return fmt.Errorf("error reading Keyset %q: %v", name, err)
-	}
-
-	if keyset.Spec.Type != keysetType {
-		return fmt.Errorf("mismatch on Keyset type on %q", name)
-	}
-
-	var newKeys []kops.KeysetItem
-	found := false
-	for _, ki := range keyset.Spec.Keys {
-		if ki.Id == id {
-			found = true
-		} else {
-			newKeys = append(newKeys, ki)
-		}
-	}
-	if !found {
-		return fmt.Errorf("KeysetItem %q not found in Keyset %q", id, name)
-	}
-	if len(newKeys) == 0 {
-		if err := client.Delete(ctx, name, metav1.DeleteOptions{}); err != nil {
-			return fmt.Errorf("error deleting Keyset %q: %v", name, err)
-		}
-	} else {
-		keyset.Spec.Keys = newKeys
-		if _, err := client.Update(ctx, keyset, metav1.UpdateOptions{}); err != nil {
-			return fmt.Errorf("error updating Keyset %q: %v", name, err)
-		}
-	}
-	return nil
-}
-
 // addSSHCredential saves the specified SSH Credential to the registry, doing an update or insert
 func (c *ClientsetCAStore) addSSHCredential(ctx context.Context, name string, publicKey string) error {
 	create := false
@@ -423,18 +382,6 @@ func (c *ClientsetCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential
 
 	items := []*kops.SSHCredential{o}
 	return items, nil
-}
-
-// DeleteKeysetItem implements CAStore::DeleteKeysetItem
-func (c *ClientsetCAStore) DeleteKeysetItem(item *kops.Keyset, id string) error {
-	switch item.Spec.Type {
-	case kops.SecretTypeKeypair:
-		client := c.clientset.Keysets(c.namespace)
-		return deleteKeysetItem(client, item.Name, kops.SecretTypeKeypair, id)
-	default:
-		// Primarily because we need to make sure users can recreate them!
-		return fmt.Errorf("deletion of keystore items of type %v not (yet) supported", item.Spec.Type)
-	}
 }
 
 // DeleteSSHCredential implements SSHCredentialStore::DeleteSSHCredential
