@@ -18,7 +18,6 @@ package pki
 
 import (
 	"bytes"
-	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
@@ -42,7 +41,7 @@ func TestGenerateCertificate(t *testing.T) {
 
 	{
 		var b bytes.Buffer
-		pkData, err := x509.MarshalPKIXPublicKey(key.Key.(*rsa.PrivateKey).Public())
+		pkData, err := x509.MarshalPKIXPublicKey(key.Key.Public())
 		require.NoError(t, err, "MarshalPKIXPublicKey")
 
 		err = pem.Encode(&b, &pem.Block{Type: "RSA PUBLIC KEY", Bytes: pkData})
