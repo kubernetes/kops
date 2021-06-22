@@ -37,6 +37,8 @@ go_library(
         "get_keypairs.go",
         "get_secrets.go",
         "main.go",
+        "promote.go",
+        "promote_keypair.go",
         "replace.go",
         "rollingupdate.go",
         "rollingupdatecluster.go",
