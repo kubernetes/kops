@@ -19,7 +19,6 @@ package fi
 import (
 	"bytes"
 	"fmt"
-	"math/big"
 	"os"
 	"sort"
 	"strings"
@@ -75,16 +74,8 @@ func (c *VFSCAStore) buildCertificatePoolPath(name string) vfs.Path {
 	return c.basedir.Join("issued", name)
 }
 
-func (c *VFSCAStore) buildCertificatePath(name string, id string) vfs.Path {
-	return c.basedir.Join("issued", name, id+".crt")
-}
-
 func (c *VFSCAStore) buildPrivateKeyPoolPath(name string) vfs.Path {
 	return c.basedir.Join("private", name)
-}
-
-func (c *VFSCAStore) buildPrivateKeyPath(name string, id string) vfs.Path {
-	return c.basedir.Join("private", name, id+".key")
 }
 
 func (c *VFSCAStore) parseKeysetYaml(data []byte) (*kops.Keyset, bool, error) {
@@ -495,73 +486,6 @@ func (c *VFSCAStore) FindPrivateKey(id string) (*pki.PrivateKey, error) {
 	return key, nil
 }
 
-func (c *VFSCAStore) deletePrivateKey(name string, id string) (bool, error) {
-	// Delete the file itself
-	{
-
-		p := c.buildPrivateKeyPath(name, id)
-		if err := p.Remove(); err != nil && !os.IsNotExist(err) {
-			return false, err
-		}
-	}
-
-	// Update the bundle
-	{
-		p := c.buildPrivateKeyPoolPath(name)
-		ks, err := c.loadKeyset(p)
-		if err != nil {
-			return false, err
-		}
-
-		if ks == nil || ks.Items[id] == nil {
-			return false, nil
-		}
-		delete(ks.Items, id)
-		if ks.Primary != nil && ks.Primary.Id == id {
-			ks.Primary = nil
-		}
-
-		if err := writeKeysetBundle(c.cluster, p, name, ks, true); err != nil {
-			return false, fmt.Errorf("error writing bundle: %v", err)
-		}
-	}
-
-	return true, nil
-}
-
-func (c *VFSCAStore) deleteCertificate(name string, id string) (bool, error) {
-	// Delete the file itself
-	{
-		p := c.buildCertificatePath(name, id)
-		if err := p.Remove(); err != nil && !os.IsNotExist(err) {
-			return false, err
-		}
-	}
-
-	// Update the bundle
-	{
-		p := c.buildCertificatePoolPath(name)
-		ks, err := c.loadKeyset(p)
-		if err != nil {
-			return false, err
-		}
-
-		if ks == nil || ks.Items[id] == nil {
-			return false, nil
-		}
-		delete(ks.Items, id)
-		if ks.Primary != nil && ks.Primary.Id == id {
-			ks.Primary = nil
-		}
-
-		if err := writeKeysetBundle(c.cluster, p, name, ks, false); err != nil {
-			return false, fmt.Errorf("error writing bundle: %v", err)
-		}
-	}
-
-	return true, nil
-}
-
 // AddSSHPublicKey stores an SSH public key
 func (c *VFSCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 	id, err := sshcredentials.Fingerprint(string(pubkey))
@@ -615,36 +539,6 @@ func (c *VFSCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential, erro
 	}
 
 	return items, nil
-}
-
-// DeleteKeysetItem implements CAStore::DeleteKeysetItem
-func (c *VFSCAStore) DeleteKeysetItem(item *kops.Keyset, id string) error {
-	switch item.Spec.Type {
-	case kops.SecretTypeKeypair:
-		_, ok := big.NewInt(0).SetString(id, 10)
-		if !ok {
-			return fmt.Errorf("keypair had non-integer version: %q", id)
-		}
-		removed, err := c.deleteCertificate(item.Name, id)
-		if err != nil {
-			return fmt.Errorf("error deleting certificate: %v", err)
-		}
-		if !removed {
-			klog.Warningf("certificate %s:%s was not found", item.Name, id)
-		}
-		removed, err = c.deletePrivateKey(item.Name, id)
-		if err != nil {
-			return fmt.Errorf("error deleting private key: %v", err)
-		}
-		if !removed {
-			klog.Warningf("private key %s:%s was not found", item.Name, id)
-		}
-		return nil
-
-	default:
-		// Primarily because we need to make sure users can recreate them!
-		return fmt.Errorf("deletion of keystore items of type %v not (yet) supported", item.Spec.Type)
-	}
 }
 
 func (c *VFSCAStore) DeleteSSHCredential(item *kops.SSHCredential) error {
