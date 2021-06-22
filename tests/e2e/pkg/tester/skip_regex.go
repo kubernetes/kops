@@ -26,12 +26,9 @@ const (
 )
 
 func (t *Tester) setSkipRegexFlag() error {
-
-	// Temporarily removing for testing in the PR
-	// TODO: uncomment before merging
-	/*if t.SkipRegex != "" {
+	if t.SkipRegex != "" {
 		return nil
-	}*/
+	}
 
 	cluster, err := t.getKopsCluster()
 	if err != nil {
