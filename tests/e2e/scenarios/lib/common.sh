@@ -37,6 +37,7 @@ if [[ -z "${NETWORKING-}" ]]; then
 fi
 
 export KOPS_BASE_URL
+export KOPS
 
 export KOPS_FEATURE_FLAGS="SpecOverrideFlag"
 
