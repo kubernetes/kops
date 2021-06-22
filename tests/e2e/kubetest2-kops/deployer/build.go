@@ -40,7 +40,11 @@ func (d *deployer) Build() error {
 		return err
 	}
 	// Copy the kops binary into the test's RunDir to be included in the tester's PATH
-	return util.Copy(d.KopsBinaryPath, path.Join(d.commonOptions.RunDir(), "kops"))
+	if d.KopsBinaryPath != "" {
+		return util.Copy(d.KopsBinaryPath, path.Join(d.commonOptions.RunDir(), "kops"))
+	} else {
+		return nil
+	}
 }
 
 func (d *deployer) verifyBuildFlags() error {
