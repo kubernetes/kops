@@ -50,9 +50,15 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
+	pathSrvKCM := filepath.Join(b.PathSrvKubernetes(), "kube-controller-manager")
+
 	// Include the CA Key
 	// @TODO: use a per-machine key?  use KMS?
-	if err := b.BuildPrivateKeyTask(c, fi.CertificateIDCA, "ca.key", nil); err != nil {
+	if err := b.BuildCertificatePairTask(c, fi.CertificateIDCA, pathSrvKCM, "ca", nil); err != nil {
+		return err
+	}
+
+	if err := b.BuildPrivateKeyTask(c, "service-account", filepath.Join(pathSrvKCM, "service-account.key"), nil); err != nil {
 		return err
 	}
 
@@ -100,10 +106,12 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 // buildPod is responsible for building the kubernetes manifest for the controller-manager
 func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
+	pathSrvKubernetes := b.PathSrvKubernetes()
+	pathSrvKCM := filepath.Join(pathSrvKubernetes, "kube-controller-manager")
 
 	kcm := b.Cluster.Spec.KubeControllerManager
-	kcm.RootCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
-	kcm.ServiceAccountPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "service-account.key")
+	kcm.RootCAFile = filepath.Join(pathSrvKubernetes, "ca.crt")
+	kcm.ServiceAccountPrivateKeyFile = filepath.Join(pathSrvKCM, "service-account.key")
 
 	flags, err := flagbuilder.BuildFlagsList(kcm)
 	if err != nil {
@@ -120,8 +128,8 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 
 	// Configure CA certificate to be used to sign keys
 	flags = append(flags, []string{
-		"--cluster-signing-cert-file=" + filepath.Join(b.PathSrvKubernetes(), "ca.crt"),
-		"--cluster-signing-key-file=" + filepath.Join(b.PathSrvKubernetes(), "ca.key")}...)
+		"--cluster-signing-cert-file=" + filepath.Join(pathSrvKCM, "ca.crt"),
+		"--cluster-signing-key-file=" + filepath.Join(pathSrvKCM, "ca.key")}...)
 
 	pod := &v1.Pod{
 		TypeMeta: metav1.TypeMeta{
@@ -210,10 +218,9 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 		addHostPathMapping(pod, container, "cloudconfig", CloudConfigFilePath)
 	}
 
-	pathSrvKubernetes := b.PathSrvKubernetes()
-	if pathSrvKubernetes != "" {
-		addHostPathMapping(pod, container, "srvkube", pathSrvKubernetes)
-	}
+	addHostPathMapping(pod, container, "cabundle", filepath.Join(pathSrvKubernetes, "ca.crt"))
+
+	addHostPathMapping(pod, container, "srvkcm", pathSrvKCM)
 
 	addHostPathMapping(pod, container, "varlibkcm", "/var/lib/kube-controller-manager")
 
