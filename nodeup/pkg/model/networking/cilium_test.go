@@ -22,6 +22,7 @@ import (
 
 	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -46,6 +47,11 @@ func TestCiliumBuilder(t *testing.T) {
 						EtcdManaged: true,
 					},
 				},
+			},
+		},
+		NodeupConfig: &nodeup.Config{
+			CAs: map[string]string{
+				"etcd-clients-ca-cilium": "-----BEGIN CERTIFICATE-----\nMIIBbjCCARigAwIBAgIMFnbWaYo6t3AwKQtWMA0GCSqGSIb3DQEBCwUAMBgxFjAU\nBgNVBAMTDWNuPWt1YmVybmV0ZXMwHhcNMjEwNDE2MDMzNDI0WhcNMzEwNDE2MDMz\nNDI0WjAYMRYwFAYDVQQDEw1jbj1rdWJlcm5ldGVzMFwwDQYJKoZIhvcNAQEBBQAD\nSwAwSAJBANLVh1dSDxJ5EcCd36av7++6+sDKqEm2GAzKIwOlfvPsm+pT+pClr51s\nd1m7V16nhWE6lhWjtsiMF8Q32+P5XZkCAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgEG\nMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFIaNS7TlHC6K0r8yWYM1wExengDq\nMA0GCSqGSIb3DQEBCwUAA0EAoxha8yD6JLJcog/EOMdc5BpVPupQ/0FyO38Mb3l9\n0N7uZle0Tz1FQuadRtouySj37iq9nIxEeTh03Q52hNcl3A==\n-----END CERTIFICATE-----\n",
 			},
 		},
 		HasAPIServer: true,

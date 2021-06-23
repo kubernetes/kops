@@ -127,27 +127,13 @@ func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.ModelBuilderContext) error 
 	name := "etcd-client-cilium"
 	dir := "/etc/kubernetes/pki/cilium"
 	signer := "etcd-clients-ca-cilium"
-	if b.UseKopsControllerForNodeBootstrap() && !b.IsMaster {
-		cert, key := b.GetBootstrapCert(name)
-
-		c.AddTask(&nodetasks.File{
-			Path:           filepath.Join(dir, name+".crt"),
-			Contents:       cert,
-			Type:           nodetasks.FileType_File,
-			Mode:           fi.String("0644"),
-			BeforeServices: []string{"kubelet.service"},
-		})
-
-		c.AddTask(&nodetasks.File{
-			Path:           filepath.Join(dir, name+".key"),
-			Contents:       key,
-			Type:           nodetasks.FileType_File,
-			Mode:           fi.String("0400"),
-			BeforeServices: []string{"kubelet.service"},
-		})
-
-		return b.BuildCertificateTask(c, signer, filepath.Join(dir, "etcd-ca.crt"), nil)
-	} else {
+	c.AddTask(&nodetasks.File{
+		Path:     filepath.Join(dir, "etcd-ca.crt"),
+		Contents: fi.NewStringResource(b.NodeupConfig.CAs[signer]),
+		Type:     nodetasks.FileType_File,
+		Mode:     fi.String("0600"),
+	})
+	if b.IsMaster {
 		issueCert := &nodetasks.IssueCert{
 			Name:   name,
 			Signer: signer,
@@ -157,6 +143,30 @@ func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.ModelBuilderContext) error 
 			},
 		}
 		c.AddTask(issueCert)
-		return issueCert.AddFileTasks(c, dir, name, "etcd-ca", nil)
+		return issueCert.AddFileTasks(c, dir, name, "", nil)
+	} else {
+		if b.UseKopsControllerForNodeBootstrap() {
+			cert, key := b.GetBootstrapCert(name)
+
+			c.AddTask(&nodetasks.File{
+				Path:           filepath.Join(dir, name+".crt"),
+				Contents:       cert,
+				Type:           nodetasks.FileType_File,
+				Mode:           fi.String("0644"),
+				BeforeServices: []string{"kubelet.service"},
+			})
+
+			c.AddTask(&nodetasks.File{
+				Path:           filepath.Join(dir, name+".key"),
+				Contents:       key,
+				Type:           nodetasks.FileType_File,
+				Mode:           fi.String("0400"),
+				BeforeServices: []string{"kubelet.service"},
+			})
+
+			return nil
+		} else {
+			return b.BuildCertificatePairTask(c, name, dir, name, nil, []string{"kubelet.service"})
+		}
 	}
 }

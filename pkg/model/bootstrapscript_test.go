@@ -64,7 +64,7 @@ type nodeupConfigBuilder struct {
 	cluster *kops.Cluster
 }
 
-func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTask *fitasks.Keypair) (*nodeup.Config, *nodeup.BootConfig, error) {
+func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTasks map[string]*fitasks.Keypair) (*nodeup.Config, *nodeup.BootConfig, error) {
 	config, bootConfig := nodeup.NewConfig(n.cluster, ig)
 	return config, bootConfig, nil
 }
@@ -152,6 +152,7 @@ func TestBootstrapUserData(t *testing.T) {
 					Hash:      hashing.MustFromString("e525c28a65ff0ce4f95f9e730195b4e67fdcb15ceb1f36b5ad6921a8a4490c71"),
 				},
 			},
+			Cluster: cluster,
 		}
 
 		res, err := bs.ResourceNodeUp(c, group)
@@ -256,6 +257,7 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 					Port: 80,
 				},
 			},
+			Networking: &kops.NetworkingSpec{},
 			Hooks: []kops.HookSpec{
 				{
 					ExecContainer: &kops.ExecContainerAction{
