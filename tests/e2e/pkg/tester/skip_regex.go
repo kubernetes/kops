@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	skipRegexBase = "[Slow]|[Serial]|[Disruptive]|[Flaky]|[Feature:.+]|[HPA]|[Driver:.nfs]|Dashboard|RuntimeClass|RuntimeHandler"
+	skipRegexBase = "\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|\\[Driver:.nfs\\]|Dashboard|RuntimeClass|RuntimeHandler"
 )
 
 func (t *Tester) setSkipRegexFlag() error {
