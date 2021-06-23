@@ -142,12 +142,23 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		if etcdCluster.Name == "cilium" {
-			c.AddTask(&fitasks.Keypair{
+			clientsCaCilium := &fitasks.Keypair{
 				Name:      fi.String("etcd-clients-ca-cilium"),
 				Lifecycle: b.Lifecycle,
 				Subject:   "cn=etcd-clients-ca-cilium",
 				Type:      "ca",
-			})
+			}
+			c.AddTask(clientsCaCilium)
+
+			if !b.UseKopsControllerForNodeBootstrap() {
+				c.AddTask(&fitasks.Keypair{
+					Name:      fi.String("etcd-client-cilium"),
+					Lifecycle: b.Lifecycle,
+					Subject:   "cn=cilium",
+					Type:      "client",
+					Signer:    clientsCaCilium,
+				})
+			}
 		}
 	}
 

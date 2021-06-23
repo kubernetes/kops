@@ -84,7 +84,7 @@ func (b *KopsControllerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 	for _, cert := range caList {
 		owner := wellknownusers.KopsControllerName
-		err := b.BuildCertificatePairTask(c, cert, pkiDir, cert, &owner)
+		err := b.BuildCertificatePairTask(c, cert, pkiDir, cert, &owner, nil)
 		if err != nil {
 			return err
 		}
