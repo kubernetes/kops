@@ -21,8 +21,6 @@ import (
 	"path"
 	"path/filepath"
 
-	"k8s.io/kops/pkg/model/components"
-
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 
@@ -30,6 +28,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/pkg/systemd"
