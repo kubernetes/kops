@@ -35,6 +35,11 @@ func TestVMScaleSetModelBuilder_Build(t *testing.T) {
 		AzureModelContext: newTestAzureModelContext(),
 		BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
 			Lifecycle: fi.LifecycleSync,
+			Cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					Networking: &kops.NetworkingSpec{},
+				},
+			},
 		},
 	}
 	c := &fi.ModelBuilderContext{

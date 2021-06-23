@@ -29,6 +29,7 @@ import (
 	"text/template"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"sigs.k8s.io/yaml"
 
@@ -43,7 +44,7 @@ import (
 )
 
 type NodeUpConfigBuilder interface {
-	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTask *fitasks.Keypair) (*nodeup.Config, *nodeup.BootConfig, error)
+	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTasks map[string]*fitasks.Keypair) (*nodeup.Config, *nodeup.BootConfig, error)
 }
 
 // BootstrapScriptBuilder creates the bootstrap script
@@ -51,6 +52,7 @@ type BootstrapScriptBuilder struct {
 	Lifecycle           fi.Lifecycle
 	NodeUpAssets        map[architectures.Architecture]*mirrors.MirroredAsset
 	NodeUpConfigBuilder NodeUpConfigBuilder
+	Cluster             *kops.Cluster
 }
 
 type BootstrapScript struct {
@@ -62,8 +64,8 @@ type BootstrapScript struct {
 	// alternateNameTasks are tasks that contribute api-server IP addresses.
 	alternateNameTasks []fi.HasAddress
 
-	// caTask holds the CA task, for dependency analysis.
-	caTask *fitasks.Keypair
+	// caTasks hold the CA tasks, for dependency analysis.
+	caTasks map[string]*fitasks.Keypair
 
 	// nodeupConfig contains the nodeup config.
 	nodeupConfig fi.TaskDependentResource
@@ -91,7 +93,7 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (string
 	}
 
 	sort.Strings(alternateNames)
-	config, bootConfig, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames, b.caTask)
+	config, bootConfig, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames, b.caTasks)
 	if err != nil {
 		return "", err
 	}
@@ -209,11 +211,22 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 // ResourceNodeUp generates and returns a nodeup (bootstrap) script from a
 // template file, substituting in specific env vars & cluster spec configuration
 func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) (fi.Resource, error) {
-	caTaskObject, found := c.Tasks["Keypair/ca"]
-	if !found {
-		return nil, fmt.Errorf("keypair/ca task not found")
+	keypairs := []string{"ca"}
+	if model.UseCiliumEtcd(b.Cluster) {
+		keypairs = append(keypairs, "etcd-clients-ca-cilium")
+		if !model.UseKopsControllerForNodeBootstrap(b.Cluster) {
+			keypairs = append(keypairs, "etcd-client-cilium")
+		}
 	}
-	caTask := caTaskObject.(*fitasks.Keypair)
+
+	caTasks := map[string]*fitasks.Keypair{}
+	for _, keypair := range keypairs {
+		caTaskObject, found := c.Tasks["Keypair/"+keypair]
+		if !found {
+			return nil, fmt.Errorf("keypair/%s task not found", keypair)
+		}
+		caTasks[keypair] = caTaskObject.(*fitasks.Keypair)
+	}
 
 	// Bastions can have AdditionalUserData, but if there isn't any skip this part
 	if ig.IsBastion() && len(ig.Spec.AdditionalUserData) == 0 {
@@ -229,7 +242,7 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 		Lifecycle: b.Lifecycle,
 		ig:        ig,
 		builder:   b,
-		caTask:    caTask,
+		caTasks:   caTasks,
 	}
 	task.resource.Task = task
 	task.nodeupConfig.Task = task
@@ -258,7 +271,9 @@ func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		}
 	}
 
-	deps = append(deps, b.caTask)
+	for _, task := range b.caTasks {
+		deps = append(deps, task)
+	}
 
 	return deps
 }

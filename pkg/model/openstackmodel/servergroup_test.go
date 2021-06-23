@@ -1012,7 +1012,7 @@ func createBuilderForCluster(cluster *kops.Cluster, instanceGroups []*kops.Insta
 type nodeupConfigBuilder struct {
 }
 
-func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTask *fitasks.Keypair) (*nodeup.Config, *nodeup.BootConfig, error) {
+func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTasks map[string]*fitasks.Keypair) (*nodeup.Config, *nodeup.BootConfig, error) {
 	return &nodeup.Config{}, &nodeup.BootConfig{}, nil
 }
 
@@ -1031,6 +1031,9 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 	testutils.SetupMockOpenstack()
 
 	clusterLifecycle := fi.LifecycleSync
+	if testCase.cluster.Spec.Networking == nil {
+		testCase.cluster.Spec.Networking = &kops.NetworkingSpec{}
+	}
 	bootstrapScriptBuilder := &model.BootstrapScriptBuilder{
 		NodeUpConfigBuilder: &nodeupConfigBuilder{},
 		NodeUpAssets: map[architectures.Architecture]*mirrors.MirroredAsset{
@@ -1043,6 +1046,7 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 				Hash:      hashing.MustFromString("e525c28a65ff0ce4f95f9e730195b4e67fdcb15ceb1f36b5ad6921a8a4490c71"),
 			},
 		},
+		Cluster: testCase.cluster,
 	}
 
 	builder := createBuilderForCluster(testCase.cluster, testCase.instanceGroups, clusterLifecycle, bootstrapScriptBuilder)
