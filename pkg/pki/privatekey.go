@@ -72,7 +72,7 @@ func GeneratePrivateKey() (*PrivateKey, error) {
 }
 
 type PrivateKey struct {
-	Key crypto.PrivateKey
+	Key crypto.Signer
 }
 
 func (k *PrivateKey) AsString() (string, error) {
@@ -177,7 +177,7 @@ func (k *PrivateKey) WriteToFile(filename string, perm os.FileMode) error {
 	return err
 }
 
-func parsePEMPrivateKey(pemData []byte) (crypto.PrivateKey, error) {
+func parsePEMPrivateKey(pemData []byte) (crypto.Signer, error) {
 	for {
 		block, rest := pem.Decode(pemData)
 		if block == nil {
@@ -193,7 +193,7 @@ func parsePEMPrivateKey(pemData []byte) (crypto.PrivateKey, error) {
 			if err != nil {
 				return nil, err
 			}
-			return k.(crypto.PrivateKey), nil
+			return k.(crypto.Signer), nil
 		} else {
 			klog.Infof("Ignoring unexpected PEM block: %q", block.Type)
 		}
