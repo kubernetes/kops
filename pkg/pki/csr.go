@@ -18,7 +18,6 @@ package pki
 
 import (
 	crypto_rand "crypto/rand"
-	"crypto/rsa"
 	"crypto/x509"
 	"fmt"
 	"math/big"
@@ -47,10 +46,7 @@ func BuildPKISerial(timestamp int64) *big.Int {
 
 func signNewCertificate(privateKey *PrivateKey, template *x509.Certificate, signer *x509.Certificate, signerPrivateKey *PrivateKey) (*Certificate, error) {
 	if template.PublicKey == nil {
-		rsaPrivateKey, ok := privateKey.Key.(*rsa.PrivateKey)
-		if ok {
-			template.PublicKey = rsaPrivateKey.Public()
-		}
+		template.PublicKey = privateKey.Key.Public()
 	}
 
 	if template.PublicKey == nil {
