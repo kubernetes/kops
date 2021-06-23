@@ -421,6 +421,9 @@ spec:
       serviceAccountName: ebs-csi-controller-sa
       priorityClassName: system-cluster-critical
       {{ if not UseServiceAccountIAM }}
+      {{ if IsIPv6Only }}
+      hostNetwork: true
+      {{ end }}
       tolerations:
         - operator: Exists
       {{ end }}
@@ -460,7 +463,7 @@ spec:
               mountPath: /var/lib/csi/sockets/pluginproxy/
           ports:
             - name: healthz
-              containerPort: 9808
+              containerPort: 9809
               protocol: TCP
           livenessProbe:
             httpGet:
