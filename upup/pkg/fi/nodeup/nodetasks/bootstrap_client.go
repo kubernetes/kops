@@ -20,7 +20,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -103,7 +102,7 @@ func (b *BootstrapClientTask) Run(c *fi.Context) error {
 			b.keys[name] = key
 		}
 
-		pkData, err := x509.MarshalPKIXPublicKey(key.Key.(*rsa.PrivateKey).Public())
+		pkData, err := x509.MarshalPKIXPublicKey(key.Key.Public())
 		if err != nil {
 			return fmt.Errorf("marshalling public key: %v", err)
 		}
