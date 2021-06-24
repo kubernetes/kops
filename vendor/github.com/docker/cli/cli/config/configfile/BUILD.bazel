@@ -14,5 +14,6 @@ go_library(
         "//vendor/github.com/docker/cli/cli/config/credentials:go_default_library",
         "//vendor/github.com/docker/cli/cli/config/types:go_default_library",
         "//vendor/github.com/pkg/errors:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
