@@ -125,6 +125,8 @@ func getWellknownServiceAccount(name string) iam.Subject {
 		return &nodeterminationhandler.ServiceAccount{}
 	case "aws-cloud-controller-manager":
 		return &awscloudcontrollermanager.ServiceAccount{}
+	case "external-dns":
+		return &awsebscsidriver.ServiceAccount{}
 	default:
 		return nil
 	}
