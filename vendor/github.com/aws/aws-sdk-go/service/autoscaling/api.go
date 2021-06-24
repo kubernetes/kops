@@ -436,8 +436,7 @@ func (c *AutoScaling) BatchPutScheduledUpdateGroupActionRequest(input *BatchPutS
 // BatchPutScheduledUpdateGroupAction API operation for Auto Scaling.
 //
 // Creates or updates one or more scheduled scaling actions for an Auto Scaling
-// group. If you leave a parameter unspecified when updating a scheduled scaling
-// action, the corresponding value remains unchanged.
+// group.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3141,6 +3140,12 @@ func (c *AutoScaling) DescribeScalingActivitiesRequest(input *DescribeScalingAct
 //
 // Describes one or more scaling activities for the specified Auto Scaling group.
 //
+// To view the scaling activities from the Amazon EC2 Auto Scaling console,
+// choose the Activity tab of the Auto Scaling group. When scaling events occur,
+// you see scaling activity messages in the Activity history. For more information,
+// see Verifying a scaling activity for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-verify-scaling-activity.html)
+// in the Amazon EC2 Auto Scaling User Guide.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -4751,8 +4756,6 @@ func (c *AutoScaling) PutScheduledUpdateGroupActionRequest(input *PutScheduledUp
 // PutScheduledUpdateGroupAction API operation for Auto Scaling.
 //
 // Creates or updates a scheduled scaling action for an Auto Scaling group.
-// If you leave a parameter unspecified when updating a scheduled scaling action,
-// the corresponding value remains unchanged.
 //
 // For more information, see Scheduled scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/schedule_time.html)
 // in the Amazon EC2 Auto Scaling User Guide.
@@ -5698,10 +5701,16 @@ type Activity struct {
 	// ActivityId is a required field
 	ActivityId *string `type:"string" required:"true"`
 
+	// The Amazon Resource Name (ARN) of the Auto Scaling group.
+	AutoScalingGroupARN *string `min:"1" type:"string"`
+
 	// The name of the Auto Scaling group.
 	//
 	// AutoScalingGroupName is a required field
 	AutoScalingGroupName *string `min:"1" type:"string" required:"true"`
+
+	// The state of the Auto Scaling group, which is either InService or Deleted.
+	AutoScalingGroupState *string `min:"1" type:"string"`
 
 	// The reason the activity began.
 	//
@@ -5750,9 +5759,21 @@ func (s *Activity) SetActivityId(v string) *Activity {
 	return s
 }
 
+// SetAutoScalingGroupARN sets the AutoScalingGroupARN field's value.
+func (s *Activity) SetAutoScalingGroupARN(v string) *Activity {
+	s.AutoScalingGroupARN = &v
+	return s
+}
+
 // SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
 func (s *Activity) SetAutoScalingGroupName(v string) *Activity {
 	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetAutoScalingGroupState sets the AutoScalingGroupState field's value.
+func (s *Activity) SetAutoScalingGroupState(v string) *Activity {
+	s.AutoScalingGroupState = &v
 	return s
 }
 
@@ -6624,13 +6645,13 @@ type CreateAutoScalingGroupInput struct {
 	MinSize *int64 `type:"integer" required:"true"`
 
 	// An embedded object that specifies a mixed instances policy. The required
-	// parameters must be specified. If optional parameters are unspecified, their
+	// properties must be specified. If optional properties are unspecified, their
 	// default values are used.
 	//
-	// The policy includes parameters that not only define the distribution of On-Demand
+	// The policy includes properties that not only define the distribution of On-Demand
 	// Instances and Spot Instances, the maximum price to pay for Spot Instances,
 	// and how the Auto Scaling group allocates instance types to fulfill On-Demand
-	// and Spot capacities, but also the parameters that specify the instance configuration
+	// and Spot capacities, but also the properties that specify the instance configuration
 	// information—the launch template and instance types. The policy can also
 	// include a weight for each instance type and different launch templates for
 	// individual instance types. For more information, see Auto Scaling groups
@@ -8991,6 +9012,9 @@ type DescribeScalingActivitiesInput struct {
 	// The name of the Auto Scaling group.
 	AutoScalingGroupName *string `min:"1" type:"string"`
 
+	// Indicates whether to include scaling activity from deleted Auto Scaling groups.
+	IncludeDeletedGroups *bool `type:"boolean"`
+
 	// The maximum number of items to return with this call. The default value is
 	// 100 and the maximum value is 100.
 	MaxRecords *int64 `type:"integer"`
@@ -9032,6 +9056,12 @@ func (s *DescribeScalingActivitiesInput) SetActivityIds(v []*string) *DescribeSc
 // SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
 func (s *DescribeScalingActivitiesInput) SetAutoScalingGroupName(v string) *DescribeScalingActivitiesInput {
 	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetIncludeDeletedGroups sets the IncludeDeletedGroups field's value.
+func (s *DescribeScalingActivitiesInput) SetIncludeDeletedGroups(v bool) *DescribeScalingActivitiesInput {
+	s.IncludeDeletedGroups = &v
 	return s
 }
 
@@ -11100,11 +11130,12 @@ type InstancesDistribution struct {
 
 	// Indicates how to allocate instance types to fulfill On-Demand capacity. The
 	// only valid value is prioritized, which is also the default value. This strategy
-	// uses the order of instance types in the overrides to define the launch priority
-	// of each instance type. The first instance type in the array is prioritized
-	// higher than the last. If all your On-Demand capacity cannot be fulfilled
-	// using your highest priority instance, then the Auto Scaling groups launches
-	// the remaining capacity using the second priority instance type, and so on.
+	// uses the order of instance types in the LaunchTemplateOverrides to define
+	// the launch priority of each instance type. The first instance type in the
+	// array is prioritized higher than the last. If all your On-Demand capacity
+	// cannot be fulfilled using your highest priority instance, then the Auto Scaling
+	// groups launches the remaining capacity using the second priority instance
+	// type, and so on.
 	OnDemandAllocationStrategy *string `type:"string"`
 
 	// The minimum amount of the Auto Scaling group's capacity that must be fulfilled
@@ -11120,13 +11151,20 @@ type InstancesDistribution struct {
 	// to 100 if not specified. If set to 100, only On-Demand Instances are provisioned.
 	OnDemandPercentageAboveBaseCapacity *int64 `type:"integer"`
 
-	// Indicates how to allocate instances across Spot Instance pools. If the allocation
-	// strategy is capacity-optimized (recommended), the Auto Scaling group launches
-	// instances using Spot pools that are optimally chosen based on the available
-	// Spot capacity. If the allocation strategy is lowest-price, the Auto Scaling
-	// group launches instances using the Spot pools with the lowest price, and
-	// evenly allocates your instances across the number of Spot pools that you
-	// specify. Defaults to lowest-price if not specified.
+	// Indicates how to allocate instances across Spot Instance pools.
+	//
+	// If the allocation strategy is lowest-price, the Auto Scaling group launches
+	// instances using the Spot pools with the lowest price, and evenly allocates
+	// your instances across the number of Spot pools that you specify. Defaults
+	// to lowest-price if not specified.
+	//
+	// If the allocation strategy is capacity-optimized (recommended), the Auto
+	// Scaling group launches instances using Spot pools that are optimally chosen
+	// based on the available Spot capacity. Alternatively, you can use capacity-optimized-prioritized
+	// and set the order of instance types in the list of launch template overrides
+	// from highest to lowest priority (from first to last in the list). Amazon
+	// EC2 Auto Scaling honors the instance type priorities on a best-effort basis
+	// but optimizes for capacity first.
 	SpotAllocationStrategy *string `type:"string"`
 
 	// The number of Spot Instance pools across which to allocate your Spot Instances.
@@ -11449,7 +11487,7 @@ func (s *LaunchConfiguration) SetUserData(v string) *LaunchConfiguration {
 
 // Describes a launch template and overrides.
 //
-// You specify these parameters as part of a mixed instances policy.
+// You specify these properties as part of a mixed instances policy.
 //
 // When you update the launch template or overrides, existing Amazon EC2 instances
 // continue to run. When scale out occurs, Amazon EC2 Auto Scaling launches
@@ -11461,7 +11499,7 @@ type LaunchTemplate struct {
 	// The launch template to use.
 	LaunchTemplateSpecification *LaunchTemplateSpecification `type:"structure"`
 
-	// Any parameters that you specify override the same parameters in the launch
+	// Any properties that you specify override the same properties in the launch
 	// template. If not provided, Amazon EC2 Auto Scaling uses the instance type
 	// specified in the launch template when it launches an instance.
 	Overrides []*LaunchTemplateOverrides `type:"list"`
@@ -12200,13 +12238,13 @@ func (s *MetricGranularityType) SetGranularity(v string) *MetricGranularityType 
 //
 // You can create a mixed instances policy for a new Auto Scaling group, or
 // you can create it for an existing group by updating the group to specify
-// MixedInstancesPolicy as the top-level parameter instead of a launch configuration
+// MixedInstancesPolicy as the top-level property instead of a launch configuration
 // or launch template.
 type MixedInstancesPolicy struct {
 	_ struct{} `type:"structure"`
 
 	// Specifies the instances distribution. If not provided, the value for each
-	// parameter in InstancesDistribution uses a default value.
+	// property in InstancesDistribution uses a default value.
 	InstancesDistribution *InstancesDistribution `type:"structure"`
 
 	// Specifies the launch template to use and optionally the instance types (overrides)
@@ -12986,8 +13024,7 @@ type PutScheduledUpdateGroupActionInput struct {
 	// scale beyond this capacity if you add more scaling conditions.
 	DesiredCapacity *int64 `type:"integer"`
 
-	// The date and time for the recurring schedule to end. Amazon EC2 Auto Scaling
-	// does not perform the action after this time.
+	// The date and time for the recurring schedule to end, in UTC.
 	EndTime *time.Time `type:"timestamp"`
 
 	// The maximum size of the Auto Scaling group.
@@ -12996,14 +13033,15 @@ type PutScheduledUpdateGroupActionInput struct {
 	// The minimum size of the Auto Scaling group.
 	MinSize *int64 `type:"integer"`
 
-	// The recurring schedule for this action, in Unix cron syntax format. This
-	// format consists of five fields separated by white spaces: [Minute] [Hour]
-	// [Day_of_Month] [Month_of_Year] [Day_of_Week]. The value must be in quotes
-	// (for example, "30 0 1 1,6,12 *"). For more information about this format,
-	// see Crontab (http://crontab.org).
+	// The recurring schedule for this action. This format consists of five fields
+	// separated by white spaces: [Minute] [Hour] [Day_of_Month] [Month_of_Year]
+	// [Day_of_Week]. The value must be in quotes (for example, "30 0 1 1,6,12 *").
+	// For more information about this format, see Crontab (http://crontab.org).
 	//
 	// When StartTime and EndTime are specified with Recurrence, they form the boundaries
 	// of when the recurring action starts and stops.
+	//
+	// Cron expressions use Universal Coordinated Time (UTC) by default.
 	Recurrence *string `min:"1" type:"string"`
 
 	// The name of this scaling action.
@@ -13024,6 +13062,15 @@ type PutScheduledUpdateGroupActionInput struct {
 
 	// This parameter is no longer used.
 	Time *time.Time `type:"timestamp"`
+
+	// Specifies the time zone for a cron expression. If a time zone is not provided,
+	// UTC is used by default.
+	//
+	// Valid values are the canonical names of the IANA time zones, derived from
+	// the IANA Time Zone Database (such as Etc/GMT+9 or Pacific/Tahiti). For more
+	// information, see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+	// (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
+	TimeZone *string `min:"1" type:"string"`
 }
 
 // String returns the string representation
@@ -13053,6 +13100,9 @@ func (s *PutScheduledUpdateGroupActionInput) Validate() error {
 	}
 	if s.ScheduledActionName != nil && len(*s.ScheduledActionName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("ScheduledActionName", 1))
+	}
+	if s.TimeZone != nil && len(*s.TimeZone) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TimeZone", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -13112,6 +13162,12 @@ func (s *PutScheduledUpdateGroupActionInput) SetStartTime(v time.Time) *PutSched
 // SetTime sets the Time field's value.
 func (s *PutScheduledUpdateGroupActionInput) SetTime(v time.Time) *PutScheduledUpdateGroupActionInput {
 	s.Time = &v
+	return s
+}
+
+// SetTimeZone sets the TimeZone field's value.
+func (s *PutScheduledUpdateGroupActionInput) SetTimeZone(v string) *PutScheduledUpdateGroupActionInput {
+	s.TimeZone = &v
 	return s
 }
 
@@ -13555,6 +13611,9 @@ type ScheduledUpdateGroupAction struct {
 
 	// This parameter is no longer used.
 	Time *time.Time `type:"timestamp"`
+
+	// The time zone for the cron expression.
+	TimeZone *string `min:"1" type:"string"`
 }
 
 // String returns the string representation
@@ -13627,11 +13686,14 @@ func (s *ScheduledUpdateGroupAction) SetTime(v time.Time) *ScheduledUpdateGroupA
 	return s
 }
 
+// SetTimeZone sets the TimeZone field's value.
+func (s *ScheduledUpdateGroupAction) SetTimeZone(v string) *ScheduledUpdateGroupAction {
+	s.TimeZone = &v
+	return s
+}
+
 // Describes information used for one or more scheduled scaling action updates
 // in a BatchPutScheduledUpdateGroupAction operation.
-//
-// When updating a scheduled scaling action, all optional parameters are left
-// unchanged if not specified.
 type ScheduledUpdateGroupActionRequest struct {
 	_ struct{} `type:"structure"`
 
@@ -13639,8 +13701,7 @@ type ScheduledUpdateGroupActionRequest struct {
 	// the scheduled action runs and the capacity it attempts to maintain.
 	DesiredCapacity *int64 `type:"integer"`
 
-	// The date and time for the recurring schedule to end. Amazon EC2 Auto Scaling
-	// does not perform the action after this time.
+	// The date and time for the recurring schedule to end, in UTC.
 	EndTime *time.Time `type:"timestamp"`
 
 	// The maximum size of the Auto Scaling group.
@@ -13656,6 +13717,8 @@ type ScheduledUpdateGroupActionRequest struct {
 	//
 	// When StartTime and EndTime are specified with Recurrence, they form the boundaries
 	// of when the recurring action starts and stops.
+	//
+	// Cron expressions use Universal Coordinated Time (UTC) by default.
 	Recurrence *string `min:"1" type:"string"`
 
 	// The name of the scaling action.
@@ -13673,6 +13736,15 @@ type ScheduledUpdateGroupActionRequest struct {
 	// If you try to schedule the action in the past, Amazon EC2 Auto Scaling returns
 	// an error message.
 	StartTime *time.Time `type:"timestamp"`
+
+	// Specifies the time zone for a cron expression. If a time zone is not provided,
+	// UTC is used by default.
+	//
+	// Valid values are the canonical names of the IANA time zones, derived from
+	// the IANA Time Zone Database (such as Etc/GMT+9 or Pacific/Tahiti). For more
+	// information, see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+	// (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
+	TimeZone *string `min:"1" type:"string"`
 }
 
 // String returns the string representation
@@ -13696,6 +13768,9 @@ func (s *ScheduledUpdateGroupActionRequest) Validate() error {
 	}
 	if s.ScheduledActionName != nil && len(*s.ScheduledActionName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("ScheduledActionName", 1))
+	}
+	if s.TimeZone != nil && len(*s.TimeZone) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TimeZone", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -13743,6 +13818,12 @@ func (s *ScheduledUpdateGroupActionRequest) SetScheduledActionName(v string) *Sc
 // SetStartTime sets the StartTime field's value.
 func (s *ScheduledUpdateGroupActionRequest) SetStartTime(v time.Time) *ScheduledUpdateGroupActionRequest {
 	s.StartTime = &v
+	return s
+}
+
+// SetTimeZone sets the TimeZone field's value.
+func (s *ScheduledUpdateGroupActionRequest) SetTimeZone(v string) *ScheduledUpdateGroupActionRequest {
+	s.TimeZone = &v
 	return s
 }
 
@@ -14622,7 +14703,7 @@ type UpdateAutoScalingGroupInput struct {
 	MinSize *int64 `type:"integer"`
 
 	// An embedded object that specifies a mixed instances policy. When you make
-	// changes to an existing policy, all optional parameters are left unchanged
+	// changes to an existing policy, all optional properties are left unchanged
 	// if not specified. For more information, see Auto Scaling groups with multiple
 	// instance types and purchase options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-purchase-options.html)
 	// in the Amazon EC2 Auto Scaling User Guide.

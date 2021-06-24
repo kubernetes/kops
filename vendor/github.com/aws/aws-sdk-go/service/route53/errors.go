@@ -199,13 +199,13 @@ const (
 	// ErrCodeInvalidKeySigningKeyName for service response error code
 	// "InvalidKeySigningKeyName".
 	//
-	// The key signing key (KSK) name that you specified isn't a valid name.
+	// The key-signing key (KSK) name that you specified isn't a valid name.
 	ErrCodeInvalidKeySigningKeyName = "InvalidKeySigningKeyName"
 
 	// ErrCodeInvalidKeySigningKeyStatus for service response error code
 	// "InvalidKeySigningKeyStatus".
 	//
-	// The key signing key (KSK) status isn't valid or another KSK has the status
+	// The key-signing key (KSK) status isn't valid or another KSK has the status
 	// INTERNAL_FAILURE.
 	ErrCodeInvalidKeySigningKeyStatus = "InvalidKeySigningKeyStatus"
 
@@ -240,20 +240,20 @@ const (
 	// ErrCodeKeySigningKeyAlreadyExists for service response error code
 	// "KeySigningKeyAlreadyExists".
 	//
-	// You've already created a key signing key (KSK) with this name or with the
-	// same customer managed key (CMK) ARN.
+	// You've already created a key-signing key (KSK) with this name or with the
+	// same customer managed customer master key (CMK) ARN.
 	ErrCodeKeySigningKeyAlreadyExists = "KeySigningKeyAlreadyExists"
 
 	// ErrCodeKeySigningKeyInParentDSRecord for service response error code
 	// "KeySigningKeyInParentDSRecord".
 	//
-	// The key signing key (KSK) is specified in a parent DS record.
+	// The key-signing key (KSK) is specified in a parent DS record.
 	ErrCodeKeySigningKeyInParentDSRecord = "KeySigningKeyInParentDSRecord"
 
 	// ErrCodeKeySigningKeyInUse for service response error code
 	// "KeySigningKeyInUse".
 	//
-	// The key signing key (KSK) that you specified can't be deactivated because
+	// The key-signing key (KSK) that you specified can't be deactivated because
 	// it's the only KSK for a currently-enabled DNSSEC. Disable DNSSEC signing,
 	// or add or enable another KSK.
 	ErrCodeKeySigningKeyInUse = "KeySigningKeyInUse"
@@ -261,7 +261,7 @@ const (
 	// ErrCodeKeySigningKeyWithActiveStatusNotFound for service response error code
 	// "KeySigningKeyWithActiveStatusNotFound".
 	//
-	// A key signing key (KSK) with ACTIVE status wasn't found.
+	// A key-signing key (KSK) with ACTIVE status wasn't found.
 	ErrCodeKeySigningKeyWithActiveStatusNotFound = "KeySigningKeyWithActiveStatusNotFound"
 
 	// ErrCodeLastVPCAssociation for service response error code
@@ -327,7 +327,7 @@ const (
 	// ErrCodeNoSuchKeySigningKey for service response error code
 	// "NoSuchKeySigningKey".
 	//
-	// The specified key signing key (KSK) doesn't exist.
+	// The specified key-signing key (KSK) doesn't exist.
 	ErrCodeNoSuchKeySigningKey = "NoSuchKeySigningKey"
 
 	// ErrCodeNoSuchQueryLoggingConfig for service response error code
@@ -428,7 +428,7 @@ const (
 	// ErrCodeTooManyKeySigningKeys for service response error code
 	// "TooManyKeySigningKeys".
 	//
-	// You've reached the limit for the number of key signing keys (KSKs). Remove
+	// You've reached the limit for the number of key-signing keys (KSKs). Remove
 	// at least one KSK, and then try again.
 	ErrCodeTooManyKeySigningKeys = "TooManyKeySigningKeys"
 
