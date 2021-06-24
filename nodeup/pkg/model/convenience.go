@@ -36,11 +36,11 @@ func b(v bool) *bool {
 	return fi.Bool(v)
 }
 
-// buildDockerEnvironmentVars just converts a series of keypairs to docker environment variables switches
-func buildDockerEnvironmentVars(env map[string]string) []string {
+// buildContainerRuntimeEnvironmentVars just converts a series of keypairs to docker environment variables switches
+func buildContainerRuntimeEnvironmentVars(env map[string]string) []string {
 	var list []string
 	for k, v := range env {
-		list = append(list, []string{"-e", fmt.Sprintf("%s=%s", k, v)}...)
+		list = append(list, []string{"--env", fmt.Sprintf("%s=%s", k, v)}...)
 	}
 
 	return list
