@@ -4,7 +4,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: dns-controller.addons.k8s.io
-    addon.kops.k8s.io/version: 1.22.0-alpha.1
     app.kubernetes.io/managed-by: kops
     k8s-addon: dns-controller.addons.k8s.io
     k8s-app: dns-controller
@@ -82,7 +81,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: dns-controller.addons.k8s.io
-    addon.kops.k8s.io/version: 1.22.0-alpha.1
     app.kubernetes.io/managed-by: kops
     k8s-addon: dns-controller.addons.k8s.io
   name: dns-controller
@@ -96,7 +94,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: dns-controller.addons.k8s.io
-    addon.kops.k8s.io/version: 1.22.0-alpha.1
     app.kubernetes.io/managed-by: kops
     k8s-addon: dns-controller.addons.k8s.io
   name: kops:dns-controller
@@ -130,7 +127,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: dns-controller.addons.k8s.io
-    addon.kops.k8s.io/version: 1.22.0-alpha.1
     app.kubernetes.io/managed-by: kops
     k8s-addon: dns-controller.addons.k8s.io
   name: kops:dns-controller
