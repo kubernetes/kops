@@ -88,6 +88,7 @@ go_test(
         "containerd_test.go",
         "docker_test.go",
         "fakes_test.go",
+        "hooks_test.go",
         "kops_controller_test.go",
         "kube_apiserver_test.go",
         "kube_controller_manager_test.go",
