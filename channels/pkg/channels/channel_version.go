@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/blang/semver/v4"
 	certmanager "github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -40,7 +39,6 @@ type Channel struct {
 }
 
 type ChannelVersion struct {
-	Version      *string `json:"version,omitempty"`
 	Channel      *string `json:"channel,omitempty"`
 	Id           string  `json:"id,omitempty"`
 	ManifestHash string  `json:"manifestHash,omitempty"`
@@ -54,7 +52,7 @@ func stringValue(s *string) string {
 }
 
 func (c *ChannelVersion) String() string {
-	s := "Version=" + stringValue(c.Version) + " Channel=" + stringValue(c.Channel)
+	s := "Channel=" + stringValue(c.Channel)
 	if c.Id != "" {
 		s += " Id=" + c.Id
 	}
@@ -106,47 +104,16 @@ func (c *Channel) AnnotationName() string {
 
 func (c *ChannelVersion) replaces(existing *ChannelVersion) bool {
 	klog.V(4).Infof("Checking existing channel: %v compared to new channel: %v", existing, c)
-	if existing.Version != nil {
-		if c.Version == nil {
-			klog.V(4).Infof("New Version info missing")
-			return false
-		}
-		cVersion, err := semver.ParseTolerant(*c.Version)
-		if err != nil {
-			klog.Warningf("error parsing version %q; will ignore this version", *c.Version)
-			return false
-		}
-		existingVersion, err := semver.ParseTolerant(*existing.Version)
-		if err != nil {
-			klog.Warningf("error parsing existing version %q", *existing.Version)
-			return true
-		}
-		if cVersion.LT(existingVersion) {
-			klog.V(4).Infof("New Version is less then old")
-			return false
-		} else if cVersion.GT(existingVersion) {
-			klog.V(4).Infof("New Version is greater then old")
-			return true
-		} else {
-			// Same version; check ids
-			if c.Id == existing.Id {
-				// Same id; check manifests
-				if c.ManifestHash == existing.ManifestHash {
-					klog.V(4).Infof("Manifest Match")
-					return false
-				}
-				klog.V(4).Infof("Channels had same version and ids %q, %q but different ManifestHash (%q vs %q); will replace", *c.Version, c.Id, c.ManifestHash, existing.ManifestHash)
-			} else {
-				klog.V(4).Infof("Channels had same version %q but different ids (%q vs %q); will replace", *c.Version, c.Id, existing.Id)
-			}
-		}
-	} else {
-		klog.Warningf("Existing ChannelVersion did not have a version; can't perform real version check")
-	}
 
-	if c.Version == nil {
-		klog.Warningf("New ChannelVersion did not have a version; can't perform real version check")
-		return false
+	if c.Id == existing.Id {
+		// Same id; check manifests
+		if c.ManifestHash == existing.ManifestHash {
+			klog.V(4).Infof("Manifest Match")
+			return false
+		}
+		klog.V(4).Infof("Channels had same ids %q, %q but different ManifestHash (%q vs %q); will replace", c.Id, c.ManifestHash, existing.ManifestHash)
+	} else {
+		klog.V(4).Infof("Channels had different ids (%q vs %q); will replace", c.Id, existing.Id)
 	}
 
 	return true

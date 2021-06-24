@@ -143,7 +143,6 @@ func addLabels(addon *addonsapi.AddonSpec, objects kubemanifest.ObjectList) erro
 
 		meta.Labels["app.kubernetes.io/managed-by"] = "kops"
 		meta.Labels["addon.kops.k8s.io/name"] = *addon.Name
-		meta.Labels["addon.kops.k8s.io/version"] = *addon.Version
 
 		// ensure selector is set where applicable
 		for key, val := range addon.Selector {

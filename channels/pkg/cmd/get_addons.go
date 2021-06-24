@@ -110,14 +110,11 @@ func RunGetAddons(ctx context.Context, f Factory, out io.Writer, options *GetAdd
 		t.AddColumn("NAMESPACE", func(r *addonInfo) string {
 			return r.Namespace.Name
 		})
-		t.AddColumn("VERSION", func(r *addonInfo) string {
+		t.AddColumn("HASH", func(r *addonInfo) string {
 			if r.Version == nil {
 				return "-"
 			}
-			if r.Version.Version != nil {
-				return *r.Version.Version
-			}
-			return "?"
+			return r.Version.ManifestHash
 		})
 		t.AddColumn("CHANNEL", func(r *addonInfo) string {
 			if r.Version == nil {
@@ -129,7 +126,7 @@ func RunGetAddons(ctx context.Context, f Factory, out io.Writer, options *GetAdd
 			return "?"
 		})
 
-		columns := []string{"NAMESPACE", "NAME", "VERSION", "CHANNEL"}
+		columns := []string{"NAMESPACE", "NAME", "HASH", "CHANNEL"}
 		err := t.Render(info, os.Stdout, columns...)
 		if err != nil {
 			return err
