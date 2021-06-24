@@ -2,11 +2,11 @@ Name: kops-hook-0.service
 definition: |
   [Unit]
   Description=Kops Hook kops-hook-0
-  Requires=docker.service
+  Requires=containerd.service
 
   [Service]
-  ExecStartPre=/usr/bin/docker pull busybox
-  ExecStart=/usr/bin/docker run -v /:/rootfs/ -v /var/run/dbus:/var/run/dbus -v /run/systemd:/run/systemd --net=host --privileged busybox sh -c "chroot /rootfs apt-get update && chroot /rootfs apt-get install -y ceph-common"
+  ExecStartPre=/usr/bin/ctr --namespace k8s.io image pull docker.io/library/busybox:latest
+  ExecStart=/usr/bin/ctr --namespace k8s.io run --rm --mount type=bind,src=/,dst=/rootfs,options=rbind:rslave --mount type=bind,src=/var/run/dbus,dst=/var/run/dbus,options=rbind:rprivate --mount type=bind,src=/run/systemd,dst=/run/systemd,options=rbind:rprivate --net-host --privileged docker.io/library/busybox:latest kops-hook-0 sh -c "chroot /rootfs apt-get update && chroot /rootfs apt-get install -y ceph-common"
   Type=oneshot
 
   [Install]

@@ -128,8 +128,17 @@ func (h *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*no
 		case nil:
 			unit.SetSection("Service", hook.Manifest)
 		default:
-			if err := h.buildDockerService(unit, hook); err != nil {
-				return nil, err
+			switch h.Cluster.Spec.ContainerRuntime {
+			case "containerd":
+				if err := h.buildContainerdService(unit, hook, name); err != nil {
+					return nil, err
+				}
+			case "docker":
+				if err := h.buildDockerService(unit, hook); err != nil {
+					return nil, err
+				}
+			default:
+				return nil, fmt.Errorf("unknown container runtime %q", h.Cluster.Spec.ContainerRuntime)
 			}
 		}
 		definition = s(unit.Render())
@@ -145,6 +154,41 @@ func (h *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*no
 	return service, nil
 }
 
+// buildContainerdService is responsible for generating a containerd exec unit file
+func (h *HookBuilder) buildContainerdService(unit *systemd.Manifest, hook *kops.HookSpec, name string) error {
+	containerdImage := hook.ExecContainer.Image
+	if !strings.Contains(containerdImage, "/") {
+		containerdImage = "docker.io/library/" + containerdImage
+	}
+	if !strings.Contains(containerdImage, ":") {
+		containerdImage = containerdImage + ":latest"
+	}
+
+	containerdArgs := []string{
+		"/usr/bin/ctr", "--namespace", "k8s.io", "run", "--rm",
+		"--mount", "type=bind,src=/,dst=/rootfs,options=rbind:rslave",
+		"--mount", "type=bind,src=/var/run/dbus,dst=/var/run/dbus,options=rbind:rprivate",
+		"--mount", "type=bind,src=/run/systemd,dst=/run/systemd,options=rbind:rprivate",
+		"--net-host",
+		"--privileged",
+	}
+	containerdArgs = append(containerdArgs, buildContainerRuntimeEnvironmentVars(hook.ExecContainer.Environment)...)
+	containerdArgs = append(containerdArgs, containerdImage)
+	containerdArgs = append(containerdArgs, name)
+	containerdArgs = append(containerdArgs, hook.ExecContainer.Command...)
+
+	containerdRunCommand := systemd.EscapeCommand(containerdArgs)
+	containerdPullCommand := systemd.EscapeCommand([]string{"/usr/bin/ctr", "--namespace", "k8s.io", "image", "pull", containerdImage})
+
+	unit.Set("Unit", "Requires", "containerd.service")
+	unit.Set("Service", "ExecStartPre", containerdPullCommand)
+	unit.Set("Service", "ExecStart", containerdRunCommand)
+	unit.Set("Service", "Type", "oneshot")
+	unit.Set("Install", "WantedBy", "multi-user.target")
+
+	return nil
+}
+
 // buildDockerService is responsible for generating a docker exec unit file
 func (h *HookBuilder) buildDockerService(unit *systemd.Manifest, hook *kops.HookSpec) error {
 	dockerArgs := []string{
@@ -155,7 +199,7 @@ func (h *HookBuilder) buildDockerService(unit *systemd.Manifest, hook *kops.Hook
 		"--net=host",
 		"--privileged",
 	}
-	dockerArgs = append(dockerArgs, buildDockerEnvironmentVars(hook.ExecContainer.Environment)...)
+	dockerArgs = append(dockerArgs, buildContainerRuntimeEnvironmentVars(hook.ExecContainer.Environment)...)
 	dockerArgs = append(dockerArgs, hook.ExecContainer.Image)
 	dockerArgs = append(dockerArgs, hook.ExecContainer.Command...)
 
