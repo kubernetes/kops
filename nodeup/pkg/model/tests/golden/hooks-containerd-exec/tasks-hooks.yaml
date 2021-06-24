@@ -1,0 +1,17 @@
+Name: kops-hook-0.service
+definition: |
+  [Unit]
+  Description=Kops Hook kops-hook-0
+  Requires=docker.service
+
+  [Service]
+  ExecStartPre=/usr/bin/docker pull busybox
+  ExecStart=/usr/bin/docker run -v /:/rootfs/ -v /var/run/dbus:/var/run/dbus -v /run/systemd:/run/systemd --net=host --privileged busybox sh -c "chroot /rootfs apt-get update && chroot /rootfs apt-get install -y ceph-common"
+  Type=oneshot
+
+  [Install]
+  WantedBy=multi-user.target
+enabled: true
+manageState: true
+running: true
+smartRestart: true
