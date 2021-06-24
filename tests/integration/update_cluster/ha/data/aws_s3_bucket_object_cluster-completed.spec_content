@@ -53,6 +53,8 @@ spec:
     name: events
     provider: Manager
     version: 3.4.13
+  externalDns:
+    provider: dns-controller
   iam:
     legacy: false
   keyStore: memfs://tests/ha.example.com/pki

@@ -210,7 +210,7 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 			changeset.Add(rrs.New(dnsHostname, []string{PlaceholderIP}, PlaceholderTTLDigitialOcean, rrstype.A))
 		} else {
 			changeset.Add(rrs.New(dnsHostname, []string{PlaceholderIP}, PlaceholderTTL, rrstype.A))
-			if featureflag.EnableExternalDNS.Enabled() {
+			if cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderExternalDNS {
 				changeset.Add(rrs.New(dnsHostname, []string{fmt.Sprintf("\"heritage=external-dns,external-dns/owner=%s\"", cluster.GetClusterName())}, PlaceholderTTL, rrstype.TXT))
 			}
 		}
