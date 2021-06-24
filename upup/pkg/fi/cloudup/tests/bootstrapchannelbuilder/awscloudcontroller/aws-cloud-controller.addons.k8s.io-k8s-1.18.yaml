@@ -4,7 +4,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-cloud-controller.addons.k8s.io
-    addon.kops.k8s.io/version: 1.18.0-kops.1
     app.kubernetes.io/managed-by: kops
     k8s-addon: aws-cloud-controller.addons.k8s.io
     k8s-app: aws-cloud-controller-manager
@@ -55,7 +54,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-cloud-controller.addons.k8s.io
-    addon.kops.k8s.io/version: 1.18.0-kops.1
     app.kubernetes.io/managed-by: kops
     k8s-addon: aws-cloud-controller.addons.k8s.io
   name: cloud-controller-manager
@@ -69,7 +67,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-cloud-controller.addons.k8s.io
-    addon.kops.k8s.io/version: 1.18.0-kops.1
     app.kubernetes.io/managed-by: kops
     k8s-addon: aws-cloud-controller.addons.k8s.io
   name: cloud-controller-manager:apiserver-authentication-reader
@@ -92,7 +89,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-cloud-controller.addons.k8s.io
-    addon.kops.k8s.io/version: 1.18.0-kops.1
     app.kubernetes.io/managed-by: kops
     k8s-addon: aws-cloud-controller.addons.k8s.io
   name: system:cloud-controller-manager
@@ -197,7 +193,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-cloud-controller.addons.k8s.io
-    addon.kops.k8s.io/version: 1.18.0-kops.1
     app.kubernetes.io/managed-by: kops
     k8s-addon: aws-cloud-controller.addons.k8s.io
   name: system:cloud-controller-manager
