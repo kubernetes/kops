@@ -164,19 +164,13 @@ func RunApplyChannel(ctx context.Context, f Factory, out io.Writer, options *App
 			if r.ExistingVersion == nil {
 				return "-"
 			}
-			if r.ExistingVersion.Version != nil {
-				return *r.ExistingVersion.Version
-			}
-			return "?"
+			return r.ExistingVersion.ManifestHash
 		})
 		t.AddColumn("UPDATE", func(r *channels.AddonUpdate) string {
 			if r.NewVersion == nil {
 				return "-"
 			}
-			if r.NewVersion.Version != nil {
-				return *r.NewVersion.Version
-			}
-			return "?"
+			return r.NewVersion.ManifestHash
 		})
 		t.AddColumn("PKI", func(r *channels.AddonUpdate) string {
 			if r.InstallPKI {
@@ -204,11 +198,7 @@ func RunApplyChannel(ctx context.Context, f Factory, out io.Writer, options *App
 		}
 		// Could have been a concurrent request
 		if update != nil {
-			if update.NewVersion != nil && update.NewVersion.Version != nil {
-				fmt.Printf("Updated %q to %s\n", update.Name, *update.NewVersion.Version)
-			} else {
-				fmt.Printf("Updated %q\n", update.Name)
-			}
+			fmt.Printf("Updated %q\n", update.Name)
 		}
 	}
 
