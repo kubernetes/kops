@@ -1,0 +1,98 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: storage-aws.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: storage-aws.addons.k8s.io
+  name: default
+parameters:
+  type: gp2
+provisioner: kubernetes.io/aws-ebs
+
+---
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "false"
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: storage-aws.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: storage-aws.addons.k8s.io
+  name: gp2
+parameters:
+  type: gp2
+provisioner: kubernetes.io/aws-ebs
+
+---
+
+allowVolumeExpansion: true
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: storage-aws.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: storage-aws.addons.k8s.io
+  name: kops-ssd-1-17
+parameters:
+  encrypted: "true"
+  type: gp2
+provisioner: kubernetes.io/aws-ebs
+volumeBindingMode: WaitForFirstConsumer
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: storage-aws.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: storage-aws.addons.k8s.io
+  name: system:aws-cloud-provider
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: storage-aws.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: storage-aws.addons.k8s.io
+  name: system:aws-cloud-provider
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:aws-cloud-provider
+subjects:
+- kind: ServiceAccount
+  name: aws-cloud-provider
+  namespace: kube-system
