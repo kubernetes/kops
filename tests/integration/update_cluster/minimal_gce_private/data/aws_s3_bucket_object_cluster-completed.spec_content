@@ -45,6 +45,8 @@ spec:
     name: events
     provider: Manager
     version: 3.4.13
+  externalDns:
+    provider: dns-controller
   iam:
     legacy: false
   keyStore: memfs://tests/minimal-gce-private.example.com/pki
