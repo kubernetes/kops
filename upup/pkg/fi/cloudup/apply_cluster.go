@@ -1335,6 +1335,9 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 
 	if isMaster {
 		config.KeypairIDs[fi.CertificateIDCA] = caTasks[fi.CertificateIDCA].Keyset().Primary.Id
+		if caTasks["etcd-clients-ca-cilium"] != nil {
+			config.KeypairIDs["etcd-clients-ca-cilium"] = caTasks["etcd-clients-ca-cilium"].Keyset().Primary.Id
+		}
 	} else {
 		if caTasks["etcd-client-cilium"] != nil {
 			config.KeypairIDs["etcd-client-cilium"] = caTasks["etcd-client-cilium"].Keyset().Primary.Id
