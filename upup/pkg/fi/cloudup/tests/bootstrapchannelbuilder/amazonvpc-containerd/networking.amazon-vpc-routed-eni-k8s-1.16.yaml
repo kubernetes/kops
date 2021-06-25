@@ -4,7 +4,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
-    addon.kops.k8s.io/version: 1.7.8-kops.1
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -25,7 +24,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
-    addon.kops.k8s.io/version: 1.7.8-kops.1
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -73,7 +71,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
-    addon.kops.k8s.io/version: 1.7.8-kops.1
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: eniconfigs.crd.k8s.amazonaws.com
@@ -97,7 +94,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
-    addon.kops.k8s.io/version: 1.7.8-kops.1
     app.kubernetes.io/managed-by: kops
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
@@ -232,7 +228,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
-    addon.kops.k8s.io/version: 1.7.8-kops.1
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: aws-node

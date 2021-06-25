@@ -19,7 +19,6 @@ package api
 import (
 	"fmt"
 
-	"github.com/blang/semver/v4"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/values"
 )
@@ -43,9 +42,6 @@ type AddonSpec struct {
 
 	// Selector is a label query over pods that should match the Replicas count.
 	Selector map[string]string `json:"selector"`
-
-	// Version is a semver version
-	Version *string `json:"version,omitempty"`
 
 	// Manifest is the URL to the manifest that should be applied
 	Manifest *string `json:"manifest,omitempty"`
@@ -77,17 +73,6 @@ func (a *Addons) Verify() error {
 	for _, addon := range a.Spec.Addons {
 		if addon == nil {
 			continue
-		}
-		if addon.Version != nil && *addon.Version != "" {
-			name := a.ObjectMeta.Name
-			if addon.Name != nil {
-				name = *addon.Name
-			}
-
-			_, err := semver.ParseTolerant(*addon.Version)
-			if err != nil {
-				return fmt.Errorf("addon %q has unparseable version %q: %v", name, *addon.Version, err)
-			}
 		}
 		if addon.KubernetesVersion != "" {
 			return fmt.Errorf("bootstrap addon %q has a KubernetesVersion", values.StringValue(addon.Name))
