@@ -53,6 +53,7 @@ type AddonUpdate struct {
 	ExistingVersion *ChannelVersion
 	NewVersion      *ChannelVersion
 	InstallPKI      bool
+	Replace         bool
 }
 
 // AddonMenu is a collection of addons, with helpers for computing the latest versions
@@ -71,20 +72,19 @@ func (m *AddonMenu) MergeAddons(o *AddonMenu) {
 		existing := m.Addons[k]
 		if existing == nil {
 			m.Addons[k] = v
-		} else {
-			if v.ChannelVersion().replaces(existing.ChannelVersion()) {
-				m.Addons[k] = v
-			}
+		} else if update, _ := v.ChannelVersion().updates(existing.ChannelVersion()); update {
+			m.Addons[k] = v
 		}
 	}
 }
 
 func (a *Addon) ChannelVersion() *ChannelVersion {
 	return &ChannelVersion{
-		Channel:      &a.ChannelName,
-		Version:      a.Spec.Version,
-		Id:           a.Spec.Id,
-		ManifestHash: a.Spec.ManifestHash,
+		Channel:              &a.ChannelName,
+		Version:              a.Spec.Version,
+		Id:                   a.Spec.Id,
+		ManifestHash:         a.Spec.ManifestHash,
+		ReplaceBeforeVersion: a.Spec.ReplaceBeforeVersion,
 	}
 }
 
@@ -120,8 +120,11 @@ func (a *Addon) GetRequiredUpdates(ctx context.Context, k8sClient kubernetes.Int
 		}
 	}
 
-	if existingVersion != nil && !newVersion.replaces(existingVersion) {
-		newVersion = nil
+	var update, replace bool
+	if existingVersion != nil {
+		if update, replace = newVersion.updates(existingVersion); !update {
+			newVersion = nil
+		}
 	}
 
 	if pkiInstalled && newVersion == nil {
@@ -133,6 +136,7 @@ func (a *Addon) GetRequiredUpdates(ctx context.Context, k8sClient kubernetes.Int
 		ExistingVersion: existingVersion,
 		NewVersion:      newVersion,
 		InstallPKI:      !pkiInstalled,
+		Replace:         replace,
 	}, nil
 }
 
@@ -168,7 +172,12 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 		}
 		klog.Infof("Applying update from %q", manifestURL)
 
-		err = Apply(manifestURL.String())
+		if required.Replace {
+			klog.Infof("Addon %q update requires replace", a.Name)
+			err = Replace(manifestURL.String())
+		} else {
+			err = Apply(manifestURL.String())
+		}
 		if err != nil {
 			return nil, fmt.Errorf("error applying update from %q: %v", manifestURL, err)
 		}
