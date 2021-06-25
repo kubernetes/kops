@@ -43,7 +43,6 @@ go_library(
         "cloudup/resources/addons/rbac.addons.k8s.io/k8s-1.8.yaml",
         "cloudup/resources/addons/scheduler.addons.k8s.io/v1.7.0.yaml",
         "cloudup/resources/addons/spotinst-kubernetes-cluster-controller.addons.k8s.io/v1.14.0.yaml.template",
-        "cloudup/resources/addons/spotinst-kubernetes-cluster-controller.addons.k8s.io/v1.9.0.yaml.template",
         "cloudup/resources/addons/storage-aws.addons.k8s.io/v1.15.0.yaml.template",
         "cloudup/resources/addons/storage-gce.addons.k8s.io/v1.7.0.yaml.template",
         "cloudup/resources/addons/storage-openstack.addons.k8s.io/k8s-1.16.yaml.template",
