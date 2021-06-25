@@ -63,6 +63,7 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"")
 
 		// See https://github.com/kubernetes/kube-deploy/issues/261
+		// and https://github.com/kubernetes/kops/issues/10206
 		sysctls = append(sysctls,
 			"# Increase the number of connections",
 			"net.core.somaxconn = 32768",
@@ -77,8 +78,8 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"",
 
 			"# Increase the maximum total buffer-space allocatable",
-			"net.ipv4.tcp_wmem = 4096 12582912 16777216",
-			"net.ipv4.tcp_rmem = 4096 12582912 16777216",
+			"net.ipv4.tcp_wmem = 4096 87380 16777216",
+			"net.ipv4.tcp_rmem = 4096 87380 16777216",
 			"",
 
 			"# Increase the number of outstanding syn requests allowed",

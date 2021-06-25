@@ -12,7 +12,10 @@ NODEUP_HASH_ARM64=7603675379699105a9b9915ff97718ea99b1bbb01a4c184e2f827c8a96e8e8
 
 
 
-sysctl -w net.ipv4.tcp_rmem='4096 12582912 16777216' || true
+sysctl -w net.core.rmem_max=16777216 || true
+sysctl -w net.core.wmem_max=16777216 || true
+sysctl -w net.ipv4.tcp_rmem='4096 87380 16777216' || true
+sysctl -w net.ipv4.tcp_wmem='4096 87380 16777216' || true
 
 
 function ensure-install-dir() {
