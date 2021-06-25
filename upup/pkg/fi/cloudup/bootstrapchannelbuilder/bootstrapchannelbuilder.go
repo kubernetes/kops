@@ -696,20 +696,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		key := "spotinst-kubernetes-cluster-controller.addons.k8s.io"
 
 		{
-			id := "v1.9.0"
-			location := key + "/" + id + ".yaml"
-			version := "1.0.39"
-
-			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:     fi.String(key),
-				Version:  fi.String(version),
-				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.String(location),
-				Id:       id,
-			})
-		}
-
-		{
 			id := "v1.14.0"
 			location := key + "/" + id + ".yaml"
 			version := "1.0.75"
