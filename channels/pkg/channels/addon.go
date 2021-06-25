@@ -82,7 +82,6 @@ func (m *AddonMenu) MergeAddons(o *AddonMenu) {
 func (a *Addon) ChannelVersion() *ChannelVersion {
 	return &ChannelVersion{
 		Channel:      &a.ChannelName,
-		Version:      a.Spec.Version,
 		Id:           a.Spec.Id,
 		ManifestHash: a.Spec.ManifestHash,
 	}
