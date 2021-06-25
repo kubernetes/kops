@@ -13,4 +13,7 @@ The process of updating the AMI version is as following:
         Before updating `alpha` channel, check and see if `alpha` and `stable` channel are both running the same AMI version. If `stable` currently runs a different version, and more than 7-10 days passed since `alpha` was updated- it's safe to also push the version currently in `alpha`, to `stable` in the same PR.
         e.g., let's say that the most recent available on Ubuntu image locator is `20201210`, `alpha` is currently using `20201101` and `stable` is currently using `20201015`. If `alpha` was updated at least 7-10 days prior to your desired change, you can update `stable` with the version that was listed in `alpha` **before** your change. Then- you may update `alpha` with the most recent version of Ubuntu.
 
+    !!!note
+        When updating the `stable` channel with a new ami version, there's a pretty good chance that this will cause some tests to fail. Thus, it's worth running `hack/update-expected.sh`. This will update all the integration tests with the newly updated ami. To get ahead of this locally before pushing - `make test` will confirm that everything is updated as should.
+
 - Let the new AMI version bake-in in `alpha` channel for at least 7-10 days, afterwhich it's safe to create a follow-up PR to push the latest version to `stable` channel.  
