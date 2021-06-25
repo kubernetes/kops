@@ -1087,6 +1087,12 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e kops.EtcdClusterSp
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("awsSrcDstCheck"), &v.AWSSrcDstCheck, valid)...)
 	}
 
+	if v.CrossSubnet != nil {
+		if fi.BoolValue(v.CrossSubnet) && v.AWSSrcDstCheck != "Disable" {
+			field.Invalid(fldPath.Child("crossSubnet"), v.CrossSubnet, "crossSubnet is deprecated, use awsSrcDstCheck instead")
+		}
+	}
+
 	if v.BPFExternalServiceMode != "" {
 		valid := []string{"Tunnel", "DSR"}
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("bpfExternalServiceMode"), &v.BPFExternalServiceMode, valid)...)
@@ -1112,10 +1118,20 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e kops.EtcdClusterSp
 
 	if v.IPIPMode != "" {
 		child := fldPath.Child("ipipMode")
-		allErrs = append(allErrs, validateCalicoIPPoolEncapsulationMode(v.IPIPMode, child)...)
+		allErrs = append(allErrs, validateCalicoEncapsulationMode(v.IPIPMode, child)...)
 		if v.IPIPMode != "Never" {
 			if v.EncapsulationMode != "" && v.EncapsulationMode != "ipip" {
 				allErrs = append(allErrs, field.Forbidden(child, `IP-in-IP encapsulation requires use of Calico's "ipip" encapsulation mode`))
+			}
+		}
+	}
+
+	if v.VXLANMode != "" {
+		child := fldPath.Child("vxlanMode")
+		allErrs = append(allErrs, validateCalicoEncapsulationMode(v.VXLANMode, child)...)
+		if v.VXLANMode != "Never" {
+			if v.EncapsulationMode != "" && v.EncapsulationMode != "vxlan" {
+				allErrs = append(allErrs, field.Forbidden(child, `VXLAN encapsulation requires use of Calico's "vxlan" encapsulation mode`))
 			}
 		}
 	}
@@ -1201,7 +1217,7 @@ func validateCalicoAutoDetectionMethod(fldPath *field.Path, runtime string, vers
 	}
 }
 
-func validateCalicoIPPoolEncapsulationMode(mode string, fldPath *field.Path) field.ErrorList {
+func validateCalicoEncapsulationMode(mode string, fldPath *field.Path) field.ErrorList {
 	valid := []string{"Always", "CrossSubnet", "Never"}
 
 	allErrs := field.ErrorList{}

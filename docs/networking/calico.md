@@ -53,7 +53,7 @@ As of Calico version 3.17, in order to use IP-in-IP encapsulation, Calico must u
 ### Enable Cross-Subnet mode in Calico
 
 Calico supports a new option for both of its IP-in-IP and VXLAN encapsulation modes where traffic is only encapsulated
-when it’s destined to subnets with intermediate infrastructure lacking Calico route awareness—for example, across
+when it’s destined to subnets with intermediate infrastructure lacking Calico route awareness, for example, across
 heterogeneous public clouds or on AWS where traffic is crossing availability zones.
 
 With this mode, encapsulation is only [performed selectively](https://docs.projectcalico.org/v3.10/networking/vxlan-ipip#configure-ip-in-ip-encapsulation-for-only-cross-subnet-traffic).
@@ -91,6 +91,9 @@ or
       encapsulationMode: vxlan
 ```
 depending on which encapsulation mode you have selected.
+
+**Cross-subnet mode is the default mode in kOps 1.22+** for both IP-in-IP and VXLAN encapsulation.
+It can be disabled or adjusted by setting the `ipipMode`, `vxlanMode` and `awsSrcDstCheck` options.
 
 In AWS an IAM policy will be added to all nodes to allow Calico to execute `ec2:DescribeInstances` and `ec2:ModifyNetworkInterfaceAttribute`, as required when [awsSrcDstCheck](https://docs.projectcalico.org/reference/resources/felixconfig#spec) is set.
 For older versions of kOps, an addon controller ([k8s-ec2-srcdst](https://github.com/ottoyiu/k8s-ec2-srcdst))
