@@ -304,7 +304,15 @@ func parsePkixName(s string) (*pkix.Name, error) {
 
 func (e *Keypair) ensureResources() {
 	if e.certificates == nil {
-		e.certificates = &fi.TaskDependentResource{Task: e}
+		e.certificates = &fi.TaskDependentResource{
+			Resource: fi.NewStringResource("<< TO BE GENERATED >>\n"),
+			Task:     e,
+		}
+		e.keyset = &fi.Keyset{
+			Primary: &fi.KeysetItem{
+				Id: "<< TO BE GENERATED >>",
+			},
+		}
 	}
 }
 
