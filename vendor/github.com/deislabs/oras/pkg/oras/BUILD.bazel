@@ -24,6 +24,7 @@ go_library(
         "//vendor/github.com/opencontainers/image-spec/specs-go:go_default_library",
         "//vendor/github.com/opencontainers/image-spec/specs-go/v1:go_default_library",
         "//vendor/github.com/pkg/errors:go_default_library",
+        "//vendor/golang.org/x/sync/errgroup:go_default_library",
         "//vendor/golang.org/x/sync/semaphore:go_default_library",
     ],
 )
