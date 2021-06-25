@@ -390,7 +390,7 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 		"SetSysctls": func() string {
 			// By setting some sysctls early, we avoid broken configurations that prevent nodeup download.
 			// See https://github.com/kubernetes/kops/issues/10206 for details.
-			return "sysctl -w net.ipv4.tcp_rmem='4096 12582912 16777216' || true\n"
+			return setSysctls()
 		},
 	}
 
@@ -476,4 +476,16 @@ func gzipBase64(data string) (string, error) {
 	}
 
 	return base64.StdEncoding.EncodeToString(b.Bytes()), nil
+}
+
+func setSysctls() string {
+	var b bytes.Buffer
+
+	// Based on https://github.com/kubernetes/kops/issues/10206#issuecomment-766852332
+	b.WriteString("sysctl -w net.core.rmem_max=16777216 || true\n")
+	b.WriteString("sysctl -w net.core.wmem_max=16777216 || true\n")
+	b.WriteString("sysctl -w net.ipv4.tcp_rmem='4096 87380 16777216' || true\n")
+	b.WriteString("sysctl -w net.ipv4.tcp_wmem='4096 87380 16777216' || true\n")
+
+	return b.String()
 }

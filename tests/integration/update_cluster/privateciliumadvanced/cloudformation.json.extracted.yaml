@@ -15,7 +15,10 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumadvancedexamplec
 
 
 
-  sysctl -w net.ipv4.tcp_rmem='4096 12582912 16777216' || true
+  sysctl -w net.core.rmem_max=16777216 || true
+  sysctl -w net.core.wmem_max=16777216 || true
+  sysctl -w net.ipv4.tcp_rmem='4096 87380 16777216' || true
+  sysctl -w net.ipv4.tcp_wmem='4096 87380 16777216' || true
 
 
   function ensure-install-dir() {
@@ -356,7 +359,10 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumadvancedexamplecom.Properties.La
 
 
 
-  sysctl -w net.ipv4.tcp_rmem='4096 12582912 16777216' || true
+  sysctl -w net.core.rmem_max=16777216 || true
+  sysctl -w net.core.wmem_max=16777216 || true
+  sysctl -w net.ipv4.tcp_rmem='4096 87380 16777216' || true
+  sysctl -w net.ipv4.tcp_wmem='4096 87380 16777216' || true
 
 
   function ensure-install-dir() {
