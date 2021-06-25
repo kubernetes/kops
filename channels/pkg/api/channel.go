@@ -21,6 +21,7 @@ import (
 
 	"github.com/blang/semver/v4"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops/pkg/values"
 )
 
 type Addons struct {
@@ -74,7 +75,10 @@ type AddonSpec struct {
 
 func (a *Addons) Verify() error {
 	for _, addon := range a.Spec.Addons {
-		if addon != nil && addon.Version != nil && *addon.Version != "" {
+		if addon == nil {
+			continue
+		}
+		if addon.Version != nil && *addon.Version != "" {
 			name := a.ObjectMeta.Name
 			if addon.Name != nil {
 				name = *addon.Name
@@ -84,6 +88,9 @@ func (a *Addons) Verify() error {
 			if err != nil {
 				return fmt.Errorf("addon %q has unparseable version %q: %v", name, *addon.Version, err)
 			}
+		}
+		if addon.KubernetesVersion != "" {
+			return fmt.Errorf("bootstrap addon %q has a KubernetesVersion", values.StringValue(addon.Name))
 		}
 	}
 

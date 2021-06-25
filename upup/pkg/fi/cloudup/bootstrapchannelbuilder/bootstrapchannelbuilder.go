@@ -622,13 +622,12 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			id := "k8s-1.9"
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key),
-				Version:           fi.String(version),
-				Selector:          map[string]string{"k8s-addon": key},
-				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.9.0",
-				Id:                id,
-				NeedsPKI:          true,
+				Name:     fi.String(key),
+				Version:  fi.String(version),
+				Selector: map[string]string{"k8s-addon": key},
+				Manifest: fi.String(location),
+				Id:       id,
+				NeedsPKI: true,
 			})
 		}
 
@@ -984,7 +983,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 
 	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
 
-		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
+		if b.IsKubernetesGTE("1.18") && b.Cluster.Spec.ExternalCloudControllerManager != nil {
 			key := "aws-cloud-controller.addons.k8s.io"
 			// Version refers to the addon configuration.  The CCM tag is given by
 			// the template function AWSCCMTag()
@@ -993,12 +992,11 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 				id := "k8s-1.18"
 				location := key + "/" + id + ".yaml"
 				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-					Name:              fi.String(key),
-					Version:           fi.String(version),
-					Manifest:          fi.String(location),
-					Selector:          map[string]string{"k8s-addon": key},
-					KubernetesVersion: ">=1.18.0",
-					Id:                id,
+					Name:     fi.String(key),
+					Version:  fi.String(version),
+					Manifest: fi.String(location),
+					Selector: map[string]string{"k8s-addon": key},
+					Id:       id,
 				})
 			}
 		}
@@ -1010,12 +1008,11 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 				id := "k8s-1.17"
 				location := key + "/" + id + ".yaml"
 				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-					Name:              fi.String(key),
-					Version:           fi.String(version),
-					Manifest:          fi.String(location),
-					Selector:          map[string]string{"k8s-addon": key},
-					KubernetesVersion: ">=1.17.0",
-					Id:                id,
+					Name:     fi.String(key),
+					Version:  fi.String(version),
+					Manifest: fi.String(location),
+					Selector: map[string]string{"k8s-addon": key},
+					Id:       id,
 				})
 			}
 
@@ -1026,7 +1023,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 	}
 
-	if b.Cluster.Spec.SnapshotController != nil && fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled) {
+	if b.IsKubernetesGTE("1.20") && b.Cluster.Spec.SnapshotController != nil && fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled) {
 		key := "snapshot-controller.addons.k8s.io"
 
 		version := "4.0.0-kops.1"
@@ -1034,13 +1031,12 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			id := "k8s-1.20"
 			location := key + "/" + id + ".yaml"
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key),
-				Version:           fi.String(version),
-				Manifest:          fi.String(location),
-				Selector:          map[string]string{"k8s-addon": key},
-				KubernetesVersion: ">=1.20.0",
-				NeedsPKI:          true,
-				Id:                id,
+				Name:     fi.String(key),
+				Version:  fi.String(version),
+				Manifest: fi.String(location),
+				Selector: map[string]string{"k8s-addon": key},
+				NeedsPKI: true,
+				Id:       id,
 			})
 		}
 	}

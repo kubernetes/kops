@@ -53,7 +53,6 @@ spec:
       k8s-addon: storage-aws.addons.k8s.io
     version: 1.17.0
   - id: k8s-1.18
-    kubernetesVersion: '>=1.18.0'
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
     manifestHash: 802a42830a525a9083c80e2ad58efb72ea34945e
     name: aws-cloud-controller.addons.k8s.io
@@ -61,7 +60,6 @@ spec:
       k8s-addon: aws-cloud-controller.addons.k8s.io
     version: 1.18.0-kops.1
   - id: k8s-1.17
-    kubernetesVersion: '>=1.17.0'
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
     manifestHash: 59c7723a8a9271558c6a87ccb0f0c61c2e36c6ed
     name: aws-ebs-csi-driver.addons.k8s.io
