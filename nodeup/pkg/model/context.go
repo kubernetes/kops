@@ -240,6 +240,9 @@ func (c *NodeupModelContext) BuildIssuedKubeconfig(name string, subject nodetask
 
 // GetBootstrapCert requests a certificate keypair from kops-controller.
 func (c *NodeupModelContext) GetBootstrapCert(name string) (cert, key fi.Resource) {
+	if c.IsMaster {
+		panic("control plane nodes can't get certs from kops-controller")
+	}
 	b, ok := c.bootstrapCerts[name]
 	if !ok {
 		b = &nodetasks.BootstrapCert{
