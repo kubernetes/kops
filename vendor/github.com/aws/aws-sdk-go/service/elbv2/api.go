@@ -245,7 +245,7 @@ func (c *ELBV2) CreateListenerRequest(input *CreateListenerInput) (req *request.
 // CreateListener API operation for Elastic Load Balancing.
 //
 // Creates a listener for the specified Application Load Balancer, Network Load
-// Balancer. or Gateway Load Balancer.
+// Balancer, or Gateway Load Balancer.
 //
 // For more information, see the following:
 //
@@ -4672,10 +4672,10 @@ type CreateTargetGroupInput struct {
 	HealthCheckEnabled *bool `type:"boolean"`
 
 	// The approximate amount of time, in seconds, between health checks of an individual
-	// target. For TCP health checks, the supported values are 10 and 30 seconds.
-	// If the target type is instance or ip, the default is 30 seconds. If the target
-	// group protocol is GENEVE, the default is 10 seconds. If the target type is
-	// lambda, the default is 35 seconds.
+	// target. If the target group protocol is TCP, TLS, UDP, or TCP_UDP, the supported
+	// values are 10 and 30 seconds. If the target group protocol is HTTP or HTTPS,
+	// the default is 30 seconds. If the target group protocol is GENEVE, the default
+	// is 10 seconds. If the target type is lambda, the default is 35 seconds.
 	HealthCheckIntervalSeconds *int64 `min:"5" type:"integer"`
 
 	// [HTTP/HTTPS health checks] The destination for health checks on the targets.
@@ -6804,7 +6804,9 @@ type LoadBalancerState struct {
 
 	// The state code. The initial state of the load balancer is provisioning. After
 	// the load balancer is fully set up and ready to route traffic, its state is
-	// active. If the load balancer could not be set up, its state is failed.
+	// active. If load balancer is routing traffic but does not have the resources
+	// it needs to scale, its state isactive_impaired. If the load balancer could
+	// not be set up, its state is failed.
 	Code *string `type:"string" enum:"LoadBalancerStateEnum"`
 
 	// A description of the state.
@@ -8963,8 +8965,8 @@ type TargetGroupAttribute struct {
 	//    The value is true or false. The default is false.
 	//
 	//    * stickiness.type - The type of sticky sessions. The possible values are
-	//    lb_cookie for Application Load Balancers or source_ip for Network Load
-	//    Balancers.
+	//    lb_cookie and app_cookie for Application Load Balancers or source_ip for
+	//    Network Load Balancers.
 	//
 	// The following attributes are supported only if the load balancer is an Application
 	// Load Balancer and the target is an instance or an IP address:
@@ -8978,6 +8980,16 @@ type TargetGroupAttribute struct {
 	//    to the target group. After this time period ends, the target receives
 	//    its full share of traffic. The range is 30-900 seconds (15 minutes). The
 	//    default is 0 seconds (disabled).
+	//
+	//    * stickiness.app_cookie.cookie_name - Indicates the name of the application-based
+	//    cookie. Names that start with the following names are not allowed: AWSALB,
+	//    AWSALBAPP, and AWSALBTG. They're reserved for use by the load balancer.
+	//
+	//    * stickiness.app_cookie.duration_seconds - The time period, in seconds,
+	//    during which requests from a client should be routed to the same target.
+	//    After this time period expires, the application-based cookie is considered
+	//    stale. The range is 1 second to 1 week (604800 seconds). The default value
+	//    is 1 day (86400 seconds).
 	//
 	//    * stickiness.lb_cookie.duration_seconds - The time period, in seconds,
 	//    during which requests from a client should be routed to the same target.
@@ -9000,6 +9012,12 @@ type TargetGroupAttribute struct {
 	//    * deregistration_delay.connection_termination.enabled - Indicates whether
 	//    the load balancer terminates connections at the end of the deregistration
 	//    timeout. The value is true or false. The default is false.
+	//
+	//    * preserve_client_ip.enabled - Indicates whether client IP preservation
+	//    is enabled. The value is true or false. The default is disabled if the
+	//    target group type is IP address and the target group protocol is TCP or
+	//    TLS. Otherwise, the default is enabled. Client IP preservation cannot
+	//    be disabled for UDP and TCP_UDP target groups.
 	//
 	//    * proxy_protocol_v2.enabled - Indicates whether Proxy Protocol version
 	//    2 is enabled. The value is true or false. The default is false.

@@ -57,7 +57,7 @@ func (c *Route53) ActivateKeySigningKeyRequest(input *ActivateKeySigningKeyInput
 
 // ActivateKeySigningKey API operation for Amazon Route 53.
 //
-// Activates a key signing key (KSK) so that it can be used for signing by DNSSEC.
+// Activates a key-signing key (KSK) so that it can be used for signing by DNSSEC.
 // This operation changes the KSK status to ACTIVE.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -73,10 +73,10 @@ func (c *Route53) ActivateKeySigningKeyRequest(input *ActivateKeySigningKeyInput
 //   at the same time that you did. Retry the request.
 //
 //   * ErrCodeNoSuchKeySigningKey "NoSuchKeySigningKey"
-//   The specified key signing key (KSK) doesn't exist.
+//   The specified key-signing key (KSK) doesn't exist.
 //
 //   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
-//   The key signing key (KSK) status isn't valid or another KSK has the status
+//   The key-signing key (KSK) status isn't valid or another KSK has the status
 //   INTERNAL_FAILURE.
 //
 //   * ErrCodeInvalidSigningStatus "InvalidSigningStatus"
@@ -884,7 +884,7 @@ func (c *Route53) CreateKeySigningKeyRequest(input *CreateKeySigningKeyInput) (r
 
 // CreateKeySigningKey API operation for Amazon Route 53.
 //
-// Creates a new key signing key (KSK) associated with a hosted zone. You can
+// Creates a new key-signing key (KSK) associated with a hosted zone. You can
 // only have two KSKs per hosted zone.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -909,7 +909,7 @@ func (c *Route53) CreateKeySigningKeyRequest(input *CreateKeySigningKeyInput) (r
 //   signing.
 //
 //   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
-//   The key signing key (KSK) status isn't valid or another KSK has the status
+//   The key-signing key (KSK) status isn't valid or another KSK has the status
 //   INTERNAL_FAILURE.
 //
 //   * ErrCodeInvalidSigningStatus "InvalidSigningStatus"
@@ -917,14 +917,14 @@ func (c *Route53) CreateKeySigningKeyRequest(input *CreateKeySigningKeyInput) (r
 //   change the status to enable DNSSEC or disable DNSSEC.
 //
 //   * ErrCodeInvalidKeySigningKeyName "InvalidKeySigningKeyName"
-//   The key signing key (KSK) name that you specified isn't a valid name.
+//   The key-signing key (KSK) name that you specified isn't a valid name.
 //
 //   * ErrCodeKeySigningKeyAlreadyExists "KeySigningKeyAlreadyExists"
-//   You've already created a key signing key (KSK) with this name or with the
-//   same customer managed key (CMK) ARN.
+//   You've already created a key-signing key (KSK) with this name or with the
+//   same customer managed customer master key (CMK) ARN.
 //
 //   * ErrCodeTooManyKeySigningKeys "TooManyKeySigningKeys"
-//   You've reached the limit for the number of key signing keys (KSKs). Remove
+//   You've reached the limit for the number of key-signing keys (KSKs). Remove
 //   at least one KSK, and then try again.
 //
 //   * ErrCodeConcurrentModification "ConcurrentModification"
@@ -1780,7 +1780,7 @@ func (c *Route53) DeactivateKeySigningKeyRequest(input *DeactivateKeySigningKeyI
 
 // DeactivateKeySigningKey API operation for Amazon Route 53.
 //
-// Deactivates a key signing key (KSK) so that it will not be used for signing
+// Deactivates a key-signing key (KSK) so that it will not be used for signing
 // by DNSSEC. This operation changes the KSK status to INACTIVE.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -1796,10 +1796,10 @@ func (c *Route53) DeactivateKeySigningKeyRequest(input *DeactivateKeySigningKeyI
 //   at the same time that you did. Retry the request.
 //
 //   * ErrCodeNoSuchKeySigningKey "NoSuchKeySigningKey"
-//   The specified key signing key (KSK) doesn't exist.
+//   The specified key-signing key (KSK) doesn't exist.
 //
 //   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
-//   The key signing key (KSK) status isn't valid or another KSK has the status
+//   The key-signing key (KSK) status isn't valid or another KSK has the status
 //   INTERNAL_FAILURE.
 //
 //   * ErrCodeInvalidSigningStatus "InvalidSigningStatus"
@@ -1807,12 +1807,12 @@ func (c *Route53) DeactivateKeySigningKeyRequest(input *DeactivateKeySigningKeyI
 //   change the status to enable DNSSEC or disable DNSSEC.
 //
 //   * ErrCodeKeySigningKeyInUse "KeySigningKeyInUse"
-//   The key signing key (KSK) that you specified can't be deactivated because
+//   The key-signing key (KSK) that you specified can't be deactivated because
 //   it's the only KSK for a currently-enabled DNSSEC. Disable DNSSEC signing,
 //   or add or enable another KSK.
 //
 //   * ErrCodeKeySigningKeyInParentDSRecord "KeySigningKeyInParentDSRecord"
-//   The key signing key (KSK) is specified in a parent DS record.
+//   The key-signing key (KSK) is specified in a parent DS record.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeactivateKeySigningKey
 func (c *Route53) DeactivateKeySigningKey(input *DeactivateKeySigningKeyInput) (*DeactivateKeySigningKeyOutput, error) {
@@ -2120,7 +2120,7 @@ func (c *Route53) DeleteKeySigningKeyRequest(input *DeleteKeySigningKeyInput) (r
 
 // DeleteKeySigningKey API operation for Amazon Route 53.
 //
-// Deletes a key signing key (KSK). Before you can delete a KSK, you must deactivate
+// Deletes a key-signing key (KSK). Before you can delete a KSK, you must deactivate
 // it. The KSK must be deactived before you can delete it regardless of whether
 // the hosted zone is enabled for DNSSEC signing.
 //
@@ -2137,10 +2137,10 @@ func (c *Route53) DeleteKeySigningKeyRequest(input *DeleteKeySigningKeyInput) (r
 //   at the same time that you did. Retry the request.
 //
 //   * ErrCodeNoSuchKeySigningKey "NoSuchKeySigningKey"
-//   The specified key signing key (KSK) doesn't exist.
+//   The specified key-signing key (KSK) doesn't exist.
 //
 //   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
-//   The key signing key (KSK) status isn't valid or another KSK has the status
+//   The key-signing key (KSK) status isn't valid or another KSK has the status
 //   INTERNAL_FAILURE.
 //
 //   * ErrCodeInvalidSigningStatus "InvalidSigningStatus"
@@ -2708,7 +2708,7 @@ func (c *Route53) DisableHostedZoneDNSSECRequest(input *DisableHostedZoneDNSSECI
 // DisableHostedZoneDNSSEC API operation for Amazon Route 53.
 //
 // Disables DNSSEC signing in a specific hosted zone. This action does not deactivate
-// any key signing keys (KSKs) that are active in the hosted zone.
+// any key-signing keys (KSKs) that are active in the hosted zone.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2729,13 +2729,13 @@ func (c *Route53) DisableHostedZoneDNSSECRequest(input *DisableHostedZoneDNSSECI
 //   at the same time that you did. Retry the request.
 //
 //   * ErrCodeKeySigningKeyInParentDSRecord "KeySigningKeyInParentDSRecord"
-//   The key signing key (KSK) is specified in a parent DS record.
+//   The key-signing key (KSK) is specified in a parent DS record.
 //
 //   * ErrCodeDNSSECNotFound "DNSSECNotFound"
 //   The hosted zone doesn't have any DNSSEC resources.
 //
 //   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
-//   The key signing key (KSK) status isn't valid or another KSK has the status
+//   The key-signing key (KSK) status isn't valid or another KSK has the status
 //   INTERNAL_FAILURE.
 //
 //   * ErrCodeInvalidKMSArn "InvalidKMSArn"
@@ -2941,7 +2941,7 @@ func (c *Route53) EnableHostedZoneDNSSECRequest(input *EnableHostedZoneDNSSECInp
 //   at the same time that you did. Retry the request.
 //
 //   * ErrCodeKeySigningKeyWithActiveStatusNotFound "KeySigningKeyWithActiveStatusNotFound"
-//   A key signing key (KSK) with ACTIVE status wasn't found.
+//   A key-signing key (KSK) with ACTIVE status wasn't found.
 //
 //   * ErrCodeInvalidKMSArn "InvalidKMSArn"
 //   The KeyManagementServiceArn that you specified isn't valid to use with DNSSEC
@@ -2955,7 +2955,7 @@ func (c *Route53) EnableHostedZoneDNSSECRequest(input *EnableHostedZoneDNSSECInp
 //   The hosted zone doesn't have any DNSSEC resources.
 //
 //   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
-//   The key signing key (KSK) status isn't valid or another KSK has the status
+//   The key-signing key (KSK) status isn't valid or another KSK has the status
 //   INTERNAL_FAILURE.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/EnableHostedZoneDNSSEC
@@ -3203,6 +3203,8 @@ func (c *Route53) GetCheckerIpRangesRequest(input *GetCheckerIpRangesInput) (req
 
 // GetCheckerIpRanges API operation for Amazon Route 53.
 //
+// Route 53 does not perform authorization for this API because it retrieves
+// information that is already available to the public.
 //
 // GetCheckerIpRanges still works, but we recommend that you download ip-ranges.json,
 // which includes IP address ranges for all AWS services. For more information,
@@ -3282,7 +3284,7 @@ func (c *Route53) GetDNSSECRequest(input *GetDNSSECInput) (req *request.Request,
 // GetDNSSEC API operation for Amazon Route 53.
 //
 // Returns information about DNSSEC for a specific hosted zone, including the
-// key signing keys (KSKs) and zone signing keys (ZSKs) in the hosted zone.
+// key-signing keys (KSKs) in the hosted zone.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3366,6 +3368,9 @@ func (c *Route53) GetGeoLocationRequest(input *GetGeoLocationInput) (req *reques
 //
 // Gets information about whether a specified geographic location is supported
 // for Amazon Route 53 geolocation resource record sets.
+//
+// Route 53 does not perform authorization for this API because it retrieves
+// information that is already available to the public.
 //
 // Use the following syntax to determine whether a continent is supported for
 // geolocation:
@@ -4556,6 +4561,9 @@ func (c *Route53) ListGeoLocationsRequest(input *ListGeoLocationsInput) (req *re
 // 53 supports subdivisions for a country (for example, states or provinces),
 // the subdivisions for that country are listed in alphabetical order immediately
 // after the corresponding country.
+//
+// Route 53 does not perform authorization for this API because it retrieves
+// information that is already available to the public.
 //
 // For a list of supported geolocation codes, see the GeoLocation (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GeoLocation.html)
 // data type.
@@ -6801,7 +6809,9 @@ type ActivateKeySigningKeyInput struct {
 	// HostedZoneId is a required field
 	HostedZoneId *string `location:"uri" locationName:"HostedZoneId" type:"string" required:"true"`
 
-	// An alphanumeric string used to identify a key signing key (KSK).
+	// A string used to identify a key-signing key (KSK). Name can include numbers,
+	// letters, and underscores (_). Name must be unique for each key-signing key
+	// in the same hosted zone.
 	//
 	// Name is a required field
 	Name *string `location:"uri" locationName:"Name" min:"3" type:"string" required:"true"`
@@ -6902,8 +6912,9 @@ type AlarmIdentifier struct {
 	// determine whether this health check is healthy, the region that the alarm
 	// was created in.
 	//
-	// For the current list of CloudWatch regions, see Amazon CloudWatch (https://docs.aws.amazon.com/general/latest/gr/rande.html#cw_region)
-	// in the AWS Service Endpoints chapter of the Amazon Web Services General Reference.
+	// For the current list of CloudWatch regions, see Amazon CloudWatch endpoints
+	// and quotas (https://docs.aws.amazon.com/general/latest/gr/cw_region.html)
+	// in the Amazon Web Services General Reference.
 	//
 	// Region is a required field
 	Region *string `min:"1" type:"string" required:"true" enum:"CloudWatchRegion"`
@@ -7199,21 +7210,20 @@ type AliasTarget struct {
 	//
 	// Specify the hosted zone ID for the region that you created the environment
 	// in. The environment must have a regionalized subdomain. For a list of regions
-	// and the corresponding hosted zone IDs, see AWS Elastic Beanstalk (https://docs.aws.amazon.com/general/latest/gr/rande.html#elasticbeanstalk_region)
-	// in the "AWS Service Endpoints" chapter of the Amazon Web Services General
-	// Reference.
+	// and the corresponding hosted zone IDs, see AWS Elastic Beanstalk endpoints
+	// and quotas (https://docs.aws.amazon.com/general/latest/gr/elasticbeanstalk.html)
+	// in the the Amazon Web Services General Reference.
 	//
 	// ELB load balancer
 	//
 	// Specify the value of the hosted zone ID for the load balancer. Use the following
 	// methods to get the hosted zone ID:
 	//
-	//    * Service Endpoints (https://docs.aws.amazon.com/general/latest/gr/elb.html)
-	//    table in the "Elastic Load Balancing Endpoints and Quotas" topic in the
-	//    Amazon Web Services General Reference: Use the value that corresponds
-	//    with the region that you created your load balancer in. Note that there
-	//    are separate columns for Application and Classic Load Balancers and for
-	//    Network Load Balancers.
+	//    * Elastic Load Balancing endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/elb.html)
+	//    topic in the Amazon Web Services General Reference: Use the value that
+	//    corresponds with the region that you created your load balancer in. Note
+	//    that there are separate columns for Application and Classic Load Balancers
+	//    and for Network Load Balancers.
 	//
 	//    * AWS Management Console: Go to the Amazon EC2 page, choose Load Balancers
 	//    in the navigation pane, select the load balancer, and get the value of
@@ -8230,13 +8240,13 @@ type CreateKeySigningKeyInput struct {
 	// HostedZoneId is a required field
 	HostedZoneId *string `type:"string" required:"true"`
 
-	// The Amazon resource name (ARN) for a customer managed key (CMK) in AWS Key
-	// Management Service (KMS). The KeyManagementServiceArn must be unique for
-	// each key signing key (KSK) in a single hosted zone. To see an example of
-	// KeyManagementServiceArn that grants the correct permissions for DNSSEC, scroll
-	// down to Example.
+	// The Amazon resource name (ARN) for a customer managed customer master key
+	// (CMK) in AWS Key Management Service (AWS KMS). The KeyManagementServiceArn
+	// must be unique for each key-signing key (KSK) in a single hosted zone. To
+	// see an example of KeyManagementServiceArn that grants the correct permissions
+	// for DNSSEC, scroll down to Example.
 	//
-	// You must configure the CMK as follows:
+	// You must configure the customer managed CMK as follows:
 	//
 	// Status
 	//
@@ -8265,19 +8275,20 @@ type CreateKeySigningKeyInput struct {
 	//
 	//    * "Service": "api-service.dnssec.route53.aws.internal"
 	//
-	// For more information about working with CMK in KMS, see AWS Key Management
-	// Service concepts (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html).
+	// For more information about working with a customer managed CMK in AWS KMS,
+	// see AWS Key Management Service concepts (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html).
 	//
 	// KeyManagementServiceArn is a required field
 	KeyManagementServiceArn *string `type:"string" required:"true"`
 
-	// An alphanumeric string used to identify a key signing key (KSK). Name must
-	// be unique for each key signing key in the same hosted zone.
+	// A string used to identify a key-signing key (KSK). Name can include numbers,
+	// letters, and underscores (_). Name must be unique for each key-signing key
+	// in the same hosted zone.
 	//
 	// Name is a required field
 	Name *string `min:"3" type:"string" required:"true"`
 
-	// A string specifying the initial status of the key signing key (KSK). You
+	// A string specifying the initial status of the key-signing key (KSK). You
 	// can set the value to ACTIVE or INACTIVE.
 	//
 	// Status is a required field
@@ -8367,12 +8378,12 @@ type CreateKeySigningKeyOutput struct {
 	// ChangeInfo is a required field
 	ChangeInfo *ChangeInfo `type:"structure" required:"true"`
 
-	// The key signing key (KSK) that the request creates.
+	// The key-signing key (KSK) that the request creates.
 	//
 	// KeySigningKey is a required field
 	KeySigningKey *KeySigningKey `type:"structure" required:"true"`
 
-	// The unique URL representing the new key signing key (KSK).
+	// The unique URL representing the new key-signing key (KSK).
 	//
 	// Location is a required field
 	Location *string `location:"header" locationName:"Location" type:"string" required:"true"`
@@ -9059,14 +9070,34 @@ func (s *CreateVPCAssociationAuthorizationOutput) SetVPC(v *VPC) *CreateVPCAssoc
 type DNSSECStatus struct {
 	_ struct{} `type:"structure"`
 
-	// Indicates your hosted zone signging status: SIGNING, NOT_SIGNING, or INTERNAL_FAILURE.
-	// If the status is INTERNAL_FAILURE, see StatusMessage for information about
-	// steps that you can take to correct the problem.
+	// A string that represents the current hosted zone signing status.
 	//
-	// A status INTERNAL_FAILURE means there was an error during a request. Before
-	// you can continue to work with DNSSEC signing, including working with key
-	// signing keys (KSKs), you must correct the problem by enabling or disabling
-	// DNSSEC signing for the hosted zone.
+	// Status can have one of the following values:
+	//
+	// SIGNING
+	//
+	// DNSSEC signing is enabled for the hosted zone.
+	//
+	// NOT_SIGNING
+	//
+	// DNSSEC signing is not enabled for the hosted zone.
+	//
+	// DELETING
+	//
+	// DNSSEC signing is in the process of being removed for the hosted zone.
+	//
+	// ACTION_NEEDED
+	//
+	// There is a problem with signing in the hosted zone that requires you to take
+	// action to resolve. For example, the customer managed customer master key
+	// (CMK) might have been deleted, or the permissions for the customer managed
+	// CMK might have been changed.
+	//
+	// INTERNAL_FAILURE
+	//
+	// There was an error during a request. Before you can continue to work with
+	// DNSSEC signing, including with key-signing keys (KSKs), you must correct
+	// the problem by enabling or disabling DNSSEC signing for the hosted zone.
 	ServeSignature *string `min:"1" type:"string"`
 
 	// The status message provided for the following DNSSEC signing status: INTERNAL_FAILURE.
@@ -9105,7 +9136,7 @@ type DeactivateKeySigningKeyInput struct {
 	// HostedZoneId is a required field
 	HostedZoneId *string `location:"uri" locationName:"HostedZoneId" type:"string" required:"true"`
 
-	// An alphanumeric string used to identify a key signing key (KSK).
+	// A string used to identify a key-signing key (KSK).
 	//
 	// Name is a required field
 	Name *string `location:"uri" locationName:"Name" min:"3" type:"string" required:"true"`
@@ -9362,7 +9393,7 @@ type DeleteKeySigningKeyInput struct {
 	// HostedZoneId is a required field
 	HostedZoneId *string `location:"uri" locationName:"HostedZoneId" type:"string" required:"true"`
 
-	// An alphanumeric string used to identify a key signing key (KSK).
+	// A string used to identify a key-signing key (KSK).
 	//
 	// Name is a required field
 	Name *string `location:"uri" locationName:"Name" min:"3" type:"string" required:"true"`
@@ -10147,8 +10178,12 @@ type GeoLocationDetails struct {
 	// The name of the country.
 	CountryName *string `min:"1" type:"string"`
 
-	// The code for the subdivision. Route 53 currently supports only states in
-	// the United States.
+	// The code for the subdivision, such as a particular state within the United
+	// States. For a list of US state abbreviations, see Appendix B: Two–Letter
+	// State and Possession Abbreviations (https://pe.usps.com/text/pub28/28apb.htm)
+	// on the United States Postal Service website. For a list of all supported
+	// subdivision codes, use the ListGeoLocations (https://docs.aws.amazon.com/Route53/latest/APIReference/API_ListGeoLocations.html)
+	// API.
 	SubdivisionCode *string `min:"1" type:"string"`
 
 	// The full name of the subdivision. Route 53 currently supports only states
@@ -10461,7 +10496,7 @@ func (s *GetDNSSECInput) SetHostedZoneId(v string) *GetDNSSECInput {
 type GetDNSSECOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The key signing keys (KSKs) in your account.
+	// The key-signing keys (KSKs) in your account.
 	//
 	// KeySigningKeys is a required field
 	KeySigningKeys []*KeySigningKey `type:"list" required:"true"`
@@ -10521,12 +10556,12 @@ type GetGeoLocationInput struct {
 	// standard 3166-1 alpha-2 (https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).
 	CountryCode *string `location:"querystring" locationName:"countrycode" min:"1" type:"string"`
 
-	// For SubdivisionCode, Amazon Route 53 supports only states of the United States.
-	// For a list of state abbreviations, see Appendix B: Two–Letter State and
-	// Possession Abbreviations (https://pe.usps.com/text/pub28/28apb.htm) on the
-	// United States Postal Service website.
-	//
-	// If you specify subdivisioncode, you must also specify US for CountryCode.
+	// The code for the subdivision, such as a particular state within the United
+	// States. For a list of US state abbreviations, see Appendix B: Two–Letter
+	// State and Possession Abbreviations (https://pe.usps.com/text/pub28/28apb.htm)
+	// on the United States Postal Service website. For a list of all supported
+	// subdivision codes, use the ListGeoLocations (https://docs.aws.amazon.com/Route53/latest/APIReference/API_ListGeoLocations.html)
+	// API.
 	SubdivisionCode *string `location:"querystring" locationName:"subdivisioncode" min:"1" type:"string"`
 }
 
@@ -11576,7 +11611,7 @@ type HealthCheck struct {
 	// HealthCheckVersion is a required field
 	HealthCheckVersion *int64 `min:"1" type:"long" required:"true"`
 
-	// The identifier that Amazon Route 53assigned to the health check when you
+	// The identifier that Amazon Route 53 assigned to the health check when you
 	// created it. When you add or update a resource record set, you use this value
 	// to specify which health check to use. The value can be up to 64 characters
 	// long.
@@ -12380,7 +12415,7 @@ func (s *HostedZoneSummary) SetOwner(v *HostedZoneOwner) *HostedZoneSummary {
 	return s
 }
 
-// A key signing key (KSK) is a complex type that represents a public/private
+// A key-signing key (KSK) is a complex type that represents a public/private
 // key pair. The private key is used to generate a digital signature for the
 // zone signing key (ZSK). The public key is stored in the DNS and is used to
 // authenticate the ZSK. A KSK is always associated with a hosted zone; it cannot
@@ -12388,7 +12423,7 @@ func (s *HostedZoneSummary) SetOwner(v *HostedZoneOwner) *HostedZoneSummary {
 type KeySigningKey struct {
 	_ struct{} `type:"structure"`
 
-	// The date when the key signing key (KSK) was created.
+	// The date when the key-signing key (KSK) was created.
 	CreatedDate *time.Time `type:"timestamp"`
 
 	// A string that represents a DNSKEY record.
@@ -12411,7 +12446,7 @@ type KeySigningKey struct {
 	// system.
 	DigestValue *string `type:"string"`
 
-	// An integer that specifies how the key is used. For key signing key (KSK),
+	// An integer that specifies how the key is used. For key-signing key (KSK),
 	// this value is always 257.
 	Flag *int64 `type:"integer"`
 
@@ -12419,9 +12454,9 @@ type KeySigningKey struct {
 	// used to calculate the value is described in RFC-4034 Appendix B (https://tools.ietf.org/rfc/rfc4034.txt).
 	KeyTag *int64 `type:"integer"`
 
-	// The Amazon resource name (ARN) used to identify the customer managed key
-	// (CMK) in AWS Key Management Service (KMS). The KmsArn must be unique for
-	// each key signing key (KSK) in a single hosted zone.
+	// The Amazon resource name (ARN) used to identify the customer managed customer
+	// master key (CMK) in AWS Key Management Service (AWS KMS). The KmsArn must
+	// be unique for each key-signing key (KSK) in a single hosted zone.
 	//
 	// You must configure the CMK as follows:
 	//
@@ -12452,15 +12487,16 @@ type KeySigningKey struct {
 	//
 	//    * "Service": "api-service.dnssec.route53.aws.internal"
 	//
-	// For more information about working with the customer managed key (CMK) in
-	// KMS, see AWS Key Management Service concepts (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html).
+	// For more information about working with the customer managed CMK in AWS KMS,
+	// see AWS Key Management Service concepts (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html).
 	KmsArn *string `type:"string"`
 
-	// The last time that the key signing key (KSK) was changed.
+	// The last time that the key-signing key (KSK) was changed.
 	LastModifiedDate *time.Time `type:"timestamp"`
 
-	// An alphanumeric string used to identify a key signing key (KSK). Name must
-	// be unique for each key signing key in the same hosted zone.
+	// A string used to identify a key-signing key (KSK). Name can include numbers,
+	// letters, and underscores (_). Name must be unique for each key-signing key
+	// in the same hosted zone.
 	Name *string `min:"3" type:"string"`
 
 	// The public key, represented as a Base64 encoding, as required by RFC-4034
@@ -12475,7 +12511,7 @@ type KeySigningKey struct {
 	// the guidelines provided by RFC-8624 Section 3.1 (https://tools.ietf.org/html/rfc8624#section-3.1).
 	SigningAlgorithmType *int64 `type:"integer"`
 
-	// A string that represents the current key signing key (KSK) status.
+	// A string that represents the current key-signing key (KSK) status.
 	//
 	// Status can have one of the following values:
 	//
@@ -12487,9 +12523,16 @@ type KeySigningKey struct {
 	//
 	// The KSK is not being used for signing.
 	//
+	// DELETING
+	//
+	// The KSK is in the process of being deleted.
+	//
 	// ACTION_NEEDED
 	//
-	// There is an error in the KSK that requires you to take action to resolve.
+	// There is a problem with the KSK that requires you to take action to resolve.
+	// For example, the customer managed customer master key (CMK) might have been
+	// deleted, or the permissions for the customer managed CMK might have been
+	// changed.
 	//
 	// INTERNAL_FAILURE
 	//
@@ -12498,7 +12541,7 @@ type KeySigningKey struct {
 	// the problem. For example, you may need to activate or deactivate the KSK.
 	Status *string `min:"5" type:"string"`
 
-	// The status message provided for the following key signing key (KSK) statuses:
+	// The status message provided for the following key-signing key (KSK) statuses:
 	// ACTION_NEEDED or INTERNAL_FAILURE. The status message includes information
 	// about what the problem might be and steps that you can take to correct the
 	// issue.
@@ -15378,8 +15421,8 @@ type ResourceRecordSet struct {
 	// data is encoded for them, see Supported DNS Resource Record Types (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/ResourceRecordTypes.html)
 	// in the Amazon Route 53 Developer Guide.
 	//
-	// Valid values for basic resource record sets: A | AAAA | CAA | CNAME | MX
-	// | NAPTR | NS | PTR | SOA | SPF | SRV | TXT
+	// Valid values for basic resource record sets: A | AAAA | CAA | CNAME | DS
+	// |MX | NAPTR | NS | PTR | SOA | SPF | SRV | TXT
 	//
 	// Values for weighted, latency, geolocation, and failover resource record sets:
 	// A | AAAA | CAA | CNAME | MX | NAPTR | PTR | SPF | SRV | TXT. When creating
