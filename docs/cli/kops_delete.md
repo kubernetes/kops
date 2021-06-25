@@ -3,11 +3,11 @@
 
 ## kops delete
 
-Delete clusters, instancegroups, instances, keypairs, or secrets.
+Delete clusters, instancegroups, instances, or secrets.
 
 ### Synopsis
 
-Delete Kubernetes clusters, instancegroups, instances, keypairs, and secrets, or a combination of the before mentioned.
+Delete Kubernetes clusters, instancegroups, instances, and secrets, or a combination of the before mentioned.
 
 ```
 kops delete -f FILENAME [--yes] [flags]
@@ -68,6 +68,5 @@ kops delete -f FILENAME [--yes] [flags]
 * [kops delete cluster](kops_delete_cluster.md)	 - Delete a cluster.
 * [kops delete instance](kops_delete_instance.md)	 - Delete an instance
 * [kops delete instancegroup](kops_delete_instancegroup.md)	 - Delete instancegroup
-* [kops delete keypair](kops_delete_keypair.md)	 - Delete a keypair.
 * [kops delete secret](kops_delete_secret.md)	 - Delete a secret
 
