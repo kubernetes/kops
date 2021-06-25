@@ -4,7 +4,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: authentication.aws
-    addon.kops.k8s.io/version: 0.5.1-kops.1
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/authentication: "1"
   name: iamidentitymappings.iamauthenticator.k8s.aws
@@ -45,7 +44,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: authentication.aws
-    addon.kops.k8s.io/version: 0.5.1-kops.1
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/authentication: "1"
   name: aws-iam-authenticator
@@ -97,7 +95,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: authentication.aws
-    addon.kops.k8s.io/version: 0.5.1-kops.1
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/authentication: "1"
   name: aws-iam-authenticator
@@ -111,7 +108,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: authentication.aws
-    addon.kops.k8s.io/version: 0.5.1-kops.1
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/authentication: "1"
   name: aws-iam-authenticator
@@ -134,7 +130,6 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: authentication.aws
-    addon.kops.k8s.io/version: 0.5.1-kops.1
     app.kubernetes.io/managed-by: kops
     k8s-app: aws-iam-authenticator
     role.kubernetes.io/authentication: "1"

@@ -6,56 +6,48 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: e225462a29ef1cf9c6201f1375cd2511f7a1f665
+    manifestHash: 90b1206425c7a034147e2373ea00193018a1fb4a
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
       k8s-addon: kops-controller.addons.k8s.io
-    version: 1.22.0-alpha.1
   - manifest: core.addons.k8s.io/v1.4.0.yaml
-    manifestHash: 75dd91a5b15ade4a61ebc1de8c35714376dfbed4
+    manifestHash: 9283cd74e74b10e441d3f1807c49c1bef8fac8c8
     name: core.addons.k8s.io
     selector:
       k8s-addon: core.addons.k8s.io
-    version: 1.4.0
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 48af055a4d74db801f75bec7d7574d6f471f1be0
+    manifestHash: 004bda4e250d9cec5d5f3e732056020b78b0ab88
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
-    version: 1.8.3-kops.3
   - id: k8s-1.9
     manifest: kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml
-    manifestHash: 1dbad74e01965afc2c32ca822d16c204d015db82
+    manifestHash: 8ee090e41be5e8bcd29ee799b1608edcd2dd8b65
     name: kubelet-api.rbac.addons.k8s.io
     selector:
       k8s-addon: kubelet-api.rbac.addons.k8s.io
-    version: v0.0.1
   - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
-    manifestHash: 18871595294c46105ef2570f11b1b2318aecfb57
+    manifestHash: 6ed889ae6a8d83dd6e5b511f831b3ac65950cf9d
     name: limit-range.addons.k8s.io
     selector:
       k8s-addon: limit-range.addons.k8s.io
-    version: 1.5.0
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 582aff25d26f9c6826feb43459bbd4d936c16b4a
+    manifestHash: f38cb2b94a5c260e04499ce71c2ce6b6f4e0bea2
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.22.0-alpha.1
   - id: v1.15.0
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
-    manifestHash: cc7393f22cb59dc4e23b9220ee962243334f47f1
+    manifestHash: d474dbcc9b9c5cd2e87b41a7755851811f5f48aa
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
-    version: 1.17.0
   - id: k8s-1.12
     manifest: authentication.aws/k8s-1.12.yaml
-    manifestHash: 685133bd71d677a5b299b5386eceffdbd3d60834
+    manifestHash: 1ce76cfd2180815252c11cc79e946d75b277b41a
     name: authentication.aws
     selector:
       role.kubernetes.io/authentication: "1"
-    version: 0.5.1-kops.1

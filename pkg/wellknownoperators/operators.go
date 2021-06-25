@@ -71,7 +71,6 @@ func (b *Builder) Build() ([]*WellKnownAddon, kubemanifest.ObjectList, error) {
 			Manifest: manifestBytes,
 			Spec: channelsapi.AddonSpec{
 				Name:     fi.String(key),
-				Version:  fi.String(version),
 				Selector: map[string]string{"k8s-addon": key},
 				Manifest: fi.String(location),
 				Id:       id,

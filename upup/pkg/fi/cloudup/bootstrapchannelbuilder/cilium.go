@@ -35,14 +35,12 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) error {
 
 		key := "networking.cilium.io"
 		if ver.Minor < 9 {
-			version := "1.8.0-kops.1"
 			{
 				id := "k8s-1.12"
 				location := key + "/" + id + "-v1.8.yaml"
 
 				addons.Spec.Addons = append(addons.Spec.Addons, &api.AddonSpec{
 					Name:               fi.String(key),
-					Version:            fi.String(version),
 					Selector:           networkingSelector(),
 					Manifest:           fi.String(location),
 					Id:                 id,
@@ -50,14 +48,12 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) error {
 				})
 			}
 		} else if ver.Minor == 9 {
-			version := "1.9.4-kops.1"
 			{
 				id := "k8s-1.12"
 				location := key + "/" + id + "-v1.9.yaml"
 
 				addon := &api.AddonSpec{
 					Name:               fi.String(key),
-					Version:            fi.String(version),
 					Selector:           networkingSelector(),
 					Manifest:           fi.String(location),
 					Id:                 id,
@@ -69,14 +65,12 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) error {
 				addons.Spec.Addons = append(addons.Spec.Addons, addon)
 			}
 		} else if ver.Minor == 10 {
-			version := "1.10.0-kops.1"
 			{
 				id := "k8s-1.16"
 				location := key + "/" + id + "-v1.10.yaml"
 
 				addon := &api.AddonSpec{
 					Name:               fi.String(key),
-					Version:            fi.String(version),
 					Selector:           networkingSelector(),
 					Manifest:           fi.String(location),
 					Id:                 id,
