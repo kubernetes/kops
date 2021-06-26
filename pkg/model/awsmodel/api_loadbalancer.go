@@ -178,9 +178,15 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Listeners:        nlbListeners,
 			TargetGroups:     make([]*awstasks.TargetGroup, 0),
 
-			Tags: tags,
-			VPC:  b.LinkToVPC(),
-			Type: fi.String("network"),
+			Tags:          tags,
+			VPC:           b.LinkToVPC(),
+			Type:          fi.String("network"),
+			IpAddressType: fi.String("ipv4"),
+		}
+		// DualStack can only be used for public NLB
+		// https://aws.amazon.com/premiumsupport/knowledge-center/elb-configure-with-ipv6
+		if b.UseIPv6ForAPI() && lbSpec.Type == kops.LoadBalancerTypePublic {
+			nlb.IpAddressType = fi.String("dualstack")
 		}
 
 		clb = &awstasks.ClassicLoadBalancer{

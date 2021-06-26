@@ -112,14 +112,24 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				return err
 			}
 
-			apiDnsName := &awstasks.DNSName{
+			c.AddTask(&awstasks.DNSName{
 				Name:               fi.String(b.Cluster.Spec.MasterPublicName),
+				ResourceName:       fi.String(b.Cluster.Spec.MasterPublicName),
 				Lifecycle:          b.Lifecycle,
 				Zone:               b.LinkToDNSZone(),
 				ResourceType:       fi.String("A"),
 				TargetLoadBalancer: targetLoadBalancer,
+			})
+			if b.UseIPv6ForAPI() {
+				c.AddTask(&awstasks.DNSName{
+					Name:               fi.String(b.Cluster.Spec.MasterPublicName + "-AAAA"),
+					ResourceName:       fi.String(b.Cluster.Spec.MasterPublicName),
+					Lifecycle:          b.Lifecycle,
+					Zone:               b.LinkToDNSZone(),
+					ResourceType:       fi.String("AAAA"),
+					TargetLoadBalancer: targetLoadBalancer,
+				})
 			}
-			c.AddTask(apiDnsName)
 		}
 	}
 
@@ -132,15 +142,33 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				return err
 			}
 
-			internalApiDnsName := &awstasks.DNSName{
-				Name:               fi.String(b.Cluster.Spec.MasterInternalName),
-				Lifecycle:          b.Lifecycle,
-				Zone:               b.LinkToDNSZone(),
-				ResourceType:       fi.String("A"),
-				TargetLoadBalancer: targetLoadBalancer,
-			}
 			// Using EnsureTask as MasterInternalName and MasterPublicName could be the same
-			c.EnsureTask(internalApiDnsName)
+			{
+				err := c.EnsureTask(&awstasks.DNSName{
+					Name:               fi.String(b.Cluster.Spec.MasterInternalName),
+					ResourceName:       fi.String(b.Cluster.Spec.MasterInternalName),
+					Lifecycle:          b.Lifecycle,
+					Zone:               b.LinkToDNSZone(),
+					ResourceType:       fi.String("A"),
+					TargetLoadBalancer: targetLoadBalancer,
+				})
+				if err != nil {
+					return err
+				}
+			}
+			if b.UseIPv6ForAPI() {
+				err := c.EnsureTask(&awstasks.DNSName{
+					Name:               fi.String(b.Cluster.Spec.MasterInternalName + "-AAAA"),
+					ResourceName:       fi.String(b.Cluster.Spec.MasterInternalName),
+					Lifecycle:          b.Lifecycle,
+					Zone:               b.LinkToDNSZone(),
+					ResourceType:       fi.String("AAAA"),
+					TargetLoadBalancer: targetLoadBalancer,
+				})
+				if err != nil {
+					return err
+				}
+			}
 		}
 	}
 

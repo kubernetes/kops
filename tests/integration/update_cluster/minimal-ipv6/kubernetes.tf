@@ -511,6 +511,17 @@ resource "aws_route53_record" "api-minimal-ipv6-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
+resource "aws_route53_record" "api-minimal-ipv6-example-com-AAAA" {
+  alias {
+    evaluate_target_health = false
+    name                   = aws_lb.api-minimal-ipv6-example-com.dns_name
+    zone_id                = aws_lb.api-minimal-ipv6-example-com.zone_id
+  }
+  name    = "api.minimal-ipv6.example.com"
+  type    = "AAAA"
+  zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
+}
+
 resource "aws_route_table" "minimal-ipv6-example-com" {
   tags = {
     "KubernetesCluster"                              = "minimal-ipv6.example.com"
