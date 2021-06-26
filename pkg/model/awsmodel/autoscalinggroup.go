@@ -215,10 +215,14 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		}
 
 		// @step: add an IPv6 address
-		for _, subnet := range subnets {
-			if subnet.IPv6CIDR != "" {
-				lt.IPv6AddressCount = fi.Int64(1)
-				break
+		for _, clusterSubnet := range b.Cluster.Spec.Subnets {
+			for _, igSubnet := range ig.Spec.Subnets {
+				if clusterSubnet.Name != igSubnet {
+					continue
+				}
+				if clusterSubnet.IPv6CIDR != "" {
+					lt.IPv6AddressCount = fi.Int64(1)
+				}
 			}
 		}
 	}
