@@ -128,9 +128,20 @@ func TestContainerdBuilder_BuildFlags(t *testing.T) {
 }
 
 func runContainerdBuilderTest(t *testing.T, key string, distro distributions.Distribution) {
+	h := testutils.NewIntegrationTestHarness(t)
+	defer h.Close()
+
+	h.MockKopsVersion("1.18.0")
+	h.SetupMockAWS()
+
 	basedir := path.Join("tests/containerdbuilder/", key)
 
-	nodeUpModelContext, err := BuildNodeupModelContext(basedir)
+	model, err := testutils.LoadModel(basedir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	nodeUpModelContext, err := BuildNodeupModelContext(model)
 	if err != nil {
 		t.Fatalf("error parsing cluster yaml %q: %v", basedir, err)
 		return
@@ -148,6 +159,10 @@ func runContainerdBuilderTest(t *testing.T, key string, distro distributions.Dis
 	nodeUpModelContext.Assets.AddForTest("ctr", "usr/local/bin/ctr", "testing containerd content")
 	nodeUpModelContext.Assets.AddForTest("runc", "usr/local/sbin/runc", "testing containerd content")
 
+	if err := nodeUpModelContext.Init(); err != nil {
+		t.Fatalf("error from nodeupModelContext.Init(): %v", err)
+		return
+	}
 	context := &fi.ModelBuilderContext{
 		Tasks: make(map[string]fi.Task),
 	}
