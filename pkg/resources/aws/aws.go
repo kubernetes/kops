@@ -1801,7 +1801,7 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*resources.Resour
 		}
 		err := c.Route53().ListResourceRecordSetsPages(request, func(p *route53.ListResourceRecordSetsOutput, lastPage bool) bool {
 			for _, rrs := range p.ResourceRecordSets {
-				if aws.StringValue(rrs.Type) != "A" {
+				if aws.StringValue(rrs.Type) != "A" && aws.StringValue(rrs.Type) != "AAAA" {
 					continue
 				}
 
@@ -1827,7 +1827,7 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*resources.Resour
 
 				resourceTracker := &resources.Resource{
 					Name:     aws.StringValue(rrs.Name),
-					ID:       hostedZoneID + "/" + aws.StringValue(rrs.Name),
+					ID:       hostedZoneID + "/" + aws.StringValue(rrs.Type) + "/" + aws.StringValue(rrs.Name),
 					Type:     "route53-record",
 					GroupKey: hostedZoneID,
 					GroupDeleter: func(cloud fi.Cloud, resourceTrackers []*resources.Resource) error {

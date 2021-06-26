@@ -60,6 +60,8 @@ type NetworkLoadBalancer struct {
 
 	CrossZoneLoadBalancing *bool
 
+	IpAddressType *string
+
 	Tags         map[string]string
 	ForAPIServer bool
 
@@ -259,6 +261,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 	actual.Scheme = lb.Scheme
 	actual.VPC = &VPC{ID: lb.VpcId}
 	actual.Type = lb.Type
+	actual.IpAddressType = lb.IpAddressType
 
 	tagMap, err := cloud.DescribeELBV2Tags([]string{*loadBalancerArn})
 	if err != nil {
@@ -502,6 +505,7 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 		request.Name = e.LoadBalancerName
 		request.Scheme = e.Scheme
 		request.Type = e.Type
+		request.IpAddressType = e.IpAddressType
 		request.Tags = awsup.ELBv2Tags(e.Tags)
 
 		for _, subnetMapping := range e.SubnetMappings {
@@ -554,6 +558,16 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 		}
 
 		loadBalancerArn = fi.StringValue(lb.LoadBalancerArn)
+
+		if changes.IpAddressType != nil {
+			request := &elbv2.SetIpAddressTypeInput{
+				IpAddressType:   e.IpAddressType,
+				LoadBalancerArn: lb.LoadBalancerArn,
+			}
+			if _, err := t.Cloud.ELBV2().SetIpAddressType(request); err != nil {
+				return fmt.Errorf("error setting the IP addresses type: %v", err)
+			}
+		}
 
 		if changes.SubnetMappings != nil {
 			actualSubnets := make(map[string]*string)

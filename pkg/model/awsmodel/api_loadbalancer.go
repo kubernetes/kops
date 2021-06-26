@@ -178,9 +178,13 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Listeners:        nlbListeners,
 			TargetGroups:     make([]*awstasks.TargetGroup, 0),
 
-			Tags: tags,
-			VPC:  b.LinkToVPC(),
-			Type: fi.String("network"),
+			Tags:          tags,
+			VPC:           b.LinkToVPC(),
+			Type:          fi.String("network"),
+			IpAddressType: fi.String("ipv4"),
+		}
+		if b.UseIPv6ForAPI() {
+			nlb.IpAddressType = fi.String("dualstack")
 		}
 
 		clb = &awstasks.ClassicLoadBalancer{

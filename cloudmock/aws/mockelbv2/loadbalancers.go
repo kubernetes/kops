@@ -83,6 +83,7 @@ func (m *MockELBV2) CreateLoadBalancer(request *elbv2.CreateLoadBalancerInput) (
 		LoadBalancerName:      request.Name,
 		Scheme:                request.Scheme,
 		Type:                  request.Type,
+		IpAddressType:         request.IpAddressType,
 		DNSName:               aws.String(fmt.Sprintf("%v.amazonaws.com", aws.StringValue(request.Name))),
 		CanonicalHostedZoneId: aws.String("HZ123456"),
 	}
