@@ -236,14 +236,13 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	modelContext := &model.NodeupModelContext{
-		Cloud:           cloud,
-		Architecture:    architecture,
-		Assets:          assetStore,
-		Cluster:         c.cluster,
-		ConfigBase:      configBase,
-		Distribution:    distribution,
-		NodeupConfig:    c.config,
-		NodeupAuxConfig: c.auxConfig,
+		Cloud:        cloud,
+		Architecture: architecture,
+		Assets:       assetStore,
+		Cluster:      c.cluster,
+		ConfigBase:   configBase,
+		Distribution: distribution,
+		NodeupConfig: c.config,
 	}
 
 	var secretStore fi.SecretStore
