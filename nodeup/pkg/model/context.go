@@ -48,16 +48,16 @@ const (
 
 // NodeupModelContext is the context supplied the nodeup tasks
 type NodeupModelContext struct {
-	Cloud           fi.Cloud
-	Architecture    architectures.Architecture
-	Assets          *fi.AssetStore
-	Cluster         *kops.Cluster
-	ConfigBase      vfs.Path
-	Distribution    distributions.Distribution
-	KeyStore        fi.CAStore
-	NodeupConfig    *nodeup.Config
-	NodeupAuxConfig *nodeup.AuxConfig
-	SecretStore     fi.SecretStore
+	Cloud        fi.Cloud
+	Architecture architectures.Architecture
+	Assets       *fi.AssetStore
+	Cluster      *kops.Cluster
+	ConfigBase   vfs.Path
+	Distribution distributions.Distribution
+	KeyStore     fi.CAStore
+	BootConfig   *nodeup.BootConfig
+	NodeupConfig *nodeup.Config
+	SecretStore  fi.SecretStore
 
 	// IsMaster is true if the InstanceGroup has a role of master (populated by Init)
 	IsMaster bool
@@ -82,7 +82,7 @@ func (c *NodeupModelContext) Init() error {
 	c.kubernetesVersion = *k8sVersion
 	c.bootstrapCerts = map[string]*nodetasks.BootstrapCert{}
 
-	role := c.NodeupConfig.InstanceGroupRole
+	role := c.BootConfig.InstanceGroupRole
 
 	if role == kops.InstanceGroupRoleMaster {
 		c.IsMaster = true

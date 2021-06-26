@@ -64,9 +64,9 @@ type nodeupConfigBuilder struct {
 	cluster *kops.Cluster
 }
 
-func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTask *fitasks.Keypair) (*nodeup.Config, *nodeup.AuxConfig, error) {
-	config, auxConfig := nodeup.NewConfig(n.cluster, ig)
-	return config, auxConfig, nil
+func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTask *fitasks.Keypair) (*nodeup.Config, *nodeup.BootConfig, error) {
+	config, bootConfig := nodeup.NewConfig(n.cluster, ig)
+	return config, bootConfig, nil
 }
 
 func TestBootstrapUserData(t *testing.T) {
@@ -172,14 +172,14 @@ func TestBootstrapUserData(t *testing.T) {
 
 		golden.AssertMatchesFile(t, actual, fmt.Sprintf("tests/data/bootstrapscript_%d.txt", x.ExpectedFileIndex))
 
-		require.Contains(t, c.Tasks, "ManagedFile/auxconfig-testIG")
-		actual, err = fi.ResourceAsString(c.Tasks["ManagedFile/auxconfig-testIG"].(*fitasks.ManagedFile).Contents)
+		require.Contains(t, c.Tasks, "ManagedFile/nodeupconfig-testIG")
+		actual, err = fi.ResourceAsString(c.Tasks["ManagedFile/nodeupconfig-testIG"].(*fitasks.ManagedFile).Contents)
 		if err != nil {
-			t.Errorf("case %d failed to render auxconfig resource. error: %s", i, err)
+			t.Errorf("case %d failed to render nodeupconfig resource. error: %s", i, err)
 			continue
 		}
 
-		golden.AssertMatchesFile(t, actual, fmt.Sprintf("tests/data/auxconfig_%d.txt", x.ExpectedFileIndex))
+		golden.AssertMatchesFile(t, actual, fmt.Sprintf("tests/data/nodeupconfig_%d.txt", x.ExpectedFileIndex))
 	}
 }
 

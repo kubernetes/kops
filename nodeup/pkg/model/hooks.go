@@ -40,7 +40,7 @@ var _ fi.ModelBuilder = &HookBuilder{}
 func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 	// we keep a list of hooks name so we can allow local instanceGroup hooks override the cluster ones
 	hookNames := make(map[string]bool)
-	for i, spec := range h.NodeupAuxConfig.Hooks {
+	for i, spec := range h.NodeupConfig.Hooks {
 		for j, hook := range spec {
 			isInstanceGroup := i == 0
 
