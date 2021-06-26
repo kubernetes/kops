@@ -251,82 +251,11 @@ masterKubelet:
 __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
-Assets:
-  amd64:
-  - 3f03e5c160a8b658d30b34824a1c00abadbac96e62c4d01bf5c9271a2debc3ab@https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/amd64/kubelet
-  - 79bb0d2f05487ff533999a639c075043c70a0a1ba25c1629eb1eef6ebe3ba70f@https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/amd64/kubectl
-  - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
-  - 5504d190eef37355231325c176686d51ade6e0cabe2da526d561a38d8611506f@https://download.docker.com/linux/static/stable/x86_64/docker-19.03.15.tgz
-  - f90ed6dcef534e6d1ae17907dc7eb40614b8945ad4af7f0e98d2be7cde8165c6@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-amd64
-  - 9992e7eb2a2e93f799e5a9e98eb718637433524bc65f630357201a79f49b13d0@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-amd64
-  arm64:
-  - d8fa5a9739ecc387dfcc55afa91ac6f4b0ccd01f1423c423dbd312d787bbb6bf@https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/arm64/kubelet
-  - d4adf1b6b97252025cb2f7febf55daa3f42dc305822e3da133f77fd33071ec2f@https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/arm64/kubectl
-  - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
-  - 264f3396630507606a8646fda6a28a98d3ced8927df84be8ee9a74ab73cc1566@https://download.docker.com/linux/static/stable/aarch64/docker-19.03.15.tgz
-  - 2f599c3d54f4c4bdbcc95aaf0c7b513a845d8f9503ec5b34c9f86aa1bc34fc0c@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-arm64
-  - 9d842e3636a95de2315cdea2be7a282355aac0658ef0b86d5dc2449066538f13@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-arm64
-AuxConfigHash: /O5IS/dGo83lv2DbWn4k91OYfuOqtO79vjf5pD1DQlI=
-CAs:
-  ca: |
-    -----BEGIN CERTIFICATE-----
-    MIIBaDCCARKgAwIBAgIMFoq6Pex4lTCM8fOIMA0GCSqGSIb3DQEBCwUAMBUxEzAR
-    BgNVBAMTCmt1YmVybmV0ZXMwHhcNMjEwNjE5MjI0MzEwWhcNMzEwNjE5MjI0MzEw
-    WjAVMRMwEQYDVQQDEwprdWJlcm5ldGVzMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJB
-    ANiW3hfHTcKnxCig+uWhpVbOfH1pANKmXVSysPKgE80QSU4tZ6m49pAEeIMsvwvD
-    MaLsb2v6JvXe0qvCmueU+/sCAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgEGMA8GA1Ud
-    EwEB/wQFMAMBAf8wHQYDVR0OBBYEFCOW3hR7ngBsk9aUOlEznWzH494EMA0GCSqG
-    SIb3DQEBCwUAA0EAVnZzkiku07kQFGAEXzWI6aZnAbzSoClYskEzCBMrOmdadjVp
-    VWcz76FwFlyd5jhzOJ49eMcVusSotKv2ZGimcA==
-    -----END CERTIFICATE-----
-    -----BEGIN CERTIFICATE-----
-    MIIBaDCCARKgAwIBAgIMFoq6PeyECsgUTfc2MA0GCSqGSIb3DQEBCwUAMBUxEzAR
-    BgNVBAMTCmt1YmVybmV0ZXMwHhcNMjEwNjE5MjI0MzEwWhcNMzEwNjE5MjI0MzEw
-    WjAVMRMwEQYDVQQDEwprdWJlcm5ldGVzMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJB
-    AKOE64nZbH+GM91AIrqf7HEk4hvzqsZFFtxc+8xir1XC3mI/RhCCrs6AdVRZNZ26
-    A6uHArhi33c2kHQkCjyLA7sCAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgEGMA8GA1Ud
-    EwEB/wQFMAMBAf8wHQYDVR0OBBYEFIT28RJlG8FTgmvn2YMa3hYX+u1BMA0GCSqG
-    SIb3DQEBCwUAA0EAKuaE5wKMP26AyfxkWu83iHoTPFtdjabXF0JcyPy0ijQZxfJq
-    9xc2CkttvgaDtT4H+E/ryQ3iq6kSfEYYPi8c0w==
-    -----END CERTIFICATE-----
 CloudProvider: aws
-ClusterName: minimal.example.com
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-KeypairIDs:
-  ca: "6976381481633145814258938760"
-KubeletConfig:
-  anonymousAuth: false
-  cgroupRoot: /
-  cloudProvider: aws
-  clusterDNS: 100.64.0.10
-  clusterDomain: cluster.local
-  enableDebuggingHandlers: true
-  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-  hostnameOverride: '@aws'
-  kubeconfigPath: /var/lib/kubelet/kubeconfig
-  logLevel: 2
-  networkPluginName: cni
-  nodeLabels:
-    kops.k8s.io/kops-controller-pki: ""
-    kubernetes.io/role: master
-    node-role.kubernetes.io/control-plane: ""
-    node-role.kubernetes.io/master: ""
-    node.kubernetes.io/exclude-from-external-load-balancers: ""
-  nonMasqueradeCIDR: 100.64.0.0/10
-  podInfraContainerImage: k8s.gcr.io/pause:3.2
-  podManifestPath: /etc/kubernetes/manifests
-  registerSchedulable: false
-UpdatePolicy: automatic
-channels:
-- memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
-etcdManifests:
-- memfs://clusters.example.com/minimal.example.com/manifests/etcd/main.yaml
-- memfs://clusters.example.com/minimal.example.com/manifests/etcd/events.yaml
-staticManifests:
-- key: kube-apiserver-healthcheck
-  path: manifests/static/kube-apiserver-healthcheck.yaml
+NodeupConfigHash: llFbwmUKxmtS93Ft3tz7dQvd4c6aZ7FGtltTmth0vH0=
 
 __EOF_KUBE_ENV
 

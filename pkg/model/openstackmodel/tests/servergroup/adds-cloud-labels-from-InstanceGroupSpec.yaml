@@ -83,8 +83,8 @@ Contents:
     Lifecycle: ""
     Name: node
 Lifecycle: ""
-Location: igconfig/node/node/auxconfig.yaml
-Name: auxconfig-node
+Location: igconfig/node/node/nodeupconfig.yaml
+Name: nodeupconfig-node
 Public: null
 ---
 AdditionalSecurityGroups: null
