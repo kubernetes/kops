@@ -279,15 +279,6 @@ func (b *IAMModelBuilder) roleKey(role iam.Subject) (string, bool) {
 func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.ModelBuilderContext, shared bool) error {
 	roleKey, _ := b.roleKey(role)
 
-	iamRole, err := b.buildIAMRole(role, iamName, c)
-	if err != nil {
-		return err
-	}
-
-	if err := b.buildIAMRolePolicy(role, iamName, iamRole, c); err != nil {
-		return err
-	}
-
 	{
 		// To minimize diff for easier code review
 
@@ -297,79 +288,90 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 				Name:      fi.String(iamName),
 				Lifecycle: b.Lifecycle,
 				Shared:    fi.Bool(shared),
-				Tags:      b.CloudTags(iamName, false),
+				Tags:      b.CloudTags(iamName, shared),
 			}
 			c.AddTask(iamInstanceProfile)
 		}
 
-		{
-			iamInstanceProfileRole := &awstasks.IAMInstanceProfileRole{
-				Name:      fi.String(iamName),
-				Lifecycle: b.Lifecycle,
-
-				InstanceProfile: iamInstanceProfile,
-				Role:            iamRole,
-			}
-			c.AddTask(iamInstanceProfileRole)
-		}
-
-		// Create External Policy tasks
 		if !shared {
-			var externalPolicies []string
 
-			if b.Cluster.Spec.ExternalPolicies != nil {
-				p := *(b.Cluster.Spec.ExternalPolicies)
-				externalPolicies = append(externalPolicies, p[roleKey]...)
-			}
-			sort.Strings(externalPolicies)
-
-			name := fmt.Sprintf("%s-policyoverride", roleKey)
-			t := &awstasks.IAMRolePolicy{
-				Name:             fi.String(name),
-				Lifecycle:        b.Lifecycle,
-				Role:             iamRole,
-				Managed:          true,
-				ExternalPolicies: &externalPolicies,
+			// Create External Policy tasks
+			iamRole, err := b.buildIAMRole(role, iamName, c)
+			if err != nil {
+				return err
 			}
 
-			c.AddTask(t)
-		}
+			{
+				if err := b.buildIAMRolePolicy(role, iamName, iamRole, c); err != nil {
+					return err
+				}
+				{
+					iamInstanceProfileRole := &awstasks.IAMInstanceProfileRole{
+						Name:      fi.String(iamName),
+						Lifecycle: b.Lifecycle,
 
-		// Generate additional policies if needed, and attach to existing role
-		if !shared {
-			additionalPolicy := ""
-			if b.Cluster.Spec.AdditionalPolicies != nil {
-				additionalPolicies := *(b.Cluster.Spec.AdditionalPolicies)
-
-				additionalPolicy = additionalPolicies[roleKey]
-			}
-
-			additionalPolicyName := "additional." + iamName
-
-			t := &awstasks.IAMRolePolicy{
-				Name:      fi.String(additionalPolicyName),
-				Lifecycle: b.Lifecycle,
-
-				Role: iamRole,
-			}
-
-			if additionalPolicy != "" {
-				p, err := b.buildPolicy(additionalPolicy)
-				if err != nil {
-					return fmt.Errorf("additionalPolicy %q is invalid: %v", roleKey, err)
+						InstanceProfile: iamInstanceProfile,
+						Role:            iamRole,
+					}
+					c.AddTask(iamInstanceProfileRole)
 				}
 
-				policy, err := p.AsJSON()
-				if err != nil {
-					return fmt.Errorf("error building IAM policy: %w", err)
+				var externalPolicies []string
+
+				if b.Cluster.Spec.ExternalPolicies != nil {
+					p := *(b.Cluster.Spec.ExternalPolicies)
+					externalPolicies = append(externalPolicies, p[roleKey]...)
+				}
+				sort.Strings(externalPolicies)
+
+				name := fmt.Sprintf("%s-policyoverride", roleKey)
+				t := &awstasks.IAMRolePolicy{
+					Name:             fi.String(name),
+					Lifecycle:        b.Lifecycle,
+					Role:             iamRole,
+					Managed:          true,
+					ExternalPolicies: &externalPolicies,
 				}
 
-				t.PolicyDocument = fi.NewStringResource(policy)
-			} else {
-				t.PolicyDocument = fi.NewStringResource("")
+				c.AddTask(t)
 			}
 
-			c.AddTask(t)
+			// Generate additional policies if needed, and attach to existing role
+			{
+				additionalPolicy := ""
+				if b.Cluster.Spec.AdditionalPolicies != nil {
+					additionalPolicies := *(b.Cluster.Spec.AdditionalPolicies)
+
+					additionalPolicy = additionalPolicies[roleKey]
+				}
+
+				additionalPolicyName := "additional." + iamName
+
+				t := &awstasks.IAMRolePolicy{
+					Name:      fi.String(additionalPolicyName),
+					Lifecycle: b.Lifecycle,
+
+					Role: iamRole,
+				}
+
+				if additionalPolicy != "" {
+					p, err := b.buildPolicy(additionalPolicy)
+					if err != nil {
+						return fmt.Errorf("additionalPolicy %q is invalid: %v", roleKey, err)
+					}
+
+					policy, err := p.AsJSON()
+					if err != nil {
+						return fmt.Errorf("error building IAM policy: %w", err)
+					}
+
+					t.PolicyDocument = fi.NewStringResource(policy)
+				} else {
+					t.PolicyDocument = fi.NewStringResource("")
+				}
+
+				c.AddTask(t)
+			}
 		}
 	}
 
