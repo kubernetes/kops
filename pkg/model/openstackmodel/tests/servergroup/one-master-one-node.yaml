@@ -187,8 +187,8 @@ Contents:
     Lifecycle: ""
     Name: master
 Lifecycle: ""
-Location: igconfig/master/master/auxconfig.yaml
-Name: auxconfig-master
+Location: igconfig/master/master/nodeupconfig.yaml
+Name: nodeupconfig-master
 Public: null
 ---
 Base: null
@@ -197,8 +197,8 @@ Contents:
     Lifecycle: ""
     Name: node
 Lifecycle: ""
-Location: igconfig/node/node/auxconfig.yaml
-Name: auxconfig-node
+Location: igconfig/node/node/nodeupconfig.yaml
+Name: nodeupconfig-node
 Public: null
 ---
 AdditionalSecurityGroups: null
