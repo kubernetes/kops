@@ -61,27 +61,5 @@ func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest
 		nodeConfig.NodeupConfig = string(b)
 	}
 
-	// We populate some certificates that we know the node will need.
-	for _, name := range []string{"ca"} {
-		cert, _, err := s.keystore.FindPrimaryKeypair(name)
-		if err != nil {
-			return nil, fmt.Errorf("error getting certificate %q: %w", name, err)
-		}
-
-		if cert == nil {
-			return nil, fmt.Errorf("certificate %q not found", name)
-		}
-
-		certData, err := cert.AsString()
-		if err != nil {
-			return nil, fmt.Errorf("error marshalling certificate %q: %w", name, err)
-		}
-
-		nodeConfig.Certificates = append(nodeConfig.Certificates, &nodeup.NodeConfigCertificate{
-			Name: name,
-			Cert: certData,
-		})
-	}
-
 	return nodeConfig, nil
 }
