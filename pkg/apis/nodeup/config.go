@@ -82,16 +82,16 @@ type Config struct {
 	// AuxConfigHash holds a secure hash of the nodeup.AuxConfig.
 	AuxConfigHash string
 
+	// FileAssets are a collection of file assets for this instance group.
+	FileAssets []kops.FileAssetSpec `json:",omitempty"`
+	// Hooks are for custom actions, for example on first installation.
+	Hooks [][]kops.HookSpec
 	// ContainerdConfig config holds the configuration for containerd
 	ContainerdConfig string `json:"containerdConfig,omitempty"`
 }
 
 // AuxConfig is the configuration for the nodeup binary that might be too big to fit in userdata.
 type AuxConfig struct {
-	// FileAssets are a collection of file assets for this instance group.
-	FileAssets []kops.FileAssetSpec `json:",omitempty"`
-	// Hooks are for custom actions, for example on first installation.
-	Hooks [][]kops.HookSpec
 }
 
 type ConfigServerOptions struct {
@@ -121,21 +121,20 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	role := instanceGroup.Spec.Role
 	isMaster := role == kops.InstanceGroupRoleMaster
 
+	clusterHooks := filterHooks(cluster.Spec.Hooks, instanceGroup.Spec.Role)
+	igHooks := filterHooks(instanceGroup.Spec.Hooks, instanceGroup.Spec.Role)
+
 	config := Config{
 		InstanceGroupRole: role,
 		CAs:               map[string]string{},
 		KeypairIDs:        map[string]string{},
 		SysctlParameters:  instanceGroup.Spec.SysctlParameters,
 		VolumeMounts:      instanceGroup.Spec.VolumeMounts,
+		FileAssets:        append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
+		Hooks:             [][]kops.HookSpec{igHooks, clusterHooks},
 	}
 
-	clusterHooks := filterHooks(cluster.Spec.Hooks, instanceGroup.Spec.Role)
-	igHooks := filterHooks(instanceGroup.Spec.Hooks, instanceGroup.Spec.Role)
-
-	auxConfig := AuxConfig{
-		FileAssets: append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
-		Hooks:      [][]kops.HookSpec{igHooks, clusterHooks},
-	}
+	auxConfig := AuxConfig{}
 
 	warmPool := cluster.Spec.WarmPool.ResolveDefaults(instanceGroup)
 	if warmPool.IsEnabled() && warmPool.EnableLifecycleHook {
