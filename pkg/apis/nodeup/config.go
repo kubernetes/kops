@@ -123,6 +123,10 @@ type StaticManifest struct {
 type APIServerConfig struct {
 	// KubeAPIServer is a copy of the KubeAPIServerConfig from the cluster spec.
 	KubeAPIServer *kops.KubeAPIServerConfig
+	// EncryptionConfigSecretHash is a hash of the encryptionconfig secret.
+	// It is empty if EncryptionConfig is not enabled.
+	// TODO: give secrets IDs and look them up like we do keypairs.
+	EncryptionConfigSecretHash string `json:",omitempty"`
 }
 
 func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Config, *BootConfig) {
