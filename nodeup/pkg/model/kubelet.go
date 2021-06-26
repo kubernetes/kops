@@ -425,7 +425,7 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.ModelBuilderContext) erro
 // buildKubeletConfigSpec returns the kubeletconfig for the specified instanceGroup
 func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, error) {
 	isMaster := b.IsMaster
-	isAPIServer := b.NodeupConfig.InstanceGroupRole == kops.InstanceGroupRoleAPIServer
+	isAPIServer := b.BootConfig.InstanceGroupRole == kops.InstanceGroupRoleAPIServer
 
 	// Merge KubeletConfig for NodeLabels
 	c := b.NodeupConfig.KubeletConfig

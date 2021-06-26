@@ -1296,7 +1296,7 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 }
 
 // BuildConfig returns the NodeUp config and auxiliary config.
-func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTask *fitasks.Keypair) (*nodeup.Config, *nodeup.AuxConfig, error) {
+func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTask *fitasks.Keypair) (*nodeup.Config, *nodeup.BootConfig, error) {
 	cluster := n.cluster
 
 	if ig == nil {
@@ -1311,7 +1311,8 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	useGossip := dns.IsGossipHostname(cluster.Spec.MasterInternalName)
 	isMaster := role == kops.InstanceGroupRoleMaster
 
-	config, auxConfig := nodeup.NewConfig(cluster, ig)
+	config, bootConfig := nodeup.NewConfig(cluster, ig)
+
 	config.Assets = make(map[architectures.Architecture][]string)
 	for _, arch := range architectures.GetSupported() {
 		config.Assets[arch] = []string{}
@@ -1319,9 +1320,6 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 			config.Assets[arch] = append(config.Assets[arch], a.CompactString())
 		}
 	}
-	config.ClusterName = cluster.ObjectMeta.Name
-	config.InstanceGroupName = ig.ObjectMeta.Name
-	config.CloudProvider = cluster.Spec.CloudProvider
 
 	cas, err := fi.ResourceAsString(caTask.Certificates())
 	if err != nil {
@@ -1357,12 +1355,14 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		}
 
 		configServer := &nodeup.ConfigServerOptions{
-			Server: baseURL.String(),
+			Server:         baseURL.String(),
+			CACertificates: config.CAs[fi.CertificateIDCA],
 		}
 
-		config.ConfigServer = configServer
+		bootConfig.ConfigServer = configServer
+		delete(config.CAs, fi.CertificateIDCA)
 	} else {
-		config.ConfigBase = fi.String(n.configBase.Path())
+		bootConfig.ConfigBase = fi.String(n.configBase.Path())
 	}
 
 	if isMaster {
@@ -1402,7 +1402,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		config.WarmPoolImages = n.buildWarmPoolImages(ig)
 	}
 
-	return config, auxConfig, nil
+	return config, bootConfig, nil
 }
 
 func buildContainerdConfig(cluster *kops.Cluster) string {
