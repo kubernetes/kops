@@ -18,10 +18,10 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-  externalDNS:
+  externalDns:
     provider: "external-dns"
   iam:
-    useServiceAccountsExternalPermissions: true
+    useServiceAccountExternalPermissions: true
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.21.0
@@ -31,6 +31,9 @@ spec:
   networking:
     cni: {}
   nonMasqueradeCIDR: 100.64.0.0/10
+  serviceAccountIssuerDiscovery:
+    discoveryStore: memfs://discovery.example.com/minimal.example.com
+    enableAWSOIDCProvider: true
   sshAccess:
     - 0.0.0.0/0
   topology:

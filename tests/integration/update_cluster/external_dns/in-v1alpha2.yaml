@@ -18,7 +18,7 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-  externalDNS:
+  externalDns:
     provider: "external-dns"
   iam: {}
   kubelet:

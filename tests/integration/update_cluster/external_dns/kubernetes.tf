@@ -550,10 +550,10 @@ resource "aws_s3_bucket_object" "minimal-example-com-addons-coredns-addons-k8s-i
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "minimal-example-com-addons-dns-controller-addons-k8s-io-k8s-1-12" {
+resource "aws_s3_bucket_object" "minimal-example-com-addons-external-dns-addons-k8s-io-k8s-1-12" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_minimal.example.com-addons-dns-controller.addons.k8s.io-k8s-1.12_content")
-  key                    = "clusters.example.com/minimal.example.com/addons/dns-controller.addons.k8s.io/k8s-1.12.yaml"
+  content                = file("${path.module}/data/aws_s3_bucket_object_minimal.example.com-addons-external-dns.addons.k8s.io-k8s-1.12_content")
+  key                    = "clusters.example.com/minimal.example.com/addons/external-dns.addons.k8s.io/k8s-1.12.yaml"
   server_side_encryption = "AES256"
 }
 
