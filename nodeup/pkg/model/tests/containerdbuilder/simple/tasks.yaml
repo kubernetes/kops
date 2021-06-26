@@ -30,7 +30,7 @@ contents: |2
 path: /etc/crictl.yaml
 type: file
 ---
-contents: CONTAINERD_OPTS=
+contents: CONTAINERD_OPTS=--log-level=info
 path: /etc/sysconfig/containerd
 type: file
 ---

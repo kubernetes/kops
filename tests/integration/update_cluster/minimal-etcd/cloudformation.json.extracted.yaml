@@ -261,7 +261,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimaletcdexamplecom.Propert
   ConfigBase: memfs://clusters.example.com/minimal-etcd.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: nFj4StYotytc8HjM+2SFARL30uAbj5DCiMarLWo4+/Q=
+  NodeupConfigHash: l/xI57IEaF993tGMaoFVIaymP3M01cZxEI7Wr+GweAw=
 
   __EOF_KUBE_ENV
 
