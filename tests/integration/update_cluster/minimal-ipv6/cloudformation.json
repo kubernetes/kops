@@ -1546,6 +1546,29 @@
         },
         "HostedZoneId": "/hostedzone/Z1AFAKE1ZON3YO"
       }
+    },
+    "AWSRoute53RecordSetapiminimalipv6examplecomAAAA": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "Name": "api.minimal-ipv6.example.com",
+        "Type": "AAAA",
+        "AliasTarget": {
+          "DNSName": {
+            "Fn::GetAtt": [
+              "AWSElasticLoadBalancingV2LoadBalancerapiminimalipv6examplecom",
+              "DNSName"
+            ]
+          },
+          "HostedZoneId": {
+            "Fn::GetAtt": [
+              "AWSElasticLoadBalancingV2LoadBalancerapiminimalipv6examplecom",
+              "CanonicalHostedZoneID"
+            ]
+          },
+          "EvaluateTargetHealth": false
+        },
+        "HostedZoneId": "/hostedzone/Z1AFAKE1ZON3YO"
+      }
     }
   }
 }

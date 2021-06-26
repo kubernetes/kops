@@ -38,6 +38,7 @@ type DNSName struct {
 
 	ID           *string
 	Zone         *DNSZone
+	ResourceName *string
 	ResourceType *string
 
 	TargetLoadBalancer DNSTarget
@@ -56,11 +57,11 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	if e.Zone == nil || e.Zone.ZoneID == nil {
-		klog.V(4).Infof("Zone / ZoneID not found for %s, skipping Find", fi.StringValue(e.Name))
+		klog.V(4).Infof("Zone / ZoneID not found for %s, skipping Find", fi.StringValue(e.ResourceName))
 		return nil, nil
 	}
 
-	findName := fi.StringValue(e.Name)
+	findName := fi.StringValue(e.ResourceName)
 	if findName == "" {
 		return nil, nil
 	}
@@ -111,8 +112,9 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 	}
 
 	actual := &DNSName{}
-	actual.Zone = e.Zone
 	actual.Name = e.Name
+	actual.Zone = e.Zone
+	actual.ResourceName = e.ResourceName
 	actual.ResourceType = e.ResourceType
 	actual.Lifecycle = e.Lifecycle
 
@@ -120,7 +122,7 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 		dnsName := aws.StringValue(found.AliasTarget.DNSName)
 		klog.Infof("AliasTarget for %q is %q", aws.StringValue(found.Name), dnsName)
 		if dnsName != "" {
-			if actual.TargetLoadBalancer, err = findDNSTarget(cloud, found.AliasTarget, dnsName, e.Name); err != nil {
+			if actual.TargetLoadBalancer, err = findDNSTarget(cloud, found.AliasTarget, dnsName, e.ResourceName); err != nil {
 				return nil, err
 			}
 		}
@@ -196,7 +198,7 @@ func (e *DNSName) Run(c *fi.Context) error {
 
 func (s *DNSName) CheckChanges(a, e, changes *DNSName) error {
 	if a == nil {
-		if fi.StringValue(e.Name) == "" {
+		if fi.StringValue(e.ResourceName) == "" {
 			return fi.RequiredField("Name")
 		}
 	}
@@ -205,7 +207,7 @@ func (s *DNSName) CheckChanges(a, e, changes *DNSName) error {
 
 func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error {
 	rrs := &route53.ResourceRecordSet{
-		Name: e.Name,
+		Name: e.ResourceName,
 		Type: e.ResourceType,
 	}
 
@@ -229,7 +231,7 @@ func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error
 	request.HostedZoneId = e.Zone.ZoneID
 	request.ChangeBatch = changeBatch
 
-	klog.V(2).Infof("Updating DNS record %q", *e.Name)
+	klog.V(2).Infof("Updating DNS record %q", *e.ResourceName)
 
 	response, err := t.Cloud.Route53().ChangeResourceRecordSets(request)
 	if err != nil {
@@ -253,13 +255,14 @@ type terraformRoute53Record struct {
 
 type terraformAlias struct {
 	Name                 *terraformWriter.Literal `json:"name" cty:"name"`
+	Type                 *terraformWriter.Literal `json:"type" cty:"type"`
 	ZoneID               *terraformWriter.Literal `json:"zone_id" cty:"zone_id"`
 	EvaluateTargetHealth *bool                    `json:"evaluate_target_health" cty:"evaluate_target_health"`
 }
 
 func (_ *DNSName) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DNSName) error {
 	tf := &terraformRoute53Record{
-		Name:   e.Name,
+		Name:   e.ResourceName,
 		ZoneID: e.Zone.TerraformLink(),
 		Type:   e.ResourceType,
 	}
@@ -297,7 +300,7 @@ type cloudformationAlias struct {
 
 func (_ *DNSName) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *DNSName) error {
 	cf := &cloudformationRoute53Record{
-		Name:   e.Name,
+		Name:   e.ResourceName,
 		ZoneID: e.Zone.CloudformationLink(),
 		Type:   e.ResourceType,
 	}
