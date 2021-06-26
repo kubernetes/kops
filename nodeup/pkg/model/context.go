@@ -55,6 +55,7 @@ type NodeupModelContext struct {
 	ConfigBase   vfs.Path
 	Distribution distributions.Distribution
 	KeyStore     fi.CAStore
+	BootConfig   *nodeup.BootConfig
 	NodeupConfig *nodeup.Config
 	SecretStore  fi.SecretStore
 
@@ -81,7 +82,7 @@ func (c *NodeupModelContext) Init() error {
 	c.kubernetesVersion = *k8sVersion
 	c.bootstrapCerts = map[string]*nodetasks.BootstrapCert{}
 
-	role := c.NodeupConfig.InstanceGroupRole
+	role := c.BootConfig.InstanceGroupRole
 
 	if role == kops.InstanceGroupRoleMaster {
 		c.IsMaster = true
