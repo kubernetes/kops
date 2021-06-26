@@ -159,22 +159,10 @@ kubelet:
 __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
-AuxConfigHash: /0fgYG0lsuxVGuNdtGBZA0RYxOfvLD/xOFg1eJwyfcw=
-CAs: {}
-CloudProvider: ""
+CloudProvider: aws
+InstanceGroupName: testIG
 InstanceGroupRole: Node
-KeypairIDs: {}
-KubeletConfig:
-  kubeconfigPath: /etc/kubernetes/igconfig.txt
-  nodeLabels:
-    kubernetes.io/role: node
-    label2: value2
-    labelname: labelvalue
-    node-role.kubernetes.io/node: ""
-  taints:
-  - key1=value1:NoSchedule
-  - key2=value2:NoExecute
-UpdatePolicy: automatic
+NodeupConfigHash: eTDaduFsjC2TKb+AiKZQXzn8M2eV4IOeu8A2AYWtug4=
 
 __EOF_KUBE_ENV
 

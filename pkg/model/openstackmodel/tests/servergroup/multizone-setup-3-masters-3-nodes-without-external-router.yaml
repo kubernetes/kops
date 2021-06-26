@@ -459,8 +459,8 @@ Contents:
     Lifecycle: ""
     Name: master-a
 Lifecycle: ""
-Location: igconfig/master/master-a/auxconfig.yaml
-Name: auxconfig-master-a
+Location: igconfig/master/master-a/nodeupconfig.yaml
+Name: nodeupconfig-master-a
 Public: null
 ---
 Base: null
@@ -469,8 +469,8 @@ Contents:
     Lifecycle: ""
     Name: master-b
 Lifecycle: ""
-Location: igconfig/master/master-b/auxconfig.yaml
-Name: auxconfig-master-b
+Location: igconfig/master/master-b/nodeupconfig.yaml
+Name: nodeupconfig-master-b
 Public: null
 ---
 Base: null
@@ -479,8 +479,8 @@ Contents:
     Lifecycle: ""
     Name: master-c
 Lifecycle: ""
-Location: igconfig/master/master-c/auxconfig.yaml
-Name: auxconfig-master-c
+Location: igconfig/master/master-c/nodeupconfig.yaml
+Name: nodeupconfig-master-c
 Public: null
 ---
 Base: null
@@ -489,8 +489,8 @@ Contents:
     Lifecycle: ""
     Name: node-a
 Lifecycle: ""
-Location: igconfig/node/node-a/auxconfig.yaml
-Name: auxconfig-node-a
+Location: igconfig/node/node-a/nodeupconfig.yaml
+Name: nodeupconfig-node-a
 Public: null
 ---
 Base: null
@@ -499,8 +499,8 @@ Contents:
     Lifecycle: ""
     Name: node-b
 Lifecycle: ""
-Location: igconfig/node/node-b/auxconfig.yaml
-Name: auxconfig-node-b
+Location: igconfig/node/node-b/nodeupconfig.yaml
+Name: nodeupconfig-node-b
 Public: null
 ---
 Base: null
@@ -509,8 +509,8 @@ Contents:
     Lifecycle: ""
     Name: node-c
 Lifecycle: ""
-Location: igconfig/node/node-c/auxconfig.yaml
-Name: auxconfig-node-c
+Location: igconfig/node/node-c/nodeupconfig.yaml
+Name: nodeupconfig-node-c
 Public: null
 ---
 AdditionalSecurityGroups: null
