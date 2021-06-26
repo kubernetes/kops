@@ -2,7 +2,7 @@ contents: ""
 path: /etc/containerd/config-kops.toml
 type: file
 ---
-contents: CONTAINERD_OPTS=
+contents: CONTAINERD_OPTS=--log-level=info
 path: /etc/sysconfig/containerd
 type: file
 ---
