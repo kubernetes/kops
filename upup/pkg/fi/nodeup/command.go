@@ -68,21 +68,20 @@ type NodeUpCommand struct {
 	ConfigLocation string
 	Target         string
 	cluster        *api.Cluster
-	config         *nodeup.Config
-	auxConfig      *nodeup.AuxConfig
 }
 
 // Run is responsible for perform the nodeup process
 func (c *NodeUpCommand) Run(out io.Writer) error {
 	ctx := context.Background()
 
+	var bootConfig nodeup.BootConfig
 	if c.ConfigLocation != "" {
-		config, err := vfs.Context.ReadFile(c.ConfigLocation)
+		b, err := vfs.Context.ReadFile(c.ConfigLocation)
 		if err != nil {
 			return fmt.Errorf("error loading configuration %q: %v", c.ConfigLocation, err)
 		}
 
-		err = utils.YamlUnmarshal(config, &c.config)
+		err = utils.YamlUnmarshal(b, &bootConfig)
 		if err != nil {
 			return fmt.Errorf("error parsing configuration %q: %v", c.ConfigLocation, err)
 		}
@@ -94,11 +93,11 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("CacheDir is required")
 	}
 
-	region, err := getRegion(ctx, c.config)
+	region, err := getRegion(ctx, &bootConfig)
 	if err != nil {
 		return err
 	}
-	if err = seedRNG(ctx, c.config, region); err != nil {
+	if err = seedRNG(ctx, &bootConfig, region); err != nil {
 		return err
 	}
 
@@ -107,29 +106,17 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	// If we're using a config server instead of vfs, nodeConfig will hold our configuration
 	var nodeConfig *nodeup.NodeConfig
 
-	if c.config.ConfigServer != nil {
-		response, err := getNodeConfigFromServer(ctx, c.config, region)
+	if bootConfig.ConfigServer != nil {
+		response, err := getNodeConfigFromServer(ctx, &bootConfig, region)
 		if err != nil {
 			return err
 		}
 		nodeConfig = response.NodeConfig
-	} else if fi.StringValue(c.config.ConfigBase) != "" {
+	} else if fi.StringValue(bootConfig.ConfigBase) != "" {
 		var err error
-		configBase, err = vfs.Context.BuildVfsPath(*c.config.ConfigBase)
+		configBase, err = vfs.Context.BuildVfsPath(*bootConfig.ConfigBase)
 		if err != nil {
-			return fmt.Errorf("cannot parse ConfigBase %q: %v", *c.config.ConfigBase, err)
-		}
-	} else if fi.StringValue(c.config.ClusterLocation) != "" {
-		basePath := *c.config.ClusterLocation
-		lastSlash := strings.LastIndex(basePath, "/")
-		if lastSlash != -1 {
-			basePath = basePath[0:lastSlash]
-		}
-
-		var err error
-		configBase, err = vfs.Context.BuildVfsPath(basePath)
-		if err != nil {
-			return fmt.Errorf("cannot parse inferred ConfigBase %q: %v", basePath, err)
+			return fmt.Errorf("cannot parse ConfigBase %q: %v", *bootConfig.ConfigBase, err)
 		}
 	} else {
 		return fmt.Errorf("ConfigBase or ConfigServer is required")
@@ -142,20 +129,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			b = []byte(nodeConfig.ClusterFullConfig)
 			clusterDescription = "config response"
 		} else {
-			clusterLocation := fi.StringValue(c.config.ClusterLocation)
-
-			var p vfs.Path
-			if clusterLocation != "" {
-				var err error
-				p, err = vfs.Context.BuildVfsPath(clusterLocation)
-				if err != nil {
-					return fmt.Errorf("error parsing ClusterLocation %q: %v", clusterLocation, err)
-				}
-			} else {
-				p = configBase.Join(registry.PathClusterCompleted)
-			}
-
+			p := configBase.Join(registry.PathClusterCompleted)
 			var err error
+
 			b, err = p.ReadFile()
 			if err != nil {
 				return fmt.Errorf("error loading Cluster %q: %v", p, err)
@@ -173,35 +149,35 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 	}
 
-	var auxConfigHash [32]byte
+	var nodeupConfig nodeup.Config
+	var nodeupConfigHash [32]byte
 	if nodeConfig != nil {
-		c.auxConfig = &nodeup.AuxConfig{}
-		if err := utils.YamlUnmarshal([]byte(nodeConfig.AuxConfig), c.auxConfig); err != nil {
-			return fmt.Errorf("error parsing AuxConfig config response: %v", err)
+		if err := utils.YamlUnmarshal([]byte(nodeConfig.NodeupConfig), &nodeupConfig); err != nil {
+			return fmt.Errorf("error parsing BootConfig config response: %v", err)
 		}
-		auxConfigHash = sha256.Sum256([]byte(nodeConfig.AuxConfig))
-	} else if c.config.InstanceGroupName != "" {
-		auxConfigLocation := configBase.Join("igconfig", strings.ToLower(string(c.config.InstanceGroupRole)), c.config.InstanceGroupName, "auxconfig.yaml")
+		nodeupConfigHash = sha256.Sum256([]byte(nodeConfig.NodeupConfig))
+		nodeupConfig.CAs[fi.CertificateIDCA] = bootConfig.ConfigServer.CACertificates
+	} else if bootConfig.InstanceGroupName != "" {
+		nodeupConfigLocation := configBase.Join("igconfig", strings.ToLower(string(bootConfig.InstanceGroupRole)), bootConfig.InstanceGroupName, "nodeupconfig.yaml")
 
-		c.auxConfig = &nodeup.AuxConfig{}
-		b, err := auxConfigLocation.ReadFile()
+		b, err := nodeupConfigLocation.ReadFile()
 		if err != nil {
-			return fmt.Errorf("error loading AuxConfig %q: %v", auxConfigLocation, err)
+			return fmt.Errorf("error loading NodeupConfig %q: %v", nodeupConfigLocation, err)
 		}
 
-		if err = utils.YamlUnmarshal(b, c.auxConfig); err != nil {
-			return fmt.Errorf("error parsing AuxConfig %q: %v", auxConfigLocation, err)
+		if err = utils.YamlUnmarshal(b, &nodeupConfig); err != nil {
+			return fmt.Errorf("error parsing NodeupConfig %q: %v", nodeupConfigLocation, err)
 		}
-		auxConfigHash = sha256.Sum256(b)
+		nodeupConfigHash = sha256.Sum256(b)
 	} else {
 		return fmt.Errorf("no instance group defined in nodeup config")
 	}
 
-	if c.config.AuxConfigHash != base64.StdEncoding.EncodeToString(auxConfigHash[:]) {
-		return fmt.Errorf("auxiliary config hash mismatch")
+	if bootConfig.NodeupConfigHash != base64.StdEncoding.EncodeToString(nodeupConfigHash[:]) {
+		return fmt.Errorf("nodeup config hash mismatch")
 	}
 
-	err = evaluateSpec(c)
+	err = evaluateSpec(c, &nodeupConfig)
 	if err != nil {
 		return err
 	}
@@ -216,7 +192,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("error determining OS distribution: %v", err)
 	}
 
-	configAssets := c.config.Assets[architecture]
+	configAssets := nodeupConfig.Assets[architecture]
 	assetStore := fi.NewAssetStore(c.CacheDir)
 	for _, asset := range configAssets {
 		err := assetStore.Add(asset)
@@ -236,14 +212,14 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	modelContext := &model.NodeupModelContext{
-		Cloud:           cloud,
-		Architecture:    architecture,
-		Assets:          assetStore,
-		Cluster:         c.cluster,
-		ConfigBase:      configBase,
-		Distribution:    distribution,
-		NodeupConfig:    c.config,
-		NodeupAuxConfig: c.auxConfig,
+		Cloud:        cloud,
+		Architecture: architecture,
+		Assets:       assetStore,
+		Cluster:      c.cluster,
+		ConfigBase:   configBase,
+		Distribution: distribution,
+		BootConfig:   &bootConfig,
+		NodeupConfig: &nodeupConfig,
 	}
 
 	var secretStore fi.SecretStore
@@ -340,7 +316,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("error building loader: %v", err)
 	}
 
-	for i, image := range c.config.Images[architecture] {
+	for i, image := range nodeupConfig.Images[architecture] {
 		taskMap["LoadImage."+strconv.Itoa(i)] = &nodetasks.LoadImageTask{
 			Sources: image.Sources,
 			Hash:    image.Hash,
@@ -386,7 +362,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		klog.Exitf("error closing target: %v", err)
 	}
 
-	if c.config.EnableLifecycleHook {
+	if nodeupConfig.EnableLifecycleHook {
 		if api.CloudProviderID(c.cluster.Spec.CloudProvider) == api.CloudProviderAWS {
 			err := completeWarmingLifecycleAction(cloud.(awsup.AWSCloud), modelContext)
 			if err != nil {
@@ -398,7 +374,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 }
 
 func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.NodeupModelContext) error {
-	asgName := modelContext.NodeupConfig.InstanceGroupName + "." + modelContext.Cluster.GetName()
+	asgName := modelContext.BootConfig.InstanceGroupName + "." + modelContext.Cluster.GetName()
 	hookName := "kops-warmpool"
 	svc := cloud.(awsup.AWSCloud).Autoscaling()
 	hooks, err := svc.DescribeLifecycleHooks(&autoscaling.DescribeLifecycleHooksInput{
@@ -427,7 +403,7 @@ func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.No
 	return nil
 }
 
-func evaluateSpec(c *NodeUpCommand) error {
+func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config) error {
 	var err error
 
 	c.cluster.Spec.Kubelet.HostnameOverride, err = evaluateHostnameOverride(c.cluster.Spec.Kubelet.HostnameOverride)
@@ -440,7 +416,7 @@ func evaluateSpec(c *NodeUpCommand) error {
 		return err
 	}
 
-	c.config.KubeletConfig.HostnameOverride, err = evaluateHostnameOverride(c.config.KubeletConfig.HostnameOverride)
+	nodeupConfig.KubeletConfig.HostnameOverride, err = evaluateHostnameOverride(nodeupConfig.KubeletConfig.HostnameOverride)
 	if err != nil {
 		return err
 	}
@@ -690,8 +666,8 @@ func loadKernelModules(context *model.NodeupModelContext) error {
 }
 
 // getRegion queries the cloud provider for the region.
-func getRegion(ctx context.Context, config *nodeup.Config) (string, error) {
-	switch api.CloudProviderID(config.CloudProvider) {
+func getRegion(ctx context.Context, bootConfig *nodeup.BootConfig) (string, error) {
+	switch api.CloudProviderID(bootConfig.CloudProvider) {
 	case api.CloudProviderAWS:
 		region, err := awsup.RegionFromMetadata(ctx)
 		if err != nil {
@@ -705,8 +681,8 @@ func getRegion(ctx context.Context, config *nodeup.Config) (string, error) {
 }
 
 // seedRNG adds entropy to the random number generator.
-func seedRNG(ctx context.Context, config *nodeup.Config, region string) error {
-	switch api.CloudProviderID(config.CloudProvider) {
+func seedRNG(ctx context.Context, bootConfig *nodeup.BootConfig, region string) error {
+	switch api.CloudProviderID(bootConfig.CloudProvider) {
 	case api.CloudProviderAWS:
 		config := aws.NewConfig().WithCredentialsChainVerboseErrors(true).WithRegion(region)
 		sess, err := session.NewSession(config)
@@ -738,10 +714,10 @@ func seedRNG(ctx context.Context, config *nodeup.Config, region string) error {
 }
 
 // getNodeConfigFromServer queries kops-controller for our node's configuration.
-func getNodeConfigFromServer(ctx context.Context, config *nodeup.Config, region string) (*nodeup.BootstrapResponse, error) {
+func getNodeConfigFromServer(ctx context.Context, bootConfig *nodeup.BootConfig, region string) (*nodeup.BootstrapResponse, error) {
 	var authenticator fi.Authenticator
 
-	switch api.CloudProviderID(config.CloudProvider) {
+	switch api.CloudProviderID(bootConfig.CloudProvider) {
 	case api.CloudProviderAWS:
 		a, err := awsup.NewAWSAuthenticator(region)
 		if err != nil {
@@ -749,20 +725,19 @@ func getNodeConfigFromServer(ctx context.Context, config *nodeup.Config, region 
 		}
 		authenticator = a
 	default:
-		return nil, fmt.Errorf("unsupported cloud provider %s", config.CloudProvider)
+		return nil, fmt.Errorf("unsupported cloud provider %s", bootConfig.CloudProvider)
 	}
 
 	client := &nodetasks.KopsBootstrapClient{
 		Authenticator: authenticator,
 	}
 
-	client.CAs = []byte(config.CAs[fi.CertificateIDCA])
-
-	u, err := url.Parse(config.ConfigServer.Server)
+	u, err := url.Parse(bootConfig.ConfigServer.Server)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse configuration server url %q: %w", config.ConfigServer.Server, err)
+		return nil, fmt.Errorf("unable to parse configuration server url %q: %w", bootConfig.ConfigServer.Server, err)
 	}
 	client.BaseURL = *u
+	client.CAs = []byte(bootConfig.ConfigServer.CACertificates)
 
 	request := nodeup.BootstrapRequest{
 		APIVersion:        nodeup.BootstrapAPIVersion,
@@ -774,7 +749,7 @@ func getNodeConfigFromServer(ctx context.Context, config *nodeup.Config, region 
 func getAWSConfigurationMode(c *model.NodeupModelContext) (string, error) {
 	// Only worker nodes and apiservers can actually autoscale.
 	// We are not adding describe permissions to the other roles
-	role := c.NodeupConfig.InstanceGroupRole
+	role := c.BootConfig.InstanceGroupRole
 	if role != api.InstanceGroupRoleNode && role != api.InstanceGroupRoleAPIServer {
 		return "", nil
 	}

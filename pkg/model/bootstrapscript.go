@@ -43,7 +43,7 @@ import (
 )
 
 type NodeUpConfigBuilder interface {
-	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTask *fitasks.Keypair) (*nodeup.Config, *nodeup.AuxConfig, error)
+	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTask *fitasks.Keypair) (*nodeup.Config, *nodeup.BootConfig, error)
 }
 
 // BootstrapScriptBuilder creates the bootstrap script
@@ -65,15 +65,15 @@ type BootstrapScript struct {
 	// caTask holds the CA task, for dependency analysis.
 	caTask *fitasks.Keypair
 
-	// auxConfig contains the nodeup auxiliary config.
-	auxConfig fi.TaskDependentResource
+	// nodeupConfig contains the nodeup config.
+	nodeupConfig fi.TaskDependentResource
 }
 
 var _ fi.Task = &BootstrapScript{}
 var _ fi.HasName = &BootstrapScript{}
 var _ fi.HasDependencies = &BootstrapScript{}
 
-// kubeEnv returns the nodeup config for the instance group
+// kubeEnv returns the boot config for the instance group
 func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (string, error) {
 	var alternateNames []string
 
@@ -91,25 +91,25 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (string
 	}
 
 	sort.Strings(alternateNames)
-	config, auxConfig, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames, b.caTask)
+	config, bootConfig, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames, b.caTask)
 	if err != nil {
 		return "", err
 	}
 
-	auxData, err := utils.YamlMarshal(auxConfig)
-	if err != nil {
-		return "", fmt.Errorf("error converting nodeup auxiliary config to yaml: %v", err)
-	}
-	sum256 := sha256.Sum256(auxData)
-	config.AuxConfigHash = base64.StdEncoding.EncodeToString(sum256[:])
-	b.auxConfig.Resource = fi.NewBytesResource(auxData)
-
-	data, err := utils.YamlMarshal(config)
+	configData, err := utils.YamlMarshal(config)
 	if err != nil {
 		return "", fmt.Errorf("error converting nodeup config to yaml: %v", err)
 	}
+	sum256 := sha256.Sum256(configData)
+	bootConfig.NodeupConfigHash = base64.StdEncoding.EncodeToString(sum256[:])
+	b.nodeupConfig.Resource = fi.NewBytesResource(configData)
 
-	return string(data), nil
+	bootConfigData, err := utils.YamlMarshal(bootConfig)
+	if err != nil {
+		return "", fmt.Errorf("error converting boot config to yaml: %v", err)
+	}
+
+	return string(bootConfigData), nil
 }
 
 func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[string]string, error) {
@@ -232,14 +232,14 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 		caTask:    caTask,
 	}
 	task.resource.Task = task
-	task.auxConfig.Task = task
+	task.nodeupConfig.Task = task
 	c.AddTask(task)
 
 	c.AddTask(&fitasks.ManagedFile{
-		Name:      fi.String("auxconfig-" + ig.Name),
+		Name:      fi.String("nodeupconfig-" + ig.Name),
 		Lifecycle: b.Lifecycle,
-		Location:  fi.String("igconfig/" + strings.ToLower(string(ig.Spec.Role)) + "/" + ig.Name + "/auxconfig.yaml"),
-		Contents:  &task.auxConfig,
+		Location:  fi.String("igconfig/" + strings.ToLower(string(ig.Spec.Role)) + "/" + ig.Name + "/nodeupconfig.yaml"),
+		Contents:  &task.nodeupConfig,
 	})
 	return &task.resource, nil
 }
