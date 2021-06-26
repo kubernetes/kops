@@ -298,6 +298,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 
 			Zone:               b.LinkToDNSZone(),
+			ResourceName:       fi.String(bastionPublicName),
 			ResourceType:       fi.String("A"),
 			TargetLoadBalancer: elb,
 		}
