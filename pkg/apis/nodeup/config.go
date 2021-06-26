@@ -35,8 +35,6 @@ type Config struct {
 	Images map[architectures.Architecture][]*Image `json:"images,omitempty"`
 	// ConfigBase is the base VFS path for config objects
 	ConfigBase *string `json:",omitempty"`
-	// ClusterLocation is the VFS path to the cluster spec (deprecated: prefer ConfigBase)
-	ClusterLocation *string `json:",omitempty"`
 	// InstanceGroupName is the name of the instance group
 	InstanceGroupName string `json:",omitempty"`
 	// InstanceGroupRole is the instance group role.
