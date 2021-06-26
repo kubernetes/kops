@@ -149,12 +149,24 @@ func stringSlicesEqual(exp, other []string) bool {
 }
 
 func Test_RunKubeletBuilder(t *testing.T) {
+	h := testutils.NewIntegrationTestHarness(t)
+	defer h.Close()
+
+	h.MockKopsVersion("1.18.0")
+	h.SetupMockAWS()
+
 	basedir := "tests/kubelet/featuregates"
 
 	context := &fi.ModelBuilderContext{
 		Tasks: make(map[string]fi.Task),
 	}
-	nodeUpModelContext, err := BuildNodeupModelContext(basedir)
+
+	model, err := testutils.LoadModel(basedir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	nodeUpModelContext, err := BuildNodeupModelContext(model)
 	if err != nil {
 		t.Fatalf("error loading model %q: %v", basedir, err)
 		return
@@ -166,12 +178,24 @@ func Test_RunKubeletBuilder(t *testing.T) {
 }
 
 func Test_RunKubeletBuilderWarmPool(t *testing.T) {
+	h := testutils.NewIntegrationTestHarness(t)
+	defer h.Close()
+
+	h.MockKopsVersion("1.18.0")
+	h.SetupMockAWS()
+
 	basedir := "tests/kubelet/warmpool"
 
 	context := &fi.ModelBuilderContext{
 		Tasks: make(map[string]fi.Task),
 	}
-	nodeUpModelContext, err := BuildNodeupModelContext(basedir)
+
+	model, err := testutils.LoadModel(basedir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	nodeUpModelContext, err := BuildNodeupModelContext(model)
 	if err != nil {
 		t.Fatalf("error loading model %q: %v", basedir, err)
 		return
@@ -186,6 +210,10 @@ func Test_RunKubeletBuilderWarmPool(t *testing.T) {
 }
 
 func runKubeletBuilder(t *testing.T, context *fi.ModelBuilderContext, nodeupModelContext *NodeupModelContext) {
+	if err := nodeupModelContext.Init(); err != nil {
+		t.Fatalf("error from nodeupModelContext.Init(): %v", err)
+	}
+
 	builder := KubeletBuilder{NodeupModelContext: nodeupModelContext}
 
 	kubeletConfig, err := builder.buildKubeletConfig()
@@ -221,18 +249,12 @@ func runKubeletBuilder(t *testing.T, context *fi.ModelBuilderContext, nodeupMode
 
 }
 
-func BuildNodeupModelContext(basedir string) (*NodeupModelContext, error) {
-	model, err := testutils.LoadModel(basedir)
-	if err != nil {
-		return nil, err
-	}
-
+func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error) {
 	if model.Cluster == nil {
-		return nil, fmt.Errorf("no cluster found in %s", basedir)
+		return nil, fmt.Errorf("no cluster found in model")
 	}
 
-	nodeUpModelContext := &NodeupModelContext{
-		Cluster:      model.Cluster,
+	nodeupModelContext := &NodeupModelContext{
 		Architecture: "amd64",
 		BootConfig:   &nodeup.BootConfig{},
 		NodeupConfig: &nodeup.Config{
@@ -241,22 +263,34 @@ func BuildNodeupModelContext(basedir string) (*NodeupModelContext, error) {
 		},
 	}
 
+	// Populate the cluster
+	cloud, err := cloudup.BuildCloud(model.Cluster)
+	if err != nil {
+		return nil, fmt.Errorf("error from BuildCloud: %v", err)
+	}
+
+	err = cloudup.PerformAssignments(model.Cluster, cloud)
+	if err != nil {
+		return nil, fmt.Errorf("error from PerformAssignments: %v", err)
+	}
+
+	nodeupModelContext.Cluster, err = mockedPopulateClusterSpec(model.Cluster, cloud)
+	if err != nil {
+		return nil, fmt.Errorf("unexpected error from mockedPopulateClusterSpec: %v", err)
+	}
+
 	if len(model.InstanceGroups) == 0 {
 		// We tolerate this - not all tests need an instance group
 	} else if len(model.InstanceGroups) == 1 {
-		nodeUpModelContext.NodeupConfig, nodeUpModelContext.BootConfig = nodeup.NewConfig(model.Cluster, model.InstanceGroups[0])
+		nodeupModelContext.NodeupConfig, nodeupModelContext.BootConfig = nodeup.NewConfig(nodeupModelContext.Cluster, model.InstanceGroups[0])
 	} else {
-		return nil, fmt.Errorf("unexpected number of instance groups in %s, found %d", basedir, len(model.InstanceGroups))
+		return nil, fmt.Errorf("unexpected number of instance groups: found %d", len(model.InstanceGroups))
 	}
 
-	nodeUpModelContext.NodeupConfig.CAs["ca"] = dummyCertificate + nextCertificate
-	nodeUpModelContext.NodeupConfig.KeypairIDs["ca"] = "3"
+	nodeupModelContext.NodeupConfig.CAs["ca"] = dummyCertificate + nextCertificate
+	nodeupModelContext.NodeupConfig.KeypairIDs["ca"] = "3"
 
-	if err := nodeUpModelContext.Init(); err != nil {
-		return nil, err
-	}
-
-	return nodeUpModelContext, nil
+	return nodeupModelContext, nil
 }
 
 func mockedPopulateClusterSpec(c *kops.Cluster, cloud fi.Cloud) (*kops.Cluster, error) {
@@ -339,9 +373,10 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 	context := &fi.ModelBuilderContext{
 		Tasks: make(map[string]fi.Task),
 	}
-	nodeupModelContext, err := BuildNodeupModelContext(basedir)
+
+	model, err := testutils.LoadModel(basedir)
 	if err != nil {
-		t.Fatalf("error loading model %q: %v", basedir, err)
+		t.Fatal(err)
 	}
 
 	keystore := &fakeCAStore{}
@@ -362,25 +397,15 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 		"kube-scheduler":          mustParseCertificate(dummyCertificate),
 	}
 
-	nodeupModelContext.KeyStore = keystore
-
-	// Populate the cluster
-	cloud, err := cloudup.BuildCloud(nodeupModelContext.Cluster)
+	nodeupModelContext, err := BuildNodeupModelContext(model)
 	if err != nil {
-		t.Fatalf("error from BuildCloud: %v", err)
+		t.Fatalf("error loading model %q: %v", basedir, err)
 	}
 
-	{
-		err := cloudup.PerformAssignments(nodeupModelContext.Cluster, cloud)
-		if err != nil {
-			t.Fatalf("error from PerformAssignments: %v", err)
-		}
+	nodeupModelContext.KeyStore = keystore
 
-		full, err := mockedPopulateClusterSpec(nodeupModelContext.Cluster, cloud)
-		if err != nil {
-			t.Fatalf("unexpected error from mockedPopulateClusterSpec: %v", err)
-		}
-		nodeupModelContext.Cluster = full
+	if err := nodeupModelContext.Init(); err != nil {
+		t.Fatalf("error from nodeupModelContext.Init(): %v", err)
 	}
 
 	if err := builder(nodeupModelContext, context); err != nil {
