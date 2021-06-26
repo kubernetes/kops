@@ -64,26 +64,24 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
-	if b.Cluster.Spec.EncryptionConfig != nil {
-		if *b.Cluster.Spec.EncryptionConfig {
-			encryptionConfigPath := fi.String(filepath.Join(b.PathSrvKubernetes(), "encryptionconfig.yaml"))
+	if b.NodeupConfig.APIServerConfig.EncryptionConfigSecretHash != "" {
+		encryptionConfigPath := fi.String(filepath.Join(b.PathSrvKubernetes(), "kube-apiserver", "encryptionconfig.yaml"))
 
-			kubeAPIServer.EncryptionProviderConfig = encryptionConfigPath
+		kubeAPIServer.EncryptionProviderConfig = encryptionConfigPath
 
-			key := "encryptionconfig"
-			encryptioncfg, err := b.SecretStore.Secret(key)
-			if err == nil {
-				contents := string(encryptioncfg.Data)
-				t := &nodetasks.File{
-					Path:     *encryptionConfigPath,
-					Contents: fi.NewStringResource(contents),
-					Mode:     fi.String("600"),
-					Type:     nodetasks.FileType_File,
-				}
-				c.AddTask(t)
-			} else {
-				return fmt.Errorf("encryptionConfig enabled, but could not load encryptionconfig secret: %v", err)
+		key := "encryptionconfig"
+		encryptioncfg, err := b.SecretStore.Secret(key)
+		if err == nil {
+			contents := string(encryptioncfg.Data)
+			t := &nodetasks.File{
+				Path:     *encryptionConfigPath,
+				Contents: fi.NewStringResource(contents),
+				Mode:     fi.String("600"),
+				Type:     nodetasks.FileType_File,
 			}
+			c.AddTask(t)
+		} else {
+			return fmt.Errorf("encryptionConfig enabled, but could not load encryptionconfig secret: %v", err)
 		}
 	}
 	{
