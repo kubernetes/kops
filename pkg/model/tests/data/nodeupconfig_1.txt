@@ -1,3 +1,6 @@
+APIServerConfig:
+  KubeAPIServer:
+    image: CoreOS
 CAs: {}
 FileAssets:
 - content: blah blah
