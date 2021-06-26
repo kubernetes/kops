@@ -198,8 +198,17 @@ func (e *DNSName) Run(c *fi.Context) error {
 
 func (s *DNSName) CheckChanges(a, e, changes *DNSName) error {
 	if a == nil {
-		if fi.StringValue(e.ResourceName) == "" {
+		if fi.StringValue(e.Name) == "" {
 			return fi.RequiredField("Name")
+		}
+		if fi.StringValue(e.ResourceName) == "" {
+			return fi.RequiredField("ResourceName")
+		}
+		if fi.StringValue(e.ResourceType) == "" {
+			return fi.RequiredField("ResourceType")
+		}
+		if e.Zone == nil {
+			return fi.RequiredField("Zone")
 		}
 	}
 	return nil

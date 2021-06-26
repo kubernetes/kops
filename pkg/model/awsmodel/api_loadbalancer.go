@@ -183,7 +183,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Type:          fi.String("network"),
 			IpAddressType: fi.String("ipv4"),
 		}
-		if b.UseIPv6ForAPI() {
+		// DualStack can only be used for public NLB
+		// https://aws.amazon.com/premiumsupport/knowledge-center/elb-configure-with-ipv6
+		if b.UseIPv6ForAPI() && lbSpec.Type == kops.LoadBalancerTypePublic {
 			nlb.IpAddressType = fi.String("dualstack")
 		}
 
