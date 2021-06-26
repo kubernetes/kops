@@ -119,18 +119,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		if err != nil {
 			return fmt.Errorf("cannot parse ConfigBase %q: %v", *c.config.ConfigBase, err)
 		}
-	} else if fi.StringValue(c.config.ClusterLocation) != "" {
-		basePath := *c.config.ClusterLocation
-		lastSlash := strings.LastIndex(basePath, "/")
-		if lastSlash != -1 {
-			basePath = basePath[0:lastSlash]
-		}
-
-		var err error
-		configBase, err = vfs.Context.BuildVfsPath(basePath)
-		if err != nil {
-			return fmt.Errorf("cannot parse inferred ConfigBase %q: %v", basePath, err)
-		}
 	} else {
 		return fmt.Errorf("ConfigBase or ConfigServer is required")
 	}
@@ -142,20 +130,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			b = []byte(nodeConfig.ClusterFullConfig)
 			clusterDescription = "config response"
 		} else {
-			clusterLocation := fi.StringValue(c.config.ClusterLocation)
-
-			var p vfs.Path
-			if clusterLocation != "" {
-				var err error
-				p, err = vfs.Context.BuildVfsPath(clusterLocation)
-				if err != nil {
-					return fmt.Errorf("error parsing ClusterLocation %q: %v", clusterLocation, err)
-				}
-			} else {
-				p = configBase.Join(registry.PathClusterCompleted)
-			}
-
+			p := configBase.Join(registry.PathClusterCompleted)
 			var err error
+
 			b, err = p.ReadFile()
 			if err != nil {
 				return fmt.Errorf("error loading Cluster %q: %v", p, err)
