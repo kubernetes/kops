@@ -45,7 +45,7 @@ func (f *FileAssetsBuilder) Build(c *fi.ModelBuilderContext) error {
 		Mode: s("0755"),
 	})
 
-	return f.buildFileAssets(c, f.NodeupAuxConfig.FileAssets, tracker)
+	return f.buildFileAssets(c, f.NodeupConfig.FileAssets, tracker)
 }
 
 // buildFileAssets is responsible for rendering the file assets to disk
