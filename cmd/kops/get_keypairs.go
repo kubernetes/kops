@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
@@ -46,6 +47,7 @@ var (
 
 type GetKeypairsOptions struct {
 	*GetOptions
+	Distrusted bool
 }
 
 func NewCmdGetKeypairs(f *util.Factory, out io.Writer, getOptions *GetOptions) *cobra.Command {
@@ -67,15 +69,18 @@ func NewCmdGetKeypairs(f *util.Factory, out io.Writer, getOptions *GetOptions) *
 		},
 	}
 
+	cmd.Flags().BoolVar(&options.Distrusted, "distrusted", options.Distrusted, "Include distrusted keypairs")
+
 	return cmd
 }
 
 type keypairItem struct {
-	Name          string
-	Id            string
-	IsPrimary     bool
-	Certificate   *pki.Certificate
-	HasPrivateKey bool
+	Name              string
+	Id                string
+	DistrustTimestamp *time.Time
+	IsPrimary         bool
+	Certificate       *pki.Certificate
+	HasPrivateKey     bool
 }
 
 func listKeypairs(keyStore fi.CAStore, names []string) ([]*keypairItem, error) {
@@ -102,11 +107,12 @@ func listKeypairs(keyStore fi.CAStore, names []string) ([]*keypairItem, error) {
 
 		for _, item := range keyset.Items {
 			items = append(items, &keypairItem{
-				Name:          name,
-				Id:            item.Id,
-				IsPrimary:     item.Id == keyset.Primary.Id,
-				Certificate:   item.Certificate,
-				HasPrivateKey: item.PrivateKey != nil,
+				Name:              name,
+				Id:                item.Id,
+				DistrustTimestamp: item.DistrustTimestamp,
+				IsPrimary:         item.Id == keyset.Primary.Id,
+				Certificate:       item.Certificate,
+				HasPrivateKey:     item.PrivateKey != nil,
 			})
 		}
 	}
@@ -148,6 +154,12 @@ func RunGetKeypairs(ctx context.Context, out io.Writer, options *GetKeypairsOpti
 		t.AddColumn("ID", func(i *keypairItem) string {
 			return i.Id
 		})
+		t.AddColumn("DISTRUSTED", func(i *keypairItem) string {
+			if i.DistrustTimestamp != nil {
+				return i.DistrustTimestamp.Local().Format("2006-01-02")
+			}
+			return ""
+		})
 		t.AddColumn("PRIMARY", func(i *keypairItem) string {
 			if i.IsPrimary {
 				return "*"
@@ -160,7 +172,12 @@ func RunGetKeypairs(ctx context.Context, out io.Writer, options *GetKeypairsOpti
 			}
 			return ""
 		})
-		return t.Render(items, out, "NAME", "ID", "PRIMARY", "HASPRIVATE")
+		columnNames := []string{"NAME", "ID"}
+		if options.Distrusted {
+			columnNames = append(columnNames, "DISTRUSTED")
+		}
+		columnNames = append(columnNames, "PRIMARY", "HASPRIVATE")
+		return t.Render(items, out, columnNames...)
 
 	case OutputYaml:
 		return fmt.Errorf("yaml output format is not (currently) supported for keypairs")

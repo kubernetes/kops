@@ -24,6 +24,7 @@ import (
 	"strings"
 	"sync"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/acls"
@@ -140,8 +141,13 @@ func (k *Keyset) ToAPIObject(name string, includePrivateKeyMaterial bool) (*kops
 
 	for _, key := range keys {
 		ki := k.Items[key]
+		var distrustTimestamp *metav1.Time
+		if ki.DistrustTimestamp != nil {
+			distrustTimestamp = &metav1.Time{Time: *ki.DistrustTimestamp}
+		}
 		oki := kops.KeysetItem{
-			Id: ki.Id,
+			Id:                ki.Id,
+			DistrustTimestamp: distrustTimestamp,
 		}
 
 		if ki.Certificate != nil {
@@ -417,6 +423,9 @@ func (c *VFSCAStore) StoreKeyset(name string, keyset *Keyset) error {
 	primaryId := keyset.Primary.Id
 	if keyset.Items[primaryId] == nil {
 		return fmt.Errorf("keyset's primary id %q not present in items", primaryId)
+	}
+	if keyset.Items[primaryId].DistrustTimestamp != nil {
+		return fmt.Errorf("keyset's primary id %q must not be distrusted", primaryId)
 	}
 	if keyset.Items[primaryId].PrivateKey == nil {
 		return fmt.Errorf("keyset's primary id %q must have a private key", primaryId)
