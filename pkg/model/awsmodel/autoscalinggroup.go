@@ -251,7 +251,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 		Lifecycle:              b.Lifecycle,
 		IAMInstanceProfile:     link,
 		ImageID:                fi.String(ig.Spec.Image),
-		InstanceMonitoring:     ig.Spec.DetailedInstanceMonitoring,
+		InstanceMonitoring:     fi.Bool(false),
 		InstanceType:           fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
 		RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
 		RootVolumeSize:         fi.Int64(int64(volumeSize)),
@@ -351,6 +351,10 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateHelper(c *fi.ModelBuil
 		})
 	}
 
+	if ig.Spec.DetailedInstanceMonitoring != nil {
+		t.InstanceMonitoring = ig.Spec.DetailedInstanceMonitoring
+	}
+
 	if b.AWSModelContext.UseSSHKey() {
 		if t.SSHKey, err = b.LinkToSSHKey(); err != nil {
 			return nil, err
@@ -400,6 +404,8 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 			"GroupTerminatingInstances",
 			"GroupTotalInstances",
 		},
+
+		InstanceProtection: fi.Bool(false),
 	}
 
 	minSize := fi.Int64(1)
@@ -439,7 +445,9 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 	processes = append(processes, ig.Spec.SuspendProcesses...)
 	t.SuspendProcesses = &processes
 
-	t.InstanceProtection = ig.Spec.InstanceProtection
+	if ig.Spec.InstanceProtection != nil {
+		t.InstanceProtection = ig.Spec.InstanceProtection
+	}
 
 	t.LoadBalancers = []*awstasks.ClassicLoadBalancer{}
 	t.TargetGroups = []*awstasks.TargetGroup{}

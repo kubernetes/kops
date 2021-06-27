@@ -163,7 +163,8 @@
           "GroupStandbyInstances",
           "GroupTerminatingInstances",
           "GroupTotalInstances"
-        ]
+        ],
+        "protect_from_scale_in": false
       },
       "nodes-minimal-json-example-com": {
         "name": "nodes.minimal-json.example.com",
@@ -223,7 +224,8 @@
           "GroupStandbyInstances",
           "GroupTerminatingInstances",
           "GroupTotalInstances"
-        ]
+        ],
+        "protect_from_scale_in": false
       }
     },
     "aws_ebs_volume": {
@@ -369,6 +371,11 @@
           "http_put_response_hop_limit": 1,
           "http_tokens": "optional"
         },
+        "monitoring": [
+          {
+            "enabled": false
+          }
+        ],
         "network_interfaces": [
           {
             "associate_public_ip_address": true,
@@ -457,6 +464,11 @@
           "http_put_response_hop_limit": 1,
           "http_tokens": "optional"
         },
+        "monitoring": [
+          {
+            "enabled": false
+          }
+        ],
         "network_interfaces": [
           {
             "associate_public_ip_address": true,
