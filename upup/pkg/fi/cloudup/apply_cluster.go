@@ -495,6 +495,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		Lifecycle:           clusterLifecycle,
 		NodeUpConfigBuilder: configBuilder,
 		NodeUpAssets:        c.NodeUpAssets,
+		Cluster:             cluster,
 	}
 
 	{
@@ -1296,7 +1297,7 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 }
 
 // BuildConfig returns the NodeUp config and auxiliary config.
-func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTask *fitasks.Keypair) (*nodeup.Config, *nodeup.BootConfig, error) {
+func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTasks map[string]*fitasks.Keypair) (*nodeup.Config, *nodeup.BootConfig, error) {
 	cluster := n.cluster
 
 	if ig == nil {
@@ -1321,15 +1322,26 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		}
 	}
 
-	cas, err := fi.ResourceAsString(caTask.Certificates())
+	err := getTasksCertificate(caTasks, fi.CertificateIDCA, config)
 	if err != nil {
-		// CA task may not have run yet; we'll retry
-		return nil, nil, fmt.Errorf("failed to read CA certificates: %w", err)
+		return nil, nil, err
 	}
-	config.CAs[fi.CertificateIDCA] = cas
+	if caTasks["etcd-clients-ca-cilium"] != nil {
+		err := getTasksCertificate(caTasks, "etcd-clients-ca-cilium", config)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
 
 	if isMaster {
-		config.KeypairIDs[fi.CertificateIDCA] = caTask.Keyset().Primary.Id
+		config.KeypairIDs[fi.CertificateIDCA] = caTasks[fi.CertificateIDCA].Keyset().Primary.Id
+		if caTasks["etcd-clients-ca-cilium"] != nil {
+			config.KeypairIDs["etcd-clients-ca-cilium"] = caTasks["etcd-clients-ca-cilium"].Keyset().Primary.Id
+		}
+	} else {
+		if caTasks["etcd-client-cilium"] != nil {
+			config.KeypairIDs["etcd-client-cilium"] = caTasks["etcd-client-cilium"].Keyset().Primary.Id
+		}
 	}
 
 	if isMaster || useGossip {
@@ -1403,6 +1415,16 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	}
 
 	return config, bootConfig, nil
+}
+
+func getTasksCertificate(caTasks map[string]*fitasks.Keypair, name string, config *nodeup.Config) error {
+	cas, err := fi.ResourceAsString(caTasks[name].Certificates())
+	if err != nil {
+		// CA task may not have run yet; we'll retry
+		return fmt.Errorf("failed to read %s certificates: %w", name, err)
+	}
+	config.CAs[name] = cas
+	return nil
 }
 
 func buildContainerdConfig(cluster *kops.Cluster) string {
