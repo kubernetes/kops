@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
@@ -30,10 +31,13 @@ import (
 
 var (
 	distrustKeypairLong = templates.LongDesc(i18n.T(`
-		Distrust a keypair.`))
+		Distrust one or more keypairs.`))
 
 	distrustKeypairExample = templates.Examples(i18n.T(`
-	# Syntax: kops distrust keypair KEYSET ID
+	# Distrust all cluster CA keypairs older than the primary.
+	kops distrust keypair ca
+
+	# Distrust a particular keypair.
 	kops distrust keypair ca 6977545226837259959403993899
 
 	`))
@@ -44,14 +48,14 @@ var (
 type DistrustKeypairOptions struct {
 	ClusterName string
 	Keyset      string
-	KeypairID   string
+	KeypairIDs  []string
 }
 
 func NewCmdDistrustKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &DistrustKeypairOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "keypair KEYSET ID",
+		Use:     "keypair KEYSET [ID]...",
 		Short:   distrustKeypairShort,
 		Long:    distrustKeypairLong,
 		Example: distrustKeypairExample,
@@ -64,11 +68,13 @@ func NewCmdDistrustKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 				return
 			}
 
-			if len(args) != 2 {
-				exitWithError(fmt.Errorf("usage: kops distrust keypair KEYSET ID"))
+			if len(args) == 0 {
+				exitWithError(fmt.Errorf("must specify name of keyset to distrust keypair in"))
 			}
 			options.Keyset = args[0]
-			options.KeypairID = args[1]
+			if len(args) > 1 {
+				options.KeypairIDs = args[1:]
+			}
 
 			err := RunDistrustKeypair(ctx, f, out, options)
 			if err != nil {
@@ -86,9 +92,6 @@ func RunDistrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, opt
 	}
 	if options.Keyset == "" {
 		return fmt.Errorf("Keyset is required")
-	}
-	if options.KeypairID == "" {
-		return fmt.Errorf("KeypairID is required")
 	}
 
 	clientset, err := f.Clientset()
@@ -111,18 +114,36 @@ func RunDistrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, opt
 		return err
 	}
 
-	if options.KeypairID == keyset.Primary.Id {
-		return fmt.Errorf("cannot distrust the primary keypair")
-	}
-	item := keyset.Items[options.KeypairID]
-	if item == nil {
-		return fmt.Errorf("keypair not found")
-	}
-	now := time.Now().UTC().Round(0)
-	item.DistrustTimestamp = &now
+	if len(options.KeypairIDs) == 0 {
+		primarySerial := keyset.Primary.Certificate.Certificate.SerialNumber
+		for id, item := range keyset.Items {
+			if item.DistrustTimestamp == nil && item.Certificate.Certificate.SerialNumber.Cmp(primarySerial) < 0 {
+				options.KeypairIDs = append(options.KeypairIDs, id)
+			}
+		}
 
-	if err := keyStore.StoreKeyset(options.Keyset, keyset); err != nil {
-		return fmt.Errorf("error deleting keypair: %w", err)
+		if len(options.KeypairIDs) == 0 {
+			klog.Infof("No %s keypairs older than the primary.", options.Keyset)
+			return nil
+		}
+	}
+
+	for _, id := range options.KeypairIDs {
+		if id == keyset.Primary.Id {
+			return fmt.Errorf("cannot distrust the primary keypair")
+		}
+		item := keyset.Items[id]
+		if item == nil {
+			return fmt.Errorf("keypair not found")
+		}
+		now := time.Now().UTC().Round(0)
+		item.DistrustTimestamp = &now
+
+		if err := keyStore.StoreKeyset(options.Keyset, keyset); err != nil {
+			return fmt.Errorf("error deleting keypair: %w", err)
+		}
+
+		klog.Infof("Distrusted %s %s", options.Keyset, id)
 	}
 
 	return nil
