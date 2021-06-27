@@ -86,11 +86,12 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-externallb-example-c
     id      = aws_launch_template.master-us-test-1a-masters-externallb-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-externallb-example-com.latest_version
   }
-  load_balancers      = ["my-external-elb-1", "my-external-elb-2", "my-external-elb-3"]
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "master-us-test-1a.masters.externallb.example.com"
+  load_balancers        = ["my-external-elb-1", "my-external-elb-2", "my-external-elb-3"]
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "master-us-test-1a.masters.externallb.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -151,11 +152,12 @@ resource "aws_autoscaling_group" "nodes-externallb-example-com" {
     id      = aws_launch_template.nodes-externallb-example-com.id
     version = aws_launch_template.nodes-externallb-example-com.latest_version
   }
-  load_balancers      = ["my-external-elb-1"]
-  max_size            = 2
-  metrics_granularity = "1Minute"
-  min_size            = 2
-  name                = "nodes.externallb.example.com"
+  load_balancers        = ["my-external-elb-1"]
+  max_size              = 2
+  metrics_granularity   = "1Minute"
+  min_size              = 2
+  name                  = "nodes.externallb.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -328,6 +330,9 @@ resource "aws_launch_template" "master-us-test-1a-masters-externallb-example-com
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
+  monitoring {
+    enabled = false
+  }
   name = "master-us-test-1a.masters.externallb.example.com"
   network_interfaces {
     associate_public_ip_address = true
@@ -405,6 +410,9 @@ resource "aws_launch_template" "nodes-externallb-example-com" {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
+  }
+  monitoring {
+    enabled = false
   }
   name = "nodes.externallb.example.com"
   network_interfaces {

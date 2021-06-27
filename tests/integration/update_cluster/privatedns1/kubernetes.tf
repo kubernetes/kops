@@ -116,11 +116,12 @@ resource "aws_autoscaling_group" "bastion-privatedns1-example-com" {
     id      = aws_launch_template.bastion-privatedns1-example-com.id
     version = aws_launch_template.bastion-privatedns1-example-com.latest_version
   }
-  load_balancers      = [aws_elb.bastion-privatedns1-example-com.id]
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "bastion.privatedns1.example.com"
+  load_balancers        = [aws_elb.bastion-privatedns1-example-com.id]
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "bastion.privatedns1.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -175,11 +176,12 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatedns1-example-
     id      = aws_launch_template.master-us-test-1a-masters-privatedns1-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-privatedns1-example-com.latest_version
   }
-  load_balancers      = [aws_elb.api-privatedns1-example-com.id]
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "master-us-test-1a.masters.privatedns1.example.com"
+  load_balancers        = [aws_elb.api-privatedns1-example-com.id]
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "master-us-test-1a.masters.privatedns1.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -249,10 +251,11 @@ resource "aws_autoscaling_group" "nodes-privatedns1-example-com" {
     id      = aws_launch_template.nodes-privatedns1-example-com.id
     version = aws_launch_template.nodes-privatedns1-example-com.latest_version
   }
-  max_size            = 2
-  metrics_granularity = "1Minute"
-  min_size            = 2
-  name                = "nodes.privatedns1.example.com"
+  max_size              = 2
+  metrics_granularity   = "1Minute"
+  min_size              = 2
+  name                  = "nodes.privatedns1.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -542,6 +545,9 @@ resource "aws_launch_template" "bastion-privatedns1-example-com" {
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
+  monitoring {
+    enabled = false
+  }
   name = "bastion.privatedns1.example.com"
   network_interfaces {
     associate_public_ip_address = true
@@ -619,6 +625,9 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatedns1-example-co
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
+  }
+  monitoring {
+    enabled = false
   }
   name = "master-us-test-1a.masters.privatedns1.example.com"
   network_interfaces {
@@ -703,6 +712,9 @@ resource "aws_launch_template" "nodes-privatedns1-example-com" {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
+  }
+  monitoring {
+    enabled = false
   }
   name = "nodes.privatedns1.example.com"
   network_interfaces {
