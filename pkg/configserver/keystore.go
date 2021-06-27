@@ -20,7 +20,6 @@ import (
 	"crypto/x509"
 	"fmt"
 
-	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
@@ -28,12 +27,12 @@ import (
 
 //configserverKeyStore is a KeyStore backed by the config server.
 type configserverKeyStore struct {
-	nodeConfig *nodeup.NodeConfig
+	caCertificates string
 }
 
-func NewKeyStore(nodeConfig *nodeup.NodeConfig) fi.CAStore {
+func NewKeyStore(caCertificates string) fi.CAStore {
 	return &configserverKeyStore{
-		nodeConfig: nodeConfig,
+		caCertificates: caCertificates,
 	}
 }
 
@@ -69,15 +68,13 @@ func (s *configserverKeyStore) FindPrivateKey(name string) (*pki.PrivateKey, err
 
 // FindCert implements fi.CAStore
 func (s *configserverKeyStore) FindCert(name string) (*pki.Certificate, error) {
-	for _, cert := range s.nodeConfig.Certificates {
-		if cert.Name == name {
-			// Special case for the CA certificate
-			c, err := pki.ParsePEMCertificate([]byte(cert.Cert))
-			if err != nil {
-				return nil, fmt.Errorf("error parsing certificate %q: %w", name, err)
-			}
-			return c, nil
+	if name == fi.CertificateIDCA {
+		// Special case for the CA certificate
+		c, err := pki.ParsePEMCertificate([]byte(s.caCertificates))
+		if err != nil {
+			return nil, fmt.Errorf("error parsing certificate %q: %w", name, err)
 		}
+		return c, nil
 	}
 
 	return nil, fmt.Errorf("FindCert(%q) not supported by configserverKeyStore", name)
