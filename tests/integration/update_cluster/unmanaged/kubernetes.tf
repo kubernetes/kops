@@ -111,11 +111,12 @@ resource "aws_autoscaling_group" "bastion-unmanaged-example-com" {
     id      = aws_launch_template.bastion-unmanaged-example-com.id
     version = aws_launch_template.bastion-unmanaged-example-com.latest_version
   }
-  load_balancers      = [aws_elb.bastion-unmanaged-example-com.id]
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "bastion.unmanaged.example.com"
+  load_balancers        = [aws_elb.bastion-unmanaged-example-com.id]
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "bastion.unmanaged.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -160,11 +161,12 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-unmanaged-example-co
     id      = aws_launch_template.master-us-test-1a-masters-unmanaged-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-unmanaged-example-com.latest_version
   }
-  load_balancers      = [aws_elb.api-unmanaged-example-com.id]
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "master-us-test-1a.masters.unmanaged.example.com"
+  load_balancers        = [aws_elb.api-unmanaged-example-com.id]
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "master-us-test-1a.masters.unmanaged.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -214,10 +216,11 @@ resource "aws_autoscaling_group" "nodes-unmanaged-example-com" {
     id      = aws_launch_template.nodes-unmanaged-example-com.id
     version = aws_launch_template.nodes-unmanaged-example-com.latest_version
   }
-  max_size            = 2
-  metrics_granularity = "1Minute"
-  min_size            = 2
-  name                = "nodes.unmanaged.example.com"
+  max_size              = 2
+  metrics_granularity   = "1Minute"
+  min_size              = 2
+  name                  = "nodes.unmanaged.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -438,6 +441,9 @@ resource "aws_launch_template" "bastion-unmanaged-example-com" {
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
+  monitoring {
+    enabled = false
+  }
   name = "bastion.unmanaged.example.com"
   network_interfaces {
     associate_public_ip_address = true
@@ -509,6 +515,9 @@ resource "aws_launch_template" "master-us-test-1a-masters-unmanaged-example-com"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
+  monitoring {
+    enabled = false
+  }
   name = "master-us-test-1a.masters.unmanaged.example.com"
   network_interfaces {
     associate_public_ip_address = false
@@ -579,6 +588,9 @@ resource "aws_launch_template" "nodes-unmanaged-example-com" {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
+  }
+  monitoring {
+    enabled = false
   }
   name = "nodes.unmanaged.example.com"
   network_interfaces {

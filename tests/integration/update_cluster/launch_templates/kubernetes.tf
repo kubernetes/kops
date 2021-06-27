@@ -91,12 +91,13 @@ provider "aws" {
 }
 
 resource "aws_autoscaling_group" "master-us-test-1a-masters-launchtemplates-example-com" {
-  enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_configuration = aws_launch_configuration.master-us-test-1a-masters-launchtemplates-example-com.id
-  max_size             = 1
-  metrics_granularity  = "1Minute"
-  min_size             = 1
-  name                 = "master-us-test-1a.masters.launchtemplates.example.com"
+  enabled_metrics       = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_configuration  = aws_launch_configuration.master-us-test-1a-masters-launchtemplates-example-com.id
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "master-us-test-1a.masters.launchtemplates.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -141,12 +142,13 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-launchtemplates-exam
 }
 
 resource "aws_autoscaling_group" "master-us-test-1b-masters-launchtemplates-example-com" {
-  enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_configuration = aws_launch_configuration.master-us-test-1b-masters-launchtemplates-example-com.id
-  max_size             = 1
-  metrics_granularity  = "1Minute"
-  min_size             = 1
-  name                 = "master-us-test-1b.masters.launchtemplates.example.com"
+  enabled_metrics       = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_configuration  = aws_launch_configuration.master-us-test-1b-masters-launchtemplates-example-com.id
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "master-us-test-1b.masters.launchtemplates.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -191,12 +193,13 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-launchtemplates-exam
 }
 
 resource "aws_autoscaling_group" "master-us-test-1c-masters-launchtemplates-example-com" {
-  enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_configuration = aws_launch_configuration.master-us-test-1c-masters-launchtemplates-example-com.id
-  max_size             = 1
-  metrics_granularity  = "1Minute"
-  min_size             = 1
-  name                 = "master-us-test-1c.masters.launchtemplates.example.com"
+  enabled_metrics       = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_configuration  = aws_launch_configuration.master-us-test-1c-masters-launchtemplates-example-com.id
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "master-us-test-1c.masters.launchtemplates.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true

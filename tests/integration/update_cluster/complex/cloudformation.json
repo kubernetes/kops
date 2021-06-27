@@ -283,6 +283,9 @@
             "HttpPutResponseHopLimit": 1,
             "HttpTokens": "required"
           },
+          "Monitoring": {
+            "Enabled": false
+          },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,

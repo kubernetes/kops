@@ -116,11 +116,12 @@ resource "aws_autoscaling_group" "bastion-bastionuserdata-example-com" {
     id      = aws_launch_template.bastion-bastionuserdata-example-com.id
     version = aws_launch_template.bastion-bastionuserdata-example-com.latest_version
   }
-  load_balancers      = [aws_elb.bastion-bastionuserdata-example-com.id]
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "bastion.bastionuserdata.example.com"
+  load_balancers        = [aws_elb.bastion-bastionuserdata-example-com.id]
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "bastion.bastionuserdata.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -165,11 +166,12 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-bastionuserdata-exam
     id      = aws_launch_template.master-us-test-1a-masters-bastionuserdata-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-bastionuserdata-example-com.latest_version
   }
-  load_balancers      = [aws_elb.api-bastionuserdata-example-com.id]
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "master-us-test-1a.masters.bastionuserdata.example.com"
+  load_balancers        = [aws_elb.api-bastionuserdata-example-com.id]
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "master-us-test-1a.masters.bastionuserdata.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -219,10 +221,11 @@ resource "aws_autoscaling_group" "nodes-bastionuserdata-example-com" {
     id      = aws_launch_template.nodes-bastionuserdata-example-com.id
     version = aws_launch_template.nodes-bastionuserdata-example-com.latest_version
   }
-  max_size            = 2
-  metrics_granularity = "1Minute"
-  min_size            = 2
-  name                = "nodes.bastionuserdata.example.com"
+  max_size              = 2
+  metrics_granularity   = "1Minute"
+  min_size              = 2
+  name                  = "nodes.bastionuserdata.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -461,6 +464,9 @@ resource "aws_launch_template" "bastion-bastionuserdata-example-com" {
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
+  monitoring {
+    enabled = false
+  }
   name = "bastion.bastionuserdata.example.com"
   network_interfaces {
     associate_public_ip_address = true
@@ -533,6 +539,9 @@ resource "aws_launch_template" "master-us-test-1a-masters-bastionuserdata-exampl
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
+  monitoring {
+    enabled = false
+  }
   name = "master-us-test-1a.masters.bastionuserdata.example.com"
   network_interfaces {
     associate_public_ip_address = false
@@ -603,6 +612,9 @@ resource "aws_launch_template" "nodes-bastionuserdata-example-com" {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
+  }
+  monitoring {
+    enabled = false
   }
   name = "nodes.bastionuserdata.example.com"
   network_interfaces {

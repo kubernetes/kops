@@ -116,11 +116,12 @@ resource "aws_autoscaling_group" "bastion-privateflannel-example-com" {
     id      = aws_launch_template.bastion-privateflannel-example-com.id
     version = aws_launch_template.bastion-privateflannel-example-com.latest_version
   }
-  load_balancers      = [aws_elb.bastion-privateflannel-example-com.id]
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "bastion.privateflannel.example.com"
+  load_balancers        = [aws_elb.bastion-privateflannel-example-com.id]
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "bastion.privateflannel.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -165,11 +166,12 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privateflannel-examp
     id      = aws_launch_template.master-us-test-1a-masters-privateflannel-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-privateflannel-example-com.latest_version
   }
-  load_balancers      = [aws_elb.api-privateflannel-example-com.id]
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "master-us-test-1a.masters.privateflannel.example.com"
+  load_balancers        = [aws_elb.api-privateflannel-example-com.id]
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "master-us-test-1a.masters.privateflannel.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -219,10 +221,11 @@ resource "aws_autoscaling_group" "nodes-privateflannel-example-com" {
     id      = aws_launch_template.nodes-privateflannel-example-com.id
     version = aws_launch_template.nodes-privateflannel-example-com.latest_version
   }
-  max_size            = 2
-  metrics_granularity = "1Minute"
-  min_size            = 2
-  name                = "nodes.privateflannel.example.com"
+  max_size              = 2
+  metrics_granularity   = "1Minute"
+  min_size              = 2
+  name                  = "nodes.privateflannel.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -461,6 +464,9 @@ resource "aws_launch_template" "bastion-privateflannel-example-com" {
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
+  monitoring {
+    enabled = false
+  }
   name = "bastion.privateflannel.example.com"
   network_interfaces {
     associate_public_ip_address = true
@@ -532,6 +538,9 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateflannel-example
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
+  monitoring {
+    enabled = false
+  }
   name = "master-us-test-1a.masters.privateflannel.example.com"
   network_interfaces {
     associate_public_ip_address = false
@@ -602,6 +611,9 @@ resource "aws_launch_template" "nodes-privateflannel-example-com" {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
+  }
+  monitoring {
+    enabled = false
   }
   name = "nodes.privateflannel.example.com"
   network_interfaces {

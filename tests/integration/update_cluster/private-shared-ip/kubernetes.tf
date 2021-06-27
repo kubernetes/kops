@@ -111,11 +111,12 @@ resource "aws_autoscaling_group" "bastion-private-shared-ip-example-com" {
     id      = aws_launch_template.bastion-private-shared-ip-example-com.id
     version = aws_launch_template.bastion-private-shared-ip-example-com.latest_version
   }
-  load_balancers      = [aws_elb.bastion-private-shared-ip-example-com.id]
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "bastion.private-shared-ip.example.com"
+  load_balancers        = [aws_elb.bastion-private-shared-ip-example-com.id]
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "bastion.private-shared-ip.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -160,11 +161,12 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-private-shared-ip-ex
     id      = aws_launch_template.master-us-test-1a-masters-private-shared-ip-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-private-shared-ip-example-com.latest_version
   }
-  load_balancers      = [aws_elb.api-private-shared-ip-example-com.id]
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "master-us-test-1a.masters.private-shared-ip.example.com"
+  load_balancers        = [aws_elb.api-private-shared-ip-example-com.id]
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "master-us-test-1a.masters.private-shared-ip.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -214,10 +216,11 @@ resource "aws_autoscaling_group" "nodes-private-shared-ip-example-com" {
     id      = aws_launch_template.nodes-private-shared-ip-example-com.id
     version = aws_launch_template.nodes-private-shared-ip-example-com.latest_version
   }
-  max_size            = 2
-  metrics_granularity = "1Minute"
-  min_size            = 2
-  name                = "nodes.private-shared-ip.example.com"
+  max_size              = 2
+  metrics_granularity   = "1Minute"
+  min_size              = 2
+  name                  = "nodes.private-shared-ip.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -438,6 +441,9 @@ resource "aws_launch_template" "bastion-private-shared-ip-example-com" {
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
+  monitoring {
+    enabled = false
+  }
   name = "bastion.private-shared-ip.example.com"
   network_interfaces {
     associate_public_ip_address = true
@@ -509,6 +515,9 @@ resource "aws_launch_template" "master-us-test-1a-masters-private-shared-ip-exam
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
+  monitoring {
+    enabled = false
+  }
   name = "master-us-test-1a.masters.private-shared-ip.example.com"
   network_interfaces {
     associate_public_ip_address = false
@@ -579,6 +588,9 @@ resource "aws_launch_template" "nodes-private-shared-ip-example-com" {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
+  }
+  monitoring {
+    enabled = false
   }
   name = "nodes.private-shared-ip.example.com"
   network_interfaces {
