@@ -70,6 +70,11 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 		},
 		BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
 			Lifecycle: fi.LifecycleSync,
+			Cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					Networking: &kops.NetworkingSpec{},
+				},
+			},
 		},
 		Cluster: cluster,
 	}
@@ -159,6 +164,7 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 		},
 		BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
 			Lifecycle: fi.LifecycleSync,
+			Cluster:   cluster,
 		},
 		Cluster: cluster,
 	}

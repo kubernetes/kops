@@ -68,6 +68,7 @@ type integrationTest struct {
 	sshKey                           bool
 	jsonOutput                       bool
 	bastionUserData                  bool
+	ciliumEtcd                       bool
 	// nth is true if we should check for files created by nth queue processor add on
 	nth bool
 }
@@ -129,6 +130,11 @@ func (i *integrationTest) withServiceAccountRole(sa string, inlinePolicy bool) *
 
 func (i *integrationTest) withBastionUserData() *integrationTest {
 	i.bastionUserData = true
+	return i
+}
+
+func (i *integrationTest) withCiliumEtcd() *integrationTest {
+	i.ciliumEtcd = true
 	return i
 }
 
@@ -262,8 +268,14 @@ func TestPrivateCilium2(t *testing.T) {
 }
 
 func TestPrivateCiliumAdvanced(t *testing.T) {
-	newIntegrationTest("privateciliumadvanced.example.com", "privateciliumadvanced").withPrivate().runTestTerraformAWS(t)
-	newIntegrationTest("privateciliumadvanced.example.com", "privateciliumadvanced").withPrivate().runTestCloudformation(t)
+	newIntegrationTest("privateciliumadvanced.example.com", "privateciliumadvanced").
+		withPrivate().
+		withCiliumEtcd().
+		runTestTerraformAWS(t)
+	newIntegrationTest("privateciliumadvanced.example.com", "privateciliumadvanced").
+		withPrivate().
+		withCiliumEtcd().
+		runTestCloudformation(t)
 }
 
 // TestPrivateCanal runs the test on a configuration with private topology, canal networking
@@ -598,15 +610,39 @@ func (i *integrationTest) setupCluster(t *testing.T, inputYAML string, ctx conte
 		t.Fatalf("error getting keystore: %v", err)
 	}
 
+	storeKeyset(t, keyStore, fi.CertificateIDCA, &testingKeyset{
+		primaryKey:           "-----BEGIN RSA PRIVATE KEY-----\nMIIBPQIBAAJBANiW3hfHTcKnxCig+uWhpVbOfH1pANKmXVSysPKgE80QSU4tZ6m4\n9pAEeIMsvwvDMaLsb2v6JvXe0qvCmueU+/sCAwEAAQJBAKt/gmpHqP3qA3u8RA5R\n2W6L360Z2Mnza1FmkI/9StCCkJGjuE5yDhxU4JcVnFyX/nMxm2ockEEQDqRSu7Oo\nxTECIQD2QsUsgFL4FnXWzTclySJ6ajE4Cte3gSDOIvyMNMireQIhAOEnsV8UaSI+\nZyL7NMLzMPLCgtsrPnlamr8gdrEHf9ITAiEAxCCLbpTI/4LL2QZZrINTLVGT34Fr\nKl/yI5pjrrp/M2kCIQDfOktQyRuzJ8t5kzWsUxCkntS+FxHJn1rtQ3Jp8dV4oQIh\nAOyiVWDyLZJvg7Y24Ycmp86BZjM9Wk/BfWpBXKnl9iDY\n-----END RSA PRIVATE KEY-----",
+		primaryCertificate:   "-----BEGIN CERTIFICATE-----\nMIIBaDCCARKgAwIBAgIMFoq6Pex4lTCM8fOIMA0GCSqGSIb3DQEBCwUAMBUxEzAR\nBgNVBAMTCmt1YmVybmV0ZXMwHhcNMjEwNjE5MjI0MzEwWhcNMzEwNjE5MjI0MzEw\nWjAVMRMwEQYDVQQDEwprdWJlcm5ldGVzMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJB\nANiW3hfHTcKnxCig+uWhpVbOfH1pANKmXVSysPKgE80QSU4tZ6m49pAEeIMsvwvD\nMaLsb2v6JvXe0qvCmueU+/sCAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgEGMA8GA1Ud\nEwEB/wQFMAMBAf8wHQYDVR0OBBYEFCOW3hR7ngBsk9aUOlEznWzH494EMA0GCSqG\nSIb3DQEBCwUAA0EAVnZzkiku07kQFGAEXzWI6aZnAbzSoClYskEzCBMrOmdadjVp\nVWcz76FwFlyd5jhzOJ49eMcVusSotKv2ZGimcA==\n-----END CERTIFICATE-----",
+		secondaryKey:         "-----BEGIN RSA PRIVATE KEY-----\nMIIBOgIBAAJBAKOE64nZbH+GM91AIrqf7HEk4hvzqsZFFtxc+8xir1XC3mI/RhCC\nrs6AdVRZNZ26A6uHArhi33c2kHQkCjyLA7sCAwEAAQJAejInjmEzqmzQr0NxcIN4\nPukwK3FBKl+RAOZfqNIKcww14mfOn7Gc6lF2zEC4GnLiB3tthbSXoBGi54nkW4ki\nyQIhANZNne9UhQlwyjsd3WxDWWrl6OOZ3J8ppMOIQni9WRLlAiEAw1XEdxPOSOSO\nB6rucpTT1QivVvyEFIb/ukvPm769Mh8CIQDNQwKnHdlfNX0+KljPPaMD1LrAZbr/\naC+8aWLhqtsKUQIgF7gUcTkwdV17eabh6Xv09Qtm7zMefred2etWvFy+8JUCIECv\nFYOKQVWHX+Q7CHX2K1oTECVnZuW1UItdDYVlFYxQ\n-----END RSA PRIVATE KEY-----\n",
+		secondaryCertificate: "-----BEGIN CERTIFICATE-----\nMIIBaDCCARKgAwIBAgIMFoq6PeyECsgUTfc2MA0GCSqGSIb3DQEBCwUAMBUxEzAR\nBgNVBAMTCmt1YmVybmV0ZXMwHhcNMjEwNjE5MjI0MzEwWhcNMzEwNjE5MjI0MzEw\nWjAVMRMwEQYDVQQDEwprdWJlcm5ldGVzMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJB\nAKOE64nZbH+GM91AIrqf7HEk4hvzqsZFFtxc+8xir1XC3mI/RhCCrs6AdVRZNZ26\nA6uHArhi33c2kHQkCjyLA7sCAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgEGMA8GA1Ud\nEwEB/wQFMAMBAf8wHQYDVR0OBBYEFIT28RJlG8FTgmvn2YMa3hYX+u1BMA0GCSqG\nSIb3DQEBCwUAA0EAKuaE5wKMP26AyfxkWu83iHoTPFtdjabXF0JcyPy0ijQZxfJq\n9xc2CkttvgaDtT4H+E/ryQ3iq6kSfEYYPi8c0w==\n-----END CERTIFICATE-----",
+	})
+	if i.ciliumEtcd {
+		storeKeyset(t, keyStore, "etcd-clients-ca-cilium", &testingKeyset{
+			primaryKey:           "-----BEGIN RSA PRIVATE KEY-----\nMIIBPQIBAAJBANiW3hfHTcKnxCig+uWhpVbOfH1pANKmXVSysPKgE80QSU4tZ6m4\n9pAEeIMsvwvDMaLsb2v6JvXe0qvCmueU+/sCAwEAAQJBAKt/gmpHqP3qA3u8RA5R\n2W6L360Z2Mnza1FmkI/9StCCkJGjuE5yDhxU4JcVnFyX/nMxm2ockEEQDqRSu7Oo\nxTECIQD2QsUsgFL4FnXWzTclySJ6ajE4Cte3gSDOIvyMNMireQIhAOEnsV8UaSI+\nZyL7NMLzMPLCgtsrPnlamr8gdrEHf9ITAiEAxCCLbpTI/4LL2QZZrINTLVGT34Fr\nKl/yI5pjrrp/M2kCIQDfOktQyRuzJ8t5kzWsUxCkntS+FxHJn1rtQ3Jp8dV4oQIh\nAOyiVWDyLZJvg7Y24Ycmp86BZjM9Wk/BfWpBXKnl9iDY\n-----END RSA PRIVATE KEY-----",
+			primaryCertificate:   "-----BEGIN CERTIFICATE-----\nMIIBgDCCASqgAwIBAgIMFotPsR9PsbCKkTJsMA0GCSqGSIb3DQEBCwUAMCExHzAd\nBgNVBAMTFmV0Y2QtY2xpZW50cy1jYS1jaWxpdW0wHhcNMjEwNjIxMjAyMTUyWhcN\nMzEwNjIxMjAyMTUyWjAhMR8wHQYDVQQDExZldGNkLWNsaWVudHMtY2EtY2lsaXVt\nMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANiW3hfHTcKnxCig+uWhpVbOfH1pANKm\nXVSysPKgE80QSU4tZ6m49pAEeIMsvwvDMaLsb2v6JvXe0qvCmueU+/sCAwEAAaNC\nMEAwDgYDVR0PAQH/BAQDAgEGMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFCOW\n3hR7ngBsk9aUOlEznWzH494EMA0GCSqGSIb3DQEBCwUAA0EAR4UEW5ZK+NVtqm7s\nHF/JbSYPd+BhcNaJVOv8JP+/CGfCOXOmxjpZICSYQqe6UjjjP7fbJy8FANTpKTuJ\nUQC1kQ==\n-----END CERTIFICATE-----",
+			secondaryKey:         "-----BEGIN RSA PRIVATE KEY-----\nMIIBPQIBAAJBANiW3hfHTcKnxCig+uWhpVbOfH1pANKmXVSysPKgE80QSU4tZ6m4\n9pAEeIMsvwvDMaLsb2v6JvXe0qvCmueU+/sCAwEAAQJBAKt/gmpHqP3qA3u8RA5R\n2W6L360Z2Mnza1FmkI/9StCCkJGjuE5yDhxU4JcVnFyX/nMxm2ockEEQDqRSu7Oo\nxTECIQD2QsUsgFL4FnXWzTclySJ6ajE4Cte3gSDOIvyMNMireQIhAOEnsV8UaSI+\nZyL7NMLzMPLCgtsrPnlamr8gdrEHf9ITAiEAxCCLbpTI/4LL2QZZrINTLVGT34Fr\nKl/yI5pjrrp/M2kCIQDfOktQyRuzJ8t5kzWsUxCkntS+FxHJn1rtQ3Jp8dV4oQIh\nAOyiVWDyLZJvg7Y24Ycmp86BZjM9Wk/BfWpBXKnl9iDY\n-----END RSA PRIVATE KEY-----",
+			secondaryCertificate: "-----BEGIN CERTIFICATE-----\nMIIBgDCCASqgAwIBAgIMFotP940EXpD3N1D7MA0GCSqGSIb3DQEBCwUAMCExHzAd\nBgNVBAMTFmV0Y2QtY2xpZW50cy1jYS1jaWxpdW0wHhcNMjEwNjIxMjAyNjU1WhcN\nMzEwNjIxMjAyNjU1WjAhMR8wHQYDVQQDExZldGNkLWNsaWVudHMtY2EtY2lsaXVt\nMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANiW3hfHTcKnxCig+uWhpVbOfH1pANKm\nXVSysPKgE80QSU4tZ6m49pAEeIMsvwvDMaLsb2v6JvXe0qvCmueU+/sCAwEAAaNC\nMEAwDgYDVR0PAQH/BAQDAgEGMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFCOW\n3hR7ngBsk9aUOlEznWzH494EMA0GCSqGSIb3DQEBCwUAA0EARXoKy6mExpD6tHFO\nCN3ZGNZ5BsHl5W5y+gwUuVskgC7xt/bgTuXm5hz8TLgnG5kYtG4uxjFg4yCvtNg2\nMQNfAQ==\n-----END CERTIFICATE-----",
+		})
+	}
+
+	return factory
+}
+
+type testingKeyset struct {
+	primaryKey           string
+	primaryCertificate   string
+	secondaryKey         string
+	secondaryCertificate string
+}
+
+func storeKeyset(t *testing.T, keyStore fi.CAStore, name string, testingKeyset *testingKeyset) {
 	{
-		caKey := "-----BEGIN RSA PRIVATE KEY-----\nMIIBPQIBAAJBANiW3hfHTcKnxCig+uWhpVbOfH1pANKmXVSysPKgE80QSU4tZ6m4\n9pAEeIMsvwvDMaLsb2v6JvXe0qvCmueU+/sCAwEAAQJBAKt/gmpHqP3qA3u8RA5R\n2W6L360Z2Mnza1FmkI/9StCCkJGjuE5yDhxU4JcVnFyX/nMxm2ockEEQDqRSu7Oo\nxTECIQD2QsUsgFL4FnXWzTclySJ6ajE4Cte3gSDOIvyMNMireQIhAOEnsV8UaSI+\nZyL7NMLzMPLCgtsrPnlamr8gdrEHf9ITAiEAxCCLbpTI/4LL2QZZrINTLVGT34Fr\nKl/yI5pjrrp/M2kCIQDfOktQyRuzJ8t5kzWsUxCkntS+FxHJn1rtQ3Jp8dV4oQIh\nAOyiVWDyLZJvg7Y24Ycmp86BZjM9Wk/BfWpBXKnl9iDY\n-----END RSA PRIVATE KEY-----"
-		privateKey, err := pki.ParsePEMPrivateKey([]byte(caKey))
+		privateKey, err := pki.ParsePEMPrivateKey([]byte(testingKeyset.primaryKey))
 		if err != nil {
 			t.Fatalf("error loading private key %v", err)
 		}
 
-		caCertificate := "-----BEGIN CERTIFICATE-----\nMIIBaDCCARKgAwIBAgIMFoq6Pex4lTCM8fOIMA0GCSqGSIb3DQEBCwUAMBUxEzAR\nBgNVBAMTCmt1YmVybmV0ZXMwHhcNMjEwNjE5MjI0MzEwWhcNMzEwNjE5MjI0MzEw\nWjAVMRMwEQYDVQQDEwprdWJlcm5ldGVzMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJB\nANiW3hfHTcKnxCig+uWhpVbOfH1pANKmXVSysPKgE80QSU4tZ6m49pAEeIMsvwvD\nMaLsb2v6JvXe0qvCmueU+/sCAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgEGMA8GA1Ud\nEwEB/wQFMAMBAf8wHQYDVR0OBBYEFCOW3hR7ngBsk9aUOlEznWzH494EMA0GCSqG\nSIb3DQEBCwUAA0EAVnZzkiku07kQFGAEXzWI6aZnAbzSoClYskEzCBMrOmdadjVp\nVWcz76FwFlyd5jhzOJ49eMcVusSotKv2ZGimcA==\n-----END CERTIFICATE-----"
-		cert, err := pki.ParsePEMCertificate([]byte(caCertificate))
+		cert, err := pki.ParsePEMCertificate([]byte(testingKeyset.primaryCertificate))
 		if err != nil {
 			t.Fatalf("error loading certificate %v", err)
 		}
@@ -616,26 +652,22 @@ func (i *integrationTest) setupCluster(t *testing.T, inputYAML string, ctx conte
 			t.Fatalf("error creating keyset: %v", err)
 		}
 
-		caKey = "-----BEGIN RSA PRIVATE KEY-----\nMIIBOgIBAAJBAKOE64nZbH+GM91AIrqf7HEk4hvzqsZFFtxc+8xir1XC3mI/RhCC\nrs6AdVRZNZ26A6uHArhi33c2kHQkCjyLA7sCAwEAAQJAejInjmEzqmzQr0NxcIN4\nPukwK3FBKl+RAOZfqNIKcww14mfOn7Gc6lF2zEC4GnLiB3tthbSXoBGi54nkW4ki\nyQIhANZNne9UhQlwyjsd3WxDWWrl6OOZ3J8ppMOIQni9WRLlAiEAw1XEdxPOSOSO\nB6rucpTT1QivVvyEFIb/ukvPm769Mh8CIQDNQwKnHdlfNX0+KljPPaMD1LrAZbr/\naC+8aWLhqtsKUQIgF7gUcTkwdV17eabh6Xv09Qtm7zMefred2etWvFy+8JUCIECv\nFYOKQVWHX+Q7CHX2K1oTECVnZuW1UItdDYVlFYxQ\n-----END RSA PRIVATE KEY-----\n"
-		privateKey, err = pki.ParsePEMPrivateKey([]byte(caKey))
+		privateKey, err = pki.ParsePEMPrivateKey([]byte(testingKeyset.secondaryKey))
 		if err != nil {
 			t.Fatalf("error loading private key %v", err)
 		}
 
-		caCertificate = "-----BEGIN CERTIFICATE-----\nMIIBaDCCARKgAwIBAgIMFoq6PeyECsgUTfc2MA0GCSqGSIb3DQEBCwUAMBUxEzAR\nBgNVBAMTCmt1YmVybmV0ZXMwHhcNMjEwNjE5MjI0MzEwWhcNMzEwNjE5MjI0MzEw\nWjAVMRMwEQYDVQQDEwprdWJlcm5ldGVzMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJB\nAKOE64nZbH+GM91AIrqf7HEk4hvzqsZFFtxc+8xir1XC3mI/RhCCrs6AdVRZNZ26\nA6uHArhi33c2kHQkCjyLA7sCAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgEGMA8GA1Ud\nEwEB/wQFMAMBAf8wHQYDVR0OBBYEFIT28RJlG8FTgmvn2YMa3hYX+u1BMA0GCSqG\nSIb3DQEBCwUAA0EAKuaE5wKMP26AyfxkWu83iHoTPFtdjabXF0JcyPy0ijQZxfJq\n9xc2CkttvgaDtT4H+E/ryQ3iq6kSfEYYPi8c0w==\n-----END CERTIFICATE-----"
-		cert, err = pki.ParsePEMCertificate([]byte(caCertificate))
+		cert, err = pki.ParsePEMCertificate([]byte(testingKeyset.secondaryCertificate))
 		if err != nil {
 			t.Fatalf("error loading certificate %v", err)
 		}
 
 		_ = keyset.AddItem(cert, privateKey, false)
-		err = keyStore.StoreKeyset(fi.CertificateIDCA, keyset)
+		err = keyStore.StoreKeyset(name, keyset)
 		if err != nil {
 			t.Fatalf("error storing user provided keys: %v", err)
 		}
 	}
-
-	return factory
 }
 
 func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
