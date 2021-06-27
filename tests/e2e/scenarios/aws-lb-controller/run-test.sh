@@ -17,11 +17,7 @@
 REPO_ROOT=$(git rev-parse --show-toplevel);
 source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
-REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/aws-lb-controller/"
-
-export KOPS_BASE_URL
-KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
-KOPS=$(kops-download-from-base)
+kops-acquire-latest
 
 
 # shellcheck disable=SC2034
@@ -40,6 +36,8 @@ VPC=$(${KOPS} toolbox dump -o json | jq -r .vpc.id)
 ZONE=$(${KOPS} get ig -o json | jq -r '[.[] | select(.spec.role=="Node") | .spec.subnets[0]][0]')
 
 REGION=${ZONE%?}
+
+REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/aws-lb-controller/"
 
 # shellcheck disable=SC2164
 cd "$(mktemp -dt kops.XXXXXXXXX)"
