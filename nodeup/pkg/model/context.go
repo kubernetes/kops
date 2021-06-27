@@ -240,6 +240,9 @@ func (c *NodeupModelContext) BuildIssuedKubeconfig(name string, subject nodetask
 
 // GetBootstrapCert requests a certificate keypair from kops-controller.
 func (c *NodeupModelContext) GetBootstrapCert(name string) (cert, key fi.Resource) {
+	if c.IsMaster {
+		panic("control plane nodes can't get certs from kops-controller")
+	}
 	b, ok := c.bootstrapCerts[name]
 	if !ok {
 		b = &nodetasks.BootstrapCert{
@@ -404,7 +407,7 @@ func (c *NodeupModelContext) KubectlPath() string {
 }
 
 // BuildCertificatePairTask creates the tasks to create the certificate and private key files.
-func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContext, name, path, filename string, owner *string) error {
+func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContext, name, path, filename string, owner *string, beforeServices []string) error {
 	p := filepath.Join(path, filename)
 	if !filepath.IsAbs(p) {
 		p = filepath.Join(c.PathSrvKubernetes(), p)
@@ -440,11 +443,12 @@ func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContex
 	}
 
 	ctx.AddTask(&nodetasks.File{
-		Path:     p + ".crt",
-		Contents: fi.NewStringResource(cert),
-		Type:     nodetasks.FileType_File,
-		Mode:     s("0600"),
-		Owner:    owner,
+		Path:           p + ".crt",
+		Contents:       fi.NewStringResource(cert),
+		Type:           nodetasks.FileType_File,
+		Mode:           s("0600"),
+		Owner:          owner,
+		BeforeServices: beforeServices,
 	})
 
 	privateKey := item.PrivateKey

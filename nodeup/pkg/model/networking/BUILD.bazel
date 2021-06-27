@@ -35,6 +35,7 @@ go_test(
     deps = [
         "//nodeup/pkg/model:go_default_library",
         "//pkg/apis/kops:go_default_library",
+        "//pkg/apis/nodeup:go_default_library",
         "//pkg/pki:go_default_library",
         "//upup/pkg/fi:go_default_library",
     ],
