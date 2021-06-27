@@ -4434,6 +4434,7 @@ func Convert_kops_Keyset_To_v1alpha2_Keyset(in *kops.Keyset, out *Keyset, s conv
 
 func autoConvert_v1alpha2_KeysetItem_To_kops_KeysetItem(in *KeysetItem, out *kops.KeysetItem, s conversion.Scope) error {
 	out.Id = in.Id
+	out.DistrustTimestamp = in.DistrustTimestamp
 	if err := conversion.Convert_Slice_byte_To_Slice_byte(&in.PublicMaterial, &out.PublicMaterial, s); err != nil {
 		return err
 	}
@@ -4450,6 +4451,7 @@ func Convert_v1alpha2_KeysetItem_To_kops_KeysetItem(in *KeysetItem, out *kops.Ke
 
 func autoConvert_kops_KeysetItem_To_v1alpha2_KeysetItem(in *kops.KeysetItem, out *KeysetItem, s conversion.Scope) error {
 	out.Id = in.Id
+	out.DistrustTimestamp = in.DistrustTimestamp
 	if err := conversion.Convert_Slice_byte_To_Slice_byte(&in.PublicMaterial, &out.PublicMaterial, s); err != nil {
 		return err
 	}

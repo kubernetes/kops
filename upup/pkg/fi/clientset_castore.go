@@ -17,11 +17,9 @@ limitations under the License.
 package fi
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"math/big"
-	"sort"
 
 	"golang.org/x/crypto/ssh"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -77,6 +75,10 @@ func parseKeyset(o *kops.Keyset) (*Keyset, error) {
 		ki := &KeysetItem{
 			Id: key.Id,
 		}
+		if key.DistrustTimestamp != nil {
+			distrustTimestamp := key.DistrustTimestamp.Time
+			ki.DistrustTimestamp = &distrustTimestamp
+		}
 		if len(key.PublicMaterial) != 0 {
 			cert, err := pki.ParsePEMCertificate(key.PublicMaterial)
 			if err != nil {
@@ -128,6 +130,10 @@ func FindPrimary(keyset *kops.Keyset) *kops.KeysetItem {
 
 	for i := range keyset.Spec.Keys {
 		item := &keyset.Spec.Keys[i]
+		if item.DistrustTimestamp != nil {
+			continue
+		}
+
 		version, ok := big.NewInt(0).SetString(item.Id, 10)
 		if !ok {
 			klog.Warningf("Ignoring key item with non-integer version: %q", item.Id)
@@ -228,7 +234,7 @@ func (c *ClientsetCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
 // StoreKeyset implements CAStore::StoreKeyset
 func (c *ClientsetCAStore) StoreKeyset(name string, keyset *Keyset) error {
 	ctx := context.TODO()
-	return c.storeKeyset(ctx, name, keyset, kops.SecretTypeKeypair)
+	return c.storeKeyset(ctx, name, keyset)
 }
 
 // FindPrivateKey implements CAStore::FindPrivateKey
@@ -246,53 +252,28 @@ func (c *ClientsetCAStore) FindPrivateKey(name string) (*pki.PrivateKey, error) 
 }
 
 // storeKeyset saves the specified keyset to the registry.
-func (c *ClientsetCAStore) storeKeyset(ctx context.Context, name string, keyset *Keyset, keysetType kops.KeysetType) error {
+func (c *ClientsetCAStore) storeKeyset(ctx context.Context, name string, keyset *Keyset) error {
 	create := false
 	client := c.clientset.Keysets(c.namespace)
-	kopsKeyset, err := client.Get(ctx, name, metav1.GetOptions{})
+
+	kopsKeyset, err := keyset.ToAPIObject(name, true)
 	if err != nil {
-		if errors.IsNotFound(err) {
-			kopsKeyset = nil
+		return err
+	}
+
+	oldKeyset, err := client.Get(ctx, name, metav1.GetOptions{})
+	if errors.IsNotFound(err) {
+		oldKeyset = nil
+		err = nil
+	}
+	if err == nil {
+		if oldKeyset == nil {
+			create = true
 		} else {
-			return fmt.Errorf("error reading keyset %q: %v", name, err)
+			kopsKeyset.ObjectMeta = oldKeyset.ObjectMeta
 		}
-	}
-
-	if kopsKeyset == nil {
-		kopsKeyset = &kops.Keyset{}
-		kopsKeyset.Name = name
-		kopsKeyset.Spec.Type = keysetType
-		create = true
-	}
-
-	kopsKeyset.Spec.Keys = nil
-	kopsKeyset.Spec.PrimaryId = keyset.Primary.Id
-
-	keys := make([]string, 0, len(keyset.Items))
-	for k := range keyset.Items {
-		keys = append(keys, k)
-	}
-	sort.Slice(keys, func(i, j int) bool {
-		return KeysetItemIdOlder(keyset.Items[keys[i]].Id, keyset.Items[keys[j]].Id)
-	})
-
-	for _, key := range keys {
-		item := keyset.Items[key]
-		var publicMaterial bytes.Buffer
-		if _, err := item.Certificate.WriteTo(&publicMaterial); err != nil {
-			return err
-		}
-
-		var privateMaterial bytes.Buffer
-		if _, err := item.PrivateKey.WriteTo(&privateMaterial); err != nil {
-			return err
-		}
-
-		kopsKeyset.Spec.Keys = append(kopsKeyset.Spec.Keys, kops.KeysetItem{
-			Id:              item.Id,
-			PublicMaterial:  publicMaterial.Bytes(),
-			PrivateMaterial: privateMaterial.Bytes(),
-		})
+	} else {
+		return fmt.Errorf("error reading keyset %q: %v", name, err)
 	}
 
 	if create {

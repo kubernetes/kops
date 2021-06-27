@@ -55,6 +55,10 @@ type KeysetItem struct {
 	// Id is the unique identifier for this key in the keyset
 	Id string `json:"id,omitempty"`
 
+	// DistrustTimestamp is RFC 3339 date and time at which this keypair was distrusted.
+	// If not set, keypair is trusted or is not a keypair.
+	DistrustTimestamp *metav1.Time `json:"distrustTimestamp,omitempty"`
+
 	// PublicMaterial holds non-secret material (e.g. a certificate)
 	PublicMaterial []byte `json:"publicMaterial,omitempty"`
 

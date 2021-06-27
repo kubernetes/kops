@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
@@ -28,32 +29,32 @@ import (
 )
 
 var (
-	deleteKeypairLong = templates.LongDesc(i18n.T(`
-		Delete a keypair.`))
+	distrustKeypairLong = templates.LongDesc(i18n.T(`
+		Distrust a keypair.`))
 
-	deleteKeypairExample = templates.Examples(i18n.T(`
-	# Syntax: kops delete keypair KEYSET ID
-	kops delete keypair ca 5938372002934847
+	distrustKeypairExample = templates.Examples(i18n.T(`
+	# Syntax: kops distrust keypair KEYSET ID
+	kops distrust keypair ca 6977545226837259959403993899
 
 	`))
 
-	deleteKeypairShort = i18n.T(`Delete a keypair.`)
+	distrustKeypairShort = i18n.T(`Distrust a keypair.`)
 )
 
-type DeleteKeypairOptions struct {
+type DistrustKeypairOptions struct {
 	ClusterName string
 	Keyset      string
 	KeypairID   string
 }
 
-func NewCmdDeleteKeypair(f *util.Factory, out io.Writer) *cobra.Command {
-	options := &DeleteKeypairOptions{}
+func NewCmdDistrustKeypair(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &DistrustKeypairOptions{}
 
 	cmd := &cobra.Command{
 		Use:     "keypair KEYSET ID",
-		Short:   deleteKeypairShort,
-		Long:    deleteKeypairLong,
-		Example: deleteKeypairExample,
+		Short:   distrustKeypairShort,
+		Long:    distrustKeypairLong,
+		Example: distrustKeypairExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := context.TODO()
 
@@ -64,12 +65,12 @@ func NewCmdDeleteKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 			}
 
 			if len(args) != 2 {
-				exitWithError(fmt.Errorf("usage: kops delete keypair KEYSET ID"))
+				exitWithError(fmt.Errorf("usage: kops distrust keypair KEYSET ID"))
 			}
 			options.Keyset = args[0]
 			options.KeypairID = args[1]
 
-			err := RunDeleteKeypair(ctx, f, out, options)
+			err := RunDistrustKeypair(ctx, f, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -79,7 +80,7 @@ func NewCmdDeleteKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunDeleteKeypair(ctx context.Context, f *util.Factory, out io.Writer, options *DeleteKeypairOptions) error {
+func RunDistrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, options *DistrustKeypairOptions) error {
 	if options.ClusterName == "" {
 		return fmt.Errorf("ClusterName is required")
 	}
@@ -111,12 +112,14 @@ func RunDeleteKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 	}
 
 	if options.KeypairID == keyset.Primary.Id {
-		return fmt.Errorf("cannot delete the primary keypair")
+		return fmt.Errorf("cannot distrust the primary keypair")
 	}
-	if _, ok := keyset.Items[options.KeypairID]; !ok {
+	item := keyset.Items[options.KeypairID]
+	if item == nil {
 		return fmt.Errorf("keypair not found")
 	}
-	delete(keyset.Items, options.KeypairID)
+	now := time.Now().UTC().Round(0)
+	item.DistrustTimestamp = &now
 
 	if err := keyStore.StoreKeyset(options.Keyset, keyset); err != nil {
 		return fmt.Errorf("error deleting keypair: %w", err)
