@@ -55,6 +55,8 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
+	pathSrvKAPI := filepath.Join(b.PathSrvKubernetes(), "kube-apiserver")
+
 	var kubeAPIServer kops.KubeAPIServerConfig
 	if b.NodeupConfig.APIServerConfig.KubeAPIServer != nil {
 		kubeAPIServer = *b.NodeupConfig.APIServerConfig.KubeAPIServer
@@ -65,7 +67,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if b.NodeupConfig.APIServerConfig.EncryptionConfigSecretHash != "" {
-		encryptionConfigPath := fi.String(filepath.Join(b.PathSrvKubernetes(), "kube-apiserver", "encryptionconfig.yaml"))
+		encryptionConfigPath := fi.String(filepath.Join(pathSrvKAPI, "encryptionconfig.yaml"))
 
 		kubeAPIServer.EncryptionProviderConfig = encryptionConfigPath
 
@@ -84,28 +86,15 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("encryptionConfig enabled, but could not load encryptionconfig secret: %v", err)
 		}
 	}
-	{
-		keyset, err := b.KeyStore.FindKeyset("service-account")
-		if err != nil {
-			return err
-		}
 
-		if keyset == nil {
-			return fmt.Errorf("service-account keyset not found")
-		}
+	kubeAPIServer.ServiceAccountKeyFile = append(kubeAPIServer.ServiceAccountKeyFile, filepath.Join(pathSrvKAPI, "service-account.pub"))
+	c.AddTask(&nodetasks.File{
+		Path:     filepath.Join(pathSrvKAPI, "service-account.pub"),
+		Contents: fi.NewStringResource(b.NodeupConfig.APIServerConfig.ServiceAccountPublicKeys),
+		Type:     nodetasks.FileType_File,
+		Mode:     s("0600"),
+	})
 
-		buf, err := keyset.ToPublicKeyBytes()
-		if err != nil {
-			return err
-		}
-
-		c.AddTask(&nodetasks.File{
-			Path:     filepath.Join(b.PathSrvKubernetes(), "service-account.pub"),
-			Contents: fi.NewBytesResource(buf),
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0600"),
-		})
-	}
 	{
 		pod, err := b.buildPod(&kubeAPIServer)
 		if err != nil {
@@ -306,8 +295,6 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 
 // buildPod is responsible for generating the kube-apiserver pod and thus manifest file
 func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig) (*v1.Pod, error) {
-	kubeAPIServer.ServiceAccountKeyFile = append(kubeAPIServer.ServiceAccountKeyFile, filepath.Join(b.PathSrvKubernetes(), "service-account.pub"))
-
 	// Set the signing key if we're using Service Account Token VolumeProjection
 	if kubeAPIServer.ServiceAccountSigningKeyFile == nil {
 		if fi.StringValue(kubeAPIServer.ServiceAccountIssuer) != "" {

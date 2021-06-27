@@ -1056,13 +1056,19 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 		LifecycleOverrides: map[string]fi.Lifecycle{},
 	}
 
-	// We need the CA for the bootstrap script
+	// We need the CA and service-account for the bootstrap script
 	caTask := &fitasks.Keypair{
 		Name:    fi.String(fi.CertificateIDCA),
 		Subject: "cn=kubernetes",
 		Type:    "ca",
 	}
 	context.AddTask(caTask)
+	saTask := &fitasks.Keypair{
+		Name:    fi.String("service-account"),
+		Subject: "cn=service-account",
+		Type:    "ca",
+	}
+	context.AddTask(saTask)
 
 	if err := builder.Build(context); err != nil {
 		t.Fatalf("error from Build: %v", err)

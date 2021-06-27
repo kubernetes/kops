@@ -1353,6 +1353,10 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 
 	if isMaster || role == kops.InstanceGroupRoleAPIServer {
 		config.APIServerConfig.EncryptionConfigSecretHash = n.encryptionConfigSecretHash
+		config.APIServerConfig.ServiceAccountPublicKeys, err = caTasks["service-account"].Keyset().ToPublicKeys()
+		if err != nil {
+			return nil, nil, fmt.Errorf("encoding service-account keys: %w", err)
+		}
 	}
 
 	if isMaster || useGossip {
