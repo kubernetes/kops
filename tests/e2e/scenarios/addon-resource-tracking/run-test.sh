@@ -42,7 +42,7 @@ ${KUBETEST2} \
 haveds
 
 # Upgrade to a version that should adopt existing resources and apply the change below
-KOPS=$(kops-acquire-latest)
+kops-acquire-latest
 
 cp "${KOPS}" "${WORKSPACE}/kops"
 
