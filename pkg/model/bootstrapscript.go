@@ -218,6 +218,9 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 			keypairs = append(keypairs, "etcd-client-cilium")
 		}
 	}
+	if ig.HasAPIServer() {
+		keypairs = append(keypairs, "service-account")
+	}
 
 	caTasks := map[string]*fitasks.Keypair{}
 	for _, keypair := range keypairs {
