@@ -240,7 +240,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	if nodeConfig != nil {
-		modelContext.KeyStore = configserver.NewKeyStore(nodeConfig)
+		modelContext.KeyStore = configserver.NewKeyStore(nodeupConfig.CAs[fi.CertificateIDCA])
 	} else if c.cluster.Spec.KeyStore != "" {
 		klog.Infof("Building KeyStore at %q", c.cluster.Spec.KeyStore)
 		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.KeyStore)
