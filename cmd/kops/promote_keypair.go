@@ -123,21 +123,24 @@ func RunPromoteKeypair(ctx context.Context, f *util.Factory, out io.Writer, opti
 
 	keypairID := options.KeypairID
 	if keypairID == "" {
-		highestId := big.NewInt(0)
+		highestTrustedId := big.NewInt(0)
 		for id, item := range keyset.Items {
-			if item.PrivateKey != nil {
+			if item.PrivateKey != nil && item.DistrustTimestamp == nil {
 				itemId, ok := big.NewInt(0).SetString(id, 10)
-				if ok && highestId.Cmp(itemId) < 0 {
-					highestId = itemId
+				if ok && highestTrustedId.Cmp(itemId) < 0 {
+					highestTrustedId = itemId
 				}
 			}
 		}
 
-		keypairID = highestId.String()
+		keypairID = highestTrustedId.String()
 		if keypairID == keyset.Primary.Id {
 			return fmt.Errorf("no keypair newer than current primary %s", keypairID)
 		}
 	} else if item := keyset.Items[keypairID]; item != nil {
+		if item.DistrustTimestamp != nil {
+			return fmt.Errorf("keypair is distrusted")
+		}
 		if item.PrivateKey == nil {
 			return fmt.Errorf("keypair has no private key")
 		}
