@@ -1,6 +1,7 @@
 APIServerConfig:
   KubeAPIServer:
     image: CoreOS
+  ServiceAccountPublicKeys: ""
 CAs: {}
 FileAssets:
 - content: user,token
