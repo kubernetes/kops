@@ -7,16 +7,19 @@ Distrust a keypair.
 
 ### Synopsis
 
-Distrust a keypair.
+Distrust one or more keypairs.
 
 ```
-kops distrust keypair KEYSET ID [flags]
+kops distrust keypair KEYSET [ID]... [flags]
 ```
 
 ### Examples
 
 ```
-  # Syntax: kops distrust keypair KEYSET ID
+  # Distrust all cluster CA keypairs older than the primary.
+  kops distrust keypair ca
+  
+  # Distrust a particular keypair.
   kops distrust keypair ca 6977545226837259959403993899
 ```
 
