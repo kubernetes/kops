@@ -127,6 +127,8 @@ type APIServerConfig struct {
 	// It is empty if EncryptionConfig is not enabled.
 	// TODO: give secrets IDs and look them up like we do keypairs.
 	EncryptionConfigSecretHash string `json:",omitempty"`
+	// ServiceAccountPublicKeys are the service-account public keys to trust.
+	ServiceAccountPublicKeys string
 }
 
 func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Config, *BootConfig) {

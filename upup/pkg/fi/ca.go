@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"math/big"
 	"sort"
+	"strings"
 	"time"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -160,7 +161,7 @@ func (k *Keyset) ToCertificateBytes() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (k *Keyset) ToPublicKeyBytes() ([]byte, error) {
+func (k *Keyset) ToPublicKeys() (string, error) {
 	keys := make([]string, 0, len(k.Items))
 	for k := range k.Items {
 		keys = append(keys, k)
@@ -169,18 +170,18 @@ func (k *Keyset) ToPublicKeyBytes() ([]byte, error) {
 		return KeysetItemIdOlder(k.Items[keys[i]].Id, k.Items[keys[j]].Id)
 	})
 
-	buf := new(bytes.Buffer)
+	buf := new(strings.Builder)
 	for _, key := range keys {
 		item := k.Items[key]
 		publicKeyData, err := x509.MarshalPKIXPublicKey(item.Certificate.PublicKey)
 		if err != nil {
-			return nil, fmt.Errorf("marshalling public key %s: %v", item.Id, err)
+			return "", fmt.Errorf("marshalling public key %s: %v", item.Id, err)
 		}
 		if err = pem.Encode(buf, &pem.Block{Type: "RSA PUBLIC KEY", Bytes: publicKeyData}); err != nil {
-			return nil, fmt.Errorf("encoding public key %s: %v", item.Id, err)
+			return "", fmt.Errorf("encoding public key %s: %v", item.Id, err)
 		}
 	}
-	return buf.Bytes(), nil
+	return buf.String(), nil
 }
 
 // NewKeyset creates a Keyset.

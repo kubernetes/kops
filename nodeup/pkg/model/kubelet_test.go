@@ -287,8 +287,14 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 		return nil, fmt.Errorf("unexpected number of instance groups: found %d", len(model.InstanceGroups))
 	}
 
+	// Are we mocking out too much of the apply_cluster logic?
 	nodeupModelContext.NodeupConfig.CAs["ca"] = dummyCertificate + nextCertificate
 	nodeupModelContext.NodeupConfig.KeypairIDs["ca"] = "3"
+
+	if nodeupModelContext.NodeupConfig.APIServerConfig != nil {
+		saPublicKeys, _ := rotatingPrivateKeyset().ToPublicKeys()
+		nodeupModelContext.NodeupConfig.APIServerConfig.ServiceAccountPublicKeys = saPublicKeys
+	}
 
 	return nodeupModelContext, nil
 }
@@ -330,30 +336,25 @@ func simplePrivateKeyset(cert, key string) *kops.Keyset {
 	}
 }
 
-func rotatingPrivateKeyset() *kops.Keyset {
-	return &kops.Keyset{
-		Spec: kops.KeysetSpec{
-			PrimaryId: "2",
-			Keys: []kops.KeysetItem{
-				{
-					Id:              "2",
-					PrivateMaterial: []byte(previousKey),
-					PublicMaterial:  []byte(previousCertificate),
-				},
-				{
-					Id:              "4",
-					PrivateMaterial: []byte(nextKey),
-					PublicMaterial:  []byte(nextCertificate),
-				},
-			},
-		},
-	}
+func rotatingPrivateKeyset() *fi.Keyset {
+	keyset, _ := fi.NewKeyset(mustParseCertificate(previousCertificate), mustParseKey(previousKey))
+	_ = keyset.AddItem(mustParseCertificate(nextCertificate), mustParseKey(nextKey), false)
+
+	return keyset
 }
 
 func mustParseCertificate(s string) *pki.Certificate {
 	k, err := pki.ParsePEMCertificate([]byte(s))
 	if err != nil {
 		klog.Fatalf("error parsing certificate %v", err)
+	}
+	return k
+}
+
+func mustParseKey(s string) *pki.PrivateKey {
+	k, err := pki.ParsePEMPrivateKey([]byte(s))
+	if err != nil {
+		klog.Fatalf("error parsing private key %v", err)
 	}
 	return k
 }
@@ -376,13 +377,14 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 
 	keystore := &fakeCAStore{}
 	keystore.T = t
+	saKeyset, _ := rotatingPrivateKeyset().ToAPIObject("service-account", true)
 	keystore.privateKeysets = map[string]*kops.Keyset{
 		"ca":                      simplePrivateKeyset(dummyCertificate, dummyKey),
 		"apiserver-aggregator-ca": simplePrivateKeyset(dummyCertificate, dummyKey),
 		"kube-controller-manager": simplePrivateKeyset(dummyCertificate, dummyKey),
 		"kube-proxy":              simplePrivateKeyset(dummyCertificate, dummyKey),
 		"kube-scheduler":          simplePrivateKeyset(dummyCertificate, dummyKey),
-		"service-account":         rotatingPrivateKeyset(),
+		"service-account":         saKeyset,
 	}
 	keystore.certs = map[string]*pki.Certificate{
 		"ca":                      mustParseCertificate(dummyCertificate),

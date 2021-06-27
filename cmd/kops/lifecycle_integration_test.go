@@ -195,34 +195,11 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 
 	inputYAML := "in-" + o.Version + ".yaml"
 
-	factoryOptions := &util.FactoryOptions{}
-	factoryOptions.RegistryPath = "memfs://tests"
-
-	factory := util.NewFactory(factoryOptions)
-
 	beforeResources := AllAWSResources(cloud)
 
-	{
-		options := &CreateOptions{}
-		options.Filenames = []string{path.Join(o.SrcDir, inputYAML)}
+	factory := newIntegrationTest(o.ClusterName, o.SrcDir).
+		setupCluster(t, inputYAML, ctx, stdout)
 
-		err := RunCreate(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running %q create: %v", inputYAML, err)
-		}
-	}
-
-	{
-		options := &CreateSecretPublickeyOptions{}
-		options.ClusterName = o.ClusterName
-		options.Name = "admin"
-		options.PublicKeyPath = path.Join(o.SrcDir, "id_rsa.pub")
-
-		err := RunCreateSecretPublicKey(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running %q create: %v", inputYAML, err)
-		}
-	}
 	updateEnsureNoChanges(ctx, t, factory, o.ClusterName, stdout)
 
 	// Overrides
@@ -437,32 +414,8 @@ func runLifecycleTestOpenstack(o *LifecycleTestOptions) {
 
 	inputYAML := "in-" + o.Version + ".yaml"
 
-	factoryOptions := &util.FactoryOptions{}
-	factoryOptions.RegistryPath = "memfs://tests"
-
-	factory := util.NewFactory(factoryOptions)
-
-	{
-		options := &CreateOptions{}
-		options.Filenames = []string{path.Join(o.SrcDir, inputYAML)}
-
-		err := RunCreate(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running %q create: %v", inputYAML, err)
-		}
-	}
-
-	{
-		options := &CreateSecretPublickeyOptions{}
-		options.ClusterName = o.ClusterName
-		options.Name = "admin"
-		options.PublicKeyPath = path.Join(o.SrcDir, "id_rsa.pub")
-
-		err := RunCreateSecretPublicKey(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running %q create: %v", inputYAML, err)
-		}
-	}
+	factory := newIntegrationTest(o.ClusterName, o.SrcDir).
+		setupCluster(t, inputYAML, ctx, stdout)
 
 	updateEnsureNoChanges(ctx, t, factory, o.ClusterName, stdout)
 
@@ -515,31 +468,8 @@ func runLifecycleTestGCE(o *LifecycleTestOptions) {
 	var stdout bytes.Buffer
 	inputYAML := "in-" + o.Version + ".yaml"
 
-	factory := util.NewFactory(&util.FactoryOptions{
-		RegistryPath: "memfs://tests",
-	})
-
-	{
-		options := &CreateOptions{}
-		options.Filenames = []string{path.Join(o.SrcDir, inputYAML)}
-
-		err := RunCreate(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running %q create: %v", inputYAML, err)
-		}
-	}
-
-	{
-		options := &CreateSecretPublickeyOptions{}
-		options.ClusterName = o.ClusterName
-		options.Name = "admin"
-		options.PublicKeyPath = path.Join(o.SrcDir, "id_rsa.pub")
-
-		err := RunCreateSecretPublicKey(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running %q create: %v", inputYAML, err)
-		}
-	}
+	factory := newIntegrationTest(o.ClusterName, o.SrcDir).
+		setupCluster(t, inputYAML, ctx, stdout)
 
 	updateEnsureNoChanges(ctx, t, factory, o.ClusterName, stdout)
 
