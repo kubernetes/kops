@@ -17,7 +17,6 @@ limitations under the License.
 package cloudup
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -34,7 +33,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	kopsbase "k8s.io/kops"
-	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -42,7 +40,6 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple"
-	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
@@ -540,6 +537,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				Lifecycle:        clusterLifecycle,
 			},
 			&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
+			&model.ConfigBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 		)
 
 		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -666,7 +664,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	var target fi.Target
-	dryRun := false
 	shouldPrecreateDNS := true
 
 	switch c.TargetName {
@@ -735,7 +732,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			out = io.Discard
 		}
 		target = fi.NewDryRunTarget(assetBuilder, out)
-		dryRun = true
 
 		// Avoid making changes on a dry-run
 		shouldPrecreateDNS = false
@@ -757,37 +753,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return fmt.Errorf("error building context: %v", err)
 	}
 	defer context.Close()
-
-	if !dryRun && clusterLifecycle != fi.LifecycleIgnore {
-		acl, err := acls.GetACL(configBase, cluster)
-		if err != nil {
-			return err
-		}
-		err = configBase.Join(registry.PathKopsVersionUpdated).WriteFile(bytes.NewReader([]byte(kopsbase.Version)), acl)
-		if err != nil {
-			return fmt.Errorf("error writing kops version: %v", err)
-		}
-
-		err = c.Clientset.UpdateCompletedCluster(ctx, c.Cluster)
-		if err != nil {
-			return fmt.Errorf("error writing completed cluster spec: %v", err)
-		}
-
-		vfsMirror := vfsclientset.NewInstanceGroupMirror(cluster, configBase)
-
-		for _, g := range c.InstanceGroups {
-			// TODO: We need to update the mirror (below), but do we need to update the primary?
-			_, err := c.Clientset.InstanceGroupsFor(c.Cluster).Update(ctx, g, metav1.UpdateOptions{})
-			if err != nil {
-				return fmt.Errorf("error writing InstanceGroup %q to registry: %v", g.ObjectMeta.Name, err)
-			}
-
-			// TODO: Don't write if vfsMirror == c.ClientSet
-			if err := vfsMirror.WriteMirror(g); err != nil {
-				return fmt.Errorf("error writing instance group spec to mirror: %v", err)
-			}
-		}
-	}
 
 	var options fi.RunTasksOptions
 	if c.RunTasksOptions != nil {

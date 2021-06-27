@@ -37,9 +37,6 @@ type Clientset interface {
 	// UpdateCluster updates a cluster
 	UpdateCluster(ctx context.Context, cluster *kops.Cluster, status *kops.ClusterStatus) (*kops.Cluster, error)
 
-	// UpdateCompletedCluster updates a completed cluster.
-	UpdateCompletedCluster(ctx context.Context, cluster *kops.Cluster) error
-
 	// ListClusters returns all clusters
 	ListClusters(ctx context.Context, options metav1.ListOptions) (*kops.ClusterList, error)
 
