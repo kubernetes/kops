@@ -86,11 +86,12 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-externalpolicies-exa
     id      = aws_launch_template.master-us-test-1a-masters-externalpolicies-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-externalpolicies-example-com.latest_version
   }
-  load_balancers      = [aws_elb.api-externalpolicies-example-com.id]
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "master-us-test-1a.masters.externalpolicies.example.com"
+  load_balancers        = [aws_elb.api-externalpolicies-example-com.id]
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "master-us-test-1a.masters.externalpolicies.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -160,11 +161,12 @@ resource "aws_autoscaling_group" "nodes-externalpolicies-example-com" {
     id      = aws_launch_template.nodes-externalpolicies-example-com.id
     version = aws_launch_template.nodes-externalpolicies-example-com.latest_version
   }
-  max_size            = 2
-  metrics_granularity = "1Minute"
-  min_size            = 2
-  name                = "nodes.externalpolicies.example.com"
-  suspended_processes = ["AZRebalance"]
+  max_size              = 2
+  metrics_granularity   = "1Minute"
+  min_size              = 2
+  name                  = "nodes.externalpolicies.example.com"
+  protect_from_scale_in = false
+  suspended_processes   = ["AZRebalance"]
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -399,6 +401,9 @@ resource "aws_launch_template" "master-us-test-1a-masters-externalpolicies-examp
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
+  }
+  monitoring {
+    enabled = false
   }
   name = "master-us-test-1a.masters.externalpolicies.example.com"
   network_interfaces {

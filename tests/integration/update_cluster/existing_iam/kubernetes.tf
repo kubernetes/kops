@@ -76,10 +76,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-existing-iam-example
     id      = aws_launch_template.master-us-test-1a-masters-existing-iam-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-existing-iam-example-com.latest_version
   }
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "master-us-test-1a.masters.existing-iam.example.com"
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "master-us-test-1a.masters.existing-iam.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -139,10 +140,11 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-existing-iam-example
     id      = aws_launch_template.master-us-test-1b-masters-existing-iam-example-com.id
     version = aws_launch_template.master-us-test-1b-masters-existing-iam-example-com.latest_version
   }
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "master-us-test-1b.masters.existing-iam.example.com"
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "master-us-test-1b.masters.existing-iam.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -202,10 +204,11 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-existing-iam-example
     id      = aws_launch_template.master-us-test-1c-masters-existing-iam-example-com.id
     version = aws_launch_template.master-us-test-1c-masters-existing-iam-example-com.latest_version
   }
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "master-us-test-1c.masters.existing-iam.example.com"
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "master-us-test-1c.masters.existing-iam.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -265,10 +268,11 @@ resource "aws_autoscaling_group" "nodes-existing-iam-example-com" {
     id      = aws_launch_template.nodes-existing-iam-example-com.id
     version = aws_launch_template.nodes-existing-iam-example-com.latest_version
   }
-  max_size            = 2
-  metrics_granularity = "1Minute"
-  min_size            = 2
-  name                = "nodes.existing-iam.example.com"
+  max_size              = 2
+  metrics_granularity   = "1Minute"
+  min_size              = 2
+  name                  = "nodes.existing-iam.example.com"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -452,6 +456,9 @@ resource "aws_launch_template" "master-us-test-1a-masters-existing-iam-example-c
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
+  monitoring {
+    enabled = false
+  }
   name = "master-us-test-1a.masters.existing-iam.example.com"
   network_interfaces {
     associate_public_ip_address = true
@@ -533,6 +540,9 @@ resource "aws_launch_template" "master-us-test-1b-masters-existing-iam-example-c
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
+  }
+  monitoring {
+    enabled = false
   }
   name = "master-us-test-1b.masters.existing-iam.example.com"
   network_interfaces {
@@ -616,6 +626,9 @@ resource "aws_launch_template" "master-us-test-1c-masters-existing-iam-example-c
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
+  monitoring {
+    enabled = false
+  }
   name = "master-us-test-1c.masters.existing-iam.example.com"
   network_interfaces {
     associate_public_ip_address = true
@@ -693,6 +706,9 @@ resource "aws_launch_template" "nodes-existing-iam-example-com" {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
+  }
+  monitoring {
+    enabled = false
   }
   name = "nodes.existing-iam.example.com"
   network_interfaces {
