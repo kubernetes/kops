@@ -46,6 +46,11 @@ kops-acquire-latest
 
 cp "${KOPS}" "${WORKSPACE}/kops"
 
+# allow downgrade is a bug where the version written to VFS is not the same as the running version.
+kops update cluster --allow-kops-downgrade
+kops update cluster --yes --allow-kops-downgrade
+kops rolling-update cluster --yes
+
 # Switch to queue mode. This should remove the DS and install a Deployment instead
 kops edit cluster "${CLUSTER_NAME}" "--set=cluster.spec.nodeTerminationHandler.enableSQSTerminationDraining=true"
 
