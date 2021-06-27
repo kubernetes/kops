@@ -333,17 +333,12 @@ func simplePrivateKeyset(cert, key string) *kops.Keyset {
 func rotatingPrivateKeyset() *kops.Keyset {
 	return &kops.Keyset{
 		Spec: kops.KeysetSpec{
-			PrimaryId: "3",
+			PrimaryId: "2",
 			Keys: []kops.KeysetItem{
 				{
 					Id:              "2",
 					PrivateMaterial: []byte(previousKey),
 					PublicMaterial:  []byte(previousCertificate),
-				},
-				{
-					Id:              "3",
-					PrivateMaterial: []byte(dummyKey),
-					PublicMaterial:  []byte(dummyCertificate),
 				},
 				{
 					Id:              "4",
