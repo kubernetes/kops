@@ -18,11 +18,10 @@ package fi
 
 import (
 	"fmt"
-	"io"
-	"net/http"
 	"os"
+	"os/exec"
 	"path"
-	"time"
+	"strings"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/util/pkg/hashing"
@@ -69,30 +68,16 @@ func downloadURLAlways(url string, destPath string, dirMode os.FileMode) error {
 		return fmt.Errorf("error creating directories for destination file %q: %v", destPath, err)
 	}
 
-	output, err := os.Create(destPath)
-	if err != nil {
-		return fmt.Errorf("error creating file for download %q: %v", destPath, err)
-	}
-	defer output.Close()
+	args := []string{"curl", "-v", "-f", "--compressed", "-Lo", destPath, "--connect-timeout", "20", "--retry", "6", "--retry-delay", "10", url}
 
-	klog.Infof("Downloading %q", url)
-
-	// Create a client with a shorter timeout
-	httpClient := http.Client{
-		Timeout: 2 * time.Minute,
-	}
-	response, err := httpClient.Get(url)
+	human := strings.Join(args, " ")
+	klog.Infof("running command %s", human)
+	cmd := exec.Command(args[0], args[1:]...)
+	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("error doing HTTP fetch of %q: %v", url, err)
+		return fmt.Errorf("error downloading file '%s': %v: %s", human, err, string(output))
 	}
-	if response.StatusCode >= 400 {
-		return fmt.Errorf("error response from %q: HTTP %v", url, response.StatusCode)
-	}
-	defer response.Body.Close()
 
-	_, err = io.Copy(output, response.Body)
-	if err != nil {
-		return fmt.Errorf("error downloading HTTP content from %q: %v", url, err)
-	}
+	klog.Infof("output for %q:\n%s", url, string(output))
 	return nil
 }

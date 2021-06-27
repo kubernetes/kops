@@ -1069,8 +1069,8 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 			if dns.IsGossipHostname(cluster.Name) {
 				// gossip DNS names don't work outside the cluster, so we use a LoadBalancer instead
 				cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
-			} else {
-				cluster.Spec.API.DNS = &api.DNSAccessSpec{}
+				//} else {
+				//	cluster.Spec.API.DNS = &api.DNSAccessSpec{}
 			}
 
 		case api.TopologyPrivate:
