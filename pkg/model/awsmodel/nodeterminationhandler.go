@@ -22,6 +22,7 @@ import (
 	"k8s.io/kops/pkg/model"
 
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"k8s.io/kops/pkg/apis/kops"
@@ -141,13 +142,13 @@ func (b *NodeTerminationHandlerBuilder) buildEventBridgeRules(c *fi.ModelBuilder
 
 	for _, event := range events {
 		// build rule
-		ruleName := aws.String(clusterName + "-" + event.name)
+		ruleName := clusterName + "-" + event.name
 		pattern := event.pattern
 
 		ruleTask := &awstasks.EventBridgeRule{
-			Name:      ruleName,
+			Name:      fi.String(awsup.TruncateString(ruleName, awsup.TruncateStringOptions{MaxLength: 64})),
 			Lifecycle: b.Lifecycle,
-			Tags:      b.CloudTags(*ruleName, false),
+			Tags:      b.CloudTags(ruleName, false),
 
 			EventPattern: &pattern,
 			TargetArn:    &targetArn,
@@ -157,7 +158,7 @@ func (b *NodeTerminationHandlerBuilder) buildEventBridgeRules(c *fi.ModelBuilder
 
 		// build target
 		targetTask := &awstasks.EventBridgeTarget{
-			Name:      aws.String(*ruleName + "-Target"),
+			Name:      aws.String(ruleName + "-Target"),
 			Lifecycle: b.Lifecycle,
 
 			Rule:      ruleTask,
