@@ -55,56 +55,48 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	if err := b.writeAuthenticationConfig(c); err != nil {
+	pathSrvKAPI := filepath.Join(b.PathSrvKubernetes(), "kube-apiserver")
+
+	var kubeAPIServer kops.KubeAPIServerConfig
+	if b.NodeupConfig.APIServerConfig.KubeAPIServer != nil {
+		kubeAPIServer = *b.NodeupConfig.APIServerConfig.KubeAPIServer
+	}
+
+	if err := b.writeAuthenticationConfig(c, &kubeAPIServer); err != nil {
 		return err
 	}
 
-	if b.Cluster.Spec.EncryptionConfig != nil {
-		if *b.Cluster.Spec.EncryptionConfig {
-			encryptionConfigPath := fi.String(filepath.Join(b.PathSrvKubernetes(), "encryptionconfig.yaml"))
+	if b.NodeupConfig.APIServerConfig.EncryptionConfigSecretHash != "" {
+		encryptionConfigPath := fi.String(filepath.Join(pathSrvKAPI, "encryptionconfig.yaml"))
 
-			b.Cluster.Spec.KubeAPIServer.EncryptionProviderConfig = encryptionConfigPath
+		kubeAPIServer.EncryptionProviderConfig = encryptionConfigPath
 
-			key := "encryptionconfig"
-			encryptioncfg, err := b.SecretStore.Secret(key)
-			if err == nil {
-				contents := string(encryptioncfg.Data)
-				t := &nodetasks.File{
-					Path:     *encryptionConfigPath,
-					Contents: fi.NewStringResource(contents),
-					Mode:     fi.String("600"),
-					Type:     nodetasks.FileType_File,
-				}
-				c.AddTask(t)
-			} else {
-				return fmt.Errorf("encryptionConfig enabled, but could not load encryptionconfig secret: %v", err)
+		key := "encryptionconfig"
+		encryptioncfg, err := b.SecretStore.Secret(key)
+		if err == nil {
+			contents := string(encryptioncfg.Data)
+			t := &nodetasks.File{
+				Path:     *encryptionConfigPath,
+				Contents: fi.NewStringResource(contents),
+				Mode:     fi.String("600"),
+				Type:     nodetasks.FileType_File,
 			}
+			c.AddTask(t)
+		} else {
+			return fmt.Errorf("encryptionConfig enabled, but could not load encryptionconfig secret: %v", err)
 		}
 	}
+
+	kubeAPIServer.ServiceAccountKeyFile = append(kubeAPIServer.ServiceAccountKeyFile, filepath.Join(pathSrvKAPI, "service-account.pub"))
+	c.AddTask(&nodetasks.File{
+		Path:     filepath.Join(pathSrvKAPI, "service-account.pub"),
+		Contents: fi.NewStringResource(b.NodeupConfig.APIServerConfig.ServiceAccountPublicKeys),
+		Type:     nodetasks.FileType_File,
+		Mode:     s("0600"),
+	})
+
 	{
-		keyset, err := b.KeyStore.FindKeyset("service-account")
-		if err != nil {
-			return err
-		}
-
-		if keyset == nil {
-			return fmt.Errorf("service-account keyset not found")
-		}
-
-		buf, err := keyset.ToPublicKeyBytes()
-		if err != nil {
-			return err
-		}
-
-		c.AddTask(&nodetasks.File{
-			Path:     filepath.Join(b.PathSrvKubernetes(), "service-account.pub"),
-			Contents: fi.NewBytesResource(buf),
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0600"),
-		})
-	}
-	{
-		pod, err := b.buildPod()
+		pod, err := b.buildPod(&kubeAPIServer)
 		if err != nil {
 			return fmt.Errorf("error building kube-apiserver manifest: %v", err)
 		}
@@ -151,7 +143,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderContext) error {
+func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderContext, kubeAPIServer *kops.KubeAPIServerConfig) error {
 	if b.Cluster.Spec.Authentication == nil || b.Cluster.Spec.Authentication.IsEmpty() {
 		return nil
 	}
@@ -198,7 +190,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 
 	if b.Cluster.Spec.Authentication.Aws != nil {
 		id := "aws-iam-authenticator"
-		b.Cluster.Spec.KubeAPIServer.AuthenticationTokenWebhookConfigFile = fi.String(PathAuthnConfig)
+		kubeAPIServer.AuthenticationTokenWebhookConfigFile = fi.String(PathAuthnConfig)
 
 		{
 			caCertificate, _, err := b.NodeupModelContext.KeyStore.FindPrimaryKeypair(fi.CertificateIDCA)
@@ -302,11 +294,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 }
 
 // buildPod is responsible for generating the kube-apiserver pod and thus manifest file
-func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
-	kubeAPIServer := b.Cluster.Spec.KubeAPIServer
-
-	kubeAPIServer.ServiceAccountKeyFile = append(kubeAPIServer.ServiceAccountKeyFile, filepath.Join(b.PathSrvKubernetes(), "service-account.pub"))
-
+func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig) (*v1.Pod, error) {
 	// Set the signing key if we're using Service Account Token VolumeProjection
 	if kubeAPIServer.ServiceAccountSigningKeyFile == nil {
 		if fi.StringValue(kubeAPIServer.ServiceAccountIssuer) != "" {
@@ -393,15 +381,14 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		// @note: note sure if this is the best place to put it, I could place into the validation.go which has the benefit of
 		// fixing up the manifests itself, but that feels VERY hacky
 		// @note: it's fine to use AdmissionControl here and it's not populated by the model, thus the only data could have come from the cluster spec
-		c := b.Cluster.Spec.KubeAPIServer
-		if len(c.AdmissionControl) > 0 {
-			c.EnableAdmissionPlugins = append([]string(nil), c.AdmissionControl...)
-			c.AdmissionControl = []string{}
+		if len(kubeAPIServer.AdmissionControl) > 0 {
+			kubeAPIServer.EnableAdmissionPlugins = append([]string(nil), kubeAPIServer.AdmissionControl...)
+			kubeAPIServer.AdmissionControl = []string{}
 		}
 	}
 
 	// build the kube-apiserver flags for the service
-	flags, err := flagbuilder.BuildFlagsList(b.Cluster.Spec.KubeAPIServer)
+	flags, err := flagbuilder.BuildFlagsList(kubeAPIServer)
 	if err != nil {
 		return nil, fmt.Errorf("error building kube-apiserver flags: %v", err)
 	}
@@ -501,8 +488,8 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		Ports: []v1.ContainerPort{
 			{
 				Name:          "https",
-				ContainerPort: b.Cluster.Spec.KubeAPIServer.SecurePort,
-				HostPort:      b.Cluster.Spec.KubeAPIServer.SecurePort,
+				ContainerPort: kubeAPIServer.SecurePort,
+				HostPort:      kubeAPIServer.SecurePort,
 			},
 		},
 		Resources: v1.ResourceRequirements{
@@ -563,7 +550,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		addHostPathMapping(pod, container, "srvsshproxy", pathSrvSshproxy)
 	}
 
-	auditLogPath := b.Cluster.Spec.KubeAPIServer.AuditLogPath
+	auditLogPath := kubeAPIServer.AuditLogPath
 	// Don't mount a volume if the mount path is set to '-' for stdout logging
 	// See https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#audit-backends
 	if auditLogPath != nil && *auditLogPath != "-" {

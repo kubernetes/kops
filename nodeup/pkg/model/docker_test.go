@@ -120,9 +120,20 @@ func TestDockerBuilder_BuildFlags(t *testing.T) {
 }
 
 func runDockerBuilderTest(t *testing.T, key string) {
+	h := testutils.NewIntegrationTestHarness(t)
+	defer h.Close()
+
+	h.MockKopsVersion("1.18.0")
+	h.SetupMockAWS()
+
 	basedir := path.Join("tests/dockerbuilder/", key)
 
-	nodeUpModelContext, err := BuildNodeupModelContext(basedir)
+	model, err := testutils.LoadModel(basedir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	nodeUpModelContext, err := BuildNodeupModelContext(model)
 	if err != nil {
 		t.Fatalf("error parsing cluster yaml %q: %v", basedir, err)
 		return
@@ -163,6 +174,9 @@ func runDockerBuilderTest(t *testing.T, key string) {
 		}
 	}
 
+	if err := nodeUpModelContext.Init(); err != nil {
+		t.Fatalf("error from nodeUpModelContext.Init(): %v", err)
+	}
 	context := &fi.ModelBuilderContext{
 		Tasks: make(map[string]fi.Task),
 	}

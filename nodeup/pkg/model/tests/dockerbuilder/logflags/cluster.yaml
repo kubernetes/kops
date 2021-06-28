@@ -20,6 +20,8 @@ spec:
     - instanceGroup: master-us-test-1a
       name: master-us-test-1a
     name: events
+  iam:
+    legacy: false
   kubernetesVersion: v1.17.0
   masterInternalName: api.internal.logflags.example.com
   masterPublicName: api.logflags.example.com

@@ -180,6 +180,12 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 		Type:    "ca",
 	}
 	c.AddTask(caTask)
+	saTask := &fitasks.Keypair{
+		Name:    fi.String("service-account"),
+		Subject: "cn=service-account",
+		Type:    "ca",
+	}
+	c.AddTask(saTask)
 
 	b.Build(c)
 

@@ -18,6 +18,8 @@ package cloudup
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"net"
@@ -330,6 +332,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
+	encryptionConfigSecretHash := ""
 	if fi.BoolValue(c.Cluster.Spec.EncryptionConfig) {
 		secret, err := secretStore.FindSecret("encryptionconfig")
 		if err != nil {
@@ -341,6 +344,8 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			fmt.Println("See `kops create secret encryptionconfig -h` and https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/")
 			return fmt.Errorf("could not find encryptionconfig secret")
 		}
+		hashBytes := sha256.Sum256(secret.Data)
+		encryptionConfigSecretHash = base64.URLEncoding.EncodeToString(hashBytes[:])
 	}
 
 	ciliumSpec := c.Cluster.Spec.Networking.Cilium
@@ -484,7 +489,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		cloud:            cloud,
 	}
 
-	configBuilder, err := newNodeUpConfigBuilder(cluster, assetBuilder, c.Assets)
+	configBuilder, err := newNodeUpConfigBuilder(cluster, assetBuilder, c.Assets, encryptionConfigSecretHash)
 	if err != nil {
 		return err
 	}
@@ -1104,17 +1109,18 @@ type nodeUpConfigBuilder struct {
 	//  url with hash: <hex>@http://... or <hex>@https://...
 	assets map[architectures.Architecture][]*mirrors.MirroredAsset
 
-	assetBuilder   *assets.AssetBuilder
-	channels       []string
-	configBase     vfs.Path
-	cluster        *kops.Cluster
-	etcdManifests  map[kops.InstanceGroupRole][]string
-	images         map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image
-	protokubeAsset map[architectures.Architecture][]*mirrors.MirroredAsset
-	channelsAsset  map[architectures.Architecture][]*mirrors.MirroredAsset
+	assetBuilder               *assets.AssetBuilder
+	channels                   []string
+	configBase                 vfs.Path
+	cluster                    *kops.Cluster
+	etcdManifests              map[kops.InstanceGroupRole][]string
+	images                     map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image
+	protokubeAsset             map[architectures.Architecture][]*mirrors.MirroredAsset
+	channelsAsset              map[architectures.Architecture][]*mirrors.MirroredAsset
+	encryptionConfigSecretHash string
 }
 
-func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBuilder, assets map[architectures.Architecture][]*mirrors.MirroredAsset) (model.NodeUpConfigBuilder, error) {
+func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBuilder, assets map[architectures.Architecture][]*mirrors.MirroredAsset, encryptionConfigSecretHash string) (model.NodeUpConfigBuilder, error) {
 	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
@@ -1247,15 +1253,16 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 	}
 
 	configBuilder := nodeUpConfigBuilder{
-		assetBuilder:   assetBuilder,
-		assets:         assets,
-		channels:       channels,
-		configBase:     configBase,
-		cluster:        cluster,
-		etcdManifests:  etcdManifests,
-		images:         images,
-		protokubeAsset: protokubeAsset,
-		channelsAsset:  channelsAsset,
+		assetBuilder:               assetBuilder,
+		assets:                     assets,
+		channels:                   channels,
+		configBase:                 configBase,
+		cluster:                    cluster,
+		etcdManifests:              etcdManifests,
+		images:                     images,
+		protokubeAsset:             protokubeAsset,
+		channelsAsset:              channelsAsset,
+		encryptionConfigSecretHash: encryptionConfigSecretHash,
 	}
 
 	return &configBuilder, nil
@@ -1306,6 +1313,14 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	} else {
 		if caTasks["etcd-client-cilium"] != nil {
 			config.KeypairIDs["etcd-client-cilium"] = caTasks["etcd-client-cilium"].Keyset().Primary.Id
+		}
+	}
+
+	if isMaster || role == kops.InstanceGroupRoleAPIServer {
+		config.APIServerConfig.EncryptionConfigSecretHash = n.encryptionConfigSecretHash
+		config.APIServerConfig.ServiceAccountPublicKeys, err = caTasks["service-account"].Keyset().ToPublicKeys()
+		if err != nil {
+			return nil, nil, fmt.Errorf("encoding service-account keys: %w", err)
 		}
 	}
 
