@@ -4237,6 +4237,19 @@ spec:
                       to false.
                     type: boolean
                 type: object
+              nvidia:
+                description: NvidiaConfiguration configures the Nvidia GPU runtime.
+                properties:
+                  enabled:
+                    description: Enabled determines if kOps will install the Nvidia
+                      GPU runtime and drivers. They will only be installed on intances
+                      that has an Nvidia GPU.
+                    type: boolean
+                  package:
+                    description: Package is the name of the nvidia driver package
+                      that will be installed. Default is "nvidia-headless-460-server".
+                    type: string
+                type: object
               podCIDR:
                 description: PodCIDR is the CIDR from which we allocate IPs for pods
                 type: string
