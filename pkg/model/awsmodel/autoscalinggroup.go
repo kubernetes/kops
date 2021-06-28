@@ -182,7 +182,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		IAMInstanceProfile:           link,
 		ImageID:                      fi.String(ig.Spec.Image),
 		InstanceInterruptionBehavior: ig.Spec.InstanceInterruptionBehavior,
-		InstanceMonitoring:           ig.Spec.DetailedInstanceMonitoring,
+		InstanceMonitoring:           fi.Bool(false),
 		InstanceType:                 fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
 		IPv6AddressCount:             fi.Int64(0),
 		RootVolumeIops:               fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops))),
@@ -265,6 +265,10 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 			EbsVolumeThroughput:    x.Throughput,
 			EbsVolumeType:          fi.String(x.Type),
 		})
+	}
+
+	if ig.Spec.DetailedInstanceMonitoring != nil {
+		lt.InstanceMonitoring = ig.Spec.DetailedInstanceMonitoring
 	}
 
 	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit != nil {
@@ -384,6 +388,8 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 			"GroupTerminatingInstances",
 			"GroupTotalInstances",
 		},
+
+		InstanceProtection: fi.Bool(false),
 	}
 
 	minSize := fi.Int64(1)
@@ -423,7 +429,9 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 	processes = append(processes, ig.Spec.SuspendProcesses...)
 	t.SuspendProcesses = &processes
 
-	t.InstanceProtection = ig.Spec.InstanceProtection
+	if ig.Spec.InstanceProtection != nil {
+		t.InstanceProtection = ig.Spec.InstanceProtection
+	}
 
 	t.LoadBalancers = []*awstasks.ClassicLoadBalancer{}
 	t.TargetGroups = []*awstasks.TargetGroup{}
