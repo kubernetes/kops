@@ -388,7 +388,7 @@ func (c *NodeupModelContext) UsesSecondaryIP() bool {
 // UseBootstrapTokens checks if we are using bootstrap tokens
 func (c *NodeupModelContext) UseBootstrapTokens() bool {
 	if c.HasAPIServer {
-		return fi.BoolValue(c.Cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken)
+		return fi.BoolValue(c.NodeupConfig.APIServerConfig.KubeAPIServer.EnableBootstrapAuthToken)
 	}
 
 	return c.Cluster.Spec.Kubelet != nil && c.Cluster.Spec.Kubelet.BootstrapKubeconfig != ""
