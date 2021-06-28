@@ -5,6 +5,10 @@ assets:
     githubName: kops-darwin-amd64
   - source: darwin/amd64/kops.sha256
     githubName: kops-darwin-amd64.sha256
+  - source: darwin/arm64/kops
+    githubName: kops-darwin-arm64
+  - source: darwin/arm64/kops.sha256
+    githubName: kops-darwin-arm64.sha256
   - source: linux/amd64/kops
     githubName: kops-linux-amd64
   - source: linux/amd64/kops.sha256
