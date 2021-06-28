@@ -531,6 +531,14 @@ oldFormat: false
 subject: cn=kubernetes
 type: ca
 ---
+Lifecycle: ""
+Name: service-account
+Signer: null
+alternateNames: null
+oldFormat: false
+subject: cn=service-account
+type: ca
+---
 Base: null
 Contents:
   task:

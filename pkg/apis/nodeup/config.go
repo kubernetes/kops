@@ -73,6 +73,9 @@ type Config struct {
 	Hooks [][]kops.HookSpec
 	// ContainerdConfig config holds the configuration for containerd
 	ContainerdConfig string `json:"containerdConfig,omitempty"`
+
+	// APIServerConfig is additional configuration for nodes running an APIServer.
+	APIServerConfig *APIServerConfig `json:",omitempty"`
 }
 
 // BootConfig is the configuration for the nodeup binary that might be too big to fit in userdata.
@@ -116,6 +119,18 @@ type StaticManifest struct {
 	Path string `json:"path,omitempty"`
 }
 
+// APIServerConfig is additional configuration for nodes running an APIServer.
+type APIServerConfig struct {
+	// KubeAPIServer is a copy of the KubeAPIServerConfig from the cluster spec.
+	KubeAPIServer *kops.KubeAPIServerConfig
+	// EncryptionConfigSecretHash is a hash of the encryptionconfig secret.
+	// It is empty if EncryptionConfig is not enabled.
+	// TODO: give secrets IDs and look them up like we do keypairs.
+	EncryptionConfigSecretHash string `json:",omitempty"`
+	// ServiceAccountPublicKeys are the service-account public keys to trust.
+	ServiceAccountPublicKeys string
+}
+
 func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Config, *BootConfig) {
 	role := instanceGroup.Spec.Role
 	isMaster := role == kops.InstanceGroupRoleMaster
@@ -153,6 +168,12 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		}
 	} else {
 		reflectutils.JSONMergeStruct(&config.KubeletConfig, cluster.Spec.Kubelet)
+	}
+
+	if isMaster || role == kops.InstanceGroupRoleAPIServer {
+		config.APIServerConfig = &APIServerConfig{
+			KubeAPIServer: cluster.Spec.KubeAPIServer,
+		}
 	}
 
 	if instanceGroup.Spec.Kubelet != nil {
