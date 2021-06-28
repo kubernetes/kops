@@ -204,6 +204,11 @@ ${DIST}/darwin/amd64/kops:
 	mkdir -p ${DIST}
 	GOOS=darwin GOARCH=amd64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 
+.PHONY: ${DIST}/darwin/arm64/kops
+${DIST}/darwin/arm64/kops:
+	mkdir -p ${DIST}
+	GOOS=darwin GOARCH=arm64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+
 .PHONY: ${DIST}/linux/amd64/kops
 ${DIST}/linux/amd64/kops:
 	mkdir -p ${DIST}
@@ -220,7 +225,7 @@ ${DIST}/windows/amd64/kops.exe:
 	GOOS=windows GOARCH=amd64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 
 .PHONY: crossbuild
-crossbuild: ${DIST}/windows/amd64/kops.exe ${DIST}/darwin/amd64/kops ${DIST}/linux/amd64/kops ${DIST}/linux/arm64/kops
+crossbuild: ${DIST}/windows/amd64/kops.exe ${DIST}/darwin/amd64/kops ${DIST}/darwin/arm64/kops ${DIST}/linux/amd64/kops ${DIST}/linux/arm64/kops
 
 .PHONY: upload
 upload: bazel-version-dist # Upload kops to S3
@@ -572,6 +577,10 @@ bazel-build-cli: bazelisk
 bazel-build-kops-darwin-amd64:
 	${BAZEL_BIN} ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64 //cmd/kops/...
 
+.PHONY: bazel-build-kops-darwin-arm64
+bazel-build-kops-darwin-arm64:
+	${BAZEL_BIN} ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:darwin_arm64 //cmd/kops/...
+
 .PHONY: bazel-build-kops-linux-amd64
 bazel-build-kops-linux-amd64:
 	${BAZEL_BIN} ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops/...
@@ -585,7 +594,7 @@ bazel-build-kops-windows-amd64:
 	${BAZEL_BIN} ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:windows_amd64 //cmd/kops/...
 
 .PHONY: bazel-crossbuild-kops
-bazel-crossbuild-kops: bazel-build-kops-darwin-amd64 bazel-build-kops-linux-amd64 bazel-build-kops-linux-arm64 bazel-build-kops-windows-amd64
+bazel-crossbuild-kops: bazel-build-kops-darwin-amd64 bazel-build-kops-darwin-arm64 bazel-build-kops-linux-amd64 bazel-build-kops-linux-arm64 bazel-build-kops-windows-amd64
 	echo "Done cross-building kops"
 
 .PHONY: bazel-build-nodeup-linux-amd64
@@ -730,11 +739,12 @@ bazel-version-dist-linux-arm64: bazelisk bazel-build-kops-linux-arm64 bazel-buil
 	echo "Done building dist for arm64"
 
 .PHONY: bazel-version-dist
-bazel-version-dist: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm64 bazel-build-kops-darwin-amd64 bazel-build-kops-windows-amd64
+bazel-version-dist: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm64 bazel-build-kops-darwin-amd64 bazel-build-kops-darwin-arm64 bazel-build-kops-windows-amd64
 	rm -rf ${BAZELUPLOAD}
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/darwin/arm64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
 	cp bazel-bin/cmd/nodeup/linux-amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
@@ -767,6 +777,8 @@ bazel-version-dist: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm6
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/kops.sha256
 	cp bazel-bin/cmd/kops/darwin-amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha256
+	cp bazel-bin/cmd/kops/darwin-arm64/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/arm64/kops
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/darwin/arm64/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/arm64/kops.sha256
 	cp bazel-bin/cmd/kops/windows-amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha256
 	tar cfvz ${BAZELUPLOAD}/kops/${VERSION}/images/images.tar.gz -C ${BAZELIMAGES} --exclude "*.sha256" .
