@@ -36,6 +36,7 @@ import (
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/commands"
+	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
@@ -65,10 +66,6 @@ var (
 	rootShort = i18n.T(`kOps is Kubernetes Operations.`)
 )
 
-type Factory interface {
-	Clientset() (simple.Clientset, error)
-}
-
 type RootCmd struct {
 	util.FactoryOptions
 
@@ -81,7 +78,7 @@ type RootCmd struct {
 	cobraCommand *cobra.Command
 }
 
-var _ Factory = &RootCmd{}
+var _ commandutils.Factory = &RootCmd{}
 
 var rootCommand = RootCmd{
 	cobraCommand: &cobra.Command{
@@ -129,13 +126,18 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.PersistentFlags().StringVar(&rootCommand.configFile, "config", "", "yaml config file (default is $HOME/.kops.yaml)")
 	viper.BindPFlag("config", cmd.PersistentFlags().Lookup("config"))
 	viper.SetDefault("config", "$HOME/.kops.yaml")
+	cmd.RegisterFlagCompletionFunc("config", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"yaml", "json"}, cobra.ShellCompDirectiveFilterFileExt
+	})
 
 	cmd.PersistentFlags().StringVar(&rootCommand.RegistryPath, "state", "", "Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable")
 	viper.BindPFlag("KOPS_STATE_STORE", cmd.PersistentFlags().Lookup("state"))
 	viper.BindEnv("KOPS_STATE_STORE")
+	// TODO implement completion against VFS
 
 	defaultClusterName := os.Getenv("KOPS_CLUSTER_NAME")
 	cmd.PersistentFlags().StringVarP(&rootCommand.clusterName, "name", "", defaultClusterName, "Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable")
+	cmd.RegisterFlagCompletionFunc("name", commandutils.CompleteClusterName(&rootCommand))
 
 	// create subcommands
 	cmd.AddCommand(NewCmdCompletion(f, out))
@@ -290,7 +292,7 @@ func (c *RootCmd) Cluster(ctx context.Context) (*kopsapi.Cluster, error) {
 	return GetCluster(ctx, c.factory, clusterName)
 }
 
-func GetCluster(ctx context.Context, factory Factory, clusterName string) (*kopsapi.Cluster, error) {
+func GetCluster(ctx context.Context, factory commandutils.Factory, clusterName string) (*kopsapi.Cluster, error) {
 	if clusterName == "" {
 		return nil, field.Required(field.NewPath("clusterName"), "Cluster name is required")
 	}
