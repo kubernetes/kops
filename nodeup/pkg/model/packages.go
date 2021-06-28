@@ -39,19 +39,17 @@ func (b *PackagesBuilder) Build(c *fi.ModelBuilderContext) error {
 	//   ebtables - kops #1711
 	//   ethtool - kops #1830
 	if b.Distribution.IsDebianFamily() {
-		if b.InstallNvidiaRuntime() {
-			c.AddTask(&nodetasks.AptSource{
-				Name:    "nvidia-container-runtime",
-				Keyring: "https://nvidia.github.io/nvidia-container-runtime/gpgkey",
-				Sources: []string{
-					"deb https://nvidia.github.io/nvidia-container-runtime/stable/ubuntu18.04/$(ARCH) /",
-					"deb https://nvidia.github.io/libnvidia-container/stable/ubuntu18.04/$(ARCH) /",
-					"deb https://nvidia.github.io/nvidia-docker/ubuntu18.04/$(ARCH) /",
-				},
-			})
-			c.AddTask(&nodetasks.Package{Name: "nvidia-container-runtime"})
-			c.AddTask(&nodetasks.Package{Name: "nvidia-headless-460-server"})
-		}
+		c.AddTask(&nodetasks.AptSource{
+			Name:    "nvidia-container-runtime",
+			Keyring: "https://nvidia.github.io/nvidia-container-runtime/gpgkey",
+			Sources: []string{
+				"deb https://nvidia.github.io/nvidia-container-runtime/stable/ubuntu18.04/$(ARCH) /",
+				"deb https://nvidia.github.io/libnvidia-container/stable/ubuntu18.04/$(ARCH) /",
+				"deb https://nvidia.github.io/nvidia-docker/ubuntu18.04/$(ARCH) /",
+			},
+		})
+		c.AddTask(&nodetasks.Package{Name: "nvidia-container-runtime"})
+		c.AddTask(&nodetasks.Package{Name: "nvidia-headless-460-server"})
 		c.AddTask(&nodetasks.Package{Name: "nfs-common"})
 		// From containerd: https://github.com/containerd/cri/blob/master/contrib/ansible/tasks/bootstrap_ubuntu.yaml
 		c.AddTask(&nodetasks.Package{Name: "bridge-utils"})

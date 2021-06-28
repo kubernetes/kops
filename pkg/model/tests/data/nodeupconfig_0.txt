@@ -27,4 +27,5 @@ KubeletConfig:
   taints:
   - key1=value1:NoSchedule
   - key2=value2:NoExecute
+Nvidia: null
 UpdatePolicy: automatic

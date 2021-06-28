@@ -58,6 +58,7 @@ KubeletConfig:
     node-role.kubernetes.io/node: ""
   nonMasqueradeCIDR: 172.20.0.0/16
   podManifestPath: /etc/kubernetes/manifests
+Nvidia: null
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
