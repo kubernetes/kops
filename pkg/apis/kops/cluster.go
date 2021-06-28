@@ -208,12 +208,20 @@ type ClusterSpec struct {
 	ClusterAutoscaler *ClusterAutoscalerConfig `json:"clusterAutoscaler,omitempty"`
 	// WarmPool defines the default warm pool settings for instance groups (AWS only).
 	WarmPool *WarmPoolSpec `json:"warmPool,omitempty"`
-
 	// ServiceAccountIssuerDiscovery configures the OIDC Issuer for ServiceAccounts.
 	ServiceAccountIssuerDiscovery *ServiceAccountIssuerDiscoveryConfig `json:"serviceAccountIssuerDiscovery,omitempty"`
-
 	// SnapshotController defines the CSI Snapshot Controller configuration.
 	SnapshotController *SnapshotControllerConfig `json:"snapshotController,omitempty"`
+	// NvidiaConfiguration configures the Nvidia GPU runtime.
+	Nvidia *NvidiaConfiguration `json:"nvidia,omitempty"`
+}
+
+type NvidiaConfiguration struct {
+	// Package is the name of the nvidia driver package that will be installed.
+	// Default is nvidia-kernel-common-460-server.
+	DriverPackage string `json:"package,omitempty"`
+	// Install determines if kOps will install the Nvidia GPU runtime
+	Install *bool `json:"install,omitempty"`
 }
 
 // ServiceAccountIssuerDiscoveryConfig configures an OIDC Issuer.
