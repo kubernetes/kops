@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubectl/pkg/util/i18n"
@@ -120,7 +121,7 @@ func NewCmdGetCluster(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 	return cmd
 }
 
-func RunGetClusters(ctx context.Context, f Factory, out io.Writer, options *GetClusterOptions) error {
+func RunGetClusters(ctx context.Context, f commandutils.Factory, out io.Writer, options *GetClusterOptions) error {
 	client, err := f.Clientset()
 	if err != nil {
 		return err
