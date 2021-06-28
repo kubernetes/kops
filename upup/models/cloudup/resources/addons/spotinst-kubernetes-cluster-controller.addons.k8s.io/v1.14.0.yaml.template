@@ -133,7 +133,7 @@ rules:
   # ----------------------------------------------------------------------------
 - apiGroups: ["sparkoperator.k8s.io"]
   resources: ["sparkapplications", "scheduledsparkapplications"]
-  verbs: ["get", "list"]
+  verbs: ["get", "list", "create"]
 - apiGroups: ["wave.spot.io"]
   resources: ["sparkapplications", "wavecomponents", "waveenvironments"]
   verbs: ["get", "list"]
@@ -205,7 +205,7 @@ spec:
       containers:
       - name: spotinst-kubernetes-cluster-controller
         imagePullPolicy: Always
-        image: gcr.io/spotinst-artifacts/kubernetes-cluster-controller:1.0.75
+        image: gcr.io/spotinst-artifacts/kubernetes-cluster-controller:1.0.76
         livenessProbe:
           httpGet:
             path: /healthcheck
