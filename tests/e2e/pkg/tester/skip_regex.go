@@ -70,17 +70,6 @@ func (t *Tester) setSkipRegexFlag() error {
 		}
 	}
 
-	igs, err := t.getKopsInstanceGroups()
-	if err != nil {
-		return err
-	}
-	for _, ig := range igs {
-		if strings.Contains(ig.Spec.Image, "arm64") {
-			skipRegex += "|Simple.pod.should.handle.in-cluster.config"
-			break
-		}
-	}
-
 	// Ensure it is valid regex
 	if _, err := regexp.Compile(skipRegex); err != nil {
 		return err
