@@ -86,10 +86,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-k8s-local" {
     id      = aws_launch_template.master-us-test-1a-masters-minimal-k8s-local.id
     version = aws_launch_template.master-us-test-1a-masters-minimal-k8s-local.latest_version
   }
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "master-us-test-1a.masters.minimal.k8s.local"
+  max_size              = 1
+  metrics_granularity   = "1Minute"
+  min_size              = 1
+  name                  = "master-us-test-1a.masters.minimal.k8s.local"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -149,10 +150,11 @@ resource "aws_autoscaling_group" "nodes-minimal-k8s-local" {
     id      = aws_launch_template.nodes-minimal-k8s-local.id
     version = aws_launch_template.nodes-minimal-k8s-local.latest_version
   }
-  max_size            = 2
-  metrics_granularity = "1Minute"
-  min_size            = 2
-  name                = "nodes.minimal.k8s.local"
+  max_size              = 2
+  metrics_granularity   = "1Minute"
+  min_size              = 2
+  name                  = "nodes.minimal.k8s.local"
+  protect_from_scale_in = false
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -324,6 +326,9 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-k8s-local" {
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
+  monitoring {
+    enabled = false
+  }
   name = "master-us-test-1a.masters.minimal.k8s.local"
   network_interfaces {
     associate_public_ip_address = true
@@ -401,6 +406,9 @@ resource "aws_launch_template" "nodes-minimal-k8s-local" {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
+  }
+  monitoring {
+    enabled = false
   }
   name = "nodes.minimal.k8s.local"
   network_interfaces {

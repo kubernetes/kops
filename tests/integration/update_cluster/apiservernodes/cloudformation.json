@@ -320,6 +320,9 @@
             "HttpPutResponseHopLimit": 1,
             "HttpTokens": "optional"
           },
+          "Monitoring": {
+            "Enabled": false
+          },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,
@@ -438,6 +441,9 @@
           "MetadataOptions": {
             "HttpPutResponseHopLimit": 1,
             "HttpTokens": "optional"
+          },
+          "Monitoring": {
+            "Enabled": false
           },
           "NetworkInterfaces": [
             {
@@ -585,6 +591,9 @@
           "MetadataOptions": {
             "HttpPutResponseHopLimit": 1,
             "HttpTokens": "optional"
+          },
+          "Monitoring": {
+            "Enabled": false
           },
           "NetworkInterfaces": [
             {
