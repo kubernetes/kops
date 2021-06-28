@@ -60,8 +60,9 @@ type CreateKeypairOptions struct {
 }
 
 var keysetCommonNames = map[string]string{
-	"ca":              "kubernetes",
-	"service-account": "service-account",
+	"ca":                     "kubernetes",
+	"etcd-clients-ca-cilium": "etcd-clients-ca-cilium",
+	"service-account":        "service-account",
 }
 
 // NewCmdCreateKeypair returns a create keypair command.
