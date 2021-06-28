@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
@@ -116,7 +117,7 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunGet(ctx context.Context, f Factory, out io.Writer, options *GetOptions) error {
+func RunGet(ctx context.Context, f commandutils.Factory, out io.Writer, options *GetOptions) error {
 
 	client, err := f.Clientset()
 	if err != nil {
