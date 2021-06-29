@@ -110,7 +110,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 				exitWithError(err)
 			}
 
-			clusterName := rootCommand.ClusterName()
+			clusterName := rootCommand.ClusterName(true)
 
 			if _, err := RunUpdateCluster(ctx, f, clusterName, out, options); err != nil {
 				exitWithError(err)

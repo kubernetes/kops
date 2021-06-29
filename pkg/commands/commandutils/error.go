@@ -24,6 +24,10 @@ import (
 
 // CompletionError a helper function to logs and return an error from a Cobra completion function.
 func CompletionError(prefix string, err error) ([]string, cobra.ShellCompDirective) {
-	cobra.CompError(fmt.Sprintf("%s: %v", prefix, err))
+	if err == nil {
+		cobra.CompError(prefix)
+	} else {
+		cobra.CompError(fmt.Sprintf("%s: %v", prefix, err))
+	}
 	return nil, cobra.ShellCompDirectiveError | cobra.ShellCompDirectiveNoFileComp
 }

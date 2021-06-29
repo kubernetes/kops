@@ -79,7 +79,7 @@ func NewCmdCreateSecretWeaveEncryptionConfig(f *util.Factory, out io.Writer) *co
 				exitWithError(err)
 			}
 
-			options.ClusterName = rootCommand.ClusterName()
+			options.ClusterName = rootCommand.ClusterName(true)
 
 			err = RunCreateSecretWeaveEncryptionConfig(ctx, f, options)
 			if err != nil {

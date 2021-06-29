@@ -83,7 +83,7 @@ func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, option
 		return err
 	}
 
-	clusterName := rootCommand.ClusterName()
+	clusterName := rootCommand.ClusterName(true)
 	options.clusterName = clusterName
 	if clusterName == "" {
 		return fmt.Errorf("--name is required")
