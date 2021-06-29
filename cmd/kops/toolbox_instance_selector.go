@@ -189,7 +189,7 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, args []str
 		return fmt.Errorf("Can only specify one instance group name at a time")
 	}
 	igName := args[0]
-	clusterName := rootCommand.ClusterName()
+	clusterName := rootCommand.ClusterName(true)
 
 	flags, err := processAndValidateFlags(commandline)
 	if err != nil {

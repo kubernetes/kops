@@ -208,7 +208,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 			return
 		}
 
-		clusterName := rootCommand.ClusterName()
+		clusterName := rootCommand.ClusterName(true)
 		if clusterName == "" {
 			exitWithError(fmt.Errorf("--name is required"))
 			return

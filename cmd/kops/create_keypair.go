@@ -26,7 +26,9 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/commands/commandutils"
 
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/pki"
@@ -39,7 +41,22 @@ import (
 var (
 	createKeypairLong = templates.LongDesc(i18n.T(`
 	Add a CA certificate and private key to a keyset.
-    `))
+
+	If neither a certificate nor a private key is provided, a new self-signed
+	certificate and private key will be generated.
+
+	If no certificate is provided but a private key is, a self-signed
+	certificate will be generated from the provided private key.
+
+	If a certificate is provided but no private key is, the certificate
+	will be added to the keyset without a private key. Such a certificate
+	cannot be made primary.
+
+	One of the certificate/private key pairs in each keyset must be primary.
+	The primary keypair is the one used to issue certificates (or, for the
+	"service-account" keyset, service-account tokens). As a consequence, the
+	first entry in a keyset must be made primary.
+	`))
 
 	createKeypairExample = templates.Examples(i18n.T(`
 	Add a CA certificate and private key to a keyset.
@@ -59,43 +76,45 @@ type CreateKeypairOptions struct {
 	Primary        bool
 }
 
-var keysetCommonNames = map[string]string{
-	"ca":                     "kubernetes",
-	"etcd-clients-ca-cilium": "etcd-clients-ca-cilium",
-	"service-account":        "service-account",
-}
+var rotatableKeysets = sets.NewString(
+	"ca",
+	"etcd-clients-ca-cilium",
+	"service-account",
+)
 
 // NewCmdCreateKeypair returns a create keypair command.
 func NewCmdCreateKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateKeypairOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "keypair KEYSET",
+		Use:     "keypair keyset",
 		Short:   createKeypairShort,
 		Long:    createKeypairLong,
 		Example: createKeypairExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
-
-			options.ClusterName = rootCommand.ClusterName()
+		Args: func(cmd *cobra.Command, args []string) error {
+			options.ClusterName = rootCommand.ClusterName(true)
 
 			if options.ClusterName == "" {
-				exitWithError(fmt.Errorf("--name is required"))
-				return
+				return fmt.Errorf("--name is required")
 			}
 
 			if len(args) == 0 {
-				exitWithError(fmt.Errorf("must specify name of keyset to add keypair to"))
+				return fmt.Errorf("must specify name of keyset to add keypair to")
 			}
-			if len(args) != 1 {
-				exitWithError(fmt.Errorf("can only add to one keyset at a time"))
-			}
+
 			options.Keyset = args[0]
 
-			err := RunCreateKeypair(ctx, f, out, options)
-			if err != nil {
-				exitWithError(err)
+			if len(args) != 1 {
+				return fmt.Errorf("can only add to one keyset at a time")
 			}
+
+			return nil
+		},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return completeCreateKeyset(options, args, toComplete)
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunCreateKeypair(context.TODO(), f, out, options)
 		},
 	}
 
@@ -108,8 +127,7 @@ func NewCmdCreateKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 
 // RunCreateKeypair adds a custom CA certificate and private key.
 func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, options *CreateKeypairOptions) error {
-	commonName := keysetCommonNames[options.Keyset]
-	if commonName == "" {
+	if !rotatableKeysets.Has(options.Keyset) {
 		return fmt.Errorf("adding keypair to %q is not supported", options.Keyset)
 	}
 
@@ -151,6 +169,10 @@ func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 			}
 		}
 
+		commonName := options.Keyset
+		if commonName == "ca" {
+			commonName = "kubernetes"
+		}
 		req := pki.IssueCertRequest{
 			Type:       "ca",
 			Subject:    pkix.Name{CommonName: "cn=" + commonName},
@@ -202,4 +224,62 @@ func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 		klog.Infof("using user provided private key: %v\n", options.PrivateKeyPath)
 	}
 	return nil
+}
+
+func completeCreateKeyset(options *CreateKeypairOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	commandutils.ConfigureKlogForCompletion()
+
+	options.ClusterName = rootCommand.ClusterName(false)
+
+	if options.ClusterName == "" {
+		return []string{"--name"}, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	ctx := context.TODO()
+	cluster, err := GetCluster(ctx, &rootCommand, options.ClusterName)
+	if err != nil {
+		return commandutils.CompletionError("getting cluster", err)
+	}
+
+	clientSet, err := rootCommand.Clientset()
+	if err != nil {
+		return commandutils.CompletionError("getting clientset", err)
+	}
+
+	keyStore, err := clientSet.KeyStore(cluster)
+	if err != nil {
+		return commandutils.CompletionError("getting keystore", err)
+	}
+
+	if len(args) == 0 {
+		list, err := keyStore.ListKeysets()
+		if err != nil {
+			return commandutils.CompletionError("listing keysets", err)
+		}
+
+		var keysets []string
+		for name := range list {
+			if rotatableKeysets.Has(name) {
+				keysets = append(keysets, name)
+			}
+		}
+
+		return keysets, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	if len(args) > 1 {
+		return commandutils.CompletionError("too many arguments", nil)
+	}
+
+	var flags []string
+	if options.CertPath == "" {
+		flags = append(flags, "--cert")
+	}
+	if options.PrivateKeyPath == "" {
+		flags = append(flags, "--key")
+	}
+	if !options.Primary && (options.CertPath == "" || options.PrivateKeyPath != "") {
+		flags = append(flags, "--primary")
+	}
+	return flags, cobra.ShellCompDirectiveNoFileComp
 }

@@ -9,8 +9,16 @@ Add a CA certificate and private key to a keyset.
 
 Add a CA certificate and private key to a keyset.
 
+ If neither a certificate nor a private key is provided, a new self-signed certificate and private key will be generated.
+
+ If no certificate is provided but a private key is, a self-signed certificate will be generated from the provided private key.
+
+ If a certificate is provided but no private key is, the certificate will be added to the keyset without a private key. Such a certificate cannot be made primary.
+
+ One of the certificate/private key pairs in each keyset must be primary. The primary keypair is the one used to issue certificates (or, for the "service-account" keyset, service-account tokens). As a consequence, the first entry in a keyset must be made primary.
+
 ```
-kops create keypair KEYSET [flags]
+kops create keypair keyset [flags]
 ```
 
 ### Examples

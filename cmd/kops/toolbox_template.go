@@ -88,7 +88,7 @@ func NewCmdToolboxTemplate(f *util.Factory, out io.Writer) *cobra.Command {
 			if err := rootCommand.ProcessArgs(args); err != nil {
 				exitWithError(err)
 			}
-			options.clusterName = rootCommand.ClusterName()
+			options.clusterName = rootCommand.ClusterName(true)
 
 			if err := runToolBoxTemplate(f, out, options); err != nil {
 				exitWithError(err)
