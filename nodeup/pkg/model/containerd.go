@@ -464,7 +464,7 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "cni", "conf_template"}, "/etc/containerd/config-cni.template")
 	}
 
-	if b.NodeupConfig.Nvidia != nil && fi.BoolValue(b.NodeupConfig.Nvidia.Install) {
+	if b.InstallNvidiaRuntime() {
 		if err := appendGPURuntimeContainerdConfig(config); err != nil {
 			return "", err
 		}
