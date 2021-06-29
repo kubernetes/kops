@@ -93,9 +93,9 @@ func downloadURLAlways(url string, destPath string, dirMode os.FileMode) error {
 		},
 	}
 
-	// this will stop slow downloads after 5 minutes
+	// this will stop slow downloads after 3 minutes
 	// and interrupt reading of the Response.Body
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
