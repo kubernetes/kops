@@ -78,7 +78,7 @@ func NewCmdCreateSecretCiliumEncryptionConfig(f *util.Factory, out io.Writer) *c
 				exitWithError(err)
 			}
 
-			options.ClusterName = rootCommand.ClusterName()
+			options.ClusterName = rootCommand.ClusterName(true)
 
 			err = RunCreateSecretCiliumEncryptionConfig(ctx, f, os.Stdout, options)
 			if err != nil {

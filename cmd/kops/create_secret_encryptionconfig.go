@@ -78,7 +78,7 @@ func NewCmdCreateSecretEncryptionConfig(f *util.Factory, out io.Writer) *cobra.C
 				exitWithError(err)
 			}
 
-			options.ClusterName = rootCommand.ClusterName()
+			options.ClusterName = rootCommand.ClusterName(true)
 
 			err = RunCreateSecretEncryptionConfig(ctx, f, os.Stdout, options)
 			if err != nil {

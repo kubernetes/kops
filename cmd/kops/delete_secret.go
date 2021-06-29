@@ -71,7 +71,7 @@ func NewCmdDeleteSecret(f *util.Factory, out io.Writer) *cobra.Command {
 				options.SecretID = args[2]
 			}
 
-			options.ClusterName = rootCommand.ClusterName()
+			options.ClusterName = rootCommand.ClusterName(true)
 
 			err := RunDeleteSecret(ctx, f, out, options)
 			if err != nil {

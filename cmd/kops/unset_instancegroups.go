@@ -63,7 +63,7 @@ func NewCmdUnsetInstancegroup(f *util.Factory, out io.Writer) *cobra.Command {
 				}
 			}
 
-			options.ClusterName = rootCommand.ClusterName()
+			options.ClusterName = rootCommand.ClusterName(true)
 
 			if err := commands.RunUnsetInstancegroup(ctx, f, cmd, out, options); err != nil {
 				exitWithError(err)
