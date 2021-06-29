@@ -235,21 +235,13 @@ func (c *RootCmd) ProcessArgs(args []string) error {
 	return fmt.Errorf("expected a single <clustername> to be passed as an argument")
 }
 
-func (c *RootCmd) ClusterName() string {
+func (c *RootCmd) ClusterName(verbose bool) string {
 	if c.clusterName != "" {
 		return c.clusterName
 	}
 
-	c.clusterName = ClusterNameFromKubecfg()
-
-	return c.clusterName
-}
-
-func ClusterNameFromKubecfg() string {
 	// Read from kubeconfig
 	pathOptions := clientcmd.NewDefaultPathOptions()
-
-	clusterName := ""
 
 	config, err := pathOptions.GetStartingConfig()
 	if err != nil {
@@ -263,20 +255,14 @@ func ClusterNameFromKubecfg() string {
 		} else if context.Cluster == "" {
 			klog.Warningf("context %q in kubecfg did not have a cluster", config.CurrentContext)
 		} else {
-			fmt.Fprintf(os.Stderr, "Using cluster from kubectl context: %s\n\n", context.Cluster)
-			clusterName = context.Cluster
+			if verbose {
+				fmt.Fprintf(os.Stderr, "Using cluster from kubectl context: %s\n\n", context.Cluster)
+			}
+			c.clusterName = context.Cluster
 		}
 	}
 
-	//config, err := readKubectlClusterConfig()
-	//if err != nil {
-	//	klog.Warningf("error reading kubecfg: %v", err)
-	//} else if config != nil && config.Name != "" {
-	//	fmt.Fprintf(os.Stderr, "Using cluster from kubectl context: %s\n\n", config.Name)
-	//	c.clusterName = config.Name
-	//}
-
-	return clusterName
+	return c.clusterName
 }
 
 func (c *RootCmd) Clientset() (simple.Clientset, error) {
@@ -284,7 +270,7 @@ func (c *RootCmd) Clientset() (simple.Clientset, error) {
 }
 
 func (c *RootCmd) Cluster(ctx context.Context) (*kopsapi.Cluster, error) {
-	clusterName := c.ClusterName()
+	clusterName := c.ClusterName(true)
 	if clusterName == "" {
 		return nil, fmt.Errorf("--name is required")
 	}

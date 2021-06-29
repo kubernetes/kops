@@ -65,7 +65,7 @@ func NewCmdPromoteKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := context.TODO()
 
-			options.ClusterName = rootCommand.ClusterName()
+			options.ClusterName = rootCommand.ClusterName(true)
 
 			if options.ClusterName == "" {
 				exitWithError(fmt.Errorf("--name is required"))
@@ -95,7 +95,7 @@ func NewCmdPromoteKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 
 // RunPromoteKeypair promotes a keypair.
 func RunPromoteKeypair(ctx context.Context, f *util.Factory, out io.Writer, options *PromoteKeypairOptions) error {
-	if keysetCommonNames[options.Keyset] == "" {
+	if !rotatableKeysets.Has(options.Keyset) {
 		return fmt.Errorf("promoting keypairs for %q is not supported", options.Keyset)
 	}
 

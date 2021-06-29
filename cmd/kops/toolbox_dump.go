@@ -87,7 +87,7 @@ func NewCmdToolboxDump(f *util.Factory, out io.Writer) *cobra.Command {
 				exitWithError(err)
 			}
 
-			options.ClusterName = rootCommand.ClusterName()
+			options.ClusterName = rootCommand.ClusterName(true)
 
 			err := RunToolboxDump(ctx, f, out, options)
 			if err != nil {

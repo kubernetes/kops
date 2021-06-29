@@ -83,7 +83,7 @@ func NewCmdCreateSecretDockerConfig(f *util.Factory, out io.Writer) *cobra.Comma
 				exitWithError(err)
 			}
 
-			options.ClusterName = rootCommand.ClusterName()
+			options.ClusterName = rootCommand.ClusterName(true)
 
 			err = RunCreateSecretDockerConfig(ctx, f, os.Stdout, options)
 			if err != nil {

@@ -73,7 +73,7 @@ func NewCmdCreateSecretPublicKey(f *util.Factory, out io.Writer) *cobra.Command 
 				exitWithError(err)
 			}
 
-			options.ClusterName = rootCommand.ClusterName()
+			options.ClusterName = rootCommand.ClusterName(true)
 
 			err = RunCreateSecretPublicKey(ctx, f, os.Stdout, options)
 			if err != nil {

@@ -82,7 +82,7 @@ func NewCmdGetInstanceGroups(f *util.Factory, out io.Writer, getOptions *GetOpti
 func RunGetInstanceGroups(ctx context.Context, options *GetInstanceGroupsOptions, args []string) error {
 	out := os.Stdout
 
-	clusterName := rootCommand.ClusterName()
+	clusterName := rootCommand.ClusterName(true)
 	if clusterName == "" {
 		return fmt.Errorf("--name is required")
 	}
