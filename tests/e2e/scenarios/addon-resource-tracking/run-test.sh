@@ -66,3 +66,5 @@ kops validate cluster --wait=5m
 
 # We should no longer have a daemonset called aws-node-termination-handler
 haveds && exit 1
+
+echo "Done"
