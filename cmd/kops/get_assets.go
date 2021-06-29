@@ -98,7 +98,7 @@ func NewCmdGetAssets(f *util.Factory, out io.Writer, getOptions *GetOptions) *co
 
 func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *GetAssetsOptions) error {
 
-	clusterName := rootCommand.ClusterName()
+	clusterName := rootCommand.ClusterName(true)
 	options.clusterName = clusterName
 	if clusterName == "" {
 		return fmt.Errorf("--name is required")

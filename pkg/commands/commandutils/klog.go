@@ -24,6 +24,7 @@ import (
 // ConfigureKlogForCompletion configures Klog to not interfere with Cobra completion functions.
 func ConfigureKlogForCompletion() {
 	klog.SetOutput(&toCompDebug{})
+	klog.LogToStderr(false)
 }
 
 type toCompDebug struct{}

@@ -129,7 +129,7 @@ func NewCmdDeleteInstance(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		ctx := context.TODO()
 
-		clusterName := rootCommand.ClusterName()
+		clusterName := rootCommand.ClusterName(true)
 
 		if clusterName == "" {
 			exitWithError(fmt.Errorf("--name is required"))
