@@ -62,7 +62,7 @@ func NewCmdDistrustKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := context.TODO()
 
-			options.ClusterName = rootCommand.ClusterName()
+			options.ClusterName = rootCommand.ClusterName(true)
 			if options.ClusterName == "" {
 				exitWithError(fmt.Errorf("--name is required"))
 				return

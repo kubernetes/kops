@@ -78,7 +78,7 @@ func NewCmdDeleteInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 			groupName := args[0]
 			options.GroupName = groupName
 
-			options.ClusterName = rootCommand.ClusterName()
+			options.ClusterName = rootCommand.ClusterName(true)
 
 			if !options.Yes {
 				message := fmt.Sprintf("Do you really want to delete instance group %q? This action cannot be undone.", groupName)

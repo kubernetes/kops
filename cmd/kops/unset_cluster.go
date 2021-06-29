@@ -62,7 +62,7 @@ func NewCmdUnsetCluster(f *util.Factory, out io.Writer) *cobra.Command {
 			}
 
 			if options.ClusterName == "" {
-				options.ClusterName = rootCommand.ClusterName()
+				options.ClusterName = rootCommand.ClusterName(true)
 			}
 
 			if err := commands.RunUnsetCluster(ctx, f, cmd, out, options); err != nil {
