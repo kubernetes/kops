@@ -23,9 +23,9 @@ contents: |
       - --cloud-config=/etc/kubernetes/cloud.config
       - --cloud-provider=aws
       - --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,NodeRestriction,ResourceQuota
-      - --etcd-cafile=/etc/kubernetes/pki/kube-apiserver/etcd-ca.crt
-      - --etcd-certfile=/etc/kubernetes/pki/kube-apiserver/etcd-client.crt
-      - --etcd-keyfile=/etc/kubernetes/pki/kube-apiserver/etcd-client.key
+      - --etcd-cafile=/srv/kubernetes/kube-apiserver/etcd-ca.crt
+      - --etcd-certfile=/srv/kubernetes/kube-apiserver/etcd-client.crt
+      - --etcd-keyfile=/srv/kubernetes/kube-apiserver/etcd-client.key
       - --etcd-servers-overrides=/events#https://events.etcd.minimal.example.com:4002
       - --etcd-servers=https://main.etcd.minimal.example.com:4001
       - --insecure-port=0
@@ -166,6 +166,37 @@ mode: "0755"
 path: /srv/kubernetes
 type: directory
 ---
+mode: "0755"
+path: /srv/kubernetes/kube-apiserver
+type: directory
+---
+contents: ""
+mode: "0644"
+path: /srv/kubernetes/kube-apiserver/etcd-ca.crt
+type: file
+---
+contents:
+  task:
+    Name: etcd-client
+    signer: etcd-clients-ca
+    subject:
+      CommonName: kube-apiserver
+    type: client
+mode: "0644"
+path: /srv/kubernetes/kube-apiserver/etcd-client.crt
+type: file
+---
+contents:
+  task:
+    Name: etcd-client
+    signer: etcd-clients-ca
+    subject:
+      CommonName: kube-apiserver
+    type: client
+mode: "0600"
+path: /srv/kubernetes/kube-apiserver/etcd-client.key
+type: file
+---
 contents: |
   -----BEGIN RSA PUBLIC KEY-----
   MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANiW3hfHTcKnxCig+uWhpVbOfH1pANKm
@@ -206,6 +237,12 @@ ifNotExists: true
 mode: "0400"
 path: /var/log/kube-apiserver.log
 type: file
+---
+Name: etcd-client
+signer: etcd-clients-ca
+subject:
+  CommonName: kube-apiserver
+type: client
 ---
 Name: kubelet-api
 signer: ca
