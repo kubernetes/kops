@@ -95,6 +95,35 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		Mode:     s("0600"),
 	})
 
+	if b.UseEtcdManager() && b.UseEtcdTLS() {
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join(pathSrvKAPI, "etcd-ca.crt"),
+			Contents: fi.NewStringResource(b.NodeupConfig.CAs["etcd-clients-ca"]),
+			Type:     nodetasks.FileType_File,
+			Mode:     fi.String("0644"),
+		})
+		kubeAPIServer.EtcdCAFile = filepath.Join(pathSrvKAPI, "etcd-ca.crt")
+
+		issueCert := &nodetasks.IssueCert{
+			Name:   "etcd-client",
+			Signer: "etcd-clients-ca",
+			Type:   "client",
+			Subject: nodetasks.PKIXName{
+				CommonName: "kube-apiserver",
+			},
+		}
+		c.AddTask(issueCert)
+		if err := issueCert.AddFileTasks(c, pathSrvKAPI, issueCert.Name, "", nil); err != nil {
+			return err
+		}
+		kubeAPIServer.EtcdCertFile = filepath.Join(pathSrvKAPI, "etcd-client.crt")
+		kubeAPIServer.EtcdKeyFile = filepath.Join(pathSrvKAPI, "etcd-client.key")
+	} else if b.UseEtcdTLS() {
+		kubeAPIServer.EtcdCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
+		kubeAPIServer.EtcdCertFile = filepath.Join(b.PathSrvKubernetes(), "etcd-client.pem")
+		kubeAPIServer.EtcdKeyFile = filepath.Join(b.PathSrvKubernetes(), "etcd-client-key.pem")
+	}
+
 	{
 		pod, err := b.buildPod(&kubeAPIServer)
 		if err != nil {
@@ -336,17 +365,6 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 				kubeAPIServer.EtcdServersOverrides[i] = strings.ReplaceAll(kubeAPIServer.EtcdServersOverrides[i], "127.0.0.1", eventsEtcdDNSName)
 			}
 		}
-	}
-
-	if b.UseEtcdManager() && b.UseEtcdTLS() {
-		basedir := "/etc/kubernetes/pki/kube-apiserver"
-		kubeAPIServer.EtcdCAFile = filepath.Join(basedir, "etcd-ca.crt")
-		kubeAPIServer.EtcdCertFile = filepath.Join(basedir, "etcd-client.crt")
-		kubeAPIServer.EtcdKeyFile = filepath.Join(basedir, "etcd-client.key")
-	} else if b.UseEtcdTLS() {
-		kubeAPIServer.EtcdCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
-		kubeAPIServer.EtcdCertFile = filepath.Join(b.PathSrvKubernetes(), "etcd-client.pem")
-		kubeAPIServer.EtcdKeyFile = filepath.Join(b.PathSrvKubernetes(), "etcd-client-key.pem")
 	}
 
 	// @note we are making assumption were using the ones created by the pki model, not custom defined ones
