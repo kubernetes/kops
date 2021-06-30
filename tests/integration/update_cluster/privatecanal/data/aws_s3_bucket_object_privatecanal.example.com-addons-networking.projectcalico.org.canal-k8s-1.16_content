@@ -1,0 +1,756 @@
+apiVersion: v1
+data:
+  canal_iface: ""
+  cni_network_config: |-
+    {
+      "name": "k8s-pod-network",
+      "cniVersion": "0.3.1",
+      "plugins": [
+        {
+          "type": "calico",
+          "log_level": "info",
+          "datastore_type": "kubernetes",
+          "nodename": "__KUBERNETES_NODE_NAME__",
+          "mtu": __CNI_MTU__,
+          "ipam": {
+              "type": "host-local",
+              "subnet": "usePodCidr"
+          },
+          "policy": {
+              "type": "k8s"
+          },
+          "kubernetes": {
+              "kubeconfig": "__KUBECONFIG_FILEPATH__"
+          }
+        },
+        {
+          "type": "portmap",
+          "snat": true,
+          "capabilities": {"portMappings": true}
+        },
+        {
+          "type": "bandwidth",
+          "capabilities": {"bandwidth": true}
+        }
+      ]
+    }
+  masquerade: "true"
+  net-conf.json: |
+    {
+      "Network": "100.64.0.0/10",
+      "Backend": {
+        "Type": "vxlan"
+      }
+    }
+  typha_service_name: none
+  veth_mtu: "1440"
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: canal-config
+  namespace: kube-system
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: bgpconfigurations.crd.projectcalico.org
+spec:
+  group: crd.projectcalico.org
+  names:
+    kind: BGPConfiguration
+    plural: bgpconfigurations
+    singular: bgpconfiguration
+  scope: Cluster
+  version: v1
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: bgppeers.crd.projectcalico.org
+spec:
+  group: crd.projectcalico.org
+  names:
+    kind: BGPPeer
+    plural: bgppeers
+    singular: bgppeer
+  scope: Cluster
+  version: v1
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: blockaffinities.crd.projectcalico.org
+spec:
+  group: crd.projectcalico.org
+  names:
+    kind: BlockAffinity
+    plural: blockaffinities
+    singular: blockaffinity
+  scope: Cluster
+  version: v1
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: clusterinformations.crd.projectcalico.org
+spec:
+  group: crd.projectcalico.org
+  names:
+    kind: ClusterInformation
+    plural: clusterinformations
+    singular: clusterinformation
+  scope: Cluster
+  version: v1
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: felixconfigurations.crd.projectcalico.org
+spec:
+  group: crd.projectcalico.org
+  names:
+    kind: FelixConfiguration
+    plural: felixconfigurations
+    singular: felixconfiguration
+  scope: Cluster
+  version: v1
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: globalnetworkpolicies.crd.projectcalico.org
+spec:
+  group: crd.projectcalico.org
+  names:
+    kind: GlobalNetworkPolicy
+    plural: globalnetworkpolicies
+    singular: globalnetworkpolicy
+  scope: Cluster
+  version: v1
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: globalnetworksets.crd.projectcalico.org
+spec:
+  group: crd.projectcalico.org
+  names:
+    kind: GlobalNetworkSet
+    plural: globalnetworksets
+    singular: globalnetworkset
+  scope: Cluster
+  version: v1
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: hostendpoints.crd.projectcalico.org
+spec:
+  group: crd.projectcalico.org
+  names:
+    kind: HostEndpoint
+    plural: hostendpoints
+    singular: hostendpoint
+  scope: Cluster
+  version: v1
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: ipamblocks.crd.projectcalico.org
+spec:
+  group: crd.projectcalico.org
+  names:
+    kind: IPAMBlock
+    plural: ipamblocks
+    singular: ipamblock
+  scope: Cluster
+  version: v1
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: ipamconfigs.crd.projectcalico.org
+spec:
+  group: crd.projectcalico.org
+  names:
+    kind: IPAMConfig
+    plural: ipamconfigs
+    singular: ipamconfig
+  scope: Cluster
+  version: v1
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: ipamhandles.crd.projectcalico.org
+spec:
+  group: crd.projectcalico.org
+  names:
+    kind: IPAMHandle
+    plural: ipamhandles
+    singular: ipamhandle
+  scope: Cluster
+  version: v1
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: ippools.crd.projectcalico.org
+spec:
+  group: crd.projectcalico.org
+  names:
+    kind: IPPool
+    plural: ippools
+    singular: ippool
+  scope: Cluster
+  version: v1
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: networkpolicies.crd.projectcalico.org
+spec:
+  group: crd.projectcalico.org
+  names:
+    kind: NetworkPolicy
+    plural: networkpolicies
+    singular: networkpolicy
+  scope: Namespaced
+  version: v1
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: networksets.crd.projectcalico.org
+spec:
+  group: crd.projectcalico.org
+  names:
+    kind: NetworkSet
+    plural: networksets
+    singular: networkset
+  scope: Namespaced
+  version: v1
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: calico
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - nodes
+  - namespaces
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  - services
+  verbs:
+  - watch
+  - list
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
+  - update
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - networkpolicies
+  verbs:
+  - watch
+  - list
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - namespaces
+  - serviceaccounts
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods/status
+  verbs:
+  - patch
+- apiGroups:
+  - crd.projectcalico.org
+  resources:
+  - globalfelixconfigs
+  - felixconfigurations
+  - bgppeers
+  - globalbgpconfigs
+  - bgpconfigurations
+  - ippools
+  - ipamblocks
+  - globalnetworkpolicies
+  - globalnetworksets
+  - networkpolicies
+  - networksets
+  - clusterinformations
+  - hostendpoints
+  - blockaffinities
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - crd.projectcalico.org
+  resources:
+  - ippools
+  - felixconfigurations
+  - clusterinformations
+  verbs:
+  - create
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - crd.projectcalico.org
+  resources:
+  - bgpconfigurations
+  - bgppeers
+  verbs:
+  - create
+  - update
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: flannel
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: canal-flannel
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: flannel
+subjects:
+- kind: ServiceAccount
+  name: canal
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: canal-calico
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: calico
+subjects:
+- kind: ServiceAccount
+  name: canal
+  namespace: kube-system
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    k8s-app: canal
+    role.kubernetes.io/networking: "1"
+  name: canal
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: canal
+  template:
+    metadata:
+      labels:
+        k8s-app: canal
+    spec:
+      containers:
+      - env:
+        - name: DATASTORE_TYPE
+          value: kubernetes
+        - name: USE_POD_CIDR
+          value: "true"
+        - name: WAIT_FOR_DATASTORE
+          value: "true"
+        - name: NODENAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: CALICO_NETWORKING_BACKEND
+          value: none
+        - name: CLUSTER_TYPE
+          value: k8s,canal
+        - name: FELIX_IPTABLESREFRESHINTERVAL
+          value: "60"
+        - name: IP
+          value: ""
+        - name: FELIX_IPINIPMTU
+          valueFrom:
+            configMapKeyRef:
+              key: veth_mtu
+              name: canal-config
+        - name: CALICO_DISABLE_FILE_LOGGING
+          value: "true"
+        - name: FELIX_DEFAULTENDPOINTTOHOSTACTION
+          value: ACCEPT
+        - name: FELIX_IPV6SUPPORT
+          value: "false"
+        - name: FELIX_LOGSEVERITYSCREEN
+          value: info
+        - name: FELIX_HEALTHENABLED
+          value: "true"
+        - name: FELIX_CHAININSERTMODE
+          value: insert
+        - name: FELIX_IPTABLESBACKEND
+          value: Auto
+        - name: FELIX_PROMETHEUSMETRICSENABLED
+          value: "false"
+        - name: FELIX_PROMETHEUSMETRICSPORT
+          value: "9091"
+        - name: FELIX_PROMETHEUSGOMETRICSENABLED
+          value: "true"
+        - name: FELIX_PROMETHEUSPROCESSMETRICSENABLED
+          value: "true"
+        image: calico/node:v3.13.4
+        livenessProbe:
+          exec:
+            command:
+            - /bin/calico-node
+            - -felix-live
+          failureThreshold: 6
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        name: calico-node
+        readinessProbe:
+          httpGet:
+            host: localhost
+            path: /readiness
+            port: 9099
+          periodSeconds: 10
+        resources:
+          requests:
+            cpu: 100m
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: lib-modules
+          readOnly: true
+        - mountPath: /run/xtables.lock
+          name: xtables-lock
+          readOnly: false
+        - mountPath: /var/run/calico
+          name: var-run-calico
+          readOnly: false
+        - mountPath: /var/lib/calico
+          name: var-lib-calico
+          readOnly: false
+        - mountPath: /var/run/nodeagent
+          name: policysync
+      - command:
+        - /opt/bin/flanneld
+        - --ip-masq
+        - --kube-subnet-mgr
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: FLANNELD_IFACE
+          valueFrom:
+            configMapKeyRef:
+              key: canal_iface
+              name: canal-config
+        - name: FLANNELD_IP_MASQ
+          valueFrom:
+            configMapKeyRef:
+              key: masquerade
+              name: canal-config
+        image: quay.io/coreos/flannel:v0.11.0
+        name: kube-flannel
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /run/xtables.lock
+          name: xtables-lock
+          readOnly: false
+        - mountPath: /etc/kube-flannel/
+          name: flannel-cfg
+      hostNetwork: true
+      initContainers:
+      - command:
+        - /install-cni.sh
+        env:
+        - name: CNI_CONF_NAME
+          value: 10-canal.conflist
+        - name: CNI_NETWORK_CONFIG
+          valueFrom:
+            configMapKeyRef:
+              key: cni_network_config
+              name: canal-config
+        - name: KUBERNETES_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: CNI_MTU
+          valueFrom:
+            configMapKeyRef:
+              key: veth_mtu
+              name: canal-config
+        - name: SLEEP
+          value: "false"
+        image: calico/cni:v3.13.4
+        name: install-cni
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /host/opt/cni/bin
+          name: cni-bin-dir
+        - mountPath: /host/etc/cni/net.d
+          name: cni-net-dir
+      - image: calico/pod2daemon-flexvol:v3.13.4
+        name: flexvol-driver
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /host/driver
+          name: flexvol-driver-host
+      nodeSelector:
+        kubernetes.io/os: linux
+      priorityClassName: system-node-critical
+      serviceAccountName: canal
+      terminationGracePeriodSeconds: 0
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
+      volumes:
+      - hostPath:
+          path: /lib/modules
+        name: lib-modules
+      - hostPath:
+          path: /var/run/calico
+        name: var-run-calico
+      - hostPath:
+          path: /var/lib/calico
+        name: var-lib-calico
+      - hostPath:
+          path: /run/xtables.lock
+          type: FileOrCreate
+        name: xtables-lock
+      - configMap:
+          name: canal-config
+        name: flannel-cfg
+      - hostPath:
+          path: /opt/cni/bin
+        name: cni-bin-dir
+      - hostPath:
+          path: /etc/cni/net.d
+        name: cni-net-dir
+      - hostPath:
+          path: /var/run/nodeagent
+          type: DirectoryOrCreate
+        name: policysync
+      - hostPath:
+          path: /usr/libexec/kubernetes/kubelet-plugins/volume/exec/nodeagent~uds
+          type: DirectoryOrCreate
+        name: flexvol-driver-host
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: canal
+  namespace: kube-system

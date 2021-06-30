@@ -27,6 +27,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/try:go_default_library",
+        "//upup/pkg/fi/cloudup/terraformWriter:go_default_library",
         "//util/pkg/hashing:go_default_library",
         "//vendor/github.com/Azure/azure-pipeline-go/pipeline:go_default_library",
         "//vendor/github.com/Azure/azure-storage-blob-go/azblob:go_default_library",
