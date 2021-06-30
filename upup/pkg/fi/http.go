@@ -17,8 +17,10 @@ limitations under the License.
 package fi
 
 import (
+	"context"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"path"
@@ -77,18 +79,42 @@ func downloadURLAlways(url string, destPath string, dirMode os.FileMode) error {
 
 	klog.Infof("Downloading %q", url)
 
-	// Create a client with a shorter timeout
-	httpClient := http.Client{
-		Timeout: 2 * time.Minute,
+	// Create a client with custom timeouts
+	// to avoid idle downloads to hang the program
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ResponseHeaderTimeout: 10 * time.Second,
+			IdleConnTimeout:       30 * time.Second,
+		},
 	}
-	response, err := httpClient.Get(url)
+
+	// this will stop slow downloads after 3 minutes
+	// and interrupt reading of the Response.Body
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return fmt.Errorf("Cannot create request: %v", err)
+	}
+
+	response, err := httpClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("error doing HTTP fetch of %q: %v", url, err)
 	}
+	defer response.Body.Close()
+
 	if response.StatusCode >= 400 {
 		return fmt.Errorf("error response from %q: HTTP %v", url, response.StatusCode)
 	}
-	defer response.Body.Close()
+
+	start := time.Now()
+	defer klog.Infof("Copying %q to %q took %q seconds", url, destPath, time.Since(start))
 
 	_, err = io.Copy(output, response.Body)
 	if err != nil {
