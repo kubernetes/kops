@@ -25,6 +25,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -147,6 +148,10 @@ func TestBootstrapUserData(t *testing.T) {
 		c.AddTask(saTask)
 
 		bs := &BootstrapScriptBuilder{
+			KopsModelContext: &KopsModelContext{
+				IAMModelContext: iam.IAMModelContext{Cluster: cluster},
+				InstanceGroups:  []*kops.InstanceGroup{group},
+			},
 			NodeUpConfigBuilder: &nodeupConfigBuilder{cluster: cluster},
 			NodeUpAssets: map[architectures.Architecture]*mirrors.MirroredAsset{
 				architectures.ArchitectureAmd64: {
