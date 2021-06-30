@@ -49,6 +49,7 @@ type NodeUpConfigBuilder interface {
 
 // BootstrapScriptBuilder creates the bootstrap script
 type BootstrapScriptBuilder struct {
+	*KopsModelContext
 	Lifecycle           fi.Lifecycle
 	NodeUpAssets        map[architectures.Architecture]*mirrors.MirroredAsset
 	NodeUpConfigBuilder NodeUpConfigBuilder
@@ -220,6 +221,9 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 	}
 	if ig.HasAPIServer() {
 		keypairs = append(keypairs, "service-account")
+		if b.UseEtcdManager() && b.UseEtcdTLS() {
+			keypairs = append(keypairs, "etcd-clients-ca")
+		}
 	}
 
 	caTasks := map[string]*fitasks.Keypair{}

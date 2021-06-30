@@ -1035,6 +1035,10 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 		testCase.cluster.Spec.Networking = &kops.NetworkingSpec{}
 	}
 	bootstrapScriptBuilder := &model.BootstrapScriptBuilder{
+		KopsModelContext: &model.KopsModelContext{
+			IAMModelContext: iam.IAMModelContext{Cluster: testCase.cluster},
+			InstanceGroups:  testCase.instanceGroups,
+		},
 		NodeUpConfigBuilder: &nodeupConfigBuilder{},
 		NodeUpAssets: map[architectures.Architecture]*mirrors.MirroredAsset{
 			architectures.ArchitectureAmd64: {
