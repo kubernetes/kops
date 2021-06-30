@@ -330,6 +330,7 @@ func (e *Keypair) setResources(keyset *fi.Keyset) error {
 }
 
 func (e *Keypair) Keyset() *fi.Keyset {
+	e.ensureResources()
 	return e.keyset
 }
 
