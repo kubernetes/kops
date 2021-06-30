@@ -22,27 +22,16 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kubectl/pkg/util/i18n"
-	"k8s.io/kubectl/pkg/util/templates"
 )
 
 var (
-	promoteLong = templates.LongDesc(i18n.T(`
-	Promote a resource.`))
-
-	promoteExample = templates.Examples(i18n.T(`
-	# Promote the newest ca keypair to be the primary.
-	kops promote keypair ca
-`))
-
 	promoteShort = i18n.T(`Promote a resource.`)
 )
 
 func NewCmdPromote(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "promote",
-		Short:   promoteShort,
-		Long:    promoteLong,
-		Example: promoteExample,
+		Use:   "promote",
+		Short: promoteShort,
 	}
 
 	// create subcommands

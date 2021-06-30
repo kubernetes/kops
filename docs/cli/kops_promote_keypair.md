@@ -10,7 +10,7 @@ Promote a keypair to be the primary, used for signing.
 Promote a keypair to be the primary, used for signing.
 
 ```
-kops promote keypair KEYSET [ID] [flags]
+kops promote keypair keyset [id] [flags]
 ```
 
 ### Examples
