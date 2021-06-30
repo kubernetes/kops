@@ -28,6 +28,8 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/commands/commandutils"
 
 	"k8s.io/kops/cmd/kops/util"
@@ -81,6 +83,10 @@ var rotatableKeysets = sets.NewString(
 	"etcd-clients-ca-cilium",
 	"service-account",
 )
+
+func rotatableKeysetFilter(name string, _ *fi.Keyset) bool {
+	return rotatableKeysets.Has(name)
+}
 
 // NewCmdCreateKeypair returns a create keypair command.
 func NewCmdCreateKeypair(f *util.Factory, out io.Writer) *cobra.Command {
@@ -226,45 +232,51 @@ func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 	return nil
 }
 
-func completeCreateKeyset(options *CreateKeypairOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	commandutils.ConfigureKlogForCompletion()
-
-	options.ClusterName = rootCommand.ClusterName(false)
-
-	if options.ClusterName == "" {
-		return []string{"--name"}, cobra.ShellCompDirectiveNoFileComp
-	}
-
-	ctx := context.TODO()
-	cluster, err := GetCluster(ctx, &rootCommand, options.ClusterName)
-	if err != nil {
-		return commandutils.CompletionError("getting cluster", err)
-	}
-
-	clientSet, err := rootCommand.Clientset()
-	if err != nil {
-		return commandutils.CompletionError("getting clientset", err)
-	}
-
+func completeKeyset(cluster *kopsapi.Cluster, clientSet simple.Clientset, args []string, filter func(name string, keyset *fi.Keyset) bool) (keyset *fi.Keyset, keyStore fi.CAStore, completions []string, directive cobra.ShellCompDirective) {
 	keyStore, err := clientSet.KeyStore(cluster)
 	if err != nil {
-		return commandutils.CompletionError("getting keystore", err)
+		completions, directive := commandutils.CompletionError("getting keystore", err)
+		return nil, nil, completions, directive
 	}
 
 	if len(args) == 0 {
 		list, err := keyStore.ListKeysets()
 		if err != nil {
-			return commandutils.CompletionError("listing keysets", err)
+			completions, directive := commandutils.CompletionError("listing keystore", err)
+			return nil, nil, completions, directive
 		}
 
 		var keysets []string
-		for name := range list {
-			if rotatableKeysets.Has(name) {
+		for name, keyset := range list {
+			if filter(name, keyset) {
 				keysets = append(keysets, name)
 			}
 		}
 
-		return keysets, cobra.ShellCompDirectiveNoFileComp
+		return nil, nil, keysets, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	keyset, err = keyStore.FindKeyset(args[0])
+	if err != nil {
+		completions, directive := commandutils.CompletionError("finding keyset", err)
+		return nil, nil, completions, directive
+	}
+
+	return keyset, keyStore, nil, 0
+}
+
+func completeCreateKeyset(options *CreateKeypairOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	commandutils.ConfigureKlogForCompletion()
+	ctx := context.TODO()
+
+	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand)
+	if cluster == nil {
+		return completions, directive
+	}
+
+	keyset, _, completions, directive := completeKeyset(cluster, clientSet, args, rotatableKeysetFilter)
+	if keyset == nil {
+		return completions, directive
 	}
 
 	if len(args) > 1 {
