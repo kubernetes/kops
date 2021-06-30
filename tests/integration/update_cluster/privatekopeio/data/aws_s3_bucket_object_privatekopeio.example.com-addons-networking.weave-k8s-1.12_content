@@ -1,0 +1,285 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.weave
+    app.kubernetes.io/managed-by: kops
+    name: weave-net
+    role.kubernetes.io/networking: "1"
+  name: weave-net
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.weave
+    app.kubernetes.io/managed-by: kops
+    name: weave-net
+    role.kubernetes.io/networking: "1"
+  name: weave-net
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - namespaces
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - extensions
+  resources:
+  - networkpolicies
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - networkpolicies
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
+  - update
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.weave
+    app.kubernetes.io/managed-by: kops
+    name: weave-net
+    role.kubernetes.io/networking: "1"
+  name: weave-net
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: weave-net
+subjects:
+- kind: ServiceAccount
+  name: weave-net
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.weave
+    app.kubernetes.io/managed-by: kops
+    name: weave-net
+    role.kubernetes.io/networking: "1"
+  name: weave-net
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ""
+  resourceNames:
+  - weave-net
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.weave
+    app.kubernetes.io/managed-by: kops
+    name: weave-net
+    role.kubernetes.io/networking: "1"
+  name: weave-net
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: weave-net
+subjects:
+- kind: ServiceAccount
+  name: weave-net
+  namespace: kube-system
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.weave
+    app.kubernetes.io/managed-by: kops
+    name: weave-net
+    role.kubernetes.io/networking: "1"
+  name: weave-net
+  namespace: kube-system
+spec:
+  minReadySeconds: 5
+  selector:
+    matchLabels:
+      name: weave-net
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+      labels:
+        name: weave-net
+    spec:
+      containers:
+      - command:
+        - /home/weave/launch.sh
+        env:
+        - name: INIT_CONTAINER
+          value: "true"
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: IPALLOC_RANGE
+          value: 100.96.0.0/11
+        image: weaveworks/weave-kube:2.8.1
+        name: weave
+        ports:
+        - containerPort: 6782
+          name: metrics
+        readinessProbe:
+          httpGet:
+            host: 127.0.0.1
+            path: /status
+            port: 6784
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 50m
+            memory: 200Mi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /weavedb
+          name: weavedb
+        - mountPath: /host/var/lib/dbus
+          name: dbus
+          readOnly: true
+        - mountPath: /host/etc/machine-id
+          name: cni-machine-id
+          readOnly: true
+        - mountPath: /run/xtables.lock
+          name: xtables-lock
+          readOnly: false
+      - env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        image: weaveworks/weave-npc:2.8.1
+        name: weave-npc
+        ports:
+        - containerPort: 6781
+          name: metrics
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 50m
+            memory: 200Mi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /run/xtables.lock
+          name: xtables-lock
+          readOnly: false
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      hostPID: false
+      initContainers:
+      - command:
+        - /home/weave/init.sh
+        image: weaveworks/weave-kube:2.8.1
+        name: weave-init
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /host/opt
+          name: cni-bin
+        - mountPath: /host/home
+          name: cni-bin2
+        - mountPath: /host/etc
+          name: cni-conf
+        - mountPath: /lib/modules
+          name: lib-modules
+        - mountPath: /run/xtables.lock
+          name: xtables-lock
+          readOnly: false
+      priorityClassName: system-node-critical
+      restartPolicy: Always
+      securityContext:
+        seLinuxOptions: {}
+      serviceAccountName: weave-net
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
+      volumes:
+      - hostPath:
+          path: /var/lib/weave
+        name: weavedb
+      - hostPath:
+          path: /opt
+        name: cni-bin
+      - hostPath:
+          path: /home
+        name: cni-bin2
+      - hostPath:
+          path: /etc
+        name: cni-conf
+      - hostPath:
+          path: /etc/machine-id
+        name: cni-machine-id
+      - hostPath:
+          path: /var/lib/dbus
+        name: dbus
+      - hostPath:
+          path: /lib/modules
+        name: lib-modules
+      - hostPath:
+          path: /run/xtables.lock
+          type: FileOrCreate
+        name: xtables-lock
+  updateStrategy:
+    type: RollingUpdate

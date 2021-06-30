@@ -547,6 +547,110 @@
         "route_table_id": "${aws_route_table.minimal-json-example-com.id}"
       }
     },
+    "aws_s3_bucket_object": {
+      "cluster-completed-spec": {
+        "bucket": "testingBucket",
+        "key": "clusters.example.com/minimal-json.example.com/cluster-completed.spec",
+        "content": "${file(\"${path.module}/data/aws_s3_bucket_object_cluster-completed.spec_content\")}",
+        "server_side_encryption": "AES256"
+      },
+      "etcd-cluster-spec-events": {
+        "bucket": "testingBucket",
+        "key": "clusters.example.com/minimal-json.example.com/backups/etcd/events/control/etcd-cluster-spec",
+        "content": "${file(\"${path.module}/data/aws_s3_bucket_object_etcd-cluster-spec-events_content\")}",
+        "server_side_encryption": "AES256"
+      },
+      "etcd-cluster-spec-main": {
+        "bucket": "testingBucket",
+        "key": "clusters.example.com/minimal-json.example.com/backups/etcd/main/control/etcd-cluster-spec",
+        "content": "${file(\"${path.module}/data/aws_s3_bucket_object_etcd-cluster-spec-main_content\")}",
+        "server_side_encryption": "AES256"
+      },
+      "kops-version-txt": {
+        "bucket": "testingBucket",
+        "key": "clusters.example.com/minimal-json.example.com/kops-version.txt",
+        "content": "${file(\"${path.module}/data/aws_s3_bucket_object_kops-version.txt_content\")}",
+        "server_side_encryption": "AES256"
+      },
+      "manifests-etcdmanager-events": {
+        "bucket": "testingBucket",
+        "key": "clusters.example.com/minimal-json.example.com/manifests/etcd/events.yaml",
+        "content": "${file(\"${path.module}/data/aws_s3_bucket_object_manifests-etcdmanager-events_content\")}",
+        "server_side_encryption": "AES256"
+      },
+      "manifests-etcdmanager-main": {
+        "bucket": "testingBucket",
+        "key": "clusters.example.com/minimal-json.example.com/manifests/etcd/main.yaml",
+        "content": "${file(\"${path.module}/data/aws_s3_bucket_object_manifests-etcdmanager-main_content\")}",
+        "server_side_encryption": "AES256"
+      },
+      "manifests-static-kube-apiserver-healthcheck": {
+        "bucket": "testingBucket",
+        "key": "clusters.example.com/minimal-json.example.com/manifests/static/kube-apiserver-healthcheck.yaml",
+        "content": "${file(\"${path.module}/data/aws_s3_bucket_object_manifests-static-kube-apiserver-healthcheck_content\")}",
+        "server_side_encryption": "AES256"
+      },
+      "minimal-json-example-com-addons-bootstrap": {
+        "bucket": "testingBucket",
+        "key": "clusters.example.com/minimal-json.example.com/addons/bootstrap-channel.yaml",
+        "content": "${file(\"${path.module}/data/aws_s3_bucket_object_minimal-json.example.com-addons-bootstrap_content\")}",
+        "server_side_encryption": "AES256"
+      },
+      "minimal-json-example-com-addons-core-addons-k8s-io": {
+        "bucket": "testingBucket",
+        "key": "clusters.example.com/minimal-json.example.com/addons/core.addons.k8s.io/v1.4.0.yaml",
+        "content": "${file(\"${path.module}/data/aws_s3_bucket_object_minimal-json.example.com-addons-core.addons.k8s.io_content\")}",
+        "server_side_encryption": "AES256"
+      },
+      "minimal-json-example-com-addons-coredns-addons-k8s-io-k8s-1-12": {
+        "bucket": "testingBucket",
+        "key": "clusters.example.com/minimal-json.example.com/addons/coredns.addons.k8s.io/k8s-1.12.yaml",
+        "content": "${file(\"${path.module}/data/aws_s3_bucket_object_minimal-json.example.com-addons-coredns.addons.k8s.io-k8s-1.12_content\")}",
+        "server_side_encryption": "AES256"
+      },
+      "minimal-json-example-com-addons-dns-controller-addons-k8s-io-k8s-1-12": {
+        "bucket": "testingBucket",
+        "key": "clusters.example.com/minimal-json.example.com/addons/dns-controller.addons.k8s.io/k8s-1.12.yaml",
+        "content": "${file(\"${path.module}/data/aws_s3_bucket_object_minimal-json.example.com-addons-dns-controller.addons.k8s.io-k8s-1.12_content\")}",
+        "server_side_encryption": "AES256"
+      },
+      "minimal-json-example-com-addons-kops-controller-addons-k8s-io-k8s-1-16": {
+        "bucket": "testingBucket",
+        "key": "clusters.example.com/minimal-json.example.com/addons/kops-controller.addons.k8s.io/k8s-1.16.yaml",
+        "content": "${file(\"${path.module}/data/aws_s3_bucket_object_minimal-json.example.com-addons-kops-controller.addons.k8s.io-k8s-1.16_content\")}",
+        "server_side_encryption": "AES256"
+      },
+      "minimal-json-example-com-addons-kubelet-api-rbac-addons-k8s-io-k8s-1-9": {
+        "bucket": "testingBucket",
+        "key": "clusters.example.com/minimal-json.example.com/addons/kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml",
+        "content": "${file(\"${path.module}/data/aws_s3_bucket_object_minimal-json.example.com-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content\")}",
+        "server_side_encryption": "AES256"
+      },
+      "minimal-json-example-com-addons-limit-range-addons-k8s-io": {
+        "bucket": "testingBucket",
+        "key": "clusters.example.com/minimal-json.example.com/addons/limit-range.addons.k8s.io/v1.5.0.yaml",
+        "content": "${file(\"${path.module}/data/aws_s3_bucket_object_minimal-json.example.com-addons-limit-range.addons.k8s.io_content\")}",
+        "server_side_encryption": "AES256"
+      },
+      "minimal-json-example-com-addons-storage-aws-addons-k8s-io-v1-15-0": {
+        "bucket": "testingBucket",
+        "key": "clusters.example.com/minimal-json.example.com/addons/storage-aws.addons.k8s.io/v1.15.0.yaml",
+        "content": "${file(\"${path.module}/data/aws_s3_bucket_object_minimal-json.example.com-addons-storage-aws.addons.k8s.io-v1.15.0_content\")}",
+        "server_side_encryption": "AES256"
+      },
+      "nodeupconfig-master-us-test-1a": {
+        "bucket": "testingBucket",
+        "key": "clusters.example.com/minimal-json.example.com/igconfig/master/master-us-test-1a/nodeupconfig.yaml",
+        "content": "${file(\"${path.module}/data/aws_s3_bucket_object_nodeupconfig-master-us-test-1a_content\")}",
+        "server_side_encryption": "AES256"
+      },
+      "nodeupconfig-nodes": {
+        "bucket": "testingBucket",
+        "key": "clusters.example.com/minimal-json.example.com/igconfig/node/nodes/nodeupconfig.yaml",
+        "content": "${file(\"${path.module}/data/aws_s3_bucket_object_nodeupconfig-nodes_content\")}",
+        "server_side_encryption": "AES256"
+      }
+    },
     "aws_security_group": {
       "masters-minimal-json-example-com": {
         "name": "masters.minimal-json.example.com",
