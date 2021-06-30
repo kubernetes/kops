@@ -93,12 +93,14 @@ var (
 	Azure = New("Azure", Bool(false))
 	// KopsControllerStateStore enables fetching the kops state from kops-controller, instead of requiring access to S3/GCS/etc.
 	KopsControllerStateStore = New("KopsControllerStateStore", Bool(false))
-	// APIServerNodes enables ability to provision nodes that only run the kube-apiserver
+	// APIServerNodes enables ability to provision nodes that only run the kube-apiserver.
 	APIServerNodes = New("APIServerNodes", Bool(false))
 	// UseAddonOperators activates experimental addon operator support
 	UseAddonOperators = New("UseAddonOperators", Bool(false))
 	// AWSIPv6 activates experimental AWS IPv6 support.
 	AWSIPv6 = New("AWSIPv6", Bool(false))
+	// TerraformManagedFiles enables rendering managed files into the Terraform configuration.
+	TerraformManagedFiles = New("TerraformManagedFiles", Bool(true))
 )
 
 // FeatureFlag defines a feature flag

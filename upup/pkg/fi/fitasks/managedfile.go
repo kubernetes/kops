@@ -21,9 +21,12 @@ import (
 	"fmt"
 	"os"
 
+	"k8s.io/kops/pkg/featureflag"
+
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -146,4 +149,39 @@ func getBasePath(c *fi.Context, e *ManagedFile) (vfs.Path, error) {
 	}
 
 	return c.ClusterConfigBase, nil
+}
+
+// RenderTerraform is responsible for rendering the terraform json.
+func (f *ManagedFile) RenderTerraform(c *fi.Context, t *terraform.TerraformTarget, a, e, changes *ManagedFile) error {
+	if !featureflag.TerraformManagedFiles.Enabled() {
+		return f.Render(c, a, e, changes)
+	}
+
+	location := fi.StringValue(e.Location)
+	if location == "" {
+		return fi.RequiredField("Location")
+	}
+
+	p, err := getBasePath(c, e)
+	if err != nil {
+		return err
+	}
+	p = p.Join(location)
+
+	acl, err := acls.GetACL(p, c.Cluster)
+	if err != nil {
+		return err
+	}
+
+	terraformPath, ok := p.(vfs.TerraformPath)
+	if !ok {
+		return fmt.Errorf("path %q must be of a type that can render in Terraform", p)
+	}
+
+	reader, err := e.Contents.Open()
+	if err != nil {
+		return err
+	}
+
+	return terraformPath.RenderTerraform(&t.TerraformWriter, *e.Name, reader, acl)
 }

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: core.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: core.addons.k8s.io
+  name: kube-system

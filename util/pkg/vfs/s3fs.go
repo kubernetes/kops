@@ -21,6 +21,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -30,6 +31,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -48,6 +50,7 @@ type S3Path struct {
 }
 
 var _ Path = &S3Path{}
+var _ TerraformPath = &S3Path{}
 var _ HasHash = &S3Path{}
 
 // S3Acl is an ACL implementation for objects on S3
@@ -190,6 +193,46 @@ func (p *S3Path) Join(relativePath ...string) Path {
 	}
 }
 
+func (p *S3Path) getServerSideEncryption() (sse *string, sseLog string, err error) {
+	// If we are on an S3 implementation that supports SSE (i.e. not
+	// DO), we use server-side-encryption, it doesn't really cost us
+	// anything.  But if the bucket has a defaultEncryption policy
+	// instead, we honor that - it is likely to be a higher encryption
+	// standard.
+	sseLog = "-"
+	if p.sse {
+		err := p.ensureBucketDetails()
+		if err != nil {
+			return nil, "", err
+		}
+		defaultEncryption := p.bucketDetails.hasServerSideEncryptionByDefault()
+		if defaultEncryption {
+			sseLog = "DefaultBucketEncryption"
+		} else {
+			sseLog = "AES256"
+			sse = aws.String("AES256")
+		}
+	}
+
+	return sse, sseLog, nil
+}
+
+func (p *S3Path) getRequestACL(aclObj ACL) (*string, error) {
+	acl := os.Getenv("KOPS_STATE_S3_ACL")
+	acl = strings.TrimSpace(acl)
+	if acl != "" {
+		klog.V(8).Infof("Using KOPS_STATE_S3_ACL=%s", acl)
+		return &acl, nil
+	} else if aclObj != nil {
+		s3Acl, ok := aclObj.(*S3Acl)
+		if !ok {
+			return nil, fmt.Errorf("write to %s with ACL of unexpected type %T", p, aclObj)
+		}
+		return s3Acl.RequestACL, nil
+	}
+	return nil, nil
+}
+
 func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 	client, err := p.client()
 	if err != nil {
@@ -203,43 +246,22 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 	request.Bucket = aws.String(p.bucket)
 	request.Key = aws.String(p.key)
 
-	// If we are on an S3 implementation that supports SSE (i.e. not
-	// DO), we use server-side-encryption, it doesn't really cost us
-	// anything.  But if the bucket has a defaultEncryption policy
-	// instead, we honor that - it is likely to be a higher encryption
-	// standard.
-	sseLog := "-"
-	if p.sse {
-		defaultEncryption := p.bucketDetails.hasServerSideEncryptionByDefault()
-		if defaultEncryption {
-			sseLog = "DefaultBucketEncryption"
-		} else {
-			sseLog = "AES256"
-			request.ServerSideEncryption = aws.String("AES256")
-		}
-	}
+	var sseLog string
+	request.ServerSideEncryption, sseLog, _ = p.getServerSideEncryption()
 
-	acl := os.Getenv("KOPS_STATE_S3_ACL")
-	acl = strings.TrimSpace(acl)
-	if acl != "" {
-		klog.V(8).Infof("Using KOPS_STATE_S3_ACL=%s", acl)
-		request.ACL = aws.String(acl)
-	} else if aclObj != nil {
-		s3Acl, ok := aclObj.(*S3Acl)
-		if !ok {
-			return fmt.Errorf("write to %s with ACL of unexpected type %T", p, aclObj)
-		}
-		request.ACL = s3Acl.RequestACL
+	request.ACL, err = p.getRequestACL(aclObj)
+	if err != nil {
+		return err
 	}
 
 	// We don't need Content-MD5: https://github.com/aws/aws-sdk-go/issues/208
 
-	klog.V(8).Infof("Calling S3 PutObject Bucket=%q Key=%q SSE=%q ACL=%q", p.bucket, p.key, sseLog, acl)
+	klog.V(8).Infof("Calling S3 PutObject Bucket=%q Key=%q SSE=%q ACL=%q", p.bucket, p.key, sseLog, aws.StringValue(request.ACL))
 
 	_, err = client.PutObject(request)
 	if err != nil {
-		if acl != "" {
-			return fmt.Errorf("error writing %s (with ACL=%q): %v", p, acl, err)
+		if request.ACL != nil {
+			return fmt.Errorf("error writing %s (with ACL=%q): %v", p, aws.StringValue(request.ACL), err)
 		}
 		return fmt.Errorf("error writing %s: %v", p, err)
 	}
@@ -393,15 +415,23 @@ func (p *S3Path) ReadTree() ([]Path, error) {
 	return paths, nil
 }
 
-func (p *S3Path) client() (*s3.S3, error) {
-	var err error
+func (p *S3Path) ensureBucketDetails() error {
 	if p.bucketDetails == nil || p.bucketDetails.region == "" {
 		bucketDetails, err := p.s3Context.getDetailsForBucket(p.bucket)
 
 		p.bucketDetails = bucketDetails
 		if err != nil {
-			return nil, err
+			return err
 		}
+	}
+
+	return nil
+}
+
+func (p *S3Path) client() (*s3.S3, error) {
+	err := p.ensureBucketDetails()
+	if err != nil {
+		return nil, err
 	}
 
 	client, err := p.s3Context.getClient(p.bucketDetails.region)
@@ -449,6 +479,45 @@ func (p *S3Path) GetHTTPsUrl() (string, error) {
 	}
 	url := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", p.bucketDetails.name, p.bucketDetails.region, p.Key())
 	return strings.TrimSuffix(url, "/"), nil
+}
+
+type terraformS3File struct {
+	Bucket  string                   `json:"bucket" cty:"bucket"`
+	Key     string                   `json:"key" cty:"key"`
+	Content *terraformWriter.Literal `json:"content,omitempty" cty:"content"`
+	Acl     *string                  `json:"acl,omitempty" cty:"acl"`
+	SSE     *string                  `json:"server_side_encryption,omitempty" cty:"server_side_encryption"`
+}
+
+func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string, data io.Reader, acl ACL) error {
+	bytes, err := ioutil.ReadAll(data)
+	if err != nil {
+		return fmt.Errorf("reading data: %v", err)
+	}
+
+	content, err := w.AddFileBytes("aws_s3_bucket_object", name, "content", bytes, false)
+	if err != nil {
+		return fmt.Errorf("rendering S3 file: %v", err)
+	}
+
+	sse, _, err := p.getServerSideEncryption()
+	if err != nil {
+		return err
+	}
+
+	requestACL, err := p.getRequestACL(acl)
+	if err != nil {
+		return err
+	}
+
+	tf := &terraformS3File{
+		Bucket:  p.Bucket(),
+		Key:     p.Key(),
+		Content: content,
+		SSE:     sse,
+		Acl:     requestACL,
+	}
+	return w.RenderResource("aws_s3_bucket_object", name, tf)
 }
 
 // AWSErrorCode returns the aws error code, if it is an awserr.Error, otherwise ""
