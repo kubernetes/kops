@@ -23,8 +23,9 @@ import (
 	"math/big"
 
 	"github.com/spf13/cobra"
-	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/commands/commandutils"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
@@ -58,35 +59,39 @@ func NewCmdPromoteKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &PromoteKeypairOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "keypair KEYSET [ID]",
+		Use:     "keypair keyset [id]",
 		Short:   promoteKeypairShort,
 		Long:    promoteKeypairLong,
 		Example: promoteKeypairExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
-
+		Args: func(cmd *cobra.Command, args []string) error {
 			options.ClusterName = rootCommand.ClusterName(true)
 
 			if options.ClusterName == "" {
-				exitWithError(fmt.Errorf("--name is required"))
-				return
+				return fmt.Errorf("--name is required")
 			}
 
 			if len(args) == 0 {
-				exitWithError(fmt.Errorf("must specify name of keyset promote keypair in"))
+				return fmt.Errorf("must specify name of keyset promote keypair in")
 			}
-			if len(args) > 2 {
-				exitWithError(fmt.Errorf("can only promote to one keyset at a time"))
-			}
+
 			options.Keyset = args[0]
+
+			if len(args) > 2 {
+				return fmt.Errorf("can only promote to one keyset at a time")
+			}
 			if len(args) > 1 {
 				options.KeypairID = args[1]
 			}
 
-			err := RunPromoteKeypair(ctx, f, out, options)
-			if err != nil {
-				exitWithError(err)
-			}
+			return nil
+		},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return completePromoteKeyset(options, args, toComplete)
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := context.TODO()
+
+			return RunPromoteKeypair(ctx, f, out, options)
 		},
 	}
 
@@ -101,17 +106,17 @@ func RunPromoteKeypair(ctx context.Context, f *util.Factory, out io.Writer, opti
 
 	cluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
-		return fmt.Errorf("error getting cluster: %q: %v", options.ClusterName, err)
+		return fmt.Errorf("getting cluster: %q: %v", options.ClusterName, err)
 	}
 
 	clientSet, err := f.Clientset()
 	if err != nil {
-		return fmt.Errorf("error getting clientset: %v", err)
+		return fmt.Errorf("getting clientset: %v", err)
 	}
 
 	keyStore, err := clientSet.KeyStore(cluster)
 	if err != nil {
-		return fmt.Errorf("error getting keystore: %v", err)
+		return fmt.Errorf("getting keystore: %v", err)
 	}
 
 	keyset, err := keyStore.FindKeyset(options.Keyset)
@@ -151,9 +156,46 @@ func RunPromoteKeypair(ctx context.Context, f *util.Factory, out io.Writer, opti
 	keyset.Primary = keyset.Items[keypairID]
 	err = keyStore.StoreKeyset(options.Keyset, keyset)
 	if err != nil {
-		return fmt.Errorf("error writing keyset: %v", err)
+		return fmt.Errorf("writing keyset: %v", err)
 	}
 
-	klog.Infof("promoted keypair %s", keypairID)
+	fmt.Fprintf(out, "promoted keypair %s", keypairID)
 	return nil
+}
+
+func completePromoteKeyset(options *PromoteKeypairOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	commandutils.ConfigureKlogForCompletion()
+	ctx := context.TODO()
+
+	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand)
+	if cluster == nil {
+		return completions, directive
+	}
+
+	keyset, _, completions, directive := completeKeyset(cluster, clientSet, args, rotatableKeysetFilter)
+	if keyset == nil {
+		return completions, directive
+	}
+
+	if len(args) == 1 {
+		return completeKeypairID(keyset, func(keyset *fi.Keyset, item *fi.KeysetItem) bool {
+			return item.DistrustTimestamp == nil && item.Id != keyset.Primary.Id
+		})
+	}
+
+	if len(args) > 2 {
+		return commandutils.CompletionError("too many arguments", nil)
+	}
+
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeKeypairID(keyset *fi.Keyset, filter func(keyset *fi.Keyset, item *fi.KeysetItem) bool) (completions []string, directive cobra.ShellCompDirective) {
+	for _, item := range keyset.Items {
+		if filter(keyset, item) {
+			completions = append(completions, item.Id)
+		}
+	}
+
+	return completions, cobra.ShellCompDirectiveNoFileComp
 }

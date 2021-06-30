@@ -5,17 +5,6 @@
 
 Promote a resource.
 
-### Synopsis
-
-Promote a resource.
-
-### Examples
-
-```
-  # Promote the newest ca keypair to be the primary.
-  kops promote keypair ca
-```
-
 ### Options
 
 ```

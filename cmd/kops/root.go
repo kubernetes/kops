@@ -302,6 +302,28 @@ func GetCluster(ctx context.Context, factory commandutils.Factory, clusterName s
 	return cluster, nil
 }
 
+func GetClusterForCompletion(ctx context.Context, factory commandutils.Factory) (cluster *kopsapi.Cluster, clientSet simple.Clientset, completions []string, directive cobra.ShellCompDirective) {
+	clusterName := rootCommand.ClusterName(false)
+
+	if clusterName == "" {
+		return nil, nil, []string{"--name"}, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	cluster, err := GetCluster(ctx, &rootCommand, clusterName)
+	if err != nil {
+		completions, directive := commandutils.CompletionError("getting cluster", err)
+		return nil, nil, completions, directive
+	}
+
+	clientSet, err = rootCommand.Clientset()
+	if err != nil {
+		completions, directive := commandutils.CompletionError("getting clientset", err)
+		return nil, nil, completions, directive
+	}
+
+	return cluster, clientSet, nil, 0
+}
+
 // ConsumeStdin reads all the bytes available from stdin
 func ConsumeStdin() ([]byte, error) {
 	file := os.Stdin
