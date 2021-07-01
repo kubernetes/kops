@@ -21,55 +21,20 @@
     },
     {
       "Action": [
+        "ec2:CreateSecurityGroup",
+        "ec2:CreateTags",
         "ec2:DescribeAccountAttributes",
+        "ec2:DescribeAvailabilityZones",
         "ec2:DescribeInstances",
         "ec2:DescribeInternetGateways",
+        "ec2:DescribeNetworkInterfaces",
         "ec2:DescribeRegions",
         "ec2:DescribeRouteTables",
         "ec2:DescribeSecurityGroups",
         "ec2:DescribeSubnets",
-        "ec2:DescribeVolumes"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
-        "ec2:CreateSecurityGroup",
-        "ec2:CreateTags",
-        "ec2:ModifyInstanceAttribute"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
-        "ec2:AttachVolume",
-        "ec2:AuthorizeSecurityGroupIngress",
-        "ec2:CreateRoute",
-        "ec2:DeleteRoute",
-        "ec2:DeleteSecurityGroup",
-        "ec2:RevokeSecurityGroupIngress"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "ec2:ResourceTag/KubernetesCluster": "minimal.example.com"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
-        "ec2:DescribeAvailabilityZones",
-        "ec2:DescribeNetworkInterfaces",
+        "ec2:DescribeVolumes",
         "ec2:DescribeVpcs",
+        "ec2:ModifyInstanceAttribute",
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
         "elasticloadbalancing:AttachLoadBalancerToSubnets",
@@ -105,6 +70,23 @@
         "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
         "elasticloadbalancing:SetLoadBalancerPoliciesOfListener"
       ],
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": [
+        "ec2:AttachVolume",
+        "ec2:AuthorizeSecurityGroupIngress",
+        "ec2:CreateRoute",
+        "ec2:DeleteRoute",
+        "ec2:DeleteSecurityGroup",
+        "ec2:RevokeSecurityGroupIngress"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/KubernetesCluster": "minimal.example.com"
+        }
+      },
       "Effect": "Allow",
       "Resource": "*"
     }
