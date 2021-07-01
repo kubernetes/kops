@@ -686,6 +686,18 @@ spec:
     housekeepingInterval: 30s
 ```
 
+### Pod PIDs Limit
+{{ kops_feature_table(kops_added_default='1.22', k8s_min='1.20') }}
+
+`podPidsLimit` allows to configure the maximum number of pids (process ids) in any pod.
+[Read more](https://kubernetes.io/docs/concepts/policy/pid-limiting/) in Kubernetes documentation.
+
+```yaml
+spec:
+  kubelet:
+    podPidsLimit: 1024
+```
+
 ### Event QPS
 {{ kops_feature_table(kops_added_default='1.19') }}
 

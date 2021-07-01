@@ -221,6 +221,8 @@ type KubeletConfigSpec struct {
 	ContainerLogMaxFiles *int32 `json:"containerLogMaxFiles,omitempty" flag:"container-log-max-files"`
 	// EnableCadvisorJsonEndpoints enables cAdvisor json `/spec` and `/stats/*` endpoints. Defaults to False.
 	EnableCadvisorJsonEndpoints *bool `json:"enableCadvisorJsonEndpoints,omitempty" flag:"enable-cadvisor-json-endpoints"`
+	// PodPidsLimit is the maximum number of pids in any pod.
+	PodPidsLimit *int64 `json:"podPidsLimit,omitempty" flag:"pod-max-pids"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
