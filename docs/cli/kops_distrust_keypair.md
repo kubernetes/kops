@@ -7,10 +7,16 @@ Distrust a keypair.
 
 ### Synopsis
 
-Distrust one or more keypairs.
+Distrust one or more keypairs in a keyset.
+
+ Distrusting removes the certificates of the specified keypairs from trust stores.
+
+ Only secondary keypairs may be distrusted.
+
+ If no keypair IDs are specified, distrusts all keypairs in the keyset that are older than the primary keypair.
 
 ```
-kops distrust keypair KEYSET [ID]... [flags]
+kops distrust keypair keyset [id]... [flags]
 ```
 
 ### Examples
