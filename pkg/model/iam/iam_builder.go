@@ -49,12 +49,35 @@ const PolicyDefaultVersion = "2012-10-17"
 
 // Policy Struct is a collection of fields that form a valid AWS policy document
 type Policy struct {
-	Statement []*Statement
-	Version   string
+	clusterName         string
+	unconditionalAction sets.String
+	clusterTaggedAction sets.String
+	Statement           []*Statement
+	Version             string
 }
 
 // AsJSON converts the policy document to JSON format (parsable by AWS)
 func (p *Policy) AsJSON() (string, error) {
+	if len(p.unconditionalAction) > 0 {
+		p.Statement = append(p.Statement, &Statement{
+			Effect:   StatementEffectAllow,
+			Action:   stringorslice.Of(p.unconditionalAction.List()...),
+			Resource: stringorslice.String("*"),
+		})
+	}
+	if len(p.clusterTaggedAction) > 0 {
+		p.Statement = append(p.Statement, &Statement{
+			Effect:   StatementEffectAllow,
+			Action:   stringorslice.Of(p.clusterTaggedAction.List()...),
+			Resource: stringorslice.String("*"),
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"aws:ResourceTag/KubernetesCluster": p.clusterName,
+				},
+			},
+		})
+	}
+
 	j, err := json.MarshalIndent(p, "", "  ")
 	if err != nil {
 		return "", fmt.Errorf("error marshaling policy to JSON: %v", err)
@@ -236,13 +259,21 @@ func (b *PolicyBuilder) BuildAWSPolicy() (*Policy, error) {
 	return p, nil
 }
 
+func NewPolicy(clusterName string) *Policy {
+	p := &Policy{
+		Version:             PolicyDefaultVersion,
+		clusterName:         clusterName,
+		unconditionalAction: sets.NewString(),
+		clusterTaggedAction: sets.NewString(),
+	}
+	return p
+}
+
 // BuildAWSPolicy generates a custom policy for a Kubernetes master.
 func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	resource := createResource(b)
 
-	p := &Policy{
-		Version: PolicyDefaultVersion,
-	}
+	p := NewPolicy(b.Cluster.GetClusterName())
 
 	AddMasterEC2Policies(p, resource, b.Cluster.GetName())
 	addASLifecyclePolicies(p, resource, b.Cluster.GetName(), r.warmPool)
