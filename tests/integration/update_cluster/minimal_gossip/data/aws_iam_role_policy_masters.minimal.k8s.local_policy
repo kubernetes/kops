@@ -156,38 +156,11 @@
     },
     {
       "Action": [
-        "ec2:DescribeAccountAttributes",
-        "ec2:DescribeInstances",
-        "ec2:DescribeVolumes",
-        "ec2:DescribeVolumesModifications",
-        "ec2:DescribeTags"
-      ],
-      "Effect": "Allow",
-      "Resource": "*"
-    },
-    {
-      "Action": [
         "ec2:CreateVolume"
       ],
       "Condition": {
         "StringEquals": {
           "aws:RequestTag/KubernetesCluster": "minimal.k8s.local"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": "*"
-    },
-    {
-      "Action": [
-        "ec2:ModifyVolume",
-        "ec2:ModifyInstanceAttribute",
-        "ec2:AttachVolume",
-        "ec2:DeleteVolume",
-        "ec2:DetachVolume"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "aws:ResourceTag/KubernetesCluster": "minimal.k8s.local"
         }
       },
       "Effect": "Allow",
@@ -213,7 +186,7 @@
       "Action": "ec2:DeleteTags",
       "Condition": {
         "StringEquals": {
-          "ec2:ResourceTag/KubernetesCluster": "minimal.k8s.local"
+          "aws:ResourceTag/KubernetesCluster": "minimal.k8s.local"
         }
       },
       "Effect": "Allow",
@@ -221,21 +194,6 @@
         "arn:aws:ec2:*:*:volume/*",
         "arn:aws:ec2:*:*:snapshot/*"
       ]
-    },
-    {
-      "Action": [
-        "ec2:AttachVolume",
-        "ec2:DeleteVolume",
-        "ec2:DetachVolume",
-        "ec2:RevokeSecurityGroupIngress"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "ec2:ResourceTag/KubernetesCluster": "minimal.k8s.local"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": "*"
     },
     {
       "Action": [
@@ -262,6 +220,33 @@
       "Resource": [
         "*"
       ]
+    },
+    {
+      "Action": [
+        "ec2:DescribeAccountAttributes",
+        "ec2:DescribeInstances",
+        "ec2:DescribeTags",
+        "ec2:DescribeVolumes",
+        "ec2:DescribeVolumesModifications"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": [
+        "ec2:AttachVolume",
+        "ec2:DeleteVolume",
+        "ec2:DetachVolume",
+        "ec2:ModifyInstanceAttribute",
+        "ec2:ModifyVolume"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/KubernetesCluster": "minimal.k8s.local"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
     }
   ],
   "Version": "2012-10-17"
