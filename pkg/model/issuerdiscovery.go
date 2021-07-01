@@ -28,7 +28,6 @@ import (
 
 	"gopkg.in/square/go-jose.v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 )
@@ -68,12 +67,7 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		SigningKey: skTask,
 	}
 
-	serviceAccountIssuer, err := iam.ServiceAccountIssuer(&b.Cluster.Spec)
-	if err != nil {
-		return err
-	}
-
-	discovery, err := buildDiscoveryJSON(serviceAccountIssuer)
+	discovery, err := buildDiscoveryJSON(*b.Cluster.Spec.KubeAPIServer.ServiceAccountIssuer)
 	if err != nil {
 		return err
 	}

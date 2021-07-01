@@ -17,7 +17,6 @@ limitations under the License.
 package awsmodel
 
 import (
-	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
@@ -42,11 +41,6 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	serviceAccountIssuer, err := iam.ServiceAccountIssuer(&b.Cluster.Spec)
-	if err != nil {
-		return err
-	}
-
 	fingerprints := getFingerprints()
 
 	thumbprints := []*string{}
@@ -58,7 +52,7 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 	c.AddTask(&awstasks.IAMOIDCProvider{
 		Name:        fi.String(b.ClusterName()),
 		Lifecycle:   b.Lifecycle,
-		URL:         fi.String(serviceAccountIssuer),
+		URL:         b.Cluster.Spec.KubeAPIServer.ServiceAccountIssuer,
 		ClientIDs:   []*string{fi.String(defaultAudience)},
 		Tags:        b.CloudTags(b.ClusterName(), false),
 		Thumbprints: thumbprints,

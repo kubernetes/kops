@@ -950,7 +950,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		})
 	}
 
-	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
+	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderAWS && b.Cluster.Spec.KubeAPIServer.ServiceAccountIssuer != nil {
 		awsModelContext := &awsmodel.AWSModelContext{
 			KopsModelContext: b.KopsModelContext,
 		}
