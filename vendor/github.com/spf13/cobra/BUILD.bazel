@@ -5,11 +5,12 @@ go_library(
     srcs = [
         "args.go",
         "bash_completions.go",
+        "bash_completionsV2.go",
         "cobra.go",
         "command.go",
         "command_notwin.go",
         "command_win.go",
-        "custom_completions.go",
+        "completions.go",
         "fish_completions.go",
         "powershell_completions.go",
         "shell_completions.go",
