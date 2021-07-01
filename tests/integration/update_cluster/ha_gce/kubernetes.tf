@@ -17,7 +17,8 @@ output "region" {
 }
 
 provider "google" {
-  region = "us-test1"
+  project = "us-test1"
+  region  = "us-test1"
 }
 
 resource "google_compute_disk" "d1-etcd-events-ha-gce-example-com" {
