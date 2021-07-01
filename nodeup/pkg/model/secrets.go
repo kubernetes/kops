@@ -134,21 +134,6 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	{
-		issueCert := &nodetasks.IssueCert{
-			Name:   "apiserver-aggregator",
-			Signer: "apiserver-aggregator-ca",
-			Type:   "client",
-			// Must match RequestheaderAllowedNames
-			Subject: nodetasks.PKIXName{CommonName: "aggregator"},
-		}
-		c.AddTask(issueCert)
-		err := issueCert.AddFileTasks(c, b.PathSrvKubernetes(), "apiserver-aggregator", "apiserver-aggregator-ca", nil)
-		if err != nil {
-			return err
-		}
-	}
-
 	if err := b.BuildPrivateKeyTask(c, "service-account", "service-account.key", nil); err != nil {
 		return err
 	}
