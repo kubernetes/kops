@@ -17,7 +17,8 @@ output "region" {
 }
 
 provider "google" {
-  region = "us-test1"
+  project = "testproject"
+  region  = "us-test1"
 }
 
 resource "aws_s3_bucket_object" "cluster-completed-spec" {
