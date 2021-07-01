@@ -163,6 +163,10 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 			},
 		},
 		BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
+			KopsModelContext: &model.KopsModelContext{
+				IAMModelContext: iam.IAMModelContext{Cluster: cluster},
+				InstanceGroups:  igs,
+			},
 			Lifecycle: fi.LifecycleSync,
 			Cluster:   cluster,
 		},
