@@ -384,9 +384,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	resource := createResource(b)
 
-	p := &Policy{
-		Version: PolicyDefaultVersion,
-	}
+	p := NewPolicy(b.Cluster.GetClusterName())
 
 	addNodeEC2Policies(p, resource)
 	addASLifecyclePolicies(p, resource, b.Cluster.GetName(), r.enableLifecycleHookPermissions)
@@ -418,19 +416,11 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 // BuildAWSPolicy generates a custom policy for a bastion host.
 func (r *NodeRoleBastion) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
-	resource := createResource(b)
-
-	p := &Policy{
-		Version: PolicyDefaultVersion,
-	}
+	p := NewPolicy(b.Cluster.GetClusterName())
 
 	// Bastion hosts currently don't require any specific permissions.
 	// A trivial permission is granted, because empty policies are not allowed.
-	p.Statement = append(p.Statement, &Statement{
-		Effect:   StatementEffectAllow,
-		Action:   stringorslice.Slice([]string{"ec2:DescribeRegions"}),
-		Resource: resource,
-	})
+	p.unconditionalAction.Insert("ec2:DescribeRegions")
 
 	return p, nil
 }
