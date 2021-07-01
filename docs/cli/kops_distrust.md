@@ -5,17 +5,6 @@
 
 Distrust keypairs.
 
-### Synopsis
-
-Distrust keypairs.
-
-### Examples
-
-```
-  # Distrust a keypair
-  kops distrust keypair ca 6977545226837259959403993899
-```
-
 ### Options
 
 ```
