@@ -3633,6 +3633,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.PodPidsLimit != nil {
+		in, out := &in.PodPidsLimit, &out.PodPidsLimit
+		*out = new(int64)
+		**out = **in
+	}
 	return
 }
 
