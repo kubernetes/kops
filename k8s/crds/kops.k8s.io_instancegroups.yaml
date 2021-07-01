@@ -526,6 +526,11 @@ spec:
                     description: config is the path to the config file or directory
                       of files
                     type: string
+                  podPidsLimit:
+                    description: PodPidsLimit is the maximum number of pids in any
+                      pod.
+                    format: int64
+                    type: integer
                   protectKernelDefaults:
                     description: 'Default kubelet behaviour for kernel tuning. If
                       set, kubelet errors if any of kernel tunables is different than
