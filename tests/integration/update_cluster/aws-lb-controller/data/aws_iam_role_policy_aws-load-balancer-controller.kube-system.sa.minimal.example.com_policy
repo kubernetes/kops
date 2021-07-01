@@ -2,16 +2,6 @@
   "Statement": [
     {
       "Action": [
-        "ec2:DescribeAvailabilityZones",
-        "ec2:DescribeNetworkInterfaces"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
         "ec2:AuthorizeSecurityGroupIngress",
         "ec2:DeleteSecurityGroup",
         "ec2:RevokeSecurityGroupIngress",
@@ -27,23 +17,7 @@
         }
       },
       "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
-        "elasticloadbalancing:DescribeTags",
-        "elasticloadbalancing:DescribeTargetGroupAttributes",
-        "elasticloadbalancing:DescribeRules",
-        "elasticloadbalancing:DescribeTargetHealth",
-        "elasticloadbalancing:DescribeListenerCertificates",
-        "elasticloadbalancing:CreateRule"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
+      "Resource": "*"
     },
     {
       "Action": [
@@ -93,41 +67,46 @@
     },
     {
       "Action": [
+        "ec2:DescribeAvailabilityZones",
+        "ec2:DescribeNetworkInterfaces",
         "ec2:DescribeVpcs",
-        "elasticloadbalancing:DescribeLoadBalancers",
-        "elasticloadbalancing:DescribeLoadBalancerAttributes",
-        "elasticloadbalancing:DescribeListeners",
-        "elasticloadbalancing:DescribeLoadBalancerPolicies",
-        "elasticloadbalancing:DescribeTargetGroups",
-        "elasticloadbalancing:DescribeTargetHealth",
+        "elasticloadbalancing:AddTags",
+        "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
+        "elasticloadbalancing:AttachLoadBalancerToSubnets",
+        "elasticloadbalancing:ConfigureHealthCheck",
         "elasticloadbalancing:CreateListener",
-        "elasticloadbalancing:CreateTargetGroup",
         "elasticloadbalancing:CreateLoadBalancer",
-        "elasticloadbalancing:CreateLoadBalancerPolicy",
         "elasticloadbalancing:CreateLoadBalancerListeners",
+        "elasticloadbalancing:CreateLoadBalancerPolicy",
+        "elasticloadbalancing:CreateRule",
+        "elasticloadbalancing:CreateTargetGroup",
+        "elasticloadbalancing:DeleteListener",
         "elasticloadbalancing:DeleteLoadBalancer",
         "elasticloadbalancing:DeleteLoadBalancerListeners",
-        "elasticloadbalancing:DeleteListener",
         "elasticloadbalancing:DeleteTargetGroup",
-        "elasticloadbalancing:AddTags",
-        "elasticloadbalancing:ModifyLoadBalancerAttributes",
-        "elasticloadbalancing:ModifyListener",
-        "elasticloadbalancing:ModifyTargetGroup",
-        "elasticloadbalancing:AttachLoadBalancerToSubnets",
-        "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
-        "elasticloadbalancing:ConfigureHealthCheck",
-        "elasticloadbalancing:DetachLoadBalancerFromSubnets",
         "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
-        "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
-        "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
         "elasticloadbalancing:DeregisterTargets",
+        "elasticloadbalancing:DescribeListenerCertificates",
+        "elasticloadbalancing:DescribeListeners",
+        "elasticloadbalancing:DescribeLoadBalancerAttributes",
+        "elasticloadbalancing:DescribeLoadBalancerPolicies",
+        "elasticloadbalancing:DescribeLoadBalancers",
+        "elasticloadbalancing:DescribeRules",
+        "elasticloadbalancing:DescribeTags",
+        "elasticloadbalancing:DescribeTargetGroupAttributes",
+        "elasticloadbalancing:DescribeTargetGroups",
+        "elasticloadbalancing:DescribeTargetHealth",
+        "elasticloadbalancing:DetachLoadBalancerFromSubnets",
+        "elasticloadbalancing:ModifyListener",
+        "elasticloadbalancing:ModifyLoadBalancerAttributes",
+        "elasticloadbalancing:ModifyTargetGroup",
+        "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
         "elasticloadbalancing:RegisterTargets",
+        "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
         "elasticloadbalancing:SetLoadBalancerPoliciesOfListener"
       ],
       "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
+      "Resource": "*"
     }
   ],
   "Version": "2012-10-17"
