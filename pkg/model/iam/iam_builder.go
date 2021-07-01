@@ -317,9 +317,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	resource := createResource(b)
 	clusterName := b.Cluster.GetName()
 
-	p := &Policy{
-		Version: PolicyDefaultVersion,
-	}
+	p := NewPolicy(clusterName)
 
 	AddMasterEC2Policies(p, resource, b.Cluster.GetName())
 	addASLifecyclePolicies(p, resource, b.Cluster.GetName(), true)
@@ -343,7 +341,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	if !b.UseServiceAccountIAM {
 		esc := b.Cluster.Spec.SnapshotController != nil &&
 			fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled)
-		AddAWSEBSCSIDriverPermissions(p, clusterName, esc)
+		AddAWSEBSCSIDriverPermissions(p, esc)
 
 		if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
 			AddAWSLoadbalancerControllerPermissions(p, resource, b.Cluster.GetName())
@@ -377,7 +375,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	if b.Cluster.Spec.SnapshotController != nil && fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled) {
-		addSnapshotPersmissions(p, b.Cluster.GetName())
+		addSnapshotPersmissions(p)
 	}
 	return p, nil
 }
@@ -829,54 +827,38 @@ func AddClusterAutoscalerPermissions(p *Policy, clusterName string) {
 }
 
 // AddAWSEBSCSIDriverPermissions appens policy statements that the AWS EBS CSI Driver needs to operate.
-func AddAWSEBSCSIDriverPermissions(p *Policy, clusterName string, appendSnapshotPermissions bool) {
-
-	everything := stringorslice.String("*")
+func AddAWSEBSCSIDriverPermissions(p *Policy, appendSnapshotPermissions bool) {
 
 	if appendSnapshotPermissions {
-		addSnapshotPersmissions(p, clusterName)
+		addSnapshotPersmissions(p)
 	}
 
+	p.unconditionalAction.Insert(
+		"ec2:DescribeAccountAttributes",    // aws.go
+		"ec2:DescribeInstances",            // aws.go
+		"ec2:DescribeVolumes",              // aws.go
+		"ec2:DescribeVolumesModifications", // aws.go
+		"ec2:DescribeTags",                 // aws.go
+	)
+	p.clusterTaggedAction.Insert(
+		"ec2:ModifyVolume",            // aws.go
+		"ec2:ModifyInstanceAttribute", // aws.go
+		"ec2:AttachVolume",            // aws.go
+		"ec2:DeleteVolume",            // aws.go
+		"ec2:DetachVolume",            // aws.go
+	)
+
 	p.Statement = append(p.Statement,
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Slice([]string{
-				"ec2:DescribeAccountAttributes",    // aws.go
-				"ec2:DescribeInstances",            // aws.go
-				"ec2:DescribeVolumes",              // aws.go
-				"ec2:DescribeVolumesModifications", // aws.go
-				"ec2:DescribeTags",                 // aws.go
-			}),
-			Resource: everything,
-		},
 		&Statement{
 			Effect: StatementEffectAllow,
 			Action: stringorslice.Slice([]string{
 				"ec2:CreateVolume", // aws.go
 			}),
 
-			Resource: everything,
+			Resource: stringorslice.String("*"),
 			Condition: Condition{
 				"StringEquals": map[string]string{
-					"aws:RequestTag/KubernetesCluster": clusterName,
-				},
-			},
-		},
-
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Slice([]string{
-				"ec2:ModifyVolume",            // aws.go
-				"ec2:ModifyInstanceAttribute", // aws.go
-				"ec2:AttachVolume",            // aws.go
-				"ec2:DeleteVolume",            // aws.go
-				"ec2:DetachVolume",            // aws.go
-			}),
-
-			Resource: everything,
-			Condition: Condition{
-				"StringEquals": map[string]string{
-					"aws:ResourceTag/KubernetesCluster": clusterName,
+					"aws:RequestTag/KubernetesCluster": p.clusterName,
 				},
 			},
 		},
@@ -916,51 +898,22 @@ func AddAWSEBSCSIDriverPermissions(p *Policy, clusterName string, appendSnapshot
 			),
 			Condition: Condition{
 				"StringEquals": map[string]string{
-					"ec2:ResourceTag/KubernetesCluster": clusterName,
-				},
-			},
-		},
-
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
-				"ec2:AttachVolume",               // aws.go
-				"ec2:DeleteVolume",               // aws.go
-				"ec2:DetachVolume",               // aws.go
-				"ec2:RevokeSecurityGroupIngress", // aws.go
-			),
-			Resource: everything,
-			Condition: Condition{
-				"StringEquals": map[string]string{
-					"ec2:ResourceTag/KubernetesCluster": clusterName,
+					"aws:ResourceTag/KubernetesCluster": p.clusterName,
 				},
 			},
 		},
 	)
 }
 
-func addSnapshotPersmissions(p *Policy, clusterName string) {
-	p.Statement = append(p.Statement, &Statement{
-		Effect: StatementEffectAllow,
-		Action: stringorslice.Of(
-			"ec2:CreateSnapshot",
-			"ec2:DescribeAvailabilityZones",
-			"ec2:DescribeSnapshots",
-		),
-		Resource: stringorslice.Slice([]string{"*"}),
-	})
-	p.Statement = append(p.Statement, &Statement{
-		Effect: StatementEffectAllow,
-		Action: stringorslice.Of(
-			"ec2:DeleteSnapshot",
-		),
-		Resource: stringorslice.Slice([]string{"*"}),
-		Condition: Condition{
-			"StringEquals": map[string]string{
-				"aws:ResourceTag/KubernetesCluster": clusterName,
-			},
-		},
-	})
+func addSnapshotPersmissions(p *Policy) {
+	p.unconditionalAction.Insert(
+		"ec2:CreateSnapshot",
+		"ec2:DescribeAvailabilityZones",
+		"ec2:DescribeSnapshots",
+	)
+	p.clusterTaggedAction.Insert(
+		"ec2:DeleteSnapshot",
+	)
 
 }
 
