@@ -494,6 +494,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return err
 	}
 	bootstrapScriptBuilder := &model.BootstrapScriptBuilder{
+		KopsModelContext:    modelContext,
 		Lifecycle:           clusterLifecycle,
 		NodeUpConfigBuilder: configBuilder,
 		NodeUpAssets:        c.NodeUpAssets,
@@ -1294,13 +1295,11 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		}
 	}
 
-	err := getTasksCertificate(caTasks, fi.CertificateIDCA, config)
-	if err != nil {
+	if err := getTasksCertificate(caTasks, fi.CertificateIDCA, config); err != nil {
 		return nil, nil, err
 	}
 	if caTasks["etcd-clients-ca-cilium"] != nil {
-		err := getTasksCertificate(caTasks, "etcd-clients-ca-cilium", config)
-		if err != nil {
+		if err := getTasksCertificate(caTasks, "etcd-clients-ca-cilium", config); err != nil {
 			return nil, nil, err
 		}
 	}
@@ -1317,7 +1316,14 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	}
 
 	if isMaster || role == kops.InstanceGroupRoleAPIServer {
+		if caTasks["etcd-clients-ca"] != nil {
+			if err := getTasksCertificate(caTasks, "etcd-clients-ca", config); err != nil {
+				return nil, nil, err
+			}
+		}
+
 		config.APIServerConfig.EncryptionConfigSecretHash = n.encryptionConfigSecretHash
+		var err error
 		config.APIServerConfig.ServiceAccountPublicKeys, err = caTasks["service-account"].Keyset().ToPublicKeys()
 		if err != nil {
 			return nil, nil, fmt.Errorf("encoding service-account keys: %w", err)

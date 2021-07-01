@@ -20,7 +20,6 @@ import (
 	"fmt"
 
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
 // EtcdManagerTLSBuilder configures TLS support for etcd-manager
@@ -34,11 +33,6 @@ var _ fi.ModelBuilder = &EtcdManagerTLSBuilder{}
 func (b *EtcdManagerTLSBuilder) Build(ctx *fi.ModelBuilderContext) error {
 	if !b.HasAPIServer || !b.UseEtcdManager() {
 		return nil
-	}
-
-	// We also dynamically generate the client keypair for apiserver
-	if err := b.buildKubeAPIServerKeypair(ctx); err != nil {
-		return err
 	}
 
 	for _, etcdCluster := range b.Cluster.Spec.EtcdClusters {
@@ -80,18 +74,4 @@ func (b *EtcdManagerTLSBuilder) Build(ctx *fi.ModelBuilderContext) error {
 	}
 
 	return nil
-}
-
-func (b *EtcdManagerTLSBuilder) buildKubeAPIServerKeypair(c *fi.ModelBuilderContext) error {
-	name := "etcd-client"
-	issueCert := &nodetasks.IssueCert{
-		Name:   name,
-		Signer: "etcd-clients-ca",
-		Type:   "client",
-		Subject: nodetasks.PKIXName{
-			CommonName: "kube-apiserver",
-		},
-	}
-	c.AddTask(issueCert)
-	return issueCert.AddFileTasks(c, "/etc/kubernetes/pki/kube-apiserver", name, "etcd-ca", nil)
 }
