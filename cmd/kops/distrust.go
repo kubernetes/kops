@@ -22,29 +22,16 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kubectl/pkg/util/i18n"
-	"k8s.io/kubectl/pkg/util/templates"
 )
 
 var (
-	distrustLong = templates.LongDesc(i18n.T(`
-	Distrust keypairs.
-	`))
-
-	distrustExample = templates.Examples(i18n.T(`
-		# Distrust a keypair
-        kops distrust keypair ca 6977545226837259959403993899
-
-	`))
-
 	distrustShort = i18n.T("Distrust keypairs.")
 )
 
 func NewCmdDistrust(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "distrust",
-		Short:   distrustShort,
-		Long:    distrustLong,
-		Example: distrustExample,
+		Use:   "distrust",
+		Short: distrustShort,
 	}
 
 	// create subcommands

@@ -23,15 +23,27 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/commands/commandutils"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
 
 var (
 	distrustKeypairLong = templates.LongDesc(i18n.T(`
-		Distrust one or more keypairs.`))
+	Distrust one or more keypairs in a keyset.
+
+	Distrusting removes the certificates of the specified keypairs from trust
+	stores.
+
+	Only secondary keypairs may be distrusted.
+
+	If no keypair IDs are specified, distrusts all keypairs in the keyset that
+	are older than the primary keypair.
+	`))
 
 	distrustKeypairExample = templates.Examples(i18n.T(`
 	# Distrust all cluster CA keypairs older than the primary.
@@ -55,31 +67,34 @@ func NewCmdDistrustKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &DistrustKeypairOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "keypair KEYSET [ID]...",
+		Use:     "keypair keyset [id]...",
 		Short:   distrustKeypairShort,
 		Long:    distrustKeypairLong,
 		Example: distrustKeypairExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
-
+		Args: func(cmd *cobra.Command, args []string) error {
 			options.ClusterName = rootCommand.ClusterName(true)
 			if options.ClusterName == "" {
-				exitWithError(fmt.Errorf("--name is required"))
-				return
+				return fmt.Errorf("--name is required")
 			}
 
 			if len(args) == 0 {
-				exitWithError(fmt.Errorf("must specify name of keyset to distrust keypair in"))
+				return fmt.Errorf("must specify name of keyset to distrust keypair in")
 			}
 			options.Keyset = args[0]
+
 			if len(args) > 1 {
 				options.KeypairIDs = args[1:]
 			}
 
-			err := RunDistrustKeypair(ctx, f, out, options)
-			if err != nil {
-				exitWithError(err)
-			}
+			return nil
+		},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return completeDistrustKeyset(options, args, toComplete)
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := context.TODO()
+
+			return RunDistrustKeypair(ctx, f, out, options)
 		},
 	}
 
@@ -87,13 +102,6 @@ func NewCmdDistrustKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunDistrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, options *DistrustKeypairOptions) error {
-	if options.ClusterName == "" {
-		return fmt.Errorf("ClusterName is required")
-	}
-	if options.Keyset == "" {
-		return fmt.Errorf("Keyset is required")
-	}
-
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
@@ -147,4 +155,24 @@ func RunDistrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, opt
 	}
 
 	return nil
+}
+
+func completeDistrustKeyset(options *DistrustKeypairOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	commandutils.ConfigureKlogForCompletion()
+	ctx := context.TODO()
+
+	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand)
+	if cluster == nil {
+		return completions, directive
+	}
+
+	keyset, _, completions, directive := completeKeyset(cluster, clientSet, args, rotatableKeysetFilter)
+	if keyset == nil {
+		return completions, directive
+	}
+
+	alreadySelected := sets.NewString(args[1:]...)
+	return completeKeypairID(keyset, func(keyset *fi.Keyset, item *fi.KeysetItem) bool {
+		return item.DistrustTimestamp == nil && item.Id != keyset.Primary.Id && !alreadySelected.Has(item.Id)
+	})
 }
