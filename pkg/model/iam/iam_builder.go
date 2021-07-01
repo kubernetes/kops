@@ -322,7 +322,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	AddMasterEC2Policies(p, resource, b.Cluster.GetName())
 	addASLifecyclePolicies(p, resource, b.Cluster.GetName(), true)
 	addMasterASPolicies(p, resource, b.Cluster.GetName())
-	AddMasterELBPolicies(p, resource)
+	AddMasterELBPolicies(p)
 	addCertIAMPolicies(p, resource)
 	addKMSGenerateRandomPolicies(p)
 
@@ -344,7 +344,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		AddAWSEBSCSIDriverPermissions(p, esc)
 
 		if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
-			AddAWSLoadbalancerControllerPermissions(p, resource, b.Cluster.GetName())
+			AddAWSLoadbalancerControllerPermissions(p)
 		}
 		AddClusterAutoscalerPermissions(p, b.Cluster.GetName())
 	}
@@ -738,43 +738,37 @@ func addECRPermissions(p *Policy) {
 	// We shouldn't be running lots of pods on the master, but it is perfectly reasonable to run
 	// a private logging pod or similar.
 	// At this point we allow all regions with ECR, since ECR is region specific.
-	p.Statement = append(p.Statement, &Statement{
-		Effect: StatementEffectAllow,
-		Action: stringorslice.Of(
-			"ecr:GetAuthorizationToken",
-			"ecr:BatchCheckLayerAvailability",
-			"ecr:GetDownloadUrlForLayer",
-			"ecr:GetRepositoryPolicy",
-			"ecr:DescribeRepositories",
-			"ecr:ListImages",
-			"ecr:BatchGetImage",
-		),
-		Resource: stringorslice.Slice([]string{"*"}),
-	})
+	p.unconditionalAction.Insert(
+		"ecr:GetAuthorizationToken",
+		"ecr:BatchCheckLayerAvailability",
+		"ecr:GetDownloadUrlForLayer",
+		"ecr:GetRepositoryPolicy",
+		"ecr:DescribeRepositories",
+		"ecr:ListImages",
+		"ecr:BatchGetImage",
+	)
 }
 
 func addCalicoSrcDstCheckPermissions(p *Policy) {
-	p.Statement = append(p.Statement, &Statement{
-		Effect: StatementEffectAllow,
-		Action: stringorslice.Of(
-			"ec2:DescribeInstances",
-			"ec2:ModifyNetworkInterfaceAttribute",
-		),
-		Resource: stringorslice.Slice([]string{"*"}),
-	})
+	p.unconditionalAction.Insert(
+		"ec2:DescribeInstances",
+		"ec2:ModifyNetworkInterfaceAttribute",
+	)
 }
 
 // AddAWSLoadbalancerControllerPermissions adds the permissions needed for the aws load balancer controller to the givnen policy
-func AddAWSLoadbalancerControllerPermissions(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {
+func AddAWSLoadbalancerControllerPermissions(p *Policy) {
+	p.unconditionalAction.Insert(
+		"ec2:DescribeAvailabilityZones",
+		"ec2:DescribeNetworkInterfaces",
+		"elasticloadbalancing:DescribeTags",
+		"elasticloadbalancing:DescribeTargetGroupAttributes",
+		"elasticloadbalancing:DescribeRules",
+		"elasticloadbalancing:DescribeTargetHealth",
+		"elasticloadbalancing:DescribeListenerCertificates",
+		"elasticloadbalancing:CreateRule",
+	)
 	p.Statement = append(p.Statement,
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
-				"ec2:DescribeAvailabilityZones",
-				"ec2:DescribeNetworkInterfaces",
-			),
-			Resource: stringorslice.Slice([]string{"*"}),
-		},
 		&Statement{
 			Effect: StatementEffectAllow,
 			Action: stringorslice.Of(
@@ -789,24 +783,12 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy, resource stringorslice.S
 				"elasticloadbalancing:AddTags",
 				"elasticloadbalancing:RemoveTags",
 			),
-			Resource: resource,
+			Resource: stringorslice.String("*"),
 			Condition: Condition{
 				"StringEquals": map[string]string{
-					"aws:ResourceTag/elbv2.k8s.aws/cluster": clusterName,
+					"aws:ResourceTag/elbv2.k8s.aws/cluster": p.clusterName,
 				},
 			},
-		},
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
-				"elasticloadbalancing:DescribeTags",
-				"elasticloadbalancing:DescribeTargetGroupAttributes",
-				"elasticloadbalancing:DescribeRules",
-				"elasticloadbalancing:DescribeTargetHealth",
-				"elasticloadbalancing:DescribeListenerCertificates",
-				"elasticloadbalancing:CreateRule",
-			),
-			Resource: resource,
 		},
 	)
 }
@@ -1057,44 +1039,40 @@ func AddMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, clust
 	)
 }
 
-func AddMasterELBPolicies(p *Policy, resource stringorslice.StringOrSlice) {
+func AddMasterELBPolicies(p *Policy) {
 	// Comments are which cloudprovider code file makes the call
-	p.Statement = append(p.Statement, &Statement{
-		Effect: StatementEffectAllow,
-		Action: stringorslice.Of(
-			"ec2:DescribeVpcs",                                             // aws_loadbalancer.go
-			"elasticloadbalancing:DescribeLoadBalancers",                   // aws.go
-			"elasticloadbalancing:DescribeLoadBalancerAttributes",          // aws.go
-			"elasticloadbalancing:DescribeListeners",                       // aws_loadbalancer.go
-			"elasticloadbalancing:DescribeLoadBalancerPolicies",            // aws_loadbalancer.go
-			"elasticloadbalancing:DescribeTargetGroups",                    // aws_loadbalancer.go
-			"elasticloadbalancing:DescribeTargetHealth",                    // aws_loadbalancer.go
-			"elasticloadbalancing:CreateListener",                          // aws_loadbalancer.go
-			"elasticloadbalancing:CreateTargetGroup",                       // aws_loadbalancer.go
-			"elasticloadbalancing:CreateLoadBalancer",                      // aws_loadbalancer.go
-			"elasticloadbalancing:CreateLoadBalancerPolicy",                // aws_loadbalancer.go
-			"elasticloadbalancing:CreateLoadBalancerListeners",             // aws_loadbalancer.go
-			"elasticloadbalancing:DeleteLoadBalancer",                      // aws.go
-			"elasticloadbalancing:DeleteLoadBalancerListeners",             // aws_loadbalancer.go
-			"elasticloadbalancing:DeleteListener",                          // aws_loadbalancer.go
-			"elasticloadbalancing:DeleteTargetGroup",                       // aws_loadbalancer.go
-			"elasticloadbalancing:AddTags",                                 // aws_loadbalancer.go
-			"elasticloadbalancing:ModifyLoadBalancerAttributes",            // aws_loadbalancer.go
-			"elasticloadbalancing:ModifyListener",                          // aws_loadbalancer.go
-			"elasticloadbalancing:ModifyTargetGroup",                       // aws_loadbalancer.go
-			"elasticloadbalancing:AttachLoadBalancerToSubnets",             // aws_loadbalancer.go
-			"elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",       // aws_loadbalancer.go
-			"elasticloadbalancing:ConfigureHealthCheck",                    // aws_loadbalancer.go
-			"elasticloadbalancing:DetachLoadBalancerFromSubnets",           // aws_loadbalancer.go
-			"elasticloadbalancing:DeregisterInstancesFromLoadBalancer",     // aws_loadbalancer.go
-			"elasticloadbalancing:RegisterInstancesWithLoadBalancer",       // aws_loadbalancer.go
-			"elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer", // aws_loadbalancer.go
-			"elasticloadbalancing:DeregisterTargets",                       // aws_loadbalancer.go
-			"elasticloadbalancing:RegisterTargets",                         // aws_loadbalancer.go
-			"elasticloadbalancing:SetLoadBalancerPoliciesOfListener",       // aws_loadbalancer.go
-		),
-		Resource: resource,
-	})
+	p.unconditionalAction.Insert(
+		"ec2:DescribeVpcs",                                             // aws_loadbalancer.go
+		"elasticloadbalancing:DescribeLoadBalancers",                   // aws.go
+		"elasticloadbalancing:DescribeLoadBalancerAttributes",          // aws.go
+		"elasticloadbalancing:DescribeListeners",                       // aws_loadbalancer.go
+		"elasticloadbalancing:DescribeLoadBalancerPolicies",            // aws_loadbalancer.go
+		"elasticloadbalancing:DescribeTargetGroups",                    // aws_loadbalancer.go
+		"elasticloadbalancing:DescribeTargetHealth",                    // aws_loadbalancer.go
+		"elasticloadbalancing:CreateListener",                          // aws_loadbalancer.go
+		"elasticloadbalancing:CreateTargetGroup",                       // aws_loadbalancer.go
+		"elasticloadbalancing:CreateLoadBalancer",                      // aws_loadbalancer.go
+		"elasticloadbalancing:CreateLoadBalancerPolicy",                // aws_loadbalancer.go
+		"elasticloadbalancing:CreateLoadBalancerListeners",             // aws_loadbalancer.go
+		"elasticloadbalancing:DeleteLoadBalancer",                      // aws.go
+		"elasticloadbalancing:DeleteLoadBalancerListeners",             // aws_loadbalancer.go
+		"elasticloadbalancing:DeleteListener",                          // aws_loadbalancer.go
+		"elasticloadbalancing:DeleteTargetGroup",                       // aws_loadbalancer.go
+		"elasticloadbalancing:AddTags",                                 // aws_loadbalancer.go
+		"elasticloadbalancing:ModifyLoadBalancerAttributes",            // aws_loadbalancer.go
+		"elasticloadbalancing:ModifyListener",                          // aws_loadbalancer.go
+		"elasticloadbalancing:ModifyTargetGroup",                       // aws_loadbalancer.go
+		"elasticloadbalancing:AttachLoadBalancerToSubnets",             // aws_loadbalancer.go
+		"elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",       // aws_loadbalancer.go
+		"elasticloadbalancing:ConfigureHealthCheck",                    // aws_loadbalancer.go
+		"elasticloadbalancing:DetachLoadBalancerFromSubnets",           // aws_loadbalancer.go
+		"elasticloadbalancing:DeregisterInstancesFromLoadBalancer",     // aws_loadbalancer.go
+		"elasticloadbalancing:RegisterInstancesWithLoadBalancer",       // aws_loadbalancer.go
+		"elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer", // aws_loadbalancer.go
+		"elasticloadbalancing:DeregisterTargets",                       // aws_loadbalancer.go
+		"elasticloadbalancing:RegisterTargets",                         // aws_loadbalancer.go
+		"elasticloadbalancing:SetLoadBalancerPoliciesOfListener",       // aws_loadbalancer.go
+	)
 }
 
 func addMasterASPolicies(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {
