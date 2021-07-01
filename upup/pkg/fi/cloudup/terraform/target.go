@@ -83,9 +83,9 @@ func tfGetProviderExtraConfig(c *kops.TargetSpec) map[string]string {
 func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 	var err error
 	if featureflag.TerraformJSON.Enabled() {
-		err = t.finishJSON(taskMap)
+		err = t.finishJSON()
 	} else {
-		err = t.finishHCL2(taskMap)
+		err = t.finishHCL2()
 	}
 	if err != nil {
 		return err

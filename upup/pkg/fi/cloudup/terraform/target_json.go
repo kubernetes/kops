@@ -21,10 +21,9 @@ import (
 	"fmt"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
-func (t *TerraformTarget) finishJSON(taskMap map[string]fi.Task) error {
+func (t *TerraformTarget) finishJSON() error {
 	resourcesByType, err := t.GetResourcesByType()
 	if err != nil {
 		return err
