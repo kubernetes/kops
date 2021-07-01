@@ -25,11 +25,10 @@ import (
 	"github.com/zclconf/go-cty/cty/gocty"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
-func (t *TerraformTarget) finishHCL2(taskMap map[string]fi.Task) error {
+func (t *TerraformTarget) finishHCL2() error {
 	f := hclwrite.NewEmptyFile()
 	rootBody := f.Body()
 
