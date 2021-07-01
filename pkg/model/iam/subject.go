@@ -18,15 +18,11 @@ package iam
 
 import (
 	"fmt"
-	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/wellknownusers"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 // Subject represents an IAM identity, to which permissions are granted.
@@ -109,50 +105,6 @@ func BuildNodeRoleSubject(igRole kops.InstanceGroupRole, enableLifecycleHookPerm
 	default:
 		return nil, fmt.Errorf("unknown instancegroup role %q", igRole)
 	}
-}
-
-// ServiceAccountIssuer determines the issuer in the ServiceAccount JWTs
-func ServiceAccountIssuer(clusterSpec *kops.ClusterSpec) (string, error) {
-	said := clusterSpec.ServiceAccountIssuerDiscovery
-	if said != nil && said.DiscoveryStore != "" {
-		store := said.DiscoveryStore
-		base, err := vfs.Context.BuildVfsPath(store)
-		if err != nil {
-			return "", fmt.Errorf("error parsing locationStore=%q: %w", store, err)
-		}
-		switch base := base.(type) {
-		case *vfs.S3Path:
-			return base.GetHTTPsUrl()
-		case *vfs.MemFSPath:
-			if !base.IsClusterReadable() {
-				// If this _is_ a test, we should call MarkClusterReadable
-				return "", fmt.Errorf("locationStore=%q is only supported in tests", store)
-			}
-			return strings.Replace(base.Path(), "memfs://", "https://", 1), nil
-		default:
-			return "", fmt.Errorf("locationStore=%q is of unexpected type %T", store, base)
-		}
-	} else {
-		if dns.IsGossipHostname(clusterSpec.MasterInternalName) {
-			return "https://kubernetes.default", nil
-		}
-		if supportsPublicJWKS(clusterSpec) {
-			return "https://" + clusterSpec.MasterPublicName, nil
-		}
-		return "https://" + clusterSpec.MasterInternalName, nil
-	}
-}
-
-func supportsPublicJWKS(clusterSpec *kops.ClusterSpec) bool {
-	if !fi.BoolValue(clusterSpec.KubeAPIServer.AnonymousAuth) {
-		return false
-	}
-	for _, cidr := range clusterSpec.KubernetesAPIAccess {
-		if cidr == "0.0.0.0/0" || cidr == "::/0" {
-			return true
-		}
-	}
-	return false
 }
 
 // AddServiceAccountRole adds the appropriate mounts / env vars to enable a pod to use a service-account role
