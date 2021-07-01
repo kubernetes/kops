@@ -184,6 +184,12 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 		Type:    "ca",
 	}
 	c.AddTask(caTask)
+	aggregatorTask := &fitasks.Keypair{
+		Name:    fi.String("apiserver-aggregator-ca"),
+		Subject: "cn=apiserver-aggregator-ca",
+		Type:    "ca",
+	}
+	c.AddTask(aggregatorTask)
 	saTask := &fitasks.Keypair{
 		Name:    fi.String("service-account"),
 		Subject: "cn=service-account",

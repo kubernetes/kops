@@ -1316,6 +1316,9 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	}
 
 	if isMaster || role == kops.InstanceGroupRoleAPIServer {
+		if err := getTasksCertificate(caTasks, "apiserver-aggregator-ca", config); err != nil {
+			return nil, nil, err
+		}
 		if caTasks["etcd-clients-ca"] != nil {
 			if err := getTasksCertificate(caTasks, "etcd-clients-ca", config); err != nil {
 				return nil, nil, err
