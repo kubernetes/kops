@@ -410,11 +410,7 @@ func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role iam.Subject) (fi.Resource, 
 	var policy string
 	serviceAccount, ok := role.ServiceAccount()
 	if ok {
-		serviceAccountIssuer, err := iam.ServiceAccountIssuer(&b.Cluster.Spec)
-		if err != nil {
-			return nil, err
-		}
-		oidcProvider := strings.TrimPrefix(serviceAccountIssuer, "https://")
+		oidcProvider := strings.TrimPrefix(*b.Cluster.Spec.KubeAPIServer.ServiceAccountIssuer, "https://")
 
 		iamPolicy := &iam.Policy{
 			Version: iam.PolicyDefaultVersion,
