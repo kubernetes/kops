@@ -1590,13 +1590,9 @@
         "PolicyDocument": {
           "Statement": [
             {
-              "Action": [
-                "ec2:DescribeRegions"
-              ],
+              "Action": "ec2:DescribeRegions",
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": "*"
             }
           ],
           "Version": "2012-10-17"
