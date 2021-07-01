@@ -56,9 +56,7 @@
         "ec2:ModifyNetworkInterfaceAttribute"
       ],
       "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
+      "Resource": "*"
     }
   ],
   "Version": "2012-10-17"
