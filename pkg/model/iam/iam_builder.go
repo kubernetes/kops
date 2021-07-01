@@ -498,10 +498,15 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 
 		case *vfs.MemFSPath:
 			// Tests - we emulate the s3 permissions so that we can get an idea of the full policy
-			klog.Warningf("ignoring memfs path %q for IAM policy builder", vfsPath)
 
 			iamS3Path := "placeholder-read-bucket/" + path.Location()
 			b.buildS3GetStatements(p, iamS3Path)
+			s3Buckets.Insert("placeholder-read-bucket")
+		case *vfs.FSPath:
+			// tests - we emulate the s3 permissions so that we can get an idea of the full policy
+
+			iamS3path := "placeholder-read-bucket/" + strings.TrimPrefix(path.Path(), "file://")
+			b.buildS3GetStatements(p, iamS3path)
 			s3Buckets.Insert("placeholder-read-bucket")
 		case *vfs.VaultPath:
 			// Vault access needs to come from somewhere else
@@ -530,6 +535,10 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 			iamS3Path := "placeholder-write-bucket/" + path.Location()
 			b.buildS3WriteStatements(p, iamS3Path)
 			s3Buckets.Insert("placeholder-write-bucket")
+		case *vfs.FSPath:
+			iamS3path := "placeholder-read-bucket/" + strings.TrimPrefix(path.Path(), "file://")
+			b.buildS3WriteStatements(p, iamS3path)
+			s3Buckets.Insert("placeholder-read-bucket")
 		default:
 			return nil, fmt.Errorf("unknown writeable path, can't apply IAM policy: %q", vfsPath)
 		}
