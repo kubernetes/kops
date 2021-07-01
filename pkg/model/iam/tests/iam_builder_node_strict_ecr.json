@@ -2,30 +2,6 @@
   "Statement": [
     {
       "Action": [
-        "ec2:DescribeInstances",
-        "ec2:DescribeRegions"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": "autoscaling:DescribeAutoScalingInstances",
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": "kms:GenerateRandom",
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
         "s3:Get*"
       ],
       "Effect": "Allow",
@@ -54,13 +30,17 @@
     },
     {
       "Action": [
+        "autoscaling:DescribeAutoScalingInstances",
+        "ec2:DescribeInstances",
+        "ec2:DescribeRegions",
         "ecr:BatchCheckLayerAvailability",
         "ecr:BatchGetImage",
         "ecr:DescribeRepositories",
         "ecr:GetAuthorizationToken",
         "ecr:GetDownloadUrlForLayer",
         "ecr:GetRepositoryPolicy",
-        "ecr:ListImages"
+        "ecr:ListImages",
+        "kms:GenerateRandom"
       ],
       "Effect": "Allow",
       "Resource": "*"

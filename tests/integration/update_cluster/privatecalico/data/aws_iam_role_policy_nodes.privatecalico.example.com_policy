@@ -2,30 +2,6 @@
   "Statement": [
     {
       "Action": [
-        "ec2:DescribeInstances",
-        "ec2:DescribeRegions"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": "autoscaling:DescribeAutoScalingInstances",
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": "kms:GenerateRandom",
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
         "s3:Get*"
       ],
       "Effect": "Allow",
@@ -52,8 +28,11 @@
     },
     {
       "Action": [
+        "autoscaling:DescribeAutoScalingInstances",
         "ec2:DescribeInstances",
-        "ec2:ModifyNetworkInterfaceAttribute"
+        "ec2:DescribeRegions",
+        "ec2:ModifyNetworkInterfaceAttribute",
+        "kms:GenerateRandom"
       ],
       "Effect": "Allow",
       "Resource": "*"
