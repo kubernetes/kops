@@ -1766,6 +1766,57 @@
             },
             {
               "Action": [
+                "s3:Get*"
+              ],
+              "Effect": "Allow",
+              "Resource": "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/*"
+            },
+            {
+              "Action": [
+                "s3:GetObject",
+                "s3:DeleteObject",
+                "s3:DeleteObjectVersion",
+                "s3:PutObject"
+              ],
+              "Effect": "Allow",
+              "Resource": "arn:aws:s3:::placeholder-write-bucket/clusters.example.com/privatecilium.example.com/backups/etcd/main/*"
+            },
+            {
+              "Action": [
+                "s3:GetObject",
+                "s3:DeleteObject",
+                "s3:DeleteObjectVersion",
+                "s3:PutObject"
+              ],
+              "Effect": "Allow",
+              "Resource": "arn:aws:s3:::placeholder-write-bucket/clusters.example.com/privatecilium.example.com/backups/etcd/events/*"
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetEncryptionConfiguration",
+                "s3:ListBucket",
+                "s3:ListBucketVersions"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::placeholder-read-bucket"
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetEncryptionConfiguration",
+                "s3:ListBucket",
+                "s3:ListBucketVersions"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::placeholder-write-bucket"
+              ]
+            },
+            {
+              "Action": [
                 "route53:ChangeResourceRecordSets",
                 "route53:ListResourceRecordSets",
                 "route53:GetHostedZone"
@@ -1925,6 +1976,32 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
+              ]
+            },
+            {
+              "Action": [
+                "s3:Get*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/addons/*",
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/cluster-completed.spec",
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/igconfig/node/*",
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/pki/issued/*",
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/pki/ssh/*",
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/secrets/dockerconfig"
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetEncryptionConfiguration",
+                "s3:ListBucket",
+                "s3:ListBucketVersions"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::placeholder-read-bucket"
               ]
             }
           ],
