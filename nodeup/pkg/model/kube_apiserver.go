@@ -95,7 +95,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		Mode:     s("0600"),
 	})
 
-	if b.UseEtcdManager() && b.UseEtcdTLS() {
+	if b.UseEtcdManager() {
 		c.AddTask(&nodetasks.File{
 			Path:     filepath.Join(pathSrvKAPI, "etcd-ca.crt"),
 			Contents: fi.NewStringResource(b.NodeupConfig.CAs["etcd-clients-ca"]),

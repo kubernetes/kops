@@ -221,7 +221,7 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 	}
 	if ig.HasAPIServer() {
 		keypairs = append(keypairs, "service-account")
-		if b.UseEtcdManager() && b.UseEtcdTLS() {
+		if b.UseEtcdManager() {
 			keypairs = append(keypairs, "etcd-clients-ca")
 		}
 	}
