@@ -326,11 +326,12 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		klog.V(2).Infof("Creating autoscaling group with name: %s", fi.StringValue(e.Name))
 
 		request := &autoscaling.CreateAutoScalingGroupInput{
-			AutoScalingGroupName: e.Name,
-			MinSize:              e.MinSize,
-			MaxSize:              e.MaxSize,
-			Tags:                 v.AutoscalingGroupTags(),
-			VPCZoneIdentifier:    fi.String(strings.Join(e.AutoscalingGroupSubnets(), ",")),
+			AutoScalingGroupName:             e.Name,
+			MinSize:                          e.MinSize,
+			MaxSize:                          e.MaxSize,
+			NewInstancesProtectedFromScaleIn: e.InstanceProtection,
+			Tags:                             v.AutoscalingGroupTags(),
+			VPCZoneIdentifier:                fi.String(strings.Join(e.AutoscalingGroupSubnets(), ",")),
 		}
 
 		for _, k := range e.LoadBalancers {
@@ -419,9 +420,6 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			}
 		}
 
-		if e.InstanceProtection != nil {
-			request.NewInstancesProtectedFromScaleIn = e.InstanceProtection
-		}
 	} else {
 		// @logic: else we have found a autoscaling group and we need to evaluate the difference
 		request := &autoscaling.UpdateAutoScalingGroupInput{
