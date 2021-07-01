@@ -271,8 +271,6 @@ func NewPolicy(clusterName string) *Policy {
 
 // BuildAWSPolicy generates a custom policy for a Kubernetes master.
 func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
-	resource := stringorslice.String("*")
-
 	p := NewPolicy(b.Cluster.GetClusterName())
 
 	AddMasterEC2Policies(p)
@@ -294,15 +292,15 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		addAmazonVPCCNIPermissions(p, resource, b.Cluster.GetName(), b.IAMPrefix())
+		addAmazonVPCCNIPermissions(p, b.IAMPrefix())
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
-		addLyftVPCPermissions(p, resource, b.Cluster.GetName())
+		addLyftVPCPermissions(p)
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.Ipam == kops.CiliumIpamEni {
-		addCiliumEniPermissions(p, resource)
+		addCiliumEniPermissions(p)
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "DoNothing" {
@@ -314,7 +312,6 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 // BuildAWSPolicy generates a custom policy for a Kubernetes master.
 func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
-	resource := stringorslice.String("*")
 	clusterName := b.Cluster.GetName()
 
 	p := NewPolicy(clusterName)
@@ -346,7 +343,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
 			AddAWSLoadbalancerControllerPermissions(p)
 		}
-		AddClusterAutoscalerPermissions(p, b.Cluster.GetName())
+		AddClusterAutoscalerPermissions(p)
 	}
 
 	if b.Cluster.Spec.IAM.AllowContainerRegistry {
@@ -354,15 +351,15 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		addAmazonVPCCNIPermissions(p, resource, b.Cluster.GetName(), b.IAMPrefix())
+		addAmazonVPCCNIPermissions(p, b.IAMPrefix())
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
-		addLyftVPCPermissions(p, resource, b.Cluster.GetName())
+		addLyftVPCPermissions(p)
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.Ipam == kops.CiliumIpamEni {
-		addCiliumEniPermissions(p, resource)
+		addCiliumEniPermissions(p)
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "DoNothing" {
@@ -371,7 +368,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 	nth := b.Cluster.Spec.NodeTerminationHandler
 	if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSQSTerminationDraining) {
-		addNodeTerminationHandlerSQSPermissions(p, resource)
+		addNodeTerminationHandlerSQSPermissions(p)
 	}
 
 	if b.Cluster.Spec.SnapshotController != nil && fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled) {
@@ -382,8 +379,6 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 // BuildAWSPolicy generates a custom policy for a Kubernetes node.
 func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
-	resource := stringorslice.String("*")
-
 	p := NewPolicy(b.Cluster.GetClusterName())
 
 	addNodeEC2Policies(p)
@@ -400,11 +395,11 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		addAmazonVPCCNIPermissions(p, resource, b.Cluster.GetName(), b.IAMPrefix())
+		addAmazonVPCCNIPermissions(p, b.IAMPrefix())
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
-		addLyftVPCPermissions(p, resource, b.Cluster.GetName())
+		addLyftVPCPermissions(p)
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "DoNothing" {
@@ -793,31 +788,15 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy) {
 	)
 }
 
-func AddClusterAutoscalerPermissions(p *Policy, clusterName string) {
-	resource := stringorslice.Slice([]string{"*"})
-	p.Statement = append(p.Statement,
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
-				"autoscaling:SetDesiredCapacity",
-				"autoscaling:TerminateInstanceInAutoScalingGroup",
-			),
-			Resource: resource,
-			Condition: Condition{
-				"StringEquals": map[string]string{
-					"autoscaling:ResourceTag/KubernetesCluster": clusterName,
-				},
-			},
-		},
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
-				"autoscaling:DescribeAutoScalingGroups",
-				"autoscaling:DescribeAutoScalingInstances",
-				"autoscaling:DescribeLaunchConfigurations",
-			),
-			Resource: resource,
-		},
+func AddClusterAutoscalerPermissions(p *Policy) {
+	p.clusterTaggedAction.Insert(
+		"autoscaling:SetDesiredCapacity",
+		"autoscaling:TerminateInstanceInAutoScalingGroup",
+	)
+	p.unconditionalAction.Insert(
+		"autoscaling:DescribeAutoScalingGroups",
+		"autoscaling:DescribeAutoScalingInstances",
+		"autoscaling:DescribeLaunchConfigurations",
 	)
 }
 
@@ -1081,72 +1060,56 @@ func addCertIAMPolicies(p *Policy) {
 	)
 }
 
-func addLyftVPCPermissions(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {
-	p.Statement = append(p.Statement,
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Slice([]string{
-				"ec2:AssignPrivateIpAddresses",
-				"ec2:AttachNetworkInterface",
-				"ec2:CreateNetworkInterface",
-				"ec2:DeleteNetworkInterface",
-				"ec2:DescribeInstanceTypes",
-				"ec2:DescribeNetworkInterfaces",
-				"ec2:DescribeSecurityGroups",
-				"ec2:DescribeSubnets",
-				"ec2:DescribeVpcPeeringConnections",
-				"ec2:DescribeVpcs",
-				"ec2:DetachNetworkInterface",
-				"ec2:ModifyNetworkInterfaceAttribute",
-				"ec2:UnassignPrivateIpAddresses",
-			}),
-			Resource: resource,
-		},
+func addLyftVPCPermissions(p *Policy) {
+	p.unconditionalAction.Insert(
+		"ec2:AssignPrivateIpAddresses",
+		"ec2:AttachNetworkInterface",
+		"ec2:CreateNetworkInterface",
+		"ec2:DeleteNetworkInterface",
+		"ec2:DescribeInstanceTypes",
+		"ec2:DescribeNetworkInterfaces",
+		"ec2:DescribeSecurityGroups",
+		"ec2:DescribeSubnets",
+		"ec2:DescribeVpcPeeringConnections",
+		"ec2:DescribeVpcs",
+		"ec2:DetachNetworkInterface",
+		"ec2:ModifyNetworkInterfaceAttribute",
+		"ec2:UnassignPrivateIpAddresses",
 	)
 }
 
-func addCiliumEniPermissions(p *Policy, resource stringorslice.StringOrSlice) {
-	p.Statement = append(p.Statement,
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Slice([]string{
-				"ec2:DescribeSubnets",
-				"ec2:AttachNetworkInterface",
-				"ec2:AssignPrivateIpAddresses",
-				"ec2:UnassignPrivateIpAddresses",
-				"ec2:CreateNetworkInterface",
-				"ec2:DescribeNetworkInterfaces",
-				"ec2:DescribeVpcPeeringConnections",
-				"ec2:DescribeSecurityGroups",
-				"ec2:DetachNetworkInterface",
-				"ec2:DeleteNetworkInterface",
-				"ec2:ModifyNetworkInterfaceAttribute",
-				"ec2:DescribeVpcs",
-			}),
-			Resource: resource,
-		},
+func addCiliumEniPermissions(p *Policy) {
+	p.unconditionalAction.Insert(
+		"ec2:DescribeSubnets",
+		"ec2:AttachNetworkInterface",
+		"ec2:AssignPrivateIpAddresses",
+		"ec2:UnassignPrivateIpAddresses",
+		"ec2:CreateNetworkInterface",
+		"ec2:DescribeNetworkInterfaces",
+		"ec2:DescribeVpcPeeringConnections",
+		"ec2:DescribeSecurityGroups",
+		"ec2:DetachNetworkInterface",
+		"ec2:DeleteNetworkInterface",
+		"ec2:ModifyNetworkInterfaceAttribute",
+		"ec2:DescribeVpcs",
 	)
 }
 
-func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, clusterName string, iamPrefix string) {
+func addAmazonVPCCNIPermissions(p *Policy, iamPrefix string) {
+	p.unconditionalAction.Insert(
+		"ec2:AssignPrivateIpAddresses",
+		"ec2:AttachNetworkInterface",
+		"ec2:CreateNetworkInterface",
+		"ec2:DeleteNetworkInterface",
+		"ec2:DescribeInstances",
+		"ec2:DescribeInstanceTypes",
+		"ec2:DescribeTags",
+		"ec2:DescribeNetworkInterfaces",
+		"ec2:DetachNetworkInterface",
+		"ec2:ModifyNetworkInterfaceAttribute",
+		"ec2:UnassignPrivateIpAddresses",
+	)
 	p.Statement = append(p.Statement,
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Slice([]string{
-				"ec2:AssignPrivateIpAddresses",
-				"ec2:AttachNetworkInterface",
-				"ec2:CreateNetworkInterface",
-				"ec2:DeleteNetworkInterface",
-				"ec2:DescribeInstances",
-				"ec2:DescribeInstanceTypes",
-				"ec2:DescribeTags",
-				"ec2:DescribeNetworkInterfaces",
-				"ec2:DetachNetworkInterface",
-				"ec2:ModifyNetworkInterfaceAttribute",
-				"ec2:UnassignPrivateIpAddresses",
-			}),
-			Resource: resource,
-		},
 		&Statement{
 			Effect: StatementEffectAllow,
 			Action: stringorslice.Slice([]string{
@@ -1158,27 +1121,11 @@ func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice,
 	)
 }
 
-func addNodeTerminationHandlerSQSPermissions(p *Policy, resource stringorslice.StringOrSlice) {
-	p.Statement = append(p.Statement,
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Slice([]string{
-				"autoscaling:CompleteLifecycleAction",
-				"autoscaling:DescribeAutoScalingInstances",
-				"sqs:DeleteMessage",
-				"sqs:ReceiveMessage",
-			}),
-			Resource: resource,
-		},
+func addNodeTerminationHandlerSQSPermissions(p *Policy) {
+	p.unconditionalAction.Insert(
+		"autoscaling:CompleteLifecycleAction",
+		"autoscaling:DescribeAutoScalingInstances",
+		"sqs:DeleteMessage",
+		"sqs:ReceiveMessage",
 	)
-}
-
-func createResource(b *PolicyBuilder) stringorslice.StringOrSlice {
-	var resource stringorslice.StringOrSlice
-	if b.ResourceARN != nil {
-		resource = stringorslice.Slice([]string{*b.ResourceARN})
-	} else {
-		resource = stringorslice.Slice([]string{"*"})
-	}
-	return resource
 }

@@ -123,42 +123,7 @@
     },
     {
       "Action": [
-        "autoscaling:SetDesiredCapacity",
-        "autoscaling:TerminateInstanceInAutoScalingGroup"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "autoscaling:ResourceTag/KubernetesCluster": "nthsqsresources.example.com"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
-        "autoscaling:DescribeAutoScalingGroups",
-        "autoscaling:DescribeAutoScalingInstances",
-        "autoscaling:DescribeLaunchConfigurations"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
         "autoscaling:CompleteLifecycleAction",
-        "autoscaling:DescribeAutoScalingInstances",
-        "sqs:DeleteMessage",
-        "sqs:ReceiveMessage"
-      ],
-      "Effect": "Allow",
-      "Resource": "*"
-    },
-    {
-      "Action": [
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeLaunchConfigurations",
@@ -210,7 +175,9 @@
         "elasticloadbalancing:SetLoadBalancerPoliciesOfListener",
         "iam:GetServerCertificate",
         "iam:ListServerCertificates",
-        "kms:GenerateRandom"
+        "kms:GenerateRandom",
+        "sqs:DeleteMessage",
+        "sqs:ReceiveMessage"
       ],
       "Effect": "Allow",
       "Resource": "*"
@@ -219,6 +186,8 @@
       "Action": [
         "autoscaling:CompleteLifecycleAction",
         "autoscaling:DescribeAutoScalingInstances",
+        "autoscaling:SetDesiredCapacity",
+        "autoscaling:TerminateInstanceInAutoScalingGroup",
         "ec2:AttachVolume",
         "ec2:AuthorizeSecurityGroupIngress",
         "ec2:CreateRoute",

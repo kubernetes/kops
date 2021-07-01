@@ -28,23 +28,6 @@
     },
     {
       "Action": [
-        "ec2:AssignPrivateIpAddresses",
-        "ec2:AttachNetworkInterface",
-        "ec2:CreateNetworkInterface",
-        "ec2:DeleteNetworkInterface",
-        "ec2:DescribeInstances",
-        "ec2:DescribeInstanceTypes",
-        "ec2:DescribeTags",
-        "ec2:DescribeNetworkInterfaces",
-        "ec2:DetachNetworkInterface",
-        "ec2:ModifyNetworkInterfaceAttribute",
-        "ec2:UnassignPrivateIpAddresses"
-      ],
-      "Effect": "Allow",
-      "Resource": "*"
-    },
-    {
-      "Action": [
         "ec2:CreateTags"
       ],
       "Effect": "Allow",
@@ -55,8 +38,18 @@
     {
       "Action": [
         "autoscaling:DescribeAutoScalingInstances",
+        "ec2:AssignPrivateIpAddresses",
+        "ec2:AttachNetworkInterface",
+        "ec2:CreateNetworkInterface",
+        "ec2:DeleteNetworkInterface",
+        "ec2:DescribeInstanceTypes",
         "ec2:DescribeInstances",
+        "ec2:DescribeNetworkInterfaces",
         "ec2:DescribeRegions",
+        "ec2:DescribeTags",
+        "ec2:DetachNetworkInterface",
+        "ec2:ModifyNetworkInterfaceAttribute",
+        "ec2:UnassignPrivateIpAddresses",
         "kms:GenerateRandom"
       ],
       "Effect": "Allow",

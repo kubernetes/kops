@@ -34,7 +34,7 @@ func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, erro
 	clusterName := b.Cluster.ObjectMeta.Name
 	p := iam.NewPolicy(clusterName)
 
-	iam.AddClusterAutoscalerPermissions(p, b.Cluster.ObjectMeta.Name)
+	iam.AddClusterAutoscalerPermissions(p)
 
 	return p, nil
 }
