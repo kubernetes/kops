@@ -490,38 +490,28 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 			return nil, fmt.Errorf("cannot parse VFS path %q: %v", root, err)
 		}
 
-		if s3Path, ok := vfsPath.(*vfs.S3Path); ok {
-			iamS3Path := s3Path.Bucket() + "/" + s3Path.Key()
+		switch path := vfsPath.(type) {
+		case *vfs.S3Path:
+			iamS3Path := path.Bucket() + "/" + path.Key()
 			iamS3Path = strings.TrimSuffix(iamS3Path, "/")
 
-			s3Buckets.Insert(s3Path.Bucket())
+			s3Buckets.Insert(path.Bucket())
 
-			resources, err := ReadableStatePaths(b.Cluster, b.Role)
-			if err != nil {
+			if err := b.buildS3GetStatements(p, iamS3Path); err != nil {
 				return nil, err
 			}
 
-			if len(resources) != 0 {
-				sort.Strings(resources)
-
-				// Add the prefix for IAM
-				for i, r := range resources {
-					resources[i] = b.IAMPrefix() + ":s3:::" + iamS3Path + r
-				}
-
-				p.Statement = append(p.Statement, &Statement{
-					Effect:   StatementEffectAllow,
-					Action:   stringorslice.Slice([]string{"s3:Get*"}),
-					Resource: stringorslice.Of(resources...),
-				})
-			}
-		} else if _, ok := vfsPath.(*vfs.MemFSPath); ok {
-			// Tests -ignore - nothing we can do in terms of IAM policy
+		case *vfs.MemFSPath:
+			// Tests - we emulate the s3 permissions so that we can get an idea of the full policy
 			klog.Warningf("ignoring memfs path %q for IAM policy builder", vfsPath)
-		} else if _, ok := vfsPath.(*vfs.VaultPath); ok {
+
+			iamS3Path := "placeholder-read-bucket/" + path.Location()
+			b.buildS3GetStatements(p, iamS3Path)
+			s3Buckets.Insert("placeholder-read-bucket")
+		case *vfs.VaultPath:
 			// Vault access needs to come from somewhere else
 			klog.Warningf("ignoring valult path %q for IAM policy builder", vfsPath)
-		} else {
+		default:
 			// We could implement this approach, but it seems better to
 			// get all clouds using cluster-readable storage
 			return nil, fmt.Errorf("path is not cluster readable: %v", root)
@@ -534,26 +524,19 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 	}
 
 	for _, vfsPath := range writeablePaths {
-		if s3Path, ok := vfsPath.(*vfs.S3Path); ok {
-			iamS3Path := s3Path.Bucket() + "/" + s3Path.Key()
+		switch path := vfsPath.(type) {
+		case *vfs.S3Path:
+			iamS3Path := path.Bucket() + "/" + path.Key()
 			iamS3Path = strings.TrimSuffix(iamS3Path, "/")
 
-			p.Statement = append(p.Statement, &Statement{
-				Effect: StatementEffectAllow,
-				Action: stringorslice.Slice([]string{
-					"s3:GetObject",
-					"s3:DeleteObject",
-					"s3:DeleteObjectVersion",
-					"s3:PutObject",
-				}),
-				Resource: stringorslice.Of(
-					strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/*"}, ""),
-				),
-			})
-
-			s3Buckets.Insert(s3Path.Bucket())
-		} else {
-			klog.Warningf("unknown writeable path, can't apply IAM policy: %q", vfsPath)
+			b.buildS3WriteStatements(p, iamS3Path)
+			s3Buckets.Insert(path.Bucket())
+		case *vfs.MemFSPath:
+			iamS3Path := "placeholder-write-bucket/" + path.Location()
+			b.buildS3WriteStatements(p, iamS3Path)
+			s3Buckets.Insert("placeholder-write-bucket")
+		default:
+			return nil, fmt.Errorf("unknown writeable path, can't apply IAM policy: %q", vfsPath)
 		}
 	}
 
@@ -574,6 +557,46 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 	}
 
 	return p, nil
+}
+
+func (b *PolicyBuilder) buildS3WriteStatements(p *Policy, iamS3Path string) {
+	p.Statement = append(p.Statement, &Statement{
+		Effect: StatementEffectAllow,
+		Action: stringorslice.Slice([]string{
+			"s3:GetObject",
+			"s3:DeleteObject",
+			"s3:DeleteObjectVersion",
+			"s3:PutObject",
+		}),
+		Resource: stringorslice.Of(
+			strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/*"}, ""),
+		),
+	})
+
+}
+
+func (b *PolicyBuilder) buildS3GetStatements(p *Policy, iamS3Path string) error {
+
+	resources, err := ReadableStatePaths(b.Cluster, b.Role)
+	if err != nil {
+		return err
+	}
+
+	if len(resources) != 0 {
+		sort.Strings(resources)
+
+		// Add the prefix for IAM
+		for i, r := range resources {
+			resources[i] = b.IAMPrefix() + ":s3:::" + iamS3Path + r
+		}
+
+		p.Statement = append(p.Statement, &Statement{
+			Effect:   StatementEffectAllow,
+			Action:   stringorslice.Slice([]string{"s3:Get*"}),
+			Resource: stringorslice.Of(resources...),
+		})
+	}
+	return nil
 }
 
 func WriteableVFSPaths(cluster *kops.Cluster, role Subject) ([]vfs.Path, error) {
