@@ -2,122 +2,6 @@
   "Statement": [
     {
       "Action": [
-        "ec2:DescribeAccountAttributes",
-        "ec2:DescribeInstances",
-        "ec2:DescribeInternetGateways",
-        "ec2:DescribeRegions",
-        "ec2:DescribeRouteTables",
-        "ec2:DescribeSecurityGroups",
-        "ec2:DescribeSubnets",
-        "ec2:DescribeVolumes"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
-        "ec2:CreateSecurityGroup",
-        "ec2:CreateTags",
-        "ec2:ModifyInstanceAttribute"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
-        "ec2:AttachVolume",
-        "ec2:AuthorizeSecurityGroupIngress",
-        "ec2:CreateRoute",
-        "ec2:DeleteRoute",
-        "ec2:DeleteSecurityGroup",
-        "ec2:RevokeSecurityGroupIngress"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "ec2:ResourceTag/KubernetesCluster": "sharedvpc.example.com"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": "autoscaling:CompleteLifecycleAction",
-      "Condition": {
-        "StringEquals": {
-          "autoscaling:ResourceTag/KubernetesCluster": "sharedvpc.example.com"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": "autoscaling:DescribeLifecycleHooks",
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": "autoscaling:DescribeAutoScalingInstances",
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
-        "autoscaling:DescribeAutoScalingGroups",
-        "autoscaling:DescribeLaunchConfigurations",
-        "autoscaling:DescribeTags",
-        "ec2:DescribeLaunchTemplateVersions"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
-        "autoscaling:CompleteLifecycleAction",
-        "autoscaling:DescribeAutoScalingInstances"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "autoscaling:ResourceTag/KubernetesCluster": "sharedvpc.example.com"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
-        "iam:ListServerCertificates",
-        "iam:GetServerCertificate"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": "kms:GenerateRandom",
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
         "s3:Get*"
       ],
       "Effect": "Allow",
@@ -265,12 +149,26 @@
     },
     {
       "Action": [
+        "autoscaling:DescribeAutoScalingGroups",
+        "autoscaling:DescribeAutoScalingInstances",
+        "autoscaling:DescribeLaunchConfigurations",
+        "autoscaling:DescribeLifecycleHooks",
+        "autoscaling:DescribeTags",
+        "ec2:CreateSecurityGroup",
+        "ec2:CreateTags",
         "ec2:DescribeAccountAttributes",
         "ec2:DescribeInstances",
+        "ec2:DescribeInternetGateways",
+        "ec2:DescribeLaunchTemplateVersions",
+        "ec2:DescribeRegions",
+        "ec2:DescribeRouteTables",
+        "ec2:DescribeSecurityGroups",
+        "ec2:DescribeSubnets",
         "ec2:DescribeTags",
         "ec2:DescribeVolumes",
         "ec2:DescribeVolumesModifications",
         "ec2:DescribeVpcs",
+        "ec2:ModifyInstanceAttribute",
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
         "elasticloadbalancing:AttachLoadBalancerToSubnets",
@@ -299,18 +197,28 @@
         "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
         "elasticloadbalancing:RegisterTargets",
         "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
-        "elasticloadbalancing:SetLoadBalancerPoliciesOfListener"
+        "elasticloadbalancing:SetLoadBalancerPoliciesOfListener",
+        "iam:GetServerCertificate",
+        "iam:ListServerCertificates",
+        "kms:GenerateRandom"
       ],
       "Effect": "Allow",
       "Resource": "*"
     },
     {
       "Action": [
+        "autoscaling:CompleteLifecycleAction",
+        "autoscaling:DescribeAutoScalingInstances",
         "ec2:AttachVolume",
+        "ec2:AuthorizeSecurityGroupIngress",
+        "ec2:CreateRoute",
+        "ec2:DeleteRoute",
+        "ec2:DeleteSecurityGroup",
         "ec2:DeleteVolume",
         "ec2:DetachVolume",
         "ec2:ModifyInstanceAttribute",
-        "ec2:ModifyVolume"
+        "ec2:ModifyVolume",
+        "ec2:RevokeSecurityGroupIngress"
       ],
       "Condition": {
         "StringEquals": {

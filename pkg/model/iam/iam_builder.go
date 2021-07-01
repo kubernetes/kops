@@ -271,13 +271,13 @@ func NewPolicy(clusterName string) *Policy {
 
 // BuildAWSPolicy generates a custom policy for a Kubernetes master.
 func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
-	resource := createResource(b)
+	resource := stringorslice.String("*")
 
 	p := NewPolicy(b.Cluster.GetClusterName())
 
-	AddMasterEC2Policies(p, resource, b.Cluster.GetName())
-	addASLifecyclePolicies(p, resource, b.Cluster.GetName(), r.warmPool)
-	addCertIAMPolicies(p, resource)
+	AddMasterEC2Policies(p)
+	addASLifecyclePolicies(p, r.warmPool)
+	addCertIAMPolicies(p)
 	addKMSGenerateRandomPolicies(p)
 
 	var err error
@@ -314,16 +314,16 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 // BuildAWSPolicy generates a custom policy for a Kubernetes master.
 func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
-	resource := createResource(b)
+	resource := stringorslice.String("*")
 	clusterName := b.Cluster.GetName()
 
 	p := NewPolicy(clusterName)
 
-	AddMasterEC2Policies(p, resource, b.Cluster.GetName())
-	addASLifecyclePolicies(p, resource, b.Cluster.GetName(), true)
-	addMasterASPolicies(p, resource, b.Cluster.GetName())
+	AddMasterEC2Policies(p)
+	addASLifecyclePolicies(p, true)
+	addMasterASPolicies(p)
 	AddMasterELBPolicies(p)
-	addCertIAMPolicies(p, resource)
+	addCertIAMPolicies(p)
 	addKMSGenerateRandomPolicies(p)
 
 	var err error
@@ -382,12 +382,12 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 // BuildAWSPolicy generates a custom policy for a Kubernetes node.
 func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
-	resource := createResource(b)
+	resource := stringorslice.String("*")
 
 	p := NewPolicy(b.Cluster.GetClusterName())
 
-	addNodeEC2Policies(p, resource)
-	addASLifecyclePolicies(p, resource, b.Cluster.GetName(), r.enableLifecycleHookPermissions)
+	addNodeEC2Policies(p)
+	addASLifecyclePolicies(p, r.enableLifecycleHookPermissions)
 	addKMSGenerateRandomPolicies(p)
 
 	var err error
@@ -949,41 +949,31 @@ func AddDNSControllerPermissions(b *PolicyBuilder, p *Policy) {
 
 func addKMSIAMPolicies(p *Policy, resource stringorslice.StringOrSlice) {
 	// TODO could use "kms:ViaService" Condition Key here?
-	p.Statement = append(p.Statement, &Statement{
-		Effect: StatementEffectAllow,
-		Action: stringorslice.Of(
-			"kms:CreateGrant",
-			"kms:Decrypt",
-			"kms:DescribeKey",
-			"kms:Encrypt",
-			"kms:GenerateDataKey*",
-			"kms:ReEncrypt*",
-		),
-		Resource: resource,
-	})
+	p.unconditionalAction.Insert(
+		"kms:CreateGrant",
+		"kms:Decrypt",
+		"kms:DescribeKey",
+		"kms:Encrypt",
+		"kms:GenerateDataKey*",
+		"kms:ReEncrypt*",
+	)
 }
 
 func addKMSGenerateRandomPolicies(p *Policy) {
 	// For nodeup to seed the instance's random number generator.
-	p.Statement = append(p.Statement, &Statement{
-		Effect: StatementEffectAllow,
-		Action: stringorslice.Of(
-			"kms:GenerateRandom",
-		),
-		Resource: stringorslice.Slice([]string{"*"}),
-	})
+	p.unconditionalAction.Insert(
+		"kms:GenerateRandom",
+	)
 }
 
-func addNodeEC2Policies(p *Policy, resource stringorslice.StringOrSlice) {
+func addNodeEC2Policies(p *Policy) {
 	// Protokube makes a DescribeInstances call, DescribeRegions when finding S3 State Bucket
-	p.Statement = append(p.Statement, &Statement{
-		Effect:   StatementEffectAllow,
-		Action:   stringorslice.Slice([]string{"ec2:DescribeInstances", "ec2:DescribeRegions"}),
-		Resource: resource,
-	})
+	p.unconditionalAction.Insert(
+		"ec2:DescribeInstances", "ec2:DescribeRegions",
+	)
 }
 
-func AddMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {
+func AddMasterEC2Policies(p *Policy) {
 	// Describe* calls don't support any additional IAM restrictions
 	// The non-Describe* ec2 calls support different types of filtering:
 	// http://docs.aws.amazon.com/AWSEC2/latest/APIReference/ec2-api-permissions.html
@@ -995,47 +985,26 @@ func AddMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, clust
 	// Network Routing Permissions - May not be required with the CNI Networking provider
 
 	// Comments are which cloudprovider code file makes the call
-	p.Statement = append(p.Statement,
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Slice([]string{
-				"ec2:DescribeAccountAttributes", // aws.go
-				"ec2:DescribeInstances",         // aws.go
-				"ec2:DescribeInternetGateways",  // aws.go
-				"ec2:DescribeRegions",           // s3context.go
-				"ec2:DescribeRouteTables",       // aws.go
-				"ec2:DescribeSecurityGroups",    // aws.go
-				"ec2:DescribeSubnets",           // aws.go
-				"ec2:DescribeVolumes",           // aws.go
-			}),
-			Resource: resource,
-		},
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Slice([]string{
-				"ec2:CreateSecurityGroup",     // aws.go
-				"ec2:CreateTags",              // aws.go, tag.go
-				"ec2:ModifyInstanceAttribute", // aws.go
-			}),
-			Resource: resource,
-		},
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
-				"ec2:AttachVolume",                  // aws.go
-				"ec2:AuthorizeSecurityGroupIngress", // aws.go
-				"ec2:CreateRoute",                   // aws.go
-				"ec2:DeleteRoute",                   // aws.go
-				"ec2:DeleteSecurityGroup",           // aws.go
-				"ec2:RevokeSecurityGroupIngress",    // aws.go
-			),
-			Resource: resource,
-			Condition: Condition{
-				"StringEquals": map[string]string{
-					"ec2:ResourceTag/KubernetesCluster": clusterName,
-				},
-			},
-		},
+	p.unconditionalAction.Insert(
+		"ec2:DescribeAccountAttributes", // aws.go
+		"ec2:DescribeInstances",         // aws.go
+		"ec2:DescribeInternetGateways",  // aws.go
+		"ec2:DescribeRegions",           // s3context.go
+		"ec2:DescribeRouteTables",       // aws.go
+		"ec2:DescribeSecurityGroups",    // aws.go
+		"ec2:DescribeSubnets",           // aws.go
+		"ec2:DescribeVolumes",           // aws.go
+		"ec2:CreateSecurityGroup",       // aws.go
+		"ec2:CreateTags",                // aws.go, tag.go
+		"ec2:ModifyInstanceAttribute",   // aws.go
+	)
+	p.clusterTaggedAction.Insert(
+		"ec2:AttachVolume",                  // aws.go
+		"ec2:AuthorizeSecurityGroupIngress", // aws.go
+		"ec2:CreateRoute",                   // aws.go
+		"ec2:DeleteRoute",                   // aws.go
+		"ec2:DeleteSecurityGroup",           // aws.go
+		"ec2:RevokeSecurityGroupIngress",    // aws.go
 	)
 }
 
@@ -1075,81 +1044,41 @@ func AddMasterELBPolicies(p *Policy) {
 	)
 }
 
-func addMasterASPolicies(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {
+func addMasterASPolicies(p *Policy) {
 	// Comments are which cloudprovider / autoscaler code file makes the call
 	// TODO: Make optional only if using autoscalers
-	p.Statement = append(p.Statement,
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
-				"autoscaling:DescribeAutoScalingGroups",    // aws_instancegroups.go
-				"autoscaling:DescribeLaunchConfigurations", // aws.go
-				"autoscaling:DescribeTags",                 // auto_scaling.go
-				"ec2:DescribeLaunchTemplateVersions",
-			),
-			Resource: resource,
-		},
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
-				"autoscaling:CompleteLifecycleAction",      // aws_manager.go
-				"autoscaling:DescribeAutoScalingInstances", // aws_instancegroups.go
-			),
-			Resource: resource,
-			Condition: Condition{
-				"StringEquals": map[string]string{
-					"autoscaling:ResourceTag/KubernetesCluster": clusterName,
-				},
-			},
-		},
+	p.unconditionalAction.Insert(
+		"autoscaling:DescribeAutoScalingGroups",    // aws_instancegroups.go
+		"autoscaling:DescribeLaunchConfigurations", // aws.go
+		"autoscaling:DescribeTags",                 // auto_scaling.go
+		"ec2:DescribeLaunchTemplateVersions",
+	)
+	p.clusterTaggedAction.Insert(
+		"autoscaling:CompleteLifecycleAction",      // aws_manager.go
+		"autoscaling:DescribeAutoScalingInstances", // aws_instancegroups.go
 	)
 }
 
-func addASLifecyclePolicies(p *Policy, resource stringorslice.StringOrSlice, clusterName string, enableHookSupport bool) {
+func addASLifecyclePolicies(p *Policy, enableHookSupport bool) {
 	if enableHookSupport {
-		p.Statement = append(p.Statement,
-			&Statement{
-				Effect: StatementEffectAllow,
-				Action: stringorslice.Of(
-					"autoscaling:CompleteLifecycleAction", // aws_manager.go
-				),
-				Resource: resource,
-				Condition: Condition{
-					"StringEquals": map[string]string{
-						"autoscaling:ResourceTag/KubernetesCluster": clusterName,
-					},
-				},
-			},
-			&Statement{
-				Effect: StatementEffectAllow,
-				Action: stringorslice.Of(
-					"autoscaling:DescribeLifecycleHooks",
-				),
-				Resource: resource,
-			},
+		p.clusterTaggedAction.Insert(
+			"autoscaling:CompleteLifecycleAction", // aws_manager.go
+		)
+		p.unconditionalAction.Insert(
+			"autoscaling:DescribeLifecycleHooks",
 		)
 	}
-	p.Statement = append(p.Statement,
-
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
-				"autoscaling:DescribeAutoScalingInstances",
-			),
-			Resource: resource,
-		})
+	p.unconditionalAction.Insert(
+		"autoscaling:DescribeAutoScalingInstances",
+	)
 }
 
-func addCertIAMPolicies(p *Policy, resource stringorslice.StringOrSlice) {
+func addCertIAMPolicies(p *Policy) {
 	// TODO: Make optional only if using IAM SSL Certs on ELBs
-	p.Statement = append(p.Statement, &Statement{
-		Effect: StatementEffectAllow,
-		Action: stringorslice.Of(
-			"iam:ListServerCertificates",
-			"iam:GetServerCertificate",
-		),
-		Resource: resource,
-	})
+	p.unconditionalAction.Insert(
+		"iam:ListServerCertificates",
+		"iam:GetServerCertificate",
+	)
 }
 
 func addLyftVPCPermissions(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {
