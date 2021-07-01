@@ -142,49 +142,6 @@
     },
     {
       "Action": [
-        "autoscaling:SetDesiredCapacity",
-        "autoscaling:TerminateInstanceInAutoScalingGroup"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "autoscaling:ResourceTag/KubernetesCluster": "minimal.example.com"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
-        "autoscaling:DescribeAutoScalingGroups",
-        "autoscaling:DescribeAutoScalingInstances",
-        "autoscaling:DescribeLaunchConfigurations"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
-      "Action": [
-        "ec2:AssignPrivateIpAddresses",
-        "ec2:AttachNetworkInterface",
-        "ec2:CreateNetworkInterface",
-        "ec2:DeleteNetworkInterface",
-        "ec2:DescribeInstances",
-        "ec2:DescribeInstanceTypes",
-        "ec2:DescribeTags",
-        "ec2:DescribeNetworkInterfaces",
-        "ec2:DetachNetworkInterface",
-        "ec2:ModifyNetworkInterfaceAttribute",
-        "ec2:UnassignPrivateIpAddresses"
-      ],
-      "Effect": "Allow",
-      "Resource": "*"
-    },
-    {
-      "Action": [
         "ec2:CreateTags"
       ],
       "Effect": "Allow",
@@ -199,11 +156,16 @@
         "autoscaling:DescribeLaunchConfigurations",
         "autoscaling:DescribeLifecycleHooks",
         "autoscaling:DescribeTags",
+        "ec2:AssignPrivateIpAddresses",
+        "ec2:AttachNetworkInterface",
+        "ec2:CreateNetworkInterface",
         "ec2:CreateSecurityGroup",
         "ec2:CreateSnapshot",
         "ec2:CreateTags",
+        "ec2:DeleteNetworkInterface",
         "ec2:DescribeAccountAttributes",
         "ec2:DescribeAvailabilityZones",
+        "ec2:DescribeInstanceTypes",
         "ec2:DescribeInstances",
         "ec2:DescribeInternetGateways",
         "ec2:DescribeLaunchTemplateVersions",
@@ -217,7 +179,10 @@
         "ec2:DescribeVolumes",
         "ec2:DescribeVolumesModifications",
         "ec2:DescribeVpcs",
+        "ec2:DetachNetworkInterface",
         "ec2:ModifyInstanceAttribute",
+        "ec2:ModifyNetworkInterfaceAttribute",
+        "ec2:UnassignPrivateIpAddresses",
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
         "elasticloadbalancing:AttachLoadBalancerToSubnets",
@@ -263,6 +228,8 @@
       "Action": [
         "autoscaling:CompleteLifecycleAction",
         "autoscaling:DescribeAutoScalingInstances",
+        "autoscaling:SetDesiredCapacity",
+        "autoscaling:TerminateInstanceInAutoScalingGroup",
         "ec2:AttachVolume",
         "ec2:AuthorizeSecurityGroupIngress",
         "ec2:CreateRoute",
