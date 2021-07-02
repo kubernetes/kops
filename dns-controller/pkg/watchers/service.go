@@ -22,14 +22,14 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/kops/dns-controller/pkg/dns"
-	"k8s.io/kops/dns-controller/pkg/util"
-
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/dns-controller/pkg/dns"
+	"k8s.io/kops/dns-controller/pkg/util"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // ServiceController watches for services with dns annotations
@@ -164,8 +164,12 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) string {
 					klog.V(4).Infof("Found CNAME record for service %s/%s: %q", service.Namespace, service.Name, ingress.Hostname)
 				}
 				if ingress.IP != "" {
+					var recordType dns.RecordType = dns.RecordTypeA
+					if utils.IsIPv6IP(ingress.IP) {
+						recordType = dns.RecordTypeAAAA
+					}
 					ingresses = append(ingresses, dns.Record{
-						RecordType: dns.RecordTypeA,
+						RecordType: recordType,
 						Value:      ingress.IP,
 					})
 					klog.V(4).Infof("Found A record for service %s/%s: %q", service.Namespace, service.Name, ingress.IP)
