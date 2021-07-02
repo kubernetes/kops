@@ -1067,6 +1067,12 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 		Type:    "ca",
 	}
 	context.AddTask(caTask)
+	aggregatorTask := &fitasks.Keypair{
+		Name:    fi.String("apiserver-aggregator-ca"),
+		Subject: "cn=apiserver-aggregator-ca",
+		Type:    "ca",
+	}
+	context.AddTask(aggregatorTask)
 	saTask := &fitasks.Keypair{
 		Name:    fi.String("service-account"),
 		Subject: "cn=service-account",
