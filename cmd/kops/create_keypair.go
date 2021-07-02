@@ -79,6 +79,7 @@ type CreateKeypairOptions struct {
 }
 
 var rotatableKeysets = sets.NewString(
+	"apiserver-aggregator-ca",
 	"ca",
 	"etcd-clients-ca-cilium",
 	"service-account",
