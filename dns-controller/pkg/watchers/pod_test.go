@@ -46,6 +46,10 @@ func TestPodController(t *testing.T) {
 		},
 		Status: corev1.PodStatus{
 			PodIP: "10.0.0.1",
+			PodIPs: []corev1.PodIP{
+				{IP: "10.0.0.1"},
+				{IP: "2001:db8:0:0:0:ff00:42:8329"},
+			},
 		},
 	}
 
@@ -86,6 +90,7 @@ func TestPodController(t *testing.T) {
 		"kube-system/somepod": {
 			{RecordType: "_alias", FQDN: "a.foo.com.", Value: "node/my-node/external"},
 			{RecordType: "A", FQDN: "internal.a.foo.com.", Value: "10.0.0.1"},
+			{RecordType: "AAAA", FQDN: "internal.a.foo.com.", Value: "2001:db8:0:0:0:ff00:42:8329"},
 		},
 	}
 	if diff := cmp.Diff(scope.records, want); diff != "" {
