@@ -71,6 +71,14 @@ UserData:
     Name: node
 ---
 Lifecycle: ""
+Name: apiserver-aggregator-ca
+Signer: null
+alternateNames: null
+oldFormat: false
+subject: cn=apiserver-aggregator-ca
+type: ca
+---
+Lifecycle: ""
 Name: ca
 Signer: null
 alternateNames: null

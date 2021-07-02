@@ -95,7 +95,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		Mode:     s("0600"),
 	})
 
-	if b.UseEtcdManager() && b.UseEtcdTLS() {
+	if b.UseEtcdManager() {
 		c.AddTask(&nodetasks.File{
 			Path:     filepath.Join(pathSrvKAPI, "etcd-ca.crt"),
 			Contents: fi.NewStringResource(b.NodeupConfig.CAs["etcd-clients-ca"]),
@@ -122,6 +122,31 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		kubeAPIServer.EtcdCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 		kubeAPIServer.EtcdCertFile = filepath.Join(b.PathSrvKubernetes(), "etcd-client.pem")
 		kubeAPIServer.EtcdKeyFile = filepath.Join(b.PathSrvKubernetes(), "etcd-client-key.pem")
+	}
+
+	{
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join(pathSrvKAPI, "apiserver-aggregator-ca.crt"),
+			Contents: fi.NewStringResource(b.NodeupConfig.CAs["apiserver-aggregator-ca"]),
+			Type:     nodetasks.FileType_File,
+			Mode:     fi.String("0644"),
+		})
+		kubeAPIServer.RequestheaderClientCAFile = filepath.Join(pathSrvKAPI, "apiserver-aggregator-ca.crt")
+
+		issueCert := &nodetasks.IssueCert{
+			Name:   "apiserver-aggregator",
+			Signer: "apiserver-aggregator-ca",
+			Type:   "client",
+			// Must match RequestheaderAllowedNames
+			Subject: nodetasks.PKIXName{CommonName: "aggregator"},
+		}
+		c.AddTask(issueCert)
+		err := issueCert.AddFileTasks(c, pathSrvKAPI, "apiserver-aggregator", "", nil)
+		if err != nil {
+			return err
+		}
+		kubeAPIServer.ProxyClientCertFile = fi.String(filepath.Join(pathSrvKAPI, "apiserver-aggregator.crt"))
+		kubeAPIServer.ProxyClientKeyFile = fi.String(filepath.Join(pathSrvKAPI, "apiserver-aggregator.key"))
 	}
 
 	{
@@ -370,26 +395,6 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 	// @note we are making assumption were using the ones created by the pki model, not custom defined ones
 	kubeAPIServer.KubeletClientCertificate = filepath.Join(b.PathSrvKubernetes(), "kubelet-api.crt")
 	kubeAPIServer.KubeletClientKey = filepath.Join(b.PathSrvKubernetes(), "kubelet-api.key")
-
-	{
-		certPath := filepath.Join(b.PathSrvKubernetes(), "apiserver-aggregator.crt")
-		kubeAPIServer.ProxyClientCertFile = &certPath
-		keyPath := filepath.Join(b.PathSrvKubernetes(), "apiserver-aggregator.key")
-		kubeAPIServer.ProxyClientKeyFile = &keyPath
-	}
-
-	// APIServer aggregation options
-	{
-		cert, err := b.KeyStore.FindCert("apiserver-aggregator-ca")
-		if err != nil {
-			return nil, fmt.Errorf("apiserver aggregator CA cert lookup failed: %v", err.Error())
-		}
-
-		if cert != nil {
-			certPath := filepath.Join(b.PathSrvKubernetes(), "apiserver-aggregator-ca.crt")
-			kubeAPIServer.RequestheaderClientCAFile = certPath
-		}
-	}
 
 	// @fixup: the admission controller migrated from --admission-control to --enable-admission-plugins, but
 	// most people will still have c.Spec.KubeAPIServer.AdmissionControl references into their configuration we need

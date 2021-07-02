@@ -262,7 +262,6 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 		container.Image = remapped
 	}
 
-	etcdInsecure := !b.UseEtcdTLS()
 	var clientHost string
 
 	if featureflag.APIServerNodes.Enabled() {
@@ -350,7 +349,6 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 		BackupStore:   backupStore,
 		GrpcPort:      grpcPort,
 		DNSSuffix:     dnsInternalSuffix,
-		EtcdInsecure:  etcdInsecure,
 	}
 
 	config.LogLevel = 6
@@ -564,12 +562,6 @@ type config struct {
 
 	// PKIDir is set to the directory for PKI keys, used to secure commucations between etcd-manager peers
 	PKIDir string `flag:"pki-dir"`
-
-	// Insecure can be used to turn off tls for etcd-manager (compare with EtcdInsecure)
-	Insecure bool `flag:"insecure"`
-
-	// EtcdInsecure can be used to turn off tls for etcd itself (compare with Insecure)
-	EtcdInsecure bool `flag:"etcd-insecure"`
 
 	Address               string   `flag:"address"`
 	PeerUrls              string   `flag:"peer-urls"`
