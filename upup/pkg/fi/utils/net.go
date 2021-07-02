@@ -27,9 +27,43 @@ import (
 	"github.com/apparentlymart/go-cidr/cidr"
 )
 
+// IsIPv4IP checks if a string is a valid IPv4 IP.
+func IsIPv4IP(s string) bool {
+	ip := net.ParseIP(s)
+	if ip == nil {
+		return false
+	}
+
+	// Must convert to IPv4
+	if ip.To4() == nil {
+		return false
+	}
+	// Must NOT contain ":"
+	if strings.Contains(s, ":") {
+		return false
+	}
+
+	return true
+}
+
+// IsIPv6IP checks if a string is a valid IPv6 IP.
+func IsIPv6IP(s string) bool {
+	ip := net.ParseIP(s)
+	if ip == nil {
+		return false
+	}
+
+	// Must NOT convert to IPv4
+	if ip.To4() != nil {
+		return false
+	}
+
+	return true
+}
+
 // IsIPv4CIDR checks if a string is a valid IPv4 CIDR.
-func IsIPv4CIDR(cidr string) bool {
-	ip, _, err := net.ParseCIDR(cidr)
+func IsIPv4CIDR(s string) bool {
+	ip, _, err := net.ParseCIDR(s)
 	if err != nil {
 		return false
 	}
@@ -39,7 +73,7 @@ func IsIPv4CIDR(cidr string) bool {
 		return false
 	}
 	// Must NOT contain ":"
-	if strings.Contains(cidr, ":") {
+	if strings.Contains(s, ":") {
 		return false
 	}
 
@@ -47,18 +81,14 @@ func IsIPv4CIDR(cidr string) bool {
 }
 
 // IsIPv6CIDR checks if a string is a valid IPv6 CIDR.
-func IsIPv6CIDR(cidr string) bool {
-	ip, _, err := net.ParseCIDR(cidr)
+func IsIPv6CIDR(s string) bool {
+	ip, _, err := net.ParseCIDR(s)
 	if err != nil {
 		return false
 	}
 
 	// Must NOT convert to IPv4
 	if ip.To4() != nil {
-		return false
-	}
-	// Must contain ":"
-	if !strings.Contains(cidr, ":") {
 		return false
 	}
 

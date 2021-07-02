@@ -23,6 +23,7 @@ const (
 	RecordTypeAlias = "_alias"
 
 	RecordTypeA     = "A"
+	RecordTypeAAAA  = "AAAA"
 	RecordTypeCNAME = "CNAME"
 
 	RoleTypeExternal = "external"

@@ -22,14 +22,14 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/klog/v2"
-
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // PodController watches for Pods with dns annotations
@@ -179,8 +179,8 @@ func (c *PodController) updatePodRecords(pod *v1.Pod) string {
 	if specInternal != "" {
 		var ips []string
 		if pod.Spec.HostNetwork {
-			if pod.Status.PodIP != "" {
-				ips = append(ips, pod.Status.PodIP)
+			for _, ip := range pod.Status.PodIPs {
+				ips = append(ips, ip.IP)
 			}
 		} else {
 			klog.V(4).Infof("Pod %q had %s=%s, but was not HostNetwork", pod.Name, AnnotationNameDNSInternal, specInternal)
@@ -192,8 +192,13 @@ func (c *PodController) updatePodRecords(pod *v1.Pod) string {
 
 			fqdn := dns.EnsureDotSuffix(token)
 			for _, ip := range ips {
+				var recordType dns.RecordType = dns.RecordTypeA
+				if utils.IsIPv6IP(ip) {
+					recordType = dns.RecordTypeAAAA
+				}
+
 				records = append(records, dns.Record{
-					RecordType: dns.RecordTypeA,
+					RecordType: recordType,
 					FQDN:       fqdn,
 					Value:      ip,
 				})

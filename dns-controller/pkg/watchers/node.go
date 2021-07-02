@@ -21,15 +21,15 @@ import (
 	"fmt"
 	"time"
 
-	"k8s.io/kops/dns-controller/pkg/dns"
-	"k8s.io/kops/dns-controller/pkg/util"
-	kopsutil "k8s.io/kops/pkg/apis/kops/util"
-
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/dns-controller/pkg/dns"
+	"k8s.io/kops/dns-controller/pkg/util"
+	kopsutil "k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // NodeController watches for nodes
@@ -151,8 +151,12 @@ func (c *NodeController) updateNodeRecords(node *v1.Node) string {
 		if a.Type != v1.NodeInternalIP {
 			continue
 		}
+		var recordType dns.RecordType = dns.RecordTypeA
+		if utils.IsIPv6IP(a.Address) {
+			recordType = dns.RecordTypeAAAA
+		}
 		records = append(records, dns.Record{
-			RecordType:  dns.RecordTypeA,
+			RecordType:  recordType,
 			FQDN:        "node/" + node.Name + "/internal",
 			Value:       a.Address,
 			AliasTarget: true,
@@ -164,8 +168,12 @@ func (c *NodeController) updateNodeRecords(node *v1.Node) string {
 		if a.Type != v1.NodeExternalIP {
 			continue
 		}
+		var recordType dns.RecordType = dns.RecordTypeA
+		if utils.IsIPv6IP(a.Address) {
+			recordType = dns.RecordTypeAAAA
+		}
 		records = append(records, dns.Record{
-			RecordType:  dns.RecordTypeA,
+			RecordType:  recordType,
 			FQDN:        "node/" + node.Name + "/external",
 			Value:       a.Address,
 			AliasTarget: true,
@@ -188,8 +196,12 @@ func (c *NodeController) updateNodeRecords(node *v1.Node) string {
 			} else if a.Type == v1.NodeExternalIP {
 				roleType = dns.RoleTypeExternal
 			}
+			var recordType dns.RecordType = dns.RecordTypeA
+			if utils.IsIPv6IP(a.Address) {
+				recordType = dns.RecordTypeAAAA
+			}
 			records = append(records, dns.Record{
-				RecordType:  dns.RecordTypeA,
+				RecordType:  recordType,
 				FQDN:        dns.AliasForNodesInRole(role, roleType),
 				Value:       a.Address,
 				AliasTarget: true,
