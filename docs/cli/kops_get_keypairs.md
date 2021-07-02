@@ -5,12 +5,8 @@
 
 Get one or many keypairs.
 
-### Synopsis
-
-Display one or many keypairs.
-
 ```
-kops get keypairs [flags]
+kops get keypairs [keyset]... [flags]
 ```
 
 ### Examples
@@ -19,8 +15,8 @@ kops get keypairs [flags]
   # List the cluster CA keypairs.
   kops get keypairs ca
   
-  # List the service-account keypairs.
-  kops get keypairs service-account
+  # List the service-account keypairs, including distrusted ones.
+  kops get keypairs service-account --distrusted
 ```
 
 ### Options
