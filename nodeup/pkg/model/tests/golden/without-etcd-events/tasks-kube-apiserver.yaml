@@ -31,10 +31,10 @@ contents: |
       - --kubelet-client-certificate=/srv/kubernetes/kubelet-api.crt
       - --kubelet-client-key=/srv/kubernetes/kubelet-api.key
       - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
-      - --proxy-client-cert-file=/srv/kubernetes/apiserver-aggregator.crt
-      - --proxy-client-key-file=/srv/kubernetes/apiserver-aggregator.key
+      - --proxy-client-cert-file=/srv/kubernetes/kube-apiserver/apiserver-aggregator.crt
+      - --proxy-client-key-file=/srv/kubernetes/kube-apiserver/apiserver-aggregator.key
       - --requestheader-allowed-names=aggregator
-      - --requestheader-client-ca-file=/srv/kubernetes/apiserver-aggregator-ca.crt
+      - --requestheader-client-ca-file=/srv/kubernetes/kube-apiserver/apiserver-aggregator-ca.crt
       - --requestheader-extra-headers-prefix=X-Remote-Extra-
       - --requestheader-group-headers=X-Remote-Group
       - --requestheader-username-headers=X-Remote-User
@@ -171,6 +171,33 @@ type: directory
 ---
 contents: ""
 mode: "0644"
+path: /srv/kubernetes/kube-apiserver/apiserver-aggregator-ca.crt
+type: file
+---
+contents:
+  task:
+    Name: apiserver-aggregator
+    signer: apiserver-aggregator-ca
+    subject:
+      CommonName: aggregator
+    type: client
+mode: "0644"
+path: /srv/kubernetes/kube-apiserver/apiserver-aggregator.crt
+type: file
+---
+contents:
+  task:
+    Name: apiserver-aggregator
+    signer: apiserver-aggregator-ca
+    subject:
+      CommonName: aggregator
+    type: client
+mode: "0600"
+path: /srv/kubernetes/kube-apiserver/apiserver-aggregator.key
+type: file
+---
+contents: ""
+mode: "0644"
 path: /srv/kubernetes/kube-apiserver/etcd-ca.crt
 type: file
 ---
@@ -236,6 +263,12 @@ ifNotExists: true
 mode: "0400"
 path: /var/log/kube-apiserver.log
 type: file
+---
+Name: apiserver-aggregator
+signer: apiserver-aggregator-ca
+subject:
+  CommonName: aggregator
+type: client
 ---
 Name: etcd-client
 signer: etcd-clients-ca
