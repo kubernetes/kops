@@ -23,7 +23,9 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/tables"
@@ -32,15 +34,12 @@ import (
 )
 
 var (
-	getKeypairLong = templates.LongDesc(i18n.T(`
-	Display one or many keypairs.`))
-
 	getKeypairExample = templates.Examples(i18n.T(`
 	# List the cluster CA keypairs.
 	kops get keypairs ca
 
-	# List the service-account keypairs.
-	kops get keypairs service-account`))
+	# List the service-account keypairs, including distrusted ones.
+	kops get keypairs service-account --distrusted`))
 
 	getKeypairShort = i18n.T(`Get one or many keypairs.`)
 )
@@ -51,21 +50,20 @@ type GetKeypairsOptions struct {
 }
 
 func NewCmdGetKeypairs(f *util.Factory, out io.Writer, getOptions *GetOptions) *cobra.Command {
-	options := GetKeypairsOptions{
+	options := &GetKeypairsOptions{
 		GetOptions: getOptions,
 	}
 	cmd := &cobra.Command{
-		Use:     "keypairs",
+		Use:     "keypairs [keyset]...",
 		Aliases: []string{"keypair"},
 		Short:   getKeypairShort,
-		Long:    getKeypairLong,
 		Example: getKeypairExample,
-		Run: func(cmd *cobra.Command, args []string) {
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return completeGetKeypairs(options, args, toComplete)
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.TODO()
-			err := RunGetKeypairs(ctx, out, &options, args)
-			if err != nil {
-				exitWithError(err)
-			}
+			return RunGetKeypairs(ctx, out, options, args)
 		},
 	}
 
@@ -160,6 +158,12 @@ func RunGetKeypairs(ctx context.Context, out io.Writer, options *GetKeypairsOpti
 			}
 			return ""
 		})
+		t.AddColumn("ISSUED", func(i *keypairItem) string {
+			return i.Certificate.Certificate.NotBefore.Local().Format("2006-01-02")
+		})
+		t.AddColumn("EXPIRES", func(i *keypairItem) string {
+			return i.Certificate.Certificate.NotAfter.Local().Format("2006-01-02")
+		})
 		t.AddColumn("PRIMARY", func(i *keypairItem) string {
 			if i.IsPrimary {
 				return "*"
@@ -172,7 +176,7 @@ func RunGetKeypairs(ctx context.Context, out io.Writer, options *GetKeypairsOpti
 			}
 			return ""
 		})
-		columnNames := []string{"NAME", "ID"}
+		columnNames := []string{"NAME", "ID", "ISSUED", "EXPIRES"}
 		if options.Distrusted {
 			columnNames = append(columnNames, "DISTRUSTED")
 		}
@@ -187,4 +191,21 @@ func RunGetKeypairs(ctx context.Context, out io.Writer, options *GetKeypairsOpti
 	default:
 		return fmt.Errorf("Unknown output format: %q", options.output)
 	}
+}
+
+func completeGetKeypairs(options *GetKeypairsOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	commandutils.ConfigureKlogForCompletion()
+	ctx := context.TODO()
+
+	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand)
+	if cluster == nil {
+		return completions, directive
+	}
+
+	alreadySelected := sets.NewString(args...)
+	_, _, completions, directive = completeKeyset(cluster, clientSet, nil, func(name string, keyset *fi.Keyset) bool {
+		return !alreadySelected.Has(name)
+	})
+
+	return completions, directive
 }
