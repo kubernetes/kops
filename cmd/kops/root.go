@@ -140,7 +140,6 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.RegisterFlagCompletionFunc("name", commandutils.CompleteClusterName(&rootCommand))
 
 	// create subcommands
-	cmd.AddCommand(NewCmdCompletion(f, out))
 	cmd.AddCommand(NewCmdCreate(f, out))
 	cmd.AddCommand(NewCmdDelete(f, out))
 	cmd.AddCommand(NewCmdDistrust(f, out))
