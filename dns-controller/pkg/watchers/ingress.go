@@ -26,9 +26,9 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
-
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // IngressController watches for Ingress objects with dns labels
@@ -156,8 +156,12 @@ func (c *IngressController) updateIngressRecords(ingress *v1beta1.Ingress) strin
 			})
 		}
 		if ingress.IP != "" {
+			var recordType dns.RecordType = dns.RecordTypeA
+			if utils.IsIPv6IP(ingress.IP) {
+				recordType = dns.RecordTypeAAAA
+			}
 			ingresses = append(ingresses, dns.Record{
-				RecordType: dns.RecordTypeA,
+				RecordType: recordType,
 				Value:      ingress.IP,
 			})
 		}
