@@ -162,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecanal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: kbEzK8kw6giy8umE3XXpcv1nDzibIhbZueakiXYsON8=
+NodeupConfigHash: qBRsKRIIsXSvg7PNIh2jBXrzhuvNTySqmoxkGDVuqSU=
 
 __EOF_KUBE_ENV
 

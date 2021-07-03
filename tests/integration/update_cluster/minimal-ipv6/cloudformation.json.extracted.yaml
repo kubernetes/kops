@@ -245,7 +245,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom.Propert
   ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: t15gEwnuPE103HxZkfcSBfp1mlPGREFQRbXE52po4uU=
+  NodeupConfigHash: ZoTQgFtCoUHlcX+vOlAMNWBTIXU4nCdbQvGIGGEqb8M=
 
   __EOF_KUBE_ENV
 
@@ -416,7 +416,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalipv6examplecom.Properties.LaunchTempla
   ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: hashGwgB0w/VcBJswvdIcl/rNtIZNNbw85a0f/Yga5o=
+  NodeupConfigHash: E9EbfWhia9Hi9OKNeATPBerRt5w1CPzHc0aZCxQDxNg=
 
   __EOF_KUBE_ENV
 
