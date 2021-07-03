@@ -191,7 +191,6 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Protocol:      fi.String("tcp"),
 			FromPort:      fi.Int64(22),
 			ToPort:        fi.Int64(22),
-			CIDR:          fi.String(sshAccess),
 		}
 		if utils.IsIPv6CIDR(sshAccess) {
 			t.IPv6CIDR = fi.String(sshAccess)
