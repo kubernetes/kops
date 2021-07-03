@@ -200,7 +200,7 @@ contents:
     alternateNames:
     - localhost
     - 127.0.0.1
-    signer: ca
+    signer: kubernetes-ca
     subject:
       CommonName: aws-iam-authenticator
     type: server
@@ -216,7 +216,7 @@ contents:
     alternateNames:
     - localhost
     - 127.0.0.1
-    signer: ca
+    signer: kubernetes-ca
     subject:
       CommonName: aws-iam-authenticator
     type: server
@@ -300,7 +300,7 @@ type: file
 contents:
   task:
     Name: kubelet-api
-    signer: ca
+    signer: kubernetes-ca
     subject:
       CommonName: kubelet-api
     type: client
@@ -311,7 +311,7 @@ type: file
 contents:
   task:
     Name: kubelet-api
-    signer: ca
+    signer: kubernetes-ca
     subject:
       CommonName: kubelet-api
     type: client
@@ -335,7 +335,7 @@ Name: aws-iam-authenticator
 alternateNames:
 - localhost
 - 127.0.0.1
-signer: ca
+signer: kubernetes-ca
 subject:
   CommonName: aws-iam-authenticator
 type: server
@@ -347,7 +347,7 @@ subject:
 type: client
 ---
 Name: kubelet-api
-signer: ca
+signer: kubernetes-ca
 subject:
   CommonName: kubelet-api
 type: client
