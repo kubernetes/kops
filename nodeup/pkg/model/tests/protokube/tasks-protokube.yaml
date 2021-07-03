@@ -24,7 +24,7 @@ contents:
     CA:
       task:
         Name: kops
-        signer: ca
+        signer: kubernetes-ca
         subject:
           CommonName: kops
           Organization:
@@ -33,7 +33,7 @@ contents:
     Cert:
       task:
         Name: kops
-        signer: ca
+        signer: kubernetes-ca
         subject:
           CommonName: kops
           Organization:
@@ -42,7 +42,7 @@ contents:
     Key:
       task:
         Name: kops
-        signer: ca
+        signer: kubernetes-ca
         subject:
           CommonName: kops
           Organization:
@@ -55,7 +55,7 @@ path: /var/lib/kops/kubeconfig
 type: file
 ---
 Name: kops
-signer: ca
+signer: kubernetes-ca
 subject:
   CommonName: kops
   Organization:
@@ -65,7 +65,7 @@ type: client
 CA:
   task:
     Name: kops
-    signer: ca
+    signer: kubernetes-ca
     subject:
       CommonName: kops
       Organization:
@@ -74,7 +74,7 @@ CA:
 Cert:
   task:
     Name: kops
-    signer: ca
+    signer: kubernetes-ca
     subject:
       CommonName: kops
       Organization:
@@ -83,7 +83,7 @@ Cert:
 Key:
   task:
     Name: kops
-    signer: ca
+    signer: kubernetes-ca
     subject:
       CommonName: kops
       Organization:

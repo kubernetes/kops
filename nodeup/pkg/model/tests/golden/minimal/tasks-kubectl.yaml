@@ -11,7 +11,7 @@ contents:
     CA:
       task:
         Name: kubecfg
-        signer: ca
+        signer: kubernetes-ca
         subject:
           CommonName: kubecfg
           Organization:
@@ -20,7 +20,7 @@ contents:
     Cert:
       task:
         Name: kubecfg
-        signer: ca
+        signer: kubernetes-ca
         subject:
           CommonName: kubecfg
           Organization:
@@ -29,7 +29,7 @@ contents:
     Key:
       task:
         Name: kubecfg
-        signer: ca
+        signer: kubernetes-ca
         subject:
           CommonName: kubecfg
           Organization:
@@ -42,7 +42,7 @@ path: /var/lib/kubectl/kubeconfig
 type: file
 ---
 Name: kubecfg
-signer: ca
+signer: kubernetes-ca
 subject:
   CommonName: kubecfg
   Organization:
@@ -52,7 +52,7 @@ type: client
 CA:
   task:
     Name: kubecfg
-    signer: ca
+    signer: kubernetes-ca
     subject:
       CommonName: kubecfg
       Organization:
@@ -61,7 +61,7 @@ CA:
 Cert:
   task:
     Name: kubecfg
-    signer: ca
+    signer: kubernetes-ca
     subject:
       CommonName: kubecfg
       Organization:
@@ -70,7 +70,7 @@ Cert:
 Key:
   task:
     Name: kubecfg
-    signer: ca
+    signer: kubernetes-ca
     subject:
       CommonName: kubecfg
       Organization:
