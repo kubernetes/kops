@@ -56,6 +56,7 @@ func NewLogDumper(sshConfig *ssh.ClientConfig, artifactsDir string) *logDumper {
 	d.services = []string{
 		"node-problem-detector",
 		"kubelet",
+		"containerd",
 		"docker",
 		"kops-configuration",
 		"protokube",
