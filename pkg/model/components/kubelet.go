@@ -55,7 +55,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	// Standard options
 	clusterSpec.Kubelet.EnableDebuggingHandlers = fi.Bool(true)
 	clusterSpec.Kubelet.PodManifestPath = "/etc/kubernetes/manifests"
-	clusterSpec.Kubelet.LogLevel = fi.Int32(2)
+	clusterSpec.Kubelet.LogLevel = fi.Int32(9)
 	clusterSpec.Kubelet.ClusterDomain = clusterSpec.ClusterDNSDomain
 	clusterSpec.Kubelet.NonMasqueradeCIDR = clusterSpec.NonMasqueradeCIDR
 

@@ -53,7 +53,7 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 			}
 		}
 		// Set default log level to INFO
-		containerd.LogLevel = fi.String("info")
+		containerd.LogLevel = fi.String("debug")
 
 	} else if clusterSpec.ContainerRuntime == "docker" {
 		// Docker version should always be available
