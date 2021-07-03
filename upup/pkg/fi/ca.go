@@ -31,7 +31,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-const CertificateIDCA = "ca"
+const CertificateIDCA = "kubernetes-ca"
 
 const (
 	// SecretNameSSHPrimary is the Name for the primary SSH key

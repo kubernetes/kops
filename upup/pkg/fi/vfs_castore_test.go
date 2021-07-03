@@ -82,7 +82,7 @@ func TestVFSCAStoreRoundTrip(t *testing.T) {
 			},
 			Primary: item,
 		}
-		if err := s.StoreKeyset("ca", keyset); err != nil {
+		if err := s.StoreKeyset("kubernetes-ca", keyset); err != nil {
 			t.Fatalf("error from StoreKeyset: %v", err)
 		}
 	}
@@ -98,8 +98,8 @@ func TestVFSCAStoreRoundTrip(t *testing.T) {
 	}
 
 	for _, p := range []string{
-		"memfs://tests/issued/ca/keyset.yaml",
-		"memfs://tests/private/ca/keyset.yaml",
+		"memfs://tests/issued/kubernetes-ca/keyset.yaml",
+		"memfs://tests/private/kubernetes-ca/keyset.yaml",
 	} {
 		if _, found := pathMap[p]; !found {
 			t.Fatalf("file not found: %v", p)
@@ -110,11 +110,11 @@ func TestVFSCAStoreRoundTrip(t *testing.T) {
 		t.Fatalf("unexpected pathMap: %v", pathMap)
 	}
 
-	// Check issued/ca/keyset.yaml round-tripped
+	// Check issued/kubernetes-ca/keyset.yaml round-tripped
 	{
-		issuedKeysetYaml, err := pathMap["memfs://tests/issued/ca/keyset.yaml"].ReadFile()
+		issuedKeysetYaml, err := pathMap["memfs://tests/issued/kubernetes-ca/keyset.yaml"].ReadFile()
 		if err != nil {
-			t.Fatalf("error reading file memfs://tests/issued/ca/keyset.yaml: %v", err)
+			t.Fatalf("error reading file memfs://tests/issued/kubernetes-ca/keyset.yaml: %v", err)
 		}
 
 		expected := `
@@ -122,7 +122,7 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: Keyset
 metadata:
   creationTimestamp: null
-  name: ca
+  name: kubernetes-ca
 spec:
   keys:
   - id: "237054359138908419352140518924933177492"
@@ -135,7 +135,7 @@ spec:
 			t.Fatalf("unexpected issued/ca/keyset.yaml: %q", string(issuedKeysetYaml))
 		}
 
-		keyset, err := s.FindKeyset("ca")
+		keyset, err := s.FindKeyset("kubernetes-ca")
 		if err != nil {
 			t.Fatalf("error reading certificate keyset: %v", err)
 		}
@@ -154,11 +154,11 @@ spec:
 		}
 	}
 
-	// Check private/ca/keyset.yaml round-tripped
+	// Check private/kubernetes-ca/keyset.yaml round-tripped
 	{
-		privateKeysetYaml, err := pathMap["memfs://tests/private/ca/keyset.yaml"].ReadFile()
+		privateKeysetYaml, err := pathMap["memfs://tests/private/kubernetes-ca/keyset.yaml"].ReadFile()
 		if err != nil {
-			t.Fatalf("error reading file memfs://tests/private/ca/keyset.yaml: %v", err)
+			t.Fatalf("error reading file memfs://tests/private/kubernetes-ca/keyset.yaml: %v", err)
 		}
 
 		expected := `
@@ -166,7 +166,7 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: Keyset
 metadata:
   creationTimestamp: null
-  name: ca
+  name: kubernetes-ca
 spec:
   keys:
   - id: "237054359138908419352140518924933177492"
@@ -180,7 +180,7 @@ spec:
 			t.Fatalf("unexpected private/ca/keyset.yaml: %q", string(privateKeysetYaml))
 		}
 
-		key, err := s.FindPrivateKey("ca")
+		key, err := s.FindPrivateKey("kubernetes-ca")
 		if err != nil {
 			t.Fatalf("error reading certificate pool: %v", err)
 		}
@@ -242,7 +242,7 @@ func TestVFSCAStoreRoundTripWithVault(t *testing.T) {
 		},
 		Primary: item,
 	}
-	if err := s.StoreKeyset("ca", keyset); err != nil {
+	if err := s.StoreKeyset("kubernetes-ca", keyset); err != nil {
 		t.Fatalf("error from StoreKeyset: %v", err)
 	}
 
@@ -295,7 +295,7 @@ spec:
 			t.Fatalf("unexpected issued/ca/keyset.yaml: %q", string(issuedKeysetYaml))
 		}
 
-		keyset, err := s.FindKeyset("ca")
+		keyset, err := s.FindKeyset("kubernetes-ca")
 		if err != nil {
 			t.Fatalf("error reading certificate keyset: %v", err)
 		}
@@ -339,7 +339,7 @@ spec:
 			t.Fatalf("unexpected private/ca/keyset.yaml: %q", string(privateKeysetYaml))
 		}
 
-		key, err := s.FindPrivateKey("ca")
+		key, err := s.FindPrivateKey("kubernetes-ca")
 		if err != nil {
 			t.Fatalf("error reading certificate pool: %v", err)
 		}
