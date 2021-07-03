@@ -288,8 +288,8 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 	}
 
 	// Are we mocking out too much of the apply_cluster logic?
-	nodeupModelContext.NodeupConfig.CAs["ca"] = dummyCertificate + nextCertificate
-	nodeupModelContext.NodeupConfig.KeypairIDs["ca"] = "3"
+	nodeupModelContext.NodeupConfig.CAs["kubernetes-ca"] = dummyCertificate + nextCertificate
+	nodeupModelContext.NodeupConfig.KeypairIDs["kubernetes-ca"] = "3"
 
 	if nodeupModelContext.NodeupConfig.APIServerConfig != nil {
 		saPublicKeys, _ := rotatingPrivateKeyset().ToPublicKeys()
@@ -379,7 +379,7 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 	keystore.T = t
 	saKeyset, _ := rotatingPrivateKeyset().ToAPIObject("service-account", true)
 	keystore.privateKeysets = map[string]*kops.Keyset{
-		"ca":                      simplePrivateKeyset(dummyCertificate, dummyKey),
+		"kubernetes-ca":           simplePrivateKeyset(dummyCertificate, dummyKey),
 		"apiserver-aggregator-ca": simplePrivateKeyset(dummyCertificate, dummyKey),
 		"kube-controller-manager": simplePrivateKeyset(dummyCertificate, dummyKey),
 		"kube-proxy":              simplePrivateKeyset(dummyCertificate, dummyKey),
@@ -387,7 +387,7 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 		"service-account":         saKeyset,
 	}
 	keystore.certs = map[string]*pki.Certificate{
-		"ca":                      mustParseCertificate(dummyCertificate),
+		"kubernetes-ca":           mustParseCertificate(dummyCertificate),
 		"apiserver-aggregator-ca": mustParseCertificate(dummyCertificate),
 		"kube-controller-manager": mustParseCertificate(dummyCertificate),
 		"kube-proxy":              mustParseCertificate(dummyCertificate),
