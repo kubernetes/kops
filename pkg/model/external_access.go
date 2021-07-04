@@ -39,7 +39,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		klog.Warningf("KubernetesAPIAccess is empty")
 	}
 
-	if len(b.Cluster.Spec.SSHAccess) == 0 {
+	if len(b.Cluster.Spec.SSHAccess.SSHAllowList) == 0 {
 		klog.Warningf("SSHAccess is empty")
 	}
 
@@ -59,7 +59,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// But I think we can always add more permissions in this case later, but we can't easily take them away
 		klog.V(2).Infof("bastion is in use; won't configure SSH access to master / node instances")
 	} else {
-		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
+		for _, sshAccess := range b.Cluster.Spec.SSHAccess.SSHAllowList {
 			for _, masterGroup := range masterGroups {
 				suffix := masterGroup.Suffix
 				t := &awstasks.SecurityGroupRule{

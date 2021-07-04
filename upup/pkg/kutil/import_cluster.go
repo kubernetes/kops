@@ -70,7 +70,7 @@ func (x *ImportCluster) ImportAWSCluster(ctx context.Context) error {
 	cluster.Spec.Channel = kops.DefaultChannel
 
 	cluster.Spec.KubernetesAPIAccess = []string{"0.0.0.0/0"}
-	cluster.Spec.SSHAccess = []string{"0.0.0.0/0"}
+	cluster.Spec.SSHAccess.SSHAllowList = []string{"0.0.0.0/0"}
 
 	configBase, err := x.Clientset.ConfigBaseFor(cluster)
 	if err != nil {

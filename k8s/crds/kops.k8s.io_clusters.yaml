@@ -3450,12 +3450,19 @@ spec:
                   network, where we allocate IPs for services
                 type: string
               sshAccess:
-                description: SSHAccess determines the permitted access to SSH Currently
-                  only a single CIDR is supported (though a richer grammar could be
-                  added in future)
-                items:
-                  type: string
-                type: array
+                description: SSHAccess determines the permitted access to SSH SSHAccess
+                  stored the details for the CIDRs that can access SSH and the bastion
+                  LoadBalancer Type.
+                properties:
+                  loadBalancerType:
+                    type: string
+                  sshAllowList:
+                    description: SSHAllowList is a list of the CIDRs that can access
+                      SSH.
+                    items:
+                      type: string
+                    type: array
+                type: object
               sshKeyName:
                 description: SSHKeyName specifies a preexisting SSH key to use
                 type: string

@@ -90,7 +90,7 @@ type CreateClusterOptions struct {
 	NetworkCIDR          string
 	DNSZone              string
 	AdminAccess          []string
-	SSHAccess            []string
+	SSHAllowList         []string
 	Networking           string
 	NodeSecurityGroups   []string
 	MasterSecurityGroups []string
@@ -323,7 +323,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.Flags().StringSliceVar(&options.AdminAccess, "admin-access", options.AdminAccess, "Restrict API access to this CIDR.  If not set, access will not be restricted by IP.")
-	cmd.Flags().StringSliceVar(&options.SSHAccess, "ssh-access", options.SSHAccess, "Restrict SSH access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0])")
+	cmd.Flags().StringSliceVar(&options.SSHAllowList, "ssh-access", options.SSHAllowList, "Restrict SSH access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0])")
 
 	// TODO: Can we deprecate this flag - it is awkward?
 	cmd.Flags().BoolVar(&associatePublicIP, "associate-public-ip", false, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
@@ -1201,14 +1201,14 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	if len(c.AdminAccess) != 0 {
-		if len(c.SSHAccess) != 0 {
-			cluster.Spec.SSHAccess = c.SSHAccess
+		if len(c.SSHAllowList) != 0 {
+			cluster.Spec.SSHAccess.SSHAllowList = c.SSHAllowList
 		} else {
-			cluster.Spec.SSHAccess = c.AdminAccess
+			cluster.Spec.SSHAccess.SSHAllowList = c.AdminAccess
 		}
 		cluster.Spec.KubernetesAPIAccess = c.AdminAccess
 	} else if len(c.AdminAccess) == 0 {
-		cluster.Spec.SSHAccess = c.SSHAccess
+		cluster.Spec.SSHAccess.SSHAllowList = c.SSHAllowList
 	}
 
 	if err := commands.SetClusterFields(c.Overrides, cluster, instanceGroups); err != nil {

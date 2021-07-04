@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
 	"time"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -45,6 +46,21 @@ type BastionModelBuilder struct {
 var _ fi.ModelBuilder = &BastionModelBuilder{}
 
 func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
+	// As an experiment lets assume bastion is private if API is private
+	elbSpec := b.Cluster.Spec.SSHAccess
+	if elbSpec == nil {
+		// Skipping API ELB creation; not requested in Spec
+		return nil
+	}
+
+	switch elbSpec.LoadBalancerType {
+	case string(kops.LoadBalancerTypeInternal), string(kops.LoadBalancerTypePublic):
+	// OK
+
+	default:
+		return fmt.Errorf("unhandled LoadBalancer type %q", elbSpec.LoadBalancerType)
+	}
+
 	var bastionInstanceGroups []*kops.InstanceGroup
 	for _, ig := range b.InstanceGroups {
 		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
@@ -163,7 +179,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Allow external access to ELB
-	for _, sshAccess := range b.Cluster.Spec.SSHAccess {
+	for _, sshAccess := range b.Cluster.Spec.SSHAccess.SSHAllowList {
 		t := &awstasks.SecurityGroupRule{
 			Name:      s("ssh-external-to-bastion-elb-" + sshAccess),
 			Lifecycle: b.SecurityLifecycle,
@@ -257,6 +273,16 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				}
 				elb.SecurityGroups = append(elb.SecurityGroups, t)
 			}
+		}
+
+		// Private VS Public
+		switch elbSpec.LoadBalancerType {
+		case string(kops.LoadBalancerTypeInternal):
+			elb.Scheme = fi.String("internal")
+		case string(kops.LoadBalancerTypePublic):
+			elb.Scheme = nil
+		default:
+			return fmt.Errorf("unknown load balancer Type: %q", elbSpec.LoadBalancerType)
 		}
 
 		c.AddTask(elb)

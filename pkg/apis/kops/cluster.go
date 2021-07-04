@@ -113,8 +113,9 @@ type ClusterSpec struct {
 	// NonMasqueradeCIDR is the CIDR for the internal k8s network (on which pods & services live)
 	// It cannot overlap ServiceClusterIPRange
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`
-	// SSHAccess is a list of the CIDRs that can access SSH.
-	SSHAccess []string `json:"sshAccess,omitempty"`
+
+	// SSHAccess stored the details for the CIDRs that can access SSH and the bastion LoadBalancer Type.
+	SSHAccess *SSHAccessSpec `json:"sshAccess,omitempty"`
 	// NodePortAccess is a list of the CIDRs that can access the node ports range (30000-32767).
 	NodePortAccess []string `json:"nodePortAccess,omitempty"`
 	// HTTPProxy defines connection information to support use of a private cluster behind an forward HTTP Proxy
@@ -435,6 +436,13 @@ const (
 var SupportedEtcdProviderTypes = []string{
 	string(EtcdProviderTypeManager),
 	string(EtcdProviderTypeLegacy),
+}
+
+// SSHAccessSpec is the SSHAccess cluster specification
+type SSHAccessSpec struct {
+	// SSHAllowList is a list of the CIDRs that can access SSH.
+	SSHAllowList []string `json:"sshAllowList,omitempty"`
+	LoadBalancerType string `json:"loadBalancerType,omitempty"`
 }
 
 // EtcdClusterSpec is the etcd cluster specification

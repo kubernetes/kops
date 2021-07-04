@@ -55,7 +55,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	allErrs = append(allErrs, validateSubnets(spec.Subnets, fieldPath.Child("subnets"))...)
 
 	// SSHAccess
-	for i, cidr := range spec.SSHAccess {
+	for i, cidr := range spec.SSHAccess.SSHAllowList {
 		allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("sshAccess").Index(i))...)
 	}
 

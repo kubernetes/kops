@@ -38,7 +38,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		klog.Warningf("KubernetesAPIAccess is empty")
 	}
 
-	if len(b.Cluster.Spec.SSHAccess) == 0 {
+	if len(b.Cluster.Spec.SSHAccess.SSHAllowList) == 0 {
 		klog.Warningf("SSHAccess is empty")
 	}
 
@@ -54,7 +54,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle:    b.Lifecycle,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:      []string{"tcp:22"},
-			SourceRanges: b.Cluster.Spec.SSHAccess,
+			SourceRanges: b.Cluster.Spec.SSHAccess.SSHAllowList,
 			Network:      b.LinkToNetwork(),
 		})
 
@@ -63,7 +63,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle:    b.Lifecycle,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			Allowed:      []string{"tcp:22"},
-			SourceRanges: b.Cluster.Spec.SSHAccess,
+			SourceRanges: b.Cluster.Spec.SSHAccess.SSHAllowList,
 			Network:      b.LinkToNetwork(),
 		})
 	}

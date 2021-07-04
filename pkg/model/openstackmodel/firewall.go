@@ -90,7 +90,7 @@ func (b *FirewallModelBuilder) addSSHRules(c *fi.ModelBuilderContext, sgMap map[
 	}
 
 	if b.UsesSSHBastion() {
-		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
+		for _, sshAccess := range b.Cluster.Spec.SSHAccess.SSHAllowList {
 			sshRule := &openstacktasks.SecurityGroupRule{
 				Lifecycle:      b.Lifecycle,
 				Direction:      s(string(rules.DirIngress)),
@@ -106,7 +106,7 @@ func (b *FirewallModelBuilder) addSSHRules(c *fi.ModelBuilderContext, sgMap map[
 		addDirectionalGroupRule(c, masterSG, bastionSG, sshIngress)
 		addDirectionalGroupRule(c, nodeSG, bastionSG, sshIngress)
 	} else {
-		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
+		for _, sshAccess := range b.Cluster.Spec.SSHAccess.SSHAllowList {
 			sshRule := &openstacktasks.SecurityGroupRule{
 				Lifecycle:      b.Lifecycle,
 				Direction:      s(string(rules.DirIngress)),
