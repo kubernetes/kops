@@ -2,27 +2,39 @@
   "Statement": [
     {
       "Action": [
-        "ec2:DescribeInstances",
-        "ec2:DescribeRegions"
+        "s3:Get*"
       ],
       "Effect": "Allow",
       "Resource": [
-        "*"
+        "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/addons/*",
+        "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/cluster-completed.spec",
+        "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/igconfig/node/*",
+        "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/pki/issued/*",
+        "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/pki/ssh/*",
+        "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/secrets/dockerconfig"
       ]
     },
     {
-      "Action": "autoscaling:DescribeAutoScalingInstances",
+      "Action": [
+        "s3:GetBucketLocation",
+        "s3:GetEncryptionConfiguration",
+        "s3:ListBucket",
+        "s3:ListBucketVersions"
+      ],
       "Effect": "Allow",
       "Resource": [
-        "*"
+        "arn:aws:s3:::placeholder-read-bucket"
       ]
     },
     {
-      "Action": "kms:GenerateRandom",
+      "Action": [
+        "autoscaling:DescribeAutoScalingInstances",
+        "ec2:DescribeInstances",
+        "ec2:DescribeRegions",
+        "kms:GenerateRandom"
+      ],
       "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
+      "Resource": "*"
     }
   ],
   "Version": "2012-10-17"

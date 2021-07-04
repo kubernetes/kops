@@ -7,7 +7,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/model/iam:go_default_library",
-        "//pkg/util/stringorslice:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
     ],
 )

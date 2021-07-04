@@ -19,7 +19,6 @@ package awsloadbalancercontroller
 import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kops/pkg/model/iam"
-	"k8s.io/kops/pkg/util/stringorslice"
 )
 
 // ServiceAccount represents the service-account used by the dns-controller.
@@ -31,15 +30,12 @@ var _ iam.Subject = &ServiceAccount{}
 
 // BuildAWSPolicy generates a custom policy for a ServiceAccount IAM role.
 func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, error) {
-	p := &iam.Policy{
-		Version: iam.PolicyDefaultVersion,
-	}
-
-	resource := stringorslice.Slice([]string{"*"})
 	clusterName := b.Cluster.ObjectMeta.Name
-	iam.AddAWSLoadbalancerControllerPermissions(p, resource, clusterName)
-	iam.AddMasterEC2Policies(p, resource, clusterName)
-	iam.AddMasterELBPolicies(p, resource)
+	p := iam.NewPolicy(clusterName)
+
+	iam.AddAWSLoadbalancerControllerPermissions(p)
+	iam.AddMasterEC2Policies(p)
+	iam.AddMasterELBPolicies(p)
 
 	return p, nil
 }
