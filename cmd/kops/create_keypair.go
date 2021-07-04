@@ -270,7 +270,7 @@ func completeCreateKeyset(options *CreateKeypairOptions, args []string, toComple
 	commandutils.ConfigureKlogForCompletion()
 	ctx := context.TODO()
 
-	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand)
+	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand, "")
 	if cluster == nil {
 		return completions, directive
 	}
