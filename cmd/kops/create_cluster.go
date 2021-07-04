@@ -662,12 +662,13 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		updateClusterOptions.Target = c.Target
 		updateClusterOptions.OutDir = c.OutDir
 		updateClusterOptions.admin = kubeconfig.DefaultKubecfgAdminLifetime
+		updateClusterOptions.ClusterName = cluster.Name
 		updateClusterOptions.CreateKubecfg = true
 
 		// SSHPublicKey has already been mapped
 		updateClusterOptions.SSHPublicKey = ""
 
-		_, err := RunUpdateCluster(ctx, f, cluster.Name, out, updateClusterOptions)
+		_, err := RunUpdateCluster(ctx, f, out, updateClusterOptions)
 		if err != nil {
 			return err
 		}
