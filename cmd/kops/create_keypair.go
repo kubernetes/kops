@@ -80,8 +80,8 @@ type CreateKeypairOptions struct {
 
 var rotatableKeysets = sets.NewString(
 	"apiserver-aggregator-ca",
-	"ca",
 	"etcd-clients-ca-cilium",
+	"kubernetes-ca",
 	"service-account",
 )
 
@@ -177,7 +177,7 @@ func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 		}
 
 		commonName := options.Keyset
-		if commonName == "ca" {
+		if commonName == "kubernetes-ca" {
 			commonName = "kubernetes"
 		}
 		req := pki.IssueCertRequest{

@@ -156,7 +156,7 @@ subject: cn=apiserver-aggregator-ca
 type: ca
 ---
 Lifecycle: ""
-Name: ca
+Name: kubernetes-ca
 Signer: null
 alternateNames: null
 oldFormat: false

@@ -239,7 +239,7 @@ type: file
 contents:
   task:
     Name: kubelet-api
-    signer: ca
+    signer: kubernetes-ca
     subject:
       CommonName: kubelet-api
     type: client
@@ -250,7 +250,7 @@ type: file
 contents:
   task:
     Name: kubelet-api
-    signer: ca
+    signer: kubernetes-ca
     subject:
       CommonName: kubelet-api
     type: client
@@ -277,7 +277,7 @@ subject:
 type: client
 ---
 Name: kubelet-api
-signer: ca
+signer: kubernetes-ca
 subject:
   CommonName: kubelet-api
 type: client
