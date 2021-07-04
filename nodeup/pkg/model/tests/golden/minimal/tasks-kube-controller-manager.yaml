@@ -219,21 +219,21 @@ contents:
     CA:
       task:
         Name: kube-controller-manager
-        signer: ca
+        signer: kubernetes-ca
         subject:
           CommonName: system:kube-controller-manager
         type: client
     Cert:
       task:
         Name: kube-controller-manager
-        signer: ca
+        signer: kubernetes-ca
         subject:
           CommonName: system:kube-controller-manager
         type: client
     Key:
       task:
         Name: kube-controller-manager
-        signer: ca
+        signer: kubernetes-ca
         subject:
           CommonName: system:kube-controller-manager
         type: client
@@ -250,7 +250,7 @@ path: /var/log/kube-controller-manager.log
 type: file
 ---
 Name: kube-controller-manager
-signer: ca
+signer: kubernetes-ca
 subject:
   CommonName: system:kube-controller-manager
 type: client
@@ -258,21 +258,21 @@ type: client
 CA:
   task:
     Name: kube-controller-manager
-    signer: ca
+    signer: kubernetes-ca
     subject:
       CommonName: system:kube-controller-manager
     type: client
 Cert:
   task:
     Name: kube-controller-manager
-    signer: ca
+    signer: kubernetes-ca
     subject:
       CommonName: system:kube-controller-manager
     type: client
 Key:
   task:
     Name: kube-controller-manager
-    signer: ca
+    signer: kubernetes-ca
     subject:
       CommonName: system:kube-controller-manager
     type: client

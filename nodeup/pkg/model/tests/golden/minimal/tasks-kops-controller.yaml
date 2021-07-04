@@ -2,6 +2,34 @@ mode: "0755"
 path: /etc/kubernetes/kops-controller
 type: directory
 ---
+contents:
+  task:
+    Name: kops-controller
+    alternateNames:
+    - kops-controller.internal.minimal.example.com
+    signer: kubernetes-ca
+    subject:
+      CommonName: kops-controller
+    type: server
+mode: "0644"
+owner: kops-controller
+path: /etc/kubernetes/kops-controller/kops-controller.crt
+type: file
+---
+contents:
+  task:
+    Name: kops-controller
+    alternateNames:
+    - kops-controller.internal.minimal.example.com
+    signer: kubernetes-ca
+    subject:
+      CommonName: kops-controller
+    type: server
+mode: "0600"
+owner: kops-controller
+path: /etc/kubernetes/kops-controller/kops-controller.key
+type: file
+---
 contents: |
   -----BEGIN CERTIFICATE-----
   MIIC2DCCAcCgAwIBAgIRALJXAkVj964tq67wMSI8oJQwDQYJKoZIhvcNAQELBQAw
@@ -23,7 +51,7 @@ contents: |
   -----END CERTIFICATE-----
 mode: "0600"
 owner: kops-controller
-path: /etc/kubernetes/kops-controller/ca.crt
+path: /etc/kubernetes/kops-controller/kubernetes-ca.crt
 type: file
 ---
 contents: |
@@ -56,41 +84,13 @@ contents: |
   -----END RSA PRIVATE KEY-----
 mode: "0600"
 owner: kops-controller
-path: /etc/kubernetes/kops-controller/ca.key
-type: file
----
-contents:
-  task:
-    Name: kops-controller
-    alternateNames:
-    - kops-controller.internal.minimal.example.com
-    signer: ca
-    subject:
-      CommonName: kops-controller
-    type: server
-mode: "0644"
-owner: kops-controller
-path: /etc/kubernetes/kops-controller/kops-controller.crt
-type: file
----
-contents:
-  task:
-    Name: kops-controller
-    alternateNames:
-    - kops-controller.internal.minimal.example.com
-    signer: ca
-    subject:
-      CommonName: kops-controller
-    type: server
-mode: "0600"
-owner: kops-controller
-path: /etc/kubernetes/kops-controller/kops-controller.key
+path: /etc/kubernetes/kops-controller/kubernetes-ca.key
 type: file
 ---
 Name: kops-controller
 alternateNames:
 - kops-controller.internal.minimal.example.com
-signer: ca
+signer: kubernetes-ca
 subject:
   CommonName: kops-controller
 type: server
