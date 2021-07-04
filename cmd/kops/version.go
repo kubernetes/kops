@@ -45,16 +45,16 @@ func NewCmdVersion(f *util.Factory, out io.Writer) *cobra.Command {
 		Short:   versionShort,
 		Long:    versionLong,
 		Example: versionExample,
+		Args:    cobra.NoArgs,
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return commands.RunVersion(f, out, options)
+		},
 	}
 
-	cmd.Run = func(cmd *cobra.Command, args []string) {
-		err := commands.RunVersion(f, out, options)
-		if err != nil {
-			exitWithError(err)
-		}
-	}
-
-	cmd.Flags().BoolVar(&options.Short, "short", options.Short, "only print the main kOps version, useful for scripting")
+	cmd.Flags().BoolVar(&options.Short, "short", options.Short, "only print the main kOps version. Useful for scripting.")
 
 	return cmd
 }
