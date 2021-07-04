@@ -94,7 +94,7 @@ func NewCmdCreateKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateKeypairOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "keypair keyset",
+		Use:     "keypair KEYSET",
 		Short:   createKeypairShort,
 		Long:    createKeypairLong,
 		Example: createKeypairExample,

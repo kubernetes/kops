@@ -67,7 +67,7 @@ func NewCmdDistrustKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &DistrustKeypairOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "keypair keyset [id]...",
+		Use:     "keypair KEYSET [ID]...",
 		Short:   distrustKeypairShort,
 		Long:    distrustKeypairLong,
 		Example: distrustKeypairExample,

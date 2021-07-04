@@ -6,7 +6,7 @@
 Get one or many keypairs.
 
 ```
-kops get keypairs [keyset]... [flags]
+kops get keypairs [KEYSET]... [flags]
 ```
 
 ### Examples
