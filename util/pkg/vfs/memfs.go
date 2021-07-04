@@ -188,6 +188,10 @@ func (p *MemFSPath) RemoveAllVersions() error {
 	return p.Remove()
 }
 
+func (p *MemFSPath) Location() string {
+	return p.location
+}
+
 // Terraform support for integration tests.
 
 type terraformMemFSFile struct {
