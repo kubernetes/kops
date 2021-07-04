@@ -54,7 +54,7 @@ func NewCmdGetKeypairs(f *util.Factory, out io.Writer, getOptions *GetOptions) *
 		GetOptions: getOptions,
 	}
 	cmd := &cobra.Command{
-		Use:     "keypairs [keyset]...",
+		Use:     "keypairs [KEYSET]...",
 		Aliases: []string{"keypair"},
 		Short:   getKeypairShort,
 		Example: getKeypairExample,
