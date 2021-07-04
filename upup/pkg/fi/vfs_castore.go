@@ -216,15 +216,23 @@ func (c *VFSCAStore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.Pri
 	return FindPrimaryKeypair(c, name)
 }
 
+var legacyKeysetMappings = map[string]string{
+	// The strange name is because kOps prior to 1.19 used the api-server TLS key for this.
+	"service-account": "master",
+	// Renamed in kOps 1.22
+	"kubernetes-ca": "ca",
+}
+
 func (c *VFSCAStore) FindKeyset(id string) (*Keyset, error) {
 	certs, err := c.loadKeyset(c.buildCertificatePoolPath(id))
 
-	if (certs == nil || os.IsNotExist(err)) && id == "service-account" {
-		// The strange name is because Kops prior to 1.19 used the api-server TLS key for this.
-		id = "master"
-		certs, err = c.loadKeyset(c.buildCertificatePoolPath(id))
-		if certs != nil {
-			certs.LegacyFormat = true
+	if certs == nil || os.IsNotExist(err) {
+		if legacyId := legacyKeysetMappings[id]; legacyId != "" {
+			certs, err = c.loadKeyset(c.buildCertificatePoolPath(legacyId))
+			if certs != nil {
+				id = legacyId
+				certs.LegacyFormat = true
+			}
 		}
 	}
 
