@@ -193,7 +193,7 @@ func completePromoteKeyset(options *PromoteKeypairOptions, args []string, toComp
 func completeKeypairID(keyset *fi.Keyset, filter func(keyset *fi.Keyset, item *fi.KeysetItem) bool) (completions []string, directive cobra.ShellCompDirective) {
 	for _, item := range keyset.Items {
 		if filter(keyset, item) {
-			completions = append(completions, item.Id)
+			completions = append(completions, fmt.Sprintf("%s\tissued %s", item.Id, item.Certificate.Certificate.NotBefore.Format("2006-01-02 15:04:05")))
 		}
 	}
 
