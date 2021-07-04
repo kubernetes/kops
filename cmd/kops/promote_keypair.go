@@ -59,7 +59,7 @@ func NewCmdPromoteKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &PromoteKeypairOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "keypair keyset [id]",
+		Use:     "keypair KEYSET [ID]",
 		Short:   promoteKeypairShort,
 		Long:    promoteKeypairLong,
 		Example: promoteKeypairExample,
