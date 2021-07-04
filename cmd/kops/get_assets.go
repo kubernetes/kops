@@ -104,9 +104,10 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 		return fmt.Errorf("--name is required")
 	}
 
-	updateClusterResults, err := RunUpdateCluster(ctx, f, clusterName, out, &UpdateClusterOptions{
-		Target:    cloudup.TargetDryRun,
-		GetAssets: true,
+	updateClusterResults, err := RunUpdateCluster(ctx, f, out, &UpdateClusterOptions{
+		Target:      cloudup.TargetDryRun,
+		GetAssets:   true,
+		ClusterName: clusterName,
 	})
 	if err != nil {
 		return err

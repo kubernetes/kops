@@ -22,28 +22,16 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kubectl/pkg/util/i18n"
-	"k8s.io/kubectl/pkg/util/templates"
 )
 
 var (
-	updateLong = templates.LongDesc(i18n.T(`
-	Creates or updates cloud resources to match cluster desired configuration.
-	`))
-
-	updateExample = templates.Examples(i18n.T(`
-		# After cluster has been created, configure it with:
-		kops update cluster k8s-cluster.example.com --yes --state=s3://my-state-store
-	`))
-
 	updateShort = i18n.T("Update a cluster.")
 )
 
 func NewCmdUpdate(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "update",
-		Short:   updateShort,
-		Long:    updateLong,
-		Example: updateExample,
+		Use:   "update",
+		Short: updateShort,
 	}
 
 	//  subcommands

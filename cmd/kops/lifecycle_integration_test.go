@@ -502,8 +502,9 @@ func updateEnsureNoChanges(ctx context.Context, t *testing.T, factory *util.Fact
 
 	// We don't test it here, and it adds a dependency on kubectl
 	options.CreateKubecfg = false
+	options.ClusterName = clusterName
 
-	_, err := RunUpdateCluster(ctx, factory, clusterName, &stdout, options)
+	_, err := RunUpdateCluster(ctx, factory, &stdout, options)
 	if err != nil {
 		t.Fatalf("error running update cluster %q: %v", clusterName, err)
 	}
@@ -517,8 +518,9 @@ func updateEnsureNoChanges(ctx context.Context, t *testing.T, factory *util.Fact
 
 	// We don't test it here, and it adds a dependency on kubectl
 	options.CreateKubecfg = false
+	options.ClusterName = clusterName
 
-	results, err := RunUpdateCluster(ctx, factory, clusterName, &stdout, options)
+	results, err := RunUpdateCluster(ctx, factory, &stdout, options)
 	if err != nil {
 		t.Fatalf("error running update cluster %q: %v", clusterName, err)
 	}

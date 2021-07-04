@@ -599,10 +599,10 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 
 		// We don't test it here, and it adds a dependency on kubectl
 		options.CreateKubecfg = false
-
+		options.ClusterName = i.clusterName
 		options.LifecycleOverrides = i.lifecycleOverrides
 
-		_, err := RunUpdateCluster(ctx, factory, i.clusterName, &stdout, options)
+		_, err := RunUpdateCluster(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running update cluster %q: %v", i.clusterName, err)
 		}
@@ -1008,9 +1008,10 @@ func (i *integrationTest) runTestCloudformation(t *testing.T) {
 
 		// We don't test it here, and it adds a dependency on kubectl
 		options.CreateKubecfg = false
+		options.ClusterName = i.clusterName
 		options.LifecycleOverrides = i.lifecycleOverrides
 
-		_, err := RunUpdateCluster(ctx, factory, i.clusterName, &stdout, options)
+		_, err := RunUpdateCluster(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running update cluster %q: %v", i.clusterName, err)
 		}
