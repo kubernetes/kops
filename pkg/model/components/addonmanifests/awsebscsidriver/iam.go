@@ -31,12 +31,12 @@ var _ iam.Subject = &ServiceAccount{}
 
 // BuildAWSPolicy generates a custom policy for a ServiceAccount IAM role.
 func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, error) {
-	p := &iam.Policy{
-		Version: iam.PolicyDefaultVersion,
-	}
+
+	clusterName := b.Cluster.ObjectMeta.Name
+	p := iam.NewPolicy(clusterName)
 
 	addSnapshotControllerPermissions := b.Cluster.Spec.SnapshotController != nil && fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled)
-	iam.AddAWSEBSCSIDriverPermissions(p, b.Cluster.ObjectMeta.Name, addSnapshotControllerPermissions)
+	iam.AddAWSEBSCSIDriverPermissions(p, addSnapshotControllerPermissions)
 
 	return p, nil
 }
