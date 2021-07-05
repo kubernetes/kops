@@ -15,7 +15,7 @@ This commands validates the following components:
   4.  All pods with a critical priority are running and have "Ready" status.
 
 ```
-kops validate cluster [flags]
+kops validate cluster [CLUSTER] [flags]
 ```
 
 ### Examples
@@ -29,11 +29,11 @@ kops validate cluster [flags]
 ### Options
 
 ```
-      --count int           If set, will validate the cluster consecutive times
+      --count int           Number of consecutive successful validations required
   -h, --help                help for cluster
       --kubeconfig string   Path to the kubeconfig file
   -o, --output string       Output format. One of json|yaml|table. (default "table")
-      --wait duration       If set, will wait for cluster to be ready
+      --wait duration       Amount of time to wait for the cluster to become ready
 ```
 
 ### Options inherited from parent commands
