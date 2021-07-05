@@ -21,31 +21,12 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kubectl/pkg/util/i18n"
-	"k8s.io/kubectl/pkg/util/templates"
-)
-
-var (
-	validateLong = templates.LongDesc(i18n.T(`
-	This command validates a cluster.
-	See:
-	kops validate cluster -h
-	`))
-
-	validateExample = templates.Examples(i18n.T(`
-	# Validate the cluster set as the current context of the kube config.
-	# Kops will try for 10 minutes to validate the cluster 3 times.
-	kops validate cluster --wait 10m --count 3`))
-
-	validateShort = i18n.T(`Validate a kOps cluster.`)
 )
 
 func NewCmdValidate(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "validate",
-		Short:   validateShort,
-		Long:    validateLong,
-		Example: validateExample,
+		Use:   "validate",
+		Short: validateClusterShort,
 	}
 
 	// create subcommands
