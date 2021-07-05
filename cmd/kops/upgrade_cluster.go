@@ -80,10 +80,7 @@ func NewCmdUpgradeCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", false, "Apply update")
 	cmd.Flags().StringVar(&options.Channel, "channel", "", "Channel to use for upgrade")
-	cmd.RegisterFlagCompletionFunc("channel", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		// TODO implement completion against VFS
-		return []string{"alpha", "stable"}, cobra.ShellCompDirectiveNoFileComp
-	})
+	cmd.RegisterFlagCompletionFunc("channel", completeChannel)
 
 	return cmd
 }
@@ -297,4 +294,9 @@ func RunUpgradeCluster(ctx context.Context, f *util.Factory, out io.Writer, opti
 	fmt.Printf("You can now apply these changes, using `kops update cluster %s`\n", cluster.ObjectMeta.Name)
 
 	return nil
+}
+
+func completeChannel(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO implement completion against VFS
+	return []string{"alpha", "stable"}, cobra.ShellCompDirectiveNoFileComp
 }

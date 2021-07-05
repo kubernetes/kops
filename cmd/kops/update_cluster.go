@@ -115,9 +115,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Create cloud resources, without --yes update is in dry run mode")
 	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform, cloudformation")
-	cmd.RegisterFlagCompletionFunc("target", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{cloudup.TargetDirect, cloudup.TargetDryRun, cloudup.TargetTerraform, cloudup.TargetCloudformation}, cobra.ShellCompDirectiveNoFileComp
-	})
+	cmd.RegisterFlagCompletionFunc("target", completeTarget)
 	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.MarkFlagDirname("out")
@@ -468,6 +466,10 @@ func hasKubecfg(contextName string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+func completeTarget(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return []string{cloudup.TargetDirect, cloudup.TargetDryRun, cloudup.TargetTerraform, cloudup.TargetCloudformation}, cobra.ShellCompDirectiveNoFileComp
 }
 
 func completeLifecycleOverrides(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
