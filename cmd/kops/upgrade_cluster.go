@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/blang/semver/v4"
@@ -26,42 +27,65 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops"
+	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
+	kopsutil "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/commands"
+	"k8s.io/kops/pkg/commands/commandutils"
+	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/tables"
+	"k8s.io/kubectl/pkg/util/i18n"
+	"k8s.io/kubectl/pkg/util/templates"
 )
 
-type UpgradeClusterCmd struct {
-	Yes bool
+var (
+	upgradeClusterLong = templates.LongDesc(i18n.T(`
+	Automates checking for and applying Kubernetes updates. This upgrades a cluster to the latest recommended
+	production ready Kubernetes version. After this command is run, use ` + pretty.Bash("kops update cluster") + ` and ` + pretty.Bash("kops rolling-update cluster") + `
+	to finish a cluster upgrade.
+	`))
 
-	Channel string
+	upgradeClusterExample = templates.Examples(i18n.T(`
+	# Upgrade a cluster's Kubernetes version.
+	kops upgrade cluster k8s-cluster.example.com --yes --state=s3://my-state-store
+	`))
+
+	upgradeClusterShort = i18n.T("Upgrade a kubernetes cluster.")
+)
+
+type UpgradeClusterOptions struct {
+	ClusterName string
+	Yes         bool
+	Channel     string
 }
 
-var upgradeCluster UpgradeClusterCmd
+func NewCmdUpgradeCluster(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &UpgradeClusterOptions{}
 
-func init() {
 	cmd := &cobra.Command{
-		Use:     "cluster",
-		Short:   upgradeShort,
-		Long:    upgradeLong,
-		Example: upgradeExample,
-		Run: func(cmd *cobra.Command, args []string) {
+		Use:               "cluster [CLUSTER]",
+		Short:             upgradeClusterShort,
+		Long:              upgradeClusterLong,
+		Example:           upgradeClusterExample,
+		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
+		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true),
+		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.TODO()
 
-			err := upgradeCluster.Run(ctx, args)
-			if err != nil {
-				exitWithError(err)
-			}
+			return RunUpgradeCluster(ctx, f, out, options)
 		},
 	}
 
-	cmd.Flags().BoolVarP(&upgradeCluster.Yes, "yes", "y", false, "Apply update")
-	cmd.Flags().StringVar(&upgradeCluster.Channel, "channel", "", "Channel to use for upgrade")
+	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", false, "Apply update")
+	cmd.Flags().StringVar(&options.Channel, "channel", "", "Channel to use for upgrade")
+	cmd.RegisterFlagCompletionFunc("channel", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		// TODO implement completion against VFS
+		return []string{"alpha", "stable"}, cobra.ShellCompDirectiveNoFileComp
+	})
 
-	upgradeCmd.AddCommand(cmd)
+	return cmd
 }
 
 type upgradeAction struct {
@@ -73,13 +97,8 @@ type upgradeAction struct {
 	apply func()
 }
 
-func (c *UpgradeClusterCmd) Run(ctx context.Context, args []string) error {
-	err := rootCommand.ProcessArgs(args)
-	if err != nil {
-		return err
-	}
-
-	cluster, err := rootCommand.Cluster(ctx)
+func RunUpgradeCluster(ctx context.Context, f *util.Factory, out io.Writer, options *UpgradeClusterOptions) error {
+	cluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
 		return err
 	}
@@ -98,7 +117,7 @@ func (c *UpgradeClusterCmd) Run(ctx context.Context, args []string) error {
 		return fmt.Errorf("upgrade is not for use with imported clusters.)")
 	}
 
-	channelLocation := c.Channel
+	channelLocation := options.Channel
 	if channelLocation == "" {
 		channelLocation = cluster.Spec.Channel
 	}
@@ -132,7 +151,7 @@ func (c *UpgradeClusterCmd) Run(ctx context.Context, args []string) error {
 
 	var currentKubernetesVersion *semver.Version
 	{
-		sv, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+		sv, err := kopsutil.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
 		if err != nil {
 			klog.Warningf("error parsing KubernetesVersion %q", cluster.Spec.KubernetesVersion)
 		} else {
@@ -247,13 +266,13 @@ func (c *UpgradeClusterCmd) Run(ctx context.Context, args []string) error {
 			return a.New
 		})
 
-		err := t.Render(actions, os.Stdout, "ITEM", "PROPERTY", "OLD", "NEW")
+		err := t.Render(actions, out, "ITEM", "PROPERTY", "OLD", "NEW")
 		if err != nil {
 			return err
 		}
 	}
 
-	if !c.Yes {
+	if !options.Yes {
 		fmt.Printf("\nMust specify --yes to perform upgrade\n")
 		return nil
 	}
