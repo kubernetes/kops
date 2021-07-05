@@ -5,17 +5,6 @@
 
 Update a cluster.
 
-### Synopsis
-
-Creates or updates cloud resources to match cluster desired configuration.
-
-### Examples
-
-```
-  # After cluster has been created, configure it with:
-  kops update cluster k8s-cluster.example.com --yes --state=s3://my-state-store
-```
-
 ### Options
 
 ```

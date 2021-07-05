@@ -7,19 +7,19 @@ Update a cluster.
 
 ### Synopsis
 
-Create or update cloud or cluster resources to match current cluster state.  If the cluster or cloud resources already exist this command may modify those resources.
+Create or update cloud or cluster resources to match the current cluster and instance group definitions. If the cluster or cloud resources already exist this command may modify those resources.
 
- If nodes need updating such as during a Kubernetes upgrade, a rolling-update may be required as well.
+ If, such as during a Kubernetes upgrade, nodes need updating, a rolling-update may be subsequently required.
 
 ```
-kops update cluster [flags]
+kops update cluster [CLUSTER] [flags]
 ```
 
 ### Examples
 
 ```
-  # After cluster has been edited or upgraded, configure it with:
-  kops update cluster k8s-cluster.example.com --yes --state=s3://my-state-store --yes --admin
+  # After the cluster has been edited or upgraded, update the cloud resources with:
+  kops update cluster k8s-cluster.example.com --yes --state=s3://my-state-store --yes
 ```
 
 ### Options
