@@ -41,7 +41,7 @@ go_library(
         "promote_keypair.go",
         "replace.go",
         "rollingupdate.go",
-        "rollingupdatecluster.go",
+        "rollingupdate_cluster.go",
         "root.go",
         "set.go",
         "set_cluster.go",

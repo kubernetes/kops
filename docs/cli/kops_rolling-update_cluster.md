@@ -7,82 +7,70 @@ Rolling update a cluster.
 
 ### Synopsis
 
-This command updates a kubernetes cluster to match the cloud and kops specifications.
+This command updates a kubernetes cluster to match the cloud and kOps specifications.
 
 To perform a rolling update, you need to update the cloud resources first with the command
-`kops update cluster`. Nodes may be additionally marked for update by placing a
+`kops update cluster --yes`. Nodes may be additionally marked for update by placing a
 `kops.k8s.io/needs-update` annotation on them.
 
-If rolling-update does not report that the cluster needs to be rolled, you can force the cluster to be
-rolled with the force flag.  Rolling update drains and validates the cluster by default.  A cluster is
+If rolling-update does not report that the cluster needs to be updated, you can force the cluster to be
+updated with the --force flag.  Rolling update drains and validates the cluster by default.  A cluster is
 deemed validated when all required nodes are running and all pods with a critical priority are operational.
-When a node is deleted, rolling-update sleeps the interval for the node type, and then tries for the same period
-of time for the cluster to be validated.  For instance, setting --master-interval=3m causes rolling-update
-to wait for 3 minutes after a master is rolled, and another 3 minutes for the cluster to stabilize and pass
-validation.
 
 Note: terraform users will need to run all of the following commands from the same directory
 `kops update cluster --target=terraform` then `terraform plan` then
 `terraform apply` prior to running `kops rolling-update cluster`.
 
 ```
-kops rolling-update cluster [flags]
+kops rolling-update cluster [CLUSTER] [flags]
 ```
 
 ### Examples
 
 ```
-  # Preview a rolling-update.
+  # Preview a rolling update.
   kops rolling-update cluster
   
-  # Roll the currently selected kOps cluster with defaults.
+  # Update the currently selected kOps cluster with defaults.
   # Nodes will be drained and the cluster will be validated between node replacement.
   kops rolling-update cluster --yes
   
-  # Roll the k8s-cluster.example.com kOps cluster,
-  # do not fail if the cluster does not validate,
-  # wait 8 min to create new node, and wait at least
-  # 8 min to validate the cluster.
+  # Update the k8s-cluster.example.com kOps cluster.
+  # Do not fail if the cluster does not validate.
   kops rolling-update cluster k8s-cluster.example.com --yes \
-  --fail-on-validate-error="false" \
-  --master-interval=8m \
-  --node-interval=8m
+  --fail-on-validate-error="false"
   
-  # Roll the k8s-cluster.example.com kOps cluster,
-  # do not validate the cluster because of the cloudonly flag.
-  # Force the entire cluster to roll, even if rolling update
-  # reports that the cluster does not need to be rolled.
+  # Update the k8s-cluster.example.com kOps cluster.
+  # Do not validate the cluster.
+  # Force the entire cluster to update, even if rolling update
+  # reports that the cluster does not need to be updated.
   kops rolling-update cluster k8s-cluster.example.com --yes \
   --cloudonly \
   --force
   
-  # Roll the k8s-cluster.example.com kOps cluster,
-  # only roll the node instancegroup,
-  # use the new drain and validate functionality.
+  # Update only the "nodes-1a" instance group of the k8s-cluster.example.com kOps cluster.
   kops rolling-update cluster k8s-cluster.example.com --yes \
-  --fail-on-validate-error="false" \
-  --node-interval 8m \
-  --instance-group nodes
+  --instance-group nodes-1a
 ```
 
 ### Options
 
 ```
       --bastion-interval duration      Time to wait between restarting bastions (default 15s)
-      --cloudonly                      Perform rolling update without confirming progress with k8s
-      --fail-on-drain-error            The rolling-update will fail if draining a node fails. (default true)
-      --fail-on-validate-error         The rolling-update will fail if the cluster fails to validate. (default true)
+      --cloudonly                      Perform rolling update without confirming progress with Kubernetes
+      --fail-on-drain-error            Fail if draining a node fails (default true)
+      --fail-on-validate-error         Fail if the cluster fails to validate (default true)
       --force                          Force rolling update, even if no changes
   -h, --help                           help for cluster
-      --instance-group strings         List of instance groups to update (defaults to all if not specified)
-      --instance-group-roles strings   If specified, only instance groups of the specified role will be updated (Master,APIServer,Node,Bastion)
+      --instance-group strings         Instance groups to update (defaults to all if not specified)
+      --instance-group-roles strings   Instance group roles to update (master,apiserver,node,bastion)
   -i, --interactive                    Prompt to continue after each instance is updated
-      --master-interval duration       Time to wait between restarting masters (default 15s)
-      --node-interval duration         Time to wait between restarting nodes (default 15s)
+      --master-interval duration       Time to wait between restarting control plane nodes (default 15s)
+      --node-interval duration         Time to wait between restarting worker nodes (default 15s)
       --post-drain-delay duration      Time to wait after draining each node (default 5s)
-      --validate-count int32           Amount of times that a cluster needs to be validated after single node update (default 2)
+      --validate-count int32           Number of times that a cluster needs to be validated after single node update (default 2)
       --validation-timeout duration    Maximum time to wait for a cluster to validate (default 15m0s)
-  -y, --yes                            Perform rolling update immediately, without --yes rolling-update executes a dry-run
+  -y, --yes                            Perform rolling update immediately; without --yes rolling-update executes a dry-run
 ```
 
 ### Options inherited from parent commands

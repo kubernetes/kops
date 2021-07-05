@@ -67,7 +67,7 @@ func NewCmdDistrustKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &DistrustKeypairOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "keypair keyset [id]...",
+		Use:     "keypair KEYSET [ID]...",
 		Short:   distrustKeypairShort,
 		Long:    distrustKeypairLong,
 		Example: distrustKeypairExample,
@@ -161,7 +161,7 @@ func completeDistrustKeyset(options *DistrustKeypairOptions, args []string, toCo
 	commandutils.ConfigureKlogForCompletion()
 	ctx := context.TODO()
 
-	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand)
+	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand, "")
 	if cluster == nil {
 		return completions, directive
 	}

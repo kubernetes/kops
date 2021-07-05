@@ -24,8 +24,12 @@ import (
 )
 
 // CompleteClusterName returns a Cobra completion function for cluster names.
-func CompleteClusterName(f Factory) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func CompleteClusterName(f Factory, suppressIfArgs bool) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if suppressIfArgs && len(args) > 0 {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+
 		ConfigureKlogForCompletion()
 
 		client, err := f.Clientset()
