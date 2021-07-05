@@ -23,7 +23,7 @@ kops version [flags]
 
 ```
   -h, --help    help for version
-      --short   only print the main kOps version, useful for scripting
+      --short   only print the main kOps version. Useful for scripting.
 ```
 
 ### Options inherited from parent commands
