@@ -26,14 +26,17 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/instancegroups"
 	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kops/pkg/validation"
@@ -45,56 +48,44 @@ import (
 
 var (
 	rollingupdateLong = pretty.LongDesc(i18n.T(`
-	This command updates a kubernetes cluster to match the cloud and kops specifications.
+	This command updates a kubernetes cluster to match the cloud and kOps specifications.
 
 	To perform a rolling update, you need to update the cloud resources first with the command
-	` + pretty.Bash("kops update cluster") + `. Nodes may be additionally marked for update by placing a
+	` + pretty.Bash("kops update cluster --yes") + `. Nodes may be additionally marked for update by placing a
 	` + pretty.Bash("kops.k8s.io/needs-update") + ` annotation on them.
 
-	If rolling-update does not report that the cluster needs to be rolled, you can force the cluster to be
-	rolled with the force flag.  Rolling update drains and validates the cluster by default.  A cluster is
+	If rolling-update does not report that the cluster needs to be updated, you can force the cluster to be
+	updated with the --force flag.  Rolling update drains and validates the cluster by default.  A cluster is
 	deemed validated when all required nodes are running and all pods with a critical priority are operational.
-	When a node is deleted, rolling-update sleeps the interval for the node type, and then tries for the same period
-	of time for the cluster to be validated.  For instance, setting --master-interval=3m causes rolling-update
-	to wait for 3 minutes after a master is rolled, and another 3 minutes for the cluster to stabilize and pass
-	validation.
 
 	Note: terraform users will need to run all of the following commands from the same directory
 	` + pretty.Bash("kops update cluster --target=terraform") + ` then ` + pretty.Bash("terraform plan") + ` then
 	` + pretty.Bash("terraform apply") + ` prior to running ` + pretty.Bash("kops rolling-update cluster") + `.`))
 
 	rollingupdateExample = templates.Examples(i18n.T(`
-		# Preview a rolling-update.
+		# Preview a rolling update.
 		kops rolling-update cluster
 
-		# Roll the currently selected kOps cluster with defaults.
+		# Update the currently selected kOps cluster with defaults.
 		# Nodes will be drained and the cluster will be validated between node replacement.
 		kops rolling-update cluster --yes
 
-		# Roll the k8s-cluster.example.com kOps cluster,
-		# do not fail if the cluster does not validate,
-		# wait 8 min to create new node, and wait at least
-		# 8 min to validate the cluster.
+		# Update the k8s-cluster.example.com kOps cluster.
+		# Do not fail if the cluster does not validate.
 		kops rolling-update cluster k8s-cluster.example.com --yes \
-		  --fail-on-validate-error="false" \
-		  --master-interval=8m \
-		  --node-interval=8m
+		  --fail-on-validate-error="false"
 
-		# Roll the k8s-cluster.example.com kOps cluster,
-		# do not validate the cluster because of the cloudonly flag.
-	    # Force the entire cluster to roll, even if rolling update
-	    # reports that the cluster does not need to be rolled.
+		# Update the k8s-cluster.example.com kOps cluster.
+		# Do not validate the cluster.
+	    # Force the entire cluster to update, even if rolling update
+	    # reports that the cluster does not need to be updated.
 		kops rolling-update cluster k8s-cluster.example.com --yes \
 	      --cloudonly \
 		  --force
 
-		# Roll the k8s-cluster.example.com kOps cluster,
-		# only roll the node instancegroup,
-		# use the new drain and validate functionality.
+		# Update only the "nodes-1a" instance group of the k8s-cluster.example.com kOps cluster.
 		kops rolling-update cluster k8s-cluster.example.com --yes \
-		  --fail-on-validate-error="false" \
-		  --node-interval 8m \
-		  --instance-group nodes
+		  --instance-group nodes-1a
 		`))
 
 	rollingupdateShort = i18n.T(`Rolling update a cluster.`)
@@ -171,58 +162,52 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options.InitDefaults()
 
 	cmd := &cobra.Command{
-		Use:     "cluster",
-		Short:   rollingupdateShort,
-		Long:    rollingupdateLong,
-		Example: rollingupdateExample,
+		Use:               "cluster [CLUSTER]",
+		Short:             rollingupdateShort,
+		Long:              rollingupdateLong,
+		Example:           rollingupdateExample,
+		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
+		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunRollingUpdateCluster(context.TODO(), f, out, &options)
+		},
 	}
 
 	allRoles := make([]string, 0, len(kopsapi.AllInstanceGroupRoles))
 	for _, r := range kopsapi.AllInstanceGroupRoles {
-		allRoles = append(allRoles, string(r))
+		allRoles = append(allRoles, strings.ToLower(string(r)))
 	}
 
-	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Perform rolling update immediately, without --yes rolling-update executes a dry-run")
+	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Perform rolling update immediately; without --yes rolling-update executes a dry-run")
 	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force rolling update, even if no changes")
-	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform rolling update without confirming progress with k8s")
+	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform rolling update without confirming progress with Kubernetes")
 
 	cmd.Flags().DurationVar(&options.ValidationTimeout, "validation-timeout", options.ValidationTimeout, "Maximum time to wait for a cluster to validate")
-	cmd.Flags().Int32Var(&options.ValidateCount, "validate-count", options.ValidateCount, "Amount of times that a cluster needs to be validated after single node update")
-	cmd.Flags().DurationVar(&options.MasterInterval, "master-interval", options.MasterInterval, "Time to wait between restarting masters")
-	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", options.NodeInterval, "Time to wait between restarting nodes")
+	cmd.Flags().Int32Var(&options.ValidateCount, "validate-count", options.ValidateCount, "Number of times that a cluster needs to be validated after single node update")
+	cmd.Flags().DurationVar(&options.MasterInterval, "master-interval", options.MasterInterval, "Time to wait between restarting control plane nodes")
+	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", options.NodeInterval, "Time to wait between restarting worker nodes")
 	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
 	cmd.Flags().DurationVar(&options.PostDrainDelay, "post-drain-delay", options.PostDrainDelay, "Time to wait after draining each node")
 	cmd.Flags().BoolVarP(&options.Interactive, "interactive", "i", options.Interactive, "Prompt to continue after each instance is updated")
-	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "List of instance groups to update (defaults to all if not specified)")
-	cmd.Flags().StringSliceVar(&options.InstanceGroupRoles, "instance-group-roles", options.InstanceGroupRoles, "If specified, only instance groups of the specified role will be updated ("+strings.Join(allRoles, ",")+")")
+	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "Instance groups to update (defaults to all if not specified)")
+	cmd.RegisterFlagCompletionFunc("instance-group", completeInstanceGroup(&options))
+	cmd.Flags().StringSliceVar(&options.InstanceGroupRoles, "instance-group-roles", options.InstanceGroupRoles, "Instance group roles to update ("+strings.Join(allRoles, ",")+")")
+	cmd.RegisterFlagCompletionFunc("instance-group-roles", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return sets.NewString(allRoles...).Delete(options.InstanceGroupRoles...).List(), cobra.ShellCompDirectiveNoFileComp
+	})
 
-	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "The rolling-update will fail if draining a node fails.")
-	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "The rolling-update will fail if the cluster fails to validate.")
+	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "Fail if draining a node fails")
+	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "Fail if the cluster fails to validate")
 
-	cmd.Run = func(cmd *cobra.Command, args []string) {
-		ctx := context.TODO()
-
-		err := rootCommand.ProcessArgs(args)
-		if err != nil {
-			exitWithError(err)
-			return
+	cmd.Flags().SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
+		switch name {
+		case "ig", "instance-groups":
+			name = "instance-group"
+		case "role", "roles", "instance-group-role":
+			name = "instance-group-roles"
 		}
-
-		clusterName := rootCommand.ClusterName(true)
-		if clusterName == "" {
-			exitWithError(fmt.Errorf("--name is required"))
-			return
-		}
-
-		options.ClusterName = clusterName
-
-		err = RunRollingUpdateCluster(ctx, f, os.Stdout, &options)
-		if err != nil {
-			exitWithError(err)
-			return
-		}
-
-	}
+		return pflag.NormalizedName(name)
+	})
 
 	return cmd
 }
@@ -442,4 +427,32 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 	d.ClusterValidator = clusterValidator
 
 	return d.RollingUpdate(groups, list)
+}
+
+func completeInstanceGroup(options *RollingUpdateOptions) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		commandutils.ConfigureKlogForCompletion()
+		ctx := context.TODO()
+
+		cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand, options.ClusterName)
+		if cluster == nil {
+			return completions, directive
+		}
+
+		list, err := clientSet.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
+		if err != nil {
+			return commandutils.CompletionError("listing instance groups", err)
+		}
+
+		alreadySelected := sets.NewString(options.InstanceGroups...)
+		alreadySelectedRoles := sets.NewString(options.InstanceGroupRoles...)
+		var igs []string
+		for _, ig := range list.Items {
+			if !alreadySelected.Has(ig.Name) && !alreadySelectedRoles.Has(strings.ToLower(string(ig.Spec.Role))) {
+				igs = append(igs, ig.Name)
+			}
+		}
+
+		return igs, cobra.ShellCompDirectiveNoFileComp
+	}
 }

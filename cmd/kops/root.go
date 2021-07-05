@@ -137,7 +137,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 
 	defaultClusterName := os.Getenv("KOPS_CLUSTER_NAME")
 	cmd.PersistentFlags().StringVarP(&rootCommand.clusterName, "name", "", defaultClusterName, "Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable")
-	cmd.RegisterFlagCompletionFunc("name", commandutils.CompleteClusterName(&rootCommand))
+	cmd.RegisterFlagCompletionFunc("name", commandutils.CompleteClusterName(&rootCommand, false))
 
 	// create subcommands
 	cmd.AddCommand(NewCmdCreate(f, out))
@@ -198,6 +198,21 @@ func initConfig() {
 
 func (c *RootCmd) AddCommand(cmd *cobra.Command) {
 	c.cobraCommand.AddCommand(cmd)
+}
+
+func (c *RootCmd) clusterNameArgs(clusterName *string) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		if err := c.ProcessArgs(args); err != nil {
+			return err
+		}
+
+		*clusterName = c.ClusterName(true)
+		if *clusterName == "" {
+			return fmt.Errorf("--name is required")
+		}
+
+		return nil
+	}
 }
 
 // ProcessArgs will parse the positional args.  It assumes one of these formats:
@@ -301,8 +316,10 @@ func GetCluster(ctx context.Context, factory commandutils.Factory, clusterName s
 	return cluster, nil
 }
 
-func GetClusterForCompletion(ctx context.Context, factory commandutils.Factory) (cluster *kopsapi.Cluster, clientSet simple.Clientset, completions []string, directive cobra.ShellCompDirective) {
-	clusterName := rootCommand.ClusterName(false)
+func GetClusterForCompletion(ctx context.Context, factory commandutils.Factory, clusterName string) (cluster *kopsapi.Cluster, clientSet simple.Clientset, completions []string, directive cobra.ShellCompDirective) {
+	if clusterName == "" {
+		clusterName = rootCommand.ClusterName(false)
+	}
 
 	if clusterName == "" {
 		return nil, nil, []string{"--name"}, cobra.ShellCompDirectiveNoFileComp

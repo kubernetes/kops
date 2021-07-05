@@ -16,7 +16,7 @@ Distrust one or more keypairs in a keyset.
  If no keypair IDs are specified, distrusts all keypairs in the keyset that are older than the primary keypair.
 
 ```
-kops distrust keypair keyset [id]... [flags]
+kops distrust keypair KEYSET [ID]... [flags]
 ```
 
 ### Examples
