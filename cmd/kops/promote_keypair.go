@@ -59,7 +59,7 @@ func NewCmdPromoteKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &PromoteKeypairOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "keypair keyset [id]",
+		Use:     "keypair KEYSET [ID]",
 		Short:   promoteKeypairShort,
 		Long:    promoteKeypairLong,
 		Example: promoteKeypairExample,
@@ -167,7 +167,7 @@ func completePromoteKeyset(options *PromoteKeypairOptions, args []string, toComp
 	commandutils.ConfigureKlogForCompletion()
 	ctx := context.TODO()
 
-	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand)
+	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand, "")
 	if cluster == nil {
 		return completions, directive
 	}
@@ -193,7 +193,7 @@ func completePromoteKeyset(options *PromoteKeypairOptions, args []string, toComp
 func completeKeypairID(keyset *fi.Keyset, filter func(keyset *fi.Keyset, item *fi.KeysetItem) bool) (completions []string, directive cobra.ShellCompDirective) {
 	for _, item := range keyset.Items {
 		if filter(keyset, item) {
-			completions = append(completions, item.Id)
+			completions = append(completions, fmt.Sprintf("%s\tissued %s", item.Id, item.Certificate.Certificate.NotBefore.Format("2006-01-02 15:04:05")))
 		}
 	}
 

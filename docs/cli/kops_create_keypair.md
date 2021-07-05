@@ -18,7 +18,7 @@ Add a CA certificate and private key to a keyset.
  One of the certificate/private key pairs in each keyset must be primary. The primary keypair is the one used to issue certificates (or, for the "service-account" keyset, service-account tokens). As a consequence, the first entry in a keyset must be made primary.
 
 ```
-kops create keypair keyset [flags]
+kops create keypair KEYSET [flags]
 ```
 
 ### Examples

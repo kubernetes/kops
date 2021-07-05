@@ -94,7 +94,7 @@ func NewCmdCreateKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateKeypairOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "keypair keyset",
+		Use:     "keypair KEYSET",
 		Short:   createKeypairShort,
 		Long:    createKeypairLong,
 		Example: createKeypairExample,
@@ -270,7 +270,7 @@ func completeCreateKeyset(options *CreateKeypairOptions, args []string, toComple
 	commandutils.ConfigureKlogForCompletion()
 	ctx := context.TODO()
 
-	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand)
+	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand, "")
 	if cluster == nil {
 		return completions, directive
 	}
