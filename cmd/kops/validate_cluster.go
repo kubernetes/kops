@@ -25,6 +25,7 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
@@ -42,11 +43,30 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+var (
+	validateClusterLong = templates.LongDesc(i18n.T(`
+		This commands validates the following components:
+	
+		1. All control plane nodes are running and have "Ready" status.
+		2. All worker nodes are running and have "Ready" status.
+		3. All control plane nodes have the expected pods.
+		4. All pods with a critical priority are running and have "Ready" status.
+		`))
+
+	validateClusterExample = templates.Examples(i18n.T(`
+	# Validate the cluster set as the current context of the kube config.
+	# Kops will try for 10 minutes to validate the cluster 3 times.
+	kops validate cluster --wait 10m --count 3`))
+
+	validateClusterShort = i18n.T(`Validate a kOps cluster.`)
+)
+
 type ValidateClusterOptions struct {
-	output     string
-	wait       time.Duration
-	count      int
-	kubeconfig string
+	ClusterName string
+	output      string
+	wait        time.Duration
+	count       int
+	kubeconfig  string
 }
 
 func (o *ValidateClusterOptions) InitDefaults() {
@@ -57,60 +77,51 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &ValidateClusterOptions{}
 	options.InitDefaults()
 
-	validateClusterLong := templates.LongDesc(i18n.T(`
-	This commands validates the following components:
-
-	1. All control plane nodes are running and have "Ready" status.
-	2. All worker nodes are running and have "Ready" status.
-	3. All control plane nodes have the expected pods.
-	4. All pods with a critical priority are running and have "Ready" status.
-	`))
-
 	cmd := &cobra.Command{
-		Use:     "cluster",
-		Short:   validateShort,
-		Long:    validateClusterLong,
-		Example: validateExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
-
-			result, err := RunValidateCluster(ctx, f, cmd, args, os.Stdout, options)
+		Use:               "cluster [CLUSTER]",
+		Short:             validateClusterShort,
+		Long:              validateClusterLong,
+		Example:           validateClusterExample,
+		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
+		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			result, err := RunValidateCluster(context.TODO(), f, out, options)
 			if err != nil {
-				exitWithError(fmt.Errorf("Validation failed: %v", err))
+				return fmt.Errorf("Validation failed: %v", err)
 			}
+
 			// We want the validate command to exit non-zero if validation found a problem,
 			// even if we didn't really hit an error during validation.
 			if len(result.Failures) != 0 {
 				os.Exit(2)
 			}
+			return nil
 		},
 	}
 
 	cmd.Flags().StringVarP(&options.output, "output", "o", options.output, "Output format. One of json|yaml|table.")
-	cmd.Flags().DurationVar(&options.wait, "wait", options.wait, "If set, will wait for cluster to be ready")
-	cmd.Flags().IntVar(&options.count, "count", options.count, "If set, will validate the cluster consecutive times")
+	cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"json", "yaml", "table"}, cobra.ShellCompDirectiveNoFileComp
+	})
+	cmd.Flags().DurationVar(&options.wait, "wait", options.wait, "Amount of time to wait for the cluster to become ready")
+	cmd.Flags().IntVar(&options.count, "count", options.count, "Number of consecutive successful validations required")
 	cmd.Flags().StringVar(&options.kubeconfig, "kubeconfig", "", "Path to the kubeconfig file")
 
 	return cmd
 }
 
-func RunValidateCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *ValidateClusterOptions) (*validation.ValidationCluster, error) {
-	err := rootCommand.ProcessArgs(args)
+func RunValidateCluster(ctx context.Context, f *util.Factory, out io.Writer, options *ValidateClusterOptions) (*validation.ValidationCluster, error) {
+	clientSet, err := f.Clientset()
 	if err != nil {
 		return nil, err
 	}
 
-	cluster, err := rootCommand.Cluster(ctx)
+	cluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
 		return nil, err
 	}
 
 	cloud, err := cloudup.BuildCloud(cluster)
-	if err != nil {
-		return nil, err
-	}
-
-	clientSet, err := f.Clientset()
 	if err != nil {
 		return nil, err
 	}
