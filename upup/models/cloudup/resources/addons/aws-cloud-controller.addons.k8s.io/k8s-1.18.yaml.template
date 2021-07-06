@@ -27,16 +27,19 @@ spec:
         effect: NoSchedule
       serviceAccountName: aws-cloud-controller-manager
       containers:
-        - name: aws-cloud-controller-manager
-          image: {{ if .ExternalCloudControllerManager.Image }}{{ .ExternalCloudControllerManager.Image }}{{ else }}gcr.io/k8s-staging-provider-aws/cloud-controller-manager:{{AWSCCMTag}}{{ end }}
-          imagePullPolicy: IfNotPresent
-          args:
+      - name: aws-cloud-controller-manager
+        image: {{ if .ExternalCloudControllerManager.Image }}{{ .ExternalCloudControllerManager.Image }}{{ else }}gcr.io/k8s-staging-provider-aws/cloud-controller-manager:{{AWSCCMTag}}{{ end }}
+        imagePullPolicy: IfNotPresent
+        args:
 {{- range $arg := CloudControllerConfigArgv }}
-            - {{ $arg }}
+          - {{ $arg }}
 {{- end }}
-          resources:
-            requests:
-              cpu: 200m
+        env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: "127.0.0.1"
+        resources:
+          requests:
+            cpu: 200m
       hostNetwork: true
       priorityClassName: system-cluster-critical
 ---
