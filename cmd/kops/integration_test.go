@@ -399,7 +399,6 @@ func TestDiscoveryFeatureGate(t *testing.T) {
 	}
 	defer unsetFeatureFlags()
 
-	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
 	newIntegrationTest("minimal.example.com", "public-jwks-apiserver").
 		withServiceAccountRole("dns-controller.kube-system", true).
 		withOIDCDiscovery().
@@ -410,7 +409,6 @@ func TestDiscoveryFeatureGate(t *testing.T) {
 
 func TestVFSServiceAccountIssuerDiscovery(t *testing.T) {
 
-	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
 	newIntegrationTest("minimal.example.com", "vfs-said").
 		withOIDCDiscovery().
 		runTestTerraformAWS(t)
@@ -425,7 +423,6 @@ func TestAWSLBController(t *testing.T) {
 	}
 	defer unsetFeatureFlags()
 
-	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
 	newIntegrationTest("minimal.example.com", "aws-lb-controller").
 		withOIDCDiscovery().
 		withServiceAccountRole("dns-controller.kube-system", true).
@@ -436,7 +433,6 @@ func TestAWSLBController(t *testing.T) {
 }
 
 func TestManyAddons(t *testing.T) {
-	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
 	newIntegrationTest("minimal.example.com", "many-addons").
 		withOIDCDiscovery().
 		withAddons("aws-ebs-csi-driver.addons.k8s.io-k8s-1.17",
