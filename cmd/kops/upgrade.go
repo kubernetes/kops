@@ -17,34 +17,22 @@ limitations under the License.
 package main
 
 import (
+	"io"
+
 	"github.com/spf13/cobra"
-	"k8s.io/kubectl/pkg/util/i18n"
-	"k8s.io/kubectl/pkg/util/templates"
-)
-
-var (
-	upgradeLong = templates.LongDesc(i18n.T(`
-	Automates checking for and applying Kubernetes updates. This upgrades a cluster to the latest recommended
-	production ready k8s version. After this command is run, use kops update cluster and kops rolling-update cluster
-	to finish a cluster upgrade.
-	`))
-
-	upgradeExample = templates.Examples(i18n.T(`
-	# Upgrade a cluster's Kubernetes version.
-	kops upgrade cluster k8s-cluster.example.com --yes --state=s3://my-state-store
-	`))
-
-	upgradeShort = i18n.T("Upgrade a kubernetes cluster.")
+	"k8s.io/kops/cmd/kops/util"
 )
 
 // upgradeCmd represents the upgrade command
-var upgradeCmd = &cobra.Command{
-	Use:     "upgrade",
-	Short:   upgradeShort,
-	Long:    upgradeLong,
-	Example: upgradeExample,
-}
 
-func init() {
-	rootCommand.AddCommand(upgradeCmd)
+func NewCmdUpgrade(f *util.Factory, out io.Writer) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "upgrade",
+		Short: upgradeClusterShort,
+	}
+
+	// create subcommands
+	cmd.AddCommand(NewCmdUpgradeCluster(f, out))
+
+	return cmd
 }
