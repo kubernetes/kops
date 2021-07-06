@@ -25,7 +25,7 @@ spec:
         effect: NoSchedule
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
-      serviceAccountName: cloud-controller-manager
+      serviceAccountName: aws-cloud-controller-manager
       containers:
         - name: aws-cloud-controller-manager
           image: {{ if .ExternalCloudControllerManager.Image }}{{ .ExternalCloudControllerManager.Image }}{{ else }}gcr.io/k8s-staging-provider-aws/cloud-controller-manager:{{AWSCCMTag}}{{ end }}
@@ -42,7 +42,7 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: cloud-controller-manager
+  name: aws-cloud-controller-manager
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -57,7 +57,7 @@ roleRef:
 subjects:
 - apiGroup: ""
   kind: ServiceAccount
-  name: cloud-controller-manager
+  name: aws-cloud-controller-manager
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -168,6 +168,6 @@ roleRef:
 subjects:
 - apiGroup: ""
   kind: ServiceAccount
-  name: cloud-controller-manager
+  name: aws-cloud-controller-manager
   namespace: kube-system
 
