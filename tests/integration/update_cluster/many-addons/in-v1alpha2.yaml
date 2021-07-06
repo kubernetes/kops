@@ -40,9 +40,6 @@ spec:
     enabled: true
     enableSQSTerminationDraining: false
   nonMasqueradeCIDR: 172.20.0.0/16
-  serviceAccountIssuerDiscovery:
-    discoveryStore: memfs://discovery.example.com/minimal.example.com
-    enableAWSOIDCProvider: true
   snapshotController:
     enabled: true
   sshAccess:
