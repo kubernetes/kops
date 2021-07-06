@@ -26862,8 +26862,13 @@ spec:
         imagePullPolicy: IfNotPresent
         name: cert-manager
         resources: {}
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
       serviceAccountName: cert-manager-cainjector
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
 
 ---
 
