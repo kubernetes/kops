@@ -28,6 +28,7 @@ spec:
         - --configure-cloud-routes=false
         - --use-service-account-credentials=true
         image: gcr.io/k8s-staging-provider-aws/cloud-controller-manager:latest
+        imagePullPolicy: IfNotPresent
         name: aws-cloud-controller-manager
         resources:
           requests:
