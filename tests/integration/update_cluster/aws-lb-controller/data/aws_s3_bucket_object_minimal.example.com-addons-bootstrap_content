@@ -41,7 +41,7 @@ spec:
       k8s-addon: dns-controller.addons.k8s.io
   - id: k8s-1.16
     manifest: certmanager.io/k8s-1.16.yaml
-    manifestHash: 487c047d774b1368a74463202aaf5790c186ae6f
+    manifestHash: 59b5f2a0fd6f5fb558c6bb85a38f0236f4ef840f
     name: certmanager.io
     selector: null
   - id: k8s-1.9
