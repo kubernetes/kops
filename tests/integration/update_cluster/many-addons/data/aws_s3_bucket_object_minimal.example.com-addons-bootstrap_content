@@ -47,7 +47,7 @@ spec:
       k8s-addon: cluster-autoscaler.addons.k8s.io
   - id: k8s-1.16
     manifest: certmanager.io/k8s-1.16.yaml
-    manifestHash: c43bfe56ee1820480ed7ddbe1a13e66a679286d0
+    manifestHash: 487c047d774b1368a74463202aaf5790c186ae6f
     name: certmanager.io
     selector: null
   - id: k8s-1.11

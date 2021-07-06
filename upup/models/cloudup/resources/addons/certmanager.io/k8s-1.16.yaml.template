@@ -26815,8 +26815,13 @@ spec:
           successThreshold: 1
           timeoutSeconds: 1
         resources: {}
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
       serviceAccountName: cert-manager-webhook
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
