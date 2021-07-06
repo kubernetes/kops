@@ -194,10 +194,8 @@ func RunApplyChannel(ctx context.Context, f Factory, out io.Writer, options *App
 	for _, needUpdate := range needUpdates {
 		update, err := needUpdate.EnsureUpdated(ctx, k8sClient, cmClient)
 		if err != nil {
-			return fmt.Errorf("error updating %q: %v", needUpdate.Name, err)
-		}
-		// Could have been a concurrent request
-		if update != nil {
+			fmt.Printf("error updating %q: %v", needUpdate.Name, err)
+		} else if update != nil {
 			fmt.Printf("Updated %q\n", update.Name)
 		}
 	}
