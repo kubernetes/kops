@@ -145,14 +145,13 @@ func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
 
 	for i := 0; i < newDropletCount; i++ {
 		_, _, err = t.Cloud.DropletsService().Create(context.TODO(), &godo.DropletCreateRequest{
-			Name:              fi.StringValue(e.Name),
-			Region:            fi.StringValue(e.Region),
-			Size:              fi.StringValue(e.Size),
-			Image:             godo.DropletCreateImage{Slug: fi.StringValue(e.Image)},
-			PrivateNetworking: true,
-			Tags:              e.Tags,
-			UserData:          userData,
-			SSHKeys:           []godo.DropletCreateSSHKey{{Fingerprint: fi.StringValue(e.SSHKey)}},
+			Name:     fi.StringValue(e.Name),
+			Region:   fi.StringValue(e.Region),
+			Size:     fi.StringValue(e.Size),
+			Image:    godo.DropletCreateImage{Slug: fi.StringValue(e.Image)},
+			Tags:     e.Tags,
+			UserData: userData,
+			SSHKeys:  []godo.DropletCreateSSHKey{{Fingerprint: fi.StringValue(e.SSHKey)}},
 		})
 
 		if err != nil {
