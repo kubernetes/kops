@@ -5,18 +5,6 @@
 
 Validate a kOps cluster.
 
-### Synopsis
-
-This command validates a cluster. See: kops validate cluster -h
-
-### Examples
-
-```
-  # Validate the cluster set as the current context of the kube config.
-  # Kops will try for 10 minutes to validate the cluster 3 times.
-  kops validate cluster --wait 10m --count 3
-```
-
 ### Options
 
 ```
