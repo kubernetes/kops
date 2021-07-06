@@ -434,7 +434,7 @@ func completeInstanceGroup(options *RollingUpdateOptions) func(cmd *cobra.Comman
 		commandutils.ConfigureKlogForCompletion()
 		ctx := context.TODO()
 
-		cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand, options.ClusterName)
+		cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand, args)
 		if cluster == nil {
 			return completions, directive
 		}

@@ -317,8 +317,12 @@ func GetCluster(ctx context.Context, factory commandutils.Factory, clusterName s
 	return cluster, nil
 }
 
-func GetClusterForCompletion(ctx context.Context, factory commandutils.Factory, clusterName string) (cluster *kopsapi.Cluster, clientSet simple.Clientset, completions []string, directive cobra.ShellCompDirective) {
-	if clusterName == "" {
+func GetClusterForCompletion(ctx context.Context, factory commandutils.Factory, clusterArgs []string) (cluster *kopsapi.Cluster, clientSet simple.Clientset, completions []string, directive cobra.ShellCompDirective) {
+	clusterName := ""
+
+	if len(clusterArgs) > 0 {
+		clusterName = clusterArgs[0]
+	} else {
 		clusterName = rootCommand.ClusterName(false)
 	}
 
