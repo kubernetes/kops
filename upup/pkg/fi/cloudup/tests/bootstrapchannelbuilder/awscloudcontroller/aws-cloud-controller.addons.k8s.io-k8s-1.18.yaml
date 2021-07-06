@@ -36,7 +36,7 @@ spec:
       nodeSelector:
         node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
-      serviceAccountName: cloud-controller-manager
+      serviceAccountName: aws-cloud-controller-manager
       tolerations:
       - effect: NoSchedule
         key: node.cloudprovider.kubernetes.io/uninitialized
@@ -56,7 +56,7 @@ metadata:
     addon.kops.k8s.io/name: aws-cloud-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
     k8s-addon: aws-cloud-controller.addons.k8s.io
-  name: cloud-controller-manager
+  name: aws-cloud-controller-manager
   namespace: kube-system
 
 ---
@@ -78,7 +78,7 @@ roleRef:
 subjects:
 - apiGroup: ""
   kind: ServiceAccount
-  name: cloud-controller-manager
+  name: aws-cloud-controller-manager
   namespace: kube-system
 
 ---
@@ -203,5 +203,5 @@ roleRef:
 subjects:
 - apiGroup: ""
   kind: ServiceAccount
-  name: cloud-controller-manager
+  name: aws-cloud-controller-manager
   namespace: kube-system
