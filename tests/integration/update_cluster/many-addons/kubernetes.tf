@@ -245,17 +245,6 @@ resource "aws_iam_instance_profile" "nodes-minimal-example-com" {
   }
 }
 
-resource "aws_iam_openid_connect_provider" "minimal-example-com" {
-  client_id_list = ["amazonaws.com"]
-  tags = {
-    "KubernetesCluster"                         = "minimal.example.com"
-    "Name"                                      = "minimal.example.com"
-    "kubernetes.io/cluster/minimal.example.com" = "owned"
-  }
-  thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280", "a9d53002e97e00e043244f3d170d6f4c414104fd"]
-  url             = "https://discovery.example.com/minimal.example.com"
-}
-
 resource "aws_iam_role" "masters-minimal-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.minimal.example.com_policy")
   name               = "masters.minimal.example.com"
@@ -498,13 +487,6 @@ resource "aws_s3_bucket_object" "cluster-completed-spec" {
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "discovery-json" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_discovery.json_content")
-  key                    = "discovery.example.com/minimal.example.com/.well-known/openid-configuration"
-  server_side_encryption = "AES256"
-}
-
 resource "aws_s3_bucket_object" "etcd-cluster-spec-events" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_etcd-cluster-spec-events_content")
@@ -516,13 +498,6 @@ resource "aws_s3_bucket_object" "etcd-cluster-spec-main" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_etcd-cluster-spec-main_content")
   key                    = "clusters.example.com/minimal.example.com/backups/etcd/main/control/etcd-cluster-spec"
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_bucket_object" "keys-json" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_keys.json_content")
-  key                    = "discovery.example.com/minimal.example.com/openid/v1/jwks"
   server_side_encryption = "AES256"
 }
 
