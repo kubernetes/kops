@@ -434,7 +434,6 @@ func TestAWSLBController(t *testing.T) {
 
 func TestManyAddons(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "many-addons").
-		withOIDCDiscovery().
 		withAddons("aws-ebs-csi-driver.addons.k8s.io-k8s-1.17",
 			"aws-load-balancer-controller.addons.k8s.io-k8s-1.9",
 			"certmanager.io-k8s-1.16",
