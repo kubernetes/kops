@@ -27,6 +27,9 @@ spec:
         - --allocate-node-cidrs=true
         - --configure-cloud-routes=false
         - --use-service-account-credentials=true
+        env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: 127.0.0.1
         image: gcr.io/k8s-staging-provider-aws/cloud-controller-manager:latest
         imagePullPolicy: IfNotPresent
         name: aws-cloud-controller-manager
