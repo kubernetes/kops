@@ -19,6 +19,7 @@ package model
 import (
 	"strings"
 
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -56,6 +57,9 @@ func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
 	b.addLogRotate(c, "kubelet", "/var/log/kubelet.log", logRotateOptions{})
 	b.addLogRotate(c, "etcd", "/var/log/etcd.log", logRotateOptions{})
 	b.addLogRotate(c, "etcd-events", "/var/log/etcd-events.log", logRotateOptions{})
+	if model.UseCiliumEtcd(b.Cluster) {
+		b.addLogRotate(c, "etcd-cilium", "/var/log/etcd-cilium.log", logRotateOptions{})
+	}
 
 	if err := b.addLogrotateService(c); err != nil {
 		return err
