@@ -100,30 +100,6 @@ WantedBy=multi-user.target
 }
 
 func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.ModelBuilderContext) error {
-
-	if b.IsMaster {
-		d := "/etc/kubernetes/pki/etcd-manager-cilium"
-
-		keys := make(map[string]string)
-		keys["etcd-manager-ca"] = "etcd-manager-ca-cilium"
-		keys["etcd-peers-ca"] = "etcd-peers-ca-cilium"
-		keys["etcd-clients-ca"] = "etcd-clients-ca-cilium"
-
-		for fileName, keystoreName := range keys {
-			_, err := b.KeyStore.FindCert(keystoreName)
-			if err != nil {
-				return err
-			}
-
-			if err := b.BuildCertificateTask(c, keystoreName, d+"/"+fileName+".crt", nil); err != nil {
-				return err
-			}
-			if err := b.BuildPrivateKeyTask(c, keystoreName, d+"/"+fileName+".key", nil); err != nil {
-				return err
-			}
-		}
-	}
-
 	name := "etcd-client-cilium"
 	dir := "/etc/kubernetes/pki/cilium"
 	signer := "etcd-clients-ca-cilium"
