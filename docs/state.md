@@ -9,6 +9,7 @@ though we have to copy the data from the state store to a file where components 
 
 The state store uses kOps's VFS implementation, so can in theory be stored anywhere.
 As of now the following state stores are supported:
+
 * Amazon AWS S3 (`s3://`)
 * local filesystem (`file://`) (only for dry-run purposes, see [note](#local-filesystem-state-stores) below)
 * Digital Ocean (`do://`)
