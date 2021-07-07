@@ -14,29 +14,29 @@ Create an InstanceGroup configuration.
  The Role of an InstanceGroup defines whether machines will act as a Kubernetes master or node.
 
 ```
-kops create instancegroup [flags]
+kops create instancegroup INSTANCE_GROUP [flags]
 ```
 
 ### Examples
 
 ```
   # Create an instancegroup for the k8s-cluster.example.com cluster.
-  kops create ig --name=k8s-cluster.example.com node-example \
+  kops create instancegroup --name=k8s-cluster.example.com node-example \
   --role node --subnet my-subnet-name,my-other-subnet-name
   
   # Create a YAML manifest for an instancegroup for the k8s-cluster.example.com cluster.
-  kops create ig --name=k8s-cluster.example.com node-example \
+  kops create instancegroup --name=k8s-cluster.example.com node-example \
   --role node --subnet my-subnet-name --dry-run -oyaml
 ```
 
 ### Options
 
 ```
-      --dry-run          If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
-      --edit             If true, an editor will be opened to edit default values. (default true)
+      --dry-run          Only print the object that would be created, without created it. This flag can be used to create an instance group YAML or JSON manifest.
+      --edit             Open an editor to edit default values (default true)
   -h, --help             help for instancegroup
-  -o, --output string    Output format. One of json|yaml
-      --role string      Type of instance group to create (Master,APIServer,Node,Bastion) (default "Node")
+  -o, --output string    Output format. One of json or yaml
+      --role string      Type of instance group to create (master,node,bastion) (default "Node")
       --subnet strings   Subnet in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.
 ```
 
