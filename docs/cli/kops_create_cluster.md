@@ -66,9 +66,9 @@ kops create cluster [CLUSTER] [flags]
 
 ```
       --admin-access strings             Restrict API access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0,::/0])
-      --api-loadbalancer-class string    Currently only supported in AWS. Sets the API loadbalancer class to either 'classic' or 'network'
-      --api-loadbalancer-type string     Sets the API loadbalancer type to either 'public' or 'internal'
-      --api-ssl-certificate string       Currently only supported in AWS. Sets the ARN of the SSL Certificate to use for the API server loadbalancer.
+      --api-loadbalancer-class string    Class of loadbalancer for the Kubernetes API (AWS only): classic or network
+      --api-loadbalancer-type string     Type of loadbalancer for the Kubernetes API: public or internal
+      --api-ssl-certificate string       ARN of the SSL Certificate to use for the Kubernetes API loadbalancer (AWS only)
       --associate-public-ip              Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.
       --authorization string             Authorization mode: AlwaysAllow or RBAC (default "RBAC")
       --bastion                          Enable a bastion instance group. Only applies to private topology.
@@ -77,7 +77,7 @@ kops create cluster [CLUSTER] [flags]
       --cloud-labels string              A list of key/value pairs used to tag all instance groups (for example "Owner=John Doe,Team=Some Team").
       --container-runtime string         Container runtime to use: containerd, docker
       --disable-subnet-tags              Disable automatic subnet tagging
-      --dns string                       DNS type to use: public or private. (default "Public")
+      --dns string                       DNS type to use: public or private (default "Public")
       --dns-zone string                  DNS hosted zone (defaults to longest matching zone)
       --dry-run                          If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
       --encrypt-etcd-storage             Generate key in AWS KMS and use it for encrypt etcd volumes
@@ -88,10 +88,10 @@ kops create cluster [CLUSTER] [flags]
       --kubernetes-version string        Version of kubernetes to run (defaults to version in channel)
       --master-count int32               Number of masters. Defaults to one master per master-zone
       --master-image string              Machine image for masters. Takes precedence over --image
-      --master-public-name string        Sets the public master public name
+      --master-public-name string        Domain name of the public Kubernetes API
       --master-security-groups strings   Additional precreated security groups to add to masters.
       --master-size string               Machine type for masters
-      --master-tenancy string            The tenancy of the master group on AWS. Can either be default or dedicated.
+      --master-tenancy string            Tenancy of the master group (AWS only): default or dedicated
       --master-volume-size int32         Instance volume size (in GB) for masters
       --master-zones strings             Zones in which to run masters (must be an odd number)
       --network-cidr string              Network CIDR to use
@@ -100,23 +100,23 @@ kops create cluster [CLUSTER] [flags]
       --node-image string                Machine image for worker nodes. Takes precedence over --image
       --node-security-groups strings     Additional precreated security groups to add to worker nodes.
       --node-size string                 Machine type for worker nodes
-      --node-tenancy string              The tenancy of the node group on AWS. Can be either default or dedicated.
+      --node-tenancy string              Tenancy of the node group (AWS only): default or dedicated
       --node-volume-size int32           Instance volume size (in GB) for worker nodes
       --os-dns-servers string            comma separated list of DNS Servers which is used in network
-      --os-ext-net string                The name of the external network to use with the openstack router
-      --os-ext-subnet string             The name of the external floating subnet to use with the openstack router
-      --os-kubelet-ignore-az             If true kubernetes may attach volumes across availability zones
-      --os-lb-floating-subnet string     The name of the external subnet to use with the kubernetes api
-      --os-network string                The ID of the existing OpenStack network to use
-      --os-octavia                       If true octavia loadbalancer api will be used
+      --os-ext-net string                External network to use with the openstack router
+      --os-ext-subnet string             External floating subnet to use with the openstack router
+      --os-kubelet-ignore-az             Attach volumes across availability zones
+      --os-lb-floating-subnet string     External subnet to use with the kubernetes api
+      --os-network string                ID of the existing OpenStack network to use
+      --os-octavia                       Use octavia loadbalancer API
       --out string                       Path to write any local output
-  -o, --output string                    Output format. One of json|yaml. Used with the --dry-run flag.
+  -o, --output string                    Output format. One of json or yaml. Used with the --dry-run flag.
       --project string                   Project to use (must be set on GCE)
       --ssh-access strings               Restrict SSH access to this CIDR.  If not set, uses the value of the admin-access flag.
       --ssh-public-key string            SSH public key to use (defaults to ~/.ssh/id_rsa.pub on AWS)
       --subnets strings                  Shared subnets to use
       --target string                    Valid targets: direct, terraform, cloudformation. Set this flag to terraform if you want kOps to generate terraform (default "direct")
-  -t, --topology string                  Network topology for the cluster: public or private. (default "public")
+  -t, --topology string                  Network topology for the cluster: public or private (default "public")
       --utility-subnets strings          Shared utility subnets to use
       --vpc string                       Shared VPC to use
   -y, --yes                              Specify --yes to immediately create the cluster
