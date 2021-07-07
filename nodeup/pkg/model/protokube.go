@@ -107,7 +107,7 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 				}
 			}
 			for _, x := range []string{"etcd", "etcd-peer", "etcd-client"} {
-				if err := t.BuildPrivateKeyTask(c, x, fmt.Sprintf("%s-key.pem", x), nil); err != nil {
+				if err := t.BuildLegacyPrivateKeyTask(c, x, fmt.Sprintf("%s-key.pem", x), nil); err != nil {
 					return err
 				}
 			}

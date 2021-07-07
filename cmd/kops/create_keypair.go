@@ -23,10 +23,10 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
@@ -78,15 +78,8 @@ type CreateKeypairOptions struct {
 	Primary        bool
 }
 
-var rotatableKeysets = sets.NewString(
-	"apiserver-aggregator-ca",
-	"etcd-clients-ca-cilium",
-	"kubernetes-ca",
-	"service-account",
-)
-
 func rotatableKeysetFilter(name string, _ *fi.Keyset) bool {
-	return rotatableKeysets.Has(name)
+	return name == "service-account" || strings.Contains(name, "-ca")
 }
 
 // NewCmdCreateKeypair returns a create keypair command.
@@ -134,7 +127,7 @@ func NewCmdCreateKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 
 // RunCreateKeypair adds a custom CA certificate and private key.
 func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, options *CreateKeypairOptions) error {
-	if !rotatableKeysets.Has(options.Keyset) {
+	if !rotatableKeysetFilter(options.Keyset, nil) {
 		return fmt.Errorf("adding keypair to %q is not supported", options.Keyset)
 	}
 

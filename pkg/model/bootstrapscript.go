@@ -212,12 +212,17 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 // ResourceNodeUp generates and returns a nodeup (bootstrap) script from a
 // template file, substituting in specific env vars & cluster spec configuration
 func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) (fi.Resource, error) {
-	keypairs := []string{"kubernetes-ca"}
-	if model.UseCiliumEtcd(b.Cluster) {
-		keypairs = append(keypairs, "etcd-clients-ca-cilium")
-		if !model.UseKopsControllerForNodeBootstrap(b.Cluster) {
-			keypairs = append(keypairs, "etcd-client-cilium")
+	keypairs := []string{"kubernetes-ca", "etcd-clients-ca"}
+	for _, etcdCluster := range b.Cluster.Spec.EtcdClusters {
+		k := etcdCluster.Name
+		keypairs = append(keypairs, "etcd-manager-ca-"+k, "etcd-peers-ca-"+k)
+		if k != "events" && k != "main" {
+			keypairs = append(keypairs, "etcd-clients-ca-"+k)
 		}
+	}
+
+	if model.UseCiliumEtcd(b.Cluster) && !model.UseKopsControllerForNodeBootstrap(b.Cluster) {
+		keypairs = append(keypairs, "etcd-client-cilium")
 	}
 	if ig.HasAPIServer() {
 		keypairs = append(keypairs, "apiserver-aggregator-ca", "service-account")
