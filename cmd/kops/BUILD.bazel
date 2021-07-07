@@ -103,6 +103,7 @@ go_library(
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/aws/amazon-ec2-instance-selector/v2/pkg/cli:go_default_library",
         "//vendor/github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
         "//vendor/github.com/blang/semver/v4:go_default_library",
         "//vendor/github.com/google/go-containerregistry/pkg/name:go_default_library",
         "//vendor/github.com/google/go-containerregistry/pkg/v1/remote:go_default_library",
