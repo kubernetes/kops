@@ -461,7 +461,7 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 
 	case api.CloudProviderDO:
 		if len(opt.Zones) > 1 {
-			return nil, fmt.Errorf("digitalocean cloud provider currently supports 1 region only.")
+			return nil, fmt.Errorf("digitalocean cloud provider currently supports one region only.")
 		}
 
 		// For DO we just pass in the region for --zones
