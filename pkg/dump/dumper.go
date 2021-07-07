@@ -67,6 +67,7 @@ func NewLogDumper(sshConfig *ssh.ClientConfig, artifactsDir string) *logDumper {
 		"kube-controller-manager",
 		"etcd",
 		"etcd-events",
+		"etcd-cilium",
 		"glbc",
 		"cluster-autoscaler",
 		"kube-addon-manager",
