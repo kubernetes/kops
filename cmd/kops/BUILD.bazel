@@ -5,7 +5,7 @@ go_library(
     srcs = [
         "create.go",
         "create_cluster.go",
-        "create_ig.go",
+        "create_instancegroup.go",
         "create_keypair.go",
         "create_secret.go",
         "create_secret_cilium_encryptionconfig.go",
