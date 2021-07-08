@@ -161,7 +161,7 @@ func completeDistrustKeyset(options *DistrustKeypairOptions, args []string, toCo
 	commandutils.ConfigureKlogForCompletion()
 	ctx := context.TODO()
 
-	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand, "")
+	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand, nil)
 	if cluster == nil {
 		return completions, directive
 	}

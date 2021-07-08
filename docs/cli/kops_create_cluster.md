@@ -7,12 +7,12 @@ Create a Kubernetes cluster.
 
 ### Synopsis
 
-Create a kubernetes cluster using command line flags. This command creates cloud based resources such as networks and virtual machines. Once the infrastructure is in place Kubernetes is installed on the virtual machines.
+Create a Kubernetes cluster using command line flags. This command creates cloud based resources such as networks and virtual machines. Once the infrastructure is in place Kubernetes is installed on the virtual machines.
 
  These operations are done in parallel and rely on eventual consistency.
 
 ```
-kops create cluster [flags]
+kops create cluster [CLUSTER] [flags]
 ```
 
 ### Examples
@@ -24,7 +24,7 @@ kops create cluster [flags]
   --zones=us-east-1a \
   --node-count=2
   
-  # Create a cluster in AWS with HA masters. This cluster
+  # Create a cluster in AWS with High Availability masters. This cluster
   # has also been configured for private networking in a kops-managed VPC.
   # The bastion flag is set to create an entrypoint for admins to SSH.
   export KOPS_STATE_STORE="s3://my-state-store"
@@ -42,12 +42,11 @@ kops create cluster [flags]
   --bastion="true" \
   --yes
   
-  # Create a cluster in GCE.
-  # Note: GCE support is not GA.
-  export KOPS_FEATURE_FLAGS=AlphaAllowGCE
-  export KOPS_STATE_STORE="gs://my-state-store"
-  export ZONES="us-east1-a,us-east1-b,us-east1-c"
+  # Create a cluster in Digital Ocean.
+  export KOPS_STATE_STORE="do://my-state-store"
+  export ZONES="NYC1"
   kops create cluster k8s-cluster.example.com \
+  --cloud digitalocean \
   --zones $ZONES \
   --master-zones $ZONES \
   --node-count 3 \
@@ -71,38 +70,38 @@ kops create cluster [flags]
       --api-loadbalancer-type string     Sets the API loadbalancer type to either 'public' or 'internal'
       --api-ssl-certificate string       Currently only supported in AWS. Sets the ARN of the SSL Certificate to use for the API server loadbalancer.
       --associate-public-ip              Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.
-      --authorization string             Authorization mode to use: AlwaysAllow or RBAC (default "RBAC")
-      --bastion                          Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.
+      --authorization string             Authorization mode: AlwaysAllow or RBAC (default "RBAC")
+      --bastion                          Enable a bastion instance group. Only applies to private topology.
       --channel string                   Channel for default versions and configuration to use (default "stable")
-      --cloud string                     Cloud provider to use - gce, aws, openstack
+      --cloud string                     Cloud provider to use - aws, digitalocean, openstack
       --cloud-labels string              A list of key/value pairs used to tag all instance groups (for example "Owner=John Doe,Team=Some Team").
       --container-runtime string         Container runtime to use: containerd, docker
-      --disable-subnet-tags              Set to disable automatic subnet tagging
-      --dns string                       DNS hosted zone to use: public|private. (default "Public")
-      --dns-zone string                  DNS hosted zone to use (defaults to longest matching zone)
+      --disable-subnet-tags              Disable automatic subnet tagging
+      --dns string                       DNS type to use: public or private. (default "Public")
+      --dns-zone string                  DNS hosted zone (defaults to longest matching zone)
       --dry-run                          If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
-      --encrypt-etcd-storage             Generate key in aws kms and use it for encrypt etcd volumes
-      --etcd-storage-type string         The default storage type for etc members
+      --encrypt-etcd-storage             Generate key in AWS KMS and use it for encrypt etcd volumes
+      --etcd-storage-type string         The default storage type for etcd members
       --gce-service-account string       Service account with which the GCE VM runs. Warning: if not set, VMs will run as default compute service account.
   -h, --help                             help for cluster
-      --image string                     Set image for all instances.
+      --image string                     Machine image for all instances
       --kubernetes-version string        Version of kubernetes to run (defaults to version in channel)
-      --master-count int32               Set number of masters. Defaults to one master per master-zone
-      --master-image string              Set image for masters. Takes precedence over --image
+      --master-count int32               Number of masters. Defaults to one master per master-zone
+      --master-image string              Machine image for masters. Takes precedence over --image
       --master-public-name string        Sets the public master public name
-      --master-security-groups strings   Add precreated additional security groups to masters.
-      --master-size string               Set instance size for masters
+      --master-security-groups strings   Additional precreated security groups to add to masters.
+      --master-size string               Machine type for masters
       --master-tenancy string            The tenancy of the master group on AWS. Can either be default or dedicated.
-      --master-volume-size int32         Set instance volume size (in GB) for masters
+      --master-volume-size int32         Instance volume size (in GB) for masters
       --master-zones strings             Zones in which to run masters (must be an odd number)
-      --network-cidr string              Set to override the default network CIDR
-      --networking string                Networking mode to use.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazonvpc, cilium, cilium-etcd, cni, lyftvpc. (default "kubenet")
-      --node-count int32                 Set total number of nodes. Defaults to one node per zone
-      --node-image string                Set image for nodes. Takes precedence over --image
-      --node-security-groups strings     Add precreated additional security groups to nodes.
-      --node-size string                 Set instance size for nodes
+      --network-cidr string              Network CIDR to use
+      --networking string                Networking mode.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazonvpc, cilium, cilium-etcd, cni, lyftvpc. (default "kubenet")
+      --node-count int32                 Total number of worker nodes. Defaults to one node per zone
+      --node-image string                Machine image for worker nodes. Takes precedence over --image
+      --node-security-groups strings     Additional precreated security groups to add to worker nodes.
+      --node-size string                 Machine type for worker nodes
       --node-tenancy string              The tenancy of the node group on AWS. Can be either default or dedicated.
-      --node-volume-size int32           Set instance volume size (in GB) for nodes
+      --node-volume-size int32           Instance volume size (in GB) for worker nodes
       --os-dns-servers string            comma separated list of DNS Servers which is used in network
       --os-ext-net string                The name of the external network to use with the openstack router
       --os-ext-subnet string             The name of the external floating subnet to use with the openstack router
@@ -115,11 +114,11 @@ kops create cluster [flags]
       --project string                   Project to use (must be set on GCE)
       --ssh-access strings               Restrict SSH access to this CIDR.  If not set, uses the value of the admin-access flag.
       --ssh-public-key string            SSH public key to use (defaults to ~/.ssh/id_rsa.pub on AWS)
-      --subnets strings                  Set to use shared subnets
+      --subnets strings                  Shared subnets to use
       --target string                    Valid targets: direct, terraform, cloudformation. Set this flag to terraform if you want kOps to generate terraform (default "direct")
-  -t, --topology string                  Controls network topology for the cluster: public|private. (default "public")
-      --utility-subnets strings          Set to use shared utility subnets
-      --vpc string                       Set to use a shared VPC
+  -t, --topology string                  Network topology for the cluster: public or private. (default "public")
+      --utility-subnets strings          Shared utility subnets to use
+      --vpc string                       Shared VPC to use
   -y, --yes                              Specify --yes to immediately create the cluster
       --zones strings                    Zones in which to run the cluster
 ```

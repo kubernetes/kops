@@ -216,6 +216,21 @@ func (c *RootCmd) clusterNameArgs(clusterName *string) func(cmd *cobra.Command, 
 	}
 }
 
+func (c *RootCmd) clusterNameArgsNoKubeconfig(clusterName *string) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		if err := c.ProcessArgs(args); err != nil {
+			return err
+		}
+
+		*clusterName = c.clusterName
+		if *clusterName == "" {
+			return fmt.Errorf("--name is required")
+		}
+
+		return nil
+	}
+}
+
 // ProcessArgs will parse the positional args.  It assumes one of these formats:
 //  * <no arguments at all>
 //  * <clustername> (and --name not specified)
@@ -317,8 +332,25 @@ func GetCluster(ctx context.Context, factory commandutils.Factory, clusterName s
 	return cluster, nil
 }
 
-func GetClusterForCompletion(ctx context.Context, factory commandutils.Factory, clusterName string) (cluster *kopsapi.Cluster, clientSet simple.Clientset, completions []string, directive cobra.ShellCompDirective) {
-	if clusterName == "" {
+func GetClusterNameForCompletionNoKubeconfig(clusterArgs []string) (clusterName string, completions []string, directive cobra.ShellCompDirective) {
+	if len(clusterArgs) > 0 {
+		return clusterArgs[0], nil, 0
+	}
+
+	if rootCommand.clusterName != "" {
+		return rootCommand.clusterName, nil, 0
+	}
+
+	return "", []string{"--name"}, cobra.ShellCompDirectiveNoFileComp
+
+}
+
+func GetClusterForCompletion(ctx context.Context, factory commandutils.Factory, clusterArgs []string) (cluster *kopsapi.Cluster, clientSet simple.Clientset, completions []string, directive cobra.ShellCompDirective) {
+	clusterName := ""
+
+	if len(clusterArgs) > 0 {
+		clusterName = clusterArgs[0]
+	} else {
 		clusterName = rootCommand.ClusterName(false)
 	}
 

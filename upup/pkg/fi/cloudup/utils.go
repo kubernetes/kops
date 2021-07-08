@@ -18,12 +18,14 @@ package cloudup
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -166,6 +168,26 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
 	}
 	return cloud, nil
+}
+
+func SupportedClouds() []string {
+	clouds := []string{
+		string(kops.CloudProviderAWS),
+		string(kops.CloudProviderDO),
+		string(kops.CloudProviderOpenstack),
+	}
+	if AlphaAllowALI.Enabled() {
+		clouds = append(clouds, string(kops.CloudProviderALI))
+	}
+	if featureflag.Azure.Enabled() {
+		clouds = append(clouds, string(kops.CloudProviderAzure))
+	}
+	if AlphaAllowGCE.Enabled() {
+		clouds = append(clouds, string(kops.CloudProviderGCE))
+	}
+
+	sort.Strings(clouds)
+	return clouds
 }
 
 func FindDNSHostedZone(dns dnsprovider.Interface, clusterDNSName string, dnsType kops.DNSType) (string, error) {
