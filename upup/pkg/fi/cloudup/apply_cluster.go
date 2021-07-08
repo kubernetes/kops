@@ -83,6 +83,8 @@ const (
 	OldestSupportedKubernetesVersion = "1.17.0"
 	// OldestRecommendedKubernetesVersion is the oldest kubernetes version that is not deprecated in kOps.
 	OldestRecommendedKubernetesVersion = "1.19.0"
+	// TerraformCloudProviders is the list of cloud providers with terraform target support
+	TerraformCloudProviders = []kops.CloudProviderID{kops.CloudProviderAWS, kops.CloudProviderGCE, kops.CloudProviderALI}
 )
 
 type ApplyClusterCmd struct {
@@ -144,6 +146,18 @@ type ApplyClusterCmd struct {
 }
 
 func (c *ApplyClusterCmd) Run(ctx context.Context) error {
+	if c.TargetName == TargetTerraform {
+		found := false
+		for _, cp := range TerraformCloudProviders {
+			if c.Cloud.ProviderID() == cp {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("cloud provider %v does not support the terraform target", c.Cloud.ProviderID())
+		}
+	}
 	if c.InstanceGroups == nil {
 		list, err := c.Clientset.InstanceGroupsFor(c.Cluster).List(ctx, metav1.ListOptions{})
 		if err != nil {
