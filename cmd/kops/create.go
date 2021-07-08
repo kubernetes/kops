@@ -32,7 +32,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/text"
 	"k8s.io/kops/util/pkg/vfs"
-	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
@@ -52,16 +51,16 @@ var (
 
 	createExample = templates.Examples(i18n.T(`
 
-	# Create a cluster from the configuration specification in a YAML file
+	# Create a cluster from the configuration specification in a YAML file.
 	kops create -f my-cluster.yaml
 
-	# Create secret from secret spec file
+	# Create secret from secret spec file.
 	kops create -f secret.yaml
 
 	# Create an instancegroup based on the YAML passed into stdin.
 	cat instancegroup.yaml | kops create -f -
 
-	# Create a cluster in AWS
+	# Create a cluster in AWS.
 	kops create cluster --name=k8s-cluster.example.com \
 		--state=s3://my-state-store --zones=us-east-1a \
 		--node-count=2 --node-size=t3.small --master-size=t3.small \
@@ -82,33 +81,28 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "create -f FILENAME",
+		Use:     "create {-f FILENAME}...",
 		Short:   createShort,
 		Long:    createLong,
 		Example: createExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			if len(options.Filenames) == 0 {
-				cmd.Help()
-				return
-			}
-			ctx := context.TODO()
-			cmdutil.CheckErr(RunCreate(ctx, f, out, options))
+		Args:    cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunCreate(context.TODO(), f, out, options)
 		},
 	}
 
 	cmd.Flags().StringSliceVarP(&options.Filenames, "filename", "f", options.Filenames, "Filename to use to create the resource")
 	cmd.MarkFlagRequired("filename")
-	//cmdutil.AddValidateFlags(cmd)
-	//cmdutil.AddOutputFlagsForMutation(cmd)
-	//cmdutil.AddApplyAnnotationFlags(cmd)
-	//cmdutil.AddRecordFlag(cmd)
-	//cmdutil.AddInclude3rdPartyFlags(cmd)
+	cmd.RegisterFlagCompletionFunc("filename", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"yaml", "json"}, cobra.ShellCompDirectiveFilterFileExt
+	})
 
 	// create subcommands
 	cmd.AddCommand(NewCmdCreateCluster(f, out))
 	cmd.AddCommand(NewCmdCreateInstanceGroup(f, out))
 	cmd.AddCommand(NewCmdCreateKeypair(f, out))
 	cmd.AddCommand(NewCmdCreateSecret(f, out))
+
 	return cmd
 }
 
