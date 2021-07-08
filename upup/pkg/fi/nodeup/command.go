@@ -722,6 +722,10 @@ func getAWSConfigurationMode(c *model.NodeupModelContext) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error describing instances: %v", err)
 	}
+	// If the instance is not a part of an ASG, it won't be in a warm pool either.
+	if len(result.AutoScalingInstances) < 1 {
+		return "", nil
+	}
 	lifecycle := fi.StringValue(result.AutoScalingInstances[0].LifecycleState)
 	if strings.HasPrefix(lifecycle, "Warmed:") {
 		klog.Info("instance is entering warm pool")
