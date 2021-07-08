@@ -1130,6 +1130,19 @@ func createEtcdCluster(etcdCluster string, masters []*api.InstanceGroup, encrypt
 		m.InstanceGroup = fi.String(ig.ObjectMeta.Name)
 		etcd.Members = append(etcd.Members, m)
 	}
+
+	// Cilium etcd server is not compacted by the k8s API server.
+	if etcd.Name == "cilium" {
+		if etcd.Manager == nil {
+			etcd.Manager = &api.EtcdManagerSpec{
+				Env: []api.EnvVar{
+					{Name: "ETCD_AUTO_COMPACTION_MODE", Value: "revision"},
+					{Name: "ETCD_AUTO_COMPACTION_RETENTION", Value: "2500"},
+				},
+			}
+		}
+	}
+
 	return etcd
 
 }
