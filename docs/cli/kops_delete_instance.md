@@ -64,5 +64,5 @@ kops delete instance [flags]
 
 ### SEE ALSO
 
-* [kops delete](kops_delete.md)	 - Delete clusters, instancegroups, instances, or secrets.
+* [kops delete](kops_delete.md)	 - Delete clusters, instancegroups, instances, and secrets.
 
