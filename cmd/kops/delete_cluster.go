@@ -26,6 +26,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/resources"
 	resourceops "k8s.io/kops/pkg/resources/ops"
@@ -48,7 +49,7 @@ type DeleteClusterOptions struct {
 var (
 	deleteClusterLong = templates.LongDesc(i18n.T(`
 	Deletes a Kubernetes cluster and all associated resources.  Resources include instancegroups,
-	secrets and the state store.  There is no "UNDO" for this command.
+	secrets, and the state store.  There is no "UNDO" for this command.
 	`))
 
 	deleteClusterExample = templates.Examples(i18n.T(`
@@ -65,25 +66,14 @@ func NewCmdDeleteCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &DeleteClusterOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "cluster CLUSTERNAME [--yes]",
-		Short:   deleteClusterShort,
-		Long:    deleteClusterLong,
-		Example: deleteClusterExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
-
-			err := rootCommand.ProcessArgs(args)
-			if err != nil {
-				exitWithError(err)
-			}
-
-			// Note _not_ ClusterName(); we only want the --name flag
-			options.ClusterName = rootCommand.clusterName
-
-			err = RunDeleteCluster(ctx, f, out, options)
-			if err != nil {
-				exitWithError(err)
-			}
+		Use:               "cluster [CLUSTER]",
+		Short:             deleteClusterShort,
+		Long:              deleteClusterLong,
+		Example:           deleteClusterExample,
+		Args:              rootCommand.clusterNameArgsNoKubeconfig(&options.ClusterName),
+		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunDeleteCluster(context.TODO(), f, out, options)
 		},
 	}
 
@@ -91,7 +81,9 @@ func NewCmdDeleteCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.Unregister, "unregister", options.Unregister, "Don't delete cloud resources, just unregister the cluster")
 	cmd.Flags().BoolVar(&options.External, "external", options.External, "Delete an external cluster")
 
-	cmd.Flags().StringVar(&options.Region, "region", options.Region, "region")
+	cmd.Flags().StringVar(&options.Region, "region", options.Region, "External cluster's cloud region")
+	cmd.RegisterFlagCompletionFunc("region", completeRegion)
+
 	return cmd
 }
 
@@ -213,4 +205,9 @@ func RunDeleteCluster(ctx context.Context, f *util.Factory, out io.Writer, optio
 
 	fmt.Fprintf(out, "\nDeleted cluster: %q\n", clusterName)
 	return nil
+}
+
+func completeRegion(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO call into cloud provider(s) to get list of valid regions
+	return nil, cobra.ShellCompDirectiveNoFileComp
 }
