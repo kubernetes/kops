@@ -175,7 +175,7 @@ func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 		}
 		req := pki.IssueCertRequest{
 			Type:       "ca",
-			Subject:    pkix.Name{CommonName: "cn=" + commonName},
+			Subject:    pkix.Name{CommonName: commonName},
 			Serial:     pki.BuildPKISerial(time.Now().UnixNano()),
 			PrivateKey: privateKey,
 		}
