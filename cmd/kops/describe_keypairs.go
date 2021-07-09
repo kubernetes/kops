@@ -84,7 +84,7 @@ func (c *DescribeKeypairsCommand) Run(ctx context.Context, args []string) error 
 		return err
 	}
 
-	items, err := listKeypairs(keyStore, args)
+	items, err := listKeypairs(keyStore, args, false)
 	if err != nil {
 		return err
 	}
