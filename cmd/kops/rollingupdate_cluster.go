@@ -190,7 +190,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().DurationVar(&options.PostDrainDelay, "post-drain-delay", options.PostDrainDelay, "Time to wait after draining each node")
 	cmd.Flags().BoolVarP(&options.Interactive, "interactive", "i", options.Interactive, "Prompt to continue after each instance is updated")
 	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "Instance groups to update (defaults to all if not specified)")
-	cmd.RegisterFlagCompletionFunc("instance-group", completeInstanceGroup(&options))
+	cmd.RegisterFlagCompletionFunc("instance-group", completeInstanceGroup(&options.InstanceGroups, &options.InstanceGroupRoles))
 	cmd.Flags().StringSliceVar(&options.InstanceGroupRoles, "instance-group-roles", options.InstanceGroupRoles, "Instance group roles to update ("+strings.Join(allRoles, ",")+")")
 	cmd.RegisterFlagCompletionFunc("instance-group-roles", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return sets.NewString(allRoles...).Delete(options.InstanceGroupRoles...).List(), cobra.ShellCompDirectiveNoFileComp
@@ -429,7 +429,7 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 	return d.RollingUpdate(groups, list)
 }
 
-func completeInstanceGroup(options *RollingUpdateOptions) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func completeInstanceGroup(selectedInstanceGroups *[]string, selectedInstanceGroupRoles *[]string) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		commandutils.ConfigureKlogForCompletion()
 		ctx := context.TODO()
@@ -444,8 +444,14 @@ func completeInstanceGroup(options *RollingUpdateOptions) func(cmd *cobra.Comman
 			return commandutils.CompletionError("listing instance groups", err)
 		}
 
-		alreadySelected := sets.NewString(options.InstanceGroups...)
-		alreadySelectedRoles := sets.NewString(options.InstanceGroupRoles...)
+		alreadySelected := sets.NewString()
+		if selectedInstanceGroups != nil {
+			alreadySelected = alreadySelected.Insert(*selectedInstanceGroups...)
+		}
+		alreadySelectedRoles := sets.NewString()
+		if selectedInstanceGroupRoles != nil {
+			alreadySelectedRoles = alreadySelectedRoles.Insert(*selectedInstanceGroupRoles...)
+		}
 		var igs []string
 		for _, ig := range list.Items {
 			if !alreadySelected.Has(ig.Name) && !alreadySelectedRoles.Has(strings.ToLower(string(ig.Spec.Role))) {
