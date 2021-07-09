@@ -169,10 +169,11 @@ func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 			}
 		}
 
+		serial := pki.BuildPKISerial(time.Now().UnixNano())
 		req := pki.IssueCertRequest{
 			Type:       "ca",
-			Subject:    pkix.Name{CommonName: options.Keyset},
-			Serial:     pki.BuildPKISerial(time.Now().UnixNano()),
+			Subject:    pkix.Name{CommonName: options.Keyset, SerialNumber: serial.String()},
+			Serial:     serial,
 			PrivateKey: privateKey,
 		}
 		cert, _, _, err = pki.IssueCert(&req, nil)
