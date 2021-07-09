@@ -78,6 +78,7 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 		SKUName:            fi.String(ig.Spec.MachineType),
 		ComputerNamePrefix: fi.String(ig.Name),
 		AdminUser:          fi.String(b.Cluster.Spec.CloudConfig.Azure.AdminUser),
+		Zones:              ig.Spec.Zones,
 	}
 
 	var err error
