@@ -245,7 +245,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourcesexamplecom.Pro
   ConfigBase: memfs://clusters.example.com/nthsqsresources.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: Z+oLl6vbYliwJFjqHpNmrCcfL3nMvpz6AujN73aUUBk=
+  NodeupConfigHash: /r7NfxdVVmw9Iw2yugduecq8S/p+vAaPIdD/ksGepoY=
 
   __EOF_KUBE_ENV
 
@@ -416,7 +416,7 @@ Resources.AWSEC2LaunchTemplatenodesnthsqsresourcesexamplecom.Properties.LaunchTe
   ConfigBase: memfs://clusters.example.com/nthsqsresources.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: 6Lb1f1WPUfE4w9BIrzka4vtqACBk409Edwki4Tx/kL8=
+  NodeupConfigHash: whg4SZ6hcP+SyOMtW+XGJ4OHPqH3HMMtIjFo+hGdDWc=
 
   __EOF_KUBE_ENV
 

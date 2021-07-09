@@ -263,7 +263,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
   ConfigBase: memfs://clusters.example.com/docker.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: tslDckRyAI1DyvRNw+vkLN3BFAJQz8yllr/TWcdSv2I=
+  NodeupConfigHash: uCB+we8vSi2ma1kTwMxs06dtg6q/GgBUeXEITs8/r0Q=
 
   __EOF_KUBE_ENV
 
@@ -451,7 +451,7 @@ Resources.AWSEC2LaunchTemplatenodesdockerexamplecom.Properties.LaunchTemplateDat
   ConfigBase: memfs://clusters.example.com/docker.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: gdXmHnV3g5zzMC+hWr3LXS/Nb9lSZc81YCOfWwdJO3c=
+  NodeupConfigHash: dn0AX7sK+3cBMEdv2c5OI6iocGx8FIsx6XJP6tU58uo=
 
   __EOF_KUBE_ENV
 
