@@ -143,6 +143,15 @@ func (_ *Keypair) CheckChanges(a, e, changes *Keypair) error {
 	return nil
 }
 
+func (_ *Keypair) ShouldCreate(a, e, changes *Keypair) (bool, error) {
+	// Don't reissue a CA just because the Subject or AlternateNames changed
+	if a != nil && e.Type == "ca" && changes.Type == "" && !a.LegacyFormat {
+		return false, nil
+	}
+
+	return true, nil
+}
+
 func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	name := fi.StringValue(e.Name)
 	if name == "" {
@@ -156,10 +165,10 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		klog.V(8).Infof("creating brand new certificate")
 	} else if changes != nil {
 		klog.V(8).Infof("creating certificate as changes are not nil")
-		if changes.AlternateNames != nil {
+		if changes.AlternateNames != nil && e.Type != "ca" {
 			createCertificate = true
 			klog.V(8).Infof("creating certificate new AlternateNames")
-		} else if changes.Subject != "" {
+		} else if changes.Subject != "" && e.Type != "ca" {
 			createCertificate = true
 			klog.V(8).Infof("creating certificate new Subject")
 		} else if changes.Type != "" {
