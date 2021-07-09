@@ -162,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatekopeio.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: beCajDYS56iebcaUPw4aT6ioOp7tCZi1i0v62liTYsA=
+NodeupConfigHash: I0/ciP3rATe9KnAtypWto5jqJqtN4L7uvNXn8Ys5Fbg=
 
 __EOF_KUBE_ENV
 
