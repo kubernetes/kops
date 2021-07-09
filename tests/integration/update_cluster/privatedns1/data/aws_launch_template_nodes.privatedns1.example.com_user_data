@@ -162,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatedns1.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: zDkjm2hzuw4Kh2+iUKk3Tt7Xk0D/fchYHnOObwbh73I=
+NodeupConfigHash: sdeBXhhfzAFth/uzW0GTtW3bqhI19IOGjhy++Vlt5aE=
 
 __EOF_KUBE_ENV
 
