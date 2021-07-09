@@ -159,7 +159,7 @@ func RunPromoteKeypair(ctx context.Context, f *util.Factory, out io.Writer, opti
 		return fmt.Errorf("writing keyset: %v", err)
 	}
 
-	fmt.Fprintf(out, "promoted keypair %s", keypairID)
+	fmt.Fprintf(out, "promoted keypair %s\n", keypairID)
 	return nil
 }
 
