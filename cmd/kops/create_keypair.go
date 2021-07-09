@@ -169,13 +169,9 @@ func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 			}
 		}
 
-		commonName := options.Keyset
-		if commonName == "kubernetes-ca" {
-			commonName = "kubernetes"
-		}
 		req := pki.IssueCertRequest{
 			Type:       "ca",
-			Subject:    pkix.Name{CommonName: commonName},
+			Subject:    pkix.Name{CommonName: options.Keyset},
 			Serial:     pki.BuildPKISerial(time.Now().UnixNano()),
 			PrivateKey: privateKey,
 		}
