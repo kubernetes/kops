@@ -18,7 +18,6 @@ package tester
 
 import (
 	"regexp"
-	"strings"
 )
 
 const (
@@ -55,19 +54,6 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|load-balancer|hairpin|affinity\\stimeout|service\\.kubernetes\\.io|CLOSE_WAIT"
 	} else if networking.Kubenet != nil {
 		skipRegex += "|Services.*affinity"
-	}
-
-	if cluster.Spec.CloudProvider == "aws" {
-		if strings.Contains(cluster.Spec.KubernetesVersion, "v1.21.") {
-			// TODO(rifelpet): Remove once k8s tags has been created that include
-			// https://github.com/kubernetes/kubernetes/pull/101443
-			skipRegex += "|Invalid.AWS.KMS.key"
-		}
-		if strings.Contains(cluster.Spec.KubernetesVersion, "v1.22.") {
-			// TODO(rifelpet): Remove once volume limits tests have been fixed
-			// https://github.com/kubernetes/kubernetes/issues/79660#issuecomment-854884112
-			skipRegex += "|Volume.limits.should.verify.that.all.nodes.have.volume.limits"
-		}
 	}
 
 	// Ensure it is valid regex
