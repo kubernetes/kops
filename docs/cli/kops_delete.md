@@ -52,7 +52,7 @@ kops delete {-f FILENAME}... [flags]
 
 * [kops](kops.md)	 - kOps is Kubernetes Operations.
 * [kops delete cluster](kops_delete_cluster.md)	 - Delete a cluster.
-* [kops delete instance](kops_delete_instance.md)	 - Delete an instance
+* [kops delete instance](kops_delete_instance.md)	 - Delete an instance.
 * [kops delete instancegroup](kops_delete_instancegroup.md)	 - Delete instancegroup
 * [kops delete secret](kops_delete_secret.md)	 - Delete a secret
 
