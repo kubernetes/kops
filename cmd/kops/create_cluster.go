@@ -26,6 +26,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/spf13/cobra"
@@ -313,7 +314,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.RegisterFlagCompletionFunc("channel", completeChannel)
 
 	// Network topology
-	cmd.Flags().StringVarP(&options.Topology, "topology", "t", options.Topology, "Network topology for the cluster: public or private.")
+	cmd.Flags().StringVarP(&options.Topology, "topology", "t", options.Topology, "Network topology for the cluster: public or private")
 	cmd.RegisterFlagCompletionFunc("topology", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{api.TopologyPublic, api.TopologyPrivate}, cobra.ShellCompDirectiveNoFileComp
 	})
@@ -325,7 +326,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	})
 
 	// DNS
-	cmd.Flags().StringVar(&options.DNSType, "dns", options.DNSType, "DNS type to use: public or private.")
+	cmd.Flags().StringVar(&options.DNSType, "dns", options.DNSType, "DNS type to use: public or private")
 	cmd.RegisterFlagCompletionFunc("dns", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{"public", "private"}, cobra.ShellCompDirectiveNoFileComp
 	})
@@ -340,55 +341,90 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	})
 
 	// Master and Node Tenancy
-	cmd.Flags().StringVar(&options.MasterTenancy, "master-tenancy", options.MasterTenancy, "The tenancy of the master group on AWS. Can either be default or dedicated.")
-	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
+	cmd.Flags().StringVar(&options.MasterTenancy, "master-tenancy", options.MasterTenancy, "Tenancy of the master group (AWS only): default or dedicated")
+	cmd.RegisterFlagCompletionFunc("master-tenancy", completeTenancy)
+	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "Tenancy of the node group (AWS only): default or dedicated")
+	cmd.RegisterFlagCompletionFunc("node-tenancy", completeTenancy)
 
-	cmd.Flags().StringVar(&options.APILoadBalancerClass, "api-loadbalancer-class", options.APILoadBalancerClass, "Currently only supported in AWS. Sets the API loadbalancer class to either 'classic' or 'network'")
-	cmd.Flags().StringVar(&options.APILoadBalancerType, "api-loadbalancer-type", options.APILoadBalancerType, "Sets the API loadbalancer type to either 'public' or 'internal'")
-	cmd.Flags().StringVar(&options.APISSLCertificate, "api-ssl-certificate", options.APISSLCertificate, "Currently only supported in AWS. Sets the ARN of the SSL Certificate to use for the API server loadbalancer.")
+	cmd.Flags().StringVar(&options.APILoadBalancerClass, "api-loadbalancer-class", options.APILoadBalancerClass, "Class of loadbalancer for the Kubernetes API (AWS only): classic or network")
+	cmd.RegisterFlagCompletionFunc("api-loadbalancer-class", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"classic", "network"}, cobra.ShellCompDirectiveNoFileComp
+	})
+	cmd.Flags().StringVar(&options.APILoadBalancerType, "api-loadbalancer-type", options.APILoadBalancerType, "Type of loadbalancer for the Kubernetes API: public or internal")
+	cmd.RegisterFlagCompletionFunc("api-loadbalancer-type", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"public", "internal"}, cobra.ShellCompDirectiveNoFileComp
+	})
+	cmd.Flags().StringVar(&options.APISSLCertificate, "api-ssl-certificate", options.APISSLCertificate, "ARN of the SSL Certificate to use for the Kubernetes API loadbalancer (AWS only)")
+	cmd.RegisterFlagCompletionFunc("api-ssl-certificate", completeSSLCertificate)
 
 	// Allow custom public master name
-	cmd.Flags().StringVar(&options.MasterPublicName, "master-public-name", options.MasterPublicName, "Sets the public master public name")
+	cmd.Flags().StringVar(&options.MasterPublicName, "master-public-name", options.MasterPublicName, "Domain name of the public Kubernetes API")
+	cmd.RegisterFlagCompletionFunc("master-public-name", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	})
 
 	// DryRun mode that will print YAML or JSON
 	cmd.Flags().BoolVar(&options.DryRun, "dry-run", options.DryRun, "If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.")
-	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "Output format. One of json|yaml. Used with the --dry-run flag.")
+	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "Output format. One of json or yaml. Used with the --dry-run flag.")
+	cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
+	})
 
 	if featureflag.SpecOverrideFlag.Enabled() {
 		cmd.Flags().StringSliceVar(&options.Sets, "set", options.Sets, "Directly set values in the spec")
+		cmd.RegisterFlagCompletionFunc("set", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		})
 		cmd.Flags().StringSliceVar(&options.Unsets, "unset", options.Unsets, "Directly unset values in the spec")
+		cmd.RegisterFlagCompletionFunc("unset", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		})
 	}
 
 	// GCE flags
 	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
+	cmd.RegisterFlagCompletionFunc("project", completeProject)
 	cmd.Flags().StringVar(&options.GCEServiceAccount, "gce-service-account", options.GCEServiceAccount, "Service account with which the GCE VM runs. Warning: if not set, VMs will run as default compute service account.")
+	cmd.RegisterFlagCompletionFunc("gce-service-account", completeGCEServiceAccount)
 
 	if featureflag.Azure.Enabled() {
-		cmd.Flags().StringVar(&options.AzureSubscriptionID, "azure-subscription-id", options.AzureSubscriptionID, "Azure subscription where the cluster is created.")
+		cmd.Flags().StringVar(&options.AzureSubscriptionID, "azure-subscription-id", options.AzureSubscriptionID, "Azure subscription where the cluster is created")
+		cmd.RegisterFlagCompletionFunc("azure-subscription-id", completeAzureSubscriptionID)
 		cmd.Flags().StringVar(&options.AzureTenantID, "azure-tenant-id", options.AzureTenantID, "Azure tenant where the cluster is created.")
+		cmd.RegisterFlagCompletionFunc("azure-tenant-id", completeAzureTenantID)
 		cmd.Flags().StringVar(&options.AzureResourceGroupName, "azure-resource-group-name", options.AzureResourceGroupName, "Azure resource group name where the cluster is created. The resource group will be created if it doesn't already exist. Defaults to the cluster name.")
+		cmd.RegisterFlagCompletionFunc("azure-resource-group-name", completeAzureResourceGroupName)
 		cmd.Flags().StringVar(&options.AzureRouteTableName, "azure-route-table-name", options.AzureRouteTableName, "Azure route table name where the cluster is created.")
+		cmd.RegisterFlagCompletionFunc("azure-route-table-name", completeAzureRouteTableName)
 		cmd.Flags().StringVar(&options.AzureAdminUser, "azure-admin-user", options.AzureAdminUser, "Azure admin user of VM ScaleSet.")
+		cmd.RegisterFlagCompletionFunc("azure-admin-user", completeAzureAdminUsers)
 	}
 
 	if featureflag.Spotinst.Enabled() {
 		// Spotinst flags
-		cmd.Flags().StringVar(&options.SpotinstProduct, "spotinst-product", options.SpotinstProduct, "Set the product description (valid values: Linux/UNIX, Linux/UNIX (Amazon VPC), Windows and Windows (Amazon VPC))")
-		cmd.Flags().StringVar(&options.SpotinstOrientation, "spotinst-orientation", options.SpotinstOrientation, "Set the prediction strategy (valid values: balanced, cost, equal-distribution and availability)")
+		cmd.Flags().StringVar(&options.SpotinstProduct, "spotinst-product", options.SpotinstProduct, "Product description (valid values: Linux/UNIX, Linux/UNIX (Amazon VPC), Windows and Windows (Amazon VPC))")
+		cmd.RegisterFlagCompletionFunc("spotinst-product", completeSpotinstProduct)
+		cmd.Flags().StringVar(&options.SpotinstOrientation, "spotinst-orientation", options.SpotinstOrientation, "Prediction strategy (valid values: balanced, cost, equal-distribution and availability)")
+		cmd.RegisterFlagCompletionFunc("spotinst-orientation", completeSpotinstOrientation)
 	}
 
 	if featureflag.APIServerNodes.Enabled() {
-		cmd.Flags().Int32Var(&options.APIServerCount, "api-server-count", options.APIServerCount, "Set number of API server nodes. Defaults to 0.")
+		cmd.Flags().Int32Var(&options.APIServerCount, "api-server-count", options.APIServerCount, "Number of API server nodes. Defaults to 0.")
 	}
 
 	// Openstack flags
-	cmd.Flags().StringVar(&options.OpenstackExternalNet, "os-ext-net", options.OpenstackExternalNet, "The name of the external network to use with the openstack router")
-	cmd.Flags().StringVar(&options.OpenstackExternalSubnet, "os-ext-subnet", options.OpenstackExternalSubnet, "The name of the external floating subnet to use with the openstack router")
-	cmd.Flags().StringVar(&options.OpenstackLBSubnet, "os-lb-floating-subnet", options.OpenstackLBSubnet, "The name of the external subnet to use with the kubernetes api")
-	cmd.Flags().BoolVar(&options.OpenstackStorageIgnoreAZ, "os-kubelet-ignore-az", options.OpenstackStorageIgnoreAZ, "If true kubernetes may attach volumes across availability zones")
-	cmd.Flags().BoolVar(&options.OpenstackLBOctavia, "os-octavia", options.OpenstackLBOctavia, "If true octavia loadbalancer api will be used")
+	cmd.Flags().StringVar(&options.OpenstackExternalNet, "os-ext-net", options.OpenstackExternalNet, "External network to use with the openstack router")
+	cmd.RegisterFlagCompletionFunc("os-ext-net", completeOpenstackExternalNet)
+	cmd.Flags().StringVar(&options.OpenstackExternalSubnet, "os-ext-subnet", options.OpenstackExternalSubnet, "External floating subnet to use with the openstack router")
+	cmd.RegisterFlagCompletionFunc("os-ext-subnet", completeOpenstackExternalSubnet)
+	cmd.Flags().StringVar(&options.OpenstackLBSubnet, "os-lb-floating-subnet", options.OpenstackLBSubnet, "External subnet to use with the kubernetes api")
+	cmd.RegisterFlagCompletionFunc("os-lb-floating-subnet", completeOpenstackLBSubnet)
+	cmd.Flags().BoolVar(&options.OpenstackStorageIgnoreAZ, "os-kubelet-ignore-az", options.OpenstackStorageIgnoreAZ, "Attach volumes across availability zones")
+	cmd.Flags().BoolVar(&options.OpenstackLBOctavia, "os-octavia", options.OpenstackLBOctavia, "Use octavia loadbalancer API")
 	cmd.Flags().StringVar(&options.OpenstackDNSServers, "os-dns-servers", options.OpenstackDNSServers, "comma separated list of DNS Servers which is used in network")
-	cmd.Flags().StringVar(&options.OpenstackNetworkID, "os-network", options.OpenstackNetworkID, "The ID of the existing OpenStack network to use")
+	cmd.RegisterFlagCompletionFunc("os-dns-servers", completeOpenstackDNSServers)
+	cmd.Flags().StringVar(&options.OpenstackNetworkID, "os-network", options.OpenstackNetworkID, "ID of the existing OpenStack network to use")
+	cmd.RegisterFlagCompletionFunc("os-network", completeOpenstackNetworkID)
 
 	cmd.Flags().SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
 		switch name {
@@ -930,4 +966,83 @@ func completeSecurityGroup(options *CreateClusterOptions) func(cmd *cobra.Comman
 		// TODO call into cloud provider(s) to get list of valid Security groups
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
+}
+
+func completeTenancy(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return ec2.Tenancy_Values(), cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeSSLCertificate(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO call into cloud provider(s) to get list of certificates
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeProject(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO call into cloud provider(s) to get list of projects
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeGCEServiceAccount(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO call into cloud provider to get list of service accounts
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeAzureSubscriptionID(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO call into cloud provider to get list of subscription IDs
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeAzureTenantID(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO call into cloud provider to get list of tenant IDs
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeAzureResourceGroupName(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO call into cloud provider to get list of resource group names
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeAzureRouteTableName(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO call into cloud provider to get list of route table names
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeAzureAdminUsers(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO call into cloud provider to get list of admin users
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeSpotinstProduct(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO call into cloud provider to get list of products
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeSpotinstOrientation(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO call into cloud provider to get list of orientations
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeOpenstackExternalNet(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO call into cloud provider to get list of external networks
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeOpenstackExternalSubnet(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO call into cloud provider to get list of external floating subnets
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeOpenstackLBSubnet(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO call into cloud provider to get list of external subnets
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeOpenstackDNSServers(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO call into cloud provider to get list of DNS servers
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeOpenstackNetworkID(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO call into cloud provider to get list of network IDs
+	return nil, cobra.ShellCompDirectiveNoFileComp
 }
