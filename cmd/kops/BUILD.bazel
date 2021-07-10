@@ -50,6 +50,8 @@ go_library(
         "toolbox_dump.go",
         "toolbox_instance_selector.go",
         "toolbox_template.go",
+        "trust.go",
+        "trust_keypair.go",
         "unset.go",
         "unset_cluster.go",
         "unset_instancegroups.go",
