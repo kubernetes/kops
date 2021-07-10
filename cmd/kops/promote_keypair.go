@@ -100,7 +100,7 @@ func NewCmdPromoteKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 
 // RunPromoteKeypair promotes a keypair.
 func RunPromoteKeypair(ctx context.Context, f *util.Factory, out io.Writer, options *PromoteKeypairOptions) error {
-	if !rotatableKeysets.Has(options.Keyset) {
+	if !rotatableKeysetFilter(options.Keyset, nil) {
 		return fmt.Errorf("promoting keypairs for %q is not supported", options.Keyset)
 	}
 
@@ -159,7 +159,7 @@ func RunPromoteKeypair(ctx context.Context, f *util.Factory, out io.Writer, opti
 		return fmt.Errorf("writing keyset: %v", err)
 	}
 
-	fmt.Fprintf(out, "promoted keypair %s", keypairID)
+	fmt.Fprintf(out, "promoted keypair %s\n", keypairID)
 	return nil
 }
 

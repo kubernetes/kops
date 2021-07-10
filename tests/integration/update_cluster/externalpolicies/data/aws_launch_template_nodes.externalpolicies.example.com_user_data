@@ -162,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/externalpolicies.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: ttdcBvia/2PKvI31kMzLxkSVh84c+hRQ7Iihhk4cztk=
+NodeupConfigHash: FOANwc3tjo6Hye3xzTPpMUG5Bsz8hig2VyNxPkh5PbY=
 
 __EOF_KUBE_ENV
 

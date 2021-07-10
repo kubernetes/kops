@@ -90,6 +90,16 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 		Type:    "ca",
 	}
 	c.AddTask(caTask)
+	for _, keypair := range []string{
+		"etcd-clients-ca",
+	} {
+		task := &fitasks.Keypair{
+			Name:    fi.String(keypair),
+			Subject: "cn=" + keypair,
+			Type:    "ca",
+		}
+		c.AddTask(task)
+	}
 
 	if err := b.Build(c); err != nil {
 		t.Fatalf("error from Build: %v", err)
@@ -184,18 +194,22 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 		Type:    "ca",
 	}
 	c.AddTask(caTask)
-	aggregatorTask := &fitasks.Keypair{
-		Name:    fi.String("apiserver-aggregator-ca"),
-		Subject: "cn=apiserver-aggregator-ca",
-		Type:    "ca",
+	for _, keypair := range []string{
+		"apiserver-aggregator-ca",
+		"etcd-clients-ca",
+		"etcd-manager-ca-events",
+		"etcd-manager-ca-main",
+		"etcd-peers-ca-events",
+		"etcd-peers-ca-main",
+		"service-account",
+	} {
+		task := &fitasks.Keypair{
+			Name:    fi.String(keypair),
+			Subject: "cn=" + keypair,
+			Type:    "ca",
+		}
+		c.AddTask(task)
 	}
-	c.AddTask(aggregatorTask)
-	saTask := &fitasks.Keypair{
-		Name:    fi.String("service-account"),
-		Subject: "cn=service-account",
-		Type:    "ca",
-	}
-	c.AddTask(saTask)
 
 	b.Build(c)
 
