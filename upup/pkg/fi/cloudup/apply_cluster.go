@@ -1323,6 +1323,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 				}
 			}
 		}
+		config.KeypairIDs["service-account"] = caTasks["service-account"].Keyset().Primary.Id
 	} else {
 		if caTasks["etcd-client-cilium"] != nil {
 			config.KeypairIDs["etcd-client-cilium"] = caTasks["etcd-client-cilium"].Keyset().Primary.Id
@@ -1337,6 +1338,9 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 			if err := getTasksCertificate(caTasks, "etcd-clients-ca", config, false); err != nil {
 				return nil, nil, err
 			}
+		}
+		if cluster.Spec.KubeAPIServer != nil && fi.StringValue(cluster.Spec.KubeAPIServer.ServiceAccountIssuer) != "" {
+			config.KeypairIDs["service-account"] = caTasks["service-account"].Keyset().Primary.Id
 		}
 
 		config.APIServerConfig.EncryptionConfigSecretHash = n.encryptionConfigSecretHash
