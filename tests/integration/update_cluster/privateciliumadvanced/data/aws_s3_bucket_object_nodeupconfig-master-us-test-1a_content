@@ -299,6 +299,7 @@ KeypairIDs:
   etcd-peers-ca-events: "6982279353999767935825892873"
   etcd-peers-ca-main: "6982279353998887468930183660"
   kubernetes-ca: "6982820025135291416230495506"
+  service-account: "2"
 KubeletConfig:
   anonymousAuth: false
   cgroupDriver: systemd

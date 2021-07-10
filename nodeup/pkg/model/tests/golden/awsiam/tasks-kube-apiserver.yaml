@@ -120,8 +120,6 @@ contents: |
       - mountPath: /etc/openssl
         name: etcopenssl
         readOnly: true
-      - mountPath: /etc/kubernetes/pki/kube-apiserver
-        name: pki
       - mountPath: /etc/kubernetes/cloud.config
         name: cloudconfig
         readOnly: true
@@ -170,10 +168,6 @@ contents: |
     - hostPath:
         path: /etc/openssl
       name: etcopenssl
-    - hostPath:
-        path: /etc/kubernetes/pki/kube-apiserver
-        type: DirectoryOrCreate
-      name: pki
     - hostPath:
         path: /etc/kubernetes/cloud.config
       name: cloudconfig
