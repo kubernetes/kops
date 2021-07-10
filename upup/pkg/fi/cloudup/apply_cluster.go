@@ -1295,19 +1295,33 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		}
 	}
 
-	if err := getTasksCertificate(caTasks, fi.CertificateIDCA, config); err != nil {
+	if err := getTasksCertificate(caTasks, fi.CertificateIDCA, config, false); err != nil {
 		return nil, nil, err
 	}
 	if caTasks["etcd-clients-ca-cilium"] != nil {
-		if err := getTasksCertificate(caTasks, "etcd-clients-ca-cilium", config); err != nil {
+		if err := getTasksCertificate(caTasks, "etcd-clients-ca-cilium", config, false); err != nil {
 			return nil, nil, err
 		}
 	}
 
 	if isMaster {
 		config.KeypairIDs[fi.CertificateIDCA] = caTasks[fi.CertificateIDCA].Keyset().Primary.Id
-		if caTasks["etcd-clients-ca-cilium"] != nil {
-			config.KeypairIDs["etcd-clients-ca-cilium"] = caTasks["etcd-clients-ca-cilium"].Keyset().Primary.Id
+		if err := getTasksCertificate(caTasks, "etcd-clients-ca", config, true); err != nil {
+			return nil, nil, err
+		}
+		for _, etcdCluster := range cluster.Spec.EtcdClusters {
+			k := etcdCluster.Name
+			if err := getTasksCertificate(caTasks, "etcd-manager-ca-"+k, config, true); err != nil {
+				return nil, nil, err
+			}
+			if err := getTasksCertificate(caTasks, "etcd-peers-ca-"+k, config, true); err != nil {
+				return nil, nil, err
+			}
+			if k != "events" && k != "main" {
+				if err := getTasksCertificate(caTasks, "etcd-clients-ca-"+k, config, true); err != nil {
+					return nil, nil, err
+				}
+			}
 		}
 	} else {
 		if caTasks["etcd-client-cilium"] != nil {
@@ -1316,11 +1330,11 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	}
 
 	if isMaster || role == kops.InstanceGroupRoleAPIServer {
-		if err := getTasksCertificate(caTasks, "apiserver-aggregator-ca", config); err != nil {
+		if err := getTasksCertificate(caTasks, "apiserver-aggregator-ca", config, false); err != nil {
 			return nil, nil, err
 		}
 		if caTasks["etcd-clients-ca"] != nil {
-			if err := getTasksCertificate(caTasks, "etcd-clients-ca", config); err != nil {
+			if err := getTasksCertificate(caTasks, "etcd-clients-ca", config, false); err != nil {
 				return nil, nil, err
 			}
 		}
@@ -1406,13 +1420,16 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	return config, bootConfig, nil
 }
 
-func getTasksCertificate(caTasks map[string]*fitasks.Keypair, name string, config *nodeup.Config) error {
+func getTasksCertificate(caTasks map[string]*fitasks.Keypair, name string, config *nodeup.Config, includeKeypairID bool) error {
 	cas, err := fi.ResourceAsString(caTasks[name].Certificates())
 	if err != nil {
 		// CA task may not have run yet; we'll retry
 		return fmt.Errorf("failed to read %s certificates: %w", name, err)
 	}
 	config.CAs[name] = cas
+	if includeKeypairID {
+		config.KeypairIDs[name] = caTasks[name].Keyset().Primary.Id
+	}
 	return nil
 }
 

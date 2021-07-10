@@ -81,7 +81,7 @@ type keypairItem struct {
 	HasPrivateKey     bool
 }
 
-func listKeypairs(keyStore fi.CAStore, names []string) ([]*keypairItem, error) {
+func listKeypairs(keyStore fi.CAStore, names []string, includeDistrusted bool) ([]*keypairItem, error) {
 	var items []*keypairItem
 
 	l, err := keyStore.ListKeysets()
@@ -104,14 +104,16 @@ func listKeypairs(keyStore fi.CAStore, names []string) ([]*keypairItem, error) {
 		}
 
 		for _, item := range keyset.Items {
-			items = append(items, &keypairItem{
-				Name:              name,
-				Id:                item.Id,
-				DistrustTimestamp: item.DistrustTimestamp,
-				IsPrimary:         item.Id == keyset.Primary.Id,
-				Certificate:       item.Certificate,
-				HasPrivateKey:     item.PrivateKey != nil,
-			})
+			if includeDistrusted || item.DistrustTimestamp == nil {
+				items = append(items, &keypairItem{
+					Name:              name,
+					Id:                item.Id,
+					DistrustTimestamp: item.DistrustTimestamp,
+					IsPrimary:         item.Id == keyset.Primary.Id,
+					Certificate:       item.Certificate,
+					HasPrivateKey:     item.PrivateKey != nil,
+				})
+			}
 		}
 	}
 
@@ -134,7 +136,7 @@ func RunGetKeypairs(ctx context.Context, out io.Writer, options *GetKeypairsOpti
 		return err
 	}
 
-	items, err := listKeypairs(keyStore, args)
+	items, err := listKeypairs(keyStore, args, options.Distrusted)
 	if err != nil {
 		return err
 	}
