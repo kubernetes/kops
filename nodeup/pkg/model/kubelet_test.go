@@ -338,7 +338,7 @@ func simplePrivateKeyset(cert, key string) *kops.Keyset {
 
 func rotatingPrivateKeyset() *fi.Keyset {
 	keyset, _ := fi.NewKeyset(mustParseCertificate(previousCertificate), mustParseKey(previousKey))
-	_ = keyset.AddItem(mustParseCertificate(nextCertificate), mustParseKey(nextKey), false)
+	_, _ = keyset.AddItem(mustParseCertificate(nextCertificate), mustParseKey(nextKey), false)
 
 	return keyset
 }

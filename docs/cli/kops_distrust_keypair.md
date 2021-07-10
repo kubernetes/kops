@@ -13,10 +13,12 @@ Distrust one or more keypairs in a keyset.
 
  Only secondary keypairs may be distrusted.
 
- If no keypair IDs are specified, distrusts all keypairs in the keyset that are older than the primary keypair.
+ If no keypair IDs are specified, all keypairs in the keyset that are older than the primary keypair will be distrusted.
+
+ If the keyset is specified as "all", each rotatable keyset will have all keypairs older than their respective primary keypairs distrusted.
 
 ```
-kops distrust keypair KEYSET [ID]... [flags]
+kops distrust keypair {KEYSET [ID]... | all} [flags]
 ```
 
 ### Examples
@@ -27,6 +29,9 @@ kops distrust keypair KEYSET [ID]... [flags]
   
   # Distrust a particular keypair.
   kops distrust keypair ca 6977545226837259959403993899
+  
+  # Distrust all rotatable keypairs older than their respective primaries.
+  kops distrust keypair all
 ```
 
 ### Options
