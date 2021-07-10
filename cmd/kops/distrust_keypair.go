@@ -172,11 +172,16 @@ func distrustKeypair(out io.Writer, name string, keypairIDs []string, keyStore f
 		if item == nil {
 			return fmt.Errorf("keypair not found")
 		}
+
+		if item.DistrustTimestamp != nil {
+			continue
+		}
+
 		now := time.Now().UTC().Round(0)
 		item.DistrustTimestamp = &now
 
 		if err := keyStore.StoreKeyset(name, keyset); err != nil {
-			return fmt.Errorf("error deleting keypair: %w", err)
+			return fmt.Errorf("error storing keyset: %w", err)
 		}
 
 		fmt.Fprintf(out, "Distrusted %s %s\n", name, id)
