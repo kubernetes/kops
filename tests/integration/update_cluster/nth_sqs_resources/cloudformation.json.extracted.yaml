@@ -245,7 +245,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourcesexamplecom.Pro
   ConfigBase: memfs://clusters.example.com/nthsqsresources.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: /r7NfxdVVmw9Iw2yugduecq8S/p+vAaPIdD/ksGepoY=
+  NodeupConfigHash: A0V/0S0ExDiD+2G9kWE6kyZXWSak4Fni+f8Qqf/dlxo=
 
   __EOF_KUBE_ENV
 

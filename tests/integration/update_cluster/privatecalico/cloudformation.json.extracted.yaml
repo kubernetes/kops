@@ -246,7 +246,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom.Prope
   ConfigBase: memfs://clusters.example.com/privatecalico.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: LxY8AytaEJmDw24EgojhbfJOhPJko6n5TmLSpTx8VGQ=
+  NodeupConfigHash: gKgUwJ+RQNPAVLD3XgIyTWosf8dnDmPYqCoqVzZ3wnk=
 
   __EOF_KUBE_ENV
 

@@ -245,7 +245,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersmixedinstancesexamplecom.Prop
   ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: xfKJbRK+H/1oht3+wOLssBmsDGIleyI5Osm3XXWeOjs=
+  NodeupConfigHash: LnWRtlLC1JrdQ0wg4CmWFu4UArV7M64uU1GXJrHtEW4=
 
   __EOF_KUBE_ENV
 
@@ -498,7 +498,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1bmastersmixedinstancesexamplecom.Prop
   ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
   InstanceGroupName: master-us-test-1b
   InstanceGroupRole: Master
-  NodeupConfigHash: xfKJbRK+H/1oht3+wOLssBmsDGIleyI5Osm3XXWeOjs=
+  NodeupConfigHash: LnWRtlLC1JrdQ0wg4CmWFu4UArV7M64uU1GXJrHtEW4=
 
   __EOF_KUBE_ENV
 
@@ -751,7 +751,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1cmastersmixedinstancesexamplecom.Prop
   ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
   InstanceGroupName: master-us-test-1c
   InstanceGroupRole: Master
-  NodeupConfigHash: xfKJbRK+H/1oht3+wOLssBmsDGIleyI5Osm3XXWeOjs=
+  NodeupConfigHash: LnWRtlLC1JrdQ0wg4CmWFu4UArV7M64uU1GXJrHtEW4=
 
   __EOF_KUBE_ENV
 
