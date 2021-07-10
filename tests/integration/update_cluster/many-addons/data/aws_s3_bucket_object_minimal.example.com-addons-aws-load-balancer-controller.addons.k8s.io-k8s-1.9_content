@@ -849,6 +849,7 @@ spec:
         - --enable-shield=false
         - --ingress-class=alb
         - --default-tags=KubernetesCluster=minimal.example.com
+        - --aws-region=us-test-1
         image: amazon/aws-alb-ingress-controller:v2.2.0
         livenessProbe:
           failureThreshold: 2
