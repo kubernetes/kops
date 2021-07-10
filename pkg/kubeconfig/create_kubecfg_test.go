@@ -135,7 +135,7 @@ func fakeKeyset() *fi.Keyset {
 	key, _ := pki.ParsePEMPrivateKey([]byte(privatekeyData))
 	nextCert, _ := pki.ParsePEMCertificate([]byte(nextCertificate))
 	keyset, _ := fi.NewKeyset(cert, key)
-	_ = keyset.AddItem(nextCert, nil, false)
+	_, _ = keyset.AddItem(nextCert, nil, false)
 	return keyset
 }
 

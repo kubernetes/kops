@@ -9,8 +9,12 @@ Promote a keypair to be the primary, used for signing.
 
 Promote a keypair to be the primary, used for signing.
 
+ If no keypair ID is provided, the most recently added keypair that has a private key will be promoted if it was added after the current primary.
+
+ If the keyset is specified as "all", each rotatable keyset will have its most recently added keypair (with a private key and added after the current primary) promoted.
+
 ```
-kops promote keypair KEYSET [ID] [flags]
+kops promote keypair {KEYSET [ID] | all} [flags]
 ```
 
 ### Examples
@@ -22,6 +26,10 @@ kops promote keypair KEYSET [ID] [flags]
   
   # Promote a specific service-account keypair to be the primary.
   kops promote keypair service-account 5938372002934847 \
+  --name k8s-cluster.example.com --state s3://my-state-store
+  
+  # Promote the newest keypair (having a private key) in each rotatable keyset.
+  kops promote keypair all \
   --name k8s-cluster.example.com --state s3://my-state-store
 ```
 
