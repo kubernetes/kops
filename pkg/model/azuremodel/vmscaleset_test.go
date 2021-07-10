@@ -52,6 +52,12 @@ func TestVMScaleSetModelBuilder_Build(t *testing.T) {
 		Type:    "ca",
 	}
 	c.AddTask(caTask)
+	etcdCaTask := &fitasks.Keypair{
+		Name:    fi.String("etcd-clients-ca"),
+		Subject: "cn=etcd-clients-ca",
+		Type:    "ca",
+	}
+	c.AddTask(etcdCaTask)
 
 	err := b.Build(c)
 	if err != nil {

@@ -42,7 +42,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	defaultCA := &fitasks.Keypair{
 		Name:      fi.String(fi.CertificateIDCA),
 		Lifecycle: b.Lifecycle,
-		Subject:   "cn=kubernetes",
+		Subject:   "cn=kubernetes-ca",
 		Type:      "ca",
 	}
 	c.AddTask(defaultCA)

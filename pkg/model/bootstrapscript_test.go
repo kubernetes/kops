@@ -140,18 +140,22 @@ func TestBootstrapUserData(t *testing.T) {
 			Type:    "ca",
 		}
 		c.AddTask(caTask)
-		aggregatorTask := &fitasks.Keypair{
-			Name:    fi.String("apiserver-aggregator-ca"),
-			Subject: "cn=apiserver-aggregator-ca",
-			Type:    "ca",
+		for _, keypair := range []string{
+			"apiserver-aggregator-ca",
+			"etcd-clients-ca",
+			"etcd-manager-ca-events",
+			"etcd-manager-ca-main",
+			"etcd-peers-ca-events",
+			"etcd-peers-ca-main",
+			"service-account",
+		} {
+			task := &fitasks.Keypair{
+				Name:    fi.String(keypair),
+				Subject: "cn=" + keypair,
+				Type:    "ca",
+			}
+			c.AddTask(task)
 		}
-		c.AddTask(aggregatorTask)
-		saTask := &fitasks.Keypair{
-			Name:    fi.String("service-account"),
-			Subject: "cn=service-account",
-			Type:    "ca",
-		}
-		c.AddTask(saTask)
 
 		bs := &BootstrapScriptBuilder{
 			KopsModelContext: &KopsModelContext{

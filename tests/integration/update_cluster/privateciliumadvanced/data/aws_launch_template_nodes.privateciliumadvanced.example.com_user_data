@@ -163,7 +163,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privateciliumadvanced.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: JIFe8RrF68cyfh0uw7+3N6LY7oKYUI5fKpMSIkWpQuk=
+NodeupConfigHash: JbncEKxsWE1f1zsFdJWpEstGJgYruwlPXx9m7fFhsMc=
 
 __EOF_KUBE_ENV
 

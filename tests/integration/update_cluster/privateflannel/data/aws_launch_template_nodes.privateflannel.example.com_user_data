@@ -162,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privateflannel.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: PGiXjAxiEi8v90YeqyGERxwdVVnXIK4SzO4T9WXrxSE=
+NodeupConfigHash: WUYpV1qOJeK8eE9xp0x1Y2zUqU4SzarZlKBqJyjQgF4=
 
 __EOF_KUBE_ENV
 

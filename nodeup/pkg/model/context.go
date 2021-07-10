@@ -408,6 +408,15 @@ func (c *NodeupModelContext) KubectlPath() string {
 
 // BuildCertificatePairTask creates the tasks to create the certificate and private key files.
 func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContext, name, path, filename string, owner *string, beforeServices []string) error {
+	return c.buildCertificatePairTask(ctx, name, path, filename, owner, beforeServices, true)
+}
+
+// BuildPrivateKeyTask builds a task to create the private key file.
+func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, name, path, filename string, owner *string, beforeServices []string) error {
+	return c.buildCertificatePairTask(ctx, name, path, filename, owner, beforeServices, false)
+}
+
+func (c *NodeupModelContext) buildCertificatePairTask(ctx *fi.ModelBuilderContext, name, path, filename string, owner *string, beforeServices []string, includeCert bool) error {
 	p := filepath.Join(path, filename)
 	if !filepath.IsAbs(p) {
 		p = filepath.Join(c.PathSrvKubernetes(), p)
@@ -432,24 +441,26 @@ func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContex
 		return fmt.Errorf("did not find keypair %s for %s", keypairID, name)
 	}
 
-	certificate := item.Certificate
-	if certificate == nil {
-		return fmt.Errorf("certificate %q not found", name)
-	}
+	if includeCert {
+		certificate := item.Certificate
+		if certificate == nil {
+			return fmt.Errorf("certificate %q not found", name)
+		}
 
-	cert, err := certificate.AsString()
-	if err != nil {
-		return err
-	}
+		cert, err := certificate.AsString()
+		if err != nil {
+			return err
+		}
 
-	ctx.AddTask(&nodetasks.File{
-		Path:           p + ".crt",
-		Contents:       fi.NewStringResource(cert),
-		Type:           nodetasks.FileType_File,
-		Mode:           s("0600"),
-		Owner:          owner,
-		BeforeServices: beforeServices,
-	})
+		ctx.AddTask(&nodetasks.File{
+			Path:           p + ".crt",
+			Contents:       fi.NewStringResource(cert),
+			Type:           nodetasks.FileType_File,
+			Mode:           s("0600"),
+			Owner:          owner,
+			BeforeServices: beforeServices,
+		})
+	}
 
 	privateKey := item.PrivateKey
 	if privateKey == nil {
@@ -503,8 +514,8 @@ func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, n
 	return nil
 }
 
-// BuildPrivateKeyTask builds a task to create a private key file.
-func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, name, filename string, owner *string) error {
+// BuildLegacyPrivateKeyTask builds a task to create a private key file.
+func (c *NodeupModelContext) BuildLegacyPrivateKeyTask(ctx *fi.ModelBuilderContext, name, filename string, owner *string) error {
 	cert, err := c.KeyStore.FindPrivateKey(name)
 	if err != nil {
 		return err
