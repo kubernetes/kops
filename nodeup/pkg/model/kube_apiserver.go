@@ -95,6 +95,17 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		Mode:     s("0600"),
 	})
 
+	// Set the signing key if we're using Service Account Token VolumeProjection
+	if kubeAPIServer.ServiceAccountSigningKeyFile == nil {
+		if fi.StringValue(kubeAPIServer.ServiceAccountIssuer) != "" {
+			s := filepath.Join(pathSrvKAPI, "service-account.key")
+			kubeAPIServer.ServiceAccountSigningKeyFile = &s
+			if err := b.BuildPrivateKeyTask(c, "service-account", pathSrvKAPI, "service-account", nil, nil); err != nil {
+				return err
+			}
+		}
+	}
+
 	if b.UseEtcdManager() {
 		c.AddTask(&nodetasks.File{
 			Path:     filepath.Join(pathSrvKAPI, "etcd-ca.crt"),
@@ -349,13 +360,6 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 
 // buildPod is responsible for generating the kube-apiserver pod and thus manifest file
 func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig) (*v1.Pod, error) {
-	// Set the signing key if we're using Service Account Token VolumeProjection
-	if kubeAPIServer.ServiceAccountSigningKeyFile == nil {
-		if fi.StringValue(kubeAPIServer.ServiceAccountIssuer) != "" {
-			s := filepath.Join(b.PathSrvKubernetes(), "service-account.key")
-			kubeAPIServer.ServiceAccountSigningKeyFile = &s
-		}
-	}
 	// If clientCAFile is not specified, set it to the default value ${PathSrvKubernetes}/ca.crt
 	if kubeAPIServer.ClientCAFile == "" {
 		kubeAPIServer.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
@@ -543,19 +547,6 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 	for _, path := range b.SSLHostPaths() {
 		name := strings.Replace(path, "/", "", -1)
 		addHostPathMapping(pod, container, name, path)
-	}
-
-	if b.UseEtcdManager() {
-		volumeType := v1.HostPathDirectoryOrCreate
-		addHostPathVolume(pod, container,
-			v1.HostPathVolumeSource{
-				Path: "/etc/kubernetes/pki/kube-apiserver",
-				Type: &volumeType,
-			},
-			v1.VolumeMount{
-				Name:     "pki",
-				ReadOnly: false,
-			})
 	}
 
 	// Add cloud config file if needed

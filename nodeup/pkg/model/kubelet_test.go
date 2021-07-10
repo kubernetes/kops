@@ -290,6 +290,7 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 	// Are we mocking out too much of the apply_cluster logic?
 	nodeupModelContext.NodeupConfig.CAs["kubernetes-ca"] = dummyCertificate + nextCertificate
 	nodeupModelContext.NodeupConfig.KeypairIDs["kubernetes-ca"] = "3"
+	nodeupModelContext.NodeupConfig.KeypairIDs["service-account"] = "2"
 
 	if nodeupModelContext.NodeupConfig.APIServerConfig != nil {
 		saPublicKeys, _ := rotatingPrivateKeyset().ToPublicKeys()
