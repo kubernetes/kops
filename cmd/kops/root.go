@@ -85,6 +85,9 @@ var rootCommand = RootCmd{
 		Use:   "kops",
 		Short: rootShort,
 		Long:  rootLong,
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			cmd.SilenceUsage = true
+		},
 	},
 }
 
