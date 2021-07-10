@@ -28,10 +28,13 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/commands/commandutils"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -41,8 +44,10 @@ import (
 )
 
 type CreateInstanceGroupOptions struct {
-	Role    string
-	Subnets []string
+	ClusterName       string
+	InstanceGroupName string
+	Role              string
+	Subnets           []string
 	// DryRun mode output an ig manifest of Output type.
 	DryRun bool
 	// Output type during a DryRun
@@ -52,7 +57,7 @@ type CreateInstanceGroupOptions struct {
 }
 
 var (
-	createIgLong = templates.LongDesc(i18n.T(`
+	createInstanceGroupLong = templates.LongDesc(i18n.T(`
 		Create an InstanceGroup configuration.
 
 	    An InstanceGroup is a group of similar virtual machines.
@@ -60,18 +65,18 @@ var (
 
 		The Role of an InstanceGroup defines whether machines will act as a Kubernetes master or node.`))
 
-	createIgExample = templates.Examples(i18n.T(`
+	createInstanceGroupExample = templates.Examples(i18n.T(`
 
 		# Create an instancegroup for the k8s-cluster.example.com cluster.
-		kops create ig --name=k8s-cluster.example.com node-example \
+		kops create instancegroup --name=k8s-cluster.example.com node-example \
 		  --role node --subnet my-subnet-name,my-other-subnet-name
 
 		# Create a YAML manifest for an instancegroup for the k8s-cluster.example.com cluster.
-		kops create ig --name=k8s-cluster.example.com node-example \
+		kops create instancegroup --name=k8s-cluster.example.com node-example \
 		  --role node --subnet my-subnet-name --dry-run -oyaml
 		`))
 
-	createIgShort = i18n.T(`Create an instancegroup.`)
+	createInstanceGroupShort = i18n.T(`Create an instancegroup.`)
 )
 
 // NewCmdCreateInstanceGroup create a new cobra command object for creating a instancegroup.
@@ -82,48 +87,71 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:     "instancegroup",
+		Use:     "instancegroup INSTANCE_GROUP",
 		Aliases: []string{"instancegroups", "ig"},
-		Short:   createIgShort,
-		Long:    createIgLong,
-		Example: createIgExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
-			err := RunCreateInstanceGroup(ctx, f, cmd, args, os.Stdout, options)
-			if err != nil {
-				exitWithError(err)
+		Short:   createInstanceGroupShort,
+		Long:    createInstanceGroupLong,
+		Example: createInstanceGroupExample,
+		Args: func(cmd *cobra.Command, args []string) error {
+			options.ClusterName = rootCommand.ClusterName(true)
+
+			if options.ClusterName == "" {
+				return fmt.Errorf("--name is required")
 			}
+
+			if len(args) == 0 {
+				return fmt.Errorf("must specify name of instance group to create")
+			}
+
+			options.InstanceGroupName = args[0]
+
+			if len(args) != 1 {
+				return fmt.Errorf("can only create one instance group at a time")
+			}
+
+			return nil
+		},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			commandutils.ConfigureKlogForCompletion()
+			if len(args) == 1 && rootCommand.ClusterName(false) == "" {
+				return []string{"--name"}, cobra.ShellCompDirectiveNoFileComp
+			}
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunCreateInstanceGroup(context.TODO(), f, out, options)
 		},
 	}
 
-	// TODO: Create Enum helper - or is there one in k8s already?
-	var allRoles []string
+	allRoles := make([]string, 0, len(kopsapi.AllInstanceGroupRoles))
 	for _, r := range kopsapi.AllInstanceGroupRoles {
-		allRoles = append(allRoles, string(r))
+		if r == kopsapi.InstanceGroupRoleAPIServer && !featureflag.APIServerNodes.Enabled() {
+			continue
+		}
+		allRoles = append(allRoles, strings.ToLower(string(r)))
 	}
 
 	cmd.Flags().StringVar(&options.Role, "role", options.Role, "Type of instance group to create ("+strings.Join(allRoles, ",")+")")
+	cmd.RegisterFlagCompletionFunc("role", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return allRoles, cobra.ShellCompDirectiveNoFileComp
+	})
 	cmd.Flags().StringSliceVar(&options.Subnets, "subnet", options.Subnets, "Subnet in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.")
+	cmd.RegisterFlagCompletionFunc("subnet", completeClusterSubnet(options))
 	// DryRun mode that will print YAML or JSON
-	cmd.Flags().BoolVar(&options.DryRun, "dry-run", options.DryRun, "If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.")
-	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "Output format. One of json|yaml")
-	cmd.Flags().BoolVar(&options.Edit, "edit", options.Edit, "If true, an editor will be opened to edit default values.")
+	cmd.Flags().BoolVar(&options.DryRun, "dry-run", options.DryRun, "Only print the object that would be created, without created it. This flag can be used to create an instance group YAML or JSON manifest.")
+	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "Output format. One of json or yaml")
+	cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
+	})
+	cmd.Flags().BoolVar(&options.Edit, "edit", options.Edit, "Open an editor to edit default values")
 
 	return cmd
 }
 
-func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *CreateInstanceGroupOptions) error {
-	if len(args) == 0 {
-		return fmt.Errorf("Specify name of instance group to create")
-	}
-	if len(args) != 1 {
-		return fmt.Errorf("Can only create one instance group at a time!")
-	}
-	groupName := args[0]
-
-	cluster, err := rootCommand.Cluster(ctx)
+func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer, options *CreateInstanceGroupOptions) error {
+	cluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting cluster: %q: %v", options.ClusterName, err)
 	}
 
 	clientset, err := rootCommand.Clientset()
@@ -136,7 +164,7 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Com
 		klog.Warningf("%v", err)
 	}
 
-	existing, err := clientset.InstanceGroupsFor(cluster).Get(ctx, groupName, metav1.GetOptions{})
+	existing, err := clientset.InstanceGroupsFor(cluster).Get(ctx, options.InstanceGroupName, metav1.GetOptions{})
 	if err != nil {
 		// We expect a NotFound error when creating the instance group
 		if !errors.IsNotFound(err) {
@@ -145,12 +173,12 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Com
 	}
 
 	if existing != nil {
-		return fmt.Errorf("instance group %q already exists", groupName)
+		return fmt.Errorf("instance group %q already exists", options.InstanceGroupName)
 	}
 
 	// Populate some defaults
 	ig := &kopsapi.InstanceGroup{}
-	ig.ObjectMeta.Name = groupName
+	ig.ObjectMeta.Name = options.InstanceGroupName
 
 	role, ok := kopsapi.ParseInstanceGroupRole(options.Role, true)
 	if !ok {
@@ -247,4 +275,37 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Com
 	}
 
 	return nil
+}
+
+func completeClusterSubnet(options *CreateInstanceGroupOptions) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		commandutils.ConfigureKlogForCompletion()
+		ctx := context.TODO()
+
+		cluster, _, completions, directive := GetClusterForCompletion(ctx, &rootCommand, nil)
+		if cluster == nil {
+			return completions, directive
+		}
+
+		if len(args) > 1 {
+			return commandutils.CompletionError("too many arguments", nil)
+		}
+
+		var requiredType kopsapi.SubnetType
+		var subnets []string
+		alreadySelected := sets.NewString(options.Subnets...)
+		for _, subnet := range cluster.Spec.Subnets {
+			if alreadySelected.Has(subnet.Name) {
+				requiredType = subnet.Type
+			}
+		}
+		for _, subnet := range cluster.Spec.Subnets {
+			if !alreadySelected.Has(subnet.Name) && subnet.Type != kopsapi.SubnetTypeUtility &&
+				(subnet.Type == requiredType || requiredType == "") {
+				subnets = append(subnets, subnet.Name)
+			}
+		}
+
+		return subnets, cobra.ShellCompDirectiveNoFileComp
+	}
 }
