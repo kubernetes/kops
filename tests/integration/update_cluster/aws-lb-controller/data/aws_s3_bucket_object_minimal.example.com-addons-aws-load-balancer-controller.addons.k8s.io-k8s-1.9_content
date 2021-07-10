@@ -849,6 +849,7 @@ spec:
         - --enable-shield=false
         - --ingress-class=alb
         - --default-tags=KubernetesCluster=minimal.example.com
+        - --aws-region=us-test-1
         env:
         - name: AWS_ROLE_ARN
           value: arn:aws-test:iam::123456789012:role/aws-load-balancer-controller.kube-system.sa.minimal.example.com
