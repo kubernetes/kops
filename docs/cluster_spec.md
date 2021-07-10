@@ -508,7 +508,7 @@ To prepare the customized client-ca file on master nodes, the user can either us
 
 In the case that the user would use a customized client-ca file, it is common that the kubernetes CA (`/srv/kubernetes/ca/crt`) need to be appended to the end of the client-ca file. One way to append the ca.crt to the end of the customized client-ca file is to write an [kop-hook](https://kops.sigs.k8s.io/cluster_spec/#hooks) to do the append logic.
 
-Kops will have [CA rotation](https://kops.sigs.k8s.io/rotate-secrets/) feature soon, which would refresh the kubernetes cert files, including the ca.crt. If a customized client-ca file is used, when kops cert rotation happens, the user is responsible to update the ca.crt in the customized client-ca file. The refresh ca.crt logic can also be achieved by writing a kops hook.
+Kops has a [CA rotation](operations/rotate-secrets.md) feature, which refreshes the Kubernetes certificate files, including the ca.crt. If a customized client-ca file is used, when kOps cert rotation happens, the user is responsible for updating the ca.crt in the customized client-ca file. The refresh ca.crt logic can also be achieved by writing a kops hook.
 
 See also [Kubernetes certificates](https://kubernetes.io/docs/concepts/cluster-administration/certificates/)
 

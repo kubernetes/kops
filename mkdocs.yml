@@ -85,6 +85,7 @@ nav:
     - GPU setup: "gpu.md"
     - Label management: "labels.md"
     - Secret management: "secrets.md"
+    - Rotate Secrets: "operations/rotate-secrets.md"
     - Service Account Token Volume: "operations/service_account_token_volumes.md"
     - Moving from a Single Master to Multiple HA Masters: "single-to-multi-master.md"
     - Running kOps in a CI environment: "continuous_integration.md"
@@ -131,7 +132,6 @@ nav:
     - Egress Proxy: "http_proxy.md"
     - Node Authorization: "node_authorization.md"
     - Node Resource Allocation: "node_resource_handling.md"
-    - Rotate Secrets: "rotate-secrets.md"
     - Terraform: "terraform.md"
     - Authentication: "authentication.md"
   - Contributing:
