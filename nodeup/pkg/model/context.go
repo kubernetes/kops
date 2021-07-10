@@ -411,7 +411,7 @@ func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContex
 	return c.buildCertificatePairTask(ctx, name, path, filename, owner, beforeServices, true)
 }
 
-// BuildPrivateKeyTask creates the tasks to create the certificate and private key files.
+// BuildPrivateKeyTask builds a task to create the private key file.
 func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, name, path, filename string, owner *string, beforeServices []string) error {
 	return c.buildCertificatePairTask(ctx, name, path, filename, owner, beforeServices, false)
 }
