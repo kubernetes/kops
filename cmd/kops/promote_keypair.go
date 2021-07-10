@@ -33,6 +33,14 @@ import (
 var (
 	promoteKeypairLong = templates.LongDesc(i18n.T(`
 	Promote a keypair to be the primary, used for signing.
+
+	If no keypair ID is provided, the most recently added keypair
+	that has a private key will be promoted if it was added after
+	the current primary.
+
+	If the keyset is specified as "all", each rotatable keyset will
+	have its most recently added keypair (with a private key and
+	added after the current primary) promoted.	
     `))
 
 	promoteKeypairExample = templates.Examples(i18n.T(`
@@ -42,6 +50,10 @@ var (
 
     # Promote a specific service-account keypair to be the primary.
 	kops promote keypair service-account 5938372002934847 \
+		--name k8s-cluster.example.com --state s3://my-state-store 
+
+	# Promote the newest keypair (having a private key) in each rotatable keyset.
+	kops promote keypair all \
 		--name k8s-cluster.example.com --state s3://my-state-store 
 	`))
 
@@ -59,7 +71,7 @@ func NewCmdPromoteKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &PromoteKeypairOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "keypair KEYSET [ID]",
+		Use:     "keypair {KEYSET [ID] | all}",
 		Short:   promoteKeypairShort,
 		Long:    promoteKeypairLong,
 		Example: promoteKeypairExample,
@@ -80,6 +92,10 @@ func NewCmdPromoteKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 				return fmt.Errorf("can only promote to one keyset at a time")
 			}
 			if len(args) > 1 {
+				if options.Keyset == "all" {
+					return fmt.Errorf("cannot specify ID with \"all\"")
+				}
+
 				options.KeypairID = args[1]
 			}
 
@@ -89,9 +105,7 @@ func NewCmdPromoteKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 			return completePromoteKeyset(options, args, toComplete)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := context.TODO()
-
-			return RunPromoteKeypair(ctx, f, out, options)
+			return RunPromoteKeypair(context.TODO(), f, out, options)
 		},
 	}
 
@@ -119,14 +133,34 @@ func RunPromoteKeypair(ctx context.Context, f *util.Factory, out io.Writer, opti
 		return fmt.Errorf("getting keystore: %v", err)
 	}
 
-	keyset, err := keyStore.FindKeyset(options.Keyset)
+	if options.Keyset != "all" {
+		return promoteKeypair(out, options.Keyset, options.KeypairID, keyStore)
+	}
+
+	keysets, err := keyStore.ListKeysets()
+	if err != nil {
+		return fmt.Errorf("listing keysets: %v", err)
+	}
+
+	for name := range keysets {
+		if rotatableKeysetFilter(name, nil) {
+			if err := promoteKeypair(out, name, "", keyStore); err != nil {
+				return fmt.Errorf("promoting keypair for %s: %v", name, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func promoteKeypair(out io.Writer, name string, keypairID string, keyStore fi.CAStore) error {
+	keyset, err := keyStore.FindKeyset(name)
 	if err != nil {
 		return fmt.Errorf("reading keyset: %v", err)
 	} else if keyset == nil {
 		return fmt.Errorf("keyset not found")
 	}
 
-	keypairID := options.KeypairID
 	if keypairID == "" {
 		highestTrustedId := big.NewInt(0)
 		for id, item := range keyset.Items {
@@ -140,7 +174,8 @@ func RunPromoteKeypair(ctx context.Context, f *util.Factory, out io.Writer, opti
 
 		keypairID = highestTrustedId.String()
 		if keypairID == keyset.Primary.Id {
-			return fmt.Errorf("no keypair newer than current primary %s", keypairID)
+			fmt.Fprintf(out, "No %s keypair newer than current primary %s\n", name, keypairID)
+			return nil
 		}
 	} else if item := keyset.Items[keypairID]; item != nil {
 		if item.DistrustTimestamp != nil {
@@ -154,12 +189,12 @@ func RunPromoteKeypair(ctx context.Context, f *util.Factory, out io.Writer, opti
 	}
 
 	keyset.Primary = keyset.Items[keypairID]
-	err = keyStore.StoreKeyset(options.Keyset, keyset)
+	err = keyStore.StoreKeyset(name, keyset)
 	if err != nil {
 		return fmt.Errorf("writing keyset: %v", err)
 	}
 
-	fmt.Fprintf(out, "promoted keypair %s\n", keypairID)
+	fmt.Fprintf(out, "Promoted %s %s\n", name, keypairID)
 	return nil
 }
 

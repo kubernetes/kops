@@ -27,7 +27,6 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"k8s.io/klog/v2"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/commands/commandutils"
@@ -56,14 +55,21 @@ var (
 
 	One of the certificate/private key pairs in each keyset must be primary.
 	The primary keypair is the one used to issue certificates (or, for the
-	"service-account" keyset, service-account tokens). As a consequence, the
-	first entry in a keyset must be made primary.
+	"service-account" keyset, service-account tokens). As a consequence, a
+	keypair added to an empty keyset must be made primary.
+
+	If the keyset is specified as "all", a newly generated secondary
+	certificate and private key will be added to each rotatable keyset.
 	`))
 
 	createKeypairExample = templates.Examples(i18n.T(`
-	Add a CA certificate and private key to a keyset.
+	# Add a CA certificate and private key to a keyset.
 	kops create keypair ca \
 		--cert ~/ca.pem --key ~/ca-key.pem \
+		--name k8s-cluster.example.com --state s3://my-state-store
+
+	# Add a newly generated certificate and private key to each rotatable keyset.
+	kops create keypair all \
 		--name k8s-cluster.example.com --state s3://my-state-store
 	`))
 
@@ -79,7 +85,7 @@ type CreateKeypairOptions struct {
 }
 
 func rotatableKeysetFilter(name string, _ *fi.Keyset) bool {
-	return name == "service-account" || strings.Contains(name, "-ca")
+	return name == "all" || name == "service-account" || strings.Contains(name, "-ca")
 }
 
 // NewCmdCreateKeypair returns a create keypair command.
@@ -87,7 +93,7 @@ func NewCmdCreateKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateKeypairOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "keypair KEYSET",
+		Use:     "keypair {KEYSET | all}",
 		Short:   createKeypairShort,
 		Long:    createKeypairLong,
 		Example: createKeypairExample,
@@ -108,10 +114,22 @@ func NewCmdCreateKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 				return fmt.Errorf("can only add to one keyset at a time")
 			}
 
+			if options.Keyset == "all" {
+				if options.CertPath != "" {
+					return fmt.Errorf("cannot specify --cert with \"all\"")
+				}
+				if options.PrivateKeyPath != "" {
+					return fmt.Errorf("cannot specify --key with \"all\"")
+				}
+				if options.Primary {
+					return fmt.Errorf("cannot specify --primary with \"all\"")
+				}
+			}
+
 			return nil
 		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return completeCreateKeyset(options, args, toComplete)
+			return completeCreateKeypair(options, args, toComplete)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return RunCreateKeypair(context.TODO(), f, out, options)
@@ -146,6 +164,28 @@ func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 		return fmt.Errorf("error getting keystore: %v", err)
 	}
 
+	if options.Keyset != "all" {
+		return createKeypair(out, options, options.Keyset, keyStore)
+	}
+
+	keysets, err := keyStore.ListKeysets()
+	if err != nil {
+		return fmt.Errorf("listing keysets: %v", err)
+	}
+
+	for name := range keysets {
+		if rotatableKeysetFilter(name, nil) {
+			if err := createKeypair(out, options, name, keyStore); err != nil {
+				return fmt.Errorf("creating keypair for %s: %v", name, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func createKeypair(out io.Writer, options *CreateKeypairOptions, name string, keyStore fi.CAStore) error {
+	var err error
 	var privateKey *pki.PrivateKey
 	if options.PrivateKeyPath != "" {
 		options.PrivateKeyPath = utils.ExpandPath(options.PrivateKeyPath)
@@ -172,7 +212,7 @@ func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 		serial := pki.BuildPKISerial(time.Now().UnixNano())
 		req := pki.IssueCertRequest{
 			Type:       "ca",
-			Subject:    pkix.Name{CommonName: options.Keyset, SerialNumber: serial.String()},
+			Subject:    pkix.Name{CommonName: name, SerialNumber: serial.String()},
 			Serial:     serial,
 			PrivateKey: privateKey,
 		}
@@ -193,33 +233,38 @@ func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 		}
 	}
 
-	keyset, err := keyStore.FindKeyset(options.Keyset)
+	keyset, err := keyStore.FindKeyset(name)
+	var item *fi.KeysetItem
 	if os.IsNotExist(err) || (err == nil && keyset == nil) {
 		if options.Primary {
-			keyset, err = fi.NewKeyset(cert, privateKey)
+			if keyset, err = fi.NewKeyset(cert, privateKey); err != nil {
+				return err
+			}
 		} else {
 			return fmt.Errorf("the first keypair added to a keyset must be primary")
 		}
+		item = keyset.Primary
 	} else if err != nil {
 		return fmt.Errorf("reading existing keyset: %v", err)
 	} else {
-		err = keyset.AddItem(cert, privateKey, options.Primary)
+		item, err = keyset.AddItem(cert, privateKey, options.Primary)
 	}
 	if err != nil {
 		return err
 	}
 
-	err = keyStore.StoreKeyset(options.Keyset, keyset)
+	err = keyStore.StoreKeyset(name, keyset)
 	if err != nil {
 		return fmt.Errorf("error storing user provided keys %q %q: %v", options.CertPath, options.PrivateKeyPath, err)
 	}
 
 	if options.CertPath != "" {
-		klog.Infof("using user provided cert: %v\n", options.CertPath)
+		fmt.Fprintf(out, "using user provided cert: %v\n", options.CertPath)
 	}
 	if options.PrivateKeyPath != "" {
-		klog.Infof("using user provided private key: %v\n", options.PrivateKeyPath)
+		fmt.Fprintf(out, "using user provided private key: %v\n", options.PrivateKeyPath)
 	}
+	fmt.Fprintf(out, "Created %s %s\n", name, item.Id)
 	return nil
 }
 
@@ -244,19 +289,23 @@ func completeKeyset(cluster *kopsapi.Cluster, clientSet simple.Clientset, args [
 			}
 		}
 
+		if filter("all", keyset) {
+			keysets = append(keysets, "all")
+		}
+
 		return nil, nil, keysets, cobra.ShellCompDirectiveNoFileComp
 	}
 
 	keyset, err = keyStore.FindKeyset(args[0])
 	if err != nil {
 		completions, directive := commandutils.CompletionError("finding keyset", err)
-		return nil, nil, completions, directive
+		return nil, keyStore, completions, directive
 	}
 
-	return keyset, keyStore, nil, 0
+	return keyset, keyStore, nil, cobra.ShellCompDirectiveNoFileComp
 }
 
-func completeCreateKeyset(options *CreateKeypairOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func completeCreateKeypair(options *CreateKeypairOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	commandutils.ConfigureKlogForCompletion()
 	ctx := context.TODO()
 

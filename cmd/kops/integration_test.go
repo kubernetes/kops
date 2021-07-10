@@ -829,7 +829,7 @@ func storeKeyset(t *testing.T, keyStore fi.CAStore, name string, testingKeyset *
 			t.Fatalf("error loading certificate %v", err)
 		}
 
-		_ = keyset.AddItem(cert, privateKey, false)
+		_, _ = keyset.AddItem(cert, privateKey, false)
 		err = keyStore.StoreKeyset(name, keyset)
 		if err != nil {
 			t.Fatalf("error storing user provided keys: %v", err)

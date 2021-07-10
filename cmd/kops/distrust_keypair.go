@@ -41,8 +41,11 @@ var (
 
 	Only secondary keypairs may be distrusted.
 
-	If no keypair IDs are specified, distrusts all keypairs in the keyset that
-	are older than the primary keypair.
+	If no keypair IDs are specified, all keypairs in the keyset that
+	are older than the primary keypair will be distrusted.
+
+	If the keyset is specified as "all", each rotatable keyset will have
+	all keypairs older than their respective primary keypairs distrusted.
 	`))
 
 	distrustKeypairExample = templates.Examples(i18n.T(`
@@ -52,6 +55,8 @@ var (
 	# Distrust a particular keypair.
 	kops distrust keypair ca 6977545226837259959403993899
 
+	# Distrust all rotatable keypairs older than their respective primaries.
+	kops distrust keypair all
 	`))
 
 	distrustKeypairShort = i18n.T(`Distrust a keypair.`)
@@ -67,7 +72,7 @@ func NewCmdDistrustKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &DistrustKeypairOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "keypair KEYSET [ID]...",
+		Use:     "keypair {KEYSET [ID]... | all}",
 		Short:   distrustKeypairShort,
 		Long:    distrustKeypairLong,
 		Example: distrustKeypairExample,
@@ -83,6 +88,10 @@ func NewCmdDistrustKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 			options.Keyset = args[0]
 
 			if len(args) > 1 {
+				if options.Keyset == "all" {
+					return fmt.Errorf("cannot specify ID with \"all\"")
+				}
+
 				options.KeypairIDs = args[1:]
 			}
 
@@ -92,9 +101,7 @@ func NewCmdDistrustKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 			return completeDistrustKeyset(options, args, toComplete)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := context.TODO()
-
-			return RunDistrustKeypair(ctx, f, out, options)
+			return RunDistrustKeypair(context.TODO(), f, out, options)
 		},
 	}
 
@@ -117,26 +124,47 @@ func RunDistrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, opt
 		return err
 	}
 
-	keyset, err := keyStore.FindKeyset(options.Keyset)
+	if options.Keyset != "all" {
+		return distrustKeypair(out, options.Keyset, options.KeypairIDs[:], keyStore)
+	}
+
+	keysets, err := keyStore.ListKeysets()
+	if err != nil {
+		return fmt.Errorf("listing keysets: %v", err)
+	}
+
+	for name := range keysets {
+		if rotatableKeysetFilter(name, nil) {
+			if err := distrustKeypair(out, name, nil, keyStore); err != nil {
+				return fmt.Errorf("distrusting keypair for %s: %v", name, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func distrustKeypair(out io.Writer, name string, keypairIDs []string, keyStore fi.CAStore) error {
+	keyset, err := keyStore.FindKeyset(name)
 	if err != nil {
 		return err
 	}
 
-	if len(options.KeypairIDs) == 0 {
+	if len(keypairIDs) == 0 {
 		primarySerial := keyset.Primary.Certificate.Certificate.SerialNumber
 		for id, item := range keyset.Items {
 			if item.DistrustTimestamp == nil && item.Certificate.Certificate.SerialNumber.Cmp(primarySerial) < 0 {
-				options.KeypairIDs = append(options.KeypairIDs, id)
+				keypairIDs = append(keypairIDs, id)
 			}
 		}
 
-		if len(options.KeypairIDs) == 0 {
-			klog.Infof("No %s keypairs older than the primary.", options.Keyset)
+		if len(keypairIDs) == 0 {
+			klog.Infof("No %s keypairs older than the primary.", name)
 			return nil
 		}
 	}
 
-	for _, id := range options.KeypairIDs {
+	for _, id := range keypairIDs {
 		if id == keyset.Primary.Id {
 			return fmt.Errorf("cannot distrust the primary keypair")
 		}
@@ -147,11 +175,11 @@ func RunDistrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, opt
 		now := time.Now().UTC().Round(0)
 		item.DistrustTimestamp = &now
 
-		if err := keyStore.StoreKeyset(options.Keyset, keyset); err != nil {
+		if err := keyStore.StoreKeyset(name, keyset); err != nil {
 			return fmt.Errorf("error deleting keypair: %w", err)
 		}
 
-		klog.Infof("Distrusted %s %s", options.Keyset, id)
+		fmt.Fprintf(out, "Distrusted %s %s\n", name, id)
 	}
 
 	return nil
