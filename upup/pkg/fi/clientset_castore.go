@@ -227,7 +227,7 @@ func (c *ClientsetCAStore) storeKeyset(ctx context.Context, name string, keyset 
 	create := false
 	client := c.clientset.Keysets(c.namespace)
 
-	kopsKeyset, err := keyset.ToAPIObject(name, true)
+	kopsKeyset, err := keyset.ToAPIObject(name)
 	if err != nil {
 		return err
 	}
