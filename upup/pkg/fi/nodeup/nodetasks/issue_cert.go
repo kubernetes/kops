@@ -50,6 +50,7 @@ type IssueCert struct {
 	Name string
 
 	Signer         string   `json:"signer"`
+	KeypairID      string   `json:"keypairID"`
 	Type           string   `json:"type"`
 	Subject        PKIXName `json:"subject"`
 	AlternateNames []string `json:"alternateNames,omitempty"`
@@ -152,8 +153,13 @@ func (e *IssueCert) Run(c *fi.Context) error {
 		Validity:       time.Hour * time.Duration(validHours),
 	}
 
+	keystore, err := newStaticKeystore(e.Signer, e.KeypairID, c.Keystore)
+	if err != nil {
+		return err
+	}
+
 	klog.Infof("signing certificate for %q", e.Name)
-	certificate, privateKey, caCertificate, err := pki.IssueCert(req, c.Keystore)
+	certificate, privateKey, caCertificate, err := pki.IssueCert(req, keystore)
 	if err != nil {
 		return err
 	}
@@ -192,4 +198,43 @@ func (a asBytesResource) Open() (io.Reader, error) {
 		return nil, err
 	}
 	return bytes.NewReader(data), nil
+}
+
+type staticKeystore struct {
+	keyset      string
+	certificate *pki.Certificate
+	key         *pki.PrivateKey
+}
+
+func (s staticKeystore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	if name != s.keyset {
+		return nil, nil, fmt.Errorf("wrong signer: expected %q got %q", s.keyset, name)
+	}
+	return s.certificate, s.key, nil
+}
+
+func newStaticKeystore(signer string, keypairID string, keystore fi.Keystore) (pki.Keystore, error) {
+	if signer == "" {
+		return nil, nil
+	}
+
+	if keypairID == "" {
+		return nil, fmt.Errorf("missing keypairID for %s", signer)
+	}
+
+	keyset, err := keystore.FindKeyset(signer)
+	if err != nil {
+		return nil, fmt.Errorf("reading keyset for %s: %v", signer, err)
+	}
+
+	item := keyset.Items[keypairID]
+	if item == nil {
+		return nil, fmt.Errorf("no keypair with id %s for %s", keypairID, signer)
+	}
+
+	return &staticKeystore{
+		keyset:      signer,
+		certificate: item.Certificate,
+		key:         item.PrivateKey,
+	}, nil
 }
