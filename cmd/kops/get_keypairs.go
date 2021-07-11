@@ -204,7 +204,7 @@ func completeGetKeypairs(options *GetKeypairsOptions, args []string, toComplete 
 		return completions, directive
 	}
 
-	alreadySelected := sets.NewString(args...)
+	alreadySelected := sets.NewString(args...).Insert("all")
 	_, _, completions, directive = completeKeyset(cluster, clientSet, nil, func(name string, keyset *fi.Keyset) bool {
 		return !alreadySelected.Has(name)
 	})
