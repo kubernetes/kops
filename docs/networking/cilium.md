@@ -44,6 +44,7 @@ kops create cluster \
 
 For existing clusters, add the following to `spec.etcdClusters`:
 Make sure `instanceGroup` match the other etcd clusters.
+You should also enable auto compaction.
 
 ```yaml
   - etcdMembers:
@@ -53,6 +54,12 @@ Make sure `instanceGroup` match the other etcd clusters.
       name: b
     - instanceGroup: master-az-1c
       name: c
+    manager:
+      env:
+      - name: ETCD_AUTO_COMPACTION_MODE
+        value: revision
+      - name: ETCD_AUTO_COMPACTION_RETENTION
+        value: "2500"
     name: cilium
 ```
 
