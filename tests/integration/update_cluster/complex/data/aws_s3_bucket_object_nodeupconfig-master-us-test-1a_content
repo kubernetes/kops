@@ -229,6 +229,7 @@ Hooks:
 - null
 - null
 KeypairIDs:
+  apiserver-aggregator-ca: "6980187172486667078076483355"
   etcd-clients-ca: "6979622252718071085282986282"
   etcd-manager-ca-events: "6982279354000777253151890266"
   etcd-manager-ca-main: "6982279354000936168671127624"

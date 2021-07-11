@@ -163,7 +163,7 @@ Resources.AWSEC2LaunchTemplateapiserverapiserversminimalexamplecom.Properties.La
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: apiserver
   InstanceGroupRole: APIServer
-  NodeupConfigHash: uyxw2QanaxrAyTUMA6EDpzkUiyyKtGgpHZrmzW9MF5Y=
+  NodeupConfigHash: 1L6pI3cv8FEHcP1HKDNkdp9s+FzdakJ9Z49uvbwX+Cg=
 
   __EOF_KUBE_ENV
 
@@ -416,7 +416,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: KBozjKWIT5RV02kzo6rSvQfYQ73jyPDSApqfyg9E1OE=
+  NodeupConfigHash: LSL2sF5rz7LA14+RQiG6AeVjGFcKIwviDDXa4lsU23M=
 
   __EOF_KUBE_ENV
 

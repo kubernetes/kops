@@ -79,6 +79,7 @@ contents:
     CA:
       task:
         Name: kube-proxy
+        keypairID: "3"
         signer: kubernetes-ca
         subject:
           CommonName: system:kube-proxy
@@ -86,6 +87,7 @@ contents:
     Cert:
       task:
         Name: kube-proxy
+        keypairID: "3"
         signer: kubernetes-ca
         subject:
           CommonName: system:kube-proxy
@@ -93,6 +95,7 @@ contents:
     Key:
       task:
         Name: kube-proxy
+        keypairID: "3"
         signer: kubernetes-ca
         subject:
           CommonName: system:kube-proxy
@@ -110,6 +113,7 @@ path: /var/log/kube-proxy.log
 type: file
 ---
 Name: kube-proxy
+keypairID: "3"
 signer: kubernetes-ca
 subject:
   CommonName: system:kube-proxy
@@ -118,6 +122,7 @@ type: client
 CA:
   task:
     Name: kube-proxy
+    keypairID: "3"
     signer: kubernetes-ca
     subject:
       CommonName: system:kube-proxy
@@ -125,6 +130,7 @@ CA:
 Cert:
   task:
     Name: kube-proxy
+    keypairID: "3"
     signer: kubernetes-ca
     subject:
       CommonName: system:kube-proxy
@@ -132,6 +138,7 @@ Cert:
 Key:
   task:
     Name: kube-proxy
+    keypairID: "3"
     signer: kubernetes-ca
     subject:
       CommonName: system:kube-proxy
