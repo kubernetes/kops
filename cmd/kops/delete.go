@@ -30,7 +30,6 @@ import (
 	"k8s.io/kops/pkg/sshcredentials"
 	"k8s.io/kops/util/pkg/text"
 	"k8s.io/kops/util/pkg/vfs"
-	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
@@ -41,59 +40,40 @@ type DeleteOptions struct {
 }
 
 var (
-	deleteLong = templates.LongDesc(i18n.T(`
-	Delete Kubernetes clusters, instancegroups, instances, and secrets, or a combination of the before mentioned.
-	`))
-
 	deleteExample = templates.Examples(i18n.T(`
-		# Delete an instance
-		kops delete instance i-0a5ed581b862d3425
-
 		# Delete a cluster using a manifest file
 		kops delete -f my-cluster.yaml
 
 		# Delete a cluster using a pasted manifest file from stdin.
 		pbpaste | kops delete -f -
-
-		# Delete a cluster in AWS.
-		kops delete cluster --name=k8s.example.com --state=s3://my-state-store
-
-		# Delete an instancegroup for the k8s-cluster.example.com cluster.
-		# The --yes option runs the command immediately.
-		kops delete ig --name=k8s-cluster.example.com node-example --yes
 	`))
 
-	deleteShort = i18n.T("Delete clusters, instancegroups, instances, or secrets.")
+	deleteShort = i18n.T("Delete clusters, instancegroups, instances, and secrets.")
 )
 
 func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &DeleteOptions{}
 
 	cmd := &cobra.Command{
-		Use:        "delete -f FILENAME [--yes]",
+		Use:        "delete {-f FILENAME}...",
 		Short:      deleteShort,
-		Long:       deleteLong,
 		Example:    deleteExample,
 		SuggestFor: []string{"rm"},
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
-			if len(options.Filenames) == 0 {
-				cmd.Help()
-				return
-			}
-			cmdutil.CheckErr(RunDelete(ctx, f, out, options))
+		Args:       cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunDelete(context.TODO(), f, out, options)
 		},
 	}
 
 	cmd.Flags().StringSliceVarP(&options.Filenames, "filename", "f", options.Filenames, "Filename to use to delete the resource")
-	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Specify --yes to delete the resource")
+	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Specify --yes to immediately delete the resource")
 	cmd.MarkFlagRequired("filename")
 
 	// create subcommands
 	cmd.AddCommand(NewCmdDeleteCluster(f, out))
+	cmd.AddCommand(NewCmdDeleteInstance(f, out))
 	cmd.AddCommand(NewCmdDeleteInstanceGroup(f, out))
 	cmd.AddCommand(NewCmdDeleteSecret(f, out))
-	cmd.AddCommand(NewCmdDeleteInstance(f, out))
 
 	return cmd
 }
@@ -108,12 +88,12 @@ func RunDelete(ctx context.Context, factory *util.Factory, out io.Writer, d *Del
 		if f == "-" {
 			contents, err = ConsumeStdin()
 			if err != nil {
-				return fmt.Errorf("error reading from stdin: %v", err)
+				return fmt.Errorf("reading from stdin: %v", err)
 			}
 		} else {
 			contents, err = vfs.Context.ReadFile(f)
 			if err != nil {
-				return fmt.Errorf("error reading file %q: %v", f, err)
+				return fmt.Errorf("reading file %q: %v", f, err)
 			}
 		}
 
@@ -121,7 +101,7 @@ func RunDelete(ctx context.Context, factory *util.Factory, out io.Writer, d *Del
 		for _, section := range sections {
 			o, gvk, err := kopscodecs.Decode(section, nil)
 			if err != nil {
-				return fmt.Errorf("error parsing file %q: %v", f, err)
+				return fmt.Errorf("parsing file %q: %v", f, err)
 			}
 
 			switch v := o.(type) {
@@ -132,7 +112,7 @@ func RunDelete(ctx context.Context, factory *util.Factory, out io.Writer, d *Del
 				}
 				err = RunDeleteCluster(ctx, factory, out, options)
 				if err != nil {
-					exitWithError(err)
+					return err
 				}
 				deletedClusters.Insert(v.ObjectMeta.Name)
 			case *kopsapi.InstanceGroup:
@@ -150,7 +130,7 @@ func RunDelete(ctx context.Context, factory *util.Factory, out io.Writer, d *Del
 
 				err := RunDeleteInstanceGroup(ctx, factory, out, options)
 				if err != nil {
-					exitWithError(err)
+					return err
 				}
 			case *kopsapi.SSHCredential:
 				fingerprint, err := sshcredentials.Fingerprint(v.Spec.PublicKey)
@@ -167,11 +147,11 @@ func RunDelete(ctx context.Context, factory *util.Factory, out io.Writer, d *Del
 
 				err = RunDeleteSecret(ctx, factory, out, options)
 				if err != nil {
-					exitWithError(err)
+					return err
 				}
 			default:
 				klog.V(2).Infof("Type of object was %T", v)
-				return fmt.Errorf("Unhandled kind %q in %s", gvk, f)
+				return fmt.Errorf("unhandled kind %q in %s", gvk, f)
 			}
 		}
 	}
