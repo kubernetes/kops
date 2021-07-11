@@ -150,7 +150,7 @@ Kubernetes API.
 
 To roll back this change, distribute the previous kubeconfig `certificate-authority-data`.
 
-## Rotating encryptionconfig
+## Rotating the API Server encryptionconfig
 
 See [the Kubernetes documentation](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/#rotating-a-decryption-key)
 for information on how to gracefully rotate keys in the encryptionconfig.
@@ -158,9 +158,27 @@ for information on how to gracefully rotate keys in the encryptionconfig.
 Use `kops create secret encryptionconfig --force` to update the encryptionconfig secret.
 Following that, use `kops update cluster --yes` and `kops rolling-update cluster --yes`.
 
-## Rotating other secrets
+## Rotating the Cilium IPSec keys
 
-[TODO: cilium_encryptionconfig, dockerconfig, weave_encryptionconfig]
+See the Cilium documentation for information on how to gracefully rotate the Cilium IPSec keys.
+
+Use `kops create secret ciliumpassword --force` to update the cilium-ipsec-keys secret.
+Following that, use `kops update cluster --yes` and `kops rolling-update cluster --yes`.
+
+## Rotating the Docker secret
+
+[TODO]
+
+Use `kops create secret dockerconfig --force` to update the Docker secret.
+Following that, use `kops update cluster --yes` and `kops rolling-update cluster --yes`.
+
+## Rotating the Weave password
+
+It is not possible to rotate the Weave password without a disruptive partition of the Weave network.
+As of the writing of this document, this is a limitation of Weave itself.
+
+Use `kops create secret weavepassword --force` to update the Docker secret.
+Following that, use `kops update cluster --yes` and `kops rolling-update cluster --cloudonly --yes`.
 
 ## Legacy procedure
 
