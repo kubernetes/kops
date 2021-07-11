@@ -378,7 +378,7 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 
 	keystore := &fakeKeystore{}
 	keystore.T = t
-	saKeyset, _ := rotatingPrivateKeyset().ToAPIObject("service-account", true)
+	saKeyset, _ := rotatingPrivateKeyset().ToAPIObject("service-account")
 	keystore.privateKeysets = map[string]*kops.Keyset{
 		"kubernetes-ca":           simplePrivateKeyset(dummyCertificate, dummyKey),
 		"apiserver-aggregator-ca": simplePrivateKeyset(dummyCertificate, dummyKey),
