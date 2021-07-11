@@ -7,6 +7,7 @@ contents:
     Name: kops-controller
     alternateNames:
     - kops-controller.internal.minimal.example.com
+    keypairID: "3"
     signer: kubernetes-ca
     subject:
       CommonName: kops-controller
@@ -21,6 +22,7 @@ contents:
     Name: kops-controller
     alternateNames:
     - kops-controller.internal.minimal.example.com
+    keypairID: "3"
     signer: kubernetes-ca
     subject:
       CommonName: kops-controller
@@ -90,6 +92,7 @@ type: file
 Name: kops-controller
 alternateNames:
 - kops-controller.internal.minimal.example.com
+keypairID: "3"
 signer: kubernetes-ca
 subject:
   CommonName: kops-controller

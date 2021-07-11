@@ -92,12 +92,6 @@ type HasVFSPath interface {
 type CAStore interface {
 	Keystore
 
-	// FindPrivateKey returns the named private key, or (nil,nil) if not found
-	FindPrivateKey(name string) (*pki.PrivateKey, error)
-
-	// FindCert returns the specified certificate, if it exists, or nil if not found
-	FindCert(name string) (*pki.Certificate, error)
-
 	// ListKeysets will return all the KeySets.
 	ListKeysets() (map[string]*Keyset, error)
 }

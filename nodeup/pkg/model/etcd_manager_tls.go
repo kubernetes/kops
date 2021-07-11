@@ -17,11 +17,7 @@ limitations under the License.
 package model
 
 import (
-	"fmt"
-	"path/filepath"
-
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
 // EtcdManagerTLSBuilder configures TLS support for etcd-manager
@@ -54,22 +50,7 @@ func (b *EtcdManagerTLSBuilder) Build(ctx *fi.ModelBuilderContext) error {
 		}
 
 		for fileName, keystoreName := range keys {
-			cert, err := b.KeyStore.FindCert(keystoreName)
-			if err != nil {
-				return err
-			}
-			if cert == nil {
-				return fmt.Errorf("keypair %q not found", keystoreName)
-			}
-
-			ctx.AddTask(&nodetasks.File{
-				Path:     filepath.Join(d, fileName+".crt"),
-				Contents: fi.NewStringResource(b.NodeupConfig.CAs[keystoreName]),
-				Type:     nodetasks.FileType_File,
-				Mode:     fi.String("0600"),
-			})
-
-			if err := b.BuildPrivateKeyTask(ctx, keystoreName, d, fileName, nil, nil); err != nil {
+			if err := b.buildCertificatePairTask(ctx, keystoreName, d, fileName, nil, nil, true); err != nil {
 				return err
 			}
 		}

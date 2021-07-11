@@ -26,14 +26,10 @@ import (
 )
 
 //configserverKeyStore is a KeyStore backed by the config server.
-type configserverKeyStore struct {
-	caCertificates string
-}
+type configserverKeyStore struct{}
 
-func NewKeyStore(caCertificates string) fi.CAStore {
-	return &configserverKeyStore{
-		caCertificates: caCertificates,
-	}
+func NewKeyStore() fi.CAStore {
+	return &configserverKeyStore{}
 }
 
 // FindPrimaryKeypair implements pki.Keystore
@@ -59,25 +55,6 @@ func (s *configserverKeyStore) StoreKeyset(name string, keyset *fi.Keyset) error
 // MirrorTo implements fi.Keystore
 func (s *configserverKeyStore) MirrorTo(basedir vfs.Path) error {
 	return fmt.Errorf("MirrorTo not supported by configserverKeyStore")
-}
-
-// FindPrivateKey implements fi.CAStore
-func (s *configserverKeyStore) FindPrivateKey(name string) (*pki.PrivateKey, error) {
-	return nil, fmt.Errorf("FindPrivateKey not supported by configserverKeyStore")
-}
-
-// FindCert implements fi.CAStore
-func (s *configserverKeyStore) FindCert(name string) (*pki.Certificate, error) {
-	if name == fi.CertificateIDCA {
-		// Special case for the CA certificate
-		c, err := pki.ParsePEMCertificate([]byte(s.caCertificates))
-		if err != nil {
-			return nil, fmt.Errorf("error parsing certificate %q: %w", name, err)
-		}
-		return c, nil
-	}
-
-	return nil, fmt.Errorf("FindCert(%q) not supported by configserverKeyStore", name)
 }
 
 // ListKeysets implements fi.CAStore

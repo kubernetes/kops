@@ -1284,6 +1284,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 
 	useGossip := dns.IsGossipHostname(cluster.Spec.MasterInternalName)
 	isMaster := role == kops.InstanceGroupRoleMaster
+	hasAPIServer := isMaster || role == kops.InstanceGroupRoleAPIServer
 
 	config, bootConfig := nodeup.NewConfig(cluster, ig)
 
@@ -1299,7 +1300,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		return nil, nil, err
 	}
 	if caTasks["etcd-clients-ca-cilium"] != nil {
-		if err := getTasksCertificate(caTasks, "etcd-clients-ca-cilium", config, false); err != nil {
+		if err := getTasksCertificate(caTasks, "etcd-clients-ca-cilium", config, hasAPIServer); err != nil {
 			return nil, nil, err
 		}
 	}
@@ -1330,12 +1331,12 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		}
 	}
 
-	if isMaster || role == kops.InstanceGroupRoleAPIServer {
-		if err := getTasksCertificate(caTasks, "apiserver-aggregator-ca", config, false); err != nil {
+	if hasAPIServer {
+		if err := getTasksCertificate(caTasks, "apiserver-aggregator-ca", config, true); err != nil {
 			return nil, nil, err
 		}
 		if caTasks["etcd-clients-ca"] != nil {
-			if err := getTasksCertificate(caTasks, "etcd-clients-ca", config, false); err != nil {
+			if err := getTasksCertificate(caTasks, "etcd-clients-ca", config, true); err != nil {
 				return nil, nil, err
 			}
 		}
