@@ -180,16 +180,16 @@ spec:
 			t.Fatalf("unexpected private/ca/keyset.yaml: %q", string(privateKeysetYaml))
 		}
 
-		key, err := s.FindPrivateKey("kubernetes-ca")
+		keyset, err := s.FindKeyset("kubernetes-ca")
 		if err != nil {
 			t.Fatalf("error reading certificate pool: %v", err)
 		}
 
-		if key == nil {
-			t.Fatalf("private key was nil")
+		if keyset == nil {
+			t.Fatalf("private keyset was nil")
 		}
 
-		roundTrip, err := key.AsString()
+		roundTrip, err := keyset.Primary.PrivateKey.AsString()
 		if err != nil {
 			t.Fatalf("error serializing private key: %v", err)
 		}
@@ -339,16 +339,16 @@ spec:
 			t.Fatalf("unexpected private/ca/keyset.yaml: %q", string(privateKeysetYaml))
 		}
 
-		key, err := s.FindPrivateKey("kubernetes-ca")
+		keyset, err := s.FindKeyset("kubernetes-ca")
 		if err != nil {
 			t.Fatalf("error reading certificate pool: %v", err)
 		}
 
-		if key == nil {
-			t.Fatalf("private key was nil")
+		if keyset == nil {
+			t.Fatalf("private keyset was nil")
 		}
 
-		roundTrip, err := key.AsString()
+		roundTrip, err := keyset.Primary.PrivateKey.AsString()
 		if err != nil {
 			t.Fatalf("error serializing private key: %v", err)
 		}

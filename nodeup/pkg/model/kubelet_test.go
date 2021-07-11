@@ -376,7 +376,7 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 		t.Fatal(err)
 	}
 
-	keystore := &fakeCAStore{}
+	keystore := &fakeKeystore{}
 	keystore.T = t
 	saKeyset, _ := rotatingPrivateKeyset().ToAPIObject("service-account", true)
 	keystore.privateKeysets = map[string]*kops.Keyset{
@@ -386,13 +386,6 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 		"kube-proxy":              simplePrivateKeyset(dummyCertificate, dummyKey),
 		"kube-scheduler":          simplePrivateKeyset(dummyCertificate, dummyKey),
 		"service-account":         saKeyset,
-	}
-	keystore.certs = map[string]*pki.Certificate{
-		"kubernetes-ca":           mustParseCertificate(dummyCertificate),
-		"apiserver-aggregator-ca": mustParseCertificate(dummyCertificate),
-		"kube-controller-manager": mustParseCertificate(dummyCertificate),
-		"kube-proxy":              mustParseCertificate(dummyCertificate),
-		"kube-scheduler":          mustParseCertificate(dummyCertificate),
 	}
 
 	nodeupModelContext, err := BuildNodeupModelContext(model)

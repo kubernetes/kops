@@ -27,16 +27,15 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-// fakeCAStore mocks out some of fi.CAStore, for our tests.
-type fakeCAStore struct {
+// fakeKeystore mocks out some of fi.Keystore, for our tests.
+type fakeKeystore struct {
 	T              *testing.T
 	privateKeysets map[string]*kops.Keyset
-	certs          map[string]*pki.Certificate
 }
 
-var _ fi.CAStore = &fakeCAStore{}
+var _ fi.Keystore = &fakeKeystore{}
 
-func (k fakeCAStore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
+func (k fakeKeystore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
 	keyset, err := k.FindKeyset(name)
 	if err != nil {
 		return nil, nil, err
@@ -45,7 +44,7 @@ func (k fakeCAStore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.Pri
 	return keyset.Primary.Certificate, keyset.Primary.PrivateKey, nil
 }
 
-func (k fakeCAStore) FindKeyset(name string) (*fi.Keyset, error) {
+func (k fakeKeystore) FindKeyset(name string) (*fi.Keyset, error) {
 	kopsKeyset := k.privateKeysets[name]
 	if kopsKeyset == nil {
 		return nil, nil
@@ -83,32 +82,14 @@ func (k fakeCAStore) FindKeyset(name string) (*fi.Keyset, error) {
 	return keyset, nil
 }
 
-func (k fakeCAStore) CreateKeypair(signer string, name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
-	panic("fakeCAStore does not implement CreateKeypair")
+func (k fakeKeystore) CreateKeypair(signer string, name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
+	panic("fakeKeystore does not implement CreateKeypair")
 }
 
-func (k fakeCAStore) StoreKeyset(name string, keyset *fi.Keyset) error {
-	panic("fakeCAStore does not implement StoreKeyset")
+func (k fakeKeystore) StoreKeyset(name string, keyset *fi.Keyset) error {
+	panic("fakeKeystore does not implement StoreKeyset")
 }
 
-func (k fakeCAStore) MirrorTo(basedir vfs.Path) error {
-	panic("fakeCAStore does not implement MirrorTo")
-}
-
-func (k fakeCAStore) FindPrivateKey(name string) (*pki.PrivateKey, error) {
-	primaryId := k.privateKeysets[name].Spec.PrimaryId
-	for _, item := range k.privateKeysets[name].Spec.Keys {
-		if item.Id == primaryId {
-			return pki.ParsePEMPrivateKey(item.PrivateMaterial)
-		}
-	}
-	return nil, nil
-}
-
-func (k fakeCAStore) FindCert(name string) (*pki.Certificate, error) {
-	return k.certs[name], nil
-}
-
-func (k fakeCAStore) ListKeysets() (map[string]*fi.Keyset, error) {
-	panic("fakeCAStore does not implement ListKeysets")
+func (k fakeKeystore) MirrorTo(basedir vfs.Path) error {
+	panic("fakeKeystore does not implement MirrorTo")
 }

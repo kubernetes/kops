@@ -119,6 +119,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		issueCert := &nodetasks.IssueCert{
 			Name:           "master",
 			Signer:         fi.CertificateIDCA,
+			KeypairID:      b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
 			Type:           "server",
 			Subject:        nodetasks.PKIXName{CommonName: "kubernetes-master"},
 			AlternateNames: alternateNames,
