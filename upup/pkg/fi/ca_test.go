@@ -330,7 +330,7 @@ func TestAddItem(t *testing.T) {
 				keyset.Items[k] = v
 			}
 
-			err := keyset.AddItem(tc.cert, tc.privateKey, primary)
+			_, err := keyset.AddItem(tc.cert, tc.privateKey, primary)
 			if tcExpected.error != "" {
 				assert.EqualError(t, err, tcExpected.error)
 				return
