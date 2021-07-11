@@ -258,26 +258,13 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 		kubeAPIServer.AuthenticationTokenWebhookConfigFile = fi.String(PathAuthnConfig)
 
 		{
-			caCertificate, _, err := b.NodeupModelContext.KeyStore.FindPrimaryKeypair(fi.CertificateIDCA)
-			if err != nil {
-				return fmt.Errorf("error fetching AWS IAM Authentication CA certificate from keystore: %v", err)
-			}
-			if caCertificate == nil {
-				return fmt.Errorf("AWS IAM  Authentication CA certificate %q not found", fi.CertificateIDCA)
-			}
-
 			cluster := kubeconfig.KubectlCluster{
-				Server: "https://127.0.0.1:21362/authenticate",
+				Server:                   "https://127.0.0.1:21362/authenticate",
+				CertificateAuthorityData: []byte(b.NodeupConfig.CAs[fi.CertificateIDCA]),
 			}
 			context := kubeconfig.KubectlContext{
 				Cluster: "aws-iam-authenticator",
 				User:    "kube-apiserver",
-			}
-
-			// Since we're talking to localhost, we don't need the entire certificate bundle.
-			cluster.CertificateAuthorityData, err = caCertificate.AsBytes()
-			if err != nil {
-				return fmt.Errorf("error encoding AWS IAM Authentication CA certificate: %v", err)
 			}
 
 			config := kubeconfig.KubectlConfig{}
