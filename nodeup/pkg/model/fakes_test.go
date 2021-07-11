@@ -31,7 +31,6 @@ import (
 type fakeCAStore struct {
 	T              *testing.T
 	privateKeysets map[string]*kops.Keyset
-	certs          map[string]*pki.Certificate
 }
 
 var _ fi.CAStore = &fakeCAStore{}
@@ -93,20 +92,6 @@ func (k fakeCAStore) StoreKeyset(name string, keyset *fi.Keyset) error {
 
 func (k fakeCAStore) MirrorTo(basedir vfs.Path) error {
 	panic("fakeCAStore does not implement MirrorTo")
-}
-
-func (k fakeCAStore) FindPrivateKey(name string) (*pki.PrivateKey, error) {
-	primaryId := k.privateKeysets[name].Spec.PrimaryId
-	for _, item := range k.privateKeysets[name].Spec.Keys {
-		if item.Id == primaryId {
-			return pki.ParsePEMPrivateKey(item.PrivateMaterial)
-		}
-	}
-	return nil, nil
-}
-
-func (k fakeCAStore) FindCert(name string) (*pki.Certificate, error) {
-	return k.certs[name], nil
 }
 
 func (k fakeCAStore) ListKeysets() (map[string]*fi.Keyset, error) {
