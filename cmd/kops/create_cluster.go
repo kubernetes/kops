@@ -866,9 +866,13 @@ func completeKubernetesVersion(cmd *cobra.Command, args []string, toComplete str
 	}
 
 	// Remove pre-release versions that have a subsequent stable version.
+	// Also remove the non-useful -rc.0 versions.
 	for _, version := range versions.UnsortedList() {
 		split := strings.Split(version, "-")
 		if len(split) > 1 && versions.Has(split[0]) {
+			versions.Delete(version)
+		}
+		if strings.HasSuffix(version, "-rc.0") {
 			versions.Delete(version)
 		}
 	}

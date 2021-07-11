@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -32,6 +33,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/instancegroups"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -40,7 +42,7 @@ import (
 )
 
 // DeleteInstanceOptions is the command Object for an instance deletion.
-type deleteInstanceOptions struct {
+type DeleteInstanceOptions struct {
 	Yes       bool
 	CloudOnly bool
 
@@ -70,7 +72,7 @@ type deleteInstanceOptions struct {
 	Surge bool
 }
 
-func (o *deleteInstanceOptions) initDefaults() {
+func (o *DeleteInstanceOptions) initDefaults() {
 	d := &RollingUpdateOptions{}
 	d.InitDefaults()
 
@@ -102,64 +104,56 @@ func NewCmdDeleteInstance(f *util.Factory, out io.Writer) *cobra.Command {
 		kops delete instance --cloudonly i-0a5ed581b862d3425 --yes
 		`))
 
-	deleteInstanceShort := i18n.T(`Delete an instance`)
+	deleteInstanceShort := i18n.T(`Delete an instance.`)
 
-	var options deleteInstanceOptions
+	var options DeleteInstanceOptions
 	options.initDefaults()
 
 	cmd := &cobra.Command{
-		Use:     "instance",
+		Use:     "instance INSTANCE|NODE",
 		Short:   deleteInstanceShort,
 		Long:    deleteInstanceLong,
 		Example: deleteInstanceExample,
+		Args: func(cmd *cobra.Command, args []string) error {
+			options.ClusterName = rootCommand.ClusterName(true)
+			if options.ClusterName == "" {
+				return fmt.Errorf("--name is required")
+			}
+
+			if len(args) == 0 {
+				return fmt.Errorf("must specify ID of instance or name of node to delete")
+			}
+			options.InstanceID = args[0]
+
+			if len(args) != 1 {
+				return fmt.Errorf("can only delete one instance at a time")
+			}
+
+			return nil
+		},
+		ValidArgsFunction: completeInstanceOrNode(&options),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunDeleteInstance(context.TODO(), f, out, &options)
+		},
 	}
 
-	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform deletion update without confirming progress with k8s")
+	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform deletion update without confirming progress with Kubernetes")
 	cmd.Flags().BoolVar(&options.Surge, "surge", options.Surge, "Surge by detaching the node from the ASG before deletion")
 
 	cmd.Flags().DurationVar(&options.ValidationTimeout, "validation-timeout", options.ValidationTimeout, "Maximum time to wait for a cluster to validate")
-	cmd.Flags().Int32Var(&options.ValidateCount, "validate-count", options.ValidateCount, "Amount of times that a cluster needs to be validated after single node update")
+	cmd.Flags().Int32Var(&options.ValidateCount, "validate-count", options.ValidateCount, "Number of times that a cluster needs to be validated after single node update")
 	cmd.Flags().DurationVar(&options.PostDrainDelay, "post-drain-delay", options.PostDrainDelay, "Time to wait after draining each node")
 
-	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "The deletion will fail if draining a node fails.")
-	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "The deletion will fail if the cluster fails to validate.")
+	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "Fail if draining a node fails")
+	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "Fail if the cluster fails to validate")
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Specify --yes to immediately delete the instance")
-
-	cmd.Run = func(cmd *cobra.Command, args []string) {
-		ctx := context.TODO()
-
-		clusterName := rootCommand.ClusterName(true)
-
-		if clusterName == "" {
-			exitWithError(fmt.Errorf("--name is required"))
-			return
-		}
-
-		options.ClusterName = clusterName
-		if len(args) == 0 {
-			exitWithError(fmt.Errorf("specify ID of instance to delete"))
-		}
-		if len(args) != 1 {
-			exitWithError(fmt.Errorf("can only delete one instance at a time"))
-		}
-
-		options.InstanceID = args[0]
-
-		err := RunDeleteInstance(ctx, f, os.Stdout, &options)
-		if err != nil {
-			exitWithError(err)
-			return
-		}
-
-	}
 
 	return cmd
 }
 
-func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, options *deleteInstanceOptions) error {
-
-	clientset, err := f.Clientset()
+func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, options *DeleteInstanceOptions) error {
+	clientSet, err := f.Clientset()
 	if err != nil {
 		return err
 	}
@@ -169,36 +163,17 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 		return err
 	}
 
-	contextName := cluster.ObjectMeta.Name
-	clientGetter := genericclioptions.NewConfigFlags(true)
-	clientGetter.Context = &contextName
-
-	config, err := clientGetter.ToRESTConfig()
-	if err != nil {
-		return fmt.Errorf("cannot load kubecfg settings for %q: %v", contextName, err)
-	}
-
 	var nodes []v1.Node
 	var k8sClient kubernetes.Interface
+	var host string
 	if !options.CloudOnly {
-		k8sClient, err = kubernetes.NewForConfig(config)
+		k8sClient, host, nodes, err = getNodes(ctx, cluster, true)
 		if err != nil {
-			return fmt.Errorf("cannot build kube client for %q: %v", contextName, err)
-		}
-
-		nodeList, err := k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to reach the kubernetes API.\n")
-			fmt.Fprintf(os.Stderr, "Use --cloudonly to do a deletion without confirming progress with the k8s API\n\n")
-			return fmt.Errorf("error listing nodes in cluster: %v", err)
-		}
-
-		if nodeList != nil {
-			nodes = nodeList.Items
+			return err
 		}
 	}
 
-	list, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
+	list, err := clientSet.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -265,7 +240,7 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 
 	var clusterValidator validation.ClusterValidator
 	if !options.CloudOnly {
-		clusterValidator, err = validation.NewClusterValidator(cluster, cloud, list, config.Host, k8sClient)
+		clusterValidator, err = validation.NewClusterValidator(cluster, cloud, list, host, k8sClient)
 		if err != nil {
 			return fmt.Errorf("cannot create cluster validator: %v", err)
 		}
@@ -275,12 +250,45 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 	return d.UpdateSingleInstance(cloudMember, options.Surge)
 }
 
-func deleteNodeMatch(cloudMember *cloudinstances.CloudInstance, options *deleteInstanceOptions) bool {
+func getNodes(ctx context.Context, cluster *kopsapi.Cluster, verbose bool) (kubernetes.Interface, string, []v1.Node, error) {
+	var nodes []v1.Node
+	var k8sClient kubernetes.Interface
+
+	contextName := cluster.ObjectMeta.Name
+	clientGetter := genericclioptions.NewConfigFlags(true)
+	clientGetter.Context = &contextName
+
+	config, err := clientGetter.ToRESTConfig()
+	if err != nil {
+		return nil, "", nil, fmt.Errorf("cannot load kubecfg settings for %q: %v", contextName, err)
+	}
+
+	k8sClient, err = kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, "", nil, fmt.Errorf("cannot build kube client for %q: %v", contextName, err)
+	}
+
+	nodeList, err := k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		if verbose {
+			fmt.Fprintf(os.Stderr, "Unable to reach the kubernetes API.\n")
+			fmt.Fprintf(os.Stderr, "Use --cloudonly to do a deletion without confirming progress with the k8s API\n\n")
+		}
+		return nil, "", nil, fmt.Errorf("listing nodes in cluster: %v", err)
+	}
+
+	if nodeList != nil {
+		nodes = nodeList.Items
+	}
+	return k8sClient, config.Host, nodes, nil
+}
+
+func deleteNodeMatch(cloudMember *cloudinstances.CloudInstance, options *DeleteInstanceOptions) bool {
 	return cloudMember.ID == options.InstanceID ||
 		(!options.CloudOnly && cloudMember.Node != nil && cloudMember.Node.Name == options.InstanceID)
 }
 
-func findDeletionNode(groups map[string]*cloudinstances.CloudInstanceGroup, options *deleteInstanceOptions) *cloudinstances.CloudInstance {
+func findDeletionNode(groups map[string]*cloudinstances.CloudInstanceGroup, options *DeleteInstanceOptions) *cloudinstances.CloudInstance {
 	for _, group := range groups {
 		for _, r := range group.Ready {
 			if deleteNodeMatch(r, options) {
@@ -294,4 +302,81 @@ func findDeletionNode(groups map[string]*cloudinstances.CloudInstanceGroup, opti
 		}
 	}
 	return nil
+}
+
+func completeInstanceOrNode(options *DeleteInstanceOptions) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) > 0 {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+
+		commandutils.ConfigureKlogForCompletion()
+		ctx := context.TODO()
+
+		cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand, nil)
+		if cluster == nil {
+			return completions, directive
+		}
+
+		var nodes []v1.Node
+		var err error
+		if !options.CloudOnly {
+			_, _, nodes, err = getNodes(ctx, cluster, false)
+			if err != nil {
+				cobra.CompErrorln(err.Error())
+			}
+		}
+
+		list, err := clientSet.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
+		if err != nil {
+			return commandutils.CompletionError("listing instance groups", err)
+		}
+
+		var instanceGroups []*kopsapi.InstanceGroup
+		for i := range list.Items {
+			instanceGroups = append(instanceGroups, &list.Items[i])
+		}
+
+		cloud, err := cloudup.BuildCloud(cluster)
+		if err != nil {
+			return commandutils.CompletionError("initializing cloud", err)
+		}
+
+		groups, err := cloud.GetCloudGroups(cluster, instanceGroups, false, nodes)
+		if err != nil {
+			return commandutils.CompletionError("listing instances", err)
+		}
+
+		completions = nil
+		longestGroup := 0
+		for _, group := range groups {
+			if group.InstanceGroup != nil && longestGroup < len(group.InstanceGroup.Name) {
+				longestGroup = len(group.InstanceGroup.Name)
+			}
+		}
+		for _, group := range groups {
+			for _, instance := range group.Ready {
+				completions = appendInstance(completions, instance, longestGroup)
+			}
+			for _, instance := range group.NeedUpdate {
+				completions = appendInstance(completions, instance, longestGroup)
+			}
+		}
+
+		return completions, cobra.ShellCompDirectiveNoFileComp
+	}
+}
+
+func appendInstance(completions []string, instance *cloudinstances.CloudInstance, longestGroup int) []string {
+	completion := instance.ID
+	if instance.CloudInstanceGroup.InstanceGroup != nil {
+		completion += "\t" + instance.CloudInstanceGroup.InstanceGroup.Name
+
+		if instance.Node != nil {
+			padding := strings.Repeat(" ", longestGroup+1-len(instance.CloudInstanceGroup.InstanceGroup.Name))
+			completion += padding + instance.Node.Name
+			completions = append(completions, instance.Node.Name+"\t"+instance.CloudInstanceGroup.InstanceGroup.Name+padding+instance.ID)
+		}
+	}
+	return append(completions, completion)
 }
