@@ -163,21 +163,6 @@ func (c *ClientsetCAStore) FindKeyset(name string) (*Keyset, error) {
 	return c.loadKeyset(ctx, name)
 }
 
-// FindCert implements CAStore::FindCert
-func (c *ClientsetCAStore) FindCert(name string) (*pki.Certificate, error) {
-	ctx := context.TODO()
-	keyset, err := c.loadKeyset(ctx, name)
-	if err != nil {
-		return nil, err
-	}
-
-	if keyset != nil && keyset.Primary != nil {
-		return keyset.Primary.Certificate, nil
-	}
-
-	return nil, nil
-}
-
 // ListKeysets implements CAStore::ListKeysets
 func (c *ClientsetCAStore) ListKeysets() (map[string]*Keyset, error) {
 	ctx := context.TODO()
@@ -235,20 +220,6 @@ func (c *ClientsetCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
 func (c *ClientsetCAStore) StoreKeyset(name string, keyset *Keyset) error {
 	ctx := context.TODO()
 	return c.storeKeyset(ctx, name, keyset)
-}
-
-// FindPrivateKey implements CAStore::FindPrivateKey
-func (c *ClientsetCAStore) FindPrivateKey(name string) (*pki.PrivateKey, error) {
-	ctx := context.TODO()
-	keyset, err := c.loadKeyset(ctx, name)
-	if err != nil {
-		return nil, err
-	}
-
-	if keyset != nil && keyset.Primary != nil {
-		return keyset.Primary.PrivateKey, nil
-	}
-	return nil, nil
 }
 
 // storeKeyset saves the specified keyset to the registry.

@@ -54,7 +54,7 @@ type NodeupModelContext struct {
 	Cluster      *kops.Cluster
 	ConfigBase   vfs.Path
 	Distribution distributions.Distribution
-	KeyStore     fi.CAStore
+	KeyStore     fi.Keystore
 	BootConfig   *nodeup.BootConfig
 	NodeupConfig *nodeup.Config
 	SecretStore  fi.SecretStore
@@ -214,10 +214,11 @@ func (c *NodeupModelContext) KubeletKubeConfig() string {
 // BuildIssuedKubeconfig generates a kubeconfig with a locally issued client certificate.
 func (c *NodeupModelContext) BuildIssuedKubeconfig(name string, subject nodetasks.PKIXName, ctx *fi.ModelBuilderContext) *fi.TaskDependentResource {
 	issueCert := &nodetasks.IssueCert{
-		Name:    name,
-		Signer:  fi.CertificateIDCA,
-		Type:    "client",
-		Subject: subject,
+		Name:      name,
+		Signer:    fi.CertificateIDCA,
+		KeypairID: c.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
+		Type:      "client",
+		Subject:   subject,
 	}
 	ctx.AddTask(issueCert)
 	certResource, keyResource, caResource := issueCert.GetResources()
@@ -485,16 +486,16 @@ func (c *NodeupModelContext) buildCertificatePairTask(ctx *fi.ModelBuilderContex
 
 // BuildCertificateTask builds a task to create a certificate file.
 func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, name, filename string, owner *string) error {
-	cert, err := c.KeyStore.FindCert(name)
+	keyset, err := c.KeyStore.FindKeyset(name)
 	if err != nil {
 		return err
 	}
 
-	if cert == nil {
-		return fmt.Errorf("certificate %q not found", name)
+	if keyset == nil {
+		return fmt.Errorf("keyset %q not found", name)
 	}
 
-	serialized, err := cert.AsString()
+	serialized, err := keyset.Primary.Certificate.AsString()
 	if err != nil {
 		return err
 	}
@@ -516,16 +517,16 @@ func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, n
 
 // BuildLegacyPrivateKeyTask builds a task to create a private key file.
 func (c *NodeupModelContext) BuildLegacyPrivateKeyTask(ctx *fi.ModelBuilderContext, name, filename string, owner *string) error {
-	cert, err := c.KeyStore.FindPrivateKey(name)
+	keyset, err := c.KeyStore.FindKeyset(name)
 	if err != nil {
 		return err
 	}
 
-	if cert == nil {
-		return fmt.Errorf("private key %q not found", name)
+	if keyset == nil {
+		return fmt.Errorf("keyset %q not found", name)
 	}
 
-	serialized, err := cert.AsString()
+	serialized, err := keyset.Primary.PrivateKey.AsString()
 	if err != nil {
 		return err
 	}
@@ -622,25 +623,20 @@ func EvaluateHostnameOverride(hostnameOverride string) (string, error) {
 	return *(result.Reservations[0].Instances[0].PrivateDnsName), nil
 }
 
-// GetPrimaryKeypair is a helper method to retrieve a primary keypair from the store
+// GetPrimaryKeypair is a helper method to retrieve a primary keypair from the store.
+// TODO: Use the KeysetID in NodeupConfig instead of the Primary keypair.
 func (c *NodeupModelContext) GetPrimaryKeypair(name string) (cert []byte, key []byte, err error) {
-	certificate, privateKey, err := c.KeyStore.FindPrimaryKeypair(name)
+	keyset, err := c.KeyStore.FindKeyset(name)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error fetching certificate: %v from keystore: %v", name, err)
-	}
-	if certificate == nil {
-		return nil, nil, fmt.Errorf("unable to find certificate: %s", name)
-	}
-	if privateKey == nil {
-		return nil, nil, fmt.Errorf("unable to find key: %s", name)
+		return nil, nil, fmt.Errorf("error fetching keyset: %v from keystore: %v", name, err)
 	}
 
-	cert, err = certificate.AsBytes()
+	cert, err = keyset.Primary.Certificate.AsBytes()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	key, err = privateKey.AsBytes()
+	key, err = keyset.Primary.PrivateKey.AsBytes()
 	if err != nil {
 		return nil, nil, err
 	}

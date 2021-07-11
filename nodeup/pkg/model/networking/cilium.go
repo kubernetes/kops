@@ -109,11 +109,12 @@ func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.ModelBuilderContext) error 
 		Type:     nodetasks.FileType_File,
 		Mode:     fi.String("0600"),
 	})
-	if b.IsMaster {
+	if b.HasAPIServer {
 		issueCert := &nodetasks.IssueCert{
-			Name:   name,
-			Signer: signer,
-			Type:   "client",
+			Name:      name,
+			Signer:    signer,
+			KeypairID: b.NodeupConfig.KeypairIDs[signer],
+			Type:      "client",
 			Subject: nodetasks.PKIXName{
 				CommonName: "cilium",
 			},

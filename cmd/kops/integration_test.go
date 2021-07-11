@@ -802,7 +802,7 @@ type testingKeyset struct {
 	secondaryCertificate string
 }
 
-func storeKeyset(t *testing.T, keyStore fi.CAStore, name string, testingKeyset *testingKeyset) {
+func storeKeyset(t *testing.T, keyStore fi.Keystore, name string, testingKeyset *testingKeyset) {
 	{
 		privateKey, err := pki.ParsePEMPrivateKey([]byte(testingKeyset.primaryKey))
 		if err != nil {

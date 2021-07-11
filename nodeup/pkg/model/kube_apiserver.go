@@ -116,9 +116,10 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		kubeAPIServer.EtcdCAFile = filepath.Join(pathSrvKAPI, "etcd-ca.crt")
 
 		issueCert := &nodetasks.IssueCert{
-			Name:   "etcd-client",
-			Signer: "etcd-clients-ca",
-			Type:   "client",
+			Name:      "etcd-client",
+			Signer:    "etcd-clients-ca",
+			KeypairID: b.NodeupConfig.KeypairIDs["etcd-clients-ca"],
+			Type:      "client",
 			Subject: nodetasks.PKIXName{
 				CommonName: "kube-apiserver",
 			},
@@ -145,9 +146,10 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		kubeAPIServer.RequestheaderClientCAFile = filepath.Join(pathSrvKAPI, "apiserver-aggregator-ca.crt")
 
 		issueCert := &nodetasks.IssueCert{
-			Name:   "apiserver-aggregator",
-			Signer: "apiserver-aggregator-ca",
-			Type:   "client",
+			Name:      "apiserver-aggregator",
+			Signer:    "apiserver-aggregator-ca",
+			KeypairID: b.NodeupConfig.KeypairIDs["apiserver-aggregator-ca"],
+			Type:      "client",
 			// Must match RequestheaderAllowedNames
 			Subject: nodetasks.PKIXName{CommonName: "aggregator"},
 		}
@@ -186,10 +188,11 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	issueCert := &nodetasks.IssueCert{
-		Name:    "kubelet-api",
-		Signer:  fi.CertificateIDCA,
-		Type:    "client",
-		Subject: nodetasks.PKIXName{CommonName: "kubelet-api"},
+		Name:      "kubelet-api",
+		Signer:    fi.CertificateIDCA,
+		KeypairID: b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
+		Type:      "client",
+		Subject:   nodetasks.PKIXName{CommonName: "kubelet-api"},
 	}
 	c.AddTask(issueCert)
 	err := issueCert.AddFileTasks(c, b.PathSrvKubernetes(), "kubelet-api", "", nil)
@@ -258,26 +261,13 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 		kubeAPIServer.AuthenticationTokenWebhookConfigFile = fi.String(PathAuthnConfig)
 
 		{
-			caCertificate, _, err := b.NodeupModelContext.KeyStore.FindPrimaryKeypair(fi.CertificateIDCA)
-			if err != nil {
-				return fmt.Errorf("error fetching AWS IAM Authentication CA certificate from keystore: %v", err)
-			}
-			if caCertificate == nil {
-				return fmt.Errorf("AWS IAM  Authentication CA certificate %q not found", fi.CertificateIDCA)
-			}
-
 			cluster := kubeconfig.KubectlCluster{
-				Server: "https://127.0.0.1:21362/authenticate",
+				Server:                   "https://127.0.0.1:21362/authenticate",
+				CertificateAuthorityData: []byte(b.NodeupConfig.CAs[fi.CertificateIDCA]),
 			}
 			context := kubeconfig.KubectlContext{
 				Cluster: "aws-iam-authenticator",
 				User:    "kube-apiserver",
-			}
-
-			// Since we're talking to localhost, we don't need the entire certificate bundle.
-			cluster.CertificateAuthorityData, err = caCertificate.AsBytes()
-			if err != nil {
-				return fmt.Errorf("error encoding AWS IAM Authentication CA certificate: %v", err)
 			}
 
 			config := kubeconfig.KubectlConfig{}
@@ -321,10 +311,11 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 
 		{
 			issueCert := &nodetasks.IssueCert{
-				Name:    id,
-				Signer:  fi.CertificateIDCA,
-				Type:    "server",
-				Subject: nodetasks.PKIXName{CommonName: id},
+				Name:      id,
+				Signer:    fi.CertificateIDCA,
+				KeypairID: b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
+				Type:      "server",
+				Subject:   nodetasks.PKIXName{CommonName: id},
 				AlternateNames: []string{
 					"localhost",
 					"127.0.0.1",

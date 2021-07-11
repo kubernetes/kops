@@ -552,7 +552,6 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.ModelBuilderContex
 	if b.UseKopsControllerForNodeBootstrap() {
 		name := "kubelet-server"
 		dir := b.PathSrvKubernetes()
-		signer := fi.CertificateIDCA
 
 		nodeName, err := b.NodeName()
 		if err != nil {
@@ -580,9 +579,10 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.ModelBuilderContex
 
 		} else {
 			issueCert := &nodetasks.IssueCert{
-				Name:   name,
-				Signer: signer,
-				Type:   "server",
+				Name:      name,
+				Signer:    fi.CertificateIDCA,
+				KeypairID: b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
+				Type:      "server",
 				Subject: nodetasks.PKIXName{
 					CommonName: nodeName,
 				},

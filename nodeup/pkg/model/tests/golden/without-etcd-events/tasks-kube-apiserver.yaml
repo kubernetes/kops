@@ -171,6 +171,7 @@ type: file
 contents:
   task:
     Name: apiserver-aggregator
+    keypairID: ""
     signer: apiserver-aggregator-ca
     subject:
       CommonName: aggregator
@@ -182,6 +183,7 @@ type: file
 contents:
   task:
     Name: apiserver-aggregator
+    keypairID: ""
     signer: apiserver-aggregator-ca
     subject:
       CommonName: aggregator
@@ -198,6 +200,7 @@ type: file
 contents:
   task:
     Name: etcd-client
+    keypairID: ""
     signer: etcd-clients-ca
     subject:
       CommonName: kube-apiserver
@@ -209,6 +212,7 @@ type: file
 contents:
   task:
     Name: etcd-client
+    keypairID: ""
     signer: etcd-clients-ca
     subject:
       CommonName: kube-apiserver
@@ -233,6 +237,7 @@ type: file
 contents:
   task:
     Name: kubelet-api
+    keypairID: "3"
     signer: kubernetes-ca
     subject:
       CommonName: kubelet-api
@@ -244,6 +249,7 @@ type: file
 contents:
   task:
     Name: kubelet-api
+    keypairID: "3"
     signer: kubernetes-ca
     subject:
       CommonName: kubelet-api
@@ -259,18 +265,21 @@ path: /var/log/kube-apiserver.log
 type: file
 ---
 Name: apiserver-aggregator
+keypairID: ""
 signer: apiserver-aggregator-ca
 subject:
   CommonName: aggregator
 type: client
 ---
 Name: etcd-client
+keypairID: ""
 signer: etcd-clients-ca
 subject:
   CommonName: kube-apiserver
 type: client
 ---
 Name: kubelet-api
+keypairID: "3"
 signer: kubernetes-ca
 subject:
   CommonName: kubelet-api
