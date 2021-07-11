@@ -58,7 +58,7 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
-	if err := b.BuildLegacyPrivateKeyTask(c, "service-account", filepath.Join(pathSrvKCM, "service-account.key"), nil); err != nil {
+	if err := b.BuildPrivateKeyTask(c, "service-account", pathSrvKCM, "service-account", nil, nil); err != nil {
 		return err
 	}
 
