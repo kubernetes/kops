@@ -37,7 +37,7 @@ kops update cluster --yes
 kops rolling-update cluster --yes
 ```
 
-#### Rollback procedure:
+#### Rollback procedure
 
 A failure at this stage is unlikely. To roll back this change:
 
@@ -60,7 +60,7 @@ kops export kubecfg
 Distribute the new `certificate-authority-data` to all clients of that cluster's
 Kubernetes API.
 
-#### Rollback procedure:
+#### Rollback procedure
 
 To roll back this change, distribute the previous kubeconfig `certificate-authority-data`.
 
@@ -77,7 +77,7 @@ kops rolling-update cluster --force --yes
 As of the writing of this document, rolling-update will not necessarily identify all
 relevant nodes as needing update, so should be invoked with the `--force` flag.
 
-#### Rollback procedure:
+#### Rollback procedure
 
 The most likely failure at this stage would be a client of the Kubernetes API that
 did not get the new `certificate-authority-data` and thus do not trust the
@@ -105,7 +105,7 @@ where `DURATION` is the desired lifetime of the admin credential.
 
 Distribute the new credentials to all clients that require them.
 
-#### Rollback procedure:
+#### Rollback procedure
 
 To roll back this change, distribute the previous kubeconfig admin credentials.
 
@@ -119,7 +119,7 @@ kops update cluster --yes
 kops rolling-update cluster --yes
 ```
 
-#### Rollback procedure:
+#### Rollback procedure
 
 The most likely failure at this stage would be a client of the Kubernetes API that
 is still using a credential issued by the previous keypair.
@@ -146,7 +146,7 @@ kops export kubecfg
 Distribute the new `certificate-authority-data` to all clients of that cluster's
 Kubernetes API.
 
-#### Rollback procedure:
+#### Rollback procedure
 
 To roll back this change, distribute the previous kubeconfig `certificate-authority-data`.
 
