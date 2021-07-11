@@ -3,14 +3,14 @@
 
 ## kops delete instance
 
-Delete an instance
+Delete an instance.
 
 ### Synopsis
 
 Delete an instance. By default, it will detach the instance from the instance group, drain it, then terminate it.
 
 ```
-kops delete instance [flags]
+kops delete instance INSTANCE|NODE [flags]
 ```
 
 ### Examples
@@ -30,13 +30,13 @@ kops delete instance [flags]
 ### Options
 
 ```
-      --cloudonly                     Perform deletion update without confirming progress with k8s
-      --fail-on-drain-error           The deletion will fail if draining a node fails. (default true)
-      --fail-on-validate-error        The deletion will fail if the cluster fails to validate. (default true)
+      --cloudonly                     Perform deletion update without confirming progress with Kubernetes
+      --fail-on-drain-error           Fail if draining a node fails (default true)
+      --fail-on-validate-error        Fail if the cluster fails to validate (default true)
   -h, --help                          help for instance
       --post-drain-delay duration     Time to wait after draining each node (default 5s)
       --surge                         Surge by detaching the node from the ASG before deletion (default true)
-      --validate-count int32          Amount of times that a cluster needs to be validated after single node update (default 2)
+      --validate-count int32          Number of times that a cluster needs to be validated after single node update (default 2)
       --validation-timeout duration   Maximum time to wait for a cluster to validate (default 15m0s)
   -y, --yes                           Specify --yes to immediately delete the instance
 ```
@@ -64,5 +64,5 @@ kops delete instance [flags]
 
 ### SEE ALSO
 
-* [kops delete](kops_delete.md)	 - Delete clusters, instancegroups, instances, or secrets.
+* [kops delete](kops_delete.md)	 - Delete clusters, instancegroups, instances, and secrets.
 
