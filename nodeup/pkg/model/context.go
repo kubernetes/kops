@@ -485,16 +485,16 @@ func (c *NodeupModelContext) buildCertificatePairTask(ctx *fi.ModelBuilderContex
 
 // BuildCertificateTask builds a task to create a certificate file.
 func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, name, filename string, owner *string) error {
-	cert, err := c.KeyStore.FindCert(name)
+	keyset, err := c.KeyStore.FindKeyset(name)
 	if err != nil {
 		return err
 	}
 
-	if cert == nil {
-		return fmt.Errorf("certificate %q not found", name)
+	if keyset == nil {
+		return fmt.Errorf("keyset %q not found", name)
 	}
 
-	serialized, err := cert.AsString()
+	serialized, err := keyset.Primary.Certificate.AsString()
 	if err != nil {
 		return err
 	}
@@ -516,16 +516,16 @@ func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, n
 
 // BuildLegacyPrivateKeyTask builds a task to create a private key file.
 func (c *NodeupModelContext) BuildLegacyPrivateKeyTask(ctx *fi.ModelBuilderContext, name, filename string, owner *string) error {
-	cert, err := c.KeyStore.FindPrivateKey(name)
+	keyset, err := c.KeyStore.FindKeyset(name)
 	if err != nil {
 		return err
 	}
 
-	if cert == nil {
-		return fmt.Errorf("private key %q not found", name)
+	if keyset == nil {
+		return fmt.Errorf("keyset %q not found", name)
 	}
 
-	serialized, err := cert.AsString()
+	serialized, err := keyset.Primary.PrivateKey.AsString()
 	if err != nil {
 		return err
 	}
