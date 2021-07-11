@@ -376,7 +376,7 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 		t.Fatal(err)
 	}
 
-	keystore := &fakeCAStore{}
+	keystore := &fakeKeystore{}
 	keystore.T = t
 	saKeyset, _ := rotatingPrivateKeyset().ToAPIObject("service-account", true)
 	keystore.privateKeysets = map[string]*kops.Keyset{
