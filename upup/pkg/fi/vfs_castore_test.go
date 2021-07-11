@@ -98,7 +98,6 @@ func TestVFSCAStoreRoundTrip(t *testing.T) {
 	}
 
 	for _, p := range []string{
-		"memfs://tests/issued/kubernetes-ca/keyset.yaml",
 		"memfs://tests/private/kubernetes-ca/keyset.yaml",
 	} {
 		if _, found := pathMap[p]; !found {
@@ -106,52 +105,8 @@ func TestVFSCAStoreRoundTrip(t *testing.T) {
 		}
 	}
 
-	if len(pathMap) != 2 {
+	if len(pathMap) != 1 {
 		t.Fatalf("unexpected pathMap: %v", pathMap)
-	}
-
-	// Check issued/kubernetes-ca/keyset.yaml round-tripped
-	{
-		issuedKeysetYaml, err := pathMap["memfs://tests/issued/kubernetes-ca/keyset.yaml"].ReadFile()
-		if err != nil {
-			t.Fatalf("error reading file memfs://tests/issued/kubernetes-ca/keyset.yaml: %v", err)
-		}
-
-		expected := `
-apiVersion: kops.k8s.io/v1alpha2
-kind: Keyset
-metadata:
-  creationTimestamp: null
-  name: kubernetes-ca
-spec:
-  keys:
-  - id: "237054359138908419352140518924933177492"
-    publicMaterial: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMyRENDQWNDZ0F3SUJBZ0lSQUxKWEFrVmo5NjR0cTY3d01TSThvSlF3RFFZSktvWklodmNOQVFFTEJRQXcKRlRFVE1CRUdBMVVFQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB4TnpFeU1qY3lNelV5TkRCYUZ3MHlOekV5TWpjeQpNelV5TkRCYU1CVXhFekFSQmdOVkJBTVRDbXQxWW1WeWJtVjBaWE13Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBCkE0SUJEd0F3Z2dFS0FvSUJBUURnbkNrU210bm1meEVnUzNxTlBhVUNINVFPQkdESC9pbkhiV0NPRExCQ0s5Z2QKWEVjQmw3RlZ2OFQya0ZyMURZYjBIVkR0TUk3dGl4UlZGRExna3dObFczNHh3V2RaWEI3R2VvRmdVMXhXT1FTWQpPQUNDOEpnWVRRLzEzOUhCRXZncTRzZWo2N3ArL3MvU05jdzM0S2s3SEl1RmhsazFyUms1a01leEtJbEpCS1AxCllZVVlldHNKL1FwVU9rcUo1SFc0R29ldEU3Nll0SG5PUmZZdm55YnZpU01yaDJ3R0dhTjZyL3M0Q2hPYUliWkMKQW44L1lpUEtHSURhWkdwajZHWG5tWEFSUlgvVElkZ1NRa0x3dDBhVERCblBaNFh2dHBJOGFhTDhEWUpJcUF6QQpOUEgyYjQvdU55bGF0NWpEbzBiMEc1NGFnTWk5NysyQVVyQzlVVVhwQWdNQkFBR2pJekFoTUE0R0ExVWREd0VCCi93UUVBd0lCQmpBUEJnTlZIUk1CQWY4RUJUQURBUUgvTUEwR0NTcUdTSWIzRFFFQkN3VUFBNElCQVFCVkdSMnIKaHpYelJNVTV3cmlQUUFKU2Nzek5PUnZvQnBYZlpvWjA5Rkl1cHVkRnhCVlUzZDRoVjlTdEtuUWdQU0dBNVhRTwpIRTk3K0J4SkR1QS9yQjVvQlVzTUJqYzd5MWNkZS9UNmhtaTNyTG9FWUJTblN1ZENPWEpFNEc5LzBmOGJ5QUplCnJOOCtObzFyMlZnWnZaaDZwNzRURWtYdi9sM0hCUFdNN0lkVVYwSE85SkRoU2dPVkYxZnlRS0p4UnVMSlI4anQKTzZtUEgyVVgwdk13VmE0anZ3dGtkZHFrMk9BZFlRdkg5cmJEampiemFpVzBLbm1kdWVSbzkyS0hBTjdCc0RaeQpWcFhIcHFvMUt6ZzdEM2ZwYVhDZjVzaTdscXFyZEpWWEg0SkM3Mnp4c1BlaHFnaThlSXVxT0JraURXbVJ4QXhoCjh5R2VSeDlBYmtuSGg0SWEKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
-  primaryId: "237054359138908419352140518924933177492"
-  type: Keypair
-`
-
-		if strings.TrimSpace(string(issuedKeysetYaml)) != strings.TrimSpace(expected) {
-			t.Fatalf("unexpected issued/ca/keyset.yaml: %q", string(issuedKeysetYaml))
-		}
-
-		keyset, err := s.FindKeyset("kubernetes-ca")
-		if err != nil {
-			t.Fatalf("error reading certificate keyset: %v", err)
-		}
-
-		if len(keyset.Items) != 1 {
-			t.Fatalf("unexpected secondary certificates: %v", keyset)
-		}
-
-		roundTrip, err := keyset.Primary.Certificate.AsString()
-		if err != nil {
-			t.Fatalf("error serializing primary cert: %v", err)
-		}
-
-		if roundTrip != certData {
-			t.Fatalf("unexpected round-tripped certificate data: %q", roundTrip)
-		}
 	}
 
 	// Check private/kubernetes-ca/keyset.yaml round-tripped
@@ -269,49 +224,6 @@ func TestVFSCAStoreRoundTripWithVault(t *testing.T) {
 
 	if len(pathMap) != 4 {
 		t.Fatalf("unexpected pathMap: %v", pathMap)
-	}
-
-	// Check issued/ca/keyset.yaml round-tripped
-	{
-		issuedKeysetYaml, err := pathMap[bp+"/issued/ca/keyset.yaml"].ReadFile()
-		if err != nil {
-			t.Fatalf("error reading file issued/ca/keyset.yaml: %v", err)
-		}
-
-		expected := `
-apiVersion: kops.k8s.io/v1alpha2
-kind: Keyset
-metadata:
-  creationTimestamp: null
-  name: ca
-spec:
-  keys:
-  - id: "237054359138908419352140518924933177492"
-    publicMaterial: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMyRENDQWNDZ0F3SUJBZ0lSQUxKWEFrVmo5NjR0cTY3d01TSThvSlF3RFFZSktvWklodmNOQVFFTEJRQXcKRlRFVE1CRUdBMVVFQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB4TnpFeU1qY3lNelV5TkRCYUZ3MHlOekV5TWpjeQpNelV5TkRCYU1CVXhFekFSQmdOVkJBTVRDbXQxWW1WeWJtVjBaWE13Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBCkE0SUJEd0F3Z2dFS0FvSUJBUURnbkNrU210bm1meEVnUzNxTlBhVUNINVFPQkdESC9pbkhiV0NPRExCQ0s5Z2QKWEVjQmw3RlZ2OFQya0ZyMURZYjBIVkR0TUk3dGl4UlZGRExna3dObFczNHh3V2RaWEI3R2VvRmdVMXhXT1FTWQpPQUNDOEpnWVRRLzEzOUhCRXZncTRzZWo2N3ArL3MvU05jdzM0S2s3SEl1RmhsazFyUms1a01leEtJbEpCS1AxCllZVVlldHNKL1FwVU9rcUo1SFc0R29ldEU3Nll0SG5PUmZZdm55YnZpU01yaDJ3R0dhTjZyL3M0Q2hPYUliWkMKQW44L1lpUEtHSURhWkdwajZHWG5tWEFSUlgvVElkZ1NRa0x3dDBhVERCblBaNFh2dHBJOGFhTDhEWUpJcUF6QQpOUEgyYjQvdU55bGF0NWpEbzBiMEc1NGFnTWk5NysyQVVyQzlVVVhwQWdNQkFBR2pJekFoTUE0R0ExVWREd0VCCi93UUVBd0lCQmpBUEJnTlZIUk1CQWY4RUJUQURBUUgvTUEwR0NTcUdTSWIzRFFFQkN3VUFBNElCQVFCVkdSMnIKaHpYelJNVTV3cmlQUUFKU2Nzek5PUnZvQnBYZlpvWjA5Rkl1cHVkRnhCVlUzZDRoVjlTdEtuUWdQU0dBNVhRTwpIRTk3K0J4SkR1QS9yQjVvQlVzTUJqYzd5MWNkZS9UNmhtaTNyTG9FWUJTblN1ZENPWEpFNEc5LzBmOGJ5QUplCnJOOCtObzFyMlZnWnZaaDZwNzRURWtYdi9sM0hCUFdNN0lkVVYwSE85SkRoU2dPVkYxZnlRS0p4UnVMSlI4anQKTzZtUEgyVVgwdk13VmE0anZ3dGtkZHFrMk9BZFlRdkg5cmJEampiemFpVzBLbm1kdWVSbzkyS0hBTjdCc0RaeQpWcFhIcHFvMUt6ZzdEM2ZwYVhDZjVzaTdscXFyZEpWWEg0SkM3Mnp4c1BlaHFnaThlSXVxT0JraURXbVJ4QXhoCjh5R2VSeDlBYmtuSGg0SWEKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
-  type: Keypair
-`
-
-		if strings.TrimSpace(string(issuedKeysetYaml)) != strings.TrimSpace(expected) {
-			t.Fatalf("unexpected issued/ca/keyset.yaml: %q", string(issuedKeysetYaml))
-		}
-
-		keyset, err := s.FindKeyset("kubernetes-ca")
-		if err != nil {
-			t.Fatalf("error reading certificate keyset: %v", err)
-		}
-
-		if len(keyset.Items) != 1 {
-			t.Fatalf("unexpected secondary certificates: %v", keyset)
-		}
-
-		roundTrip, err := keyset.Primary.Certificate.AsString()
-		if err != nil {
-			t.Fatalf("error serializing primary cert: %v", err)
-		}
-
-		if roundTrip != certData {
-			t.Fatalf("unexpected round-tripped certificate data: %q", roundTrip)
-		}
 	}
 
 	// Check private/ca/keyset.yaml round-tripped
