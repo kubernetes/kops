@@ -1795,7 +1795,6 @@
                 "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/complex.example.com/addons/*",
                 "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/complex.example.com/cluster-completed.spec",
                 "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/complex.example.com/igconfig/node/*",
-                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/complex.example.com/pki/issued/*",
                 "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/complex.example.com/pki/ssh/*",
                 "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/complex.example.com/secrets/dockerconfig"
               ]

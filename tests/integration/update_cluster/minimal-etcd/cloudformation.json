@@ -1181,7 +1181,6 @@
                 "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal-etcd.example.com/addons/*",
                 "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal-etcd.example.com/cluster-completed.spec",
                 "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal-etcd.example.com/igconfig/node/*",
-                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal-etcd.example.com/pki/issued/*",
                 "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal-etcd.example.com/pki/ssh/*",
                 "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal-etcd.example.com/secrets/dockerconfig"
               ]
