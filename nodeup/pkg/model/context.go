@@ -214,10 +214,11 @@ func (c *NodeupModelContext) KubeletKubeConfig() string {
 // BuildIssuedKubeconfig generates a kubeconfig with a locally issued client certificate.
 func (c *NodeupModelContext) BuildIssuedKubeconfig(name string, subject nodetasks.PKIXName, ctx *fi.ModelBuilderContext) *fi.TaskDependentResource {
 	issueCert := &nodetasks.IssueCert{
-		Name:    name,
-		Signer:  fi.CertificateIDCA,
-		Type:    "client",
-		Subject: subject,
+		Name:      name,
+		Signer:    fi.CertificateIDCA,
+		KeypairID: c.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
+		Type:      "client",
+		Subject:   subject,
 	}
 	ctx.AddTask(issueCert)
 	certResource, keyResource, caResource := issueCert.GetResources()
