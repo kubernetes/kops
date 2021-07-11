@@ -82,9 +82,10 @@ func (b *KubeAPIServerBuilder) addHealthcheckSidecarTasks(c *fi.ModelBuilderCont
 	}
 
 	issueCert := &nodetasks.IssueCert{
-		Name:   id,
-		Signer: fi.CertificateIDCA,
-		Type:   "client",
+		Name:      id,
+		Signer:    fi.CertificateIDCA,
+		KeypairID: b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
+		Type:      "client",
 		Subject: nodetasks.PKIXName{
 			CommonName: id,
 		},

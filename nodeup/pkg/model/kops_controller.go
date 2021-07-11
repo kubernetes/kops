@@ -56,6 +56,7 @@ func (b *KopsControllerBuilder) Build(c *fi.ModelBuilderContext) error {
 	issueCert := &nodetasks.IssueCert{
 		Name:           "kops-controller",
 		Signer:         fi.CertificateIDCA,
+		KeypairID:      b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
 		Type:           "server",
 		Subject:        nodetasks.PKIXName{CommonName: "kops-controller"},
 		AlternateNames: []string{"kops-controller.internal." + b.Cluster.ObjectMeta.Name},

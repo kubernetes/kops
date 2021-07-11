@@ -116,9 +116,10 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		kubeAPIServer.EtcdCAFile = filepath.Join(pathSrvKAPI, "etcd-ca.crt")
 
 		issueCert := &nodetasks.IssueCert{
-			Name:   "etcd-client",
-			Signer: "etcd-clients-ca",
-			Type:   "client",
+			Name:      "etcd-client",
+			Signer:    "etcd-clients-ca",
+			KeypairID: b.NodeupConfig.KeypairIDs["etcd-clients-ca"],
+			Type:      "client",
 			Subject: nodetasks.PKIXName{
 				CommonName: "kube-apiserver",
 			},
@@ -145,9 +146,10 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		kubeAPIServer.RequestheaderClientCAFile = filepath.Join(pathSrvKAPI, "apiserver-aggregator-ca.crt")
 
 		issueCert := &nodetasks.IssueCert{
-			Name:   "apiserver-aggregator",
-			Signer: "apiserver-aggregator-ca",
-			Type:   "client",
+			Name:      "apiserver-aggregator",
+			Signer:    "apiserver-aggregator-ca",
+			KeypairID: b.NodeupConfig.KeypairIDs["apiserver-aggregator-ca"],
+			Type:      "client",
 			// Must match RequestheaderAllowedNames
 			Subject: nodetasks.PKIXName{CommonName: "aggregator"},
 		}
@@ -186,10 +188,11 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	issueCert := &nodetasks.IssueCert{
-		Name:    "kubelet-api",
-		Signer:  fi.CertificateIDCA,
-		Type:    "client",
-		Subject: nodetasks.PKIXName{CommonName: "kubelet-api"},
+		Name:      "kubelet-api",
+		Signer:    fi.CertificateIDCA,
+		KeypairID: b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
+		Type:      "client",
+		Subject:   nodetasks.PKIXName{CommonName: "kubelet-api"},
 	}
 	c.AddTask(issueCert)
 	err := issueCert.AddFileTasks(c, b.PathSrvKubernetes(), "kubelet-api", "", nil)
@@ -308,10 +311,11 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 
 		{
 			issueCert := &nodetasks.IssueCert{
-				Name:    id,
-				Signer:  fi.CertificateIDCA,
-				Type:    "server",
-				Subject: nodetasks.PKIXName{CommonName: id},
+				Name:      id,
+				Signer:    fi.CertificateIDCA,
+				KeypairID: b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
+				Type:      "server",
+				Subject:   nodetasks.PKIXName{CommonName: id},
 				AlternateNames: []string{
 					"localhost",
 					"127.0.0.1",
