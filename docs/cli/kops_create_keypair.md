@@ -15,18 +15,24 @@ Add a CA certificate and private key to a keyset.
 
  If a certificate is provided but no private key is, the certificate will be added to the keyset without a private key. Such a certificate cannot be made primary.
 
- One of the certificate/private key pairs in each keyset must be primary. The primary keypair is the one used to issue certificates (or, for the "service-account" keyset, service-account tokens). As a consequence, the first entry in a keyset must be made primary.
+ One of the certificate/private key pairs in each keyset must be primary. The primary keypair is the one used to issue certificates (or, for the "service-account" keyset, service-account tokens). As a consequence, a keypair added to an empty keyset must be made primary.
+
+ If the keyset is specified as "all", a newly generated secondary certificate and private key will be added to each rotatable keyset.
 
 ```
-kops create keypair KEYSET [flags]
+kops create keypair {KEYSET | all} [flags]
 ```
 
 ### Examples
 
 ```
-  Add a CA certificate and private key to a keyset.
+  # Add a CA certificate and private key to a keyset.
   kops create keypair ca \
   --cert ~/ca.pem --key ~/ca-key.pem \
+  --name k8s-cluster.example.com --state s3://my-state-store
+  
+  # Add a newly generated certificate and private key to each rotatable keyset.
+  kops create keypair all \
   --name k8s-cluster.example.com --state s3://my-state-store
 ```
 

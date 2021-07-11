@@ -199,7 +199,7 @@ func NewKeyset(cert *pki.Certificate, privateKey *pki.PrivateKey) (*Keyset, erro
 	keyset := &Keyset{
 		Items: map[string]*KeysetItem{},
 	}
-	err := keyset.AddItem(cert, privateKey, true)
+	_, err := keyset.AddItem(cert, privateKey, true)
 	if err != nil {
 		return nil, err
 	}
@@ -208,16 +208,16 @@ func NewKeyset(cert *pki.Certificate, privateKey *pki.PrivateKey) (*Keyset, erro
 }
 
 // AddItem adds an item to the keyset
-func (k *Keyset) AddItem(cert *pki.Certificate, privateKey *pki.PrivateKey, primary bool) error {
+func (k *Keyset) AddItem(cert *pki.Certificate, privateKey *pki.PrivateKey, primary bool) (item *KeysetItem, err error) {
 	if cert == nil {
-		return fmt.Errorf("no certificate provided")
+		return item, fmt.Errorf("no certificate provided")
 	}
 	if privateKey == nil && primary {
-		return fmt.Errorf("private key not provided for primary item")
+		return item, fmt.Errorf("private key not provided for primary item")
 	}
 
 	if !primary && k.Primary == nil {
-		return fmt.Errorf("cannot add secondary item when no existing primary item")
+		return item, fmt.Errorf("cannot add secondary item when no existing primary item")
 	}
 
 	highestId := big.NewInt(0)
@@ -254,5 +254,5 @@ func (k *Keyset) AddItem(cert *pki.Certificate, privateKey *pki.PrivateKey, prim
 		k.Primary = ki
 	}
 
-	return nil
+	return ki, nil
 }
