@@ -244,7 +244,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/sharedvpc.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: g5sO7Zqtt2JasAjHSWlUn8XqVtf4+/d7vIPPrvxJcAs=
+NodeupConfigHash: YG2HUGCaJjpZU4Bfb/5As0WwVGrNMyN9iH9C3DZ7jBU=
 
 __EOF_KUBE_ENV
 

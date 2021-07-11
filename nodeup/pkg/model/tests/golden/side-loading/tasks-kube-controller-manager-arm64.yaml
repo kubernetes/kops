@@ -219,6 +219,7 @@ contents:
     CA:
       task:
         Name: kube-controller-manager
+        keypairID: "3"
         signer: kubernetes-ca
         subject:
           CommonName: system:kube-controller-manager
@@ -226,6 +227,7 @@ contents:
     Cert:
       task:
         Name: kube-controller-manager
+        keypairID: "3"
         signer: kubernetes-ca
         subject:
           CommonName: system:kube-controller-manager
@@ -233,6 +235,7 @@ contents:
     Key:
       task:
         Name: kube-controller-manager
+        keypairID: "3"
         signer: kubernetes-ca
         subject:
           CommonName: system:kube-controller-manager
@@ -250,6 +253,7 @@ path: /var/log/kube-controller-manager.log
 type: file
 ---
 Name: kube-controller-manager
+keypairID: "3"
 signer: kubernetes-ca
 subject:
   CommonName: system:kube-controller-manager
@@ -258,6 +262,7 @@ type: client
 CA:
   task:
     Name: kube-controller-manager
+    keypairID: "3"
     signer: kubernetes-ca
     subject:
       CommonName: system:kube-controller-manager
@@ -265,6 +270,7 @@ CA:
 Cert:
   task:
     Name: kube-controller-manager
+    keypairID: "3"
     signer: kubernetes-ca
     subject:
       CommonName: system:kube-controller-manager
@@ -272,6 +278,7 @@ Cert:
 Key:
   task:
     Name: kube-controller-manager
+    keypairID: "3"
     signer: kubernetes-ca
     subject:
       CommonName: system:kube-controller-manager
