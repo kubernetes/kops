@@ -265,25 +265,6 @@ func (c *VFSCAStore) FindKeyset(id string) (*Keyset, error) {
 	return keys, nil
 }
 
-func (c *VFSCAStore) findCert(name string) (*pki.Certificate, bool, error) {
-	p := c.buildCertificatePoolPath(name)
-	certs, err := c.loadKeyset(p)
-	if err != nil {
-		return nil, false, fmt.Errorf("error in 'FindCert' attempting to load cert %q: %v", name, err)
-	}
-
-	if certs != nil && certs.Primary != nil {
-		return certs.Primary.Certificate, certs.LegacyFormat, nil
-	}
-
-	return nil, false, nil
-}
-
-func (c *VFSCAStore) FindCert(name string) (*pki.Certificate, error) {
-	cert, _, err := c.findCert(name)
-	return cert, err
-}
-
 // ListKeysets implements CAStore::ListKeysets
 func (c *VFSCAStore) ListKeysets() (map[string]*Keyset, error) {
 	baseDir := c.basedir.Join("private")
@@ -488,19 +469,6 @@ func (c *VFSCAStore) findPrivateKeyset(id string) (*Keyset, error) {
 	}
 
 	return keys, nil
-}
-
-func (c *VFSCAStore) FindPrivateKey(id string) (*pki.PrivateKey, error) {
-	keys, err := c.findPrivateKeyset(id)
-	if err != nil {
-		return nil, err
-	}
-
-	var key *pki.PrivateKey
-	if keys != nil && keys.Primary != nil {
-		key = keys.Primary.PrivateKey
-	}
-	return key, nil
 }
 
 // AddSSHPublicKey stores an SSH public key
