@@ -22,28 +22,17 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kubectl/pkg/util/i18n"
-	"k8s.io/kubectl/pkg/util/templates"
 )
 
 var (
-	exportLong = templates.LongDesc(i18n.T(`
-	Export configurations from a cluster.`))
-
-	exportExample = templates.Examples(i18n.T(`
-	# export a kubecfg file
-	kops export kubecfg k8s-cluster.example.com
-		`))
-
 	exportShort = i18n.T(`Export configuration.`)
 )
 
 func NewCmdExport(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:     "export",
-		Short:   exportShort,
-		Long:    exportLong,
-		Example: exportExample,
+		Use:   "export",
+		Short: exportShort,
 	}
 
 	// create subcommands
