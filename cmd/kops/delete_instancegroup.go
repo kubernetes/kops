@@ -75,13 +75,13 @@ func NewCmdDeleteInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 			}
 
 			if len(args) == 0 {
-				return fmt.Errorf("must specify the name of instance group to delete")
+				return fmt.Errorf("must specify the name of the instance group to delete")
 			}
 
 			options.GroupName = args[0]
 
 			if len(args) != 1 {
-				return fmt.Errorf("can only edit one instance group at a time")
+				return fmt.Errorf("can only delete one instance group at a time")
 			}
 
 			return nil

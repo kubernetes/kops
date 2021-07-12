@@ -44,55 +44,65 @@ var (
 
 	This command changes the instancegroup desired configuration in the registry.
 
-    	To set your preferred editor, you can define the EDITOR environment variable.
-    	When you have done this, kOps will use the editor that you have set.
+	To set your preferred editor, you can define the EDITOR environment variable.
+	When you have done this, kOps will use the editor that you have set.
 
 	kops edit does not update the cloud resources, to apply the changes use "kops update cluster".`))
 
 	editInstancegroupExample = templates.Examples(i18n.T(`
 	# Edit an instancegroup desired configuration.
-	kops edit ig --name k8s-cluster.example.com nodes --state=s3://my-state-store
+	kops edit instancegroup --name k8s-cluster.example.com nodes --state=s3://my-state-store
 	`))
 
 	editInstancegroupShort = i18n.T(`Edit instancegroup.`)
 )
 
 type EditInstanceGroupOptions struct {
+	ClusterName string
+	GroupName   string
 }
 
 func NewCmdEditInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &EditInstanceGroupOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "instancegroup",
+		Use:     "instancegroup INSTANCE_GROUP",
 		Aliases: []string{"instancegroups", "ig"},
 		Short:   editInstancegroupShort,
 		Long:    editInstancegroupLong,
 		Example: editInstancegroupExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
+		Args: func(cmd *cobra.Command, args []string) error {
+			options.ClusterName = rootCommand.ClusterName(true)
 
-			err := RunEditInstanceGroup(ctx, f, cmd, args, os.Stdout, options)
-			if err != nil {
-				exitWithError(err)
+			if options.ClusterName == "" {
+				return fmt.Errorf("--name is required")
 			}
+
+			if len(args) == 0 {
+				return fmt.Errorf("must specify the name of the instance group to edit")
+			}
+
+			options.GroupName = args[0]
+
+			if len(args) != 1 {
+				return fmt.Errorf("can only edit one instance group at a time")
+			}
+
+			return nil
+		},
+		ValidArgsFunction: completeInstanceGroup(nil, nil),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunEditInstanceGroup(context.TODO(), f, out, options)
 		},
 	}
 
 	return cmd
 }
 
-func RunEditInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *EditInstanceGroupOptions) error {
-	if len(args) == 0 {
-		return fmt.Errorf("Specify name of instance group to edit")
-	}
-	if len(args) != 1 {
-		return fmt.Errorf("Can only edit one instance group at a time")
-	}
+func RunEditInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer, options *EditInstanceGroupOptions) error {
+	groupName := options.GroupName
 
-	groupName := args[0]
-
-	cluster, err := rootCommand.Cluster(ctx)
+	cluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
 		return err
 	}
@@ -102,13 +112,9 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Comma
 		klog.Warningf("%v", err)
 	}
 
-	clientset, err := rootCommand.Clientset()
+	clientset, err := f.Clientset()
 	if err != nil {
 		return err
-	}
-
-	if groupName == "" {
-		return fmt.Errorf("name is required")
 	}
 
 	oldGroup, err := clientset.InstanceGroupsFor(cluster).Get(ctx, groupName, metav1.GetOptions{})
@@ -141,7 +147,7 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Comma
 	}
 
 	if bytes.Equal(edited, raw) {
-		fmt.Fprintln(os.Stderr, "Edit cancelled, no changes made.")
+		fmt.Fprintln(out, "Edit cancelled: no changes made.")
 		return nil
 	}
 
