@@ -177,14 +177,12 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	encryptEtcdStorage := false
 
 	cmd := &cobra.Command{
-		Use:     "cluster [CLUSTER]",
-		Short:   createClusterShort,
-		Long:    createClusterLong,
-		Example: createClusterExample,
-		Args:    rootCommand.clusterNameArgsNoKubeconfig(&options.ClusterName),
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return nil, cobra.ShellCompDirectiveNoFileComp
-		},
+		Use:               "cluster [CLUSTER]",
+		Short:             createClusterShort,
+		Long:              createClusterLong,
+		Example:           createClusterExample,
+		Args:              rootCommand.clusterNameArgsNoKubeconfig(&options.ClusterName),
+		ValidArgsFunction: cobra.NoFileCompletions,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 
