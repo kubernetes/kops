@@ -43,7 +43,7 @@ See [Releases and versioning](https://kops.sigs.k8s.io/welcome/releases/)
 
 ## Getting Involved and Contributing
 
-See [Contributing](https://kops.sigs.k8s.io/welcome/contributing/)
+See [Contributing](https://kops.sigs.k8s.io/contributing/)
 
 ### Office Hours
 
