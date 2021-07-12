@@ -9,7 +9,6 @@
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/mixedinstances.example.com/addons/*",
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/mixedinstances.example.com/cluster-completed.spec",
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/mixedinstances.example.com/igconfig/node/*",
-        "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/mixedinstances.example.com/pki/issued/*",
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/mixedinstances.example.com/pki/ssh/*",
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/mixedinstances.example.com/secrets/dockerconfig"
       ]
