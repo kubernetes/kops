@@ -5,26 +5,6 @@
 
 Edit clusters and other resources.
 
-### Synopsis
-
-Edit a resource configuration. This command changes the desired configuration in the registry.
-
-  To set your preferred editor, you can define the EDITOR environment variable.
-  When you have done this, kOps will use the editor that you have set.
-  
-  kops edit does not update the cloud resources, to apply the changes use "kops update cluster".
-
-### Examples
-
-```
-  # Edit a cluster configuration.
-  kops edit cluster k8s-cluster.example.com --state=s3://my-state-store
-  
-  # Edit a instance group configuration.
-  kops edit ig --name k8s-cluster.example.com \
-  --state=s3://my-state-store nodes
-```
-
 ### Options
 
 ```
