@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -264,10 +265,15 @@ func deleteVolume(cloud fi.Cloud, t *resources.Resource) error {
 	c := cloud.(do.DOCloud)
 	volume := t.Obj.(godo.Volume)
 	for _, dropletID := range volume.DropletIDs {
-		action, _, err := c.VolumeActionService().DetachByDropletID(context.TODO(), volume.ID, dropletID)
+		action, resp, err := c.VolumeActionService().DetachByDropletID(context.TODO(), volume.ID, dropletID)
 		if err != nil {
-			return fmt.Errorf("failed to detach volume: %s, err: %s", volume.ID, err)
+			if resp != nil && resp.StatusCode == http.StatusNotFound {
+				// Volume is already detached, nothing to do.
+				continue
+			}
+			return fmt.Errorf("failed to detach volume %s: %s", volume.ID, err)
 		}
+
 		if err := waitForDetach(c, action); err != nil {
 			return fmt.Errorf("error while waiting for volume %s to detach: %s", volume.ID, err)
 		}
