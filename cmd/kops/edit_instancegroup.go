@@ -32,6 +32,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/edit"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/try"
@@ -128,7 +129,7 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer, o
 	}
 
 	var (
-		editor = editor.NewDefaultEditor(editorEnvs)
+		editor = editor.NewDefaultEditor(commandutils.EditorEnvs)
 	)
 
 	ext := "yaml"
