@@ -71,10 +71,6 @@ func (c *VFSCAStore) VFSPath() vfs.Path {
 	return c.basedir
 }
 
-func (c *VFSCAStore) buildCertificatePoolPath(name string) vfs.Path {
-	return c.basedir.Join("issued", name)
-}
-
 func (c *VFSCAStore) buildPrivateKeyPoolPath(name string) vfs.Path {
 	return c.basedir.Join("private", name)
 }
@@ -126,7 +122,7 @@ func (c *VFSCAStore) loadKeyset(p vfs.Path) (*Keyset, error) {
 	return keyset, nil
 }
 
-func (k *Keyset) ToAPIObject(name string, includePrivateKeyMaterial bool) (*kops.Keyset, error) {
+func (k *Keyset) ToAPIObject(name string) (*kops.Keyset, error) {
 	o := &kops.Keyset{}
 	o.Name = name
 	o.Spec.Type = kops.SecretTypeKeypair
@@ -158,7 +154,7 @@ func (k *Keyset) ToAPIObject(name string, includePrivateKeyMaterial bool) (*kops
 			oki.PublicMaterial = publicMaterial.Bytes()
 		}
 
-		if includePrivateKeyMaterial && ki.PrivateKey != nil {
+		if ki.PrivateKey != nil {
 			var privateMaterial bytes.Buffer
 			if _, err := ki.PrivateKey.WriteTo(&privateMaterial); err != nil {
 				return nil, err
@@ -176,10 +172,10 @@ func (k *Keyset) ToAPIObject(name string, includePrivateKeyMaterial bool) (*kops
 }
 
 // writeKeysetBundle writes a Keyset bundle to VFS.
-func writeKeysetBundle(cluster *kops.Cluster, p vfs.Path, name string, keyset *Keyset, includePrivateKeyMaterial bool) error {
+func writeKeysetBundle(cluster *kops.Cluster, p vfs.Path, name string, keyset *Keyset) error {
 	p = p.Join("keyset.yaml")
 
-	o, err := keyset.ToAPIObject(name, includePrivateKeyMaterial)
+	o, err := keyset.ToAPIObject(name)
 	if err != nil {
 		return err
 	}
@@ -224,45 +220,17 @@ var legacyKeysetMappings = map[string]string{
 }
 
 func (c *VFSCAStore) FindKeyset(id string) (*Keyset, error) {
-	certs, err := c.loadKeyset(c.buildCertificatePoolPath(id))
-
-	if certs == nil || os.IsNotExist(err) {
-		if legacyId := legacyKeysetMappings[id]; legacyId != "" {
-			certs, err = c.loadKeyset(c.buildCertificatePoolPath(legacyId))
-			if certs != nil {
-				id = legacyId
-				certs.LegacyFormat = true
-			}
-		}
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
 	keys, err := c.findPrivateKeyset(id)
-	if err != nil {
-		return nil, err
-	}
-
-	if certs != nil {
-		if keys == nil {
-			return certs, nil
-		}
-		if certs.LegacyFormat {
-			keys.LegacyFormat = true
-		}
-		for key, certItem := range certs.Items {
-			keyItem := keys.Items[key]
-			if keyItem == nil {
-				keys.Items[key] = certItem
-			} else if keyItem.Certificate == nil {
-				keyItem.Certificate = certItem.Certificate
+	if keys == nil || os.IsNotExist(err) {
+		if legacyId := legacyKeysetMappings[id]; legacyId != "" {
+			keys, err = c.findPrivateKeyset(legacyId)
+			if keys != nil {
+				keys.LegacyFormat = true
 			}
 		}
 	}
 
-	return keys, nil
+	return keys, err
 }
 
 // ListKeysets implements CAStore::ListKeysets
@@ -373,12 +341,8 @@ func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
 
 // mirrorKeyset writes Keyset bundles for the certificates & privatekeys.
 func mirrorKeyset(cluster *kops.Cluster, basedir vfs.Path, name string, keyset *Keyset) error {
-	if err := writeKeysetBundle(cluster, basedir.Join("private"), name, keyset, true); err != nil {
+	if err := writeKeysetBundle(cluster, basedir.Join("private"), name, keyset); err != nil {
 		return fmt.Errorf("writing private bundle: %v", err)
-	}
-
-	if err := writeKeysetBundle(cluster, basedir.Join("issued"), name, keyset, false); err != nil {
-		return fmt.Errorf("writing certificate bundle: %v", err)
 	}
 
 	return nil
@@ -422,15 +386,8 @@ func (c *VFSCAStore) StoreKeyset(name string, keyset *Keyset) error {
 
 	{
 		p := c.buildPrivateKeyPoolPath(name)
-		if err := writeKeysetBundle(c.cluster, p, name, keyset, true); err != nil {
+		if err := writeKeysetBundle(c.cluster, p, name, keyset); err != nil {
 			return fmt.Errorf("writing private bundle: %v", err)
-		}
-	}
-
-	{
-		p := c.buildCertificatePoolPath(name)
-		if err := writeKeysetBundle(c.cluster, p, name, keyset, false); err != nil {
-			return fmt.Errorf("writing certificate bundle: %v", err)
 		}
 	}
 

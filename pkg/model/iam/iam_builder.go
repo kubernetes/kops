@@ -643,7 +643,6 @@ func ReadableStatePaths(cluster *kops.Cluster, role Subject) ([]string, error) {
 			"/addons/*",
 			"/cluster-completed.spec",
 			"/igconfig/node/*",
-			"/pki/issued/*",
 			"/pki/ssh/*",
 			"/secrets/dockerconfig",
 		)

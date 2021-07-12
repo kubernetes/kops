@@ -9,7 +9,6 @@
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/compress.example.com/addons/*",
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/compress.example.com/cluster-completed.spec",
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/compress.example.com/igconfig/node/*",
-        "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/compress.example.com/pki/issued/*",
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/compress.example.com/pki/ssh/*",
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/compress.example.com/secrets/dockerconfig"
       ]
