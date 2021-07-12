@@ -25,7 +25,6 @@ go_library(
         "edit.go",
         "edit_cluster.go",
         "edit_instancegroup.go",
-        "editor.go",
         "export.go",
         "export_kubecfg.go",
         "gen_help_docs.go",

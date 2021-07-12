@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "cluster.go",
+        "editor.go",
         "error.go",
         "exit.go",
         "factory.go",
