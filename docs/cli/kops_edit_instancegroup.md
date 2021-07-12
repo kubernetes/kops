@@ -11,20 +11,19 @@ Edit a cluster configuration.
 
  This command changes the instancegroup desired configuration in the registry.
 
-  To set your preferred editor, you can define the EDITOR environment variable.
-  When you have done this, kOps will use the editor that you have set.
-  
+ To set your preferred editor, you can define the EDITOR environment variable. When you have done this, kOps will use the editor that you have set.
+
  kops edit does not update the cloud resources, to apply the changes use "kops update cluster".
 
 ```
-kops edit instancegroup [flags]
+kops edit instancegroup INSTANCE_GROUP [flags]
 ```
 
 ### Examples
 
 ```
   # Edit an instancegroup desired configuration.
-  kops edit ig --name k8s-cluster.example.com nodes --state=s3://my-state-store
+  kops edit instancegroup --name k8s-cluster.example.com nodes --state=s3://my-state-store
 ```
 
 ### Options
