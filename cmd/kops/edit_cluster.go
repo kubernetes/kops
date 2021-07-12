@@ -103,7 +103,7 @@ func RunEditCluster(ctx context.Context, f *util.Factory, out io.Writer, options
 	}
 
 	var (
-		editor = util_editor.NewDefaultEditor(editorEnvs)
+		editor = util_editor.NewDefaultEditor(commandutils.EditorEnvs)
 	)
 
 	ext := "yaml"
