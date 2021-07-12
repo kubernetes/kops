@@ -148,6 +148,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdDistrust(f, out))
 	cmd.AddCommand(NewCmdEdit(f, out))
 	cmd.AddCommand(NewCmdExport(f, out))
+	cmd.AddCommand(NewCmdGenCLIDocs(f, out))
 	cmd.AddCommand(NewCmdGet(f, out))
 	cmd.AddCommand(commands.NewCmdHelpers(f, out))
 	cmd.AddCommand(NewCmdPromote(f, out))
