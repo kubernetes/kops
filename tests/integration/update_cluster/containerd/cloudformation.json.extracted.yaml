@@ -416,7 +416,7 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
   ConfigBase: memfs://clusters.example.com/containerd.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: LfIjYwhZ+QZeIe1EaAfPaVAJEXDldauEfoRDqJ376L8=
+  NodeupConfigHash: yNDHI151rlG9u+g2DApXbUdjHi3Ko/2WgbLZcK5oyP0=
 
   __EOF_KUBE_ENV
 
