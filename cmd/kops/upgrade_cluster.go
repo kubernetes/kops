@@ -41,7 +41,7 @@ import (
 )
 
 var (
-	upgradeClusterLong = templates.LongDesc(i18n.T(`
+	upgradeClusterLong = pretty.LongDesc(i18n.T(`
 	Automates checking for and applying Kubernetes updates. This upgrades a cluster to the latest recommended
 	production ready Kubernetes version. After this command is run, use ` + pretty.Bash("kops update cluster") + ` and ` + pretty.Bash("kops rolling-update cluster") + `
 	to finish a cluster upgrade.
