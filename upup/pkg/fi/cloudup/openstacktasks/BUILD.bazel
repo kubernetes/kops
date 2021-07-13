@@ -69,9 +69,11 @@ go_test(
     srcs = ["port_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "//pkg/apis/kops:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/openstack:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/ports:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
     ],
 )
