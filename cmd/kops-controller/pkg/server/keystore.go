@@ -22,6 +22,7 @@ import (
 	"path"
 
 	"k8s.io/kops/pkg/pki"
+	"sigs.k8s.io/yaml"
 )
 
 type keystore struct {
@@ -43,27 +44,27 @@ func (k keystore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.Privat
 	return entry.certificate, entry.key, nil
 }
 
-func newKeystore(basePath string, cas []string) (pki.Keystore, error) {
+func newKeystore(basePath string, cas []string) (pki.Keystore, map[string]string, error) {
 	keystore := &keystore{
 		keys: map[string]keystoreEntry{},
 	}
 	for _, name := range cas {
 		certBytes, err := ioutil.ReadFile(path.Join(basePath, name+".crt"))
 		if err != nil {
-			return nil, fmt.Errorf("reading %q certificate: %v", name, err)
+			return nil, nil, fmt.Errorf("reading %q certificate: %v", name, err)
 		}
 		certificate, err := pki.ParsePEMCertificate(certBytes)
 		if err != nil {
-			return nil, fmt.Errorf("parsing %q certificate: %v", name, err)
+			return nil, nil, fmt.Errorf("parsing %q certificate: %v", name, err)
 		}
 
 		keyBytes, err := ioutil.ReadFile(path.Join(basePath, name+".key"))
 		if err != nil {
-			return nil, fmt.Errorf("reading %q key: %v", name, err)
+			return nil, nil, fmt.Errorf("reading %q key: %v", name, err)
 		}
 		key, err := pki.ParsePEMPrivateKey(keyBytes)
 		if err != nil {
-			return nil, fmt.Errorf("parsing %q key: %v", name, err)
+			return nil, nil, fmt.Errorf("parsing %q key: %v", name, err)
 		}
 
 		keystore.keys[name] = keystoreEntry{
@@ -72,5 +73,15 @@ func newKeystore(basePath string, cas []string) (pki.Keystore, error) {
 		}
 	}
 
-	return keystore, nil
+	var keypairIDs map[string]string
+	keypairIDsBytes, err := ioutil.ReadFile(path.Join(basePath, "keypair-ids.yaml"))
+	if err != nil {
+		return nil, nil, fmt.Errorf("reading keypair-ids.yaml")
+	}
+	err = yaml.Unmarshal(keypairIDsBytes, &keypairIDs)
+	if err != nil {
+		return nil, nil, fmt.Errorf("parsing keypair-ids.yaml")
+	}
+
+	return keystore, keypairIDs, nil
 }
