@@ -17,8 +17,11 @@ limitations under the License.
 package main
 
 import (
+	"io"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
+	"k8s.io/kops/cmd/kops/util"
 )
 
 const fileHeader = `
@@ -26,34 +29,31 @@ const fileHeader = `
 
 `
 
-type GenHelpDocsCmd struct {
-	cobraCommand *cobra.Command
-	OutDir       string
+type GenHelpDocsOptions struct {
+	OutDir string
 }
 
-var genHelpDocsCmd = GenHelpDocsCmd{
-	cobraCommand: &cobra.Command{
-		Use:    "genhelpdocs",
-		Short:  "Generate CLI help docs",
-		Hidden: true,
-	},
-}
+func NewCmdGenCLIDocs(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &GenHelpDocsOptions{}
 
-func init() {
-	cmd := genHelpDocsCmd.cobraCommand
-	rootCommand.cobraCommand.AddCommand(cmd)
-
-	cmd.Run = func(cmd *cobra.Command, args []string) {
-		err := genHelpDocsCmd.Run()
-		if err != nil {
-			exitWithError(err)
-		}
+	cmd := &cobra.Command{
+		Use:               "gen-cli-docs",
+		Short:             "Generate CLI help docs",
+		Hidden:            true,
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cobra.NoFileCompletions,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunGenCLIDocs(options)
+		},
 	}
 
-	cmd.Flags().StringVar(&genHelpDocsCmd.OutDir, "out", "", "path to write out to.")
+	cmd.Flags().StringVar(&options.OutDir, "out", "", "path to write out to.")
+	cmd.MarkFlagDirname("out")
+
+	return cmd
 }
 
-func (c *GenHelpDocsCmd) Run() error {
+func RunGenCLIDocs(options *GenHelpDocsOptions) error {
 	rootCommand.cobraCommand.DisableAutoGenTag = true
 
 	// unset KOPS_STATE_STORE from default value
@@ -64,5 +64,5 @@ func (c *GenHelpDocsCmd) Run() error {
 	linkHandler := func(link string) string { return link }
 	filePrepender := func(filname string) string { return fileHeader }
 
-	return doc.GenMarkdownTreeCustom(rootCommand.cobraCommand, c.OutDir, filePrepender, linkHandler)
+	return doc.GenMarkdownTreeCustom(rootCommand.cobraCommand, options.OutDir, filePrepender, linkHandler)
 }

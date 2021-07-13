@@ -298,7 +298,7 @@ gcs-publish-ci: bazel-version-ci
 gen-cli-docs: ${KOPS} # Regenerate CLI docs
 	KOPS_STATE_STORE= \
 	KOPS_FEATURE_FLAGS= \
-	${KOPS} genhelpdocs --out docs/cli
+	${KOPS} gen-cli-docs --out docs/cli
 
 .PHONY: push-amd64
 push-amd64: crossbuild-nodeup-amd64
@@ -439,7 +439,7 @@ verify-misspelling:
 .PHONY: verify-gendocs
 verify-gendocs: ${KOPS}
 	@TMP_DOCS="$$(mktemp -d)"; \
-	'${KOPS}' genhelpdocs --out "$$TMP_DOCS"; \
+	'${KOPS}' gen-cli-docs --out "$$TMP_DOCS"; \
 	\
 	if ! diff -r "$$TMP_DOCS" '${KOPS_ROOT}/docs/cli'; then \
 	     echo "FAIL: make verify-gendocs failed, as the generated markdown docs are out of date." 1>&2; \

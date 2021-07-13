@@ -10,7 +10,7 @@ Replace cluster resources.
 Replace a resource desired configuration by filename or stdin.
 
 ```
-kops replace -f FILENAME [flags]
+kops replace {-f FILENAME}... [flags]
 ```
 
 ### Examples

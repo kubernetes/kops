@@ -31,7 +31,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/text"
 	"k8s.io/kops/util/pkg/vfs"
-	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
@@ -54,42 +53,38 @@ var (
 	replaceShort = i18n.T(`Replace cluster resources.`)
 )
 
-// replaceOptions is the options for the command
-type replaceOptions struct {
-	// Filenames is a list of files containing resources
+// ReplaceOptions is the options for the command
+type ReplaceOptions struct {
+	// Filenames is a list of files containing resources to replace.
 	Filenames []string
-	// create any resources not found - we limit to instance groups only for now
-	force bool
+	// Force causes any missing rescources to be created.
+	Force bool
 }
 
 // NewCmdReplace returns a new replace command
 func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
-	options := &replaceOptions{}
+	options := &ReplaceOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "replace -f FILENAME",
-		Short:   replaceShort,
-		Long:    replaceLong,
-		Example: replaceExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
-			if len(options.Filenames) == 0 {
-				cmd.Help()
-				return
-			}
-
-			cmdutil.CheckErr(RunReplace(ctx, f, cmd, out, options))
+		Use:               "replace {-f FILENAME}...",
+		Short:             replaceShort,
+		Long:              replaceLong,
+		Example:           replaceExample,
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cobra.NoFileCompletions,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunReplace(context.TODO(), f, out, options)
 		},
 	}
 	cmd.Flags().StringSliceVarP(&options.Filenames, "filename", "f", options.Filenames, "A list of one or more files separated by a comma.")
-	cmd.Flags().BoolVarP(&options.force, "force", "", false, "Force any changes, which will also create any non-existing resource")
 	cmd.MarkFlagRequired("filename")
+	cmd.Flags().BoolVarP(&options.Force, "force", "", false, "Force any changes, which will also create any non-existing resource")
 
 	return cmd
 }
 
 // RunReplace processes the replace command
-func RunReplace(ctx context.Context, f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOptions) error {
+func RunReplace(ctx context.Context, f *util.Factory, out io.Writer, c *ReplaceOptions) error {
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
@@ -140,7 +135,7 @@ func RunReplace(ctx context.Context, f *util.Factory, cmd *cobra.Command, out io
 						}
 					}
 					if cluster == nil {
-						if !c.force {
+						if !c.Force {
 							return fmt.Errorf("cluster %v does not exist (try adding --force flag)", clusterName)
 						}
 						_, err = clientset.CreateCluster(ctx, v)
@@ -172,7 +167,7 @@ func RunReplace(ctx context.Context, f *util.Factory, cmd *cobra.Command, out io
 				ig, err := clientset.InstanceGroupsFor(cluster).Get(ctx, igName, metav1.GetOptions{})
 				if err != nil {
 					if errors.IsNotFound(err) {
-						if !c.force {
+						if !c.Force {
 							return fmt.Errorf("instanceGroup: %v does not exist (try adding --force flag)", igName)
 						}
 					} else {
