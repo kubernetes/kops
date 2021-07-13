@@ -72,7 +72,7 @@ type Config struct {
 	// Hooks are for custom actions, for example on first installation.
 	Hooks [][]kops.HookSpec
 	// ContainerdConfig config holds the configuration for containerd
-	ContainerdConfig string `json:"containerdConfig,omitempty"`
+	ContainerdConfig *kops.ContainerdConfig `json:"containerdConfig,omitempty"`
 
 	// APIServerConfig is additional configuration for nodes running an APIServer.
 	APIServerConfig *APIServerConfig `json:",omitempty"`
