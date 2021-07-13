@@ -32,7 +32,7 @@ import (
 )
 
 var (
-	trustKeypairLong = templates.LongDesc(i18n.T(`
+	trustKeypairLong = pretty.LongDesc(i18n.T(`
 	Trust one or more keypairs in a keyset.
 
 	Trusting adds the certificates of the specified keypairs to trust
