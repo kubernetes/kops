@@ -559,7 +559,10 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.ModelBuilderContex
 		}
 
 		if !b.HasAPIServer {
-			cert, key := b.GetBootstrapCert(name)
+			cert, key, err := b.GetBootstrapCert(name, fi.CertificateIDCA)
+			if err != nil {
+				return err
+			}
 
 			c.AddTask(&nodetasks.File{
 				Path:           filepath.Join(dir, name+".crt"),

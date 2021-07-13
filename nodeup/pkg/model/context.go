@@ -65,8 +65,9 @@ type NodeupModelContext struct {
 	// HasAPIServer is true if the InstanceGroup has a role of master or apiserver (pupulated by Init)
 	HasAPIServer bool
 
-	kubernetesVersion semver.Version
-	bootstrapCerts    map[string]*nodetasks.BootstrapCert
+	kubernetesVersion   semver.Version
+	bootstrapCerts      map[string]*nodetasks.BootstrapCert
+	bootstrapKeypairIDs map[string]string
 
 	// ConfigurationMode determines if we are prewarming an instance or running it live
 	ConfigurationMode string
@@ -81,6 +82,7 @@ func (c *NodeupModelContext) Init() error {
 	}
 	c.kubernetesVersion = *k8sVersion
 	c.bootstrapCerts = map[string]*nodetasks.BootstrapCert{}
+	c.bootstrapKeypairIDs = map[string]string{}
 
 	role := c.BootConfig.InstanceGroupRole
 
@@ -240,7 +242,7 @@ func (c *NodeupModelContext) BuildIssuedKubeconfig(name string, subject nodetask
 }
 
 // GetBootstrapCert requests a certificate keypair from kops-controller.
-func (c *NodeupModelContext) GetBootstrapCert(name string) (cert, key fi.Resource) {
+func (c *NodeupModelContext) GetBootstrapCert(name string, signer string) (cert, key fi.Resource, err error) {
 	if c.IsMaster {
 		panic("control plane nodes can't get certs from kops-controller")
 	}
@@ -252,13 +254,20 @@ func (c *NodeupModelContext) GetBootstrapCert(name string) (cert, key fi.Resourc
 		}
 		c.bootstrapCerts[name] = b
 	}
-	return b.Cert, b.Key
+	c.bootstrapKeypairIDs[signer] = c.NodeupConfig.KeypairIDs[signer]
+	if c.bootstrapKeypairIDs[signer] == "" {
+		return nil, nil, fmt.Errorf("no keypairID for %q", signer)
+	}
+	return b.Cert, b.Key, nil
 }
 
 // BuildBootstrapKubeconfig generates a kubeconfig with a client certificate from either kops-controller or the state store.
 func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.ModelBuilderContext) (fi.Resource, error) {
 	if c.UseKopsControllerForNodeBootstrap() {
-		cert, key := c.GetBootstrapCert(name)
+		cert, key, err := c.GetBootstrapCert(name, fi.CertificateIDCA)
+		if err != nil {
+			return nil, err
+		}
 
 		kubeConfig := &nodetasks.KubeConfig{
 			Name: name,
@@ -273,7 +282,7 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Model
 			kubeConfig.ServerURL = "https://" + c.Cluster.Spec.MasterInternalName
 		}
 
-		err := ctx.EnsureTask(kubeConfig)
+		err = ctx.EnsureTask(kubeConfig)
 		if err != nil {
 			return nil, err
 		}
