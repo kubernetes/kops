@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
@@ -176,4 +177,33 @@ func runContainerdBuilderTest(t *testing.T, key string, distro distributions.Dis
 	}
 
 	testutils.ValidateTasks(t, filepath.Join(basedir, "tasks.yaml"), context)
+}
+
+func TestContainerdConfig(t *testing.T) {
+	cluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			ContainerRuntime:  "containerd",
+			Containerd:        &kops.ContainerdConfig{},
+			KubernetesVersion: "1.21.0",
+			Networking: &kops.NetworkingSpec{
+				Kubenet: &kops.KubenetNetworkingSpec{},
+			},
+		},
+	}
+
+	b := &ContainerdBuilder{
+		NodeupModelContext: &NodeupModelContext{
+			Cluster: cluster,
+			NodeupConfig: &nodeup.Config{
+				ContainerdConfig: &kops.ContainerdConfig{},
+			},
+		},
+	}
+
+	config := b.buildContainerdConfig()
+
+	if config == "" {
+		t.Errorf("got unexpected empty containerd config")
+	}
+
 }
