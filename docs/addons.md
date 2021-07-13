@@ -174,8 +174,10 @@ The kOps CLI requires additional IAM permissions to manage the requisite EventBr
         "events:ListTargetsByRule",
         "events:ListTagsForResource",
         "events:PutEvents",
+        "events:PutRule",
         "events:PutTargets",
         "events:RemoveTargets",
+        "events:TagResource",
         "sqs:CreateQueue",
         "sqs:DeleteQueue",
         "sqs:GetQueueAttributes",
@@ -188,7 +190,7 @@ The kOps CLI requires additional IAM permissions to manage the requisite EventBr
 }
 ```
 
-**Warning: If you switch between the two operating modes on an existing cluster, the old resources have to be manually deleted. For IMDS to Queue Processor, this means deleting the k8s nth daemonset. For Queue Processor to IMDS, this means deleting the k8s nth deployment and the AWS resources: the SQS queue, EventBridge rules, and ASG Lifecycle hooks.**
+**Warning:** If you switch between the two operating modes on an existing cluster, the old resources have to be manually deleted. For IMDS to Queue Processor, this means deleting the k8s nth daemonset. For Queue Processor to IMDS, this means deleting the Kubernetes NTH deployment and the AWS resources: the SQS queue, EventBridge rules, and ASG Lifecycle hooks.
 
 #### Node Problem Detector
 
