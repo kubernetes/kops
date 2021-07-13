@@ -50,7 +50,7 @@ kops validate cluster my-cluster.example.com
 kops delete cluster my-cluster.example.com --yes
 
 # to export kubecfg
-* follow steps as mentioned [here](https://kops.sigs.k8s.io/cli/kops_export_kubecfg/#examples). 
+* follow steps as mentioned [here](https://kops.sigs.k8s.io/cli/kops_export_kubeconfig/#examples). 
 
 # to update a cluster
 * follow steps as mentioned [here](https://kops.sigs.k8s.io/operations/updates_and_upgrades/#manual-update)
