@@ -35,27 +35,27 @@ import (
 )
 
 var (
-	exportKubecfgLong = templates.LongDesc(i18n.T(`
-	Export a kubecfg file for a cluster from the state store. By default the configuration
-	will be saved into a users $HOME/.kube/config file. Kops will respect the KUBECONFIG environment variable
-	if the --kubeconfig flag is not set.
+	exportKubeconfigLong = templates.LongDesc(i18n.T(`
+	Export a kubeconfig file for a cluster from the state store. By default the configuration
+	will be saved into a users $HOME/.kube/config file.
 	`))
 
-	exportKubecfgExample = templates.Examples(i18n.T(`
+	exportKubeconfigExample = templates.Examples(i18n.T(`
 	# export a kubeconfig file with the cluster admin user (make sure you keep this user safe!)
-	kops export kubecfg k8s-cluster.example.com --admin
+	kops export kubeconfig k8s-cluster.example.com --admin
 
 	# export using a user already existing in the kubeconfig file
-	kops export kubecfg k8s-cluster.example.com --user my-oidc-user
+	kops export kubeconfig k8s-cluster.example.com --user my-oidc-user
 
 	# export using the internal DNS name, bypassing the cloud load balancer
-	kops export kubecfg k8s-cluster.example.com --internal
-		`))
+	kops export kubeconfig k8s-cluster.example.com --internal
+	`))
 
-	exportKubecfgShort = i18n.T(`Export kubecfg.`)
+	exportKubeconfigShort = i18n.T(`Export kubeconfig.`)
 )
 
-type ExportKubecfgOptions struct {
+type ExportKubeconfigOptions struct {
+	ClusterName    string
 	KubeConfigPath string
 	all            bool
 	admin          time.Duration
@@ -66,46 +66,49 @@ type ExportKubecfgOptions struct {
 	UseKopsAuthenticationPlugin bool
 }
 
-func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
-	options := &ExportKubecfgOptions{}
+func NewCmdExportKubeconfig(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &ExportKubeconfigOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "kubecfg CLUSTERNAME",
-		Short:   exportKubecfgShort,
-		Long:    exportKubecfgLong,
-		Example: exportKubecfgExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
-			err := RunExportKubecfg(ctx, f, out, options, args)
-			if err != nil {
-				exitWithError(err)
+		Use:     "kubeconfig [CLUSTER | --all]",
+		Aliases: []string{"kubecfg"},
+		Short:   exportKubeconfigShort,
+		Long:    exportKubeconfigLong,
+		Example: exportKubeconfigExample,
+		Args: func(cmd *cobra.Command, args []string) error {
+			if options.all {
+				if len(args) != 0 {
+					return fmt.Errorf("cannot use both --all flag and positional arguments")
+				}
 			}
+			if options.admin != 0 && options.user != "" {
+				return fmt.Errorf("cannot use both --admin and --user")
+			}
+
+			return rootCommand.clusterNameArgs(&options.ClusterName)(cmd, args)
+		},
+		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunExportKubeconfig(context.TODO(), f, out, options, args)
 		},
 	}
 
-	cmd.Flags().StringVar(&options.KubeConfigPath, "kubeconfig", options.KubeConfigPath, "the location of the kubeconfig file to create.")
-	cmd.Flags().BoolVar(&options.all, "all", options.all, "export all clusters from the kOps state store")
-	cmd.Flags().DurationVar(&options.admin, "admin", options.admin, "export a cluster admin user credential with the given lifetime and add it to the cluster context")
+	cmd.Flags().StringVar(&options.KubeConfigPath, "kubeconfig", options.KubeConfigPath, "Filename of the kubeconfig to create")
+	cmd.Flags().BoolVar(&options.all, "all", options.all, "Export all clusters from the kOps state store")
+	cmd.Flags().DurationVar(&options.admin, "admin", options.admin, "Also export a cluster admin user credential with the specified lifetime and add it to the cluster context")
 	cmd.Flags().Lookup("admin").NoOptDefVal = kubeconfig.DefaultKubecfgAdminLifetime.String()
-	cmd.Flags().StringVar(&options.user, "user", options.user, "re-use an existing user in kubeconfig.  Value must specify an existing user block in your kubeconfig file.")
-	cmd.Flags().BoolVar(&options.internal, "internal", options.internal, "use the cluster's internal DNS name")
-	cmd.Flags().BoolVar(&options.UseKopsAuthenticationPlugin, "auth-plugin", options.UseKopsAuthenticationPlugin, "use the kOps authentication plugin")
+	cmd.Flags().StringVar(&options.user, "user", options.user, "Existing user in kubeconfig file to use")
+	cmd.RegisterFlagCompletionFunc("user", completeKubecfgUser)
+	cmd.Flags().BoolVar(&options.internal, "internal", options.internal, "Use the cluster's internal DNS name")
+	cmd.Flags().BoolVar(&options.UseKopsAuthenticationPlugin, "auth-plugin", options.UseKopsAuthenticationPlugin, "Use the kOps authentication plugin")
 
 	return cmd
 }
 
-func RunExportKubecfg(ctx context.Context, f *util.Factory, out io.Writer, options *ExportKubecfgOptions, args []string) error {
+func RunExportKubeconfig(ctx context.Context, f *util.Factory, out io.Writer, options *ExportKubeconfigOptions, args []string) error {
 	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
-	}
-	if options.all {
-		if len(args) != 0 {
-			return fmt.Errorf("cannot use both --all flag and positional arguments")
-		}
-	}
-	if options.admin != 0 && options.user != "" {
-		return fmt.Errorf("cannot use both --admin and --user")
 	}
 
 	var clusterList []*kopsapi.Cluster
@@ -166,7 +169,7 @@ func RunExportKubecfg(ctx context.Context, f *util.Factory, out io.Writer, optio
 	return nil
 }
 
-func buildPathOptions(options *ExportKubecfgOptions) *clientcmd.PathOptions {
+func buildPathOptions(options *ExportKubeconfigOptions) *clientcmd.PathOptions {
 	pathOptions := clientcmd.NewDefaultPathOptions()
 
 	if len(options.KubeConfigPath) > 0 {
