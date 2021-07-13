@@ -922,7 +922,7 @@ Resources.AWSEC2LaunchTemplatenodesmixedinstancesexamplecom.Properties.LaunchTem
   ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: Z6ruP2QBZKY/CWpan8kL/iVGVxh3jBaxSSqQCLNmG+4=
+  NodeupConfigHash: RsLEJr46Xcyh5F+aw+mv0cdok9gUDJHGcyoBzcorJd0=
 
   __EOF_KUBE_ENV
 

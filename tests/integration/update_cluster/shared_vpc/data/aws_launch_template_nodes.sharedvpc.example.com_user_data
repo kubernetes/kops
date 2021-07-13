@@ -162,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/sharedvpc.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: R/zXiPbN576jx9+tm7w01As1c3o6puktRbSarvYqmAU=
+NodeupConfigHash: qNrBFJAwMHFXNb+sdtcrH13LD/Nl6ZCUjk0mLkIaLqw=
 
 __EOF_KUBE_ENV
 
