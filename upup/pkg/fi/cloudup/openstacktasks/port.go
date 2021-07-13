@@ -19,6 +19,7 @@ package openstacktasks
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	secgroup "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
@@ -31,12 +32,13 @@ import (
 type Port struct {
 	ID                       *string
 	Name                     *string
+	InstanceGroupName        *string
 	Network                  *Network
 	Subnets                  []*Subnet
 	SecurityGroups           []*SecurityGroup
 	AdditionalSecurityGroups []string
 	Lifecycle                fi.Lifecycle
-	Tag                      *string
+	Tags                     []string
 }
 
 // GetDependencies returns the dependencies of the Port task
@@ -101,22 +103,44 @@ func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle
 		}
 	}
 
-	tag := ""
-	if find != nil && fi.ArrayContains(port.Tags, fi.StringValue(find.Tag)) {
-		tag = fi.StringValue(find.Tag)
+	var tags []string
+
+	if find != nil {
+		for _, t := range find.Tags {
+			if fi.ArrayContains(port.Tags, t) {
+				tags = append(tags, t)
+			}
+		}
+	} else {
+		tags = port.Tags
+	}
+
+	var cloudInstanceGroupName *string
+	for _, t := range port.Tags {
+		prefix := fmt.Sprintf("%s=", openstack.TagKopsInstanceGroup)
+		if !strings.HasPrefix(t, prefix) {
+			continue
+		}
+		cloudInstanceGroupName = fi.String("")
+		scanString := fmt.Sprintf("%s%%s", prefix)
+		if _, err := fmt.Sscanf(t, scanString, cloudInstanceGroupName); err != nil {
+			klog.V(2).Infof("Error extracting instance group for Port with name: %q", port.Name)
+		}
 	}
 
 	actual := &Port{
-		ID:             fi.String(port.ID),
-		Name:           fi.String(port.Name),
-		Network:        &Network{ID: fi.String(port.NetworkID)},
-		SecurityGroups: sgs,
-		Subnets:        subnets,
-		Lifecycle:      lifecycle,
-		Tag:            fi.String(tag),
+		ID:                fi.String(port.ID),
+		InstanceGroupName: cloudInstanceGroupName,
+		Name:              fi.String(port.Name),
+		Network:           &Network{ID: fi.String(port.NetworkID)},
+		SecurityGroups:    sgs,
+		Subnets:           subnets,
+		Lifecycle:         lifecycle,
+		Tags:              tags,
 	}
 	if find != nil {
 		find.ID = actual.ID
+		actual.InstanceGroupName = find.InstanceGroupName
 		actual.AdditionalSecurityGroups = find.AdditionalSecurityGroups
 	}
 	return actual, nil
@@ -180,19 +204,25 @@ func (*Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Por
 			return fmt.Errorf("Error creating port: %v", err)
 		}
 
-		if e.Tag != nil {
-			err = t.Cloud.AppendTag(openstack.ResourceTypePort, v.ID, fi.StringValue(e.Tag))
-			if err != nil {
-				return fmt.Errorf("Error appending tag to port: %v", err)
+		if e.Tags != nil {
+			for _, tag := range e.Tags {
+				err = t.Cloud.AppendTag(openstack.ResourceTypePort, v.ID, tag)
+				if err != nil {
+					return fmt.Errorf("Error appending tag to port: %v", err)
+				}
 			}
 		}
 		e.ID = fi.String(v.ID)
 		klog.V(2).Infof("Creating a new Openstack port, id=%s", v.ID)
 		return nil
-	} else if changes != nil && changes.Tag != nil {
-		err := t.Cloud.AppendTag(openstack.ResourceTypePort, fi.StringValue(a.ID), fi.StringValue(changes.Tag))
-		if err != nil {
-			return fmt.Errorf("Error appending tag to port: %v", err)
+	}
+	if changes != nil && changes.Tags != nil {
+		klog.V(2).Infof("Updating tags for Port with name: %q", fi.StringValue(e.Name))
+		for _, tag := range e.Tags {
+			err := t.Cloud.AppendTag(openstack.ResourceTypePort, fi.StringValue(a.ID), tag)
+			if err != nil {
+				return fmt.Errorf("Error appending tag to port: %v", err)
+			}
 		}
 	}
 	e.ID = a.ID
