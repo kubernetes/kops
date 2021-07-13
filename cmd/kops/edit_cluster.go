@@ -32,8 +32,10 @@ import (
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/commands"
+	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/edit"
 	"k8s.io/kops/pkg/kopscodecs"
+	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	util_editor "k8s.io/kubectl/pkg/cmd/util/editor"
@@ -42,6 +44,7 @@ import (
 )
 
 type EditClusterOptions struct {
+	ClusterName string
 }
 
 var (
@@ -49,14 +52,14 @@ var (
 
 	This command changes the desired cluster configuration in the registry.
 
-    	To set your preferred editor, you can define the EDITOR environment variable.
-    	When you have done this, kOps will use the editor that you have set.
+    To set your preferred editor, you can define the EDITOR environment variable.
+    When you have done this, kOps will use the editor that you have set.
 
-	kops edit does not update the cloud resources, to apply the changes use "kops update cluster".`))
+	kops edit does not update the cloud resources, to apply the changes use ` + pretty.Bash("kops update cluster") + `.`))
 
 	editClusterExample = templates.Examples(i18n.T(`
-		# Edit a cluster configuration in AWS.
-		kops edit cluster k8s.cluster.site --state=s3://my-state-store
+	# Edit a cluster configuration in AWS.
+	kops edit cluster k8s.cluster.site --state=s3://my-state-store
 	`))
 )
 
@@ -64,30 +67,22 @@ func NewCmdEditCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &EditClusterOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "cluster",
-		Short:   i18n.T("Edit cluster."),
-		Long:    editClusterLong,
-		Example: editClusterExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
-
-			err := RunEditCluster(ctx, f, cmd, args, out, options)
-			if err != nil {
-				exitWithError(err)
-			}
+		Use:               "cluster [CLUSTER]",
+		Short:             i18n.T("Edit cluster."),
+		Long:              editClusterLong,
+		Example:           editClusterExample,
+		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
+		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunEditCluster(context.TODO(), f, out, options)
 		},
 	}
 
 	return cmd
 }
 
-func RunEditCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *EditClusterOptions) error {
-	err := rootCommand.ProcessArgs(args)
-	if err != nil {
-		return err
-	}
-
-	oldCluster, err := rootCommand.Cluster(ctx)
+func RunEditCluster(ctx context.Context, f *util.Factory, out io.Writer, options *EditClusterOptions) error {
+	oldCluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
 		return err
 	}
@@ -108,7 +103,7 @@ func RunEditCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, ar
 	}
 
 	var (
-		editor = util_editor.NewDefaultEditor(editorEnvs)
+		editor = util_editor.NewDefaultEditor(commandutils.EditorEnvs)
 	)
 
 	ext := "yaml"
@@ -145,7 +140,7 @@ func RunEditCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, ar
 
 		if containsError {
 			if bytes.Equal(stripComments(editedDiff), stripComments(edited)) {
-				return preservedFile(fmt.Errorf("%s", "Edit cancelled, no valid changes were saved."), file, out)
+				return preservedFile(fmt.Errorf("%s", "Edit cancelled: no valid changes were saved."), file, out)
 			}
 		}
 
@@ -155,7 +150,7 @@ func RunEditCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, ar
 
 		if bytes.Equal(stripComments(raw), stripComments(edited)) {
 			try.RemoveFile(file)
-			fmt.Fprintln(out, "Edit cancelled, no changes made.")
+			fmt.Fprintln(out, "Edit cancelled: no changes made.")
 			return nil
 		}
 
@@ -165,7 +160,7 @@ func RunEditCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, ar
 		}
 		if !lines {
 			try.RemoveFile(file)
-			fmt.Fprintln(out, "Edit cancelled, saved file was empty.")
+			fmt.Fprintln(out, "Edit cancelled: saved file was empty.")
 			return nil
 		}
 
