@@ -422,7 +422,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: tkKsjnWeOxwXl+xmlcu9fg6LL9i/1GpYYZbbNEUSOgk=
+  NodeupConfigHash: A0AyiJo03pbqluaXrVtbacjofP1NmBexAl0w2y4oS5o=
 
   __EOF_KUBE_ENV
 
