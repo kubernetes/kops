@@ -46,7 +46,6 @@ func NewCmdUnset(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	// create subcommands
-	cmd.AddCommand(NewCmdUnsetCluster(f, out))
 	cmd.AddCommand(NewCmdUnsetInstancegroup(f, out))
 
 	return cmd
