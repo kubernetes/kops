@@ -62,6 +62,7 @@ nav:
     - kops rolling-update: "cli/kops_rolling-update.md"
     - kops set: "cli/kops_set.md"
     - kops toolbox: "cli/kops_toolbox.md"
+    - kops trust: "cli/kops_trust.md"
     - kops unset: "cli/kops_unset.md"
     - kops update: "cli/kops_update.md"
     - kops upgrade: "cli/kops_upgrade.md"
