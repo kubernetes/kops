@@ -41,14 +41,12 @@ func NewCmdVersion(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &commands.VersionOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "version",
-		Short:   versionShort,
-		Long:    versionLong,
-		Example: versionExample,
-		Args:    cobra.NoArgs,
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return nil, cobra.ShellCompDirectiveNoFileComp
-		},
+		Use:               "version",
+		Short:             versionShort,
+		Long:              versionLong,
+		Example:           versionExample,
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cobra.NoFileCompletions,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return commands.RunVersion(f, out, options)
 		},
