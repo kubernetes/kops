@@ -48,6 +48,5 @@ Unset a configuration field.
 ### SEE ALSO
 
 * [kops](kops.md)	 - kOps is Kubernetes Operations.
-* [kops unset cluster](kops_unset_cluster.md)	 - Unset cluster fields.
 * [kops unset instancegroup](kops_unset_instancegroup.md)	 - Unset instancegroup fields.
 
