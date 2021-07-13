@@ -122,7 +122,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
 	cmd.Flags().DurationVar(&options.admin, "admin", options.admin, "Also export a cluster admin user credential with the specified lifetime and add it to the cluster context")
 	cmd.Flags().Lookup("admin").NoOptDefVal = kubeconfig.DefaultKubecfgAdminLifetime.String()
-	cmd.Flags().StringVar(&options.user, "user", options.user, "Re-use an existing user in kubeconfig. Value must specify an existing user block in your kubeconfig file.  Implies --create-kube-config")
+	cmd.Flags().StringVar(&options.user, "user", options.user, "Existing user in kubeconfig file to use.  Implies --create-kube-config")
 	cmd.RegisterFlagCompletionFunc("user", completeKubecfgUser)
 	cmd.Flags().BoolVar(&options.internal, "internal", options.internal, "Use the cluster's internal DNS name. Implies --create-kube-config")
 	cmd.Flags().BoolVar(&options.AllowKopsDowngrade, "allow-kops-downgrade", options.AllowKopsDowngrade, "Allow an older version of kOps to update the cluster than last used")
@@ -323,7 +323,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 		}
 		firstRun = !hasKubecfg
 
-		klog.Infof("Exporting kubecfg for cluster")
+		klog.Infof("Exporting kubeconfig for cluster")
 
 		// TODO: Another flag?
 		useKopsAuthenticationPlugin := false
@@ -347,7 +347,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 		}
 
 		if c.admin == 0 && c.user == "" {
-			klog.Warningf("Exported kubecfg with no user authentication; use --admin, --user or --auth-plugin flags with `kops export kubecfg`")
+			klog.Warningf("Exported kubeconfig with no user authentication; use --admin, --user or --auth-plugin flags with `kops export kubeconfig`")
 		}
 	}
 

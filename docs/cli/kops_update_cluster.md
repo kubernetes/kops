@@ -35,7 +35,7 @@ kops update cluster [CLUSTER] [flags]
       --phase string                  Subset of tasks to run: cluster, network, security
       --ssh-public-key string         SSH public key to use (deprecated: use kops create secret instead)
       --target string                 Target - direct, terraform, cloudformation (default "direct")
-      --user string                   Re-use an existing user in kubeconfig. Value must specify an existing user block in your kubeconfig file.  Implies --create-kube-config
+      --user string                   Existing user in kubeconfig file to use.  Implies --create-kube-config
   -y, --yes                           Create cloud resources, without --yes update is in dry run mode
 ```
 

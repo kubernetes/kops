@@ -26,7 +26,7 @@ go_library(
         "edit_cluster.go",
         "edit_instancegroup.go",
         "export.go",
-        "export_kubecfg.go",
+        "export_kubeconfig.go",
         "gen_help_docs.go",
         "get.go",
         "get_assets.go",
