@@ -9,7 +9,8 @@ Trust a keypair.
 
 Trust one or more keypairs in a keyset.
 
- Trusting adds the certificates of the specified keypairs to trust stores. It is the reverse of thekops distrust keypair command.
+Trusting adds the certificates of the specified keypairs to trust
+stores. It is the reverse of the `kops distrust keypair` command.
 
 ```
 kops trust keypair KEYSET ID... [flags]
