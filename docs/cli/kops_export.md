@@ -35,5 +35,5 @@ Export configuration.
 ### SEE ALSO
 
 * [kops](kops.md)	 - kOps is Kubernetes Operations.
-* [kops export kubecfg](kops_export_kubecfg.md)	 - Export kubecfg.
+* [kops export kubeconfig](kops_export_kubeconfig.md)	 - Export kubeconfig.
 
