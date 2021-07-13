@@ -36,7 +36,7 @@ func NewCmdExport(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	// create subcommands
-	cmd.AddCommand(NewCmdExportKubecfg(f, out))
+	cmd.AddCommand(NewCmdExportKubeconfig(f, out))
 
 	return cmd
 }
