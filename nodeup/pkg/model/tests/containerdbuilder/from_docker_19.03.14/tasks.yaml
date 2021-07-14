@@ -1,4 +1,5 @@
-contents: ""
+contents: |
+  disabled_plugins = ["cri"]
 path: /etc/containerd/config-kops.toml
 type: file
 ---
