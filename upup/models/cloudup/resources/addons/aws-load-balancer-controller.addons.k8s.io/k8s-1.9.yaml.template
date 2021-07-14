@@ -802,6 +802,7 @@ spec:
         - --enable-shield=false
         - --ingress-class=alb
         - "--default-tags={{ CloudLabels }}"
+        - --aws-region={{ Region }}
         image: amazon/aws-alb-ingress-controller:{{ or .AWSLoadBalancerController.Version "v2.2.0" }}
         livenessProbe:
           failureThreshold: 2
