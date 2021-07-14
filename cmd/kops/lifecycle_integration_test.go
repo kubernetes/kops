@@ -32,6 +32,7 @@ import (
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	gcemock "k8s.io/kops/cloudmock/gce"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/testutils"
@@ -219,12 +220,17 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 		}
 		for _, overrideBatch := range overrides {
 			t.Logf("overriding cluster values %v\n", overrideBatch)
-			setClusterOptions := &commands.SetClusterOptions{
-				Fields:      overrideBatch,
-				ClusterName: o.ClusterName,
+			instanceGroups, err := commands.ReadAllInstanceGroups(ctx, clientset, cluster)
+			if err != nil {
+				t.Fatalf("error reading instance groups: %v", err)
 			}
-			if err := commands.RunSetCluster(ctx, factory, nil, nil, setClusterOptions); err != nil {
-				t.Fatalf("error applying overrides: %v", err)
+
+			if err := commands.SetClusterFields(overrideBatch, cluster); err != nil {
+				t.Fatalf("error setting cluster fields: %v", err)
+			}
+
+			if err := commands.UpdateCluster(ctx, clientset, cluster, instanceGroups); err != nil {
+				t.Fatalf("error updating cluster: %v", err)
 			}
 			updateEnsureNoChanges(ctx, t, factory, o.ClusterName, stdout)
 		}
@@ -242,13 +248,28 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 
 			for _, overrideBatch := range overrides {
 				t.Logf("overriding instance group values (%v) %v\n", ig.Name, overrideBatch)
-				setIGOptions := &commands.SetInstanceGroupOptions{
-					Fields:            overrideBatch,
-					ClusterName:       o.ClusterName,
-					InstanceGroupName: ig.Name,
+				instanceGroups, err := commands.ReadAllInstanceGroups(ctx, clientset, cluster)
+				if err != nil {
+					t.Fatalf("error reading instance groups: %v", err)
 				}
-				if err := commands.RunSetInstancegroup(ctx, factory, nil, nil, setIGOptions); err != nil {
+				var instanceGroupToUpdate *kops.InstanceGroup
+				for _, instanceGroup := range instanceGroups {
+					if instanceGroup.GetName() == ig.Name {
+						instanceGroupToUpdate = instanceGroup
+					}
+				}
+				if instanceGroupToUpdate == nil {
+					t.Fatalf("unable to find instance group with name %q", ig.Name)
+				}
+
+				err = commands.SetInstancegroupFields(overrideBatch, instanceGroupToUpdate)
+				if err != nil {
 					t.Fatalf("error applying overrides: %v", err)
+				}
+
+				err = commands.UpdateInstanceGroup(ctx, clientset, cluster, instanceGroups, instanceGroupToUpdate)
+				if err != nil {
+					t.Fatalf("error updating instance groups: %v", err)
 				}
 				updateEnsureNoChanges(ctx, t, factory, o.ClusterName, stdout)
 			}

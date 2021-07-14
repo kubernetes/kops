@@ -31,9 +31,11 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/edit"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kops/pkg/try"
@@ -45,17 +47,22 @@ import (
 
 type EditClusterOptions struct {
 	ClusterName string
+
+	// Sets allows setting values directly in the spec.
+	Sets []string
+	// Unsets allows unsetting values directly in the spec.
+	Unsets []string
 }
 
 var (
-	editClusterLong = templates.LongDesc(i18n.T(`Edit a cluster configuration.
+	editClusterLong = pretty.LongDesc(i18n.T(`Edit a cluster configuration.
 
 	This command changes the desired cluster configuration in the registry.
 
     To set your preferred editor, you can define the EDITOR environment variable.
     When you have done this, kOps will use the editor that you have set.
 
-	kops edit does not update the cloud resources, to apply the changes use ` + pretty.Bash("kops update cluster") + `.`))
+	kops edit does not update the cloud resources; to apply the changes use ` + pretty.Bash("kops update cluster") + `.`))
 
 	editClusterExample = templates.Examples(i18n.T(`
 	# Edit a cluster configuration in AWS.
@@ -76,6 +83,17 @@ func NewCmdEditCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return RunEditCluster(context.TODO(), f, out, options)
 		},
+	}
+
+	if featureflag.SpecOverrideFlag.Enabled() {
+		cmd.Flags().StringSliceVar(&options.Sets, "set", options.Sets, "Directly set values in the spec")
+		cmd.RegisterFlagCompletionFunc("set", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		})
+		cmd.Flags().StringSliceVar(&options.Unsets, "unset", options.Unsets, "Directly unset values in the spec")
+		cmd.RegisterFlagCompletionFunc("unset", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		})
 	}
 
 	return cmd
@@ -100,6 +118,25 @@ func RunEditCluster(ctx context.Context, f *util.Factory, out io.Writer, options
 	instanceGroups, err := commands.ReadAllInstanceGroups(ctx, clientset, oldCluster)
 	if err != nil {
 		return err
+	}
+
+	if len(options.Unsets)+len(options.Sets) > 0 {
+		newCluster := oldCluster.DeepCopy()
+		if err := commands.UnsetClusterFields(options.Unsets, newCluster); err != nil {
+			return err
+		}
+		if err := commands.SetClusterFields(options.Sets, newCluster); err != nil {
+			return err
+		}
+
+		failure, err := updateCluster(ctx, clientset, oldCluster, newCluster, instanceGroups)
+		if err != nil {
+			return err
+		}
+		if failure != "" {
+			return fmt.Errorf("%s", failure)
+		}
+		return nil
 	}
 
 	var (
@@ -200,51 +237,54 @@ func RunEditCluster(ctx context.Context, f *util.Factory, out io.Writer, options
 			continue
 		}
 
-		cloud, err := cloudup.BuildCloud(newCluster)
-		if err != nil {
-			return err
-		}
-
-		err = cloudup.PerformAssignments(newCluster, cloud)
-		if err != nil {
-			return preservedFile(fmt.Errorf("error populating configuration: %v", err), file, out)
-		}
-
-		assetBuilder := assets.NewAssetBuilder(newCluster, false)
-		fullCluster, err := cloudup.PopulateClusterSpec(clientset, newCluster, cloud, assetBuilder)
-		if err != nil {
-			results = editResults{
-				file: file,
-			}
-			results.header.addError(fmt.Sprintf("error populating cluster spec: %s", err))
-			containsError = true
-			continue
-		}
-
-		err = validation.DeepValidate(fullCluster, instanceGroups, true, cloud)
-		if err != nil {
-			results = editResults{
-				file: file,
-			}
-			results.header.addError(fmt.Sprintf("validation failed: %s", err))
-			containsError = true
-			continue
-		}
-
-		// Retrieve the current status of the cluster.  This will eventually be part of the cluster object.
-		status, err := cloud.FindClusterStatus(oldCluster)
-		if err != nil {
-			return err
-		}
-
-		// Note we perform as much validation as we can, before writing a bad config
-		_, err = clientset.UpdateCluster(ctx, newCluster, status)
+		failure, err := updateCluster(ctx, clientset, oldCluster, newCluster, instanceGroups)
 		if err != nil {
 			return preservedFile(err, file, out)
+		}
+		if failure != "" {
+			results = editResults{
+				file: file,
+			}
+			results.header.addError(failure)
+			containsError = true
+			continue
 		}
 
 		return nil
 	}
+}
+
+func updateCluster(ctx context.Context, clientset simple.Clientset, oldCluster, newCluster *api.Cluster, instanceGroups []*api.InstanceGroup) (string, error) {
+	cloud, err := cloudup.BuildCloud(newCluster)
+	if err != nil {
+		return "", err
+	}
+
+	err = cloudup.PerformAssignments(newCluster, cloud)
+	if err != nil {
+		return "", fmt.Errorf("error populating configuration: %v", err)
+	}
+
+	assetBuilder := assets.NewAssetBuilder(newCluster, false)
+	fullCluster, err := cloudup.PopulateClusterSpec(clientset, newCluster, cloud, assetBuilder)
+	if err != nil {
+		return fmt.Sprintf("error populating cluster spec: %s", err), nil
+	}
+
+	err = validation.DeepValidate(fullCluster, instanceGroups, true, cloud)
+	if err != nil {
+		return fmt.Sprintf("validation failed: %s", err), nil
+	}
+
+	// Retrieve the current status of the cluster.  This will eventually be part of the cluster object.
+	status, err := cloud.FindClusterStatus(oldCluster)
+	if err != nil {
+		return "", err
+	}
+
+	// Note we perform as much validation as we can, before writing a bad config
+	_, err = clientset.UpdateCluster(ctx, newCluster, status)
+	return "", err
 }
 
 type editResults struct {

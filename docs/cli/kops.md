@@ -48,10 +48,8 @@ kOps is Kubernetes Operations.
 * [kops promote](kops_promote.md)	 - Promote a resource.
 * [kops replace](kops_replace.md)	 - Replace cluster resources.
 * [kops rolling-update](kops_rolling-update.md)	 - Rolling update a cluster.
-* [kops set](kops_set.md)	 - Set fields on clusters and other resources.
 * [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands.
 * [kops trust](kops_trust.md)	 - Trust keypairs.
-* [kops unset](kops_unset.md)	 - Unset fields on clusters and other resources.
 * [kops update](kops_update.md)	 - Update a cluster.
 * [kops upgrade](kops_upgrade.md)	 - Upgrade a kubernetes cluster.
 * [kops validate](kops_validate.md)	 - Validate a kOps cluster.

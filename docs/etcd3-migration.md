@@ -79,7 +79,7 @@ If you don't already have TLS enabled with etcd, you can adopt etcd-manager befo
 kOps 1.12 & kubernetes 1.12 by running:
 
 ```bash
-kops set cluster cluster.spec.etcdClusters[*].provider=manager
+kops edit cluster --set=cluster.spec.etcdClusters[*].provider=manager
 ```
 
 Then you can proceed to update to kOps 1.12 & kubernetes 1.12, as this becomes the default.
@@ -89,7 +89,7 @@ Then you can proceed to update to kOps 1.12 & kubernetes 1.12, as this becomes t
 To delay adopting etcd-manager with kOps 1.12, specify the provider as type `legacy`:
 
 ```bash
-kops set cluster cluster.spec.etcdClusters[*].provider=legacy
+kops edit cluster --set=cluster.spec.etcdClusters[*].provider=legacy
 ```
 
 To remove, `kops edit` your cluster and delete the `provider: Legacy` lines from both etcdCluster blocks.
@@ -99,7 +99,7 @@ To remove, `kops edit` your cluster and delete the `provider: Legacy` lines from
 To delay adopting etcd3 with kOps 1.12, specify the etcd version as 2.2.1
 
 ```bash
-kops set cluster cluster.spec.etcdClusters[*].version=2.2.1
+kops edit cluster --set=cluster.spec.etcdClusters[*].version=2.2.1
 ```
 
 To remove, `kops edit` your cluster and delete the `version: 2.2.1` lines from both etcdCluster blocks.
