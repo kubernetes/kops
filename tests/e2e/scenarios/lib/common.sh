@@ -108,6 +108,8 @@ function kops-acquire-latest() {
          fi
          $KUBETEST2 --build
          KOPS=".bazelbuild/dist/linux/amd64/kops"
+         SHA=$(git describe --always)
+         KOPS_BASE_URL="https://storage.googleapis.com/kops-ci/pulls/${JOB_NAME}/pull-${SHA}"
     fi
 }
 

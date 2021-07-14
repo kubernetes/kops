@@ -42,14 +42,17 @@ ${KUBETEST2} \
 haveds
 
 # Upgrade to a version that should adopt existing resources and apply the change below
-KOPS=$(kops-acquire-latest)
+kops-acquire-latest
 
 cp "${KOPS}" "${WORKSPACE}/kops"
 
+# allow downgrade is a bug where the version written to VFS is not the same as the running version.
+kops update cluster --allow-kops-downgrade
+kops update cluster --yes --allow-kops-downgrade
+kops rolling-update cluster --yes
+
 # Switch to queue mode. This should remove the DS and install a Deployment instead
 kops set cluster "${CLUSTER_NAME}" "cluster.spec.nodeTerminationHandler.enableSQSTerminationDraining=true"
-
-# allow downgrade is a bug where the version written to VFS is not the same as the running version.
 kops update cluster --allow-kops-downgrade
 kops update cluster --yes --allow-kops-downgrade
 
@@ -61,3 +64,5 @@ kops validate cluster --wait=5m
 
 # We should no longer have a daemonset called aws-node-termination-handler
 haveds && exit 1
+
+echo "Done"

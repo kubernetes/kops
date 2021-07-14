@@ -64,6 +64,8 @@ func RunApplyChannel(ctx context.Context, f Factory, out io.Writer, options *App
 		return err
 	}
 
+	kube := f.HelmKubeClient()
+
 	kubernetesVersionInfo, err := k8sClient.Discovery().ServerVersion()
 	if err != nil {
 		return fmt.Errorf("error querying kubernetes version: %v", err)
@@ -192,7 +194,7 @@ func RunApplyChannel(ctx context.Context, f Factory, out io.Writer, options *App
 	}
 
 	for _, needUpdate := range needUpdates {
-		update, err := needUpdate.EnsureUpdated(ctx, k8sClient, cmClient)
+		update, err := needUpdate.EnsureUpdated(ctx, kube, k8sClient, cmClient)
 		if err != nil {
 			fmt.Printf("error updating %q: %v", needUpdate.Name, err)
 		} else if update != nil {
