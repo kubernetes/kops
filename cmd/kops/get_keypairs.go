@@ -144,7 +144,7 @@ func RunGetKeypairs(ctx context.Context, out io.Writer, options *GetKeypairsOpti
 	if len(items) == 0 {
 		return fmt.Errorf("no keypairs found")
 	}
-	switch options.output {
+	switch options.Output {
 
 	case OutputTable:
 		t := &tables.Table{}
@@ -191,7 +191,7 @@ func RunGetKeypairs(ctx context.Context, out io.Writer, options *GetKeypairsOpti
 		return fmt.Errorf("json output format is not (currently) supported for keypairs")
 
 	default:
-		return fmt.Errorf("Unknown output format: %q", options.output)
+		return fmt.Errorf("Unknown output format: %q", options.Output)
 	}
 }
 

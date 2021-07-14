@@ -99,7 +99,7 @@ func NewCmdGetAssets(f *util.Factory, out io.Writer, getOptions *GetOptions) *co
 func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *GetAssetsOptions) error {
 
 	clusterName := rootCommand.ClusterName(true)
-	options.clusterName = clusterName
+	options.ClusterName = clusterName
 	if clusterName == "" {
 		return fmt.Errorf("--name is required")
 	}
@@ -150,7 +150,7 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 		}
 	}
 
-	switch options.output {
+	switch options.Output {
 	case OutputTable:
 		if err = imageOutputTable(result.Images, out); err != nil {
 			return err
@@ -173,7 +173,7 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 			return fmt.Errorf("error writing to output: %v", err)
 		}
 	default:
-		return fmt.Errorf("unsupported output format: %q", options.output)
+		return fmt.Errorf("unsupported output format: %q", options.Output)
 	}
 
 	return nil

@@ -168,13 +168,13 @@ func RunGetClusters(ctx context.Context, f commandutils.Factory, out io.Writer, 
 	}
 
 	var obj []runtime.Object
-	if options.output != OutputTable {
+	if options.Output != OutputTable {
 		for _, c := range clusters {
 			obj = append(obj, c)
 		}
 	}
 
-	switch options.output {
+	switch options.Output {
 	case OutputTable:
 		return clusterOutputTable(clusters, out)
 	case OutputYaml:
@@ -182,7 +182,7 @@ func RunGetClusters(ctx context.Context, f commandutils.Factory, out io.Writer, 
 	case OutputJSON:
 		return fullOutputJSON(out, obj...)
 	default:
-		return fmt.Errorf("Unknown output format: %q", options.output)
+		return fmt.Errorf("Unknown output format: %q", options.Output)
 	}
 }
 

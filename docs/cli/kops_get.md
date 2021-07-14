@@ -20,10 +20,7 @@ kops get [flags]
 ### Examples
 
 ```
-  # Get all clusters in a state store
-  kops get clusters
-  
-  # Get a cluster and its instancegroups
+  # Get a cluster and its instance groups
   kops get k8s-cluster.example.com
   
   # Get a cluster and its instancegroups' YAML desired configuration
@@ -31,19 +28,13 @@ kops get [flags]
   
   # Save a cluster and its instancegroups' desired configuration to YAML file
   kops get k8s-cluster.example.com -o yaml > cluster-desired-config.yaml
-  
-  # Get a secret
-  kops get secrets kube -oplaintext
-  
-  # Get the admin password for a cluster
-  kops get secrets admin -oplaintext
 ```
 
 ### Options
 
 ```
   -h, --help            help for get
-  -o, --output string   output format.  One of: table, yaml, json (default "table")
+  -o, --output string   output format. One of: table, yaml, json (default "table")
 ```
 
 ### Options inherited from parent commands
