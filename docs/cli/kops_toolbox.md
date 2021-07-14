@@ -36,6 +36,6 @@ Miscellaneous, infrequently used commands.
 
 * [kops](kops.md)	 - kOps is Kubernetes Operations.
 * [kops toolbox dump](kops_toolbox_dump.md)	 - Dump cluster information
-* [kops toolbox instance-selector](kops_toolbox_instance-selector.md)	 - Generate on-demand or spot instance-group specs by providing resource specs like vcpus and memory.
+* [kops toolbox instance-selector](kops_toolbox_instance-selector.md)	 - Generate instance-group specs by providing resource specs such as vcpus and memory.
 * [kops toolbox template](kops_toolbox_template.md)	 - Generate cluster.yaml from template
 

@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kubectl/pkg/util/i18n"
@@ -80,6 +81,7 @@ const (
 
 // InstanceSelectorOptions is a struct representing non-filter flags passed into instance-selector
 type InstanceSelectorOptions struct {
+	ClusterName        string
 	NodeCountMin       int32
 	NodeCountMax       int32
 	NodeVolumeSize     *int32
@@ -93,39 +95,65 @@ type InstanceSelectorOptions struct {
 
 var (
 	toolboxInstanceSelectorLong = templates.LongDesc(i18n.T(`
-	Generate AWS EC2 on-demand or spot instance-groups by providing resource specs like vcpus and memory rather than instance types.`))
+	Generate AWS EC2 instance groups by providing resource specs,
+	such as vcpus and memory, rather than instance types.`))
 
 	toolboxInstanceSelectorExample = templates.Examples(i18n.T(`
-
-	kops toolbox instance-selector <ig name> [flags ...]
-
-	## Create a best-practices spot instance-group using a MixInstancesPolicy and Capacity-Optimized spot allocation strategy
-	## --flexible defaults to a 1:2 vcpus to memory ratio and 4 vcpus
+	## Create a spot instance group using a MixInstancesPolicy and Capacity-Optimized spot allocation strategy.
+	## --flexible defaults to a 1:2 vcpus to memory ratio and 4 vcpus.
 	kops toolbox instance-selector my-spot-mig --usage-class spot --flexible
 
-	## Create a best-practices on-demand instance-group with custom vcpus and memory range filters
+	## Create an on-demand instance group with custom vcpu and memory range filters.
 	kops toolbox instance-selector ondemand-ig --vcpus-min=2 --vcpus-max=4 --memory-min 2gb --memory-max 4gb
 	`))
 
-	toolboxInstanceSelectorShort = i18n.T(`Generate on-demand or spot instance-group specs by providing resource specs like vcpus and memory.`)
+	toolboxInstanceSelectorShort = i18n.T(`Generate instance-group specs by providing resource specs such as vcpus and memory.`)
 )
 
 // NewCmdToolboxInstanceSelector defines the cobra command for the instance-selector tool
 func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &InstanceSelectorOptions{}
+
 	commandline := cli.New(
-		"instance-selector",
+		"instance-selector INSTANCE_GROUP",
 		toolboxInstanceSelectorShort,
 		toolboxInstanceSelectorLong,
 		toolboxInstanceSelectorExample,
-		func(cmd *cobra.Command, args []string) {},
+		nil,
 	)
-	commandline.Command.Run = func(cmd *cobra.Command, args []string) {
-		ctx := context.TODO()
+	commandline.Command.Args = func(cmd *cobra.Command, args []string) error {
+		options.ClusterName = rootCommand.ClusterName(true)
 
-		err := RunToolboxInstanceSelector(ctx, f, args, out, &commandline)
-		if err != nil {
-			exitWithError(err)
+		if options.ClusterName == "" {
+			return fmt.Errorf("--name is required")
 		}
+
+		if len(args) == 0 {
+			return fmt.Errorf("must specify name of instance group to create")
+		}
+
+		options.InstanceGroupName = args[0]
+
+		if len(args) != 1 {
+			return fmt.Errorf("can only create one instance group at a time")
+		}
+
+		if err := processAndValidateFlags(&commandline); err != nil {
+			return err
+		}
+		setInstanceSelectorOpts(options, &commandline)
+
+		return nil
+	}
+	commandline.Command.ValidArgsFunction = func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		commandutils.ConfigureKlogForCompletion()
+		if len(args) == 1 && rootCommand.ClusterName(false) == "" {
+			return []string{"--name"}, cobra.ShellCompDirectiveNoFileComp
+		}
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	commandline.Command.RunE = func(cmd *cobra.Command, args []string) error {
+		return RunToolboxInstanceSelector(context.TODO(), f, out, &commandline, options)
 	}
 
 	cpuArchs := []string{cpuArchitectureAMD64, cpuArchitectureARM64}
@@ -181,22 +209,7 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 }
 
 // RunToolboxInstanceSelector executes the instance-selector tool to create instance groups with declarative resource specifications
-func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, args []string, out io.Writer, commandline *cli.CommandLineInterface) error {
-	if len(args) == 0 {
-		return fmt.Errorf("Specify name of instance group to create")
-	}
-	if len(args) != 1 {
-		return fmt.Errorf("Can only specify one instance group name at a time")
-	}
-	igName := args[0]
-	clusterName := rootCommand.ClusterName(true)
-
-	flags, err := processAndValidateFlags(commandline)
-	if err != nil {
-		return err
-	}
-	instanceSelectorOpts := getInstanceSelectorOpts(commandline)
-	instanceSelectorOpts.InstanceGroupName = igName
+func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, out io.Writer, commandline *cli.CommandLineInterface, options *InstanceSelectorOptions) error {
 
 	clientset, cluster, channel, err := retrieveClusterRefs(ctx, f)
 	if err != nil {
@@ -230,7 +243,7 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, args []str
 		zones = append(zones, strings.ReplaceAll(igSubnet, "utility-", ""))
 	}
 
-	tags := map[string]string{"KubernetesCluster": clusterName}
+	tags := map[string]string{"KubernetesCluster": options.ClusterName}
 	cloud, err := awsup.NewAWSCloud(region, tags)
 	if err != nil {
 		return fmt.Errorf("error initializing AWS client: %v", err)
@@ -240,13 +253,10 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, args []str
 		EC2: cloud.EC2(),
 	}
 
-	igCount := instanceSelectorOpts.InstanceGroupCount
-	if flags[instanceGroupCount] == nil {
-		igCount = 1
-	}
+	igCount := options.InstanceGroupCount
 	filters := getFilters(commandline, region, zones)
 	mutatedFilters := filters
-	if flags[instanceGroupCount] != nil || filters.Flexible != nil {
+	if commandline.Flags[instanceGroupCount] != nil || filters.Flexible != nil {
 		if filters.VCpusToMemoryRatio == nil {
 			defaultStartRatio := float64(2.0)
 			mutatedFilters.VCpusToMemoryRatio = &defaultStartRatio
@@ -256,9 +266,9 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, args []str
 	newInstanceGroups := []*kops.InstanceGroup{}
 
 	for i := 0; i < igCount; i++ {
-		igNameForRun := igName
+		igNameForRun := options.InstanceGroupName
 		if igCount != 1 {
-			igNameForRun = fmt.Sprintf("%s%d", igName, i+1)
+			igNameForRun = fmt.Sprintf("%s%d", options.InstanceGroupName, i+1)
 		}
 		selectedInstanceTypes, err := instanceSelector.Filter(mutatedFilters)
 		if err != nil {
@@ -269,14 +279,14 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, args []str
 		}
 		usageClass := *filters.UsageClass
 
-		ig := createInstanceGroup(igNameForRun, clusterName, igSubnets)
-		ig = decorateWithInstanceGroupSpecs(ig, instanceSelectorOpts)
+		ig := createInstanceGroup(igNameForRun, options.ClusterName, igSubnets)
+		ig = decorateWithInstanceGroupSpecs(ig, options)
 		ig, err = decorateWithMixedInstancesPolicy(ig, usageClass, selectedInstanceTypes)
 		if err != nil {
 			return err
 		}
-		if instanceSelectorOpts.ClusterAutoscaler {
-			ig = decorateWithClusterAutoscalerLabels(ig, clusterName)
+		if options.ClusterAutoscaler {
+			ig = decorateWithClusterAutoscalerLabels(ig, options.ClusterName)
 		}
 		ig, err = cloudup.PopulateInstanceGroupSpec(cluster, ig, cloud, channel)
 		if err != nil {
@@ -291,9 +301,9 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, args []str
 		}
 	}
 
-	if instanceSelectorOpts.DryRun {
+	if options.DryRun {
 		for _, ig := range newInstanceGroups {
-			switch instanceSelectorOpts.Output {
+			switch options.Output {
 			case OutputYaml:
 				if err := fullOutputYAML(out, ig); err != nil {
 					return fmt.Errorf("error writing cluster yaml to stdout: %v", err)
@@ -303,7 +313,7 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, args []str
 					return fmt.Errorf("error writing cluster json to stdout: %v", err)
 				}
 			default:
-				return fmt.Errorf("unsupported output type %q", instanceSelectorOpts.Output)
+				return fmt.Errorf("unsupported output type %q", options.Output)
 			}
 		}
 		return nil
@@ -323,20 +333,20 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, args []str
 	return nil
 }
 
-func processAndValidateFlags(commandline *cli.CommandLineInterface) (map[string]interface{}, error) {
+func processAndValidateFlags(commandline *cli.CommandLineInterface) error {
 	if err := commandline.SetUntouchedFlagValuesToNil(); err != nil {
-		return nil, err
+		return err
 	}
 
 	if err := commandline.ProcessFlags(); err != nil {
-		return nil, err
+		return err
 	}
 
 	if err := commandline.ValidateFlags(); err != nil {
-		return nil, err
+		return err
 	}
 
-	return commandline.Flags, nil
+	return nil
 }
 
 func retrieveClusterRefs(ctx context.Context, f *util.Factory) (simple.Clientset, *kops.Cluster, *kops.Channel, error) {
@@ -391,25 +401,24 @@ func getFilters(commandline *cli.CommandLineInterface, region string, zones []st
 	}
 }
 
-func getInstanceSelectorOpts(commandline *cli.CommandLineInterface) InstanceSelectorOptions {
-	opts := InstanceSelectorOptions{}
+func setInstanceSelectorOpts(options *InstanceSelectorOptions, commandline *cli.CommandLineInterface) {
 	flags := commandline.Flags
-	opts.NodeCountMin = int32(*commandline.IntMe(flags[nodeCountMin]))
-	opts.NodeCountMax = int32(*commandline.IntMe(flags[nodeCountMax]))
-	opts.Output = *commandline.StringMe(flags[output])
-	opts.DryRun = *commandline.BoolMe(flags[dryRun])
-	opts.ClusterAutoscaler = *commandline.BoolMe(flags[clusterAutoscaler])
+	options.NodeCountMin = int32(*commandline.IntMe(flags[nodeCountMin]))
+	options.NodeCountMax = int32(*commandline.IntMe(flags[nodeCountMax]))
+	options.Output = *commandline.StringMe(flags[output])
+	options.DryRun = *commandline.BoolMe(flags[dryRun])
+	options.ClusterAutoscaler = *commandline.BoolMe(flags[clusterAutoscaler])
 	if flags[nodeVolumeSize] != nil {
 		volumeSize := int32(*commandline.IntMe(flags[nodeVolumeSize]))
-		opts.NodeVolumeSize = &volumeSize
+		options.NodeVolumeSize = &volumeSize
 	}
 	if flags[nodeSecurityGroups] != nil {
-		opts.NodeSecurityGroups = *commandline.StringSliceMe(flags[nodeSecurityGroups])
+		options.NodeSecurityGroups = *commandline.StringSliceMe(flags[nodeSecurityGroups])
 	}
+	options.InstanceGroupCount = 1
 	if flags[instanceGroupCount] != nil {
-		opts.InstanceGroupCount = *commandline.IntMe(flags[instanceGroupCount])
+		options.InstanceGroupCount = *commandline.IntMe(flags[instanceGroupCount])
 	}
-	return opts
 }
 
 func validateUserSubnets(userSubnets []string, clusterSubnets []kops.ClusterSubnetSpec) error {
@@ -468,7 +477,7 @@ func createInstanceGroup(groupName, clusterName string, subnets []string) *kops.
 	return ig
 }
 
-func decorateWithInstanceGroupSpecs(instanceGroup *kops.InstanceGroup, instanceGroupOpts InstanceSelectorOptions) *kops.InstanceGroup {
+func decorateWithInstanceGroupSpecs(instanceGroup *kops.InstanceGroup, instanceGroupOpts *InstanceSelectorOptions) *kops.InstanceGroup {
 	ig := instanceGroup
 	ig.Spec.MinSize = &instanceGroupOpts.NodeCountMin
 	ig.Spec.MaxSize = &instanceGroupOpts.NodeCountMax
