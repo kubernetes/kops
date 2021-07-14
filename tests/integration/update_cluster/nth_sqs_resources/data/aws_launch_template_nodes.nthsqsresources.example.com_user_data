@@ -162,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/nthsqsresources.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: whg4SZ6hcP+SyOMtW+XGJ4OHPqH3HMMtIjFo+hGdDWc=
+NodeupConfigHash: RHYxFKnk5Hvv4XubFyLlP/sxrRCWwz0Vc4Gs82v4t2M=
 
 __EOF_KUBE_ENV
 

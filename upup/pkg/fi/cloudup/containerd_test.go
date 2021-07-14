@@ -22,8 +22,6 @@ import (
 	"reflect"
 	"testing"
 
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/util/pkg/architectures"
 )
 
@@ -326,25 +324,4 @@ func TestContainerdVersionsHashesAmd64(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestContainerdConfig(t *testing.T) {
-	cluster := &kops.Cluster{
-		Spec: kops.ClusterSpec{
-			ContainerRuntime:  "containerd",
-			Containerd:        &kops.ContainerdConfig{},
-			KubernetesVersion: "1.21.0",
-			Networking: &kops.NetworkingSpec{
-				Kubenet: &kops.KubenetNetworkingSpec{},
-			},
-		},
-	}
-	config := &nodeup.Config{}
-
-	config.ContainerdConfig = buildContainerdConfig(cluster)
-
-	if config.ContainerdConfig == "" {
-		t.Errorf("got unexpected empty containerd config")
-	}
-
 }

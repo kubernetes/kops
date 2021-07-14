@@ -60,22 +60,9 @@ KubeletConfig:
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/minimal-warmpool.example.com/addons/bootstrap-channel.yaml
-containerdConfig: |
-  version = 2
-
-  [plugins]
-
-    [plugins."io.containerd.grpc.v1.cri"]
-
-      [plugins."io.containerd.grpc.v1.cri".containerd]
-
-        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
-
-          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-            runtime_type = "io.containerd.runc.v2"
-
-            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-              SystemdCgroup = true
+containerdConfig:
+  logLevel: info
+  version: 1.4.6
 warmPoolImages:
 - k8s.gcr.io/kube-proxy:v1.21.0
 - k8s.gcr.io/provider-aws/aws-ebs-csi-driver:v1.1.0

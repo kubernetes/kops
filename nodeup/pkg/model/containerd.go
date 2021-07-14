@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/blang/semver/v4"
+	"github.com/pelletier/go-toml"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/nodeup/pkg/model/resources"
 	"k8s.io/kops/pkg/apis/kops"
@@ -127,7 +128,7 @@ func (b *ContainerdBuilder) installContainerd(c *fi.ModelBuilderContext) error {
 	var containerRuntimeVersion string
 	if b.Cluster.Spec.ContainerRuntime == "containerd" {
 		if b.Cluster.Spec.Containerd != nil {
-			containerRuntimeVersion = fi.StringValue(b.Cluster.Spec.Containerd.Version)
+			containerRuntimeVersion = fi.StringValue(b.NodeupConfig.ContainerdConfig.Version)
 		} else {
 			return fmt.Errorf("error finding contained version")
 		}
@@ -273,8 +274,8 @@ func (b *ContainerdBuilder) buildSystemdServiceOverrideFlatcar(c *fi.ModelBuilde
 // buildSysconfigFile is responsible for creating the containerd sysconfig file
 func (b *ContainerdBuilder) buildSysconfigFile(c *fi.ModelBuilderContext) error {
 	var containerd kops.ContainerdConfig
-	if b.Cluster.Spec.Containerd != nil {
-		containerd = *b.Cluster.Spec.Containerd
+	if b.NodeupConfig.ContainerdConfig != nil {
+		containerd = *b.NodeupConfig.ContainerdConfig
 	}
 
 	flagsString, err := flagbuilder.BuildFlags(&containerd)
@@ -298,16 +299,23 @@ func (b *ContainerdBuilder) buildSysconfigFile(c *fi.ModelBuilderContext) error 
 
 // buildConfigFile is responsible for creating the containerd configuration file
 func (b *ContainerdBuilder) buildConfigFile(c *fi.ModelBuilderContext) {
+	var config string
+
+	if b.NodeupConfig.ContainerdConfig != nil && b.NodeupConfig.ContainerdConfig.ConfigOverride != nil {
+		config = fi.StringValue(b.NodeupConfig.ContainerdConfig.ConfigOverride)
+	} else {
+		config = b.buildContainerdConfig()
+	}
 	c.AddTask(&nodetasks.File{
 		Path:     b.containerdConfigFilePath(),
-		Contents: fi.NewStringResource(b.NodeupConfig.ContainerdConfig),
+		Contents: fi.NewStringResource(config),
 		Type:     nodetasks.FileType_File,
 	})
 }
 
 // skipInstall determines if kops should skip the installation and configuration of containerd
 func (b *ContainerdBuilder) skipInstall() bool {
-	d := b.Cluster.Spec.Containerd
+	d := b.NodeupConfig.ContainerdConfig
 
 	// don't skip install if the user hasn't specified anything
 	if d == nil {
@@ -418,4 +426,35 @@ func (b *ContainerdBuilder) buildCNIConfigTemplateFile(c *fi.ModelBuilderContext
 		Contents: fi.NewStringResource(contents),
 		Type:     nodetasks.FileType_File,
 	})
+}
+
+func (b *ContainerdBuilder) buildContainerdConfig() string {
+	cluster := b.Cluster
+
+	if cluster.Spec.ContainerRuntime != "containerd" {
+		return ""
+	}
+
+	containerd := b.NodeupConfig.ContainerdConfig
+	if fi.StringValue(containerd.ConfigOverride) != "" {
+		return *containerd.ConfigOverride
+	}
+
+	// Build config file for containerd running in CRI mode
+
+	config, _ := toml.Load("")
+	config.SetPath([]string{"version"}, int64(2))
+	for name, endpoints := range containerd.RegistryMirrors {
+		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "registry", "mirrors", name, "endpoint"}, endpoints)
+	}
+	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "runtime_type"}, "io.containerd.runc.v2")
+	// only enable systemd cgroups for kubernetes >= 1.20
+	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "options", "SystemdCgroup"}, cluster.IsKubernetesGTE("1.20"))
+	if components.UsesKubenet(cluster.Spec.Networking) {
+		// Using containerd with Kubenet requires special configuration.
+		// This is a temporary backwards-compatible solution for kubenet users and will be deprecated when Kubenet is deprecated:
+		// https://github.com/containerd/containerd/blob/master/docs/cri/config.md#cni-config-template
+		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "cni", "conf_template"}, "/etc/containerd/config-cni.template")
+	}
+	return config.String()
 }
