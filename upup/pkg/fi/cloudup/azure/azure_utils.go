@@ -30,3 +30,13 @@ func ZoneToLocation(zone string) (string, error) {
 	}
 	return l[0], nil
 }
+
+// ZoneToAvailabilityZoneNumber extracts the availability zone number from a zone of the
+// form <location>-<available-zone-number>..
+func ZoneToAvailabilityZoneNumber(zone string) (string, error) {
+	l := strings.Split(zone, "-")
+	if len(l) != 2 {
+		return "", fmt.Errorf("invalid Azure zone: %q ", zone)
+	}
+	return l[1], nil
+}
