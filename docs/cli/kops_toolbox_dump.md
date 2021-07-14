@@ -53,5 +53,5 @@ kops toolbox dump [flags]
 
 ### SEE ALSO
 
-* [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands.
+* [kops toolbox](kops_toolbox.md)	 - Miscellaneous, infrequently used commands.
 

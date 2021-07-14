@@ -3,18 +3,7 @@
 
 ## kops toolbox
 
-Misc infrequently used commands.
-
-### Synopsis
-
-Misc infrequently used commands.
-
-### Examples
-
-```
-  # Dump cluster information
-  kops toolbox dump --name k8s-cluster.example.com
-```
+Miscellaneous, infrequently used commands.
 
 ### Options
 
