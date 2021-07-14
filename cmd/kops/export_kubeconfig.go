@@ -76,16 +76,17 @@ func NewCmdExportKubeconfig(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    exportKubeconfigLong,
 		Example: exportKubeconfigExample,
 		Args: func(cmd *cobra.Command, args []string) error {
+			if options.admin != 0 && options.user != "" {
+				return fmt.Errorf("cannot use both --admin and --user")
+			}
 			if options.all {
 				if len(args) != 0 {
 					return fmt.Errorf("cannot use both --all flag and positional arguments")
 				}
+				return nil
+			} else {
+				return rootCommand.clusterNameArgs(&options.ClusterName)(cmd, args)
 			}
-			if options.admin != 0 && options.user != "" {
-				return fmt.Errorf("cannot use both --admin and --user")
-			}
-
-			return rootCommand.clusterNameArgs(&options.ClusterName)(cmd, args)
 		},
 		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -121,11 +122,7 @@ func RunExportKubeconfig(ctx context.Context, f *util.Factory, out io.Writer, op
 			clusterList = append(clusterList, &list.Items[i])
 		}
 	} else {
-		err := rootCommand.ProcessArgs(args)
-		if err != nil {
-			return err
-		}
-		cluster, err := rootCommand.Cluster(ctx)
+		cluster, err := GetCluster(ctx, f, options.ClusterName)
 		if err != nil {
 			return err
 		}
