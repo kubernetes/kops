@@ -32,9 +32,13 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/edit"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kopscodecs"
+	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubectl/pkg/cmd/util/editor"
@@ -43,14 +47,14 @@ import (
 )
 
 var (
-	editInstancegroupLong = templates.LongDesc(i18n.T(`Edit a cluster configuration.
+	editInstancegroupLong = pretty.LongDesc(i18n.T(`Edit a cluster configuration.
 
-	This command changes the instancegroup desired configuration in the registry.
+	This command changes the instance group desired configuration in the registry.
 
 	To set your preferred editor, you can define the EDITOR environment variable.
 	When you have done this, kOps will use the editor that you have set.
 
-	kops edit does not update the cloud resources, to apply the changes use "kops update cluster".`))
+	kops edit does not update the cloud resources; to apply the changes use ` + pretty.Bash("kops update cluster") + `.`))
 
 	editInstancegroupExample = templates.Examples(i18n.T(`
 	# Edit an instancegroup desired configuration.
@@ -63,6 +67,11 @@ var (
 type EditInstanceGroupOptions struct {
 	ClusterName string
 	GroupName   string
+
+	// Sets allows setting values directly in the spec.
+	Sets []string
+	// Unsets allows unsetting values directly in the spec.
+	Unsets []string
 }
 
 func NewCmdEditInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
@@ -99,6 +108,17 @@ func NewCmdEditInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 	}
 
+	if featureflag.SpecOverrideFlag.Enabled() {
+		cmd.Flags().StringSliceVar(&options.Sets, "set", options.Sets, "Directly set values in the spec")
+		cmd.RegisterFlagCompletionFunc("set", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		})
+		cmd.Flags().StringSliceVar(&options.Unsets, "unset", options.Unsets, "Directly unset values in the spec")
+		cmd.RegisterFlagCompletionFunc("unset", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		})
+	}
+
 	return cmd
 }
 
@@ -126,6 +146,25 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer, o
 	}
 	if oldGroup == nil {
 		return fmt.Errorf("InstanceGroup %q not found", groupName)
+	}
+
+	if len(options.Unsets)+len(options.Sets) > 0 {
+		newGroup := oldGroup.DeepCopy()
+		if err := commands.UnsetInstancegroupFields(options.Unsets, newGroup); err != nil {
+			return err
+		}
+		if err := commands.SetInstancegroupFields(options.Sets, newGroup); err != nil {
+			return err
+		}
+
+		failure, err := updateInstanceGroup(ctx, clientset, channel, cluster, oldGroup, newGroup)
+		if err != nil {
+			return err
+		}
+		if failure != "" {
+			return fmt.Errorf("%s", failure)
+		}
+		return nil
 	}
 
 	var (
@@ -226,54 +265,53 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer, o
 			continue
 		}
 
-		cloud, err := cloudup.BuildCloud(cluster)
-		if err != nil {
-			return err
-		}
-		fullGroup, err := cloudup.PopulateInstanceGroupSpec(cluster, newGroup, cloud, channel)
-		if err != nil {
-			results = editResults{
-				file: file,
-			}
-			results.header.addError(fmt.Sprintf("error populating instance group spec: %s", err))
-			containsError = true
-			continue
-		}
-
-		// We need the full cluster spec to perform deep validation
-		// Note that we don't write it back though
-		err = cloudup.PerformAssignments(cluster, cloud)
-		if err != nil {
-			return preservedFile(fmt.Errorf("error populating configuration: %v", err), file, out)
-		}
-
-		assetBuilder := assets.NewAssetBuilder(cluster, false)
-		fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, cloud, assetBuilder)
-		if err != nil {
-			results = editResults{
-				file: file,
-			}
-			results.header.addError(fmt.Sprintf("error populating cluster spec: %s", err))
-			containsError = true
-			continue
-		}
-
-		err = validation.CrossValidateInstanceGroup(fullGroup, fullCluster, cloud).ToAggregate()
-		if err != nil {
-			results = editResults{
-				file: file,
-			}
-			results.header.addError(fmt.Sprintf("validation failed: %s", err))
-			containsError = true
-			continue
-		}
-
-		// Note we perform as much validation as we can, before writing a bad config
-		_, err = clientset.InstanceGroupsFor(cluster).Update(ctx, fullGroup, metav1.UpdateOptions{})
+		failure, err := updateInstanceGroup(ctx, clientset, channel, cluster, oldGroup, newGroup)
 		if err != nil {
 			return preservedFile(err, file, out)
+		}
+		if failure != "" {
+			results = editResults{
+				file: file,
+			}
+			results.header.addError(failure)
+			containsError = true
+			continue
 		}
 
 		return nil
 	}
+}
+
+func updateInstanceGroup(ctx context.Context, clientset simple.Clientset, channel *api.Channel, cluster *api.Cluster, oldGroup, newGroup *api.InstanceGroup) (string, error) {
+	cloud, err := cloudup.BuildCloud(cluster)
+	if err != nil {
+		return "", err
+	}
+
+	fullGroup, err := cloudup.PopulateInstanceGroupSpec(cluster, newGroup, cloud, channel)
+	if err != nil {
+		return fmt.Sprintf("error populating instance group spec: %s", err), nil
+	}
+
+	// We need the full cluster spec to perform deep validation
+	// Note that we don't write it back though
+	err = cloudup.PerformAssignments(cluster, cloud)
+	if err != nil {
+		return "", fmt.Errorf("error populating configuration: %v", err)
+	}
+
+	assetBuilder := assets.NewAssetBuilder(cluster, false)
+	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, cloud, assetBuilder)
+	if err != nil {
+		return fmt.Sprintf("error populating cluster spec: %s", err), nil
+	}
+
+	err = validation.CrossValidateInstanceGroup(fullGroup, fullCluster, cloud).ToAggregate()
+	if err != nil {
+		return fmt.Sprintf("validation failed: %s", err), nil
+	}
+
+	// Note we perform as much validation as we can, before writing a bad config
+	_, err = clientset.InstanceGroupsFor(cluster).Update(ctx, fullGroup, metav1.UpdateOptions{})
+	return "", err
 }
