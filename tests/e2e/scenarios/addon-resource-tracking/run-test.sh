@@ -47,7 +47,7 @@ KOPS=$(kops-acquire-latest)
 cp "${KOPS}" "${WORKSPACE}/kops"
 
 # Switch to queue mode. This should remove the DS and install a Deployment instead
-kops set cluster "${CLUSTER_NAME}" "cluster.spec.nodeTerminationHandler.enableSQSTerminationDraining=true"
+kops edit cluster "${CLUSTER_NAME}" "--set=cluster.spec.nodeTerminationHandler.enableSQSTerminationDraining=true"
 
 # allow downgrade is a bug where the version written to VFS is not the same as the running version.
 kops update cluster --allow-kops-downgrade
