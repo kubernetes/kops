@@ -162,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://tests/existing-iam.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: a9izGDtROyYPQA5SEEtooPpdWzsaJBjmEwSWE1pQWdw=
+NodeupConfigHash: I6SvbzNi8x8vsZvatJwokYmc0zJry/3TeQktzRJREpU=
 
 __EOF_KUBE_ENV
 

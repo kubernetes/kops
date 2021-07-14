@@ -297,6 +297,8 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 		nodeupModelContext.NodeupConfig.APIServerConfig.ServiceAccountPublicKeys = saPublicKeys
 	}
 
+	nodeupModelContext.NodeupConfig.ContainerdConfig = nodeupModelContext.Cluster.Spec.Containerd
+
 	return nodeupModelContext, nil
 }
 

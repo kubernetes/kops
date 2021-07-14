@@ -20,7 +20,25 @@ contents: |
 path: /etc/containerd/config-cni.template
 type: file
 ---
-contents: ""
+contents: |
+  version = 2
+
+  [plugins]
+
+    [plugins."io.containerd.grpc.v1.cri"]
+
+      [plugins."io.containerd.grpc.v1.cri".cni]
+        conf_template = "/etc/containerd/config-cni.template"
+
+      [plugins."io.containerd.grpc.v1.cri".containerd]
+
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+            runtime_type = "io.containerd.runc.v2"
+
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+              SystemdCgroup = false
 path: /etc/containerd/config-kops.toml
 type: file
 ---
