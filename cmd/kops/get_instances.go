@@ -84,18 +84,18 @@ func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, option
 	}
 
 	clusterName := rootCommand.ClusterName(true)
-	options.clusterName = clusterName
+	options.ClusterName = clusterName
 	if clusterName == "" {
 		return fmt.Errorf("--name is required")
 	}
 
-	cluster, err := clientset.GetCluster(ctx, options.clusterName)
+	cluster, err := clientset.GetCluster(ctx, options.ClusterName)
 	if err != nil {
 		return err
 	}
 
 	if cluster == nil {
-		return fmt.Errorf("cluster not found %q", options.clusterName)
+		return fmt.Errorf("cluster not found %q", options.ClusterName)
 	}
 
 	cloud, err := cloudup.BuildCloud(cluster)
@@ -137,11 +137,11 @@ func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, option
 		cg.AdjustNeedUpdate()
 	}
 
-	switch options.output {
+	switch options.Output {
 	case OutputTable:
 		return instanceOutputTable(cloudInstances, out)
 	default:
-		return fmt.Errorf("unsupported output format: %q", options.output)
+		return fmt.Errorf("unsupported output format: %q", options.Output)
 	}
 }
 
