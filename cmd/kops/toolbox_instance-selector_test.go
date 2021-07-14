@@ -57,7 +57,8 @@ func TestGetInstanceSelectorOpts(t *testing.T) {
 		clusterAutoscaler:  true,
 	}
 
-	instanceSelectorOpts := getInstanceSelectorOpts(&commandline)
+	instanceSelectorOpts := &InstanceSelectorOptions{}
+	setInstanceSelectorOpts(instanceSelectorOpts, &commandline)
 	if instanceSelectorOpts.NodeCountMax != count || instanceSelectorOpts.NodeCountMin != count ||
 		*instanceSelectorOpts.NodeVolumeSize != count || len(instanceSelectorOpts.NodeSecurityGroups) != int(count) ||
 		instanceSelectorOpts.InstanceGroupCount != int(count) {
@@ -151,7 +152,7 @@ func TestCreateInstanceGroup(t *testing.T) {
 
 func TestDecorateWithInstanceGroupSpecs(t *testing.T) {
 	count := int32(1)
-	instanceGroupOpts := InstanceSelectorOptions{
+	instanceGroupOpts := &InstanceSelectorOptions{
 		NodeCountMax:       count,
 		NodeCountMin:       count,
 		NodeVolumeSize:     &count,
