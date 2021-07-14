@@ -39,10 +39,7 @@ var (
 	Display one or many resources.` + validResources))
 
 	getExample = templates.Examples(i18n.T(`
-	# Get all clusters in a state store
-	kops get clusters
-
-	# Get a cluster and its instancegroups
+	# Get a cluster and its instance groups
 	kops get k8s-cluster.example.com
 
 	# Get a cluster and its instancegroups' YAML desired configuration
@@ -50,19 +47,14 @@ var (
 
 	# Save a cluster and its instancegroups' desired configuration to YAML file
 	kops get k8s-cluster.example.com -o yaml > cluster-desired-config.yaml
-
-	# Get a secret
-	kops get secrets kube -oplaintext
-
-	# Get the admin password for a cluster
-	kops get secrets admin -oplaintext`))
+	`))
 
 	getShort = i18n.T(`Get one or many resources.`)
 )
 
 type GetOptions struct {
-	output      string
-	clusterName string
+	ClusterName string
+	Output      string
 }
 
 const (
@@ -73,38 +65,26 @@ const (
 
 func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &GetOptions{
-		output: OutputTable,
+		Output: OutputTable,
 	}
 
 	cmd := &cobra.Command{
-		Use:        "get",
-		SuggestFor: []string{"list"},
-		Short:      getShort,
-		Long:       getLong,
-		Example:    getExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
-
-			if len(args) != 0 {
-				options.clusterName = args[0]
-			}
-
-			if rootCommand.clusterName != "" {
-				if len(args) != 0 {
-					exitWithError(fmt.Errorf("cannot mix --name for cluster with positional arguments"))
-				}
-
-				options.clusterName = rootCommand.clusterName
-			}
-
-			err := RunGet(ctx, &rootCommand, os.Stdout, options)
-			if err != nil {
-				exitWithError(err)
-			}
+		Use:               "get",
+		SuggestFor:        []string{"list"},
+		Short:             getShort,
+		Long:              getLong,
+		Example:           getExample,
+		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
+		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunGet(context.TODO(), &rootCommand, out, options)
 		},
 	}
 
-	cmd.PersistentFlags().StringVarP(&options.output, "output", "o", options.output, "output format.  One of: table, yaml, json")
+	cmd.PersistentFlags().StringVarP(&options.Output, "output", "o", options.Output, "output format. One of: table, yaml, json")
+	cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"table", "json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
+	})
 
 	// create subcommands
 	cmd.AddCommand(NewCmdGetAssets(f, out, options))
@@ -124,7 +104,7 @@ func RunGet(ctx context.Context, f commandutils.Factory, out io.Writer, options 
 		return err
 	}
 
-	cluster, err := client.GetCluster(ctx, options.clusterName)
+	cluster, err := client.GetCluster(ctx, options.ClusterName)
 	if err != nil {
 		return err
 	}
@@ -148,14 +128,14 @@ func RunGet(ctx context.Context, f commandutils.Factory, out io.Writer, options 
 	}
 
 	var obj []runtime.Object
-	if options.output != OutputTable {
+	if options.Output != OutputTable {
 		obj = append(obj, cluster)
 		for _, group := range instancegroups {
 			obj = append(obj, group)
 		}
 	}
 
-	switch options.output {
+	switch options.Output {
 	case OutputYaml:
 		if err := fullOutputYAML(out, obj...); err != nil {
 			return fmt.Errorf("error writing cluster yaml to stdout: %v", err)
@@ -170,19 +150,19 @@ func RunGet(ctx context.Context, f commandutils.Factory, out io.Writer, options 
 		return nil
 
 	case OutputTable:
-		fmt.Fprintf(os.Stdout, "Cluster\n")
+		fmt.Fprintf(out, "Cluster\n")
 		err = clusterOutputTable([]*api.Cluster{cluster}, out)
 		if err != nil {
 			return err
 		}
-		fmt.Fprintf(os.Stdout, "\nInstance Groups\n")
+		fmt.Fprintf(out, "\nInstance Groups\n")
 		err = igOutputTable(cluster, instancegroups, out)
 		if err != nil {
 			return err
 		}
 
 	default:
-		return fmt.Errorf("Unknown output format: %q", options.output)
+		return fmt.Errorf("Unknown output format: %q", options.Output)
 	}
 
 	return nil

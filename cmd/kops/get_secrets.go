@@ -193,7 +193,7 @@ func RunGetSecrets(ctx context.Context, options *GetSecretsOptions, args []strin
 	if len(items) == 0 {
 		return fmt.Errorf("No secrets found")
 	}
-	switch options.output {
+	switch options.Output {
 
 	case OutputTable:
 
@@ -239,6 +239,6 @@ func RunGetSecrets(ctx context.Context, options *GetSecretsOptions, args []strin
 		return nil
 
 	default:
-		return fmt.Errorf("Unknown output format: %q", options.output)
+		return fmt.Errorf("Unknown output format: %q", options.Output)
 	}
 }
