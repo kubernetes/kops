@@ -35,6 +35,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/dump"
 	"k8s.io/kops/pkg/resources"
 	resourceops "k8s.io/kops/pkg/resources/ops"
@@ -76,31 +77,27 @@ func NewCmdToolboxDump(f *util.Factory, out io.Writer) *cobra.Command {
 	options.InitDefaults()
 
 	cmd := &cobra.Command{
-		Use:     "dump",
-		Short:   toolboxDumpShort,
-		Long:    toolboxDumpLong,
-		Example: toolboxDumpExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
-
-			if err := rootCommand.ProcessArgs(args); err != nil {
-				exitWithError(err)
-			}
-
-			options.ClusterName = rootCommand.ClusterName(true)
-
-			err := RunToolboxDump(ctx, f, out, options)
-			if err != nil {
-				exitWithError(err)
-			}
+		Use:               "dump [CLUSTER]",
+		Short:             toolboxDumpShort,
+		Long:              toolboxDumpLong,
+		Example:           toolboxDumpExample,
+		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
+		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunToolboxDump(context.TODO(), f, out, options)
 		},
 	}
 
-	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "output format.  One of: yaml, json")
+	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "Output format.  One of json or yaml")
+	cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
+	})
 
-	cmd.Flags().StringVar(&options.Dir, "dir", options.Dir, "target directory; if specified will collect logs and other information.")
-	cmd.Flags().StringVar(&options.PrivateKey, "private-key", options.PrivateKey, "private key to use for SSH acccess to instances")
-	cmd.Flags().StringVar(&options.SSHUser, "ssh-user", options.SSHUser, "the remote user for SSH access to instances")
+	cmd.Flags().StringVar(&options.Dir, "dir", options.Dir, "Target directory; if specified will collect logs and other information.")
+	cmd.MarkFlagDirname("dir")
+	cmd.Flags().StringVar(&options.PrivateKey, "private-key", options.PrivateKey, "File containing private key to use for SSH access to instances")
+	cmd.Flags().StringVar(&options.SSHUser, "ssh-user", options.SSHUser, "The remote user for SSH access to instances")
+	cmd.RegisterFlagCompletionFunc("ssh-user", cobra.NoFileCompletions)
 
 	return cmd
 }
@@ -110,10 +107,6 @@ func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
-	}
-
-	if options.ClusterName == "" {
-		return fmt.Errorf("ClusterName is required")
 	}
 
 	cluster, err := clientset.GetCluster(ctx, options.ClusterName)
@@ -155,11 +148,6 @@ func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options
 			return fmt.Errorf("error parsing private key %q: %v", privateKeyPath, err)
 		}
 
-		cluster, err := GetCluster(ctx, f, options.ClusterName)
-		if err != nil {
-			return err
-		}
-
 		contextName := cluster.ObjectMeta.Name
 		clientGetter := genericclioptions.NewConfigFlags(true)
 		clientGetter.Context = &contextName
@@ -168,7 +156,7 @@ func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options
 
 		config, err := clientGetter.ToRESTConfig()
 		if err != nil {
-			klog.Warningf("cannot load kubecfg settings for %q: %v", contextName, err)
+			klog.Warningf("cannot load kubeconfig settings for %q: %v", contextName, err)
 		} else {
 			k8sClient, err := kubernetes.NewForConfig(config)
 			if err != nil {
