@@ -432,7 +432,7 @@ Resources.AWSEC2LaunchTemplatenodesminimaletcdexamplecom.Properties.LaunchTempla
   ConfigBase: memfs://clusters.example.com/minimal-etcd.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: 0iYBTE1qSb9CYeRIeXSmG9rdUezNsUe2pRjMbE8RbG8=
+  NodeupConfigHash: LDevpa8cfuLNHz9S4syHz3JhFCuU5OppDWbYVPzPrWY=
 
   __EOF_KUBE_ENV
 

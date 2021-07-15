@@ -123,7 +123,10 @@ func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.ModelBuilderContext) error 
 		return issueCert.AddFileTasks(c, dir, name, "", nil)
 	} else {
 		if b.UseKopsControllerForNodeBootstrap() {
-			cert, key := b.GetBootstrapCert(name)
+			cert, key, err := b.GetBootstrapCert(name, signer)
+			if err != nil {
+				return err
+			}
 
 			c.AddTask(&nodetasks.File{
 				Path:           filepath.Join(dir, name+".crt"),

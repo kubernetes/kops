@@ -451,7 +451,7 @@ Resources.AWSEC2LaunchTemplatenodesdockerexamplecom.Properties.LaunchTemplateDat
   ConfigBase: memfs://clusters.example.com/docker.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: dn0AX7sK+3cBMEdv2c5OI6iocGx8FIsx6XJP6tU58uo=
+  NodeupConfigHash: IUUmgKRx8/87kspoEHjZ9Q2XsW04SJhfvsctLdfPywA=
 
   __EOF_KUBE_ENV
 

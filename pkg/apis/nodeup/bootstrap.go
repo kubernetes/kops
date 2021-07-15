@@ -24,6 +24,8 @@ type BootstrapRequest struct {
 	APIVersion string `json:"apiVersion"`
 	// Certs are the requested certificates and their respective public keys.
 	Certs map[string]string `json:"certs"`
+	// KeypairIDs are the keypair IDs of the CAs to use for issuing certificates.
+	KeypairIDs map[string]string `json:"keypairIDs"`
 
 	// IncludeNodeConfig controls whether the cluster & instance group configuration should be returned.
 	// This allows for nodes without access to the kops state store.

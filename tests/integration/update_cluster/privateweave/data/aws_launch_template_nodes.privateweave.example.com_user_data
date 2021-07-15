@@ -162,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privateweave.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: n4yAEF5KBx5KC7fCKntkd15tfGbRtbxeLD7aiHXEj3c=
+NodeupConfigHash: jrZ6kGuXzL2l7Ef5ebcuHNJU0QhGKTEwQYHa0teZrcE=
 
 __EOF_KUBE_ENV
 

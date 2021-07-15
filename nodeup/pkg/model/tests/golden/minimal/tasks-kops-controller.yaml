@@ -2,6 +2,14 @@ mode: "0755"
 path: /etc/kubernetes/kops-controller
 type: directory
 ---
+contents: |
+  kubernetes-ca: "3"
+  service-account: "2"
+mode: "0600"
+owner: kops-controller
+path: /etc/kubernetes/kops-controller/keypair-ids.yaml
+type: file
+---
 contents:
   task:
     Name: kops-controller

@@ -417,7 +417,7 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumexamplecom.Properties.LaunchTemp
   ConfigBase: memfs://clusters.example.com/privatecilium.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: JNy6CJ9R/90CCImseZqoKFV3lArtwCQb9wcUE5A3HV0=
+  NodeupConfigHash: +A3ynJBC/SEqeXU3Mzrq9NrWNYkoYI7qFtSbcymftlU=
 
   __EOF_KUBE_ENV
 

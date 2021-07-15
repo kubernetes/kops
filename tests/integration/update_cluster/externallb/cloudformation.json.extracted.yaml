@@ -416,7 +416,7 @@ Resources.AWSEC2LaunchTemplatenodesexternallbexamplecom.Properties.LaunchTemplat
   ConfigBase: memfs://clusters.example.com/externallb.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: FzEzx/o0MsD4+1xVGe75bmIsb4TbSm3ZgB3HI6UGMYM=
+  NodeupConfigHash: bdjSOGEceYhBOW9P2HSJNSoQH3jEvW12Hag/2hr1e6E=
 
   __EOF_KUBE_ENV
 
