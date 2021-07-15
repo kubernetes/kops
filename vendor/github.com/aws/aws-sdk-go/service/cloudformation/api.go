@@ -13,6 +13,182 @@ import (
 	"github.com/aws/aws-sdk-go/private/protocol/query"
 )
 
+const opActivateType = "ActivateType"
+
+// ActivateTypeRequest generates a "aws/request.Request" representing the
+// client's request for the ActivateType operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ActivateType for more information on using the ActivateType
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the ActivateTypeRequest method.
+//    req, resp := client.ActivateTypeRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/ActivateType
+func (c *CloudFormation) ActivateTypeRequest(input *ActivateTypeInput) (req *request.Request, output *ActivateTypeOutput) {
+	op := &request.Operation{
+		Name:       opActivateType,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ActivateTypeInput{}
+	}
+
+	output = &ActivateTypeOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ActivateType API operation for AWS CloudFormation.
+//
+// Activates a public third-party extension, making it available for use in
+// stack templates. For more information, see Using public extensions (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry-public.html)
+// in the CloudFormation User Guide.
+//
+// Once you have activated a public third-party extension in your account and
+// region, use SetTypeConfiguration (AWSCloudFormation/latest/APIReference/API_SetTypeConfiguration.html)
+// to specify configuration properties for the extension. For more information,
+// see Configuring extensions at the account level (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry-register.html#registry-set-configuration)
+// in the CloudFormation User Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CloudFormation's
+// API operation ActivateType for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeCFNRegistryException "CFNRegistryException"
+//   An error occurred during a CloudFormation registry operation.
+//
+//   * ErrCodeTypeNotFoundException "TypeNotFoundException"
+//   The specified extension does not exist in the CloudFormation registry.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/ActivateType
+func (c *CloudFormation) ActivateType(input *ActivateTypeInput) (*ActivateTypeOutput, error) {
+	req, out := c.ActivateTypeRequest(input)
+	return out, req.Send()
+}
+
+// ActivateTypeWithContext is the same as ActivateType with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ActivateType for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudFormation) ActivateTypeWithContext(ctx aws.Context, input *ActivateTypeInput, opts ...request.Option) (*ActivateTypeOutput, error) {
+	req, out := c.ActivateTypeRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opBatchDescribeTypeConfigurations = "BatchDescribeTypeConfigurations"
+
+// BatchDescribeTypeConfigurationsRequest generates a "aws/request.Request" representing the
+// client's request for the BatchDescribeTypeConfigurations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See BatchDescribeTypeConfigurations for more information on using the BatchDescribeTypeConfigurations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the BatchDescribeTypeConfigurationsRequest method.
+//    req, resp := client.BatchDescribeTypeConfigurationsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/BatchDescribeTypeConfigurations
+func (c *CloudFormation) BatchDescribeTypeConfigurationsRequest(input *BatchDescribeTypeConfigurationsInput) (req *request.Request, output *BatchDescribeTypeConfigurationsOutput) {
+	op := &request.Operation{
+		Name:       opBatchDescribeTypeConfigurations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &BatchDescribeTypeConfigurationsInput{}
+	}
+
+	output = &BatchDescribeTypeConfigurationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// BatchDescribeTypeConfigurations API operation for AWS CloudFormation.
+//
+// Returns configuration data for the specified CloudFormation extensions, from
+// the CloudFormation registry for the account and region.
+//
+// For more information, see Configuring extensions at the account level (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry-register.html#registry-set-configuration)
+// in the CloudFormation User Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CloudFormation's
+// API operation BatchDescribeTypeConfigurations for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeTypeConfigurationNotFoundException "TypeConfigurationNotFoundException"
+//   The specified extension configuration cannot be found.
+//
+//   * ErrCodeCFNRegistryException "CFNRegistryException"
+//   An error occurred during a CloudFormation registry operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/BatchDescribeTypeConfigurations
+func (c *CloudFormation) BatchDescribeTypeConfigurations(input *BatchDescribeTypeConfigurationsInput) (*BatchDescribeTypeConfigurationsOutput, error) {
+	req, out := c.BatchDescribeTypeConfigurationsRequest(input)
+	return out, req.Send()
+}
+
+// BatchDescribeTypeConfigurationsWithContext is the same as BatchDescribeTypeConfigurations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See BatchDescribeTypeConfigurations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudFormation) BatchDescribeTypeConfigurationsWithContext(ctx aws.Context, input *BatchDescribeTypeConfigurationsInput, opts ...request.Option) (*BatchDescribeTypeConfigurationsOutput, error) {
+	req, out := c.BatchDescribeTypeConfigurationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCancelUpdateStack = "CancelUpdateStack"
 
 // CancelUpdateStackRequest generates a "aws/request.Request" representing the
@@ -585,6 +761,96 @@ func (c *CloudFormation) CreateStackSetWithContext(ctx aws.Context, input *Creat
 	return out, req.Send()
 }
 
+const opDeactivateType = "DeactivateType"
+
+// DeactivateTypeRequest generates a "aws/request.Request" representing the
+// client's request for the DeactivateType operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeactivateType for more information on using the DeactivateType
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DeactivateTypeRequest method.
+//    req, resp := client.DeactivateTypeRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/DeactivateType
+func (c *CloudFormation) DeactivateTypeRequest(input *DeactivateTypeInput) (req *request.Request, output *DeactivateTypeOutput) {
+	op := &request.Operation{
+		Name:       opDeactivateType,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeactivateTypeInput{}
+	}
+
+	output = &DeactivateTypeOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(query.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeactivateType API operation for AWS CloudFormation.
+//
+// Deactivates a public extension that was previously activated in this account
+// and region.
+//
+// Once deactivated, an extension cannot be used in any CloudFormation operation.
+// This includes stack update operations where the stack template includes the
+// extension, even if no updates are being made to the extension. In addition,
+// deactivated extensions are not automatically updated if a new version of
+// the extension is released.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CloudFormation's
+// API operation DeactivateType for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeCFNRegistryException "CFNRegistryException"
+//   An error occurred during a CloudFormation registry operation.
+//
+//   * ErrCodeTypeNotFoundException "TypeNotFoundException"
+//   The specified extension does not exist in the CloudFormation registry.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/DeactivateType
+func (c *CloudFormation) DeactivateType(input *DeactivateTypeInput) (*DeactivateTypeOutput, error) {
+	req, out := c.DeactivateTypeRequest(input)
+	return out, req.Send()
+}
+
+// DeactivateTypeWithContext is the same as DeactivateType with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeactivateType for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudFormation) DeactivateTypeWithContext(ctx aws.Context, input *DeactivateTypeInput, opts ...request.Option) (*DeactivateTypeOutput, error) {
+	req, out := c.DeactivateTypeRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteChangeSet = "DeleteChangeSet"
 
 // DeleteChangeSetRequest generates a "aws/request.Request" representing the
@@ -1013,7 +1279,7 @@ func (c *CloudFormation) DeregisterTypeRequest(input *DeregisterTypeInput) (req 
 //   An error occurred during a CloudFormation registry operation.
 //
 //   * ErrCodeTypeNotFoundException "TypeNotFoundException"
-//   The specified type does not exist in the CloudFormation registry.
+//   The specified extension does not exist in the CloudFormation registry.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/DeregisterType
 func (c *CloudFormation) DeregisterType(input *DeregisterTypeInput) (*DeregisterTypeOutput, error) {
@@ -1250,6 +1516,96 @@ func (c *CloudFormation) DescribeChangeSet(input *DescribeChangeSetInput) (*Desc
 // for more information on using Contexts.
 func (c *CloudFormation) DescribeChangeSetWithContext(ctx aws.Context, input *DescribeChangeSetInput, opts ...request.Option) (*DescribeChangeSetOutput, error) {
 	req, out := c.DescribeChangeSetRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribePublisher = "DescribePublisher"
+
+// DescribePublisherRequest generates a "aws/request.Request" representing the
+// client's request for the DescribePublisher operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribePublisher for more information on using the DescribePublisher
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DescribePublisherRequest method.
+//    req, resp := client.DescribePublisherRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/DescribePublisher
+func (c *CloudFormation) DescribePublisherRequest(input *DescribePublisherInput) (req *request.Request, output *DescribePublisherOutput) {
+	op := &request.Operation{
+		Name:       opDescribePublisher,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribePublisherInput{}
+	}
+
+	output = &DescribePublisherOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribePublisher API operation for AWS CloudFormation.
+//
+// Returns information about a CloudFormation extension publisher.
+//
+// If you do not supply a PublisherId, and you have registered as an extension
+// publisher, DescribePublisher returns information about your own publisher
+// account.
+//
+// For more information on registering as a publisher, see:
+//
+//    * RegisterPublisher (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterPublisher.html)
+//
+//    * Publishing extensions to make them available for public use (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/publish-extension.html)
+//    in the CloudFormation CLI User Guide
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CloudFormation's
+// API operation DescribePublisher for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeCFNRegistryException "CFNRegistryException"
+//   An error occurred during a CloudFormation registry operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/DescribePublisher
+func (c *CloudFormation) DescribePublisher(input *DescribePublisherInput) (*DescribePublisherOutput, error) {
+	req, out := c.DescribePublisherRequest(input)
+	return out, req.Send()
+}
+
+// DescribePublisherWithContext is the same as DescribePublisher with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribePublisher for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudFormation) DescribePublisherWithContext(ctx aws.Context, input *DescribePublisherInput, opts ...request.Option) (*DescribePublisherOutput, error) {
+	req, out := c.DescribePublisherRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -2233,7 +2589,7 @@ func (c *CloudFormation) DescribeTypeRequest(input *DescribeTypeInput) (req *req
 //   An error occurred during a CloudFormation registry operation.
 //
 //   * ErrCodeTypeNotFoundException "TypeNotFoundException"
-//   The specified type does not exist in the CloudFormation registry.
+//   The specified extension does not exist in the CloudFormation registry.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/DescribeType
 func (c *CloudFormation) DescribeType(input *DescribeTypeInput) (*DescribeTypeOutput, error) {
@@ -4735,6 +5091,95 @@ func (c *CloudFormation) ListTypesPagesWithContext(ctx aws.Context, input *ListT
 	return p.Err()
 }
 
+const opPublishType = "PublishType"
+
+// PublishTypeRequest generates a "aws/request.Request" representing the
+// client's request for the PublishType operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PublishType for more information on using the PublishType
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the PublishTypeRequest method.
+//    req, resp := client.PublishTypeRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/PublishType
+func (c *CloudFormation) PublishTypeRequest(input *PublishTypeInput) (req *request.Request, output *PublishTypeOutput) {
+	op := &request.Operation{
+		Name:       opPublishType,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &PublishTypeInput{}
+	}
+
+	output = &PublishTypeOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// PublishType API operation for AWS CloudFormation.
+//
+// Publishes the specified extension to the CloudFormation registry as a public
+// extension in this region. Public extensions are available for use by all
+// CloudFormation users. For more information on publishing extensions, see
+// Publishing extensions to make them available for public use (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/publish-extension.html)
+// in the CloudFormation CLI User Guide.
+//
+// To publish an extension, you must be registered as a publisher with CloudFormation.
+// For more information, see RegisterPublisher (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterPublisher.html).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CloudFormation's
+// API operation PublishType for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeCFNRegistryException "CFNRegistryException"
+//   An error occurred during a CloudFormation registry operation.
+//
+//   * ErrCodeTypeNotFoundException "TypeNotFoundException"
+//   The specified extension does not exist in the CloudFormation registry.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/PublishType
+func (c *CloudFormation) PublishType(input *PublishTypeInput) (*PublishTypeOutput, error) {
+	req, out := c.PublishTypeRequest(input)
+	return out, req.Send()
+}
+
+// PublishTypeWithContext is the same as PublishType with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PublishType for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudFormation) PublishTypeWithContext(ctx aws.Context, input *PublishTypeInput, opts ...request.Option) (*PublishTypeOutput, error) {
+	req, out := c.PublishTypeRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opRecordHandlerProgress = "RecordHandlerProgress"
 
 // RecordHandlerProgressRequest generates a "aws/request.Request" representing the
@@ -4823,6 +5268,91 @@ func (c *CloudFormation) RecordHandlerProgressWithContext(ctx aws.Context, input
 	return out, req.Send()
 }
 
+const opRegisterPublisher = "RegisterPublisher"
+
+// RegisterPublisherRequest generates a "aws/request.Request" representing the
+// client's request for the RegisterPublisher operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See RegisterPublisher for more information on using the RegisterPublisher
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the RegisterPublisherRequest method.
+//    req, resp := client.RegisterPublisherRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/RegisterPublisher
+func (c *CloudFormation) RegisterPublisherRequest(input *RegisterPublisherInput) (req *request.Request, output *RegisterPublisherOutput) {
+	op := &request.Operation{
+		Name:       opRegisterPublisher,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &RegisterPublisherInput{}
+	}
+
+	output = &RegisterPublisherOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// RegisterPublisher API operation for AWS CloudFormation.
+//
+// Registers your account as a publisher of public extensions in the CloudFormation
+// registry. Public extensions are available for use by all CloudFormation users.
+// This publisher ID applies to your account in all AWS regions.
+//
+// For information on requirements for registering as a public extension publisher,
+// see Registering your account to publish CloudFormation extensions (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/publish-extension.html#publish-extension-prereqs)
+// in the CloudFormation CLI User Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CloudFormation's
+// API operation RegisterPublisher for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeCFNRegistryException "CFNRegistryException"
+//   An error occurred during a CloudFormation registry operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/RegisterPublisher
+func (c *CloudFormation) RegisterPublisher(input *RegisterPublisherInput) (*RegisterPublisherOutput, error) {
+	req, out := c.RegisterPublisherRequest(input)
+	return out, req.Send()
+}
+
+// RegisterPublisherWithContext is the same as RegisterPublisher with the addition of
+// the ability to pass a context and additional request options.
+//
+// See RegisterPublisher for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudFormation) RegisterPublisherWithContext(ctx aws.Context, input *RegisterPublisherInput, opts ...request.Option) (*RegisterPublisherOutput, error) {
+	req, out := c.RegisterPublisherRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opRegisterType = "RegisterType"
 
 // RegisterTypeRequest generates a "aws/request.Request" representing the
@@ -4888,6 +5418,12 @@ func (c *CloudFormation) RegisterTypeRequest(input *RegisterTypeInput) (req *req
 // Once you have initiated a registration request using RegisterType , you can
 // use DescribeTypeRegistration to monitor the progress of the registration
 // request.
+//
+// Once you have registered a private extension in your account and region,
+// use SetTypeConfiguration (AWSCloudFormation/latest/APIReference/API_SetTypeConfiguration.html)
+// to specify configuration properties for the extension. For more information,
+// see Configuring extensions at the account level (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry-register.html#registry-set-configuration)
+// in the CloudFormation User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4997,6 +5533,99 @@ func (c *CloudFormation) SetStackPolicyWithContext(ctx aws.Context, input *SetSt
 	return out, req.Send()
 }
 
+const opSetTypeConfiguration = "SetTypeConfiguration"
+
+// SetTypeConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the SetTypeConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See SetTypeConfiguration for more information on using the SetTypeConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the SetTypeConfigurationRequest method.
+//    req, resp := client.SetTypeConfigurationRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/SetTypeConfiguration
+func (c *CloudFormation) SetTypeConfigurationRequest(input *SetTypeConfigurationInput) (req *request.Request, output *SetTypeConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opSetTypeConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &SetTypeConfigurationInput{}
+	}
+
+	output = &SetTypeConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// SetTypeConfiguration API operation for AWS CloudFormation.
+//
+// Specifies the configuration data for a registered CloudFormation extension,
+// in the given account and region.
+//
+// To view the current configuration data for an extension, refer to the ConfigurationSchema
+// element of DescribeType (AWSCloudFormation/latest/APIReference/API_DescribeType.html).
+// For more information, see Configuring extensions at the account level (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry-register.html#registry-set-configuration)
+// in the CloudFormation User Guide.
+//
+// It is strongly recommended that you use dynamic references to restrict sensitive
+// configuration definitions, such as third-party credentials. For more details
+// on dynamic references, see Using dynamic references to specify template values
+// (https://docs.aws.amazon.com/) in the AWS CloudFormation User Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CloudFormation's
+// API operation SetTypeConfiguration for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeCFNRegistryException "CFNRegistryException"
+//   An error occurred during a CloudFormation registry operation.
+//
+//   * ErrCodeTypeNotFoundException "TypeNotFoundException"
+//   The specified extension does not exist in the CloudFormation registry.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/SetTypeConfiguration
+func (c *CloudFormation) SetTypeConfiguration(input *SetTypeConfigurationInput) (*SetTypeConfigurationOutput, error) {
+	req, out := c.SetTypeConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// SetTypeConfigurationWithContext is the same as SetTypeConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See SetTypeConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudFormation) SetTypeConfigurationWithContext(ctx aws.Context, input *SetTypeConfigurationInput, opts ...request.Option) (*SetTypeConfigurationOutput, error) {
+	req, out := c.SetTypeConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opSetTypeDefaultVersion = "SetTypeDefaultVersion"
 
 // SetTypeDefaultVersionRequest generates a "aws/request.Request" representing the
@@ -5057,7 +5686,7 @@ func (c *CloudFormation) SetTypeDefaultVersionRequest(input *SetTypeDefaultVersi
 //   An error occurred during a CloudFormation registry operation.
 //
 //   * ErrCodeTypeNotFoundException "TypeNotFoundException"
-//   The specified type does not exist in the CloudFormation registry.
+//   The specified extension does not exist in the CloudFormation registry.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/SetTypeDefaultVersion
 func (c *CloudFormation) SetTypeDefaultVersion(input *SetTypeDefaultVersionInput) (*SetTypeDefaultVersionOutput, error) {
@@ -5242,6 +5871,114 @@ func (c *CloudFormation) StopStackSetOperation(input *StopStackSetOperationInput
 // for more information on using Contexts.
 func (c *CloudFormation) StopStackSetOperationWithContext(ctx aws.Context, input *StopStackSetOperationInput, opts ...request.Option) (*StopStackSetOperationOutput, error) {
 	req, out := c.StopStackSetOperationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opTestType = "TestType"
+
+// TestTypeRequest generates a "aws/request.Request" representing the
+// client's request for the TestType operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See TestType for more information on using the TestType
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the TestTypeRequest method.
+//    req, resp := client.TestTypeRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/TestType
+func (c *CloudFormation) TestTypeRequest(input *TestTypeInput) (req *request.Request, output *TestTypeOutput) {
+	op := &request.Operation{
+		Name:       opTestType,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &TestTypeInput{}
+	}
+
+	output = &TestTypeOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// TestType API operation for AWS CloudFormation.
+//
+// Tests a registered extension to make sure it meets all necessary requirements
+// for being published in the CloudFormation registry.
+//
+//    * For resource types, this includes passing all contracts tests defined
+//    for the type.
+//
+//    * For modules, this includes determining if the module's model meets all
+//    necessary requirements.
+//
+// For more information, see Testing your public extension prior to publishing
+// (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/publish-extension.html#publish-extension-testing)
+// in the CloudFormation CLI User Guide.
+//
+// If you do not specify a version, CloudFormation uses the default version
+// of the extension in your account and region for testing.
+//
+// To perform testing, CloudFormation assumes the execution role specified when
+// the test was registered. For more information, see RegisterType (AWSCloudFormation/latest/APIReference/API_RegisterType.html).
+//
+// Once you've initiated testing on an extension using TestType, you can use
+// DescribeType (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_DescribeType.html)
+// to monitor the current test status and test status description for the extension.
+//
+// An extension must have a test status of PASSED before it can be published.
+// For more information, see Publishing extensions to make them available for
+// public use (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-publish.html)
+// in the CloudFormation CLI User Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CloudFormation's
+// API operation TestType for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeCFNRegistryException "CFNRegistryException"
+//   An error occurred during a CloudFormation registry operation.
+//
+//   * ErrCodeTypeNotFoundException "TypeNotFoundException"
+//   The specified extension does not exist in the CloudFormation registry.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/TestType
+func (c *CloudFormation) TestType(input *TestTypeInput) (*TestTypeOutput, error) {
+	req, out := c.TestTypeRequest(input)
+	return out, req.Send()
+}
+
+// TestTypeWithContext is the same as TestType with the addition of
+// the ability to pass a context and additional request options.
+//
+// See TestType for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudFormation) TestTypeWithContext(ctx aws.Context, input *TestTypeInput, opts ...request.Option) (*TestTypeOutput, error) {
+	req, out := c.TestTypeRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -5826,6 +6563,195 @@ func (s *AccountLimit) SetValue(v int64) *AccountLimit {
 	return s
 }
 
+type ActivateTypeInput struct {
+	_ struct{} `type:"structure"`
+
+	// Whether to automatically update the extension in this account and region
+	// when a new minor version is published by the extension publisher. Major versions
+	// released by the publisher must be manually updated.
+	//
+	// The default is true.
+	AutoUpdate *bool `type:"boolean"`
+
+	// The name of the IAM execution role to use to activate the extension.
+	ExecutionRoleArn *string `min:"1" type:"string"`
+
+	// Contains logging configuration information for an extension.
+	LoggingConfig *LoggingConfig `type:"structure"`
+
+	// The major version of this extension you want to activate, if multiple major
+	// versions are available. The default is the latest major version. CloudFormation
+	// uses the latest available minor version of the major version selected.
+	//
+	// You can specify MajorVersion or VersionBump, but not both.
+	MajorVersion *int64 `min:"1" type:"long"`
+
+	// The Amazon Resource Number (ARN) of the public extension.
+	//
+	// Conditional: You must specify PublicTypeArn, or TypeName, Type, and PublisherId.
+	PublicTypeArn *string `type:"string"`
+
+	// The ID of the extension publisher.
+	//
+	// Conditional: You must specify PublicTypeArn, or TypeName, Type, and PublisherId.
+	PublisherId *string `min:"1" type:"string"`
+
+	// The extension type.
+	//
+	// Conditional: You must specify PublicTypeArn, or TypeName, Type, and PublisherId.
+	Type *string `type:"string" enum:"ThirdPartyType"`
+
+	// The name of the extension.
+	//
+	// Conditional: You must specify PublicTypeArn, or TypeName, Type, and PublisherId.
+	TypeName *string `min:"10" type:"string"`
+
+	// An alias to assign to the public extension, in this account and region. If
+	// you specify an alias for the extension, CloudFormation treats the alias as
+	// the extension type name within this account and region. You must use the
+	// alias to refer to the extension in your templates, API calls, and CloudFormation
+	// console.
+	//
+	// An extension alias must be unique within a given account and region. You
+	// can activate the same public resource multiple times in the same account
+	// and region, using different type name aliases.
+	TypeNameAlias *string `min:"10" type:"string"`
+
+	// Manually updates a previously-activated type to a new major or minor version,
+	// if available. You can also use this parameter to update the value of AutoUpdate.
+	//
+	//    * MAJOR: CloudFormation updates the extension to the newest major version,
+	//    if one is available.
+	//
+	//    * MINOR: CloudFormation updates the extension to the newest minor version,
+	//    if one is available.
+	VersionBump *string `type:"string" enum:"VersionBump"`
+}
+
+// String returns the string representation
+func (s ActivateTypeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ActivateTypeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ActivateTypeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ActivateTypeInput"}
+	if s.ExecutionRoleArn != nil && len(*s.ExecutionRoleArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExecutionRoleArn", 1))
+	}
+	if s.MajorVersion != nil && *s.MajorVersion < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MajorVersion", 1))
+	}
+	if s.PublisherId != nil && len(*s.PublisherId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PublisherId", 1))
+	}
+	if s.TypeName != nil && len(*s.TypeName) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("TypeName", 10))
+	}
+	if s.TypeNameAlias != nil && len(*s.TypeNameAlias) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("TypeNameAlias", 10))
+	}
+	if s.LoggingConfig != nil {
+		if err := s.LoggingConfig.Validate(); err != nil {
+			invalidParams.AddNested("LoggingConfig", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAutoUpdate sets the AutoUpdate field's value.
+func (s *ActivateTypeInput) SetAutoUpdate(v bool) *ActivateTypeInput {
+	s.AutoUpdate = &v
+	return s
+}
+
+// SetExecutionRoleArn sets the ExecutionRoleArn field's value.
+func (s *ActivateTypeInput) SetExecutionRoleArn(v string) *ActivateTypeInput {
+	s.ExecutionRoleArn = &v
+	return s
+}
+
+// SetLoggingConfig sets the LoggingConfig field's value.
+func (s *ActivateTypeInput) SetLoggingConfig(v *LoggingConfig) *ActivateTypeInput {
+	s.LoggingConfig = v
+	return s
+}
+
+// SetMajorVersion sets the MajorVersion field's value.
+func (s *ActivateTypeInput) SetMajorVersion(v int64) *ActivateTypeInput {
+	s.MajorVersion = &v
+	return s
+}
+
+// SetPublicTypeArn sets the PublicTypeArn field's value.
+func (s *ActivateTypeInput) SetPublicTypeArn(v string) *ActivateTypeInput {
+	s.PublicTypeArn = &v
+	return s
+}
+
+// SetPublisherId sets the PublisherId field's value.
+func (s *ActivateTypeInput) SetPublisherId(v string) *ActivateTypeInput {
+	s.PublisherId = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *ActivateTypeInput) SetType(v string) *ActivateTypeInput {
+	s.Type = &v
+	return s
+}
+
+// SetTypeName sets the TypeName field's value.
+func (s *ActivateTypeInput) SetTypeName(v string) *ActivateTypeInput {
+	s.TypeName = &v
+	return s
+}
+
+// SetTypeNameAlias sets the TypeNameAlias field's value.
+func (s *ActivateTypeInput) SetTypeNameAlias(v string) *ActivateTypeInput {
+	s.TypeNameAlias = &v
+	return s
+}
+
+// SetVersionBump sets the VersionBump field's value.
+func (s *ActivateTypeInput) SetVersionBump(v string) *ActivateTypeInput {
+	s.VersionBump = &v
+	return s
+}
+
+type ActivateTypeOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Number (ARN) of the activated extension, in this account
+	// and region.
+	Arn *string `type:"string"`
+}
+
+// String returns the string representation
+func (s ActivateTypeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ActivateTypeOutput) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *ActivateTypeOutput) SetArn(v string) *ActivateTypeOutput {
+	s.Arn = &v
+	return s
+}
+
 // [Service-managed permissions] Describes whether StackSets automatically deploys
 // to AWS Organizations accounts that are added to a target organization or
 // organizational unit (OU).
@@ -5864,6 +6790,144 @@ func (s *AutoDeployment) SetEnabled(v bool) *AutoDeployment {
 // SetRetainStacksOnAccountRemoval sets the RetainStacksOnAccountRemoval field's value.
 func (s *AutoDeployment) SetRetainStacksOnAccountRemoval(v bool) *AutoDeployment {
 	s.RetainStacksOnAccountRemoval = &v
+	return s
+}
+
+// Detailed information concerning an error generated during the setting of
+// configuration data for a CloudFormation extension.
+type BatchDescribeTypeConfigurationsError struct {
+	_ struct{} `type:"structure"`
+
+	// The error code.
+	ErrorCode *string `min:"3" type:"string"`
+
+	// The error message.
+	ErrorMessage *string `min:"1" type:"string"`
+
+	// Identifying information for the configuration of a CloudFormation extension.
+	TypeConfigurationIdentifier *TypeConfigurationIdentifier `type:"structure"`
+}
+
+// String returns the string representation
+func (s BatchDescribeTypeConfigurationsError) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s BatchDescribeTypeConfigurationsError) GoString() string {
+	return s.String()
+}
+
+// SetErrorCode sets the ErrorCode field's value.
+func (s *BatchDescribeTypeConfigurationsError) SetErrorCode(v string) *BatchDescribeTypeConfigurationsError {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetErrorMessage sets the ErrorMessage field's value.
+func (s *BatchDescribeTypeConfigurationsError) SetErrorMessage(v string) *BatchDescribeTypeConfigurationsError {
+	s.ErrorMessage = &v
+	return s
+}
+
+// SetTypeConfigurationIdentifier sets the TypeConfigurationIdentifier field's value.
+func (s *BatchDescribeTypeConfigurationsError) SetTypeConfigurationIdentifier(v *TypeConfigurationIdentifier) *BatchDescribeTypeConfigurationsError {
+	s.TypeConfigurationIdentifier = v
+	return s
+}
+
+type BatchDescribeTypeConfigurationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The list of identifiers for the desired extension configurations.
+	//
+	// TypeConfigurationIdentifiers is a required field
+	TypeConfigurationIdentifiers []*TypeConfigurationIdentifier `min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s BatchDescribeTypeConfigurationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s BatchDescribeTypeConfigurationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *BatchDescribeTypeConfigurationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "BatchDescribeTypeConfigurationsInput"}
+	if s.TypeConfigurationIdentifiers == nil {
+		invalidParams.Add(request.NewErrParamRequired("TypeConfigurationIdentifiers"))
+	}
+	if s.TypeConfigurationIdentifiers != nil && len(s.TypeConfigurationIdentifiers) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TypeConfigurationIdentifiers", 1))
+	}
+	if s.TypeConfigurationIdentifiers != nil {
+		for i, v := range s.TypeConfigurationIdentifiers {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "TypeConfigurationIdentifiers", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetTypeConfigurationIdentifiers sets the TypeConfigurationIdentifiers field's value.
+func (s *BatchDescribeTypeConfigurationsInput) SetTypeConfigurationIdentifiers(v []*TypeConfigurationIdentifier) *BatchDescribeTypeConfigurationsInput {
+	s.TypeConfigurationIdentifiers = v
+	return s
+}
+
+type BatchDescribeTypeConfigurationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of information concerning any errors generated during the setting
+	// of the specified configurations.
+	Errors []*BatchDescribeTypeConfigurationsError `type:"list"`
+
+	// A list of any of the specified extension configurations from the CloudFormation
+	// registry.
+	TypeConfigurations []*TypeConfigurationDetails `type:"list"`
+
+	// A list of any of the specified extension configurations that CloudFormation
+	// could not process for any reason.
+	UnprocessedTypeConfigurations []*TypeConfigurationIdentifier `type:"list"`
+}
+
+// String returns the string representation
+func (s BatchDescribeTypeConfigurationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s BatchDescribeTypeConfigurationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetErrors sets the Errors field's value.
+func (s *BatchDescribeTypeConfigurationsOutput) SetErrors(v []*BatchDescribeTypeConfigurationsError) *BatchDescribeTypeConfigurationsOutput {
+	s.Errors = v
+	return s
+}
+
+// SetTypeConfigurations sets the TypeConfigurations field's value.
+func (s *BatchDescribeTypeConfigurationsOutput) SetTypeConfigurations(v []*TypeConfigurationDetails) *BatchDescribeTypeConfigurationsOutput {
+	s.TypeConfigurations = v
+	return s
+}
+
+// SetUnprocessedTypeConfigurations sets the UnprocessedTypeConfigurations field's value.
+func (s *BatchDescribeTypeConfigurationsOutput) SetUnprocessedTypeConfigurations(v []*TypeConfigurationIdentifier) *BatchDescribeTypeConfigurationsOutput {
+	s.UnprocessedTypeConfigurations = v
 	return s
 }
 
@@ -7490,6 +8554,81 @@ func (s *CreateStackSetOutput) SetStackSetId(v string) *CreateStackSetOutput {
 	return s
 }
 
+type DeactivateTypeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) for the extension, in this account and region.
+	//
+	// Conditional: You must specify either Arn, or TypeName and Type.
+	Arn *string `type:"string"`
+
+	// The extension type.
+	//
+	// Conditional: You must specify either Arn, or TypeName and Type.
+	Type *string `type:"string" enum:"ThirdPartyType"`
+
+	// The type name of the extension, in this account and region. If you specified
+	// a type name alias when enabling the extension, use the type name alias.
+	//
+	// Conditional: You must specify either Arn, or TypeName and Type.
+	TypeName *string `min:"10" type:"string"`
+}
+
+// String returns the string representation
+func (s DeactivateTypeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeactivateTypeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeactivateTypeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeactivateTypeInput"}
+	if s.TypeName != nil && len(*s.TypeName) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("TypeName", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetArn sets the Arn field's value.
+func (s *DeactivateTypeInput) SetArn(v string) *DeactivateTypeInput {
+	s.Arn = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *DeactivateTypeInput) SetType(v string) *DeactivateTypeInput {
+	s.Type = &v
+	return s
+}
+
+// SetTypeName sets the TypeName field's value.
+func (s *DeactivateTypeInput) SetTypeName(v string) *DeactivateTypeInput {
+	s.TypeName = &v
+	return s
+}
+
+type DeactivateTypeOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeactivateTypeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeactivateTypeOutput) GoString() string {
+	return s.String()
+}
+
 // The input for the DeleteChangeSet action.
 type DeleteChangeSetInput struct {
 	_ struct{} `type:"structure"`
@@ -8420,6 +9559,98 @@ func (s *DescribeChangeSetOutput) SetStatusReason(v string) *DescribeChangeSetOu
 // SetTags sets the Tags field's value.
 func (s *DescribeChangeSetOutput) SetTags(v []*Tag) *DescribeChangeSetOutput {
 	s.Tags = v
+	return s
+}
+
+type DescribePublisherInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the extension publisher.
+	//
+	// If you do not supply a PublisherId, and you have registered as an extension
+	// publisher, DescribePublisher returns information about your own publisher
+	// account.
+	PublisherId *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribePublisherInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribePublisherInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribePublisherInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribePublisherInput"}
+	if s.PublisherId != nil && len(*s.PublisherId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PublisherId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPublisherId sets the PublisherId field's value.
+func (s *DescribePublisherInput) SetPublisherId(v string) *DescribePublisherInput {
+	s.PublisherId = &v
+	return s
+}
+
+type DescribePublisherOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The type of account used as the identity provider when registering this publisher
+	// with CloudFormation.
+	IdentityProvider *string `type:"string" enum:"IdentityProvider"`
+
+	// The ID of the extension publisher.
+	PublisherId *string `min:"1" type:"string"`
+
+	// The URL to the publisher's profile with the identity provider.
+	PublisherProfile *string `type:"string"`
+
+	// Whether the publisher is verified. Currently, all registered publishers are
+	// verified.
+	PublisherStatus *string `type:"string" enum:"PublisherStatus"`
+}
+
+// String returns the string representation
+func (s DescribePublisherOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribePublisherOutput) GoString() string {
+	return s.String()
+}
+
+// SetIdentityProvider sets the IdentityProvider field's value.
+func (s *DescribePublisherOutput) SetIdentityProvider(v string) *DescribePublisherOutput {
+	s.IdentityProvider = &v
+	return s
+}
+
+// SetPublisherId sets the PublisherId field's value.
+func (s *DescribePublisherOutput) SetPublisherId(v string) *DescribePublisherOutput {
+	s.PublisherId = &v
+	return s
+}
+
+// SetPublisherProfile sets the PublisherProfile field's value.
+func (s *DescribePublisherOutput) SetPublisherProfile(v string) *DescribePublisherOutput {
+	s.PublisherProfile = &v
+	return s
+}
+
+// SetPublisherStatus sets the PublisherStatus field's value.
+func (s *DescribePublisherOutput) SetPublisherStatus(v string) *DescribePublisherOutput {
+	s.PublisherStatus = &v
 	return s
 }
 
@@ -9379,6 +10610,14 @@ type DescribeTypeInput struct {
 	// Conditional: You must specify either TypeName and Type, or Arn.
 	Arn *string `type:"string"`
 
+	// The version number of a public third-party extension.
+	PublicVersionNumber *string `min:"5" type:"string"`
+
+	// The publisher ID of the extension publisher.
+	//
+	// Extensions provided by Amazon are not assigned a publisher ID.
+	PublisherId *string `min:"1" type:"string"`
+
 	// The kind of extension.
 	//
 	// Conditional: You must specify either TypeName and Type, or Arn.
@@ -9412,6 +10651,12 @@ func (s DescribeTypeInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *DescribeTypeInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "DescribeTypeInput"}
+	if s.PublicVersionNumber != nil && len(*s.PublicVersionNumber) < 5 {
+		invalidParams.Add(request.NewErrParamMinLen("PublicVersionNumber", 5))
+	}
+	if s.PublisherId != nil && len(*s.PublisherId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PublisherId", 1))
+	}
 	if s.TypeName != nil && len(*s.TypeName) < 10 {
 		invalidParams.Add(request.NewErrParamMinLen("TypeName", 10))
 	}
@@ -9428,6 +10673,18 @@ func (s *DescribeTypeInput) Validate() error {
 // SetArn sets the Arn field's value.
 func (s *DescribeTypeInput) SetArn(v string) *DescribeTypeInput {
 	s.Arn = &v
+	return s
+}
+
+// SetPublicVersionNumber sets the PublicVersionNumber field's value.
+func (s *DescribeTypeInput) SetPublicVersionNumber(v string) *DescribeTypeInput {
+	s.PublicVersionNumber = &v
+	return s
+}
+
+// SetPublisherId sets the PublisherId field's value.
+func (s *DescribeTypeInput) SetPublisherId(v string) *DescribeTypeInput {
+	s.PublisherId = &v
 	return s
 }
 
@@ -9455,8 +10712,29 @@ type DescribeTypeOutput struct {
 	// The Amazon Resource Name (ARN) of the extension.
 	Arn *string `type:"string"`
 
+	// Whether CloudFormation automatically updates the extension in this account
+	// and region when a new minor version is published by the extension publisher.
+	// Major versions released by the publisher must be manually updated. For more
+	// information, see Activating public extensions for use in your account (AWSCloudFormation/latest/UserGuide/registry-public.html#registry-public-enable)
+	// in the AWS CloudFormation User Guide.
+	AutoUpdate *bool `type:"boolean"`
+
+	// A JSON string that represent the current configuration data for the extension
+	// in this account and region.
+	//
+	// To set the configuration data for an extension, use SetTypeConfiguration
+	// (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_SetTypeConfiguration.html).
+	// For more information, see Configuring extensions at the account level (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry-register.html#registry-set-configuration)
+	// in the CloudFormation User Guide.
+	ConfigurationSchema *string `min:"1" type:"string"`
+
 	// The ID of the default version of the extension. The default version is used
 	// when the extension version is not specified.
+	//
+	// This applies only to private extensions you have registered in your account.
+	// For public extensions, both those provided by Amazon and published by third
+	// parties, CloudFormation returns null. For more information, see RegisterType
+	// (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterType.html).
 	//
 	// To set the default version of an extension, use SetTypeDefaultVersion .
 	DefaultVersionId *string `min:"1" type:"string"`
@@ -9465,52 +10743,113 @@ type DescribeTypeOutput struct {
 	//
 	// Valid values include:
 	//
-	//    * LIVE: The extension is registered and can be used in CloudFormation
+	//    * LIVE: The extension is activated or registered and can be used in CloudFormation
 	//    operations, dependent on its provisioning behavior and visibility scope.
 	//
-	//    * DEPRECATED: The extension has been deregistered and can no longer be
-	//    used in CloudFormation operations.
+	//    * DEPRECATED: The extension has been deactivated or deregistered and can
+	//    no longer be used in CloudFormation operations.
+	//
+	// For public third-party extensions, CloudFormation returns null.
 	DeprecatedStatus *string `type:"string" enum:"DeprecatedStatus"`
 
-	// The description of the registered extension.
+	// The description of the extension.
 	Description *string `min:"1" type:"string"`
 
 	// The URL of a page providing detailed documentation for this extension.
 	DocumentationUrl *string `type:"string"`
 
 	// The Amazon Resource Name (ARN) of the IAM execution role used to register
-	// the extension. If your resource type calls AWS APIs in any of its handlers,
-	// you must create an IAM execution role (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)
-	// that includes the necessary permissions to call those AWS APIs, and provision
+	// the extension. This applies only to private extensions you have registered
+	// in your account. For more information, see RegisterType (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterType.html).
+	//
+	// If the registered extension calls any AWS APIs, you must create an IAM execution
+	// role (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html) that
+	// includes the necessary permissions to call those AWS APIs, and provision
 	// that execution role in your account. CloudFormation then assumes that execution
 	// role to provide your extension with the appropriate credentials.
 	ExecutionRoleArn *string `min:"1" type:"string"`
 
+	// Whether or not the extension is activated in the account and region.
+	//
+	// This only applies to public third-party extensions. For all other extensions,
+	// CloudFormation returns null.
+	IsActivated *bool `type:"boolean"`
+
 	// Whether the specified extension version is set as the default version.
+	//
+	// This applies only to private extensions you have registered in your account,
+	// and extensions published by Amazon. For public third-party extensions, whether
+	// or not they are activated in your account, CloudFormation returns null.
 	IsDefaultVersion *bool `type:"boolean"`
 
-	// When the specified extension version was registered.
+	// When the specified extension version was registered. This applies only to:
+	//
+	//    * Private extensions you have registered in your account. For more information,
+	//    see RegisterType (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterType.html).
+	//
+	//    * Public extensions you have activated in your account with auto-update
+	//    specified. For more information, see ActivateType (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_ActivateType.html).
 	LastUpdated *time.Time `type:"timestamp"`
 
-	// Contains logging configuration information for an extension.
+	// The latest version of a public extension that is available for use.
+	//
+	// This only applies if you specify a public extension, and you do not specify
+	// a version. For all other requests, CloudFormation returns null.
+	LatestPublicVersion *string `min:"5" type:"string"`
+
+	// Contains logging configuration information for private extensions. This applies
+	// only to private extensions you have registered in your account. For public
+	// extensions, both those provided by Amazon and published by third parties,
+	// CloudFormation returns null. For more information, see RegisterType (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterType.html).
 	LoggingConfig *LoggingConfig `type:"structure"`
 
-	// The provisioning behavior of the extension. AWS CloudFormation determines
-	// the provisioning type during registration, based on the types of handlers
-	// in the schema handler package submitted.
+	// For public extensions that have been activated for this account and region,
+	// the Amazon Resource Name (ARN) of the public extension.
+	OriginalTypeArn *string `type:"string"`
+
+	// For public extensions that have been activated for this account and region,
+	// the type name of the public extension.
+	//
+	// If you specified a TypeNameAlias when enabling the extension in this account
+	// and region, CloudFormation treats that alias as the extension's type name
+	// within the account and region, not the type name of the public extension.
+	// For more information, see Specifying aliases to refer to extensions (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry-public.html#registry-public-enable-alias)
+	// in the CloudFormation User Guide.
+	OriginalTypeName *string `min:"10" type:"string"`
+
+	// For resource type extensions, the provisioning behavior of the resource type.
+	// AWS CloudFormation determines the provisioning type during registration,
+	// based on the types of handlers in the schema handler package submitted.
 	//
 	// Valid values include:
 	//
-	//    * FULLY_MUTABLE: The extension includes an update handler to process updates
-	//    to the extension during stack update operations.
+	//    * FULLY_MUTABLE: The resource type includes an update handler to process
+	//    updates to the type during stack update operations.
 	//
-	//    * IMMUTABLE: The extension does not include an update handler, so the
-	//    extension cannot be updated and must instead be replaced during stack
-	//    update operations.
+	//    * IMMUTABLE: The resource type does not include an update handler, so
+	//    the type cannot be updated and must instead be replaced during stack update
+	//    operations.
 	//
-	//    * NON_PROVISIONABLE: The extension does not include all of the following
+	//    * NON_PROVISIONABLE: The resource type does not include all of the following
 	//    handlers, and therefore cannot actually be provisioned. create read delete
 	ProvisioningType *string `type:"string" enum:"ProvisioningType"`
+
+	// The version number of a public third-party extension.
+	//
+	// This applies only if you specify a public extension you have activated in
+	// your account, or specify a public extension without specifying a version.
+	// For all other extensions, CloudFormation returns null.
+	PublicVersionNumber *string `min:"5" type:"string"`
+
+	// The publisher ID of the extension publisher.
+	//
+	// This applies only to public third-party extensions. For private registered
+	// extensions, and extensions provided by Amazon, CloudFormation returns null.
+	PublisherId *string `min:"1" type:"string"`
+
+	// For extensions that are modules, the public third-party extensions that must
+	// be activated in your account in order for the module itself to be activated.
+	RequiredActivatedTypes []*RequiredActivatedType `type:"list"`
 
 	// The schema that defines the extension.
 	//
@@ -9521,14 +10860,47 @@ type DescribeTypeOutput struct {
 	// The URL of the source code for the extension.
 	SourceUrl *string `type:"string"`
 
-	// When the specified extension version was registered.
+	// When the specified private extension version was registered or activated
+	// in your account.
 	TimeCreated *time.Time `type:"timestamp"`
 
 	// The kind of extension.
 	Type *string `type:"string" enum:"RegistryType"`
 
-	// The name of the registered extension.
+	// The name of the extension.
+	//
+	// If the extension is a public third-party type you have activated with a type
+	// name alias, CloudFormation returns the type name alias. For more information,
+	// see ActivateType (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_ActivateType.html).
 	TypeName *string `min:"10" type:"string"`
+
+	// The contract test status of the registered extension version. To return the
+	// extension test status of a specifc extension version, you must specify VersionId.
+	//
+	// This applies only to registered private extension versions. CloudFormation
+	// does not return this information for public extensions, whether or not they
+	// are activated in your account.
+	//
+	//    * PASSED: The extension has passed all its contract tests. An extension
+	//    must have a test status of PASSED before it can be published. For more
+	//    information, see Publishing extensions to make them available for public
+	//    use (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-publish.html)
+	//    in the CloudFormation Command Line Interface User Guide.
+	//
+	//    * FAILED: The extension has failed one or more contract tests.
+	//
+	//    * IN_PROGRESS: Contract tests are currently being performed on the extension.
+	//
+	//    * NOT_TESTED: Contract tests have not been performed on the extension.
+	TypeTestsStatus *string `type:"string" enum:"TypeTestsStatus"`
+
+	// The description of the test status. To return the extension test status of
+	// a specifc extension version, you must specify VersionId.
+	//
+	// This applies only to registered private extension versions. CloudFormation
+	// does not return this information for public extensions, whether or not they
+	// are activated in your account.
+	TypeTestsStatusDescription *string `min:"1" type:"string"`
 
 	// The scope at which the extension is visible and usable in CloudFormation
 	// operations.
@@ -9536,8 +10908,8 @@ type DescribeTypeOutput struct {
 	// Valid values include:
 	//
 	//    * PRIVATE: The extension is only visible and usable within the account
-	//    in which it is registered. Currently, AWS CloudFormation marks any types
-	//    you register as PRIVATE.
+	//    in which it is registered. AWS CloudFormation marks any extensions you
+	//    register as PRIVATE.
 	//
 	//    * PUBLIC: The extension is publically visible and usable within any Amazon
 	//    account.
@@ -9557,6 +10929,18 @@ func (s DescribeTypeOutput) GoString() string {
 // SetArn sets the Arn field's value.
 func (s *DescribeTypeOutput) SetArn(v string) *DescribeTypeOutput {
 	s.Arn = &v
+	return s
+}
+
+// SetAutoUpdate sets the AutoUpdate field's value.
+func (s *DescribeTypeOutput) SetAutoUpdate(v bool) *DescribeTypeOutput {
+	s.AutoUpdate = &v
+	return s
+}
+
+// SetConfigurationSchema sets the ConfigurationSchema field's value.
+func (s *DescribeTypeOutput) SetConfigurationSchema(v string) *DescribeTypeOutput {
+	s.ConfigurationSchema = &v
 	return s
 }
 
@@ -9590,6 +10974,12 @@ func (s *DescribeTypeOutput) SetExecutionRoleArn(v string) *DescribeTypeOutput {
 	return s
 }
 
+// SetIsActivated sets the IsActivated field's value.
+func (s *DescribeTypeOutput) SetIsActivated(v bool) *DescribeTypeOutput {
+	s.IsActivated = &v
+	return s
+}
+
 // SetIsDefaultVersion sets the IsDefaultVersion field's value.
 func (s *DescribeTypeOutput) SetIsDefaultVersion(v bool) *DescribeTypeOutput {
 	s.IsDefaultVersion = &v
@@ -9602,15 +10992,51 @@ func (s *DescribeTypeOutput) SetLastUpdated(v time.Time) *DescribeTypeOutput {
 	return s
 }
 
+// SetLatestPublicVersion sets the LatestPublicVersion field's value.
+func (s *DescribeTypeOutput) SetLatestPublicVersion(v string) *DescribeTypeOutput {
+	s.LatestPublicVersion = &v
+	return s
+}
+
 // SetLoggingConfig sets the LoggingConfig field's value.
 func (s *DescribeTypeOutput) SetLoggingConfig(v *LoggingConfig) *DescribeTypeOutput {
 	s.LoggingConfig = v
 	return s
 }
 
+// SetOriginalTypeArn sets the OriginalTypeArn field's value.
+func (s *DescribeTypeOutput) SetOriginalTypeArn(v string) *DescribeTypeOutput {
+	s.OriginalTypeArn = &v
+	return s
+}
+
+// SetOriginalTypeName sets the OriginalTypeName field's value.
+func (s *DescribeTypeOutput) SetOriginalTypeName(v string) *DescribeTypeOutput {
+	s.OriginalTypeName = &v
+	return s
+}
+
 // SetProvisioningType sets the ProvisioningType field's value.
 func (s *DescribeTypeOutput) SetProvisioningType(v string) *DescribeTypeOutput {
 	s.ProvisioningType = &v
+	return s
+}
+
+// SetPublicVersionNumber sets the PublicVersionNumber field's value.
+func (s *DescribeTypeOutput) SetPublicVersionNumber(v string) *DescribeTypeOutput {
+	s.PublicVersionNumber = &v
+	return s
+}
+
+// SetPublisherId sets the PublisherId field's value.
+func (s *DescribeTypeOutput) SetPublisherId(v string) *DescribeTypeOutput {
+	s.PublisherId = &v
+	return s
+}
+
+// SetRequiredActivatedTypes sets the RequiredActivatedTypes field's value.
+func (s *DescribeTypeOutput) SetRequiredActivatedTypes(v []*RequiredActivatedType) *DescribeTypeOutput {
+	s.RequiredActivatedTypes = v
 	return s
 }
 
@@ -9641,6 +11067,18 @@ func (s *DescribeTypeOutput) SetType(v string) *DescribeTypeOutput {
 // SetTypeName sets the TypeName field's value.
 func (s *DescribeTypeOutput) SetTypeName(v string) *DescribeTypeOutput {
 	s.TypeName = &v
+	return s
+}
+
+// SetTypeTestsStatus sets the TypeTestsStatus field's value.
+func (s *DescribeTypeOutput) SetTypeTestsStatus(v string) *DescribeTypeOutput {
+	s.TypeTestsStatus = &v
+	return s
+}
+
+// SetTypeTestsStatusDescription sets the TypeTestsStatusDescription field's value.
+func (s *DescribeTypeOutput) SetTypeTestsStatusDescription(v string) *DescribeTypeOutput {
+	s.TypeTestsStatusDescription = &v
 	return s
 }
 
@@ -10350,7 +11788,7 @@ type GetTemplateInput struct {
 	// specify Processed.
 	//
 	// If the template doesn't include transforms, Original and Processed return
-	// the same template. By default, AWS CloudFormation specifies Original.
+	// the same template. By default, AWS CloudFormation specifies Processed.
 	TemplateStage *string `type:"string" enum:"TemplateStage"`
 }
 
@@ -11820,6 +13258,11 @@ type ListTypeVersionsInput struct {
 	// the previous response object's NextToken parameter is set to null.
 	NextToken *string `min:"1" type:"string"`
 
+	// The publisher ID of the extension publisher.
+	//
+	// Extensions published by Amazon are not assigned a publisher ID.
+	PublisherId *string `min:"1" type:"string"`
+
 	// The kind of the extension.
 	//
 	// Conditional: You must specify either TypeName and Type, or Arn.
@@ -11849,6 +13292,9 @@ func (s *ListTypeVersionsInput) Validate() error {
 	}
 	if s.NextToken != nil && len(*s.NextToken) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.PublisherId != nil && len(*s.PublisherId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PublisherId", 1))
 	}
 	if s.TypeName != nil && len(*s.TypeName) < 10 {
 		invalidParams.Add(request.NewErrParamMinLen("TypeName", 10))
@@ -11881,6 +13327,12 @@ func (s *ListTypeVersionsInput) SetMaxResults(v int64) *ListTypeVersionsInput {
 // SetNextToken sets the NextToken field's value.
 func (s *ListTypeVersionsInput) SetNextToken(v string) *ListTypeVersionsInput {
 	s.NextToken = &v
+	return s
+}
+
+// SetPublisherId sets the PublisherId field's value.
+func (s *ListTypeVersionsInput) SetPublisherId(v string) *ListTypeVersionsInput {
+	s.PublisherId = &v
 	return s
 }
 
@@ -11946,6 +13398,12 @@ type ListTypesInput struct {
 	//    used in CloudFormation operations.
 	DeprecatedStatus *string `type:"string" enum:"DeprecatedStatus"`
 
+	// Filter criteria to use in determining which extensions to return.
+	//
+	// If you specify a filter, CloudFormation ignores any specified Visibility
+	// value when returning the list of types.
+	Filters *TypeFilters `type:"structure"`
+
 	// The maximum number of results to be returned with a single call. If the number
 	// of available results exceeds this maximum, the response includes a NextToken
 	// value that you can assign to the NextToken request parameter to get the next
@@ -11959,37 +13417,41 @@ type ListTypesInput struct {
 	// the previous response object's NextToken parameter is set to null.
 	NextToken *string `min:"1" type:"string"`
 
-	// The provisioning behavior of the type. AWS CloudFormation determines the
-	// provisioning type during registration, based on the types of handlers in
-	// the schema handler package submitted.
+	// For resource types, the provisioning behavior of the resource type. AWS CloudFormation
+	// determines the provisioning type during registration, based on the types
+	// of handlers in the schema handler package submitted.
 	//
 	// Valid values include:
 	//
-	//    * FULLY_MUTABLE: The extension includes an update handler to process updates
-	//    to the extension during stack update operations.
+	//    * FULLY_MUTABLE: The resource type includes an update handler to process
+	//    updates to the type during stack update operations.
 	//
-	//    * IMMUTABLE: The extension does not include an update handler, so the
-	//    extension cannot be updated and must instead be replaced during stack
-	//    update operations.
+	//    * IMMUTABLE: The resource type does not include an update handler, so
+	//    the type cannot be updated and must instead be replaced during stack update
+	//    operations.
 	//
-	//    * NON_PROVISIONABLE: The extension does not include create, read, and
-	//    delete handlers, and therefore cannot actually be provisioned.
+	//    * NON_PROVISIONABLE: The resource type does not include create, read,
+	//    and delete handlers, and therefore cannot actually be provisioned.
+	//
+	// The default is FULLY_MUTABLE.
 	ProvisioningType *string `type:"string" enum:"ProvisioningType"`
 
 	// The type of extension.
 	Type *string `type:"string" enum:"RegistryType"`
 
-	// The scope at which the extension is visible and usable in CloudFormation
+	// The scope at which the extensions are visible and usable in CloudFormation
 	// operations.
 	//
 	// Valid values include:
 	//
-	//    * PRIVATE: The extension is only visible and usable within the account
-	//    in which it is registered. Currently, AWS CloudFormation marks any extension
-	//    you create as PRIVATE.
+	//    * PRIVATE: Extensions that are visible and usable within this account
+	//    and region. This includes: Private extensions you have registered in this
+	//    account and region. Public extensions that you have activated in this
+	//    account and region.
 	//
-	//    * PUBLIC: The extension is publically visible and usable within any Amazon
-	//    account.
+	//    * PUBLIC: Extensions that are publicly visible and available to be activated
+	//    within any Amazon account. This includes extensions from Amazon, as well
+	//    as third-party publishers.
 	//
 	// The default is PRIVATE.
 	Visibility *string `type:"string" enum:"Visibility"`
@@ -12014,6 +13476,11 @@ func (s *ListTypesInput) Validate() error {
 	if s.NextToken != nil && len(*s.NextToken) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
 	}
+	if s.Filters != nil {
+		if err := s.Filters.Validate(); err != nil {
+			invalidParams.AddNested("Filters", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -12024,6 +13491,12 @@ func (s *ListTypesInput) Validate() error {
 // SetDeprecatedStatus sets the DeprecatedStatus field's value.
 func (s *ListTypesInput) SetDeprecatedStatus(v string) *ListTypesInput {
 	s.DeprecatedStatus = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *ListTypesInput) SetFilters(v *TypeFilters) *ListTypesInput {
+	s.Filters = v
 	return s
 }
 
@@ -12093,12 +13566,12 @@ func (s *ListTypesOutput) SetTypeSummaries(v []*TypeSummary) *ListTypesOutput {
 	return s
 }
 
-// Contains logging configuration information for a type.
+// Contains logging configuration information for an extension.
 type LoggingConfig struct {
 	_ struct{} `type:"structure"`
 
 	// The Amazon CloudWatch log group to which CloudFormation sends error logging
-	// information when invoking the type's handlers.
+	// information when invoking the extension's handlers.
 	//
 	// LogGroupName is a required field
 	LogGroupName *string `min:"1" type:"string" required:"true"`
@@ -12528,6 +14001,111 @@ func (s *PropertyDifference) SetPropertyPath(v string) *PropertyDifference {
 	return s
 }
 
+type PublishTypeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Number (ARN) of the extension.
+	//
+	// Conditional: You must specify Arn, or TypeName and Type.
+	Arn *string `type:"string"`
+
+	// The version number to assign to this version of the extension.
+	//
+	// Use the following format, and adhere to semantic versioning when assigning
+	// a version number to your extension:
+	//
+	// MAJOR.MINOR.PATCH
+	//
+	// For more information, see Semantic Versioning 2.0.0 (https://semver.org/).
+	//
+	// If you do not specify a version number, CloudFormation increments the version
+	// number by one minor version release.
+	PublicVersionNumber *string `min:"5" type:"string"`
+
+	// The type of the extension.
+	//
+	// Conditional: You must specify Arn, or TypeName and Type.
+	Type *string `type:"string" enum:"ThirdPartyType"`
+
+	// The name of the extension.
+	//
+	// Conditional: You must specify Arn, or TypeName and Type.
+	TypeName *string `min:"10" type:"string"`
+}
+
+// String returns the string representation
+func (s PublishTypeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PublishTypeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PublishTypeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PublishTypeInput"}
+	if s.PublicVersionNumber != nil && len(*s.PublicVersionNumber) < 5 {
+		invalidParams.Add(request.NewErrParamMinLen("PublicVersionNumber", 5))
+	}
+	if s.TypeName != nil && len(*s.TypeName) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("TypeName", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetArn sets the Arn field's value.
+func (s *PublishTypeInput) SetArn(v string) *PublishTypeInput {
+	s.Arn = &v
+	return s
+}
+
+// SetPublicVersionNumber sets the PublicVersionNumber field's value.
+func (s *PublishTypeInput) SetPublicVersionNumber(v string) *PublishTypeInput {
+	s.PublicVersionNumber = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *PublishTypeInput) SetType(v string) *PublishTypeInput {
+	s.Type = &v
+	return s
+}
+
+// SetTypeName sets the TypeName field's value.
+func (s *PublishTypeInput) SetTypeName(v string) *PublishTypeInput {
+	s.TypeName = &v
+	return s
+}
+
+type PublishTypeOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Number (ARN) assigned to the public extension upon publication.
+	PublicTypeArn *string `type:"string"`
+}
+
+// String returns the string representation
+func (s PublishTypeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PublishTypeOutput) GoString() string {
+	return s.String()
+}
+
+// SetPublicTypeArn sets the PublicTypeArn field's value.
+func (s *PublishTypeOutput) SetPublicTypeArn(v string) *PublishTypeOutput {
+	s.PublicTypeArn = &v
+	return s
+}
+
 type RecordHandlerProgressInput struct {
 	_ struct{} `type:"structure"`
 
@@ -12648,6 +14226,83 @@ func (s RecordHandlerProgressOutput) GoString() string {
 	return s.String()
 }
 
+type RegisterPublisherInput struct {
+	_ struct{} `type:"structure"`
+
+	// Whether you accept the terms and conditions for publishing extensions in
+	// the CloudFormation registry. You must accept the terms and conditions in
+	// order to register to publish public extensions to the CloudFormation registry.
+	//
+	// The default is false.
+	AcceptTermsAndConditions *bool `type:"boolean"`
+
+	// If you are using a Bitbucket or GitHub account for identity verification,
+	// the Amazon Resource Name (ARN) for your connection to that account.
+	//
+	// For more information, see Registering your account to publish CloudFormation
+	// extensions (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/publish-extension.html#publish-extension-prereqs)
+	// in the CloudFormation CLI User Guide.
+	ConnectionArn *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s RegisterPublisherInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s RegisterPublisherInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RegisterPublisherInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RegisterPublisherInput"}
+	if s.ConnectionArn != nil && len(*s.ConnectionArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ConnectionArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAcceptTermsAndConditions sets the AcceptTermsAndConditions field's value.
+func (s *RegisterPublisherInput) SetAcceptTermsAndConditions(v bool) *RegisterPublisherInput {
+	s.AcceptTermsAndConditions = &v
+	return s
+}
+
+// SetConnectionArn sets the ConnectionArn field's value.
+func (s *RegisterPublisherInput) SetConnectionArn(v string) *RegisterPublisherInput {
+	s.ConnectionArn = &v
+	return s
+}
+
+type RegisterPublisherOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID assigned this account by CloudFormation for publishing extensions.
+	PublisherId *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s RegisterPublisherOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s RegisterPublisherOutput) GoString() string {
+	return s.String()
+}
+
+// SetPublisherId sets the PublisherId field's value.
+func (s *RegisterPublisherOutput) SetPublisherId(v string) *RegisterPublisherOutput {
+	s.PublisherId = &v
+	return s
+}
+
 type RegisterTypeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -12658,13 +14313,21 @@ type RegisterTypeInput struct {
 	ClientRequestToken *string `min:"1" type:"string"`
 
 	// The Amazon Resource Name (ARN) of the IAM role for CloudFormation to assume
-	// when invoking the extension. If your extension calls AWS APIs in any of its
-	// handlers, you must create an IAM execution role (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)
+	// when invoking the extension.
+	//
+	// For CloudFormation to assume the specified execution role, the role must
+	// contain a trust relationship with the CloudFormation service principle (resources.cloudformation.amazonaws.com).
+	// For more information on adding trust relationships, see Modifying a role
+	// trust policy (IAM/latest/UserGuide/roles-managingrole-editing-console.html#roles-managingrole_edit-trust-policy)
+	// in the AWS Identity and Access Management User Guide.
+	//
+	// If your extension calls AWS APIs in any of its handlers, you must create
+	// an IAM execution role (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)
 	// that includes the necessary permissions to call those AWS APIs, and provision
 	// that execution role in your account. When CloudFormation needs to invoke
-	// the extension handler, CloudFormation assumes this execution role to create
-	// a temporary session token, which it then passes to the extension handler,
-	// thereby supplying your extension with the appropriate credentials.
+	// the resource type handler, CloudFormation assumes this execution role to
+	// create a temporary session token, which it then passes to the resource type
+	// handler, thereby supplying your resource type with the appropriate credentials.
 	ExecutionRoleArn *string `min:"1" type:"string"`
 
 	// Specifies logging configuration information for an extension.
@@ -12691,7 +14354,11 @@ type RegisterTypeInput struct {
 
 	// The name of the extension being registered.
 	//
-	// We recommend that extension names adhere to the following pattern: company_or_organization::service::type.
+	// We recommend that extension names adhere to the following patterns:
+	//
+	//    * For resource types, company_or_organization::service::type.
+	//
+	//    * For modules, company_or_organization::service::type::MODULE.
 	//
 	// The following organization namespaces are reserved and cannot be used in
 	// your extension names:
@@ -12814,6 +14481,72 @@ func (s RegisterTypeOutput) GoString() string {
 // SetRegistrationToken sets the RegistrationToken field's value.
 func (s *RegisterTypeOutput) SetRegistrationToken(v string) *RegisterTypeOutput {
 	s.RegistrationToken = &v
+	return s
+}
+
+// For extensions that are modules, a public third-party extension that must
+// be activated in your account in order for the module itself to be activated.
+//
+// For more information, see Activating public modules for use in your account
+// (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/modules.html#module-enabling)
+// in the AWS CloudFormation User Guide.
+type RequiredActivatedType struct {
+	_ struct{} `type:"structure"`
+
+	// The type name of the public extension.
+	//
+	// If you specified a TypeNameAlias when enabling the extension in this account
+	// and region, CloudFormation treats that alias as the extension's type name
+	// within the account and region, not the type name of the public extension.
+	// For more information, see Specifying aliases to refer to extensions (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry-public.html#registry-public-enable-alias)
+	// in the CloudFormation User Guide.
+	OriginalTypeName *string `min:"10" type:"string"`
+
+	// The publisher ID of the extension publisher.
+	PublisherId *string `min:"1" type:"string"`
+
+	// A list of the major versions of the extension type that the macro supports.
+	SupportedMajorVersions []*int64 `type:"list"`
+
+	// An alias assigned to the public extension, in this account and region. If
+	// you specify an alias for the extension, CloudFormation treats the alias as
+	// the extension type name within this account and region. You must use the
+	// alias to refer to the extension in your templates, API calls, and CloudFormation
+	// console.
+	TypeNameAlias *string `min:"10" type:"string"`
+}
+
+// String returns the string representation
+func (s RequiredActivatedType) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s RequiredActivatedType) GoString() string {
+	return s.String()
+}
+
+// SetOriginalTypeName sets the OriginalTypeName field's value.
+func (s *RequiredActivatedType) SetOriginalTypeName(v string) *RequiredActivatedType {
+	s.OriginalTypeName = &v
+	return s
+}
+
+// SetPublisherId sets the PublisherId field's value.
+func (s *RequiredActivatedType) SetPublisherId(v string) *RequiredActivatedType {
+	s.PublisherId = &v
+	return s
+}
+
+// SetSupportedMajorVersions sets the SupportedMajorVersions field's value.
+func (s *RequiredActivatedType) SetSupportedMajorVersions(v []*int64) *RequiredActivatedType {
+	s.SupportedMajorVersions = v
+	return s
+}
+
+// SetTypeNameAlias sets the TypeNameAlias field's value.
+func (s *RequiredActivatedType) SetTypeNameAlias(v string) *RequiredActivatedType {
+	s.TypeNameAlias = &v
 	return s
 }
 
@@ -13439,6 +15172,138 @@ func (s SetStackPolicyOutput) String() string {
 // GoString returns the string representation
 func (s SetStackPolicyOutput) GoString() string {
 	return s.String()
+}
+
+type SetTypeConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The configuration data for the extension, in this account and region.
+	//
+	// The configuration data must be formatted as JSON, and validate against the
+	// schema returned in the ConfigurationSchema response element of API_DescribeType
+	// (AWSCloudFormation/latest/APIReference/API_DescribeType.html). For more information,
+	// see Defining account-level configuration data for an extension (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-model.html#resource-type-howto-configuration)
+	// in the CloudFormation CLI User Guide.
+	//
+	// Configuration is a required field
+	Configuration *string `min:"1" type:"string" required:"true"`
+
+	// An alias by which to refer to this extension configuration data.
+	//
+	// Conditional: Specifying a configuration alias is required when setting a
+	// configuration for a resource type extension.
+	ConfigurationAlias *string `min:"1" type:"string"`
+
+	// The type of extension.
+	//
+	// Conditional: You must specify ConfigurationArn, or Type and TypeName.
+	Type *string `type:"string" enum:"ThirdPartyType"`
+
+	// The Amazon Resource Name (ARN) for the extension, in this account and region.
+	//
+	// For public extensions, this will be the ARN assigned when you activate the
+	// type (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_ActivateType.html)
+	// in this account and region. For private extensions, this will be the ARN
+	// assigned when you register the type (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterType.html)
+	// in this account and region.
+	//
+	// Do not include the extension versions suffix at the end of the ARN. You can
+	// set the configuration for an extension, but not for a specific extension
+	// version.
+	TypeArn *string `type:"string"`
+
+	// The name of the extension.
+	//
+	// Conditional: You must specify ConfigurationArn, or Type and TypeName.
+	TypeName *string `min:"10" type:"string"`
+}
+
+// String returns the string representation
+func (s SetTypeConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s SetTypeConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SetTypeConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SetTypeConfigurationInput"}
+	if s.Configuration == nil {
+		invalidParams.Add(request.NewErrParamRequired("Configuration"))
+	}
+	if s.Configuration != nil && len(*s.Configuration) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Configuration", 1))
+	}
+	if s.ConfigurationAlias != nil && len(*s.ConfigurationAlias) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ConfigurationAlias", 1))
+	}
+	if s.TypeName != nil && len(*s.TypeName) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("TypeName", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetConfiguration sets the Configuration field's value.
+func (s *SetTypeConfigurationInput) SetConfiguration(v string) *SetTypeConfigurationInput {
+	s.Configuration = &v
+	return s
+}
+
+// SetConfigurationAlias sets the ConfigurationAlias field's value.
+func (s *SetTypeConfigurationInput) SetConfigurationAlias(v string) *SetTypeConfigurationInput {
+	s.ConfigurationAlias = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *SetTypeConfigurationInput) SetType(v string) *SetTypeConfigurationInput {
+	s.Type = &v
+	return s
+}
+
+// SetTypeArn sets the TypeArn field's value.
+func (s *SetTypeConfigurationInput) SetTypeArn(v string) *SetTypeConfigurationInput {
+	s.TypeArn = &v
+	return s
+}
+
+// SetTypeName sets the TypeName field's value.
+func (s *SetTypeConfigurationInput) SetTypeName(v string) *SetTypeConfigurationInput {
+	s.TypeName = &v
+	return s
+}
+
+type SetTypeConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) for the configuration data, in this account
+	// and region.
+	//
+	// Conditional: You must specify ConfigurationArn, or Type and TypeName.
+	ConfigurationArn *string `type:"string"`
+}
+
+// String returns the string representation
+func (s SetTypeConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s SetTypeConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetConfigurationArn sets the ConfigurationArn field's value.
+func (s *SetTypeConfigurationOutput) SetConfigurationArn(v string) *SetTypeConfigurationOutput {
+	s.ConfigurationArn = &v
+	return s
 }
 
 type SetTypeDefaultVersionInput struct {
@@ -15657,6 +17522,8 @@ type StackSetOperationPreferences struct {
 	//
 	// Conditional: You must specify either FailureToleranceCount or FailureTolerancePercentage
 	// (but not both).
+	//
+	// By default, 0 is specified.
 	FailureToleranceCount *int64 `type:"integer"`
 
 	// The percentage of accounts, per Region, for which this stack operation can
@@ -15669,6 +17536,8 @@ type StackSetOperationPreferences struct {
 	//
 	// Conditional: You must specify either FailureToleranceCount or FailureTolerancePercentage,
 	// but not both.
+	//
+	// By default, 0 is specified.
 	FailureTolerancePercentage *int64 `type:"integer"`
 
 	// The maximum number of accounts in which to perform this operation at one
@@ -15681,6 +17550,8 @@ type StackSetOperationPreferences struct {
 	//
 	// Conditional: You must specify either MaxConcurrentCount or MaxConcurrentPercentage,
 	// but not both.
+	//
+	// By default, 1 is specified.
 	MaxConcurrentCount *int64 `min:"1" type:"integer"`
 
 	// The maximum percentage of accounts in which to perform this operation at
@@ -15697,6 +17568,8 @@ type StackSetOperationPreferences struct {
 	//
 	// Conditional: You must specify either MaxConcurrentCount or MaxConcurrentPercentage,
 	// but not both.
+	//
+	// By default, 1 is specified.
 	MaxConcurrentPercentage *int64 `min:"1" type:"integer"`
 
 	// The concurrency type of deploying StackSets operations in regions, could
@@ -16408,29 +18281,481 @@ func (s *TemplateParameter) SetParameterKey(v string) *TemplateParameter {
 	return s
 }
 
-// Contains summary information about the specified CloudFormation type.
+type TestTypeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Number (ARN) of the extension.
+	//
+	// Conditional: You must specify Arn, or TypeName and Type.
+	Arn *string `type:"string"`
+
+	// The S3 bucket to which CloudFormation delivers the contract test execution
+	// logs.
+	//
+	// CloudFormation delivers the logs by the time contract testing has completed
+	// and the extension has been assigned a test type status of PASSED or FAILED.
+	//
+	// The user calling TestType must be able to access items in the specified S3
+	// bucket. Specifically, the user needs the following permissions:
+	//
+	//    * GetObject
+	//
+	//    * PutObject
+	//
+	// For more information, see Actions, Resources, and Condition Keys for Amazon
+	// S3 (https://docs.aws.amazon.com/service-authorization/latest/reference/list_amazons3.html)
+	// in the AWS Identity and Access Management User Guide.
+	LogDeliveryBucket *string `min:"3" type:"string"`
+
+	// The type of the extension to test.
+	//
+	// Conditional: You must specify Arn, or TypeName and Type.
+	Type *string `type:"string" enum:"ThirdPartyType"`
+
+	// The name of the extension to test.
+	//
+	// Conditional: You must specify Arn, or TypeName and Type.
+	TypeName *string `min:"10" type:"string"`
+
+	// The version of the extension to test.
+	//
+	// You can specify the version id with either Arn, or with TypeName and Type.
+	//
+	// If you do not specify a version, CloudFormation uses the default version
+	// of the extension in this account and region for testing.
+	VersionId *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s TestTypeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s TestTypeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TestTypeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TestTypeInput"}
+	if s.LogDeliveryBucket != nil && len(*s.LogDeliveryBucket) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("LogDeliveryBucket", 3))
+	}
+	if s.TypeName != nil && len(*s.TypeName) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("TypeName", 10))
+	}
+	if s.VersionId != nil && len(*s.VersionId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("VersionId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetArn sets the Arn field's value.
+func (s *TestTypeInput) SetArn(v string) *TestTypeInput {
+	s.Arn = &v
+	return s
+}
+
+// SetLogDeliveryBucket sets the LogDeliveryBucket field's value.
+func (s *TestTypeInput) SetLogDeliveryBucket(v string) *TestTypeInput {
+	s.LogDeliveryBucket = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *TestTypeInput) SetType(v string) *TestTypeInput {
+	s.Type = &v
+	return s
+}
+
+// SetTypeName sets the TypeName field's value.
+func (s *TestTypeInput) SetTypeName(v string) *TestTypeInput {
+	s.TypeName = &v
+	return s
+}
+
+// SetVersionId sets the VersionId field's value.
+func (s *TestTypeInput) SetVersionId(v string) *TestTypeInput {
+	s.VersionId = &v
+	return s
+}
+
+type TestTypeOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Number (ARN) of the extension.
+	TypeVersionArn *string `type:"string"`
+}
+
+// String returns the string representation
+func (s TestTypeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s TestTypeOutput) GoString() string {
+	return s.String()
+}
+
+// SetTypeVersionArn sets the TypeVersionArn field's value.
+func (s *TestTypeOutput) SetTypeVersionArn(v string) *TestTypeOutput {
+	s.TypeVersionArn = &v
+	return s
+}
+
+// Detailed information concerning the specification of a CloudFormation extension
+// in a given account and region.
+//
+// For more information, see Configuring extensions at the account level (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry-register.html#registry-set-configuration)
+// in the CloudFormation User Guide.
+type TypeConfigurationDetails struct {
+	_ struct{} `type:"structure"`
+
+	// The alias specified for this configuration, if one was specified when the
+	// configuration was set.
+	Alias *string `min:"1" type:"string"`
+
+	// The Amazon Resource Name (ARN) for the configuration data, in this account
+	// and region.
+	Arn *string `type:"string"`
+
+	// A JSON string specifying the configuration data for the extension, in this
+	// account and region.
+	//
+	// If a configuration has not been set for a specified extension, CloudFormation
+	// returns {}.
+	Configuration *string `min:"1" type:"string"`
+
+	// Whether or not this configuration data is the default configuration for the
+	// extension.
+	IsDefaultConfiguration *bool `type:"boolean"`
+
+	// When the configuration data was last updated for this extension.
+	//
+	// If a configuration has not been set for a specified extension, CloudFormation
+	// returns null.
+	LastUpdated *time.Time `type:"timestamp"`
+
+	// The Amazon Resource Name (ARN) for the extension, in this account and region.
+	//
+	// For public extensions, this will be the ARN assigned when you activate the
+	// type (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_ActivateType.html)
+	// in this account and region. For private extensions, this will be the ARN
+	// assigned when you register the type (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterType.html)
+	// in this account and region.
+	TypeArn *string `type:"string"`
+
+	// The name of the extension.
+	TypeName *string `min:"10" type:"string"`
+}
+
+// String returns the string representation
+func (s TypeConfigurationDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s TypeConfigurationDetails) GoString() string {
+	return s.String()
+}
+
+// SetAlias sets the Alias field's value.
+func (s *TypeConfigurationDetails) SetAlias(v string) *TypeConfigurationDetails {
+	s.Alias = &v
+	return s
+}
+
+// SetArn sets the Arn field's value.
+func (s *TypeConfigurationDetails) SetArn(v string) *TypeConfigurationDetails {
+	s.Arn = &v
+	return s
+}
+
+// SetConfiguration sets the Configuration field's value.
+func (s *TypeConfigurationDetails) SetConfiguration(v string) *TypeConfigurationDetails {
+	s.Configuration = &v
+	return s
+}
+
+// SetIsDefaultConfiguration sets the IsDefaultConfiguration field's value.
+func (s *TypeConfigurationDetails) SetIsDefaultConfiguration(v bool) *TypeConfigurationDetails {
+	s.IsDefaultConfiguration = &v
+	return s
+}
+
+// SetLastUpdated sets the LastUpdated field's value.
+func (s *TypeConfigurationDetails) SetLastUpdated(v time.Time) *TypeConfigurationDetails {
+	s.LastUpdated = &v
+	return s
+}
+
+// SetTypeArn sets the TypeArn field's value.
+func (s *TypeConfigurationDetails) SetTypeArn(v string) *TypeConfigurationDetails {
+	s.TypeArn = &v
+	return s
+}
+
+// SetTypeName sets the TypeName field's value.
+func (s *TypeConfigurationDetails) SetTypeName(v string) *TypeConfigurationDetails {
+	s.TypeName = &v
+	return s
+}
+
+// Identifying information for the configuration of a CloudFormation extension.
+type TypeConfigurationIdentifier struct {
+	_ struct{} `type:"structure"`
+
+	// The type of extension.
+	Type *string `type:"string" enum:"ThirdPartyType"`
+
+	// The Amazon Resource Name (ARN) for the extension, in this account and region.
+	//
+	// For public extensions, this will be the ARN assigned when you activate the
+	// type (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_ActivateType.html)
+	// in this account and region. For private extensions, this will be the ARN
+	// assigned when you register the type (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterType.html)
+	// in this account and region.
+	TypeArn *string `type:"string"`
+
+	// The alias specified for this configuration, if one was specified when the
+	// configuration was set.
+	TypeConfigurationAlias *string `min:"1" type:"string"`
+
+	// The Amazon Resource Name (ARN) for the configuration, in this account and
+	// region.
+	TypeConfigurationArn *string `type:"string"`
+
+	// The name of the extension type to which this configuration applies.
+	TypeName *string `min:"10" type:"string"`
+}
+
+// String returns the string representation
+func (s TypeConfigurationIdentifier) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s TypeConfigurationIdentifier) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TypeConfigurationIdentifier) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TypeConfigurationIdentifier"}
+	if s.TypeConfigurationAlias != nil && len(*s.TypeConfigurationAlias) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TypeConfigurationAlias", 1))
+	}
+	if s.TypeName != nil && len(*s.TypeName) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("TypeName", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetType sets the Type field's value.
+func (s *TypeConfigurationIdentifier) SetType(v string) *TypeConfigurationIdentifier {
+	s.Type = &v
+	return s
+}
+
+// SetTypeArn sets the TypeArn field's value.
+func (s *TypeConfigurationIdentifier) SetTypeArn(v string) *TypeConfigurationIdentifier {
+	s.TypeArn = &v
+	return s
+}
+
+// SetTypeConfigurationAlias sets the TypeConfigurationAlias field's value.
+func (s *TypeConfigurationIdentifier) SetTypeConfigurationAlias(v string) *TypeConfigurationIdentifier {
+	s.TypeConfigurationAlias = &v
+	return s
+}
+
+// SetTypeConfigurationArn sets the TypeConfigurationArn field's value.
+func (s *TypeConfigurationIdentifier) SetTypeConfigurationArn(v string) *TypeConfigurationIdentifier {
+	s.TypeConfigurationArn = &v
+	return s
+}
+
+// SetTypeName sets the TypeName field's value.
+func (s *TypeConfigurationIdentifier) SetTypeName(v string) *TypeConfigurationIdentifier {
+	s.TypeName = &v
+	return s
+}
+
+// Filter criteria to use in determining which extensions to return.
+type TypeFilters struct {
+	_ struct{} `type:"structure"`
+
+	// The category of extensions to return.
+	//
+	//    * REGISTERED: Private extensions that have been registered for this account
+	//    and region.
+	//
+	//    * ACTIVATED: Public extensions that have been activated for this account
+	//    and region.
+	//
+	//    * THIRD-PARTY: Extensions available for use from publishers other than
+	//    Amazon. This includes: Private extensions registered in the account. Public
+	//    extensions from publishers other than Amazon, whether activated or not.
+	//
+	//    * AWS-TYPES: Extensions available for use from Amazon.
+	Category *string `type:"string" enum:"Category"`
+
+	// The id of the publisher of the extension.
+	//
+	// Extensions published by Amazon are not assigned a publisher ID. Use the AWS-TYPES
+	// category to specify a list of types published by Amazon.
+	PublisherId *string `min:"1" type:"string"`
+
+	// A prefix to use as a filter for results.
+	TypeNamePrefix *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s TypeFilters) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s TypeFilters) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TypeFilters) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TypeFilters"}
+	if s.PublisherId != nil && len(*s.PublisherId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PublisherId", 1))
+	}
+	if s.TypeNamePrefix != nil && len(*s.TypeNamePrefix) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TypeNamePrefix", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCategory sets the Category field's value.
+func (s *TypeFilters) SetCategory(v string) *TypeFilters {
+	s.Category = &v
+	return s
+}
+
+// SetPublisherId sets the PublisherId field's value.
+func (s *TypeFilters) SetPublisherId(v string) *TypeFilters {
+	s.PublisherId = &v
+	return s
+}
+
+// SetTypeNamePrefix sets the TypeNamePrefix field's value.
+func (s *TypeFilters) SetTypeNamePrefix(v string) *TypeFilters {
+	s.TypeNamePrefix = &v
+	return s
+}
+
+// Contains summary information about the specified CloudFormation extension.
 type TypeSummary struct {
 	_ struct{} `type:"structure"`
 
-	// The ID of the default version of the type. The default version is used when
-	// the type version is not specified.
+	// The ID of the default version of the extension. The default version is used
+	// when the extension version is not specified.
 	//
-	// To set the default version of a type, use SetTypeDefaultVersion .
+	// This applies only to private extensions you have registered in your account.
+	// For public extensions, both those provided by Amazon and published by third
+	// parties, CloudFormation returns null. For more information, see RegisterType
+	// (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterType.html).
+	//
+	// To set the default version of an extension, use SetTypeDefaultVersion .
 	DefaultVersionId *string `min:"1" type:"string"`
 
-	// The description of the type.
+	// The description of the extension.
 	Description *string `min:"1" type:"string"`
 
-	// When the current default version of the type was registered.
+	// Whether or not the extension is activated for this account and region.
+	//
+	// This applies only to third-party public extensions. Extensions published
+	// by Amazon are activated by default.
+	IsActivated *bool `type:"boolean"`
+
+	// When the specified extension version was registered. This applies only to:
+	//
+	//    * Private extensions you have registered in your account. For more information,
+	//    see RegisterType (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterType.html).
+	//
+	//    * Public extensions you have activated in your account with auto-update
+	//    specified. For more information, see ActivateType (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_ActivateType.html).
+	//
+	// For all other extension types, CloudFormation returns null.
 	LastUpdated *time.Time `type:"timestamp"`
 
-	// The kind of type.
+	// For public extensions that have been activated for this account and region,
+	// the latest version of the public extension that is available. For any extensions
+	// other than activated third-arty extensions, CloudFormation returns null.
+	//
+	// How you specified AutoUpdate when enabling the extension affects whether
+	// CloudFormation automatically updates the extention in this account and region
+	// when a new version is released. For more information, see Setting CloudFormation
+	// to automatically use new versions of extensions (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry-public.html#registry-public-enable-auto)
+	// in the CloudFormation User Guide.
+	LatestPublicVersion *string `min:"5" type:"string"`
+
+	// For public extensions that have been activated for this account and region,
+	// the type name of the public extension.
+	//
+	// If you specified a TypeNameAlias when enabling the extension in this account
+	// and region, CloudFormation treats that alias as the extension's type name
+	// within the account and region, not the type name of the public extension.
+	// For more information, see Specifying aliases to refer to extensions (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry-public.html#registry-public-enable-alias)
+	// in the CloudFormation User Guide.
+	OriginalTypeName *string `min:"10" type:"string"`
+
+	// For public extensions that have been activated for this account and region,
+	// the version of the public extension to be used for CloudFormation operations
+	// in this account and region.
+	//
+	// How you specified AutoUpdate when enabling the extension affects whether
+	// CloudFormation automatically updates the extention in this account and region
+	// when a new version is released. For more information, see Setting CloudFormation
+	// to automatically use new versions of extensions (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry-public.html#registry-public-enable-auto)
+	// in the CloudFormation User Guide.
+	PublicVersionNumber *string `min:"5" type:"string"`
+
+	// The ID of the extension publisher, if the extension is published by a third
+	// party. Extensions published by Amazon do not return a publisher ID.
+	PublisherId *string `min:"1" type:"string"`
+
+	// The service used to verify the publisher identity.
+	//
+	// For more information, see Registering your account to publish CloudFormation
+	// extensions (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/publish-extension.html)
+	// in the CFN-CLI User Guide for Extension Development.
+	PublisherIdentity *string `type:"string" enum:"IdentityProvider"`
+
+	// The publisher name, as defined in the public profile for that publisher in
+	// the service used to verify the publisher identity.
+	PublisherName *string `min:"1" type:"string"`
+
+	// The kind of extension.
 	Type *string `type:"string" enum:"RegistryType"`
 
-	// The Amazon Resource Name (ARN) of the type.
+	// The Amazon Resource Name (ARN) of the extension.
 	TypeArn *string `type:"string"`
 
-	// The name of the type.
+	// The name of the extension.
+	//
+	// If you specified a TypeNameAlias when you activate this extension (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_ActivateType.html)
+	// in your account and region, CloudFormation considers that alias as the type
+	// name.
 	TypeName *string `min:"10" type:"string"`
 }
 
@@ -16456,9 +18781,51 @@ func (s *TypeSummary) SetDescription(v string) *TypeSummary {
 	return s
 }
 
+// SetIsActivated sets the IsActivated field's value.
+func (s *TypeSummary) SetIsActivated(v bool) *TypeSummary {
+	s.IsActivated = &v
+	return s
+}
+
 // SetLastUpdated sets the LastUpdated field's value.
 func (s *TypeSummary) SetLastUpdated(v time.Time) *TypeSummary {
 	s.LastUpdated = &v
+	return s
+}
+
+// SetLatestPublicVersion sets the LatestPublicVersion field's value.
+func (s *TypeSummary) SetLatestPublicVersion(v string) *TypeSummary {
+	s.LatestPublicVersion = &v
+	return s
+}
+
+// SetOriginalTypeName sets the OriginalTypeName field's value.
+func (s *TypeSummary) SetOriginalTypeName(v string) *TypeSummary {
+	s.OriginalTypeName = &v
+	return s
+}
+
+// SetPublicVersionNumber sets the PublicVersionNumber field's value.
+func (s *TypeSummary) SetPublicVersionNumber(v string) *TypeSummary {
+	s.PublicVersionNumber = &v
+	return s
+}
+
+// SetPublisherId sets the PublisherId field's value.
+func (s *TypeSummary) SetPublisherId(v string) *TypeSummary {
+	s.PublisherId = &v
+	return s
+}
+
+// SetPublisherIdentity sets the PublisherIdentity field's value.
+func (s *TypeSummary) SetPublisherIdentity(v string) *TypeSummary {
+	s.PublisherIdentity = &v
+	return s
+}
+
+// SetPublisherName sets the PublisherName field's value.
+func (s *TypeSummary) SetPublisherName(v string) *TypeSummary {
+	s.PublisherName = &v
 	return s
 }
 
@@ -16481,31 +18848,47 @@ func (s *TypeSummary) SetTypeName(v string) *TypeSummary {
 }
 
 // Contains summary information about a specific version of a CloudFormation
-// type.
+// extension.
 type TypeVersionSummary struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resource Name (ARN) of the type version.
+	// The Amazon Resource Name (ARN) of the extension version.
 	Arn *string `type:"string"`
 
-	// The description of the type version.
+	// The description of the extension version.
 	Description *string `min:"1" type:"string"`
 
-	// Whether the specified type version is set as the default version.
+	// Whether the specified extension version is set as the default version.
+	//
+	// This applies only to private extensions you have registered in your account,
+	// and extensions published by Amazon. For public third-party extensions, whether
+	// or not they are activated in your account, CloudFormation returns null.
 	IsDefaultVersion *bool `type:"boolean"`
+
+	// For public extensions that have been activated for this account and region,
+	// the version of the public extension to be used for CloudFormation operations
+	// in this account and region. For any extensions other than activated third-arty
+	// extensions, CloudFormation returns null.
+	//
+	// How you specified AutoUpdate when enabling the extension affects whether
+	// CloudFormation automatically updates the extention in this account and region
+	// when a new version is released. For more information, see Setting CloudFormation
+	// to automatically use new versions of extensions (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry-public.html#registry-public-enable-auto)
+	// in the CloudFormation User Guide.
+	PublicVersionNumber *string `min:"5" type:"string"`
 
 	// When the version was registered.
 	TimeCreated *time.Time `type:"timestamp"`
 
-	// The kind of type.
+	// The kind of extension.
 	Type *string `type:"string" enum:"RegistryType"`
 
-	// The name of the type.
+	// The name of the extension.
 	TypeName *string `min:"10" type:"string"`
 
-	// The ID of a specific version of the type. The version ID is the value at
-	// the end of the Amazon Resource Name (ARN) assigned to the type version when
-	// it is registered.
+	// The ID of a specific version of the extension. The version ID is the value
+	// at the end of the Amazon Resource Name (ARN) assigned to the extension version
+	// when it is registered.
 	VersionId *string `min:"1" type:"string"`
 }
 
@@ -16534,6 +18917,12 @@ func (s *TypeVersionSummary) SetDescription(v string) *TypeVersionSummary {
 // SetIsDefaultVersion sets the IsDefaultVersion field's value.
 func (s *TypeVersionSummary) SetIsDefaultVersion(v bool) *TypeVersionSummary {
 	s.IsDefaultVersion = &v
+	return s
+}
+
+// SetPublicVersionNumber sets the PublicVersionNumber field's value.
+func (s *TypeVersionSummary) SetPublicVersionNumber(v string) *TypeVersionSummary {
+	s.PublicVersionNumber = &v
 	return s
 }
 
@@ -17828,6 +20217,30 @@ func Capability_Values() []string {
 }
 
 const (
+	// CategoryRegistered is a Category enum value
+	CategoryRegistered = "REGISTERED"
+
+	// CategoryActivated is a Category enum value
+	CategoryActivated = "ACTIVATED"
+
+	// CategoryThirdParty is a Category enum value
+	CategoryThirdParty = "THIRD_PARTY"
+
+	// CategoryAwsTypes is a Category enum value
+	CategoryAwsTypes = "AWS_TYPES"
+)
+
+// Category_Values returns all elements of the Category enum
+func Category_Values() []string {
+	return []string{
+		CategoryRegistered,
+		CategoryActivated,
+		CategoryThirdParty,
+		CategoryAwsTypes,
+	}
+}
+
+const (
 	// ChangeActionAdd is a ChangeAction enum value
 	ChangeActionAdd = "Add"
 
@@ -18081,6 +20494,9 @@ const (
 
 	// HandlerErrorCodeInternalFailure is a HandlerErrorCode enum value
 	HandlerErrorCodeInternalFailure = "InternalFailure"
+
+	// HandlerErrorCodeInvalidTypeConfiguration is a HandlerErrorCode enum value
+	HandlerErrorCodeInvalidTypeConfiguration = "InvalidTypeConfiguration"
 )
 
 // HandlerErrorCode_Values returns all elements of the HandlerErrorCode enum
@@ -18100,6 +20516,27 @@ func HandlerErrorCode_Values() []string {
 		HandlerErrorCodeServiceInternalError,
 		HandlerErrorCodeNetworkFailure,
 		HandlerErrorCodeInternalFailure,
+		HandlerErrorCodeInvalidTypeConfiguration,
+	}
+}
+
+const (
+	// IdentityProviderAwsMarketplace is a IdentityProvider enum value
+	IdentityProviderAwsMarketplace = "AWS_Marketplace"
+
+	// IdentityProviderGitHub is a IdentityProvider enum value
+	IdentityProviderGitHub = "GitHub"
+
+	// IdentityProviderBitbucket is a IdentityProvider enum value
+	IdentityProviderBitbucket = "Bitbucket"
+)
+
+// IdentityProvider_Values returns all elements of the IdentityProvider enum
+func IdentityProvider_Values() []string {
+	return []string{
+		IdentityProviderAwsMarketplace,
+		IdentityProviderGitHub,
+		IdentityProviderBitbucket,
 	}
 }
 
@@ -18180,6 +20617,22 @@ func ProvisioningType_Values() []string {
 		ProvisioningTypeNonProvisionable,
 		ProvisioningTypeImmutable,
 		ProvisioningTypeFullyMutable,
+	}
+}
+
+const (
+	// PublisherStatusVerified is a PublisherStatus enum value
+	PublisherStatusVerified = "VERIFIED"
+
+	// PublisherStatusUnverified is a PublisherStatus enum value
+	PublisherStatusUnverified = "UNVERIFIED"
+)
+
+// PublisherStatus_Values returns all elements of the PublisherStatus enum
+func PublisherStatus_Values() []string {
+	return []string{
+		PublisherStatusVerified,
+		PublisherStatusUnverified,
 	}
 }
 
@@ -18784,6 +21237,62 @@ func TemplateStage_Values() []string {
 	return []string{
 		TemplateStageOriginal,
 		TemplateStageProcessed,
+	}
+}
+
+const (
+	// ThirdPartyTypeResource is a ThirdPartyType enum value
+	ThirdPartyTypeResource = "RESOURCE"
+
+	// ThirdPartyTypeModule is a ThirdPartyType enum value
+	ThirdPartyTypeModule = "MODULE"
+)
+
+// ThirdPartyType_Values returns all elements of the ThirdPartyType enum
+func ThirdPartyType_Values() []string {
+	return []string{
+		ThirdPartyTypeResource,
+		ThirdPartyTypeModule,
+	}
+}
+
+const (
+	// TypeTestsStatusPassed is a TypeTestsStatus enum value
+	TypeTestsStatusPassed = "PASSED"
+
+	// TypeTestsStatusFailed is a TypeTestsStatus enum value
+	TypeTestsStatusFailed = "FAILED"
+
+	// TypeTestsStatusInProgress is a TypeTestsStatus enum value
+	TypeTestsStatusInProgress = "IN_PROGRESS"
+
+	// TypeTestsStatusNotTested is a TypeTestsStatus enum value
+	TypeTestsStatusNotTested = "NOT_TESTED"
+)
+
+// TypeTestsStatus_Values returns all elements of the TypeTestsStatus enum
+func TypeTestsStatus_Values() []string {
+	return []string{
+		TypeTestsStatusPassed,
+		TypeTestsStatusFailed,
+		TypeTestsStatusInProgress,
+		TypeTestsStatusNotTested,
+	}
+}
+
+const (
+	// VersionBumpMajor is a VersionBump enum value
+	VersionBumpMajor = "MAJOR"
+
+	// VersionBumpMinor is a VersionBump enum value
+	VersionBumpMinor = "MINOR"
+)
+
+// VersionBump_Values returns all elements of the VersionBump enum
+func VersionBump_Values() []string {
+	return []string{
+		VersionBumpMajor,
+		VersionBumpMinor,
 	}
 }
 
