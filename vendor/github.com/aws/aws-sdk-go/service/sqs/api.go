@@ -64,12 +64,12 @@ func (c *SQS) AddPermissionRequest(input *AddPermissionInput) (req *request.Requ
 // Only you, the owner of the queue, can grant or deny permissions to the queue.
 // For more information about these permissions, see Allow Developers to Write
 // Messages to a Shared Queue (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-writing-an-sqs-policy.html#write-messages-to-shared-queue)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 //
 //    * AddPermission generates a policy for you. You can use SetQueueAttributes
 //    to upload your policy. For more information, see Using Custom Policies
 //    with the Amazon SQS Access Policy Language (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-creating-custom-policies.html)
-//    in the Amazon Simple Queue Service Developer Guide.
+//    in the Amazon SQS Developer Guide.
 //
 //    * An Amazon SQS policy can have a maximum of 7 actions.
 //
@@ -87,7 +87,7 @@ func (c *SQS) AddPermissionRequest(input *AddPermissionInput) (req *request.Requ
 //
 // Cross-account permissions don't apply to this action. For more information,
 // see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -174,7 +174,7 @@ func (c *SQS) ChangeMessageVisibilityRequest(input *ChangeMessageVisibilityInput
 // value. The default visibility timeout for a message is 30 seconds. The minimum
 // is 0 seconds. The maximum is 12 hours. For more information, see Visibility
 // Timeout (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 //
 // For example, you have a message with a visibility timeout of 5 minutes. After
 // 3 minutes, you call ChangeMessageVisibility with a timeout of 10 minutes.
@@ -415,7 +415,7 @@ func (c *SQS) CreateQueueRequest(input *CreateQueueInput) (req *request.Request,
 //    create a new FIFO queue for your application or delete your existing standard
 //    queue and recreate it as a FIFO queue. For more information, see Moving
 //    From a Standard Queue to a FIFO Queue (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-moving)
-//    in the Amazon Simple Queue Service Developer Guide.
+//    in the Amazon SQS Developer Guide.
 //
 //    * If you don't provide a value for an attribute, the queue is created
 //    with the default value for the attribute.
@@ -450,7 +450,7 @@ func (c *SQS) CreateQueueRequest(input *CreateQueueInput) (req *request.Request,
 //
 // Cross-account permissions don't apply to this action. For more information,
 // see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -755,7 +755,7 @@ func (c *SQS) DeleteQueueRequest(input *DeleteQueueInput) (req *request.Request,
 //
 // Cross-account permissions don't apply to this action. For more information,
 // see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -918,7 +918,7 @@ func (c *SQS) GetQueueUrlRequest(input *GetQueueUrlInput) (req *request.Request,
 // must grant you permission to access the queue. For more information about
 // shared queue access, see AddPermission or see Allow Developers to Write Messages
 // to a Shared Queue (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-writing-an-sqs-policy.html#write-messages-to-shared-queue)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1016,7 +1016,7 @@ func (c *SQS) ListDeadLetterSourceQueuesRequest(input *ListDeadLetterSourceQueue
 //
 // For more information about using dead-letter queues, see Using Amazon SQS
 // Dead-Letter Queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1149,11 +1149,11 @@ func (c *SQS) ListQueueTagsRequest(input *ListQueueTagsInput) (req *request.Requ
 //
 // List all cost allocation tags added to the specified Amazon SQS queue. For
 // an overview, see Tagging Your Amazon SQS Queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-queue-tags.html)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 //
 // Cross-account permissions don't apply to this action. For more information,
 // see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1247,7 +1247,7 @@ func (c *SQS) ListQueuesRequest(input *ListQueuesInput) (req *request.Request, o
 //
 // Cross-account permissions don't apply to this action. For more information,
 // see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1473,7 +1473,7 @@ func (c *SQS) ReceiveMessageRequest(input *ReceiveMessageInput) (req *request.Re
 // Retrieves one or more messages (up to 10), from the specified queue. Using
 // the WaitTimeSeconds parameter enables long-poll support. For more information,
 // see Amazon SQS Long Polling (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-long-polling.html)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 //
 // Short poll is the default behavior where a weighted random set of machines
 // is sampled on a ReceiveMessage call. Thus, only the messages on the sampled
@@ -1500,14 +1500,14 @@ func (c *SQS) ReceiveMessageRequest(input *ReceiveMessageInput) (req *request.Re
 //
 // The receipt handle is the identifier you must provide when deleting the message.
 // For more information, see Queue and Message Identifiers (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-queue-message-identifiers.html)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 //
 // You can provide the VisibilityTimeout parameter in your request. The parameter
 // is applied to the messages that Amazon SQS returns in the response. If you
 // don't include the parameter, the overall visibility timeout for the queue
 // is used for the returned messages. For more information, see Visibility Timeout
 // (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 //
 // A message that isn't deleted or a message whose visibility isn't extended
 // before the visibility timeout expires counts as a failed receive. Depending
@@ -1606,7 +1606,7 @@ func (c *SQS) RemovePermissionRequest(input *RemovePermissionInput) (req *reques
 //
 //    * Cross-account permissions don't apply to this action. For more information,
 //    see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
-//    in the Amazon Simple Queue Service Developer Guide.
+//    in the Amazon SQS Developer Guide.
 //
 //    * To remove the ability to change queue permissions, you must deny permission
 //    to the AddPermission, RemovePermission, and SetQueueAttributes actions
@@ -1910,7 +1910,7 @@ func (c *SQS) SetQueueAttributesRequest(input *SetQueueAttributesInput) (req *re
 //
 //    * Cross-account permissions don't apply to this action. For more information,
 //    see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
-//    in the Amazon Simple Queue Service Developer Guide.
+//    in the Amazon SQS Developer Guide.
 //
 //    * To remove the ability to change queue permissions, you must deny permission
 //    to the AddPermission, RemovePermission, and SetQueueAttributes actions
@@ -1996,7 +1996,7 @@ func (c *SQS) TagQueueRequest(input *TagQueueInput) (req *request.Request, outpu
 //
 // Add cost allocation tags to the specified Amazon SQS queue. For an overview,
 // see Tagging Your Amazon SQS Queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-queue-tags.html)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 //
 // When you use queue tags, keep the following guidelines in mind:
 //
@@ -2010,12 +2010,12 @@ func (c *SQS) TagQueueRequest(input *TagQueueInput) (req *request.Request, outpu
 //    * A new tag with a key identical to that of an existing tag overwrites
 //    the existing tag.
 //
-// For a full list of tag restrictions, see Limits Related to Queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-limits.html#limits-queues)
-// in the Amazon Simple Queue Service Developer Guide.
+// For a full list of tag restrictions, see Quotas related to queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-limits.html#limits-queues)
+// in the Amazon SQS Developer Guide.
 //
 // Cross-account permissions don't apply to this action. For more information,
 // see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2092,11 +2092,11 @@ func (c *SQS) UntagQueueRequest(input *UntagQueueInput) (req *request.Request, o
 //
 // Remove cost allocation tags from the specified Amazon SQS queue. For an overview,
 // see Tagging Your Amazon SQS Queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-queue-tags.html)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 //
 // Cross-account permissions don't apply to this action. For more information,
 // see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2129,11 +2129,10 @@ func (c *SQS) UntagQueueWithContext(ctx aws.Context, input *UntagQueueInput, opt
 type AddPermissionInput struct {
 	_ struct{} `type:"structure"`
 
-	// The AWS account number of the principal (https://docs.aws.amazon.com/general/latest/gr/glos-chap.html#P)
-	// who is given permission. The principal must have an AWS account, but does
-	// not need to be signed up for Amazon SQS. For information about locating the
-	// AWS account identification, see Your AWS Identifiers (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-making-api-requests.html#sqs-api-request-authentication)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// The account numbers of the principals (https://docs.aws.amazon.com/general/latest/gr/glos-chap.html#P)
+	// who are to receive permission. For information about locating the account
+	// identification, see Your Amazon Web Services Identifiers (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-making-api-requests.html#sqs-api-request-authentication)
+	// in the Amazon SQS Developer Guide.
 	//
 	// AWSAccountIds is a required field
 	AWSAccountIds []*string `locationNameList:"AWSAccountId" type:"list" flattened:"true" required:"true"`
@@ -2143,7 +2142,7 @@ type AddPermissionInput struct {
 	//
 	// For more information about these actions, see Overview of Managing Access
 	// Permissions to Your Amazon Simple Queue Service Resource (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-overview-of-managing-access.html)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// in the Amazon SQS Developer Guide.
 	//
 	// Specifying SendMessage, DeleteMessage, or ChangeMessageVisibility for ActionName.n
 	// also grants permissions for the corresponding batch versions of those actions:
@@ -2607,8 +2606,9 @@ type CreateQueueInput struct {
 	//    Amazon SQS retains a message. Valid values: An integer from 60 seconds
 	//    (1 minute) to 1,209,600 seconds (14 days). Default: 345,600 (4 days).
 	//
-	//    * Policy – The queue's policy. A valid AWS policy. For more information
-	//    about policy structure, see Overview of AWS IAM Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/PoliciesOverview.html)
+	//    * Policy – The queue's policy. A valid Amazon Web Services policy. For
+	//    more information about policy structure, see Overview of Amazon Web Services
+	//    IAM Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/PoliciesOverview.html)
 	//    in the Amazon IAM User Guide.
 	//
 	//    * ReceiveMessageWaitTimeSeconds – The length of time, in seconds, for
@@ -2619,9 +2619,9 @@ type CreateQueueInput struct {
 	//    queue functionality of the source queue as a JSON object. For more information
 	//    about the redrive policy and dead-letter queues, see Using Amazon SQS
 	//    Dead-Letter Queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html)
-	//    in the Amazon Simple Queue Service Developer Guide. deadLetterTargetArn
-	//    – The Amazon Resource Name (ARN) of the dead-letter queue to which Amazon
-	//    SQS moves messages after the value of maxReceiveCount is exceeded. maxReceiveCount
+	//    in the Amazon SQS Developer Guide. deadLetterTargetArn – The Amazon
+	//    Resource Name (ARN) of the dead-letter queue to which Amazon SQS moves
+	//    messages after the value of maxReceiveCount is exceeded. maxReceiveCount
 	//    – The number of times a message is delivered to the source queue before
 	//    being moved to the dead-letter queue. When the ReceiveCount for a message
 	//    exceeds the maxReceiveCount for a queue, Amazon SQS moves the message
@@ -2633,25 +2633,26 @@ type CreateQueueInput struct {
 	//    Valid values: An integer from 0 to 43,200 (12 hours). Default: 30. For
 	//    more information about the visibility timeout, see Visibility Timeout
 	//    (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html)
-	//    in the Amazon Simple Queue Service Developer Guide.
+	//    in the Amazon SQS Developer Guide.
 	//
 	// The following attributes apply only to server-side-encryption (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-server-side-encryption.html):
 	//
-	//    * KmsMasterKeyId – The ID of an AWS-managed customer master key (CMK)
-	//    for Amazon SQS or a custom CMK. For more information, see Key Terms (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-server-side-encryption.html#sqs-sse-key-terms).
-	//    While the alias of the AWS-managed CMK for Amazon SQS is always alias/aws/sqs,
-	//    the alias of a custom CMK can, for example, be alias/MyAlias . For more
-	//    examples, see KeyId (https://docs.aws.amazon.com/kms/latest/APIReference/API_DescribeKey.html#API_DescribeKey_RequestParameters)
-	//    in the AWS Key Management Service API Reference.
+	//    * KmsMasterKeyId – The ID of an Amazon Web Services managed customer
+	//    master key (CMK) for Amazon SQS or a custom CMK. For more information,
+	//    see Key Terms (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-server-side-encryption.html#sqs-sse-key-terms).
+	//    While the alias of the Amazon Web Services managed CMK for Amazon SQS
+	//    is always alias/aws/sqs, the alias of a custom CMK can, for example, be
+	//    alias/MyAlias . For more examples, see KeyId (https://docs.aws.amazon.com/kms/latest/APIReference/API_DescribeKey.html#API_DescribeKey_RequestParameters)
+	//    in the Key Management Service API Reference.
 	//
 	//    * KmsDataKeyReusePeriodSeconds – The length of time, in seconds, for
 	//    which Amazon SQS can reuse a data key (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#data-keys)
-	//    to encrypt or decrypt messages before calling AWS KMS again. An integer
-	//    representing seconds, between 60 seconds (1 minute) and 86,400 seconds
-	//    (24 hours). Default: 300 (5 minutes). A shorter time period provides better
-	//    security but results in more calls to KMS which might incur charges after
-	//    Free Tier. For more information, see How Does the Data Key Reuse Period
-	//    Work? (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-server-side-encryption.html#sqs-how-does-the-data-key-reuse-period-work).
+	//    to encrypt or decrypt messages before calling KMS again. An integer representing
+	//    seconds, between 60 seconds (1 minute) and 86,400 seconds (24 hours).
+	//    Default: 300 (5 minutes). A shorter time period provides better security
+	//    but results in more calls to KMS which might incur charges after Free
+	//    Tier. For more information, see How Does the Data Key Reuse Period Work?
+	//    (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-server-side-encryption.html#sqs-how-does-the-data-key-reuse-period-work).
 	//
 	// The following attributes apply only to FIFO (first-in-first-out) queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html):
 	//
@@ -2660,17 +2661,17 @@ type CreateQueueInput struct {
 	//    a standard queue. You can provide this attribute only during queue creation.
 	//    You can't change it for an existing queue. When you set this attribute,
 	//    you must also provide the MessageGroupId for your messages explicitly.
-	//    For more information, see FIFO Queue Logic (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-understanding-logic)
-	//    in the Amazon Simple Queue Service Developer Guide.
+	//    For more information, see FIFO queue logic (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues-understanding-logic.html)
+	//    in the Amazon SQS Developer Guide.
 	//
 	//    * ContentBasedDeduplication – Enables content-based deduplication. Valid
-	//    values are true and false. For more information, see Exactly-Once Processing
-	//    (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-exactly-once-processing)
-	//    in the Amazon Simple Queue Service Developer Guide. Note the following:
-	//    Every message must have a unique MessageDeduplicationId. You may provide
-	//    a MessageDeduplicationId explicitly. If you aren't able to provide a MessageDeduplicationId
-	//    and you enable ContentBasedDeduplication for your queue, Amazon SQS uses
-	//    a SHA-256 hash to generate the MessageDeduplicationId using the body of
+	//    values are true and false. For more information, see Exactly-once processing
+	//    (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues-exactly-once-processing.html)
+	//    in the Amazon SQS Developer Guide. Note the following: Every message must
+	//    have a unique MessageDeduplicationId. You may provide a MessageDeduplicationId
+	//    explicitly. If you aren't able to provide a MessageDeduplicationId and
+	//    you enable ContentBasedDeduplication for your queue, Amazon SQS uses a
+	//    SHA-256 hash to generate the MessageDeduplicationId using the body of
 	//    the message (but not the attributes of the message). If you don't provide
 	//    a MessageDeduplicationId and the queue doesn't have ContentBasedDeduplication
 	//    set, the action fails with an error. If the queue has ContentBasedDeduplication
@@ -2682,15 +2683,7 @@ type CreateQueueInput struct {
 	//    as the one generated for the first MessageDeduplicationId, the two messages
 	//    are treated as duplicates and only one copy of the message is delivered.
 	//
-	// Preview: High throughput for FIFO queues
-	//
-	// High throughput for Amazon SQS FIFO queues is in preview release and is subject
-	// to change. This feature provides a high number of transactions per second
-	// (TPS) for messages in FIFO queues. For information on throughput quotas,
-	// see Quotas related to messages (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html)
-	// in the Amazon Simple Queue Service Developer Guide.
-	//
-	// This preview includes two new attributes:
+	// The following attributes apply only to high throughput for FIFO queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/high-throughput-fifo.html):
 	//
 	//    * DeduplicationScope – Specifies whether message deduplication occurs
 	//    at the message group or queue level. Valid values are messageGroup and
@@ -2708,22 +2701,11 @@ type CreateQueueInput struct {
 	//    * Set FifoThroughputLimit to perMessageGroupId.
 	//
 	// If you set these attributes to anything other than the values shown for enabling
-	// high throughput, standard throughput is in effect and deduplication occurs
+	// high throughput, normal throughput is in effect and deduplication occurs
 	// as specified.
 	//
-	// This preview is available in the following AWS Regions:
-	//
-	//    * US East (Ohio); us-east-2
-	//
-	//    * US East (N. Virginia); us-east-1
-	//
-	//    * US West (Oregon); us-west-2
-	//
-	//    * Europe (Ireland); eu-west-1
-	//
-	// For more information about high throughput for FIFO queues, see Preview:
-	// High throughput for FIFO queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/high-throughput-fifo.html)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// For information on throughput quotas, see Quotas related to messages (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html)
+	// in the Amazon SQS Developer Guide.
 	Attributes map[string]*string `locationName:"Attribute" locationNameKey:"Name" locationNameValue:"Value" type:"map" flattened:"true"`
 
 	// The name of the new queue. The following limits apply to this name:
@@ -2742,7 +2724,7 @@ type CreateQueueInput struct {
 
 	// Add cost allocation tags to the specified Amazon SQS queue. For an overview,
 	// see Tagging Your Amazon SQS Queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-queue-tags.html)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// in the Amazon SQS Developer Guide.
 	//
 	// When you use queue tags, keep the following guidelines in mind:
 	//
@@ -2756,15 +2738,15 @@ type CreateQueueInput struct {
 	//    * A new tag with a key identical to that of an existing tag overwrites
 	//    the existing tag.
 	//
-	// For a full list of tag restrictions, see Limits Related to Queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-limits.html#limits-queues)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// For a full list of tag restrictions, see Quotas related to queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-limits.html#limits-queues)
+	// in the Amazon SQS Developer Guide.
 	//
 	// To be able to tag a queue on creation, you must have the sqs:CreateQueue
 	// and sqs:TagQueue permissions.
 	//
 	// Cross-account permissions don't apply to this action. For more information,
 	// see Grant cross-account permissions to a role and a user name (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// in the Amazon SQS Developer Guide.
 	Tags map[string]*string `locationName:"Tag" locationNameKey:"Key" locationNameValue:"Value" type:"map" flattened:"true"`
 }
 
@@ -3148,6 +3130,9 @@ type GetQueueAttributesInput struct {
 
 	// A list of attributes for which to retrieve information.
 	//
+	// The AttributeName.N parameter is optional, but if you don't specify values
+	// for this parameter, the request returns empty results.
+	//
 	// In the future, new attributes might be added. If you write code that calls
 	// this action, we recommend that you structure your code so that it can handle
 	// new attributes gracefully.
@@ -3199,9 +3184,9 @@ type GetQueueAttributesInput struct {
 	//    queue functionality of the source queue as a JSON object. For more information
 	//    about the redrive policy and dead-letter queues, see Using Amazon SQS
 	//    Dead-Letter Queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html)
-	//    in the Amazon Simple Queue Service Developer Guide. deadLetterTargetArn
-	//    – The Amazon Resource Name (ARN) of the dead-letter queue to which Amazon
-	//    SQS moves messages after the value of maxReceiveCount is exceeded. maxReceiveCount
+	//    in the Amazon SQS Developer Guide. deadLetterTargetArn – The Amazon
+	//    Resource Name (ARN) of the dead-letter queue to which Amazon SQS moves
+	//    messages after the value of maxReceiveCount is exceeded. maxReceiveCount
 	//    – The number of times a message is delivered to the source queue before
 	//    being moved to the dead-letter queue. When the ReceiveCount for a message
 	//    exceeds the maxReceiveCount for a queue, Amazon SQS moves the message
@@ -3210,41 +3195,33 @@ type GetQueueAttributesInput struct {
 	//    * VisibilityTimeout – Returns the visibility timeout for the queue.
 	//    For more information about the visibility timeout, see Visibility Timeout
 	//    (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html)
-	//    in the Amazon Simple Queue Service Developer Guide.
+	//    in the Amazon SQS Developer Guide.
 	//
 	// The following attributes apply only to server-side-encryption (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-server-side-encryption.html):
 	//
-	//    * KmsMasterKeyId – Returns the ID of an AWS-managed customer master
-	//    key (CMK) for Amazon SQS or a custom CMK. For more information, see Key
-	//    Terms (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-server-side-encryption.html#sqs-sse-key-terms).
+	//    * KmsMasterKeyId – Returns the ID of an Amazon Web Services managed
+	//    customer master key (CMK) for Amazon SQS or a custom CMK. For more information,
+	//    see Key Terms (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-server-side-encryption.html#sqs-sse-key-terms).
 	//
 	//    * KmsDataKeyReusePeriodSeconds – Returns the length of time, in seconds,
 	//    for which Amazon SQS can reuse a data key to encrypt or decrypt messages
-	//    before calling AWS KMS again. For more information, see How Does the Data
+	//    before calling KMS again. For more information, see How Does the Data
 	//    Key Reuse Period Work? (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-server-side-encryption.html#sqs-how-does-the-data-key-reuse-period-work).
 	//
 	// The following attributes apply only to FIFO (first-in-first-out) queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html):
 	//
 	//    * FifoQueue – Returns information about whether the queue is FIFO. For
-	//    more information, see FIFO Queue Logic (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-understanding-logic)
-	//    in the Amazon Simple Queue Service Developer Guide. To determine whether
-	//    a queue is FIFO (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html),
+	//    more information, see FIFO queue logic (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues-understanding-logic.html)
+	//    in the Amazon SQS Developer Guide. To determine whether a queue is FIFO
+	//    (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html),
 	//    you can check whether QueueName ends with the .fifo suffix.
 	//
 	//    * ContentBasedDeduplication – Returns whether content-based deduplication
-	//    is enabled for the queue. For more information, see Exactly-Once Processing
-	//    (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-exactly-once-processing)
-	//    in the Amazon Simple Queue Service Developer Guide.
+	//    is enabled for the queue. For more information, see Exactly-once processing
+	//    (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues-exactly-once-processing.html)
+	//    in the Amazon SQS Developer Guide.
 	//
-	// Preview: High throughput for FIFO queues
-	//
-	// High throughput for Amazon SQS FIFO queues is in preview release and is subject
-	// to change. This feature provides a high number of transactions per second
-	// (TPS) for messages in FIFO queues. For information on throughput quotas,
-	// see Quotas related to messages (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html)
-	// in the Amazon Simple Queue Service Developer Guide.
-	//
-	// This preview includes two new attributes:
+	// The following attributes apply only to high throughput for FIFO queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/high-throughput-fifo.html):
 	//
 	//    * DeduplicationScope – Specifies whether message deduplication occurs
 	//    at the message group or queue level. Valid values are messageGroup and
@@ -3262,22 +3239,11 @@ type GetQueueAttributesInput struct {
 	//    * Set FifoThroughputLimit to perMessageGroupId.
 	//
 	// If you set these attributes to anything other than the values shown for enabling
-	// high throughput, standard throughput is in effect and deduplication occurs
+	// high throughput, normal throughput is in effect and deduplication occurs
 	// as specified.
 	//
-	// This preview is available in the following AWS Regions:
-	//
-	//    * US East (Ohio); us-east-2
-	//
-	//    * US East (N. Virginia); us-east-1
-	//
-	//    * US West (Oregon); us-west-2
-	//
-	//    * Europe (Ireland); eu-west-1
-	//
-	// For more information about high throughput for FIFO queues, see Preview:
-	// High throughput for FIFO queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/high-throughput-fifo.html)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// For information on throughput quotas, see Quotas related to messages (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html)
+	// in the Amazon SQS Developer Guide.
 	AttributeNames []*string `locationNameList:"AttributeName" type:"list" flattened:"true"`
 
 	// The URL of the Amazon SQS queue whose attribute information is retrieved.
@@ -3358,7 +3324,7 @@ type GetQueueUrlInput struct {
 	// QueueName is a required field
 	QueueName *string `type:"string" required:"true"`
 
-	// The AWS account ID of the account that created the queue.
+	// The account ID of the account that created the queue.
 	QueueOwnerAWSAccountId *string `type:"string"`
 }
 
@@ -3398,7 +3364,7 @@ func (s *GetQueueUrlInput) SetQueueOwnerAWSAccountId(v string) *GetQueueUrlInput
 }
 
 // For more information, see Interpreting Responses (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-api-responses.html)
-// in the Amazon Simple Queue Service Developer Guide.
+// in the Amazon SQS Developer Guide.
 type GetQueueUrlOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3700,12 +3666,12 @@ type Message struct {
 	MD5OfMessageAttributes *string `type:"string"`
 
 	// Each message attribute consists of a Name, Type, and Value. For more information,
-	// see Amazon SQS Message Attributes (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-metadata.html#sqs-message-attributes)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// see Amazon SQS message attributes (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-metadata.html#sqs-message-attributes)
+	// in the Amazon SQS Developer Guide.
 	MessageAttributes map[string]*MessageAttributeValue `locationName:"MessageAttribute" locationNameKey:"Name" locationNameValue:"Value" type:"map" flattened:"true"`
 
 	// A unique identifier for the message. A MessageIdis considered unique across
-	// all AWS accounts for an extended period of time.
+	// all accounts for an extended period of time.
 	MessageId *string `type:"string"`
 
 	// An identifier associated with the act of receiving the message. A new receipt
@@ -3790,7 +3756,7 @@ type MessageAttributeValue struct {
 	//
 	// You can also append custom labels. For more information, see Amazon SQS Message
 	// Attributes (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-metadata.html#sqs-message-attributes)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// in the Amazon SQS Developer Guide.
 	//
 	// DataType is a required field
 	DataType *string `type:"string" required:"true"`
@@ -3878,7 +3844,7 @@ type MessageSystemAttributeValue struct {
 	//
 	// You can also append custom labels. For more information, see Amazon SQS Message
 	// Attributes (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-metadata.html#sqs-message-attributes)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// in the Amazon SQS Developer Guide.
 	//
 	// DataType is a required field
 	DataType *string `type:"string" required:"true"`
@@ -4013,7 +3979,7 @@ type ReceiveMessageInput struct {
 	//    * ApproximateReceiveCount – Returns the number of times a message has
 	//    been received across all queues but not deleted.
 	//
-	//    * AWSTraceHeader – Returns the AWS X-Ray trace header string.
+	//    * AWSTraceHeader – Returns the X-Ray trace header string.
 	//
 	//    * SenderId For an IAM user, returns the IAM user ID, for example ABCDEFGHI1JKLMNOPQ23R.
 	//    For an IAM role, returns the IAM role ID, for example ABCDE1F2GH3I4JK5LMNOP:i-a123b456.
@@ -4090,15 +4056,14 @@ type ReceiveMessageInput struct {
 	//    return the same messages and receipt handles. If a retry occurs within
 	//    the deduplication interval, it resets the visibility timeout. For more
 	//    information, see Visibility Timeout (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html)
-	//    in the Amazon Simple Queue Service Developer Guide. If a caller of the
-	//    ReceiveMessage action still processes messages when the visibility timeout
-	//    expires and messages become visible, another worker consuming from the
-	//    same queue can receive the same messages and therefore process duplicates.
-	//    Also, if a consumer whose message processing time is longer than the visibility
-	//    timeout tries to delete the processed messages, the action fails with
-	//    an error. To mitigate this effect, ensure that your application observes
-	//    a safe threshold before the visibility timeout expires and extend the
-	//    visibility timeout as necessary.
+	//    in the Amazon SQS Developer Guide. If a caller of the ReceiveMessage action
+	//    still processes messages when the visibility timeout expires and messages
+	//    become visible, another worker consuming from the same queue can receive
+	//    the same messages and therefore process duplicates. Also, if a consumer
+	//    whose message processing time is longer than the visibility timeout tries
+	//    to delete the processed messages, the action fails with an error. To mitigate
+	//    this effect, ensure that your application observes a safe threshold before
+	//    the visibility timeout expires and extend the visibility timeout as necessary.
 	//
 	//    * While messages with a particular MessageGroupId are invisible, no more
 	//    messages belonging to the same MessageGroupId are returned until the visibility
@@ -4114,7 +4079,7 @@ type ReceiveMessageInput struct {
 	//
 	// For best practices of using ReceiveRequestAttemptId, see Using the ReceiveRequestAttemptId
 	// Request Parameter (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-receiverequestattemptid-request-parameter.html)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// in the Amazon SQS Developer Guide.
 	ReceiveRequestAttemptId *string `type:"string"`
 
 	// The duration (in seconds) that the received messages are hidden from subsequent
@@ -4421,8 +4386,8 @@ type SendMessageBatchRequestEntry struct {
 	Id *string `type:"string" required:"true"`
 
 	// Each message attribute consists of a Name, Type, and Value. For more information,
-	// see Amazon SQS Message Attributes (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-metadata.html#sqs-message-attributes)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// see Amazon SQS message attributes (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-metadata.html#sqs-message-attributes)
+	// in the Amazon SQS Developer Guide.
 	MessageAttributes map[string]*MessageAttributeValue `locationName:"MessageAttribute" locationNameKey:"Name" locationNameValue:"Value" type:"map" flattened:"true"`
 
 	// The body of the message.
@@ -4435,8 +4400,8 @@ type SendMessageBatchRequestEntry struct {
 	// The token used for deduplication of messages within a 5-minute minimum deduplication
 	// interval. If a message with a particular MessageDeduplicationId is sent successfully,
 	// subsequent messages with the same MessageDeduplicationId are accepted successfully
-	// but aren't delivered. For more information, see Exactly-Once Processing (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-exactly-once-processing)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// but aren't delivered. For more information, see Exactly-once processing (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues-exactly-once-processing.html)
+	// in the Amazon SQS Developer Guide.
 	//
 	//    * Every message must have a unique MessageDeduplicationId, You may provide
 	//    a MessageDeduplicationId explicitly. If you aren't able to provide a MessageDeduplicationId
@@ -4471,7 +4436,7 @@ type SendMessageBatchRequestEntry struct {
 	//
 	// For best practices of using MessageDeduplicationId, see Using the MessageDeduplicationId
 	// Property (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagededuplicationid-property.html)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// in the Amazon SQS Developer Guide.
 	MessageDeduplicationId *string `type:"string"`
 
 	// This parameter applies only to FIFO (first-in-first-out) queues.
@@ -4496,7 +4461,7 @@ type SendMessageBatchRequestEntry struct {
 	//
 	// For best practices of using MessageGroupId, see Using the MessageGroupId
 	// Property (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// in the Amazon SQS Developer Guide.
 	//
 	// MessageGroupId is required for FIFO queues. You can't use it for Standard
 	// queues.
@@ -4506,8 +4471,8 @@ type SendMessageBatchRequestEntry struct {
 	// of a Name, Type, and Value.
 	//
 	//    * Currently, the only supported message system attribute is AWSTraceHeader.
-	//    Its type must be String and its value must be a correctly formatted AWS
-	//    X-Ray trace header string.
+	//    Its type must be String and its value must be a correctly formatted X-Ray
+	//    trace header string.
 	//
 	//    * The size of a message system attribute doesn't count towards the total
 	//    size of a message.
@@ -4704,8 +4669,8 @@ type SendMessageInput struct {
 	DelaySeconds *int64 `type:"integer"`
 
 	// Each message attribute consists of a Name, Type, and Value. For more information,
-	// see Amazon SQS Message Attributes (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-metadata.html#sqs-message-attributes)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// see Amazon SQS message attributes (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-metadata.html#sqs-message-attributes)
+	// in the Amazon SQS Developer Guide.
 	MessageAttributes map[string]*MessageAttributeValue `locationName:"MessageAttribute" locationNameKey:"Name" locationNameValue:"Value" type:"map" flattened:"true"`
 
 	// The message to send. The minimum size is one character. The maximum size
@@ -4727,9 +4692,9 @@ type SendMessageInput struct {
 	// The token used for deduplication of sent messages. If a message with a particular
 	// MessageDeduplicationId is sent successfully, any messages sent with the same
 	// MessageDeduplicationId are accepted successfully but aren't delivered during
-	// the 5-minute deduplication interval. For more information, see Exactly-Once
-	// Processing (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-exactly-once-processing)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// the 5-minute deduplication interval. For more information, see Exactly-once
+	// processing (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues-exactly-once-processing.html)
+	// in the Amazon SQS Developer Guide.
 	//
 	//    * Every message must have a unique MessageDeduplicationId, You may provide
 	//    a MessageDeduplicationId explicitly. If you aren't able to provide a MessageDeduplicationId
@@ -4764,7 +4729,7 @@ type SendMessageInput struct {
 	//
 	// For best practices of using MessageDeduplicationId, see Using the MessageDeduplicationId
 	// Property (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagededuplicationid-property.html)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// in the Amazon SQS Developer Guide.
 	MessageDeduplicationId *string `type:"string"`
 
 	// This parameter applies only to FIFO (first-in-first-out) queues.
@@ -4789,7 +4754,7 @@ type SendMessageInput struct {
 	//
 	// For best practices of using MessageGroupId, see Using the MessageGroupId
 	// Property (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// in the Amazon SQS Developer Guide.
 	//
 	// MessageGroupId is required for FIFO queues. You can't use it for Standard
 	// queues.
@@ -4799,8 +4764,8 @@ type SendMessageInput struct {
 	// of a Name, Type, and Value.
 	//
 	//    * Currently, the only supported message system attribute is AWSTraceHeader.
-	//    Its type must be String and its value must be a correctly formatted AWS
-	//    X-Ray trace header string.
+	//    Its type must be String and its value must be a correctly formatted X-Ray
+	//    trace header string.
 	//
 	//    * The size of a message system attribute doesn't count towards the total
 	//    size of a message.
@@ -4925,7 +4890,7 @@ type SendMessageOutput struct {
 
 	// An attribute containing the MessageId of the message sent to the queue. For
 	// more information, see Queue and Message Identifiers (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-queue-message-identifiers.html)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// in the Amazon SQS Developer Guide.
 	MessageId *string `type:"string"`
 
 	// This parameter applies only to FIFO (first-in-first-out) queues.
@@ -4997,9 +4962,10 @@ type SetQueueAttributesInput struct {
 	//    Amazon SQS retains a message. Valid values: An integer representing seconds,
 	//    from 60 (1 minute) to 1,209,600 (14 days). Default: 345,600 (4 days).
 	//
-	//    * Policy – The queue's policy. A valid AWS policy. For more information
-	//    about policy structure, see Overview of AWS IAM Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/PoliciesOverview.html)
-	//    in the Amazon IAM User Guide.
+	//    * Policy – The queue's policy. A valid Amazon Web Services policy. For
+	//    more information about policy structure, see Overview of Amazon Web Services
+	//    IAM Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/PoliciesOverview.html)
+	//    in the Identity and Access Management User Guide.
 	//
 	//    * ReceiveMessageWaitTimeSeconds – The length of time, in seconds, for
 	//    which a ReceiveMessage action waits for a message to arrive. Valid values:
@@ -5009,9 +4975,9 @@ type SetQueueAttributesInput struct {
 	//    queue functionality of the source queue as a JSON object. For more information
 	//    about the redrive policy and dead-letter queues, see Using Amazon SQS
 	//    Dead-Letter Queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html)
-	//    in the Amazon Simple Queue Service Developer Guide. deadLetterTargetArn
-	//    – The Amazon Resource Name (ARN) of the dead-letter queue to which Amazon
-	//    SQS moves messages after the value of maxReceiveCount is exceeded. maxReceiveCount
+	//    in the Amazon SQS Developer Guide. deadLetterTargetArn – The Amazon
+	//    Resource Name (ARN) of the dead-letter queue to which Amazon SQS moves
+	//    messages after the value of maxReceiveCount is exceeded. maxReceiveCount
 	//    – The number of times a message is delivered to the source queue before
 	//    being moved to the dead-letter queue. When the ReceiveCount for a message
 	//    exceeds the maxReceiveCount for a queue, Amazon SQS moves the message
@@ -5023,36 +4989,37 @@ type SetQueueAttributesInput struct {
 	//    Valid values: An integer from 0 to 43,200 (12 hours). Default: 30. For
 	//    more information about the visibility timeout, see Visibility Timeout
 	//    (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html)
-	//    in the Amazon Simple Queue Service Developer Guide.
+	//    in the Amazon SQS Developer Guide.
 	//
 	// The following attributes apply only to server-side-encryption (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-server-side-encryption.html):
 	//
-	//    * KmsMasterKeyId – The ID of an AWS-managed customer master key (CMK)
-	//    for Amazon SQS or a custom CMK. For more information, see Key Terms (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-server-side-encryption.html#sqs-sse-key-terms).
+	//    * KmsMasterKeyId – The ID of an Amazon Web Services managed customer
+	//    master key (CMK) for Amazon SQS or a custom CMK. For more information,
+	//    see Key Terms (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-server-side-encryption.html#sqs-sse-key-terms).
 	//    While the alias of the AWS-managed CMK for Amazon SQS is always alias/aws/sqs,
 	//    the alias of a custom CMK can, for example, be alias/MyAlias . For more
 	//    examples, see KeyId (https://docs.aws.amazon.com/kms/latest/APIReference/API_DescribeKey.html#API_DescribeKey_RequestParameters)
-	//    in the AWS Key Management Service API Reference.
+	//    in the Key Management Service API Reference.
 	//
 	//    * KmsDataKeyReusePeriodSeconds – The length of time, in seconds, for
 	//    which Amazon SQS can reuse a data key (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#data-keys)
-	//    to encrypt or decrypt messages before calling AWS KMS again. An integer
-	//    representing seconds, between 60 seconds (1 minute) and 86,400 seconds
-	//    (24 hours). Default: 300 (5 minutes). A shorter time period provides better
-	//    security but results in more calls to KMS which might incur charges after
-	//    Free Tier. For more information, see How Does the Data Key Reuse Period
-	//    Work? (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-server-side-encryption.html#sqs-how-does-the-data-key-reuse-period-work).
+	//    to encrypt or decrypt messages before calling KMS again. An integer representing
+	//    seconds, between 60 seconds (1 minute) and 86,400 seconds (24 hours).
+	//    Default: 300 (5 minutes). A shorter time period provides better security
+	//    but results in more calls to KMS which might incur charges after Free
+	//    Tier. For more information, see How Does the Data Key Reuse Period Work?
+	//    (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-server-side-encryption.html#sqs-how-does-the-data-key-reuse-period-work).
 	//
 	// The following attribute applies only to FIFO (first-in-first-out) queues
 	// (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html):
 	//
 	//    * ContentBasedDeduplication – Enables content-based deduplication. For
-	//    more information, see Exactly-Once Processing (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-exactly-once-processing)
-	//    in the Amazon Simple Queue Service Developer Guide. Note the following:
-	//    Every message must have a unique MessageDeduplicationId. You may provide
-	//    a MessageDeduplicationId explicitly. If you aren't able to provide a MessageDeduplicationId
-	//    and you enable ContentBasedDeduplication for your queue, Amazon SQS uses
-	//    a SHA-256 hash to generate the MessageDeduplicationId using the body of
+	//    more information, see Exactly-once processing (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues-exactly-once-processing.html)
+	//    in the Amazon SQS Developer Guide. Note the following: Every message must
+	//    have a unique MessageDeduplicationId. You may provide a MessageDeduplicationId
+	//    explicitly. If you aren't able to provide a MessageDeduplicationId and
+	//    you enable ContentBasedDeduplication for your queue, Amazon SQS uses a
+	//    SHA-256 hash to generate the MessageDeduplicationId using the body of
 	//    the message (but not the attributes of the message). If you don't provide
 	//    a MessageDeduplicationId and the queue doesn't have ContentBasedDeduplication
 	//    set, the action fails with an error. If the queue has ContentBasedDeduplication
@@ -5064,15 +5031,7 @@ type SetQueueAttributesInput struct {
 	//    as the one generated for the first MessageDeduplicationId, the two messages
 	//    are treated as duplicates and only one copy of the message is delivered.
 	//
-	// Preview: High throughput for FIFO queues
-	//
-	// High throughput for Amazon SQS FIFO queues is in preview release and is subject
-	// to change. This feature provides a high number of transactions per second
-	// (TPS) for messages in FIFO queues. For information on throughput quotas,
-	// see Quotas related to messages (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html)
-	// in the Amazon Simple Queue Service Developer Guide.
-	//
-	// This preview includes two new attributes:
+	// The following attributes apply only to high throughput for FIFO queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/high-throughput-fifo.html):
 	//
 	//    * DeduplicationScope – Specifies whether message deduplication occurs
 	//    at the message group or queue level. Valid values are messageGroup and
@@ -5090,22 +5049,11 @@ type SetQueueAttributesInput struct {
 	//    * Set FifoThroughputLimit to perMessageGroupId.
 	//
 	// If you set these attributes to anything other than the values shown for enabling
-	// high throughput, standard throughput is in effect and deduplication occurs
+	// high throughput, normal throughput is in effect and deduplication occurs
 	// as specified.
 	//
-	// This preview is available in the following AWS Regions:
-	//
-	//    * US East (Ohio); us-east-2
-	//
-	//    * US East (N. Virginia); us-east-1
-	//
-	//    * US West (Oregon); us-west-2
-	//
-	//    * Europe (Ireland); eu-west-1
-	//
-	// For more information about high throughput for FIFO queues, see Preview:
-	// High throughput for FIFO queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/high-throughput-fifo.html)
-	// in the Amazon Simple Queue Service Developer Guide.
+	// For information on throughput quotas, see Quotas related to messages (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html)
+	// in the Amazon SQS Developer Guide.
 	//
 	// Attributes is a required field
 	Attributes map[string]*string `locationName:"Attribute" locationNameKey:"Name" locationNameValue:"Value" type:"map" flattened:"true" required:"true"`

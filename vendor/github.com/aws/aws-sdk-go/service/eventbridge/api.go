@@ -1358,6 +1358,10 @@ func (c *EventBridge) DeleteRuleRequest(input *DeleteRuleInput) (req *request.Re
 // When you delete a rule, incoming events might continue to match to the deleted
 // rule. Allow a short period of time for changes to take effect.
 //
+// If you call delete rule multiple times for the same rule, all calls will
+// succeed. When you call delete rule for a non-existent custom eventbus, ResourceNotFoundException
+// is returned.
+//
 // Managed rules are rules created and managed by another AWS service on your
 // behalf. These rules are created by those other AWS services to support functionality
 // in those services. You can delete these rules using the Force option, but
@@ -3763,43 +3767,55 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 //
 // You can configure the following as targets for Events:
 //
-//    * EC2 instances
+//    * API destination (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-api-destinations.html)
 //
-//    * SSM Run Command
+//    * Amazon API Gateway REST API endpoints
 //
-//    * SSM Automation
+//    * API Gateway
 //
-//    * AWS Lambda functions
+//    * AWS Batch job queue
 //
-//    * Data streams in Amazon Kinesis Data Streams
+//    * CloudWatch Logs group
 //
-//    * Data delivery streams in Amazon Kinesis Data Firehose
+//    * CodeBuild project
+//
+//    * CodePineline
+//
+//    * Amazon EC2 CreateSnapshot API call
+//
+//    * Amazon EC2 RebootInstances API call
+//
+//    * Amazon EC2 StopInstances API call
+//
+//    * Amazon EC2 TerminateInstances API call
 //
 //    * Amazon ECS tasks
 //
-//    * AWS Step Functions state machines
+//    * Event bus in a different AWS account or Region. You can use an event
+//    bus in the US East (N. Virginia) us-east-1, US West (Oregon) us-west-2,
+//    or Europe (Ireland) eu-west-1 Regions as a target for a rule.
 //
-//    * AWS Batch jobs
+//    * Firehose delivery stream (Kinesis Data Firehose)
 //
-//    * AWS CodeBuild projects
+//    * Inspector assessment template (Amazon Inspector)
 //
-//    * Pipelines in AWS CodePipeline
+//    * Kinesis stream (Kinesis Data Stream)
 //
-//    * Amazon Inspector assessment templates
+//    * AWS Lambda function
 //
-//    * Amazon SNS topics
+//    * Redshift clusters (Data API statement execution)
 //
-//    * Amazon SQS queues, including FIFO queues
+//    * Amazon SNS topic
 //
-//    * The default event bus of another AWS account
+//    * Amazon SQS queues (includes FIFO queues
 //
-//    * Amazon API Gateway REST APIs
+//    * SSM Automation
 //
-//    * Redshift Clusters to invoke Data API ExecuteStatement on
+//    * SSM OpsItem
 //
-//    * Custom/SaaS HTTPS APIs via EventBridge API Destinations
+//    * SSM Run Command
 //
-//    * Amazon SageMaker Model Building Pipelines
+//    * Step Functions state machines
 //
 // Creating rules with built-in targets is supported only in the AWS Management
 // Console. The built-in targets are EC2 CreateSnapshot API call, EC2 RebootInstances
@@ -4461,7 +4477,7 @@ func (c *EventBridge) UntagResourceRequest(input *UntagResourceInput) (req *requ
 // UntagResource API operation for Amazon EventBridge.
 //
 // Removes one or more tags from the specified EventBridge resource. In Amazon
-// EventBridge (CloudWatch Events, rules and event buses can be tagged.
+// EventBridge (CloudWatch Events), rules and event buses can be tagged.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5297,6 +5313,73 @@ func (s *CancelReplayOutput) SetState(v string) *CancelReplayOutput {
 // SetStateReason sets the StateReason field's value.
 func (s *CancelReplayOutput) SetStateReason(v string) *CancelReplayOutput {
 	s.StateReason = &v
+	return s
+}
+
+// The details of a capacity provider strategy. To learn more, see CapacityProviderStrategyItem
+// (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CapacityProviderStrategyItem.html)
+// in the Amazon ECS API Reference.
+type CapacityProviderStrategyItem struct {
+	_ struct{} `type:"structure"`
+
+	// The base value designates how many tasks, at a minimum, to run on the specified
+	// capacity provider. Only one capacity provider in a capacity provider strategy
+	// can have a base defined. If no value is specified, the default value of 0
+	// is used.
+	Base *int64 `locationName:"base" type:"integer"`
+
+	// The short name of the capacity provider.
+	//
+	// CapacityProvider is a required field
+	CapacityProvider *string `locationName:"capacityProvider" min:"1" type:"string" required:"true"`
+
+	// The weight value designates the relative percentage of the total number of
+	// tasks launched that should use the specified capacity provider. The weight
+	// value is taken into consideration after the base value, if defined, is satisfied.
+	Weight *int64 `locationName:"weight" type:"integer"`
+}
+
+// String returns the string representation
+func (s CapacityProviderStrategyItem) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CapacityProviderStrategyItem) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CapacityProviderStrategyItem) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CapacityProviderStrategyItem"}
+	if s.CapacityProvider == nil {
+		invalidParams.Add(request.NewErrParamRequired("CapacityProvider"))
+	}
+	if s.CapacityProvider != nil && len(*s.CapacityProvider) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CapacityProvider", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBase sets the Base field's value.
+func (s *CapacityProviderStrategyItem) SetBase(v int64) *CapacityProviderStrategyItem {
+	s.Base = &v
+	return s
+}
+
+// SetCapacityProvider sets the CapacityProvider field's value.
+func (s *CapacityProviderStrategyItem) SetCapacityProvider(v string) *CapacityProviderStrategyItem {
+	s.CapacityProvider = &v
+	return s
+}
+
+// SetWeight sets the Weight field's value.
+func (s *CapacityProviderStrategyItem) SetWeight(v int64) *CapacityProviderStrategyItem {
+	s.Weight = &v
 	return s
 }
 
@@ -8576,6 +8659,23 @@ func (s DisableRuleOutput) GoString() string {
 type EcsParameters struct {
 	_ struct{} `type:"structure"`
 
+	// The capacity provider strategy to use for the task.
+	//
+	// If a capacityProviderStrategy is specified, the launchType parameter must
+	// be omitted. If no capacityProviderStrategy or launchType is specified, the
+	// defaultCapacityProviderStrategy for the cluster is used.
+	CapacityProviderStrategy []*CapacityProviderStrategyItem `type:"list"`
+
+	// Specifies whether to enable Amazon ECS managed tags for the task. For more
+	// information, see Tagging Your Amazon ECS Resources (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-using-tags.html)
+	// in the Amazon Elastic Container Service Developer Guide.
+	EnableECSManagedTags *bool `type:"boolean"`
+
+	// Whether or not to enable the execute command functionality for the containers
+	// in this task. If true, this enables execute command functionality on all
+	// containers in the task.
+	EnableExecuteCommand *bool `type:"boolean"`
+
 	// Specifies an ECS task group for the task. The maximum length is 255 characters.
 	Group *string `type:"string"`
 
@@ -8596,6 +8696,15 @@ type EcsParameters struct {
 	// the awsvpc network mode, the task fails.
 	NetworkConfiguration *NetworkConfiguration `type:"structure"`
 
+	// An array of placement constraint objects to use for the task. You can specify
+	// up to 10 constraints per task (including constraints in the task definition
+	// and those specified at runtime).
+	PlacementConstraints []*PlacementConstraint `type:"list"`
+
+	// The placement strategy objects to use for the task. You can specify a maximum
+	// of five strategy rules per task.
+	PlacementStrategy []*PlacementStrategy `type:"list"`
+
 	// Specifies the platform version for the task. Specify only the numeric portion
 	// of the platform version, such as 1.1.0.
 	//
@@ -8603,6 +8712,21 @@ type EcsParameters struct {
 	// about valid platform versions, see AWS Fargate Platform Versions (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/platform_versions.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	PlatformVersion *string `type:"string"`
+
+	// Specifies whether to propagate the tags from the task definition to the task.
+	// If no value is specified, the tags are not propagated. Tags can only be propagated
+	// to the task during task creation. To add tags to a task after task creation,
+	// use the TagResource API action.
+	PropagateTags *string `type:"string" enum:"PropagateTags"`
+
+	// The reference ID to use for the task.
+	ReferenceId *string `type:"string"`
+
+	// The metadata that you apply to the task to help you categorize and organize
+	// them. Each tag consists of a key and an optional value, both of which you
+	// define. To learn more, see RunTask (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_RunTask.html#ECS-RunTask-request-tags)
+	// in the Amazon ECS API Reference.
+	Tags []*Tag `type:"list"`
 
 	// The number of tasks to create based on TaskDefinition. The default is 1.
 	TaskCount *int64 `min:"1" type:"integer"`
@@ -8636,9 +8760,29 @@ func (s *EcsParameters) Validate() error {
 	if s.TaskDefinitionArn != nil && len(*s.TaskDefinitionArn) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("TaskDefinitionArn", 1))
 	}
+	if s.CapacityProviderStrategy != nil {
+		for i, v := range s.CapacityProviderStrategy {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "CapacityProviderStrategy", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
 	if s.NetworkConfiguration != nil {
 		if err := s.NetworkConfiguration.Validate(); err != nil {
 			invalidParams.AddNested("NetworkConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
 		}
 	}
 
@@ -8646,6 +8790,24 @@ func (s *EcsParameters) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCapacityProviderStrategy sets the CapacityProviderStrategy field's value.
+func (s *EcsParameters) SetCapacityProviderStrategy(v []*CapacityProviderStrategyItem) *EcsParameters {
+	s.CapacityProviderStrategy = v
+	return s
+}
+
+// SetEnableECSManagedTags sets the EnableECSManagedTags field's value.
+func (s *EcsParameters) SetEnableECSManagedTags(v bool) *EcsParameters {
+	s.EnableECSManagedTags = &v
+	return s
+}
+
+// SetEnableExecuteCommand sets the EnableExecuteCommand field's value.
+func (s *EcsParameters) SetEnableExecuteCommand(v bool) *EcsParameters {
+	s.EnableExecuteCommand = &v
+	return s
 }
 
 // SetGroup sets the Group field's value.
@@ -8666,9 +8828,39 @@ func (s *EcsParameters) SetNetworkConfiguration(v *NetworkConfiguration) *EcsPar
 	return s
 }
 
+// SetPlacementConstraints sets the PlacementConstraints field's value.
+func (s *EcsParameters) SetPlacementConstraints(v []*PlacementConstraint) *EcsParameters {
+	s.PlacementConstraints = v
+	return s
+}
+
+// SetPlacementStrategy sets the PlacementStrategy field's value.
+func (s *EcsParameters) SetPlacementStrategy(v []*PlacementStrategy) *EcsParameters {
+	s.PlacementStrategy = v
+	return s
+}
+
 // SetPlatformVersion sets the PlatformVersion field's value.
 func (s *EcsParameters) SetPlatformVersion(v string) *EcsParameters {
 	s.PlatformVersion = &v
+	return s
+}
+
+// SetPropagateTags sets the PropagateTags field's value.
+func (s *EcsParameters) SetPropagateTags(v string) *EcsParameters {
+	s.PropagateTags = &v
+	return s
+}
+
+// SetReferenceId sets the ReferenceId field's value.
+func (s *EcsParameters) SetReferenceId(v string) *EcsParameters {
+	s.ReferenceId = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *EcsParameters) SetTags(v []*Tag) *EcsParameters {
+	s.Tags = v
 	return s
 }
 
@@ -8753,11 +8945,10 @@ func (s EnableRuleOutput) GoString() string {
 }
 
 // An event bus receives events from a source and routes them to rules associated
-// with that event bus. Your account's default event bus receives rules from
-// AWS services. A custom event bus can receive rules from AWS services as well
-// as your custom applications and services. A partner event bus receives events
-// from an event source created by an SaaS partner. These events come from the
-// partners services or applications.
+// with that event bus. Your account's default event bus receives events from
+// AWS services. A custom event bus can receive events from your custom applications
+// and services. A partner event bus receives events from an event source created
+// by an SaaS partner. These events come from the partners services or applications.
 type EventBus struct {
 	_ struct{} `type:"structure"`
 
@@ -10826,6 +11017,92 @@ func (s *PartnerEventSourceAccount) SetExpirationTime(v time.Time) *PartnerEvent
 // SetState sets the State field's value.
 func (s *PartnerEventSourceAccount) SetState(v string) *PartnerEventSourceAccount {
 	s.State = &v
+	return s
+}
+
+// An object representing a constraint on task placement. To learn more, see
+// Task Placement Constraints (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-placement-constraints.html)
+// in the Amazon Elastic Container Service Developer Guide.
+type PlacementConstraint struct {
+	_ struct{} `type:"structure"`
+
+	// A cluster query language expression to apply to the constraint. You cannot
+	// specify an expression if the constraint type is distinctInstance. To learn
+	// more, see Cluster Query Language (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/cluster-query-language.html)
+	// in the Amazon Elastic Container Service Developer Guide.
+	Expression *string `locationName:"expression" type:"string"`
+
+	// The type of constraint. Use distinctInstance to ensure that each task in
+	// a particular group is running on a different container instance. Use memberOf
+	// to restrict the selection to a group of valid candidates.
+	Type *string `locationName:"type" type:"string" enum:"PlacementConstraintType"`
+}
+
+// String returns the string representation
+func (s PlacementConstraint) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PlacementConstraint) GoString() string {
+	return s.String()
+}
+
+// SetExpression sets the Expression field's value.
+func (s *PlacementConstraint) SetExpression(v string) *PlacementConstraint {
+	s.Expression = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *PlacementConstraint) SetType(v string) *PlacementConstraint {
+	s.Type = &v
+	return s
+}
+
+// The task placement strategy for a task or service. To learn more, see Task
+// Placement Strategies (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-placement-strategies.html)
+// in the Amazon Elastic Container Service Developer Guide.
+type PlacementStrategy struct {
+	_ struct{} `type:"structure"`
+
+	// The field to apply the placement strategy against. For the spread placement
+	// strategy, valid values are instanceId (or host, which has the same effect),
+	// or any platform or custom attribute that is applied to a container instance,
+	// such as attribute:ecs.availability-zone. For the binpack placement strategy,
+	// valid values are cpu and memory. For the random placement strategy, this
+	// field is not used.
+	Field *string `locationName:"field" type:"string"`
+
+	// The type of placement strategy. The random placement strategy randomly places
+	// tasks on available candidates. The spread placement strategy spreads placement
+	// across available candidates evenly based on the field parameter. The binpack
+	// strategy places tasks on available candidates that have the least available
+	// amount of the resource that is specified with the field parameter. For example,
+	// if you binpack on memory, a task is placed on the instance with the least
+	// amount of remaining memory (but still enough to run the task).
+	Type *string `locationName:"type" type:"string" enum:"PlacementStrategyType"`
+}
+
+// String returns the string representation
+func (s PlacementStrategy) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PlacementStrategy) GoString() string {
+	return s.String()
+}
+
+// SetField sets the Field field's value.
+func (s *PlacementStrategy) SetField(v string) *PlacementStrategy {
+	s.Field = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *PlacementStrategy) SetType(v string) *PlacementStrategy {
+	s.Type = &v
 	return s
 }
 
@@ -14396,6 +14673,54 @@ func LaunchType_Values() []string {
 	return []string{
 		LaunchTypeEc2,
 		LaunchTypeFargate,
+	}
+}
+
+const (
+	// PlacementConstraintTypeDistinctInstance is a PlacementConstraintType enum value
+	PlacementConstraintTypeDistinctInstance = "distinctInstance"
+
+	// PlacementConstraintTypeMemberOf is a PlacementConstraintType enum value
+	PlacementConstraintTypeMemberOf = "memberOf"
+)
+
+// PlacementConstraintType_Values returns all elements of the PlacementConstraintType enum
+func PlacementConstraintType_Values() []string {
+	return []string{
+		PlacementConstraintTypeDistinctInstance,
+		PlacementConstraintTypeMemberOf,
+	}
+}
+
+const (
+	// PlacementStrategyTypeRandom is a PlacementStrategyType enum value
+	PlacementStrategyTypeRandom = "random"
+
+	// PlacementStrategyTypeSpread is a PlacementStrategyType enum value
+	PlacementStrategyTypeSpread = "spread"
+
+	// PlacementStrategyTypeBinpack is a PlacementStrategyType enum value
+	PlacementStrategyTypeBinpack = "binpack"
+)
+
+// PlacementStrategyType_Values returns all elements of the PlacementStrategyType enum
+func PlacementStrategyType_Values() []string {
+	return []string{
+		PlacementStrategyTypeRandom,
+		PlacementStrategyTypeSpread,
+		PlacementStrategyTypeBinpack,
+	}
+}
+
+const (
+	// PropagateTagsTaskDefinition is a PropagateTags enum value
+	PropagateTagsTaskDefinition = "TASK_DEFINITION"
+)
+
+// PropagateTags_Values returns all elements of the PropagateTags enum
+func PropagateTags_Values() []string {
+	return []string{
+		PropagateTagsTaskDefinition,
 	}
 }
 
