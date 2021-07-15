@@ -43,6 +43,17 @@ func (r *Templater) templateFuncsMap(tm *template.Template) template.FuncMap {
 		return content
 	}
 
+	// More template functions borrowed from Helm project, originally added in
+	// - https://github.com/helm/helm/pull/1686
+	// - https://github.com/helm/helm/pull/2000
+	// - https://github.com/helm/helm/pull/7712
+	funcs["toYaml"] = toYAML
+	funcs["fromYaml"] = fromYAML
+	funcs["fromYamlArray"] = fromYAMLArray
+	funcs["toJson"] = toJSON
+	funcs["fromJson"] = fromJSON
+	funcs["fromJsonArray"] = fromJSONArray
+
 	funcs["ChannelRecommendedKubernetesUpgradeVersion"] = func(version string) string {
 
 		parsed, err := util.ParseKubernetesVersion(version)
