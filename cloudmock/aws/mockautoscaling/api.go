@@ -27,11 +27,10 @@ type MockAutoscaling struct {
 	// Mock out interface
 	autoscalingiface.AutoScalingAPI
 
-	mutex                sync.Mutex
-	Groups               map[string]*autoscaling.Group
-	WarmPoolInstances    map[string][]*autoscaling.Instance
-	LaunchConfigurations map[string]*autoscaling.LaunchConfiguration
-	LifecycleHooks       map[string]*autoscaling.LifecycleHook
+	mutex             sync.Mutex
+	Groups            map[string]*autoscaling.Group
+	WarmPoolInstances map[string][]*autoscaling.Instance
+	LifecycleHooks    map[string]*autoscaling.LifecycleHook
 }
 
 var _ autoscalingiface.AutoScalingAPI = &MockAutoscaling{}
