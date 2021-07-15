@@ -201,6 +201,18 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 		e.ID = response.Vpc.VpcId
 	}
 
+	if a != nil && e.AmazonIPv6 != nil && changes.AmazonIPv6 != nil {
+		request := &ec2.AssociateVpcCidrBlockInput{
+			VpcId:                       e.ID,
+			AmazonProvidedIpv6CidrBlock: e.AmazonIPv6,
+		}
+
+		_, err := t.Cloud.EC2().AssociateVpcCidrBlock(request)
+		if err != nil {
+			return fmt.Errorf("AssociateVpcCidrBlockRequest failed: %w", err)
+		}
+	}
+
 	if changes.EnableDNSSupport != nil {
 		request := &ec2.ModifyVpcAttributeInput{
 			VpcId:            e.ID,
