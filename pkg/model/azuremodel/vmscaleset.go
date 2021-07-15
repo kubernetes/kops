@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azuretasks"
 )
 
@@ -70,6 +71,14 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 	name string,
 	ig *kops.InstanceGroup,
 ) (*azuretasks.VMScaleSet, error) {
+	var azNumbers []string
+	for _, zone := range ig.Spec.Zones {
+		az, err := azure.ZoneToAvailabilityZoneNumber(zone)
+		if err != nil {
+			return nil, err
+		}
+		azNumbers = append(azNumbers, az)
+	}
 	t := &azuretasks.VMScaleSet{
 		Name:               fi.String(name),
 		Lifecycle:          b.Lifecycle,
@@ -78,6 +87,7 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 		SKUName:            fi.String(ig.Spec.MachineType),
 		ComputerNamePrefix: fi.String(ig.Name),
 		AdminUser:          fi.String(b.Cluster.Spec.CloudConfig.Azure.AdminUser),
+		Zones:              azNumbers,
 	}
 
 	var err error
