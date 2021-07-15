@@ -53,7 +53,7 @@ Port:
     Tag: null
   Tags:
   - KopsInstanceGroup=node
-  - KopsName=port-node-1-cluster
+  - KopsName=port-node-1
   - KubernetesCluster=cluster
 Region: region
 Role: Node
@@ -205,7 +205,7 @@ Subnets:
   Tag: null
 Tags:
 - KopsInstanceGroup=node
-- KopsName=port-node-1-cluster
+- KopsName=port-node-1
 - KubernetesCluster=cluster
 ---
 ClusterName: cluster

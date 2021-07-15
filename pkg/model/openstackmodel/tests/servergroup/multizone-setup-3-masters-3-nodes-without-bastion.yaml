@@ -125,7 +125,7 @@ Port:
     Tag: null
   Tags:
   - KopsInstanceGroup=master-a
-  - KopsName=port-master-a-1-cluster
+  - KopsName=port-master-a-1
   - KubernetesCluster=cluster
 Region: region
 Role: Master
@@ -212,7 +212,7 @@ Port:
     Tag: null
   Tags:
   - KopsInstanceGroup=master-b
-  - KopsName=port-master-b-1-cluster
+  - KopsName=port-master-b-1
   - KubernetesCluster=cluster
 Region: region
 Role: Master
@@ -299,7 +299,7 @@ Port:
     Tag: null
   Tags:
   - KopsInstanceGroup=master-c
-  - KopsName=port-master-c-1-cluster
+  - KopsName=port-master-c-1
   - KubernetesCluster=cluster
 Region: region
 Role: Master
@@ -377,7 +377,7 @@ Port:
     Tag: null
   Tags:
   - KopsInstanceGroup=node-a
-  - KopsName=port-node-a-1-cluster
+  - KopsName=port-node-a-1
   - KubernetesCluster=cluster
 Region: region
 Role: Node
@@ -455,7 +455,7 @@ Port:
     Tag: null
   Tags:
   - KopsInstanceGroup=node-b
-  - KopsName=port-node-b-1-cluster
+  - KopsName=port-node-b-1
   - KubernetesCluster=cluster
 Region: region
 Role: Node
@@ -533,7 +533,7 @@ Port:
     Tag: null
   Tags:
   - KopsInstanceGroup=node-c
-  - KopsName=port-node-c-1-cluster
+  - KopsName=port-node-c-1
   - KubernetesCluster=cluster
 Region: region
 Role: Node
@@ -741,7 +741,7 @@ Subnets:
   Tag: null
 Tags:
 - KopsInstanceGroup=master-a
-- KopsName=port-master-a-1-cluster
+- KopsName=port-master-a-1
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
@@ -778,7 +778,7 @@ Subnets:
   Tag: null
 Tags:
 - KopsInstanceGroup=master-b
-- KopsName=port-master-b-1-cluster
+- KopsName=port-master-b-1
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
@@ -815,7 +815,7 @@ Subnets:
   Tag: null
 Tags:
 - KopsInstanceGroup=master-c
-- KopsName=port-master-c-1-cluster
+- KopsName=port-master-c-1
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
@@ -846,7 +846,7 @@ Subnets:
   Tag: null
 Tags:
 - KopsInstanceGroup=node-a
-- KopsName=port-node-a-1-cluster
+- KopsName=port-node-a-1
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
@@ -877,7 +877,7 @@ Subnets:
   Tag: null
 Tags:
 - KopsInstanceGroup=node-b
-- KopsName=port-node-b-1-cluster
+- KopsName=port-node-b-1
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
@@ -908,7 +908,7 @@ Subnets:
   Tag: null
 Tags:
 - KopsInstanceGroup=node-c
-- KopsName=port-node-c-1-cluster
+- KopsName=port-node-c-1
 - KubernetesCluster=cluster
 ---
 ClusterName: cluster

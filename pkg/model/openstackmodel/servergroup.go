@@ -133,13 +133,21 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		}
 		// Create instance port task
 		portName := fmt.Sprintf("%s-%s", "port", *instanceName)
+		portTagKopsName := strings.Replace(
+			strings.Replace(
+				strings.ToLower(
+					fmt.Sprintf("port-%s-%d", ig.Name, i+1),
+				),
+				"_", "-", -1,
+			), ".", "-", -1,
+		)
 		portTask := &openstacktasks.Port{
 			Name:              fi.String(portName),
 			InstanceGroupName: &groupName,
 			Network:           b.LinkToNetwork(),
 			Tags: []string{
 				fmt.Sprintf("%s=%s", openstack.TagKopsInstanceGroup, groupName),
-				fmt.Sprintf("%s=%s", openstack.TagKopsName, portName),
+				fmt.Sprintf("%s=%s", openstack.TagKopsName, portTagKopsName),
 				fmt.Sprintf("%s=%s", openstack.TagClusterName, b.ClusterName()),
 			},
 			SecurityGroups:           securityGroups,
