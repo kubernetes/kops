@@ -131,9 +131,15 @@ const (
 	// A client request token already exists.
 	ErrCodeTokenAlreadyExistsException = "TokenAlreadyExistsException"
 
+	// ErrCodeTypeConfigurationNotFoundException for service response error code
+	// "TypeConfigurationNotFoundException".
+	//
+	// The specified extension configuration cannot be found.
+	ErrCodeTypeConfigurationNotFoundException = "TypeConfigurationNotFoundException"
+
 	// ErrCodeTypeNotFoundException for service response error code
 	// "TypeNotFoundException".
 	//
-	// The specified type does not exist in the CloudFormation registry.
+	// The specified extension does not exist in the CloudFormation registry.
 	ErrCodeTypeNotFoundException = "TypeNotFoundException"
 )

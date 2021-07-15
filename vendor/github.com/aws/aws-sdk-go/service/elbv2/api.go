@@ -417,7 +417,8 @@ func (c *ELBV2) CreateLoadBalancerRequest(input *CreateLoadBalancerInput) (req *
 //   A load balancer with the specified name already exists.
 //
 //   * ErrCodeTooManyLoadBalancersException "TooManyLoadBalancers"
-//   You've reached the limit on the number of load balancers for your AWS account.
+//   You've reached the limit on the number of load balancers for your Amazon
+//   Web Services account.
 //
 //   * ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
 //   The requested configuration is not valid.
@@ -540,7 +541,8 @@ func (c *ELBV2) CreateRuleRequest(input *CreateRuleInput) (req *request.Request,
 //   The specified priority is in use.
 //
 //   * ErrCodeTooManyTargetGroupsException "TooManyTargetGroups"
-//   You've reached the limit on the number of target groups for your AWS account.
+//   You've reached the limit on the number of target groups for your Amazon Web
+//   Services account.
 //
 //   * ErrCodeTooManyRulesException "TooManyRules"
 //   You've reached the limit on the number of rules per load balancer.
@@ -676,7 +678,8 @@ func (c *ELBV2) CreateTargetGroupRequest(input *CreateTargetGroupInput) (req *re
 //   A target group with the specified name already exists.
 //
 //   * ErrCodeTooManyTargetGroupsException "TooManyTargetGroups"
-//   You've reached the limit on the number of target groups for your AWS account.
+//   You've reached the limit on the number of target groups for your Amazon Web
+//   Services account.
 //
 //   * ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
 //   The requested configuration is not valid.
@@ -1184,8 +1187,8 @@ func (c *ELBV2) DescribeAccountLimitsRequest(input *DescribeAccountLimitsInput) 
 
 // DescribeAccountLimits API operation for Elastic Load Balancing.
 //
-// Describes the current Elastic Load Balancing resource limits for your AWS
-// account.
+// Describes the current Elastic Load Balancing resource limits for your Amazon
+// Web Services account.
 //
 // For more information, see the following:
 //
@@ -4683,7 +4686,7 @@ type CreateTargetGroupInput struct {
 	// [HTTP1 or HTTP2 protocol version] The ping path. The default is /.
 	//
 	// [GRPC protocol version] The path of a custom health check method with the
-	// format /package.service/method. The default is /AWS.ALB/healthcheck.
+	// format /package.service/method. The default is /Amazon Web Services.ALB/healthcheck.
 	HealthCheckPath *string `min:"1" type:"string"`
 
 	// The port the load balancer uses when performing health checks on targets.
@@ -6365,7 +6368,8 @@ func (s *HttpRequestMethodConditionConfig) SetValues(v []*string) *HttpRequestMe
 	return s
 }
 
-// Information about an Elastic Load Balancing resource limit for your AWS account.
+// Information about an Elastic Load Balancing resource limit for your Amazon
+// Web Services account.
 type Limit struct {
 	_ struct{} `type:"structure"`
 
@@ -6763,7 +6767,8 @@ type LoadBalancerAttribute struct {
 	//
 	//    * waf.fail_open.enabled - Indicates whether to allow a WAF-enabled load
 	//    balancer to route requests to targets if it is unable to forward the request
-	//    to AWS WAF. The value is true or false. The default is false.
+	//    to Amazon Web Services WAF. The value is true or false. The default is
+	//    false.
 	//
 	// The following attribute is supported by Network Load Balancers and Gateway
 	// Load Balancers:
@@ -7286,16 +7291,19 @@ type ModifyTargetGroupInput struct {
 	// [HTTP1 or HTTP2 protocol version] The ping path. The default is /.
 	//
 	// [GRPC protocol version] The path of a custom health check method with the
-	// format /package.service/method. The default is /AWS.ALB/healthcheck.
+	// format /package.service/method. The default is /Amazon Web Services.ALB/healthcheck.
 	HealthCheckPath *string `min:"1" type:"string"`
 
 	// The port the load balancer uses when performing health checks on targets.
 	HealthCheckPort *string `type:"string"`
 
 	// The protocol the load balancer uses when performing health checks on targets.
-	// The TCP protocol is supported for health checks only if the protocol of the
-	// target group is TCP, TLS, UDP, or TCP_UDP. The GENEVE, TLS, UDP, and TCP_UDP
-	// protocols are not supported for health checks.
+	// For Application Load Balancers, the default is HTTP. For Network Load Balancers
+	// and Gateway Load Balancers, the default is TCP. The TCP protocol is not supported
+	// for health checks if the protocol of the target group is HTTP or HTTPS. It
+	// is supported for health checks only if the protocol of the target group is
+	// TCP, TLS, UDP, or TCP_UDP. The GENEVE, TLS, UDP, and TCP_UDP protocols are
+	// not supported for health checks.
 	//
 	// With Network Load Balancers, you can't modify this setting.
 	HealthCheckProtocol *string `type:"string" enum:"ProtocolEnum"`
@@ -8982,8 +8990,9 @@ type TargetGroupAttribute struct {
 	//    default is 0 seconds (disabled).
 	//
 	//    * stickiness.app_cookie.cookie_name - Indicates the name of the application-based
-	//    cookie. Names that start with the following names are not allowed: AWSALB,
-	//    AWSALBAPP, and AWSALBTG. They're reserved for use by the load balancer.
+	//    cookie. Names that start with the following prefixes are not allowed:
+	//    AWSALB, AWSALBAPP, and AWSALBTG; they're reserved for use by the load
+	//    balancer.
 	//
 	//    * stickiness.app_cookie.duration_seconds - The time period, in seconds,
 	//    during which requests from a client should be routed to the same target.
