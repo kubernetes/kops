@@ -5,6 +5,7 @@ Lifecycle: ""
 Name: node
 ---
 AvailabilityZone: zone-1
+ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP: null
 ForAPIServer: false
@@ -81,6 +82,7 @@ UserData:
     Name: master
 ---
 AvailabilityZone: zone-1
+ConfigDrive: false
 Flavor: blc.2-4
 FloatingIP: null
 ForAPIServer: false

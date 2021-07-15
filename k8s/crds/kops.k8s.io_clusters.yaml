@@ -374,6 +374,16 @@ spec:
                           useOctavia:
                             type: boolean
                         type: object
+                      metadata:
+                        description: OpenstackMetadata defines config for metadata
+                          service related settings
+                        properties:
+                          configDrive:
+                            description: ConfigDrive specifies to use config drive
+                              for retrieving user data instead of the metadata service
+                              when launching instances
+                            type: boolean
+                        type: object
                       monitor:
                         description: OpenstackMonitor defines the config for a health
                           monitor

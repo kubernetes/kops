@@ -17,6 +17,7 @@ Lifecycle: ""
 Name: node-c
 ---
 AvailabilityZone: zone-1
+ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP: null
 ForAPIServer: false
@@ -93,6 +94,7 @@ UserData:
     Name: master-a
 ---
 AvailabilityZone: zone-2
+ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP: null
 ForAPIServer: false
@@ -169,6 +171,7 @@ UserData:
     Name: master-b
 ---
 AvailabilityZone: zone-3
+ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP: null
 ForAPIServer: false
@@ -245,6 +248,7 @@ UserData:
     Name: master-c
 ---
 AvailabilityZone: zone-1
+ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP: null
 ForAPIServer: false
@@ -312,6 +316,7 @@ UserData:
     Name: node-a
 ---
 AvailabilityZone: zone-2
+ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP: null
 ForAPIServer: false
@@ -379,6 +384,7 @@ UserData:
     Name: node-b
 ---
 AvailabilityZone: zone-3
+ConfigDrive: false
 Flavor: blc.1-2
 FloatingIP: null
 ForAPIServer: false
