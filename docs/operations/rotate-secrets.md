@@ -1,3 +1,4 @@
+
 # How to rotate all secrets / credentials
 
 There are two types of credentials managed by kOps:
@@ -71,11 +72,15 @@ Promote the new keypairs to primary with:
 ```shell
 kops promote keypair all
 kops update cluster --yes
-kops rolling-update cluster --force --yes
+kops rolling-update cluster --yes
 ```
 
-As of the writing of this document, rolling-update will not necessarily identify all
-relevant nodes as needing update, so should be invoked with the `--force` flag.
+On cloud providers, such as AWS, that use kops-controller to bootstrap worker nodes, after
+the `kops update cluster --yes` step there is a temporary impediment to node scale-up.
+Instances using the new launch template will not be able to bootstrap off of old kops-controllers.
+Similarly, instances using the old launch template and which have not yet bootstrapped will not
+be able to bootstrap off of new kops-controllers. The subsequent rolling update will eventually
+replace all instances using the old launch template.
 
 #### Rollback procedure
 
@@ -89,7 +94,7 @@ To roll back this change:
   most likely by identifying the issue dates.
 * Then use `kops promote keypair` to promote each of them by keyset and ID.
 * Then use `kops update cluster --yes`
-* Then use `kops rolling-update cluster --force --yes`
+* Then use `kops rolling-update cluster --yes`
 
 ### Export and distribute new kubeconfig admin credentials
 
