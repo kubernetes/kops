@@ -695,5 +695,5 @@ func (c *NodeupModelContext) CNIConfDir() string {
 }
 
 func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
-	return c.NodeupConfig.Nvidia != nil && fi.BoolValue(c.NodeupConfig.Nvidia.Install)
+	return c.NodeupConfig.Nvidia != nil && fi.BoolValue(c.NodeupConfig.Nvidia.Enable)
 }

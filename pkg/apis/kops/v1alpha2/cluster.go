@@ -211,15 +211,16 @@ type ClusterSpec struct {
 	// SnapshotController defines the CSI Snapshot Controller configuration.
 	SnapshotController *SnapshotControllerConfig `json:"snapshotController,omitempty"`
 	// NvidiaConfiguration configures the Nvidia GPU runtime.
-	Nvidia *NvidiaConfiguration `json:"nvidia,omitempty"`
+	Nvidia *NvidiaConfig `json:"nvidia,omitempty"`
 }
 
-type NvidiaConfiguration struct {
-	// Package is the name of the nvidia driver package that will be installed.
+type NvidiaConfig struct {
+	// Package is the name of the Nvidia driver package that will be installed.
 	// Default is nvidia-kernel-common-460-server.
 	DriverPackage string `json:"package,omitempty"`
-	// Install determines if kOps will install the Nvidia GPU runtime
-	Install *bool `json:"install,omitempty"`
+	// Enable determines if kOps will install the Nvidia GPU runtime and drivers.
+	// They will only be installed on intances that has an Nvidia GPU.
+	Enable *bool `json:"install,omitempty"`
 }
 
 // ServiceAccountIssuerDiscoveryConfig configures an OIDC Issuer.

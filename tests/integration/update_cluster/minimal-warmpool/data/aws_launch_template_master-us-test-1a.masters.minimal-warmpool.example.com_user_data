@@ -253,7 +253,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-warmpool.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: Yi6r8Ti1c6EV/wa+e4hxdhUrQzk+XFIwSG1gBWrPT4E=
+NodeupConfigHash: sR2GOS2tBNui0LjwkG2LMsJzbFsToDj31Fm6FJekS6I=
 
 __EOF_KUBE_ENV
 

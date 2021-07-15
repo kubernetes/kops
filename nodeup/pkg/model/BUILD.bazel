@@ -28,6 +28,7 @@ go_library(
         "manifests.go",
         "miscutils.go",
         "ntp.go",
+        "nvidia.go",
         "packages.go",
         "protokube.go",
         "secrets.go",

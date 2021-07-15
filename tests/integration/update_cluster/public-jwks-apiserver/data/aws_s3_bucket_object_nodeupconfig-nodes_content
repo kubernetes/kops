@@ -54,7 +54,6 @@ KubeletConfig:
   nonMasqueradeCIDR: 100.64.0.0/10
   podInfraContainerImage: k8s.gcr.io/pause:3.5
   podManifestPath: /etc/kubernetes/manifests
-Nvidia: null
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml

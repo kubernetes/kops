@@ -4165,11 +4165,12 @@ spec:
                 description: NvidiaConfiguration configures the Nvidia GPU runtime.
                 properties:
                   install:
-                    description: Install determines if kOps will install the Nvidia
-                      GPU runtime
+                    description: Enable determines if kOps will install the Nvidia
+                      GPU runtime and drivers. They will only be installed on intances
+                      that has an Nvidia GPU.
                     type: boolean
                   package:
-                    description: Package is the name of the nvidia driver package
+                    description: Package is the name of the Nvidia driver package
                       that will be installed. Default is nvidia-kernel-common-460-server.
                     type: string
                 type: object

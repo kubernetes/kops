@@ -18,8 +18,10 @@ package nodetasks
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 	"syscall"
 
@@ -56,10 +58,18 @@ func (*AptSource) CheckChanges(a, e, changes *AptSource) error {
 
 func (f *AptSource) RenderLocal(t *local.LocalTarget, a, e, changes *AptSource) error {
 
-	filename := "/tmp/" + f.Name + ".gpg"
-
-	_, err := fi.DownloadURL(f.Keyring, filename, nil)
+	tmpDir, err := ioutil.TempDir("", "aptsource")
 	if err != nil {
+		return fmt.Errorf("error creating temp dir: %v", err)
+	}
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			klog.Warningf("error deleting temp dir %q: %v", tmpDir, err)
+		}
+	}()
+	filename := path.Join(tmpDir, f.Name+".gpg")
+
+	if _, err := fi.DownloadURL(f.Keyring, filename, nil); err != nil {
 		return err
 	}
 
