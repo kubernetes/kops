@@ -74,6 +74,30 @@ func SetString(target interface{}, targetPath string, newValue string) error {
 
 		}
 
+		if v.Kind() == reflect.Map && v.Type().Key().Kind() == reflect.String {
+			if v.IsNil() {
+				v.Set(reflect.MakeMap(v.Type()))
+			}
+
+			key, ok, final := targetFieldPath.MapElementFollowing(path)
+			if ok {
+				keyValue := reflect.ValueOf(key)
+				if final {
+					elemValue := reflect.New(v.Type().Elem())
+					if err := setPrimitive(elemValue.Elem(), newValue); err != nil {
+						return fmt.Errorf("cannot set field %q: %v", targetFieldPath, err)
+					}
+					v.SetMapIndex(keyValue, elemValue.Elem())
+					fieldSet = true
+					return SkipReflection
+				} else if !v.MapIndex(keyValue).IsValid() {
+					// Create the map key
+					v.SetMapIndex(keyValue, reflect.Zero(v.Type().Elem()))
+				}
+			}
+			return nil
+		}
+
 		return nil
 	}
 

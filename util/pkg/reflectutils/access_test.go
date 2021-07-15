@@ -66,8 +66,8 @@ type fakeObjectPolicy struct {
 }
 
 type fakeObjectResources struct {
-	Limits   map[string]int `json:"limits"`
-	Requests map[string]int `json:"requests"`
+	Limits   map[string]int  `json:"limits"`
+	Requests map[string]*int `json:"requests"`
 }
 
 type fakeObjectStatus struct {
@@ -169,6 +169,27 @@ func TestSet(t *testing.T) {
 			Expected: "{ 'spec': { 'containers': [ { 'enumSlice': [ 'ABC', 'DEF', 'GHI', 'JKL' ] } ] } }",
 			Path:     "spec.containers[0].enumSlice",
 			Value:    "GHI,JKL",
+		},
+		{
+			Name:     "create map",
+			Input:    "{ 'spec': { 'containers': [ {} ] } }",
+			Expected: "{ 'spec': { 'containers': [ { 'resources': { 'limits': { 'ABC': 3 } } } ] } }",
+			Path:     "spec.containers[0].resources.limits.ABC",
+			Value:    "3",
+		},
+		{
+			Name:     "create map element",
+			Input:    "{ 'spec': { 'containers': [ { 'resources': { 'limits': { 'ABC': 3 } } } ] } }",
+			Expected: "{ 'spec': { 'containers': [ { 'resources': { 'limits': { 'ABC': 3, 'DEF': 5 } } } ] } }",
+			Path:     "spec.containers[0].resources.limits.DEF",
+			Value:    "5",
+		},
+		{
+			Name:     "create map element pointer",
+			Input:    "{ 'spec': { 'containers': [ { 'resources': { 'requests': { 'ABC': 3 } } } ] } }",
+			Expected: "{ 'spec': { 'containers': [ { 'resources': { 'requests': { 'ABC': 3, 'DEF': 5 } } } ] } }",
+			Path:     "spec.containers[0].resources.requests.DEF",
+			Value:    "5",
 		},
 		// Not sure if we should do this...
 		// {
