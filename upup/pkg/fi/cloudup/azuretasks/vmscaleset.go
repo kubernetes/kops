@@ -116,6 +116,7 @@ type VMScaleSet struct {
 	// CustomData is the user data configuration
 	CustomData  fi.Resource
 	Tags        map[string]*string
+	Zones       []string
 	PrincipalID *string
 }
 
@@ -230,6 +231,9 @@ func (s *VMScaleSet) Find(c *fi.Context) (*VMScaleSet, error) {
 		vmss.LoadBalancer = &LoadBalancer{
 			Name: to.StringPtr(loadBalancerID.LoadBalancerName),
 		}
+	}
+	if found.Zones != nil {
+		vmss.Zones = *found.Zones
 	}
 	return vmss, nil
 }
@@ -367,7 +371,8 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 		Identity: &compute.VirtualMachineScaleSetIdentity{
 			Type: compute.ResourceIdentityTypeSystemAssigned,
 		},
-		Tags: e.Tags,
+		Tags:  e.Tags,
+		Zones: &e.Zones,
 	}
 
 	result, err := t.Cloud.VMScaleSet().CreateOrUpdate(

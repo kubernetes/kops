@@ -61,3 +61,44 @@ func TestZoneToLocation(t *testing.T) {
 		})
 	}
 }
+
+func TestZoneToAvailabilityZoneNumber(t *testing.T) {
+	testCases := []struct {
+		zone     string
+		success  bool
+		azNumber string
+	}{
+		{
+			zone:     "eastus-1",
+			success:  true,
+			azNumber: "1",
+		},
+		{
+			zone:    "eastus",
+			success: false,
+		},
+		{
+			zone:    "eastus-1-2",
+			success: false,
+		},
+	}
+
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("test case %d", i), func(t *testing.T) {
+			azNum, err := ZoneToAvailabilityZoneNumber(tc.zone)
+			if !tc.success {
+				if err == nil {
+					t.Fatalf("unexpected success")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if azNum != tc.azNumber {
+				t.Errorf("expected %s but got %s", tc.azNumber, azNum)
+			}
+		})
+	}
+}
