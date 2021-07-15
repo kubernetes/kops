@@ -140,6 +140,9 @@ type NewClusterOptions struct {
 	// APISSLCertificate is the SSL certificate to use for the API loadbalancer.
 	// Currently only supported in AWS.
 	APISSLCertificate string
+
+	// ContainerRuntime decides which CRI implementation to use.
+	ContainerRuntime string
 }
 
 func (o *NewClusterOptions) InitDefaults() {
@@ -291,6 +294,8 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, err
 	}
 
+	setupRuntimes(opt, &cluster)
+
 	instanceGroups := append([]*api.InstanceGroup(nil), masters...)
 	instanceGroups = append(instanceGroups, apiservers...)
 	instanceGroups = append(instanceGroups, nodes...)
@@ -302,6 +307,20 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		Channel:        channel,
 	}
 	return &result, nil
+}
+
+func setupRuntimes(opt *NewClusterOptions, cluster *api.Cluster) {
+	if opt.ContainerRuntime != "" {
+		cluster.Spec.ContainerRuntime = opt.ContainerRuntime
+	}
+	if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+		if opt.ContainerRuntime == "" || opt.ContainerRuntime == "containerd" {
+			cluster.Spec.Nvidia = &api.NvidiaConfig{
+				Enable: fi.Bool(true),
+			}
+		}
+
+	}
 }
 
 func setupVPC(opt *NewClusterOptions, cluster *api.Cluster) error {

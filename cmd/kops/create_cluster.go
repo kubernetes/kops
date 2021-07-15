@@ -63,7 +63,6 @@ type CreateClusterOptions struct {
 	MasterSize           string
 	MasterVolumeSize     int32
 	NodeVolumeSize       int32
-	ContainerRuntime     string
 	OutDir               string
 	Image                string
 	NodeImage            string
@@ -593,10 +592,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 
 	if c.DNSZone != "" {
 		cluster.Spec.DNSZone = c.DNSZone
-	}
-
-	if c.ContainerRuntime != "" {
-		cluster.Spec.ContainerRuntime = c.ContainerRuntime
 	}
 
 	if c.NetworkCIDR != "" {
