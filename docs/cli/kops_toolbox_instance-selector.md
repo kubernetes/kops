@@ -3,26 +3,24 @@
 
 ## kops toolbox instance-selector
 
-Generate on-demand or spot instance-group specs by providing resource specs like vcpus and memory.
+Generate instance-group specs by providing resource specs such as vcpus and memory.
 
 ### Synopsis
 
-Generate AWS EC2 on-demand or spot instance-groups by providing resource specs like vcpus and memory rather than instance types.
+Generate AWS EC2 instance groups by providing resource specs, such as vcpus and memory, rather than instance types.
 
 ```
-kops toolbox instance-selector [flags]
+kops toolbox instance-selector INSTANCE_GROUP [flags]
 ```
 
 ### Examples
 
 ```
-  kops toolbox instance-selector <ig name> [flags ...]
-  
-  ## Create a best-practices spot instance-group using a MixInstancesPolicy and Capacity-Optimized spot allocation strategy
-  ## --flexible defaults to a 1:2 vcpus to memory ratio and 4 vcpus
+  ## Create a spot instance group using a MixInstancesPolicy and Capacity-Optimized spot allocation strategy.
+  ## --flexible defaults to a 1:2 vcpus to memory ratio and 4 vcpus.
   kops toolbox instance-selector my-spot-mig --usage-class spot --flexible
   
-  ## Create a best-practices on-demand instance-group with custom vcpus and memory range filters
+  ## Create an on-demand instance group with custom vcpu and memory range filters.
   kops toolbox instance-selector ondemand-ig --vcpus-min=2 --vcpus-max=4 --memory-min 2gb --memory-max 4gb
 ```
 
@@ -90,5 +88,5 @@ kops toolbox instance-selector [flags]
 
 ### SEE ALSO
 
-* [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands.
+* [kops toolbox](kops_toolbox.md)	 - Miscellaneous, infrequently used commands.
 

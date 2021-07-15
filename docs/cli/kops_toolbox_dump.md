@@ -10,7 +10,7 @@ Dump cluster information
 Displays cluster information.  Includes information about cloud and Kubernetes resources.
 
 ```
-kops toolbox dump [flags]
+kops toolbox dump [CLUSTER] [flags]
 ```
 
 ### Examples
@@ -23,11 +23,11 @@ kops toolbox dump [flags]
 ### Options
 
 ```
-      --dir string           target directory; if specified will collect logs and other information.
+      --dir string           Target directory; if specified will collect logs and other information.
   -h, --help                 help for dump
-  -o, --output string        output format.  One of: yaml, json (default "yaml")
-      --private-key string   private key to use for SSH acccess to instances (default "~/.ssh/id_rsa")
-      --ssh-user string      the remote user for SSH access to instances (default "ubuntu")
+  -o, --output string        Output format.  One of json or yaml (default "yaml")
+      --private-key string   File containing private key to use for SSH access to instances (default "~/.ssh/id_rsa")
+      --ssh-user string      The remote user for SSH access to instances (default "ubuntu")
 ```
 
 ### Options inherited from parent commands
@@ -53,5 +53,5 @@ kops toolbox dump [flags]
 
 ### SEE ALSO
 
-* [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands.
+* [kops toolbox](kops_toolbox.md)	 - Miscellaneous, infrequently used commands.
 
