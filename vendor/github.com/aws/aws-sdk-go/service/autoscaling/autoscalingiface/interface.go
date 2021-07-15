@@ -268,6 +268,10 @@ type AutoScalingAPI interface {
 	ExitStandbyWithContext(aws.Context, *autoscaling.ExitStandbyInput, ...request.Option) (*autoscaling.ExitStandbyOutput, error)
 	ExitStandbyRequest(*autoscaling.ExitStandbyInput) (*request.Request, *autoscaling.ExitStandbyOutput)
 
+	GetPredictiveScalingForecast(*autoscaling.GetPredictiveScalingForecastInput) (*autoscaling.GetPredictiveScalingForecastOutput, error)
+	GetPredictiveScalingForecastWithContext(aws.Context, *autoscaling.GetPredictiveScalingForecastInput, ...request.Option) (*autoscaling.GetPredictiveScalingForecastOutput, error)
+	GetPredictiveScalingForecastRequest(*autoscaling.GetPredictiveScalingForecastInput) (*request.Request, *autoscaling.GetPredictiveScalingForecastOutput)
+
 	PutLifecycleHook(*autoscaling.PutLifecycleHookInput) (*autoscaling.PutLifecycleHookOutput, error)
 	PutLifecycleHookWithContext(aws.Context, *autoscaling.PutLifecycleHookInput, ...request.Option) (*autoscaling.PutLifecycleHookOutput, error)
 	PutLifecycleHookRequest(*autoscaling.PutLifecycleHookInput) (*request.Request, *autoscaling.PutLifecycleHookOutput)
