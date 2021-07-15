@@ -299,8 +299,11 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 		}
 
 		for _, member := range allMembers {
-			node := member.Node
+			if member.Status == cloudinstances.CloudInstanceStatusDetached {
+				continue
+			}
 
+			node := member.Node
 			if node == nil {
 				nodeExpectedToJoin := true
 				if cloudGroup.InstanceGroup.Spec.Role == kops.InstanceGroupRoleBastion {
@@ -308,10 +311,6 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 					nodeExpectedToJoin = false
 				}
 				if member.State == cloudinstances.WarmPool {
-					nodeExpectedToJoin = false
-				}
-
-				if member.Status == cloudinstances.CloudInstanceStatusDetached {
 					nodeExpectedToJoin = false
 				}
 
