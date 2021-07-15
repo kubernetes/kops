@@ -34,7 +34,7 @@ metadata:
     k8s-addon: kubernetes-dashboard.addons.k8s.io
     k8s-app: kubernetes-dashboard
     version: v1.6.0
-    kubernetes.io/cluster-service: "true" 
+    kubernetes.io/cluster-service: "true"
   name: kubernetes-dashboard
   namespace: kube-system
 spec:
