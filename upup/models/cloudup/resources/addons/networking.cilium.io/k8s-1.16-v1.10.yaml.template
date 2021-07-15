@@ -83,10 +83,16 @@ data:
   operator-prometheus-serve-addr: ":6942"
   enable-metrics: "true"
   {{ end }}
+
   {{ if .EnableEncryption }}
+  {{ if eq .EncryptionType "ipsec" }}
   enable-ipsec: "true"
   ipsec-key-file: /etc/ipsec/keys
+  {{ else if eq .EncryptionType "wireguard"  }}
+  enable-wireguard: "true"
   {{ end }}
+  {{ end }}
+
   # Enable IPv4 addressing. If enabled, all endpoints are allocated an IPv4
   # address.
   enable-ipv4: "{{ not IsIPv6Only }}"

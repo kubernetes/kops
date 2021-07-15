@@ -343,6 +343,9 @@ type CiliumNetworkingSpec struct {
 	// EnableEncryption enables Cilium Encryption.
 	// Default: false
 	EnableEncryption bool `json:"enableEncryption,omitempty"`
+	// EncryptionType specifies Cilium Encryption method ("ipsec", "wireguard").
+	// Default: ipsec
+	EncryptionType string `json:"encryptionType,omitempty"`
 	// EnvoyLog is not implemented and may be removed in the future.
 	// Setting this has no effect.
 	EnvoyLog string `json:"envoyLog,omitempty"`
