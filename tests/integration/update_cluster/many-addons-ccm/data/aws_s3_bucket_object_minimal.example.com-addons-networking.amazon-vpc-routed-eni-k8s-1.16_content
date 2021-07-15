@@ -1,0 +1,230 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: aws-node
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: aws-node
+subjects:
+- kind: ServiceAccount
+  name: aws-node
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: aws-node
+rules:
+- apiGroups:
+  - crd.k8s.amazonaws.com
+  resources:
+  - eniconfigs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - namespaces
+  verbs:
+  - list
+  - watch
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+  - watch
+  - get
+  - update
+- apiGroups:
+  - extensions
+  - apps
+  resources:
+  - '*'
+  verbs:
+  - list
+  - watch
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: eniconfigs.crd.k8s.amazonaws.com
+spec:
+  group: crd.k8s.amazonaws.com
+  names:
+    kind: ENIConfig
+    plural: eniconfigs
+    singular: eniconfig
+  scope: Cluster
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
+    app.kubernetes.io/managed-by: kops
+    k8s-app: aws-node
+    role.kubernetes.io/networking: "1"
+  name: aws-node
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: aws-node
+  template:
+    metadata:
+      labels:
+        k8s-app: aws-node
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
+              - key: kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+                - arm64
+              - key: eks.amazonaws.com/compute-type
+                operator: NotIn
+                values:
+                - fargate
+      containers:
+      - env:
+        - name: AWS_VPC_K8S_CNI_CONFIGURE_RPFILTER
+          value: "false"
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: CLUSTER_NAME
+          value: minimal.example.com
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.8.0
+        imagePullPolicy: Always
+        livenessProbe:
+          exec:
+            command:
+            - /app/grpc-health-probe
+            - -addr=:50051
+          initialDelaySeconds: 60
+        name: aws-node
+        ports:
+        - containerPort: 61678
+          name: metrics
+        readinessProbe:
+          exec:
+            command:
+            - /app/grpc-health-probe
+            - -addr=:50051
+          initialDelaySeconds: 1
+        resources:
+          requests:
+            cpu: 10m
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+        volumeMounts:
+        - mountPath: /host/opt/cni/bin
+          name: cni-bin-dir
+        - mountPath: /host/etc/cni/net.d
+          name: cni-net-dir
+        - mountPath: /host/var/log/aws-routed-eni
+          name: log-dir
+        - mountPath: /var/run/aws-node
+          name: run-dir
+        - mountPath: /var/run/dockershim.sock
+          name: dockershim
+        - mountPath: /run/xtables.lock
+          name: xtables-lock
+      hostNetwork: true
+      initContainers:
+      - env:
+        - name: DISABLE_TCP_EARLY_DEMUX
+          value: "false"
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.8.0
+        imagePullPolicy: Always
+        name: aws-vpc-cni-init
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /host/opt/cni/bin
+          name: cni-bin-dir
+      priorityClassName: system-node-critical
+      serviceAccountName: aws-node
+      terminationGracePeriodSeconds: 10
+      tolerations:
+      - operator: Exists
+      volumes:
+      - hostPath:
+          path: /opt/cni/bin
+        name: cni-bin-dir
+      - hostPath:
+          path: /etc/cni/net.d
+        name: cni-net-dir
+      - hostPath:
+          path: /run/containerd/containerd.sock
+        name: dockershim
+      - hostPath:
+          path: /run/xtables.lock
+        name: xtables-lock
+      - hostPath:
+          path: /var/log/aws-routed-eni
+          type: DirectoryOrCreate
+        name: log-dir
+      - hostPath:
+          path: /var/run/aws-node
+          type: DirectoryOrCreate
+        name: run-dir
+  updateStrategy:
+    type: OnDelete
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: aws-node
+  namespace: kube-system

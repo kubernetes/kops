@@ -444,6 +444,53 @@ func TestManyAddons(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+func TestManyAddonsCCMIRSA(t *testing.T) {
+	featureflag.ParseFlags("+UseServiceAccountIAM,+EnableExternalCloudController")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-UseServiceAccountIAM,-EnableExternalCloudController")
+	}
+	defer unsetFeatureFlags()
+
+	newIntegrationTest("minimal.example.com", "many-addons-ccm-irsa").
+		withOIDCDiscovery().
+		withServiceAccountRole("dns-controller.kube-system", true).
+		withServiceAccountRole("aws-load-balancer-controller.kube-system", true).
+		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
+		withServiceAccountRole("cluster-autoscaler.kube-system", true).
+		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true).
+		withAddons(
+			"aws-ebs-csi-driver.addons.k8s.io-k8s-1.17",
+			"aws-load-balancer-controller.addons.k8s.io-k8s-1.9",
+			"certmanager.io-k8s-1.16",
+			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
+			"networking.amazon-vpc-routed-eni-k8s-1.16",
+			"node-termination-handler.aws-k8s-1.11",
+			"snapshot-controller.addons.k8s.io-k8s-1.20",
+			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
+		).
+		runTestTerraformAWS(t)
+}
+
+func TestCCM(t *testing.T) {
+	featureflag.ParseFlags("+EnableExternalCloudController")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-EnableExternalCloudController")
+	}
+	defer unsetFeatureFlags()
+	newIntegrationTest("minimal.example.com", "many-addons-ccm").
+		withAddons(
+			"aws-ebs-csi-driver.addons.k8s.io-k8s-1.17",
+			"aws-load-balancer-controller.addons.k8s.io-k8s-1.9",
+			"certmanager.io-k8s-1.16",
+			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
+			"networking.amazon-vpc-routed-eni-k8s-1.16",
+			"node-termination-handler.aws-k8s-1.11",
+			"snapshot-controller.addons.k8s.io-k8s-1.20",
+			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
+		).
+		runTestTerraformAWS(t)
+}
+
 // TestSharedSubnet runs the test on a configuration with a shared subnet (and VPC)
 func TestSharedSubnet(t *testing.T) {
 	newIntegrationTest("sharedsubnet.example.com", "shared_subnet").

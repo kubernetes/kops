@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/awsmodel"
 	"k8s.io/kops/pkg/model/components/addonmanifests"
+	awscloudcontrollermanager "k8s.io/kops/pkg/model/components/addonmanifests/awscloudcontroller"
 	"k8s.io/kops/pkg/model/components/addonmanifests/awsebscsidriver"
 	"k8s.io/kops/pkg/model/components/addonmanifests/awsloadbalancercontroller"
 	"k8s.io/kops/pkg/model/components/addonmanifests/clusterautoscaler"
@@ -899,6 +900,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 					Selector: map[string]string{"k8s-addon": key},
 					Id:       id,
 				})
+			}
+			if b.UseServiceAccountIAM() {
+				serviceAccountRoles = append(serviceAccountRoles, &awscloudcontrollermanager.ServiceAccount{})
 			}
 		}
 		if b.Cluster.Spec.CloudConfig != nil && b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {

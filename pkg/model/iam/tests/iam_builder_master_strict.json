@@ -2,6 +2,27 @@
   "Statement": [
     {
       "Action": [
+        "ec2:DescribeVolumes"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Action": "ec2:AttachVolume",
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/k8s.io/role/master": "1"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Action": [
         "s3:Get*"
       ],
       "Effect": "Allow",
@@ -17,6 +38,42 @@
       "Effect": "Allow",
       "Resource": [
         "arn:aws:s3:::kops-tests"
+      ]
+    },
+    {
+      "Action": "ec2:CreateTags",
+      "Condition": {
+        "StringEquals": {
+          "ec2:CreateAction": [
+            "CreateVolume",
+            "CreateSnapshot"
+          ]
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws:ec2:*:*:volume/*",
+        "arn:aws:ec2:*:*:snapshot/*"
+      ]
+    },
+    {
+      "Action": [
+        "elasticloadbalancing:CreateLoadBalancer",
+        "elasticloadbalancing:CreateLoadBalancerPolicy",
+        "elasticloadbalancing:CreateLoadBalancerListeners",
+        "ec2:CreateSecurityGroup",
+        "ec2:CreateVolume",
+        "elasticloadbalancing:CreateListener",
+        "elasticloadbalancing:CreateTargetGroup"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/KubernetesCluster": "iam-builder-test.k8s.local"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "*"
       ]
     },
     {
@@ -65,14 +122,11 @@
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeLaunchConfigurations",
-        "autoscaling:DescribeLifecycleHooks",
         "autoscaling:DescribeTags",
         "ec2:CreateSecurityGroup",
         "ec2:CreateTags",
         "ec2:DescribeAccountAttributes",
         "ec2:DescribeInstances",
-        "ec2:DescribeInternetGateways",
-        "ec2:DescribeLaunchTemplateVersions",
         "ec2:DescribeRegions",
         "ec2:DescribeRouteTables",
         "ec2:DescribeSecurityGroups",
@@ -81,36 +135,12 @@
         "ec2:DescribeVolumes",
         "ec2:DescribeVolumesModifications",
         "ec2:DescribeVpcs",
-        "ec2:ModifyInstanceAttribute",
-        "elasticloadbalancing:AddTags",
-        "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
-        "elasticloadbalancing:AttachLoadBalancerToSubnets",
-        "elasticloadbalancing:ConfigureHealthCheck",
-        "elasticloadbalancing:CreateListener",
-        "elasticloadbalancing:CreateLoadBalancer",
-        "elasticloadbalancing:CreateLoadBalancerListeners",
-        "elasticloadbalancing:CreateLoadBalancerPolicy",
-        "elasticloadbalancing:CreateTargetGroup",
-        "elasticloadbalancing:DeleteListener",
-        "elasticloadbalancing:DeleteLoadBalancer",
-        "elasticloadbalancing:DeleteLoadBalancerListeners",
-        "elasticloadbalancing:DeleteTargetGroup",
-        "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
-        "elasticloadbalancing:DeregisterTargets",
         "elasticloadbalancing:DescribeListeners",
         "elasticloadbalancing:DescribeLoadBalancerAttributes",
         "elasticloadbalancing:DescribeLoadBalancerPolicies",
         "elasticloadbalancing:DescribeLoadBalancers",
         "elasticloadbalancing:DescribeTargetGroups",
         "elasticloadbalancing:DescribeTargetHealth",
-        "elasticloadbalancing:DetachLoadBalancerFromSubnets",
-        "elasticloadbalancing:ModifyListener",
-        "elasticloadbalancing:ModifyLoadBalancerAttributes",
-        "elasticloadbalancing:ModifyTargetGroup",
-        "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
-        "elasticloadbalancing:RegisterTargets",
-        "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
-        "elasticloadbalancing:SetLoadBalancerPoliciesOfListener",
         "iam:GetServerCertificate",
         "iam:ListServerCertificates",
         "kms:CreateGrant",
@@ -126,8 +156,6 @@
     },
     {
       "Action": [
-        "autoscaling:CompleteLifecycleAction",
-        "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:SetDesiredCapacity",
         "autoscaling:TerminateInstanceInAutoScalingGroup",
         "ec2:AttachVolume",
@@ -139,7 +167,25 @@
         "ec2:DetachVolume",
         "ec2:ModifyInstanceAttribute",
         "ec2:ModifyVolume",
-        "ec2:RevokeSecurityGroupIngress"
+        "ec2:RevokeSecurityGroupIngress",
+        "elasticloadbalancing:AddTags",
+        "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
+        "elasticloadbalancing:AttachLoadBalancerToSubnets",
+        "elasticloadbalancing:ConfigureHealthCheck",
+        "elasticloadbalancing:DeleteListener",
+        "elasticloadbalancing:DeleteLoadBalancer",
+        "elasticloadbalancing:DeleteLoadBalancerListeners",
+        "elasticloadbalancing:DeleteTargetGroup",
+        "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+        "elasticloadbalancing:DeregisterTargets",
+        "elasticloadbalancing:DetachLoadBalancerFromSubnets",
+        "elasticloadbalancing:ModifyListener",
+        "elasticloadbalancing:ModifyLoadBalancerAttributes",
+        "elasticloadbalancing:ModifyTargetGroup",
+        "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+        "elasticloadbalancing:RegisterTargets",
+        "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
+        "elasticloadbalancing:SetLoadBalancerPoliciesOfListener"
       ],
       "Condition": {
         "StringEquals": {

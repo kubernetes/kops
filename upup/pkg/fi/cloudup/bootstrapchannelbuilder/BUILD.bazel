@@ -17,6 +17,7 @@ go_library(
         "//pkg/model:go_default_library",
         "//pkg/model/awsmodel:go_default_library",
         "//pkg/model/components/addonmanifests:go_default_library",
+        "//pkg/model/components/addonmanifests/awscloudcontroller:go_default_library",
         "//pkg/model/components/addonmanifests/awsebscsidriver:go_default_library",
         "//pkg/model/components/addonmanifests/awsloadbalancercontroller:go_default_library",
         "//pkg/model/components/addonmanifests/clusterautoscaler:go_default_library",

@@ -1,0 +1,226 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: aws-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: aws-cloud-controller.addons.k8s.io
+    k8s-app: aws-cloud-controller-manager
+  name: aws-cloud-controller-manager
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: aws-cloud-controller-manager
+  template:
+    metadata:
+      labels:
+        k8s-app: aws-cloud-controller-manager
+    spec:
+      containers:
+      - args:
+        - --v=2
+        - --cloud-provider=aws
+        - --use-service-account-credentials=true
+        env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: 127.0.0.1
+        - name: AWS_ROLE_ARN
+          value: arn:aws-test:iam::123456789012:role/aws-cloud-controller-manager.kube-system.sa.minimal.example.com
+        - name: AWS_WEB_IDENTITY_TOKEN_FILE
+          value: /var/run/secrets/amazonaws.com/token
+        image: gcr.io/k8s-staging-provider-aws/cloud-controller-manager:latest
+        imagePullPolicy: IfNotPresent
+        name: aws-cloud-controller-manager
+        resources:
+          requests:
+            cpu: 200m
+        volumeMounts:
+        - mountPath: /var/run/secrets/amazonaws.com/
+          name: token-amazonaws-com
+          readOnly: true
+      hostNetwork: true
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      priorityClassName: system-cluster-critical
+      securityContext:
+        fsGroup: 10001
+      serviceAccountName: aws-cloud-controller-manager
+      tolerations:
+      - effect: NoSchedule
+        key: node.cloudprovider.kubernetes.io/uninitialized
+        value: "true"
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      volumes:
+      - name: token-amazonaws-com
+        projected:
+          defaultMode: 420
+          sources:
+          - serviceAccountToken:
+              audience: amazonaws.com
+              expirationSeconds: 86400
+              path: token
+  updateStrategy:
+    type: RollingUpdate
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: aws-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: aws-cloud-controller.addons.k8s.io
+  name: aws-cloud-controller-manager
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: aws-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: aws-cloud-controller.addons.k8s.io
+  name: cloud-controller-manager:apiserver-authentication-reader
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+- apiGroup: ""
+  kind: ServiceAccount
+  name: aws-cloud-controller-manager
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: aws-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: aws-cloud-controller.addons.k8s.io
+  name: system:cloud-controller-manager
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services/status
+  verbs:
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumes
+  verbs:
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resourceNames:
+  - node-controller
+  - service-controller
+  - route-controller
+  resources:
+  - serviceaccounts/token
+  verbs:
+  - create
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: aws-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: aws-cloud-controller.addons.k8s.io
+  name: system:cloud-controller-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:cloud-controller-manager
+subjects:
+- apiGroup: ""
+  kind: ServiceAccount
+  name: aws-cloud-controller-manager
+  namespace: kube-system

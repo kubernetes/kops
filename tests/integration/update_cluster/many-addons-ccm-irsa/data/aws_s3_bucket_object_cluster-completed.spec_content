@@ -1,0 +1,222 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2016-12-10T22:42:27Z"
+  name: minimal.example.com
+spec:
+  api:
+    dns: {}
+  authorization:
+    alwaysAllow: {}
+  awsLoadBalancerController:
+    enabled: true
+  certManager:
+    enabled: true
+  channel: stable
+  cloudConfig:
+    awsEBSCSIDriver:
+      enabled: true
+      version: v1.1.0
+    manageStorageClasses: true
+  cloudControllerManager: {}
+  cloudProvider: aws
+  clusterAutoscaler:
+    balanceSimilarNodeGroups: false
+    enabled: true
+    expander: random
+    image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.21.0
+    newPodScaleUpDelay: 0s
+    scaleDownDelayAfterAdd: 10m0s
+    scaleDownUtilizationThreshold: "0.5"
+    skipNodesWithLocalStorage: true
+    skipNodesWithSystemPods: true
+  clusterDNSDomain: cluster.local
+  configBase: memfs://clusters.example.com/minimal.example.com
+  configStore: memfs://clusters.example.com/minimal.example.com
+  containerRuntime: containerd
+  containerd:
+    logLevel: info
+    version: 1.4.6
+  dnsZone: Z1AFAKE1ZON3YO
+  docker:
+    skipInstall: true
+  etcdClusters:
+  - backups:
+      backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd/main
+    enableEtcdTLS: true
+    enableTLSAuth: true
+    etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    name: main
+    provider: Manager
+    version: 3.4.13
+  - backups:
+      backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd/events
+    enableEtcdTLS: true
+    enableTLSAuth: true
+    etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    name: events
+    provider: Manager
+    version: 3.4.13
+  iam:
+    legacy: false
+  keyStore: memfs://clusters.example.com/minimal.example.com/pki
+  kubeAPIServer:
+    allowPrivileged: true
+    anonymousAuth: false
+    apiAudiences:
+    - kubernetes.svc.default
+    apiServerCount: 1
+    authorizationMode: AlwaysAllow
+    bindAddress: 0.0.0.0
+    cloudProvider: external
+    enableAdmissionPlugins:
+    - NamespaceLifecycle
+    - LimitRanger
+    - ServiceAccount
+    - PersistentVolumeLabel
+    - DefaultStorageClass
+    - DefaultTolerationSeconds
+    - MutatingAdmissionWebhook
+    - ValidatingAdmissionWebhook
+    - NodeRestriction
+    - ResourceQuota
+    etcdServers:
+    - https://127.0.0.1:4001
+    etcdServersOverrides:
+    - /events#https://127.0.0.1:4002
+    image: k8s.gcr.io/kube-apiserver:v1.21.0
+    kubeletPreferredAddressTypes:
+    - InternalIP
+    - Hostname
+    - ExternalIP
+    logLevel: 2
+    requestheaderAllowedNames:
+    - aggregator
+    requestheaderExtraHeaderPrefixes:
+    - X-Remote-Extra-
+    requestheaderGroupHeaders:
+    - X-Remote-Group
+    requestheaderUsernameHeaders:
+    - X-Remote-User
+    securePort: 443
+    serviceAccountIssuer: https://discovery.example.com/minimal.example.com
+    serviceAccountJWKSURI: https://discovery.example.com/minimal.example.com/openid/v1/jwks
+    serviceClusterIPRange: 172.20.0.0/19
+    storageBackend: etcd3
+  kubeControllerManager:
+    allocateNodeCIDRs: true
+    attachDetachReconcileSyncPeriod: 1m0s
+    cloudProvider: external
+    clusterCIDR: 172.20.128.0/17
+    clusterName: minimal.example.com
+    configureCloudRoutes: false
+    featureGates:
+      CSIMigrationAWS: "true"
+    image: k8s.gcr.io/kube-controller-manager:v1.21.0
+    leaderElection:
+      leaderElect: true
+    logLevel: 2
+    useServiceAccountCredentials: true
+  kubeDNS:
+    cacheMaxConcurrent: 150
+    cacheMaxSize: 1000
+    cpuRequest: 100m
+    domain: cluster.local
+    memoryLimit: 170Mi
+    memoryRequest: 70Mi
+    nodeLocalDNS:
+      cpuRequest: 25m
+      enabled: false
+      memoryRequest: 5Mi
+    provider: CoreDNS
+    replicas: 2
+    serverIP: 172.20.0.10
+  kubeProxy:
+    cpuRequest: 100m
+    hostnameOverride: '@aws'
+    image: k8s.gcr.io/kube-proxy:v1.21.0
+    logLevel: 2
+  kubeScheduler:
+    image: k8s.gcr.io/kube-scheduler:v1.21.0
+    leaderElection:
+      leaderElect: true
+    logLevel: 2
+  kubelet:
+    anonymousAuth: false
+    cgroupDriver: systemd
+    cgroupRoot: /
+    cloudProvider: external
+    clusterDNS: 172.20.0.10
+    clusterDomain: cluster.local
+    enableDebuggingHandlers: true
+    evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    hostnameOverride: '@aws'
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
+    logLevel: 2
+    networkPluginName: cni
+    nonMasqueradeCIDR: 172.20.0.0/16
+    podManifestPath: /etc/kubernetes/manifests
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: 1.21.0
+  masterInternalName: api.internal.minimal.example.com
+  masterKubelet:
+    anonymousAuth: false
+    cgroupDriver: systemd
+    cgroupRoot: /
+    cloudProvider: external
+    clusterDNS: 172.20.0.10
+    clusterDomain: cluster.local
+    enableDebuggingHandlers: true
+    evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    hostnameOverride: '@aws'
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
+    logLevel: 2
+    networkPluginName: cni
+    nonMasqueradeCIDR: 172.20.0.0/16
+    podManifestPath: /etc/kubernetes/manifests
+    registerSchedulable: false
+  masterPublicName: api.minimal.example.com
+  networkCIDR: 172.20.0.0/16
+  networking:
+    amazonvpc: {}
+  nodeTerminationHandler:
+    cpuRequest: 50m
+    enableSQSTerminationDraining: false
+    enableScheduledEventDraining: false
+    enableSpotInterruptionDraining: true
+    enabled: true
+    managedASGTag: aws-node-termination-handler/managed
+    memoryRequest: 64Mi
+    prometheusEnable: false
+  nonMasqueradeCIDR: 172.20.0.0/16
+  podCIDR: 172.20.128.0/17
+  secretStore: memfs://clusters.example.com/minimal.example.com/secrets
+  serviceAccountIssuerDiscovery:
+    discoveryStore: memfs://discovery.example.com/minimal.example.com
+    enableAWSOIDCProvider: true
+  serviceClusterIPRange: 172.20.0.0/19
+  snapshotController:
+    enabled: true
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-test-1a
+    type: Public
+    zone: us-test-1a
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public

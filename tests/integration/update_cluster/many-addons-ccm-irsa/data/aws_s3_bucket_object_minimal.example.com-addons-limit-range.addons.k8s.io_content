@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: LimitRange
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: limit-range.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: limit-range.addons.k8s.io
+  name: limits
+  namespace: default
+spec:
+  limits:
+  - defaultRequest:
+      cpu: 100m
+    type: Container

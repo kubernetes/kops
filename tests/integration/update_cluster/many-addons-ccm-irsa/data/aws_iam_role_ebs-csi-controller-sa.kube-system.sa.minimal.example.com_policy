@@ -1,0 +1,17 @@
+{
+  "Statement": [
+    {
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "discovery.example.com/minimal.example.com:sub": "system:serviceaccount:kube-system:ebs-csi-controller-sa"
+        }
+      },
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::123456789012:oidc-provider/discovery.example.com/minimal.example.com"
+      }
+    }
+  ],
+  "Version": "2012-10-17"
+}

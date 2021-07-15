@@ -11,6 +11,7 @@ go_library(
         "//pkg/featureflag:go_default_library",
         "//pkg/kubemanifest:go_default_library",
         "//pkg/model:go_default_library",
+        "//pkg/model/components/addonmanifests/awscloudcontroller:go_default_library",
         "//pkg/model/components/addonmanifests/awsebscsidriver:go_default_library",
         "//pkg/model/components/addonmanifests/awsloadbalancercontroller:go_default_library",
         "//pkg/model/components/addonmanifests/clusterautoscaler:go_default_library",

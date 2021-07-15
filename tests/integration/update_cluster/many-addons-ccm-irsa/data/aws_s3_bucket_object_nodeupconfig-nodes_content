@@ -1,0 +1,79 @@
+Assets:
+  amd64:
+  - 681c81b7934ae2bf38b9f12d891683972d1fbbf6d7d97e50940a47b139d41b35@https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubelet
+  - 9f74f2fa7ee32ad07e17211725992248470310ca1988214518806b39b1dad9f0@https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl
+  - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
+  - 6ae4763598c9583f8b50605f19d6c7e9ef93c216706465e73dfc84ee6b63a238@https://github.com/containerd/containerd/releases/download/v1.4.6/cri-containerd-cni-1.4.6-linux-amd64.tar.gz
+  arm64:
+  - 17832b192be5ea314714f7e16efd5e5f65347974bbbf41def6b02f68931380c4@https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/arm64/kubelet
+  - a4dd7100f547a40d3e2f83850d0bab75c6ea5eb553f0a80adcf73155bef1fd0d@https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/arm64/kubectl
+  - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
+  - be8c9a5a06ebec8fb1d36e867cd00fb5777746a9812a0cae2966778ff899c525@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.7.tgz
+CAs:
+  kubernetes-ca: |
+    -----BEGIN CERTIFICATE-----
+    MIIBaDCCARKgAwIBAgIMFoq6Pex4lTCM8fOIMA0GCSqGSIb3DQEBCwUAMBUxEzAR
+    BgNVBAMTCmt1YmVybmV0ZXMwHhcNMjEwNjE5MjI0MzEwWhcNMzEwNjE5MjI0MzEw
+    WjAVMRMwEQYDVQQDEwprdWJlcm5ldGVzMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJB
+    ANiW3hfHTcKnxCig+uWhpVbOfH1pANKmXVSysPKgE80QSU4tZ6m49pAEeIMsvwvD
+    MaLsb2v6JvXe0qvCmueU+/sCAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgEGMA8GA1Ud
+    EwEB/wQFMAMBAf8wHQYDVR0OBBYEFCOW3hR7ngBsk9aUOlEznWzH494EMA0GCSqG
+    SIb3DQEBCwUAA0EAVnZzkiku07kQFGAEXzWI6aZnAbzSoClYskEzCBMrOmdadjVp
+    VWcz76FwFlyd5jhzOJ49eMcVusSotKv2ZGimcA==
+    -----END CERTIFICATE-----
+    -----BEGIN CERTIFICATE-----
+    MIIBaDCCARKgAwIBAgIMFoq6PeyECsgUTfc2MA0GCSqGSIb3DQEBCwUAMBUxEzAR
+    BgNVBAMTCmt1YmVybmV0ZXMwHhcNMjEwNjE5MjI0MzEwWhcNMzEwNjE5MjI0MzEw
+    WjAVMRMwEQYDVQQDEwprdWJlcm5ldGVzMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJB
+    AKOE64nZbH+GM91AIrqf7HEk4hvzqsZFFtxc+8xir1XC3mI/RhCCrs6AdVRZNZ26
+    A6uHArhi33c2kHQkCjyLA7sCAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgEGMA8GA1Ud
+    EwEB/wQFMAMBAf8wHQYDVR0OBBYEFIT28RJlG8FTgmvn2YMa3hYX+u1BMA0GCSqG
+    SIb3DQEBCwUAA0EAKuaE5wKMP26AyfxkWu83iHoTPFtdjabXF0JcyPy0ijQZxfJq
+    9xc2CkttvgaDtT4H+E/ryQ3iq6kSfEYYPi8c0w==
+    -----END CERTIFICATE-----
+ClusterName: minimal.example.com
+DefaultMachineType: t2.medium
+Hooks:
+- null
+- null
+KeypairIDs: {}
+KubeletConfig:
+  anonymousAuth: false
+  cgroupDriver: systemd
+  cgroupRoot: /
+  cloudProvider: external
+  clusterDNS: 172.20.0.10
+  clusterDomain: cluster.local
+  enableDebuggingHandlers: true
+  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  featureGates:
+    CSIMigrationAWS: "true"
+    InTreePluginAWSUnregister: "true"
+  hostnameOverride: '@aws'
+  kubeconfigPath: /var/lib/kubelet/kubeconfig
+  logLevel: 2
+  networkPluginName: cni
+  nodeLabels:
+    kubernetes.io/role: node
+    node-role.kubernetes.io/node: ""
+  nonMasqueradeCIDR: 172.20.0.0/16
+  podManifestPath: /etc/kubernetes/manifests
+UpdatePolicy: automatic
+channels:
+- memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
+containerdConfig: |
+  version = 2
+
+  [plugins]
+
+    [plugins."io.containerd.grpc.v1.cri"]
+
+      [plugins."io.containerd.grpc.v1.cri".containerd]
+
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+            runtime_type = "io.containerd.runc.v2"
+
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+              SystemdCgroup = true

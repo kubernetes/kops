@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
+	awscloudcontrollermanager "k8s.io/kops/pkg/model/components/addonmanifests/awscloudcontroller"
 	"k8s.io/kops/pkg/model/components/addonmanifests/awsebscsidriver"
 	"k8s.io/kops/pkg/model/components/addonmanifests/awsloadbalancercontroller"
 	"k8s.io/kops/pkg/model/components/addonmanifests/clusterautoscaler"
@@ -86,10 +87,7 @@ func addServiceAccountRole(context *model.KopsModelContext, objects kubemanifest
 	}
 
 	for _, object := range objects {
-		if object.Kind() != "Deployment" {
-			continue
-		}
-		if object.APIVersion() != "apps/v1" {
+		if !hasPodSpecTemplate(object) {
 			continue
 		}
 		podSpec := &corev1.PodSpec{}
@@ -123,6 +121,8 @@ func getWellknownServiceAccount(name string) iam.Subject {
 		return &clusterautoscaler.ServiceAccount{}
 	case "ebs-csi-controller-sa":
 		return &awsebscsidriver.ServiceAccount{}
+	case "aws-cloud-controller-manager":
+		return &awscloudcontrollermanager.ServiceAccount{}
 	default:
 		return nil
 	}
@@ -156,4 +156,13 @@ func addLabels(addon *addonsapi.AddonSpec, objects kubemanifest.ObjectList) erro
 		object.Set(meta, "metadata")
 	}
 	return nil
+}
+
+func hasPodSpecTemplate(object *kubemanifest.Object) bool {
+	if object.Kind() == "Deployment" || object.Kind() == "DaemonSet" {
+		if object.APIVersion() == "apps/v1" {
+			return true
+		}
+	}
+	return false
 }
