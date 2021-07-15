@@ -246,32 +246,6 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 	return nil
 }
 
-// FindAutoscalingLaunchConfiguration finds an AWS launch configuration given its name
-func FindAutoscalingLaunchConfiguration(cloud awsup.AWSCloud, name string) (*autoscaling.LaunchConfiguration, error) {
-	klog.V(2).Infof("Retrieving Autoscaling LaunchConfigurations %q", name)
-
-	var results []*autoscaling.LaunchConfiguration
-
-	request := &autoscaling.DescribeLaunchConfigurationsInput{
-		LaunchConfigurationNames: []*string{&name},
-	}
-	err := cloud.Autoscaling().DescribeLaunchConfigurationsPages(request, func(p *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
-		results = append(results, p.LaunchConfigurations...)
-		return true
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error listing autoscaling LaunchConfigurations: %v", err)
-	}
-
-	if len(results) == 0 {
-		return nil, nil
-	}
-	if len(results) != 1 {
-		return nil, fmt.Errorf("found multiple LaunchConfigurations with name %q", name)
-	}
-	return results[0], nil
-}
-
 func matchesElbTags(tags map[string]string, actual []*elb.Tag) bool {
 	for k, v := range tags {
 		found := false
