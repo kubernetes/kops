@@ -22,27 +22,16 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kubectl/pkg/util/i18n"
-	"k8s.io/kubectl/pkg/util/templates"
 )
 
 var (
-	toolboxLong = templates.LongDesc(i18n.T(`
-	Misc infrequently used commands.`))
-
-	toolboxExample = templates.Examples(i18n.T(`
-	# Dump cluster information
-	kops toolbox dump --name k8s-cluster.example.com
-	`))
-
-	toolboxShort = i18n.T(`Misc infrequently used commands.`)
+	toolboxShort = i18n.T(`Miscellaneous, infrequently used commands.`)
 )
 
 func NewCmdToolbox(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "toolbox",
-		Short:   toolboxShort,
-		Long:    toolboxLong,
-		Example: toolboxExample,
+		Use:   "toolbox",
+		Short: toolboxShort,
 	}
 
 	cmd.AddCommand(NewCmdToolboxDump(f, out))

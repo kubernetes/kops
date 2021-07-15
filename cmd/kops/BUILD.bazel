@@ -44,7 +44,7 @@ go_library(
         "root.go",
         "toolbox.go",
         "toolbox_dump.go",
-        "toolbox_instance_selector.go",
+        "toolbox_instance-selector.go",
         "toolbox_template.go",
         "trust.go",
         "trust_keypair.go",
@@ -154,7 +154,7 @@ go_test(
         "delete_confirm_test.go",
         "integration_test.go",
         "lifecycle_integration_test.go",
-        "toolbox_instance_selector_internal_test.go",
+        "toolbox_instance-selector_test.go",
         "toolbox_template_test.go",
     ],
     data = [
