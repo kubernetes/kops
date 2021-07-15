@@ -41,8 +41,8 @@ func ParseKubernetesVersion(version string) (string, error) {
 
 		// Replace the last part of the version URL path with the contents of the URL's body
 		// Example:
-		// https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt -> v1.21.0-beta.1.112+576aa2d2470b28%0A
-		// becomes https://storage.googleapis.com/kubernetes-release-dev/ci/v1.21.0-beta.1.112+576aa2d2470b28%0A
+		// https://storage.googleapis.com/k8s-release-dev/ci/latest.txt -> v1.21.0-beta.1.112+576aa2d2470b28%0A
+		// becomes https://storage.googleapis.com/k8s-release-dev/ci/v1.21.0-beta.1.112+576aa2d2470b28%0A
 		pathParts := strings.Split(u.Path, "/")
 		pathParts[len(pathParts)-1] = strings.TrimSpace(b.String())
 		u.Path = strings.Join(pathParts, "/")
