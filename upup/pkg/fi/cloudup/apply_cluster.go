@@ -35,6 +35,7 @@ import (
 	"k8s.io/klog/v2"
 	kopsbase "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
+	apiModel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
@@ -1295,17 +1296,16 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		}
 	}
 
-	if err := getTasksCertificate(caTasks, fi.CertificateIDCA, config, false); err != nil {
+	if err := getTasksCertificate(caTasks, fi.CertificateIDCA, config, true); err != nil {
 		return nil, nil, err
 	}
 	if caTasks["etcd-clients-ca-cilium"] != nil {
-		if err := getTasksCertificate(caTasks, "etcd-clients-ca-cilium", config, hasAPIServer); err != nil {
+		if err := getTasksCertificate(caTasks, "etcd-clients-ca-cilium", config, hasAPIServer || apiModel.UseKopsControllerForNodeBootstrap(n.cluster)); err != nil {
 			return nil, nil, err
 		}
 	}
 
 	if isMaster {
-		config.KeypairIDs[fi.CertificateIDCA] = caTasks[fi.CertificateIDCA].Keyset().Primary.Id
 		if err := getTasksCertificate(caTasks, "etcd-clients-ca", config, true); err != nil {
 			return nil, nil, err
 		}
