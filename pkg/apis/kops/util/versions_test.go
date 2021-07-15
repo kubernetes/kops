@@ -64,7 +64,7 @@ func Test_ParseKubernetesVersion(t *testing.T) {
 			},
 		},
 		{
-			version: "https://storage.googleapis.com/kubernetes-release-dev/ci/v1.4.0-alpha.2.677+ea69570f61af8e/",
+			version: "https://storage.googleapis.com/k8s-release-dev/ci/v1.4.0-alpha.2.677+ea69570f61af8e/",
 			expected: &semver.Version{
 				Major: 1,
 				Minor: 4,
