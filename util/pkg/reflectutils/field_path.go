@@ -165,6 +165,10 @@ func (p *FieldPath) HasPrefixMatch(r *FieldPath) bool {
 		matcher := p.elements[i]
 		target := r.elements[i]
 		switch matcher.Type {
+		case FieldPathElementTypeField:
+			if target.Type == FieldPathElementTypeMapKey && matcher.token == target.token {
+				isMatch = true
+			}
 		case FieldPathElementTypeWildcardIndex:
 			if target.Type == FieldPathElementTypeArrayIndex {
 				isMatch = true
@@ -175,4 +179,15 @@ func (p *FieldPath) HasPrefixMatch(r *FieldPath) bool {
 		}
 	}
 	return true
+}
+
+func (p *FieldPath) MapElementFollowing(r *FieldPath) (string, bool, bool) {
+	if len(p.elements) == len(r.elements) {
+		return "", false, false
+	}
+	following := p.elements[len(r.elements)]
+	if following.Type != FieldPathElementTypeField && following.Type != FieldPathElementTypeMapKey {
+		return "", false, false
+	}
+	return following.token, true, len(p.elements) == len(r.elements)+1
 }
