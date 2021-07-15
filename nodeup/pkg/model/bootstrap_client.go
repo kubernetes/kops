@@ -64,8 +64,9 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	bootstrapClientTask := &nodetasks.BootstrapClientTask{
-		Client: bootstrapClient,
-		Certs:  b.bootstrapCerts,
+		Client:     bootstrapClient,
+		Certs:      b.bootstrapCerts,
+		KeypairIDs: b.bootstrapKeypairIDs,
 	}
 
 	for _, cert := range b.bootstrapCerts {

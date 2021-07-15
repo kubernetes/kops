@@ -171,7 +171,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/bastionuserdata.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: v3vAGhTxpuP2+WEcyx3spjODFbRipxYbiD0PoMfW/1c=
+NodeupConfigHash: XE9IpKZd9oCrCv/x+HIIxysnlj82y2WpjG3iuknb0Mk=
 
 __EOF_KUBE_ENV
 

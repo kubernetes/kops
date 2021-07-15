@@ -40,11 +40,12 @@ import (
 )
 
 type Server struct {
-	opt       *config.Options
-	certNames sets.String
-	server    *http.Server
-	verifier  fi.Verifier
-	keystore  pki.Keystore
+	opt        *config.Options
+	certNames  sets.String
+	keypairIDs map[string]string
+	server     *http.Server
+	verifier   fi.Verifier
+	keystore   pki.Keystore
 
 	// configBase is the base of the configuration storage.
 	configBase vfs.Path
@@ -81,7 +82,7 @@ func NewServer(opt *config.Options, verifier fi.Verifier) (*Server, error) {
 
 func (s *Server) Start() error {
 	var err error
-	s.keystore, err = newKeystore(s.opt.Server.CABasePath, s.opt.Server.SigningCAs)
+	s.keystore, s.keypairIDs, err = newKeystore(s.opt.Server.CABasePath, s.opt.Server.SigningCAs)
 	if err != nil {
 		return err
 	}
@@ -152,7 +153,7 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 	validHours := (455 * 24) + (hash.Sum32() % (30 * 24))
 
 	for name, pubKey := range req.Certs {
-		cert, err := s.issueCert(name, pubKey, id, validHours)
+		cert, err := s.issueCert(name, pubKey, id, validHours, req.KeypairIDs)
 		if err != nil {
 			klog.Infof("bootstrap %s cert %q issue err: %v", r.RemoteAddr, name, err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -167,7 +168,7 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 	klog.Infof("bootstrap %s %s success", r.RemoteAddr, id.NodeName)
 }
 
-func (s *Server) issueCert(name string, pubKey string, id *fi.VerifyResult, validHours uint32) (string, error) {
+func (s *Server) issueCert(name string, pubKey string, id *fi.VerifyResult, validHours uint32, keypairIDs map[string]string) (string, error) {
 	block, _ := pem.Decode([]byte(pubKey))
 	if block.Type != "RSA PUBLIC KEY" {
 		return "", fmt.Errorf("unexpected key type %q", block.Type)
@@ -214,6 +215,13 @@ func (s *Server) issueCert(name string, pubKey string, id *fi.VerifyResult, vali
 		}
 	default:
 		return "", fmt.Errorf("unexpected key name")
+	}
+
+	// This field was added to the protocol in kOps 1.22.
+	if len(keypairIDs) > 0 {
+		if keypairIDs[issueReq.Signer] != s.keypairIDs[issueReq.Signer] {
+			return "", fmt.Errorf("request's keypair ID %q for %s didn't match server's %q", keypairIDs[issueReq.Signer], issueReq.Signer, s.keypairIDs[issueReq.Signer])
+		}
 	}
 
 	cert, _, _, err := pki.IssueCert(issueReq, s.keystore)

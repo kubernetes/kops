@@ -41,6 +41,8 @@ import (
 type BootstrapClientTask struct {
 	// Certs are the requested certificates.
 	Certs map[string]*BootstrapCert
+	// KeypairIDs are the keypair IDs of the CAs to use for issuing certificates.
+	KeypairIDs map[string]string
 
 	// Client holds the client wrapper for the kops-bootstrap protocol
 	Client *KopsBootstrapClient
@@ -83,6 +85,7 @@ func (b *BootstrapClientTask) Run(c *fi.Context) error {
 	req := nodeup.BootstrapRequest{
 		APIVersion: nodeup.BootstrapAPIVersion,
 		Certs:      map[string]string{},
+		KeypairIDs: b.KeypairIDs,
 	}
 
 	if b.keys == nil {
