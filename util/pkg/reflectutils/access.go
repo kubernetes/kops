@@ -219,6 +219,18 @@ func Unset(target interface{}, targetPath string) error {
 			return nil
 		}
 
+		if v.Kind() == reflect.Map && v.Type().Key().Kind() == reflect.String {
+			key, _, final := targetFieldPath.MapElementFollowing(path)
+			if final {
+				keyValue := reflect.ValueOf(key)
+				var zeroValue reflect.Value
+				v.SetMapIndex(keyValue, zeroValue)
+				fieldUnset = true
+				return SkipReflection
+			}
+			return nil
+		}
+
 		return nil
 	}
 

@@ -366,6 +366,18 @@ func TestUnset(t *testing.T) {
 			Expected: "{ 'spec': { 'containers': [ {} ] } }",
 			Path:     "spec.containers[0].enumSlice",
 		},
+		{
+			Name:     "Remove map element",
+			Input:    "{ 'spec': { 'containers': [ { 'resources': { 'limits': { 'ABC': 3, 'DEF': 5 } } } ] } }",
+			Expected: "{ 'spec': { 'containers': [ { 'resources': { 'limits': { 'ABC': 3 } } } ] } }",
+			Path:     "spec.containers[0].resources.limits.DEF",
+		},
+		{
+			Name:     "Remove map element pointer",
+			Input:    "{ 'spec': { 'containers': [ { 'resources': { 'requests': { 'ABC': 3, 'DEF': 5 } } } ] } }",
+			Expected: "{ 'spec': { 'containers': [ { 'resources': { 'requests': { 'ABC': 3 } } } ] } }",
+			Path:     "spec.containers[0].resources.requests.DEF",
+		},
 	}
 
 	for _, g := range grid {
