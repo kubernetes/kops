@@ -62,6 +62,8 @@ spec:
     name: events
     provider: Manager
     version: 3.4.13
+  externalDns:
+    provider: dns-controller
   iam:
     legacy: false
     permissionsBoundary: arn:aws:iam:00000000000:policy/boundaries

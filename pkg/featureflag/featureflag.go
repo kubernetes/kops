@@ -52,8 +52,6 @@ var (
 	CacheNodeidentityInfo = New("CacheNodeidentityInfo", Bool(false))
 	// DNSPreCreate controls whether we pre-create DNS records.
 	DNSPreCreate = New("DNSPreCreate", Bool(true))
-	// EnableExternalDNS enables external DNS
-	EnableExternalDNS = New("EnableExternalDNS", Bool(false))
 	// EnableSeparateConfigBase allows a config-base that is different from the state store
 	EnableSeparateConfigBase = New("EnableSeparateConfigBase", Bool(false))
 	// ExperimentalClusterDNS allows for setting the kubelet dns flag to experimental values.

@@ -21,6 +21,7 @@ go_library(
         "//pkg/model/components/addonmanifests/awsloadbalancercontroller:go_default_library",
         "//pkg/model/components/addonmanifests/clusterautoscaler:go_default_library",
         "//pkg/model/components/addonmanifests/dnscontroller:go_default_library",
+        "//pkg/model/components/addonmanifests/externaldns:go_default_library",
         "//pkg/model/iam:go_default_library",
         "//pkg/templates:go_default_library",
         "//pkg/wellknownoperators:go_default_library",

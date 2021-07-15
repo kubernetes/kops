@@ -3626,6 +3626,7 @@ func autoConvert_v1alpha2_ExternalDNSConfig_To_kops_ExternalDNSConfig(in *Extern
 	out.Disable = in.Disable
 	out.WatchIngress = in.WatchIngress
 	out.WatchNamespace = in.WatchNamespace
+	out.Provider = kops.ExternalDNSProvider(in.Provider)
 	return nil
 }
 
@@ -3638,6 +3639,7 @@ func autoConvert_kops_ExternalDNSConfig_To_v1alpha2_ExternalDNSConfig(in *kops.E
 	out.Disable = in.Disable
 	out.WatchIngress = in.WatchIngress
 	out.WatchNamespace = in.WatchNamespace
+	out.Provider = ExternalDNSProvider(in.Provider)
 	return nil
 }
 

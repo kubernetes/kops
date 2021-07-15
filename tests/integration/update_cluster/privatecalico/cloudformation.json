@@ -1697,7 +1697,8 @@
             },
             {
               "Action": [
-                "route53:ListHostedZones"
+                "route53:ListHostedZones",
+                "route53:ListTagsForResource"
               ],
               "Effect": "Allow",
               "Resource": [

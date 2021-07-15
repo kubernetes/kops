@@ -49,6 +49,8 @@ spec:
     name: events
     provider: Manager
     version: 3.4.13
+  externalDns:
+    provider: dns-controller
   iam:
     legacy: false
   keyStore: memfs://clusters.example.com/minimal.example.com/pki

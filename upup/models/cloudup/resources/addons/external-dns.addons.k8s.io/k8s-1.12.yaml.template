@@ -26,17 +26,25 @@ spec:
       tolerations:
       - key: "node-role.kubernetes.io/master"
         effect: NoSchedule
+      - key: "node.kubernetes.io/not-ready"
+        effect: NoSchedule
       nodeSelector:
         node-role.kubernetes.io/master: ""
       dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
       hostNetwork: true
       containers:
       - name: external-dns
-        image: k8s.gcr.io/external-dns/external-dns:v0.7.6
+        image: olemarkus/external-dns:kops
+        imagePullPolicy: Always
         args:
 {{ range $arg := ExternalDnsArgv }}
         - "{{ $arg }}"
 {{ end }}
+        env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: "127.0.0.1"
+        - name: KUBERNETES_SERVICE_PORT
+          value: "443"
         resources:
           requests:
             cpu: 50m

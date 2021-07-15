@@ -35,6 +35,7 @@ import (
 	utilvalidation "k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
@@ -147,6 +148,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 
 	if spec.ClusterAutoscaler != nil {
 		allErrs = append(allErrs, validateClusterAutoscaler(c, spec.ClusterAutoscaler, fieldPath.Child("clusterAutoscaler"))...)
+	}
+
+	if spec.ExternalDNS != nil {
+		allErrs = append(allErrs, validateExternalDNS(c, spec.ExternalDNS, fieldPath.Child("externalDNS"))...)
 	}
 
 	if spec.NodeTerminationHandler != nil {
@@ -1430,6 +1435,25 @@ func validateClusterAutoscaler(cluster *kops.Cluster, spec *kops.ClusterAutoscal
 	}
 
 	return allErrs
+}
+
+func validateExternalDNS(cluster *kops.Cluster, spec *kops.ExternalDNSConfig, fldPath *field.Path) (allErrs field.ErrorList) {
+	allErrs = append(allErrs, IsValidValue(fldPath.Child("provider"), (*string)(&spec.Provider), []string{"", "dns-controller", "external-dns"})...)
+
+	if spec.WatchNamespace != "" {
+		if spec.WatchNamespace != "kube-system" {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("watchNamespace"), "externalDNS must watch either all namespaces or only kube-system"))
+		}
+	}
+
+	if spec.Provider == kops.ExternalDNSProviderExternalDNS {
+		if dns.IsGossipHostname(cluster.Spec.MasterInternalName) {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("provider"), "external-dns does not supprot gossip clusters"))
+		}
+	}
+
+	return allErrs
+
 }
 
 func validateNodeTerminationHandler(cluster *kops.Cluster, spec *kops.NodeTerminationHandlerConfig, fldPath *field.Path) (allErrs field.ErrorList) {

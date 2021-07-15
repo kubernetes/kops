@@ -500,6 +500,13 @@ type NodeLocalDNSConfig struct {
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 }
 
+type ExternalDNSProvider string
+
+const (
+	ExternalDNSProviderDNSController ExternalDNSProvider = "dns-controller"
+	ExternalDNSProviderExternalDNS   ExternalDNSProvider = "external-dns"
+)
+
 // ExternalDNSConfig are options of the dns-controller
 type ExternalDNSConfig struct {
 	// Disable indicates we do not wish to run the dns-controller addon
@@ -508,6 +515,10 @@ type ExternalDNSConfig struct {
 	WatchIngress *bool `json:"watchIngress,omitempty"`
 	// WatchNamespace is namespace to watch, defaults to all (use to control whom can creates dns entries)
 	WatchNamespace string `json:"watchNamespace,omitempty"`
+	// Provider determines which implementation of ExternalDNS to use.
+	// 'dns-controller' will use kOps DNS Controller.
+	// 'external-dns' will use kubernetes-sigs/external-dns.
+	Provider ExternalDNSProvider `json:"provider,omitempty"`
 }
 
 // EtcdProviderType describes etcd cluster provisioning types (Standalone, Manager)

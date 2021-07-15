@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: external-dns.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: external-dns.addons.k8s.io
+    k8s-app: external-dns
+    version: v0.7.6
+  name: external-dns
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: external-dns
+  template:
+    metadata:
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+      labels:
+        k8s-addon: external-dns.addons.k8s.io
+        k8s-app: external-dns
+        version: v0.7.6
+    spec:
+      containers:
+      - args:
+        - --provider=aws
+        - --events
+        - --source=pod
+        - --source=service
+        - --compatibility=kops-dns-controller
+        - --registry=txt
+        - --txt-owner-id=kops-minimal.example.com
+        - --zone-id-filter=Z1AFAKE1ZON3YO
+        env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: 127.0.0.1
+        - name: KUBERNETES_SERVICE_PORT
+          value: "443"
+        image: olemarkus/external-dns:kops
+        imagePullPolicy: Always
+        name: external-dns
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+      dnsPolicy: Default
+      hostNetwork: true
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      priorityClassName: system-cluster-critical
+      serviceAccount: external-dns
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        key: node.kubernetes.io/not-ready
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: external-dns.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: external-dns.addons.k8s.io
+  name: external-dns
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: external-dns.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: external-dns.addons.k8s.io
+  name: kops:external-dns
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - services
+  - endpoints
+  - pods
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - extensions
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+  - watch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: external-dns.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: external-dns.addons.k8s.io
+  name: kops:external-dns
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kops:external-dns
+subjects:
+- kind: ServiceAccount
+  name: external-dns
+  namespace: kube-system

@@ -1026,6 +1026,11 @@ spec:
                     description: Disable indicates we do not wish to run the dns-controller
                       addon
                     type: boolean
+                  provider:
+                    description: Provider determines which implementation of ExternalDNS
+                      to use. 'dns-controller' will use kOps DNS Controller. 'external-dns'
+                      will use kubernetes-sigs/external-dns.
+                    type: string
                   watchIngress:
                     description: WatchIngress indicates you want the dns-controller
                       to watch and create dns entries for ingress resources

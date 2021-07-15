@@ -24,5 +24,6 @@ const (
 	A     = RrsType("A")
 	AAAA  = RrsType("AAAA")
 	CNAME = RrsType("CNAME")
+	TXT   = RrsType("TXT")
 	// TODO:  Add other types as required
 )

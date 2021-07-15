@@ -123,6 +123,8 @@ func getWellknownServiceAccount(name string) iam.Subject {
 		return &clusterautoscaler.ServiceAccount{}
 	case "ebs-csi-controller-sa":
 		return &awsebscsidriver.ServiceAccount{}
+	case "external-dns":
+		return &awsebscsidriver.ServiceAccount{}
 	default:
 		return nil
 	}
