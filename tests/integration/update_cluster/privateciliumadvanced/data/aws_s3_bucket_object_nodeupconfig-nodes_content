@@ -58,7 +58,9 @@ ClusterName: privateciliumadvanced.example.com
 Hooks:
 - null
 - null
-KeypairIDs: {}
+KeypairIDs:
+  etcd-clients-ca-cilium: "6977087239278090025924899436"
+  kubernetes-ca: "6982820025135291416230495506"
 KubeletConfig:
   anonymousAuth: false
   cgroupDriver: systemd

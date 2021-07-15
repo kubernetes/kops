@@ -133,7 +133,7 @@ ensure-install-dir
 
 echo "H4sIAAAAAAAA/3yS0W7bPAyF7/0UvCl601+2i/7BJvRiW7KhAZYuSJ6AsRhXiEymouQsbz/YTZplA3Zl+Bzah/zIJkh2U+Gtb20BgAf9+mU9Xc9n0fcUBwmAGDeBnIUtBqUCoEPGltZJIrY0DahKaiHFTEUjnNAzxVXm5Duy8K64i+mGHwdpv1NPwYLnrRQAPUX1whZq82AmhZNm99aC7vx+zpowhFPMLm9oGeXncbCbkDVRnM5nKwt1VZmPE1OZqqzrwdznFb1m0jR6XQHwIpoYO/rRU4zekYXbT3jQ2wLAd9iShd0HNW0TjZdySPpvP0b1tbmvTXXV+v3YSqA00mPhYydZP+f0csHVtFHy/kQU9KiJOveur0SShXKcQ7JbRum9GwrxoJfhZs/rt9kmD6YydfWbIx16tudXE6TBUJy3NqNNblvP7ROyCxTPewKg3jfJCz9hdBY66iQeDfbow/DdY11VC3/H4mirV/LNWfTDU79Fosf/b+5Gcn+VntWr2n+vYODZjAe5xIFi2WMsg9+UJ9DlpeCPTQAwpYPE3TLk1vMzjufHfjCEF6ivmSI6uhzKCLMqR5x7cQtkvyVNp2BKzRgWmRJp2Z1cLX4BAAD//wEAAP//GWuHvzUDAAA=" | base64 -d | gzip -d > conf/cluster_spec.yaml
 
-echo "H4sIAAAAAAAA/1SNwU6EMBQA7/2KfgEoJkiaeBCMiiZI1JC9Nu1jYWn7mj5K+fzNZk9c5jBzmMZg1H3AbdYQBJeJWINunM+1JBDcgh1J5LkykVYIlMEurTeQKbS5QusD0EGy1tEqnYKPgNF30oLgDjXQMfyiAcE71MBuiP4+/ZQ0CV49PG3FV5re96TK6vsU3Pi8LPXj5W94bfe3/7Ie+mJb3fKTXtgVAAD//wEAAP//5xLuGcEAAAA=" | base64 -d | gzip -d > conf/kube_env.yaml
+echo "H4sIAAAAAAAA/1SNwUrEMBQA7/mK3IUGxSIGvFiktWKVghWPIXmt3SZ52bykW/brl2VPvcxh5jCVxWy+I66zgSi5OhGr0I/z9KoIJHfgRpJCaJspQaQCNuWChUKjExpdiEA7yd49JeU11BFz6JQDyT0aoH3o0YLkHRpgV+RwmzaK/iV/m5qtPD/V83N32I5N36ZyEHf+cfn6yOn351Mv93lYH3Ir/l7YBQAA//8BAAD//w/PoYLBAAAA" | base64 -d | gzip -d > conf/kube_env.yaml
 
 download-release
 echo "== nodeup node config done =="
