@@ -170,40 +170,64 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 
 	// Instance Group Node Configurations
 
-	commandline.IntFlag(nodeCountMin, nil, &nodeCountMinDefault, "Set the minimum number of nodes")
-	commandline.IntFlag(nodeCountMax, nil, &nodeCountMaxDefault, "Set the maximum number of nodes")
-	commandline.IntFlag(nodeVolumeSize, nil, nil, "Set instance volume size (in GiB) for nodes")
-	commandline.StringSliceFlag(nodeSecurityGroups, nil, nil, "Add precreated additional security groups to nodes")
+	commandline.IntFlag(nodeCountMin, nil, &nodeCountMinDefault, "Minimum number of nodes")
+	commandline.IntFlag(nodeCountMax, nil, &nodeCountMaxDefault, "Maximum number of nodes")
+	commandline.IntFlag(nodeVolumeSize, nil, nil, "Instance volume size (in GiB) for nodes")
+	commandline.StringSliceFlag(nodeSecurityGroups, nil, nil, "Pre-created additional security groups for nodes")
+	commandline.Command.RegisterFlagCompletionFunc(nodeSecurityGroups, completeSecurityGroup)
 	commandline.BoolFlag(clusterAutoscaler, nil, &clusterAutoscalerDefault, "Add auto-discovery tags for cluster-autoscaler to manage the instance-group")
 
 	// Aggregate Filters
 
-	commandline.StringFlag(instanceTypeBase, nil, nil, "Base instance type to retrieve similarly spec'd instance types", nil)
-	commandline.BoolFlag(flexible, nil, nil, "Retrieves a group of instance types spanning multiple generations based on opinionated defaults and user overridden resource filters")
-	commandline.IntFlag(instanceGroupCount, nil, nil, "Number of instance groups to create w/ different vcpus-to-memory-ratios starting at 1:2 and doubling.")
+	commandline.StringFlag(instanceTypeBase, nil, nil, "Base instance type to retrieve similarly specified instance types", nil)
+	commandline.Command.RegisterFlagCompletionFunc(instanceTypeBase, completeMachineType)
+	commandline.BoolFlag(flexible, nil, nil, "Retrieve a group of instance types spanning multiple generations based on opinionated defaults and user overridden resource filters")
+	commandline.IntFlag(instanceGroupCount, nil, nil, "Number of instance groups to create with different vcpus-to-memory ratios, starting at 1:2 and doubling")
 
 	// Raw Filters
 
-	commandline.IntMinMaxRangeFlags(vcpus, nil, nil, "Number of vcpus available to the instance type.")
+	commandline.IntMinMaxRangeFlags(vcpus, nil, nil, "Number of vcpus available to the instance type")
 	commandline.ByteQuantityMinMaxRangeFlags(memory, nil, nil, "Amount of memory available (Example: 4gb)")
-	commandline.RatioFlag(vcpusToMemoryRatio, nil, nil, "The ratio of vcpus to memory in MiB. (Example: 1:2)")
+	commandline.Command.RegisterFlagCompletionFunc(memory, cobra.NoFileCompletions)
+	commandline.Command.RegisterFlagCompletionFunc(memory+"-min", cobra.NoFileCompletions)
+	commandline.Command.RegisterFlagCompletionFunc(memory+"-max", cobra.NoFileCompletions)
+	commandline.RatioFlag(vcpusToMemoryRatio, nil, nil, "Ratio of vcpus to memory in MiB. (Example: 1:2)")
+	commandline.Command.RegisterFlagCompletionFunc(vcpusToMemoryRatio, cobra.NoFileCompletions)
 	commandline.StringOptionsFlag(cpuArchitecture, nil, &cpuArchDefault, fmt.Sprintf("CPU architecture [%s]", strings.Join(cpuArchs, ", ")), append(cpuArchs, cpuArchitectureX8664))
-	commandline.IntMinMaxRangeFlags(gpus, nil, nil, "Total number of GPUs (Example: 4)")
-	commandline.ByteQuantityMinMaxRangeFlags(gpuMemory, nil, nil, "Number of GPUs' total memory (Example: 4gb)")
+	commandline.Command.RegisterFlagCompletionFunc(cpuArchitecture, func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return cpuArchs, cobra.ShellCompDirectiveNoFileComp
+	})
+	commandline.IntMinMaxRangeFlags(gpus, nil, nil, "Number of GPUs (Example: 4)")
+	commandline.ByteQuantityMinMaxRangeFlags(gpuMemory, nil, nil, "GPUs' total memory (Example: 4gb)")
+	commandline.Command.RegisterFlagCompletionFunc(gpuMemory, cobra.NoFileCompletions)
+	commandline.Command.RegisterFlagCompletionFunc(gpuMemory+"-min", cobra.NoFileCompletions)
+	commandline.Command.RegisterFlagCompletionFunc(gpuMemory+"-max", cobra.NoFileCompletions)
 	commandline.StringOptionsFlag(placementGroupStrategy, nil, nil, fmt.Sprintf("Placement group strategy: [%s]", strings.Join(placementGroupStrategies, ", ")), placementGroupStrategies)
+	commandline.Command.RegisterFlagCompletionFunc(placementGroupStrategy, func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return placementGroupStrategies, cobra.ShellCompDirectiveNoFileComp
+	})
 	commandline.StringOptionsFlag(usageClass, nil, &usageClassDefault, fmt.Sprintf("Usage class: [%s]", strings.Join(usageClasses, ", ")), usageClasses)
+	commandline.Command.RegisterFlagCompletionFunc(usageClass, func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return usageClasses, cobra.ShellCompDirectiveNoFileComp
+	})
 	commandline.BoolFlag(enaSupport, nil, nil, "Instance types where ENA is supported or required")
 	commandline.BoolFlag(burstSupport, nil, nil, "Burstable instance types")
 	commandline.StringSliceFlag(subnets, nil, nil, "Subnet(s) in which to create the instance group. One of Availability Zone like eu-west-1a or utility-eu-west-1a,")
+	commandline.Command.RegisterFlagCompletionFunc(subnets, completeClusterSubnet(commandline.Flags[subnets].(*[]string)))
 	commandline.IntMinMaxRangeFlags(networkInterfaces, nil, nil, "Number of network interfaces (ENIs) that can be attached to the instance")
 	commandline.RegexFlag(allowList, nil, nil, "List of allowed instance types to select from w/ regex syntax (Example: m[3-5]\\.*)")
+	commandline.Command.RegisterFlagCompletionFunc(allowList, cobra.NoFileCompletions)
 	commandline.RegexFlag(denyList, nil, nil, "List of instance types which should be excluded w/ regex syntax (Example: m[1-2]\\.*)")
+	commandline.Command.RegisterFlagCompletionFunc(denyList, cobra.NoFileCompletions)
 
 	// Output Flags
 
 	commandline.IntFlag(maxResults, nil, &maxResultsDefault, "Maximum number of instance types to return back")
-	commandline.BoolFlag(dryRun, nil, &dryRunDefault, "If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.")
-	commandline.StringFlag(output, commandline.StringMe("o"), &outputDefault, "Output format. One of json|yaml. Used with the --dry-run flag.", nil)
+	commandline.BoolFlag(dryRun, nil, &dryRunDefault, "Only print the object that would be created, without creating it. This flag can be used to create a cluster YAML or JSON manifest.")
+	commandline.StringFlag(output, commandline.StringMe("o"), &outputDefault, "Output format. One of json or yaml. Used with the --dry-run flag.", nil)
+	commandline.Command.RegisterFlagCompletionFunc(output, func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
+	})
 
 	return commandline.Command
 }
