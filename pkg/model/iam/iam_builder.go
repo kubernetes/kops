@@ -273,10 +273,7 @@ func NewPolicy(clusterName string) *Policy {
 func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	p := NewPolicy(b.Cluster.GetClusterName())
 
-	AddMasterEC2Policies(p)
-	addASLifecyclePolicies(p, r.warmPool)
-	addCertIAMPolicies(p)
-	addKMSGenerateRandomPolicies(p)
+	addNodeupPermissions(p, r.warmPool)
 
 	var err error
 	if p, err = b.AddS3Permissions(p); err != nil {
@@ -316,12 +313,10 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 	p := NewPolicy(clusterName)
 
-	AddMasterEC2Policies(p)
-	addASLifecyclePolicies(p, true)
-	addMasterASPolicies(p)
-	AddMasterELBPolicies(p)
-	addCertIAMPolicies(p)
-	addKMSGenerateRandomPolicies(p)
+	addEtcdManagerPermissions(p)
+	addNodeupPermissions(p, false)
+	AddCCMPermissions(p, clusterName, b.Cluster.Spec.Networking.Kubenet != nil)
+	AddLegacyCCMPermissions(p)
 
 	var err error
 	if p, err = b.AddS3Permissions(p); err != nil {
@@ -381,9 +376,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	p := NewPolicy(b.Cluster.GetClusterName())
 
-	addNodeEC2Policies(p)
-	addASLifecyclePolicies(p, r.enableLifecycleHookPermissions)
-	addKMSGenerateRandomPolicies(p)
+	addNodeupPermissions(p, r.enableLifecycleHookPermissions)
 
 	var err error
 	if p, err = b.AddS3Permissions(p); err != nil {
@@ -759,6 +752,148 @@ func addCalicoSrcDstCheckPermissions(p *Policy) {
 	)
 }
 
+func addNodeupPermissions(p *Policy, enableHookSupport bool) {
+	addCertIAMPolicies(p)
+	addKMSGenerateRandomPolicies(p)
+	addASLifecyclePolicies(p, enableHookSupport)
+	p.unconditionalAction.Insert(
+		"ec2:DescribeInstances", // aws.go
+	)
+}
+
+func addEtcdManagerPermissions(p *Policy) {
+	resource := stringorslice.Slice([]string{"*"})
+	p.unconditionalAction.Insert(
+		"ec2:DescribeVolumes", // aws.go
+	)
+
+	p.Statement = append(p.Statement,
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Of(
+				"ec2:AttachVolume",
+			),
+			Resource: resource,
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"aws:ResourceTag/k8s.io/role/master": "1",
+					"aws:ResourceTag/KubernetesCluster":  p.clusterName,
+				},
+			},
+		},
+	)
+
+}
+
+func AddLegacyCCMPermissions(p *Policy) {
+	p.unconditionalAction.Insert(
+		"ec2:CreateSecurityGroup",
+		"ec2:CreateTags",
+	)
+}
+
+func AddCCMPermissions(p *Policy, clusterName string, cloudRoutes bool) {
+	resource := stringorslice.Slice([]string{"*"})
+
+	p.unconditionalAction.Insert(
+		"autoscaling:DescribeAutoScalingGroups",
+		"autoscaling:DescribeTags",
+		"ec2:DescribeInstances",
+		"ec2:DescribeRegions",
+		"ec2:DescribeRouteTables",
+		"ec2:DescribeSecurityGroups",
+		"ec2:DescribeSubnets",
+		"ec2:DescribeVolumes",
+		"ec2:DescribeVpcs",
+		"elasticloadbalancing:DescribeLoadBalancers",
+		"elasticloadbalancing:DescribeLoadBalancerAttributes",
+		"elasticloadbalancing:DescribeListeners",
+		"elasticloadbalancing:DescribeLoadBalancerPolicies",
+		"elasticloadbalancing:DescribeTargetGroups",
+		"elasticloadbalancing:DescribeTargetHealth",
+		"kms:DescribeKey",
+	)
+
+	p.clusterTaggedAction.Insert(
+		"ec2:ModifyInstanceAttribute",
+		"ec2:ModifyVolume",
+		"ec2:AttachVolume",
+		"ec2:AuthorizeSecurityGroupIngress",
+		"ec2:DeleteRoute",
+		"ec2:DeleteSecurityGroup",
+		"ec2:DeleteVolume",
+		"ec2:DetachVolume",
+		"ec2:RevokeSecurityGroupIngress",
+		"elasticloadbalancing:AddTags",
+		"elasticloadbalancing:AttachLoadBalancerToSubnets",
+		"elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
+		"elasticloadbalancing:ConfigureHealthCheck",
+		"elasticloadbalancing:DeleteLoadBalancer",
+		"elasticloadbalancing:DeleteLoadBalancerListeners",
+		"elasticloadbalancing:DetachLoadBalancerFromSubnets",
+		"elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+		"elasticloadbalancing:ModifyLoadBalancerAttributes",
+		"elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+		"elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
+		"elasticloadbalancing:AddTags",
+		"elasticloadbalancing:DeleteListener",
+		"elasticloadbalancing:DeleteTargetGroup",
+		"elasticloadbalancing:ModifyListener",
+		"elasticloadbalancing:ModifyTargetGroup",
+		"elasticloadbalancing:RegisterTargets",
+		"elasticloadbalancing:DeregisterTargets",
+		"elasticloadbalancing:SetLoadBalancerPoliciesOfListener",
+	)
+
+	p.Statement = append(p.Statement,
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Of(
+				"ec2:CreateTags",
+			),
+			Resource: stringorslice.Slice(
+				[]string{
+					"arn:aws:ec2:*:*:volume/*",
+					"arn:aws:ec2:*:*:snapshot/*",
+				},
+			),
+			Condition: Condition{
+				"StringEquals": map[string]interface{}{
+					"ec2:CreateAction": []string{
+						"CreateVolume",
+						"CreateSnapshot",
+					},
+				},
+			},
+		},
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Of(
+				"elasticloadbalancing:CreateLoadBalancer",
+				"elasticloadbalancing:CreateLoadBalancerPolicy",
+				"elasticloadbalancing:CreateLoadBalancerListeners",
+				"ec2:CreateSecurityGroup",
+				"ec2:CreateVolume",
+				"elasticloadbalancing:CreateListener",
+				"elasticloadbalancing:CreateTargetGroup",
+			),
+			Resource: resource,
+
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"aws:RequestTag/KubernetesCluster": clusterName,
+				},
+			},
+		},
+	)
+	if cloudRoutes {
+		p.clusterTaggedAction.Insert(
+			"ec2:CreateRoute",
+			"ec2:DeleteRoute",
+		)
+	}
+}
+
 // AddAWSLoadbalancerControllerPermissions adds the permissions needed for the aws load balancer controller to the givnen policy
 func AddAWSLoadbalancerControllerPermissions(p *Policy) {
 	p.unconditionalAction.Insert(
@@ -850,7 +985,6 @@ func AddAWSEBSCSIDriverPermissions(p *Policy, appendSnapshotPermissions bool) {
 			Action: stringorslice.String(
 				"ec2:CreateTags", // aws.go, tag.go
 			),
-
 			Resource: stringorslice.Slice(
 				[]string{
 					"arn:aws:ec2:*:*:volume/*",
@@ -950,99 +1084,6 @@ func addKMSGenerateRandomPolicies(p *Policy) {
 	// For nodeup to seed the instance's random number generator.
 	p.unconditionalAction.Insert(
 		"kms:GenerateRandom",
-	)
-}
-
-func addNodeEC2Policies(p *Policy) {
-	// Protokube makes a DescribeInstances call, DescribeRegions when finding S3 State Bucket
-	p.unconditionalAction.Insert(
-		"ec2:DescribeInstances", "ec2:DescribeRegions",
-	)
-}
-
-func AddMasterEC2Policies(p *Policy) {
-	// Describe* calls don't support any additional IAM restrictions
-	// The non-Describe* ec2 calls support different types of filtering:
-	// http://docs.aws.amazon.com/AWSEC2/latest/APIReference/ec2-api-permissions.html
-	// We try to lock down the permissions here in non-legacy mode,
-	// but there are still some improvements we can make:
-
-	// CreateVolume - supports filtering on tags, but we need to switch to pass tags to CreateVolume
-	// CreateTags - supports filtering on existing tags. Also supports filtering on VPC for some resources (e.g. security groups)
-	// Network Routing Permissions - May not be required with the CNI Networking provider
-
-	// Comments are which cloudprovider code file makes the call
-	p.unconditionalAction.Insert(
-		"ec2:DescribeAccountAttributes", // aws.go
-		"ec2:DescribeInstances",         // aws.go
-		"ec2:DescribeInternetGateways",  // aws.go
-		"ec2:DescribeRegions",           // s3context.go
-		"ec2:DescribeRouteTables",       // aws.go
-		"ec2:DescribeSecurityGroups",    // aws.go
-		"ec2:DescribeSubnets",           // aws.go
-		"ec2:DescribeVolumes",           // aws.go
-		"ec2:CreateSecurityGroup",       // aws.go
-		"ec2:CreateTags",                // aws.go, tag.go
-		"ec2:ModifyInstanceAttribute",   // aws.go
-	)
-	p.clusterTaggedAction.Insert(
-		"ec2:AttachVolume",                  // aws.go
-		"ec2:AuthorizeSecurityGroupIngress", // aws.go
-		"ec2:CreateRoute",                   // aws.go
-		"ec2:DeleteRoute",                   // aws.go
-		"ec2:DeleteSecurityGroup",           // aws.go
-		"ec2:RevokeSecurityGroupIngress",    // aws.go
-	)
-}
-
-func AddMasterELBPolicies(p *Policy) {
-	// Comments are which cloudprovider code file makes the call
-	p.unconditionalAction.Insert(
-		"ec2:DescribeVpcs",                                             // aws_loadbalancer.go
-		"elasticloadbalancing:DescribeLoadBalancers",                   // aws.go
-		"elasticloadbalancing:DescribeLoadBalancerAttributes",          // aws.go
-		"elasticloadbalancing:DescribeListeners",                       // aws_loadbalancer.go
-		"elasticloadbalancing:DescribeLoadBalancerPolicies",            // aws_loadbalancer.go
-		"elasticloadbalancing:DescribeTargetGroups",                    // aws_loadbalancer.go
-		"elasticloadbalancing:DescribeTargetHealth",                    // aws_loadbalancer.go
-		"elasticloadbalancing:CreateListener",                          // aws_loadbalancer.go
-		"elasticloadbalancing:CreateTargetGroup",                       // aws_loadbalancer.go
-		"elasticloadbalancing:CreateLoadBalancer",                      // aws_loadbalancer.go
-		"elasticloadbalancing:CreateLoadBalancerPolicy",                // aws_loadbalancer.go
-		"elasticloadbalancing:CreateLoadBalancerListeners",             // aws_loadbalancer.go
-		"elasticloadbalancing:DeleteLoadBalancer",                      // aws.go
-		"elasticloadbalancing:DeleteLoadBalancerListeners",             // aws_loadbalancer.go
-		"elasticloadbalancing:DeleteListener",                          // aws_loadbalancer.go
-		"elasticloadbalancing:DeleteTargetGroup",                       // aws_loadbalancer.go
-		"elasticloadbalancing:AddTags",                                 // aws_loadbalancer.go
-		"elasticloadbalancing:ModifyLoadBalancerAttributes",            // aws_loadbalancer.go
-		"elasticloadbalancing:ModifyListener",                          // aws_loadbalancer.go
-		"elasticloadbalancing:ModifyTargetGroup",                       // aws_loadbalancer.go
-		"elasticloadbalancing:AttachLoadBalancerToSubnets",             // aws_loadbalancer.go
-		"elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",       // aws_loadbalancer.go
-		"elasticloadbalancing:ConfigureHealthCheck",                    // aws_loadbalancer.go
-		"elasticloadbalancing:DetachLoadBalancerFromSubnets",           // aws_loadbalancer.go
-		"elasticloadbalancing:DeregisterInstancesFromLoadBalancer",     // aws_loadbalancer.go
-		"elasticloadbalancing:RegisterInstancesWithLoadBalancer",       // aws_loadbalancer.go
-		"elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer", // aws_loadbalancer.go
-		"elasticloadbalancing:DeregisterTargets",                       // aws_loadbalancer.go
-		"elasticloadbalancing:RegisterTargets",                         // aws_loadbalancer.go
-		"elasticloadbalancing:SetLoadBalancerPoliciesOfListener",       // aws_loadbalancer.go
-	)
-}
-
-func addMasterASPolicies(p *Policy) {
-	// Comments are which cloudprovider / autoscaler code file makes the call
-	// TODO: Make optional only if using autoscalers
-	p.unconditionalAction.Insert(
-		"autoscaling:DescribeAutoScalingGroups",    // aws_instancegroups.go
-		"autoscaling:DescribeLaunchConfigurations", // aws.go
-		"autoscaling:DescribeTags",                 // auto_scaling.go
-		"ec2:DescribeLaunchTemplateVersions",
-	)
-	p.clusterTaggedAction.Insert(
-		"autoscaling:CompleteLifecycleAction",      // aws_manager.go
-		"autoscaling:DescribeAutoScalingInstances", // aws_instancegroups.go
 	)
 }
 
