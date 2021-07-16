@@ -1349,6 +1349,12 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		if err != nil {
 			return nil, nil, fmt.Errorf("encoding service-account keys: %w", err)
 		}
+	} else {
+		for _, key := range []string{"kubelet", "kube-proxy", "kube-router"} {
+			if caTasks[key] != nil {
+				config.KeypairIDs[key] = caTasks[key].Keyset().Primary.Id
+			}
+		}
 	}
 
 	if isMaster || useGossip {
