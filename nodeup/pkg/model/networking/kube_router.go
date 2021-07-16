@@ -41,7 +41,7 @@ func (b *KuberouterBuilder) Build(c *fi.ModelBuilderContext) error {
 	var kubeconfig fi.Resource
 	var err error
 
-	if b.IsMaster {
+	if b.HasAPIServer {
 		kubeconfig = b.BuildIssuedKubeconfig("kube-router", nodetasks.PKIXName{CommonName: rbac.KubeRouter}, c)
 	} else {
 		kubeconfig, err = b.BuildBootstrapKubeconfig("kube-router", c)

@@ -289,7 +289,26 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Model
 
 		return kubeConfig.GetConfig(), nil
 	} else {
-		cert, key, err := c.GetPrimaryKeypair(name)
+		keyset, err := c.KeyStore.FindKeyset(name)
+		if err != nil {
+			return nil, fmt.Errorf("error fetching keyset: %v from keystore: %v", name, err)
+		}
+
+		keypairID := c.NodeupConfig.KeypairIDs[name]
+		if keypairID == "" {
+			return nil, fmt.Errorf("keypairID for %s missing from NodeupConfig", name)
+		}
+		item := keyset.Items[keypairID]
+		if item == nil {
+			return nil, fmt.Errorf("keypairID %s missing from %s keyset", keypairID, name)
+		}
+
+		cert, err := item.Certificate.AsBytes()
+		if err != nil {
+			return nil, err
+		}
+
+		key, err := item.PrivateKey.AsBytes()
 		if err != nil {
 			return nil, err
 		}
@@ -630,27 +649,6 @@ func EvaluateHostnameOverride(hostnameOverride string) (string, error) {
 		return "", fmt.Errorf("too many instances returned for the single instance-id")
 	}
 	return *(result.Reservations[0].Instances[0].PrivateDnsName), nil
-}
-
-// GetPrimaryKeypair is a helper method to retrieve a primary keypair from the store.
-// TODO: Use the KeysetID in NodeupConfig instead of the Primary keypair.
-func (c *NodeupModelContext) GetPrimaryKeypair(name string) (cert []byte, key []byte, err error) {
-	keyset, err := c.KeyStore.FindKeyset(name)
-	if err != nil {
-		return nil, nil, fmt.Errorf("error fetching keyset: %v from keystore: %v", name, err)
-	}
-
-	cert, err = keyset.Primary.Certificate.AsBytes()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	key, err = keyset.Primary.PrivateKey.AsBytes()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return cert, key, nil
 }
 
 func (b *NodeupModelContext) AddCNIBinAssets(c *fi.ModelBuilderContext, assetNames []string) error {
