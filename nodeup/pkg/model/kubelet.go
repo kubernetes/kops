@@ -117,8 +117,15 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		if b.HasAPIServer || !b.UseBootstrapTokens() {
 			var kubeconfig fi.Resource
-			if b.HasAPIServer && (b.IsKubernetesGTE("1.19") || b.UseBootstrapTokens()) {
-				kubeconfig, err = b.buildMasterKubeletKubeconfig(c)
+			if b.HasAPIServer {
+				if b.IsKubernetesGTE("1.19") || b.UseBootstrapTokens() {
+					kubeconfig, err = b.buildMasterKubeletKubeconfig(c)
+				} else {
+					kubeconfig = b.BuildIssuedKubeconfig("kubelet", nodetasks.PKIXName{
+						CommonName:   "kubelet",
+						Organization: []string{rbac.NodesGroup},
+					}, c)
+				}
 			} else {
 				kubeconfig, err = b.BuildBootstrapKubeconfig("kubelet", c)
 			}
