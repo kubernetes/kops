@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
@@ -39,17 +40,17 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// PathAuthnConfig is the path to the custom webhook authentication config
+// PathAuthnConfig is the path to the custom webhook authentication config.
 const PathAuthnConfig = "/etc/kubernetes/authn.config"
 
-// KubeAPIServerBuilder install kube-apiserver (just the manifest at the moment)
+// KubeAPIServerBuilder installs kube-apiserver.
 type KubeAPIServerBuilder struct {
 	*NodeupModelContext
 }
 
 var _ fi.ModelBuilder = &KubeAPIServerBuilder{}
 
-// Build is responsible for generating the configuration for the kube-apiserver
+// Build is responsible for generating the configuration for the kube-apiserver.
 func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !b.HasAPIServer {
 		return nil
@@ -160,6 +161,10 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		kubeAPIServer.ProxyClientCertFile = fi.String(filepath.Join(pathSrvKAPI, "apiserver-aggregator.crt"))
 		kubeAPIServer.ProxyClientKeyFile = fi.String(filepath.Join(pathSrvKAPI, "apiserver-aggregator.key"))
+	}
+
+	if err := b.writeServerCertificate(c, &kubeAPIServer); err != nil {
+		return err
 	}
 
 	{
@@ -349,15 +354,79 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 	return fmt.Errorf("unrecognized authentication config %v", b.Cluster.Spec.Authentication)
 }
 
-// buildPod is responsible for generating the kube-apiserver pod and thus manifest file
-func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig) (*v1.Pod, error) {
+func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.ModelBuilderContext, kubeAPIServer *kops.KubeAPIServerConfig) error {
+	pathSrvKAPI := filepath.Join(b.PathSrvKubernetes(), "kube-apiserver")
+
+	{
+		// A few names used from inside the cluster, which all resolve the same based on our default suffixes
+		alternateNames := []string{
+			"kubernetes",
+			"kubernetes.default",
+			"kubernetes.default.svc",
+			"kubernetes.default.svc." + b.Cluster.Spec.ClusterDNSDomain,
+		}
+
+		// Names specified in the cluster spec
+		alternateNames = append(alternateNames, b.Cluster.Spec.MasterPublicName)
+		alternateNames = append(alternateNames, b.Cluster.Spec.MasterInternalName)
+		alternateNames = append(alternateNames, b.Cluster.Spec.AdditionalSANs...)
+
+		// Load balancer IPs passed in through NodeupConfig
+		alternateNames = append(alternateNames, b.NodeupConfig.ApiserverAdditionalIPs...)
+
+		// Referencing it by internal IP should work also
+		{
+			ip, err := components.WellKnownServiceIP(&b.Cluster.Spec, 1)
+			if err != nil {
+				return err
+			}
+			alternateNames = append(alternateNames, ip.String())
+		}
+
+		// We also want to be able to reference it locally via https://127.0.0.1
+		alternateNames = append(alternateNames, "127.0.0.1")
+
+		if b.Cluster.Spec.CloudProvider == "openstack" {
+			if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Masters == kops.TopologyPrivate {
+				instanceAddress, err := getInstanceAddress()
+				if err != nil {
+					return err
+				}
+				alternateNames = append(alternateNames, instanceAddress)
+			}
+		}
+
+		issueCert := &nodetasks.IssueCert{
+			Name:           "master",
+			Signer:         fi.CertificateIDCA,
+			KeypairID:      b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
+			Type:           "server",
+			Subject:        nodetasks.PKIXName{CommonName: "kubernetes-master"},
+			AlternateNames: alternateNames,
+		}
+
+		// Including the CA certificate is more correct, and is needed for e.g. AWS WebIdentity federation
+		issueCert.IncludeRootCertificate = true
+
+		c.AddTask(issueCert)
+		err := issueCert.AddFileTasks(c, pathSrvKAPI, "server", "", nil)
+		if err != nil {
+			return err
+		}
+	}
+
 	// If clientCAFile is not specified, set it to the default value ${PathSrvKubernetes}/ca.crt
 	if kubeAPIServer.ClientCAFile == "" {
 		kubeAPIServer.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 	}
-	kubeAPIServer.TLSCertFile = filepath.Join(b.PathSrvKubernetes(), "server.crt")
-	kubeAPIServer.TLSPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "server.key")
+	kubeAPIServer.TLSCertFile = filepath.Join(pathSrvKAPI, "server.crt")
+	kubeAPIServer.TLSPrivateKeyFile = filepath.Join(pathSrvKAPI, "server.key")
 
+	return nil
+}
+
+// buildPod is responsible for generating the kube-apiserver pod and thus manifest file
+func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig) (*v1.Pod, error) {
 	// Support for basic auth was deprecated 1.16 and removed in 1.19
 	// https://github.com/kubernetes/kubernetes/pull/89069
 	if b.IsKubernetesLT("1.18") {
