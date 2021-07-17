@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/pkg/tokens"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
@@ -164,6 +165,10 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if err := b.writeServerCertificate(c, &kubeAPIServer); err != nil {
+		return err
+	}
+
+	if err := b.writeStaticCredentials(c, &kubeAPIServer); err != nil {
 		return err
 	}
 
@@ -425,21 +430,90 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.ModelBuilderContext,
 	return nil
 }
 
-// buildPod is responsible for generating the kube-apiserver pod and thus manifest file
-func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig) (*v1.Pod, error) {
+func (b *KubeAPIServerBuilder) writeStaticCredentials(c *fi.ModelBuilderContext, kubeAPIServer *kops.KubeAPIServerConfig) error {
+	pathSrvKAPI := filepath.Join(b.PathSrvKubernetes(), "kube-apiserver")
+
+	// Support for basic auth was deprecated 1.16 and removed in 1.19
+	// https://github.com/kubernetes/kubernetes/pull/89069
+	if b.IsKubernetesLT("1.19") && b.SecretStore != nil {
+		key := "kube"
+		token, err := b.SecretStore.FindSecret(key)
+		if err != nil {
+			return err
+		}
+		if token == nil {
+			return fmt.Errorf("token not found: %q", key)
+		}
+		csv := string(token.Data) + "," + adminUser + "," + adminUser + "," + adminGroup
+
+		t := &nodetasks.File{
+			Path:     filepath.Join(pathSrvKAPI, "basic_auth.csv"),
+			Contents: fi.NewStringResource(csv),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0600"),
+		}
+		c.AddTask(t)
+	}
+
+	if b.SecretStore != nil {
+		allTokens, err := b.allAuthTokens()
+		if err != nil {
+			return err
+		}
+
+		var lines []string
+		for id, token := range allTokens {
+			if id == adminUser {
+				lines = append(lines, token+","+id+","+id+","+adminGroup)
+			} else {
+				lines = append(lines, token+","+id+","+id)
+			}
+		}
+		csv := strings.Join(lines, "\n")
+
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join(pathSrvKAPI, "known_tokens.csv"),
+			Contents: fi.NewStringResource(csv),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0600"),
+		})
+	}
+
 	// Support for basic auth was deprecated 1.16 and removed in 1.19
 	// https://github.com/kubernetes/kubernetes/pull/89069
 	if b.IsKubernetesLT("1.18") {
-		kubeAPIServer.TokenAuthFile = filepath.Join(b.PathSrvKubernetes(), "known_tokens.csv")
+		kubeAPIServer.TokenAuthFile = filepath.Join(pathSrvKAPI, "known_tokens.csv")
 		if kubeAPIServer.DisableBasicAuth == nil || !*kubeAPIServer.DisableBasicAuth {
-			kubeAPIServer.BasicAuthFile = filepath.Join(b.PathSrvKubernetes(), "basic_auth.csv")
+			kubeAPIServer.BasicAuthFile = filepath.Join(pathSrvKAPI, "basic_auth.csv")
 		}
 	} else if b.IsKubernetesLT("1.19") {
 		if kubeAPIServer.DisableBasicAuth != nil && !*kubeAPIServer.DisableBasicAuth {
-			kubeAPIServer.BasicAuthFile = filepath.Join(b.PathSrvKubernetes(), "basic_auth.csv")
+			kubeAPIServer.BasicAuthFile = filepath.Join(pathSrvKAPI, "basic_auth.csv")
 		}
 	}
 
+	return nil
+}
+
+// allTokens returns a map of all auth tokens that are present
+func (b *KubeAPIServerBuilder) allAuthTokens() (map[string]string, error) {
+	possibleTokens := tokens.GetKubernetesAuthTokens_Deprecated()
+
+	tokens := make(map[string]string)
+	for _, id := range possibleTokens {
+		token, err := b.SecretStore.FindSecret(id)
+		if err != nil {
+			return nil, err
+		}
+		if token != nil {
+			tokens[id] = string(token.Data)
+		}
+	}
+	return tokens, nil
+}
+
+// buildPod is responsible for generating the kube-apiserver pod and thus manifest file
+func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig) (*v1.Pod, error) {
 	// we need to replace 127.0.0.1 for etcd urls with the dns names in case this apiserver is not
 	// running on master nodes
 	if !b.IsMaster {
