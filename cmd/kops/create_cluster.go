@@ -304,9 +304,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().StringSliceVar(&options.NodeSecurityGroups, "node-security-groups", options.NodeSecurityGroups, "Additional precreated security groups to add to worker nodes.")
-	cmd.RegisterFlagCompletionFunc("node-security-groups", completeSecurityGroup(options))
+	cmd.RegisterFlagCompletionFunc("node-security-groups", completeSecurityGroup)
 	cmd.Flags().StringSliceVar(&options.MasterSecurityGroups, "master-security-groups", options.MasterSecurityGroups, "Additional precreated security groups to add to masters.")
-	cmd.RegisterFlagCompletionFunc("master-security-groups", completeSecurityGroup(options))
+	cmd.RegisterFlagCompletionFunc("master-security-groups", completeSecurityGroup)
 
 	cmd.Flags().StringVar(&options.Channel, "channel", options.Channel, "Channel for default versions and configuration to use")
 	cmd.RegisterFlagCompletionFunc("channel", completeChannel)
@@ -963,11 +963,9 @@ func completeDNSZone(options *CreateClusterOptions) func(cmd *cobra.Command, arg
 	}
 }
 
-func completeSecurityGroup(options *CreateClusterOptions) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		// TODO call into cloud provider(s) to get list of valid Security groups
-		return nil, cobra.ShellCompDirectiveNoFileComp
-	}
+func completeSecurityGroup(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO call into cloud provider(s) to get list of valid Security groups
+	return nil, cobra.ShellCompDirectiveNoFileComp
 }
 
 func completeTenancy(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
