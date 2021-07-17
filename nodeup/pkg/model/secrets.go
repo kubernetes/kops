@@ -21,14 +21,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"k8s.io/kops/util/pkg/vfs"
-
-	"k8s.io/kops/pkg/apis/kops"
-
-	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/tokens"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 // SecretBuilder writes secrets
@@ -75,64 +71,6 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	// If we do not run the Kubernetes API server we can stop here.
 	if !b.HasAPIServer {
 		return nil
-	}
-
-	{
-		// A few names used from inside the cluster, which all resolve the same based on our default suffixes
-		alternateNames := []string{
-			"kubernetes",
-			"kubernetes.default",
-			"kubernetes.default.svc",
-			"kubernetes.default.svc." + b.Cluster.Spec.ClusterDNSDomain,
-		}
-
-		// Names specified in the cluster spec
-		alternateNames = append(alternateNames, b.Cluster.Spec.MasterPublicName)
-		alternateNames = append(alternateNames, b.Cluster.Spec.MasterInternalName)
-		alternateNames = append(alternateNames, b.Cluster.Spec.AdditionalSANs...)
-
-		// Load balancer IPs passed in through NodeupConfig
-		alternateNames = append(alternateNames, b.NodeupConfig.ApiserverAdditionalIPs...)
-
-		// Referencing it by internal IP should work also
-		{
-			ip, err := components.WellKnownServiceIP(&b.Cluster.Spec, 1)
-			if err != nil {
-				return err
-			}
-			alternateNames = append(alternateNames, ip.String())
-		}
-
-		// We also want to be able to reference it locally via https://127.0.0.1
-		alternateNames = append(alternateNames, "127.0.0.1")
-
-		if b.Cluster.Spec.CloudProvider == "openstack" {
-			if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Masters == kops.TopologyPrivate {
-				instanceAddress, err := getInstanceAddress()
-				if err != nil {
-					return err
-				}
-				alternateNames = append(alternateNames, instanceAddress)
-			}
-		}
-
-		issueCert := &nodetasks.IssueCert{
-			Name:           "master",
-			Signer:         fi.CertificateIDCA,
-			KeypairID:      b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
-			Type:           "server",
-			Subject:        nodetasks.PKIXName{CommonName: "kubernetes-master"},
-			AlternateNames: alternateNames,
-		}
-
-		// Including the CA certificate is more correct, and is needed for e.g. AWS WebIdentity federation
-		issueCert.IncludeRootCertificate = true
-
-		c.AddTask(issueCert)
-		err := issueCert.AddFileTasks(c, b.PathSrvKubernetes(), "server", "", nil)
-		if err != nil {
-			return err
-		}
 	}
 
 	// Support for basic auth was deprecated 1.16 and removed in 1.19
