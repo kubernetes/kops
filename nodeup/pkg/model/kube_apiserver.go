@@ -696,10 +696,10 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 		addHostPathMapping(pod, container, "cloudconfig", CloudConfigFilePath)
 	}
 
-	pathSrvKubernetes := b.PathSrvKubernetes()
-	if pathSrvKubernetes != "" {
-		addHostPathMapping(pod, container, "srvkube", pathSrvKubernetes)
-	}
+	addHostPathMapping(pod, container, "kubernetesca", filepath.Join(b.PathSrvKubernetes(), "ca.crt"))
+
+	pathSrvKAPI := filepath.Join(b.PathSrvKubernetes(), "kube-apiserver")
+	addHostPathMapping(pod, container, "srvkapi", pathSrvKAPI)
 
 	pathSrvSshproxy := b.PathSrvSshproxy()
 	if pathSrvSshproxy != "" {
