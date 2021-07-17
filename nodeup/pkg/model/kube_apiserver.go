@@ -168,6 +168,10 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
+	if err := b.writeKubeletAPICertificate(c, &kubeAPIServer); err != nil {
+		return err
+	}
+
 	if err := b.writeStaticCredentials(c, &kubeAPIServer); err != nil {
 		return err
 	}
@@ -195,19 +199,6 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		if err := b.addHealthcheckSidecarTasks(c); err != nil {
 			return err
 		}
-	}
-
-	issueCert := &nodetasks.IssueCert{
-		Name:      "kubelet-api",
-		Signer:    fi.CertificateIDCA,
-		KeypairID: b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
-		Type:      "client",
-		Subject:   nodetasks.PKIXName{CommonName: "kubelet-api"},
-	}
-	c.AddTask(issueCert)
-	err := issueCert.AddFileTasks(c, b.PathSrvKubernetes(), "kubelet-api", "", nil)
-	if err != nil {
-		return err
 	}
 
 	c.AddTask(&nodetasks.File{
@@ -430,6 +421,29 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.ModelBuilderContext,
 	return nil
 }
 
+func (b *KubeAPIServerBuilder) writeKubeletAPICertificate(c *fi.ModelBuilderContext, kubeAPIServer *kops.KubeAPIServerConfig) error {
+	pathSrvKAPI := filepath.Join(b.PathSrvKubernetes(), "kube-apiserver")
+
+	issueCert := &nodetasks.IssueCert{
+		Name:      "kubelet-api",
+		Signer:    fi.CertificateIDCA,
+		KeypairID: b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
+		Type:      "client",
+		Subject:   nodetasks.PKIXName{CommonName: "kubelet-api"},
+	}
+	c.AddTask(issueCert)
+	err := issueCert.AddFileTasks(c, pathSrvKAPI, "kubelet-api", "", nil)
+	if err != nil {
+		return err
+	}
+
+	// @note we are making assumption were using the ones created by the pki model, not custom defined ones
+	kubeAPIServer.KubeletClientCertificate = filepath.Join(pathSrvKAPI, "kubelet-api.crt")
+	kubeAPIServer.KubeletClientKey = filepath.Join(pathSrvKAPI, "kubelet-api.key")
+
+	return nil
+}
+
 func (b *KubeAPIServerBuilder) writeStaticCredentials(c *fi.ModelBuilderContext, kubeAPIServer *kops.KubeAPIServerConfig) error {
 	pathSrvKAPI := filepath.Join(b.PathSrvKubernetes(), "kube-apiserver")
 
@@ -529,10 +543,6 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 			}
 		}
 	}
-
-	// @note we are making assumption were using the ones created by the pki model, not custom defined ones
-	kubeAPIServer.KubeletClientCertificate = filepath.Join(b.PathSrvKubernetes(), "kubelet-api.crt")
-	kubeAPIServer.KubeletClientKey = filepath.Join(b.PathSrvKubernetes(), "kubelet-api.key")
 
 	// @fixup: the admission controller migrated from --admission-control to --enable-admission-plugins, but
 	// most people will still have c.Spec.KubeAPIServer.AdmissionControl references into their configuration we need
