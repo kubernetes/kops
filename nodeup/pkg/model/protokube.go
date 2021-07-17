@@ -101,16 +101,24 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// retrieve the etcd peer certificates and private keys from the keystore
 		if !t.UseEtcdManager() && t.UseEtcdTLS() {
-			for _, x := range []string{"etcd", "etcd-peer", "etcd-client"} {
+			for _, x := range []string{"etcd", "etcd-peer"} {
 				if err := t.BuildCertificateTask(c, x, fmt.Sprintf("%s.pem", x), nil); err != nil {
 					return err
 				}
 			}
-			for _, x := range []string{"etcd", "etcd-peer", "etcd-client"} {
+			for _, x := range []string{"etcd", "etcd-peer"} {
 				if err := t.BuildLegacyPrivateKeyTask(c, x, fmt.Sprintf("%s-key.pem", x), nil); err != nil {
 					return err
 				}
 			}
+			pathEtcdClient := filepath.Join(t.PathSrvKubernetes(), "kube-apiserver", "etcd-client")
+			if err := t.BuildCertificateTask(c, "etcd-client", pathEtcdClient+".crt", nil); err != nil {
+				return err
+			}
+			if err := t.BuildLegacyPrivateKeyTask(c, "etcd-client", pathEtcdClient+".key", nil); err != nil {
+				return err
+			}
+
 		}
 	}
 
