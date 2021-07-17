@@ -237,6 +237,15 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("unknown load balancer Type: %q", lbSpec.Type)
 		}
 
+		if lbSpec.AccessLog != nil {
+			clb.AccessLog = &awstasks.ClassicLoadBalancerAccessLog{
+				EmitInterval:   fi.Int64(int64(lbSpec.AccessLog.Interval)),
+				Enabled:        fi.Bool(true),
+				S3BucketName:   fi.String(lbSpec.AccessLog.Bucket),
+				S3BucketPrefix: fi.String(lbSpec.AccessLog.BucketPrefix),
+			}
+		}
+
 		if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
 			c.AddTask(clb)
 		} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
