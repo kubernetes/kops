@@ -2,6 +2,8 @@
 
 The [lyft cni-ipvlan-vpc-k8s](https://github.com/lyft/cni-ipvlan-vpc-k8s) plugin uses Amazon Elastic Network Interfaces (ENI) to assign AWS-managed IPs to Pods using the Linux kernel's IPvlan driver in L2 mode.
 
+Support for the Lyft CNI is deprecated in kOps 1.22 and will be removed in kOps 1.23.
+
 ## Installing
 
 Read the [prerequisites](https://github.com/lyft/cni-ipvlan-vpc-k8s#prerequisites) before starting. In addition to that, you need to specify the VPC ID as `spec.networkID` in the cluster spec file.
