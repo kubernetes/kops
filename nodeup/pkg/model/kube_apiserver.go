@@ -26,6 +26,8 @@ import (
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/pkg/tokens"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
@@ -39,17 +41,17 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// PathAuthnConfig is the path to the custom webhook authentication config
+// PathAuthnConfig is the path to the custom webhook authentication config.
 const PathAuthnConfig = "/etc/kubernetes/authn.config"
 
-// KubeAPIServerBuilder install kube-apiserver (just the manifest at the moment)
+// KubeAPIServerBuilder installs kube-apiserver.
 type KubeAPIServerBuilder struct {
 	*NodeupModelContext
 }
 
 var _ fi.ModelBuilder = &KubeAPIServerBuilder{}
 
-// Build is responsible for generating the configuration for the kube-apiserver
+// Build is responsible for generating the configuration for the kube-apiserver.
 func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !b.HasAPIServer {
 		return nil
@@ -162,6 +164,18 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		kubeAPIServer.ProxyClientKeyFile = fi.String(filepath.Join(pathSrvKAPI, "apiserver-aggregator.key"))
 	}
 
+	if err := b.writeServerCertificate(c, &kubeAPIServer); err != nil {
+		return err
+	}
+
+	if err := b.writeKubeletAPICertificate(c, &kubeAPIServer); err != nil {
+		return err
+	}
+
+	if err := b.writeStaticCredentials(c, &kubeAPIServer); err != nil {
+		return err
+	}
+
 	{
 		pod, err := b.buildPod(&kubeAPIServer)
 		if err != nil {
@@ -185,19 +199,6 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		if err := b.addHealthcheckSidecarTasks(c); err != nil {
 			return err
 		}
-	}
-
-	issueCert := &nodetasks.IssueCert{
-		Name:      "kubelet-api",
-		Signer:    fi.CertificateIDCA,
-		KeypairID: b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
-		Type:      "client",
-		Subject:   nodetasks.PKIXName{CommonName: "kubelet-api"},
-	}
-	c.AddTask(issueCert)
-	err := issueCert.AddFileTasks(c, b.PathSrvKubernetes(), "kubelet-api", "", nil)
-	if err != nil {
-		return err
 	}
 
 	c.AddTask(&nodetasks.File{
@@ -349,28 +350,184 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 	return fmt.Errorf("unrecognized authentication config %v", b.Cluster.Spec.Authentication)
 }
 
-// buildPod is responsible for generating the kube-apiserver pod and thus manifest file
-func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig) (*v1.Pod, error) {
+func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.ModelBuilderContext, kubeAPIServer *kops.KubeAPIServerConfig) error {
+	pathSrvKAPI := filepath.Join(b.PathSrvKubernetes(), "kube-apiserver")
+
+	{
+		// A few names used from inside the cluster, which all resolve the same based on our default suffixes
+		alternateNames := []string{
+			"kubernetes",
+			"kubernetes.default",
+			"kubernetes.default.svc",
+			"kubernetes.default.svc." + b.Cluster.Spec.ClusterDNSDomain,
+		}
+
+		// Names specified in the cluster spec
+		alternateNames = append(alternateNames, b.Cluster.Spec.MasterPublicName)
+		alternateNames = append(alternateNames, b.Cluster.Spec.MasterInternalName)
+		alternateNames = append(alternateNames, b.Cluster.Spec.AdditionalSANs...)
+
+		// Load balancer IPs passed in through NodeupConfig
+		alternateNames = append(alternateNames, b.NodeupConfig.ApiserverAdditionalIPs...)
+
+		// Referencing it by internal IP should work also
+		{
+			ip, err := components.WellKnownServiceIP(&b.Cluster.Spec, 1)
+			if err != nil {
+				return err
+			}
+			alternateNames = append(alternateNames, ip.String())
+		}
+
+		// We also want to be able to reference it locally via https://127.0.0.1
+		alternateNames = append(alternateNames, "127.0.0.1")
+
+		if b.Cluster.Spec.CloudProvider == "openstack" {
+			if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Masters == kops.TopologyPrivate {
+				instanceAddress, err := getInstanceAddress()
+				if err != nil {
+					return err
+				}
+				alternateNames = append(alternateNames, instanceAddress)
+			}
+		}
+
+		issueCert := &nodetasks.IssueCert{
+			Name:           "master",
+			Signer:         fi.CertificateIDCA,
+			KeypairID:      b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
+			Type:           "server",
+			Subject:        nodetasks.PKIXName{CommonName: "kubernetes-master"},
+			AlternateNames: alternateNames,
+		}
+
+		// Including the CA certificate is more correct, and is needed for e.g. AWS WebIdentity federation
+		issueCert.IncludeRootCertificate = true
+
+		c.AddTask(issueCert)
+		err := issueCert.AddFileTasks(c, pathSrvKAPI, "server", "", nil)
+		if err != nil {
+			return err
+		}
+	}
+
 	// If clientCAFile is not specified, set it to the default value ${PathSrvKubernetes}/ca.crt
 	if kubeAPIServer.ClientCAFile == "" {
 		kubeAPIServer.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 	}
-	kubeAPIServer.TLSCertFile = filepath.Join(b.PathSrvKubernetes(), "server.crt")
-	kubeAPIServer.TLSPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "server.key")
+	kubeAPIServer.TLSCertFile = filepath.Join(pathSrvKAPI, "server.crt")
+	kubeAPIServer.TLSPrivateKeyFile = filepath.Join(pathSrvKAPI, "server.key")
+
+	return nil
+}
+
+func (b *KubeAPIServerBuilder) writeKubeletAPICertificate(c *fi.ModelBuilderContext, kubeAPIServer *kops.KubeAPIServerConfig) error {
+	pathSrvKAPI := filepath.Join(b.PathSrvKubernetes(), "kube-apiserver")
+
+	issueCert := &nodetasks.IssueCert{
+		Name:      "kubelet-api",
+		Signer:    fi.CertificateIDCA,
+		KeypairID: b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
+		Type:      "client",
+		Subject:   nodetasks.PKIXName{CommonName: "kubelet-api"},
+	}
+	c.AddTask(issueCert)
+	err := issueCert.AddFileTasks(c, pathSrvKAPI, "kubelet-api", "", nil)
+	if err != nil {
+		return err
+	}
+
+	// @note we are making assumption were using the ones created by the pki model, not custom defined ones
+	kubeAPIServer.KubeletClientCertificate = filepath.Join(pathSrvKAPI, "kubelet-api.crt")
+	kubeAPIServer.KubeletClientKey = filepath.Join(pathSrvKAPI, "kubelet-api.key")
+
+	return nil
+}
+
+func (b *KubeAPIServerBuilder) writeStaticCredentials(c *fi.ModelBuilderContext, kubeAPIServer *kops.KubeAPIServerConfig) error {
+	pathSrvKAPI := filepath.Join(b.PathSrvKubernetes(), "kube-apiserver")
+
+	// Support for basic auth was deprecated 1.16 and removed in 1.19
+	// https://github.com/kubernetes/kubernetes/pull/89069
+	if b.IsKubernetesLT("1.19") && b.SecretStore != nil {
+		key := "kube"
+		token, err := b.SecretStore.FindSecret(key)
+		if err != nil {
+			return err
+		}
+		if token == nil {
+			return fmt.Errorf("token not found: %q", key)
+		}
+		csv := string(token.Data) + "," + adminUser + "," + adminUser + "," + adminGroup
+
+		t := &nodetasks.File{
+			Path:     filepath.Join(pathSrvKAPI, "basic_auth.csv"),
+			Contents: fi.NewStringResource(csv),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0600"),
+		}
+		c.AddTask(t)
+	}
+
+	if b.SecretStore != nil {
+		allTokens, err := b.allAuthTokens()
+		if err != nil {
+			return err
+		}
+
+		var lines []string
+		for id, token := range allTokens {
+			if id == adminUser {
+				lines = append(lines, token+","+id+","+id+","+adminGroup)
+			} else {
+				lines = append(lines, token+","+id+","+id)
+			}
+		}
+		csv := strings.Join(lines, "\n")
+
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join(pathSrvKAPI, "known_tokens.csv"),
+			Contents: fi.NewStringResource(csv),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0600"),
+		})
+	}
 
 	// Support for basic auth was deprecated 1.16 and removed in 1.19
 	// https://github.com/kubernetes/kubernetes/pull/89069
 	if b.IsKubernetesLT("1.18") {
-		kubeAPIServer.TokenAuthFile = filepath.Join(b.PathSrvKubernetes(), "known_tokens.csv")
+		kubeAPIServer.TokenAuthFile = filepath.Join(pathSrvKAPI, "known_tokens.csv")
 		if kubeAPIServer.DisableBasicAuth == nil || !*kubeAPIServer.DisableBasicAuth {
-			kubeAPIServer.BasicAuthFile = filepath.Join(b.PathSrvKubernetes(), "basic_auth.csv")
+			kubeAPIServer.BasicAuthFile = filepath.Join(pathSrvKAPI, "basic_auth.csv")
 		}
 	} else if b.IsKubernetesLT("1.19") {
 		if kubeAPIServer.DisableBasicAuth != nil && !*kubeAPIServer.DisableBasicAuth {
-			kubeAPIServer.BasicAuthFile = filepath.Join(b.PathSrvKubernetes(), "basic_auth.csv")
+			kubeAPIServer.BasicAuthFile = filepath.Join(pathSrvKAPI, "basic_auth.csv")
 		}
 	}
 
+	return nil
+}
+
+// allTokens returns a map of all auth tokens that are present
+func (b *KubeAPIServerBuilder) allAuthTokens() (map[string]string, error) {
+	possibleTokens := tokens.GetKubernetesAuthTokens_Deprecated()
+
+	tokens := make(map[string]string)
+	for _, id := range possibleTokens {
+		token, err := b.SecretStore.FindSecret(id)
+		if err != nil {
+			return nil, err
+		}
+		if token != nil {
+			tokens[id] = string(token.Data)
+		}
+	}
+	return tokens, nil
+}
+
+// buildPod is responsible for generating the kube-apiserver pod and thus manifest file
+func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig) (*v1.Pod, error) {
 	// we need to replace 127.0.0.1 for etcd urls with the dns names in case this apiserver is not
 	// running on master nodes
 	if !b.IsMaster {
@@ -386,10 +543,6 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 			}
 		}
 	}
-
-	// @note we are making assumption were using the ones created by the pki model, not custom defined ones
-	kubeAPIServer.KubeletClientCertificate = filepath.Join(b.PathSrvKubernetes(), "kubelet-api.crt")
-	kubeAPIServer.KubeletClientKey = filepath.Join(b.PathSrvKubernetes(), "kubelet-api.key")
 
 	// @fixup: the admission controller migrated from --admission-control to --enable-admission-plugins, but
 	// most people will still have c.Spec.KubeAPIServer.AdmissionControl references into their configuration we need
