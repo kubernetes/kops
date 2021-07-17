@@ -52,7 +52,11 @@ KOPS_B=$(kops-download-from-base)
 
 KOPS="${KOPS_B}"
 
-"${KOPS_B}" edit cluster "${CLUSTER_NAME}" "--set=cluster.spec.kubernetesVersion=${K8S_VERSION_B}"
+if [[ "${KOPS_B}" =~ v1.2[01] ]]; then
+  "${KOPS_B}" set cluster "${CLUSTER_NAME}" "cluster.spec.kubernetesVersion=${K8S_VERSION_B}"
+else
+  "${KOPS_B}" edit cluster "${CLUSTER_NAME}" "--set=cluster.spec.kubernetesVersion=${K8S_VERSION_B}"
+fi
 
 "${KOPS_B}" update cluster
 "${KOPS_B}" update cluster --admin --yes
