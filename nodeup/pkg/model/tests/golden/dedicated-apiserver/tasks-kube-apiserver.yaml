@@ -43,8 +43,8 @@ contents: |
       - --service-account-key-file=/srv/kubernetes/kube-apiserver/service-account.pub
       - --service-cluster-ip-range=100.64.0.0/13
       - --storage-backend=etcd3
-      - --tls-cert-file=/srv/kubernetes/server.crt
-      - --tls-private-key-file=/srv/kubernetes/server.key
+      - --tls-cert-file=/srv/kubernetes/kube-apiserver/server.crt
+      - --tls-private-key-file=/srv/kubernetes/kube-apiserver/server.key
       - --v=2
       - --logtostderr=false
       - --alsologtostderr
@@ -222,6 +222,50 @@ mode: "0600"
 path: /srv/kubernetes/kube-apiserver/etcd-client.key
 type: file
 ---
+contents:
+  task:
+    Name: master
+    alternateNames:
+    - kubernetes
+    - kubernetes.default
+    - kubernetes.default.svc
+    - kubernetes.default.svc.cluster.local
+    - api.minimal.example.com
+    - api.internal.minimal.example.com
+    - 100.64.0.1
+    - 127.0.0.1
+    includeRootCertificate: true
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kubernetes-master
+    type: server
+mode: "0644"
+path: /srv/kubernetes/kube-apiserver/server.crt
+type: file
+---
+contents:
+  task:
+    Name: master
+    alternateNames:
+    - kubernetes
+    - kubernetes.default
+    - kubernetes.default.svc
+    - kubernetes.default.svc.cluster.local
+    - api.minimal.example.com
+    - api.internal.minimal.example.com
+    - 100.64.0.1
+    - 127.0.0.1
+    includeRootCertificate: true
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kubernetes-master
+    type: server
+mode: "0600"
+path: /srv/kubernetes/kube-apiserver/server.key
+type: file
+---
 contents: |
   -----BEGIN RSA PUBLIC KEY-----
   MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANiW3hfHTcKnxCig+uWhpVbOfH1pANKm
@@ -285,3 +329,20 @@ signer: kubernetes-ca
 subject:
   CommonName: kubelet-api
 type: client
+---
+Name: master
+alternateNames:
+- kubernetes
+- kubernetes.default
+- kubernetes.default.svc
+- kubernetes.default.svc.cluster.local
+- api.minimal.example.com
+- api.internal.minimal.example.com
+- 100.64.0.1
+- 127.0.0.1
+includeRootCertificate: true
+keypairID: "3"
+signer: kubernetes-ca
+subject:
+  CommonName: kubernetes-master
+type: server
