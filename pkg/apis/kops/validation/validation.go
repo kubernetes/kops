@@ -221,6 +221,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateDockerConfig(spec.Docker, fieldPath.Child("docker"))...)
 	}
 
+	if spec.Nvidia != nil {
+		allErrs = append(allErrs, validateNvidiaConfig(spec, fieldPath.Child("nvidia"))...)
+	}
+
 	if spec.Assets != nil {
 		if spec.Assets.ContainerProxy != nil && spec.Assets.ContainerRegistry != nil {
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("assets", "containerProxy"), "containerProxy cannot be used in conjunction with containerRegistry"))
@@ -1384,6 +1388,20 @@ func validateDockerConfig(config *kops.DockerConfig, fldPath *field.Path) field.
 		}
 	}
 
+	return allErrs
+}
+
+func validateNvidiaConfig(spec *kops.ClusterSpec, fldPath *field.Path) (allErrs field.ErrorList) {
+	nvidia := spec.Nvidia
+	if !fi.BoolValue(nvidia.Enabled) {
+		return allErrs
+	}
+	if kops.CloudProviderID(spec.CloudProvider) != kops.CloudProviderAWS {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "Nvidia is only supported on AWS"))
+	}
+	if spec.ContainerRuntime != "containerd" {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "Nvidia is only supported using containerd"))
+	}
 	return allErrs
 }
 
