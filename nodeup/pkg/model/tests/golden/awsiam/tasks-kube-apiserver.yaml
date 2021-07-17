@@ -51,8 +51,8 @@ contents: |
       - --etcd-servers-overrides=/events#https://127.0.0.1:4002
       - --etcd-servers=https://127.0.0.1:4001
       - --insecure-port=0
-      - --kubelet-client-certificate=/srv/kubernetes/kubelet-api.crt
-      - --kubelet-client-key=/srv/kubernetes/kubelet-api.key
+      - --kubelet-client-certificate=/srv/kubernetes/kube-apiserver/kubelet-api.crt
+      - --kubelet-client-key=/srv/kubernetes/kube-apiserver/kubelet-api.key
       - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
       - --proxy-client-cert-file=/srv/kubernetes/kube-apiserver/apiserver-aggregator.crt
       - --proxy-client-key-file=/srv/kubernetes/kube-apiserver/apiserver-aggregator.key
@@ -184,10 +184,6 @@ contents: |
 path: /etc/kubernetes/manifests/kube-apiserver.manifest
 type: file
 ---
-mode: "0755"
-path: /srv/kubernetes
-type: directory
----
 contents:
   task:
     Name: aws-iam-authenticator
@@ -286,6 +282,30 @@ type: file
 ---
 contents:
   task:
+    Name: kubelet-api
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kubelet-api
+    type: client
+mode: "0644"
+path: /srv/kubernetes/kube-apiserver/kubelet-api.crt
+type: file
+---
+contents:
+  task:
+    Name: kubelet-api
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kubelet-api
+    type: client
+mode: "0600"
+path: /srv/kubernetes/kube-apiserver/kubelet-api.key
+type: file
+---
+contents:
+  task:
     Name: master
     alternateNames:
     - kubernetes
@@ -339,30 +359,6 @@ contents: |
   -----END RSA PUBLIC KEY-----
 mode: "0600"
 path: /srv/kubernetes/kube-apiserver/service-account.pub
-type: file
----
-contents:
-  task:
-    Name: kubelet-api
-    keypairID: "3"
-    signer: kubernetes-ca
-    subject:
-      CommonName: kubelet-api
-    type: client
-mode: "0644"
-path: /srv/kubernetes/kubelet-api.crt
-type: file
----
-contents:
-  task:
-    Name: kubelet-api
-    keypairID: "3"
-    signer: kubernetes-ca
-    subject:
-      CommonName: kubelet-api
-    type: client
-mode: "0600"
-path: /srv/kubernetes/kubelet-api.key
 type: file
 ---
 contents: ""
