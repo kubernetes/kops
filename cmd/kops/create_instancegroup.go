@@ -136,7 +136,7 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 		return allRoles, cobra.ShellCompDirectiveNoFileComp
 	})
 	cmd.Flags().StringSliceVar(&options.Subnets, "subnet", options.Subnets, "Subnet in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.")
-	cmd.RegisterFlagCompletionFunc("subnet", completeClusterSubnet(options))
+	cmd.RegisterFlagCompletionFunc("subnet", completeClusterSubnet(&options.Subnets))
 	// DryRun mode that will print YAML or JSON
 	cmd.Flags().BoolVar(&options.DryRun, "dry-run", options.DryRun, "Only print the object that would be created, without created it. This flag can be used to create an instance group YAML or JSON manifest.")
 	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "Output format. One of json or yaml")
@@ -277,7 +277,7 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 	return nil
 }
 
-func completeClusterSubnet(options *CreateInstanceGroupOptions) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func completeClusterSubnet(excludeSubnets *[]string) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		commandutils.ConfigureKlogForCompletion()
 		ctx := context.TODO()
@@ -293,7 +293,7 @@ func completeClusterSubnet(options *CreateInstanceGroupOptions) func(cmd *cobra.
 
 		var requiredType kopsapi.SubnetType
 		var subnets []string
-		alreadySelected := sets.NewString(options.Subnets...)
+		alreadySelected := sets.NewString(*excludeSubnets...)
 		for _, subnet := range cluster.Spec.Subnets {
 			if alreadySelected.Has(subnet.Name) {
 				requiredType = subnet.Type
