@@ -10,14 +10,13 @@ Generate cluster.yaml from template
 Generate cluster.yaml from values input yaml file and apply template.
 
 ```
-kops toolbox template [flags]
+kops toolbox template [CLUSTER] [flags]
 ```
 
 ### Examples
 
 ```
-  # generate cluster.yaml from template and input values
-  
+  # Generate cluster.yaml from template and input values
   kops toolbox template \
   --values values.yaml --values=another.yaml \
   --set var=value --set-string othervar=true \
@@ -29,12 +28,12 @@ kops toolbox template [flags]
 ### Options
 
 ```
-      --channel string           Channel to use for the channel* functions
+      --channel string           Channel to use for the channel* functions (default "stable")
       --config-value string      Show the value of a specific configuration value
       --fail-on-missing          Fail on referencing unset variables in templates (default true)
       --format-yaml              Attempt to format the generated yaml content before output
   -h, --help                     help for template
-      --out string               Path to output file, otherwise defaults to stdout
+      --out string               Path to output file. Defaults to stdout
       --set stringArray          Set values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)
       --set-string stringArray   Set STRING values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)
       --snippets strings         Path to directory containing snippets used for templating

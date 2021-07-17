@@ -28,6 +28,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"helm.sh/helm/v3/pkg/strvals"
+	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 	"sigs.k8s.io/yaml"
@@ -47,8 +48,7 @@ var (
 	`))
 
 	toolboxTemplatingExample = templates.Examples(i18n.T(`
-	# generate cluster.yaml from template and input values
-
+	# Generate cluster.yaml from template and input values
 	kops toolbox template \
 		--values values.yaml --values=another.yaml \
 		--set var=value --set-string othervar=true \
@@ -60,9 +60,8 @@ var (
 	toolboxTemplatingShort = i18n.T(`Generate cluster.yaml from template`)
 )
 
-// the options for the command
-type toolboxTemplateOption struct {
-	clusterName   string
+type ToolboxTemplateOptions struct {
+	ClusterName   string
 	configPath    []string
 	configValue   string
 	failOnMissing bool
@@ -75,35 +74,40 @@ type toolboxTemplateOption struct {
 	channel       string
 }
 
-// NewCmdToolboxTemplate returns a new templating command
+// NewCmdToolboxTemplate returns a new templating command.
 func NewCmdToolboxTemplate(f *util.Factory, out io.Writer) *cobra.Command {
-	options := &toolboxTemplateOption{}
+	options := &ToolboxTemplateOptions{
+		channel: kopsapi.DefaultChannel,
+	}
 
 	cmd := &cobra.Command{
-		Use:     "template",
-		Short:   toolboxTemplatingShort,
-		Long:    toolboxTemplatingLong,
-		Example: toolboxTemplatingExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			if err := rootCommand.ProcessArgs(args); err != nil {
-				exitWithError(err)
-			}
-			options.clusterName = rootCommand.ClusterName(true)
-
-			if err := runToolBoxTemplate(f, out, options); err != nil {
-				exitWithError(err)
-			}
+		Use:               "template [CLUSTER]",
+		Short:             toolboxTemplatingShort,
+		Long:              toolboxTemplatingLong,
+		Example:           toolboxTemplatingExample,
+		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
+		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunToolBoxTemplate(f, out, options)
 		},
 	}
 
 	cmd.Flags().StringSliceVar(&options.configPath, "values", options.configPath, "Path to a configuration file containing values to include in template")
+	cmd.RegisterFlagCompletionFunc("values", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"yaml", "json"}, cobra.ShellCompDirectiveFilterFileExt
+	})
 	cmd.Flags().StringArrayVar(&options.values, "set", options.values, "Set values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)")
+	cmd.RegisterFlagCompletionFunc("set", cobra.NoFileCompletions)
 	cmd.Flags().StringArrayVar(&options.stringValues, "set-string", options.stringValues, "Set STRING values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)")
+	cmd.RegisterFlagCompletionFunc("set", cobra.NoFileCompletions)
 	cmd.Flags().StringSliceVar(&options.templatePath, "template", options.templatePath, "Path to template file or directory of templates to render")
 	cmd.Flags().StringSliceVar(&options.snippetsPath, "snippets", options.snippetsPath, "Path to directory containing snippets used for templating")
+	cmd.MarkFlagDirname("snippets")
 	cmd.Flags().StringVar(&options.channel, "channel", options.channel, "Channel to use for the channel* functions")
-	cmd.Flags().StringVar(&options.outputPath, "out", options.outputPath, "Path to output file, otherwise defaults to stdout")
+	cmd.RegisterFlagCompletionFunc("channel", completeChannel)
+	cmd.Flags().StringVar(&options.outputPath, "out", options.outputPath, "Path to output file. Defaults to stdout")
 	cmd.Flags().StringVar(&options.configValue, "config-value", "", "Show the value of a specific configuration value")
+	cmd.RegisterFlagCompletionFunc("config-value", cobra.NoFileCompletions)
 	cmd.Flags().BoolVar(&options.failOnMissing, "fail-on-missing", true, "Fail on referencing unset variables in templates")
 	cmd.Flags().BoolVar(&options.formatYAML, "format-yaml", false, "Attempt to format the generated yaml content before output")
 	cmd.Flags().SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
@@ -117,8 +121,8 @@ func NewCmdToolboxTemplate(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-// runToolBoxTemplate is the action for the command
-func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplateOption) error {
+// RunToolBoxTemplate is the action for the command
+func RunToolBoxTemplate(f *util.Factory, out io.Writer, options *ToolboxTemplateOptions) error {
 	// @step: read in the configuration if any
 	context, err := newTemplateContext(options.configPath, options.values, options.stringValues)
 	if err != nil {
@@ -128,9 +132,9 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 	// @step: set clusterName from template's values or cli flag
 	value, ok := context["clusterName"].(string)
 	if ok {
-		options.clusterName = value
+		options.ClusterName = value
 	} else {
-		context["clusterName"] = options.clusterName
+		context["clusterName"] = options.ClusterName
 	}
 
 	// @check if we are just rendering the config value
@@ -171,14 +175,9 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 		}
 	}
 
-	channelLocation := ""
-	if channelLocation == "" {
-		channelLocation = kopsapi.DefaultChannel
-	}
-
-	channel, err := kopsapi.LoadChannel(channelLocation)
+	channel, err := kopsapi.LoadChannel(options.channel)
 	if err != nil {
-		return fmt.Errorf("error loading channel %q: %v", channelLocation, err)
+		return fmt.Errorf("error loading channel %q: %v", options.channel, err)
 	}
 
 	// @step: render each of the templates, splitting on the documents
