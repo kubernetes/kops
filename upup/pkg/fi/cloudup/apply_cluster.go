@@ -417,10 +417,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			modelContext.AWSAccountID = accountID
 			modelContext.AWSPartition = partition
 
-			if len(sshPublicKeys) == 0 && c.Cluster.Spec.SSHKeyName == nil {
-				return fmt.Errorf("SSH public key must be specified when running with AWS (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
-			}
-
 			if len(sshPublicKeys) > 1 {
 				return fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with AWS; please delete a key using `kops delete secret`")
 			}
