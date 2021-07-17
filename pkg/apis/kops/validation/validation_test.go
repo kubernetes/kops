@@ -1311,3 +1311,45 @@ func TestValidateSAExternalPermissions(t *testing.T) {
 	}
 
 }
+
+func Test_Validate_Nvdia(t *testing.T) {
+
+	grid := []struct {
+		Input          kops.ClusterSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.ClusterSpec{
+				Nvidia: &kops.NvidiaConfig{
+					Enabled: fi.Bool(true),
+				},
+				CloudProvider:    "aws",
+				ContainerRuntime: "containerd",
+			},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Nvidia: &kops.NvidiaConfig{
+					Enabled: fi.Bool(true),
+				},
+				CloudProvider:    "gce",
+				ContainerRuntime: "containerd",
+			},
+			ExpectedErrors: []string{"Forbidden::nvidia"},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Nvidia: &kops.NvidiaConfig{
+					Enabled: fi.Bool(true),
+				},
+				CloudProvider:    "aws",
+				ContainerRuntime: "docker",
+			},
+			ExpectedErrors: []string{"Forbidden::nvidia"},
+		},
+	}
+	for _, g := range grid {
+		errs := validateNvidiaConfig(&g.Input, field.NewPath("nvidia"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
