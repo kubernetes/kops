@@ -134,6 +134,7 @@ spec:
       nodeSelector:
         kubernetes.io/role: master
       serviceAccountName: cluster-autoscaler
+      priorityClassName: system-cluster-critical
       containers:
         - image: {{IMAGE}}
           name: cluster-autoscaler
