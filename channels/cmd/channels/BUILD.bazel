@@ -9,6 +9,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//channels/pkg/cmd:go_default_library",
+        "//vendor/helm.sh/helm/v3/pkg/kube:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
     ],
 )

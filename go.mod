@@ -83,7 +83,7 @@ require (
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
 	gopkg.in/square/go-jose.v2 v2.5.1
-	helm.sh/helm/v3 v3.6.1
+	helm.sh/helm/v3 v3.6.3
 	k8s.io/api v0.21.1
 	k8s.io/apimachinery v0.21.1
 	k8s.io/cli-runtime v0.21.1

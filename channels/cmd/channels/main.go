@@ -20,12 +20,18 @@ import (
 	"fmt"
 	"os"
 
+	helmkube "helm.sh/helm/v3/pkg/kube"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/channels/pkg/cmd"
 )
 
 func main() {
 	klog.InitFlags(nil)
+
+	// This will make kops the owner of the server-side-apply managed fields.
+	// We set kops here instead of channels since should we change the addon manager from
+	// channels to something else, we can still own the managed fields.
+	helmkube.ManagedFieldsManager = "kops"
 
 	f := &cmd.DefaultFactory{}
 	if err := cmd.Execute(f, os.Stdout); err != nil {
