@@ -100,8 +100,11 @@ contents: |
       - mountPath: /etc/kubernetes/cloud.config
         name: cloudconfig
         readOnly: true
-      - mountPath: /srv/kubernetes
-        name: srvkube
+      - mountPath: /srv/kubernetes/ca.crt
+        name: kubernetesca
+        readOnly: true
+      - mountPath: /srv/kubernetes/kube-apiserver
+        name: srvkapi
         readOnly: true
       - mountPath: /srv/sshproxy
         name: srvsshproxy
@@ -146,8 +149,11 @@ contents: |
         path: /etc/kubernetes/cloud.config
       name: cloudconfig
     - hostPath:
-        path: /srv/kubernetes
-      name: srvkube
+        path: /srv/kubernetes/ca.crt
+      name: kubernetesca
+    - hostPath:
+        path: /srv/kubernetes/kube-apiserver
+      name: srvkapi
     - hostPath:
         path: /srv/sshproxy
       name: srvsshproxy
