@@ -50,6 +50,7 @@ go_library(
         "cloudup/resources/addons/networking.cilium.io/k8s-1.12-v1.9.yaml.template",
         "cloudup/resources/addons/snapshot-controller.addons.k8s.io/k8s-1.20.yaml.template",
         "cloudup/resources/addons/node-problem-detector.addons.k8s.io/k8s-1.17.yaml.template",
+        "cloudup/resources/addons/nvidia.addons.k8s.io/k8s-1.16.yaml",
     ],
     importpath = "k8s.io/kops/upup/models",
     visibility = ["//visibility:public"],

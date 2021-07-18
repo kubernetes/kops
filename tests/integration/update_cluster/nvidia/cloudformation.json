@@ -1,0 +1,1321 @@
+{
+  "Resources": {
+    "AWSAutoScalingAutoScalingGroupmasterustest1amastersminimalexamplecom": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AutoScalingGroupName": "master-us-test-1a.masters.minimal.example.com",
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
+        },
+        "MaxSize": "1",
+        "MinSize": "1",
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "AWSEC2Subnetustest1aminimalexamplecom"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Name",
+            "Value": "master-us-test-1a.masters.minimal.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+            "Value": "master",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kops.k8s.io/instancegroup",
+            "Value": "master-us-test-1a",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal.example.com",
+            "Value": "owned",
+            "PropagateAtLaunch": true
+          }
+        ],
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute",
+            "Metrics": [
+              "GroupDesiredCapacity",
+              "GroupInServiceInstances",
+              "GroupMaxSize",
+              "GroupMinSize",
+              "GroupPendingInstances",
+              "GroupStandbyInstances",
+              "GroupTerminatingInstances",
+              "GroupTotalInstances"
+            ]
+          }
+        ]
+      }
+    },
+    "AWSAutoScalingAutoScalingGroupnodesminimalexamplecom": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AutoScalingGroupName": "nodes.minimal.example.com",
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatenodesminimalexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatenodesminimalexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
+        },
+        "MaxSize": "2",
+        "MinSize": "2",
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "AWSEC2Subnetustest1aminimalexamplecom"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.minimal.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+            "Value": "node",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/role/node",
+            "Value": "1",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kops.k8s.io/instancegroup",
+            "Value": "nodes",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal.example.com",
+            "Value": "owned",
+            "PropagateAtLaunch": true
+          }
+        ],
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute",
+            "Metrics": [
+              "GroupDesiredCapacity",
+              "GroupInServiceInstances",
+              "GroupMaxSize",
+              "GroupMinSize",
+              "GroupPendingInstances",
+              "GroupStandbyInstances",
+              "GroupTerminatingInstances",
+              "GroupTotalInstances"
+            ]
+          }
+        ]
+      }
+    },
+    "AWSEC2DHCPOptionsminimalexamplecom": {
+      "Type": "AWS::EC2::DHCPOptions",
+      "Properties": {
+        "DomainName": "us-test-1.compute.internal",
+        "DomainNameServers": [
+          "AmazonProvidedDNS"
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2InternetGatewayminimalexamplecom": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "master-us-test-1a.masters.minimal.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp3",
+                "VolumeSize": 64,
+                "Iops": 3000,
+                "Throughput": 125,
+                "DeleteOnTermination": true,
+                "Encrypted": true
+              }
+            },
+            {
+              "DeviceName": "/dev/sdc",
+              "VirtualName": "ephemeral0"
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilemastersminimalexamplecom"
+            }
+          },
+          "ImageId": "ami-12345678",
+          "InstanceType": "m3.medium",
+          "KeyName": "kubernetes.minimal.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "MetadataOptions": {
+            "HttpPutResponseHopLimit": 1,
+            "HttpTokens": "optional"
+          },
+          "Monitoring": {
+            "Enabled": false
+          },
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": true,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Ipv6AddressCount": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "minimal.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.minimal.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "master"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/minimal.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "minimal.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.minimal.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "master"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/minimal.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
+      }
+    },
+    "AWSEC2LaunchTemplatenodesminimalexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "nodes.minimal.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp3",
+                "VolumeSize": 128,
+                "Iops": 3000,
+                "Throughput": 125,
+                "DeleteOnTermination": true,
+                "Encrypted": true
+              }
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilenodesminimalexamplecom"
+            }
+          },
+          "ImageId": "ami-12345678",
+          "InstanceType": "t2.medium",
+          "KeyName": "kubernetes.minimal.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "MetadataOptions": {
+            "HttpPutResponseHopLimit": 1,
+            "HttpTokens": "optional"
+          },
+          "Monitoring": {
+            "Enabled": false
+          },
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": true,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Ipv6AddressCount": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "minimal.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.minimal.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "node"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/minimal.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "minimal.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.minimal.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "node"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/minimal.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
+      }
+    },
+    "AWSEC2Route0": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableminimalexamplecom"
+        },
+        "DestinationIpv6CidrBlock": "::/0",
+        "GatewayId": {
+          "Ref": "AWSEC2InternetGatewayminimalexamplecom"
+        }
+      }
+    },
+    "AWSEC2Route00000": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableminimalexamplecom"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "AWSEC2InternetGatewayminimalexamplecom"
+        }
+      }
+    },
+    "AWSEC2RouteTableminimalexamplecom": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCminimalexamplecom"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/kops/role",
+            "Value": "public"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupEgressfrommastersminimalexamplecomegressall0to00": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIpv6": "::/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressfrommastersminimalexamplecomegressall0to000000": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressfromnodesminimalexamplecomegressall0to00": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIpv6": "::/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressfromnodesminimalexamplecomegressall0to000000": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22mastersminimalexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22nodesminimalexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp443to443mastersminimalexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrommastersminimalexamplecomingressall0to0mastersminimalexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrommastersminimalexamplecomingressall0to0nodesminimalexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfromnodesminimalexamplecomingressall0to0nodesminimalexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfromnodesminimalexamplecomingresstcp1to2379mastersminimalexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "FromPort": 1,
+        "ToPort": 2379,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfromnodesminimalexamplecomingresstcp2382to4000mastersminimalexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "FromPort": 2382,
+        "ToPort": 4000,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfromnodesminimalexamplecomingresstcp4003to65535mastersminimalexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "FromPort": 4003,
+        "ToPort": 65535,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfromnodesminimalexamplecomingressudp1to65535mastersminimalexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "FromPort": 1,
+        "ToPort": 65535,
+        "IpProtocol": "udp"
+      }
+    },
+    "AWSEC2SecurityGroupmastersminimalexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "masters.minimal.example.com",
+        "VpcId": {
+          "Ref": "AWSEC2VPCminimalexamplecom"
+        },
+        "GroupDescription": "Security group for masters",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.minimal.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupnodesminimalexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "nodes.minimal.example.com",
+        "VpcId": {
+          "Ref": "AWSEC2VPCminimalexamplecom"
+        },
+        "GroupDescription": "Security group for nodes",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.minimal.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SubnetRouteTableAssociationustest1aminimalexamplecom": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "AWSEC2Subnetustest1aminimalexamplecom"
+        },
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableminimalexamplecom"
+        }
+      }
+    },
+    "AWSEC2Subnetustest1aminimalexamplecom": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCminimalexamplecom"
+        },
+        "CidrBlock": "172.20.32.0/19",
+        "AvailabilityZone": "us-test-1a",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.minimal.example.com"
+          },
+          {
+            "Key": "SubnetType",
+            "Value": "Public"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/role/elb",
+            "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/role/internal-elb",
+            "Value": "1"
+          }
+        ]
+      }
+    },
+    "AWSEC2VPCCidrBlockAmazonIPv6": {
+      "Type": "AWS::EC2::VPCCidrBlock",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCminimalexamplecom"
+        },
+        "AmazonProvidedIpv6CidrBlock": true
+      }
+    },
+    "AWSEC2VPCDHCPOptionsAssociationminimalexamplecom": {
+      "Type": "AWS::EC2::VPCDHCPOptionsAssociation",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCminimalexamplecom"
+        },
+        "DhcpOptionsId": {
+          "Ref": "AWSEC2DHCPOptionsminimalexamplecom"
+        }
+      }
+    },
+    "AWSEC2VPCGatewayAttachmentminimalexamplecom": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCminimalexamplecom"
+        },
+        "InternetGatewayId": {
+          "Ref": "AWSEC2InternetGatewayminimalexamplecom"
+        }
+      }
+    },
+    "AWSEC2VPCminimalexamplecom": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "172.20.0.0/16",
+        "EnableDnsHostnames": true,
+        "EnableDnsSupport": true,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2Volumeustest1aetcdeventsminimalexamplecom": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "AvailabilityZone": "us-test-1a",
+        "Size": 20,
+        "VolumeType": "gp3",
+        "Iops": 3000,
+        "Throughput": 125,
+        "Encrypted": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.etcd-events.minimal.example.com"
+          },
+          {
+            "Key": "k8s.io/etcd/events",
+            "Value": "us-test-1a/us-test-1a"
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2Volumeustest1aetcdmainminimalexamplecom": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "AvailabilityZone": "us-test-1a",
+        "Size": 20,
+        "VolumeType": "gp3",
+        "Iops": 3000,
+        "Throughput": 125,
+        "Encrypted": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.etcd-main.minimal.example.com"
+          },
+          {
+            "Key": "k8s.io/etcd/main",
+            "Value": "us-test-1a/us-test-1a"
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSIAMInstanceProfilemastersminimalexamplecom": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "InstanceProfileName": "masters.minimal.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolemastersminimalexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSIAMInstanceProfilenodesminimalexamplecom": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "InstanceProfileName": "nodes.minimal.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolenodesminimalexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSIAMPolicymastersminimalexamplecom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "masters.minimal.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolemastersminimalexamplecom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "ec2:AttachVolume",
+              "Condition": {
+                "StringEquals": {
+                  "aws:ResourceTag/KubernetesCluster": "minimal.example.com",
+                  "aws:ResourceTag/k8s.io/role/master": "1"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": "ec2:CreateTags",
+              "Condition": {
+                "StringEquals": {
+                  "ec2:CreateAction": [
+                    "CreateVolume",
+                    "CreateSnapshot"
+                  ]
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:ec2:*:*:volume/*",
+                "arn:aws:ec2:*:*:snapshot/*"
+              ]
+            },
+            {
+              "Action": [
+                "elasticloadbalancing:CreateLoadBalancer",
+                "elasticloadbalancing:CreateLoadBalancerPolicy",
+                "elasticloadbalancing:CreateLoadBalancerListeners",
+                "ec2:CreateSecurityGroup",
+                "ec2:CreateVolume",
+                "elasticloadbalancing:CreateListener",
+                "elasticloadbalancing:CreateTargetGroup"
+              ],
+              "Condition": {
+                "StringEquals": {
+                  "aws:RequestTag/KubernetesCluster": "minimal.example.com"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "s3:Get*"
+              ],
+              "Effect": "Allow",
+              "Resource": "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/*"
+            },
+            {
+              "Action": [
+                "s3:GetObject",
+                "s3:DeleteObject",
+                "s3:DeleteObjectVersion",
+                "s3:PutObject"
+              ],
+              "Effect": "Allow",
+              "Resource": "arn:aws:s3:::placeholder-write-bucket/clusters.example.com/minimal.example.com/backups/etcd/main/*"
+            },
+            {
+              "Action": [
+                "s3:GetObject",
+                "s3:DeleteObject",
+                "s3:DeleteObjectVersion",
+                "s3:PutObject"
+              ],
+              "Effect": "Allow",
+              "Resource": "arn:aws:s3:::placeholder-write-bucket/clusters.example.com/minimal.example.com/backups/etcd/events/*"
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetEncryptionConfiguration",
+                "s3:ListBucket",
+                "s3:ListBucketVersions"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::placeholder-read-bucket"
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetEncryptionConfiguration",
+                "s3:ListBucket",
+                "s3:ListBucketVersions"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::placeholder-write-bucket"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ChangeResourceRecordSets",
+                "route53:ListResourceRecordSets",
+                "route53:GetHostedZone"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
+              ]
+            },
+            {
+              "Action": [
+                "route53:GetChange"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::change/*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ListHostedZones"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:CreateVolume"
+              ],
+              "Condition": {
+                "StringEquals": {
+                  "aws:RequestTag/KubernetesCluster": "minimal.example.com"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Action": "ec2:CreateTags",
+              "Condition": {
+                "StringEquals": {
+                  "ec2:CreateAction": [
+                    "CreateVolume",
+                    "CreateSnapshot"
+                  ]
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:ec2:*:*:volume/*",
+                "arn:aws:ec2:*:*:snapshot/*"
+              ]
+            },
+            {
+              "Action": "ec2:DeleteTags",
+              "Condition": {
+                "StringEquals": {
+                  "aws:ResourceTag/KubernetesCluster": "minimal.example.com"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:ec2:*:*:volume/*",
+                "arn:aws:ec2:*:*:snapshot/*"
+              ]
+            },
+            {
+              "Action": [
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeTags",
+                "ec2:CreateSecurityGroup",
+                "ec2:CreateTags",
+                "ec2:DescribeAccountAttributes",
+                "ec2:DescribeInstanceTypes",
+                "ec2:DescribeInstances",
+                "ec2:DescribeRegions",
+                "ec2:DescribeRouteTables",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeTags",
+                "ec2:DescribeVolumes",
+                "ec2:DescribeVolumesModifications",
+                "ec2:DescribeVpcs",
+                "elasticloadbalancing:DescribeListeners",
+                "elasticloadbalancing:DescribeLoadBalancerAttributes",
+                "elasticloadbalancing:DescribeLoadBalancerPolicies",
+                "elasticloadbalancing:DescribeLoadBalancers",
+                "elasticloadbalancing:DescribeTargetGroups",
+                "elasticloadbalancing:DescribeTargetHealth",
+                "iam:GetServerCertificate",
+                "iam:ListServerCertificates",
+                "kms:DescribeKey",
+                "kms:GenerateRandom"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Action": [
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup",
+                "ec2:AttachVolume",
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:DeleteRoute",
+                "ec2:DeleteSecurityGroup",
+                "ec2:DeleteVolume",
+                "ec2:DetachVolume",
+                "ec2:ModifyInstanceAttribute",
+                "ec2:ModifyVolume",
+                "ec2:RevokeSecurityGroupIngress",
+                "elasticloadbalancing:AddTags",
+                "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
+                "elasticloadbalancing:AttachLoadBalancerToSubnets",
+                "elasticloadbalancing:ConfigureHealthCheck",
+                "elasticloadbalancing:DeleteListener",
+                "elasticloadbalancing:DeleteLoadBalancer",
+                "elasticloadbalancing:DeleteLoadBalancerListeners",
+                "elasticloadbalancing:DeleteTargetGroup",
+                "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                "elasticloadbalancing:DeregisterTargets",
+                "elasticloadbalancing:DetachLoadBalancerFromSubnets",
+                "elasticloadbalancing:ModifyListener",
+                "elasticloadbalancing:ModifyLoadBalancerAttributes",
+                "elasticloadbalancing:ModifyTargetGroup",
+                "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                "elasticloadbalancing:RegisterTargets",
+                "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
+                "elasticloadbalancing:SetLoadBalancerPoliciesOfListener"
+              ],
+              "Condition": {
+                "StringEquals": {
+                  "aws:ResourceTag/KubernetesCluster": "minimal.example.com"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMPolicynodesminimalexamplecom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "nodes.minimal.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolenodesminimalexamplecom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:Get*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/addons/*",
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/cluster-completed.spec",
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/igconfig/node/*",
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/pki/ssh/*",
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/secrets/dockerconfig"
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetEncryptionConfiguration",
+                "s3:ListBucket",
+                "s3:ListBucketVersions"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::placeholder-read-bucket"
+              ]
+            },
+            {
+              "Action": [
+                "autoscaling:DescribeAutoScalingInstances",
+                "ec2:DescribeInstanceTypes",
+                "ec2:DescribeInstances",
+                "iam:GetServerCertificate",
+                "iam:ListServerCertificates",
+                "kms:GenerateRandom"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMRolemastersminimalexamplecom": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "masters.minimal.example.com",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.minimal.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSIAMRolenodesminimalexamplecom": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "nodes.minimal.example.com",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.minimal.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    }
+  }
+}
