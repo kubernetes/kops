@@ -166,6 +166,11 @@ resource "aws_autoscaling_group" "nodes-minimal-example-com" {
     value               = "nodes.minimal.example.com"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/gpu"
+    propagate_at_launch = true
+    value               = "1"
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
     propagate_at_launch = true
     value               = "node"
@@ -422,6 +427,7 @@ resource "aws_launch_template" "nodes-minimal-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "minimal.example.com"
       "Name"                                                                       = "nodes.minimal.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/gpu"              = "1"
       "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
@@ -434,6 +440,7 @@ resource "aws_launch_template" "nodes-minimal-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "minimal.example.com"
       "Name"                                                                       = "nodes.minimal.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/gpu"              = "1"
       "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
@@ -444,6 +451,7 @@ resource "aws_launch_template" "nodes-minimal-example-com" {
   tags = {
     "KubernetesCluster"                                                          = "minimal.example.com"
     "Name"                                                                       = "nodes.minimal.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/gpu"              = "1"
     "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"

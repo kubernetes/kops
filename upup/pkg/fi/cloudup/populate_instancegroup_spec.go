@@ -161,6 +161,22 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		return nil, fmt.Errorf("unable to infer any Subnets for InstanceGroup %s ", ig.ObjectMeta.Name)
 	}
 
+	if cluster.Spec.Nvidia != nil && fi.BoolValue(cluster.Spec.Nvidia.Enabled) {
+		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+		case kops.CloudProviderAWS:
+			mt, err := awsup.GetMachineTypeInfo(cloud.(awsup.AWSCloud), ig.Spec.MachineType)
+			if err != nil {
+				return ig, fmt.Errorf("error looking up machine type info: %v", err)
+			}
+			if mt.GPU {
+				if ig.Spec.NodeLabels == nil {
+					ig.Spec.NodeLabels = make(map[string]string)
+				}
+				ig.Spec.NodeLabels["kops.k8s.io/gpu"] = "1"
+				ig.Spec.Taints = append(ig.Spec.Taints, "nvidia.com/gpu:NoSchedule")
+			}
+		}
+	}
 	return ig, nil
 }
 
