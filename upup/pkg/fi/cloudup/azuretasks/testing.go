@@ -122,6 +122,10 @@ func (c *MockAzureCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	return nil, errors.New("FindVPCInfo not implemented on azureCloud")
 }
 
+func (c *MockAzureCloud) FindVNetInfo(id, resourceGroup string) (*fi.VPCInfo, error) {
+	return nil, errors.New("FindVNetInfo not implemented on azureCloud")
+}
+
 // DeleteInstance deletes the instance.
 func (c *MockAzureCloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
 	return errors.New("DeleteInstance not implemented on azureCloud")
