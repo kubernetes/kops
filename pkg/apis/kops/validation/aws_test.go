@@ -266,6 +266,32 @@ func TestMixedInstancePolicies(t *testing.T) {
 		},
 		{
 			Input: kops.InstanceGroupSpec{
+				MachineType: "g4dn.xlarge",
+				Image:       "ami-073c8c0760395aab8",
+				MixedInstancesPolicy: &kops.MixedInstancesPolicySpec{
+					Instances: []string{
+						"g4dn.xlarge",
+						"g4ad.16xlarge",
+					},
+				},
+			},
+		},
+		{
+			Input: kops.InstanceGroupSpec{
+				MachineType: "g4dn.xlarge",
+				Image:       "ami-073c8c0760395aab8",
+				MixedInstancesPolicy: &kops.MixedInstancesPolicySpec{
+					Instances: []string{
+						"g4dn.xlarge",
+						"g4ad.16xlarge",
+						"c4.xlarge",
+					},
+				},
+			},
+			ExpectedErrors: []string{"Forbidden::spec.mixedInstancesPolicy.instances[2]"},
+		},
+		{
+			Input: kops.InstanceGroupSpec{
 				MachineType: "m4.large",
 				Image:       "ami-073c8c0760395aab8",
 				MixedInstancesPolicy: &kops.MixedInstancesPolicySpec{
