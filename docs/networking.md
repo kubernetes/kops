@@ -23,7 +23,7 @@ The following table provides the support status for various networking providers
 | Kopeio | 1.5 | - | - | - |
 | Kube-router | 1.6.2 | - | - | - |
 | Kubenet | 1.5 | 1.5 | - | - |
-| Lyft VPC | 1.11 | - | - | - |
+| Lyft VPC | 1.11 | - | 1.22 | - |
 | Romana | 1.8 | - | 1.18 | 1.19 |
 | Weave | 1.5 | - | - | - |
 
@@ -77,7 +77,6 @@ Several CNI providers are currently built into kOps:
 * [Flannel](networking/flannel.md)
 * [Kube-router](networking/kube-router.md)
 * [Lyft VPC](networking/lyft-vpc.md)
-* [Romana](networking/romana.md)
 * [Weave](networking/weave.md)
 
 kOps makes it easy for cluster operators to choose one of these options. The manifests for the providers
