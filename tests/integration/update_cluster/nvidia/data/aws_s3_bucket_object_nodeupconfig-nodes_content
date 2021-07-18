@@ -51,10 +51,13 @@ KubeletConfig:
   logLevel: 2
   networkPluginName: cni
   nodeLabels:
+    kops.k8s.io/gpu: "1"
     kubernetes.io/role: node
     node-role.kubernetes.io/node: ""
   nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
+  taints:
+  - nvidia.com/gpu:NoSchedule
 Nvidia:
   enabled: true
   package: nvidia-headless-460-server
