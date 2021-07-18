@@ -38,6 +38,7 @@ import (
 
 	"golang.org/x/crypto/ssh"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/jsonutils"
@@ -791,6 +792,20 @@ func (i *integrationTest) setupCluster(t *testing.T, inputYAML string, ctx conte
 			secondaryCertificate: "-----BEGIN CERTIFICATE-----\nMIIBfDCCASagAwIBAgIMFo+b23acX0hZEkbkMA0GCSqGSIb3DQEBCwUAMB8xHTAb\nBgNVBAMTFGV0Y2QtcGVlcnMtY2EtY2lsaXVtMB4XDTIxMDcwNTIwMjIzN1oXDTMx\nMDcwNTIwMjIzN1owHzEdMBsGA1UEAxMUZXRjZC1wZWVycy1jYS1jaWxpdW0wXDAN\nBgkqhkiG9w0BAQEFAANLADBIAkEAw3T2pyEOgBPBKwofuILLokPxAFplVzdu540f\noREJ4iVqiroUlsz1G90mEwmqR+B7/0kt70ve9i5Z6E7Qz2nQaQIDAQABo0IwQDAO\nBgNVHQ8BAf8EBAMCAQYwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQU0hyEvGir\n2ucsJrojyZaDBIb8JLAwDQYJKoZIhvcNAQELBQADQQA9vQylgkvgROIMspzOlbZr\nZwsTAzp9J2ZxZL06AQ9iWzpvIw/H3oClV63q6zN2aHtpBTkhUOSX3Q4L/X/0MOkj\n-----END CERTIFICATE-----",
 		})
 	}
+	if !model.UseKopsControllerForNodeBootstrap(cluster) {
+		storeKeyset(t, keyStore, "kubelet", &testingKeyset{
+			primaryKey:           "-----BEGIN RSA PRIVATE KEY-----\nMIIBOgIBAAJBAM6BUO6Gjjskn8s87GdJB8QPpNTx949t5Z/GgQpLVCapj741c1//\nvyH6JPsyqFUVy+lsBXQHSdCz2awMhKd9x5kCAwEAAQJARozbj4Ic2Yvbo92+jlLe\n+la146J/B1tuVbXFpDS0HTi3W94fVfu6R7FR9um1te1hzBAr6I4RqXxBAvipzG9P\n4QIhAPUg1AV/uyzKxELhVNKysAqvz1oLx2NeAh3DewRQn2MNAiEA16n2q69vFDvd\nnoCi2jwfR9/VyuMjloJElRyG1hoqg70CIQDkH/QRVgkcq2uxDkFBgLgiifF/zJx3\n1mJDzsuqfVmH9QIgEP/2z8W+bcviRlJBhA5lMNc2FQ4eigiuu0pKXqolW8kCIBy/\n27C5grBlEqjw1taSKqoSnylUW6SL8N8UR0MJU5up\n-----END RSA PRIVATE KEY-----",
+			primaryCertificate:   "-----BEGIN CERTIFICATE-----\nMIIBkzCCAT2gAwIBAgIMFpL6CzllQiBcgTbiMA0GCSqGSIb3DQEBCwUAMBgxFjAU\nBgNVBAMTDWt1YmVybmV0ZXMtY2EwHhcNMjEwNzE2MTk0MjIxWhcNMzEwNzE2MTk0\nMjIxWjApMRUwEwYDVQQKEwxzeXN0ZW06bm9kZXMxEDAOBgNVBAMTB2t1YmVsZXQw\nXDANBgkqhkiG9w0BAQEFAANLADBIAkEAzoFQ7oaOOySfyzzsZ0kHxA+k1PH3j23l\nn8aBCktUJqmPvjVzX/+/Ifok+zKoVRXL6WwFdAdJ0LPZrAyEp33HmQIDAQABo1Yw\nVDAOBgNVHQ8BAf8EBAMCB4AwEwYDVR0lBAwwCgYIKwYBBQUHAwIwDAYDVR0TAQH/\nBAIwADAfBgNVHSMEGDAWgBTRt81Y03C5ScA7CePyvQ1eyqIVADANBgkqhkiG9w0B\nAQsFAANBAGOPYAM8wEDpRs4Sa+UxSRNM5xt2a0ctNqLxYbN0gsoTXY3vEFb06qLH\npgBJgBLXG8siOEhyEhsFiXSw4klQ/y8=\n-----END CERTIFICATE-----",
+			secondaryKey:         "",
+			secondaryCertificate: "",
+		})
+		storeKeyset(t, keyStore, "kube-proxy", &testingKeyset{
+			primaryKey:           "-----BEGIN RSA PRIVATE KEY-----\nMIIBOgIBAAJBAM7f0Zt5vDchamMg9TABxyAWGRVhWVmLqmfKr1rGvohWB/eVJmxZ\nCSNg6ShIDnDT2qJx5Aw05jjfDRJsrlCcAkMCAwEAAQJAeeRo5boBy14WCFiH/4Rc\npqw+lVlpwxhHDKbhUZRe+YbfobR7M35GoKJ5Zjtvh5V1eC1irGzSvUQg96snVCIv\nqQIhAPWGxfFedkYvddBHpp6pg/55AshVp8NPeYfV1olKc10FAiEA17Lzn7yyekzY\nr8tgm5zt6Hf9DfOPS+iCUwTpJzkhRKcCIAJUiyBlUx4LaUTWyUAMP9J0d5BLL9Js\nuKyPXP/kkv+5AiEApTYO/jmU5rH3gmafP3Gqk9VbwRTdnAGh2J65Sm6quZ8CIC4v\nqwjRQtwPYB4PPym2gTL4hjgWTj7bQEspm3A9eEs5\n-----END RSA PRIVATE KEY-----",
+			primaryCertificate:   "-----BEGIN CERTIFICATE-----\nMIIBhjCCATCgAwIBAgIMFpL6CzlkDYhRlgqCMA0GCSqGSIb3DQEBCwUAMBgxFjAU\nBgNVBAMTDWt1YmVybmV0ZXMtY2EwHhcNMjEwNzE2MTk0MjIxWhcNMzEwNzE2MTk0\nMjIxWjAcMRowGAYDVQQDExFzeXN0ZW06a3ViZS1wcm94eTBcMA0GCSqGSIb3DQEB\nAQUAA0sAMEgCQQDO39Gbebw3IWpjIPUwAccgFhkVYVlZi6pnyq9axr6IVgf3lSZs\nWQkjYOkoSA5w09qiceQMNOY43w0SbK5QnAJDAgMBAAGjVjBUMA4GA1UdDwEB/wQE\nAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAjAMBgNVHRMBAf8EAjAAMB8GA1UdIwQY\nMBaAFNG3zVjTcLlJwDsJ4/K9DV7KohUAMA0GCSqGSIb3DQEBCwUAA0EANRng3dTL\nZYQLfeRolSiKFHrsDxfNL5sXbsNcJNkP9VNmxTGs3RyvNlzsaVQkXaBnlHYx0+nk\nGWXMq4Kke2ukxQ==\n-----END CERTIFICATE-----",
+			secondaryKey:         "",
+			secondaryCertificate: "",
+		})
+	}
 
 	return factory
 }
@@ -819,17 +834,20 @@ func storeKeyset(t *testing.T, keyStore fi.Keystore, name string, testingKeyset 
 			t.Fatalf("error creating keyset: %v", err)
 		}
 
-		privateKey, err = pki.ParsePEMPrivateKey([]byte(testingKeyset.secondaryKey))
-		if err != nil {
-			t.Fatalf("error loading private key %v", err)
+		if testingKeyset.secondaryKey != "" {
+			privateKey, err = pki.ParsePEMPrivateKey([]byte(testingKeyset.secondaryKey))
+			if err != nil {
+				t.Fatalf("error loading private key %v", err)
+			}
+
+			cert, err = pki.ParsePEMCertificate([]byte(testingKeyset.secondaryCertificate))
+			if err != nil {
+				t.Fatalf("error loading certificate %v", err)
+			}
+
+			_, _ = keyset.AddItem(cert, privateKey, false)
 		}
 
-		cert, err = pki.ParsePEMCertificate([]byte(testingKeyset.secondaryCertificate))
-		if err != nil {
-			t.Fatalf("error loading certificate %v", err)
-		}
-
-		_, _ = keyset.AddItem(cert, privateKey, false)
 		err = keyStore.StoreKeyset(name, keyset)
 		if err != nil {
 			t.Fatalf("error storing user provided keys: %v", err)

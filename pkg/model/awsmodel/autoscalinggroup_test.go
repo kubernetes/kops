@@ -72,7 +72,9 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 			Lifecycle: fi.LifecycleSync,
 			Cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					Networking: &kops.NetworkingSpec{},
+					CloudProvider:     "aws",
+					Networking:        &kops.NetworkingSpec{},
+					KubernetesVersion: "1.20.0",
 				},
 			},
 		},
@@ -207,6 +209,18 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 			Name:    fi.String(keypair),
 			Subject: "cn=" + keypair,
 			Type:    "ca",
+		}
+		c.AddTask(task)
+	}
+	for _, keypair := range []string{
+		"kubelet",
+		"kube-proxy",
+	} {
+		task := &fitasks.Keypair{
+			Name:    fi.String(keypair),
+			Subject: "cn=" + keypair,
+			Signer:  caTask,
+			Type:    "client",
 		}
 		c.AddTask(task)
 	}
