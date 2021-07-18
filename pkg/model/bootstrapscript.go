@@ -229,6 +229,24 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 		if b.UseEtcdManager() {
 			keypairs = append(keypairs, "etcd-clients-ca")
 		}
+	} else if !model.UseKopsControllerForNodeBootstrap(b.Cluster) {
+		keypairs = append(keypairs, "kubelet", "kube-proxy")
+		if b.Cluster.Spec.Networking.Kuberouter != nil {
+			keypairs = append(keypairs, "kube-router")
+		}
+	}
+
+	if ig.IsBastion() {
+		keypairs = nil
+
+		// Bastions can have AdditionalUserData, but if there isn't any skip this part
+		if len(ig.Spec.AdditionalUserData) == 0 {
+			templateResource, err := NewTemplateResource("nodeup", "", nil, nil)
+			if err != nil {
+				return nil, err
+			}
+			return templateResource, nil
+		}
 	}
 
 	caTasks := map[string]*fitasks.Keypair{}
@@ -238,15 +256,6 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 			return nil, fmt.Errorf("keypair/%s task not found", keypair)
 		}
 		caTasks[keypair] = caTaskObject.(*fitasks.Keypair)
-	}
-
-	// Bastions can have AdditionalUserData, but if there isn't any skip this part
-	if ig.IsBastion() && len(ig.Spec.AdditionalUserData) == 0 {
-		templateResource, err := NewTemplateResource("nodeup", "", nil, nil)
-		if err != nil {
-			return nil, err
-		}
-		return templateResource, nil
 	}
 
 	task := &BootstrapScript{
