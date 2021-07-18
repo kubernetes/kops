@@ -241,7 +241,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		return []string{"containerd", "docker"}, cobra.ShellCompDirectiveNoFileComp
 	})
 
-	cmd.Flags().StringVar(&sshPublicKey, "ssh-public-key", sshPublicKey, "SSH public key to use (defaults to ~/.ssh/id_rsa.pub on AWS)")
+	cmd.Flags().StringVar(&sshPublicKey, "ssh-public-key", sshPublicKey, "SSH public key to use")
 	cmd.RegisterFlagCompletionFunc("ssh-public-key", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{"pub"}, cobra.ShellCompDirectiveFilterFileExt
 	})
@@ -700,8 +700,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	if len(c.SSHPublicKeys) == 0 {
 		autoloadSSHPublicKeys := true
 		switch c.CloudProvider {
-		case "gce":
-			// We don't normally use SSH keys on GCE
+		case "gce", "aws":
 			autoloadSSHPublicKeys = false
 		}
 
