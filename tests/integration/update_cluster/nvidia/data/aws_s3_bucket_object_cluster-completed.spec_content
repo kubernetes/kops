@@ -1,0 +1,188 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2016-12-10T22:42:27Z"
+  name: minimal.example.com
+spec:
+  api:
+    dns: {}
+  authorization:
+    alwaysAllow: {}
+  channel: stable
+  cloudConfig:
+    awsEBSCSIDriver:
+      enabled: false
+    manageStorageClasses: true
+  cloudProvider: aws
+  clusterDNSDomain: cluster.local
+  configBase: memfs://clusters.example.com/minimal.example.com
+  configStore: memfs://clusters.example.com/minimal.example.com
+  containerRuntime: containerd
+  containerd:
+    logLevel: info
+    version: 1.4.6
+  dnsZone: Z1AFAKE1ZON3YO
+  docker:
+    skipInstall: true
+  etcdClusters:
+  - backups:
+      backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd/main
+    enableEtcdTLS: true
+    enableTLSAuth: true
+    etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    name: main
+    provider: Manager
+    version: 3.4.13
+  - backups:
+      backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd/events
+    enableEtcdTLS: true
+    enableTLSAuth: true
+    etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    name: events
+    provider: Manager
+    version: 3.4.13
+  iam:
+    legacy: false
+  keyStore: memfs://clusters.example.com/minimal.example.com/pki
+  kubeAPIServer:
+    allowPrivileged: true
+    anonymousAuth: false
+    apiAudiences:
+    - kubernetes.svc.default
+    apiServerCount: 1
+    authorizationMode: AlwaysAllow
+    bindAddress: 0.0.0.0
+    cloudProvider: aws
+    enableAdmissionPlugins:
+    - NamespaceLifecycle
+    - LimitRanger
+    - ServiceAccount
+    - PersistentVolumeLabel
+    - DefaultStorageClass
+    - DefaultTolerationSeconds
+    - MutatingAdmissionWebhook
+    - ValidatingAdmissionWebhook
+    - NodeRestriction
+    - ResourceQuota
+    etcdServers:
+    - https://127.0.0.1:4001
+    etcdServersOverrides:
+    - /events#https://127.0.0.1:4002
+    image: k8s.gcr.io/kube-apiserver:v1.21.0
+    kubeletPreferredAddressTypes:
+    - InternalIP
+    - Hostname
+    - ExternalIP
+    logLevel: 2
+    requestheaderAllowedNames:
+    - aggregator
+    requestheaderExtraHeaderPrefixes:
+    - X-Remote-Extra-
+    requestheaderGroupHeaders:
+    - X-Remote-Group
+    requestheaderUsernameHeaders:
+    - X-Remote-User
+    securePort: 443
+    serviceAccountIssuer: https://api.internal.minimal.example.com
+    serviceAccountJWKSURI: https://api.internal.minimal.example.com/openid/v1/jwks
+    serviceClusterIPRange: 100.64.0.0/13
+    storageBackend: etcd3
+  kubeControllerManager:
+    allocateNodeCIDRs: true
+    attachDetachReconcileSyncPeriod: 1m0s
+    cloudProvider: aws
+    clusterCIDR: 100.96.0.0/11
+    clusterName: minimal.example.com
+    configureCloudRoutes: false
+    image: k8s.gcr.io/kube-controller-manager:v1.21.0
+    leaderElection:
+      leaderElect: true
+    logLevel: 2
+    useServiceAccountCredentials: true
+  kubeDNS:
+    cacheMaxConcurrent: 150
+    cacheMaxSize: 1000
+    cpuRequest: 100m
+    domain: cluster.local
+    memoryLimit: 170Mi
+    memoryRequest: 70Mi
+    nodeLocalDNS:
+      cpuRequest: 25m
+      enabled: false
+      memoryRequest: 5Mi
+    provider: CoreDNS
+    replicas: 2
+    serverIP: 100.64.0.10
+  kubeProxy:
+    clusterCIDR: 100.96.0.0/11
+    cpuRequest: 100m
+    hostnameOverride: '@aws'
+    image: k8s.gcr.io/kube-proxy:v1.21.0
+    logLevel: 2
+  kubeScheduler:
+    image: k8s.gcr.io/kube-scheduler:v1.21.0
+    leaderElection:
+      leaderElect: true
+    logLevel: 2
+  kubelet:
+    anonymousAuth: false
+    cgroupDriver: systemd
+    cgroupRoot: /
+    cloudProvider: aws
+    clusterDNS: 100.64.0.10
+    clusterDomain: cluster.local
+    enableDebuggingHandlers: true
+    evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    hostnameOverride: '@aws'
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
+    logLevel: 2
+    networkPluginName: cni
+    nonMasqueradeCIDR: 100.64.0.0/10
+    podManifestPath: /etc/kubernetes/manifests
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: 1.21.0
+  masterInternalName: api.internal.minimal.example.com
+  masterKubelet:
+    anonymousAuth: false
+    cgroupDriver: systemd
+    cgroupRoot: /
+    cloudProvider: aws
+    clusterDNS: 100.64.0.10
+    clusterDomain: cluster.local
+    enableDebuggingHandlers: true
+    evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    hostnameOverride: '@aws'
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
+    logLevel: 2
+    networkPluginName: cni
+    nonMasqueradeCIDR: 100.64.0.0/10
+    podManifestPath: /etc/kubernetes/manifests
+    registerSchedulable: false
+  masterPublicName: api.minimal.example.com
+  networkCIDR: 172.20.0.0/16
+  networking:
+    cni: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  nvidia:
+    enabled: true
+    package: nvidia-headless-460-server
+  podCIDR: 100.96.0.0/11
+  secretStore: memfs://clusters.example.com/minimal.example.com/secrets
+  serviceClusterIPRange: 100.64.0.0/13
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-test-1a
+    type: Public
+    zone: us-test-1a
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public

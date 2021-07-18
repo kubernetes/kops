@@ -1,0 +1,55 @@
+# Sourced from https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.9.0/nvidia-device-plugin.yml
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nvidia-device-plugin-daemonset
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: nvidia-device-plugin-ds
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        name: nvidia-device-plugin-ds
+    spec:
+      containers:
+      - image: docker.io/nvidia/k8s-device-plugin:v0.9.0
+        name: nvidia-device-plugin-ctr
+        args: ["--fail-on-init-error=false"]
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+        volumeMounts:
+          - name: device-plugin
+            mountPath: /var/lib/kubelet/device-plugins
+      nodeSelector:
+        kops.k8s.io/gpu: "1"
+      priorityClassName: "system-node-critical"
+      runtimeClassName: "nvidia"
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      volumes:
+        - name: device-plugin
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+---
+
+kind: RuntimeClass
+apiVersion: node.k8s.io/v1beta1
+metadata:
+  name: nvidia
+handler: nvidia
+scheduling:
+  nodeSelector:
+    kops.k8s.io/gpu: "1"
+  tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
+    effect: NoSchedule   
