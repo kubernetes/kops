@@ -182,6 +182,12 @@ func TestMinimal(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
 }
 
+func TestNvidia(t *testing.T) {
+	newIntegrationTest("minimal.example.com", "nvidia").
+		withAddons("nvidia.addons.k8s.io-k8s-1.16").
+		runTestTerraformAWS(t)
+}
+
 // TestMinimal runs the test on a minimum gossip configuration
 func TestMinimalGossip(t *testing.T) {
 	newIntegrationTest("minimal.k8s.local", "minimal_gossip").

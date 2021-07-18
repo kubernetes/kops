@@ -1,0 +1,53 @@
+kind: Addons
+metadata:
+  creationTimestamp: null
+  name: bootstrap
+spec:
+  addons:
+  - id: k8s-1.16
+    manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
+    manifestHash: 886d0565bb011313ee94e8497700550b415eea75
+    name: kops-controller.addons.k8s.io
+    needsRollingUpdate: control-plane
+    selector:
+      k8s-addon: kops-controller.addons.k8s.io
+  - manifest: core.addons.k8s.io/v1.4.0.yaml
+    manifestHash: 9283cd74e74b10e441d3f1807c49c1bef8fac8c8
+    name: core.addons.k8s.io
+    selector:
+      k8s-addon: core.addons.k8s.io
+  - id: k8s-1.12
+    manifest: coredns.addons.k8s.io/k8s-1.12.yaml
+    manifestHash: 004bda4e250d9cec5d5f3e732056020b78b0ab88
+    name: coredns.addons.k8s.io
+    selector:
+      k8s-addon: coredns.addons.k8s.io
+  - id: k8s-1.9
+    manifest: kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml
+    manifestHash: 8ee090e41be5e8bcd29ee799b1608edcd2dd8b65
+    name: kubelet-api.rbac.addons.k8s.io
+    selector:
+      k8s-addon: kubelet-api.rbac.addons.k8s.io
+  - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
+    manifestHash: 6ed889ae6a8d83dd6e5b511f831b3ac65950cf9d
+    name: limit-range.addons.k8s.io
+    selector:
+      k8s-addon: limit-range.addons.k8s.io
+  - id: k8s-1.12
+    manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
+    manifestHash: 2096284cd9a5115cb2ea85c8f952d2a9a0cd2d7e
+    name: dns-controller.addons.k8s.io
+    selector:
+      k8s-addon: dns-controller.addons.k8s.io
+  - id: k8s-1.16
+    manifest: nvidia.addons.k8s.io/k8s-1.16.yaml
+    manifestHash: b7da0d26b6c91660a6279a3e35e528b66fbd3a5a
+    name: nvidia.addons.k8s.io
+    selector:
+      k8s-addon: nvidia.addons.k8s.io
+  - id: v1.15.0
+    manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
+    manifestHash: d474dbcc9b9c5cd2e87b41a7755851811f5f48aa
+    name: storage-aws.addons.k8s.io
+    selector:
+      k8s-addon: storage-aws.addons.k8s.io

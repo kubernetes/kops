@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: nvidia.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: nvidia.addons.k8s.io
+  name: nvidia-device-plugin-daemonset
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: nvidia-device-plugin-ds
+  template:
+    metadata:
+      labels:
+        name: nvidia-device-plugin-ds
+    spec:
+      containers:
+      - args:
+        - --fail-on-init-error=false
+        image: docker.io/nvidia/k8s-device-plugin:v0.9.0
+        name: nvidia-device-plugin-ctr
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - mountPath: /var/lib/kubelet/device-plugins
+          name: device-plugin
+      nodeSelector:
+        kops.k8s.io/gpu: "1"
+      priorityClassName: system-node-critical
+      runtimeClassName: nvidia
+      tolerations:
+      - effect: NoSchedule
+        key: nvidia.com/gpu
+        operator: Exists
+      volumes:
+      - hostPath:
+          path: /var/lib/kubelet/device-plugins
+        name: device-plugin
+  updateStrategy:
+    type: RollingUpdate
+
+---
+
+apiVersion: node.k8s.io/v1beta1
+handler: nvidia
+kind: RuntimeClass
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: nvidia.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: nvidia.addons.k8s.io
+  name: nvidia
+scheduling:
+  nodeSelector:
+    kops.k8s.io/gpu: "1"
+  tolerations:
+  - effect: NoSchedule
+    key: nvidia.com/gpu
+    operator: Exists
