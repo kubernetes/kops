@@ -130,13 +130,11 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		if err := issueCert.AddFileTasks(c, pathSrvKAPI, issueCert.Name, "", nil); err != nil {
 			return err
 		}
-		kubeAPIServer.EtcdCertFile = filepath.Join(pathSrvKAPI, "etcd-client.crt")
-		kubeAPIServer.EtcdKeyFile = filepath.Join(pathSrvKAPI, "etcd-client.key")
 	} else if b.UseEtcdTLS() {
 		kubeAPIServer.EtcdCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
-		kubeAPIServer.EtcdCertFile = filepath.Join(b.PathSrvKubernetes(), "etcd-client.pem")
-		kubeAPIServer.EtcdKeyFile = filepath.Join(b.PathSrvKubernetes(), "etcd-client-key.pem")
 	}
+	kubeAPIServer.EtcdCertFile = filepath.Join(pathSrvKAPI, "etcd-client.crt")
+	kubeAPIServer.EtcdKeyFile = filepath.Join(pathSrvKAPI, "etcd-client.key")
 
 	{
 		c.AddTask(&nodetasks.File{
@@ -698,10 +696,10 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 		addHostPathMapping(pod, container, "cloudconfig", CloudConfigFilePath)
 	}
 
-	pathSrvKubernetes := b.PathSrvKubernetes()
-	if pathSrvKubernetes != "" {
-		addHostPathMapping(pod, container, "srvkube", pathSrvKubernetes)
-	}
+	addHostPathMapping(pod, container, "kubernetesca", filepath.Join(b.PathSrvKubernetes(), "ca.crt"))
+
+	pathSrvKAPI := filepath.Join(b.PathSrvKubernetes(), "kube-apiserver")
+	addHostPathMapping(pod, container, "srvkapi", pathSrvKAPI)
 
 	pathSrvSshproxy := b.PathSrvSshproxy()
 	if pathSrvSshproxy != "" {
