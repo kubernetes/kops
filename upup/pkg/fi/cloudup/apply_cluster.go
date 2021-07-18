@@ -1292,77 +1292,79 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		}
 	}
 
-	if err := getTasksCertificate(caTasks, fi.CertificateIDCA, config, true); err != nil {
-		return nil, nil, err
-	}
-	if caTasks["etcd-clients-ca-cilium"] != nil {
-		if err := getTasksCertificate(caTasks, "etcd-clients-ca-cilium", config, hasAPIServer || apiModel.UseKopsControllerForNodeBootstrap(n.cluster)); err != nil {
+	if role != kops.InstanceGroupRoleBastion {
+		if err := getTasksCertificate(caTasks, fi.CertificateIDCA, config, true); err != nil {
 			return nil, nil, err
 		}
-	}
-
-	if isMaster {
-		if err := getTasksCertificate(caTasks, "etcd-clients-ca", config, true); err != nil {
-			return nil, nil, err
-		}
-		for _, etcdCluster := range cluster.Spec.EtcdClusters {
-			k := etcdCluster.Name
-			if err := getTasksCertificate(caTasks, "etcd-manager-ca-"+k, config, true); err != nil {
+		if caTasks["etcd-clients-ca-cilium"] != nil {
+			if err := getTasksCertificate(caTasks, "etcd-clients-ca-cilium", config, hasAPIServer || apiModel.UseKopsControllerForNodeBootstrap(n.cluster)); err != nil {
 				return nil, nil, err
 			}
-			if err := getTasksCertificate(caTasks, "etcd-peers-ca-"+k, config, true); err != nil {
-				return nil, nil, err
-			}
-			if k != "events" && k != "main" {
-				if err := getTasksCertificate(caTasks, "etcd-clients-ca-"+k, config, true); err != nil {
-					return nil, nil, err
-				}
-			}
 		}
-		config.KeypairIDs["service-account"] = caTasks["service-account"].Keyset().Primary.Id
-	} else {
-		if caTasks["etcd-client-cilium"] != nil {
-			config.KeypairIDs["etcd-client-cilium"] = caTasks["etcd-client-cilium"].Keyset().Primary.Id
-		}
-	}
 
-	if hasAPIServer {
-		if err := getTasksCertificate(caTasks, "apiserver-aggregator-ca", config, true); err != nil {
-			return nil, nil, err
-		}
-		if caTasks["etcd-clients-ca"] != nil {
+		if isMaster {
 			if err := getTasksCertificate(caTasks, "etcd-clients-ca", config, true); err != nil {
 				return nil, nil, err
 			}
-		}
-		if cluster.Spec.KubeAPIServer != nil && fi.StringValue(cluster.Spec.KubeAPIServer.ServiceAccountIssuer) != "" {
+			for _, etcdCluster := range cluster.Spec.EtcdClusters {
+				k := etcdCluster.Name
+				if err := getTasksCertificate(caTasks, "etcd-manager-ca-"+k, config, true); err != nil {
+					return nil, nil, err
+				}
+				if err := getTasksCertificate(caTasks, "etcd-peers-ca-"+k, config, true); err != nil {
+					return nil, nil, err
+				}
+				if k != "events" && k != "main" {
+					if err := getTasksCertificate(caTasks, "etcd-clients-ca-"+k, config, true); err != nil {
+						return nil, nil, err
+					}
+				}
+			}
 			config.KeypairIDs["service-account"] = caTasks["service-account"].Keyset().Primary.Id
-		}
-
-		config.APIServerConfig.EncryptionConfigSecretHash = n.encryptionConfigSecretHash
-		var err error
-		config.APIServerConfig.ServiceAccountPublicKeys, err = caTasks["service-account"].Keyset().ToPublicKeys()
-		if err != nil {
-			return nil, nil, fmt.Errorf("encoding service-account keys: %w", err)
-		}
-	} else {
-		for _, key := range []string{"kubelet", "kube-proxy", "kube-router"} {
-			if caTasks[key] != nil {
-				config.KeypairIDs[key] = caTasks[key].Keyset().Primary.Id
-			}
-		}
-	}
-
-	if isMaster || useGossip {
-		for _, arch := range architectures.GetSupported() {
-			for _, a := range n.protokubeAsset[arch] {
-				config.Assets[arch] = append(config.Assets[arch], a.CompactString())
+		} else {
+			if caTasks["etcd-client-cilium"] != nil {
+				config.KeypairIDs["etcd-client-cilium"] = caTasks["etcd-client-cilium"].Keyset().Primary.Id
 			}
 		}
 
-		for _, arch := range architectures.GetSupported() {
-			for _, a := range n.channelsAsset[arch] {
-				config.Assets[arch] = append(config.Assets[arch], a.CompactString())
+		if hasAPIServer {
+			if err := getTasksCertificate(caTasks, "apiserver-aggregator-ca", config, true); err != nil {
+				return nil, nil, err
+			}
+			if caTasks["etcd-clients-ca"] != nil {
+				if err := getTasksCertificate(caTasks, "etcd-clients-ca", config, true); err != nil {
+					return nil, nil, err
+				}
+			}
+			if cluster.Spec.KubeAPIServer != nil && fi.StringValue(cluster.Spec.KubeAPIServer.ServiceAccountIssuer) != "" {
+				config.KeypairIDs["service-account"] = caTasks["service-account"].Keyset().Primary.Id
+			}
+
+			config.APIServerConfig.EncryptionConfigSecretHash = n.encryptionConfigSecretHash
+			var err error
+			config.APIServerConfig.ServiceAccountPublicKeys, err = caTasks["service-account"].Keyset().ToPublicKeys()
+			if err != nil {
+				return nil, nil, fmt.Errorf("encoding service-account keys: %w", err)
+			}
+		} else {
+			for _, key := range []string{"kubelet", "kube-proxy", "kube-router"} {
+				if caTasks[key] != nil {
+					config.KeypairIDs[key] = caTasks[key].Keyset().Primary.Id
+				}
+			}
+		}
+
+		if isMaster || useGossip {
+			for _, arch := range architectures.GetSupported() {
+				for _, a := range n.protokubeAsset[arch] {
+					config.Assets[arch] = append(config.Assets[arch], a.CompactString())
+				}
+			}
+
+			for _, arch := range architectures.GetSupported() {
+				for _, a := range n.channelsAsset[arch] {
+					config.Assets[arch] = append(config.Assets[arch], a.CompactString())
+				}
 			}
 		}
 	}
