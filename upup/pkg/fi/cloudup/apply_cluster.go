@@ -81,10 +81,6 @@ const (
 )
 
 var (
-	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
-	AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
-	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha
-	AlphaAllowALI = featureflag.New("AlphaAllowALI", featureflag.Bool(false))
 	// OldestSupportedKubernetesVersion is the oldest kubernetes version that is supported in Kops
 	OldestSupportedKubernetesVersion = "1.17.0"
 	// OldestRecommendedKubernetesVersion is the oldest kubernetes version that is not deprecated in Kops
@@ -393,7 +389,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			gceCloud := cloud.(gce.GCECloud)
 			project = gceCloud.Project()
 
-			if !AlphaAllowGCE.Enabled() {
+			if !featureflag.AlphaAllowGCE.Enabled() {
 				return fmt.Errorf("GCE support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowGCE")
 			}
 
@@ -428,7 +424,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			fmt.Println("aliyun support has been deprecated due to lack of maintainers. It may be removed in a future version of kOps.")
 			fmt.Println("")
 
-			if !AlphaAllowALI.Enabled() {
+			if !featureflag.AlphaAllowALI.Enabled() {
 				return fmt.Errorf("aliyun support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowALI")
 			}
 
