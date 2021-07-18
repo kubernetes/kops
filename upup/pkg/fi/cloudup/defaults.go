@@ -24,6 +24,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/vfs"
 
@@ -56,20 +57,31 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 		}
 	}
 
-	// Currently only AWS uses NetworkCIDRs
-	setNetworkCIDR := (cloud.ProviderID() == kops.CloudProviderAWS) || (cloud.ProviderID() == kops.CloudProviderALI)
+	setNetworkCIDR := (cloud.ProviderID() == kops.CloudProviderAWS) || (cloud.ProviderID() == kops.CloudProviderALI) || (cloud.ProviderID() == kops.CloudProviderAzure)
 	if setNetworkCIDR && c.Spec.NetworkCIDR == "" {
 		if c.SharedVPC() {
-			vpcInfo, err := cloud.FindVPCInfo(c.Spec.NetworkID)
-			if err != nil {
-				return err
+			var vpcInfo *fi.VPCInfo
+			var err error
+			if cloud.ProviderID() == kops.CloudProviderAzure {
+				if c.Spec.CloudConfig == nil || c.Spec.CloudConfig.Azure == nil || c.Spec.CloudConfig.Azure.ResourceGroupName == "" {
+					return fmt.Errorf("missing required --azure-resource-group-name when specifying Network ID")
+				}
+				vpcInfo, err = cloud.(azure.AzureCloud).FindVNetInfo(c.Spec.NetworkID, c.Spec.CloudConfig.Azure.ResourceGroupName)
+				if err != nil {
+					return err
+				}
+			} else {
+				vpcInfo, err = cloud.FindVPCInfo(c.Spec.NetworkID)
+				if err != nil {
+					return err
+				}
 			}
 			if vpcInfo == nil {
-				return fmt.Errorf("unable to find VPC ID %q", c.Spec.NetworkID)
+				return fmt.Errorf("unable to find Network ID %q", c.Spec.NetworkID)
 			}
 			c.Spec.NetworkCIDR = vpcInfo.CIDR
 			if c.Spec.NetworkCIDR == "" {
-				return fmt.Errorf("unable to infer NetworkCIDR from VPC ID, please specify --network-cidr")
+				return fmt.Errorf("unable to infer NetworkCIDR from Network ID, please specify --network-cidr")
 			}
 		} else {
 			if cloud.ProviderID() == kops.CloudProviderAWS {
