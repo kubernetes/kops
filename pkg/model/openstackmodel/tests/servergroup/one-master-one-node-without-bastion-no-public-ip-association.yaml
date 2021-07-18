@@ -196,6 +196,36 @@ subject: cn=etcd-peers-ca-main
 type: ca
 ---
 Lifecycle: ""
+Name: kube-proxy
+Signer:
+  Lifecycle: ""
+  Name: kubernetes-ca
+  Signer: null
+  alternateNames: null
+  oldFormat: false
+  subject: cn=kubernetes
+  type: ca
+alternateNames: null
+oldFormat: false
+subject: cn=kube-proxy
+type: client
+---
+Lifecycle: ""
+Name: kubelet
+Signer:
+  Lifecycle: ""
+  Name: kubernetes-ca
+  Signer: null
+  alternateNames: null
+  oldFormat: false
+  subject: cn=kubernetes
+  type: ca
+alternateNames: null
+oldFormat: false
+subject: cn=kubelet
+type: client
+---
+Lifecycle: ""
 Name: kubernetes-ca
 Signer: null
 alternateNames: null
