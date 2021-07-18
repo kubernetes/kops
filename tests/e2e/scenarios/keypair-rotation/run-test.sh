@@ -17,7 +17,7 @@
 REPO_ROOT=$(git rev-parse --show-toplevel);
 source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
-KOPS=$(kops-acquire-latest)
+kops-acquire-latest
 
 kops-up
 
