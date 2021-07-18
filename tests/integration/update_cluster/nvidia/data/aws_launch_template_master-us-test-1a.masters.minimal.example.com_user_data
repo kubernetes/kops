@@ -1,0 +1,252 @@
+#!/bin/bash
+set -o errexit
+set -o nounset
+set -o pipefail
+
+NODEUP_URL_AMD64=https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/nodeup-linux-amd64
+NODEUP_HASH_AMD64=585fbda0f0a43184656b4bfc0cc5f0c0b85612faf43b8816acca1f99d422c924
+NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/nodeup-linux-arm64
+NODEUP_HASH_ARM64=7603675379699105a9b9915ff97718ea99b1bbb01a4c184e2f827c8a96e8e865
+
+export AWS_REGION=us-test-1
+
+
+
+
+sysctl -w net.core.rmem_max=16777216 || true
+sysctl -w net.core.wmem_max=16777216 || true
+sysctl -w net.ipv4.tcp_rmem='4096 87380 16777216' || true
+sysctl -w net.ipv4.tcp_wmem='4096 87380 16777216' || true
+
+
+function ensure-install-dir() {
+  INSTALL_DIR="/opt/kops"
+  # On ContainerOS, we install under /var/lib/toolbox; /opt is ro and noexec
+  if [[ -d /var/lib/toolbox ]]; then
+    INSTALL_DIR="/var/lib/toolbox/kops"
+  fi
+  mkdir -p ${INSTALL_DIR}/bin
+  mkdir -p ${INSTALL_DIR}/conf
+  cd ${INSTALL_DIR}
+}
+
+# Retry a download until we get it. args: name, sha, urls
+download-or-bust() {
+  local -r file="$1"
+  local -r hash="$2"
+  local -r urls=( $(split-commas "$3") )
+
+  if [[ -f "${file}" ]]; then
+    if ! validate-hash "${file}" "${hash}"; then
+      rm -f "${file}"
+    else
+      return
+    fi
+  fi
+
+  while true; do
+    for url in "${urls[@]}"; do
+      commands=(
+        "curl -f --compressed -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
+        "wget --compression=auto -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
+        "curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
+        "wget -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
+      )
+      for cmd in "${commands[@]}"; do
+        echo "Attempting download with: ${cmd} {url}"
+        if ! (${cmd} "${url}"); then
+          echo "== Download failed with ${cmd} =="
+          continue
+        fi
+        if ! validate-hash "${file}" "${hash}"; then
+          echo "== Hash validation of ${url} failed. Retrying. =="
+          rm -f "${file}"
+        else
+          echo "== Downloaded ${url} (SHA256 = ${hash}) =="
+          return
+        fi
+      done
+    done
+
+    echo "All downloads failed; sleeping before retrying"
+    sleep 60
+  done
+}
+
+validate-hash() {
+  local -r file="$1"
+  local -r expected="$2"
+  local actual
+
+  actual=$(sha256sum ${file} | awk '{ print $1 }') || true
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo "== ${file} corrupted, hash ${actual} doesn't match expected ${expected} =="
+    return 1
+  fi
+}
+
+function split-commas() {
+  echo $1 | tr "," "\n"
+}
+
+function download-release() {
+  case "$(uname -m)" in
+  x86_64*|i?86_64*|amd64*)
+    NODEUP_URL="${NODEUP_URL_AMD64}"
+    NODEUP_HASH="${NODEUP_HASH_AMD64}"
+    ;;
+  aarch64*|arm64*)
+    NODEUP_URL="${NODEUP_URL_ARM64}"
+    NODEUP_HASH="${NODEUP_HASH_ARM64}"
+    ;;
+  *)
+    echo "Unsupported host arch: $(uname -m)" >&2
+    exit 1
+    ;;
+  esac
+
+  cd ${INSTALL_DIR}/bin
+  download-or-bust nodeup "${NODEUP_HASH}" "${NODEUP_URL}"
+
+  chmod +x nodeup
+
+  echo "Running nodeup"
+  # We can't run in the foreground because of https://github.com/docker/docker/issues/23793
+  ( cd ${INSTALL_DIR}/bin; ./nodeup --install-systemd-unit --conf=${INSTALL_DIR}/conf/kube_env.yaml --v=8  )
+}
+
+####################################################################################
+
+/bin/systemd-machine-id-setup || echo "failed to set up ensure machine-id configured"
+
+echo "== nodeup node config starting =="
+ensure-install-dir
+
+cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
+cloudConfig:
+  awsEBSCSIDriver:
+    enabled: false
+  manageStorageClasses: true
+containerRuntime: containerd
+containerd:
+  logLevel: info
+  version: 1.4.6
+docker:
+  skipInstall: true
+encryptionConfig: null
+etcdClusters:
+  events:
+    version: 3.4.13
+  main:
+    version: 3.4.13
+kubeAPIServer:
+  allowPrivileged: true
+  anonymousAuth: false
+  apiAudiences:
+  - kubernetes.svc.default
+  apiServerCount: 1
+  authorizationMode: AlwaysAllow
+  bindAddress: 0.0.0.0
+  cloudProvider: aws
+  enableAdmissionPlugins:
+  - NamespaceLifecycle
+  - LimitRanger
+  - ServiceAccount
+  - PersistentVolumeLabel
+  - DefaultStorageClass
+  - DefaultTolerationSeconds
+  - MutatingAdmissionWebhook
+  - ValidatingAdmissionWebhook
+  - NodeRestriction
+  - ResourceQuota
+  etcdServers:
+  - https://127.0.0.1:4001
+  etcdServersOverrides:
+  - /events#https://127.0.0.1:4002
+  image: k8s.gcr.io/kube-apiserver:v1.21.0
+  kubeletPreferredAddressTypes:
+  - InternalIP
+  - Hostname
+  - ExternalIP
+  logLevel: 2
+  requestheaderAllowedNames:
+  - aggregator
+  requestheaderExtraHeaderPrefixes:
+  - X-Remote-Extra-
+  requestheaderGroupHeaders:
+  - X-Remote-Group
+  requestheaderUsernameHeaders:
+  - X-Remote-User
+  securePort: 443
+  serviceAccountIssuer: https://api.internal.minimal.example.com
+  serviceAccountJWKSURI: https://api.internal.minimal.example.com/openid/v1/jwks
+  serviceClusterIPRange: 100.64.0.0/13
+  storageBackend: etcd3
+kubeControllerManager:
+  allocateNodeCIDRs: true
+  attachDetachReconcileSyncPeriod: 1m0s
+  cloudProvider: aws
+  clusterCIDR: 100.96.0.0/11
+  clusterName: minimal.example.com
+  configureCloudRoutes: false
+  image: k8s.gcr.io/kube-controller-manager:v1.21.0
+  leaderElection:
+    leaderElect: true
+  logLevel: 2
+  useServiceAccountCredentials: true
+kubeProxy:
+  clusterCIDR: 100.96.0.0/11
+  cpuRequest: 100m
+  hostnameOverride: '@aws'
+  image: k8s.gcr.io/kube-proxy:v1.21.0
+  logLevel: 2
+kubeScheduler:
+  image: k8s.gcr.io/kube-scheduler:v1.21.0
+  leaderElection:
+    leaderElect: true
+  logLevel: 2
+kubelet:
+  anonymousAuth: false
+  cgroupDriver: systemd
+  cgroupRoot: /
+  cloudProvider: aws
+  clusterDNS: 100.64.0.10
+  clusterDomain: cluster.local
+  enableDebuggingHandlers: true
+  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  hostnameOverride: '@aws'
+  kubeconfigPath: /var/lib/kubelet/kubeconfig
+  logLevel: 2
+  networkPluginName: cni
+  nonMasqueradeCIDR: 100.64.0.0/10
+  podManifestPath: /etc/kubernetes/manifests
+masterKubelet:
+  anonymousAuth: false
+  cgroupDriver: systemd
+  cgroupRoot: /
+  cloudProvider: aws
+  clusterDNS: 100.64.0.10
+  clusterDomain: cluster.local
+  enableDebuggingHandlers: true
+  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  hostnameOverride: '@aws'
+  kubeconfigPath: /var/lib/kubelet/kubeconfig
+  logLevel: 2
+  networkPluginName: cni
+  nonMasqueradeCIDR: 100.64.0.0/10
+  podManifestPath: /etc/kubernetes/manifests
+  registerSchedulable: false
+
+__EOF_CLUSTER_SPEC
+
+cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
+CloudProvider: aws
+ConfigBase: memfs://clusters.example.com/minimal.example.com
+InstanceGroupName: master-us-test-1a
+InstanceGroupRole: Master
+NodeupConfigHash: yGAfgK0NPZYEUOLMMMzSZkCbHknciWasTJdPN/4s2ZQ=
+
+__EOF_KUBE_ENV
+
+download-release
+echo "== nodeup node config done =="
