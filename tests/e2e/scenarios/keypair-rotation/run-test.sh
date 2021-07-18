@@ -21,7 +21,8 @@ kops-acquire-latest
 
 kops-up
 
-REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/keypair-rotation/"
+REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/keypair-rotation"
+mkdir -p "${REPORT_DIR}"
 
 ${KOPS} create keypair all
 ${KOPS} update cluster --yes
