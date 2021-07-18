@@ -43,6 +43,8 @@ type AzureCloud interface {
 
 	AddClusterTags(tags map[string]*string)
 
+	FindVNetInfo(id, resourceGroup string) (*fi.VPCInfo, error)
+
 	SubscriptionID() string
 	ResourceGroup() ResourceGroupsClient
 	VirtualNetwork() VirtualNetworksClient
@@ -114,7 +116,31 @@ func (c *azureCloudImplementation) DNS() (dnsprovider.Interface, error) {
 }
 
 func (c *azureCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
-	return nil, errors.New("FindVPCInfo not implemented on azureCloud")
+	return nil, errors.New("FindVPCInfo not implemented on azureCloud, use FindVNETInfo instead")
+}
+
+func (c *azureCloudImplementation) FindVNetInfo(id, resourceGroup string) (*fi.VPCInfo, error) {
+	vnets, err := c.vnetsClient.List(context.TODO(), resourceGroup)
+	if err != nil {
+		return nil, err
+	}
+	for _, vnet := range vnets {
+		if *vnet.ID != id {
+			continue
+		}
+		subnets := make([]*fi.SubnetInfo, 0)
+		for _, subnet := range *vnet.Subnets {
+			subnets = append(subnets, &fi.SubnetInfo{
+				ID:   *subnet.ID,
+				CIDR: *subnet.AddressPrefix,
+			})
+		}
+		return &fi.VPCInfo{
+			CIDR:    (*vnet.AddressSpace.AddressPrefixes)[0],
+			Subnets: subnets,
+		}, nil
+	}
+	return nil, nil
 }
 
 func (c *azureCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance) error {
