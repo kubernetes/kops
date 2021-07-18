@@ -58,6 +58,16 @@
     },
     {
       "Action": [
+        "s3:GetObject",
+        "s3:DeleteObject",
+        "s3:DeleteObjectVersion",
+        "s3:PutObject"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::placeholder-read-bucket/addons/*"
+    },
+    {
+      "Action": [
         "s3:GetBucketLocation",
         "s3:GetEncryptionConfiguration",
         "s3:ListBucket",
@@ -66,6 +76,18 @@
       "Effect": "Allow",
       "Resource": [
         "arn:aws:s3:::kops-tests"
+      ]
+    },
+    {
+      "Action": [
+        "s3:GetBucketLocation",
+        "s3:GetEncryptionConfiguration",
+        "s3:ListBucket",
+        "s3:ListBucketVersions"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws:s3:::placeholder-read-bucket"
       ]
     },
     {

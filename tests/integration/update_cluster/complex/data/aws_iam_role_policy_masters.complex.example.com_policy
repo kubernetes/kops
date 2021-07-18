@@ -78,6 +78,16 @@
     },
     {
       "Action": [
+        "s3:GetObject",
+        "s3:DeleteObject",
+        "s3:DeleteObjectVersion",
+        "s3:PutObject"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::placeholder-write-bucket/clusters.example.com/complex.example.com/addons/*"
+    },
+    {
+      "Action": [
         "s3:GetBucketLocation",
         "s3:GetEncryptionConfiguration",
         "s3:ListBucket",
