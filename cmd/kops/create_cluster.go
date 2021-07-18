@@ -928,7 +928,7 @@ func completeNetworking(options *CreateClusterOptions) func(cmd *cobra.Command, 
 				completions = append(completions, "amazonvpc", "lyftvpc")
 			}
 
-			if cloudup.AlphaAllowGCE.Enabled() && (options.CloudProvider == "gce" || options.CloudProvider == "") {
+			if featureflag.AlphaAllowGCE.Enabled() && (options.CloudProvider == "gce" || options.CloudProvider == "") {
 				completions = append(completions, "gce")
 			}
 		}
