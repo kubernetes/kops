@@ -78,12 +78,10 @@ import (
 
 const (
 	starline = "*********************************************************************************"
-)
 
-var (
-	// OldestSupportedKubernetesVersion is the oldest kubernetes version that is supported in Kops
+	// OldestSupportedKubernetesVersion is the oldest kubernetes version that is supported in kOps.
 	OldestSupportedKubernetesVersion = "1.17.0"
-	// OldestRecommendedKubernetesVersion is the oldest kubernetes version that is not deprecated in Kops
+	// OldestRecommendedKubernetesVersion is the oldest kubernetes version that is not deprecated in kOps.
 	OldestRecommendedKubernetesVersion = "1.19.0"
 )
 
