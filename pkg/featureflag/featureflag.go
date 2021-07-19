@@ -49,58 +49,62 @@ var (
 var (
 	// CacheNodeidentityInfo enables NodeidentityInfo caching
 	// in order to reduce the number of EC2 DescribeInstance calls.
-	CacheNodeidentityInfo = New("CacheNodeidentityInfo", Bool(false))
+	CacheNodeidentityInfo = new("CacheNodeidentityInfo", Bool(false))
 	// DNSPreCreate controls whether we pre-create DNS records.
-	DNSPreCreate = New("DNSPreCreate", Bool(true))
+	DNSPreCreate = new("DNSPreCreate", Bool(true))
 	// EnableExternalDNS enables external DNS
-	EnableExternalDNS = New("EnableExternalDNS", Bool(false))
+	EnableExternalDNS = new("EnableExternalDNS", Bool(false))
 	// EnableSeparateConfigBase allows a config-base that is different from the state store
-	EnableSeparateConfigBase = New("EnableSeparateConfigBase", Bool(false))
+	EnableSeparateConfigBase = new("EnableSeparateConfigBase", Bool(false))
 	// ExperimentalClusterDNS allows for setting the kubelet dns flag to experimental values.
-	ExperimentalClusterDNS = New("ExperimentalClusterDNS", Bool(false))
+	ExperimentalClusterDNS = new("ExperimentalClusterDNS", Bool(false))
 	// GoogleCloudBucketACL means the ACL will be set on a bucket when using GCS
-	GoogleCloudBucketACL = New("GoogleCloudBucketAcl", Bool(false))
+	GoogleCloudBucketACL = new("GoogleCloudBucketAcl", Bool(false))
 	// KeepLaunchConfigurations can be set to prevent garbage collection of old launch configurations
-	KeepLaunchConfigurations = New("KeepLaunchConfigurations", Bool(false))
+	KeepLaunchConfigurations = new("KeepLaunchConfigurations", Bool(false))
 	// SkipTerraformFormat if set means we will not `tf fmt` the generated terraform.
 	// However we should no longer need it, with the keyset.yaml fix
 	// In particular, this is the only (?) way to grant the bucket.list permission
 	// It allows for experiments with alternative DNS configurations - in particular local proxies.
-	SkipTerraformFormat = New("SkipTerraformFormat", Bool(false))
+	SkipTerraformFormat = new("SkipTerraformFormat", Bool(false))
 	// SpecOverrideFlag allows setting spec values on create
-	SpecOverrideFlag = New("SpecOverrideFlag", Bool(false))
+	SpecOverrideFlag = new("SpecOverrideFlag", Bool(false))
 	// Spotinst toggles the use of Spotinst integration.
-	Spotinst = New("Spotinst", Bool(false))
+	Spotinst = new("Spotinst", Bool(false))
 	// SpotinstOcean toggles the use of Spotinst Ocean instance group implementation.
-	SpotinstOcean = New("SpotinstOcean", Bool(false))
+	SpotinstOcean = new("SpotinstOcean", Bool(false))
 	// SpotinstHybrid toggles between hybrid and full instance group implementations.
-	SpotinstHybrid = New("SpotinstHybrid", Bool(false))
+	SpotinstHybrid = new("SpotinstHybrid", Bool(false))
 	// SpotinstController toggles the installation of the Spotinst controller addon.
-	SpotinstController = New("SpotinstController", Bool(true))
+	SpotinstController = new("SpotinstController", Bool(true))
 	// VFSVaultSupport enables setting Vault as secret/keystore
-	VFSVaultSupport = New("VFSVaultSupport", Bool(false))
+	VFSVaultSupport = new("VFSVaultSupport", Bool(false))
 	// VPCSkipEnableDNSSupport if set will make that a VPC does not need DNSSupport enabled.
-	VPCSkipEnableDNSSupport = New("VPCSkipEnableDNSSupport", Bool(false))
+	VPCSkipEnableDNSSupport = new("VPCSkipEnableDNSSupport", Bool(false))
 	// SkipEtcdVersionCheck will bypass the check that etcd-manager is using a supported etcd version
-	SkipEtcdVersionCheck = New("SkipEtcdVersionCheck", Bool(false))
+	SkipEtcdVersionCheck = new("SkipEtcdVersionCheck", Bool(false))
 	// TerraformJSON outputs terraform in JSON instead of hcl output. JSON output can be also parsed by terraform 0.12
-	TerraformJSON = New("TerraformJSON", Bool(false))
+	TerraformJSON = new("TerraformJSON", Bool(false))
 	// ClusterAddons activates experimental cluster-addons support
-	ClusterAddons = New("ClusterAddons", Bool(false))
+	ClusterAddons = new("ClusterAddons", Bool(false))
 	// UseServiceAccountIAM controls whether we use pod-level IAM permissions for our system pods and kOps addons.
-	UseServiceAccountIAM = New("UseServiceAccountIAM", Bool(false))
+	UseServiceAccountIAM = new("UseServiceAccountIAM", Bool(false))
 	// Azure toggles the Azure support.
-	Azure = New("Azure", Bool(false))
+	Azure = new("Azure", Bool(false))
 	// KopsControllerStateStore enables fetching the kops state from kops-controller, instead of requiring access to S3/GCS/etc.
-	KopsControllerStateStore = New("KopsControllerStateStore", Bool(false))
+	KopsControllerStateStore = new("KopsControllerStateStore", Bool(false))
 	// APIServerNodes enables ability to provision nodes that only run the kube-apiserver.
-	APIServerNodes = New("APIServerNodes", Bool(false))
+	APIServerNodes = new("APIServerNodes", Bool(false))
 	// UseAddonOperators activates experimental addon operator support
-	UseAddonOperators = New("UseAddonOperators", Bool(false))
+	UseAddonOperators = new("UseAddonOperators", Bool(false))
 	// AWSIPv6 activates experimental AWS IPv6 support.
-	AWSIPv6 = New("AWSIPv6", Bool(false))
+	AWSIPv6 = new("AWSIPv6", Bool(false))
 	// TerraformManagedFiles enables rendering managed files into the Terraform configuration.
-	TerraformManagedFiles = New("TerraformManagedFiles", Bool(true))
+	TerraformManagedFiles = new("TerraformManagedFiles", Bool(true))
+	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha.
+	AlphaAllowGCE = new("AlphaAllowGCE", Bool(false))
+	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha.
+	AlphaAllowALI = new("AlphaAllowALI", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
@@ -110,8 +114,8 @@ type FeatureFlag struct {
 	defaultValue *bool
 }
 
-// New creates a new feature flag
-func New(key string, defaultValue *bool) *FeatureFlag {
+// new creates a new feature flag
+func new(key string, defaultValue *bool) *FeatureFlag {
 	flagsMutex.Lock()
 	defer flagsMutex.Unlock()
 
@@ -148,6 +152,9 @@ func Bool(b bool) *bool {
 
 // ParseFlags responsible for parse out the feature flag usage
 func ParseFlags(f string) {
+	flagsMutex.Lock()
+	defer flagsMutex.Unlock()
+
 	f = strings.TrimSpace(f)
 	for _, s := range strings.Split(f, ",") {
 		s = strings.TrimSpace(s)
@@ -157,14 +164,18 @@ func ParseFlags(f string) {
 		enabled := true
 		var ff *FeatureFlag
 		if s[0] == '+' || s[0] == '-' {
-			ff = New(s[1:], nil)
+			ff = flags[s[1:]]
 			if s[0] == '-' {
 				enabled = false
 			}
 		} else {
-			ff = New(s, nil)
+			ff = flags[s]
 		}
-		klog.Infof("FeatureFlag %q=%v", ff.Key, enabled)
-		ff.enabled = &enabled
+		if ff != nil {
+			klog.Infof("FeatureFlag %q=%v", ff.Key, enabled)
+			ff.enabled = &enabled
+		} else {
+			klog.Infof("Unknown FeatureFlag %q", s)
+		}
 	}
 }

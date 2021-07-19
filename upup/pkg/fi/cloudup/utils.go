@@ -176,13 +176,13 @@ func SupportedClouds() []string {
 		string(kops.CloudProviderDO),
 		string(kops.CloudProviderOpenstack),
 	}
-	if AlphaAllowALI.Enabled() {
+	if featureflag.AlphaAllowALI.Enabled() {
 		clouds = append(clouds, string(kops.CloudProviderALI))
 	}
 	if featureflag.Azure.Enabled() {
 		clouds = append(clouds, string(kops.CloudProviderAzure))
 	}
-	if AlphaAllowGCE.Enabled() {
+	if featureflag.AlphaAllowGCE.Enabled() {
 		clouds = append(clouds, string(kops.CloudProviderGCE))
 	}
 

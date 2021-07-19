@@ -24,7 +24,7 @@ import (
 )
 
 func TestFlagToFalse(t *testing.T) {
-	f := New("UnitTest1", Bool(true))
+	f := new("UnitTest1", Bool(true))
 	if !f.Enabled() {
 		t.Fatalf("Flag did not default true")
 	}
@@ -44,7 +44,7 @@ func TestFlagToFalse(t *testing.T) {
 }
 
 func TestSetenv(t *testing.T) {
-	f := New("UnitTest2", Bool(true))
+	f := new("UnitTest2", Bool(true))
 	if !f.Enabled() {
 		t.Fatalf("Flag did not default true")
 	}
