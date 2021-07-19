@@ -14,7 +14,7 @@ The following table provides the support status for various networking providers
 
 | Network provider | Experimental | Stable | Deprecated | Removed |
 | ------------ | -----------: | -----: | ---------: | ------: |
-| AWS VPC | 1.9 | - | - | - |
+| AWS VPC | 1.9 | 1.21 | - | - |
 | Calico | 1.6 | 1.11 | - | - |
 | Canal  | 1.12 | - | - | - |
 | Cilium | 1.9 | 1.15 | - | - |
