@@ -850,6 +850,7 @@ spec:
         - --ingress-class=alb
         - --default-tags=KubernetesCluster=minimal.example.com
         - --aws-region=us-test-1
+        - --aws-vpc-id=vpc-12345678
         image: amazon/aws-alb-ingress-controller:v2.2.0
         livenessProbe:
           failureThreshold: 2
