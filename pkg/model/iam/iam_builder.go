@@ -339,6 +339,11 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 			AddAWSLoadbalancerControllerPermissions(p)
 		}
 		AddClusterAutoscalerPermissions(p)
+
+		nth := b.Cluster.Spec.NodeTerminationHandler
+		if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSQSTerminationDraining) {
+			AddNodeTerminationHandlerSQSPermissions(p)
+		}
 	}
 
 	if b.Cluster.Spec.IAM.AllowContainerRegistry {
@@ -359,11 +364,6 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "DoNothing" {
 		addCalicoSrcDstCheckPermissions(p)
-	}
-
-	nth := b.Cluster.Spec.NodeTerminationHandler
-	if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSQSTerminationDraining) {
-		addNodeTerminationHandlerSQSPermissions(p)
 	}
 
 	if b.Cluster.Spec.SnapshotController != nil && fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled) {
@@ -1170,11 +1170,17 @@ func addAmazonVPCCNIPermissions(p *Policy, iamPrefix string) {
 	)
 }
 
-func addNodeTerminationHandlerSQSPermissions(p *Policy) {
+func AddNodeTerminationHandlerSQSPermissions(p *Policy) {
 	p.unconditionalAction.Insert(
-		"autoscaling:CompleteLifecycleAction",
 		"autoscaling:DescribeAutoScalingInstances",
+		"autoscaling:DescribeTags",
+		"ec2:DescribeInstances",
+		// SQS permissions do not support conditions.
 		"sqs:DeleteMessage",
 		"sqs:ReceiveMessage",
 	)
+	p.clusterTaggedAction.Insert(
+		"autoscaling:CompleteLifecycleAction",
+	)
+
 }
