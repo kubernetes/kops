@@ -58,6 +58,17 @@ func TestVMScaleSetModelBuilder_Build(t *testing.T) {
 		Type:    "ca",
 	}
 	c.AddTask(etcdCaTask)
+	for _, cert := range []string{
+		"kubelet",
+		"kube-proxy",
+	} {
+		c.AddTask(&fitasks.Keypair{
+			Name:    fi.String(cert),
+			Subject: "cn=" + cert,
+			Signer:  caTask,
+			Type:    "client",
+		})
+	}
 
 	err := b.Build(c)
 	if err != nil {

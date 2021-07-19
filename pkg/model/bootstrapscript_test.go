@@ -209,7 +209,7 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 	return &kops.Cluster{
 		Spec: kops.ClusterSpec{
 			CloudProvider:     "aws",
-			KubernetesVersion: "1.7.0",
+			KubernetesVersion: "1.20.0",
 			Subnets: []kops.ClusterSubnetSpec{
 				{Name: "test", Zone: "eu-west-1a"},
 			},
