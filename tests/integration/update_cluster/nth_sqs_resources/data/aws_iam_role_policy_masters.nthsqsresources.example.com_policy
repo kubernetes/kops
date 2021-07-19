@@ -172,7 +172,6 @@
     },
     {
       "Action": [
-        "autoscaling:CompleteLifecycleAction",
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeLaunchConfigurations",
@@ -207,6 +206,7 @@
     },
     {
       "Action": [
+        "autoscaling:CompleteLifecycleAction",
         "autoscaling:SetDesiredCapacity",
         "autoscaling:TerminateInstanceInAutoScalingGroup",
         "ec2:AttachVolume",
