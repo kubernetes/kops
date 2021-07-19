@@ -49,6 +49,7 @@ func newTestCluster() *kops.Cluster {
 					Type: kops.LoadBalancerTypeInternal,
 				},
 			},
+			Networking:  &kops.NetworkingSpec{},
 			NetworkID:   "test-virtual-network",
 			NetworkCIDR: "10.0.0.0/8",
 			Subnets: []kops.ClusterSubnetSpec{

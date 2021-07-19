@@ -1083,6 +1083,18 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 		}
 		context.AddTask(task)
 	}
+	for _, keypair := range []string{
+		"kubelet",
+		"kube-proxy",
+	} {
+		task := &fitasks.Keypair{
+			Name:    fi.String(keypair),
+			Subject: "cn=" + keypair,
+			Signer:  caTask,
+			Type:    "client",
+		}
+		context.AddTask(task)
+	}
 
 	if err := builder.Build(context); err != nil {
 		t.Fatalf("error from Build: %v", err)
