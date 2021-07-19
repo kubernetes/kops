@@ -366,9 +366,6 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addCalicoSrcDstCheckPermissions(p)
 	}
 
-	if b.Cluster.Spec.SnapshotController != nil && fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled) {
-		addSnapshotPersmissions(p)
-	}
 	return p, nil
 }
 
