@@ -21,10 +21,11 @@ import (
 
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // CompleteClusterName returns a Cobra completion function for cluster names.
-func CompleteClusterName(f Factory, suppressIfArgs bool) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func CompleteClusterName(f Factory, suppressIfArgs bool, suppressArgs bool) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		if suppressIfArgs && len(args) > 0 {
 			return nil, cobra.ShellCompDirectiveNoFileComp
@@ -43,8 +44,14 @@ func CompleteClusterName(f Factory, suppressIfArgs bool) func(cmd *cobra.Command
 		}
 
 		var clusterNames []string
+		alreadySelected := sets.NewString()
+		if suppressArgs {
+			alreadySelected = alreadySelected.Insert(args...)
+		}
 		for _, cluster := range list.Items {
-			clusterNames = append(clusterNames, cluster.Name)
+			if !alreadySelected.Has(cluster.Name) {
+				clusterNames = append(clusterNames, cluster.Name)
+			}
 		}
 
 		return clusterNames, cobra.ShellCompDirectiveNoFileComp

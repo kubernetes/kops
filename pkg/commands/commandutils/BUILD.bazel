@@ -16,6 +16,7 @@ go_library(
         "//pkg/client/simple:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
     ],
 )
