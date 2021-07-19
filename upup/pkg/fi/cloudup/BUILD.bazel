@@ -51,6 +51,7 @@ go_library(
         "//pkg/model/gcemodel:go_default_library",
         "//pkg/model/iam:go_default_library",
         "//pkg/model/openstackmodel:go_default_library",
+        "//pkg/resources/aws:go_default_library",
         "//pkg/resources/spotinst:go_default_library",
         "//pkg/templates:go_default_library",
         "//pkg/util/subnet:go_default_library",
