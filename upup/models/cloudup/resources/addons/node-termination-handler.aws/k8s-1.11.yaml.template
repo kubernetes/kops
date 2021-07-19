@@ -94,7 +94,7 @@ spec:
         k8s-app: aws-node-termination-handler
         kubernetes.io/os: linux
     spec:
-      priorityClassName: "system-node-critical"
+      priorityClassName: "system-cluster-critical"
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -200,10 +200,12 @@ spec:
             requests:
               cpu: {{ .CPURequest }}
               memory: {{ .MemoryRequest }}
+      {{ if not UseServiceAccountIAM }}
       nodeSelector:
         node-role.kubernetes.io/master: ""
       tolerations:
         - operator: Exists
+      {{ end }}
 {{ else }}
 ---
 # Source: aws-node-termination-handler/templates/daemonset.linux.yaml
