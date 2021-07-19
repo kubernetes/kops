@@ -106,7 +106,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:              updateClusterLong,
 		Example:           updateClusterExample,
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
-		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true),
+		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			_, err := RunUpdateCluster(context.TODO(), f, out, options)
 			return err
