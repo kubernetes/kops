@@ -44,7 +44,7 @@ KUBECFG_PROMOTE=$(mktemp -t kubeconfig.XXXXXXXXX)
 ${KOPS} export kubecfg --admin --kubeconfig="${KUBECFG_PROMOTE}"
 kubectl --kubeconfig="${KUBECFG_PROMOTE}" config view > "${REPORT_DIR}/promote.kubeconfig"
 
-CA=$(kubectl --kubeconfig="${KUBECFG_PROMOTE}" config view --raw -o jsonpath="{.clusters[0].cluster.certificate-authority-data}" | base64 -D)
+CA=$(kubectl --kubeconfig="${KUBECFG_PROMOTE}" config view --raw -o jsonpath="{.clusters[0].cluster.certificate-authority-data}" | base64 --decode)
 if [ "$(echo "${CA}" | grep -c "BEGIN CERTIFICATE")" != "1" ]; then
   >&2 echo unexpected number of CA certificates in kubeconfig
   exit 1
