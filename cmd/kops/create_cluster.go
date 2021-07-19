@@ -207,7 +207,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Specify --yes to immediately create the cluster")
 	cmd.Flags().StringVar(&options.Target, "target", options.Target, fmt.Sprintf("Valid targets: %s, %s, %s. Set this flag to %s if you want kOps to generate terraform", cloudup.TargetDirect, cloudup.TargetTerraform, cloudup.TargetCloudformation, cloudup.TargetTerraform))
-	cmd.RegisterFlagCompletionFunc("target", completeTarget)
+	cmd.RegisterFlagCompletionFunc("target", completeCreateClusterTarget(options))
 
 	// Configuration / state location
 	if featureflag.EnableSeparateConfigBase.Enabled() {
@@ -933,6 +933,24 @@ func completeNetworking(options *CreateClusterOptions) func(cmd *cobra.Command, 
 			}
 		}
 
+		return completions, cobra.ShellCompDirectiveNoFileComp
+	}
+}
+
+func completeCreateClusterTarget(options *CreateClusterOptions) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		completions := []string{
+			cloudup.TargetDirect,
+			cloudup.TargetDryRun,
+		}
+		for _, cp := range cloudup.TerraformCloudProviders {
+			if options.CloudProvider == string(cp) {
+				completions = append(completions, cloudup.TargetTerraform)
+			}
+		}
+		if options.CloudProvider == string(api.CloudProviderAWS) {
+			completions = append(completions, cloudup.TargetCloudformation)
+		}
 		return completions, cobra.ShellCompDirectiveNoFileComp
 	}
 }
