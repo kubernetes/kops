@@ -10,7 +10,7 @@ Get one or many clusters.
 Display one or many cluster resources.
 
 ```
-kops get clusters [flags]
+kops get clusters [CLUSTER]... [flags]
 ```
 
 ### Examples

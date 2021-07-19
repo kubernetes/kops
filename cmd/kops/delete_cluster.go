@@ -71,7 +71,7 @@ func NewCmdDeleteCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:              deleteClusterLong,
 		Example:           deleteClusterExample,
 		Args:              rootCommand.clusterNameArgsNoKubeconfig(&options.ClusterName),
-		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true),
+		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return RunDeleteCluster(context.TODO(), f, out, options)
 		},

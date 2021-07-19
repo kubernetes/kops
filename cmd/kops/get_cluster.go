@@ -90,29 +90,26 @@ func NewCmdGetCluster(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 	}
 
 	cmd := &cobra.Command{
-		Use:     "clusters",
+		Use:     "clusters [CLUSTER]...",
 		Aliases: []string{"cluster"},
 		Short:   getClusterShort,
 		Long:    getClusterLong,
 		Example: getClusterExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
+		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 0 {
-				options.ClusterNames = append(options.ClusterNames, args...)
-			}
-
-			if rootCommand.clusterName != "" {
-				if len(args) != 0 {
-					exitWithError(fmt.Errorf("cannot mix --name for cluster with positional arguments"))
+				if rootCommand.clusterName != "" {
+					return fmt.Errorf("cannot mix --name for cluster with positional arguments")
 				}
-
-				options.ClusterNames = append(options.ClusterNames, rootCommand.clusterName)
+				options.ClusterNames = append(options.ClusterNames, args...)
+			} else {
+				options.ClusterNames = append(options.ClusterNames, rootCommand.ClusterName(true))
 			}
 
-			err := RunGetClusters(ctx, &rootCommand, os.Stdout, &options)
-			if err != nil {
-				exitWithError(err)
-			}
+			return nil
+		},
+		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, false, true),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunGetClusters(context.TODO(), &rootCommand, os.Stdout, &options)
 		},
 	}
 
