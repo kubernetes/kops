@@ -203,6 +203,17 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 
 	mockEC2.CreateVpcWithId(&ec2.CreateVpcInput{
 		CidrBlock: aws.String("172.20.0.0/16"),
+		TagSpecifications: []*ec2.TagSpecification{
+			{
+				ResourceType: aws.String(ec2.ResourceTypeVpc),
+				Tags: []*ec2.Tag{
+					{
+						Key:   aws.String("kubernetes.io/cluster/minimal.example.com"),
+						Value: aws.String(""),
+					},
+				},
+			},
+		},
 	}, "vpc-12345678")
 	mockEC2.CreateInternetGateway(&ec2.CreateInternetGatewayInput{})
 	mockEC2.AttachInternetGateway(&ec2.AttachInternetGatewayInput{
