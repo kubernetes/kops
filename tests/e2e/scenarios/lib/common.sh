@@ -118,8 +118,8 @@ function kops-up() {
         create_args="${create_args} --zones=${ZONES}"
     fi
     ${KUBETEST2} \
-		--up \
-		--kops-binary-path="${KOPS}" \
-		--kubernetes-version="1.21.0" \
-		--create-args="${create_args}"
+        --up \
+        --kops-binary-path="${KOPS}" \
+        --kubernetes-version="1.21.0" \
+        --create-args="${create_args}"
 }
