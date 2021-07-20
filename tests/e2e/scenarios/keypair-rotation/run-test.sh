@@ -40,17 +40,8 @@ ${KOPS} promote keypair all
 ${KOPS} update cluster --yes
 ${KOPS} rolling-update cluster --yes --validate-count=10
 
-KUBECFG_PROMOTE=$(mktemp -t kubeconfig.XXXXXXXXX)
-${KOPS} export kubecfg --admin --kubeconfig="${KUBECFG_PROMOTE}"
-kubectl --kubeconfig="${KUBECFG_PROMOTE}" config view > "${REPORT_DIR}/promote.kubeconfig"
+${KOPS} validate cluster --wait=10m --count=3
 
-CA=$(kubectl --kubeconfig="${KUBECFG_PROMOTE}" config view --raw -o jsonpath="{.clusters[0].cluster.certificate-authority-data}" | base64 --decode)
-if [ "$(echo "${CA}" | grep -c "BEGIN CERTIFICATE")" != "1" ]; then
-  >&2 echo unexpected number of CA certificates in kubeconfig
-  exit 1
-fi
-
-export KUBECONFIG="${KUBECFG_PROMOTE}"
 ${KOPS} distrust keypair all
 ${KOPS} update cluster --yes
 ${KOPS} rolling-update cluster --yes --validate-count=10
@@ -58,6 +49,12 @@ ${KOPS} rolling-update cluster --yes --validate-count=10
 KUBECFG_DISTRUST=$(mktemp -t kubeconfig.XXXXXXXXX)
 ${KOPS} export kubecfg --admin --kubeconfig="${KUBECFG_DISTRUST}"
 kubectl --kubeconfig="${KUBECFG_DISTRUST}" config view > "${REPORT_DIR}/distrust.kubeconfig"
+
+CA=$(kubectl --kubeconfig="${KUBECFG_DISTRUST}" config view --raw -o jsonpath="{.clusters[0].cluster.certificate-authority-data}" | base64 --decode)
+if [ "$(echo "${CA}" | grep -c "BEGIN CERTIFICATE")" != "1" ]; then
+    >&2 echo unexpected number of CA certificates in kubeconfig
+    exit 1
+fi
 
 export KUBECONFIG="${KUBECFG_DISTRUST}"
 ${KOPS} validate cluster --wait=10m --count=3
