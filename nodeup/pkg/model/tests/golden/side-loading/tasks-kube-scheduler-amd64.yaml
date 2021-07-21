@@ -16,6 +16,8 @@ contents: |
       - --authorization-kubeconfig=/var/lib/kube-scheduler/kubeconfig
       - --config=/var/lib/kube-scheduler/config.yaml
       - --leader-elect=true
+      - --tls-cert-file=/srv/kubernetes/kube-scheduler/server.crt
+      - --tls-private-key-file=/srv/kubernetes/kube-scheduler/server.key
       - --v=2
       - --logtostderr=false
       - --alsologtostderr
@@ -38,6 +40,9 @@ contents: |
       - mountPath: /var/lib/kube-scheduler
         name: varlibkubescheduler
         readOnly: true
+      - mountPath: /srv/kubernetes/kube-scheduler
+        name: srvscheduler
+        readOnly: true
       - mountPath: /var/log/kube-scheduler.log
         name: logfile
     hostNetwork: true
@@ -50,10 +55,45 @@ contents: |
         path: /var/lib/kube-scheduler
       name: varlibkubescheduler
     - hostPath:
+        path: /srv/kubernetes/kube-scheduler
+      name: srvscheduler
+    - hostPath:
         path: /var/log/kube-scheduler.log
       name: logfile
   status: {}
 path: /etc/kubernetes/manifests/kube-scheduler.manifest
+type: file
+---
+mode: "0755"
+path: /srv/kubernetes/kube-scheduler
+type: directory
+---
+contents:
+  task:
+    Name: kube-scheduler-server
+    alternateNames:
+    - kube-scheduler.kube-system.svc.cluster.local
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kube-scheduler
+    type: server
+mode: "0644"
+path: /srv/kubernetes/kube-scheduler/server.crt
+type: file
+---
+contents:
+  task:
+    Name: kube-scheduler-server
+    alternateNames:
+    - kube-scheduler.kube-system.svc.cluster.local
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kube-scheduler
+    type: server
+mode: "0600"
+path: /srv/kubernetes/kube-scheduler/server.key
 type: file
 ---
 contents: |
@@ -109,6 +149,15 @@ signer: kubernetes-ca
 subject:
   CommonName: system:kube-scheduler
 type: client
+---
+Name: kube-scheduler-server
+alternateNames:
+- kube-scheduler.kube-system.svc.cluster.local
+keypairID: "3"
+signer: kubernetes-ca
+subject:
+  CommonName: kube-scheduler
+type: server
 ---
 CA:
   task:
