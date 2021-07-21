@@ -40,6 +40,11 @@ ${KOPS} promote keypair all
 ${KOPS} update cluster --yes
 ${KOPS} rolling-update cluster --yes --validate-count=10
 
+KUBECFG_PROMOTE=$(mktemp -t kubeconfig.XXXXXXXXX)
+${KOPS} export kubecfg --admin --kubeconfig="${KUBECFG_PROMOTE}"
+kubectl --kubeconfig="${KUBECFG_PROMOTE}" config view > "${REPORT_DIR}/promote.kubeconfig"
+
+export KUBECONFIG="${KUBECFG_PROMOTE}"
 ${KOPS} validate cluster --wait=10m --count=3
 
 ${KOPS} distrust keypair all
