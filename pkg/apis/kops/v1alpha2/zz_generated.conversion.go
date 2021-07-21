@@ -4851,8 +4851,10 @@ func autoConvert_v1alpha2_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.HorizontalPodAutoscalerUseRestClients = in.HorizontalPodAutoscalerUseRestClients
 	out.ExperimentalClusterSigningDuration = in.ExperimentalClusterSigningDuration
 	out.FeatureGates = in.FeatureGates
+	out.TLSCertFile = in.TLSCertFile
 	out.TLSCipherSuites = in.TLSCipherSuites
 	out.TLSMinVersion = in.TLSMinVersion
+	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
 	out.MinResyncPeriod = in.MinResyncPeriod
 	out.KubeAPIQPS = in.KubeAPIQPS
 	out.KubeAPIBurst = in.KubeAPIBurst
@@ -4918,8 +4920,10 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha2_KubeControllerMana
 	out.HorizontalPodAutoscalerUseRestClients = in.HorizontalPodAutoscalerUseRestClients
 	out.ExperimentalClusterSigningDuration = in.ExperimentalClusterSigningDuration
 	out.FeatureGates = in.FeatureGates
+	out.TLSCertFile = in.TLSCertFile
 	out.TLSCipherSuites = in.TLSCipherSuites
 	out.TLSMinVersion = in.TLSMinVersion
+	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
 	out.MinResyncPeriod = in.MinResyncPeriod
 	out.KubeAPIQPS = in.KubeAPIQPS
 	out.KubeAPIBurst = in.KubeAPIBurst
@@ -5091,6 +5095,8 @@ func autoConvert_v1alpha2_KubeSchedulerConfig_To_kops_KubeSchedulerConfig(in *Ku
 	out.AuthorizationKubeconfig = in.AuthorizationKubeconfig
 	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths
 	out.EnableProfiling = in.EnableProfiling
+	out.TLSCertFile = in.TLSCertFile
+	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
 	return nil
 }
 
@@ -5122,6 +5128,8 @@ func autoConvert_kops_KubeSchedulerConfig_To_v1alpha2_KubeSchedulerConfig(in *ko
 	out.AuthorizationKubeconfig = in.AuthorizationKubeconfig
 	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths
 	out.EnableProfiling = in.EnableProfiling
+	out.TLSCertFile = in.TLSCertFile
+	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
 	return nil
 }
 
