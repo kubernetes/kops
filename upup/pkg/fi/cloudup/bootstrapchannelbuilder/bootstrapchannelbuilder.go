@@ -104,6 +104,8 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
+	manifestTasks := make(map[string]*fitasks.ManagedFile)
+
 	for _, a := range addons.Spec.Addons {
 		key := *a.Name
 		if a.Id != "" {
@@ -113,43 +115,26 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		manifestPath := "addons/" + *a.Manifest
 		klog.V(4).Infof("Addon %q", name)
 
-		manifestResource := b.templates.Find(manifestPath)
-		if manifestResource == nil {
+		templateResource := b.templates.Find(manifestPath)
+		if templateResource == nil {
 			return fmt.Errorf("unable to find manifest %s", manifestPath)
 		}
 
-		manifestBytes, err := fi.ResourceAsBytes(manifestResource)
-		if err != nil {
-			return fmt.Errorf("error reading manifest %s: %v", manifestPath, err)
+		manifestResource := &ManifestResource{
+			template:         templateResource,
+			addon:            a,
+			kopsModelContext: b.KopsModelContext,
+			assetBuilder:     b.assetBuilder,
 		}
 
-		// Go through any transforms that are best expressed as code
-		remapped, err := addonmanifests.RemapAddonManifest(a, b.KopsModelContext, b.assetBuilder, manifestBytes)
-		if err != nil {
-			klog.Infof("invalid manifest: %s", string(manifestBytes))
-			return fmt.Errorf("error remapping manifest %s: %v", manifestPath, err)
-		}
-		manifestBytes = remapped
-
-		// Trim whitespace
-		manifestBytes = []byte(strings.TrimSpace(string(manifestBytes)))
-
-		rawManifest := string(manifestBytes)
-		klog.V(4).Infof("Manifest %v", rawManifest)
-
-		manifestHash, err := utils.HashString(rawManifest)
-		klog.V(4).Infof("hash %s", manifestHash)
-		if err != nil {
-			return fmt.Errorf("error hashing manifest: %v", err)
-		}
-		a.ManifestHash = manifestHash
-
-		c.AddTask(&fitasks.ManagedFile{
-			Contents:  fi.NewBytesResource(manifestBytes),
+		manifestTask := &fitasks.ManagedFile{
+			Contents:  manifestResource,
 			Lifecycle: b.Lifecycle,
 			Location:  fi.String(manifestPath),
 			Name:      fi.String(name),
-		})
+		}
+		c.AddTask(manifestTask)
+		manifestTasks[*a.Name] = manifestTask
 	}
 
 	if featureflag.UseAddonOperators.Enabled() {
@@ -242,15 +227,15 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		addons.Spec.Addons = append(addons.Spec.Addons, a)
 	}
 
-	addonsYAML, err := utils.YamlMarshal(addons)
-	if err != nil {
-		return fmt.Errorf("error serializing addons yaml: %v", err)
+	channelResource := &ChannelResource{
+		addons:        addons,
+		manifestTasks: manifestTasks,
 	}
 
 	name := b.Cluster.ObjectMeta.Name + "-addons-bootstrap"
 
 	c.AddTask(&fitasks.ManagedFile{
-		Contents:  fi.NewBytesResource(addonsYAML),
+		Contents:  channelResource,
 		Lifecycle: b.Lifecycle,
 		Location:  fi.String("addons/bootstrap-channel.yaml"),
 		Name:      fi.String(name),

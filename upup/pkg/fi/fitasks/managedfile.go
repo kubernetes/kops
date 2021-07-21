@@ -17,9 +17,9 @@ limitations under the License.
 package fitasks
 
 import (
-	"bytes"
 	"fmt"
 	"os"
+	"strings"
 
 	"k8s.io/kops/pkg/featureflag"
 
@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -109,7 +110,7 @@ func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
 		return fi.RequiredField("Location")
 	}
 
-	data, err := fi.ResourceAsBytes(e.Contents)
+	data, err := fi.ResourceAsString(e.Contents)
 	if err != nil {
 		return fmt.Errorf("error reading contents of ManagedFile: %v", err)
 	}
@@ -144,7 +145,7 @@ func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
 		}
 	}
 
-	err = p.WriteFile(bytes.NewReader(data), acl)
+	err = p.WriteFile(strings.NewReader(data), acl)
 	if err != nil {
 		return fmt.Errorf("error creating ManagedFile %q: %v", location, err)
 	}
@@ -198,4 +199,17 @@ func (f *ManagedFile) RenderTerraform(c *fi.Context, t *terraform.TerraformTarge
 	}
 
 	return terraformPath.RenderTerraform(&t.TerraformWriter, *e.Name, reader, acl)
+}
+
+func (f *ManagedFile) GetHash() (string, error) {
+	content, err := fi.ResourceAsString(f.Contents)
+	if err != nil {
+		return "", fmt.Errorf("error hashing data: %w", err)
+	}
+	hash, err := utils.HashString(content)
+	if err != nil {
+		return "", fmt.Errorf("error hashing data: %w", err)
+	}
+
+	return hash, nil
 }

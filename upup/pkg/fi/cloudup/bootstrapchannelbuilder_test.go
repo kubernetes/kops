@@ -173,23 +173,6 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		t.Fatalf("error from BootstrapChannelBuilder Build: %v", err)
 	}
 
-	{
-		name := cluster.ObjectMeta.Name + "-addons-bootstrap"
-		manifestTask := context.Tasks["ManagedFile/"+name]
-		if manifestTask == nil {
-			t.Fatalf("manifest task not found (%q)", name)
-		}
-
-		manifestFileTask := manifestTask.(*fitasks.ManagedFile)
-		actualManifest, err := fi.ResourceAsString(manifestFileTask.Contents)
-		if err != nil {
-			t.Fatalf("error getting manifest as string: %v", err)
-		}
-
-		expectedManifestPath := path.Join(basedir, "manifest.yaml")
-		golden.AssertMatchesFile(t, actualManifest, expectedManifestPath)
-	}
-
 	for _, k := range addonManifests {
 		name := cluster.ObjectMeta.Name + "-addons-" + k
 		manifestTask := context.Tasks["ManagedFile/"+name]
@@ -209,4 +192,29 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		expectedManifestPath := path.Join(basedir, k+".yaml")
 		golden.AssertMatchesFile(t, actualManifest, expectedManifestPath)
 	}
+
+	// Make sure all managed files are rendered and hashed.
+	for _, k := range context.Tasks {
+		if task, ok := k.(*fitasks.ManagedFile); ok {
+			fi.ResourceAsString(task.Contents)
+		}
+	}
+
+	{
+		name := cluster.ObjectMeta.Name + "-addons-bootstrap"
+		manifestTask := context.Tasks["ManagedFile/"+name]
+		if manifestTask == nil {
+			t.Fatalf("manifest task not found (%q)", name)
+		}
+
+		manifestFileTask := manifestTask.(*fitasks.ManagedFile)
+		actualManifest, err := fi.ResourceAsString(manifestFileTask.Contents)
+		if err != nil {
+			t.Fatalf("error getting manifest as string: %v", err)
+		}
+
+		expectedManifestPath := path.Join(basedir, "manifest.yaml")
+		golden.AssertMatchesFile(t, actualManifest, expectedManifestPath)
+	}
+
 }
