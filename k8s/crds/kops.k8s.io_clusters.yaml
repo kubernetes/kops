@@ -1973,6 +1973,10 @@ spec:
                       garbage collector is disabled.
                     format: int32
                     type: integer
+                  tlsCertFile:
+                    description: TLSCertFile is the file containing the TLS server
+                      certificate.
+                    type: string
                   tlsCipherSuites:
                     description: TLSCipherSuites indicates the allowed TLS cipher
                       suite
@@ -1981,6 +1985,10 @@ spec:
                     type: array
                   tlsMinVersion:
                     description: TLSMinVersion indicates the minimum TLS version allowed
+                    type: string
+                  tlsPrivateKeyFile:
+                    description: TLSPrivateKeyFile is the file containing the private
+                      key for the TLS server certificate.
                     type: string
                   useServiceAccountCredentials:
                     description: UseServiceAccountCredentials controls whether we
@@ -2295,6 +2303,14 @@ spec:
                       the burst quota is exhausted
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
+                  tlsCertFile:
+                    description: TLSCertFile is the file containing the TLS server
+                      certificate.
+                    type: string
+                  tlsPrivateKeyFile:
+                    description: TLSPrivateKeyFile is the file containing the private
+                      key for the TLS server certificate.
+                    type: string
                   usePolicyConfigMap:
                     description: UsePolicyConfigMap enable setting the scheduler policy
                       from a configmap
