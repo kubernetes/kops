@@ -10,7 +10,7 @@ Display assets for cluster.
 Display image and file assets used by a cluster. Displays both their canonical
 (original) and download (local repository) locations.
 
-When invoked with the `--copy`flag, will copy each asset from the
+When invoked with the `--copy` flag, will copy each asset from the
 canonical to the download location.
 
 ```
@@ -23,7 +23,7 @@ kops get assets [CLUSTER] [flags]
   # Display all assets.
   kops get assets
   
-  # Copy assets to the local repositories configured in the cluster spec
+  # Copy assets to the local repositories configured in the cluster spec.
   kops get assets --copy
 ```
 
