@@ -83,7 +83,7 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.PersistentFlags().StringVarP(&options.Output, "output", "o", options.Output, "output format. One of: table, yaml, json")
 	cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"table", "json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
+		return []string{OutputTable, OutputJSON, OutputYaml}, cobra.ShellCompDirectiveNoFileComp
 	})
 
 	// create subcommands

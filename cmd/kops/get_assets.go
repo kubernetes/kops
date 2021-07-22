@@ -41,14 +41,14 @@ var (
 	Display image and file assets used by a cluster. Displays both their canonical
 	(original) and download (local repository) locations.
 
-	When invoked with the ` + pretty.Bash("--copy") + `flag, will copy each asset from the
+	When invoked with the ` + pretty.Bash("--copy") + ` flag, will copy each asset from the
 	canonical to the download location.`))
 
 	getAssetsExample = templates.Examples(i18n.T(`
 	# Display all assets.
 	kops get assets
 
-	# Copy assets to the local repositories configured in the cluster spec
+	# Copy assets to the local repositories configured in the cluster spec.
 	kops get assets --copy 
 	`))
 
