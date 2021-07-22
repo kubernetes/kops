@@ -88,7 +88,7 @@ func NewCmdExportKubeconfig(f *util.Factory, out io.Writer) *cobra.Command {
 				return rootCommand.clusterNameArgs(&options.ClusterName)(cmd, args)
 			}
 		},
-		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true),
+		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return RunExportKubeconfig(context.TODO(), f, out, options, args)
 		},
