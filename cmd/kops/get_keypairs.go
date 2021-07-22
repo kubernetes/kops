@@ -46,7 +46,8 @@ var (
 
 type GetKeypairsOptions struct {
 	*GetOptions
-	Distrusted bool
+	KeysetNames []string
+	Distrusted  bool
 }
 
 func NewCmdGetKeypairs(f *util.Factory, out io.Writer, getOptions *GetOptions) *cobra.Command {
@@ -58,12 +59,20 @@ func NewCmdGetKeypairs(f *util.Factory, out io.Writer, getOptions *GetOptions) *
 		Aliases: []string{"keypair"},
 		Short:   getKeypairShort,
 		Example: getKeypairExample,
+		Args: func(cmd *cobra.Command, args []string) error {
+			options.ClusterName = rootCommand.ClusterName(true)
+			if options.ClusterName == "" {
+				return fmt.Errorf("--name is required")
+			}
+
+			options.KeysetNames = args
+			return nil
+		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return completeGetKeypairs(options, args, toComplete)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := context.TODO()
-			return RunGetKeypairs(ctx, out, options, args)
+			return RunGetKeypairs(context.TODO(), &rootCommand, out, options)
 		},
 	}
 
@@ -120,13 +129,13 @@ func listKeypairs(keyStore fi.CAStore, names []string, includeDistrusted bool) (
 	return items, nil
 }
 
-func RunGetKeypairs(ctx context.Context, out io.Writer, options *GetKeypairsOptions, args []string) error {
-	cluster, err := rootCommand.Cluster(ctx)
+func RunGetKeypairs(ctx context.Context, f commandutils.Factory, out io.Writer, options *GetKeypairsOptions) error {
+	clientset, err := f.Clientset()
 	if err != nil {
 		return err
 	}
 
-	clientset, err := rootCommand.Clientset()
+	cluster, err := clientset.GetCluster(ctx, options.ClusterName)
 	if err != nil {
 		return err
 	}
@@ -136,7 +145,7 @@ func RunGetKeypairs(ctx context.Context, out io.Writer, options *GetKeypairsOpti
 		return err
 	}
 
-	items, err := listKeypairs(keyStore, args, options.Distrusted)
+	items, err := listKeypairs(keyStore, options.KeysetNames, options.Distrusted)
 	if err != nil {
 		return err
 	}
