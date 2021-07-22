@@ -123,8 +123,10 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 		flags = append(flags, "--cloud-config="+CloudConfigFilePath)
 	}
 
-	// Add kubeconfig flag
-	flags = append(flags, "--kubeconfig="+"/var/lib/kube-controller-manager/kubeconfig")
+	// Add kubeconfig flags
+	for _, flag := range []string{"", "authentication-", "authorization-"} {
+		flags = append(flags, "--"+flag+"kubeconfig="+"/var/lib/kube-controller-manager/kubeconfig")
+	}
 
 	// Configure CA certificate to be used to sign keys
 	flags = append(flags, []string{

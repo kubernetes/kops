@@ -12,6 +12,8 @@ contents: |
   spec:
     containers:
     - args:
+      - --authentication-kubeconfig=/var/lib/kube-scheduler/kubeconfig
+      - --authorization-kubeconfig=/var/lib/kube-scheduler/kubeconfig
       - --config=/var/lib/kube-scheduler/config.yaml
       - --leader-elect=true
       - --v=2
