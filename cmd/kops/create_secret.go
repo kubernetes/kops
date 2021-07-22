@@ -22,42 +22,36 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kubectl/pkg/util/i18n"
-	"k8s.io/kubectl/pkg/util/templates"
 )
 
 var (
-	createSecretLong = templates.LongDesc(i18n.T(`
-	Create a secret`))
-
-	createSecretExample = templates.Examples(i18n.T(`
-	# Create a new ssh public key called admin.
-	kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
-		--name k8s-cluster.example.com --state s3://my-state-store
-
-	kops create secret dockerconfig -f ~/.docker/config.json \
-		--name k8s-cluster.example.com --state s3://my-state-store
-
-	kops create secret encryptionconfig -f ~/.encryptionconfig.yaml \
-		--name k8s-cluster.example.com --state s3://my-state-store
-	`))
-
 	createSecretShort = i18n.T(`Create a secret.`)
 )
 
 func NewCmdCreateSecret(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "secret",
-		Short:   createSecretShort,
-		Long:    createSecretLong,
-		Example: createSecretExample,
+		Use:   "secret",
+		Short: createSecretShort,
 	}
 
 	// create subcommands
-	cmd.AddCommand(NewCmdCreateSecretPublicKey(f, out))
 	cmd.AddCommand(NewCmdCreateSecretDockerConfig(f, out))
 	cmd.AddCommand(NewCmdCreateSecretEncryptionConfig(f, out))
 	cmd.AddCommand(NewCmdCreateSecretWeaveEncryptionConfig(f, out))
 	cmd.AddCommand(NewCmdCreateSecretCiliumEncryptionConfig(f, out))
+
+	sshPublicKey := NewCmdCreateSSHPublicKey(f, out)
+	sshPublicKey.Hidden = true
+	innerArgs := sshPublicKey.Args
+	sshPublicKey.Args = func(cmd *cobra.Command, args []string) error {
+		if len(args) > 0 && args[0] == "admin" {
+			// Backwards compatibility
+			args = args[1:]
+		}
+
+		return innerArgs(cmd, args)
+	}
+	cmd.AddCommand(sshPublicKey)
 
 	return cmd
 }
