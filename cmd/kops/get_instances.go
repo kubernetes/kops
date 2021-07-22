@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 
@@ -43,33 +44,24 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 )
 
-func NewCmdGetInstances(f *util.Factory, out io.Writer, options *GetOptions) *cobra.Command {
-	getInstancesShort := i18n.T(`Display cluster instances.`)
-
-	getInstancesLong := templates.LongDesc(i18n.T(`
-	Display cluster instances.`))
-
-	getInstancesExample := templates.Examples(i18n.T(`
+var (
+	getInstancesExample = templates.Examples(i18n.T(`
 	# Display all instances.
 	kops get instances
 	`))
 
+	getInstancesShort = i18n.T(`Display cluster instances.`)
+)
+
+func NewCmdGetInstances(f *util.Factory, out io.Writer, options *GetOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "instances",
-		Short:   getInstancesShort,
-		Long:    getInstancesLong,
-		Example: getInstancesExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
-
-			if err := rootCommand.ProcessArgs(args); err != nil {
-				exitWithError(err)
-			}
-
-			err := RunGetInstances(ctx, f, out, options)
-			if err != nil {
-				exitWithError(err)
-			}
+		Use:               "instances [CLUSTER]",
+		Short:             getInstancesShort,
+		Example:           getInstancesExample,
+		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
+		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true, false),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunGetInstances(context.TODO(), f, out, options)
 		},
 	}
 
@@ -77,16 +69,9 @@ func NewCmdGetInstances(f *util.Factory, out io.Writer, options *GetOptions) *co
 }
 
 func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, options *GetOptions) error {
-
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
-	}
-
-	clusterName := rootCommand.ClusterName(true)
-	options.ClusterName = clusterName
-	if clusterName == "" {
-		return fmt.Errorf("--name is required")
 	}
 
 	cluster, err := clientset.GetCluster(ctx, options.ClusterName)
