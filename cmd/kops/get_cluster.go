@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -109,7 +108,7 @@ func NewCmdGetCluster(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 		},
 		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, false, true),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunGetClusters(context.TODO(), &rootCommand, os.Stdout, &options)
+			return RunGetClusters(context.TODO(), &rootCommand, out, &options)
 		},
 	}
 

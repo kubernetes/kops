@@ -3,27 +3,27 @@
 
 ## kops get instancegroups
 
-Get one or many instancegroups
+Get one or many instance groups.
 
 ### Synopsis
 
-Display one or many instancegroup resources.
+Display one or many instance group resources.
 
 ```
-kops get instancegroups [flags]
+kops get instancegroups [INSTANCE_GROUP]... [flags]
 ```
 
 ### Examples
 
 ```
-  # Get all instancegroups in a state store
-  kops get ig
+  # Get all instance groups in a state store
+  kops get instancegroups
   
   # Get a cluster's instancegroup
-  kops get ig --name k8s-cluster.example.com nodes
+  kops get instancegroups --name k8s-cluster.example.com nodes
   
   # Save a cluster's instancegroups desired configuration to YAML file
-  kops get ig --name k8s-cluster.example.com -o yaml > instancegroups-desired-config.yaml
+  kops get instancegroups --name k8s-cluster.example.com -o yaml > instancegroups-desired-config.yaml
 ```
 
 ### Options
