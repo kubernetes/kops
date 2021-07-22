@@ -150,6 +150,11 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 
 	flags = append(flags, "--config="+"/var/lib/kube-scheduler/config.yaml")
 
+	// Add kubeconfig flags
+	for _, flag := range []string{"authentication-", "authorization-"} {
+		flags = append(flags, "--"+flag+"kubeconfig="+defaultKubeConfig)
+	}
+
 	if c.UsePolicyConfigMap != nil {
 		flags = append(flags, "--policy-configmap=scheduler-policy", "--policy-configmap-namespace=kube-system")
 	}
