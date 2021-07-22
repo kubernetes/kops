@@ -698,12 +698,11 @@ func (i *integrationTest) setupCluster(t *testing.T, inputYAML string, ctx conte
 	}
 
 	if i.sshKey {
-		options := &CreateSecretPublickeyOptions{}
+		options := &CreateSSHPublicKeyOptions{}
 		options.ClusterName = i.clusterName
-		options.Name = "admin"
 		options.PublicKeyPath = path.Join(i.srcDir, "id_rsa.pub")
 
-		err := RunCreateSecretPublicKey(ctx, factory, &stdout, options)
+		err := RunCreateSSHPublicKey(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running %q create public key: %v", inputYAML, err)
 		}

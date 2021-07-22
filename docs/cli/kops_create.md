@@ -30,20 +30,6 @@ kops create {-f FILENAME}... [flags]
   
   # Create an instancegroup based on the YAML passed into stdin.
   cat instancegroup.yaml | kops create -f -
-  
-  # Create a cluster in AWS.
-  kops create cluster --name=k8s-cluster.example.com \
-  --state=s3://my-state-store --zones=us-east-1a \
-  --node-count=2 --node-size=t3.small --master-size=t3.small \
-  --dns-zone=example.com
-  
-  # Create an instancegroup for the k8s-cluster.example.com cluster.
-  kops create ig --name=k8s-cluster.example.com node-example \
-  --role node --subnet my-subnet-name
-  
-  # Create a new ssh public key called admin.
-  kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
-  --name k8s-cluster.example.com --state s3://my-state-store
 ```
 
 ### Options
@@ -81,4 +67,5 @@ kops create {-f FILENAME}... [flags]
 * [kops create instancegroup](kops_create_instancegroup.md)	 - Create an instancegroup.
 * [kops create keypair](kops_create_keypair.md)	 - Add a CA certificate and private key to a keyset.
 * [kops create secret](kops_create_secret.md)	 - Create a secret.
+* [kops create sshpublickey](kops_create_sshpublickey.md)	 - Create an SSH public key.
 
