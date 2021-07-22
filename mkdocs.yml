@@ -52,7 +52,6 @@ nav:
     - kops completion: "cli/kops_completion.md"
     - kops create: "cli/kops_create.md"
     - kops delete: "cli/kops_delete.md"
-    - kops describe: "cli/kops_describe.md"
     - kops distrust: "cli/kops_distrust.md"
     - kops edit: "cli/kops_edit.md"
     - kops export: "cli/kops_export.md"

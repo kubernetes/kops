@@ -18,8 +18,6 @@ go_library(
         "delete_instance.go",
         "delete_instancegroup.go",
         "delete_secret.go",
-        "describe.go",
-        "describe_keypairs.go",
         "distrust.go",
         "distrust_keypair.go",
         "edit.go",
