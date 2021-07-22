@@ -14,6 +14,8 @@ contents: |
     - args:
       - --allocate-node-cidrs=true
       - --attach-detach-reconcile-sync-period=1m0s
+      - --authentication-kubeconfig=/var/lib/kube-controller-manager/kubeconfig
+      - --authorization-kubeconfig=/var/lib/kube-controller-manager/kubeconfig
       - --cloud-config=/etc/kubernetes/cloud.config
       - --cloud-provider=aws
       - --cluster-cidr=100.96.0.0/11
