@@ -6,10 +6,6 @@
 
 -oplaintext exposes the raw secret value.
 
-### describe secret
-
-`kops describe secret`
-
 ### create secret
 
 `kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub`
