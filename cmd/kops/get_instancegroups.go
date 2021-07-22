@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -28,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/formatter"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubectl/pkg/util/i18n"
@@ -36,24 +36,25 @@ import (
 
 var (
 	getInstancegroupsLong = templates.LongDesc(i18n.T(`
-	Display one or many instancegroup resources.`))
+	Display one or many instance group resources.`))
 
 	getInstancegroupsExample = templates.Examples(i18n.T(`
-	# Get all instancegroups in a state store
-	kops get ig
+	# Get all instance groups in a state store
+	kops get instancegroups
 
 	# Get a cluster's instancegroup
-	kops get ig --name k8s-cluster.example.com nodes
+	kops get instancegroups --name k8s-cluster.example.com nodes
 
 	# Save a cluster's instancegroups desired configuration to YAML file
-	kops get ig --name k8s-cluster.example.com -o yaml > instancegroups-desired-config.yaml
+	kops get instancegroups --name k8s-cluster.example.com -o yaml > instancegroups-desired-config.yaml
 	`))
 
-	getInstancegroupsShort = i18n.T(`Get one or many instancegroups`)
+	getInstancegroupsShort = i18n.T(`Get one or many instance groups.`)
 )
 
 type GetInstanceGroupsOptions struct {
 	*GetOptions
+	InstanceGroupNames []string
 }
 
 func NewCmdGetInstanceGroups(f *util.Factory, out io.Writer, getOptions *GetOptions) *cobra.Command {
@@ -62,43 +63,44 @@ func NewCmdGetInstanceGroups(f *util.Factory, out io.Writer, getOptions *GetOpti
 	}
 
 	cmd := &cobra.Command{
-		Use:     "instancegroups",
+		Use:     "instancegroups [INSTANCE_GROUP]...",
 		Aliases: []string{"instancegroup", "ig"},
 		Short:   getInstancegroupsShort,
 		Long:    getInstancegroupsLong,
 		Example: getInstancegroupsExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
-			err := RunGetInstanceGroups(ctx, &options, args)
-			if err != nil {
-				exitWithError(err)
+		Args: func(cmd *cobra.Command, args []string) error {
+			options.ClusterName = rootCommand.ClusterName(true)
+			if options.ClusterName == "" {
+				return fmt.Errorf("--name is required")
 			}
+
+			options.InstanceGroupNames = args
+			return nil
+		},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return completeInstanceGroup(&args, nil)(cmd, nil, toComplete)
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunGetInstanceGroups(context.TODO(), &rootCommand, out, &options)
 		},
 	}
 
 	return cmd
 }
 
-func RunGetInstanceGroups(ctx context.Context, options *GetInstanceGroupsOptions, args []string) error {
-	out := os.Stdout
-
-	clusterName := rootCommand.ClusterName(true)
-	if clusterName == "" {
-		return fmt.Errorf("--name is required")
-	}
-
-	clientset, err := rootCommand.Clientset()
+func RunGetInstanceGroups(ctx context.Context, f commandutils.Factory, out io.Writer, options *GetInstanceGroupsOptions) error {
+	clientset, err := f.Clientset()
 	if err != nil {
 		return err
 	}
 
-	cluster, err := clientset.GetCluster(ctx, clusterName)
+	cluster, err := clientset.GetCluster(ctx, options.ClusterName)
 	if err != nil {
-		return fmt.Errorf("error fetching cluster %q: %v", clusterName, err)
+		return fmt.Errorf("error fetching cluster %q: %v", options.ClusterName, err)
 	}
 
 	if cluster == nil {
-		return fmt.Errorf("cluster %q was not found", clusterName)
+		return fmt.Errorf("cluster %q was not found", options.ClusterName)
 	}
 
 	list, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
@@ -106,13 +108,13 @@ func RunGetInstanceGroups(ctx context.Context, options *GetInstanceGroupsOptions
 		return err
 	}
 
-	instancegroups, err := filterInstanceGroupsByName(args, list.Items)
+	instancegroups, err := filterInstanceGroupsByName(options.InstanceGroupNames, list.Items)
 	if err != nil {
 		return err
 	}
 
 	if len(instancegroups) == 0 {
-		return fmt.Errorf("No InstanceGroup objects found")
+		return fmt.Errorf("no InstanceGroup objects found")
 	}
 
 	var obj []runtime.Object
@@ -130,7 +132,7 @@ func RunGetInstanceGroups(ctx context.Context, options *GetInstanceGroupsOptions
 	case OutputJSON:
 		return fullOutputJSON(out, obj...)
 	default:
-		return fmt.Errorf("Unknown output format: %q", options.Output)
+		return fmt.Errorf("unknown output format: %q", options.Output)
 	}
 }
 
@@ -181,7 +183,7 @@ func igOutputTable(cluster *api.Cluster, instancegroups []*api.InstanceGroup, ou
 		return int32PointerToString(c.Spec.MaxSize)
 	})
 	// SUBNETS is not selected by default - not as useful as ZONES
-	return t.Render(instancegroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
+	return t.Render(instancegroups, out, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
 }
 
 func int32PointerToString(v *int32) string {
