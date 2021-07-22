@@ -23,6 +23,8 @@ import (
 	"io"
 
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/commands/commandutils"
+	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 	"sigs.k8s.io/yaml"
@@ -32,6 +34,25 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+)
+
+var (
+	getAssetsLong = pretty.LongDesc(i18n.T(`
+	Display image and file assets used by a cluster. Displays both their canonical
+	(original) and download (local repository) locations.
+
+	When invoked with the ` + pretty.Bash("--copy") + ` flag, will copy each asset from the
+	canonical to the download location.`))
+
+	getAssetsExample = templates.Examples(i18n.T(`
+	# Display all assets.
+	kops get assets
+
+	# Copy assets to the local repositories configured in the cluster spec.
+	kops get assets --copy 
+	`))
+
+	getAssetsShort = i18n.T(`Display assets for cluster.`)
 )
 
 type GetAssetsOptions struct {
@@ -62,32 +83,15 @@ func NewCmdGetAssets(f *util.Factory, out io.Writer, getOptions *GetOptions) *co
 		GetOptions: getOptions,
 	}
 
-	getAssetsShort := i18n.T(`Display assets for cluster.`)
-
-	getAssetsLong := templates.LongDesc(i18n.T(`
-	Display assets for cluster.`))
-
-	getAssetsExample := templates.Examples(i18n.T(`
-	# Display all assets.
-	kops get assets
-	`))
-
 	cmd := &cobra.Command{
-		Use:     "assets",
-		Short:   getAssetsShort,
-		Long:    getAssetsLong,
-		Example: getAssetsExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
-
-			if err := rootCommand.ProcessArgs(args); err != nil {
-				exitWithError(err)
-			}
-
-			err := RunGetAssets(ctx, f, out, &options)
-			if err != nil {
-				exitWithError(err)
-			}
+		Use:               "assets [CLUSTER]",
+		Short:             getAssetsShort,
+		Long:              getAssetsLong,
+		Example:           getAssetsExample,
+		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
+		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true, false),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunGetAssets(context.TODO(), f, out, &options)
 		},
 	}
 
@@ -97,17 +101,10 @@ func NewCmdGetAssets(f *util.Factory, out io.Writer, getOptions *GetOptions) *co
 }
 
 func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *GetAssetsOptions) error {
-
-	clusterName := rootCommand.ClusterName(true)
-	options.clusterName = clusterName
-	if clusterName == "" {
-		return fmt.Errorf("--name is required")
-	}
-
 	updateClusterResults, err := RunUpdateCluster(ctx, f, out, &UpdateClusterOptions{
 		Target:      cloudup.TargetDryRun,
 		GetAssets:   true,
-		ClusterName: clusterName,
+		ClusterName: options.ClusterName,
 	})
 	if err != nil {
 		return err
@@ -150,7 +147,7 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 		}
 	}
 
-	switch options.output {
+	switch options.Output {
 	case OutputTable:
 		if err = imageOutputTable(result.Images, out); err != nil {
 			return err
@@ -173,7 +170,7 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 			return fmt.Errorf("error writing to output: %v", err)
 		}
 	default:
-		return fmt.Errorf("unsupported output format: %q", options.output)
+		return fmt.Errorf("unsupported output format: %q", options.Output)
 	}
 
 	return nil

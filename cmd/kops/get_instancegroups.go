@@ -116,13 +116,13 @@ func RunGetInstanceGroups(ctx context.Context, options *GetInstanceGroupsOptions
 	}
 
 	var obj []runtime.Object
-	if options.output != OutputTable {
+	if options.Output != OutputTable {
 		for _, c := range instancegroups {
 			obj = append(obj, c)
 		}
 	}
 
-	switch options.output {
+	switch options.Output {
 	case OutputTable:
 		return igOutputTable(cluster, instancegroups, out)
 	case OutputYaml:
@@ -130,7 +130,7 @@ func RunGetInstanceGroups(ctx context.Context, options *GetInstanceGroupsOptions
 	case OutputJSON:
 		return fullOutputJSON(out, obj...)
 	default:
-		return fmt.Errorf("Unknown output format: %q", options.output)
+		return fmt.Errorf("Unknown output format: %q", options.Output)
 	}
 }
 

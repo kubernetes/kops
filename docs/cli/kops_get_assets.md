@@ -7,10 +7,14 @@ Display assets for cluster.
 
 ### Synopsis
 
-Display assets for cluster.
+Display image and file assets used by a cluster. Displays both their canonical
+(original) and download (local repository) locations.
+
+When invoked with the `--copy` flag, will copy each asset from the
+canonical to the download location.
 
 ```
-kops get assets [flags]
+kops get assets [CLUSTER] [flags]
 ```
 
 ### Examples
@@ -18,6 +22,9 @@ kops get assets [flags]
 ```
   # Display all assets.
   kops get assets
+  
+  # Copy assets to the local repositories configured in the cluster spec.
+  kops get assets --copy
 ```
 
 ### Options
@@ -40,7 +47,7 @@ kops get assets [flags]
       --logtostderr                      log to standard error instead of files (default true)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
       --one_output                       If true, only write logs to their native severity level (vs also writing to each lower severity level)
-  -o, --output string                    output format.  One of: table, yaml, json (default "table")
+  -o, --output string                    output format. One of: table, yaml, json (default "table")
       --skip_headers                     If true, avoid header prefixes in the log messages
       --skip_log_headers                 If true, avoid headers when opening log files
       --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
