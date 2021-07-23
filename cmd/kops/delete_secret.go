@@ -114,7 +114,7 @@ func RunDeleteSecret(ctx context.Context, f *util.Factory, out io.Writer, option
 		return err
 	}
 
-	secrets, err := listSecrets(secretStore, nil, options.SecretType, []string{options.SecretName})
+	secrets, err := listSecrets(secretStore, options.SecretType, []string{options.SecretName})
 	if err != nil {
 		return err
 	}
