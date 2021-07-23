@@ -196,26 +196,6 @@ func (c *ClientsetCAStore) ListKeysets() (map[string]*Keyset, error) {
 	return items, nil
 }
 
-// ListSSHCredentials implements SSHCredentialStore::ListSSHCredentials
-func (c *ClientsetCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
-	ctx := context.TODO()
-
-	var items []*kops.SSHCredential
-
-	{
-		list, err := c.clientset.SSHCredentials(c.namespace).List(ctx, metav1.ListOptions{})
-		if err != nil {
-			return nil, fmt.Errorf("error listing SSHCredentials: %v", err)
-		}
-
-		for i := range list.Items {
-			items = append(items, &list.Items[i])
-		}
-	}
-
-	return items, nil
-}
-
 // StoreKeyset implements CAStore::StoreKeyset
 func (c *ClientsetCAStore) StoreKeyset(name string, keyset *Keyset) error {
 	ctx := context.TODO()
@@ -312,15 +292,15 @@ func (c *ClientsetCAStore) AddSSHPublicKey(pubkey []byte) error {
 }
 
 // FindSSHPublicKeys implements CAStore::FindSSHPublicKeys
-func (c *ClientsetCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential, error) {
+func (c *ClientsetCAStore) FindSSHPublicKeys() ([]*kops.SSHCredential, error) {
 	ctx := context.TODO()
 
-	o, err := c.clientset.SSHCredentials(c.namespace).Get(ctx, name, metav1.GetOptions{})
+	o, err := c.clientset.SSHCredentials(c.namespace).Get(ctx, "admin", metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("error reading SSHCredential %q: %v", name, err)
+		return nil, fmt.Errorf("error reading SSHCredential: %v", err)
 	}
 
 	items := []*kops.SSHCredential{o}
@@ -346,7 +326,7 @@ func (c *ClientsetCAStore) MirrorTo(basedir vfs.Path) error {
 		}
 	}
 
-	sshCredentials, err := c.ListSSHCredentials()
+	sshCredentials, err := c.FindSSHPublicKeys()
 	if err != nil {
 		return fmt.Errorf("error listing SSHCredentials: %v", err)
 	}

@@ -87,7 +87,7 @@ func RunGetSSHPublicKeys(ctx context.Context, f *util.Factory, out io.Writer, op
 
 	var items []*SSHKeyItem
 
-	l, err := sshCredentialStore.FindSSHPublicKeys("admin")
+	l, err := sshCredentialStore.FindSSHPublicKeys()
 	if err != nil {
 		return fmt.Errorf("listing SSH credentials %v", err)
 	}

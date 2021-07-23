@@ -268,44 +268,6 @@ func (c *VFSCAStore) ListKeysets() (map[string]*Keyset, error) {
 	return keysets, nil
 }
 
-// ListSSHCredentials implements SSHCredentialStore::ListSSHCredentials
-func (c *VFSCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
-	var items []*kops.SSHCredential
-
-	{
-		baseDir := c.basedir.Join("ssh", "public")
-		files, err := baseDir.ReadTree()
-		if err != nil {
-			return nil, fmt.Errorf("error reading directory %q: %v", baseDir, err)
-		}
-
-		for _, f := range files {
-			relativePath, err := vfs.RelativePath(baseDir, f)
-			if err != nil {
-				return nil, err
-			}
-
-			tokens := strings.Split(relativePath, "/")
-			if len(tokens) != 2 {
-				klog.V(2).Infof("ignoring unexpected file in keystore: %q", f)
-				continue
-			}
-
-			pubkey, err := f.ReadFile()
-			if err != nil {
-				return nil, fmt.Errorf("error reading SSH credential %q: %v", f, err)
-			}
-
-			item := &kops.SSHCredential{}
-			item.Name = tokens[0]
-			item.Spec.PublicKey = string(pubkey)
-			items = append(items, item)
-		}
-	}
-
-	return items, nil
-}
-
 // MirrorTo will copy keys to a vfs.Path, which is often easier for a machine to read
 func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
 	if basedir.Path() == c.basedir.Path() {
@@ -325,7 +287,7 @@ func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
 		}
 	}
 
-	sshCredentials, err := c.ListSSHCredentials()
+	sshCredentials, err := c.FindSSHPublicKeys()
 	if err != nil {
 		return fmt.Errorf("error listing SSHCredentials: %v", err)
 	}
@@ -451,8 +413,8 @@ func (c *VFSCAStore) buildSSHPublicKeyPath(id string) vfs.Path {
 	return c.basedir.Join("ssh", "public", "admin", id)
 }
 
-func (c *VFSCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential, error) {
-	p := c.basedir.Join("ssh", "public", name)
+func (c *VFSCAStore) FindSSHPublicKeys() ([]*kops.SSHCredential, error) {
+	p := c.basedir.Join("ssh", "public", "admin")
 
 	files, err := p.ReadDir()
 	if err != nil {
@@ -475,7 +437,7 @@ func (c *VFSCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential, erro
 		}
 
 		item := &kops.SSHCredential{}
-		item.Name = name
+		item.Name = "admin"
 		item.Spec.PublicKey = string(data)
 		items = append(items, item)
 	}
