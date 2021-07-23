@@ -9,7 +9,6 @@
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal-json.example.com/addons/*",
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal-json.example.com/cluster-completed.spec",
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal-json.example.com/igconfig/node/*",
-        "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal-json.example.com/pki/ssh/*",
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal-json.example.com/secrets/dockerconfig"
       ]
     },

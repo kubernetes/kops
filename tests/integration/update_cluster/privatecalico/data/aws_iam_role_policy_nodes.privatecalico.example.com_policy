@@ -9,7 +9,6 @@
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecalico.example.com/addons/*",
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecalico.example.com/cluster-completed.spec",
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecalico.example.com/igconfig/node/*",
-        "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecalico.example.com/pki/ssh/*",
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecalico.example.com/secrets/dockerconfig"
       ]
     },

@@ -11,7 +11,6 @@
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/igconfig/node/*",
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/pki/private/kube-proxy/*",
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/pki/private/kubelet/*",
-        "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/pki/ssh/*",
         "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/secrets/dockerconfig"
       ]
     },
