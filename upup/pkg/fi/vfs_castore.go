@@ -429,13 +429,13 @@ func (c *VFSCAStore) findPrivateKeyset(id string) (*Keyset, error) {
 }
 
 // AddSSHPublicKey stores an SSH public key
-func (c *VFSCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
+func (c *VFSCAStore) AddSSHPublicKey(pubkey []byte) error {
 	id, err := sshcredentials.Fingerprint(string(pubkey))
 	if err != nil {
-		return fmt.Errorf("error fingerprinting SSH public key %q: %v", name, err)
+		return fmt.Errorf("error fingerprinting SSH public key: %v", err)
 	}
 
-	p := c.buildSSHPublicKeyPath(name, id)
+	p := c.buildSSHPublicKeyPath(id)
 
 	acl, err := acls.GetACL(p, c.cluster)
 	if err != nil {
@@ -445,10 +445,10 @@ func (c *VFSCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 	return p.WriteFile(bytes.NewReader(pubkey), acl)
 }
 
-func (c *VFSCAStore) buildSSHPublicKeyPath(name string, id string) vfs.Path {
+func (c *VFSCAStore) buildSSHPublicKeyPath(id string) vfs.Path {
 	// id is fingerprint with colons, but we store without colons
 	id = strings.Replace(id, ":", "", -1)
-	return c.basedir.Join("ssh", "public", name, id)
+	return c.basedir.Join("ssh", "public", "admin", id)
 }
 
 func (c *VFSCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential, error) {
@@ -491,6 +491,6 @@ func (c *VFSCAStore) DeleteSSHCredential(item *kops.SSHCredential) error {
 	if err != nil {
 		return fmt.Errorf("invalid PublicKey when deleting SSHCredential: %v", err)
 	}
-	p := c.buildSSHPublicKeyPath(item.Name, id)
+	p := c.buildSSHPublicKeyPath(id)
 	return p.Remove()
 }

@@ -260,30 +260,30 @@ func (c *ClientsetCAStore) storeKeyset(ctx context.Context, name string, keyset 
 }
 
 // addSSHCredential saves the specified SSH Credential to the registry, doing an update or insert
-func (c *ClientsetCAStore) addSSHCredential(ctx context.Context, name string, publicKey string) error {
+func (c *ClientsetCAStore) addSSHCredential(ctx context.Context, publicKey string) error {
 	create := false
 	client := c.clientset.SSHCredentials(c.namespace)
-	sshCredential, err := client.Get(ctx, name, metav1.GetOptions{})
+	sshCredential, err := client.Get(ctx, "admin", metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			sshCredential = nil
 		} else {
-			return fmt.Errorf("error reading SSHCredential %q: %v", name, err)
+			return fmt.Errorf("error reading SSHCredential: %v", err)
 		}
 	}
 	if sshCredential == nil {
 		sshCredential = &kops.SSHCredential{}
-		sshCredential.Name = name
+		sshCredential.Name = "admin"
 		create = true
 	}
 	sshCredential.Spec.PublicKey = publicKey
 	if create {
 		if _, err := client.Create(ctx, sshCredential, metav1.CreateOptions{}); err != nil {
-			return fmt.Errorf("error creating SSHCredential %q: %v", name, err)
+			return fmt.Errorf("error creating SSHCredential: %v", err)
 		}
 	} else {
 		if _, err := client.Update(ctx, sshCredential, metav1.UpdateOptions{}); err != nil {
-			return fmt.Errorf("error updating SSHCredential %q: %v", name, err)
+			return fmt.Errorf("error updating SSHCredential: %v", err)
 		}
 	}
 	return nil
@@ -300,7 +300,7 @@ func (c *ClientsetCAStore) deleteSSHCredential(ctx context.Context, name string)
 }
 
 // AddSSHPublicKey implements CAStore::AddSSHPublicKey
-func (c *ClientsetCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
+func (c *ClientsetCAStore) AddSSHPublicKey(pubkey []byte) error {
 	ctx := context.TODO()
 
 	_, _, _, _, err := ssh.ParseAuthorizedKey(pubkey)
@@ -308,16 +308,7 @@ func (c *ClientsetCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 		return fmt.Errorf("error parsing SSH public key: %v", err)
 	}
 
-	// TODO: Reintroduce or remove
-	//// compute fingerprint to serve as id
-	//h := md5.New()
-	//_, err = h.Write(sshPublicKey.Marshal())
-	//if err != nil {
-	//	return err
-	//}
-	//id = formatFingerprint(h.Sum(nil))
-
-	return c.addSSHCredential(ctx, name, string(pubkey))
+	return c.addSSHCredential(ctx, string(pubkey))
 }
 
 // FindSSHPublicKeys implements CAStore::FindSSHPublicKeys

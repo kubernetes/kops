@@ -105,7 +105,7 @@ type SSHCredentialStore interface {
 	ListSSHCredentials() ([]*kops.SSHCredential, error)
 
 	// AddSSHPublicKey adds an SSH public key
-	AddSSHPublicKey(name string, data []byte) error
+	AddSSHPublicKey(data []byte) error
 
 	// FindSSHPublicKeys retrieves the SSH public keys with the specific name
 	FindSSHPublicKeys(name string) ([]*kops.SSHCredential, error)
