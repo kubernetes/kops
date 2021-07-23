@@ -22,9 +22,7 @@ import (
 	"io"
 
 	"github.com/spf13/cobra"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
@@ -79,12 +77,7 @@ func RunDeleteSSHPublicKey(ctx context.Context, f *util.Factory, out io.Writer, 
 		return err
 	}
 
-	sshCredential := &kops.SSHCredential{
-		ObjectMeta: v1.ObjectMeta{
-			Name: "admin",
-		},
-	}
-	if err := sshCredentialStore.DeleteSSHCredential(sshCredential); err != nil {
+	if err := sshCredentialStore.DeleteSSHCredential(); err != nil {
 		return fmt.Errorf("error deleting SSH public key: %v", err)
 	}
 
