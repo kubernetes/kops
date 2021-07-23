@@ -25,6 +25,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"k8s.io/kops/upup/pkg/fi"
@@ -57,13 +58,16 @@ func RegionFromMetadata(ctx context.Context) (string, error) {
 }
 
 func NewAWSAuthenticator(region string) (fi.Authenticator, error) {
-	config := aws.NewConfig().WithCredentialsChainVerboseErrors(true).WithRegion(region)
+	config := aws.NewConfig().
+		WithCredentialsChainVerboseErrors(true).
+		WithRegion(region).
+		WithSTSRegionalEndpoint(endpoints.RegionalSTSEndpoint)
 	sess, err := session.NewSession(config)
 	if err != nil {
 		return nil, err
 	}
 	return &awsAuthenticator{
-		sts: sts.New(sess),
+		sts: sts.New(sess, config),
 	}, nil
 }
 
