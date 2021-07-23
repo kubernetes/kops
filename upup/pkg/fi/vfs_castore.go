@@ -484,13 +484,19 @@ func (c *VFSCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential, erro
 }
 
 func (c *VFSCAStore) DeleteSSHCredential(item *kops.SSHCredential) error {
-	if item.Spec.PublicKey == "" {
-		return fmt.Errorf("must specific public key to delete SSHCredential")
-	}
-	id, err := sshcredentials.Fingerprint(item.Spec.PublicKey)
+	p := c.basedir.Join("ssh", "public", "admin")
+
+	files, err := p.ReadDir()
 	if err != nil {
-		return fmt.Errorf("invalid PublicKey when deleting SSHCredential: %v", err)
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
 	}
-	p := c.buildSSHPublicKeyPath(id)
-	return p.Remove()
+	for _, f := range files {
+		if err := f.Remove(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
