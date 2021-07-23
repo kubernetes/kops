@@ -99,7 +99,7 @@ type CAStore interface {
 // SSHCredentialStore holds SSHCredential objects
 type SSHCredentialStore interface {
 	// DeleteSSHCredential deletes the specified SSH credential
-	DeleteSSHCredential(item *kops.SSHCredential) error
+	DeleteSSHCredential() error
 
 	// ListSSHCredentials will list all the SSH credentials
 	ListSSHCredentials() ([]*kops.SSHCredential, error)

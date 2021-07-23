@@ -483,7 +483,7 @@ func (c *VFSCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential, erro
 	return items, nil
 }
 
-func (c *VFSCAStore) DeleteSSHCredential(item *kops.SSHCredential) error {
+func (c *VFSCAStore) DeleteSSHCredential() error {
 	p := c.basedir.Join("ssh", "public", "admin")
 
 	files, err := p.ReadDir()
