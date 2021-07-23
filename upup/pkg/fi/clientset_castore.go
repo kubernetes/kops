@@ -289,12 +289,12 @@ func (c *ClientsetCAStore) addSSHCredential(ctx context.Context, publicKey strin
 	return nil
 }
 
-// deleteSSHCredential deletes the specified SSHCredential from the registry
-func (c *ClientsetCAStore) deleteSSHCredential(ctx context.Context, name string) error {
+// deleteSSHCredential deletes the SSHCredential from the registry.
+func (c *ClientsetCAStore) deleteSSHCredential(ctx context.Context) error {
 	client := c.clientset.SSHCredentials(c.namespace)
-	err := client.Delete(ctx, name, metav1.DeleteOptions{})
+	err := client.Delete(ctx, "admin", metav1.DeleteOptions{})
 	if err != nil {
-		return fmt.Errorf("error deleting SSHCredential %q: %v", name, err)
+		return fmt.Errorf("error deleting SSHCredential: %v", err)
 	}
 	return nil
 }
@@ -328,10 +328,10 @@ func (c *ClientsetCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential
 }
 
 // DeleteSSHCredential implements SSHCredentialStore::DeleteSSHCredential
-func (c *ClientsetCAStore) DeleteSSHCredential(item *kops.SSHCredential) error {
+func (c *ClientsetCAStore) DeleteSSHCredential() error {
 	ctx := context.TODO()
 
-	return c.deleteSSHCredential(ctx, item.Name)
+	return c.deleteSSHCredential(ctx)
 }
 
 func (c *ClientsetCAStore) MirrorTo(basedir vfs.Path) error {
