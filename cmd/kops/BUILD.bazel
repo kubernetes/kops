@@ -18,6 +18,7 @@ go_library(
         "delete_instance.go",
         "delete_instancegroup.go",
         "delete_secret.go",
+        "delete_sshpublickey.go",
         "distrust.go",
         "distrust_keypair.go",
         "edit.go",

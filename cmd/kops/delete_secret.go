@@ -23,7 +23,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
@@ -94,6 +93,12 @@ func RunDeleteSecret(ctx context.Context, f *util.Factory, out io.Writer, option
 		return fmt.Errorf("SecretName is required")
 	}
 
+	if options.SecretType == "sshpublickey" {
+		return RunDeleteSSHPublicKey(ctx, f, out, &DeleteSSHPublicKeyOptions{
+			ClusterName: options.ClusterName,
+		})
+	}
+
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
@@ -109,12 +114,7 @@ func RunDeleteSecret(ctx context.Context, f *util.Factory, out io.Writer, option
 		return err
 	}
 
-	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
-	if err != nil {
-		return err
-	}
-
-	secrets, err := listSecrets(secretStore, sshCredentialStore, options.SecretType, []string{options.SecretName})
+	secrets, err := listSecrets(secretStore, nil, options.SecretType, []string{options.SecretName})
 	if err != nil {
 		return err
 	}
@@ -138,17 +138,7 @@ func RunDeleteSecret(ctx context.Context, f *util.Factory, out io.Writer, option
 		return fmt.Errorf("found multiple matching secrets; specify the id of the key")
 	}
 
-	switch secrets[0].Type {
-	case kops.SecretTypeSecret:
-		err = secretStore.DeleteSecret(secrets[0].Name)
-	case SecretTypeSSHPublicKey:
-		sshCredential := &kops.SSHCredential{}
-		sshCredential.Name = secrets[0].Name
-		if secrets[0].Data != nil {
-			sshCredential.Spec.PublicKey = string(secrets[0].Data)
-		}
-		err = sshCredentialStore.DeleteSSHCredential(sshCredential)
-	}
+	err = secretStore.DeleteSecret(secrets[0].Name)
 	if err != nil {
 		return fmt.Errorf("error deleting secret: %v", err)
 	}
