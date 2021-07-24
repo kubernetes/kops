@@ -280,7 +280,6 @@ func (b *PolicyBuilder) AddOSSPermissions(p *Policy) (*Policy, error) {
 					strings.Join([]string{b.RAMPrefix(), ":oss:*:*:", ramOSSPath, "/config"}, ""),
 					strings.Join([]string{b.RAMPrefix(), ":oss:*:*:", ramOSSPath, "/instancegroup/*"}, ""),
 					strings.Join([]string{b.RAMPrefix(), ":oss:*:*:", ramOSSPath, "/pki/private/kube-proxy/*"}, ""),
-					strings.Join([]string{b.RAMPrefix(), ":oss:*:*:", ramOSSPath, "/pki/ssh/*"}, ""),
 					strings.Join([]string{b.RAMPrefix(), ":oss:*:*:", ramOSSPath, "/secrets/dockerconfig"}, ""),
 				}
 
