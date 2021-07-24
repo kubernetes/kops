@@ -1877,7 +1877,6 @@
                 "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/addons/*",
                 "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/cluster-completed.spec",
                 "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/igconfig/node/*",
-                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/pki/ssh/*",
                 "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/secrets/dockerconfig"
               ]
             },
