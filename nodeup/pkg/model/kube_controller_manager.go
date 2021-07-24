@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
@@ -52,6 +53,9 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	pathSrvKCM := filepath.Join(b.PathSrvKubernetes(), "kube-controller-manager")
 
+	kcm := *b.Cluster.Spec.KubeControllerManager
+	kcm.RootCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
+
 	// Include the CA Key
 	// @TODO: use a per-machine key?  use KMS?
 	if err := b.BuildCertificatePairTask(c, fi.CertificateIDCA, pathSrvKCM, "ca", nil, nil); err != nil {
@@ -61,9 +65,14 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if err := b.BuildPrivateKeyTask(c, "service-account", pathSrvKCM, "service-account", nil, nil); err != nil {
 		return err
 	}
+	kcm.ServiceAccountPrivateKeyFile = filepath.Join(pathSrvKCM, "service-account.key")
+
+	if err := b.writeServerCertificate(c, &kcm); err != nil {
+		return err
+	}
 
 	{
-		pod, err := b.buildPod()
+		pod, err := b.buildPod(&kcm)
 		if err != nil {
 			return fmt.Errorf("error building kube-controller-manager pod: %v", err)
 		}
@@ -104,14 +113,39 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-// buildPod is responsible for building the kubernetes manifest for the controller-manager
-func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
-	pathSrvKubernetes := b.PathSrvKubernetes()
-	pathSrvKCM := filepath.Join(pathSrvKubernetes, "kube-controller-manager")
+func (b *KubeControllerManagerBuilder) writeServerCertificate(c *fi.ModelBuilderContext, kcm *kops.KubeControllerManagerConfig) error {
+	pathSrvKCM := filepath.Join(b.PathSrvKubernetes(), "kube-controller-manager")
 
-	kcm := b.Cluster.Spec.KubeControllerManager
-	kcm.RootCAFile = filepath.Join(pathSrvKubernetes, "ca.crt")
-	kcm.ServiceAccountPrivateKeyFile = filepath.Join(pathSrvKCM, "service-account.key")
+	if kcm.TLSCertFile == nil {
+		alternateNames := []string{
+			"kube-controller-manager.kube-system.svc." + b.Cluster.Spec.ClusterDNSDomain,
+		}
+
+		issueCert := &nodetasks.IssueCert{
+			Name:           "kube-controller-manager-server",
+			Signer:         fi.CertificateIDCA,
+			KeypairID:      b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
+			Type:           "server",
+			Subject:        nodetasks.PKIXName{CommonName: "kube-controller-manager"},
+			AlternateNames: alternateNames,
+		}
+
+		c.AddTask(issueCert)
+		err := issueCert.AddFileTasks(c, pathSrvKCM, "server", "", nil)
+		if err != nil {
+			return err
+		}
+
+		kcm.TLSCertFile = fi.String(filepath.Join(pathSrvKCM, "server.crt"))
+		kcm.TLSPrivateKeyFile = filepath.Join(pathSrvKCM, "server.key")
+	}
+
+	return nil
+}
+
+// buildPod is responsible for building the kubernetes manifest for the controller-manager
+func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerConfig) (*v1.Pod, error) {
+	pathSrvKCM := filepath.Join(b.PathSrvKubernetes(), "kube-controller-manager")
 
 	flags, err := flagbuilder.BuildFlagsList(kcm)
 	if err != nil {
@@ -220,7 +254,7 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 		addHostPathMapping(pod, container, "cloudconfig", CloudConfigFilePath)
 	}
 
-	addHostPathMapping(pod, container, "cabundle", filepath.Join(pathSrvKubernetes, "ca.crt"))
+	addHostPathMapping(pod, container, "cabundle", filepath.Join(b.PathSrvKubernetes(), "ca.crt"))
 
 	addHostPathMapping(pod, container, "srvkcm", pathSrvKCM)
 
