@@ -3127,6 +3127,11 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 			(*out)[key] = val
 		}
 	}
+	if in.TLSCertFile != nil {
+		in, out := &in.TLSCertFile, &out.TLSCertFile
+		*out = new(string)
+		**out = **in
+	}
 	if in.TLSCipherSuites != nil {
 		in, out := &in.TLSCipherSuites, &out.TLSCipherSuites
 		*out = make([]string, len(*in))
@@ -3362,6 +3367,11 @@ func (in *KubeSchedulerConfig) DeepCopyInto(out *KubeSchedulerConfig) {
 	if in.EnableProfiling != nil {
 		in, out := &in.EnableProfiling, &out.EnableProfiling
 		*out = new(bool)
+		**out = **in
+	}
+	if in.TLSCertFile != nil {
+		in, out := &in.TLSCertFile, &out.TLSCertFile
+		*out = new(string)
 		**out = **in
 	}
 	return

@@ -604,10 +604,14 @@ type KubeControllerManagerConfig struct {
 	ExperimentalClusterSigningDuration *metav1.Duration `json:"experimentalClusterSigningDuration,omitempty" flag:"experimental-cluster-signing-duration"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
+	// TLSCertFile is the file containing the TLS server certificate.
+	TLSCertFile *string `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
 	// TLSCipherSuites indicates the allowed TLS cipher suite
 	TLSCipherSuites []string `json:"tlsCipherSuites,omitempty" flag:"tls-cipher-suites"`
 	// TLSMinVersion indicates the minimum TLS version allowed
 	TLSMinVersion string `json:"tlsMinVersion,omitempty" flag:"tls-min-version"`
+	// TLSPrivateKeyFile is the file containing the private key for the TLS server certificate.
+	TLSPrivateKeyFile string `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
 	// MinResyncPeriod indicates the resync period in reflectors.
 	// The resync period will be random between MinResyncPeriod and 2*MinResyncPeriod. (default 12h0m0s)
 	MinResyncPeriod string `json:"minResyncPeriod,omitempty" flag:"min-resync-period"`
@@ -708,6 +712,10 @@ type KubeSchedulerConfig struct {
 
 	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
+	// TLSCertFile is the file containing the TLS server certificate.
+	TLSCertFile *string `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
+	// TLSPrivateKeyFile is the file containing the private key for the TLS server certificate.
+	TLSPrivateKeyFile string `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election
