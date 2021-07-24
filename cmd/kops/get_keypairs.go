@@ -18,19 +18,22 @@ package main
 
 import (
 	"context"
+	"crypto/rsa"
+	"encoding/json"
 	"fmt"
 	"io"
+	"sort"
 	"time"
 
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/commands/commandutils"
-	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
+	"sigs.k8s.io/yaml"
 )
 
 var (
@@ -82,12 +85,18 @@ func NewCmdGetKeypairs(f *util.Factory, out io.Writer, getOptions *GetOptions) *
 }
 
 type keypairItem struct {
-	Name              string
-	Id                string
-	DistrustTimestamp *time.Time
-	IsPrimary         bool
-	Certificate       *pki.Certificate
-	HasPrivateKey     bool
+	Name              string     `json:"name"`
+	ID                string     `json:"id"`
+	DistrustTimestamp *time.Time `json:"distrustTimestamp,omitempty"`
+	IsPrimary         bool       `json:"isPrimary,omitempty"`
+	Subject           string     `json:"subject"`
+	Issuer            string     `json:"issuer"`
+	AlternateNames    []string   `json:"alternateNames,omitempty"`
+	IsCA              bool       `json:"isCA,omitempty"`
+	NotBefore         time.Time  `json:"notBefore"`
+	NotAfter          time.Time  `json:"notAfter"`
+	KeyLength         *int       `json:"keyLength,omitempty"`
+	HasPrivateKey     bool       `json:"hasPrivateKey,omitempty"`
 }
 
 func listKeypairs(keyStore fi.CAStore, names []string, includeDistrusted bool) ([]*keypairItem, error) {
@@ -114,14 +123,31 @@ func listKeypairs(keyStore fi.CAStore, names []string, includeDistrusted bool) (
 
 		for _, item := range keyset.Items {
 			if includeDistrusted || item.DistrustTimestamp == nil {
-				items = append(items, &keypairItem{
+				var alternateNames []string
+				alternateNames = append(alternateNames, item.Certificate.Certificate.DNSNames...)
+				alternateNames = append(alternateNames, item.Certificate.Certificate.EmailAddresses...)
+				for _, ip := range item.Certificate.Certificate.IPAddresses {
+					alternateNames = append(alternateNames, ip.String())
+				}
+				sort.Strings(alternateNames)
+
+				keypair := keypairItem{
 					Name:              name,
-					Id:                item.Id,
+					ID:                item.Id,
 					DistrustTimestamp: item.DistrustTimestamp,
 					IsPrimary:         item.Id == keyset.Primary.Id,
-					Certificate:       item.Certificate,
+					Subject:           item.Certificate.Subject.String(),
+					Issuer:            item.Certificate.Certificate.Issuer.String(),
+					AlternateNames:    alternateNames,
+					IsCA:              item.Certificate.IsCA,
+					NotBefore:         item.Certificate.Certificate.NotBefore.UTC(),
+					NotAfter:          item.Certificate.Certificate.NotAfter.UTC(),
 					HasPrivateKey:     item.PrivateKey != nil,
-				})
+				}
+				if rsaKey, ok := item.Certificate.PublicKey.(*rsa.PublicKey); ok {
+					keypair.KeyLength = fi.Int(rsaKey.N.BitLen())
+				}
+				items = append(items, &keypair)
 			}
 		}
 	}
@@ -161,7 +187,7 @@ func RunGetKeypairs(ctx context.Context, f commandutils.Factory, out io.Writer, 
 			return i.Name
 		})
 		t.AddColumn("ID", func(i *keypairItem) string {
-			return i.Id
+			return i.ID
 		})
 		t.AddColumn("DISTRUSTED", func(i *keypairItem) string {
 			if i.DistrustTimestamp != nil {
@@ -170,10 +196,10 @@ func RunGetKeypairs(ctx context.Context, f commandutils.Factory, out io.Writer, 
 			return ""
 		})
 		t.AddColumn("ISSUED", func(i *keypairItem) string {
-			return i.Certificate.Certificate.NotBefore.Local().Format("2006-01-02")
+			return i.NotBefore.Local().Format("2006-01-02")
 		})
 		t.AddColumn("EXPIRES", func(i *keypairItem) string {
-			return i.Certificate.Certificate.NotAfter.Local().Format("2006-01-02")
+			return i.NotAfter.Local().Format("2006-01-02")
 		})
 		t.AddColumn("PRIMARY", func(i *keypairItem) string {
 			if i.IsPrimary {
@@ -195,13 +221,27 @@ func RunGetKeypairs(ctx context.Context, f commandutils.Factory, out io.Writer, 
 		return t.Render(items, out, columnNames...)
 
 	case OutputYaml:
-		return fmt.Errorf("yaml output format is not (currently) supported for keypairs")
+		y, err := yaml.Marshal(items)
+		if err != nil {
+			return fmt.Errorf("unable to marshal YAML: %v", err)
+		}
+		if _, err := out.Write(y); err != nil {
+			return fmt.Errorf("error writing to output: %v", err)
+		}
 	case OutputJSON:
-		return fmt.Errorf("json output format is not (currently) supported for keypairs")
+		j, err := json.Marshal(items)
+		if err != nil {
+			return fmt.Errorf("unable to marshal JSON: %v", err)
+		}
+		if _, err := out.Write(j); err != nil {
+			return fmt.Errorf("error writing to output: %v", err)
+		}
 
 	default:
 		return fmt.Errorf("Unknown output format: %q", options.Output)
 	}
+
+	return nil
 }
 
 func completeGetKeypairs(options *GetKeypairsOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
