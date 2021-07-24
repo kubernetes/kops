@@ -7,10 +7,10 @@ Create an encryption config.
 
 ### Synopsis
 
-Create a new encryption config, and store it in the state store. Used to configure encryption-at-rest by the kube-apiserver process on each of the master nodes. The config is not updated by this command.
+Create a new encryption config and store it in the state store. Used to configure encryption-at-rest by the kube-apiserver process.
 
 ```
-kops create secret encryptionconfig [flags]
+kops create secret encryptionconfig [CLUSTER] -f FILENAME [flags]
 ```
 
 ### Examples
@@ -19,9 +19,11 @@ kops create secret encryptionconfig [flags]
   # Create a new encryption config.
   kops create secret encryptionconfig -f config.yaml \
   --name k8s-cluster.example.com --state s3://my-state-store
+  
   # Create a new encryption config via stdin.
   generate-encryption-config.sh | kops create secret encryptionconfig -f - \
   --name k8s-cluster.example.com --state s3://my-state-store
+  
   # Replace an existing encryption config secret.
   kops create secret encryptionconfig -f config.yaml --force \
   --name k8s-cluster.example.com --state s3://my-state-store
@@ -30,9 +32,9 @@ kops create secret encryptionconfig [flags]
 ### Options
 
 ```
-  -f, -- string   Path to encryption config yaml file
-      --force     Force replace the kOps secret if it already exists
-  -h, --help      help for encryptionconfig
+  -f, --filename string   Path to encryption config YAML file
+      --force             Force replace the secret if it already exists
+  -h, --help              help for encryptionconfig
 ```
 
 ### Options inherited from parent commands
