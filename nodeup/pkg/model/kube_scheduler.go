@@ -18,9 +18,11 @@ package model
 
 import (
 	"fmt"
+	"path/filepath"
 	"strconv"
 	"strings"
 
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/configbuilder"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
@@ -65,8 +67,15 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !b.IsMaster {
 		return nil
 	}
+
+	kubeScheduler := *b.Cluster.Spec.KubeScheduler
+
+	if err := b.writeServerCertificate(c, &kubeScheduler); err != nil {
+		return err
+	}
+
 	{
-		pod, err := b.buildPod()
+		pod, err := b.buildPod(&kubeScheduler)
 		if err != nil {
 			return fmt.Errorf("error building kube-scheduler pod: %v", err)
 		}
@@ -103,7 +112,7 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 			config = NewSchedulerConfig("kubescheduler.config.k8s.io/v1alpha1")
 		}
 
-		manifest, err := configbuilder.BuildConfigYaml(b.Cluster.Spec.KubeScheduler, config)
+		manifest, err := configbuilder.BuildConfigYaml(&kubeScheduler, config)
 		if err != nil {
 			return err
 		}
@@ -139,11 +148,41 @@ func NewSchedulerConfig(apiVersion string) *SchedulerConfig {
 	return schedConfig
 }
 
-// buildPod is responsible for constructing the pod specification
-func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
-	c := b.Cluster.Spec.KubeScheduler
+func (b *KubeSchedulerBuilder) writeServerCertificate(c *fi.ModelBuilderContext, kubeScheduler *kops.KubeSchedulerConfig) error {
+	pathSrvScheduler := filepath.Join(b.PathSrvKubernetes(), "kube-scheduler")
 
-	flags, err := flagbuilder.BuildFlagsList(c)
+	if kubeScheduler.TLSCertFile == nil {
+		alternateNames := []string{
+			"kube-scheduler.kube-system.svc." + b.Cluster.Spec.ClusterDNSDomain,
+		}
+
+		issueCert := &nodetasks.IssueCert{
+			Name:           "kube-scheduler-server",
+			Signer:         fi.CertificateIDCA,
+			KeypairID:      b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
+			Type:           "server",
+			Subject:        nodetasks.PKIXName{CommonName: "kube-scheduler"},
+			AlternateNames: alternateNames,
+		}
+
+		c.AddTask(issueCert)
+		err := issueCert.AddFileTasks(c, pathSrvScheduler, "server", "", nil)
+		if err != nil {
+			return err
+		}
+
+		kubeScheduler.TLSCertFile = fi.String(filepath.Join(pathSrvScheduler, "server.crt"))
+		kubeScheduler.TLSPrivateKeyFile = filepath.Join(pathSrvScheduler, "server.key")
+	}
+
+	return nil
+}
+
+// buildPod is responsible for constructing the pod specification
+func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig) (*v1.Pod, error) {
+	pathSrvScheduler := filepath.Join(b.PathSrvKubernetes(), "kube-scheduler")
+
+	flags, err := flagbuilder.BuildFlagsList(kubeScheduler)
 	if err != nil {
 		return nil, fmt.Errorf("error building kube-scheduler flags: %v", err)
 	}
@@ -155,7 +194,7 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 		flags = append(flags, "--"+flag+"kubeconfig="+defaultKubeConfig)
 	}
 
-	if c.UsePolicyConfigMap != nil {
+	if kubeScheduler.UsePolicyConfigMap != nil {
 		flags = append(flags, "--policy-configmap=scheduler-policy", "--policy-configmap-namespace=kube-system")
 	}
 
@@ -176,7 +215,7 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 		},
 	}
 
-	image := c.Image
+	image := kubeScheduler.Image
 	if b.Architecture != architectures.ArchitectureAmd64 {
 		image = strings.Replace(image, "-amd64", "-"+string(b.Architecture), 1)
 	}
@@ -203,6 +242,7 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 		},
 	}
 	addHostPathMapping(pod, container, "varlibkubescheduler", "/var/lib/kube-scheduler")
+	addHostPathMapping(pod, container, "srvscheduler", pathSrvScheduler)
 
 	// Log both to docker and to the logfile
 	addHostPathMapping(pod, container, "logfile", "/var/log/kube-scheduler.log").ReadOnly = false
@@ -215,10 +255,10 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 		"--alsologtostderr",
 		"--log-file=/var/log/kube-scheduler.log")
 
-	if c.MaxPersistentVolumes != nil {
+	if kubeScheduler.MaxPersistentVolumes != nil {
 		maxPDV := v1.EnvVar{
 			Name:  "KUBE_MAX_PD_VOLS", // https://kubernetes.io/docs/concepts/storage/storage-limits/
-			Value: strconv.Itoa(int(*c.MaxPersistentVolumes)),
+			Value: strconv.Itoa(int(*kubeScheduler.MaxPersistentVolumes)),
 		}
 		container.Env = append(container.Env, maxPDV)
 	}

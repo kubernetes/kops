@@ -28,6 +28,8 @@ contents: |
       - --leader-elect=true
       - --root-ca-file=/srv/kubernetes/ca.crt
       - --service-account-private-key-file=/srv/kubernetes/kube-controller-manager/service-account.key
+      - --tls-cert-file=/srv/kubernetes/kube-controller-manager/server.crt
+      - --tls-private-key-file=/srv/kubernetes/kube-controller-manager/server.key
       - --use-service-account-credentials=true
       - --v=2
       - --logtostderr=false
@@ -147,6 +149,10 @@ contents: |
 path: /etc/kubernetes/manifests/kube-controller-manager.manifest
 type: file
 ---
+mode: "0755"
+path: /srv/kubernetes/kube-controller-manager
+type: directory
+---
 contents: |
   -----BEGIN CERTIFICATE-----
   MIIC2DCCAcCgAwIBAgIRALJXAkVj964tq67wMSI8oJQwDQYJKoZIhvcNAQELBQAw
@@ -200,6 +206,34 @@ contents: |
   -----END RSA PRIVATE KEY-----
 mode: "0600"
 path: /srv/kubernetes/kube-controller-manager/ca.key
+type: file
+---
+contents:
+  task:
+    Name: kube-controller-manager-server
+    alternateNames:
+    - kube-controller-manager.kube-system.svc.cluster.local
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kube-controller-manager
+    type: server
+mode: "0644"
+path: /srv/kubernetes/kube-controller-manager/server.crt
+type: file
+---
+contents:
+  task:
+    Name: kube-controller-manager-server
+    alternateNames:
+    - kube-controller-manager.kube-system.svc.cluster.local
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kube-controller-manager
+    type: server
+mode: "0600"
+path: /srv/kubernetes/kube-controller-manager/server.key
 type: file
 ---
 contents: |
@@ -260,6 +294,15 @@ signer: kubernetes-ca
 subject:
   CommonName: system:kube-controller-manager
 type: client
+---
+Name: kube-controller-manager-server
+alternateNames:
+- kube-controller-manager.kube-system.svc.cluster.local
+keypairID: "3"
+signer: kubernetes-ca
+subject:
+  CommonName: kube-controller-manager
+type: server
 ---
 CA:
   task:
