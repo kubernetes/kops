@@ -67,7 +67,7 @@ func NewCmdGetSecrets(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 
 			return nil
 		},
-		ValidArgsFunction: completeSecretNames,
+		ValidArgsFunction: completeSecretNames(f),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return RunGetSecrets(context.TODO(), f, out, &options)
 		},

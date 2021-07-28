@@ -50,7 +50,7 @@ func NewCmdDeleteSSHPublicKey(f *util.Factory, out io.Writer) *cobra.Command {
 		Short:             deleteSSHPublicKeyShort,
 		Example:           deleteSSHPublicKeyExample,
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
-		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true, false),
+		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.TODO()
 

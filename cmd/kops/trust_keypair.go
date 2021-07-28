@@ -80,7 +80,7 @@ func NewCmdTrustKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 			return nil
 		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return completeTrustKeyset(options, args, toComplete)
+			return completeTrustKeyset(f, options, args, toComplete)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.TODO()
@@ -135,11 +135,11 @@ func RunTrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, option
 	return nil
 }
 
-func completeTrustKeyset(options *TrustKeypairOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func completeTrustKeyset(f commandutils.Factory, options *TrustKeypairOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	commandutils.ConfigureKlogForCompletion()
 	ctx := context.TODO()
 
-	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand, nil)
+	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, f, nil)
 	if cluster == nil {
 		return completions, directive
 	}
