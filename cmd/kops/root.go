@@ -302,15 +302,6 @@ func (c *RootCmd) Clientset() (simple.Clientset, error) {
 	return c.factory.Clientset()
 }
 
-func (c *RootCmd) Cluster(ctx context.Context) (*kopsapi.Cluster, error) {
-	clusterName := c.ClusterName(true)
-	if clusterName == "" {
-		return nil, fmt.Errorf("--name is required")
-	}
-
-	return GetCluster(ctx, c.factory, clusterName)
-}
-
 func GetCluster(ctx context.Context, factory commandutils.Factory, clusterName string) (*kopsapi.Cluster, error) {
 	if clusterName == "" {
 		return nil, field.Required(field.NewPath("clusterName"), "Cluster name is required")

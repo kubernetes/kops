@@ -235,7 +235,7 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 // RunToolboxInstanceSelector executes the instance-selector tool to create instance groups with declarative resource specifications
 func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, out io.Writer, commandline *cli.CommandLineInterface, options *InstanceSelectorOptions) error {
 
-	clientset, cluster, channel, err := retrieveClusterRefs(ctx, f)
+	clientset, cluster, channel, err := retrieveClusterRefs(ctx, f, options.ClusterName)
 	if err != nil {
 		return err
 	}
@@ -373,19 +373,15 @@ func processAndValidateFlags(commandline *cli.CommandLineInterface) error {
 	return nil
 }
 
-func retrieveClusterRefs(ctx context.Context, f *util.Factory) (simple.Clientset, *kops.Cluster, *kops.Channel, error) {
+func retrieveClusterRefs(ctx context.Context, f *util.Factory, clusterName string) (simple.Clientset, *kops.Cluster, *kops.Channel, error) {
 	clientset, err := f.Clientset()
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	cluster, err := rootCommand.Cluster(ctx)
+	cluster, err := GetCluster(ctx, f, clusterName)
 	if err != nil {
 		return nil, nil, nil, err
-	}
-
-	if cluster == nil {
-		return nil, nil, nil, fmt.Errorf("cluster not found")
 	}
 
 	channel, err := cloudup.ChannelForCluster(cluster)
