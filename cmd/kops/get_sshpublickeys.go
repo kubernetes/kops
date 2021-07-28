@@ -55,7 +55,7 @@ func NewCmdGetSSHPublicKeys(f *util.Factory, out io.Writer, getOptions *GetOptio
 		Short:             getSSHPublicKeysShort,
 		Example:           getSSHPublicKeysExample,
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
-		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true, false),
+		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return RunGetSSHPublicKeys(context.TODO(), f, out, &options)
 		},

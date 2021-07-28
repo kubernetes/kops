@@ -102,7 +102,7 @@ func NewCmdPromoteKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 			return nil
 		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return completePromoteKeyset(options, args, toComplete)
+			return completePromoteKeyset(f, options, args, toComplete)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return RunPromoteKeypair(context.TODO(), f, out, options)
@@ -198,11 +198,11 @@ func promoteKeypair(out io.Writer, name string, keypairID string, keyStore fi.CA
 	return nil
 }
 
-func completePromoteKeyset(options *PromoteKeypairOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func completePromoteKeyset(f commandutils.Factory, options *PromoteKeypairOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	commandutils.ConfigureKlogForCompletion()
 	ctx := context.TODO()
 
-	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand, nil)
+	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, f, nil)
 	if cluster == nil {
 		return completions, directive
 	}
