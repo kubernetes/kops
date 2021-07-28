@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
 	"k8s.io/kops/pkg/cloudinstances"
@@ -164,7 +163,7 @@ func instanceOutputTable(instances []*cloudinstances.CloudInstance, out io.Write
 	})
 
 	columns := []string{"ID", "NODE-NAME", "STATUS", "ROLES", "STATE", "INTERNAL-IP", "INSTANCE-GROUP", "MACHINE-TYPE"}
-	return t.Render(instances, os.Stdout, columns...)
+	return t.Render(instances, out, columns...)
 }
 
 func createK8sClient(cluster *kops.Cluster) (*kubernetes.Clientset, error) {
