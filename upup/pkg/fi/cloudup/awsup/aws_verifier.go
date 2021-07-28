@@ -32,6 +32,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/sts"
@@ -59,13 +60,16 @@ type awsVerifier struct {
 var _ fi.Verifier = &awsVerifier{}
 
 func NewAWSVerifier(opt *AWSVerifierOptions) (fi.Verifier, error) {
-	config := aws.NewConfig().WithCredentialsChainVerboseErrors(true).WithRegion(opt.Region)
+	config := aws.NewConfig().
+		WithCredentialsChainVerboseErrors(true).
+		WithRegion(opt.Region).
+		WithSTSRegionalEndpoint(endpoints.RegionalSTSEndpoint)
 	sess, err := session.NewSession(config)
 	if err != nil {
 		return nil, err
 	}
 
-	stsClient := sts.New(sess)
+	stsClient := sts.New(sess, config)
 	identity, err := stsClient.GetCallerIdentity(&sts.GetCallerIdentityInput{})
 	if err != nil {
 		return nil, err
