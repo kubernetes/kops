@@ -725,8 +725,8 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			return err
 		}
 
-		for k, data := range c.SSHPublicKeys {
-			err = sshCredentialStore.AddSSHPublicKey(k, data)
+		for _, data := range c.SSHPublicKeys {
+			err = sshCredentialStore.AddSSHPublicKey(data)
 			if err != nil {
 				return fmt.Errorf("error adding SSH public key: %v", err)
 			}

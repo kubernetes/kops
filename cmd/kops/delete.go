@@ -74,6 +74,7 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdDeleteInstance(f, out))
 	cmd.AddCommand(NewCmdDeleteInstanceGroup(f, out))
 	cmd.AddCommand(NewCmdDeleteSecret(f, out))
+	cmd.AddCommand(NewCmdDeleteSSHPublicKey(f, out))
 
 	return cmd
 }

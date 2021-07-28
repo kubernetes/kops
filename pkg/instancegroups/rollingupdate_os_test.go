@@ -34,7 +34,6 @@ import (
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/testutils"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/util/pkg/vfs"
@@ -75,7 +74,7 @@ func getTestSetupOS(t *testing.T) (*RollingUpdateCluster, *openstack.MockCloud) 
 		t.Fatalf("Failed to get credential store: %v", err)
 	}
 
-	sshCredentialStore.AddSSHPublicKey(fi.SecretNameSSHPrimary, sshPublicKey)
+	sshCredentialStore.AddSSHPublicKey(sshPublicKey)
 
 	c := &RollingUpdateCluster{
 		Cloud:                   mockcloud,
