@@ -3,27 +3,31 @@
 
 ## kops create secret dockerconfig
 
-Create a docker config.
+Create a Docker config.
 
 ### Synopsis
 
-Create a new docker config, and store it in the state store. Used to configure docker on each master or node (i.e. for auth) Use update to modify it, this command will only create a new entry.
+Create a new Docker config and store it in the state store. Used to configure Docker authentication on each node.
 
- After creating a dockerconfig secret, a /root/.docker/config.json file will be added to newly created nodes. This file will be used by Kubernetes to authenticate to container registries and will also work when using containerd as container runtime.
+ After creating a dockerconfig secret a /root/.docker/config.json file will be added to newly created nodes. This file will be used by Kubernetes to authenticate to container registries.
+
+ This will also work when using containerd as the container runtime.
 
 ```
-kops create secret dockerconfig [flags]
+kops create secret dockerconfig [CLUSTER] -f FILENAME [flags]
 ```
 
 ### Examples
 
 ```
-  # Create a new docker config.
+  # Create a new Docker config.
   kops create secret dockerconfig -f /path/to/docker/config.json \
   --name k8s-cluster.example.com --state s3://my-state-store
+  
   # Create a docker config via stdin.
   generate-docker-config.sh | kops create secret dockerconfig -f - \
   --name k8s-cluster.example.com --state s3://my-state-store
+  
   # Replace an existing docker config secret.
   kops create secret dockerconfig -f /path/to/docker/config.json --force \
   --name k8s-cluster.example.com --state s3://my-state-store
@@ -32,9 +36,9 @@ kops create secret dockerconfig [flags]
 ### Options
 
 ```
-  -f, -- string   Path to docker config JSON file
-      --force     Force replace the kOps secret if it already exists
-  -h, --help      help for dockerconfig
+  -f, --filename string   Path to Docker config JSON file
+      --force             Force replace the secret if it already exists
+  -h, --help              help for dockerconfig
 ```
 
 ### Options inherited from parent commands

@@ -22,39 +22,41 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
 
 var (
-	createSecretDockerconfigLong = templates.LongDesc(i18n.T(`
-	Create a new docker config, and store it in the state store.
-	Used to configure docker on each master or node (i.e. for auth)
-	Use update to modify it, this command will only create a new entry.
+	createSecretDockerConfigLong = templates.LongDesc(i18n.T(`
+	Create a new Docker config and store it in the state store.
+	Used to configure Docker authentication on each node.
 	
-	After creating a dockerconfig secret, a /root/.docker/config.json file
+	After creating a dockerconfig secret a /root/.docker/config.json file
     will be added to newly created nodes. This file will be used by Kubernetes
-    to authenticate to container registries and will also work when using
-	containerd as container runtime.`))
+    to authenticate to container registries.
 
-	createSecretDockerconfigExample = templates.Examples(i18n.T(`
-	# Create a new docker config.
+	This will also work when using containerd as the container runtime.`))
+
+	createSecretDockerConfigExample = templates.Examples(i18n.T(`
+	# Create a new Docker config.
 	kops create secret dockerconfig -f /path/to/docker/config.json \
 		--name k8s-cluster.example.com --state s3://my-state-store
+
 	# Create a docker config via stdin.
 	generate-docker-config.sh | kops create secret dockerconfig -f - \
 		--name k8s-cluster.example.com --state s3://my-state-store
+
 	# Replace an existing docker config secret.
 	kops create secret dockerconfig -f /path/to/docker/config.json --force \
 		--name k8s-cluster.example.com --state s3://my-state-store
 	`))
 
-	createSecretDockerconfigShort = i18n.T(`Create a docker config.`)
+	createSecretDockerConfigShort = i18n.T(`Create a Docker config.`)
 )
 
 type CreateSecretDockerConfigOptions struct {
@@ -67,46 +69,28 @@ func NewCmdCreateSecretDockerConfig(f *util.Factory, out io.Writer) *cobra.Comma
 	options := &CreateSecretDockerConfigOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "dockerconfig",
-		Short:   createSecretDockerconfigShort,
-		Long:    createSecretDockerconfigLong,
-		Example: createSecretDockerconfigExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
-
-			if len(args) != 0 {
-				exitWithError(fmt.Errorf("syntax: -f <DockerConfigPath>"))
-			}
-
-			err := rootCommand.ProcessArgs(args[0:])
-			if err != nil {
-				exitWithError(err)
-			}
-
-			options.ClusterName = rootCommand.ClusterName(true)
-
-			err = RunCreateSecretDockerConfig(ctx, f, os.Stdout, options)
-			if err != nil {
-				exitWithError(err)
-			}
+		Use:               "dockerconfig [CLUSTER] -f FILENAME",
+		Short:             createSecretDockerConfigShort,
+		Long:              createSecretDockerConfigLong,
+		Example:           createSecretDockerConfigExample,
+		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
+		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true, false),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunCreateSecretDockerConfig(context.TODO(), f, out, options)
 		},
 	}
 
-	cmd.Flags().StringVarP(&options.DockerConfigPath, "", "f", "", "Path to docker config JSON file")
-	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force replace the kOps secret if it already exists")
+	cmd.Flags().StringVarP(&options.DockerConfigPath, "filename", "f", "", "Path to Docker config JSON file")
+	cmd.MarkFlagRequired("filename")
+	cmd.RegisterFlagCompletionFunc("filename", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"json"}, cobra.ShellCompDirectiveFilterFileExt
+	})
+	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force replace the secret if it already exists")
 
 	return cmd
 }
 
 func RunCreateSecretDockerConfig(ctx context.Context, f *util.Factory, out io.Writer, options *CreateSecretDockerConfigOptions) error {
-	if options.DockerConfigPath == "" {
-		return fmt.Errorf("docker config path is required (use -f)")
-	}
-	secret, err := fi.CreateSecret()
-	if err != nil {
-		return fmt.Errorf("error creating docker config secret: %v", err)
-	}
-
 	cluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
 		return err
@@ -121,39 +105,42 @@ func RunCreateSecretDockerConfig(ctx context.Context, f *util.Factory, out io.Wr
 	if err != nil {
 		return err
 	}
+
 	var data []byte
 	if options.DockerConfigPath == "-" {
 		data, err = ConsumeStdin()
 		if err != nil {
-			return fmt.Errorf("error reading docker config from stdin: %v", err)
+			return fmt.Errorf("reading Docker config from stdin: %v", err)
 		}
 	} else {
 		data, err = ioutil.ReadFile(options.DockerConfigPath)
 		if err != nil {
-			return fmt.Errorf("error reading docker config %v: %v", options.DockerConfigPath, err)
+			return fmt.Errorf("reading Docker config %v: %v", options.DockerConfigPath, err)
 		}
 	}
 
 	var parsedData map[string]interface{}
 	err = json.Unmarshal(data, &parsedData)
 	if err != nil {
-		return fmt.Errorf("Unable to parse JSON %v: %v", options.DockerConfigPath, err)
+		return fmt.Errorf("unable to parse JSON %v: %v", options.DockerConfigPath, err)
 	}
 
-	secret.Data = data
+	secret := &fi.Secret{
+		Data: data,
+	}
 
 	if !options.Force {
 		_, created, err := secretStore.GetOrCreateSecret("dockerconfig", secret)
 		if err != nil {
-			return fmt.Errorf("error adding dockerconfig secret: %v", err)
+			return fmt.Errorf("adding dockerconfig secret: %v", err)
 		}
 		if !created {
-			return fmt.Errorf("failed to create the dockerconfig secret as it already exists. The `--force` flag can be passed to replace an existing secret.")
+			return fmt.Errorf("failed to create the dockerconfig secret as it already exists. Pass the `--force` flag to replace an existing secret")
 		}
 	} else {
 		_, err := secretStore.ReplaceSecret("dockerconfig", secret)
 		if err != nil {
-			return fmt.Errorf("error updating dockerconfig secret: %v", err)
+			return fmt.Errorf("updating dockerconfig secret: %v", err)
 		}
 	}
 
