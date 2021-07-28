@@ -3,37 +3,39 @@
 
 ## kops create secret ciliumpassword
 
-Create a cilium encryption key.
+Create a Cilium IPsec configuration.
 
 ### Synopsis
 
-Create a new cilium encryption secret, and store it in the state store. Used by Cilium to generate encrypted communication between pods/nodes.
+Create a new Cilium IPsec configuration and store it in the state store. This is used by Cilium to encrypt communication between pods/nodes.
 
 ```
-kops create secret ciliumpassword [flags]
+kops create secret ciliumpassword [CLUSTER] -f FILENAME [flags]
 ```
 
 ### Examples
 
 ```
-  # Create a new cilium encryption key.
-  kops create secret ciliumpassword -f /path/to/ciliumpassword \
+  # Create a new Cilium IPsec configuration.
+  kops create secret ciliumpassword -f /path/to/configuration.yaml \
   --name k8s-cluster.example.com --state s3://my-state-store
-  # Create a new cilium encryption key via stdin.
+  
+  # Create a new Cilium IPsec key via stdin.
   cat <<EOF | kops create secret ciliumpassword --name k8s-cluster.example.com --state s3://my-state-store -f -
   keys: $(echo "3 rfc4106(gcm(aes)) $(echo $(dd if=/dev/urandom count=20 bs=1 2> /dev/null| xxd -p -c 64)) 128")
   EOF
-  # Replace an existing ciliumpassword secret
-  kops create secret ciliumpassword -f /path/to/ciliumpassword --force \
+  
+  # Replace an existing Cilium IPsec configuration secret
+  kops create secret ciliumpassword -f /path/to/configuration.yaml --force \
   --name k8s-cluster.example.com --state s3://my-state-store
 ```
 
 ### Options
 
 ```
-  -f, -- string   Path to the cilium encryption config file
-      --force     Force replace the kOps secret if it already exists
-  -h, --help      help for ciliumpassword
+  -f, --filename string   Path to the Cilium IPsec configuration file
+      --force             Force replace the secret if it already exists
+  -h, --help              help for ciliumpassword
 ```
 
 ### Options inherited from parent commands
