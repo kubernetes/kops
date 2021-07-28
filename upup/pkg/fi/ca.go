@@ -42,13 +42,6 @@ const (
 	keysetFormatLatest = "v1alpha2"
 )
 
-type KeystoreItem struct {
-	Type kops.KeysetType
-	Name string
-	ID   string
-	Data []byte
-}
-
 // Keyset is a parsed api.Keyset.
 type Keyset struct {
 	// LegacyFormat instructs a keypair task to convert a Legacy Keyset to the new Keyset API format.
