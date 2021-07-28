@@ -59,21 +59,8 @@ var (
 
 	# Create an instancegroup based on the YAML passed into stdin.
 	cat instancegroup.yaml | kops create -f -
-
-	# Create a cluster in AWS.
-	kops create cluster --name=k8s-cluster.example.com \
-		--state=s3://my-state-store --zones=us-east-1a \
-		--node-count=2 --node-size=t3.small --master-size=t3.small \
-		--dns-zone=example.com
-
-	# Create an instancegroup for the k8s-cluster.example.com cluster.
-	kops create ig --name=k8s-cluster.example.com node-example \
-		--role node --subnet my-subnet-name
-
-	# Create a new ssh public key called admin.
-	kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
-		--name k8s-cluster.example.com --state s3://my-state-store
 	`))
+
 	createShort = i18n.T("Create a resource by command line, filename or stdin.")
 )
 
@@ -102,6 +89,7 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdCreateInstanceGroup(f, out))
 	cmd.AddCommand(NewCmdCreateKeypair(f, out))
 	cmd.AddCommand(NewCmdCreateSecret(f, out))
+	cmd.AddCommand(NewCmdCreateSSHPublicKey(f, out))
 
 	return cmd
 }
@@ -203,7 +191,7 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 				}
 
 				sshKeyArr := []byte(v.Spec.PublicKey)
-				err = sshCredentialStore.AddSSHPublicKey("admin", sshKeyArr)
+				err = sshCredentialStore.AddSSHPublicKey(sshKeyArr)
 				if err != nil {
 					return err
 				}

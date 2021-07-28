@@ -55,4 +55,5 @@ kops delete {-f FILENAME}... [flags]
 * [kops delete instance](kops_delete_instance.md)	 - Delete an instance.
 * [kops delete instancegroup](kops_delete_instancegroup.md)	 - Delete instance group.
 * [kops delete secret](kops_delete_secret.md)	 - Delete a secret
+* [kops delete sshpublickey](kops_delete_sshpublickey.md)	 - Delete an SSH public key.
 

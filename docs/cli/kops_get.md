@@ -67,4 +67,5 @@ kops get [flags]
 * [kops get instances](kops_get_instances.md)	 - Display cluster instances.
 * [kops get keypairs](kops_get_keypairs.md)	 - Get one or many keypairs.
 * [kops get secrets](kops_get_secrets.md)	 - Get one or many secrets.
+* [kops get sshpublickeys](kops_get_sshpublickeys.md)	 - Get one or many secrets.
 
