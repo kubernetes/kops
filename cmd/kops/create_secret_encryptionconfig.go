@@ -21,35 +21,36 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
 
 var (
-	createSecretEncryptionconfigLong = templates.LongDesc(i18n.T(`
-	Create a new encryption config, and store it in the state store.
-	Used to configure encryption-at-rest by the kube-apiserver process
-	on each of the master nodes. The config is not updated by this command.`))
+	createSecretEncryptionConfigLong = templates.LongDesc(i18n.T(`
+	Create a new encryption config and store it in the state store.
+	Used to configure encryption-at-rest by the kube-apiserver process.`))
 
-	createSecretEncryptionconfigExample = templates.Examples(i18n.T(`
+	createSecretEncryptionConfigExample = templates.Examples(i18n.T(`
 	# Create a new encryption config.
 	kops create secret encryptionconfig -f config.yaml \
 		--name k8s-cluster.example.com --state s3://my-state-store
+
 	# Create a new encryption config via stdin.
 	generate-encryption-config.sh | kops create secret encryptionconfig -f - \
 		--name k8s-cluster.example.com --state s3://my-state-store
+
 	# Replace an existing encryption config secret.
 	kops create secret encryptionconfig -f config.yaml --force \
 		--name k8s-cluster.example.com --state s3://my-state-store
 	`))
 
-	createSecretEncryptionconfigShort = i18n.T(`Create an encryption config.`)
+	createSecretEncryptionConfigShort = i18n.T(`Create an encryption config.`)
 )
 
 type CreateSecretEncryptionConfigOptions struct {
@@ -62,47 +63,28 @@ func NewCmdCreateSecretEncryptionConfig(f *util.Factory, out io.Writer) *cobra.C
 	options := &CreateSecretEncryptionConfigOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "encryptionconfig",
-		Short:   createSecretEncryptionconfigShort,
-		Long:    createSecretEncryptionconfigLong,
-		Example: createSecretEncryptionconfigExample,
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.TODO()
-
-			if len(args) != 0 {
-				exitWithError(fmt.Errorf("syntax: -f <EncryptionConfigPath>"))
-			}
-
-			err := rootCommand.ProcessArgs(args[0:])
-			if err != nil {
-				exitWithError(err)
-			}
-
-			options.ClusterName = rootCommand.ClusterName(true)
-
-			err = RunCreateSecretEncryptionConfig(ctx, f, os.Stdout, options)
-			if err != nil {
-				exitWithError(err)
-			}
+		Use:               "encryptionconfig [CLUSTER] -f FILENAME",
+		Short:             createSecretEncryptionConfigShort,
+		Long:              createSecretEncryptionConfigLong,
+		Example:           createSecretEncryptionConfigExample,
+		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
+		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true, false),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunCreateSecretEncryptionConfig(context.TODO(), f, out, options)
 		},
 	}
 
-	cmd.Flags().StringVarP(&options.EncryptionConfigPath, "", "f", "", "Path to encryption config yaml file")
-	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force replace the kOps secret if it already exists")
+	cmd.Flags().StringVarP(&options.EncryptionConfigPath, "filename", "f", "", "Path to encryption config YAML file")
+	cmd.MarkFlagRequired("filename")
+	cmd.RegisterFlagCompletionFunc("filename", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"yaml", "json"}, cobra.ShellCompDirectiveFilterFileExt
+	})
+	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force replace the secret if it already exists")
 
 	return cmd
 }
 
 func RunCreateSecretEncryptionConfig(ctx context.Context, f *util.Factory, out io.Writer, options *CreateSecretEncryptionConfigOptions) error {
-	if options.EncryptionConfigPath == "" {
-		return fmt.Errorf("encryption config path is required (use -f)")
-	}
-
-	secret, err := fi.CreateSecret()
-	if err != nil {
-		return fmt.Errorf("error creating encryption config secret: %v", err)
-	}
-
 	cluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
 		return err
@@ -121,35 +103,37 @@ func RunCreateSecretEncryptionConfig(ctx context.Context, f *util.Factory, out i
 	if options.EncryptionConfigPath == "-" {
 		data, err = ConsumeStdin()
 		if err != nil {
-			return fmt.Errorf("error reading encryption config from stdin: %v", err)
+			return fmt.Errorf("reading encryption config from stdin: %v", err)
 		}
 	} else {
 		data, err = ioutil.ReadFile(options.EncryptionConfigPath)
 		if err != nil {
-			return fmt.Errorf("error reading encryption config %v: %v", options.EncryptionConfigPath, err)
+			return fmt.Errorf("reading encryption config %v: %v", options.EncryptionConfigPath, err)
 		}
 	}
 
 	var parsedData map[string]interface{}
 	err = kops.ParseRawYaml(data, &parsedData)
 	if err != nil {
-		return fmt.Errorf("Unable to parse yaml %v: %v", options.EncryptionConfigPath, err)
+		return fmt.Errorf("unable to parse YAML %v: %v", options.EncryptionConfigPath, err)
 	}
 
-	secret.Data = data
+	secret := &fi.Secret{
+		Data: data,
+	}
 
 	if !options.Force {
 		_, created, err := secretStore.GetOrCreateSecret("encryptionconfig", secret)
 		if err != nil {
-			return fmt.Errorf("error adding encryptionconfig secret: %v", err)
+			return fmt.Errorf("adding encryptionconfig secret: %v", err)
 		}
 		if !created {
-			return fmt.Errorf("failed to create the encryptionconfig secret as it already exists. The `--force` flag can be passed to replace an existing secret.")
+			return fmt.Errorf("failed to create the encryptionconfig secret as it already exists. Pass the `--force` flag to replace an existing secret")
 		}
 	} else {
 		_, err := secretStore.ReplaceSecret("encryptionconfig", secret)
 		if err != nil {
-			return fmt.Errorf("error updating encryptionconfig secret: %v", err)
+			return fmt.Errorf("updating encryptionconfig secret: %v", err)
 		}
 	}
 
