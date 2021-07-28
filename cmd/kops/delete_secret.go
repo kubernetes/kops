@@ -134,13 +134,13 @@ func completeSecretNames(cmd *cobra.Command, args []string, complete string) ([]
 
 	alreadySelected := sets.NewString(args...)
 	var secrets []string
-	items, err := listSecrets(secretStore, "secret", nil)
+	items, err := listSecrets(secretStore, nil)
 	if err != nil {
 		return commandutils.CompletionError("listing secrets", err)
 	}
 	for _, secret := range items {
-		if !alreadySelected.Has(secret.Name) {
-			secrets = append(secrets, secret.Name)
+		if !alreadySelected.Has(secret) {
+			secrets = append(secrets, secret)
 		}
 	}
 
