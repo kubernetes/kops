@@ -3,22 +3,17 @@
 
 ## kops delete secret
 
-Delete a secret
-
-### Synopsis
-
-Delete a secret.
+Delete one or more secrets.
 
 ```
-kops delete secret [flags]
+kops delete secret SECRET_NAME... [flags]
 ```
 
 ### Examples
 
 ```
-  # Syntax: kops delete secret <type> <name>
-  # or kops delete secret <type> <name> <id>
-  kops delete secret sshpublickey admin
+  # Delete the encryptionconfig secret
+  kops delete secret encryptionconfig
 ```
 
 ### Options
