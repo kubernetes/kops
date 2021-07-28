@@ -83,7 +83,7 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:              validateClusterLong,
 		Example:           validateClusterExample,
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
-		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true, false),
+		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			result, err := RunValidateCluster(context.TODO(), f, out, options)
 			if err != nil {

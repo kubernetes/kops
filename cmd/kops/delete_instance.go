@@ -131,7 +131,7 @@ func NewCmdDeleteInstance(f *util.Factory, out io.Writer) *cobra.Command {
 
 			return nil
 		},
-		ValidArgsFunction: completeInstanceOrNode(&options),
+		ValidArgsFunction: completeInstanceOrNode(f, &options),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return RunDeleteInstance(context.TODO(), f, out, &options)
 		},
@@ -304,7 +304,7 @@ func findDeletionNode(groups map[string]*cloudinstances.CloudInstanceGroup, opti
 	return nil
 }
 
-func completeInstanceOrNode(options *DeleteInstanceOptions) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func completeInstanceOrNode(f commandutils.Factory, options *DeleteInstanceOptions) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		if len(args) > 0 {
 			return nil, cobra.ShellCompDirectiveNoFileComp
@@ -313,7 +313,7 @@ func completeInstanceOrNode(options *DeleteInstanceOptions) func(cmd *cobra.Comm
 		commandutils.ConfigureKlogForCompletion()
 		ctx := context.TODO()
 
-		cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand, nil)
+		cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, f, nil)
 		if cluster == nil {
 			return completions, directive
 		}

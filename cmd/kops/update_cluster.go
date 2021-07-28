@@ -106,7 +106,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:              updateClusterLong,
 		Example:           updateClusterExample,
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
-		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true, false),
+		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			_, err := RunUpdateCluster(context.TODO(), f, out, options)
 			return err
@@ -115,7 +115,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Create cloud resources, without --yes update is in dry run mode")
 	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform, cloudformation")
-	cmd.RegisterFlagCompletionFunc("target", completeUpdateClusterTarget(options))
+	cmd.RegisterFlagCompletionFunc("target", completeUpdateClusterTarget(f, options))
 	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.MarkFlagDirname("out")
@@ -468,13 +468,13 @@ func hasKubecfg(contextName string) (bool, error) {
 	return false, nil
 }
 
-func completeUpdateClusterTarget(options *UpdateClusterOptions) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func completeUpdateClusterTarget(f commandutils.Factory, options *UpdateClusterOptions) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 
 		commandutils.ConfigureKlogForCompletion()
 		ctx := context.TODO()
 
-		cluster, _, _, directive := GetClusterForCompletion(ctx, &rootCommand, nil)
+		cluster, _, _, directive := GetClusterForCompletion(ctx, f, nil)
 		if cluster == nil {
 			return []string{
 				cloudup.TargetDirect,

@@ -86,7 +86,7 @@ func NewCmdToolboxTemplate(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:              toolboxTemplatingLong,
 		Example:           toolboxTemplatingExample,
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
-		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true, false),
+		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return RunToolBoxTemplate(f, out, options)
 		},

@@ -213,7 +213,7 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 	commandline.BoolFlag(enaSupport, nil, nil, "Instance types where ENA is supported or required")
 	commandline.BoolFlag(burstSupport, nil, nil, "Burstable instance types")
 	commandline.StringSliceFlag(subnets, nil, nil, "Subnet(s) in which to create the instance group. One of Availability Zone like eu-west-1a or utility-eu-west-1a,")
-	commandline.Command.RegisterFlagCompletionFunc(subnets, completeClusterSubnet(commandline.Flags[subnets].(*[]string)))
+	commandline.Command.RegisterFlagCompletionFunc(subnets, completeClusterSubnet(f, commandline.Flags[subnets].(*[]string)))
 	commandline.IntMinMaxRangeFlags(networkInterfaces, nil, nil, "Number of network interfaces (ENIs) that can be attached to the instance")
 	commandline.RegexFlag(allowList, nil, nil, "List of allowed instance types to select from w/ regex syntax (Example: m[3-5]\\.*)")
 	commandline.Command.RegisterFlagCompletionFunc(allowList, cobra.NoFileCompletions)
