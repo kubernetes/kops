@@ -268,44 +268,6 @@ func (c *VFSCAStore) ListKeysets() (map[string]*Keyset, error) {
 	return keysets, nil
 }
 
-// ListSSHCredentials implements SSHCredentialStore::ListSSHCredentials
-func (c *VFSCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
-	var items []*kops.SSHCredential
-
-	{
-		baseDir := c.basedir.Join("ssh", "public")
-		files, err := baseDir.ReadTree()
-		if err != nil {
-			return nil, fmt.Errorf("error reading directory %q: %v", baseDir, err)
-		}
-
-		for _, f := range files {
-			relativePath, err := vfs.RelativePath(baseDir, f)
-			if err != nil {
-				return nil, err
-			}
-
-			tokens := strings.Split(relativePath, "/")
-			if len(tokens) != 2 {
-				klog.V(2).Infof("ignoring unexpected file in keystore: %q", f)
-				continue
-			}
-
-			pubkey, err := f.ReadFile()
-			if err != nil {
-				return nil, fmt.Errorf("error reading SSH credential %q: %v", f, err)
-			}
-
-			item := &kops.SSHCredential{}
-			item.Name = tokens[0]
-			item.Spec.PublicKey = string(pubkey)
-			items = append(items, item)
-		}
-	}
-
-	return items, nil
-}
-
 // MirrorTo will copy keys to a vfs.Path, which is often easier for a machine to read
 func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
 	if basedir.Path() == c.basedir.Path() {
@@ -325,7 +287,7 @@ func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
 		}
 	}
 
-	sshCredentials, err := c.ListSSHCredentials()
+	sshCredentials, err := c.FindSSHPublicKeys()
 	if err != nil {
 		return fmt.Errorf("error listing SSHCredentials: %v", err)
 	}
@@ -429,13 +391,13 @@ func (c *VFSCAStore) findPrivateKeyset(id string) (*Keyset, error) {
 }
 
 // AddSSHPublicKey stores an SSH public key
-func (c *VFSCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
+func (c *VFSCAStore) AddSSHPublicKey(pubkey []byte) error {
 	id, err := sshcredentials.Fingerprint(string(pubkey))
 	if err != nil {
-		return fmt.Errorf("error fingerprinting SSH public key %q: %v", name, err)
+		return fmt.Errorf("error fingerprinting SSH public key: %v", err)
 	}
 
-	p := c.buildSSHPublicKeyPath(name, id)
+	p := c.buildSSHPublicKeyPath(id)
 
 	acl, err := acls.GetACL(p, c.cluster)
 	if err != nil {
@@ -445,14 +407,14 @@ func (c *VFSCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 	return p.WriteFile(bytes.NewReader(pubkey), acl)
 }
 
-func (c *VFSCAStore) buildSSHPublicKeyPath(name string, id string) vfs.Path {
+func (c *VFSCAStore) buildSSHPublicKeyPath(id string) vfs.Path {
 	// id is fingerprint with colons, but we store without colons
 	id = strings.Replace(id, ":", "", -1)
-	return c.basedir.Join("ssh", "public", name, id)
+	return c.basedir.Join("ssh", "public", "admin", id)
 }
 
-func (c *VFSCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential, error) {
-	p := c.basedir.Join("ssh", "public", name)
+func (c *VFSCAStore) FindSSHPublicKeys() ([]*kops.SSHCredential, error) {
+	p := c.basedir.Join("ssh", "public", "admin")
 
 	files, err := p.ReadDir()
 	if err != nil {
@@ -475,7 +437,7 @@ func (c *VFSCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential, erro
 		}
 
 		item := &kops.SSHCredential{}
-		item.Name = name
+		item.Name = "admin"
 		item.Spec.PublicKey = string(data)
 		items = append(items, item)
 	}
@@ -483,14 +445,20 @@ func (c *VFSCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential, erro
 	return items, nil
 }
 
-func (c *VFSCAStore) DeleteSSHCredential(item *kops.SSHCredential) error {
-	if item.Spec.PublicKey == "" {
-		return fmt.Errorf("must specific public key to delete SSHCredential")
-	}
-	id, err := sshcredentials.Fingerprint(item.Spec.PublicKey)
+func (c *VFSCAStore) DeleteSSHCredential() error {
+	p := c.basedir.Join("ssh", "public", "admin")
+
+	files, err := p.ReadDir()
 	if err != nil {
-		return fmt.Errorf("invalid PublicKey when deleting SSHCredential: %v", err)
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
 	}
-	p := c.buildSSHPublicKeyPath(item.Name, id)
-	return p.Remove()
+	for _, f := range files {
+		if err := f.Remove(); err != nil {
+			return err
+		}
+	}
+	return nil
 }

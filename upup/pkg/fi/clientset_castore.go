@@ -196,26 +196,6 @@ func (c *ClientsetCAStore) ListKeysets() (map[string]*Keyset, error) {
 	return items, nil
 }
 
-// ListSSHCredentials implements SSHCredentialStore::ListSSHCredentials
-func (c *ClientsetCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
-	ctx := context.TODO()
-
-	var items []*kops.SSHCredential
-
-	{
-		list, err := c.clientset.SSHCredentials(c.namespace).List(ctx, metav1.ListOptions{})
-		if err != nil {
-			return nil, fmt.Errorf("error listing SSHCredentials: %v", err)
-		}
-
-		for i := range list.Items {
-			items = append(items, &list.Items[i])
-		}
-	}
-
-	return items, nil
-}
-
 // StoreKeyset implements CAStore::StoreKeyset
 func (c *ClientsetCAStore) StoreKeyset(name string, keyset *Keyset) error {
 	ctx := context.TODO()
@@ -260,47 +240,47 @@ func (c *ClientsetCAStore) storeKeyset(ctx context.Context, name string, keyset 
 }
 
 // addSSHCredential saves the specified SSH Credential to the registry, doing an update or insert
-func (c *ClientsetCAStore) addSSHCredential(ctx context.Context, name string, publicKey string) error {
+func (c *ClientsetCAStore) addSSHCredential(ctx context.Context, publicKey string) error {
 	create := false
 	client := c.clientset.SSHCredentials(c.namespace)
-	sshCredential, err := client.Get(ctx, name, metav1.GetOptions{})
+	sshCredential, err := client.Get(ctx, "admin", metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			sshCredential = nil
 		} else {
-			return fmt.Errorf("error reading SSHCredential %q: %v", name, err)
+			return fmt.Errorf("error reading SSHCredential: %v", err)
 		}
 	}
 	if sshCredential == nil {
 		sshCredential = &kops.SSHCredential{}
-		sshCredential.Name = name
+		sshCredential.Name = "admin"
 		create = true
 	}
 	sshCredential.Spec.PublicKey = publicKey
 	if create {
 		if _, err := client.Create(ctx, sshCredential, metav1.CreateOptions{}); err != nil {
-			return fmt.Errorf("error creating SSHCredential %q: %v", name, err)
+			return fmt.Errorf("error creating SSHCredential: %v", err)
 		}
 	} else {
 		if _, err := client.Update(ctx, sshCredential, metav1.UpdateOptions{}); err != nil {
-			return fmt.Errorf("error updating SSHCredential %q: %v", name, err)
+			return fmt.Errorf("error updating SSHCredential: %v", err)
 		}
 	}
 	return nil
 }
 
-// deleteSSHCredential deletes the specified SSHCredential from the registry
-func (c *ClientsetCAStore) deleteSSHCredential(ctx context.Context, name string) error {
+// deleteSSHCredential deletes the SSHCredential from the registry.
+func (c *ClientsetCAStore) deleteSSHCredential(ctx context.Context) error {
 	client := c.clientset.SSHCredentials(c.namespace)
-	err := client.Delete(ctx, name, metav1.DeleteOptions{})
+	err := client.Delete(ctx, "admin", metav1.DeleteOptions{})
 	if err != nil {
-		return fmt.Errorf("error deleting SSHCredential %q: %v", name, err)
+		return fmt.Errorf("error deleting SSHCredential: %v", err)
 	}
 	return nil
 }
 
 // AddSSHPublicKey implements CAStore::AddSSHPublicKey
-func (c *ClientsetCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
+func (c *ClientsetCAStore) AddSSHPublicKey(pubkey []byte) error {
 	ctx := context.TODO()
 
 	_, _, _, _, err := ssh.ParseAuthorizedKey(pubkey)
@@ -308,28 +288,19 @@ func (c *ClientsetCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 		return fmt.Errorf("error parsing SSH public key: %v", err)
 	}
 
-	// TODO: Reintroduce or remove
-	//// compute fingerprint to serve as id
-	//h := md5.New()
-	//_, err = h.Write(sshPublicKey.Marshal())
-	//if err != nil {
-	//	return err
-	//}
-	//id = formatFingerprint(h.Sum(nil))
-
-	return c.addSSHCredential(ctx, name, string(pubkey))
+	return c.addSSHCredential(ctx, string(pubkey))
 }
 
 // FindSSHPublicKeys implements CAStore::FindSSHPublicKeys
-func (c *ClientsetCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential, error) {
+func (c *ClientsetCAStore) FindSSHPublicKeys() ([]*kops.SSHCredential, error) {
 	ctx := context.TODO()
 
-	o, err := c.clientset.SSHCredentials(c.namespace).Get(ctx, name, metav1.GetOptions{})
+	o, err := c.clientset.SSHCredentials(c.namespace).Get(ctx, "admin", metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("error reading SSHCredential %q: %v", name, err)
+		return nil, fmt.Errorf("error reading SSHCredential: %v", err)
 	}
 
 	items := []*kops.SSHCredential{o}
@@ -337,10 +308,10 @@ func (c *ClientsetCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential
 }
 
 // DeleteSSHCredential implements SSHCredentialStore::DeleteSSHCredential
-func (c *ClientsetCAStore) DeleteSSHCredential(item *kops.SSHCredential) error {
+func (c *ClientsetCAStore) DeleteSSHCredential() error {
 	ctx := context.TODO()
 
-	return c.deleteSSHCredential(ctx, item.Name)
+	return c.deleteSSHCredential(ctx)
 }
 
 func (c *ClientsetCAStore) MirrorTo(basedir vfs.Path) error {
@@ -355,7 +326,7 @@ func (c *ClientsetCAStore) MirrorTo(basedir vfs.Path) error {
 		}
 	}
 
-	sshCredentials, err := c.ListSSHCredentials()
+	sshCredentials, err := c.FindSSHPublicKeys()
 	if err != nil {
 		return fmt.Errorf("error listing SSHCredentials: %v", err)
 	}

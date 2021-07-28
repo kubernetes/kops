@@ -383,7 +383,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	var sshPublicKeys [][]byte
 	{
-		keys, err := sshCredentialStore.FindSSHPublicKeys(fi.SecretNameSSHPrimary)
+		keys, err := sshCredentialStore.FindSSHPublicKeys()
 		if err != nil {
 			return fmt.Errorf("error retrieving SSH public key %q: %v", fi.SecretNameSSHPrimary, err)
 		}
