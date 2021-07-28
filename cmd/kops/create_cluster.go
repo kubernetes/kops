@@ -1057,8 +1057,17 @@ func completeOpenstackLBSubnet(cmd *cobra.Command, args []string, toComplete str
 }
 
 func completeOpenstackOctaviaProvider(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	// TODO call into cloud provider to get list of Octavia providers
-	return nil, cobra.ShellCompDirectiveNoFileComp
+	providers := []string{
+		"a10",
+		"amphora",
+		"amphorav2",
+		"f5",
+		"octavia",
+		"ovn",
+		"radware",
+		"vmwareedge",
+	}
+	return providers, cobra.ShellCompDirectiveNoFileComp
 }
 
 func completeOpenstackDNSServers(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
