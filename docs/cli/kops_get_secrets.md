@@ -5,29 +5,24 @@
 
 Get one or many secrets.
 
-### Synopsis
-
-Display one or many secrets.
-
 ```
-kops get secrets [flags]
+kops get secrets [SECRET_NAME]... [flags]
 ```
 
 ### Examples
 
 ```
-  # Get a secret
-  kops get secrets kube -oplaintext
+  # List the secrets
+  kops get secrets
   
-  # Get the admin password for a cluster
+  # Get the admin static token for a cluster
   kops get secrets admin -oplaintext
 ```
 
 ### Options
 
 ```
-  -h, --help          help for secrets
-      --type string   Filter by secret type
+  -h, --help   help for secrets
 ```
 
 ### Options inherited from parent commands
