@@ -16,16 +16,6 @@ limitations under the License.
 
 package main // import "k8s.io/kops/cmd/kops"
 
-import (
-	"k8s.io/kops/pkg/commands/commandutils"
-)
-
 func main() {
 	Execute()
-}
-
-// exitWithError will terminate execution with an error result
-// It prints the error to stderr and exits with a non-zero exit code
-func exitWithError(err error) {
-	commandutils.ExitWithError(err)
 }
