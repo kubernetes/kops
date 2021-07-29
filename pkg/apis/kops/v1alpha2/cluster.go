@@ -413,7 +413,7 @@ const (
 )
 
 type AccessLogSpec struct {
-	// Interval is publishing interval in minutes
+	// Interval is publishing interval in minutes. This parameter is only used with classic load balancer.
 	Interval int `json:"interval,omitempty"`
 	// Bucket is S3 bucket name to store the logs in
 	Bucket string `json:"bucket,omitempty"`

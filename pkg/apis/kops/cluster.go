@@ -412,11 +412,11 @@ const (
 )
 
 type AccessLogSpec struct {
-	// Interval is publishing interval in minutes
+	// Interval is the publishing interval in minutes. This parameter is only used with classic load balancer.
 	Interval int `json:"interval,omitempty"`
-	// Bucket is S3 bucket name to store the logs in
+	// Bucket is the S3 bucket name to store the logs in.
 	Bucket string `json:"bucket,omitempty"`
-	// BucketPrefix is S3 bucket prefix. Logs are stored in the root if not configured.
+	// BucketPrefix is the S3 bucket prefix. Logs are stored in the root if not configured.
 	BucketPrefix string `json:"bucketPrefix,omitempty"`
 }
 
@@ -457,7 +457,7 @@ type LoadBalancerAccessSpec struct {
 	CrossZoneLoadBalancing *bool `json:"crossZoneLoadBalancing,omitempty"`
 	// Subnets allows you to specify the subnets that must be used for the load balancer
 	Subnets []LoadBalancerSubnetSpec `json:"subnets,omitempty"`
-	// AccessLog is the configuration of access logs
+	// AccessLog is the configuration of access logs.
 	AccessLog *AccessLogSpec `json:"accessLog,omitempty"`
 }
 
