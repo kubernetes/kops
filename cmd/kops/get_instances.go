@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
 	"k8s.io/kops/pkg/cloudinstances"
@@ -59,7 +58,7 @@ func NewCmdGetInstances(f *util.Factory, out io.Writer, options *GetOptions) *co
 		Short:             getInstancesShort,
 		Example:           getInstancesExample,
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
-		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true, false),
+		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return RunGetInstances(context.TODO(), f, out, options)
 		},
@@ -164,7 +163,7 @@ func instanceOutputTable(instances []*cloudinstances.CloudInstance, out io.Write
 	})
 
 	columns := []string{"ID", "NODE-NAME", "STATUS", "ROLES", "STATE", "INTERNAL-IP", "INSTANCE-GROUP", "MACHINE-TYPE"}
-	return t.Render(instances, os.Stdout, columns...)
+	return t.Render(instances, out, columns...)
 }
 
 func createK8sClient(cluster *kops.Cluster) (*kubernetes.Clientset, error) {

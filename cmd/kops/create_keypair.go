@@ -129,7 +129,7 @@ func NewCmdCreateKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 			return nil
 		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return completeCreateKeypair(options, args, toComplete)
+			return completeCreateKeypair(f, options, args, toComplete)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return RunCreateKeypair(context.TODO(), f, out, options)
@@ -305,11 +305,11 @@ func completeKeyset(cluster *kopsapi.Cluster, clientSet simple.Clientset, args [
 	return keyset, keyStore, nil, cobra.ShellCompDirectiveNoFileComp
 }
 
-func completeCreateKeypair(options *CreateKeypairOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func completeCreateKeypair(f commandutils.Factory, options *CreateKeypairOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	commandutils.ConfigureKlogForCompletion()
 	ctx := context.TODO()
 
-	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand, nil)
+	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, f, nil)
 	if cluster == nil {
 		return completions, directive
 	}
