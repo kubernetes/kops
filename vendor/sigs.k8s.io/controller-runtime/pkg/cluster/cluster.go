@@ -139,10 +139,10 @@ type Options struct {
 	newRecorderProvider func(config *rest.Config, scheme *runtime.Scheme, logger logr.Logger, makeBroadcaster intrec.EventBroadcasterProducer) (*intrec.Provider, error)
 }
 
-// Option can be used to manipulate Options
+// Option can be used to manipulate Options.
 type Option func(*Options)
 
-// New constructs a brand new cluster
+// New constructs a brand new cluster.
 func New(config *rest.Config, opts ...Option) (Cluster, error) {
 	if config == nil {
 		return nil, errors.New("must specify Config")
@@ -204,7 +204,7 @@ func New(config *rest.Config, opts ...Option) (Cluster, error) {
 	}, nil
 }
 
-// setOptionsDefaults set default values for Options fields
+// setOptionsDefaults set default values for Options fields.
 func setOptionsDefaults(options Options) Options {
 	// Use the Kubernetes client-go scheme if none is specified
 	if options.Scheme == nil {
@@ -252,10 +252,10 @@ func setOptionsDefaults(options Options) Options {
 	return options
 }
 
-// NewClientFunc allows a user to define how to create a client
+// NewClientFunc allows a user to define how to create a client.
 type NewClientFunc func(cache cache.Cache, config *rest.Config, options client.Options, uncachedObjects ...client.Object) (client.Client, error)
 
-// DefaultNewClient creates the default caching client
+// DefaultNewClient creates the default caching client.
 func DefaultNewClient(cache cache.Cache, config *rest.Config, options client.Options, uncachedObjects ...client.Object) (client.Client, error) {
 	c, err := client.New(config, options)
 	if err != nil {

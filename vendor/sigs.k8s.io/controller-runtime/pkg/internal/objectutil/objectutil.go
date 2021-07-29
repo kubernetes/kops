@@ -20,7 +20,6 @@ import (
 	"errors"
 	"fmt"
 
-	"k8s.io/apimachinery/pkg/api/meta"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,7 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
 
-// FilterWithLabels returns a copy of the items in objs matching labelSel
+// FilterWithLabels returns a copy of the items in objs matching labelSel.
 func FilterWithLabels(objs []runtime.Object, labelSel labels.Selector) ([]runtime.Object, error) {
 	outItems := make([]runtime.Object, 0, len(objs))
 	for _, obj := range objs {
@@ -69,10 +68,10 @@ func IsAPINamespacedWithGVK(gk schema.GroupVersionKind, scheme *runtime.Scheme, 
 	scope := restmapping.Scope.Name()
 
 	if scope == "" {
-		return false, errors.New("Scope cannot be identified. Empty scope returned")
+		return false, errors.New("scope cannot be identified, empty scope returned")
 	}
 
-	if scope != meta.RESTScopeNameRoot {
+	if scope != apimeta.RESTScopeNameRoot {
 		return true, nil
 	}
 	return false, nil
