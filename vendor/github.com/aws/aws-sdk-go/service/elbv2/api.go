@@ -6761,6 +6761,16 @@ type LoadBalancerAttribute struct {
 	//    HTTP headers with invalid header fields are removed by the load balancer
 	//    (true) or routed to targets (false). The default is false.
 	//
+	//    * routing.http.x_amzn_tls_version_and_cipher_suite.enabled - Indicates
+	//    whether the two headers (x-amzn-tls-version and x-amzn-tls-cipher-suite),
+	//    which contain information about the negotiated TLS version and cipher
+	//    suite, are added to the client request before sending it to the target.
+	//    The x-amzn-tls-version header has information about the TLS protocol version
+	//    negotiated with the client, and the x-amzn-tls-cipher-suite header has
+	//    information about the cipher suite negotiated with the client. Both headers
+	//    are in OpenSSL format. The possible values for the attribute are true
+	//    and false. The default is false.
+	//
 	//    * routing.http2.enabled - Indicates whether HTTP/2 is enabled. The value
 	//    is true or false. The default is true. Elastic Load Balancing requires
 	//    that message header names contain only alphanumeric characters and hyphens.

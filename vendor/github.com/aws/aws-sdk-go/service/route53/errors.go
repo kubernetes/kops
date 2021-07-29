@@ -162,6 +162,10 @@ const (
 	//    Resource doesn't have the necessary permissions.
 	//
 	//    * The resource policy hasn't finished propagating yet.
+	//
+	//    * The Key management service (KMS) key you specified doesn’t exist or
+	//    it can’t be used with the log group associated with query log. Update
+	//    or provide a resource policy to grant permissions for the KMS key.
 	ErrCodeInsufficientCloudWatchLogsResourcePolicy = "InsufficientCloudWatchLogsResourcePolicy"
 
 	// ErrCodeInvalidArgument for service response error code
@@ -283,7 +287,7 @@ const (
 	// To get the current limit on the number of Amazon VPCs that you can associate
 	// with a private hosted zone, see GetHostedZoneLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetHostedZoneLimit.html).
 	// To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-	// with the AWS Support Center.
+	// with the Amazon Web Services Support Center.
 	ErrCodeLimitsExceeded = "LimitsExceeded"
 
 	// ErrCodeNoSuchChange for service response error code
@@ -397,11 +401,11 @@ const (
 	// For information about how to get the current limit for an account, see GetAccountLimit
 	// (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html).
 	// To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-	// with the AWS Support Center.
+	// with the Amazon Web Services Support Center.
 	//
-	// You have reached the maximum number of active health checks for an AWS account.
+	// You have reached the maximum number of active health checks for an account.
 	// To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-	// with the AWS Support Center.
+	// with the Amazon Web Services Support Center.
 	ErrCodeTooManyHealthChecks = "TooManyHealthChecks"
 
 	// ErrCodeTooManyHostedZones for service response error code
@@ -422,7 +426,7 @@ const (
 	// delegation set, see GetReusableDelegationSetLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetReusableDelegationSetLimit.html).
 	//
 	// To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-	// with the AWS Support Center.
+	// with the Amazon Web Services Support Center.
 	ErrCodeTooManyHostedZones = "TooManyHostedZones"
 
 	// ErrCodeTooManyKeySigningKeys for service response error code
@@ -444,7 +448,7 @@ const (
 	// To get the current limit for an account, see GetAccountLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html).
 	//
 	// To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-	// with the AWS Support Center.
+	// with the Amazon Web Services Support Center.
 	ErrCodeTooManyTrafficPolicies = "TooManyTrafficPolicies"
 
 	// ErrCodeTooManyTrafficPolicyInstances for service response error code
@@ -460,7 +464,7 @@ const (
 	// (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html).
 	//
 	// To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-	// with the AWS Support Center.
+	// with the Amazon Web Services Support Center.
 	ErrCodeTooManyTrafficPolicyInstances = "TooManyTrafficPolicyInstances"
 
 	// ErrCodeTooManyTrafficPolicyVersionsForCurrentPolicy for service response error code
