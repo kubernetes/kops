@@ -1,3 +1,5 @@
 ## Addons
 
-Read on [addons](../docs/addons.md)
+**Legacy addons are deprecated and unmaintained!!!**
+
+Use [managed addons](../docs/addons.md) instead.
