@@ -65,29 +65,29 @@ test-tools: ## tests the tools codebase (setup-envtest)
 ## Binaries
 ## --------------------------------------
 
-$(GOLANGCI_LINT): $(TOOLS_DIR)/go.mod # Build golangci-lint from tools folder.
-	cd $(TOOLS_DIR) && go build -tags=tools -o bin/golangci-lint github.com/golangci/golangci-lint/cmd/golangci-lint
-
 $(GO_APIDIFF): $(TOOLS_DIR)/go.mod # Build go-apidiff from tools folder.
 	cd $(TOOLS_DIR) && go build -tags=tools -o bin/go-apidiff github.com/joelanford/go-apidiff
 
 $(CONTROLLER_GEN): $(TOOLS_DIR)/go.mod # Build controller-gen from tools folder.
 	cd $(TOOLS_DIR) && go build -tags=tools -o bin/controller-gen sigs.k8s.io/controller-tools/cmd/controller-gen
 
+$(GOLANGCI_LINT): .github/workflows/golangci-lint.yml # Download golanci-lint using hack script into tools folder.
+	hack/ensure-golangci-lint.sh \
+		-b $(TOOLS_BIN_DIR) \
+		$(shell cat .github/workflows/golangci-lint.yml | grep version | sed 's/.*version: //')
+
 ## --------------------------------------
 ## Linting
 ## --------------------------------------
 
-.PHONY: lint-libs
-lint-libs: $(GOLANGCI_LINT) ## Lint library codebase.
-	$(GOLANGCI_LINT) run -v
-
-.PHONY: lint-tools
-lint-tools: $(GOLANGCI_LINT) ## Lint tools codebase.
-	cd tools/setup-envtest && $(GOLANGCI_LINT) run -v
-
 .PHONY: lint
-lint: lint-libs lint-tools
+lint: $(GOLANGCI_LINT) ## Lint codebase
+	$(GOLANGCI_LINT) run -v $(GOLANGCI_LINT_EXTRA_ARGS)
+	cd tools/setup-envtest; $(GOLANGCI_LINT) run -v $(GOLANGCI_LINT_EXTRA_ARGS)
+
+.PHONY: lint-fix
+lint-fix: $(GOLANGCI_LINT) ## Lint the codebase and run auto-fixers if supported by the linter.
+	GOLANGCI_LINT_EXTRA_ARGS=--fix $(MAKE) lint
 
 ## --------------------------------------
 ## Generate

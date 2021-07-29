@@ -57,7 +57,7 @@ type EnqueueRequestForOwner struct {
 	mapper meta.RESTMapper
 }
 
-// Create implements EventHandler
+// Create implements EventHandler.
 func (e *EnqueueRequestForOwner) Create(evt event.CreateEvent, q workqueue.RateLimitingInterface) {
 	reqs := map[reconcile.Request]empty{}
 	e.getOwnerReconcileRequest(evt.Object, reqs)
@@ -66,7 +66,7 @@ func (e *EnqueueRequestForOwner) Create(evt event.CreateEvent, q workqueue.RateL
 	}
 }
 
-// Update implements EventHandler
+// Update implements EventHandler.
 func (e *EnqueueRequestForOwner) Update(evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
 	reqs := map[reconcile.Request]empty{}
 	e.getOwnerReconcileRequest(evt.ObjectOld, reqs)
@@ -76,7 +76,7 @@ func (e *EnqueueRequestForOwner) Update(evt event.UpdateEvent, q workqueue.RateL
 	}
 }
 
-// Delete implements EventHandler
+// Delete implements EventHandler.
 func (e *EnqueueRequestForOwner) Delete(evt event.DeleteEvent, q workqueue.RateLimitingInterface) {
 	reqs := map[reconcile.Request]empty{}
 	e.getOwnerReconcileRequest(evt.Object, reqs)
@@ -85,7 +85,7 @@ func (e *EnqueueRequestForOwner) Delete(evt event.DeleteEvent, q workqueue.RateL
 	}
 }
 
-// Generic implements EventHandler
+// Generic implements EventHandler.
 func (e *EnqueueRequestForOwner) Generic(evt event.GenericEvent, q workqueue.RateLimitingInterface) {
 	reqs := map[reconcile.Request]empty{}
 	e.getOwnerReconcileRequest(evt.Object, reqs)
@@ -105,10 +105,9 @@ func (e *EnqueueRequestForOwner) parseOwnerTypeGroupKind(scheme *runtime.Scheme)
 	}
 	// Expect only 1 kind.  If there is more than one kind this is probably an edge case such as ListOptions.
 	if len(kinds) != 1 {
-		err := fmt.Errorf("Expected exactly 1 kind for OwnerType %T, but found %s kinds", e.OwnerType, kinds)
-		log.Error(nil, "Expected exactly 1 kind for OwnerType", "owner type", fmt.Sprintf("%T", e.OwnerType), "kinds", kinds)
+		err := fmt.Errorf("expected exactly 1 kind for OwnerType %T, but found %s kinds", e.OwnerType, kinds)
+		log.Error(nil, "expected exactly 1 kind for OwnerType", "owner type", fmt.Sprintf("%T", e.OwnerType), "kinds", kinds)
 		return err
-
 	}
 	// Cache the Group and Kind for the OwnerType
 	e.groupKind = schema.GroupKind{Group: kinds[0].Group, Kind: kinds[0].Kind}
@@ -156,7 +155,7 @@ func (e *EnqueueRequestForOwner) getOwnerReconcileRequest(object metav1.Object, 
 
 // getOwnersReferences returns the OwnerReferences for an object as specified by the EnqueueRequestForOwner
 // - if IsController is true: only take the Controller OwnerReference (if found)
-// - if IsController is false: take all OwnerReferences
+// - if IsController is false: take all OwnerReferences.
 func (e *EnqueueRequestForOwner) getOwnersReferences(object metav1.Object) []metav1.OwnerReference {
 	if object == nil {
 		return nil

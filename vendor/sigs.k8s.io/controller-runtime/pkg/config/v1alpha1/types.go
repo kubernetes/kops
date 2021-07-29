@@ -24,7 +24,7 @@ import (
 	configv1alpha1 "k8s.io/component-base/config/v1alpha1"
 )
 
-// ControllerManagerConfigurationSpec defines the desired state of GenericControllerManagerConfiguration
+// ControllerManagerConfigurationSpec defines the desired state of GenericControllerManagerConfiguration.
 type ControllerManagerConfigurationSpec struct {
 	// SyncPeriod determines the minimum frequency at which watched resources are
 	// reconciled. A lower period will correct entropy more quickly, but reduce
@@ -96,7 +96,7 @@ type ControllerConfigurationSpec struct {
 	CacheSyncTimeout *time.Duration `json:"cacheSyncTimeout,omitempty"`
 }
 
-// ControllerMetrics defines the metrics configs
+// ControllerMetrics defines the metrics configs.
 type ControllerMetrics struct {
 	// BindAddress is the TCP address that the controller should bind to
 	// for serving prometheus metrics.
@@ -105,7 +105,7 @@ type ControllerMetrics struct {
 	BindAddress string `json:"bindAddress,omitempty"`
 }
 
-// ControllerHealth defines the health configs
+// ControllerHealth defines the health configs.
 type ControllerHealth struct {
 	// HealthProbeBindAddress is the TCP address that the controller should bind to
 	// for serving health probes
@@ -121,7 +121,7 @@ type ControllerHealth struct {
 	LivenessEndpointName string `json:"livenessEndpointName,omitempty"`
 }
 
-// ControllerWebhook defines the webhook server for the controller
+// ControllerWebhook defines the webhook server for the controller.
 type ControllerWebhook struct {
 	// Port is the port that the webhook server serves at.
 	// It is used to set webhook.Server.Port.
@@ -143,7 +143,7 @@ type ControllerWebhook struct {
 
 // +kubebuilder:object:root=true
 
-// ControllerManagerConfiguration is the Schema for the GenericControllerManagerConfigurations API
+// ControllerManagerConfiguration is the Schema for the GenericControllerManagerConfigurations API.
 type ControllerManagerConfiguration struct {
 	metav1.TypeMeta `json:",inline"`
 
@@ -151,7 +151,7 @@ type ControllerManagerConfiguration struct {
 	ControllerManagerConfigurationSpec `json:",inline"`
 }
 
-// Complete returns the configuration for controller-runtime
+// Complete returns the configuration for controller-runtime.
 func (c *ControllerManagerConfigurationSpec) Complete() (ControllerManagerConfigurationSpec, error) {
 	return *c, nil
 }
