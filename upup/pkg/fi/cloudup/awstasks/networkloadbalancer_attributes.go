@@ -27,6 +27,16 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
+type NetworkLoadBalancerAccessLog struct {
+	Enabled        *bool
+	S3BucketName   *string
+	S3BucketPrefix *string
+}
+
+func (_ *NetworkLoadBalancerAccessLog) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	return nil
+}
+
 func findNetworkLoadBalancerAttributes(cloud awsup.AWSCloud, LoadBalancerArn string) ([]*elbv2.LoadBalancerAttribute, error) {
 
 	request := &elbv2.DescribeLoadBalancerAttributesInput{
@@ -73,6 +83,28 @@ func (_ *NetworkLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget
 		attribute.Value = aws.String(strconv.FormatBool(aws.BoolValue(e.CrossZoneLoadBalancing)))
 	}
 	attributes = append(attributes, attribute)
+
+	if e.AccessLog != nil && e.AccessLog.Enabled != nil {
+		attr := &elbv2.LoadBalancerAttribute{
+			Key:   aws.String("access_logs.s3.enabled"),
+			Value: aws.String(strconv.FormatBool(aws.BoolValue(e.AccessLog.Enabled))),
+		}
+		attributes = append(attributes, attr)
+	}
+	if e.AccessLog != nil && e.AccessLog.S3BucketName != nil {
+		attr := &elbv2.LoadBalancerAttribute{
+			Key:   aws.String("access_logs.s3.bucket"),
+			Value: e.AccessLog.S3BucketName,
+		}
+		attributes = append(attributes, attr)
+	}
+	if e.AccessLog != nil && e.AccessLog.S3BucketPrefix != nil {
+		attr := &elbv2.LoadBalancerAttribute{
+			Key:   aws.String("access_logs.s3.prefix"),
+			Value: e.AccessLog.S3BucketPrefix,
+		}
+		attributes = append(attributes, attr)
+	}
 
 	request.Attributes = attributes
 
