@@ -78,8 +78,6 @@ type RootCmd struct {
 	cobraCommand *cobra.Command
 }
 
-var _ commandutils.Factory = &RootCmd{}
-
 var rootCommand = RootCmd{
 	cobraCommand: &cobra.Command{
 		Use:   "kops",
@@ -95,7 +93,7 @@ func Execute() {
 	goflag.Set("logtostderr", "true")
 	goflag.CommandLine.Parse([]string{})
 	if err := rootCommand.cobraCommand.Execute(); err != nil {
-		exitWithError(err)
+		os.Exit(1)
 	}
 }
 
@@ -140,7 +138,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 
 	defaultClusterName := os.Getenv("KOPS_CLUSTER_NAME")
 	cmd.PersistentFlags().StringVarP(&rootCommand.clusterName, "name", "", defaultClusterName, "Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable")
-	cmd.RegisterFlagCompletionFunc("name", commandutils.CompleteClusterName(&rootCommand, false, false))
+	cmd.RegisterFlagCompletionFunc("name", commandutils.CompleteClusterName(rootCommand.factory, false, false))
 
 	// create subcommands
 	cmd.AddCommand(NewCmdCreate(f, out))
@@ -298,19 +296,6 @@ func (c *RootCmd) ClusterName(verbose bool) string {
 	return c.clusterName
 }
 
-func (c *RootCmd) Clientset() (simple.Clientset, error) {
-	return c.factory.Clientset()
-}
-
-func (c *RootCmd) Cluster(ctx context.Context) (*kopsapi.Cluster, error) {
-	clusterName := c.ClusterName(true)
-	if clusterName == "" {
-		return nil, fmt.Errorf("--name is required")
-	}
-
-	return GetCluster(ctx, c.factory, clusterName)
-}
-
 func GetCluster(ctx context.Context, factory commandutils.Factory, clusterName string) (*kopsapi.Cluster, error) {
 	if clusterName == "" {
 		return nil, field.Required(field.NewPath("clusterName"), "Cluster name is required")
@@ -361,13 +346,13 @@ func GetClusterForCompletion(ctx context.Context, factory commandutils.Factory, 
 		return nil, nil, []string{"--name"}, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	cluster, err := GetCluster(ctx, &rootCommand, clusterName)
+	cluster, err := GetCluster(ctx, factory, clusterName)
 	if err != nil {
 		completions, directive := commandutils.CompletionError("getting cluster", err)
 		return nil, nil, completions, directive
 	}
 
-	clientSet, err = rootCommand.Clientset()
+	clientSet, err = factory.Clientset()
 	if err != nil {
 		completions, directive := commandutils.CompletionError("getting clientset", err)
 		return nil, nil, completions, directive

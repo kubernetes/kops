@@ -70,7 +70,7 @@ func NewCmdUpgradeCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:              upgradeClusterLong,
 		Example:           upgradeClusterExample,
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
-		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true, false),
+		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.TODO()
 
@@ -100,7 +100,7 @@ func RunUpgradeCluster(ctx context.Context, f *util.Factory, out io.Writer, opti
 		return err
 	}
 
-	clientset, err := rootCommand.Clientset()
+	clientset, err := f.Clientset()
 	if err != nil {
 		return err
 	}

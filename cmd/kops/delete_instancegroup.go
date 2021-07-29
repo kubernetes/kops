@@ -86,7 +86,7 @@ func NewCmdDeleteInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 
 			return nil
 		},
-		ValidArgsFunction: completeInstanceGroup(nil, &[]string{strings.ToLower(string(kops.InstanceGroupRoleMaster))}),
+		ValidArgsFunction: completeInstanceGroup(f, nil, &[]string{strings.ToLower(string(kops.InstanceGroupRoleMaster))}),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.TODO()
 

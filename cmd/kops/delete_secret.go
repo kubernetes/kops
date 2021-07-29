@@ -77,7 +77,7 @@ func NewCmdDeleteSecret(f *util.Factory, out io.Writer) *cobra.Command {
 
 			return nil
 		},
-		ValidArgsFunction: completeSecretNames,
+		ValidArgsFunction: completeSecretNames(f),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return RunDeleteSecret(context.TODO(), f, out, options)
 		},
@@ -118,31 +118,33 @@ func RunDeleteSecret(ctx context.Context, f *util.Factory, out io.Writer, option
 	return nil
 }
 
-func completeSecretNames(cmd *cobra.Command, args []string, complete string) ([]string, cobra.ShellCompDirective) {
-	commandutils.ConfigureKlogForCompletion()
-	ctx := context.TODO()
+func completeSecretNames(f commandutils.Factory) func(cmd *cobra.Command, args []string, complete string) ([]string, cobra.ShellCompDirective) {
+	return func(cmd *cobra.Command, args []string, complete string) ([]string, cobra.ShellCompDirective) {
+		commandutils.ConfigureKlogForCompletion()
+		ctx := context.TODO()
 
-	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand, nil)
-	if cluster == nil {
-		return completions, directive
-	}
-
-	secretStore, err := clientSet.SecretStore(cluster)
-	if err != nil {
-		return commandutils.CompletionError("constructing secret store", err)
-	}
-
-	alreadySelected := sets.NewString(args...)
-	var secrets []string
-	items, err := listSecrets(secretStore, nil)
-	if err != nil {
-		return commandutils.CompletionError("listing secrets", err)
-	}
-	for _, secret := range items {
-		if !alreadySelected.Has(secret) {
-			secrets = append(secrets, secret)
+		cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, f, nil)
+		if cluster == nil {
+			return completions, directive
 		}
-	}
 
-	return secrets, cobra.ShellCompDirectiveNoFileComp
+		secretStore, err := clientSet.SecretStore(cluster)
+		if err != nil {
+			return commandutils.CompletionError("constructing secret store", err)
+		}
+
+		alreadySelected := sets.NewString(args...)
+		var secrets []string
+		items, err := listSecrets(secretStore, nil)
+		if err != nil {
+			return commandutils.CompletionError("listing secrets", err)
+		}
+		for _, secret := range items {
+			if !alreadySelected.Has(secret) {
+				secrets = append(secrets, secret)
+			}
+		}
+
+		return secrets, cobra.ShellCompDirectiveNoFileComp
+	}
 }

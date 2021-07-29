@@ -213,7 +213,7 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 	commandline.BoolFlag(enaSupport, nil, nil, "Instance types where ENA is supported or required")
 	commandline.BoolFlag(burstSupport, nil, nil, "Burstable instance types")
 	commandline.StringSliceFlag(subnets, nil, nil, "Subnet(s) in which to create the instance group. One of Availability Zone like eu-west-1a or utility-eu-west-1a,")
-	commandline.Command.RegisterFlagCompletionFunc(subnets, completeClusterSubnet(commandline.Flags[subnets].(*[]string)))
+	commandline.Command.RegisterFlagCompletionFunc(subnets, completeClusterSubnet(f, commandline.Flags[subnets].(*[]string)))
 	commandline.IntMinMaxRangeFlags(networkInterfaces, nil, nil, "Number of network interfaces (ENIs) that can be attached to the instance")
 	commandline.RegexFlag(allowList, nil, nil, "List of allowed instance types to select from w/ regex syntax (Example: m[3-5]\\.*)")
 	commandline.Command.RegisterFlagCompletionFunc(allowList, cobra.NoFileCompletions)
@@ -235,7 +235,7 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 // RunToolboxInstanceSelector executes the instance-selector tool to create instance groups with declarative resource specifications
 func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, out io.Writer, commandline *cli.CommandLineInterface, options *InstanceSelectorOptions) error {
 
-	clientset, cluster, channel, err := retrieveClusterRefs(ctx, f)
+	clientset, cluster, channel, err := retrieveClusterRefs(ctx, f, options.ClusterName)
 	if err != nil {
 		return err
 	}
@@ -373,19 +373,15 @@ func processAndValidateFlags(commandline *cli.CommandLineInterface) error {
 	return nil
 }
 
-func retrieveClusterRefs(ctx context.Context, f *util.Factory) (simple.Clientset, *kops.Cluster, *kops.Channel, error) {
+func retrieveClusterRefs(ctx context.Context, f *util.Factory, clusterName string) (simple.Clientset, *kops.Cluster, *kops.Channel, error) {
 	clientset, err := f.Clientset()
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	cluster, err := rootCommand.Cluster(ctx)
+	cluster, err := GetCluster(ctx, f, clusterName)
 	if err != nil {
 		return nil, nil, nil, err
-	}
-
-	if cluster == nil {
-		return nil, nil, nil, fmt.Errorf("cluster not found")
 	}
 
 	channel, err := cloudup.ChannelForCluster(cluster)

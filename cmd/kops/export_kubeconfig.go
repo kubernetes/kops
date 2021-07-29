@@ -88,7 +88,7 @@ func NewCmdExportKubeconfig(f *util.Factory, out io.Writer) *cobra.Command {
 				return rootCommand.clusterNameArgs(&options.ClusterName)(cmd, args)
 			}
 		},
-		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true, false),
+		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return RunExportKubeconfig(context.TODO(), f, out, options, args)
 		},
@@ -107,7 +107,7 @@ func NewCmdExportKubeconfig(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunExportKubeconfig(ctx context.Context, f *util.Factory, out io.Writer, options *ExportKubeconfigOptions, args []string) error {
-	clientset, err := rootCommand.Clientset()
+	clientset, err := f.Clientset()
 	if err != nil {
 		return err
 	}
