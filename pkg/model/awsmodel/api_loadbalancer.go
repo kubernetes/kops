@@ -244,6 +244,11 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				S3BucketName:   fi.String(lbSpec.AccessLog.Bucket),
 				S3BucketPrefix: fi.String(lbSpec.AccessLog.BucketPrefix),
 			}
+			nlb.AccessLog = &awstasks.NetworkLoadBalancerAccessLog{
+				Enabled:        fi.Bool(true),
+				S3BucketName:   fi.String(lbSpec.AccessLog.Bucket),
+				S3BucketPrefix: fi.String(lbSpec.AccessLog.BucketPrefix),
+			}
 		}
 
 		if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {

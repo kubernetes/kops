@@ -69,6 +69,7 @@ type NetworkLoadBalancer struct {
 
 	VPC          *VPC
 	TargetGroups []*TargetGroup
+	AccessLog    *NetworkLoadBalancerAccessLog
 }
 
 var _ fi.CompareWithID = &NetworkLoadBalancer{}
@@ -365,6 +366,34 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 					return nil, err
 				}
 				actual.CrossZoneLoadBalancing = fi.Bool(b)
+			case "access_logs.s3.enabled":
+				b, err := strconv.ParseBool(*value)
+				if err != nil {
+					return nil, err
+				}
+				if actual.AccessLog != nil {
+					actual.AccessLog.Enabled = fi.Bool(b)
+				} else {
+					actual.AccessLog = &NetworkLoadBalancerAccessLog{
+						Enabled: fi.Bool(b),
+					}
+				}
+			case "access_logs.s3.bucket":
+				if actual.AccessLog != nil {
+					actual.AccessLog.S3BucketName = value
+				} else {
+					actual.AccessLog = &NetworkLoadBalancerAccessLog{
+						S3BucketName: value,
+					}
+				}
+			case "access_logs.s3.prefix":
+				if actual.AccessLog != nil {
+					actual.AccessLog.S3BucketPrefix = value
+				} else {
+					actual.AccessLog = &NetworkLoadBalancerAccessLog{
+						S3BucketPrefix: value,
+					}
+				}
 			default:
 				klog.V(2).Infof("unsupported key -- ignoring, %v.\n", key)
 			}
@@ -452,6 +481,17 @@ func (s *NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) e
 		if e.CrossZoneLoadBalancing != nil {
 			if e.CrossZoneLoadBalancing == nil {
 				return fi.RequiredField("CrossZoneLoadBalancing")
+			}
+		}
+
+		if e.AccessLog != nil {
+			if e.AccessLog.Enabled == nil {
+				return fi.RequiredField("Accesslog.Enabled")
+			}
+			if *e.AccessLog.Enabled {
+				if e.AccessLog.S3BucketName == nil {
+					return fi.RequiredField("Accesslog.S3Bucket")
+				}
 			}
 		}
 	} else {

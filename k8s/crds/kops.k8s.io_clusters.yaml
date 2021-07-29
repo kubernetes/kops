@@ -81,6 +81,22 @@ spec:
                     description: LoadBalancer is the configuration for the kube-apiserver
                       ELB
                     properties:
+                      accessLog:
+                        description: AccessLog is the configuration of access logs
+                        properties:
+                          bucket:
+                            description: Bucket is S3 bucket name to store the logs
+                              in
+                            type: string
+                          bucketPrefix:
+                            description: BucketPrefix is S3 bucket prefix. Logs are
+                              stored in the root if not configured.
+                            type: string
+                          interval:
+                            description: Interval is publishing interval in minutes.
+                              This parameter is only used with classic load balancer.
+                            type: integer
+                        type: object
                       additionalSecurityGroups:
                         description: AdditionalSecurityGroups attaches additional
                           security groups (e.g. sg-123456).
