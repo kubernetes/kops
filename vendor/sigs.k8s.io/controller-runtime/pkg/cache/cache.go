@@ -69,7 +69,7 @@ type Informers interface {
 	client.FieldIndexer
 }
 
-// Informer - informer allows you interact with the underlying informer
+// Informer - informer allows you interact with the underlying informer.
 type Informer interface {
 	// AddEventHandler adds an event handler to the shared informer using the shared informer's resync
 	// period.  Events to a single handler are delivered sequentially, but there is no coordination
@@ -82,14 +82,14 @@ type Informer interface {
 	// AddIndexers adds more indexers to this store.  If you call this after you already have data
 	// in the store, the results are undefined.
 	AddIndexers(indexers toolscache.Indexers) error
-	//HasSynced return true if the informers underlying store has synced
+	// HasSynced return true if the informers underlying store has synced.
 	HasSynced() bool
 }
 
-// SelectorsByObject associate a client.Object's GVK to a field/label selector
+// SelectorsByObject associate a client.Object's GVK to a field/label selector.
 type SelectorsByObject map[client.Object]internal.Selector
 
-// Options are the optional arguments for creating a new InformersMap object
+// Options are the optional arguments for creating a new InformersMap object.
 type Options struct {
 	// Scheme is the scheme to use for mapping objects to GroupVersionKinds
 	Scheme *runtime.Scheme
