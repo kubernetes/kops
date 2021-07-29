@@ -79,7 +79,7 @@ func NewCmdEditCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:              editClusterLong,
 		Example:           editClusterExample,
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
-		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true, false),
+		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return RunEditCluster(context.TODO(), f, out, options)
 		},

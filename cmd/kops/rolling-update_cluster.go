@@ -167,7 +167,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:              rollingupdateLong,
 		Example:           rollingupdateExample,
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
-		ValidArgsFunction: commandutils.CompleteClusterName(&rootCommand, true, false),
+		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return RunRollingUpdateCluster(context.TODO(), f, out, &options)
 		},
@@ -190,7 +190,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().DurationVar(&options.PostDrainDelay, "post-drain-delay", options.PostDrainDelay, "Time to wait after draining each node")
 	cmd.Flags().BoolVarP(&options.Interactive, "interactive", "i", options.Interactive, "Prompt to continue after each instance is updated")
 	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "Instance groups to update (defaults to all if not specified)")
-	cmd.RegisterFlagCompletionFunc("instance-group", completeInstanceGroup(&options.InstanceGroups, &options.InstanceGroupRoles))
+	cmd.RegisterFlagCompletionFunc("instance-group", completeInstanceGroup(f, &options.InstanceGroups, &options.InstanceGroupRoles))
 	cmd.Flags().StringSliceVar(&options.InstanceGroupRoles, "instance-group-roles", options.InstanceGroupRoles, "Instance group roles to update ("+strings.Join(allRoles, ",")+")")
 	cmd.RegisterFlagCompletionFunc("instance-group-roles", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return sets.NewString(allRoles...).Delete(options.InstanceGroupRoles...).List(), cobra.ShellCompDirectiveNoFileComp
@@ -429,12 +429,12 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 	return d.RollingUpdate(groups, list)
 }
 
-func completeInstanceGroup(selectedInstanceGroups *[]string, selectedInstanceGroupRoles *[]string) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func completeInstanceGroup(f commandutils.Factory, selectedInstanceGroups *[]string, selectedInstanceGroupRoles *[]string) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		commandutils.ConfigureKlogForCompletion()
 		ctx := context.TODO()
 
-		cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, &rootCommand, args)
+		cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, f, args)
 		if cluster == nil {
 			return completions, directive
 		}

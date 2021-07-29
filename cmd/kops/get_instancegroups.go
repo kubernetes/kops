@@ -78,10 +78,10 @@ func NewCmdGetInstanceGroups(f *util.Factory, out io.Writer, getOptions *GetOpti
 			return nil
 		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return completeInstanceGroup(&args, nil)(cmd, nil, toComplete)
+			return completeInstanceGroup(f, &args, nil)(cmd, nil, toComplete)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunGetInstanceGroups(context.TODO(), &rootCommand, out, &options)
+			return RunGetInstanceGroups(context.TODO(), f, out, &options)
 		},
 	}
 
