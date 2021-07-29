@@ -23,7 +23,7 @@ import (
 )
 
 // KubeAPIWarningLoggerOptions controls the behavior
-// of a rest.WarningHandler constructed using NewKubeAPIWarningLogger()
+// of a rest.WarningHandler constructed using NewKubeAPIWarningLogger().
 type KubeAPIWarningLoggerOptions struct {
 	// Deduplicate indicates a given warning message should only be written once.
 	// Setting this to true in a long-running process handling many warnings can
