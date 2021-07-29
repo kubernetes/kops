@@ -28,10 +28,12 @@ import (
 	"path/filepath"
 	"strconv"
 	"sync"
+	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	kscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/certwatcher"
+	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/internal/metrics"
 )
@@ -70,6 +72,10 @@ type Server struct {
 	// Defaults to "", which means server does not verify client's certificate.
 	ClientCAName string
 
+	// TLSVersion is the minimum version of TLS supported. Accepts
+	// "", "1.0", "1.1", "1.2" and "1.3" only ("" is equivalent to "1.0" for backwards compatibility)
+	TLSMinVersion string
+
 	// WebhookMux is the multiplexer that handles different webhooks.
 	WebhookMux *http.ServeMux
 
@@ -82,6 +88,10 @@ type Server struct {
 
 	// defaultingOnce ensures that the default fields are only ever set once.
 	defaultingOnce sync.Once
+
+	// started is set to true immediately before the server is started
+	// and thus can be used to check if the server has been started
+	started bool
 
 	// mu protects access to the webhook map & setFields for Start, Register, etc
 	mu sync.Mutex
@@ -124,8 +134,7 @@ func (s *Server) Register(path string, hook http.Handler) {
 	defer s.mu.Unlock()
 
 	s.defaultingOnce.Do(s.setDefaults)
-	_, found := s.webhooks[path]
-	if found {
+	if _, found := s.webhooks[path]; found {
 		panic(fmt.Errorf("can't register duplicate path: %v", path))
 	}
 	// TODO(directxman12): call setfields if we've already started the server
@@ -175,6 +184,26 @@ func (s *Server) StartStandalone(ctx context.Context, scheme *runtime.Scheme) er
 	return s.Start(ctx)
 }
 
+// tlsVersion converts from human-readable TLS version (for example "1.1")
+// to the values accepted by tls.Config (for example 0x301).
+func tlsVersion(version string) (uint16, error) {
+	switch version {
+	// default is previous behaviour
+	case "":
+		return tls.VersionTLS10, nil
+	case "1.0":
+		return tls.VersionTLS10, nil
+	case "1.1":
+		return tls.VersionTLS11, nil
+	case "1.2":
+		return tls.VersionTLS12, nil
+	case "1.3":
+		return tls.VersionTLS13, nil
+	default:
+		return 0, fmt.Errorf("invalid TLSMinVersion %v: expects 1.0, 1.1, 1.2, 1.3 or empty", version)
+	}
+}
+
 // Start runs the server.
 // It will install the webhook related resources depend on the server configuration.
 func (s *Server) Start(ctx context.Context) error {
@@ -197,9 +226,15 @@ func (s *Server) Start(ctx context.Context) error {
 		}
 	}()
 
-	cfg := &tls.Config{
+	tlsMinVersion, err := tlsVersion(s.TLSMinVersion)
+	if err != nil {
+		return err
+	}
+
+	cfg := &tls.Config{ //nolint:gosec
 		NextProtos:     []string{"h2"},
 		GetCertificate: certWatcher.GetCertificate,
+		MinVersion:     tlsMinVersion,
 	}
 
 	// load CA to verify client certificate
@@ -219,7 +254,7 @@ func (s *Server) Start(ctx context.Context) error {
 		cfg.ClientAuth = tls.RequireAndVerifyClientCert
 	}
 
-	listener, err := tls.Listen("tcp", net.JoinHostPort(s.Host, strconv.Itoa(int(s.Port))), cfg)
+	listener, err := tls.Listen("tcp", net.JoinHostPort(s.Host, strconv.Itoa(s.Port)), cfg)
 	if err != nil {
 		return err
 	}
@@ -243,12 +278,36 @@ func (s *Server) Start(ctx context.Context) error {
 		close(idleConnsClosed)
 	}()
 
+	s.mu.Lock()
+	s.started = true
+	s.mu.Unlock()
 	if err := srv.Serve(listener); err != nil && err != http.ErrServerClosed {
 		return err
 	}
 
 	<-idleConnsClosed
 	return nil
+}
+
+// StartedChecker returns an healthz.Checker which is healthy after the
+// server has been started.
+func (s *Server) StartedChecker() healthz.Checker {
+	return func(req *http.Request) error {
+		s.mu.Lock()
+		defer s.mu.Unlock()
+
+		if !s.started {
+			return fmt.Errorf("webhook server has not been started yet")
+		}
+
+		conn, err := net.DialTimeout("tcp", net.JoinHostPort(s.Host, strconv.Itoa(s.Port)), 10*time.Second)
+		if err != nil {
+			return fmt.Errorf("webhook server is not reachable: %v", err)
+		}
+		conn.Close()
+
+		return nil
+	}
 }
 
 // InjectFunc injects the field setter into the server.

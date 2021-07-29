@@ -80,7 +80,7 @@ func GVKForObject(obj runtime.Object, scheme *runtime.Scheme) (schema.GroupVersi
 	// (unstructured, partial, etc)
 
 	// check for PartialObjectMetadata, which is analogous to unstructured, but isn't handled by ObjectKinds
-	_, isPartial := obj.(*metav1.PartialObjectMetadata)
+	_, isPartial := obj.(*metav1.PartialObjectMetadata) //nolint:ifshort
 	_, isPartialList := obj.(*metav1.PartialObjectMetadataList)
 	if isPartial || isPartialList {
 		// we require that the GVK be populated in order to recognize the object
@@ -134,7 +134,7 @@ func (f serializerWithDecodedGVK) DecoderToVersion(serializer runtime.Decoder, _
 	return serializer
 }
 
-//createRestConfig copies the base config and updates needed fields for a new rest config
+// createRestConfig copies the base config and updates needed fields for a new rest config.
 func createRestConfig(gvk schema.GroupVersionKind, isUnstructured bool, baseConfig *rest.Config, codecs serializer.CodecFactory) *rest.Config {
 	gv := gvk.GroupVersion()
 

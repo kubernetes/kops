@@ -30,7 +30,7 @@ import (
 // ObjectKey identifies a Kubernetes Object.
 type ObjectKey = types.NamespacedName
 
-// ObjectKeyFromObject returns the ObjectKey given a runtime.Object
+// ObjectKeyFromObject returns the ObjectKey given a runtime.Object.
 func ObjectKeyFromObject(obj Object) ObjectKey {
 	return ObjectKey{Namespace: obj.GetNamespace(), Name: obj.GetName()}
 }
