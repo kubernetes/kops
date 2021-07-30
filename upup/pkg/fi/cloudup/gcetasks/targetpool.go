@@ -55,6 +55,9 @@ func (e *TargetPool) Find(c *fi.Context) (*TargetPool, error) {
 	actual := &TargetPool{}
 	actual.Name = fi.String(r.Name)
 
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
+
 	return actual, nil
 }
 
