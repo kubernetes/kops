@@ -100,8 +100,8 @@ func NewCmdGetCluster(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 					return fmt.Errorf("cannot mix --name for cluster with positional arguments")
 				}
 				options.ClusterNames = append(options.ClusterNames, args...)
-			} else {
-				options.ClusterNames = append(options.ClusterNames, rootCommand.ClusterName(true))
+			} else if rootCommand.clusterName != "" {
+				options.ClusterNames = append(options.ClusterNames, rootCommand.clusterName)
 			}
 
 			return nil
