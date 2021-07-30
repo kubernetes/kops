@@ -230,9 +230,18 @@ spec:
                     description: 'Enabled enables the loadbalancer controller. Default:
                       false'
                     type: boolean
+                  shield:
+                    description: 'Enables Shield for controller Default: false'
+                    type: boolean
                   version:
                     description: Version is the container image tag used.
                     type: string
+                  waf:
+                    description: 'Enables waf for controller Default: false'
+                    type: boolean
+                  wafv2:
+                    description: 'Enables wafv2 for controller Default: false'
+                    type: boolean
                 type: object
               certManager:
                 description: CertManager determines the metrics server configuration.

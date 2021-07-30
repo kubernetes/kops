@@ -70,6 +70,21 @@ func (in *AWSLoadBalancerControllerConfig) DeepCopyInto(out *AWSLoadBalancerCont
 		*out = new(string)
 		**out = **in
 	}
+	if in.WafV2 != nil {
+		in, out := &in.WafV2, &out.WafV2
+		*out = new(bool)
+		**out = **in
+	}
+	if in.Waf != nil {
+		in, out := &in.Waf, &out.Waf
+		*out = new(bool)
+		**out = **in
+	}
+	if in.Shield != nil {
+		in, out := &in.Shield, &out.Shield
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

@@ -797,9 +797,9 @@ spec:
       containers:
       - args:
         - --cluster-name={{ ClusterName }}
-        - --enable-waf=false
-        - --enable-wafv2=false
-        - --enable-shield=false
+        - --enable-waf={{ if .AWSLoadBalancerController.Waf -}} {{ .ExternalCloudControllerManager.Waf }} {{- else -}} false {{- end }}
+        - --enable-wafv2={{ if .AWSLoadBalancerController.WafV2 -}} {{ .ExternalCloudControllerManager.WafV2 }} {{- else -}} false {{- end }}
+        - --enable-shield={{ if .AWSLoadBalancerController.Shield -}} {{ .ExternalCloudControllerManager.Shield }} {{- else -}} false {{- end }}
         - --ingress-class=alb
         - "--default-tags={{ CloudLabels }}"
         - --aws-region={{ Region }}
