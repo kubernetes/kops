@@ -1,5 +1,4 @@
-# CoreDNS
-# Source: https://github.com/coredns/deployment/blob/master/kubernetes/coredns.yaml.sed
+# Source: https://raw.githubusercontent.com/coredns/deployment/master/kubernetes/coredns.yaml.sed
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -18,29 +17,23 @@ metadata:
     k8s-addon: coredns.addons.k8s.io
   name: system:coredns
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - endpoints
-  - services
-  - pods
-  - namespaces
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - discovery.k8s.io
-  resources:
-  - endpointslices
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - nodes
-  verbs:
-  - get
+  - apiGroups:
+    - ""
+    resources:
+    - endpoints
+    - services
+    - pods
+    - namespaces
+    verbs:
+    - list
+    - watch
+  - apiGroups:
+    - discovery.k8s.io
+    resources:
+    - endpointslices
+    verbs:
+    - list
+    - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -87,10 +80,10 @@ data:
         forward . /etc/resolv.conf {
           max_concurrent 1000
         }
-        loop
         cache 30
-        loadbalance
+        loop
         reload
+        loadbalance
     }
   {{- end }}
 ---
@@ -105,6 +98,9 @@ metadata:
     k8s-addon: coredns.addons.k8s.io
     kubernetes.io/cluster-service: "true"
 spec:
+  # replicas: not specified here:
+  # 1. Default is 1.
+  # 2. Will be tuned in real time if DNS horizontal auto-scaling is turned on.
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -124,21 +120,21 @@ spec:
         - key: "CriticalAddonsOnly"
           operator: "Exists"
       nodeSelector:
-          beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
       affinity:
         podAntiAffinity:
-           preferredDuringSchedulingIgnoredDuringExecution:
-           - weight: 100
-             podAffinityTerm:
-               labelSelector:
-                 matchExpressions:
-                   - key: k8s-app
-                     operator: In
-                     values: ["kube-dns"]
-               topologyKey: kubernetes.io/hostname
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: k8s-app
+                    operator: In
+                    values: ["kube-dns"]
+              topologyKey: kubernetes.io/hostname
       containers:
       - name: coredns
-        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}coredns/coredns:1.8.3{{ end }}
+        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}k8s.gcr.io/coredns/coredns:v1.8.4{{ end }}
         imagePullPolicy: IfNotPresent
         resources:
           limits:
@@ -305,7 +301,7 @@ spec:
     spec:
       containers:
       - name: autoscaler
-        image: {{ if KubeDNS.CPAImage }}{{ KubeDNS.CPAImage }}{{ else }}k8s.gcr.io/cpa/cluster-proportional-autoscaler:1.8.3{{ end }}
+        image: {{ if KubeDNS.CPAImage }}{{ KubeDNS.CPAImage }}{{ else }}k8s.gcr.io/cpa/cluster-proportional-autoscaler:1.8.4{{ end }}
         resources:
             requests:
                 cpu: "20m"
@@ -325,4 +321,6 @@ spec:
       - key: "CriticalAddonsOnly"
         operator: "Exists"
       serviceAccountName: coredns-autoscaler
+      nodeSelector:
+        kubernetes.io/os: linux
 ---
