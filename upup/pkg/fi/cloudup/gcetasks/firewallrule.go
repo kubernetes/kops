@@ -18,6 +18,7 @@ package gcetasks
 
 import (
 	"fmt"
+	"net"
 	"strings"
 
 	compute "google.golang.org/api/compute/v1"
@@ -38,6 +39,12 @@ type FirewallRule struct {
 	SourceRanges []string
 	TargetTags   []string
 	Allowed      []string
+
+	// Disabled: Denotes whether the firewall rule is disabled. When set to
+	// true, the firewall rule is not enforced and the network behaves as if
+	// it did not exist. If this is unspecified, the firewall rule will be
+	// enabled.
+	Disabled bool
 }
 
 var _ fi.CompareWithID = &FirewallRule{}
@@ -63,6 +70,7 @@ func (e *FirewallRule) Find(c *fi.Context) (*FirewallRule, error) {
 	actual.TargetTags = r.TargetTags
 	actual.SourceRanges = r.SourceRanges
 	actual.SourceTags = r.SourceTags
+	actual.Disabled = r.Disabled
 	for _, a := range r.Allowed {
 		actual.Allowed = append(actual.Allowed, serializeFirewallAllowed(a))
 	}
@@ -74,7 +82,58 @@ func (e *FirewallRule) Find(c *fi.Context) (*FirewallRule, error) {
 }
 
 func (e *FirewallRule) Run(c *fi.Context) error {
+	if err := e.sanityCheck(); err != nil {
+		return err
+	}
 	return fi.DefaultDeltaRunMethod(e, c)
+}
+
+// sanityCheck applies some validation that isn't technically required,
+// but avoids some problems with surprising behaviours.
+func (e *FirewallRule) sanityCheck() error {
+	if !e.Disabled {
+		// Treat it as an error if SourceRanges _and_ SourceTags empty with Disabled=false
+		// this is interpreted as SourceRanges="0.0.0.0/0", which is likely what was intended.
+		if len(e.SourceRanges) == 0 && len(e.SourceTags) == 0 {
+			return fmt.Errorf("either SourceRanges or SourceTags should be specified when Disabled is false")
+		}
+	} else {
+		// Treat it as an error if SourceRanges/SourceTags non-empty with Disabled
+		// this is allowed but is likely not what was intended.
+		if len(e.SourceRanges) != 0 || len(e.SourceTags) != 0 {
+			return fmt.Errorf("setting Disabled=true overrules SourceRanges or SourceTags")
+		}
+	}
+
+	// Treat it as an error if SourceRanges _and_ SourceTags both set;
+	// this is interpreted as OR, not AND, which is likely not what was intended.
+	if len(e.SourceRanges) != 0 && len(e.SourceTags) != 0 {
+		return fmt.Errorf("SourceRanges and SourceTags should not both be specified")
+	}
+
+	name := fi.StringValue(e.Name)
+
+	// Make sure we've split the ipv4 / ipv6 addresses.
+	// A single firewall rule can't mix ipv4 and ipv6 addresses, so we split them into two rules.
+	for _, sourceRange := range e.SourceRanges {
+		_, cidr, err := net.ParseCIDR(sourceRange)
+		if err != nil {
+			return fmt.Errorf("sourceRange %q is not valid: %w", sourceRange, err)
+		}
+		if cidr.IP.To4() != nil {
+			// IPv4
+			if strings.Contains(name, "-ipv6") {
+				return fmt.Errorf("ipv4 ranges should not be in a ipv6-named rule (found %s in %s)", sourceRange, name)
+			}
+		} else {
+			// IPv6
+			if !strings.Contains(name, "-ipv6") {
+				return fmt.Errorf("ipv6 ranges should be in a ipv6-named rule (found %s in %s)", sourceRange, name)
+			}
+		}
+	}
+
+	return nil
 }
 
 func (_ *FirewallRule) CheckChanges(a, e, changes *FirewallRule) error {
@@ -132,6 +191,7 @@ func (e *FirewallRule) mapToGCE(project string) (*compute.Firewall, error) {
 		SourceRanges: e.SourceRanges,
 		TargetTags:   e.TargetTags,
 		Allowed:      allowed,
+		Disabled:     e.Disabled,
 	}
 	return firewall, nil
 }
@@ -173,6 +233,8 @@ type terraformFirewall struct {
 
 	SourceRanges []string `json:"source_ranges,omitempty" cty:"source_ranges"`
 	TargetTags   []string `json:"target_tags,omitempty" cty:"target_tags"`
+
+	Disabled bool `json:"disabled,omitempty" cty:"disabled"`
 }
 
 func (_ *FirewallRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *FirewallRule) error {
@@ -198,10 +260,21 @@ func (_ *FirewallRule) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 		TargetTags:   g.TargetTags,
 		SourceTags:   g.SourceTags,
 		Allowed:      allowed,
+		Disabled:     g.Disabled,
 	}
 
 	// TODO: This doesn't seem right, but it looks like a TF problem
 	tf.Network = e.Network.TerraformName()
 
 	return t.RenderResource("google_compute_firewall", *e.Name, tf)
+}
+
+// DisableIfEmptySourceRanges sets Disabled if SourceRanges is empty.
+// This is helpful because empty SourceRanges and SourceTags are interpreted as allow everything,
+// but the intent is usually to block everything, which can be achieved with Disabled=true.
+func (e *FirewallRule) DisableIfEmptySourceRanges() *FirewallRule {
+	if len(e.SourceRanges) == 0 {
+		e.Disabled = true
+	}
+	return e
 }
