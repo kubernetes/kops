@@ -86,6 +86,7 @@ var rootCommand = RootCmd{
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			cmd.SilenceUsage = true
 		},
+		SilenceUsage: true,
 	},
 }
 
