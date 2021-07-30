@@ -130,7 +130,7 @@ cloudConfig:
 containerRuntime: containerd
 containerd:
   logLevel: info
-  version: 1.4.8
+  version: 1.4.9
 docker:
   skipInstall: true
 encryptionConfig: null
@@ -244,7 +244,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/private-shared-ip.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: wP7OUr/QVGW1DOXRtn4EnNcZK4uqB0OZqSglThzCbXc=
+NodeupConfigHash: r0RytDrRp7+Uk5YxpEav+iFMhhNG/4Ln4xqatVnVZTQ=
 
 __EOF_KUBE_ENV
 
