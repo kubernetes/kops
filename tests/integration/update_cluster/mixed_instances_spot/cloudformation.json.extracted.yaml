@@ -131,7 +131,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersmixedinstancesexamplecom.Prop
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.8
+    version: 1.4.9
   docker:
     skipInstall: true
   encryptionConfig: null
@@ -245,7 +245,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersmixedinstancesexamplecom.Prop
   ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: EXFXdYWeGgaysKkjq/xeqZPVyc29fc/dZxTMu79qJEw=
+  NodeupConfigHash: 3JDQOEdU3+CN4oRXuQd7zquv8YvCbWmgFmt8Yl8kYyg=
 
   __EOF_KUBE_ENV
 
@@ -384,7 +384,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1bmastersmixedinstancesexamplecom.Prop
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.8
+    version: 1.4.9
   docker:
     skipInstall: true
   encryptionConfig: null
@@ -498,7 +498,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1bmastersmixedinstancesexamplecom.Prop
   ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
   InstanceGroupName: master-us-test-1b
   InstanceGroupRole: Master
-  NodeupConfigHash: EXFXdYWeGgaysKkjq/xeqZPVyc29fc/dZxTMu79qJEw=
+  NodeupConfigHash: 3JDQOEdU3+CN4oRXuQd7zquv8YvCbWmgFmt8Yl8kYyg=
 
   __EOF_KUBE_ENV
 
@@ -637,7 +637,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1cmastersmixedinstancesexamplecom.Prop
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.8
+    version: 1.4.9
   docker:
     skipInstall: true
   encryptionConfig: null
@@ -751,7 +751,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1cmastersmixedinstancesexamplecom.Prop
   ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
   InstanceGroupName: master-us-test-1c
   InstanceGroupRole: Master
-  NodeupConfigHash: EXFXdYWeGgaysKkjq/xeqZPVyc29fc/dZxTMu79qJEw=
+  NodeupConfigHash: 3JDQOEdU3+CN4oRXuQd7zquv8YvCbWmgFmt8Yl8kYyg=
 
   __EOF_KUBE_ENV
 
@@ -890,7 +890,7 @@ Resources.AWSEC2LaunchTemplatenodesmixedinstancesexamplecom.Properties.LaunchTem
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.8
+    version: 1.4.9
   docker:
     skipInstall: true
   kubeProxy:
@@ -922,7 +922,7 @@ Resources.AWSEC2LaunchTemplatenodesmixedinstancesexamplecom.Properties.LaunchTem
   ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: 70XGgNmsIPB6D/eD6xTK5wu1z8ZOtWSaDQQu8LDLNqI=
+  NodeupConfigHash: n775SZ6AqQEgbcGT2tW74Q66rDRoGtr6r/WZFqLwyFc=
 
   __EOF_KUBE_ENV
 
