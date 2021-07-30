@@ -132,7 +132,7 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 		_roleCount
 	)
 	igs := make([]*kops.InstanceGroup, _roleCount)
-	// NB: (*AutoscalingGroupModelBuilder).buildLaunchConfigurationTask expects there to be at least
+	// NB: (*AutoscalingGroupModelBuilder).buildLaunchTemplateTask expects there to be at least
 	// one subnet specified in each InstanceGroup.
 	subnets := []string{cluster.Spec.Subnets[0].Name}
 	igs[roleBastion] = &kops.InstanceGroup{

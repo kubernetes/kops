@@ -11,7 +11,7 @@ of all flags that will be passed to all components. All decisions about how to i
 cluster are made at this stage, and thus every decision can in theory be changed if the user
 specifies a value in the spec.
 
-This complete specification is set in the launch configuration for the AutoScaling Group (on AWS),
+This complete specification is set in the LaunchTemplate for the AutoScaling Group (on AWS),
 or the Managed Instance Group (on GCE).
 
 On both AWS & GCE, everything (nodes & masters) runs in an ASG/MIG; this means that failures

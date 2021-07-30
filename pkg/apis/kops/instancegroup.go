@@ -245,7 +245,6 @@ type UserData struct {
 type VolumeSpec struct {
 	// DeleteOnTermination configures volume retention policy upon instance termination.
 	// The volume is deleted by default. Cluster deletion does not remove retained volumes.
-	// NOTE: This setting applies only to the Launch Configuration and does not affect Launch Templates.
 	DeleteOnTermination *bool `json:"deleteOnTermination,omitempty"`
 	// Device is an optional device name of the block device
 	Device string `json:"device,omitempty"`

@@ -279,7 +279,7 @@ Users would simply `kops edit cluster`, and add a value like:
 ```
 
 Then `kops update cluster --yes` would create the new NodeUpConfig, which is included in the instance startup script
-and thus requires a new LaunchConfiguration, and thus a `kops-rolling update`.  We're working on changing settings
+and thus requires a new LaunchTemplate version, and thus a `kops-rolling update`.  We're working on changing settings
 without requiring a reboot, but likely for this particular setting it isn't the sort of thing you need to change
 very often.
 
