@@ -134,7 +134,7 @@ Ps: You don't have to `kops delete cluster` if you just want to recreate from sc
 
 #### `kops rolling-update` might be needed after editing the cluster
 
-Changes made with `kops edit` (like enabling RBAC and / or feature gates) will result in changes to the launch configuration of your cluster nodes. After a `terraform apply`, they won't be applied right away since terraform will not launch new instances as part of that.
+Changes made with `kops edit` (like enabling RBAC and / or feature gates) will result in changes to the LaunchTemplate of your cluster nodes. After a `terraform apply`, they won't be applied right away since terraform will not launch new instances as part of that.
 
 To see your changes applied to the cluster you'll also need to run `kops rolling-update` after running `terraform apply`. This will ensure that all nodes' changes have the desired settings configured with `kops edit`.
 
