@@ -41,7 +41,7 @@ spec:
 
 ```
 
-Now run a cluster update to create the new launch configuration, using [lifecycle overrides](./cli/kops_update_cluster.md#options) to prevent Security Group resources from being created:
+Now run a cluster update to create the new LaunchTemplateVersion, using [lifecycle overrides](./cli/kops_update_cluster.md#options) to prevent Security Group resources from being created:
 
 ```shell
 kops update cluster ${CLUSTER_NAME} --yes --lifecycle-overrides SecurityGroup=ExistsAndWarnIfChanges,SecurityGroupRule=ExistsAndWarnIfChanges
@@ -49,7 +49,7 @@ kops update cluster ${CLUSTER_NAME} --yes --lifecycle-overrides SecurityGroup=Ex
 
 *Every time `kops update cluster` is run, it must include the above `--lifecycle-overrides`.*
 
-Then perform a rolling update in order to replace EC2 instances in the ASG with the new launch configuration:
+Then perform a rolling update in order to replace EC2 instances in the ASG with the new LaunchTemplateVersion:
 
 ```shell
 kops rolling-update cluster ${CLUSTER_NAME} --yes
