@@ -23,12 +23,15 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v1"
 	"google.golang.org/api/iam/v1"
 	oauth2 "google.golang.org/api/oauth2/v2"
+	"google.golang.org/api/serviceusage/v1"
 	"google.golang.org/api/storage/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
@@ -54,10 +57,11 @@ type GCECloud interface {
 }
 
 type gceCloudImplementation struct {
-	compute *computeClientImpl
-	storage *storage.Service
-	iam     *iam.Service
-	dns     *dnsClientImpl
+	compute      *computeClientImpl
+	storage      *storage.Service
+	iam          *iam.Service
+	dns          *dnsClientImpl
+	serviceUsage *serviceusage.Service
 
 	region  string
 	project string
@@ -139,6 +143,12 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 	}
 	c.iam = iamService
 
+	serviceUsage, err := serviceusage.NewService(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error building serviceusage API client: %v", err)
+	}
+	c.serviceUsage = serviceUsage
+
 	dnsClient, err := newDNSClientImpl(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error building DNS API client: %v", err)
@@ -156,6 +166,11 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 		} else {
 			klog.V(2).Infof("running with GCE credentials: email=%s, scope=%s", tokenInfo.Email, tokenInfo.Scope)
 		}
+	}
+
+	// Make sure compute.googleapis.com is enabled
+	if err := c.EnableService(ctx, c.project, "compute.googleapis.com"); err != nil {
+		return nil, err
 	}
 
 	return c.WithLabels(labels), nil
@@ -373,4 +388,43 @@ func (c *gceCloudImplementation) getTokenInfo(ctx context.Context) (*oauth2.Toke
 	}
 
 	return tokenInfo, nil
+}
+
+// EnableService will enable the specified GCP service, unless it is already enabled.
+func (c *gceCloudImplementation) EnableService(ctx context.Context, projectID string, serviceName string) error {
+	servicePath := "projects/" + projectID + "/services/" + serviceName
+	service, err := c.serviceUsage.Services.Get(servicePath).Context(ctx).Do()
+	if err != nil {
+		// TODO: Check for permissions error?
+		return fmt.Errorf("error querying for service %q: %w", servicePath, err)
+	}
+	switch service.State {
+	case "ENABLED":
+		return nil
+	case "DISABLED":
+		// Should enable
+	default:
+		klog.Warningf("unknown state %q for service %q, will enable", service.State, servicePath)
+	}
+
+	klog.Infof("enabling service %v", serviceName)
+
+	req := &serviceusage.EnableServiceRequest{}
+	op, err := c.serviceUsage.Services.Enable(servicePath, req).Context(ctx).Do()
+	if err != nil {
+		return fmt.Errorf("failed to enable service %q: %w", servicePath, err)
+	}
+
+	if err := wait.Poll(5*time.Second, 2*time.Minute, func() (bool, error) {
+		klog.V(4).Infof("polling status of operation %q", op.Name)
+		status, err := c.serviceUsage.Operations.Get(op.Name).Context(ctx).Do()
+		if err != nil {
+			return false, err
+		}
+		return status.Done, nil
+	}); err != nil {
+		return fmt.Errorf("timeout waiting to enable service %q: %w", servicePath, err)
+	}
+
+	return nil
 }

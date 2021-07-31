@@ -831,6 +831,7 @@ google.golang.org/api/internal/third_party/uritemplates
 google.golang.org/api/oauth2/v2
 google.golang.org/api/option
 google.golang.org/api/option/internaloption
+google.golang.org/api/serviceusage/v1
 google.golang.org/api/storage/v1
 google.golang.org/api/tpu/v1
 google.golang.org/api/transport/cert
