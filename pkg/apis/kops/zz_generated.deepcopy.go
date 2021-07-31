@@ -4229,6 +4229,16 @@ func (in *NodeTerminationHandlerConfig) DeepCopyInto(out *NodeTerminationHandler
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EnableRebalanceMonitoring != nil {
+		in, out := &in.EnableRebalanceMonitoring, &out.EnableRebalanceMonitoring
+		*out = new(bool)
+		**out = **in
+	}
+	if in.EnableRebalanceDraining != nil {
+		in, out := &in.EnableRebalanceDraining, &out.EnableRebalanceDraining
+		*out = new(bool)
+		**out = **in
+	}
 	if in.EnablePrometheusMetrics != nil {
 		in, out := &in.EnablePrometheusMetrics, &out.EnablePrometheusMetrics
 		*out = new(bool)
