@@ -4129,6 +4129,16 @@ spec:
                       Default: 50m'
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
+                  enableRebalanceDraining:
+                    description: 'EnableRebalanceDraining makes node termination handler
+                      drain nodes when the rebalance recommendation notice is received
+                      Default: false'
+                    type: boolean
+                  enableRebalanceMonitoring:
+                    description: 'EnableRebalanceMonitoring makes node termination
+                      handler cordon nodes when the rebalance recommendation notice
+                      is received Default: false'
+                    type: boolean
                   enableSQSTerminationDraining:
                     description: EnableSQSTerminationDraining enables queue-processor
                       mode which drains nodes when an SQS termination event is received.
