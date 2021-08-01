@@ -27,19 +27,19 @@ func TestHashString(t *testing.T) {
 	}{
 		{
 			s:           "test",
-			expectedStr: "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3",
+			expectedStr: "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
 		},
 		{
 			s:           "~!*/?",
-			expectedStr: "783c2ea26549ce90df7cd90a27bf9094c226c406",
+			expectedStr: "2ebef337aebca07992300b61b58f3581a3d0228e9eb17c0340eaa01bcb2abde2",
 		},
 		{
 			s:           "测试1",
-			expectedStr: "6d972f7f1450aba1f7496f685c3c656c4fca9624",
+			expectedStr: "d7d16e0c2747b4dbe70a6f4977cf4f4ebb4a227d7ebc24c3a0e99acaae79b518",
 		},
 		{
 			s:           "-897668",
-			expectedStr: "c8facb588b36948d5da0e3a7e16977a701331b0a",
+			expectedStr: "e6909a82db1ad9349f016624af382f62226e9a1bffbd360f9ccc4ef8aaded232",
 		},
 	}
 
