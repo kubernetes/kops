@@ -17,13 +17,13 @@ limitations under the License.
 package utils
 
 import (
-	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/hex"
 )
 
-// HashString Takes String and returns a sha1 hash represented as a string
+// HashString Takes String and returns a sha256 hash represented as a string
 func HashString(s string) (string, error) {
-	h := sha1.New()
+	h := sha256.New()
 	_, err := h.Write([]byte(s))
 	if err != nil {
 		return "", err
