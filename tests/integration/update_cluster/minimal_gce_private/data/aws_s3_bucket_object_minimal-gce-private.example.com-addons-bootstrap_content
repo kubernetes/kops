@@ -6,54 +6,54 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 83134476c186a4dc815ce05c9556a1e49ed86e03
+    manifestHash: aedba4516c0b5853ca5c7957854980aca30e25347f2eaed1b2cc7260281db7a8
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
       k8s-addon: kops-controller.addons.k8s.io
   - manifest: core.addons.k8s.io/v1.4.0.yaml
-    manifestHash: 9283cd74e74b10e441d3f1807c49c1bef8fac8c8
+    manifestHash: 90f8d3bd227dc1f4fdd46b561ac6bfc9355392477a7eedd6c3e2318614c375d8
     name: core.addons.k8s.io
     selector:
       k8s-addon: core.addons.k8s.io
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 73f83ad2e946a81bba6a45b8bd353eb227f932b4
+    manifestHash: 3bf8c29c45f0f7dbbb1671b577f302a19418b55d214f6847ff586f1ee9d1ba71
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
   - id: k8s-1.8
     manifest: rbac.addons.k8s.io/k8s-1.8.yaml
-    manifestHash: 38ba4e0078bb1225421114f76f121c2277ca92ac
+    manifestHash: f81bd7c57bc1902ca342635d7ad7d01b82dfeaff01a1192b076e66907d87871e
     name: rbac.addons.k8s.io
     selector:
       k8s-addon: rbac.addons.k8s.io
   - id: k8s-1.9
     manifest: kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml
-    manifestHash: 8ee090e41be5e8bcd29ee799b1608edcd2dd8b65
+    manifestHash: 01c120e887bd98d82ef57983ad58a0b22bc85efb48108092a24c4b82e4c9ea81
     name: kubelet-api.rbac.addons.k8s.io
     selector:
       k8s-addon: kubelet-api.rbac.addons.k8s.io
   - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
-    manifestHash: 6ed889ae6a8d83dd6e5b511f831b3ac65950cf9d
+    manifestHash: 2d55c3bc5e354e84a3730a65b42f39aba630a59dc8d32b30859fcce3d3178bc2
     name: limit-range.addons.k8s.io
     selector:
       k8s-addon: limit-range.addons.k8s.io
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 0ef78f6df3e5eff8d2461615b2631489c27f1053
+    manifestHash: af41a97afb5a5b3c2c35046c634309400d43d3e1e8b57a691c63e45a9349ed38
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
   - id: v1.7.0
     manifest: storage-gce.addons.k8s.io/v1.7.0.yaml
-    manifestHash: f3c1d70f1152e3443a46b33a4d18ce0593ad7d9d
+    manifestHash: 101aceff3d82b4d7066f75fdf537f272eccec6da767d508e2a72bff5e11b0b6d
     name: storage-gce.addons.k8s.io
     selector:
       k8s-addon: storage-gce.addons.k8s.io
   - id: v0.1.12
     manifest: metadata-proxy.addons.k8s.io/v0.1.12.yaml
-    manifestHash: 56ca6de90de20ab5c1ef498b2e85915c3401fdf2
+    manifestHash: 29c78a908980393b0707da7501f2b00025cd24cc62d2605083f9d77e8f3eb40f
     name: metadata-proxy.addons.k8s.io
     selector:
       k8s-addon: metadata-proxy.addons.k8s.io
