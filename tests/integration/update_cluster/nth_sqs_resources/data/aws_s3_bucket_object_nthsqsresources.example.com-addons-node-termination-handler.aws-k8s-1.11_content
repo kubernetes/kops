@@ -181,6 +181,8 @@ spec:
           value: "false"
         - name: ENABLE_REBALANCE_MONITORING
           value: "false"
+        - name: ENABLE_REBALANCE_DRAINING
+          value: "false"
         - name: ENABLE_SQS_TERMINATION_DRAINING
           value: "true"
         - name: QUEUE_URL
