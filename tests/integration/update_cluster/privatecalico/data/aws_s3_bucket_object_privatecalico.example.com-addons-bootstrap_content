@@ -47,7 +47,7 @@ spec:
       k8s-addon: storage-aws.addons.k8s.io
   - id: k8s-1.16
     manifest: networking.projectcalico.org/k8s-1.16.yaml
-    manifestHash: fd80f641a123f65d1c4a5c807648951e8dc1b3cfc684e959377036f9af8b2e4f
+    manifestHash: 48be015e63a400fec69f63740009d2e8a3cff62de42fafb61735114697fa94c1
     name: networking.projectcalico.org
     selector:
       role.kubernetes.io/networking: "1"
