@@ -246,6 +246,11 @@ spec:
                   Peers node to use the "next hop keep;" instead of "next hop self;"(default)
                   in the specific branch of the Node on "bird.cfg".
                 type: boolean
+              maxRestartTime:
+                description: Time to allow for software restart.  When specified,
+                  this is configured as the graceful restart timeout.  When not specified,
+                  the BIRD default of 120s is used.
+                type: string
               node:
                 description: The node name identifying the Calico node instance that
                   is targeted by this peer. If this is not set, and no nodeSelector
@@ -535,7 +540,7 @@ spec:
                   [Default: false]'
                 type: boolean
               bpfExtToServiceConnmark:
-                description: 'BPFExtToServiceConnmark in BPF mode, control a 32bit
+                description: 'BPFExtToServiceConnmark in BPF mode, controls a 32bit
                   mark that is set on connections from an external client to a local
                   service. This mark allows us to control how packets of that connection
                   are routed within the host and how is routing intepreted by RPF
@@ -1090,16 +1095,17 @@ spec:
                             contains a selector expression. Only traffic that originates
                             from (or terminates at) endpoints within the selected
                             namespaces will be matched. When both NamespaceSelector
-                            and Selector are defined on the same rule, then only workload
-                            endpoints that are matched by both selectors will be selected
-                            by the rule. \n For NetworkPolicy, an empty NamespaceSelector
-                            implies that the Selector is limited to selecting only
-                            workload endpoints in the same namespace as the NetworkPolicy.
-                            \n For NetworkPolicy, `global()` NamespaceSelector implies
-                            that the Selector is limited to selecting only GlobalNetworkSet
-                            or HostEndpoint. \n For GlobalNetworkPolicy, an empty
-                            NamespaceSelector implies the Selector applies to workload
-                            endpoints across all namespaces."
+                            and another selector are defined on the same rule, then
+                            only workload endpoints that are matched by both selectors
+                            will be selected by the rule. \n For NetworkPolicy, an
+                            empty NamespaceSelector implies that the Selector is limited
+                            to selecting only workload endpoints in the same namespace
+                            as the NetworkPolicy. \n For NetworkPolicy, `global()`
+                            NamespaceSelector implies that the Selector is limited
+                            to selecting only GlobalNetworkSet or HostEndpoint. \n
+                            For GlobalNetworkPolicy, an empty NamespaceSelector implies
+                            the Selector applies to workload endpoints across all
+                            namespaces."
                           type: string
                         nets:
                           description: Nets is an optional field that restricts the
@@ -1185,6 +1191,26 @@ spec:
                                 account that matches the given label selector. If
                                 both Names and Selector are specified then they are
                                 AND'ed.
+                              type: string
+                          type: object
+                        services:
+                          description: "Services is an optional field that contains
+                            options for matching Kubernetes Services. If specified,
+                            only traffic that originates from or terminates at endpoints
+                            within the selected service(s) will be matched, and only
+                            to/from each endpoint's port. \n Services cannot be specified
+                            on the same rule as Selector, NotSelector, NamespaceSelector,
+                            Ports, NotPorts, Nets, NotNets or ServiceAccounts. \n
+                            Only valid on egress rules."
+                          properties:
+                            name:
+                              description: Name specifies the name of a Kubernetes
+                                Service to match.
+                              type: string
+                            namespace:
+                              description: Namespace specifies the namespace of the
+                                given Service. If left empty, the rule will match
+                                within this policy's namespace.
                               type: string
                           type: object
                       type: object
@@ -1295,16 +1321,17 @@ spec:
                             contains a selector expression. Only traffic that originates
                             from (or terminates at) endpoints within the selected
                             namespaces will be matched. When both NamespaceSelector
-                            and Selector are defined on the same rule, then only workload
-                            endpoints that are matched by both selectors will be selected
-                            by the rule. \n For NetworkPolicy, an empty NamespaceSelector
-                            implies that the Selector is limited to selecting only
-                            workload endpoints in the same namespace as the NetworkPolicy.
-                            \n For NetworkPolicy, `global()` NamespaceSelector implies
-                            that the Selector is limited to selecting only GlobalNetworkSet
-                            or HostEndpoint. \n For GlobalNetworkPolicy, an empty
-                            NamespaceSelector implies the Selector applies to workload
-                            endpoints across all namespaces."
+                            and another selector are defined on the same rule, then
+                            only workload endpoints that are matched by both selectors
+                            will be selected by the rule. \n For NetworkPolicy, an
+                            empty NamespaceSelector implies that the Selector is limited
+                            to selecting only workload endpoints in the same namespace
+                            as the NetworkPolicy. \n For NetworkPolicy, `global()`
+                            NamespaceSelector implies that the Selector is limited
+                            to selecting only GlobalNetworkSet or HostEndpoint. \n
+                            For GlobalNetworkPolicy, an empty NamespaceSelector implies
+                            the Selector applies to workload endpoints across all
+                            namespaces."
                           type: string
                         nets:
                           description: Nets is an optional field that restricts the
@@ -1390,6 +1417,26 @@ spec:
                                 account that matches the given label selector. If
                                 both Names and Selector are specified then they are
                                 AND'ed.
+                              type: string
+                          type: object
+                        services:
+                          description: "Services is an optional field that contains
+                            options for matching Kubernetes Services. If specified,
+                            only traffic that originates from or terminates at endpoints
+                            within the selected service(s) will be matched, and only
+                            to/from each endpoint's port. \n Services cannot be specified
+                            on the same rule as Selector, NotSelector, NamespaceSelector,
+                            Ports, NotPorts, Nets, NotNets or ServiceAccounts. \n
+                            Only valid on egress rules."
+                          properties:
+                            name:
+                              description: Name specifies the name of a Kubernetes
+                                Service to match.
+                              type: string
+                            namespace:
+                              description: Namespace specifies the namespace of the
+                                given Service. If left empty, the rule will match
+                                within this policy's namespace.
                               type: string
                           type: object
                       type: object
@@ -1421,16 +1468,17 @@ spec:
                             contains a selector expression. Only traffic that originates
                             from (or terminates at) endpoints within the selected
                             namespaces will be matched. When both NamespaceSelector
-                            and Selector are defined on the same rule, then only workload
-                            endpoints that are matched by both selectors will be selected
-                            by the rule. \n For NetworkPolicy, an empty NamespaceSelector
-                            implies that the Selector is limited to selecting only
-                            workload endpoints in the same namespace as the NetworkPolicy.
-                            \n For NetworkPolicy, `global()` NamespaceSelector implies
-                            that the Selector is limited to selecting only GlobalNetworkSet
-                            or HostEndpoint. \n For GlobalNetworkPolicy, an empty
-                            NamespaceSelector implies the Selector applies to workload
-                            endpoints across all namespaces."
+                            and another selector are defined on the same rule, then
+                            only workload endpoints that are matched by both selectors
+                            will be selected by the rule. \n For NetworkPolicy, an
+                            empty NamespaceSelector implies that the Selector is limited
+                            to selecting only workload endpoints in the same namespace
+                            as the NetworkPolicy. \n For NetworkPolicy, `global()`
+                            NamespaceSelector implies that the Selector is limited
+                            to selecting only GlobalNetworkSet or HostEndpoint. \n
+                            For GlobalNetworkPolicy, an empty NamespaceSelector implies
+                            the Selector applies to workload endpoints across all
+                            namespaces."
                           type: string
                         nets:
                           description: Nets is an optional field that restricts the
@@ -1516,6 +1564,26 @@ spec:
                                 account that matches the given label selector. If
                                 both Names and Selector are specified then they are
                                 AND'ed.
+                              type: string
+                          type: object
+                        services:
+                          description: "Services is an optional field that contains
+                            options for matching Kubernetes Services. If specified,
+                            only traffic that originates from or terminates at endpoints
+                            within the selected service(s) will be matched, and only
+                            to/from each endpoint's port. \n Services cannot be specified
+                            on the same rule as Selector, NotSelector, NamespaceSelector,
+                            Ports, NotPorts, Nets, NotNets or ServiceAccounts. \n
+                            Only valid on egress rules."
+                          properties:
+                            name:
+                              description: Name specifies the name of a Kubernetes
+                                Service to match.
+                              type: string
+                            namespace:
+                              description: Namespace specifies the namespace of the
+                                given Service. If left empty, the rule will match
+                                within this policy's namespace.
                               type: string
                           type: object
                       type: object
@@ -1626,16 +1694,17 @@ spec:
                             contains a selector expression. Only traffic that originates
                             from (or terminates at) endpoints within the selected
                             namespaces will be matched. When both NamespaceSelector
-                            and Selector are defined on the same rule, then only workload
-                            endpoints that are matched by both selectors will be selected
-                            by the rule. \n For NetworkPolicy, an empty NamespaceSelector
-                            implies that the Selector is limited to selecting only
-                            workload endpoints in the same namespace as the NetworkPolicy.
-                            \n For NetworkPolicy, `global()` NamespaceSelector implies
-                            that the Selector is limited to selecting only GlobalNetworkSet
-                            or HostEndpoint. \n For GlobalNetworkPolicy, an empty
-                            NamespaceSelector implies the Selector applies to workload
-                            endpoints across all namespaces."
+                            and another selector are defined on the same rule, then
+                            only workload endpoints that are matched by both selectors
+                            will be selected by the rule. \n For NetworkPolicy, an
+                            empty NamespaceSelector implies that the Selector is limited
+                            to selecting only workload endpoints in the same namespace
+                            as the NetworkPolicy. \n For NetworkPolicy, `global()`
+                            NamespaceSelector implies that the Selector is limited
+                            to selecting only GlobalNetworkSet or HostEndpoint. \n
+                            For GlobalNetworkPolicy, an empty NamespaceSelector implies
+                            the Selector applies to workload endpoints across all
+                            namespaces."
                           type: string
                         nets:
                           description: Nets is an optional field that restricts the
@@ -1721,6 +1790,26 @@ spec:
                                 account that matches the given label selector. If
                                 both Names and Selector are specified then they are
                                 AND'ed.
+                              type: string
+                          type: object
+                        services:
+                          description: "Services is an optional field that contains
+                            options for matching Kubernetes Services. If specified,
+                            only traffic that originates from or terminates at endpoints
+                            within the selected service(s) will be matched, and only
+                            to/from each endpoint's port. \n Services cannot be specified
+                            on the same rule as Selector, NotSelector, NamespaceSelector,
+                            Ports, NotPorts, Nets, NotNets or ServiceAccounts. \n
+                            Only valid on egress rules."
+                          properties:
+                            name:
+                              description: Name specifies the name of a Kubernetes
+                                Service to match.
+                              type: string
+                            namespace:
+                              description: Namespace specifies the namespace of the
+                                given Service. If left empty, the rule will match
+                                within this policy's namespace.
                               type: string
                           type: object
                       type: object
@@ -2347,6 +2436,11 @@ spec:
                               host endpoints for every node. [Default: Disabled]'
                             type: string
                         type: object
+                      leakGracePeriod:
+                        description: 'LeakGracePeriod is the period used by the controller
+                          to determine if an IP address has been leaked. Set to 0
+                          to disable IP garbage collection. [Default: 15m]'
+                        type: string
                       reconcilerPeriod:
                         description: 'ReconcilerPeriod is the period to perform reconciliation
                           with the Calico datastore. [Default: 5m]'
@@ -2447,6 +2541,12 @@ spec:
                                   of host endpoints for every node. [Default: Disabled]'
                                 type: string
                             type: object
+                          leakGracePeriod:
+                            description: 'LeakGracePeriod is the period used by the
+                              controller to determine if an IP address has been leaked.
+                              Set to 0 to disable IP garbage collection. [Default:
+                              15m]'
+                            type: string
                           reconcilerPeriod:
                             description: 'ReconcilerPeriod is the period to perform
                               reconciliation with the Calico datastore. [Default:
@@ -2581,16 +2681,17 @@ spec:
                             contains a selector expression. Only traffic that originates
                             from (or terminates at) endpoints within the selected
                             namespaces will be matched. When both NamespaceSelector
-                            and Selector are defined on the same rule, then only workload
-                            endpoints that are matched by both selectors will be selected
-                            by the rule. \n For NetworkPolicy, an empty NamespaceSelector
-                            implies that the Selector is limited to selecting only
-                            workload endpoints in the same namespace as the NetworkPolicy.
-                            \n For NetworkPolicy, `global()` NamespaceSelector implies
-                            that the Selector is limited to selecting only GlobalNetworkSet
-                            or HostEndpoint. \n For GlobalNetworkPolicy, an empty
-                            NamespaceSelector implies the Selector applies to workload
-                            endpoints across all namespaces."
+                            and another selector are defined on the same rule, then
+                            only workload endpoints that are matched by both selectors
+                            will be selected by the rule. \n For NetworkPolicy, an
+                            empty NamespaceSelector implies that the Selector is limited
+                            to selecting only workload endpoints in the same namespace
+                            as the NetworkPolicy. \n For NetworkPolicy, `global()`
+                            NamespaceSelector implies that the Selector is limited
+                            to selecting only GlobalNetworkSet or HostEndpoint. \n
+                            For GlobalNetworkPolicy, an empty NamespaceSelector implies
+                            the Selector applies to workload endpoints across all
+                            namespaces."
                           type: string
                         nets:
                           description: Nets is an optional field that restricts the
@@ -2676,6 +2777,26 @@ spec:
                                 account that matches the given label selector. If
                                 both Names and Selector are specified then they are
                                 AND'ed.
+                              type: string
+                          type: object
+                        services:
+                          description: "Services is an optional field that contains
+                            options for matching Kubernetes Services. If specified,
+                            only traffic that originates from or terminates at endpoints
+                            within the selected service(s) will be matched, and only
+                            to/from each endpoint's port. \n Services cannot be specified
+                            on the same rule as Selector, NotSelector, NamespaceSelector,
+                            Ports, NotPorts, Nets, NotNets or ServiceAccounts. \n
+                            Only valid on egress rules."
+                          properties:
+                            name:
+                              description: Name specifies the name of a Kubernetes
+                                Service to match.
+                              type: string
+                            namespace:
+                              description: Namespace specifies the namespace of the
+                                given Service. If left empty, the rule will match
+                                within this policy's namespace.
                               type: string
                           type: object
                       type: object
@@ -2786,16 +2907,17 @@ spec:
                             contains a selector expression. Only traffic that originates
                             from (or terminates at) endpoints within the selected
                             namespaces will be matched. When both NamespaceSelector
-                            and Selector are defined on the same rule, then only workload
-                            endpoints that are matched by both selectors will be selected
-                            by the rule. \n For NetworkPolicy, an empty NamespaceSelector
-                            implies that the Selector is limited to selecting only
-                            workload endpoints in the same namespace as the NetworkPolicy.
-                            \n For NetworkPolicy, `global()` NamespaceSelector implies
-                            that the Selector is limited to selecting only GlobalNetworkSet
-                            or HostEndpoint. \n For GlobalNetworkPolicy, an empty
-                            NamespaceSelector implies the Selector applies to workload
-                            endpoints across all namespaces."
+                            and another selector are defined on the same rule, then
+                            only workload endpoints that are matched by both selectors
+                            will be selected by the rule. \n For NetworkPolicy, an
+                            empty NamespaceSelector implies that the Selector is limited
+                            to selecting only workload endpoints in the same namespace
+                            as the NetworkPolicy. \n For NetworkPolicy, `global()`
+                            NamespaceSelector implies that the Selector is limited
+                            to selecting only GlobalNetworkSet or HostEndpoint. \n
+                            For GlobalNetworkPolicy, an empty NamespaceSelector implies
+                            the Selector applies to workload endpoints across all
+                            namespaces."
                           type: string
                         nets:
                           description: Nets is an optional field that restricts the
@@ -2881,6 +3003,26 @@ spec:
                                 account that matches the given label selector. If
                                 both Names and Selector are specified then they are
                                 AND'ed.
+                              type: string
+                          type: object
+                        services:
+                          description: "Services is an optional field that contains
+                            options for matching Kubernetes Services. If specified,
+                            only traffic that originates from or terminates at endpoints
+                            within the selected service(s) will be matched, and only
+                            to/from each endpoint's port. \n Services cannot be specified
+                            on the same rule as Selector, NotSelector, NamespaceSelector,
+                            Ports, NotPorts, Nets, NotNets or ServiceAccounts. \n
+                            Only valid on egress rules."
+                          properties:
+                            name:
+                              description: Name specifies the name of a Kubernetes
+                                Service to match.
+                              type: string
+                            namespace:
+                              description: Namespace specifies the namespace of the
+                                given Service. If left empty, the rule will match
+                                within this policy's namespace.
                               type: string
                           type: object
                       type: object
@@ -2912,16 +3054,17 @@ spec:
                             contains a selector expression. Only traffic that originates
                             from (or terminates at) endpoints within the selected
                             namespaces will be matched. When both NamespaceSelector
-                            and Selector are defined on the same rule, then only workload
-                            endpoints that are matched by both selectors will be selected
-                            by the rule. \n For NetworkPolicy, an empty NamespaceSelector
-                            implies that the Selector is limited to selecting only
-                            workload endpoints in the same namespace as the NetworkPolicy.
-                            \n For NetworkPolicy, `global()` NamespaceSelector implies
-                            that the Selector is limited to selecting only GlobalNetworkSet
-                            or HostEndpoint. \n For GlobalNetworkPolicy, an empty
-                            NamespaceSelector implies the Selector applies to workload
-                            endpoints across all namespaces."
+                            and another selector are defined on the same rule, then
+                            only workload endpoints that are matched by both selectors
+                            will be selected by the rule. \n For NetworkPolicy, an
+                            empty NamespaceSelector implies that the Selector is limited
+                            to selecting only workload endpoints in the same namespace
+                            as the NetworkPolicy. \n For NetworkPolicy, `global()`
+                            NamespaceSelector implies that the Selector is limited
+                            to selecting only GlobalNetworkSet or HostEndpoint. \n
+                            For GlobalNetworkPolicy, an empty NamespaceSelector implies
+                            the Selector applies to workload endpoints across all
+                            namespaces."
                           type: string
                         nets:
                           description: Nets is an optional field that restricts the
@@ -3007,6 +3150,26 @@ spec:
                                 account that matches the given label selector. If
                                 both Names and Selector are specified then they are
                                 AND'ed.
+                              type: string
+                          type: object
+                        services:
+                          description: "Services is an optional field that contains
+                            options for matching Kubernetes Services. If specified,
+                            only traffic that originates from or terminates at endpoints
+                            within the selected service(s) will be matched, and only
+                            to/from each endpoint's port. \n Services cannot be specified
+                            on the same rule as Selector, NotSelector, NamespaceSelector,
+                            Ports, NotPorts, Nets, NotNets or ServiceAccounts. \n
+                            Only valid on egress rules."
+                          properties:
+                            name:
+                              description: Name specifies the name of a Kubernetes
+                                Service to match.
+                              type: string
+                            namespace:
+                              description: Namespace specifies the namespace of the
+                                given Service. If left empty, the rule will match
+                                within this policy's namespace.
                               type: string
                           type: object
                       type: object
@@ -3117,16 +3280,17 @@ spec:
                             contains a selector expression. Only traffic that originates
                             from (or terminates at) endpoints within the selected
                             namespaces will be matched. When both NamespaceSelector
-                            and Selector are defined on the same rule, then only workload
-                            endpoints that are matched by both selectors will be selected
-                            by the rule. \n For NetworkPolicy, an empty NamespaceSelector
-                            implies that the Selector is limited to selecting only
-                            workload endpoints in the same namespace as the NetworkPolicy.
-                            \n For NetworkPolicy, `global()` NamespaceSelector implies
-                            that the Selector is limited to selecting only GlobalNetworkSet
-                            or HostEndpoint. \n For GlobalNetworkPolicy, an empty
-                            NamespaceSelector implies the Selector applies to workload
-                            endpoints across all namespaces."
+                            and another selector are defined on the same rule, then
+                            only workload endpoints that are matched by both selectors
+                            will be selected by the rule. \n For NetworkPolicy, an
+                            empty NamespaceSelector implies that the Selector is limited
+                            to selecting only workload endpoints in the same namespace
+                            as the NetworkPolicy. \n For NetworkPolicy, `global()`
+                            NamespaceSelector implies that the Selector is limited
+                            to selecting only GlobalNetworkSet or HostEndpoint. \n
+                            For GlobalNetworkPolicy, an empty NamespaceSelector implies
+                            the Selector applies to workload endpoints across all
+                            namespaces."
                           type: string
                         nets:
                           description: Nets is an optional field that restricts the
@@ -3212,6 +3376,26 @@ spec:
                                 account that matches the given label selector. If
                                 both Names and Selector are specified then they are
                                 AND'ed.
+                              type: string
+                          type: object
+                        services:
+                          description: "Services is an optional field that contains
+                            options for matching Kubernetes Services. If specified,
+                            only traffic that originates from or terminates at endpoints
+                            within the selected service(s) will be matched, and only
+                            to/from each endpoint's port. \n Services cannot be specified
+                            on the same rule as Selector, NotSelector, NamespaceSelector,
+                            Ports, NotPorts, Nets, NotNets or ServiceAccounts. \n
+                            Only valid on egress rules."
+                          properties:
+                            name:
+                              description: Name specifies the name of a Kubernetes
+                                Service to match.
+                              type: string
+                            namespace:
+                              description: Namespace specifies the namespace of the
+                                given Service. If left empty, the rule will match
+                                within this policy's namespace.
                               type: string
                           type: object
                       type: object
@@ -3360,6 +3544,8 @@ rules:
   - pods
   verbs:
   - get
+  - list
+  - watch
 - apiGroups:
   - crd.projectcalico.org
   resources:
@@ -3447,6 +3633,13 @@ rules:
   - namespaces
   verbs:
   - get
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - watch
+  - list
 - apiGroups:
   - ""
   resources:
@@ -3694,7 +3887,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/node:v3.19.1
+        image: docker.io/calico/node:v3.20.0
         livenessProbe:
           exec:
             command:
@@ -3704,6 +3897,7 @@ spec:
           failureThreshold: 6
           initialDelaySeconds: 10
           periodSeconds: 10
+          timeoutSeconds: 10
         name: calico-node
         readinessProbe:
           exec:
@@ -3712,12 +3906,16 @@ spec:
             - -felix-ready
             - -bird-ready
           periodSeconds: 10
+          timeoutSeconds: 10
         resources:
           requests:
             cpu: 100m
         securityContext:
           privileged: true
         volumeMounts:
+        - mountPath: /host/etc/cni/net.d
+          name: cni-net-dir
+          readOnly: false
         - mountPath: /lib/modules
           name: lib-modules
           readOnly: true
@@ -3757,7 +3955,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.19.1
+        image: docker.io/calico/cni:v3.20.0
         name: upgrade-ipam
         securityContext:
           privileged: true
@@ -3791,7 +3989,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.19.1
+        image: docker.io/calico/cni:v3.20.0
         name: install-cni
         securityContext:
           privileged: true
@@ -3800,7 +3998,7 @@ spec:
           name: cni-bin-dir
         - mountPath: /host/etc/cni/net.d
           name: cni-net-dir
-      - image: docker.io/calico/pod2daemon-flexvol:v3.19.1
+      - image: docker.io/calico/pod2daemon-flexvol:v3.20.0
         name: flexvol-driver
         securityContext:
           privileged: true
@@ -3908,7 +4106,7 @@ spec:
           value: node
         - name: DATASTORE_TYPE
           value: kubernetes
-        image: docker.io/calico/kube-controllers:v3.19.1
+        image: docker.io/calico/kube-controllers:v3.20.0
         livenessProbe:
           exec:
             command:
@@ -3917,6 +4115,7 @@ spec:
           failureThreshold: 6
           initialDelaySeconds: 10
           periodSeconds: 10
+          timeoutSeconds: 10
         name: calico-kube-controllers
         readinessProbe:
           exec:
