@@ -17,6 +17,8 @@ spec:
       subnets:
         - name: us-test-1a
           allocationId: eipalloc-012345a678b9cdefa
+      accessLog:
+        bucket: access-log-example
   kubernetesApiAccess:
   - 1.1.1.0/24
   channel: stable
