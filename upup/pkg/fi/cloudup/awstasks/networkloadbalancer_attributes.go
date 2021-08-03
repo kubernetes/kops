@@ -37,6 +37,12 @@ func (_ *NetworkLoadBalancerAccessLog) GetDependencies(tasks map[string]fi.Task)
 	return nil
 }
 
+type terraformNetworkLoadBalancerAccessLog struct {
+	Enabled        *bool   `json:"enabled,omitempty" cty:"enabled"`
+	S3BucketName   *string `json:"bucket,omitempty" cty:"bucket"`
+	S3BucketPrefix *string `json:"bucket_prefix,omitempty" cty:"prefix"`
+}
+
 func findNetworkLoadBalancerAttributes(cloud awsup.AWSCloud, LoadBalancerArn string) ([]*elbv2.LoadBalancerAttribute, error) {
 
 	request := &elbv2.DescribeLoadBalancerAttributesInput{
