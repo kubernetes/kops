@@ -18,6 +18,7 @@ package tester
 
 import (
 	"regexp"
+	"strings"
 )
 
 const (
@@ -54,6 +55,12 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|load-balancer|hairpin|affinity\\stimeout|service\\.kubernetes\\.io|CLOSE_WAIT"
 	} else if networking.Kubenet != nil {
 		skipRegex += "|Services.*affinity"
+	}
+
+	if strings.Contains(cluster.Spec.KubernetesVersion, "v1.22.") {
+		// TODO(rifelpet): Remove once k8s tags has been created that include
+		// https://github.com/kubernetes/kubernetes/pull/104061
+		skipRegex += "|MetricsGrabber.should.grab.all.metrics.from.a.ControllerManager"
 	}
 
 	// Ensure it is valid regex
