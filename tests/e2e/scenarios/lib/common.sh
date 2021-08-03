@@ -107,7 +107,7 @@ function kops-acquire-latest() {
             KOPS_BASE_URL=""
          fi
          $KUBETEST2 --build
-         KOPS=".bazelbuild/dist/linux/amd64/kops"
+         KOPS="${REPO_ROOT}/.bazelbuild/dist/linux/amd64/kops"
     fi
 }
 
