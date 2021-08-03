@@ -191,6 +191,8 @@ spec:
     amazonvpc: {}
   nodeTerminationHandler:
     cpuRequest: 50m
+    enableRebalanceDraining: false
+    enableRebalanceMonitoring: false
     enableSQSTerminationDraining: false
     enableScheduledEventDraining: false
     enableSpotInterruptionDraining: true

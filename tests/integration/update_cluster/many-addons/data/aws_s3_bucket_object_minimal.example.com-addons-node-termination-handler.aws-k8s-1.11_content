@@ -152,6 +152,10 @@ spec:
           value: "true"
         - name: ENABLE_SCHEDULED_EVENT_DRAINING
           value: "false"
+        - name: ENABLE_REBALANCE_MONITORING
+          value: "false"
+        - name: ENABLE_REBALANCE_DRAINING
+          value: "false"
         - name: JSON_LOGGING
           value: "true"
         - name: ENABLE_PROMETHEUS_SERVER
