@@ -45,6 +45,12 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 	if nth.EnableScheduledEventDraining == nil {
 		nth.EnableScheduledEventDraining = fi.Bool(false)
 	}
+	if nth.EnableRebalanceMonitoring == nil {
+		nth.EnableRebalanceMonitoring = fi.Bool(false)
+	}
+	if nth.EnableRebalanceDraining == nil {
+		nth.EnableRebalanceDraining = fi.Bool(false)
+	}
 
 	if nth.EnablePrometheusMetrics == nil {
 		nth.EnablePrometheusMetrics = fi.Bool(false)

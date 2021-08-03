@@ -180,6 +180,8 @@ spec:
               value: "false"
             - name: ENABLE_REBALANCE_MONITORING
               value: "false"
+            - name: ENABLE_REBALANCE_DRAINING
+              value: "false"
             - name: ENABLE_SQS_TERMINATION_DRAINING
               value: "true"
             - name: QUEUE_URL
@@ -301,6 +303,10 @@ spec:
             value: "{{ .EnableSpotInterruptionDraining }}"
           - name: ENABLE_SCHEDULED_EVENT_DRAINING
             value: "{{ .EnableScheduledEventDraining }}"
+          - name: ENABLE_REBALANCE_MONITORING
+            value: "{{ .EnableRebalanceMonitoring }}"
+          - name: ENABLE_REBALANCE_DRAINING
+            value: "{{ .EnableRebalanceDraining }}"
           - name: JSON_LOGGING
             value: "true"
           - name: ENABLE_PROMETHEUS_SERVER
