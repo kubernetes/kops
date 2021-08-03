@@ -896,6 +896,12 @@ type NodeTerminationHandlerConfig struct {
 	// EnableScheduledEventDraining makes node termination handler drain nodes before the maintenance window starts for an EC2 instance scheduled event.
 	// Default: false
 	EnableScheduledEventDraining *bool `json:"enableScheduledEventDraining,omitempty"`
+	// EnableRebalanceMonitoring makes node termination handler cordon nodes when the rebalance recommendation notice is received
+	// Default: false
+	EnableRebalanceMonitoring *bool `json:"enableRebalanceMonitoring,omitempty"`
+	// EnableRebalanceDraining makes node termination handler drain nodes when the rebalance recommendation notice is received
+	// Default: false
+	EnableRebalanceDraining *bool `json:"enableRebalanceDraining,omitempty"`
 
 	// EnablePrometheusMetrics enables the "/metrics" endpoint.
 	EnablePrometheusMetrics *bool `json:"prometheusEnable,omitempty"`
