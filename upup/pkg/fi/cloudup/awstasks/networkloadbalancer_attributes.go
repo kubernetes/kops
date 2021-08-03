@@ -62,7 +62,7 @@ func findNetworkLoadBalancerAttributes(cloud awsup.AWSCloud, LoadBalancerArn str
 }
 
 func (_ *NetworkLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget, a, e, changes *NetworkLoadBalancer, loadBalancerArn string) error {
-	if changes.CrossZoneLoadBalancing == nil {
+	if changes.CrossZoneLoadBalancing == nil && changes.AccessLog == nil {
 		klog.V(4).Infof("No LoadBalancerAttribute changes; skipping update")
 		return nil
 	}
@@ -84,7 +84,7 @@ func (_ *NetworkLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget
 	}
 	attributes = append(attributes, attribute)
 
-	if e.AccessLog != nil && e.AccessLog.Enabled != nil {
+	if e.AccessLog != nil {
 		attr := &elbv2.LoadBalancerAttribute{
 			Key:   aws.String("access_logs.s3.enabled"),
 			Value: aws.String(strconv.FormatBool(aws.BoolValue(e.AccessLog.Enabled))),
