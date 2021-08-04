@@ -15,6 +15,7 @@ go_library(
         "generatorargs.go",
         "generatoroptions.go",
         "helmchartargs.go",
+        "iampolicygenerator.go",
         "image.go",
         "inventory.go",
         "kustomization.go",
@@ -30,6 +31,7 @@ go_library(
         "pluginrestrictions.go",
         "pluginrestrictions_string.go",
         "replacement.go",
+        "replacementfield.go",
         "replica.go",
         "secretargs.go",
         "selector.go",
@@ -41,7 +43,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/pkg/errors:go_default_library",
-        "//vendor/sigs.k8s.io/kustomize/api/resid:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/resid:go_default_library",
         "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
