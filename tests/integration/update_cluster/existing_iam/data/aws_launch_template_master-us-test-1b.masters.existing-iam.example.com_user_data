@@ -244,7 +244,7 @@ CloudProvider: aws
 ConfigBase: memfs://tests/existing-iam.example.com
 InstanceGroupName: master-us-test-1b
 InstanceGroupRole: Master
-NodeupConfigHash: NAMVb1WG5w0QSW9vww8lQPZ7DecoFr0iGfjT78fdwd0=
+NodeupConfigHash: HjHQyBAfOGm4wHwAqYAJiS+xtVgwTWq77woRSV9hd9k=
 
 __EOF_KUBE_ENV
 

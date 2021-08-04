@@ -244,7 +244,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatekopeio.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: YTGiz6ld8hiX8moyc7GCXukqmgYTRKZo7MffzqQFcXM=
+NodeupConfigHash: PKuaXMiLaQvL3+KG2VFOtmeeXcCxyEoG2dRIrN7Et10=
 
 __EOF_KUBE_ENV
 

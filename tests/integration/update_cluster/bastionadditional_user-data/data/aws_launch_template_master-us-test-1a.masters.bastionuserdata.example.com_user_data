@@ -244,7 +244,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/bastionuserdata.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: FBE8yjdRS6iFlra8yT8yCacZVKnL0oZ1qLv9yYkumCU=
+NodeupConfigHash: qYmTID0jnMsl4mMdaPk88ouExQWJxv4JBE+cDQ/QusU=
 
 __EOF_KUBE_ENV
 

@@ -261,7 +261,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimaletcdexamplecom.Propert
   ConfigBase: memfs://clusters.example.com/minimal-etcd.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: blSnak61+iqCkBUXkNfDXLGz/YypVZA6J3yldqglkPg=
+  NodeupConfigHash: W7/wjoITwtdyVXX6BtfOESF2XD1PmsG+bvat01A/V3Y=
 
   __EOF_KUBE_ENV
 
@@ -432,7 +432,7 @@ Resources.AWSEC2LaunchTemplatenodesminimaletcdexamplecom.Properties.LaunchTempla
   ConfigBase: memfs://clusters.example.com/minimal-etcd.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: 77H1CbGUHToQsytORj+assYaEZeBmoZBA7+xvmV35zA=
+  NodeupConfigHash: 2FJ3+qnrBcxX9c+xAAPgIWtvEaSYM2iki6ZjBxJI9mk=
 
   __EOF_KUBE_ENV
 
