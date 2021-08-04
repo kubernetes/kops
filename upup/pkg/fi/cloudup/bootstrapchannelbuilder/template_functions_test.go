@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cloudup
+package bootstrapchannelbuilder
 
 import (
 	"fmt"
@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -194,7 +195,9 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 	}
 	for _, testCase := range tests {
 		t.Run(testCase.desc, func(t *testing.T) {
-			tf := &TemplateFunctions{}
+			tf := &TemplateFunctions{
+				KopsModelContext: &model.KopsModelContext{},
+			}
 			tf.Cluster = testCase.cluster
 
 			actual, error := tf.CloudControllerConfigArgv()

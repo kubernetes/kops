@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components/addonmanifests"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
@@ -71,6 +72,16 @@ func (m *ManifestResource) Open() (io.Reader, error) {
 	return strings.NewReader(*m.content), nil
 }
 
+func (c *ManifestResource) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	var dependencies []fi.Task
+	for _, task := range tasks {
+		if _, ok := task.(*awstasks.VPC); ok {
+			dependencies = append(dependencies, task)
+		}
+	}
+	return dependencies
+}
+
 type ChannelResource struct {
 	addons        *api.Addons
 	manifestTasks map[string]*fitasks.ManagedFile
@@ -96,11 +107,11 @@ func (c *ChannelResource) Open() (io.Reader, error) {
 	return bytes.NewReader(addonsYAML), nil
 }
 
-// GetDependencies adds CA to the list of dependencies
 func (c *ChannelResource) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var dependencies []fi.Task
 	for _, task := range c.manifestTasks {
 		dependencies = append(dependencies, task)
 	}
+
 	return dependencies
 }

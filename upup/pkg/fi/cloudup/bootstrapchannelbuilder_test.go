@@ -28,10 +28,8 @@ import (
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/iam"
-	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/pkg/testutils/golden"
-	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/bootstrapchannelbuilder"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -109,11 +107,6 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 	}
 	cluster = fullSpec
 
-	templates, err := templates.LoadTemplates(cluster, models.NewAssetPath("cloudup/resources"))
-	if err != nil {
-		t.Fatalf("error building templates for %q: %v", key, err)
-	}
-
 	vfs.Context.ResetMemfsContext(true)
 
 	basePath, err := vfs.Context.BuildVfsPath("memfs://tests")
@@ -151,18 +144,13 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		},
 	}
 
-	tf := &TemplateFunctions{
-		KopsModelContext: kopsModel,
-		cloud:            cloud,
-	}
-	tf.AddTo(templates.TemplateFunctions, secretStore)
-
 	bcb := bootstrapchannelbuilder.NewBootstrapChannelBuilder(
 		&kopsModel,
 		fi.LifecycleSync,
 		assets.NewAssetBuilder(cluster, false),
-		templates,
 		nil,
+		secretStore,
+		cloud,
 	)
 
 	context := &fi.ModelBuilderContext{
@@ -171,6 +159,23 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 	err = bcb.Build(context)
 	if err != nil {
 		t.Fatalf("error from BootstrapChannelBuilder Build: %v", err)
+	}
+
+	{
+		name := cluster.ObjectMeta.Name + "-addons-bootstrap"
+		manifestTask := context.Tasks["ManagedFile/"+name]
+		if manifestTask == nil {
+			t.Fatalf("manifest task not found (%q)", name)
+		}
+
+		manifestFileTask := manifestTask.(*fitasks.ManagedFile)
+		actualManifest, err := fi.ResourceAsString(manifestFileTask.Contents)
+		if err != nil {
+			t.Fatalf("error getting manifest as string: %v", err)
+		}
+
+		expectedManifestPath := path.Join(basedir, "manifest.yaml")
+		golden.AssertMatchesFile(t, actualManifest, expectedManifestPath)
 	}
 
 	for _, k := range addonManifests {
@@ -192,29 +197,4 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		expectedManifestPath := path.Join(basedir, k+".yaml")
 		golden.AssertMatchesFile(t, actualManifest, expectedManifestPath)
 	}
-
-	// Make sure all managed files are rendered and hashed.
-	for _, k := range context.Tasks {
-		if task, ok := k.(*fitasks.ManagedFile); ok {
-			fi.ResourceAsString(task.Contents)
-		}
-	}
-
-	{
-		name := cluster.ObjectMeta.Name + "-addons-bootstrap"
-		manifestTask := context.Tasks["ManagedFile/"+name]
-		if manifestTask == nil {
-			t.Fatalf("manifest task not found (%q)", name)
-		}
-
-		manifestFileTask := manifestTask.(*fitasks.ManagedFile)
-		actualManifest, err := fi.ResourceAsString(manifestFileTask.Contents)
-		if err != nil {
-			t.Fatalf("error getting manifest as string: %v", err)
-		}
-
-		expectedManifestPath := path.Join(basedir, "manifest.yaml")
-		golden.AssertMatchesFile(t, actualManifest, expectedManifestPath)
-	}
-
 }

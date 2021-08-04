@@ -17,7 +17,6 @@ go_library(
         "spec_builder.go",
         "subnets.go",
         "target.go",
-        "template_functions.go",
         "urls.go",
         "utils.go",
     ],
@@ -25,7 +24,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//:go_default_library",
-        "//cmd/kops-controller/pkg/config:go_default_library",
         "//dns-controller/pkg/dns:go_default_library",
         "//dnsprovider/pkg/dnsprovider:go_default_library",
         "//dnsprovider/pkg/dnsprovider/providers/aws/route53:go_default_library",
@@ -51,11 +49,8 @@ go_library(
         "//pkg/model/gcemodel:go_default_library",
         "//pkg/model/iam:go_default_library",
         "//pkg/model/openstackmodel:go_default_library",
-        "//pkg/resources/spotinst:go_default_library",
-        "//pkg/templates:go_default_library",
         "//pkg/util/subnet:go_default_library",
         "//pkg/wellknownports:go_default_library",
-        "//upup/models:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/aliup:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
@@ -70,16 +65,13 @@ go_library(
         "//upup/pkg/fi/fitasks:go_default_library",
         "//upup/pkg/fi/loader:go_default_library",
         "//util/pkg/architectures:go_default_library",
-        "//util/pkg/env:go_default_library",
         "//util/pkg/hashing:go_default_library",
         "//util/pkg/mirrors:go_default_library",
         "//util/pkg/reflectutils:go_default_library",
         "//util/pkg/vfs:go_default_library",
-        "//vendor/github.com/Masterminds/sprig/v3:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
         "//vendor/github.com/blang/semver/v4:go_default_library",
-        "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
@@ -89,7 +81,6 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    size = "small",
     srcs = [
         "bootstrapchannelbuilder_test.go",
         "containerd_test.go",
@@ -102,12 +93,8 @@ go_test(
         "populate_cluster_spec_test.go",
         "populate_instancegroup_spec_test.go",
         "subnets_test.go",
-        "template_functions_test.go",
         "urls_test.go",
         "validation_test.go",
-    ],
-    data = [
-        "//upup/pkg/fi/cloudup/tests:exported_testdata",  # keep
     ],
     embed = [":go_default_library"],
     deps = [
@@ -121,10 +108,8 @@ go_test(
         "//pkg/kopscodecs:go_default_library",
         "//pkg/model:go_default_library",
         "//pkg/model/iam:go_default_library",
-        "//pkg/templates:go_default_library",
         "//pkg/testutils:go_default_library",
         "//pkg/testutils/golden:go_default_library",
-        "//upup/models:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/cloudup/bootstrapchannelbuilder:go_default_library",
@@ -138,5 +123,8 @@ go_test(
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
         "//vendor/sigs.k8s.io/yaml:go_default_library",
+    ],
+    data = [
+        "//upup/pkg/fi/cloudup/tests:exported_testdata",  # keep
     ],
 )

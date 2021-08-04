@@ -25,7 +25,7 @@ When defining a new function:
 		dest["MyNewFunction"] = MyNewFunction // <-- Function Pointer
 ******************************************************************************/
 
-package cloudup
+package bootstrapchannelbuilder
 
 import (
 	"encoding/base64"
@@ -59,7 +59,7 @@ import (
 
 // TemplateFunctions provides a collection of methods used throughout the templates
 type TemplateFunctions struct {
-	model.KopsModelContext
+	*model.KopsModelContext
 
 	cloud fi.Cloud
 }
@@ -67,7 +67,7 @@ type TemplateFunctions struct {
 // AddTo defines the available functions we can use in our YAML models.
 // If we are trying to get a new function implemented it MUST
 // be defined here.
-func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretStore) (err error) {
+func (tf *TemplateFunctions) AddTo(dest template.FuncMap, c *fi.ModelBuilderContext, secretStore fi.SecretStore) (err error) {
 	cluster := tf.Cluster
 
 	dest["EtcdScheme"] = tf.EtcdScheme

@@ -55,9 +55,7 @@ import (
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/model/openstackmodel"
-	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/pkg/wellknownports"
-	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -491,11 +489,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	tf := &TemplateFunctions{
-		KopsModelContext: *modelContext,
-		cloud:            cloud,
-	}
-
 	configBuilder, err := newNodeUpConfigBuilder(cluster, assetBuilder, c.Assets, encryptionConfigSecretHash)
 	if err != nil {
 		return err
@@ -509,22 +502,14 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	{
-		templates, err := templates.LoadTemplates(cluster, models.NewAssetPath("cloudup/resources"))
-		if err != nil {
-			return fmt.Errorf("error loading templates: %v", err)
-		}
-
-		err = tf.AddTo(templates.TemplateFunctions, secretStore)
-		if err != nil {
-			return err
-		}
 
 		bcb := bootstrapchannelbuilder.NewBootstrapChannelBuilder(
 			modelContext,
 			clusterLifecycle,
 			assetBuilder,
-			templates,
 			addons,
+			secretStore,
+			cloud,
 		)
 
 		l.Builders = append(l.Builders,

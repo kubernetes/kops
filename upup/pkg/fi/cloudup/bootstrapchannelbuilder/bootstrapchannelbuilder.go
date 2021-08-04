@@ -39,6 +39,7 @@ import (
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/pkg/wellknownoperators"
+	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -49,8 +50,9 @@ type BootstrapChannelBuilder struct {
 	*model.KopsModelContext
 	ClusterAddons kubemanifest.ObjectList
 	Lifecycle     fi.Lifecycle
-	templates     *templates.Templates
 	assetBuilder  *assets.AssetBuilder
+	secretStore   fi.SecretStore
+	cloud         fi.Cloud
 }
 
 var _ fi.ModelBuilder = &BootstrapChannelBuilder{}
@@ -79,22 +81,41 @@ func networkingSelector() map[string]string {
 }
 
 // NewBootstrapChannelBuilder creates a new BootstrapChannelBuilder
-func NewBootstrapChannelBuilder(modelContext *model.KopsModelContext,
+func NewBootstrapChannelBuilder(
+	modelContext *model.KopsModelContext,
 	clusterLifecycle fi.Lifecycle, assetBuilder *assets.AssetBuilder,
-	templates *templates.Templates,
 	addons kubemanifest.ObjectList,
+	secretStore fi.SecretStore,
+	cloud fi.Cloud,
 ) *BootstrapChannelBuilder {
 	return &BootstrapChannelBuilder{
 		KopsModelContext: modelContext,
 		Lifecycle:        clusterLifecycle,
 		assetBuilder:     assetBuilder,
-		templates:        templates,
 		ClusterAddons:    addons,
+		secretStore:      secretStore,
+		cloud:            cloud,
 	}
 }
 
 // Build is responsible for adding the addons to the channel
 func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
+
+	tf := &TemplateFunctions{
+		KopsModelContext: b.KopsModelContext,
+		cloud:            b.cloud,
+	}
+
+	templates, err := templates.LoadTemplates(b.Cluster, models.NewAssetPath("cloudup/resources"))
+	if err != nil {
+		return fmt.Errorf("error loading templates: %v", err)
+	}
+
+	err = tf.AddTo(templates.TemplateFunctions, c, b.secretStore)
+	if err != nil {
+		return err
+	}
+
 	addons, err := b.buildAddons(c)
 	if err != nil {
 		return err
@@ -115,7 +136,7 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		manifestPath := "addons/" + *a.Manifest
 		klog.V(4).Infof("Addon %q", name)
 
-		templateResource := b.templates.Find(manifestPath)
+		templateResource := templates.Find(manifestPath)
 		if templateResource == nil {
 			return fmt.Errorf("unable to find manifest %s", manifestPath)
 		}
