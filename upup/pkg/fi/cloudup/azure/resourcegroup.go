@@ -54,7 +54,7 @@ func (c *resourceGroupsClientImpl) List(ctx context.Context, filter string) ([]r
 }
 
 func (c *resourceGroupsClientImpl) Delete(ctx context.Context, name string) error {
-	future, err := c.c.Delete(ctx, name)
+	future, err := c.c.Delete(ctx, name, "")
 	if err != nil {
 		return fmt.Errorf("error deleting resource group: %s", err)
 	}

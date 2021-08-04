@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "apply.go",
+        "completion.go",
         "pod_port.go",
         "service_port.go",
         "umask.go",
@@ -14,11 +15,15 @@ go_library(
     importpath = "k8s.io/kubectl/pkg/util",
     visibility = ["//visibility:public"],
     deps = [
+        "//vendor/github.com/spf13/cobra:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/meta:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/intstr:go_default_library",
+        "//vendor/k8s.io/kubectl/pkg/cmd/apiresources:go_default_library",
+        "//vendor/k8s.io/kubectl/pkg/cmd/get:go_default_library",
+        "//vendor/k8s.io/kubectl/pkg/cmd/util:go_default_library",
     ] + select({
         "@io_bazel_rules_go//go/platform:aix": [
             "//vendor/golang.org/x/sys/unix:go_default_library",

@@ -48,8 +48,7 @@ func (client GroupsClient) CheckExistence(ctx context.Context, resourceGroupName
 	if err := validation.Validate([]validation.Validation{
 		{TargetValue: resourceGroupName,
 			Constraints: []validation.Constraint{{Target: "resourceGroupName", Name: validation.MaxLength, Rule: 90, Chain: nil},
-				{Target: "resourceGroupName", Name: validation.MinLength, Rule: 1, Chain: nil},
-				{Target: "resourceGroupName", Name: validation.Pattern, Rule: `^[-\p{L}\._\(\)\w]+$`, Chain: nil}}}}); err != nil {
+				{Target: "resourceGroupName", Name: validation.MinLength, Rule: 1, Chain: nil}}}}); err != nil {
 		return result, validation.NewError("resources.GroupsClient", "CheckExistence", err.Error())
 	}
 
@@ -132,8 +131,7 @@ func (client GroupsClient) CreateOrUpdate(ctx context.Context, resourceGroupName
 	if err := validation.Validate([]validation.Validation{
 		{TargetValue: resourceGroupName,
 			Constraints: []validation.Constraint{{Target: "resourceGroupName", Name: validation.MaxLength, Rule: 90, Chain: nil},
-				{Target: "resourceGroupName", Name: validation.MinLength, Rule: 1, Chain: nil},
-				{Target: "resourceGroupName", Name: validation.Pattern, Rule: `^[-\p{L}\._\(\)\w]+$`, Chain: nil}}},
+				{Target: "resourceGroupName", Name: validation.MinLength, Rule: 1, Chain: nil}}},
 		{TargetValue: parameters,
 			Constraints: []validation.Constraint{{Target: "parameters.Location", Name: validation.Null, Rule: true, Chain: nil}}}}); err != nil {
 		return result, validation.NewError("resources.GroupsClient", "CreateOrUpdate", err.Error())
@@ -208,7 +206,10 @@ func (client GroupsClient) CreateOrUpdateResponder(resp *http.Response) (result 
 // all of its template deployments and currently stored operations.
 // Parameters:
 // resourceGroupName - the name of the resource group to delete. The name is case insensitive.
-func (client GroupsClient) Delete(ctx context.Context, resourceGroupName string) (result GroupsDeleteFuture, err error) {
+// forceDeletionResourceTypes - the resource types you want to force delete. Currently, only the following is
+// supported:
+// forceDeletionResourceTypes=Microsoft.Compute/virtualMachines,Microsoft.Compute/virtualMachineScaleSets
+func (client GroupsClient) Delete(ctx context.Context, resourceGroupName string, forceDeletionResourceTypes string) (result GroupsDeleteFuture, err error) {
 	if tracing.IsEnabled() {
 		ctx = tracing.StartSpan(ctx, fqdn+"/GroupsClient.Delete")
 		defer func() {
@@ -222,12 +223,11 @@ func (client GroupsClient) Delete(ctx context.Context, resourceGroupName string)
 	if err := validation.Validate([]validation.Validation{
 		{TargetValue: resourceGroupName,
 			Constraints: []validation.Constraint{{Target: "resourceGroupName", Name: validation.MaxLength, Rule: 90, Chain: nil},
-				{Target: "resourceGroupName", Name: validation.MinLength, Rule: 1, Chain: nil},
-				{Target: "resourceGroupName", Name: validation.Pattern, Rule: `^[-\p{L}\._\(\)\w]+$`, Chain: nil}}}}); err != nil {
+				{Target: "resourceGroupName", Name: validation.MinLength, Rule: 1, Chain: nil}}}}); err != nil {
 		return result, validation.NewError("resources.GroupsClient", "Delete", err.Error())
 	}
 
-	req, err := client.DeletePreparer(ctx, resourceGroupName)
+	req, err := client.DeletePreparer(ctx, resourceGroupName, forceDeletionResourceTypes)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.GroupsClient", "Delete", nil, "Failure preparing request")
 		return
@@ -243,7 +243,7 @@ func (client GroupsClient) Delete(ctx context.Context, resourceGroupName string)
 }
 
 // DeletePreparer prepares the Delete request.
-func (client GroupsClient) DeletePreparer(ctx context.Context, resourceGroupName string) (*http.Request, error) {
+func (client GroupsClient) DeletePreparer(ctx context.Context, resourceGroupName string, forceDeletionResourceTypes string) (*http.Request, error) {
 	pathParameters := map[string]interface{}{
 		"resourceGroupName": autorest.Encode("path", resourceGroupName),
 		"subscriptionId":    autorest.Encode("path", client.SubscriptionID),
@@ -252,6 +252,9 @@ func (client GroupsClient) DeletePreparer(ctx context.Context, resourceGroupName
 	const APIVersion = "2020-06-01"
 	queryParameters := map[string]interface{}{
 		"api-version": APIVersion,
+	}
+	if len(forceDeletionResourceTypes) > 0 {
+		queryParameters["forceDeletionResourceTypes"] = autorest.Encode("query", forceDeletionResourceTypes)
 	}
 
 	preparer := autorest.CreatePreparer(
@@ -392,8 +395,7 @@ func (client GroupsClient) Get(ctx context.Context, resourceGroupName string) (r
 	if err := validation.Validate([]validation.Validation{
 		{TargetValue: resourceGroupName,
 			Constraints: []validation.Constraint{{Target: "resourceGroupName", Name: validation.MaxLength, Rule: 90, Chain: nil},
-				{Target: "resourceGroupName", Name: validation.MinLength, Rule: 1, Chain: nil},
-				{Target: "resourceGroupName", Name: validation.Pattern, Rule: `^[-\p{L}\._\(\)\w]+$`, Chain: nil}}}}); err != nil {
+				{Target: "resourceGroupName", Name: validation.MinLength, Rule: 1, Chain: nil}}}}); err != nil {
 		return result, validation.NewError("resources.GroupsClient", "Get", err.Error())
 	}
 
@@ -599,8 +601,7 @@ func (client GroupsClient) Update(ctx context.Context, resourceGroupName string,
 	if err := validation.Validate([]validation.Validation{
 		{TargetValue: resourceGroupName,
 			Constraints: []validation.Constraint{{Target: "resourceGroupName", Name: validation.MaxLength, Rule: 90, Chain: nil},
-				{Target: "resourceGroupName", Name: validation.MinLength, Rule: 1, Chain: nil},
-				{Target: "resourceGroupName", Name: validation.Pattern, Rule: `^[-\p{L}\._\(\)\w]+$`, Chain: nil}}}}); err != nil {
+				{Target: "resourceGroupName", Name: validation.MinLength, Rule: 1, Chain: nil}}}}); err != nil {
 		return result, validation.NewError("resources.GroupsClient", "Update", err.Error())
 	}
 

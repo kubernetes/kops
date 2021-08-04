@@ -11,8 +11,8 @@ go_library(
     importpath = "sigs.k8s.io/kustomize/api/loader",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/sigs.k8s.io/kustomize/api/filesys:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/ifc:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/internal/git:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/filesys:go_default_library",
     ],
 )
