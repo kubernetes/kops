@@ -419,6 +419,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.RegisterFlagCompletionFunc("os-lb-floating-subnet", completeOpenstackLBSubnet)
 	cmd.Flags().BoolVar(&options.OpenstackStorageIgnoreAZ, "os-kubelet-ignore-az", options.OpenstackStorageIgnoreAZ, "Attach volumes across availability zones")
 	cmd.Flags().BoolVar(&options.OpenstackLBOctavia, "os-octavia", options.OpenstackLBOctavia, "Use octavia loadbalancer API")
+	cmd.Flags().StringVar(&options.OpenstackOctaviaProvider, "os-octavia-provider", options.OpenstackOctaviaProvider, "Octavia provider to use")
+	cmd.RegisterFlagCompletionFunc("os-octavia-provider", completeOpenstackOctaviaProvider)
 	cmd.Flags().StringVar(&options.OpenstackDNSServers, "os-dns-servers", options.OpenstackDNSServers, "comma separated list of DNS Servers which is used in network")
 	cmd.RegisterFlagCompletionFunc("os-dns-servers", completeOpenstackDNSServers)
 	cmd.Flags().StringVar(&options.OpenstackNetworkID, "os-network", options.OpenstackNetworkID, "ID of the existing OpenStack network to use")
@@ -1052,6 +1054,20 @@ func completeOpenstackExternalSubnet(cmd *cobra.Command, args []string, toComple
 func completeOpenstackLBSubnet(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	// TODO call into cloud provider to get list of external subnets
 	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeOpenstackOctaviaProvider(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	providers := []string{
+		"a10",
+		"amphora",
+		"amphorav2",
+		"f5",
+		"octavia",
+		"ovn",
+		"radware",
+		"vmwareedge",
+	}
+	return providers, cobra.ShellCompDirectiveNoFileComp
 }
 
 func completeOpenstackDNSServers(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

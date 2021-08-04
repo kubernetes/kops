@@ -101,7 +101,8 @@ type NewClusterOptions struct {
 	OpenstackDNSServers      string
 	OpenstackLBSubnet        string
 	// OpenstackLBOctavia is whether to use use octavia instead of haproxy.
-	OpenstackLBOctavia bool
+	OpenstackLBOctavia       bool
+	OpenstackOctaviaProvider string
 
 	AzureSubscriptionID    string
 	AzureTenantID          string
@@ -1115,7 +1116,11 @@ func initializeOpenstackAPI(opt *NewClusterOptions, cluster *api.Cluster) {
 		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 		provider := "haproxy"
 		if opt.OpenstackLBOctavia {
-			provider = "octavia"
+			if opt.OpenstackOctaviaProvider != "" {
+				provider = opt.OpenstackOctaviaProvider
+			} else {
+				provider = "octavia"
+			}
 		}
 
 		cluster.Spec.CloudConfig.Openstack.Loadbalancer = &api.OpenstackLoadbalancerConfig{
