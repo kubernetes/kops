@@ -2,6 +2,7 @@ Lifecycle: ""
 Name: node
 ---
 AvailabilityZone: zone-1
+ConfigDrive: false
 Flavor: blc.2-4
 FloatingIP: null
 ForAPIServer: false
