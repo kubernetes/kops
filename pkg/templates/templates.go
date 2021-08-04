@@ -50,7 +50,10 @@ func LoadTemplates(cluster *kops.Cluster, base vfs.Path) (*Templates, error) {
 }
 
 func (t *Templates) Find(key string) fi.Resource {
-	return t.resources[key]
+	if template, ok := t.resources[key]; ok {
+		return template
+	}
+	return nil
 }
 
 func (t *Templates) loadFrom(base vfs.Path) error {
