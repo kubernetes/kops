@@ -207,6 +207,7 @@ func findAllContainerdDockerMappings() map[string]string {
 		"1.4.3": "20.10.0",
 		"1.4.4": "20.10.6",
 		"1.4.6": "20.10.7",
+		"1.4.9": "20.10.8",
 	}
 
 	return versions
