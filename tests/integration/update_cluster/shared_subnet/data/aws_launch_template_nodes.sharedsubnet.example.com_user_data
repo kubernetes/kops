@@ -162,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/sharedsubnet.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: RiX+z3LIxJ4kixy49rMdrqFvApNYvNahTAgFceZK5AY=
+NodeupConfigHash: V8pU8AneV5YcgqlmTLO77KuxdylaIkar/G5UgYpAsyU=
 
 __EOF_KUBE_ENV
 
