@@ -109,6 +109,7 @@ kops create cluster [CLUSTER] [flags]
       --os-lb-floating-subnet string     External subnet to use with the kubernetes api
       --os-network string                ID of the existing OpenStack network to use
       --os-octavia                       Use octavia loadbalancer API
+      --os-octavia-provider string       Octavia provider to use
       --out string                       Path to write any local output
   -o, --output string                    Output format. One of json or yaml. Used with the --dry-run flag.
       --project string                   Project to use (must be set on GCE)
