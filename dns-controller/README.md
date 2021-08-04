@@ -18,7 +18,7 @@ but for now we just expose it via DNS.
 
 ### Pods with hostNetworking
 
-dns-controller can add DNS records that point to nodes *with hostNetworknig* enabled.
+dns-controller can add DNS records that point to nodes *with hostNetworking* enabled.
 
 The dns-controller recognizes annotations on pod.
 
