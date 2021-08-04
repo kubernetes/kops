@@ -286,10 +286,14 @@ func (b *BootstrapScript) GetName() *string {
 func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
 
-	for _, task := range tasks {
+	for key, task := range tasks {
 		if hasAddress, ok := task.(fi.HasAddress); ok && hasAddress.IsForAPIServer() {
 			deps = append(deps, task)
 			b.alternateNameTasks = append(b.alternateNameTasks, hasAddress)
+		}
+
+		if strings.HasPrefix(key, "ManagedFile/"+b.builder.ClusterName()+"-addon") {
+			deps = append(deps, task)
 		}
 	}
 
