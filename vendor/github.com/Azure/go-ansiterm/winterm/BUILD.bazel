@@ -18,6 +18,7 @@ go_library(
     deps = select({
         "@io_bazel_rules_go//go/platform:windows": [
             "//vendor/github.com/Azure/go-ansiterm:go_default_library",
+            "//vendor/golang.org/x/sys/windows:go_default_library",
         ],
         "//conditions:default": [],
     }),

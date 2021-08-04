@@ -4785,6 +4785,12 @@ type ApplicationSecurityGroupPropertiesFormat struct {
 	ProvisioningState ProvisioningState `json:"provisioningState,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for ApplicationSecurityGroupPropertiesFormat.
+func (asgpf ApplicationSecurityGroupPropertiesFormat) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
+}
+
 // ApplicationSecurityGroupsCreateOrUpdateFuture an abstraction for monitoring and retrieving the results
 // of a long-running operation.
 type ApplicationSecurityGroupsCreateOrUpdateFuture struct {
@@ -6382,6 +6388,12 @@ type AzureFirewallFqdnTagPropertiesFormat struct {
 	FqdnTagName *string `json:"fqdnTagName,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for AzureFirewallFqdnTagPropertiesFormat.
+func (afftpf AzureFirewallFqdnTagPropertiesFormat) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
+}
+
 // AzureFirewallIPConfiguration IP configuration of an Azure Firewall.
 type AzureFirewallIPConfiguration struct {
 	// AzureFirewallIPConfigurationPropertiesFormat - Properties of the azure firewall IP configuration.
@@ -6501,6 +6513,12 @@ type AzureFirewallIPGroups struct {
 	ID *string `json:"id,omitempty"`
 	// ChangeNumber - READ-ONLY; The iteration number.
 	ChangeNumber *string `json:"changeNumber,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for AzureFirewallIPGroups.
+func (afig AzureFirewallIPGroups) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // AzureFirewallListResult response for ListAzureFirewalls API service call.
@@ -7330,6 +7348,12 @@ type BastionActiveSession struct {
 	SessionDurationInMins *float64 `json:"sessionDurationInMins,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for BastionActiveSession.
+func (bas BastionActiveSession) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
+}
+
 // BastionActiveSessionListResult response for GetActiveSessions.
 type BastionActiveSessionListResult struct {
 	autorest.Response `json:"-"`
@@ -8151,6 +8175,12 @@ type BastionSessionState struct {
 	State *string `json:"state,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for BastionSessionState.
+func (bss BastionSessionState) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
+}
+
 // BastionShareableLink bastion Shareable Link.
 type BastionShareableLink struct {
 	// VM - Reference of the virtual machine resource.
@@ -8486,6 +8516,12 @@ type BgpPeerStatus struct {
 	MessagesSent *int64 `json:"messagesSent,omitempty"`
 	// MessagesReceived - READ-ONLY; The number of BGP messages received.
 	MessagesReceived *int64 `json:"messagesReceived,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for BgpPeerStatus.
+func (bps BgpPeerStatus) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // BgpPeerStatusListResult response for list BGP peer status API service call.
@@ -8842,6 +8878,12 @@ type ConfigurationDiagnosticResponse struct {
 	autorest.Response `json:"-"`
 	// Results - READ-ONLY; List of network configuration diagnostic results.
 	Results *[]ConfigurationDiagnosticResult `json:"results,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for ConfigurationDiagnosticResponse.
+func (cdr ConfigurationDiagnosticResponse) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // ConfigurationDiagnosticResult network configuration diagnostic result corresponded to provided traffic
@@ -9590,6 +9632,12 @@ type ConnectivityHop struct {
 	Issues *[]ConnectivityIssue `json:"issues,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for ConnectivityHop.
+func (ch ConnectivityHop) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
+}
+
 // ConnectivityInformation information on the connectivity status.
 type ConnectivityInformation struct {
 	autorest.Response `json:"-"`
@@ -9609,6 +9657,12 @@ type ConnectivityInformation struct {
 	ProbesFailed *int32 `json:"probesFailed,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for ConnectivityInformation.
+func (ci ConnectivityInformation) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
+}
+
 // ConnectivityIssue information about an issue encountered in the process of checking for connectivity.
 type ConnectivityIssue struct {
 	// Origin - READ-ONLY; The origin of the issue. Possible values include: 'OriginLocal', 'OriginInbound', 'OriginOutbound'
@@ -9619,6 +9673,12 @@ type ConnectivityIssue struct {
 	Type IssueType `json:"type,omitempty"`
 	// Context - READ-ONLY; Provides additional context on the issue.
 	Context *[]map[string]*string `json:"context,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for ConnectivityIssue.
+func (ci ConnectivityIssue) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // ConnectivityParameters parameters that determine how the connectivity check will be performed.
@@ -9930,6 +9990,12 @@ func (cniic *ContainerNetworkInterfaceIPConfiguration) UnmarshalJSON(body []byte
 type ContainerNetworkInterfaceIPConfigurationPropertiesFormat struct {
 	// ProvisioningState - READ-ONLY; The provisioning state of the container network interface IP configuration resource. Possible values include: 'Succeeded', 'Updating', 'Deleting', 'Failed'
 	ProvisioningState ProvisioningState `json:"provisioningState,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for ContainerNetworkInterfaceIPConfigurationPropertiesFormat.
+func (cniicpf ContainerNetworkInterfaceIPConfigurationPropertiesFormat) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // ContainerNetworkInterfacePropertiesFormat properties of container network interface.
@@ -10859,6 +10925,12 @@ type DdosProtectionPlanPropertiesFormat struct {
 	ProvisioningState ProvisioningState `json:"provisioningState,omitempty"`
 	// VirtualNetworks - READ-ONLY; The list of virtual networks associated with the DDoS protection plan resource. This list is read-only.
 	VirtualNetworks *[]SubResource `json:"virtualNetworks,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for DdosProtectionPlanPropertiesFormat.
+func (dpppf DdosProtectionPlanPropertiesFormat) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // DdosProtectionPlansCreateOrUpdateFuture an abstraction for monitoring and retrieving the results of a
@@ -13668,6 +13740,12 @@ type ExpressRouteConnectionID struct {
 	ID *string `json:"id,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for ExpressRouteConnectionID.
+func (erci ExpressRouteConnectionID) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
+}
+
 // ExpressRouteConnectionList expressRouteConnection list.
 type ExpressRouteConnectionList struct {
 	autorest.Response `json:"-"`
@@ -15765,6 +15843,12 @@ type ExpressRoutePortsLocationBandwidths struct {
 	OfferName *string `json:"offerName,omitempty"`
 	// ValueInGbps - READ-ONLY; Bandwidth value in Gbps.
 	ValueInGbps *int32 `json:"valueInGbps,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for ExpressRoutePortsLocationBandwidths.
+func (erplb ExpressRoutePortsLocationBandwidths) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // ExpressRoutePortsLocationListResult response for ListExpressRoutePortsLocations API service call.
@@ -18160,6 +18244,12 @@ type GatewayRoute struct {
 	Weight *int32 `json:"weight,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for GatewayRoute.
+func (gr GatewayRoute) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
+}
+
 // GatewayRouteListResult list of virtual network gateway routes.
 type GatewayRouteListResult struct {
 	autorest.Response `json:"-"`
@@ -18419,6 +18509,12 @@ type HopLinkProperties struct {
 	RoundTripTimeAvg *int32 `json:"roundTripTimeAvg,omitempty"`
 	// RoundTripTimeMax - READ-ONLY; Maximum roundtrip time in milliseconds.
 	RoundTripTimeMax *int32 `json:"roundTripTimeMax,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for HopLinkProperties.
+func (hlp HopLinkProperties) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // HTTPConfiguration HTTP configuration of the connectivity check.
@@ -20125,6 +20221,12 @@ type InterfaceIPConfigurationPrivateLinkConnectionProperties struct {
 	RequiredMemberName *string `json:"requiredMemberName,omitempty"`
 	// Fqdns - READ-ONLY; List of FQDNs for current private link connection.
 	Fqdns *[]string `json:"fqdns,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for InterfaceIPConfigurationPrivateLinkConnectionProperties.
+func (iicplcp InterfaceIPConfigurationPrivateLinkConnectionProperties) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // InterfaceIPConfigurationPropertiesFormat properties of IP configuration.
@@ -26496,6 +26598,12 @@ type ManagedServiceIdentityUserAssignedIdentitiesValue struct {
 	ClientID *string `json:"clientId,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for ManagedServiceIdentityUserAssignedIdentitiesValue.
+func (msiAiv ManagedServiceIdentityUserAssignedIdentitiesValue) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
+}
+
 // MatchCondition define match conditions.
 type MatchCondition struct {
 	// MatchVariables - List of match variables.
@@ -29001,6 +29109,12 @@ type PeerRoute struct {
 	AsPath *string `json:"asPath,omitempty"`
 	// Weight - READ-ONLY; The route's weight.
 	Weight *int32 `json:"weight,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for PeerRoute.
+func (pr PeerRoute) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // PeerRouteList list of virtual router peer routes.
@@ -36344,6 +36458,12 @@ type ServiceTagInformation struct {
 	ID *string `json:"id,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for ServiceTagInformation.
+func (sti ServiceTagInformation) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
+}
+
 // ServiceTagInformationPropertiesFormat properties of the service tag information.
 type ServiceTagInformationPropertiesFormat struct {
 	// ChangeNumber - READ-ONLY; The iteration number of service tag.
@@ -36354,6 +36474,12 @@ type ServiceTagInformationPropertiesFormat struct {
 	SystemService *string `json:"systemService,omitempty"`
 	// AddressPrefixes - READ-ONLY; The list of IP address prefixes.
 	AddressPrefixes *[]string `json:"addressPrefixes,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for ServiceTagInformationPropertiesFormat.
+func (stipf ServiceTagInformationPropertiesFormat) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // ServiceTagsListResult response for the ListServiceTags API service call.
@@ -36371,6 +36497,12 @@ type ServiceTagsListResult struct {
 	Cloud *string `json:"cloud,omitempty"`
 	// Values - READ-ONLY; The list of service tag information resources.
 	Values *[]ServiceTagInformation `json:"values,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for ServiceTagsListResult.
+func (stlr ServiceTagsListResult) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // SessionIds list of session IDs.
@@ -37101,6 +37233,12 @@ type TunnelConnectionHealth struct {
 	LastConnectionEstablishedUtcTime *string `json:"lastConnectionEstablishedUtcTime,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for TunnelConnectionHealth.
+func (tch TunnelConnectionHealth) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
+}
+
 // UnprepareNetworkPoliciesRequest details of UnprepareNetworkPolicies for Subnet.
 type UnprepareNetworkPoliciesRequest struct {
 	// ServiceName - The name of the service for which subnet is being unprepared for.
@@ -37631,6 +37769,12 @@ type VirtualApplianceNicProperties struct {
 	PublicIPAddress *string `json:"publicIpAddress,omitempty"`
 	// PrivateIPAddress - READ-ONLY; Private IP address.
 	PrivateIPAddress *string `json:"privateIpAddress,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for VirtualApplianceNicProperties.
+func (vanp VirtualApplianceNicProperties) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // VirtualAppliancePropertiesFormat network Virtual Appliance definition.
@@ -38236,6 +38380,12 @@ type VirtualApplianceSkuInstances struct {
 	ScaleUnit *string `json:"scaleUnit,omitempty"`
 	// InstanceCount - READ-ONLY; Instance Count.
 	InstanceCount *int32 `json:"instanceCount,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for VirtualApplianceSkuInstances.
+func (vasi VirtualApplianceSkuInstances) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // VirtualApplianceSkuListResult response for ListNetworkVirtualApplianceSkus API service call.
@@ -42873,12 +43023,24 @@ type VirtualNetworkUsage struct {
 	Unit *string `json:"unit,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for VirtualNetworkUsage.
+func (vnu VirtualNetworkUsage) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
+}
+
 // VirtualNetworkUsageName usage strings container.
 type VirtualNetworkUsageName struct {
 	// LocalizedValue - READ-ONLY; Localized subnet size and usage string.
 	LocalizedValue *string `json:"localizedValue,omitempty"`
 	// Value - READ-ONLY; Subnet size and usage string.
 	Value *string `json:"value,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for VirtualNetworkUsageName.
+func (vnun VirtualNetworkUsageName) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // VirtualRouter virtualRouter Resource.
@@ -43993,6 +44155,12 @@ type VpnClientConnectionHealthDetail struct {
 	IngressBytesTransferred *int64 `json:"ingressBytesTransferred,omitempty"`
 	// MaxPacketsPerSecond - READ-ONLY; The max packets transferred per second.
 	MaxPacketsPerSecond *int64 `json:"maxPacketsPerSecond,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for VpnClientConnectionHealthDetail.
+func (vcchd VpnClientConnectionHealthDetail) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // VpnClientConnectionHealthDetailListResult list of virtual network gateway vpn client connection health.
@@ -45526,6 +45694,12 @@ type VpnSiteID struct {
 	VpnSite *string `json:"vpnSite,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for VpnSiteID.
+func (vsi VpnSiteID) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
+}
+
 // VpnSiteLink vpnSiteLink Resource.
 type VpnSiteLink struct {
 	autorest.Response `json:"-"`
@@ -46109,6 +46283,12 @@ type WatcherListResult struct {
 type WatcherPropertiesFormat struct {
 	// ProvisioningState - READ-ONLY; The provisioning state of the network watcher resource. Possible values include: 'Succeeded', 'Updating', 'Deleting', 'Failed'
 	ProvisioningState ProvisioningState `json:"provisioningState,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for WatcherPropertiesFormat.
+func (wpf WatcherPropertiesFormat) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // WatchersCheckConnectivityFuture an abstraction for monitoring and retrieving the results of a
@@ -46818,6 +46998,12 @@ type WebApplicationFirewallPolicyListResult struct {
 	Value *[]WebApplicationFirewallPolicy `json:"value,omitempty"`
 	// NextLink - READ-ONLY; URL to get the next set of WebApplicationFirewallPolicy objects if there are any.
 	NextLink *string `json:"nextLink,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for WebApplicationFirewallPolicyListResult.
+func (wafplr WebApplicationFirewallPolicyListResult) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	return json.Marshal(objectMap)
 }
 
 // WebApplicationFirewallPolicyListResultIterator provides access to a complete listing of

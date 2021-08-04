@@ -51,12 +51,10 @@ func (client DeploymentOperationsClient) Get(ctx context.Context, resourceGroupN
 	if err := validation.Validate([]validation.Validation{
 		{TargetValue: resourceGroupName,
 			Constraints: []validation.Constraint{{Target: "resourceGroupName", Name: validation.MaxLength, Rule: 90, Chain: nil},
-				{Target: "resourceGroupName", Name: validation.MinLength, Rule: 1, Chain: nil},
-				{Target: "resourceGroupName", Name: validation.Pattern, Rule: `^[-\p{L}\._\(\)\w]+$`, Chain: nil}}},
+				{Target: "resourceGroupName", Name: validation.MinLength, Rule: 1, Chain: nil}}},
 		{TargetValue: deploymentName,
 			Constraints: []validation.Constraint{{Target: "deploymentName", Name: validation.MaxLength, Rule: 64, Chain: nil},
-				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil},
-				{Target: "deploymentName", Name: validation.Pattern, Rule: `^[-\w\._\(\)]+$`, Chain: nil}}}}); err != nil {
+				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil}}}}); err != nil {
 		return result, validation.NewError("resources.DeploymentOperationsClient", "Get", err.Error())
 	}
 
@@ -144,8 +142,7 @@ func (client DeploymentOperationsClient) GetAtManagementGroupScope(ctx context.C
 				{Target: "groupID", Name: validation.MinLength, Rule: 1, Chain: nil}}},
 		{TargetValue: deploymentName,
 			Constraints: []validation.Constraint{{Target: "deploymentName", Name: validation.MaxLength, Rule: 64, Chain: nil},
-				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil},
-				{Target: "deploymentName", Name: validation.Pattern, Rule: `^[-\w\._\(\)]+$`, Chain: nil}}}}); err != nil {
+				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil}}}}); err != nil {
 		return result, validation.NewError("resources.DeploymentOperationsClient", "GetAtManagementGroupScope", err.Error())
 	}
 
@@ -229,8 +226,7 @@ func (client DeploymentOperationsClient) GetAtScope(ctx context.Context, scope s
 	if err := validation.Validate([]validation.Validation{
 		{TargetValue: deploymentName,
 			Constraints: []validation.Constraint{{Target: "deploymentName", Name: validation.MaxLength, Rule: 64, Chain: nil},
-				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil},
-				{Target: "deploymentName", Name: validation.Pattern, Rule: `^[-\w\._\(\)]+$`, Chain: nil}}}}); err != nil {
+				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil}}}}); err != nil {
 		return result, validation.NewError("resources.DeploymentOperationsClient", "GetAtScope", err.Error())
 	}
 
@@ -313,8 +309,7 @@ func (client DeploymentOperationsClient) GetAtSubscriptionScope(ctx context.Cont
 	if err := validation.Validate([]validation.Validation{
 		{TargetValue: deploymentName,
 			Constraints: []validation.Constraint{{Target: "deploymentName", Name: validation.MaxLength, Rule: 64, Chain: nil},
-				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil},
-				{Target: "deploymentName", Name: validation.Pattern, Rule: `^[-\w\._\(\)]+$`, Chain: nil}}}}); err != nil {
+				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil}}}}); err != nil {
 		return result, validation.NewError("resources.DeploymentOperationsClient", "GetAtSubscriptionScope", err.Error())
 	}
 
@@ -397,8 +392,7 @@ func (client DeploymentOperationsClient) GetAtTenantScope(ctx context.Context, d
 	if err := validation.Validate([]validation.Validation{
 		{TargetValue: deploymentName,
 			Constraints: []validation.Constraint{{Target: "deploymentName", Name: validation.MaxLength, Rule: 64, Chain: nil},
-				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil},
-				{Target: "deploymentName", Name: validation.Pattern, Rule: `^[-\w\._\(\)]+$`, Chain: nil}}}}); err != nil {
+				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil}}}}); err != nil {
 		return result, validation.NewError("resources.DeploymentOperationsClient", "GetAtTenantScope", err.Error())
 	}
 
@@ -481,12 +475,10 @@ func (client DeploymentOperationsClient) List(ctx context.Context, resourceGroup
 	if err := validation.Validate([]validation.Validation{
 		{TargetValue: resourceGroupName,
 			Constraints: []validation.Constraint{{Target: "resourceGroupName", Name: validation.MaxLength, Rule: 90, Chain: nil},
-				{Target: "resourceGroupName", Name: validation.MinLength, Rule: 1, Chain: nil},
-				{Target: "resourceGroupName", Name: validation.Pattern, Rule: `^[-\p{L}\._\(\)\w]+$`, Chain: nil}}},
+				{Target: "resourceGroupName", Name: validation.MinLength, Rule: 1, Chain: nil}}},
 		{TargetValue: deploymentName,
 			Constraints: []validation.Constraint{{Target: "deploymentName", Name: validation.MaxLength, Rule: 64, Chain: nil},
-				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil},
-				{Target: "deploymentName", Name: validation.Pattern, Rule: `^[-\w\._\(\)]+$`, Chain: nil}}}}); err != nil {
+				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil}}}}); err != nil {
 		return result, validation.NewError("resources.DeploymentOperationsClient", "List", err.Error())
 	}
 
@@ -618,8 +610,7 @@ func (client DeploymentOperationsClient) ListAtManagementGroupScope(ctx context.
 				{Target: "groupID", Name: validation.MinLength, Rule: 1, Chain: nil}}},
 		{TargetValue: deploymentName,
 			Constraints: []validation.Constraint{{Target: "deploymentName", Name: validation.MaxLength, Rule: 64, Chain: nil},
-				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil},
-				{Target: "deploymentName", Name: validation.Pattern, Rule: `^[-\w\._\(\)]+$`, Chain: nil}}}}); err != nil {
+				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil}}}}); err != nil {
 		return result, validation.NewError("resources.DeploymentOperationsClient", "ListAtManagementGroupScope", err.Error())
 	}
 
@@ -747,8 +738,7 @@ func (client DeploymentOperationsClient) ListAtScope(ctx context.Context, scope 
 	if err := validation.Validate([]validation.Validation{
 		{TargetValue: deploymentName,
 			Constraints: []validation.Constraint{{Target: "deploymentName", Name: validation.MaxLength, Rule: 64, Chain: nil},
-				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil},
-				{Target: "deploymentName", Name: validation.Pattern, Rule: `^[-\w\._\(\)]+$`, Chain: nil}}}}); err != nil {
+				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil}}}}); err != nil {
 		return result, validation.NewError("resources.DeploymentOperationsClient", "ListAtScope", err.Error())
 	}
 
@@ -875,8 +865,7 @@ func (client DeploymentOperationsClient) ListAtSubscriptionScope(ctx context.Con
 	if err := validation.Validate([]validation.Validation{
 		{TargetValue: deploymentName,
 			Constraints: []validation.Constraint{{Target: "deploymentName", Name: validation.MaxLength, Rule: 64, Chain: nil},
-				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil},
-				{Target: "deploymentName", Name: validation.Pattern, Rule: `^[-\w\._\(\)]+$`, Chain: nil}}}}); err != nil {
+				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil}}}}); err != nil {
 		return result, validation.NewError("resources.DeploymentOperationsClient", "ListAtSubscriptionScope", err.Error())
 	}
 
@@ -1003,8 +992,7 @@ func (client DeploymentOperationsClient) ListAtTenantScope(ctx context.Context, 
 	if err := validation.Validate([]validation.Validation{
 		{TargetValue: deploymentName,
 			Constraints: []validation.Constraint{{Target: "deploymentName", Name: validation.MaxLength, Rule: 64, Chain: nil},
-				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil},
-				{Target: "deploymentName", Name: validation.Pattern, Rule: `^[-\w\._\(\)]+$`, Chain: nil}}}}); err != nil {
+				{Target: "deploymentName", Name: validation.MinLength, Rule: 1, Chain: nil}}}}); err != nil {
 		return result, validation.NewError("resources.DeploymentOperationsClient", "ListAtTenantScope", err.Error())
 	}
 

@@ -10,11 +10,11 @@ go_library(
     importpath = "sigs.k8s.io/kustomize/api/filters/namespace",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/sigs.k8s.io/kustomize/api/filters/fieldspec:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/filters/filtersutil:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/filters/fsslice:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/types:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/kio:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/resid:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",
     ],
 )

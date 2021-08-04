@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "doc.go",
         "fieldspec.go",
-        "gvk.go",
     ],
     importmap = "k8s.io/kops/vendor/sigs.k8s.io/kustomize/api/filters/fieldspec",
     importpath = "sigs.k8s.io/kustomize/api/filters/fieldspec",
@@ -13,9 +12,9 @@ go_library(
     deps = [
         "//vendor/sigs.k8s.io/kustomize/api/filters/filtersutil:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/internal/utils:go_default_library",
-        "//vendor/sigs.k8s.io/kustomize/api/resid:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/types:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/errors:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/resid:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",
     ],
 )
