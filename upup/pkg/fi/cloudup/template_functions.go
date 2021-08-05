@@ -49,7 +49,6 @@ import (
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/pkg/resources/aws"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
@@ -236,7 +235,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["IsIPv6Only"] = tf.IsIPv6Only
 	dest["UseServiceAccountIAM"] = tf.UseServiceAccountIAM
-	dest["GetVPCID"] = tf.GetVPCID
 
 	if cluster.Spec.NodeTerminationHandler != nil {
 		dest["DefaultQueueName"] = func() string {
@@ -674,15 +672,4 @@ func (tf *TemplateFunctions) GetNodeInstanceGroups() map[string]kops.InstanceGro
 		}
 	}
 	return nodegroups
-}
-
-func (tf *TemplateFunctions) GetVPCID() (string, error) {
-	vpcs, err := aws.DescribeVPCs(tf.cloud, tf.ClusterName())
-	if err != nil {
-		return "", err
-	}
-	for id := range vpcs {
-		return id, nil
-	}
-	return "", fmt.Errorf("failed to find VPC for %q", tf.ClusterName())
 }
