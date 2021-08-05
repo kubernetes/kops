@@ -22,6 +22,7 @@ go_library(
         "//vendor/github.com/xlab/treeprint:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/errors:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/ext:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/filesys:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/kio/kioutil:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/sets:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",

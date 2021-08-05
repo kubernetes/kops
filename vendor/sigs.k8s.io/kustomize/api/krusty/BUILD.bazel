@@ -12,7 +12,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/sigs.k8s.io/kustomize/api/builtins:go_default_library",
-        "//vendor/sigs.k8s.io/kustomize/api/filesys:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/internal/plugins/builtinhelpers:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/internal/plugins/loader:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/internal/target:go_default_library",
@@ -22,6 +21,7 @@ go_library(
         "//vendor/sigs.k8s.io/kustomize/api/provider:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/resmap:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/types:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/filesys:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/openapi:go_default_library",
     ],
 )
