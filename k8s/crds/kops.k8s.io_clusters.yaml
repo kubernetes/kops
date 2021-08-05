@@ -1206,6 +1206,12 @@ spec:
                       - namespace
                       type: object
                     type: array
+                  useServiceAccountExternalPermissions:
+                    description: UseServiceAccountExternalPermissions determines if
+                      managed ServiceAccounts will use external permissions directly.
+                      If this is set to false, ServiceAccounts will assume external
+                      permissions from the instances they run on.
+                    type: boolean
                 required:
                 - legacy
                 type: object

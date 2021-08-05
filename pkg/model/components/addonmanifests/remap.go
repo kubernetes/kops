@@ -25,7 +25,6 @@ import (
 	"k8s.io/klog/v2"
 	addonsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/assets"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components/addonmanifests/awscloudcontrollermanager"
@@ -83,7 +82,7 @@ func RemapAddonManifest(addon *addonsapi.AddonSpec, context *model.KopsModelCont
 }
 
 func addServiceAccountRole(context *model.KopsModelContext, objects kubemanifest.ObjectList) error {
-	if !featureflag.UseServiceAccountIAM.Enabled() {
+	if !context.UseServiceAccountExternalPermissions() {
 		return nil
 	}
 
