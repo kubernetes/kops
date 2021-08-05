@@ -39,6 +39,7 @@ type Distribution struct {
 var (
 	DistributionDebian9      = Distribution{packageFormat: "deb", project: "debian", id: "stretch", version: 9}
 	DistributionDebian10     = Distribution{packageFormat: "deb", project: "debian", id: "buster", version: 10}
+	DistributionDebian11     = Distribution{packageFormat: "deb", project: "debian", id: "bullseye", version: 11}
 	DistributionUbuntu1604   = Distribution{packageFormat: "deb", project: "ubuntu", id: "xenial", version: 16.04}
 	DistributionUbuntu1804   = Distribution{packageFormat: "deb", project: "ubuntu", id: "bionic", version: 18.04}
 	DistributionUbuntu2004   = Distribution{packageFormat: "deb", project: "ubuntu", id: "focal", version: 20.04}
