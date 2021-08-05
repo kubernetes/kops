@@ -803,7 +803,6 @@ spec:
         - --ingress-class=alb
         - "--default-tags={{ CloudLabels }}"
         - --aws-region={{ Region }}
-        - --aws-vpc-id={{ GetVPCID }}
         image: amazon/aws-alb-ingress-controller:{{ or .AWSLoadBalancerController.Version "v2.2.0" }}
         livenessProbe:
           failureThreshold: 2
@@ -831,19 +830,15 @@ spec:
           name: cert
           readOnly: true
       priorityClassName: system-cluster-critical
-      {{ if not UseServiceAccountIAM }}
       nodeSelector:
         node-role.kubernetes.io/master: ""
-      {{ end }}
       priorityClassName: system-cluster-critical
       securityContext:
         fsGroup: 1337
       serviceAccountName: aws-load-balancer-controller
       terminationGracePeriodSeconds: 10
-      {{ if not UseServiceAccountIAM }}
       tolerations:
         - operator: Exists
-      {{ end }}
       volumes:
       - name: cert
         secret:
