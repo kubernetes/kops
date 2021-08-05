@@ -42,6 +42,7 @@ The following table provides the support status for various distros with regards
 | [Debian 8](#debian-8-jessie) | - | 1.5 | 1.17 | 1.18 |
 | [Debian 9](#debian-9-stretch) | 1.8 | 1.10 | - | - |
 | [Debian 10](#debian-10-buster) | 1.13 | 1.17 | - | - |
+| [Debian 11](#debian-11-bullseye) | 1.22 | - | - | - |
 | [Flatcar](#flatcar) | 1.15.1 | 1.17 | - | - |
 | [Kope.io](#kopeio) | - | - | 1.18 | - |
 | [RHEL 7](#rhel-7) | - | 1.5 | - | - |
@@ -141,6 +142,19 @@ aws ec2 describe-images --region us-east-1 --output table \
   --owners 136693071363 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=debian-10-amd64-*"
+```
+
+### Debian 11 (Bullseye)
+
+Debian 11 is based on Kernel version **5.10** which has no known major Kernel bugs and fully supports all Cilium features.
+
+Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 903794441882 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=debian-11-amd64-*"
 ```
 
 ### Flatcar
@@ -247,6 +261,7 @@ kOps supports owner aliases for the official accounts of supported distros:
 * `centos` => `125523088429`
 * `debian9` => `379101102735`
 * `debian10` => `136693071363`
+* `debian11` => `903794441882`
 * `flatcar` => `075585003325`
 * `redhat` => `309956199498`
 * `ubuntu` => `099720109477`
