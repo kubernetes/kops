@@ -2150,6 +2150,11 @@ func (in *IAMSpec) DeepCopyInto(out *IAMSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.UseServiceAccountExternalPermissions != nil {
+		in, out := &in.UseServiceAccountExternalPermissions, &out.UseServiceAccountExternalPermissions
+		*out = new(bool)
+		**out = **in
+	}
 	if in.ServiceAccountExternalPermissions != nil {
 		in, out := &in.ServiceAccountExternalPermissions, &out.ServiceAccountExternalPermissions
 		*out = make([]ServiceAccountExternalPermission, len(*in))

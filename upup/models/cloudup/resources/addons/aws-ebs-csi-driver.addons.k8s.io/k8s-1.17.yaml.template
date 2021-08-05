@@ -415,12 +415,12 @@ spec:
               topologyKey: topology.kubernetes.io/zone
       nodeSelector:
         kubernetes.io/os: linux
-        {{ if not UseServiceAccountIAM }}
+        {{ if not UseServiceAccountExternalPermissions }}
         node-role.kubernetes.io/master: ""
         {{ end }}
       serviceAccountName: ebs-csi-controller-sa
       priorityClassName: system-cluster-critical
-      {{ if not UseServiceAccountIAM }}
+      {{ if not UseServiceAccountExternalPermissions }}
       tolerations:
         - operator: Exists
       {{ end }}

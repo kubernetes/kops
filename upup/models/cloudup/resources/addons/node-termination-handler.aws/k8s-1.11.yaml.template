@@ -202,7 +202,7 @@ spec:
             requests:
               cpu: {{ .CPURequest }}
               memory: {{ .MemoryRequest }}
-      {{ if not UseServiceAccountIAM }}
+      {{ if not UseServiceAccountExternalPermissions }}
       nodeSelector:
         node-role.kubernetes.io/master: ""
       tolerations:

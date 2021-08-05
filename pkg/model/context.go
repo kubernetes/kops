@@ -24,7 +24,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/iam"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
@@ -414,7 +413,9 @@ func (b *KopsModelContext) NodePortRange() (utilnet.PortRange, error) {
 	return defaultServiceNodePortRange, nil
 }
 
-// UseServiceAccountIAM returns true if we are using service-account bound IAM roles.
-func (b *KopsModelContext) UseServiceAccountIAM() bool {
-	return featureflag.UseServiceAccountIAM.Enabled()
+// UseServiceAccountExternalPermissions returns true if we are using service-account bound IAM roles.
+func (b *KopsModelContext) UseServiceAccountExternalPermissions() bool {
+
+	return b.Cluster.Spec.IAM != nil &&
+		fi.BoolValue(b.Cluster.Spec.IAM.UseServiceAccountExternalPermissions)
 }

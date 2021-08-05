@@ -87,8 +87,6 @@ var (
 	TerraformJSON = new("TerraformJSON", Bool(false))
 	// ClusterAddons activates experimental cluster-addons support
 	ClusterAddons = new("ClusterAddons", Bool(false))
-	// UseServiceAccountIAM controls whether we use pod-level IAM permissions for our system pods and kOps addons.
-	UseServiceAccountIAM = new("UseServiceAccountIAM", Bool(false))
 	// Azure toggles the Azure support.
 	Azure = new("Azure", Bool(false))
 	// KopsControllerStateStore enables fetching the kops state from kops-controller, instead of requiring access to S3/GCS/etc.

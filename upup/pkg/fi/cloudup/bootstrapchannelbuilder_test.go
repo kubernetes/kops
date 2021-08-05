@@ -59,9 +59,9 @@ func TestBootstrapChannelBuilder_ServiceAccountIAM(t *testing.T) {
 
 	h.SetupMockAWS()
 
-	featureflag.ParseFlags("+UseServiceAccountIAM")
+	featureflag.ParseFlags("+UseServiceAccountExternalPermissions")
 	unsetFeatureFlag := func() {
-		featureflag.ParseFlags("-UseServiceAccountIAM")
+		featureflag.ParseFlags("-UseServiceAccountExternalPermissions")
 	}
 	defer unsetFeatureFlag()
 	runChannelBuilderTest(t, "service-account-iam", []string{"dns-controller.addons.k8s.io-k8s-1.12", "kops-controller.addons.k8s.io-k8s-1.16"})
