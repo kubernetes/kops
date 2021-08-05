@@ -63,6 +63,7 @@ spec:
     version: 3.4.13
   iam:
     legacy: false
+    useServiceAccountExternalPermissions: true
   keyStore: memfs://clusters.example.com/minimal.example.com/pki
   kubeAPIServer:
     allowPrivileged: true
