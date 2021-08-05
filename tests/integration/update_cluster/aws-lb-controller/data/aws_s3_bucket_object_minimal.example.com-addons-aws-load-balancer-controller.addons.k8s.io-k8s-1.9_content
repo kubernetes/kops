@@ -850,7 +850,6 @@ spec:
         - --ingress-class=alb
         - --default-tags=KubernetesCluster=minimal.example.com
         - --aws-region=us-test-1
-        - --aws-vpc-id=vpc-12345678
         env:
         - name: AWS_ROLE_ARN
           value: arn:aws-test:iam::123456789012:role/aws-load-balancer-controller.kube-system.sa.minimal.example.com
@@ -885,11 +884,15 @@ spec:
         - mountPath: /var/run/secrets/amazonaws.com/
           name: token-amazonaws-com
           readOnly: true
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
       securityContext:
         fsGroup: 1337
       serviceAccountName: aws-load-balancer-controller
       terminationGracePeriodSeconds: 10
+      tolerations:
+      - operator: Exists
       volumes:
       - name: cert
         secret:
