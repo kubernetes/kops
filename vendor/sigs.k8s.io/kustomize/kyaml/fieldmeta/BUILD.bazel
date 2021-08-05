@@ -7,7 +7,7 @@ go_library(
     importpath = "sigs.k8s.io/kustomize/kyaml/fieldmeta",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/github.com/go-openapi/spec:go_default_library",
+        "//vendor/k8s.io/kube-openapi/pkg/validation/spec:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/errors:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/openapi:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",

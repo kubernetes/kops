@@ -21,6 +21,7 @@ go_library(
         "rollingupdatedaemonset.go",
         "rollingupdatedeployment.go",
         "rollingupdatestatefulsetstrategy.go",
+        "scale.go",
         "statefulset.go",
         "statefulsetcondition.go",
         "statefulsetspec.go",

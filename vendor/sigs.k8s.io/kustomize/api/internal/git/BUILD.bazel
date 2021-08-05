@@ -12,7 +12,7 @@ go_library(
     visibility = ["//vendor/sigs.k8s.io/kustomize/api:__subpackages__"],
     deps = [
         "//vendor/github.com/pkg/errors:go_default_library",
-        "//vendor/sigs.k8s.io/kustomize/api/filesys:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/internal/utils:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/filesys:go_default_library",
     ],
 )
