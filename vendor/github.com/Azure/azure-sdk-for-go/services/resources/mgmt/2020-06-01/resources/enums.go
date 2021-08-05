@@ -10,42 +10,43 @@ package resources
 type AliasPathAttributes string
 
 const (
-	// Modifiable The token that the alias path is referring to is modifiable by policies with 'modify' effect.
-	Modifiable AliasPathAttributes = "Modifiable"
-	// None The token that the alias path is referring to has no attributes.
-	None AliasPathAttributes = "None"
+	// AliasPathAttributesModifiable The token that the alias path is referring to is modifiable by policies
+	// with 'modify' effect.
+	AliasPathAttributesModifiable AliasPathAttributes = "Modifiable"
+	// AliasPathAttributesNone The token that the alias path is referring to has no attributes.
+	AliasPathAttributesNone AliasPathAttributes = "None"
 )
 
 // PossibleAliasPathAttributesValues returns an array of possible values for the AliasPathAttributes const type.
 func PossibleAliasPathAttributesValues() []AliasPathAttributes {
-	return []AliasPathAttributes{Modifiable, None}
+	return []AliasPathAttributes{AliasPathAttributesModifiable, AliasPathAttributesNone}
 }
 
 // AliasPathTokenType enumerates the values for alias path token type.
 type AliasPathTokenType string
 
 const (
-	// Any The token type can be anything.
-	Any AliasPathTokenType = "Any"
-	// Array The token type is array.
-	Array AliasPathTokenType = "Array"
-	// Boolean The token type is boolean.
-	Boolean AliasPathTokenType = "Boolean"
-	// Integer The token type is integer.
-	Integer AliasPathTokenType = "Integer"
-	// NotSpecified The token type is not specified.
-	NotSpecified AliasPathTokenType = "NotSpecified"
-	// Number The token type is number.
-	Number AliasPathTokenType = "Number"
-	// Object The token type is object.
-	Object AliasPathTokenType = "Object"
-	// String The token type is string.
-	String AliasPathTokenType = "String"
+	// AliasPathTokenTypeAny The token type can be anything.
+	AliasPathTokenTypeAny AliasPathTokenType = "Any"
+	// AliasPathTokenTypeArray The token type is array.
+	AliasPathTokenTypeArray AliasPathTokenType = "Array"
+	// AliasPathTokenTypeBoolean The token type is boolean.
+	AliasPathTokenTypeBoolean AliasPathTokenType = "Boolean"
+	// AliasPathTokenTypeInteger The token type is integer.
+	AliasPathTokenTypeInteger AliasPathTokenType = "Integer"
+	// AliasPathTokenTypeNotSpecified The token type is not specified.
+	AliasPathTokenTypeNotSpecified AliasPathTokenType = "NotSpecified"
+	// AliasPathTokenTypeNumber The token type is number.
+	AliasPathTokenTypeNumber AliasPathTokenType = "Number"
+	// AliasPathTokenTypeObject The token type is object.
+	AliasPathTokenTypeObject AliasPathTokenType = "Object"
+	// AliasPathTokenTypeString The token type is string.
+	AliasPathTokenTypeString AliasPathTokenType = "String"
 )
 
 // PossibleAliasPathTokenTypeValues returns an array of possible values for the AliasPathTokenType const type.
 func PossibleAliasPathTokenTypeValues() []AliasPathTokenType {
-	return []AliasPathTokenType{Any, Array, Boolean, Integer, NotSpecified, Number, Object, String}
+	return []AliasPathTokenType{AliasPathTokenTypeAny, AliasPathTokenTypeArray, AliasPathTokenTypeBoolean, AliasPathTokenTypeInteger, AliasPathTokenTypeNotSpecified, AliasPathTokenTypeNumber, AliasPathTokenTypeObject, AliasPathTokenTypeString}
 }
 
 // AliasPatternType enumerates the values for alias pattern type.
@@ -84,44 +85,44 @@ func PossibleAliasTypeValues() []AliasType {
 type ChangeType string
 
 const (
-	// Create The resource does not exist in the current state but is present in the desired state. The
-	// resource will be created when the deployment is executed.
-	Create ChangeType = "Create"
-	// Delete The resource exists in the current state and is missing from the desired state. The resource will
-	// be deleted when the deployment is executed.
-	Delete ChangeType = "Delete"
-	// Deploy The resource exists in the current state and the desired state and will be redeployed when the
-	// deployment is executed. The properties of the resource may or may not change.
-	Deploy ChangeType = "Deploy"
-	// Ignore The resource exists in the current state and is missing from the desired state. The resource will
-	// not be deployed or modified when the deployment is executed.
-	Ignore ChangeType = "Ignore"
-	// Modify The resource exists in the current state and the desired state and will be redeployed when the
-	// deployment is executed. The properties of the resource will change.
-	Modify ChangeType = "Modify"
-	// NoChange The resource exists in the current state and the desired state and will be redeployed when the
-	// deployment is executed. The properties of the resource will not change.
-	NoChange ChangeType = "NoChange"
+	// ChangeTypeCreate The resource does not exist in the current state but is present in the desired state.
+	// The resource will be created when the deployment is executed.
+	ChangeTypeCreate ChangeType = "Create"
+	// ChangeTypeDelete The resource exists in the current state and is missing from the desired state. The
+	// resource will be deleted when the deployment is executed.
+	ChangeTypeDelete ChangeType = "Delete"
+	// ChangeTypeDeploy The resource exists in the current state and the desired state and will be redeployed
+	// when the deployment is executed. The properties of the resource may or may not change.
+	ChangeTypeDeploy ChangeType = "Deploy"
+	// ChangeTypeIgnore The resource exists in the current state and is missing from the desired state. The
+	// resource will not be deployed or modified when the deployment is executed.
+	ChangeTypeIgnore ChangeType = "Ignore"
+	// ChangeTypeModify The resource exists in the current state and the desired state and will be redeployed
+	// when the deployment is executed. The properties of the resource will change.
+	ChangeTypeModify ChangeType = "Modify"
+	// ChangeTypeNoChange The resource exists in the current state and the desired state and will be redeployed
+	// when the deployment is executed. The properties of the resource will not change.
+	ChangeTypeNoChange ChangeType = "NoChange"
 )
 
 // PossibleChangeTypeValues returns an array of possible values for the ChangeType const type.
 func PossibleChangeTypeValues() []ChangeType {
-	return []ChangeType{Create, Delete, Deploy, Ignore, Modify, NoChange}
+	return []ChangeType{ChangeTypeCreate, ChangeTypeDelete, ChangeTypeDeploy, ChangeTypeIgnore, ChangeTypeModify, ChangeTypeNoChange}
 }
 
 // DeploymentMode enumerates the values for deployment mode.
 type DeploymentMode string
 
 const (
-	// Complete ...
-	Complete DeploymentMode = "Complete"
-	// Incremental ...
-	Incremental DeploymentMode = "Incremental"
+	// DeploymentModeComplete ...
+	DeploymentModeComplete DeploymentMode = "Complete"
+	// DeploymentModeIncremental ...
+	DeploymentModeIncremental DeploymentMode = "Incremental"
 )
 
 // PossibleDeploymentModeValues returns an array of possible values for the DeploymentMode const type.
 func PossibleDeploymentModeValues() []DeploymentMode {
-	return []DeploymentMode{Complete, Incremental}
+	return []DeploymentMode{DeploymentModeComplete, DeploymentModeIncremental}
 }
 
 // ExpressionEvaluationOptionsScopeType enumerates the values for expression evaluation options scope type.
@@ -145,15 +146,15 @@ func PossibleExpressionEvaluationOptionsScopeTypeValues() []ExpressionEvaluation
 type OnErrorDeploymentType string
 
 const (
-	// LastSuccessful ...
-	LastSuccessful OnErrorDeploymentType = "LastSuccessful"
-	// SpecificDeployment ...
-	SpecificDeployment OnErrorDeploymentType = "SpecificDeployment"
+	// OnErrorDeploymentTypeLastSuccessful ...
+	OnErrorDeploymentTypeLastSuccessful OnErrorDeploymentType = "LastSuccessful"
+	// OnErrorDeploymentTypeSpecificDeployment ...
+	OnErrorDeploymentTypeSpecificDeployment OnErrorDeploymentType = "SpecificDeployment"
 )
 
 // PossibleOnErrorDeploymentTypeValues returns an array of possible values for the OnErrorDeploymentType const type.
 func PossibleOnErrorDeploymentTypeValues() []OnErrorDeploymentType {
-	return []OnErrorDeploymentType{LastSuccessful, SpecificDeployment}
+	return []OnErrorDeploymentType{OnErrorDeploymentTypeLastSuccessful, OnErrorDeploymentTypeSpecificDeployment}
 }
 
 // PropertyChangeType enumerates the values for property change type.
@@ -288,13 +289,13 @@ func PossibleTagsPatchOperationValues() []TagsPatchOperation {
 type WhatIfResultFormat string
 
 const (
-	// FullResourcePayloads ...
-	FullResourcePayloads WhatIfResultFormat = "FullResourcePayloads"
-	// ResourceIDOnly ...
-	ResourceIDOnly WhatIfResultFormat = "ResourceIdOnly"
+	// WhatIfResultFormatFullResourcePayloads ...
+	WhatIfResultFormatFullResourcePayloads WhatIfResultFormat = "FullResourcePayloads"
+	// WhatIfResultFormatResourceIDOnly ...
+	WhatIfResultFormatResourceIDOnly WhatIfResultFormat = "ResourceIdOnly"
 )
 
 // PossibleWhatIfResultFormatValues returns an array of possible values for the WhatIfResultFormat const type.
 func PossibleWhatIfResultFormatValues() []WhatIfResultFormat {
-	return []WhatIfResultFormat{FullResourcePayloads, ResourceIDOnly}
+	return []WhatIfResultFormat{WhatIfResultFormatFullResourcePayloads, WhatIfResultFormatResourceIDOnly}
 }

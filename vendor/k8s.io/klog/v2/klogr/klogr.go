@@ -104,7 +104,7 @@ func framesToCaller() int {
 	return 1 // something went wrong, this is safe
 }
 
-// trimDuplicates will deduplicates elements provided in multiple KV tuple
+// trimDuplicates will deduplicate elements provided in multiple KV tuple
 // slices, whilst maintaining the distinction between where the items are
 // contained.
 func trimDuplicates(kvLists ...[]interface{}) [][]interface{} {

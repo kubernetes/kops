@@ -15,9 +15,10 @@ go_library(
         "//vendor/github.com/pkg/errors:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/ifc:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/internal/kusterr:go_default_library",
-        "//vendor/sigs.k8s.io/kustomize/api/resid:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/resource:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/types:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/kio:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/resid:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",
     ],
 )
