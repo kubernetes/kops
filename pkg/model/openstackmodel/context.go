@@ -19,7 +19,6 @@ package openstackmodel
 import (
 	"fmt"
 
-	openstackutil "k8s.io/cloud-provider-openstack/pkg/util/openstack"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
@@ -51,7 +50,11 @@ func (c *OpenstackModelContext) UseVIPACL() bool {
 	if err != nil {
 		return false
 	}
-	return openstackutil.IsOctaviaFeatureSupported(osCloud.LoadBalancerClient(), openstackutil.OctaviaFeatureVIPACL)
+	use, err := osCloud.UseLoadBalancerVIPACL()
+	if err != nil {
+		return false
+	}
+	return use
 }
 
 func (c *OpenstackModelContext) GetNetworkName() (string, error) {
