@@ -766,6 +766,8 @@ func addNodeupPermissions(p *Policy, enableHookSupport bool) {
 	p.unconditionalAction.Insert(
 		"ec2:DescribeInstances", // aws.go
 		"ec2:DescribeInstanceTypes",
+		"ec2:DescribeNetworkInterfaces",
+		"ec2:AssignIpv6Addresses",
 	)
 }
 
