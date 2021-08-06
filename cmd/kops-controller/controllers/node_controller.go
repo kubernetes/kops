@@ -119,6 +119,7 @@ func (r *NodeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 type nodePatch struct {
+	Spec     *nodePatchSpec     `json:"spec,omitempty"`
 	Metadata *nodePatchMetadata `json:"metadata,omitempty"`
 }
 
