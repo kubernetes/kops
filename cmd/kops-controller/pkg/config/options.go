@@ -23,6 +23,9 @@ type Options struct {
 	ConfigBase            string         `json:"configBase,omitempty"`
 	Server                *ServerOptions `json:"server,omitempty"`
 	CacheNodeidentityInfo bool           `json:"cacheNodeidentityInfo,omitempty"`
+
+	// EnableCloudIPAM enables the cloud IPAM controller.
+	EnableCloudIPAM bool `json:"enableCloudIPAM,omitempty"`
 }
 
 func (o *Options) PopulateDefaults() {
