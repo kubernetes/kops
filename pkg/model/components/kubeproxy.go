@@ -60,14 +60,7 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 	// * dns-controller talks to the API using the kube-proxy configured kubernetes service
 
 	if config.ClusterCIDR == "" {
-		// If we're using the AmazonVPC networking, we should omit the ClusterCIDR
-		// because pod IPs are real, routable IPs in the VPC, and they are not in a specific
-		// CIDR range that allows us to distinguish them from other IPs.  Omitting the ClusterCIDR
-		// causes kube-proxy never to SNAT when proxying clusterIPs, which is the behavior
-		// we want for pods.
-		// If we're not using the AmazonVPC networking, and the KubeControllerMananger has
-		// a ClusterCIDR, use that because most networking plug ins draw pod IPs from this range.
-		if clusterSpec.Networking.AmazonVPC == nil && clusterSpec.KubeControllerManager != nil {
+		if b.needsClusterCIDR(clusterSpec) {
 			config.ClusterCIDR = clusterSpec.KubeControllerManager.ClusterCIDR
 		}
 	}
@@ -101,4 +94,21 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	return nil
+}
+
+func (*KubeProxyOptionsBuilder) needsClusterCIDR(clusterSpec *kops.ClusterSpec) bool {
+	// If we use podCIDR from cloud, we should not set cluster cidr.
+	if clusterSpec.PodCIDRFromCloud {
+		return false
+	}
+
+	// If we're using the AmazonVPC networking, we should omit the ClusterCIDR
+	// because pod IPs are real, routable IPs in the VPC, and they are not in a specific
+	// CIDR range that allows us to distinguish them from other IPs.  Omitting the ClusterCIDR
+	// causes kube-proxy never to SNAT when proxying clusterIPs, which is the behavior
+	// we want for pods.
+	// If we're not using the AmazonVPC networking, and the KubeControllerMananger has
+	// a ClusterCIDR, use that because most networking plug ins draw pod IPs from this range.
+	return clusterSpec.Networking.AmazonVPC == nil && clusterSpec.KubeControllerManager != nil
+
 }
