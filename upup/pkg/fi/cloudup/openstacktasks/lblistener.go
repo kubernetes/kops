@@ -21,7 +21,6 @@ import (
 	"sort"
 
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
-	openstackutil "k8s.io/cloud-provider-openstack/pkg/util/openstack"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -129,6 +128,11 @@ func (_ *LBListener) CheckChanges(a, e, changes *LBListener) error {
 }
 
 func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *LBListener) error {
+	useVIPACL, err := t.Cloud.UseLoadBalancerVIPACL()
+	if err != nil {
+		return err
+	}
+
 	if a == nil {
 		klog.V(2).Infof("Creating LB with Name: %q", fi.StringValue(e.Name))
 		listeneropts := listeners.CreateOpts{
@@ -139,7 +143,7 @@ func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 			ProtocolPort:   443,
 		}
 
-		if openstackutil.IsOctaviaFeatureSupported(t.Cloud.LoadBalancerClient(), openstackutil.OctaviaFeatureVIPACL) {
+		if useVIPACL {
 			listeneropts.AllowedCIDRs = e.AllowedCIDRs
 		}
 
@@ -150,7 +154,7 @@ func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 		e.ID = fi.String(listener.ID)
 		return nil
 	} else if len(changes.AllowedCIDRs) > 0 {
-		if openstackutil.IsOctaviaFeatureSupported(t.Cloud.LoadBalancerClient(), openstackutil.OctaviaFeatureVIPACL) {
+		if useVIPACL {
 			opts := listeners.UpdateOpts{
 				AllowedCIDRs: &changes.AllowedCIDRs,
 			}
