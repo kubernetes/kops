@@ -1725,11 +1725,13 @@
                 "autoscaling:DescribeAutoScalingInstances",
                 "autoscaling:DescribeLaunchConfigurations",
                 "autoscaling:DescribeTags",
+                "ec2:AssignIpv6Addresses",
                 "ec2:CreateSecurityGroup",
                 "ec2:CreateTags",
                 "ec2:DescribeAccountAttributes",
                 "ec2:DescribeInstanceTypes",
                 "ec2:DescribeInstances",
+                "ec2:DescribeNetworkInterfaces",
                 "ec2:DescribeRegions",
                 "ec2:DescribeRouteTables",
                 "ec2:DescribeSecurityGroups",
@@ -1853,8 +1855,10 @@
             {
               "Action": [
                 "autoscaling:DescribeAutoScalingInstances",
+                "ec2:AssignIpv6Addresses",
                 "ec2:DescribeInstanceTypes",
                 "ec2:DescribeInstances",
+                "ec2:DescribeNetworkInterfaces",
                 "iam:GetServerCertificate",
                 "iam:ListServerCertificates",
                 "kms:GenerateRandom"

@@ -30,6 +30,7 @@ go_library(
         "ntp.go",
         "nvidia.go",
         "packages.go",
+        "prefix.go",
         "protokube.go",
         "secrets.go",
         "sysctls.go",

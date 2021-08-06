@@ -1798,6 +1798,7 @@
                 "autoscaling:DescribeAutoScalingInstances",
                 "autoscaling:DescribeLaunchConfigurations",
                 "autoscaling:DescribeTags",
+                "ec2:AssignIpv6Addresses",
                 "ec2:AssignPrivateIpAddresses",
                 "ec2:AttachNetworkInterface",
                 "ec2:CreateNetworkInterface",
@@ -1935,8 +1936,10 @@
             {
               "Action": [
                 "autoscaling:DescribeAutoScalingInstances",
+                "ec2:AssignIpv6Addresses",
                 "ec2:DescribeInstanceTypes",
                 "ec2:DescribeInstances",
+                "ec2:DescribeNetworkInterfaces",
                 "iam:GetServerCertificate",
                 "iam:ListServerCertificates",
                 "kms:GenerateRandom"
