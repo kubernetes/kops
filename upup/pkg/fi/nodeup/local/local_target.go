@@ -19,11 +19,15 @@ package local
 import (
 	"os/exec"
 
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 type LocalTarget struct {
-	CacheDir string
+	CacheDir   string
+	Cloud      fi.Cloud
+	InstanceID string
+	Cluster    *kops.Cluster
 }
 
 var _ fi.Target = &LocalTarget{}

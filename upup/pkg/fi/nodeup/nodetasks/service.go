@@ -73,7 +73,7 @@ func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		// launching a custom Kubernetes build), they all depend on
 		// the "docker.service" Service task.
 		switch v := v.(type) {
-		case *Package, *UpdatePackages, *UserTask, *GroupTask, *Chattr, *BindMount, *Archive:
+		case *Package, *UpdatePackages, *UserTask, *GroupTask, *Chattr, *BindMount, *Archive, *Prefix:
 			deps = append(deps, v)
 		case *Service, *LoadImageTask, *PullImageTask, *IssueCert, *BootstrapClientTask, *KubeConfig:
 			// ignore
