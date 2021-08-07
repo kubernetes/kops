@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+spec:
+  containers:
+  - args:
+    - --ca-cert=/secrets/ca.crt
+    - --client-cert=/secrets/client.crt
+    - --client-key=/secrets/client.key
+    command:
+    - /kube-apiserver-healthcheck
+    image: k8s.gcr.io/kops/kube-apiserver-healthcheck:1.22.0-alpha.2
+    livenessProbe:
+      httpGet:
+        host: 127.0.0.1
+        path: /.kube-apiserver-healthcheck/healthz
+        port: 3990
+      initialDelaySeconds: 5
+      timeoutSeconds: 5
+    name: healthcheck
+    resources: {}
+    volumeMounts:
+    - mountPath: /secrets
+      name: healthcheck-secrets
+      readOnly: true
+  volumes:
+  - hostPath:
+      path: /etc/kubernetes/kube-apiserver-healthcheck/secrets
+      type: Directory
+    name: healthcheck-secrets
+status: {}
