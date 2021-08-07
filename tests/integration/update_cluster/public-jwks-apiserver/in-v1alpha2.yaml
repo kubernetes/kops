@@ -18,7 +18,8 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-  iam: {}
+  iam:
+    useServiceAccountExternalPermissions: true
   kubeAPIServer:
     featureGates:
       ServiceAccountIssuerDiscovery: "true"

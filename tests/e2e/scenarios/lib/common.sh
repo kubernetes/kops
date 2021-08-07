@@ -49,7 +49,6 @@ fi
 if [[ ${KOPS_IRSA-} = true ]]; then
     OVERRIDES="${OVERRIDES-} --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=${DISCOVERY_STORE}/${CLUSTER_NAME}/discovery"
     OVERRIDES="${OVERRIDES} --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true"
-    KOPS_FEATURE_FLAGS="UseServiceAccountIAM,${KOPS_FEATURE_FLAGS}"
 fi
 
 export GO111MODULE=on

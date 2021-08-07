@@ -22,7 +22,8 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-  iam: {}
+  iam:
+    useServiceAccountExternalPermissions: true
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.21.0
