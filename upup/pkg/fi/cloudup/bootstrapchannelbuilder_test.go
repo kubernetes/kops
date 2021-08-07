@@ -51,6 +51,10 @@ func TestBootstrapChannelBuilder_BuildTasks(t *testing.T) {
 	runChannelBuilderTest(t, "amazonvpc", []string{"networking.amazon-vpc-routed-eni-k8s-1.12", "networking.amazon-vpc-routed-eni-k8s-1.16"})
 	runChannelBuilderTest(t, "amazonvpc-containerd", []string{"networking.amazon-vpc-routed-eni-k8s-1.12", "networking.amazon-vpc-routed-eni-k8s-1.16"})
 	runChannelBuilderTest(t, "awsiamauthenticator", []string{"authentication.aws-k8s-1.12"})
+	runChannelBuilderTest(t, "metrics-server/insecure-1.18", []string{"metrics-server.addons.k8s.io-k8s-1.11"})
+	runChannelBuilderTest(t, "metrics-server/insecure-1.19", []string{"metrics-server.addons.k8s.io-k8s-1.11"})
+	runChannelBuilderTest(t, "metrics-server/secure-1.18", []string{"metrics-server.addons.k8s.io-k8s-1.11"})
+	runChannelBuilderTest(t, "metrics-server/secure-1.19", []string{"metrics-server.addons.k8s.io-k8s-1.11"})
 }
 
 func TestBootstrapChannelBuilder_ServiceAccountIAM(t *testing.T) {

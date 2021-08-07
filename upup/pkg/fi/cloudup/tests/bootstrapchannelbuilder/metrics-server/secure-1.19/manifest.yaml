@@ -1,0 +1,86 @@
+kind: Addons
+metadata:
+  creationTimestamp: null
+  name: bootstrap
+spec:
+  addons:
+  - id: k8s-1.16
+    kubernetesVersion: '>=1.16.0-alpha.0'
+    manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
+    manifestHash: 8219a09076d2245d21fa55d8d1308e16d7eebc60
+    name: kops-controller.addons.k8s.io
+    needsRollingUpdate: control-plane
+    selector:
+      k8s-addon: kops-controller.addons.k8s.io
+    version: 1.21.0
+  - manifest: core.addons.k8s.io/v1.4.0.yaml
+    manifestHash: 75dd91a5b15ade4a61ebc1de8c35714376dfbed4
+    name: core.addons.k8s.io
+    selector:
+      k8s-addon: core.addons.k8s.io
+    version: 1.4.0
+  - id: k8s-1.12
+    manifest: kube-dns.addons.k8s.io/k8s-1.12.yaml
+    manifestHash: 9115bb04f06321decd39b1588a93e31e48a40c06
+    name: kube-dns.addons.k8s.io
+    selector:
+      k8s-addon: kube-dns.addons.k8s.io
+    version: 1.15.13-kops.3
+  - id: k8s-1.9
+    manifest: kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml
+    manifestHash: 1dbad74e01965afc2c32ca822d16c204d015db82
+    name: kubelet-api.rbac.addons.k8s.io
+    selector:
+      k8s-addon: kubelet-api.rbac.addons.k8s.io
+    version: v0.0.1
+  - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
+    manifestHash: 18871595294c46105ef2570f11b1b2318aecfb57
+    name: limit-range.addons.k8s.io
+    selector:
+      k8s-addon: limit-range.addons.k8s.io
+    version: 1.5.0
+  - id: k8s-1.12
+    manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
+    manifestHash: c8f2a03ebfabcdbf89a49f3848eaa90c0e8cd2b8
+    name: dns-controller.addons.k8s.io
+    selector:
+      k8s-addon: dns-controller.addons.k8s.io
+    version: 1.21.0
+  - id: k8s-1.11
+    manifest: metrics-server.addons.k8s.io/k8s-1.11.yaml
+    manifestHash: 3795901da096a90916f4258aec1dc656f16d2b8f
+    name: metrics-server.addons.k8s.io
+    needsPKI: true
+    selector:
+      k8s-app: metrics-server
+    version: 0.4.4
+  - id: k8s-1.16
+    manifest: certmanager.io/k8s-1.16.yaml
+    manifestHash: e0d7966ae9d077de6344323d78ae6c899a17cb3d
+    name: certmanager.io
+    selector: null
+    version: 1.1.0
+  - id: v1.15.0
+    kubernetesVersion: '>=1.15.0'
+    manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
+    manifestHash: cc7393f22cb59dc4e23b9220ee962243334f47f1
+    name: storage-aws.addons.k8s.io
+    selector:
+      k8s-addon: storage-aws.addons.k8s.io
+    version: 1.17.0
+  - id: v1.7.0
+    kubernetesVersion: <1.15.0
+    manifest: storage-aws.addons.k8s.io/v1.7.0.yaml
+    manifestHash: 0a699ecad09b62fd94da8b97d1c2204c716c2b8f
+    name: storage-aws.addons.k8s.io
+    selector:
+      k8s-addon: storage-aws.addons.k8s.io
+    version: 1.17.0
+  - id: k8s-1.12
+    manifest: networking.cilium.io/k8s-1.12-v1.9.yaml
+    manifestHash: 57f434b35f81299083798cce92cfbf9dd3629cd0
+    name: networking.cilium.io
+    needsRollingUpdate: all
+    selector:
+      role.kubernetes.io/networking: "1"
+    version: 1.9.4-kops.1
