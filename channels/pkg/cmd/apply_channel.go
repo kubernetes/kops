@@ -26,7 +26,9 @@ import (
 
 	"github.com/blang/semver/v4"
 	"github.com/spf13/cobra"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/channels/pkg/channels"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/util/pkg/tables"
 )
 
@@ -88,12 +90,19 @@ func RunApplyChannel(ctx context.Context, f Factory, out io.Writer, options *App
 			// We recognize the following "well-known" format:
 			// <name> with no slashes ->
 			if strings.Contains(name, "/") {
-				return fmt.Errorf("Channel format not recognized (did you mean to use `-f` to specify a local file?): %q", name)
+				return fmt.Errorf("channel format not recognized (did you mean to use `-f` to specify a local file?): %q", name)
 			}
 			expanded := "https://raw.githubusercontent.com/kubernetes/kops/master/addons/" + name + "/addon.yaml"
 			location, err = url.Parse(expanded)
 			if err != nil {
 				return fmt.Errorf("unable to parse expanded argument %q as url", expanded)
+			}
+			// Disallow the use of legacy addons from the "well-known" location starting Kubernetes 1.23:
+			// https://raw.githubusercontent.com/kubernetes/kops/master/addons/<name>/addon.yaml
+			if util.IsKubernetesGTE("1.23", kubernetesVersion) {
+				return fmt.Errorf("legacy addons are deprecated and unmaintained, use managed addons instead of %s", expanded)
+			} else {
+				klog.Warningf("Legacy addons are deprecated and unmaintained, use managed addons instead of %s", expanded)
 			}
 		}
 		o, err := channels.LoadAddons(name, location)
