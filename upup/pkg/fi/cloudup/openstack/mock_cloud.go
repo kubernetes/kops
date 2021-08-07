@@ -456,3 +456,7 @@ func (c *MockCloud) UseOctavia() bool {
 func (c *MockCloud) UseZones(zones []string) {
 	c.zones = zones
 }
+
+func (c *MockCloud) UseLoadBalancerVIPACL() (bool, error) {
+	return true, nil
+}

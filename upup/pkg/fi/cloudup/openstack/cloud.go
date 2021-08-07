@@ -23,8 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
-
+	"github.com/blang/semver/v4"
 	"github.com/gophercloud/gophercloud"
 	os "github.com/gophercloud/gophercloud/openstack"
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
@@ -32,10 +31,12 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets"
 	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/apiversions"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
@@ -308,6 +309,8 @@ type OpenstackCloud interface {
 	CreateL3FloatingIP(opts l3floatingip.CreateOpts) (fip *l3floatingip.FloatingIP, err error)
 	DeleteFloatingIP(id string) error
 	DeleteL3FloatingIP(id string) error
+
+	UseLoadBalancerVIPACL() (bool, error)
 }
 
 type openstackCloud struct {
@@ -325,6 +328,7 @@ type openstackCloud struct {
 	useOctavia      bool
 	zones           []string
 	floatingEnabled bool
+	useVIPACL       *bool
 }
 
 var _ fi.Cloud = &openstackCloud{}
@@ -653,6 +657,38 @@ func getCloudGroups(c OpenstackCloud, cluster *kops.Cluster, instancegroups []*k
 
 func (c *openstackCloud) GetCloudTags() map[string]string {
 	return c.tags
+}
+
+func (c *openstackCloud) UseLoadBalancerVIPACL() (bool, error) {
+	if c.useVIPACL != nil {
+		return *c.useVIPACL, nil
+	}
+	use, err := useLoadBalancerVIPACL(c)
+	if err != nil {
+		return false, err
+	}
+	c.useVIPACL = &use
+	return use, nil
+}
+
+func useLoadBalancerVIPACL(c OpenstackCloud) (bool, error) {
+	allPages, err := apiversions.List(c.LoadBalancerClient()).AllPages()
+	if err != nil {
+		return false, err
+	}
+	versions, err := apiversions.ExtractAPIVersions(allPages)
+	if err != nil {
+		return false, err
+	}
+	if len(versions) == 0 {
+		return false, fmt.Errorf("loadbalancer API versions not found")
+	}
+	ver, err := semver.ParseTolerant(versions[len(versions)-1].ID)
+	if err != nil {
+		return false, err
+	}
+	// https://github.com/kubernetes/cloud-provider-openstack/blob/721615aa256bbddbd481cfb4a887c3ab180c5563/pkg/util/openstack/loadbalancer.go#L108
+	return ver.Compare(semver.MustParse("2.12")) > 0, nil
 }
 
 type Address struct {
