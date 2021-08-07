@@ -304,6 +304,9 @@ type IAMSpec struct {
 	Legacy                 bool    `json:"legacy"`
 	AllowContainerRegistry bool    `json:"allowContainerRegistry,omitempty"`
 	PermissionsBoundary    *string `json:"permissionsBoundary,omitempty"`
+	// UseServiceAccountExternalPermissions determines if managed ServiceAccounts will use external permissions directly.
+	// If this is set to false, ServiceAccounts will assume external permissions from the instances they run on.
+	UseServiceAccountExternalPermissions *bool `json:"useServiceAccountExternalPermissions,omitempty"`
 	// ServiceAccountExternalPermissions defines the relatinship between Kubernetes ServiceAccounts and permissions with external resources.
 	ServiceAccountExternalPermissions []ServiceAccountExternalPermission `json:"serviceAccountExternalPermissions,omitempty"`
 }

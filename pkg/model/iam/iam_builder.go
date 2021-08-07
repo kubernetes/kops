@@ -230,13 +230,13 @@ func (l *Statement) Equal(r *Statement) bool {
 // PolicyBuilder struct defines all valid fields to be used when building the
 // AWS IAM policy document for a given instance group role.
 type PolicyBuilder struct {
-	Cluster              *kops.Cluster
-	HostedZoneID         string
-	KMSKeys              []string
-	Region               string
-	ResourceARN          *string
-	Role                 Subject
-	UseServiceAccountIAM bool
+	Cluster                               *kops.Cluster
+	HostedZoneID                          string
+	KMSKeys                               []string
+	Region                                string
+	ResourceARN                           *string
+	Role                                  Subject
+	UseServiceAccountExternalPermisssions bool
 }
 
 // BuildAWSPolicy builds a set of IAM policy statements based on the
@@ -325,7 +325,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys))
 	}
 
-	// Protokube needs dns-controller permissions in instance role even if UseServiceAccountIAM.
+	// Protokube needs dns-controller permissions in instance role even if UseServiceAccountExternalPermissions.
 	AddDNSControllerPermissions(b, p)
 
 	// If cluster does not use external CCM, the master IAM Role needs CCM permissions
@@ -334,7 +334,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		AddLegacyCCMPermissions(p)
 	}
 
-	if !b.UseServiceAccountIAM {
+	if !b.UseServiceAccountExternalPermisssions {
 		esc := b.Cluster.Spec.SnapshotController != nil &&
 			fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled)
 		AddAWSEBSCSIDriverPermissions(p, esc)

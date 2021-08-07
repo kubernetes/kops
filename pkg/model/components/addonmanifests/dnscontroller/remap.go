@@ -29,7 +29,7 @@ import (
 
 // Remap remaps the dns-controller addon
 func Remap(context *model.KopsModelContext, addon *addonsapi.AddonSpec, objects []*kubemanifest.Object) error {
-	if !context.UseServiceAccountIAM() {
+	if !context.UseServiceAccountExternalPermissions() {
 		return nil
 	}
 

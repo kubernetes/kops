@@ -442,7 +442,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 
 		// Generate dns-controller ServiceAccount IAM permissions
-		if b.UseServiceAccountIAM() {
+		if b.UseServiceAccountExternalPermissions() {
 			serviceAccountRoles = append(serviceAccountRoles, &dnscontroller.ServiceAccount{})
 		}
 	}
@@ -502,7 +502,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			}
 		}
 
-		if b.UseServiceAccountIAM() {
+		if b.UseServiceAccountExternalPermissions() {
 			serviceAccountRoles = append(serviceAccountRoles, &clusterautoscaler.ServiceAccount{})
 		}
 
@@ -562,7 +562,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			})
 		}
 
-		if b.UseServiceAccountIAM() {
+		if b.UseServiceAccountExternalPermissions() {
 			serviceAccountRoles = append(serviceAccountRoles, &nodeterminationhandler.ServiceAccount{})
 		}
 	}
@@ -604,7 +604,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 
 		// Generate aws-load-balancer-controller ServiceAccount IAM permissions
-		if b.UseServiceAccountIAM() {
+		if b.UseServiceAccountExternalPermissions() {
 			serviceAccountRoles = append(serviceAccountRoles, &awsloadbalancercontroller.ServiceAccount{})
 		}
 	}
@@ -906,7 +906,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 					Id:       id,
 				})
 			}
-			if b.UseServiceAccountIAM() {
+			if b.UseServiceAccountExternalPermissions() {
 				serviceAccountRoles = append(serviceAccountRoles, &awscloudcontrollermanager.ServiceAccount{})
 			}
 		}
@@ -925,7 +925,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			}
 
 			// Generate aws-load-balancer-controller ServiceAccount IAM permissions
-			if b.UseServiceAccountIAM() {
+			if b.UseServiceAccountExternalPermissions() {
 				serviceAccountRoles = append(serviceAccountRoles, &awsebscsidriver.ServiceAccount{})
 			}
 		}

@@ -3960,6 +3960,7 @@ func autoConvert_v1alpha2_IAMSpec_To_kops_IAMSpec(in *IAMSpec, out *kops.IAMSpec
 	out.Legacy = in.Legacy
 	out.AllowContainerRegistry = in.AllowContainerRegistry
 	out.PermissionsBoundary = in.PermissionsBoundary
+	out.UseServiceAccountExternalPermissions = in.UseServiceAccountExternalPermissions
 	if in.ServiceAccountExternalPermissions != nil {
 		in, out := &in.ServiceAccountExternalPermissions, &out.ServiceAccountExternalPermissions
 		*out = make([]kops.ServiceAccountExternalPermission, len(*in))
@@ -3983,6 +3984,7 @@ func autoConvert_kops_IAMSpec_To_v1alpha2_IAMSpec(in *kops.IAMSpec, out *IAMSpec
 	out.Legacy = in.Legacy
 	out.AllowContainerRegistry = in.AllowContainerRegistry
 	out.PermissionsBoundary = in.PermissionsBoundary
+	out.UseServiceAccountExternalPermissions = in.UseServiceAccountExternalPermissions
 	if in.ServiceAccountExternalPermissions != nil {
 		in, out := &in.ServiceAccountExternalPermissions, &out.ServiceAccountExternalPermissions
 		*out = make([]ServiceAccountExternalPermission, len(*in))

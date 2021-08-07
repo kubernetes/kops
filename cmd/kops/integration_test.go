@@ -392,14 +392,8 @@ func TestPrivateDns2(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
-// TestDiscoveryFeatureGate runs a simple configuration, but with UseServiceAccountIAM and the ServiceAccountIssuerDiscovery feature gate enabled
+// TestDiscoveryFeatureGate runs a simple configuration, but with UseServiceAccountExternalPermissions and the ServiceAccountIssuerDiscovery feature gate enabled
 func TestDiscoveryFeatureGate(t *testing.T) {
-	featureflag.ParseFlags("+UseServiceAccountIAM")
-	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-UseServiceAccountIAM")
-	}
-	defer unsetFeatureFlags()
-
 	newIntegrationTest("minimal.example.com", "public-jwks-apiserver").
 		withServiceAccountRole("dns-controller.kube-system", true).
 		withOIDCDiscovery().
@@ -416,14 +410,8 @@ func TestVFSServiceAccountIssuerDiscovery(t *testing.T) {
 
 }
 
-// TestAWSLBController runs a simple configuration, but with AWS LB controller and UseServiceAccountIAM enabled
+// TestAWSLBController runs a simple configuration, but with AWS LB controller and UseServiceAccountExternalPermissions enabled
 func TestAWSLBController(t *testing.T) {
-	featureflag.ParseFlags("+UseServiceAccountIAM")
-	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-UseServiceAccountIAM")
-	}
-	defer unsetFeatureFlags()
-
 	newIntegrationTest("minimal.example.com", "aws-lb-controller").
 		withOIDCDiscovery().
 		withServiceAccountRole("dns-controller.kube-system", true).
@@ -446,12 +434,6 @@ func TestManyAddons(t *testing.T) {
 }
 
 func TestManyAddonsCCMIRSA(t *testing.T) {
-	featureflag.ParseFlags("+UseServiceAccountIAM,+EnableExternalCloudController")
-	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-UseServiceAccountIAM,-EnableExternalCloudController")
-	}
-	defer unsetFeatureFlags()
-
 	newIntegrationTest("minimal.example.com", "many-addons-ccm-irsa").
 		withOIDCDiscovery().
 		withServiceAccountRole("dns-controller.kube-system", true).
@@ -474,11 +456,6 @@ func TestManyAddonsCCMIRSA(t *testing.T) {
 }
 
 func TestCCM(t *testing.T) {
-	featureflag.ParseFlags("+EnableExternalCloudController")
-	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-EnableExternalCloudController")
-	}
-	defer unsetFeatureFlags()
 	newIntegrationTest("minimal.example.com", "many-addons-ccm").
 		withAddons(
 			"aws-ebs-csi-driver.addons.k8s.io-k8s-1.17",
