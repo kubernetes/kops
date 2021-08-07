@@ -27,7 +27,6 @@ replace (
 	k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.22.0
 	k8s.io/kubectl => k8s.io/kubectl v0.22.0
 	k8s.io/kubelet => k8s.io/kubelet v0.22.0
-	k8s.io/kubernetes => k8s.io/kubernetes v1.21.3
 	k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.22.0
 	k8s.io/metrics => k8s.io/metrics v0.22.0
 	k8s.io/mount-utils => k8s.io/mount-utils v0.22.0
@@ -59,10 +58,12 @@ require (
 	github.com/google/go-containerregistry v0.5.1
 	github.com/google/uuid v1.2.0
 	github.com/gophercloud/gophercloud v0.18.0
+	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.10.0
 	github.com/hashicorp/vault/api v1.1.0
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
 	github.com/jetstack/cert-manager v1.3.1
+	github.com/miekg/dns v1.1.35 // indirect
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/pelletier/go-toml v1.9.3
 	github.com/pkg/sftp v1.13.0
@@ -88,9 +89,9 @@ require (
 	k8s.io/apimachinery v0.22.0
 	k8s.io/cli-runtime v0.22.0
 	k8s.io/client-go v0.22.0
-	k8s.io/cloud-provider-openstack v1.21.1
 	k8s.io/component-base v0.22.0
 	k8s.io/gengo v0.0.0-20210203185629-de9496dff47b
+	k8s.io/klog v1.0.0 // indirect
 	k8s.io/klog/v2 v2.9.0
 	k8s.io/kubectl v0.22.0
 	k8s.io/legacy-cloud-providers v0.22.0

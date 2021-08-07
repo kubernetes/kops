@@ -404,7 +404,6 @@ github.com/gophercloud/gophercloud/openstack/identity/v3/extensions/ec2tokens
 github.com/gophercloud/gophercloud/openstack/identity/v3/extensions/oauth1
 github.com/gophercloud/gophercloud/openstack/identity/v3/tokens
 github.com/gophercloud/gophercloud/openstack/imageservice/v2/images
-github.com/gophercloud/gophercloud/openstack/keymanager/v1/secrets
 github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/apiversions
 github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/l7policies
 github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners
@@ -426,6 +425,7 @@ github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects
 github.com/gophercloud/gophercloud/openstack/utils
 github.com/gophercloud/gophercloud/pagination
 # github.com/gorilla/mux v1.8.0
+## explicit
 github.com/gorilla/mux
 # github.com/gosuri/uitable v0.0.4
 github.com/gosuri/uitable
@@ -450,8 +450,6 @@ github.com/hashicorp/go-retryablehttp
 github.com/hashicorp/go-rootcerts
 # github.com/hashicorp/go-sockaddr v1.0.2
 github.com/hashicorp/go-sockaddr
-# github.com/hashicorp/go-version v1.2.0
-github.com/hashicorp/go-version
 # github.com/hashicorp/golang-lru v0.5.4
 github.com/hashicorp/golang-lru/simplelru
 # github.com/hashicorp/hcl v1.0.0
@@ -553,6 +551,7 @@ github.com/mattn/go-runewidth
 # github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/miekg/dns v1.1.35
+## explicit
 github.com/miekg/dns
 # github.com/mitchellh/copystructure v1.1.1
 github.com/mitchellh/copystructure
@@ -1376,11 +1375,6 @@ k8s.io/cloud-provider/service/helpers
 k8s.io/cloud-provider/volume
 k8s.io/cloud-provider/volume/errors
 k8s.io/cloud-provider/volume/helpers
-# k8s.io/cloud-provider-openstack v1.21.1
-## explicit
-k8s.io/cloud-provider-openstack/pkg/metrics
-k8s.io/cloud-provider-openstack/pkg/util/errors
-k8s.io/cloud-provider-openstack/pkg/util/openstack
 # k8s.io/component-base v0.22.0 => k8s.io/component-base v0.22.0
 ## explicit
 k8s.io/component-base/config
@@ -1399,6 +1393,7 @@ k8s.io/gengo/namer
 k8s.io/gengo/parser
 k8s.io/gengo/types
 # k8s.io/klog v1.0.0
+## explicit
 k8s.io/klog
 # k8s.io/klog/v2 v2.9.0
 ## explicit
@@ -1593,7 +1588,6 @@ sigs.k8s.io/yaml
 # k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.22.0
 # k8s.io/kubectl => k8s.io/kubectl v0.22.0
 # k8s.io/kubelet => k8s.io/kubelet v0.22.0
-# k8s.io/kubernetes => k8s.io/kubernetes v1.21.3
 # k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.22.0
 # k8s.io/metrics => k8s.io/metrics v0.22.0
 # k8s.io/mount-utils => k8s.io/mount-utils v0.22.0
