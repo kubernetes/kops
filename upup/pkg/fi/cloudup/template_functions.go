@@ -234,7 +234,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["IsIPv6Only"] = tf.IsIPv6Only
-	dest["UseServiceAccountIAM"] = tf.UseServiceAccountIAM
+	dest["UseServiceAccountExternalPermissions"] = tf.UseServiceAccountExternalPermissions
 
 	if cluster.Spec.NodeTerminationHandler != nil {
 		dest["DefaultQueueName"] = func() string {

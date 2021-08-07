@@ -264,7 +264,7 @@ spec:
               topologyKey: topology.kubernetes.io/zone
       priorityClassName: system-cluster-critical
       serviceAccountName: cluster-autoscaler
-      {{ if not UseServiceAccountIAM }}
+      {{ if not UseServiceAccountExternalPermissions }}
       tolerations:
       - operator: "Exists"
         key: node-role.kubernetes.io/master
