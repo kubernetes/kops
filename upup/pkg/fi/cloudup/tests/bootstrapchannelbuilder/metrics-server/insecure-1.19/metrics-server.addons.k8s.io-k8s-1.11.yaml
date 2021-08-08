@@ -1,17 +1,25 @@
-# sourced from https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.4.4/components.yaml
----
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: metrics-server.addons.k8s.io
+    addon.kops.k8s.io/version: 0.4.4
+    app.kubernetes.io/managed-by: kops
     k8s-app: metrics-server
   name: metrics-server
   namespace: kube-system
+
 ---
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: metrics-server.addons.k8s.io
+    addon.kops.k8s.io/version: 0.4.4
+    app.kubernetes.io/managed-by: kops
     k8s-app: metrics-server
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
@@ -27,11 +35,17 @@ rules:
   - get
   - list
   - watch
+
 ---
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: metrics-server.addons.k8s.io
+    addon.kops.k8s.io/version: 0.4.4
+    app.kubernetes.io/managed-by: kops
     k8s-app: metrics-server
   name: system:metrics-server
 rules:
@@ -47,11 +61,17 @@ rules:
   - get
   - list
   - watch
+
 ---
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: metrics-server.addons.k8s.io
+    addon.kops.k8s.io/version: 0.4.4
+    app.kubernetes.io/managed-by: kops
     k8s-app: metrics-server
   name: metrics-server-auth-reader
   namespace: kube-system
@@ -63,11 +83,17 @@ subjects:
 - kind: ServiceAccount
   name: metrics-server
   namespace: kube-system
+
 ---
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: metrics-server.addons.k8s.io
+    addon.kops.k8s.io/version: 0.4.4
+    app.kubernetes.io/managed-by: kops
     k8s-app: metrics-server
   name: metrics-server:system:auth-delegator
 roleRef:
@@ -78,11 +104,17 @@ subjects:
 - kind: ServiceAccount
   name: metrics-server
   namespace: kube-system
+
 ---
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: metrics-server.addons.k8s.io
+    addon.kops.k8s.io/version: 0.4.4
+    app.kubernetes.io/managed-by: kops
     k8s-app: metrics-server
   name: system:metrics-server
 roleRef:
@@ -93,11 +125,17 @@ subjects:
 - kind: ServiceAccount
   name: metrics-server
   namespace: kube-system
+
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: metrics-server.addons.k8s.io
+    addon.kops.k8s.io/version: 0.4.4
+    app.kubernetes.io/managed-by: kops
     k8s-app: metrics-server
   name: metrics-server
   namespace: kube-system
@@ -109,11 +147,17 @@ spec:
     targetPort: https
   selector:
     k8s-app: metrics-server
+
 ---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: metrics-server.addons.k8s.io
+    addon.kops.k8s.io/version: 0.4.4
+    app.kubernetes.io/managed-by: kops
     k8s-app: metrics-server
   name: metrics-server
   namespace: kube-system
@@ -129,18 +173,11 @@ spec:
     spec:
       containers:
       - args:
-          - --secure-port=4443
-          - --kubelet-use-node-status-port
-{{ if not (WithDefaultBool .MetricsServer.Insecure true) }}
-          - --tls-cert-file=/srv/tls.crt
-          - --tls-private-key-file=/srv/tls.key
-{{ else }}
-          - --cert-dir=/tmp
-{{ end }}
-{{ if or (not UseKopsControllerForNodeBootstrap) (WithDefaultBool .MetricsServer.Insecure true) }}
-          - --kubelet-insecure-tls
-{{ end }}
-        image: {{ or .MetricsServer.Image "k8s.gcr.io/metrics-server/metrics-server:v0.4.4" }}
+        - --secure-port=4443
+        - --kubelet-use-node-status-port
+        - --cert-dir=/tmp
+        - --kubelet-insecure-tls
+        image: k8s.gcr.io/metrics-server/metrics-server:v0.4.4
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -161,84 +198,62 @@ spec:
             port: https
             scheme: HTTPS
           periodSeconds: 10
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
         securityContext:
           readOnlyRootFilesystem: true
           runAsNonRoot: true
           runAsUser: 1000
         volumeMounts:
-{{ if not (WithDefaultBool .MetricsServer.Insecure true) }}
-        - name: certs
-          mountPath: /srv
-{{ end }}
         - mountPath: /tmp
           name: tmp-dir
-        resources:
-          requests:
-            cpu: 50m
-            memory: 128Mi
       nodeSelector:
         kubernetes.io/os: linux
       priorityClassName: system-cluster-critical
       serviceAccountName: metrics-server
       volumes:
-{{ if not (WithDefaultBool .MetricsServer.Insecure true) }}
-      - name: certs
-        secret:
-          secretName: metrics-server-tls
-{{ end }}
       - emptyDir: {}
         name: tmp-dir
+
 ---
+
 apiVersion: apiregistration.k8s.io/v1
 kind: APIService
 metadata:
-{{ if not (WithDefaultBool .MetricsServer.Insecure true) }}
-  annotations:
-    cert-manager.io/inject-ca-from: kube-system/metrics-server
-{{ end }}
+  creationTimestamp: null
   labels:
+    addon.kops.k8s.io/name: metrics-server.addons.k8s.io
+    addon.kops.k8s.io/version: 0.4.4
+    app.kubernetes.io/managed-by: kops
     k8s-app: metrics-server
   name: v1beta1.metrics.k8s.io
 spec:
   group: metrics.k8s.io
   groupPriorityMinimum: 100
-{{ if WithDefaultBool .MetricsServer.Insecure true }}
   insecureSkipTLSVerify: true
-{{ end }}
   service:
     name: metrics-server
     namespace: kube-system
   version: v1beta1
   versionPriority: 100
+
 ---
+
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: metrics-server.addons.k8s.io
+    addon.kops.k8s.io/version: 0.4.4
+    app.kubernetes.io/managed-by: kops
+    k8s-app: metrics-server
   name: metrics-server
   namespace: kube-system
-  labels:
-    k8s-app: metrics-server
 spec:
   minAvailable: 1
   selector:
     matchLabels:
       k8s-app: metrics-server
-{{ if not (WithDefaultBool .MetricsServer.Insecure true) }}
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: metrics-server
-  namespace: kube-system
-spec:
-  secretName: metrics-server-tls
-  duration: 2160h
-  renewBefore: 360h
-  usages:
-    - server auth
-  dnsNames:
-  - metrics-server.kube-system.svc
-  issuerRef:
-    name: metrics-server.addons.k8s.io
-    kind: Issuer
-{{ end }}
