@@ -204,6 +204,10 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 
 	if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderAzure {
 		env["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
+		azureEnv := os.Getenv("AZURE_ENVIRONMENT")
+		if azureEnv != "" {
+			env["AZURE_ENVIRONMENT"] = os.Getenv("AZURE_ENVIRONMENT")
+		}
 	}
 
 	return env, nil
