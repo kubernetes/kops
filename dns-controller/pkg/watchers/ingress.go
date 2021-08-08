@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"time"
 
-	"k8s.io/api/extensions/v1beta1"
+	v1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
@@ -73,7 +73,7 @@ func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 		klog.V(4).Infof("querying without label filter")
 
 		allKeys := c.scope.AllKeys()
-		ingressList, err := c.client.ExtensionsV1beta1().Ingresses(c.namespace).List(ctx, listOpts)
+		ingressList, err := c.client.NetworkingV1().Ingresses(c.namespace).List(ctx, listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing ingresses: %v", err)
 		}
@@ -95,7 +95,7 @@ func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 
 		listOpts.Watch = true
 		listOpts.ResourceVersion = ingressList.ResourceVersion
-		watcher, err := c.client.ExtensionsV1beta1().Ingresses(c.namespace).Watch(ctx, listOpts)
+		watcher, err := c.client.NetworkingV1().Ingresses(c.namespace).Watch(ctx, listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error watching ingresses: %v", err)
 		}
@@ -111,7 +111,7 @@ func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 					return false, nil
 				}
 
-				ingress := event.Object.(*v1beta1.Ingress)
+				ingress := event.Object.(*v1.Ingress)
 				klog.V(4).Infof("ingress changed: %s %v", event.Type, ingress.Name)
 
 				switch event.Type {
@@ -142,7 +142,7 @@ func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 }
 
 // updateIngressRecords will apply the records for the specified ingress.  It returns the key that was set.
-func (c *IngressController) updateIngressRecords(ingress *v1beta1.Ingress) string {
+func (c *IngressController) updateIngressRecords(ingress *v1.Ingress) string {
 	var records []dns.Record
 
 	var ingresses []dns.Record
