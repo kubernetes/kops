@@ -41,7 +41,7 @@ spec:
       k8s-addon: limit-range.addons.k8s.io
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: e78d86189b6860dbfd96fe566d989c4dc1026d8e993ed4a02389f4b66d1d9506
+    manifestHash: 7557767927ab9cbbc5a0bc200c773efd0b6cd31084d2e8dff905e68d5b74e799
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
