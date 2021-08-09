@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/util/pkg/distributions"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -298,6 +299,11 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 	}
 
 	nodeupModelContext.NodeupConfig.ContainerdConfig = nodeupModelContext.Cluster.Spec.Containerd
+	updatePolicy := nodeupModelContext.Cluster.Spec.UpdatePolicy
+	if updatePolicy == nil {
+		updatePolicy = fi.String(kops.UpdatePolicyAutomatic)
+	}
+	nodeupModelContext.NodeupConfig.UpdatePolicy = *updatePolicy
 
 	return nodeupModelContext, nil
 }
@@ -396,6 +402,8 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 	}
 
 	nodeupModelContext.KeyStore = keystore
+
+	nodeupModelContext.Distribution = distributions.DistributionUbuntu2004
 
 	if err := nodeupModelContext.Init(); err != nil {
 		t.Fatalf("error from nodeupModelContext.Init(): %v", err)
