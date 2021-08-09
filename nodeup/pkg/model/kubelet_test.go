@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/util/pkg/distributions"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -248,6 +249,15 @@ func BuildNodeupModelContext(basedir string) (*NodeupModelContext, error) {
 		return nil, err
 	}
 
+	updatePolicy := nodeUpModelContext.Cluster.Spec.UpdatePolicy
+	if updatePolicy == nil {
+		updatePolicy = fi.String(kops.UpdatePolicyAutomatic)
+	}
+	if nodeUpModelContext.InstanceGroup == nil {
+		nodeUpModelContext.InstanceGroup = &kops.InstanceGroup{}
+	}
+	nodeUpModelContext.InstanceGroup.Spec.UpdatePolicy = updatePolicy
+
 	return nodeUpModelContext, nil
 }
 
@@ -337,6 +347,8 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 			t.Fatalf("unexpected error from mockedPopulateClusterSpec: %v", err)
 		}
 		nodeupModelContext.Cluster = full
+
+		nodeupModelContext.Distribution = distributions.DistributionUbuntu2004
 	}
 
 	if err := builder(nodeupModelContext, context); err != nil {
