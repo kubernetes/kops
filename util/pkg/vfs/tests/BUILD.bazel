@@ -2,11 +2,16 @@ load("@io_bazel_rules_go//go:def.bzl", "go_test")
 
 go_test(
     name = "go_default_test",
-    srcs = ["s3fs_test.go"],
+    srcs = [
+        "gsfs_test.go",
+        "s3fs_test.go",
+    ],
     deps = [
+        "//cloudmock/gce:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/cloudup/terraform:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
+        "//vendor/google.golang.org/api/storage/v1:go_default_library",
     ],
 )
