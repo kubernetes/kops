@@ -1,0 +1,9 @@
+contents: |
+  APT::Periodic::Update-Package-Lists "1";
+  APT::Periodic::Unattended-Upgrade "1";
+
+  APT::Periodic::AutocleanInterval "7";
+path: /etc/apt/apt.conf.d/20auto-upgrades
+type: file
+---
+Name: unattended-upgrades
