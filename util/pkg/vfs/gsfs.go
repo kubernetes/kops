@@ -22,6 +22,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -33,6 +34,7 @@ import (
 	storage "google.golang.org/api/storage/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -45,8 +47,9 @@ type GSPath struct {
 }
 
 var (
-	_ Path    = &GSPath{}
-	_ HasHash = &GSPath{}
+	_ Path          = &GSPath{}
+	_ TerraformPath = &GSPath{}
+	_ HasHash       = &GSPath{}
 )
 
 // gcsReadBackoff is the backoff strategy for GCS read retries
@@ -372,6 +375,55 @@ func (p *GSPath) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
 	}
 
 	return &hashing.Hash{Algorithm: hashing.HashAlgorithmMD5, HashValue: md5Bytes}, nil
+}
+
+type terraformGSObject struct {
+	Bucket string `json:"bucket" cty:"bucket"`
+	Name   string `json:"name" cty:"name"`
+	Source string `json:"source" cty:"source"`
+}
+
+type terraformGSObjectAccessControl struct {
+	Bucket     string                   `json:"bucket" cty:"bucket"`
+	Object     *terraformWriter.Literal `json:"object" cty:"object"`
+	RoleEntity []string                 `json:"role_entity" cty:"role_entity"`
+}
+
+func (p *GSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name string, data io.Reader, acl ACL) error {
+	bytes, err := ioutil.ReadAll(data)
+	if err != nil {
+		return fmt.Errorf("reading data: %v", err)
+	}
+
+	content, err := w.AddFileBytes("google_storage_bucket_object", name, "content", bytes, false)
+	if err != nil {
+		return fmt.Errorf("rendering GCS file: %v", err)
+	}
+
+	tf := &terraformGSObject{
+		Bucket: p.Bucket(),
+		Name:   p.Object(),
+		Source: content.FnArgs[0],
+	}
+	err = w.RenderResource("google_storage_bucket_object", name, tf)
+	if err != nil {
+		return err
+	}
+
+	tfACL := &terraformGSObjectAccessControl{
+		Bucket:     p.Bucket(),
+		Object:     p.TerraformLink(name),
+		RoleEntity: make([]string, 0),
+	}
+	for _, re := range acl.(GSAcl).Acl {
+		// https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_object_acl#role_entity
+		tfACL.RoleEntity = append(tfACL.RoleEntity, fmt.Sprintf("%v:%v", re.Role, re.Entity))
+	}
+	return w.RenderResource("google_storage_object_access_control", name, tfACL)
+}
+
+func (s *GSPath) TerraformLink(name string) *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("google_storage_bucket_object", name, "output_name")
 }
 
 func isGCSNotFound(err error) bool {
