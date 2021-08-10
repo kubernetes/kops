@@ -51,7 +51,7 @@ func (b *MiscUtilsBuilder) Build(c *fi.ModelBuilderContext) error {
 			packages = append(packages, "apt-transport-https")
 
 			// TODO: Do we really need python-apt?
-			if b.Distribution.IsUbuntu() && b.Distribution.Version() >= 20.10 {
+			if (b.Distribution.IsUbuntu() && b.Distribution.Version() >= 20.10) || (!b.Distribution.IsUbuntu() && b.Distribution.Version() >= 11) {
 				// python-apt not available (though python3-apt is)
 			} else {
 				packages = append(packages, "python-apt")
