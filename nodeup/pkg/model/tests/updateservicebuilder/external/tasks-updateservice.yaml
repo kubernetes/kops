@@ -1,0 +1,4 @@
+contents: |
+  APT::Periodic::Enable "0";
+path: /etc/apt/apt.conf.d/20auto-upgrades
+type: file
