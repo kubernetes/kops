@@ -277,7 +277,6 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/os: linux
-      hostNetwork: true
       serviceAccountName: ebs-csi-node-sa
       priorityClassName: system-node-critical
       tolerations:

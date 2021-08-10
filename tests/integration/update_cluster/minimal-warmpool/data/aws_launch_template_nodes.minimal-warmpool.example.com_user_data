@@ -126,7 +126,7 @@ cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   awsEBSCSIDriver:
     enabled: true
-    version: v1.1.0
+    version: v1.2.0
   manageStorageClasses: true
 containerRuntime: containerd
 containerd:
@@ -166,7 +166,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-warmpool.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: YOSnpGX96KVy/pdH+luCHwXQ+Ocl2AyShQHqARSwBww=
+NodeupConfigHash: jnrwGYGiEv/FWBTaQ/EPcLh801b3vEf7D4F3PVwRRPg=
 
 __EOF_KUBE_ENV
 
