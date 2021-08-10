@@ -86,6 +86,7 @@ Name: master-a-1-cluster
 Port:
   AdditionalSecurityGroups: null
   ID: null
+  InstanceGroupName: master-a
   Lifecycle: Sync
   Name: port-master-a-1-cluster
   Network:
@@ -109,7 +110,10 @@ Port:
     Name: subnet-a.cluster
     Network: null
     Tag: null
-  Tag: cluster
+  Tags:
+  - KopsInstanceGroup=master-a
+  - KopsName=port-master-a-1
+  - KubernetesCluster=cluster
 Region: region
 Role: Master
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -157,6 +161,7 @@ Name: master-b-1-cluster
 Port:
   AdditionalSecurityGroups: null
   ID: null
+  InstanceGroupName: master-b
   Lifecycle: Sync
   Name: port-master-b-1-cluster
   Network:
@@ -180,7 +185,10 @@ Port:
     Name: subnet-b.cluster
     Network: null
     Tag: null
-  Tag: cluster
+  Tags:
+  - KopsInstanceGroup=master-b
+  - KopsName=port-master-b-1
+  - KubernetesCluster=cluster
 Region: region
 Role: Master
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -228,6 +236,7 @@ Name: master-c-1-cluster
 Port:
   AdditionalSecurityGroups: null
   ID: null
+  InstanceGroupName: master-c
   Lifecycle: Sync
   Name: port-master-c-1-cluster
   Network:
@@ -251,7 +260,10 @@ Port:
     Name: subnet-c.cluster
     Network: null
     Tag: null
-  Tag: cluster
+  Tags:
+  - KopsInstanceGroup=master-c
+  - KopsName=port-master-c-1
+  - KubernetesCluster=cluster
 Region: region
 Role: Master
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -302,6 +314,7 @@ Name: node-a-1-cluster
 Port:
   AdditionalSecurityGroups: null
   ID: null
+  InstanceGroupName: node-a
   Lifecycle: Sync
   Name: port-node-a-1-cluster
   Network:
@@ -325,7 +338,10 @@ Port:
     Name: subnet-a.cluster
     Network: null
     Tag: null
-  Tag: cluster
+  Tags:
+  - KopsInstanceGroup=node-a
+  - KopsName=port-node-a-1
+  - KubernetesCluster=cluster
 Region: region
 Role: Node
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -376,6 +392,7 @@ Name: node-b-1-cluster
 Port:
   AdditionalSecurityGroups: null
   ID: null
+  InstanceGroupName: node-b
   Lifecycle: Sync
   Name: port-node-b-1-cluster
   Network:
@@ -399,7 +416,10 @@ Port:
     Name: subnet-b.cluster
     Network: null
     Tag: null
-  Tag: cluster
+  Tags:
+  - KopsInstanceGroup=node-b
+  - KopsName=port-node-b-1
+  - KubernetesCluster=cluster
 Region: region
 Role: Node
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -450,6 +470,7 @@ Name: node-c-1-cluster
 Port:
   AdditionalSecurityGroups: null
   ID: null
+  InstanceGroupName: node-c
   Lifecycle: Sync
   Name: port-node-c-1-cluster
   Network:
@@ -473,7 +494,10 @@ Port:
     Name: subnet-c.cluster
     Network: null
     Tag: null
-  Tag: cluster
+  Tags:
+  - KopsInstanceGroup=node-c
+  - KopsName=port-node-c-1
+  - KubernetesCluster=cluster
 Region: region
 Role: Node
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -802,6 +826,7 @@ ServerGroup:
 ---
 AdditionalSecurityGroups: null
 ID: null
+InstanceGroupName: master-a
 Lifecycle: Sync
 Name: port-master-a-1-cluster
 Network:
@@ -825,10 +850,14 @@ Subnets:
   Name: subnet-a.cluster
   Network: null
   Tag: null
-Tag: cluster
+Tags:
+- KopsInstanceGroup=master-a
+- KopsName=port-master-a-1
+- KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
 ID: null
+InstanceGroupName: master-b
 Lifecycle: Sync
 Name: port-master-b-1-cluster
 Network:
@@ -852,10 +881,14 @@ Subnets:
   Name: subnet-b.cluster
   Network: null
   Tag: null
-Tag: cluster
+Tags:
+- KopsInstanceGroup=master-b
+- KopsName=port-master-b-1
+- KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
 ID: null
+InstanceGroupName: master-c
 Lifecycle: Sync
 Name: port-master-c-1-cluster
 Network:
@@ -879,10 +912,14 @@ Subnets:
   Name: subnet-c.cluster
   Network: null
   Tag: null
-Tag: cluster
+Tags:
+- KopsInstanceGroup=master-c
+- KopsName=port-master-c-1
+- KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
 ID: null
+InstanceGroupName: node-a
 Lifecycle: Sync
 Name: port-node-a-1-cluster
 Network:
@@ -906,10 +943,14 @@ Subnets:
   Name: subnet-a.cluster
   Network: null
   Tag: null
-Tag: cluster
+Tags:
+- KopsInstanceGroup=node-a
+- KopsName=port-node-a-1
+- KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
 ID: null
+InstanceGroupName: node-b
 Lifecycle: Sync
 Name: port-node-b-1-cluster
 Network:
@@ -933,10 +974,14 @@ Subnets:
   Name: subnet-b.cluster
   Network: null
   Tag: null
-Tag: cluster
+Tags:
+- KopsInstanceGroup=node-b
+- KopsName=port-node-b-1
+- KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
 ID: null
+InstanceGroupName: node-c
 Lifecycle: Sync
 Name: port-node-c-1-cluster
 Network:
@@ -960,7 +1005,10 @@ Subnets:
   Name: subnet-c.cluster
   Network: null
   Tag: null
-Tag: cluster
+Tags:
+- KopsInstanceGroup=node-c
+- KopsName=port-node-c-1
+- KubernetesCluster=cluster
 ---
 ClusterName: cluster
 ID: null

@@ -32,6 +32,7 @@ Name: bastion-1-cluster
 Port:
   AdditionalSecurityGroups: null
   ID: null
+  InstanceGroupName: bastion
   Lifecycle: Sync
   Name: port-bastion-1-cluster
   Network:
@@ -55,7 +56,10 @@ Port:
     Name: utility-subnet.cluster
     Network: null
     Tag: null
-  Tag: cluster
+  Tags:
+  - KopsInstanceGroup=bastion
+  - KopsName=port-bastion-1
+  - KubernetesCluster=cluster
 Region: region
 Role: Bastion
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -103,6 +107,7 @@ Name: master-1-cluster
 Port:
   AdditionalSecurityGroups: null
   ID: null
+  InstanceGroupName: master
   Lifecycle: Sync
   Name: port-master-1-cluster
   Network:
@@ -132,7 +137,10 @@ Port:
     Name: subnet.cluster
     Network: null
     Tag: null
-  Tag: cluster
+  Tags:
+  - KopsInstanceGroup=master
+  - KopsName=port-master-1
+  - KubernetesCluster=cluster
 Region: region
 Role: Master
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -177,6 +185,7 @@ Name: node-1-cluster
 Port:
   AdditionalSecurityGroups: null
   ID: null
+  InstanceGroupName: node
   Lifecycle: Sync
   Name: port-node-1-cluster
   Network:
@@ -200,7 +209,10 @@ Port:
     Name: subnet.cluster
     Network: null
     Tag: null
-  Tag: cluster
+  Tags:
+  - KopsInstanceGroup=node
+  - KopsName=port-node-1
+  - KubernetesCluster=cluster
 Region: region
 Role: Node
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
@@ -345,6 +357,7 @@ Public: null
 ---
 AdditionalSecurityGroups: null
 ID: null
+InstanceGroupName: bastion
 Lifecycle: Sync
 Name: port-bastion-1-cluster
 Network:
@@ -368,10 +381,14 @@ Subnets:
   Name: utility-subnet.cluster
   Network: null
   Tag: null
-Tag: cluster
+Tags:
+- KopsInstanceGroup=bastion
+- KopsName=port-bastion-1
+- KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
 ID: null
+InstanceGroupName: master
 Lifecycle: Sync
 Name: port-master-1-cluster
 Network:
@@ -401,10 +418,14 @@ Subnets:
   Name: subnet.cluster
   Network: null
   Tag: null
-Tag: cluster
+Tags:
+- KopsInstanceGroup=master
+- KopsName=port-master-1
+- KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
 ID: null
+InstanceGroupName: node
 Lifecycle: Sync
 Name: port-node-1-cluster
 Network:
@@ -428,7 +449,10 @@ Subnets:
   Name: subnet.cluster
   Network: null
   Tag: null
-Tag: cluster
+Tags:
+- KopsInstanceGroup=node
+- KopsName=port-node-1
+- KubernetesCluster=cluster
 ---
 ClusterName: cluster
 ID: null
