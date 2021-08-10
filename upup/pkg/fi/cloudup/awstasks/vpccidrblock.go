@@ -44,6 +44,11 @@ func (e *VPCCIDRBlock) Find(c *fi.Context) (*VPCCIDRBlock, error) {
 
 	vpcID := e.VPC.ID
 
+	// If the VPC doesn't (yet) exist, there is no association
+	if vpcID == nil {
+		return nil, nil
+	}
+
 	vpc, err := cloud.DescribeVPC(*vpcID)
 	if err != nil {
 		return nil, err
