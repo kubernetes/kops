@@ -44,6 +44,12 @@ func (e *VPCCIDRBlock) Find(c *fi.Context) (*VPCCIDRBlock, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	vpcID := aws.StringValue(e.VPC.ID)
+
+	// If the VPC doesn't (yet) exist, there is no association
+	if vpcID == "" {
+		return nil, nil
+	}
+
 	vpc, err := cloud.DescribeVPC(vpcID)
 	if err != nil {
 		return nil, err
