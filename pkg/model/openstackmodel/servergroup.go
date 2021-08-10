@@ -74,8 +74,8 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		return err
 	}
 	igMeta[openstack.TagKopsNetwork] = netName
-	igMeta["KopsInstanceGroup"] = ig.Name
-	igMeta["KopsRole"] = string(ig.Spec.Role)
+	igMeta[openstack.TagKopsInstanceGroup] = ig.Name
+	igMeta[openstack.TagKopsRole] = string(ig.Spec.Role)
 	igMeta[openstack.INSTANCE_GROUP_GENERATION] = fmt.Sprintf("%d", ig.GetGeneration())
 	igMeta[openstack.CLUSTER_GENERATION] = fmt.Sprintf("%d", b.Cluster.GetGeneration())
 
@@ -132,10 +132,24 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			az = fi.String(zone)
 		}
 		// Create instance port task
+		portName := fmt.Sprintf("%s-%s", "port", *instanceName)
+		portTagKopsName := strings.Replace(
+			strings.Replace(
+				strings.ToLower(
+					fmt.Sprintf("port-%s-%d", ig.Name, i+1),
+				),
+				"_", "-", -1,
+			), ".", "-", -1,
+		)
 		portTask := &openstacktasks.Port{
-			Name:                     fi.String(fmt.Sprintf("%s-%s", "port", *instanceName)),
-			Network:                  b.LinkToNetwork(),
-			Tag:                      s(b.ClusterName()),
+			Name:              fi.String(portName),
+			InstanceGroupName: &groupName,
+			Network:           b.LinkToNetwork(),
+			Tags: []string{
+				fmt.Sprintf("%s=%s", openstack.TagKopsInstanceGroup, groupName),
+				fmt.Sprintf("%s=%s", openstack.TagKopsName, portTagKopsName),
+				fmt.Sprintf("%s=%s", openstack.TagClusterName, b.ClusterName()),
+			},
 			SecurityGroups:           securityGroups,
 			AdditionalSecurityGroups: ig.Spec.AdditionalSecurityGroups,
 			Subnets:                  subnets,
