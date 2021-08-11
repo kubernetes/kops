@@ -93,31 +93,27 @@ func (b *UpdateServiceBuilder) buildFlatcarSystemdService(c *fi.ModelBuilderCont
 }
 
 func (b *UpdateServiceBuilder) buildDebianPackage(c *fi.ModelBuilderContext) {
-	if b.InstanceGroup.Spec.UpdatePolicy != nil {
-		switch *b.InstanceGroup.Spec.UpdatePolicy {
-		case kops.UpdatePolicyAutomatic:
-			klog.Infof("UpdatePolicy set in InstanceGroup %q spec requests automatic updates; skipping installation of packagk %q", b.InstanceGroup.GetName(), debianPackageName)
-			return
-		case kops.UpdatePolicyExternal:
-			// Carry on with creating this systemd unit.
-		}
-	} else if fi.StringValue(b.Cluster.Spec.UpdatePolicy) != kops.UpdatePolicyExternal {
-		klog.Infof("UpdatePolicy in Cluster spec requests automatic updates; skipping installation of package %q", debianPackageName)
-		return
-	}
+	contents := ""
+	if fi.StringValue(b.InstanceGroup.Spec.UpdatePolicy) == kops.UpdatePolicyExternal {
+		klog.Infof("UpdatePolicy requests automatic updates; skipping installation of package %q", debianPackageName)
+		contents = `APT::Periodic::Enable "0";
+`
+	} else {
 
-	klog.Infof("Detected OS %s; installing %s package", b.Distribution, debianPackageName)
+		klog.Infof("Detected OS %s; installing %s package", b.Distribution, debianPackageName)
+		c.AddTask(&nodetasks.Package{Name: debianPackageName})
 
-	contents := `APT::Periodic::Update-Package-Lists "1";
+		contents = `APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Unattended-Upgrade "1";
 
 APT::Periodic::AutocleanInterval "7";
 `
+	}
+
 	c.AddTask(&nodetasks.File{
 		Path:     "/etc/apt/apt.conf.d/20auto-upgrades",
 		Contents: fi.NewStringResource(contents),
 		Type:     nodetasks.FileType_File,
 	})
 
-	c.AddTask(&nodetasks.Package{Name: debianPackageName})
 }
