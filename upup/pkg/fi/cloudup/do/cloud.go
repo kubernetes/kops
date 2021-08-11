@@ -30,9 +30,9 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	dns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/do"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
-	"k8s.io/kops/pkg/resources/digitalocean/dns"
 	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -183,7 +183,11 @@ func (c *doCloudImplementation) Region() string {
 }
 
 func (c *doCloudImplementation) DNS() (dnsprovider.Interface, error) {
-	return c.dns, nil
+	provider, err := dnsprovider.GetDnsProvider(dns.ProviderName, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error building DNS provider: %v", err)
+	}
+	return provider, nil
 }
 
 // Volumes returns an implementation of godo.StorageService

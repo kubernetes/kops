@@ -36,7 +36,6 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
-	_ "k8s.io/kops/pkg/resources/digitalocean/dns"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
