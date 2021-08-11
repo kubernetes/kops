@@ -12,9 +12,9 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//dnsprovider/pkg/dnsprovider:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/providers/do:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/cloudinstances:go_default_library",
-        "//pkg/resources/digitalocean/dns:go_default_library",
         "//protokube/pkg/etcd:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//vendor/github.com/digitalocean/godo:go_default_library",

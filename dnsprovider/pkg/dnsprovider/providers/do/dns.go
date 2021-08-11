@@ -35,11 +35,11 @@ import (
 
 const (
 	ipPlaceholder = "203.0.113.123"
-	providerName  = "digitalocean"
+	ProviderName  = "digitalocean"
 )
 
 func init() {
-	dnsprovider.RegisterDNSProvider(providerName, func(config io.Reader) (dnsprovider.Interface, error) {
+	dnsprovider.RegisterDNSProvider(ProviderName, func(config io.Reader) (dnsprovider.Interface, error) {
 		client, err := newClient()
 		if err != nil {
 			return nil, err
