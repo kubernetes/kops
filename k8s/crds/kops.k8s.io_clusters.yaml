@@ -3451,7 +3451,7 @@ spec:
                 type: string
               sshAccess:
                 description: SSHAccess determines the permitted access to SSH SSHAccess
-                  stored the details for the CIDRs that can access SSH and the bastion
+                  stores the details for the CIDRs that can access SSH and the bastion
                   LoadBalancer Type.
                 properties:
                   loadBalancerType:
