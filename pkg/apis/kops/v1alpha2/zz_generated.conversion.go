@@ -5230,7 +5230,7 @@ func Convert_kops_RomanaNetworkingSpec_To_v1alpha2_RomanaNetworkingSpec(in *kops
 
 func autoConvert_v1alpha2_SSHAccessSpec_To_kops_SSHAccessSpec(in *SSHAccessSpec, out *kops.SSHAccessSpec, s conversion.Scope) error {
 	out.SSHAllowList = in.SSHAllowList
-	out.LoadBalancerType = in.LoadBalancerType
+	out.BastionLoadBalancerType = in.BastionLoadBalancerType
 	return nil
 }
 
@@ -5241,7 +5241,7 @@ func Convert_v1alpha2_SSHAccessSpec_To_kops_SSHAccessSpec(in *SSHAccessSpec, out
 
 func autoConvert_kops_SSHAccessSpec_To_v1alpha2_SSHAccessSpec(in *kops.SSHAccessSpec, out *SSHAccessSpec, s conversion.Scope) error {
 	out.SSHAllowList = in.SSHAllowList
-	out.LoadBalancerType = in.LoadBalancerType
+	out.BastionLoadBalancerType = in.BastionLoadBalancerType
 	return nil
 }
 

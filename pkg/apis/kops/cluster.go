@@ -114,7 +114,7 @@ type ClusterSpec struct {
 	// It cannot overlap ServiceClusterIPRange
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`
 
-	// SSHAccess stored the details for the CIDRs that can access SSH and the bastion LoadBalancer Type.
+	// SSHAccess stores the details for the CIDRs that can access SSH and the bastion LoadBalancer Type.
 	SSHAccess *SSHAccessSpec `json:"sshAccess,omitempty"`
 	// NodePortAccess is a list of the CIDRs that can access the node ports range (30000-32767).
 	NodePortAccess []string `json:"nodePortAccess,omitempty"`
@@ -441,8 +441,8 @@ var SupportedEtcdProviderTypes = []string{
 // SSHAccessSpec is the SSHAccess cluster specification
 type SSHAccessSpec struct {
 	// SSHAllowList is a list of the CIDRs that can access SSH.
-	SSHAllowList []string `json:"sshAllowList,omitempty"`
-	LoadBalancerType string `json:"loadBalancerType,omitempty"`
+	SSHAllowList            []string `json:"sshAllowList,omitempty"`
+	BastionLoadBalancerType string   `json:"loadBalancerType,omitempty"`
 }
 
 // EtcdClusterSpec is the etcd cluster specification

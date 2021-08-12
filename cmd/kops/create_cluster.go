@@ -130,6 +130,9 @@ type CreateClusterOptions struct {
 	// Specify API loadbalancer as public or internal
 	APILoadBalancerType string
 
+	// Specify Bastion loadbalancer as public or internal
+	BastionLoadBalancerType string
+
 	// Specify the SSL certificate to use for the API loadbalancer. Currently only supported in AWS.
 	APISSLCertificate string
 
@@ -323,7 +326,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.Flags().StringSliceVar(&options.AdminAccess, "admin-access", options.AdminAccess, "Restrict API access to this CIDR.  If not set, access will not be restricted by IP.")
-	cmd.Flags().StringSliceVar(&options.SSHAllowList, "ssh-access", options.SSHAllowList, "Restrict SSH access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0])")
+	cmd.Flags().StringSliceVar(&options.SSHAllowList, "ssh-allow-list", options.SSHAllowList, "Restrict SSH access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0])")
 
 	// TODO: Can we deprecate this flag - it is awkward?
 	cmd.Flags().BoolVar(&associatePublicIP, "associate-public-ip", false, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
@@ -353,6 +356,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
 
 	cmd.Flags().StringVar(&options.APILoadBalancerType, "api-loadbalancer-type", options.APILoadBalancerType, "Sets the API loadbalancer type to either 'public' or 'internal'")
+	cmd.Flags().StringVar(&options.BastionLoadBalancerType, "bastion-loadbalancer-type", options.BastionLoadBalancerType, "Sets the Bastion loadbalancer type to either 'public' or 'internal'")
 	cmd.Flags().StringVar(&options.APISSLCertificate, "api-ssl-certificate", options.APISSLCertificate, "Currently only supported in AWS. Sets the ARN of the SSL Certificate to use for the API server loadbalancer.")
 
 	// Allow custom public master name
@@ -1200,15 +1204,30 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		Legacy:                 false,
 	}
 
-	if len(c.AdminAccess) != 0 {
-		if len(c.SSHAllowList) != 0 {
+
+	// TODO if sshAccess != nil
+	if cluster.Spec.SSHAccess != nil {
+		if len(c.AdminAccess) != 0 {
+			if len(c.SSHAllowList) != 0 {
+				cluster.Spec.SSHAccess.SSHAllowList = c.SSHAllowList
+			} else {
+				cluster.Spec.SSHAccess.SSHAllowList = c.AdminAccess
+			}
+			cluster.Spec.KubernetesAPIAccess = c.AdminAccess
+		} else if len(c.AdminAccess) == 0 {
 			cluster.Spec.SSHAccess.SSHAllowList = c.SSHAllowList
-		} else {
-			cluster.Spec.SSHAccess.SSHAllowList = c.AdminAccess
 		}
-		cluster.Spec.KubernetesAPIAccess = c.AdminAccess
-	} else if len(c.AdminAccess) == 0 {
-		cluster.Spec.SSHAccess.SSHAllowList = c.SSHAllowList
+	}
+
+	if cluster.Spec.SSHAccess != nil && cluster.Spec.API.LoadBalancer.Type == "" {
+		switch c.APILoadBalancerType {
+		case "", "public":
+			cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypePublic
+		case "internal":
+			cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypeInternal
+		default:
+			return fmt.Errorf("unknown api-loadbalancer-type: %q", c.APILoadBalancerType)
+		}
 	}
 
 	if err := commands.SetClusterFields(c.Overrides, cluster, instanceGroups); err != nil {
