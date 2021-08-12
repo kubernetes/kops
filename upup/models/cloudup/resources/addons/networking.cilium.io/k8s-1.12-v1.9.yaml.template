@@ -228,6 +228,8 @@ data:
   # enable-l7-proxy enables L7 proxy for L7 policy enforcement. (default true)
   enable-l7-proxy: "{{ .EnableL7Proxy }}"
 
+  cgroup-root: /sys/fs/cgroup/unified
+
   {{ if WithDefaultBool .Hubble.Enabled false }}
   # Enable Hubble gRPC service.
   enable-hubble: "true"
@@ -754,6 +756,10 @@ spec:
         - mountPath: /sys/fs/bpf
           name: bpf-maps
           mountPropagation: HostToContainer
+        # Required to mount cgroup filesystem from the host to cilium agent pod
+        - mountPath: /sys/fs/cgroup/unified
+          name: cilium-cgroup
+          mountPropagation: HostToContainer
         - mountPath: /var/run/cilium
           name: cilium-run
         resources:
@@ -785,7 +791,12 @@ spec:
           path:  /opt/cni/bin
           type: DirectoryOrCreate
         name: cni-path
-        # To install cilium cni configuration in the host
+      # To keep state between restarts / upgrades for cgroup2 filesystem
+      - hostPath:
+          path: /sys/fs/cgroup/unified
+          type: DirectoryOrCreate
+        name: cilium-cgroup
+      # To install cilium cni configuration in the host
       - hostPath:
           path: /etc/cni/net.d
           type: DirectoryOrCreate
