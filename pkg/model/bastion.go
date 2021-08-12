@@ -53,12 +53,12 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	switch elbSpec.LoadBalancerType {
+	switch elbSpec.BastionLoadBalancerType {
 	case string(kops.LoadBalancerTypeInternal), string(kops.LoadBalancerTypePublic):
 	// OK
 
 	default:
-		return fmt.Errorf("unhandled LoadBalancer type %q", elbSpec.LoadBalancerType)
+		return fmt.Errorf("unhandled LoadBalancer type %q", elbSpec.BastionLoadBalancerType)
 	}
 
 	var bastionInstanceGroups []*kops.InstanceGroup
@@ -276,13 +276,13 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		// Private VS Public
-		switch elbSpec.LoadBalancerType {
+		switch elbSpec.BastionLoadBalancerType {
 		case string(kops.LoadBalancerTypeInternal):
 			elb.Scheme = fi.String("internal")
 		case string(kops.LoadBalancerTypePublic):
 			elb.Scheme = nil
 		default:
-			return fmt.Errorf("unknown load balancer Type: %q", elbSpec.LoadBalancerType)
+			return fmt.Errorf("unknown load balancer Type: %q", elbSpec.BastionLoadBalancerType)
 		}
 
 		c.AddTask(elb)
