@@ -433,7 +433,7 @@ const (
 // SSHAccessSpec is the SSHAccess cluster specification
 type SSHAccessSpec struct {
 	// SSHAllowList is a list of the CIDRs that can access SSH.
-	SSHAllowList     []string `json:"sshAllowList,omitempty"`
+	SSHAllowList            []string `json:"sshAllowList,omitempty"`
 	BastionLoadBalancerType string   `json:"loadBalancerType,omitempty"`
 }
 

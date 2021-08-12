@@ -1204,7 +1204,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		Legacy:                 false,
 	}
 
-
 	// TODO if sshAccess != nil
 	if cluster.Spec.SSHAccess != nil {
 		if len(c.AdminAccess) != 0 {
