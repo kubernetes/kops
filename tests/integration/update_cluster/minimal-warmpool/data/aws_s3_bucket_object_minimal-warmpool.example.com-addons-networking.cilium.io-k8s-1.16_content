@@ -35,6 +35,7 @@ data:
   bpf-nat-global-max: "524288"
   bpf-neigh-global-max: "524288"
   bpf-policy-map-max: "16384"
+  cgroup-root: /sys/fs/cgroup/unified
   cluster-name: default
   container-runtime: none
   debug: "false"
@@ -383,7 +384,7 @@ spec:
           value: api.internal.minimal-warmpool.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.10.0
+        image: quay.io/cilium/cilium:v1.10.3
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -434,7 +435,7 @@ spec:
             - SYS_MODULE
           privileged: true
         startupProbe:
-          failureThreshold: 24
+          failureThreshold: 105
           httpGet:
             host: 127.0.0.1
             httpHeaders:
@@ -488,7 +489,7 @@ spec:
               key: wait-bpf-mount
               name: cilium-config
               optional: true
-        image: quay.io/cilium/cilium:v1.10.0
+        image: quay.io/cilium/cilium:v1.10.3
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
@@ -506,6 +507,9 @@ spec:
         - mountPath: /sys/fs/bpf
           mountPropagation: HostToContainer
           name: bpf-maps
+        - mountPath: /sys/fs/cgroup/unified
+          mountPropagation: HostToContainer
+          name: cilium-cgroup
         - mountPath: /var/run/cilium
           name: cilium-run
       priorityClassName: system-node-critical
@@ -528,6 +532,10 @@ spec:
           path: /opt/cni/bin
           type: DirectoryOrCreate
         name: cni-path
+      - hostPath:
+          path: /sys/fs/cgroup/unified
+          type: DirectoryOrCreate
+        name: cilium-cgroup
       - hostPath:
           path: /etc/cni/net.d
           type: DirectoryOrCreate
@@ -609,7 +617,7 @@ spec:
           value: api.internal.minimal-warmpool.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/operator:v1.10.0
+        image: quay.io/cilium/operator:v1.10.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
