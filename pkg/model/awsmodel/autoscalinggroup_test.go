@@ -34,7 +34,7 @@ func buildMinimalCluster() *kops.Cluster {
 	}
 
 	c.Spec.KubernetesAPIAccess = []string{"0.0.0.0/0"}
-	c.Spec.SSHAccess = []string{"0.0.0.0/0"}
+	c.Spec.SSHAccess.SSHAllowList = []string{"0.0.0.0/0"}
 
 	// Default to public topology
 	c.Spec.Topology = &kops.TopologySpec{
