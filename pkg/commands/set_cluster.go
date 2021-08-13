@@ -101,8 +101,10 @@ func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*a
 				cluster.Spec.KubeDNS = &api.KubeDNSConfig{}
 			}
 			cluster.Spec.KubeDNS.Provider = kv[1]
-		case "spec.sshAccess":
+		case "spec.sshAccess.sshAllowList":
 			cluster.Spec.SSHAccess.SSHAllowList = strings.Split(kv[1], ",")
+		case "spec.sshAccess.bastionLoadBalancerType":
+			cluster.Spec.SSHAccess.BastionLoadBalancerType = kv[1]
 		case "cluster.spec.etcdClusters[*].enableEtcdTLS":
 			v, err := strconv.ParseBool(kv[1])
 			if err != nil {
