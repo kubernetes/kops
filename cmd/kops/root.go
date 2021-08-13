@@ -60,7 +60,7 @@ var (
 
 	kOps helps you create, destroy, upgrade and maintain production-grade, highly available,
 	Kubernetes clusters from the command line. AWS (Amazon Web Services) is currently
-	officially supported, with GCE and OpenStack in beta support.
+	officially supported, with Digital Ocean and OpenStack in beta support.
 	`))
 
 	rootShort = i18n.T(`kOps is Kubernetes Operations.`)
