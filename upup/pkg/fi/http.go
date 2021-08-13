@@ -83,6 +83,7 @@ func downloadURLAlways(url string, destPath string, dirMode os.FileMode) error {
 	// to avoid idle downloads to hang the program
 	httpClient := &http.Client{
 		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
 			DialContext: (&net.Dialer{
 				Timeout:   30 * time.Second,
 				KeepAlive: 30 * time.Second,
