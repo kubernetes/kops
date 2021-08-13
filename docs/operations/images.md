@@ -42,7 +42,7 @@ The following table provides the support status for various distros with regards
 | Debian 8 | - | 1.5 | 1.17 | 1.18 |
 | [Debian 9](#debian-9-stretch) | 1.8 | 1.10 | 1.21 | - |
 | [Debian 10](#debian-10-buster) | 1.13 | 1.17 | - | - |
-| [Debian 11](#debian-11-bullseye) | 1.22 | - | - | - |
+| [Debian 11](#debian-11-bullseye) | 1.21.1 | - | - | - |
 | [Flatcar](#flatcar) | 1.15.1 | 1.17 | - | - |
 | [Kope.io](#kopeio) | - | - | 1.18 | - |
 | [RHEL 7](#rhel-7) | - | 1.5 | 1.21 | - |
