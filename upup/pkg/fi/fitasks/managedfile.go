@@ -49,7 +49,9 @@ func (e *ManagedFile) Find(c *fi.Context) (*ManagedFile, error) {
 		return nil, nil
 	}
 
-	existingData, err := managedFiles.Join(location).ReadFile()
+	filePath := managedFiles.Join(location)
+
+	existingData, err := filePath.ReadFile()
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
@@ -62,6 +64,18 @@ func (e *ManagedFile) Find(c *fi.Context) (*ManagedFile, error) {
 		Base:     e.Base,
 		Location: e.Location,
 		Contents: fi.NewBytesResource(existingData),
+	}
+
+	if s3file, ok := filePath.(*vfs.S3Path); ok {
+		public, err := s3file.IsPublic()
+		if err != nil {
+			return nil, err
+		}
+		actual.Public = &public
+
+		if e.Public == nil {
+			e.Public = fi.Bool(false)
+		}
 	}
 
 	// Avoid spurious changes

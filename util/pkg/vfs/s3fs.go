@@ -451,6 +451,27 @@ func (p *S3Path) GetHTTPsUrl() (string, error) {
 	return strings.TrimSuffix(url, "/"), nil
 }
 
+func (p *S3Path) IsPublic() (bool, error) {
+	client, err := p.client()
+	if err != nil {
+		return false, err
+	}
+	acl, err := client.GetObjectAcl(&s3.GetObjectAclInput{
+		Bucket: &p.bucket,
+		Key:    &p.key,
+	})
+	if err != nil {
+		return false, fmt.Errorf("failed to get grant for key %q in bucket %q: %w", p.key, p.bucket, err)
+	}
+
+	for _, grant := range acl.Grants {
+		if aws.StringValue(grant.Grantee.URI) == "http://acs.amazonaws.com/groups/global/AllUsers" {
+			return aws.StringValue(grant.Permission) == "READ", nil
+		}
+	}
+	return false, nil
+}
+
 // AWSErrorCode returns the aws error code, if it is an awserr.Error, otherwise ""
 func AWSErrorCode(err error) string {
 	if awsError, ok := err.(awserr.Error); ok {
