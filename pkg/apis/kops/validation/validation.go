@@ -887,7 +887,8 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 	}
 
 	if v.EncryptionType != "" {
-		allErrs = append(allErrs, IsValidValue(fldPath.Child("encryptionType"), &v.EncryptionType, []string{"ipsec", "wireguard"})...)
+		encryptionType := string(v.EncryptionType)
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("encryptionType"), &encryptionType, []string{"ipsec", "wireguard"})...)
 
 		version, _ := semver.Parse(v.Version)
 		if v.EncryptionType == "wireguard" && version.Minor < 10 {

@@ -150,7 +150,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.EncryptionType == "" {
-		c.EncryptionType = "ipsec"
+		c.EncryptionType = kops.CiliumEncryptionTypeIPSec
 	}
 
 	hubble := c.Hubble
