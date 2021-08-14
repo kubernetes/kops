@@ -360,7 +360,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	ciliumSpec := c.Cluster.Spec.Networking.Cilium
-	if ciliumSpec != nil && ciliumSpec.EnableEncryption {
+	if ciliumSpec != nil && ciliumSpec.EnableEncryption && ciliumSpec.EncryptionType == kops.CiliumEncryptionTypeIPSec {
 		secret, err := secretStore.FindSecret("ciliumpassword")
 		if err != nil {
 			return fmt.Errorf("could not load the ciliumpassword secret: %w", err)
