@@ -243,7 +243,6 @@ KubeletConfig:
   hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  networkPluginName: cni
   nodeLabels:
     kops.k8s.io/kops-controller-pki: ""
     kubernetes.io/role: master
