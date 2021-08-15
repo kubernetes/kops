@@ -894,10 +894,10 @@ resource "aws_s3_bucket_object" "privatekopeio-example-com-addons-limit-range-ad
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "privatekopeio-example-com-addons-networking-weave-k8s-1-12" {
+resource "aws_s3_bucket_object" "privatekopeio-example-com-addons-networking-kope-io-k8s-1-12" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_privatekopeio.example.com-addons-networking.weave-k8s-1.12_content")
-  key                    = "clusters.example.com/privatekopeio.example.com/addons/networking.weave/k8s-1.12.yaml"
+  content                = file("${path.module}/data/aws_s3_bucket_object_privatekopeio.example.com-addons-networking.kope.io-k8s-1.12_content")
+  key                    = "clusters.example.com/privatekopeio.example.com/addons/networking.kope.io/k8s-1.12.yaml"
   server_side_encryption = "AES256"
 }
 
