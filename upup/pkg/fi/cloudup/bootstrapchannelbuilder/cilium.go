@@ -24,7 +24,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) error {
+func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 
 	cilium := b.Cluster.Spec.Networking.Cilium
 	if cilium != nil {
@@ -39,7 +39,7 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) error {
 				id := "k8s-1.12"
 				location := key + "/" + id + "-v1.8.yaml"
 
-				addons.Spec.Addons = append(addons.Spec.Addons, &api.AddonSpec{
+				addons.Add(&api.AddonSpec{
 					Name:               fi.String(key),
 					Selector:           networkingSelector(),
 					Manifest:           fi.String(location),
@@ -62,7 +62,7 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) error {
 				if cilium.Hubble != nil && fi.BoolValue(cilium.Hubble.Enabled) {
 					addon.NeedsPKI = true
 				}
-				addons.Spec.Addons = append(addons.Spec.Addons, addon)
+				addons.Add(addon)
 			}
 		} else if ver.Minor == 10 {
 			{
@@ -79,7 +79,7 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) error {
 				if cilium.Hubble != nil && fi.BoolValue(cilium.Hubble.Enabled) {
 					addon.NeedsPKI = true
 				}
-				addons.Spec.Addons = append(addons.Spec.Addons, addon)
+				addons.Add(addon)
 			}
 		} else {
 			return fmt.Errorf("unknown cilium version: %q", cilium.Version)

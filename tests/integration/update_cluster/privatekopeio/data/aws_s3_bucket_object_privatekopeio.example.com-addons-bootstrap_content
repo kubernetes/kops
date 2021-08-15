@@ -56,6 +56,23 @@ spec:
     manifest: networking.kope.io/k8s-1.12.yaml
     manifestHash: 294272eb01da2938395ff6425ac74690788b6f7ebe80327a83a77b2951b63968
     name: networking.kope.io
+    prune:
+      kinds:
+      - kind: ServiceAccount
+        labelSelector: addon.kops.k8s.io/name=networking.kope.io,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: apps
+        kind: DaemonSet
+        labelSelector: addon.kops.k8s.io/name=networking.kope.io,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRole
+        labelSelector: addon.kops.k8s.io/name=networking.kope.io,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRoleBinding
+        labelSelector: addon.kops.k8s.io/name=networking.kope.io,app.kubernetes.io/managed-by=kops
     selector:
       role.kubernetes.io/networking: "1"
     version: 9.99.0
