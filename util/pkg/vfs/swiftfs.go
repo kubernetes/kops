@@ -487,7 +487,7 @@ func (p *SwiftPath) readPath(opt swiftobject.ListOpts) ([]Path, error) {
 // ReadDir implements Path::ReadDir.
 func (p *SwiftPath) ReadDir() ([]Path, error) {
 	prefix := p.key
-	if !strings.HasSuffix(prefix, "/") {
+	if prefix != "" && !strings.HasSuffix(prefix, "/") {
 		prefix += "/"
 	}
 	opt := swiftobject.ListOpts{
@@ -500,7 +500,7 @@ func (p *SwiftPath) ReadDir() ([]Path, error) {
 // ReadTree implements Path::ReadTree.
 func (p *SwiftPath) ReadTree() ([]Path, error) {
 	prefix := p.key
-	if !strings.HasSuffix(prefix, "/") {
+	if prefix != "" && !strings.HasSuffix(prefix, "/") {
 		prefix += "/"
 	}
 	opt := swiftobject.ListOpts{
