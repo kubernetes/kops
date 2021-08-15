@@ -24,6 +24,7 @@ import (
 	"net/url"
 
 	"k8s.io/kops/pkg/pki"
+	"k8s.io/kops/util/pkg/vfs"
 
 	certmanager "github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -151,7 +152,7 @@ func (a *Addon) GetManifestFullUrl() (*url.URL, error) {
 	return manifestURL, nil
 }
 
-func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interface, cmClient certmanager.Interface) (*AddonUpdate, error) {
+func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interface, cmClient certmanager.Interface, pruner *Pruner) (*AddonUpdate, error) {
 	required, err := a.GetRequiredUpdates(ctx, k8sClient, cmClient)
 	if err != nil {
 		return nil, err
@@ -167,9 +168,18 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 		}
 		klog.Infof("Applying update from %q", manifestURL)
 
-		err = Apply(manifestURL.String())
+		// We copy the manifest to a temp file because it is likely e.g. an s3 URL, which kubectl can't read
+		data, err := vfs.Context.ReadFile(manifestURL.String())
 		if err != nil {
-			return nil, fmt.Errorf("error applying update from %q: %v", manifestURL, err)
+			return nil, fmt.Errorf("error reading manifest: %w", err)
+		}
+
+		if err := Apply(data); err != nil {
+			return nil, fmt.Errorf("error applying update from %q: %w", manifestURL, err)
+		}
+
+		if err := pruner.Prune(ctx, data, a.Spec.Prune); err != nil {
+			return nil, fmt.Errorf("error pruning manifest from %q: %w", manifestURL, err)
 		}
 
 		if err := a.AddNeedsUpdateLabel(ctx, k8sClient, required); err != nil {
