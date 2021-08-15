@@ -69,6 +69,19 @@ type AddonSpec struct {
 	NeedsPKI bool `json:"needsPKI,omitempty"`
 
 	Version string `json:"version,omitempty"`
+
+	Prune *PruneSpec `json:"prune,omitempty"`
+}
+
+type PruneSpec struct {
+	Kinds []PruneKindSpec `json:"kinds,omitempty"`
+}
+
+type PruneKindSpec struct {
+	Group         string   `json:"group,omitempty"`
+	Kind          string   `json:"kind,omitempty"`
+	Namespaces    []string `json:"namespaces,omitempty"`
+	LabelSelector string   `json:"labelSelector,omitempty"`
 }
 
 func (a *Addons) Verify() error {
