@@ -134,6 +134,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateKubelet(spec.MasterKubelet, c, fieldPath.Child("masterKubelet"))...)
 	}
 
+	if spec.AWSLoadBalancerController != nil && fi.BoolValue(spec.AWSLoadBalancerController.Enabled) && c.IsKubernetesGTE("1.22") {
+		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("awsLoadBalancerController", "enabled"), "AWS load balancer controller is supported only for Kubernetes 1.21 and lower"))
+	}
+
 	if spec.Networking != nil {
 		allErrs = append(allErrs, validateNetworking(c, spec.Networking, fieldPath.Child("networking"))...)
 		if spec.Networking.Calico != nil {
@@ -160,6 +164,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 
 	if spec.AWSLoadBalancerController != nil {
 		allErrs = append(allErrs, validateAWSLoadBalancerController(c, spec.AWSLoadBalancerController, fieldPath.Child("awsLoadBalanceController"))...)
+	}
+
+	if spec.Authentication != nil && spec.Authentication.Aws != nil && c.IsKubernetesGTE("1.22") {
+		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("authentication", "aws"), "AWS IAM authenticator is supported only for Kubernetes 1.21 and lower"))
 	}
 
 	if spec.SnapshotController != nil {
@@ -703,7 +711,7 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		}
 		optionTaken = true
 
-		allErrs = append(allErrs, validateNetworkingCanal(v.Canal, fldPath.Child("canal"))...)
+		allErrs = append(allErrs, validateNetworkingCanal(cluster, v.Canal, fldPath.Child("canal"))...)
 	}
 
 	if v.Kuberouter != nil {
@@ -728,6 +736,8 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 
 		if c.CloudProvider != "aws" {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("amazonvpc"), "amazon-vpc-routed-eni networking is supported only in AWS"))
+		} else if cluster.IsKubernetesGTE("1.22") {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("amazonvpc"), "amazon-vpc-routed-eni networking is supported only for Kubernetes 1.21 and lower"))
 		}
 	}
 
@@ -774,7 +784,7 @@ func validateNetworkingFlannel(v *kops.FlannelNetworkingSpec, fldPath *field.Pat
 	return allErrs
 }
 
-func validateNetworkingCanal(v *kops.CanalNetworkingSpec, fldPath *field.Path) field.ErrorList {
+func validateNetworkingCanal(c *kops.Cluster, v *kops.CanalNetworkingSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if v.DefaultEndpointToHostAction != "" {
@@ -795,6 +805,10 @@ func validateNetworkingCanal(v *kops.CanalNetworkingSpec, fldPath *field.Path) f
 	if v.IptablesBackend != "" {
 		valid := []string{"Auto", "Legacy", "NFT"}
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("iptablesBackend"), &v.IptablesBackend, valid)...)
+	}
+
+	if c.IsKubernetesGTE("1.22") {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "Canal is supported only for Kubernetes 1.21 and lower"))
 	}
 
 	return allErrs
