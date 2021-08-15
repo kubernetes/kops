@@ -151,7 +151,6 @@ kubelet:
   hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  networkPluginName: cni
   nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
 
@@ -162,7 +161,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatekopeio.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: QsL02v5F4dPm/SxOBAeABj9LKtggcSW+f9Ead/+989Q=
+NodeupConfigHash: IE6Ri9HJ07gg3tR/oB6HIkQOksfwafZOeyBYO5rFHWY=
 
 __EOF_KUBE_ENV
 
