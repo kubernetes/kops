@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.kope.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: networking.kope.io
+    role.kubernetes.io/networking: "1"
+  name: kopeio-networking-agent
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: kopeio-networking-agent
+  template:
+    metadata:
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly",
+          "operator":"Exists"}]'
+      labels:
+        name: kopeio-networking-agent
+    spec:
+      containers:
+      - env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        image: kopeio/networking-agent:1.0.20181028
+        name: networking-agent
+        resources:
+          limits:
+            memory: 100Mi
+          requests:
+            cpu: 50m
+            memory: 100Mi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: lib-modules
+          readOnly: true
+      hostIPC: true
+      hostNetwork: true
+      hostPID: true
+      priorityClassName: system-node-critical
+      serviceAccountName: kopeio-networking-agent
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
+      volumes:
+      - hostPath:
+          path: /lib/modules
+        name: lib-modules
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.kope.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: networking.kope.io
+    role.kubernetes.io/networking: "1"
+  name: kopeio-networking-agent
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.kope.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: networking.kope.io
+    role.kubernetes.io/networking: "1"
+  name: kopeio:networking-agent
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.kope.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: networking.kope.io
+    role.kubernetes.io/networking: "1"
+  name: kopeio:networking-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kopeio:networking-agent
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: system:serviceaccount:kube-system:kopeio-networking-agent

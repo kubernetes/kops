@@ -26,7 +26,7 @@ spec:
   masterPublicName: api.privatekopeio.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    weave: {}
+    kopeio: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
