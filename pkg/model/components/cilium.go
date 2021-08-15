@@ -149,7 +149,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 		c.MemoryRequest = &defaultMemoryRequest
 	}
 
-	if c.EncryptionType == "" {
+	if c.EnableEncryption && c.EncryptionType == "" {
 		c.EncryptionType = kops.CiliumEncryptionTypeIPSec
 	}
 
