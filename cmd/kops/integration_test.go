@@ -345,11 +345,13 @@ func TestPrivateCanal(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+const kopeioNetworkingAddon = "networking.kope.io-k8s-1.12"
+
 // TestPrivateKopeio runs the test on a configuration with private topology, kopeio networking
 func TestPrivateKopeio(t *testing.T) {
 	newIntegrationTest("privatekopeio.example.com", "privatekopeio").
 		withPrivate().
-		withAddons(weaveAddon).
+		withAddons(kopeioNetworkingAddon).
 		runTestTerraformAWS(t)
 }
 

@@ -46,8 +46,8 @@ spec:
     selector:
       k8s-addon: storage-aws.addons.k8s.io
   - id: k8s-1.12
-    manifest: networking.weave/k8s-1.12.yaml
-    manifestHash: 3f14f8869934001778849837c28217709bf4f1c593d3acdbde9cdf1d97ac47f3
-    name: networking.weave
+    manifest: networking.kope.io/k8s-1.12.yaml
+    manifestHash: 294272eb01da2938395ff6425ac74690788b6f7ebe80327a83a77b2951b63968
+    name: networking.kope.io
     selector:
       role.kubernetes.io/networking: "1"
