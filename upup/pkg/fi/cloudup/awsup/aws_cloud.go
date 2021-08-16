@@ -99,9 +99,8 @@ const (
 	WellKnownAccountAmazonLinux2 = "137112412989"
 	WellKnownAccountCentOS       = "125523088429"
 	WellKnownAccountCoreOS       = "595879546273"
+	WellKnownAccountDebian       = "136693071363"
 	WellKnownAccountDebian9      = "379101102735"
-	WellKnownAccountDebian10     = "136693071363"
-	WellKnownAccountDebian11     = "903794441882"
 	WellKnownAccountFlatcar      = "075585003325"
 	WellKnownAccountKopeio       = "383156758163"
 	WellKnownAccountRedhat       = "309956199498"
@@ -1507,9 +1506,9 @@ func resolveImage(ec2Client ec2iface.EC2API, name string) (*ec2.Image, error) {
 			case "debian9":
 				owner = WellKnownAccountDebian9
 			case "debian10":
-				owner = WellKnownAccountDebian10
+				owner = WellKnownAccountDebian
 			case "debian11":
-				owner = WellKnownAccountDebian11
+				owner = WellKnownAccountDebian
 			case "flatcar":
 				owner = WellKnownAccountFlatcar
 			case "kopeio", "kope.io":
