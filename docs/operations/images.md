@@ -103,7 +103,7 @@ Available images can be listed using:
 
 ```bash
 aws ec2 describe-images --region us-east-1 --output table \
-  --owners 903794441882 \
+  --owners 136693071363 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=debian-11-amd64-*"
 ```
@@ -249,7 +249,7 @@ kOps supports owner aliases for the official accounts of supported distros:
 * `centos` => `125523088429`
 * `debian9` => `379101102735`
 * `debian10` => `136693071363`
-* `debian11` => `903794441882`
+* `debian11` => `136693071363`
 * `flatcar` => `075585003325`
 * `redhat` => `309956199498`
 * `ubuntu` => `099720109477`
