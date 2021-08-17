@@ -845,6 +845,10 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("hubble", "enabled"), "Hubble requires that cert manager is enabled"))
 			}
 		}
+
+		if version.Minor < 10 && v.EncryptionType == kops.CiliumEncryptionTypeWireguard {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("encryptionType"), "Cilium EncryptionType=WireGuard is not available for Cilium version < 1.10.0."))
+		}
 	}
 
 	if v.EnableNodePort && c.KubeProxy != nil && (c.KubeProxy.Enabled == nil || *c.KubeProxy.Enabled) {
@@ -879,8 +883,22 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("bpfLBAlgorithm"), &v.BPFLBAlgorithm, []string{"random", "maglev"})...)
 	}
 
+	if v.EncryptionType != "" {
+		encryptionType := string(v.EncryptionType)
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("encryptionType"), &encryptionType, []string{"ipsec", "wireguard"})...)
+
+		if v.EncryptionType == "wireguard" {
+			// Cilium with Wireguard integration follow-up --> https://github.com/cilium/cilium/issues/15462.
+			// The following rule of validation should be deleted as this combination
+			// will be supported on future releases of Cilium (>= v1.11.0).
+			if fi.BoolValue(v.EnableL7Proxy) {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableL7Proxy"), "L7 proxy cannot be enabled if wireguard is enabled."))
+			}
+		}
+	}
+
 	if fi.BoolValue(v.EnableL7Proxy) && v.IPTablesRulesNoinstall {
-		allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableL7Proxy"), "Cilium L7 Proxy requires IPTablesRules to be installed"))
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableL7Proxy"), "Cilium L7 Proxy requires IPTablesRules to be installed."))
 	}
 
 	if v.Ipam != "" {
