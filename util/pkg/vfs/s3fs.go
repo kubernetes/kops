@@ -230,6 +230,7 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 			return fmt.Errorf("write to %s with ACL of unexpected type %T", p, aclObj)
 		}
 		request.ACL = s3Acl.RequestACL
+		acl = *s3Acl.RequestACL
 	}
 
 	// We don't need Content-MD5: https://github.com/aws/aws-sdk-go/issues/208
