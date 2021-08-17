@@ -1774,6 +1774,7 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.EnableTracing = in.EnableTracing
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnableEncryption = in.EnableEncryption
+	out.EncryptionType = kops.CiliumEncryptionType(in.EncryptionType)
 	out.EnvoyLog = in.EnvoyLog
 	out.IdentityAllocationMode = in.IdentityAllocationMode
 	out.IdentityChangeGracePeriod = in.IdentityChangeGracePeriod
@@ -1881,6 +1882,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	out.EnableTracing = in.EnableTracing
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnableEncryption = in.EnableEncryption
+	out.EncryptionType = CiliumEncryptionType(in.EncryptionType)
 	out.EnvoyLog = in.EnvoyLog
 	out.IdentityAllocationMode = in.IdentityAllocationMode
 	out.IdentityChangeGracePeriod = in.IdentityChangeGracePeriod

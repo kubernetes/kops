@@ -149,6 +149,10 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 		c.MemoryRequest = &defaultMemoryRequest
 	}
 
+	if c.EnableEncryption && c.EncryptionType == "" {
+		c.EncryptionType = kops.CiliumEncryptionTypeIPSec
+	}
+
 	hubble := c.Hubble
 	if hubble != nil {
 		if hubble.Enabled == nil {
