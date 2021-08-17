@@ -31,7 +31,7 @@ git clone --branch v0.4.4 https://github.com/kubernetes-sigs/metrics-server.git 
 
 # The prometheus test expects to have only one metrics-server pod, but we use two
 # We scale down to meet test expectation
-kubectl scale -n kube-system deploy --replicas=1
+kubectl scale -n kube-system --replicas=1 deployment/metrics-server
 
 # shellcheck disable=SC2164
 go test -v ./test/e2e_test.go -count=1
