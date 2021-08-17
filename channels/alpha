@@ -124,8 +124,8 @@ spec:
     recommendedVersion: 1.11.10
     requiredVersion: 1.11.10
   kopsVersions:
-  - range: ">=v1.22.0-alpha.1"
-    recommendedVersion: "v1.22.0-alpha.2"
+  - range: ">=1.22.0-alpha.1"
+    recommendedVersion: "1.22.0-alpha.2"
     #requiredVersion: 1.22.0
     kubernetesVersion: 1.22.0
   - range: ">=1.21.0-alpha.1"
