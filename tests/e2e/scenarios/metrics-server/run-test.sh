@@ -19,7 +19,7 @@ source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
 kops-acquire-latest
 
-OVERRIDES="$OVERRIDES --override=cluster.spec.metricsServer.enabled=true"
+OVERRIDES="${OVERRIDES-} --override=cluster.spec.metricsServer.enabled=true"
 OVERRIDES="$OVERRIDES --override=cluster.spec.certManager.enabled=true"
 
 kops-up
