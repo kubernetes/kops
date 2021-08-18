@@ -234,6 +234,7 @@ KubeletConfig:
     node-role.kubernetes.io/node: ""
   nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
+UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/bastionuserdata.example.com/addons/bootstrap-channel.yaml
 

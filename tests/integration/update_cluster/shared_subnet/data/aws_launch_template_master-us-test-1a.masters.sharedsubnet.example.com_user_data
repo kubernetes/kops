@@ -315,6 +315,7 @@ KubeletConfig:
   nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
+UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/sharedsubnet.example.com/addons/bootstrap-channel.yaml
 etcdManifests:

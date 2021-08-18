@@ -226,6 +226,7 @@ Resources.AWSEC2LaunchTemplateapiserverapiserversminimalexamplecom.Properties.La
       node-role.kubernetes.io/api-server: ""
     nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
+  UpdatePolicy: automatic
   channels:
   - memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
   staticManifests:
@@ -555,6 +556,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
+  UpdatePolicy: automatic
   channels:
   - memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
   etcdManifests:
@@ -796,6 +798,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
       node-role.kubernetes.io/node: ""
     nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
+  UpdatePolicy: automatic
   channels:
   - memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
 
