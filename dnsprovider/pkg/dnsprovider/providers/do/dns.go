@@ -33,6 +33,8 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 )
 
+var _ dnsprovider.Interface = Interface{}
+
 const (
 	ipPlaceholder = "203.0.113.123"
 	ProviderName  = "digitalocean"
@@ -77,17 +79,17 @@ func newClient() (*godo.Client, error) {
 }
 
 // DNS implements dnsprovider.Interface
-type DNS struct {
+type Interface struct {
 	client *godo.Client
 }
 
 // NewProvider returns an implementation of dnsprovider.Interface
 func NewProvider(client *godo.Client) dnsprovider.Interface {
-	return &DNS{client: client}
+	return &Interface{client: client}
 }
 
 // Zones returns an implementation of dnsprovider.Zones
-func (d *DNS) Zones() (dnsprovider.Zones, bool) {
+func (d Interface) Zones() (dnsprovider.Zones, bool) {
 	return &zones{
 		client: d.client,
 	}, true
