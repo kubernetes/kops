@@ -14,6 +14,7 @@ go_library(
         "//dns-controller/pkg/dns:go_default_library",
         "//dnsprovider/pkg/dnsprovider:go_default_library",
         "//dnsprovider/pkg/dnsprovider/providers/aws/route53:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/providers/do:go_default_library",
         "//dnsprovider/pkg/dnsprovider/providers/google/clouddns:go_default_library",
         "//pkg/wellknownports:go_default_library",
         "//protokube/pkg/gossip:go_default_library",
