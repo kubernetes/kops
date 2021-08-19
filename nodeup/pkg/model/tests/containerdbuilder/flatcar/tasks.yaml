@@ -46,8 +46,10 @@ afterFiles:
 - /etc/containerd/config-kops.toml
 contents: |-
   [Service]
-  Environment=CONTAINERD_CONFIG=/etc/containerd/config-kops.toml
   EnvironmentFile=/etc/environment
+  Environment=CONTAINERD_CONFIG=/etc/containerd/config-kops.toml
+  ExecStart=
+  ExecStart=/usr/bin/env PATH=${TORCX_BINDIR}:${PATH} ${TORCX_BINDIR}/containerd --config ${CONTAINERD_CONFIG}
 onChangeExecute:
 - - systemctl
   - daemon-reload

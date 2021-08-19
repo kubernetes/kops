@@ -249,8 +249,10 @@ func (b *ContainerdBuilder) buildSystemdServiceOverrideContainerOS(c *fi.ModelBu
 func (b *ContainerdBuilder) buildSystemdServiceOverrideFlatcar(c *fi.ModelBuilderContext) {
 	lines := []string{
 		"[Service]",
-		"Environment=CONTAINERD_CONFIG=" + b.containerdConfigFilePath(),
 		"EnvironmentFile=/etc/environment",
+		"Environment=CONTAINERD_CONFIG=" + b.containerdConfigFilePath(),
+		"ExecStart=",
+		"ExecStart=/usr/bin/env PATH=${TORCX_BINDIR}:${PATH} ${TORCX_BINDIR}/containerd --config ${CONTAINERD_CONFIG}",
 	}
 	contents := strings.Join(lines, "\n")
 
