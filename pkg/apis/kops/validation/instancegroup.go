@@ -326,7 +326,7 @@ func validateIGCloudLabels(ig *kops.InstanceGroup, fldPath *field.Path) (allErrs
 		if key == aws.CloudTagInstanceGroupName {
 
 			if value != ig.ObjectMeta.Name {
-				allErrs = append(allErrs, field.Invalid(fldPath.Child(aws.CloudTagInstanceGroupName), key, "Node label may only contain a single slash"))
+				allErrs = append(allErrs, field.Invalid(fldPath.Child(aws.CloudTagInstanceGroupName), key, "value must match instance group name"))
 			}
 		} else {
 			genericLabels[key] = value
