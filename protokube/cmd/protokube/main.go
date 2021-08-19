@@ -38,6 +38,7 @@ import (
 
 	// Load DNS plugins
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
+	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/do"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
 )
 
