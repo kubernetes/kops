@@ -1,15 +1,6 @@
 {
   "Statement": [
     {
-      "Action": [
-        "ec2:DescribeVolumes"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ]
-    },
-    {
       "Action": "ec2:AttachVolume",
       "Condition": {
         "StringEquals": {
