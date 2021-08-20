@@ -49,11 +49,12 @@ const PolicyDefaultVersion = "2012-10-17"
 
 // Policy Struct is a collection of fields that form a valid AWS policy document
 type Policy struct {
-	clusterName         string
-	unconditionalAction sets.String
-	clusterTaggedAction sets.String
-	Statement           []*Statement
-	Version             string
+	clusterName               string
+	unconditionalAction       sets.String
+	clusterTaggedAction       sets.String
+	clusterTaggedCreateAction sets.String
+	Statement                 []*Statement
+	Version                   string
 }
 
 // AsJSON converts the policy document to JSON format (parsable by AWS)
@@ -73,6 +74,18 @@ func (p *Policy) AsJSON() (string, error) {
 			Condition: Condition{
 				"StringEquals": map[string]string{
 					"aws:ResourceTag/KubernetesCluster": p.clusterName,
+				},
+			},
+		})
+	}
+	if len(p.clusterTaggedCreateAction) > 0 {
+		p.Statement = append(p.Statement, &Statement{
+			Effect:   StatementEffectAllow,
+			Action:   stringorslice.Of(p.clusterTaggedCreateAction.List()...),
+			Resource: stringorslice.String("*"),
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"aws:RequestTag/KubernetesCluster": p.clusterName,
 				},
 			},
 		})
@@ -261,10 +274,11 @@ func (b *PolicyBuilder) BuildAWSPolicy() (*Policy, error) {
 
 func NewPolicy(clusterName string) *Policy {
 	p := &Policy{
-		Version:             PolicyDefaultVersion,
-		clusterName:         clusterName,
-		unconditionalAction: sets.NewString(),
-		clusterTaggedAction: sets.NewString(),
+		Version:                   PolicyDefaultVersion,
+		clusterName:               clusterName,
+		unconditionalAction:       sets.NewString(),
+		clusterTaggedAction:       sets.NewString(),
+		clusterTaggedCreateAction: sets.NewString(),
 	}
 	return p
 }
@@ -845,6 +859,9 @@ func AddCCMPermissions(p *Policy, cloudRoutes bool) {
 		"elasticloadbalancing:RegisterTargets",
 		"elasticloadbalancing:DeregisterTargets",
 		"elasticloadbalancing:SetLoadBalancerPoliciesOfListener",
+	)
+
+	p.clusterTaggedCreateAction.Insert(
 		"elasticloadbalancing:CreateLoadBalancer",
 		"elasticloadbalancing:CreateLoadBalancerPolicy",
 		"elasticloadbalancing:CreateLoadBalancerListeners",
@@ -951,9 +968,11 @@ func AddAWSEBSCSIDriverPermissions(p *Policy, appendSnapshotPermissions bool) {
 		"ec2:ModifyVolume",            // aws.go
 		"ec2:ModifyInstanceAttribute", // aws.go
 		"ec2:AttachVolume",            // aws.go
-		"ec2:CreateVolume",            // aws.go
 		"ec2:DeleteVolume",            // aws.go
 		"ec2:DetachVolume",            // aws.go
+	)
+	p.clusterTaggedCreateAction.Insert(
+		"ec2:CreateVolume", // aws.go
 	)
 
 	p.Statement = append(p.Statement,

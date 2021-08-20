@@ -1,18 +1,6 @@
 {
   "Statement": [
     {
-      "Action": [
-        "ec2:CreateVolume"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "aws:RequestTag/KubernetesCluster": "minimal.example.com"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": "*"
-    },
-    {
       "Action": "ec2:CreateTags",
       "Condition": {
         "StringEquals": {
@@ -67,6 +55,16 @@
       "Condition": {
         "StringEquals": {
           "aws:ResourceTag/KubernetesCluster": "minimal.example.com"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": "ec2:CreateVolume",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/KubernetesCluster": "minimal.example.com"
         }
       },
       "Effect": "Allow",
