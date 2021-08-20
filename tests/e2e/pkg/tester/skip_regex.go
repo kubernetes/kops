@@ -57,9 +57,10 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|Services.*affinity"
 	}
 
-	if strings.Contains(cluster.Spec.KubernetesVersion, "v1.22.") {
-		// TODO(rifelpet): Remove once k8s tags has been created that include
-		// https://github.com/kubernetes/kubernetes/pull/104061
+	if strings.HasSuffix(cluster.Spec.KubernetesVersion, "v1.23.0-alpha.0") {
+		// This matches `k8s_version='latest'` in build_jobs.py
+		// TODO(rifelpet): Remove once the next 1.23 pre-release tag has been created
+		// ref: https://github.com/kubernetes/kubernetes/pull/104061
 		skipRegex += "|MetricsGrabber.should.grab.all.metrics.from.a.ControllerManager"
 	}
 
