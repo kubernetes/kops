@@ -62,11 +62,6 @@ var (
 	GoogleCloudBucketACL = new("GoogleCloudBucketAcl", Bool(false))
 	// KeepLaunchConfigurations can be set to prevent garbage collection of old launch configurations
 	KeepLaunchConfigurations = new("KeepLaunchConfigurations", Bool(false))
-	// SkipTerraformFormat if set means we will not `tf fmt` the generated terraform.
-	// However we should no longer need it, with the keyset.yaml fix
-	// In particular, this is the only (?) way to grant the bucket.list permission
-	// It allows for experiments with alternative DNS configurations - in particular local proxies.
-	SkipTerraformFormat = new("SkipTerraformFormat", Bool(false))
 	// SpecOverrideFlag allows setting spec values on create
 	SpecOverrideFlag = new("SpecOverrideFlag", Bool(false))
 	// Spotinst toggles the use of Spotinst integration.
