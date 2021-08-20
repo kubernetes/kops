@@ -331,6 +331,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom.Properties.
     nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
+  UpdatePolicy: automatic
   channels:
   - memfs://clusters.example.com/complex.example.com/addons/bootstrap-channel.yaml
   etcdManifests:
@@ -592,6 +593,7 @@ Resources.AWSEC2LaunchTemplatenodescomplexexamplecom.Properties.LaunchTemplateDa
       node-role.kubernetes.io/node: ""
     nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
+  UpdatePolicy: automatic
   channels:
   - memfs://clusters.example.com/complex.example.com/addons/bootstrap-channel.yaml
 

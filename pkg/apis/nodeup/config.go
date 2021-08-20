@@ -62,6 +62,8 @@ type Config struct {
 	// specified, each parameter must follow the form variable=value, the way
 	// it would appear in sysctl.conf.
 	SysctlParameters []string `json:",omitempty"`
+	// UpdatePolicy determines the policy for applying upgrades automatically.
+	UpdatePolicy string
 	// VolumeMounts are a collection of volume mounts.
 	VolumeMounts []kops.VolumeMountSpec `json:",omitempty"`
 
@@ -133,6 +135,14 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config
 	config.KubeletConfig.NodeLabels = nodelabels.BuildNodeLabels(cluster, instanceGroup)
 
 	config.KubeletConfig.Taints = append(config.KubeletConfig.Taints, instanceGroup.Spec.Taints...)
+
+	if instanceGroup.Spec.UpdatePolicy != nil {
+		config.UpdatePolicy = *instanceGroup.Spec.UpdatePolicy
+	} else if cluster.Spec.UpdatePolicy != nil {
+		config.UpdatePolicy = *cluster.Spec.UpdatePolicy
+	} else {
+		config.UpdatePolicy = kops.UpdatePolicyAutomatic
+	}
 
 	if cluster.Spec.Networking != nil && cluster.Spec.Networking.AmazonVPC != nil {
 		config.DefaultMachineType = fi.String(strings.Split(instanceGroup.Spec.MachineType, ",")[0])
