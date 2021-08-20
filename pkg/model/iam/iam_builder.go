@@ -767,7 +767,6 @@ func addNodeupPermissions(p *Policy, enableHookSupport bool) {
 }
 
 func addEtcdManagerPermissions(p *Policy) {
-	resource := stringorslice.Slice([]string{"*"})
 	p.unconditionalAction.Insert(
 		"ec2:DescribeVolumes", // aws.go
 	)
@@ -775,17 +774,10 @@ func addEtcdManagerPermissions(p *Policy) {
 	p.Statement = append(p.Statement,
 		&Statement{
 			Effect: StatementEffectAllow,
-			Action: stringorslice.Slice([]string{
-				"ec2:DescribeVolumes", // aws.go
-			}),
-			Resource: resource,
-		},
-		&Statement{
-			Effect: StatementEffectAllow,
 			Action: stringorslice.Of(
 				"ec2:AttachVolume",
 			),
-			Resource: resource,
+			Resource: stringorslice.Slice([]string{"*"}),
 			Condition: Condition{
 				"StringEquals": map[string]string{
 					"aws:ResourceTag/k8s.io/role/master": "1",
@@ -805,8 +797,6 @@ func AddLegacyCCMPermissions(p *Policy) {
 }
 
 func AddCCMPermissions(p *Policy, cloudRoutes bool) {
-	resource := stringorslice.Slice([]string{"*"})
-
 	p.unconditionalAction.Insert(
 		"autoscaling:DescribeAutoScalingGroups",
 		"autoscaling:DescribeTags",
@@ -855,6 +845,13 @@ func AddCCMPermissions(p *Policy, cloudRoutes bool) {
 		"elasticloadbalancing:RegisterTargets",
 		"elasticloadbalancing:DeregisterTargets",
 		"elasticloadbalancing:SetLoadBalancerPoliciesOfListener",
+		"elasticloadbalancing:CreateLoadBalancer",
+		"elasticloadbalancing:CreateLoadBalancerPolicy",
+		"elasticloadbalancing:CreateLoadBalancerListeners",
+		"ec2:CreateSecurityGroup",
+		"ec2:CreateVolume",
+		"elasticloadbalancing:CreateListener",
+		"elasticloadbalancing:CreateTargetGroup",
 	)
 
 	p.Statement = append(p.Statement,
@@ -875,25 +872,6 @@ func AddCCMPermissions(p *Policy, cloudRoutes bool) {
 						"CreateVolume",
 						"CreateSnapshot",
 					},
-				},
-			},
-		},
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
-				"elasticloadbalancing:CreateLoadBalancer",
-				"elasticloadbalancing:CreateLoadBalancerPolicy",
-				"elasticloadbalancing:CreateLoadBalancerListeners",
-				"ec2:CreateSecurityGroup",
-				"ec2:CreateVolume",
-				"elasticloadbalancing:CreateListener",
-				"elasticloadbalancing:CreateTargetGroup",
-			),
-			Resource: resource,
-
-			Condition: Condition{
-				"StringEquals": map[string]string{
-					"aws:RequestTag/KubernetesCluster": p.clusterName,
 				},
 			},
 		},
@@ -973,25 +951,12 @@ func AddAWSEBSCSIDriverPermissions(p *Policy, appendSnapshotPermissions bool) {
 		"ec2:ModifyVolume",            // aws.go
 		"ec2:ModifyInstanceAttribute", // aws.go
 		"ec2:AttachVolume",            // aws.go
+		"ec2:CreateVolume",            // aws.go
 		"ec2:DeleteVolume",            // aws.go
 		"ec2:DetachVolume",            // aws.go
 	)
 
 	p.Statement = append(p.Statement,
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Slice([]string{
-				"ec2:CreateVolume", // aws.go
-			}),
-
-			Resource: stringorslice.String("*"),
-			Condition: Condition{
-				"StringEquals": map[string]string{
-					"aws:RequestTag/KubernetesCluster": p.clusterName,
-				},
-			},
-		},
-
 		&Statement{
 			Effect: StatementEffectAllow,
 			Action: stringorslice.String(
@@ -1042,7 +1007,6 @@ func addSnapshotPersmissions(p *Policy) {
 	p.clusterTaggedAction.Insert(
 		"ec2:DeleteSnapshot",
 	)
-
 }
 
 // AddDNSControllerPermissions adds IAM permissions used by the dns-controller.
