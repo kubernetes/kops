@@ -282,6 +282,9 @@ spec:
             - ./cluster-autoscaler
             - --balance-similar-node-groups={{ .BalanceSimilarNodeGroups }}
             - --cloud-provider={{ $.CloudProvider }}
+            {{ if (eq $.CloudProvider "aws") }}
+            - --aws-use-static-instance-list={{ .AWSUseStaticInstanceList }}
+            {{ end }}
             - --expander={{ .Expander }}
             {{ range $name, $spec := GetNodeInstanceGroups }}
             {{ if WithDefaultBool $spec.Autoscale true }}
