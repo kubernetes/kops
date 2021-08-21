@@ -41,7 +41,7 @@ spec:
       k8s-addon: dns-controller.addons.k8s.io
   - id: k8s-1.15
     manifest: cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml
-    manifestHash: d3af566737e6e887aae943c29292e5bc033efb0b77bccca3c027c72f66883fda
+    manifestHash: f7e1e3dde3b3bf5baba2ccc79ed7e154559e8a5f7c320feca0821ec2b2f799ad
     name: cluster-autoscaler.addons.k8s.io
     selector:
       k8s-addon: cluster-autoscaler.addons.k8s.io
