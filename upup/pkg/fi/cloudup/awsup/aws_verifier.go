@@ -232,8 +232,14 @@ func (a awsVerifier) VerifyToken(token string, body []byte) (*fi.VerifyResult, e
 
 	instance := instances.Reservations[0].Instances[0]
 
+	addrs, err := GetInstanceCertificateNames(instances)
+	if err != nil {
+		return nil, err
+	}
+
 	result := &fi.VerifyResult{
-		NodeName: aws.StringValue(instance.PrivateDnsName),
+		NodeName:         addrs[0],
+		CertificateNames: addrs,
 	}
 
 	for _, tag := range instance.Tags {
