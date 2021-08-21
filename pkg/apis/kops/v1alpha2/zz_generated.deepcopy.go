@@ -777,6 +777,11 @@ func (in *ClusterAutoscalerConfig) DeepCopyInto(out *ClusterAutoscalerConfig) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.AWSUseStaticInstanceList != nil {
+		in, out := &in.AWSUseStaticInstanceList, &out.AWSUseStaticInstanceList
+		*out = new(bool)
+		**out = **in
+	}
 	if in.ScaleDownUtilizationThreshold != nil {
 		in, out := &in.ScaleDownUtilizationThreshold, &out.ScaleDownUtilizationThreshold
 		*out = new(string)

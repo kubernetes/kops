@@ -295,6 +295,7 @@ spec:
         - ./cluster-autoscaler
         - --balance-similar-node-groups=false
         - --cloud-provider=aws
+        - --aws-use-static-instance-list=false
         - --expander=random
         - --nodes=2:2:nodes.minimal.example.com
         - --scale-down-utilization-threshold=0.5
