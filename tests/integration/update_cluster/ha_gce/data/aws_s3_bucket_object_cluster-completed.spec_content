@@ -153,6 +153,7 @@ spec:
     podManifestPath: /etc/kubernetes/manifests
   kubernetesApiAccess:
   - 0.0.0.0/0
+  - ::/0
   kubernetesVersion: 1.21.0
   masterInternalName: api.internal.ha-gce.example.com
   masterKubelet:
@@ -182,6 +183,7 @@ spec:
   serviceClusterIPRange: 100.64.0.0/13
   sshAccess:
   - 0.0.0.0/0
+  - ::/0
   subnets:
   - name: us-test1
     region: us-test1
