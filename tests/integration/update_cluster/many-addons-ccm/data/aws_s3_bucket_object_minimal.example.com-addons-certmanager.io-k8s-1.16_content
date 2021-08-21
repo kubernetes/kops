@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: certificaterequests.cert-manager.io
 spec:
   conversion:
@@ -938,12 +938,6 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
 
 ---
 
@@ -959,7 +953,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: certificates.cert-manager.io
 spec:
   conversion:
@@ -2794,12 +2788,6 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
 
 ---
 
@@ -2815,7 +2803,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: challenges.acme.cert-manager.io
 spec:
   conversion:
@@ -3305,8 +3293,8 @@ spec:
                             type: object
                           serviceType:
                             description: Optional service type for Kubernetes solver
-                              service. Supported values are NodePort or ClusterIP
-                              (default).
+                              service. Supported values are NodePort or ClusterIP.
+                              If unset, defaults to NodePort.
                             type: string
                         type: object
                       ingress:
@@ -4579,8 +4567,8 @@ spec:
                             type: object
                           serviceType:
                             description: Optional service type for Kubernetes solver
-                              service. Supported values are NodePort or ClusterIP
-                              (default).
+                              service. Supported values are NodePort or ClusterIP.
+                              If unset, defaults to NodePort.
                             type: string
                         type: object
                     type: object
@@ -6432,8 +6420,8 @@ spec:
                             type: object
                           serviceType:
                             description: Optional service type for Kubernetes solver
-                              service. Supported values are NodePort or ClusterIP
-                              (default).
+                              service. Supported values are NodePort or ClusterIP.
+                              If unset, defaults to NodePort.
                             type: string
                         type: object
                     type: object
@@ -7012,8 +7000,8 @@ spec:
                             type: object
                           serviceType:
                             description: Optional service type for Kubernetes solver
-                              service. Supported values are NodePort or ClusterIP
-                              (default).
+                              service. Supported values are NodePort or ClusterIP.
+                              If unset, defaults to NodePort.
                             type: string
                         type: object
                       ingress:
@@ -8286,8 +8274,8 @@ spec:
                             type: object
                           serviceType:
                             description: Optional service type for Kubernetes solver
-                              service. Supported values are NodePort or ClusterIP
-                              (default).
+                              service. Supported values are NodePort or ClusterIP.
+                              If unset, defaults to NodePort.
                             type: string
                         type: object
                     type: object
@@ -8866,8 +8854,8 @@ spec:
                             type: object
                           serviceType:
                             description: Optional service type for Kubernetes solver
-                              service. Supported values are NodePort or ClusterIP
-                              (default).
+                              service. Supported values are NodePort or ClusterIP.
+                              If unset, defaults to NodePort.
                             type: string
                         type: object
                       ingress:
@@ -10140,8 +10128,8 @@ spec:
                             type: object
                           serviceType:
                             description: Optional service type for Kubernetes solver
-                              service. Supported values are NodePort or ClusterIP
-                              (default).
+                              service. Supported values are NodePort or ClusterIP.
+                              If unset, defaults to NodePort.
                             type: string
                         type: object
                     type: object
@@ -10276,7 +10264,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: clusterissuers.cert-manager.io
 spec:
   conversion:
@@ -10869,7 +10857,7 @@ spec:
                                 serviceType:
                                   description: Optional service type for Kubernetes
                                     solver service. Supported values are NodePort
-                                    or ClusterIP (default).
+                                    or ClusterIP. If unset, defaults to NodePort.
                                   type: string
                               type: object
                             ingress:
@@ -12354,7 +12342,7 @@ spec:
                                 serviceType:
                                   description: Optional service type for Kubernetes
                                     solver service. Supported values are NodePort
-                                    or ClusterIP (default).
+                                    or ClusterIP. If unset, defaults to NodePort.
                                   type: string
                               type: object
                           type: object
@@ -14771,7 +14759,7 @@ spec:
                                 serviceType:
                                   description: Optional service type for Kubernetes
                                     solver service. Supported values are NodePort
-                                    or ClusterIP (default).
+                                    or ClusterIP. If unset, defaults to NodePort.
                                   type: string
                               type: object
                           type: object
@@ -15703,7 +15691,7 @@ spec:
                                 serviceType:
                                   description: Optional service type for Kubernetes
                                     solver service. Supported values are NodePort
-                                    or ClusterIP (default).
+                                    or ClusterIP. If unset, defaults to NodePort.
                                   type: string
                               type: object
                             ingress:
@@ -17188,7 +17176,7 @@ spec:
                                 serviceType:
                                   description: Optional service type for Kubernetes
                                     solver service. Supported values are NodePort
-                                    or ClusterIP (default).
+                                    or ClusterIP. If unset, defaults to NodePort.
                                   type: string
                               type: object
                           type: object
@@ -18123,7 +18111,7 @@ spec:
                                 serviceType:
                                   description: Optional service type for Kubernetes
                                     solver service. Supported values are NodePort
-                                    or ClusterIP (default).
+                                    or ClusterIP. If unset, defaults to NodePort.
                                   type: string
                               type: object
                             ingress:
@@ -19608,7 +19596,7 @@ spec:
                                 serviceType:
                                   description: Optional service type for Kubernetes
                                     solver service. Supported values are NodePort
-                                    or ClusterIP (default).
+                                    or ClusterIP. If unset, defaults to NodePort.
                                   type: string
                               type: object
                           type: object
@@ -19994,7 +19982,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: issuers.cert-manager.io
 spec:
   conversion:
@@ -20586,7 +20574,7 @@ spec:
                                 serviceType:
                                   description: Optional service type for Kubernetes
                                     solver service. Supported values are NodePort
-                                    or ClusterIP (default).
+                                    or ClusterIP. If unset, defaults to NodePort.
                                   type: string
                               type: object
                             ingress:
@@ -22071,7 +22059,7 @@ spec:
                                 serviceType:
                                   description: Optional service type for Kubernetes
                                     solver service. Supported values are NodePort
-                                    or ClusterIP (default).
+                                    or ClusterIP. If unset, defaults to NodePort.
                                   type: string
                               type: object
                           type: object
@@ -24487,7 +24475,7 @@ spec:
                                 serviceType:
                                   description: Optional service type for Kubernetes
                                     solver service. Supported values are NodePort
-                                    or ClusterIP (default).
+                                    or ClusterIP. If unset, defaults to NodePort.
                                   type: string
                               type: object
                           type: object
@@ -25418,7 +25406,7 @@ spec:
                                 serviceType:
                                   description: Optional service type for Kubernetes
                                     solver service. Supported values are NodePort
-                                    or ClusterIP (default).
+                                    or ClusterIP. If unset, defaults to NodePort.
                                   type: string
                               type: object
                             ingress:
@@ -26903,7 +26891,7 @@ spec:
                                 serviceType:
                                   description: Optional service type for Kubernetes
                                     solver service. Supported values are NodePort
-                                    or ClusterIP (default).
+                                    or ClusterIP. If unset, defaults to NodePort.
                                   type: string
                               type: object
                           type: object
@@ -27837,7 +27825,7 @@ spec:
                                 serviceType:
                                   description: Optional service type for Kubernetes
                                     solver service. Supported values are NodePort
-                                    or ClusterIP (default).
+                                    or ClusterIP. If unset, defaults to NodePort.
                                   type: string
                               type: object
                             ingress:
@@ -29322,7 +29310,7 @@ spec:
                                 serviceType:
                                   description: Optional service type for Kubernetes
                                     solver service. Supported values are NodePort
-                                    or ClusterIP (default).
+                                    or ClusterIP. If unset, defaults to NodePort.
                                   type: string
                               type: object
                           type: object
@@ -29708,7 +29696,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: orders.acme.cert-manager.io
 spec:
   conversion:
@@ -30643,7 +30631,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-cainjector
   namespace: kube-system
 
@@ -30661,7 +30649,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager
   namespace: kube-system
 
@@ -30679,7 +30667,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-webhook
   namespace: kube-system
 
@@ -30696,7 +30684,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-cainjector
 rules:
 - apiGroups:
@@ -30775,7 +30763,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-controller-issuers
 rules:
 - apiGroups:
@@ -30825,7 +30813,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-controller-clusterissuers
 rules:
 - apiGroups:
@@ -30875,7 +30863,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-controller-certificates
 rules:
 - apiGroups:
@@ -30947,7 +30935,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-controller-orders
 rules:
 - apiGroups:
@@ -31017,7 +31005,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-controller-challenges
 rules:
 - apiGroups:
@@ -31126,7 +31114,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-controller-ingress-shim
 rules:
 - apiGroups:
@@ -31176,7 +31164,7 @@ rules:
   - networking.x-k8s.io
   resources:
   - gateways/finalizers
-  - httproutes/finalisers
+  - httproutes/finalizers
   verbs:
   - update
 - apiGroups:
@@ -31200,7 +31188,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
     rbac.authorization.k8s.io/aggregate-to-view: "true"
@@ -31239,7 +31227,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
   name: cert-manager-edit
@@ -31281,7 +31269,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-controller-approve:cert-manager-io
 rules:
 - apiGroups:
@@ -31307,7 +31295,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-controller-certificatesigningrequests
 rules:
 - apiGroups:
@@ -31354,7 +31342,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-webhook:subjectaccessreviews
 rules:
 - apiGroups:
@@ -31377,7 +31365,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-cainjector
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -31401,7 +31389,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-controller-issuers
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -31425,7 +31413,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-controller-clusterissuers
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -31449,7 +31437,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-controller-certificates
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -31473,7 +31461,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-controller-orders
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -31497,7 +31485,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-controller-challenges
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -31521,7 +31509,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-controller-ingress-shim
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -31545,7 +31533,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-controller-approve:cert-manager-io
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -31569,7 +31557,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-controller-certificatesigningrequests
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -31593,7 +31581,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-webhook:subjectaccessreviews
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -31618,7 +31606,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-cainjector:leaderelection
   namespace: kube-system
 rules:
@@ -31670,7 +31658,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager:leaderelection
   namespace: kube-system
 rules:
@@ -31720,7 +31708,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-webhook:dynamic-serving
   namespace: kube-system
 rules:
@@ -31755,7 +31743,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-cainjector:leaderelection
   namespace: kube-system
 roleRef:
@@ -31780,7 +31768,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager:leaderelection
   namespace: kube-system
 roleRef:
@@ -31806,7 +31794,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-webhook:dynamic-serving
   namespace: kube-system
 roleRef:
@@ -31832,7 +31820,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager
   namespace: kube-system
 spec:
@@ -31860,7 +31848,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-webhook
   namespace: kube-system
 spec:
@@ -31888,7 +31876,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-cainjector
   namespace: kube-system
 spec:
@@ -31905,7 +31893,7 @@ spec:
         app.kubernetes.io/component: cainjector
         app.kubernetes.io/instance: cert-manager
         app.kubernetes.io/name: cainjector
-        app.kubernetes.io/version: v1.5.1
+        app.kubernetes.io/version: v1.5.2
     spec:
       containers:
       - args:
@@ -31916,7 +31904,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: quay.io/jetstack/cert-manager-cainjector:v1.5.1
+        image: quay.io/jetstack/cert-manager-cainjector:v1.5.2
         imagePullPolicy: IfNotPresent
         name: cert-manager
         resources: {}
@@ -31943,7 +31931,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager
   namespace: kube-system
 spec:
@@ -31964,7 +31952,7 @@ spec:
         app.kubernetes.io/component: controller
         app.kubernetes.io/instance: cert-manager
         app.kubernetes.io/name: cert-manager
-        app.kubernetes.io/version: v1.5.1
+        app.kubernetes.io/version: v1.5.2
     spec:
       containers:
       - args:
@@ -31977,7 +31965,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: quay.io/jetstack/cert-manager-controller:v1.5.1
+        image: quay.io/jetstack/cert-manager-controller:v1.5.2
         imagePullPolicy: IfNotPresent
         name: cert-manager
         ports:
@@ -32007,7 +31995,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-webhook
   namespace: kube-system
 spec:
@@ -32024,7 +32012,7 @@ spec:
         app.kubernetes.io/component: webhook
         app.kubernetes.io/instance: cert-manager
         app.kubernetes.io/name: webhook
-        app.kubernetes.io/version: v1.5.1
+        app.kubernetes.io/version: v1.5.2
     spec:
       containers:
       - args:
@@ -32038,7 +32026,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: quay.io/jetstack/cert-manager-webhook:v1.5.1
+        image: quay.io/jetstack/cert-manager-webhook:v1.5.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -32091,7 +32079,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-webhook
 webhooks:
 - admissionReviewVersions:
@@ -32134,7 +32122,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.5.1
+    app.kubernetes.io/version: v1.5.2
   name: cert-manager-webhook
 webhooks:
 - admissionReviewVersions:
