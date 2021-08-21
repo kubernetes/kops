@@ -78,6 +78,9 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 	if cas.BalanceSimilarNodeGroups == nil {
 		cas.BalanceSimilarNodeGroups = fi.Bool(false)
 	}
+	if cas.AWSUseStaticInstanceList == nil {
+		cas.AWSUseStaticInstanceList = fi.Bool(false)
+	}
 	if cas.NewPodScaleUpDelay == nil {
 		cas.NewPodScaleUpDelay = fi.String("0s")
 	}

@@ -899,6 +899,9 @@ type ClusterAutoscalerConfig struct {
 	// BalanceSimilarNodeGroups makes cluster autoscaler treat similar node groups as one.
 	// Default: false
 	BalanceSimilarNodeGroups *bool `json:"balanceSimilarNodeGroups,omitempty"`
+	// AWSUseStaticInstanceList makes cluster autoscaler to use statically defined set of AWS EC2 Instance List.
+	// Default: false
+	AWSUseStaticInstanceList *bool `json:"awsUseStaticInstanceList,omitempty"`
 	// ScaleDownUtilizationThreshold determines the utilization threshold for node scale-down.
 	// Default: 0.5
 	ScaleDownUtilizationThreshold *string `json:"scaleDownUtilizationThreshold,omitempty"`
