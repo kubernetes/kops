@@ -21,6 +21,7 @@ spec:
   cloudProvider: aws
   clusterAutoscaler:
     balanceSimilarNodeGroups: false
+    awsUseStaticInstanceList: false
     enabled: true
     expander: random
     image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.21.0

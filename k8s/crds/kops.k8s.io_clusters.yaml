@@ -553,6 +553,10 @@ spec:
                     description: 'BalanceSimilarNodeGroups makes cluster autoscaler
                       treat similar node groups as one. Default: false'
                     type: boolean
+                  awsUseStaticInstanceList:
+                    description: 'AWSUseStaticInstanceList makes cluster autoscaler
+                      to use statically defined set of AWS EC2 Instance List. Default: false'
+                    type: boolean
                   cpuRequest:
                     anyOf:
                     - type: integer
