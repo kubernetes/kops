@@ -18,6 +18,8 @@ package model
 
 import (
 	"fmt"
+	"net"
+	"os"
 	"path"
 	"path/filepath"
 
@@ -25,6 +27,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ec2"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
@@ -560,7 +563,7 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.ModelBuilderContex
 		name := "kubelet-server"
 		dir := b.PathSrvKubernetes()
 
-		nodeName, err := b.NodeName()
+		names, err := b.kubeletNames()
 		if err != nil {
 			return err
 		}
@@ -594,9 +597,9 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.ModelBuilderContex
 				KeypairID: b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
 				Type:      "server",
 				Subject: nodetasks.PKIXName{
-					CommonName: nodeName,
+					CommonName: names[0],
 				},
-				AlternateNames: []string{nodeName},
+				AlternateNames: names,
 			}
 			c.AddTask(issueCert)
 			return issueCert.AddFileTasks(c, dir, name, "", nil)
@@ -604,4 +607,28 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.ModelBuilderContex
 	}
 	return nil
 
+}
+
+func (b *KubeletBuilder) kubeletNames() ([]string, error) {
+	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) != kops.CloudProviderAWS {
+		name, err := os.Hostname()
+		if err != nil {
+			return nil, err
+		}
+
+		addrs, _ := net.LookupHost(name)
+
+		return append(addrs, name), nil
+	}
+
+	cloud := b.Cloud.(awsup.AWSCloud)
+
+	result, err := cloud.EC2().DescribeInstances(&ec2.DescribeInstancesInput{
+		InstanceIds: []*string{&b.InstanceID},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error describing instances: %v", err)
+	}
+
+	return awsup.GetInstanceCertificateNames(result)
 }

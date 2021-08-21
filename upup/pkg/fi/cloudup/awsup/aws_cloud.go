@@ -2069,3 +2069,40 @@ func GetRolesInInstanceProfile(c AWSCloud, profileName string) ([]string, error)
 	}
 	return roleNames, nil
 }
+
+// GetInstanceCertificateNames returns the instance hostname and addresses that should go into certificates.
+// The first value is the node name and any additional values are IP addresses.
+func GetInstanceCertificateNames(instances *ec2.DescribeInstancesOutput) (addrs []string, err error) {
+
+	if len(instances.Reservations) != 1 {
+		return nil, fmt.Errorf("too many reservations returned for the single instance-id")
+	}
+
+	if len(instances.Reservations[0].Instances) != 1 {
+		return nil, fmt.Errorf("too many instances returned for the single instance-id")
+	}
+
+	instance := instances.Reservations[0].Instances[0]
+
+	name := *instance.PrivateDnsName
+
+	addrs = append(addrs, name)
+
+	// We only use data for the first interface, and only the first IP
+	for _, iface := range instance.NetworkInterfaces {
+		if iface.Attachment == nil {
+			continue
+		}
+		if *iface.Attachment.DeviceIndex != 0 {
+			continue
+		}
+		addrs = append(addrs, *iface.PrivateIpAddress)
+		if iface.Ipv6Addresses != nil && len(iface.Ipv6Addresses) > 0 {
+			addrs = append(addrs, *iface.Ipv6Addresses[0].Ipv6Address)
+		}
+		if iface.Association.PublicIp != nil {
+			addrs = append(addrs, *iface.Association.PublicIp)
+		}
+	}
+	return addrs, nil
+}
