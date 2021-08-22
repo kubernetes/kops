@@ -109,6 +109,14 @@ func (*KubeProxyOptionsBuilder) needsClusterCIDR(clusterSpec *kops.ClusterSpec) 
 	// we want for pods.
 	// If we're not using the AmazonVPC networking, and the KubeControllerMananger has
 	// a ClusterCIDR, use that because most networking plug ins draw pod IPs from this range.
-	return clusterSpec.Networking.AmazonVPC == nil && clusterSpec.KubeControllerManager != nil
+	if clusterSpec.Networking.AmazonVPC != nil {
+		return false
+	}
 
+	// If KCM doesn't have a ClusterCIDR, KubeProxy should not either.
+	if clusterSpec.KubeControllerManager == nil || clusterSpec.KubeControllerManager.ClusterCIDR == "" {
+		return false
+	}
+
+	return true
 }
