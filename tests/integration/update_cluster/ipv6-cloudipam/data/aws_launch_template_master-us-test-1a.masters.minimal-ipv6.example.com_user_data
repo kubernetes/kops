@@ -183,12 +183,14 @@ kubeAPIServer:
   serviceClusterIPRange: 100.64.0.0/13
   storageBackend: etcd3
 kubeControllerManager:
-  allocateNodeCIDRs: true
+  allocateNodeCIDRs: false
   attachDetachReconcileSyncPeriod: 1m0s
   cloudProvider: aws
-  clusterCIDR: 100.96.0.0/11
   clusterName: minimal-ipv6.example.com
   configureCloudRoutes: false
+  controllers:
+  - '*'
+  - -nodeipam
   image: k8s.gcr.io/kube-controller-manager:v1.21.0
   leaderElection:
     leaderElect: true
