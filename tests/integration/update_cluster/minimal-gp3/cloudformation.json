@@ -949,15 +949,6 @@
         "PolicyDocument": {
           "Statement": [
             {
-              "Action": [
-                "ec2:DescribeVolumes"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            },
-            {
               "Action": "ec2:AttachVolume",
               "Condition": {
                 "StringEquals": {
@@ -1067,38 +1058,6 @@
               ]
             },
             {
-              "Action": [
-                "elasticloadbalancing:CreateLoadBalancer",
-                "elasticloadbalancing:CreateLoadBalancerPolicy",
-                "elasticloadbalancing:CreateLoadBalancerListeners",
-                "ec2:CreateSecurityGroup",
-                "ec2:CreateVolume",
-                "elasticloadbalancing:CreateListener",
-                "elasticloadbalancing:CreateTargetGroup"
-              ],
-              "Condition": {
-                "StringEquals": {
-                  "aws:RequestTag/KubernetesCluster": "minimal.example.com"
-                }
-              },
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Action": [
-                "ec2:CreateVolume"
-              ],
-              "Condition": {
-                "StringEquals": {
-                  "aws:RequestTag/KubernetesCluster": "minimal.example.com"
-                }
-              },
-              "Effect": "Allow",
-              "Resource": "*"
-            },
-            {
               "Action": "ec2:CreateTags",
               "Condition": {
                 "StringEquals": {
@@ -1194,6 +1153,24 @@
               "Condition": {
                 "StringEquals": {
                   "aws:ResourceTag/KubernetesCluster": "minimal.example.com"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Action": [
+                "ec2:CreateSecurityGroup",
+                "ec2:CreateVolume",
+                "elasticloadbalancing:CreateListener",
+                "elasticloadbalancing:CreateLoadBalancer",
+                "elasticloadbalancing:CreateLoadBalancerListeners",
+                "elasticloadbalancing:CreateLoadBalancerPolicy",
+                "elasticloadbalancing:CreateTargetGroup"
+              ],
+              "Condition": {
+                "StringEquals": {
+                  "aws:RequestTag/KubernetesCluster": "minimal.example.com"
                 }
               },
               "Effect": "Allow",
