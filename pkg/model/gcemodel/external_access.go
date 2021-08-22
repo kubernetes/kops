@@ -49,8 +49,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// But I think we can always add more permissions in this case later, but we can't easily take them away
 		klog.V(2).Infof("bastion is in use; won't configure SSH access to master / node instances")
 	} else {
-		c.AddTask(&gcetasks.FirewallRule{
-			Name:         s(b.SafeObjectName("ssh-external-to-master")),
+		b.AddFirewallRulesTasks(c, "ssh-external-to-master", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:      []string{"tcp:22"},
@@ -58,8 +57,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Network:      b.LinkToNetwork(),
 		})
 
-		c.AddTask(&gcetasks.FirewallRule{
-			Name:         s(b.SafeObjectName("ssh-external-to-node")),
+		b.AddFirewallRulesTasks(c, "ssh-external-to-node", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			Allowed:      []string{"tcp:22"},
@@ -74,9 +72,9 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		if err != nil {
 			return err
 		}
+
 		nodePortRangeString := nodePortRange.String()
-		t := &gcetasks.FirewallRule{
-			Name:       s(b.SafeObjectName("nodeport-external-to-node")),
+		b.AddFirewallRulesTasks(c, "nodeport-external-to-node", &gcetasks.FirewallRule{
 			Lifecycle:  b.Lifecycle,
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			Allowed: []string{
@@ -85,13 +83,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			},
 			SourceRanges: b.Cluster.Spec.NodePortAccess,
 			Network:      b.LinkToNetwork(),
-		}
-		if len(t.SourceRanges) == 0 {
-			// Empty SourceRanges is interpreted as 0.0.0.0/0 if tags are empty, so we set a SourceTag
-			// This is already covered by the normal node-to-node rules, but avoids opening the NodePort range
-			t.SourceTags = []string{b.GCETagForRole(kops.InstanceGroupRoleNode)}
-		}
-		c.AddTask(t)
+		})
 	}
 
 	if !b.UseLoadBalancerForAPI() {
@@ -100,8 +92,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// We need to open security groups directly to the master nodes (instead of via the ELB)
 
 		// HTTPS to the master is allowed (for API access)
-		c.AddTask(&gcetasks.FirewallRule{
-			Name:         s(b.SafeObjectName("kubernetes-master-https")),
+		b.AddFirewallRulesTasks(c, "kubernetes-master-https", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:      []string{"tcp:443"},

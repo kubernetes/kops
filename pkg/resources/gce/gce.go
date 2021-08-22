@@ -49,7 +49,8 @@ const (
 )
 
 // Maximum number of `-` separated tokens in a name
-const maxPrefixTokens = 4
+// Example: nodeport-external-to-node-ipv6
+const maxPrefixTokens = 5
 
 func ListResourcesGCE(gceCloud gce.GCECloud, clusterName string, region string) (map[string]*resources.Resource, error) {
 	if region == "" {
