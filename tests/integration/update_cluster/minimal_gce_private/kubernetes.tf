@@ -178,6 +178,21 @@ resource "google_compute_disk" "d1-etcd-main-minimal-gce-private-example-com" {
   zone = "us-test1-a"
 }
 
+resource "google_compute_firewall" "cidr-to-master-ipv6-minimal-gce-private-example-com" {
+  allow {
+    ports    = ["443"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["4194"]
+    protocol = "tcp"
+  }
+  disabled    = true
+  name        = "cidr-to-master-ipv6-minimal-gce-private-example-com"
+  network     = google_compute_network.default.name
+  target_tags = ["minimal-gce-private-example-com-k8s-io-role-master"]
+}
+
 resource "google_compute_firewall" "cidr-to-master-minimal-gce-private-example-com" {
   allow {
     ports    = ["443"]
@@ -187,10 +202,36 @@ resource "google_compute_firewall" "cidr-to-master-minimal-gce-private-example-c
     ports    = ["4194"]
     protocol = "tcp"
   }
+  disabled      = false
   name          = "cidr-to-master-minimal-gce-private-example-com"
   network       = google_compute_network.default.name
   source_ranges = ["100.64.0.0/10"]
   target_tags   = ["minimal-gce-private-example-com-k8s-io-role-master"]
+}
+
+resource "google_compute_firewall" "cidr-to-node-ipv6-minimal-gce-private-example-com" {
+  allow {
+    protocol = "tcp"
+  }
+  allow {
+    protocol = "udp"
+  }
+  allow {
+    protocol = "icmp"
+  }
+  allow {
+    protocol = "esp"
+  }
+  allow {
+    protocol = "ah"
+  }
+  allow {
+    protocol = "sctp"
+  }
+  disabled    = true
+  name        = "cidr-to-node-ipv6-minimal-gce-private-example-com"
+  network     = google_compute_network.default.name
+  target_tags = ["minimal-gce-private-example-com-k8s-io-role-node"]
 }
 
 resource "google_compute_firewall" "cidr-to-node-minimal-gce-private-example-com" {
@@ -212,10 +253,22 @@ resource "google_compute_firewall" "cidr-to-node-minimal-gce-private-example-com
   allow {
     protocol = "sctp"
   }
+  disabled      = false
   name          = "cidr-to-node-minimal-gce-private-example-com"
   network       = google_compute_network.default.name
   source_ranges = ["100.64.0.0/10"]
   target_tags   = ["minimal-gce-private-example-com-k8s-io-role-node"]
+}
+
+resource "google_compute_firewall" "kubernetes-master-https-ipv6-minimal-gce-private-example-com" {
+  allow {
+    ports    = ["443"]
+    protocol = "tcp"
+  }
+  disabled    = true
+  name        = "kubernetes-master-https-ipv6-minimal-gce-private-example-com"
+  network     = google_compute_network.default.name
+  target_tags = ["minimal-gce-private-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "kubernetes-master-https-minimal-gce-private-example-com" {
@@ -223,6 +276,7 @@ resource "google_compute_firewall" "kubernetes-master-https-minimal-gce-private-
     ports    = ["443"]
     protocol = "tcp"
   }
+  disabled      = false
   name          = "kubernetes-master-https-minimal-gce-private-example-com"
   network       = google_compute_network.default.name
   source_ranges = ["0.0.0.0/0"]
@@ -248,6 +302,7 @@ resource "google_compute_firewall" "master-to-master-minimal-gce-private-example
   allow {
     protocol = "sctp"
   }
+  disabled    = false
   name        = "master-to-master-minimal-gce-private-example-com"
   network     = google_compute_network.default.name
   source_tags = ["minimal-gce-private-example-com-k8s-io-role-master"]
@@ -273,6 +328,7 @@ resource "google_compute_firewall" "master-to-node-minimal-gce-private-example-c
   allow {
     protocol = "sctp"
   }
+  disabled    = false
   name        = "master-to-node-minimal-gce-private-example-com"
   network     = google_compute_network.default.name
   source_tags = ["minimal-gce-private-example-com-k8s-io-role-master"]
@@ -288,6 +344,7 @@ resource "google_compute_firewall" "node-to-master-minimal-gce-private-example-c
     ports    = ["4194"]
     protocol = "tcp"
   }
+  disabled    = false
   name        = "node-to-master-minimal-gce-private-example-com"
   network     = google_compute_network.default.name
   source_tags = ["minimal-gce-private-example-com-k8s-io-role-node"]
@@ -313,9 +370,25 @@ resource "google_compute_firewall" "node-to-node-minimal-gce-private-example-com
   allow {
     protocol = "sctp"
   }
+  disabled    = false
   name        = "node-to-node-minimal-gce-private-example-com"
   network     = google_compute_network.default.name
   source_tags = ["minimal-gce-private-example-com-k8s-io-role-node"]
+  target_tags = ["minimal-gce-private-example-com-k8s-io-role-node"]
+}
+
+resource "google_compute_firewall" "nodeport-external-to-node-ipv6-minimal-gce-private-example-com" {
+  allow {
+    ports    = ["30000-32767"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["30000-32767"]
+    protocol = "udp"
+  }
+  disabled    = true
+  name        = "nodeport-external-to-node-ipv6-minimal-gce-private-example-com"
+  network     = google_compute_network.default.name
   target_tags = ["minimal-gce-private-example-com-k8s-io-role-node"]
 }
 
@@ -328,10 +401,21 @@ resource "google_compute_firewall" "nodeport-external-to-node-minimal-gce-privat
     ports    = ["30000-32767"]
     protocol = "udp"
   }
+  disabled    = true
   name        = "nodeport-external-to-node-minimal-gce-private-example-com"
   network     = google_compute_network.default.name
-  source_tags = ["minimal-gce-private-example-com-k8s-io-role-node"]
   target_tags = ["minimal-gce-private-example-com-k8s-io-role-node"]
+}
+
+resource "google_compute_firewall" "ssh-external-to-master-ipv6-minimal-gce-private-example-com" {
+  allow {
+    ports    = ["22"]
+    protocol = "tcp"
+  }
+  disabled    = true
+  name        = "ssh-external-to-master-ipv6-minimal-gce-private-example-com"
+  network     = google_compute_network.default.name
+  target_tags = ["minimal-gce-private-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-master-minimal-gce-private-example-com" {
@@ -339,10 +423,22 @@ resource "google_compute_firewall" "ssh-external-to-master-minimal-gce-private-e
     ports    = ["22"]
     protocol = "tcp"
   }
+  disabled      = false
   name          = "ssh-external-to-master-minimal-gce-private-example-com"
   network       = google_compute_network.default.name
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["minimal-gce-private-example-com-k8s-io-role-master"]
+}
+
+resource "google_compute_firewall" "ssh-external-to-node-ipv6-minimal-gce-private-example-com" {
+  allow {
+    ports    = ["22"]
+    protocol = "tcp"
+  }
+  disabled    = true
+  name        = "ssh-external-to-node-ipv6-minimal-gce-private-example-com"
+  network     = google_compute_network.default.name
+  target_tags = ["minimal-gce-private-example-com-k8s-io-role-node"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-node-minimal-gce-private-example-com" {
@@ -350,6 +446,7 @@ resource "google_compute_firewall" "ssh-external-to-node-minimal-gce-private-exa
     ports    = ["22"]
     protocol = "tcp"
   }
+  disabled      = false
   name          = "ssh-external-to-node-minimal-gce-private-example-com"
   network       = google_compute_network.default.name
   source_ranges = ["0.0.0.0/0"]
