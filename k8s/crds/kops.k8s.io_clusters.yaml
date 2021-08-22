@@ -4268,6 +4268,11 @@ spec:
               podCIDR:
                 description: PodCIDR is the CIDR from which we allocate IPs for pods
                 type: string
+              podCIDRFromCloud:
+                description: PodCIDRFromCloud determines if the Node's podCIDR should
+                  be set by the cloud provider. This requires ipv6 enabled and that
+                  instances can be given full ipv6 prefixes.
+                type: boolean
               project:
                 description: Project is the cloud project we should use, required
                   on GCE
