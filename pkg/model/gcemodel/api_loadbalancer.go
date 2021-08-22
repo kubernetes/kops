@@ -84,16 +84,13 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Allow traffic into the API (port 443) from KubernetesAPIAccess CIDRs
 	{
-		t := &gcetasks.FirewallRule{
-			Name:         s(b.NameForFirewallRule("https-api")),
+		b.AddFirewallRulesTasks(c, "https-api", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
 			Network:      b.LinkToNetwork(),
 			SourceRanges: b.Cluster.Spec.KubernetesAPIAccess,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:      []string{"tcp:443"},
-		}
-		c.AddTask(t)
+		})
 	}
 	return nil
-
 }

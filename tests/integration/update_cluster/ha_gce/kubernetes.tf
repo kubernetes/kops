@@ -249,10 +249,26 @@ resource "google_compute_firewall" "cidr-to-master-ha-gce-example-com" {
     ports    = ["4194"]
     protocol = "tcp"
   }
+  disabled      = false
   name          = "cidr-to-master-ha-gce-example-com"
   network       = google_compute_network.default.name
   source_ranges = ["100.64.0.0/10"]
   target_tags   = ["ha-gce-example-com-k8s-io-role-master"]
+}
+
+resource "google_compute_firewall" "cidr-to-master-ipv6-ha-gce-example-com" {
+  allow {
+    ports    = ["443"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["4194"]
+    protocol = "tcp"
+  }
+  disabled    = true
+  name        = "cidr-to-master-ipv6-ha-gce-example-com"
+  network     = google_compute_network.default.name
+  target_tags = ["ha-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "cidr-to-node-ha-gce-example-com" {
@@ -274,10 +290,36 @@ resource "google_compute_firewall" "cidr-to-node-ha-gce-example-com" {
   allow {
     protocol = "sctp"
   }
+  disabled      = false
   name          = "cidr-to-node-ha-gce-example-com"
   network       = google_compute_network.default.name
   source_ranges = ["100.64.0.0/10"]
   target_tags   = ["ha-gce-example-com-k8s-io-role-node"]
+}
+
+resource "google_compute_firewall" "cidr-to-node-ipv6-ha-gce-example-com" {
+  allow {
+    protocol = "tcp"
+  }
+  allow {
+    protocol = "udp"
+  }
+  allow {
+    protocol = "icmp"
+  }
+  allow {
+    protocol = "esp"
+  }
+  allow {
+    protocol = "ah"
+  }
+  allow {
+    protocol = "sctp"
+  }
+  disabled    = true
+  name        = "cidr-to-node-ipv6-ha-gce-example-com"
+  network     = google_compute_network.default.name
+  target_tags = ["ha-gce-example-com-k8s-io-role-node"]
 }
 
 resource "google_compute_firewall" "kubernetes-master-https-ha-gce-example-com" {
@@ -285,9 +327,22 @@ resource "google_compute_firewall" "kubernetes-master-https-ha-gce-example-com" 
     ports    = ["443"]
     protocol = "tcp"
   }
+  disabled      = false
   name          = "kubernetes-master-https-ha-gce-example-com"
   network       = google_compute_network.default.name
   source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["ha-gce-example-com-k8s-io-role-master"]
+}
+
+resource "google_compute_firewall" "kubernetes-master-https-ipv6-ha-gce-example-com" {
+  allow {
+    ports    = ["443"]
+    protocol = "tcp"
+  }
+  disabled      = false
+  name          = "kubernetes-master-https-ipv6-ha-gce-example-com"
+  network       = google_compute_network.default.name
+  source_ranges = ["::/0"]
   target_tags   = ["ha-gce-example-com-k8s-io-role-master"]
 }
 
@@ -310,6 +365,7 @@ resource "google_compute_firewall" "master-to-master-ha-gce-example-com" {
   allow {
     protocol = "sctp"
   }
+  disabled    = false
   name        = "master-to-master-ha-gce-example-com"
   network     = google_compute_network.default.name
   source_tags = ["ha-gce-example-com-k8s-io-role-master"]
@@ -335,6 +391,7 @@ resource "google_compute_firewall" "master-to-node-ha-gce-example-com" {
   allow {
     protocol = "sctp"
   }
+  disabled    = false
   name        = "master-to-node-ha-gce-example-com"
   network     = google_compute_network.default.name
   source_tags = ["ha-gce-example-com-k8s-io-role-master"]
@@ -350,6 +407,7 @@ resource "google_compute_firewall" "node-to-master-ha-gce-example-com" {
     ports    = ["4194"]
     protocol = "tcp"
   }
+  disabled    = false
   name        = "node-to-master-ha-gce-example-com"
   network     = google_compute_network.default.name
   source_tags = ["ha-gce-example-com-k8s-io-role-node"]
@@ -375,6 +433,7 @@ resource "google_compute_firewall" "node-to-node-ha-gce-example-com" {
   allow {
     protocol = "sctp"
   }
+  disabled    = false
   name        = "node-to-node-ha-gce-example-com"
   network     = google_compute_network.default.name
   source_tags = ["ha-gce-example-com-k8s-io-role-node"]
@@ -390,9 +449,24 @@ resource "google_compute_firewall" "nodeport-external-to-node-ha-gce-example-com
     ports    = ["30000-32767"]
     protocol = "udp"
   }
+  disabled    = true
   name        = "nodeport-external-to-node-ha-gce-example-com"
   network     = google_compute_network.default.name
-  source_tags = ["ha-gce-example-com-k8s-io-role-node"]
+  target_tags = ["ha-gce-example-com-k8s-io-role-node"]
+}
+
+resource "google_compute_firewall" "nodeport-external-to-node-ipv6-ha-gce-example-com" {
+  allow {
+    ports    = ["30000-32767"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["30000-32767"]
+    protocol = "udp"
+  }
+  disabled    = true
+  name        = "nodeport-external-to-node-ipv6-ha-gce-example-com"
+  network     = google_compute_network.default.name
   target_tags = ["ha-gce-example-com-k8s-io-role-node"]
 }
 
@@ -401,9 +475,22 @@ resource "google_compute_firewall" "ssh-external-to-master-ha-gce-example-com" {
     ports    = ["22"]
     protocol = "tcp"
   }
+  disabled      = false
   name          = "ssh-external-to-master-ha-gce-example-com"
   network       = google_compute_network.default.name
   source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["ha-gce-example-com-k8s-io-role-master"]
+}
+
+resource "google_compute_firewall" "ssh-external-to-master-ipv6-ha-gce-example-com" {
+  allow {
+    ports    = ["22"]
+    protocol = "tcp"
+  }
+  disabled      = false
+  name          = "ssh-external-to-master-ipv6-ha-gce-example-com"
+  network       = google_compute_network.default.name
+  source_ranges = ["::/0"]
   target_tags   = ["ha-gce-example-com-k8s-io-role-master"]
 }
 
@@ -412,9 +499,22 @@ resource "google_compute_firewall" "ssh-external-to-node-ha-gce-example-com" {
     ports    = ["22"]
     protocol = "tcp"
   }
+  disabled      = false
   name          = "ssh-external-to-node-ha-gce-example-com"
   network       = google_compute_network.default.name
   source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["ha-gce-example-com-k8s-io-role-node"]
+}
+
+resource "google_compute_firewall" "ssh-external-to-node-ipv6-ha-gce-example-com" {
+  allow {
+    ports    = ["22"]
+    protocol = "tcp"
+  }
+  disabled      = false
+  name          = "ssh-external-to-node-ipv6-ha-gce-example-com"
+  network       = google_compute_network.default.name
+  source_ranges = ["::/0"]
   target_tags   = ["ha-gce-example-com-k8s-io-role-node"]
 }
 
