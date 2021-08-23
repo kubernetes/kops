@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+
+	"k8s.io/klog/v2"
 )
 
 type Architecture string
@@ -44,11 +46,15 @@ func GetSupported() []Architecture {
 	// Kubernetes PR builds only generate AMD64 binaries at the moment
 	// Force support only for AMD64 or ARM64
 	arch := os.Getenv("KOPS_ARCH")
-	switch arch {
-	case "amd64":
-		return []Architecture{ArchitectureAmd64}
-	case "arm64":
-		return []Architecture{ArchitectureArm64}
+	if arch != "" {
+		switch arch {
+		case "amd64":
+			return []Architecture{ArchitectureAmd64}
+		case "arm64":
+			return []Architecture{ArchitectureArm64}
+		default:
+			klog.Warningf("unknown architecture KOPS_ARCH=%q", arch)
+		}
 	}
 
 	return []Architecture{
