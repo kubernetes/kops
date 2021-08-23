@@ -115,6 +115,11 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"# e.g. uses of inotify: nginx ingress controller, kubectl logs -f",
 			"fs.inotify.max_user_instances = 8192",
 			"fs.inotify.max_user_watches = 524288",
+
+			"# Additional sysctl flags that kubelet expects",
+			"vm.overcommit_memory = 1",
+			"kernel.panic = 10",
+			"kernel.panic_on_oops = 1",
 			"",
 		)
 	}
