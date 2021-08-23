@@ -225,5 +225,9 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.CgroupDriver = "systemd"
 	}
 
+	if b.IsKubernetesGTE("1.22") && clusterSpec.Kubelet.ProtectKernelDefaults == nil {
+		clusterSpec.Kubelet.ProtectKernelDefaults = fi.Bool(true)
+	}
+
 	return nil
 }
