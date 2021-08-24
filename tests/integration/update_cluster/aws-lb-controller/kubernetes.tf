@@ -1,5 +1,7 @@
 locals {
   cluster_name                                       = "minimal.example.com"
+  iam_openid_connect_provider_arn                    = aws_iam_openid_connect_provider.minimal-example-com.arn
+  iam_openid_connect_provider_issuer                 = "discovery.example.com/minimal.example.com"
   kube-system-aws-load-balancer-controller_role_arn  = aws_iam_role.aws-load-balancer-controller-kube-system-sa-minimal-example-com.arn
   kube-system-aws-load-balancer-controller_role_name = aws_iam_role.aws-load-balancer-controller-kube-system-sa-minimal-example-com.name
   kube-system-dns-controller_role_arn                = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.arn
@@ -22,6 +24,14 @@ locals {
 
 output "cluster_name" {
   value = "minimal.example.com"
+}
+
+output "iam_openid_connect_provider_arn" {
+  value = aws_iam_openid_connect_provider.minimal-example-com.arn
+}
+
+output "iam_openid_connect_provider_issuer" {
+  value = "discovery.example.com/minimal.example.com"
 }
 
 output "kube-system-aws-load-balancer-controller_role_arn" {
