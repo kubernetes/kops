@@ -2,6 +2,8 @@ locals {
   cluster_name                          = "minimal.example.com"
   default-myserviceaccount_role_arn     = aws_iam_role.myserviceaccount-default-sa-minimal-example-com.arn
   default-myserviceaccount_role_name    = aws_iam_role.myserviceaccount-default-sa-minimal-example-com.name
+  iam_openid_connect_provider_arn       = aws_iam_openid_connect_provider.minimal-example-com.arn
+  iam_openid_connect_provider_issuer    = "discovery.example.com/minimal.example.com"
   master_autoscaling_group_ids          = [aws_autoscaling_group.master-us-test-1a-masters-minimal-example-com.id]
   master_security_group_ids             = [aws_security_group.masters-minimal-example-com.id]
   masters_role_arn                      = aws_iam_role.masters-minimal-example-com.arn
@@ -30,6 +32,14 @@ output "default-myserviceaccount_role_arn" {
 
 output "default-myserviceaccount_role_name" {
   value = aws_iam_role.myserviceaccount-default-sa-minimal-example-com.name
+}
+
+output "iam_openid_connect_provider_arn" {
+  value = aws_iam_openid_connect_provider.minimal-example-com.arn
+}
+
+output "iam_openid_connect_provider_issuer" {
+  value = "discovery.example.com/minimal.example.com"
 }
 
 output "master_autoscaling_group_ids" {

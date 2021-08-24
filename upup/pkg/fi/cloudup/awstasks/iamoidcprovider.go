@@ -192,6 +192,17 @@ type terraformIAMOIDCProvider struct {
 }
 
 func (p *IAMOIDCProvider) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMOIDCProvider) error {
+	err := t.AddOutputVariable("iam_openid_connect_provider_arn", e.TerraformLink())
+	if err != nil {
+		return err
+	}
+
+	issuerSubs := strings.SplitAfter(aws.StringValue(e.URL), "://")
+	issuer := issuerSubs[len(issuerSubs)-1]
+	err = t.AddOutputVariable("iam_openid_connect_provider_issuer", terraformWriter.LiteralFromStringValue(issuer))
+	if err != nil {
+		return err
+	}
 
 	tf := &terraformIAMOIDCProvider{
 		URL:            e.URL,
