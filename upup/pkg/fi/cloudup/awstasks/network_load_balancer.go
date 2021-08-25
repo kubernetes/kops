@@ -69,6 +69,7 @@ type NetworkLoadBalancer struct {
 
 	VPC          *VPC
 	TargetGroups []*TargetGroup
+	AccessLog    *NetworkLoadBalancerAccessLog
 }
 
 var _ fi.CompareWithID = &NetworkLoadBalancer{}
@@ -365,6 +366,25 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 					return nil, err
 				}
 				actual.CrossZoneLoadBalancing = fi.Bool(b)
+			case "access_logs.s3.enabled":
+				b, err := strconv.ParseBool(*value)
+				if err != nil {
+					return nil, err
+				}
+				if actual.AccessLog == nil {
+					actual.AccessLog = &NetworkLoadBalancerAccessLog{}
+				}
+				actual.AccessLog.Enabled = fi.Bool(b)
+			case "access_logs.s3.bucket":
+				if actual.AccessLog == nil {
+					actual.AccessLog = &NetworkLoadBalancerAccessLog{}
+				}
+				actual.AccessLog.S3BucketName = value
+			case "access_logs.s3.prefix":
+				if actual.AccessLog == nil {
+					actual.AccessLog = &NetworkLoadBalancerAccessLog{}
+				}
+				actual.AccessLog.S3BucketPrefix = value
 			default:
 				klog.V(2).Infof("unsupported key -- ignoring, %v.\n", key)
 			}
@@ -452,6 +472,17 @@ func (s *NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) e
 		if e.CrossZoneLoadBalancing != nil {
 			if e.CrossZoneLoadBalancing == nil {
 				return fi.RequiredField("CrossZoneLoadBalancing")
+			}
+		}
+
+		if e.AccessLog != nil {
+			if e.AccessLog.Enabled == nil {
+				return fi.RequiredField("Accesslog.Enabled")
+			}
+			if *e.AccessLog.Enabled {
+				if e.AccessLog.S3BucketName == nil {
+					return fi.RequiredField("Accesslog.S3Bucket")
+				}
 			}
 		}
 	} else {
@@ -666,6 +697,7 @@ type terraformNetworkLoadBalancer struct {
 	Type                   string                                      `json:"load_balancer_type" cty:"load_balancer_type"`
 	SubnetMappings         []terraformNetworkLoadBalancerSubnetMapping `json:"subnet_mapping" cty:"subnet_mapping"`
 	CrossZoneLoadBalancing bool                                        `json:"enable_cross_zone_load_balancing" cty:"enable_cross_zone_load_balancing"`
+	AccessLog              *terraformNetworkLoadBalancerAccessLog      `json:"access_logs,omitempty" cty:"access_logs"`
 
 	Tags map[string]string `json:"tags" cty:"tags"`
 }
@@ -705,6 +737,14 @@ func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 			AllocationID:       subnetMapping.AllocationID,
 			PrivateIPv4Address: subnetMapping.PrivateIPv4Address,
 		})
+	}
+
+	if e.AccessLog != nil && fi.BoolValue(e.AccessLog.Enabled) {
+		nlbTF.AccessLog = &terraformNetworkLoadBalancerAccessLog{
+			Enabled:        e.AccessLog.Enabled,
+			S3BucketName:   e.AccessLog.S3BucketName,
+			S3BucketPrefix: e.AccessLog.S3BucketPrefix,
+		}
 	}
 
 	err := t.RenderResource("aws_lb", *e.Name, nlbTF)
@@ -748,6 +788,7 @@ func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -760,17 +801,23 @@ func (e *NetworkLoadBalancer) TerraformLink(params ...string) *terraformWriter.L
 }
 
 type cloudformationNetworkLoadBalancer struct {
-	Name           string                         `json:"Name"`
-	Scheme         string                         `json:"Scheme"`
-	SubnetMappings []*cloudformationSubnetMapping `json:"SubnetMappings"`
-	Type           string                         `json:"Type"`
-	Tags           []cloudformationTag            `json:"Tags"`
+	Name                   string                                `json:"Name"`
+	Scheme                 string                                `json:"Scheme"`
+	SubnetMappings         []*cloudformationSubnetMapping        `json:"SubnetMappings"`
+	Type                   string                                `json:"Type"`
+	Tags                   []cloudformationTag                   `json:"Tags"`
+	LoadBalancerAttributes []cloudformationLoadBalancerAttribute `json:"LoadBalancerAttributes,omitempty"`
 }
 
 type cloudformationSubnetMapping struct {
 	Subnet             *cloudformation.Literal `json:"SubnetId"`
 	AllocationId       *string                 `json:"AllocationId,omitempty"`
 	PrivateIPv4Address *string                 `json:"PrivateIPv4Address,omitempty"`
+}
+
+type cloudformationLoadBalancerAttribute struct {
+	Key   *string `json:"Key"`
+	Value *string `json:"Value,omitempty"`
 }
 
 type cloudformationNetworkLoadBalancerListener struct {
@@ -809,6 +856,25 @@ func (_ *NetworkLoadBalancer) RenderCloudformation(t *cloudformation.Cloudformat
 	} else {
 		nlbCF.Scheme = elbv2.LoadBalancerSchemeEnumInternetFacing
 	}
+
+	if e.AccessLog != nil && *e.AccessLog.Enabled {
+		var attributes []cloudformationLoadBalancerAttribute
+
+		attributes = append(attributes, cloudformationLoadBalancerAttribute{
+			Key:   aws.String("access_logs.s3.enabled"),
+			Value: aws.String(strconv.FormatBool(aws.BoolValue(e.AccessLog.Enabled))),
+		})
+		attributes = append(attributes, cloudformationLoadBalancerAttribute{
+			Key:   aws.String("access_logs.s3.bucket"),
+			Value: e.AccessLog.S3BucketName,
+		})
+		attributes = append(attributes, cloudformationLoadBalancerAttribute{
+			Key:   aws.String("access_logs.s3.prefix"),
+			Value: e.AccessLog.S3BucketPrefix,
+		})
+		nlbCF.LoadBalancerAttributes = attributes
+	}
+
 	err := t.RenderResource("AWS::ElasticLoadBalancingV2::LoadBalancer", *e.Name, nlbCF)
 	if err != nil {
 		return err

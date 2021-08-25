@@ -9,6 +9,8 @@ spec:
   - 10.2.0.0/16
   api:
     loadBalancer:
+      accessLog:
+        bucket: access-log-example
       additionalSecurityGroups:
       - sg-exampleid5
       - sg-exampleid6

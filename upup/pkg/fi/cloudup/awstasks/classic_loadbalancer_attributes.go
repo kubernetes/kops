@@ -153,6 +153,9 @@ func (_ *ClassicLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget
 	//	request.LoadBalancerAttributes.AdditionalAttributes = additionalAttributes
 	//}
 
+	if e.AccessLog != nil && e.AccessLog.Enabled != nil {
+		request.LoadBalancerAttributes.AccessLog.Enabled = e.AccessLog.Enabled
+	}
 	if e.AccessLog != nil && e.AccessLog.EmitInterval != nil {
 		request.LoadBalancerAttributes.AccessLog.EmitInterval = e.AccessLog.EmitInterval
 	}
