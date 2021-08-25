@@ -27,6 +27,22 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
+type NetworkLoadBalancerAccessLog struct {
+	Enabled        *bool
+	S3BucketName   *string
+	S3BucketPrefix *string
+}
+
+func (_ *NetworkLoadBalancerAccessLog) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	return nil
+}
+
+type terraformNetworkLoadBalancerAccessLog struct {
+	Enabled        *bool   `json:"enabled,omitempty" cty:"enabled"`
+	S3BucketName   *string `json:"bucket,omitempty" cty:"bucket"`
+	S3BucketPrefix *string `json:"bucket_prefix,omitempty" cty:"prefix"`
+}
+
 func findNetworkLoadBalancerAttributes(cloud awsup.AWSCloud, LoadBalancerArn string) ([]*elbv2.LoadBalancerAttribute, error) {
 
 	request := &elbv2.DescribeLoadBalancerAttributesInput{
@@ -52,7 +68,7 @@ func findNetworkLoadBalancerAttributes(cloud awsup.AWSCloud, LoadBalancerArn str
 }
 
 func (_ *NetworkLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget, a, e, changes *NetworkLoadBalancer, loadBalancerArn string) error {
-	if changes.CrossZoneLoadBalancing == nil {
+	if changes.CrossZoneLoadBalancing == nil && changes.AccessLog == nil {
 		klog.V(4).Infof("No LoadBalancerAttribute changes; skipping update")
 		return nil
 	}
@@ -73,6 +89,28 @@ func (_ *NetworkLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget
 		attribute.Value = aws.String(strconv.FormatBool(aws.BoolValue(e.CrossZoneLoadBalancing)))
 	}
 	attributes = append(attributes, attribute)
+
+	if e.AccessLog != nil {
+		attr := &elbv2.LoadBalancerAttribute{
+			Key:   aws.String("access_logs.s3.enabled"),
+			Value: aws.String(strconv.FormatBool(aws.BoolValue(e.AccessLog.Enabled))),
+		}
+		attributes = append(attributes, attr)
+	}
+	if e.AccessLog != nil && e.AccessLog.S3BucketName != nil {
+		attr := &elbv2.LoadBalancerAttribute{
+			Key:   aws.String("access_logs.s3.bucket"),
+			Value: e.AccessLog.S3BucketName,
+		}
+		attributes = append(attributes, attr)
+	}
+	if e.AccessLog != nil && e.AccessLog.S3BucketPrefix != nil {
+		attr := &elbv2.LoadBalancerAttribute{
+			Key:   aws.String("access_logs.s3.prefix"),
+			Value: e.AccessLog.S3BucketPrefix,
+		}
+		attributes = append(attributes, attr)
+	}
 
 	request.Attributes = attributes
 

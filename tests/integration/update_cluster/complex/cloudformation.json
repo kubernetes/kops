@@ -1458,6 +1458,20 @@
             "Key": "kubernetes.io/cluster/complex.example.com",
             "Value": "owned"
           }
+        ],
+        "LoadBalancerAttributes": [
+          {
+            "Key": "access_logs.s3.enabled",
+            "Value": "true"
+          },
+          {
+            "Key": "access_logs.s3.bucket",
+            "Value": "access-log-example"
+          },
+          {
+            "Key": "access_logs.s3.prefix",
+            "Value": ""
+          }
         ]
       }
     },

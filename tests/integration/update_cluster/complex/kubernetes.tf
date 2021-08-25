@@ -523,6 +523,11 @@ resource "aws_launch_template" "nodes-complex-example-com" {
 }
 
 resource "aws_lb" "api-complex-example-com" {
+  access_logs {
+    bucket  = "access-log-example"
+    enabled = true
+    prefix  = ""
+  }
   enable_cross_zone_load_balancing = true
   internal                         = false
   load_balancer_type               = "network"
