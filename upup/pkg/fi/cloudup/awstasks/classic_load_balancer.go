@@ -716,7 +716,7 @@ func (_ *ClassicLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 		}
 	}
 
-	if e.AccessLog != nil {
+	if e.AccessLog != nil && fi.BoolValue(e.AccessLog.Enabled) {
 		tf.AccessLog = &terraformLoadBalancerAccessLog{
 			EmitInterval:   e.AccessLog.EmitInterval,
 			Enabled:        e.AccessLog.Enabled,
@@ -856,7 +856,7 @@ func (_ *ClassicLoadBalancer) RenderCloudformation(t *cloudformation.Cloudformat
 		}
 	}
 
-	if e.AccessLog != nil {
+	if e.AccessLog != nil && fi.BoolValue(e.AccessLog.Enabled) {
 		tf.AccessLog = &cloudformationClassicLoadBalancerAccessLog{
 			EmitInterval:   e.AccessLog.EmitInterval,
 			Enabled:        e.AccessLog.Enabled,
