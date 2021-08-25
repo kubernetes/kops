@@ -42,6 +42,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 				"--v=2",
 				"--cloud-provider=openstack",
 				"--use-service-account-credentials=true",
+				"--cloud-config=/etc/kubernetes/cloud.config",
 			},
 		},
 		{
@@ -58,6 +59,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 				"--v=3",
 				"--cloud-provider=openstack",
 				"--use-service-account-credentials=true",
+				"--cloud-config=/etc/kubernetes/cloud.config",
 			},
 		},
 		{
@@ -74,6 +76,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 				"--v=3",
 				"--cloud-provider=openstack",
 				"--use-service-account-credentials=true",
+				"--cloud-config=/etc/kubernetes/cloud.config",
 			},
 		},
 		{
@@ -100,6 +103,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 				"--cloud-provider=openstack",
 				"--cluster-name=k8s",
 				"--use-service-account-credentials=true",
+				"--cloud-config=/etc/kubernetes/cloud.config",
 			},
 		},
 		{
@@ -115,6 +119,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 				"--v=2",
 				"--cloud-provider=openstack",
 				"--use-service-account-credentials=true",
+				"--cloud-config=/etc/kubernetes/cloud.config",
 			},
 		},
 		{
@@ -130,6 +135,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 				"--cloud-provider=openstack",
 				"--cluster-cidr=10.0.0.0/24",
 				"--use-service-account-credentials=true",
+				"--cloud-config=/etc/kubernetes/cloud.config",
 			},
 		},
 		{
@@ -145,6 +151,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 				"--cloud-provider=openstack",
 				"--allocate-node-cidrs=true",
 				"--use-service-account-credentials=true",
+				"--cloud-config=/etc/kubernetes/cloud.config",
 			},
 		},
 		{
@@ -160,6 +167,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 				"--cloud-provider=openstack",
 				"--configure-cloud-routes=true",
 				"--use-service-account-credentials=true",
+				"--cloud-config=/etc/kubernetes/cloud.config",
 			},
 		},
 		{
@@ -175,6 +183,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 				"--cloud-provider=openstack",
 				"--cidr-allocator-type=RangeAllocator",
 				"--use-service-account-credentials=true",
+				"--cloud-config=/etc/kubernetes/cloud.config",
 			},
 		},
 		{
@@ -189,6 +198,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 				"--v=2",
 				"--cloud-provider=openstack",
 				"--use-service-account-credentials=false",
+				"--cloud-config=/etc/kubernetes/cloud.config",
 			},
 		},
 	}
