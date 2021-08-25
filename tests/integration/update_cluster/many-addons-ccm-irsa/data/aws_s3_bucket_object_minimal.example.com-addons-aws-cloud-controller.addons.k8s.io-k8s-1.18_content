@@ -23,6 +23,7 @@ spec:
         - --v=2
         - --cloud-provider=aws
         - --use-service-account-credentials=true
+        - --cloud-config=/etc/kubernetes/cloud.config
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
@@ -37,6 +38,9 @@ spec:
           requests:
             cpu: 200m
         volumeMounts:
+        - mountPath: /etc/kubernetes/cloud.config
+          name: cloudconfig
+          readOnly: true
         - mountPath: /var/run/secrets/amazonaws.com/
           name: token-amazonaws-com
           readOnly: true
@@ -54,6 +58,10 @@ spec:
       - effect: NoSchedule
         key: node-role.kubernetes.io/master
       volumes:
+      - hostPath:
+          path: /etc/kubernetes/cloud.config
+          type: ""
+        name: cloudconfig
       - name: token-amazonaws-com
         projected:
           defaultMode: 420
