@@ -27,6 +27,7 @@ spec:
         - --allocate-node-cidrs=true
         - --configure-cloud-routes=false
         - --use-service-account-credentials=true
+        - --cloud-config=/etc/kubernetes/cloud.config
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
@@ -36,6 +37,10 @@ spec:
         resources:
           requests:
             cpu: 200m
+        volumeMounts:
+        - mountPath: /etc/kubernetes/cloud.config
+          name: cloudconfig
+          readOnly: true
       hostNetwork: true
       nodeSelector:
         node-role.kubernetes.io/master: ""
@@ -47,6 +52,11 @@ spec:
         value: "true"
       - effect: NoSchedule
         key: node-role.kubernetes.io/master
+      volumes:
+      - hostPath:
+          path: /etc/kubernetes/cloud.config
+          type: ""
+        name: cloudconfig
   updateStrategy:
     type: RollingUpdate
 

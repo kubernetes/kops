@@ -40,8 +40,17 @@ spec:
         resources:
           requests:
             cpu: 200m
+        volumeMounts:
+        - mountPath: /etc/kubernetes/cloud.config
+          name: cloudconfig
+          readOnly: true
       hostNetwork: true
       priorityClassName: system-cluster-critical
+      volumes:
+      - hostPath:
+          path: /etc/kubernetes/cloud.config
+          type: ""
+        name: cloudconfig
 ---
 apiVersion: v1
 kind: ServiceAccount
