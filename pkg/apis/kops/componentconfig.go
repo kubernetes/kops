@@ -242,7 +242,7 @@ type KubeProxyConfig struct {
 	// LogLevel is the logging level of the proxy
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v"`
 	// ClusterCIDR is the CIDR range of the pods in the cluster
-	ClusterCIDR string `json:"clusterCIDR,omitempty" flag:"cluster-cidr"`
+	ClusterCIDR *string `json:"clusterCIDR,omitempty" flag:"cluster-cidr"`
 	// HostnameOverride, if non-empty, will be used as the identity instead of the actual hostname.
 	HostnameOverride string `json:"hostnameOverride,omitempty" flag:"hostname-override"`
 	// BindAddress is IP address for the proxy server to serve on
