@@ -85,3 +85,24 @@ spec:
     weave:
       version: "2.7.0"
 ```
+
+### Override default CPU/Memory resources
+
+Weave networking comes with default specs related to CPU/Memory requests and limits, already configured by kOps.
+In case users want to override default values, specs should be customized as follows:
+
+```yaml
+spec:
+  networking:
+    weave:
+      memoryRequest: 300Mi
+      cpuRequest: 100m
+      memoryLimit: 300Mi
+      cpuLimit: 100m
+      npcMemoryRequest: 300Mi
+      npcCPURequest: 100m
+      npcMemoryLimit: 300Mi
+      npcCPULimit: 100m
+```
+
+> **NOTE**: These are just example values and not necessarily the recommended values. You should override the default values according to your needs.
