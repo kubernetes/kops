@@ -72,6 +72,10 @@ spec:
                 items:
                   description: UserData defines a user-data section
                   properties:
+                    before:
+                      description: Before indicated whether this user data script
+                        should be executed before or after the default user data scripts
+                      type: boolean
                     content:
                       description: Content is the user-data content
                       type: string

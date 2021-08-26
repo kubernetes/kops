@@ -187,7 +187,24 @@ func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
 		writer.Write([]byte(fmt.Sprintf("Content-Type: multipart/mixed; boundary=\"%s\"\r\n", boundary)))
 		writer.Write([]byte("MIME-Version: 1.0\r\n\r\n"))
 
+		var placedBefore []kops.UserData
+		var placedAfter []kops.UserData
+		for _, d := range ig.Spec.AdditionalUserData {
+			if d.Before {
+				placedBefore = append(placedBefore, d)
+			} else {
+				placedAfter = append(placedAfter, d)
+			}
+		}
+
 		var err error
+		for _, d := range placedBefore {
+			err = writeUserDataPart(mimeWriter, d.Name, d.Type, []byte(d.Content))
+			if err != nil {
+				return "", err
+			}
+		}
+
 		if !ig.IsBastion() {
 			err := writeUserDataPart(mimeWriter, "nodeup.sh", "text/x-shellscript", []byte(userDataTemplate))
 			if err != nil {
@@ -195,7 +212,7 @@ func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
 			}
 		}
 
-		for _, d := range ig.Spec.AdditionalUserData {
+		for _, d := range placedAfter {
 			err = writeUserDataPart(mimeWriter, d.Name, d.Type, []byte(d.Content))
 			if err != nil {
 				return "", err

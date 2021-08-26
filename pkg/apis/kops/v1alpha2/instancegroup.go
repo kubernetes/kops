@@ -193,6 +193,8 @@ type UserData struct {
 	Type string `json:"type,omitempty"`
 	// Content is the user-data content
 	Content string `json:"content,omitempty"`
+	// Before indicated whether this user data script should be executed before or after the default user data scripts
+	Before bool `json:"before,omitempty"`
 }
 
 // VolumeSpec defined the spec for an additional volume attached to the instance group
