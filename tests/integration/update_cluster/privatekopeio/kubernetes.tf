@@ -369,7 +369,7 @@ resource "aws_elb" "bastion-privatekopeio-example-com" {
   }
   name            = "bastion-privatekopeio-exa-d8ef8e"
   security_groups = [aws_security_group.bastion-elb-privatekopeio-example-com.id]
-  subnets         = [aws_subnet.utility-us-test-1a-privatekopeio-example-com.id]
+  subnets         = [aws_subnet.utility-us-test-1a-privatekopeio-example-com.id, aws_subnet.utility-us-test-1b-privatekopeio-example-com.id]
   tags = {
     "KubernetesCluster"                               = "privatekopeio.example.com"
     "Name"                                            = "bastion.privatekopeio.example.com"
