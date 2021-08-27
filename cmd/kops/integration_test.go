@@ -655,6 +655,16 @@ func TestCustomIRSA(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+// TestClusterNameDigit runs a configuration with a cluster name beginning with a digit
+func TestClusterNameDigit(t *testing.T) {
+	newIntegrationTest("123.example.com", "digit").
+		withOIDCDiscovery().
+		withServiceAccountRole("myserviceaccount.default", false).
+		withServiceAccountRole("myotherserviceaccount.myapp", true).
+		withAddons(dnsControllerAddon).
+		runTestTerraformAWS(t)
+}
+
 func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
 	ctx := context.Background()
 
