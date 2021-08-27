@@ -32,6 +32,7 @@ import (
 	"k8s.io/kops/pkg/model/components/addonmanifests/awsloadbalancercontroller"
 	"k8s.io/kops/pkg/model/components/addonmanifests/clusterautoscaler"
 	"k8s.io/kops/pkg/model/components/addonmanifests/dnscontroller"
+	"k8s.io/kops/pkg/model/components/addonmanifests/externaldns"
 	"k8s.io/kops/pkg/model/components/addonmanifests/nodeterminationhandler"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
@@ -126,7 +127,7 @@ func getWellknownServiceAccount(name string) iam.Subject {
 	case "aws-cloud-controller-manager":
 		return &awscloudcontrollermanager.ServiceAccount{}
 	case "external-dns":
-		return &awsebscsidriver.ServiceAccount{}
+		return &externaldns.ServiceAccount{}
 	default:
 		return nil
 	}
