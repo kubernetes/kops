@@ -28,6 +28,9 @@ type VerifyResult struct {
 
 	// InstanceGroupName is the name of the kops InstanceGroup this node is a member of.
 	InstanceGroupName string
+
+	// CertificateNames is the names the node is authorized to use for certificates.
+	CertificateNames []string
 }
 
 // Verifier verifies authentication credentials for requests.
