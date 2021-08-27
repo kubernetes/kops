@@ -53,6 +53,8 @@ spec:
     name: events
     provider: Manager
     version: 3.4.13
+  externalDns:
+    provider: dns-controller
   externalPolicies:
     bastion:
     - arn:aws:iam::123456789000:policy/test-policy

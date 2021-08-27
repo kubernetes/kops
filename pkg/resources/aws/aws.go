@@ -1775,7 +1775,9 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*resources.Resour
 		}
 		err := c.Route53().ListResourceRecordSetsPages(request, func(p *route53.ListResourceRecordSetsOutput, lastPage bool) bool {
 			for _, rrs := range p.ResourceRecordSets {
-				if aws.StringValue(rrs.Type) != "A" && aws.StringValue(rrs.Type) != "AAAA" {
+				if aws.StringValue(rrs.Type) != "A" &&
+					aws.StringValue(rrs.Type) != "AAAA" &&
+					aws.StringValue(rrs.Type) != "TXT" {
 					continue
 				}
 
