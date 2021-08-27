@@ -64,7 +64,7 @@ func LiteralSelfLink(resourceType, resourceName string) *Literal {
 }
 
 func LiteralProperty(resourceType, resourceName, prop string) *Literal {
-	tfName := tfSanitize(resourceName)
+	tfName := sanitizeName(resourceName)
 	expr := "${" + resourceType + "." + tfName + "." + prop + "}"
 	return &Literal{
 		Value:        expr,

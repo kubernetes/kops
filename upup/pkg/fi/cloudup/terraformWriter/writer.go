@@ -52,11 +52,11 @@ type terraformOutputVariable struct {
 	ValueArray []*Literal
 }
 
-// A TF name can't have dots in it (if we want to refer to it from a literal),
-// so we replace them
-func tfSanitize(name string) string {
+// sanitizeName ensures terraform resource names don't start with digits or contain any invalid characters
+func sanitizeName(name string) string {
+	// Terraform resource names cannot start with a digit
 	if _, err := strconv.Atoi(string(name[0])); err == nil {
-		panic(fmt.Sprintf("Terraform resource names cannot start with a digit. This is a bug in Kops, please report this in a GitHub Issue. Name: %v", name))
+		name = fmt.Sprintf("prefix_%v", name)
 	}
 	return strings.NewReplacer(".", "-", "/", "--", ":", "_").Replace(name)
 }
@@ -144,7 +144,7 @@ func (t *TerraformWriter) GetResourcesByType() (map[string]map[string]interface{
 			resourcesByType[res.ResourceType] = resources
 		}
 
-		tfName := tfSanitize(res.ResourceName)
+		tfName := sanitizeName(res.ResourceName)
 
 		if resources[tfName] != nil {
 			return nil, fmt.Errorf("duplicate resource found: %s.%s", res.ResourceType, tfName)
@@ -159,7 +159,7 @@ func (t *TerraformWriter) GetResourcesByType() (map[string]map[string]interface{
 func (t *TerraformWriter) GetOutputs() (map[string]OutputValue, error) {
 	values := map[string]OutputValue{}
 	for _, v := range t.outputs {
-		tfName := tfSanitize(v.Key)
+		tfName := sanitizeName(v.Key)
 		if _, found := values[tfName]; found {
 			return nil, fmt.Errorf("duplicate variable found: %s", tfName)
 		}
