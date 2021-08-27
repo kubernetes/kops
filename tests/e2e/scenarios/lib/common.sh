@@ -120,6 +120,6 @@ function kops-up() {
     ${KUBETEST2} \
         --up \
         --kops-binary-path="${KOPS}" \
-        --kubernetes-version="1.21.0" \
+        --kubernetes-version="1.22.1" \
         --create-args="${create_args}"
 }
