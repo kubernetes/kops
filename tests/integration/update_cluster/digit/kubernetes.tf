@@ -2,7 +2,7 @@ locals {
   cluster_name                          = "123.example.com"
   default-myserviceaccount_role_arn     = aws_iam_role.myserviceaccount-default-sa-123-example-com.arn
   default-myserviceaccount_role_name    = aws_iam_role.myserviceaccount-default-sa-123-example-com.name
-  iam_openid_connect_provider_arn       = aws_iam_openid_connect_provider.123 - example-com.arn
+  iam_openid_connect_provider_arn       = aws_iam_openid_connect_provider.prefix_123-example-com.arn
   iam_openid_connect_provider_issuer    = "discovery.example.com/123.example.com"
   master_autoscaling_group_ids          = [aws_autoscaling_group.master-us-test-1a-masters-123-example-com.id]
   master_security_group_ids             = [aws_security_group.masters-123-example-com.id]
@@ -16,10 +16,10 @@ locals {
   nodes_role_arn                        = aws_iam_role.nodes-123-example-com.arn
   nodes_role_name                       = aws_iam_role.nodes-123-example-com.name
   region                                = "us-test-1"
-  route_table_public_id                 = aws_route_table.123 - example-com.id
+  route_table_public_id                 = aws_route_table.prefix_123-example-com.id
   subnet_us-test-1a_id                  = aws_subnet.us-test-1a-123-example-com.id
-  vpc_cidr_block                        = aws_vpc.123 - example-com.cidr_block
-  vpc_id                                = aws_vpc.123 - example-com.id
+  vpc_cidr_block                        = aws_vpc.prefix_123-example-com.cidr_block
+  vpc_id                                = aws_vpc.prefix_123-example-com.id
 }
 
 output "cluster_name" {
@@ -35,7 +35,7 @@ output "default-myserviceaccount_role_name" {
 }
 
 output "iam_openid_connect_provider_arn" {
-  value = aws_iam_openid_connect_provider.123 - example-com.arn
+  value = aws_iam_openid_connect_provider.prefix_123-example-com.arn
 }
 
 output "iam_openid_connect_provider_issuer" {
@@ -91,7 +91,7 @@ output "region" {
 }
 
 output "route_table_public_id" {
-  value = aws_route_table.123 - example-com.id
+  value = aws_route_table.prefix_123-example-com.id
 }
 
 output "subnet_us-test-1a_id" {
@@ -99,11 +99,11 @@ output "subnet_us-test-1a_id" {
 }
 
 output "vpc_cidr_block" {
-  value = aws_vpc.123 - example-com.cidr_block
+  value = aws_vpc.prefix_123-example-com.cidr_block
 }
 
 output "vpc_id" {
-  value = aws_vpc.123 - example-com.id
+  value = aws_vpc.prefix_123-example-com.id
 }
 
 provider "aws" {
@@ -275,7 +275,7 @@ resource "aws_iam_instance_profile" "nodes-123-example-com" {
   }
 }
 
-resource "aws_iam_openid_connect_provider" "123-example-com" {
+resource "aws_iam_openid_connect_provider" "prefix_123-example-com" {
   client_id_list = ["amazonaws.com"]
   tags = {
     "KubernetesCluster"                     = "123.example.com"
@@ -349,13 +349,13 @@ resource "aws_iam_role_policy_attachment" "external-myserviceaccount-default-sa-
   role       = aws_iam_role.myserviceaccount-default-sa-123-example-com.name
 }
 
-resource "aws_internet_gateway" "123-example-com" {
+resource "aws_internet_gateway" "prefix_123-example-com" {
   tags = {
     "KubernetesCluster"                     = "123.example.com"
     "Name"                                  = "123.example.com"
     "kubernetes.io/cluster/123.example.com" = "owned"
   }
-  vpc_id = aws_vpc.123 - example-com.id
+  vpc_id = aws_vpc.prefix_123-example-com.id
 }
 
 resource "aws_key_pair" "kubernetes-123-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {
@@ -527,85 +527,29 @@ resource "aws_launch_template" "nodes-123-example-com" {
 
 resource "aws_route" "route-0-0-0-0--0" {
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.123 - example-com.id
-  route_table_id         = aws_route_table.123 - example-com.id
+  gateway_id             = aws_internet_gateway.prefix_123-example-com.id
+  route_table_id         = aws_route_table.prefix_123-example-com.id
 }
 
 resource "aws_route" "route-__--0" {
   destination_ipv6_cidr_block = "::/0"
-  gateway_id                  = aws_internet_gateway.123 - example-com.id
-  route_table_id              = aws_route_table.123 - example-com.id
+  gateway_id                  = aws_internet_gateway.prefix_123-example-com.id
+  route_table_id              = aws_route_table.prefix_123-example-com.id
 }
 
-resource "aws_route_table" "123-example-com" {
+resource "aws_route_table" "prefix_123-example-com" {
   tags = {
     "KubernetesCluster"                     = "123.example.com"
     "Name"                                  = "123.example.com"
     "kubernetes.io/cluster/123.example.com" = "owned"
     "kubernetes.io/kops/role"               = "public"
   }
-  vpc_id = aws_vpc.123 - example-com.id
+  vpc_id = aws_vpc.prefix_123-example-com.id
 }
 
 resource "aws_route_table_association" "us-test-1a-123-example-com" {
-  route_table_id = aws_route_table.123 - example-com.id
+  route_table_id = aws_route_table.prefix_123-example-com.id
   subnet_id      = aws_subnet.us-test-1a-123-example-com.id
-}
-
-resource "aws_s3_bucket_object" "123-example-com-addons-bootstrap" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_123.example.com-addons-bootstrap_content")
-  key                    = "clusters.example.com/123.example.com/addons/bootstrap-channel.yaml"
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_bucket_object" "123-example-com-addons-core-addons-k8s-io" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_123.example.com-addons-core.addons.k8s.io_content")
-  key                    = "clusters.example.com/123.example.com/addons/core.addons.k8s.io/v1.4.0.yaml"
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_bucket_object" "123-example-com-addons-coredns-addons-k8s-io-k8s-1-12" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_123.example.com-addons-coredns.addons.k8s.io-k8s-1.12_content")
-  key                    = "clusters.example.com/123.example.com/addons/coredns.addons.k8s.io/k8s-1.12.yaml"
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_bucket_object" "123-example-com-addons-dns-controller-addons-k8s-io-k8s-1-12" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_123.example.com-addons-dns-controller.addons.k8s.io-k8s-1.12_content")
-  key                    = "clusters.example.com/123.example.com/addons/dns-controller.addons.k8s.io/k8s-1.12.yaml"
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_bucket_object" "123-example-com-addons-kops-controller-addons-k8s-io-k8s-1-16" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_123.example.com-addons-kops-controller.addons.k8s.io-k8s-1.16_content")
-  key                    = "clusters.example.com/123.example.com/addons/kops-controller.addons.k8s.io/k8s-1.16.yaml"
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_bucket_object" "123-example-com-addons-kubelet-api-rbac-addons-k8s-io-k8s-1-9" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_123.example.com-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content")
-  key                    = "clusters.example.com/123.example.com/addons/kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml"
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_bucket_object" "123-example-com-addons-limit-range-addons-k8s-io" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_123.example.com-addons-limit-range.addons.k8s.io_content")
-  key                    = "clusters.example.com/123.example.com/addons/limit-range.addons.k8s.io/v1.5.0.yaml"
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_bucket_object" "123-example-com-addons-storage-aws-addons-k8s-io-v1-15-0" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_123.example.com-addons-storage-aws.addons.k8s.io-v1.15.0_content")
-  key                    = "clusters.example.com/123.example.com/addons/storage-aws.addons.k8s.io/v1.15.0.yaml"
-  server_side_encryption = "AES256"
 }
 
 resource "aws_s3_bucket_object" "cluster-completed-spec" {
@@ -685,6 +629,62 @@ resource "aws_s3_bucket_object" "nodeupconfig-nodes" {
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_bucket_object" "prefix_123-example-com-addons-bootstrap" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_123.example.com-addons-bootstrap_content")
+  key                    = "clusters.example.com/123.example.com/addons/bootstrap-channel.yaml"
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_bucket_object" "prefix_123-example-com-addons-core-addons-k8s-io" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_123.example.com-addons-core.addons.k8s.io_content")
+  key                    = "clusters.example.com/123.example.com/addons/core.addons.k8s.io/v1.4.0.yaml"
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_bucket_object" "prefix_123-example-com-addons-coredns-addons-k8s-io-k8s-1-12" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_123.example.com-addons-coredns.addons.k8s.io-k8s-1.12_content")
+  key                    = "clusters.example.com/123.example.com/addons/coredns.addons.k8s.io/k8s-1.12.yaml"
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_bucket_object" "prefix_123-example-com-addons-dns-controller-addons-k8s-io-k8s-1-12" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_123.example.com-addons-dns-controller.addons.k8s.io-k8s-1.12_content")
+  key                    = "clusters.example.com/123.example.com/addons/dns-controller.addons.k8s.io/k8s-1.12.yaml"
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_bucket_object" "prefix_123-example-com-addons-kops-controller-addons-k8s-io-k8s-1-16" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_123.example.com-addons-kops-controller.addons.k8s.io-k8s-1.16_content")
+  key                    = "clusters.example.com/123.example.com/addons/kops-controller.addons.k8s.io/k8s-1.16.yaml"
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_bucket_object" "prefix_123-example-com-addons-kubelet-api-rbac-addons-k8s-io-k8s-1-9" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_123.example.com-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content")
+  key                    = "clusters.example.com/123.example.com/addons/kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml"
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_bucket_object" "prefix_123-example-com-addons-limit-range-addons-k8s-io" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_123.example.com-addons-limit-range.addons.k8s.io_content")
+  key                    = "clusters.example.com/123.example.com/addons/limit-range.addons.k8s.io/v1.5.0.yaml"
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_bucket_object" "prefix_123-example-com-addons-storage-aws-addons-k8s-io-v1-15-0" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_123.example.com-addons-storage-aws.addons.k8s.io-v1.15.0_content")
+  key                    = "clusters.example.com/123.example.com/addons/storage-aws.addons.k8s.io/v1.15.0.yaml"
+  server_side_encryption = "AES256"
+}
+
 resource "aws_security_group" "masters-123-example-com" {
   description = "Security group for masters"
   name        = "masters.123.example.com"
@@ -693,7 +693,7 @@ resource "aws_security_group" "masters-123-example-com" {
     "Name"                                  = "masters.123.example.com"
     "kubernetes.io/cluster/123.example.com" = "owned"
   }
-  vpc_id = aws_vpc.123 - example-com.id
+  vpc_id = aws_vpc.prefix_123-example-com.id
 }
 
 resource "aws_security_group" "nodes-123-example-com" {
@@ -704,7 +704,7 @@ resource "aws_security_group" "nodes-123-example-com" {
     "Name"                                  = "nodes.123.example.com"
     "kubernetes.io/cluster/123.example.com" = "owned"
   }
-  vpc_id = aws_vpc.123 - example-com.id
+  vpc_id = aws_vpc.prefix_123-example-com.id
 }
 
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-masters-123-example-com" {
@@ -844,10 +844,10 @@ resource "aws_subnet" "us-test-1a-123-example-com" {
     "kubernetes.io/role/elb"                = "1"
     "kubernetes.io/role/internal-elb"       = "1"
   }
-  vpc_id = aws_vpc.123 - example-com.id
+  vpc_id = aws_vpc.prefix_123-example-com.id
 }
 
-resource "aws_vpc" "123-example-com" {
+resource "aws_vpc" "prefix_123-example-com" {
   assign_generated_ipv6_cidr_block = true
   cidr_block                       = "172.20.0.0/16"
   enable_dns_hostnames             = true
@@ -859,7 +859,7 @@ resource "aws_vpc" "123-example-com" {
   }
 }
 
-resource "aws_vpc_dhcp_options" "123-example-com" {
+resource "aws_vpc_dhcp_options" "prefix_123-example-com" {
   domain_name         = "us-test-1.compute.internal"
   domain_name_servers = ["AmazonProvidedDNS"]
   tags = {
@@ -869,9 +869,9 @@ resource "aws_vpc_dhcp_options" "123-example-com" {
   }
 }
 
-resource "aws_vpc_dhcp_options_association" "123-example-com" {
-  dhcp_options_id = aws_vpc_dhcp_options.123 - example-com.id
-  vpc_id          = aws_vpc.123 - example-com.id
+resource "aws_vpc_dhcp_options_association" "prefix_123-example-com" {
+  dhcp_options_id = aws_vpc_dhcp_options.prefix_123-example-com.id
+  vpc_id          = aws_vpc.prefix_123-example-com.id
 }
 
 terraform {
