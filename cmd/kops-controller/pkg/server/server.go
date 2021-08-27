@@ -203,7 +203,7 @@ func (s *Server) issueCert(name string, pubKey string, id *fi.VerifyResult, vali
 		issueReq.Subject = pkix.Name{
 			CommonName: id.NodeName,
 		}
-		issueReq.AlternateNames = []string{id.NodeName}
+		issueReq.AlternateNames = id.CertificateNames
 		issueReq.Type = "server"
 	case "kube-proxy":
 		issueReq.Subject = pkix.Name{
