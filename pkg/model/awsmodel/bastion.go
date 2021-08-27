@@ -17,9 +17,12 @@ limitations under the License.
 package awsmodel
 
 import (
+	"fmt"
+	"sort"
 	"time"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -97,6 +100,30 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				IPv6CIDR:      fi.String("::/0"),
 			}
 			AddDirectionalGroupRule(c, t)
+		}
+	}
+
+	var bastionLoadBalancerType kops.LoadBalancerType
+	{
+		// Check if we requested a public or internal ELB
+		if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil && b.Cluster.Spec.Topology.Bastion.LoadBalancer != nil {
+			if b.Cluster.Spec.Topology.Bastion.LoadBalancer.Type != "" {
+				switch b.Cluster.Spec.Topology.Bastion.LoadBalancer.Type {
+				case kops.LoadBalancerTypeInternal:
+					bastionLoadBalancerType = "Internal"
+				case kops.LoadBalancerTypePublic:
+					bastionLoadBalancerType = "Public"
+				default:
+					return fmt.Errorf("unhandled bastion LoadBalancer type %q", b.Cluster.Spec.Topology.Bastion.LoadBalancer.Type)
+				}
+			} else {
+				// Default to Public
+				b.Cluster.Spec.Topology.Bastion.LoadBalancer.Type = kops.LoadBalancerTypePublic
+				bastionLoadBalancerType = "Public"
+			}
+		} else {
+			// Default to Public
+			bastionLoadBalancerType = "Public"
 		}
 	}
 
@@ -202,23 +229,34 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	var elbSubnets []*awstasks.Subnet
 	{
-		zones := sets.NewString()
-		for _, ig := range bastionInstanceGroups {
-			subnets, err := b.GatherSubnets(ig)
-			if err != nil {
-				return err
+		// Compute the subnets - only one per zone, and then break ties based on chooseBestSubnetForELB
+		subnetsByZone := make(map[string][]*kops.ClusterSubnetSpec)
+		for i := range b.Cluster.Spec.Subnets {
+			subnet := &b.Cluster.Spec.Subnets[i]
+
+			switch subnet.Type {
+			case kops.SubnetTypePublic, kops.SubnetTypeUtility:
+				if bastionLoadBalancerType != kops.LoadBalancerTypePublic {
+					continue
+				}
+
+			case kops.SubnetTypePrivate:
+				if bastionLoadBalancerType != kops.LoadBalancerTypeInternal {
+					continue
+				}
+
+			default:
+				return fmt.Errorf("subnet %q had unknown type %q", subnet.Name, subnet.Type)
 			}
-			for _, s := range subnets {
-				zones.Insert(s.Zone)
-			}
+
+			subnetsByZone[subnet.Zone] = append(subnetsByZone[subnet.Zone], subnet)
 		}
 
-		for zoneName := range zones {
-			utilitySubnet, err := b.LinkToUtilitySubnetInZone(zoneName)
-			if err != nil {
-				return err
-			}
-			elbSubnets = append(elbSubnets, utilitySubnet)
+		for zone, subnets := range subnetsByZone {
+			subnet := b.chooseBestSubnetForELB(zone, subnets)
+
+			elbSubnet := b.LinkToSubnet(subnet)
+			elbSubnets = append(elbSubnets, elbSubnet)
 		}
 	}
 
@@ -281,6 +319,15 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				elb.SecurityGroups = append(elb.SecurityGroups, t)
 			}
 		}
+		// Set the elb Scheme according to load balancer Type
+		switch bastionLoadBalancerType {
+		case kops.LoadBalancerTypeInternal:
+			elb.Scheme = fi.String("internal")
+		case kops.LoadBalancerTypePublic:
+			elb.Scheme = nil
+		default:
+			return fmt.Errorf("unhandled bastion LoadBalancer type %q", bastionLoadBalancerType)
+		}
 
 		c.AddTask(elb)
 	}
@@ -305,4 +352,50 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	}
 	return nil
+}
+
+// Choose between subnets in a zone.
+// We have already applied the rules to match internal subnets to internal ELBs and vice-versa for public-facing ELBs.
+// For internal ELBs: we prefer the master subnets
+// For public facing ELBs: we prefer the utility subnets
+func (b *BastionModelBuilder) chooseBestSubnetForELB(zone string, subnets []*kops.ClusterSubnetSpec) *kops.ClusterSubnetSpec {
+	if len(subnets) == 0 {
+		return nil
+	}
+	if len(subnets) == 1 {
+		return subnets[0]
+	}
+
+	migSubnets := sets.NewString()
+	for _, ig := range b.MasterInstanceGroups() {
+		for _, subnet := range ig.Spec.Subnets {
+			migSubnets.Insert(subnet)
+		}
+	}
+
+	var scoredSubnets []*scoredSubnet
+	for _, subnet := range subnets {
+		score := 0
+
+		if migSubnets.Has(subnet.Name) {
+			score += 1
+		}
+
+		if subnet.Type == kops.SubnetTypeUtility {
+			score += 1
+		}
+
+		scoredSubnets = append(scoredSubnets, &scoredSubnet{
+			score:  score,
+			subnet: subnet,
+		})
+	}
+
+	sort.Sort(ByScoreDescending(scoredSubnets))
+
+	if scoredSubnets[0].score == scoredSubnets[1].score {
+		klog.V(2).Infof("Making arbitrary choice between subnets in zone %q to attach to ELB (%q vs %q)", zone, scoredSubnets[0].subnet.Name, scoredSubnets[1].subnet.Name)
+	}
+
+	return scoredSubnets[0].subnet
 }
