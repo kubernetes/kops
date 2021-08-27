@@ -1480,7 +1480,7 @@ func validateExternalDNS(cluster *kops.Cluster, spec *kops.ExternalDNSConfig, fl
 
 	if spec.Provider == kops.ExternalDNSProviderExternalDNS {
 		if dns.IsGossipHostname(cluster.Spec.MasterInternalName) {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("provider"), "external-dns does not supprot gossip clusters"))
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("provider"), "external-dns does not support gossip clusters"))
 		}
 	}
 
