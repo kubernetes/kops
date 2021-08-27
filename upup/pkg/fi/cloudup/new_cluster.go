@@ -124,6 +124,9 @@ type NewClusterOptions struct {
 	NodeCount int32
 	// Bastion enables the creation of a Bastion instance.
 	Bastion bool
+	// BastionLoadBalancerType is the bastion loadbalancer type to use; "public" or "internal".
+	// Defaults to "public".
+	BastionLoadBalancerType string
 
 	// Networking is the networking provider/node to use.
 	Networking string
