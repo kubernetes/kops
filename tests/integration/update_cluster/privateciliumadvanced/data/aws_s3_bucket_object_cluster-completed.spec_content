@@ -57,6 +57,8 @@ spec:
     name: cilium
     provider: Manager
     version: 3.4.13
+  externalDns:
+    provider: dns-controller
   iam:
     legacy: false
   keyStore: memfs://clusters.example.com/privateciliumadvanced.example.com/pki
