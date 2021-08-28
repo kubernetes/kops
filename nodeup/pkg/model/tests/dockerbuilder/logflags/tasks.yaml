@@ -1,78 +1,31 @@
-file: /usr/bin/docker-runc
-mode: +i
----
 contents: |-
   DOCKER_OPTS=--ip-masq=false --iptables=false --log-driver=json-file --log-level=info --log-opt=max-file=5 --log-opt=max-size=10m --storage-driver=overlay2,overlay,aufs
   DOCKER_NOFILE=1000000
 path: /etc/sysconfig/docker
 type: file
 ---
-contents: |
-  #!/bin/bash
-
-  # Copyright 2019 The Kubernetes Authors All rights reserved.
-  #
-  # Licensed under the Apache License, Version 2.0 (the "License");
-  # you may not use this file except in compliance with the License.
-  # You may obtain a copy of the License at
-  #
-  #     http://www.apache.org/licenses/LICENSE-2.0
-  #
-  # Unless required by applicable law or agreed to in writing, software
-  # distributed under the License is distributed on an "AS IS" BASIS,
-  # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  # See the License for the specific language governing permissions and
-  # limitations under the License.
-
-  # This script is intended to be run periodically, to check the health
-  # of docker.  If it detects a failure, it will restart docker using systemctl.
-
-  healthcheck() {
-     if output=`timeout 60 docker network ls`; then
-         echo "$output" | fgrep -qw host || {
-            echo "docker 'host' network missing"
-            return 1
-         }
-     else
-         echo "docker returned $?"
-         return 1
-     fi
-  }
-
-  if healthcheck; then
-    echo "docker healthy"
-    exit 0
-  fi
-
-  echo "docker failed"
-  echo "Giving docker 30 seconds grace before restarting"
-  sleep 30
-
-  if healthcheck; then
-    echo "docker recovered"
-    exit 0
-  fi
-
-  echo "docker still unresponsive; triggering docker restart"
-  systemctl stop docker
-
-  echo "wait all tcp sockets to close"
-  sleep `cat /proc/sys/net/ipv4/tcp_fin_timeout`
-
-  sleep 10
-  systemctl start docker
-
-  echo "Waiting 120 seconds to give docker time to start"
-  sleep 60
-
-  if healthcheck; then
-    echo "docker recovered"
-    exit 0
-  fi
-
-  echo "docker still failing"
+contents:
+  Asset:
+    AssetPath: docker/containerd
+    Key: containerd
 mode: "0755"
-path: /opt/kops/bin/docker-healthcheck
+path: /usr/bin/containerd
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/containerd-shim
+    Key: containerd-shim
+mode: "0755"
+path: /usr/bin/containerd-shim
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/ctr
+    Key: ctr
+mode: "0755"
+path: /usr/bin/ctr
 type: file
 ---
 contents:
@@ -81,30 +34,6 @@ contents:
     Key: docker
 mode: "0755"
 path: /usr/bin/docker
-type: file
----
-contents:
-  Asset:
-    AssetPath: docker/docker-containerd
-    Key: docker-containerd
-mode: "0755"
-path: /usr/bin/docker-containerd
-type: file
----
-contents:
-  Asset:
-    AssetPath: docker/docker-containerd-ctr
-    Key: docker-containerd-ctr
-mode: "0755"
-path: /usr/bin/docker-containerd-ctr
-type: file
----
-contents:
-  Asset:
-    AssetPath: docker/docker-containerd-shim
-    Key: docker-containerd-shim
-mode: "0755"
-path: /usr/bin/docker-containerd-shim
 type: file
 ---
 contents:
@@ -125,18 +54,18 @@ type: file
 ---
 contents:
   Asset:
-    AssetPath: docker/docker-runc
-    Key: docker-runc
-mode: "0755"
-path: /usr/bin/docker-runc
-type: file
----
-contents:
-  Asset:
     AssetPath: docker/dockerd
     Key: dockerd
 mode: "0755"
 path: /usr/bin/dockerd
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/runc
+    Key: runc
+mode: "0755"
+path: /usr/bin/runc
 type: file
 ---
 contents: |2
@@ -339,46 +268,12 @@ GID: null
 Name: docker
 System: true
 ---
-Name: docker-healthcheck.service
-definition: |
-  [Unit]
-  Description=Run docker-healthcheck once
-  Documentation=https://kops.sigs.k8s.io
-
-  [Service]
-  Type=oneshot
-  ExecStart=/opt/kops/bin/docker-healthcheck
-
-  [Install]
-  WantedBy=multi-user.target
-enabled: true
-manageState: true
-running: true
-smartRestart: true
----
-Name: docker-healthcheck.timer
-definition: |
-  [Unit]
-  Description=Trigger docker-healthcheck periodically
-  Documentation=https://kops.sigs.k8s.io
-
-  [Timer]
-  OnUnitInactiveSec=10s
-  Unit=docker-healthcheck.service
-
-  [Install]
-  WantedBy=multi-user.target
-enabled: true
-manageState: true
-running: true
-smartRestart: true
----
 Name: docker.service
 definition: |
   [Unit]
   Description=Docker Application Container Engine
   Documentation=https://docs.docker.com
-  After=network-online.target firewalld.service
+  After=network-online.target firewalld.service containerd.service
   Wants=network-online.target
   Requires=docker.socket
 
