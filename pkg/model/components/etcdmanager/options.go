@@ -41,10 +41,6 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	for i := range clusterSpec.EtcdClusters {
 		etcdCluster := &clusterSpec.EtcdClusters[i]
-		if etcdCluster.Provider != kops.EtcdProviderTypeManager {
-			continue
-		}
-
 		if etcdCluster.Backups == nil {
 			etcdCluster.Backups = &kops.EtcdBackupSpec{}
 		}

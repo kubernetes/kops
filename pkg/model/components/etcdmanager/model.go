@@ -57,10 +57,6 @@ var _ fi.ModelBuilder = &EtcdManagerBuilder{}
 // Build creates the tasks
 func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, etcdCluster := range b.Cluster.Spec.EtcdClusters {
-		if etcdCluster.Provider != kops.EtcdProviderTypeManager {
-			continue
-		}
-
 		name := etcdCluster.Name
 		version := etcdCluster.Version
 

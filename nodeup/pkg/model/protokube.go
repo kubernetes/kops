@@ -25,7 +25,6 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
-	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/rbac"
@@ -98,28 +97,6 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0400"),
 		})
-
-		// retrieve the etcd peer certificates and private keys from the keystore
-		if !t.UseEtcdManager() && t.UseEtcdTLS() {
-			for _, x := range []string{"etcd", "etcd-peer"} {
-				if err := t.BuildCertificateTask(c, x, fmt.Sprintf("%s.pem", x), nil); err != nil {
-					return err
-				}
-			}
-			for _, x := range []string{"etcd", "etcd-peer"} {
-				if err := t.BuildLegacyPrivateKeyTask(c, x, fmt.Sprintf("%s-key.pem", x), nil); err != nil {
-					return err
-				}
-			}
-			pathEtcdClient := filepath.Join(t.PathSrvKubernetes(), "kube-apiserver", "etcd-client")
-			if err := t.BuildCertificateTask(c, "etcd-client", pathEtcdClient+".crt", nil); err != nil {
-				return err
-			}
-			if err := t.BuildLegacyPrivateKeyTask(c, "etcd-client", pathEtcdClient+".key", nil); err != nil {
-				return err
-			}
-
-		}
 	}
 
 	envFile, err := t.buildEnvFile()
@@ -179,32 +156,15 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 
 // ProtokubeFlags are the flags for protokube
 type ProtokubeFlags struct {
-	ApplyTaints               *bool    `json:"applyTaints,omitempty" flag:"apply-taints"`
-	Channels                  []string `json:"channels,omitempty" flag:"channels"`
-	Cloud                     *string  `json:"cloud,omitempty" flag:"cloud"`
-	Containerized             *bool    `json:"containerized,omitempty" flag:"containerized"`
-	DNSInternalSuffix         *string  `json:"dnsInternalSuffix,omitempty" flag:"dns-internal-suffix"`
-	DNSProvider               *string  `json:"dnsProvider,omitempty" flag:"dns"`
-	DNSServer                 *string  `json:"dns-server,omitempty" flag:"dns-server"`
-	EtcdBackupImage           string   `json:"etcd-backup-image,omitempty" flag:"etcd-backup-image"`
-	EtcdBackupStore           string   `json:"etcd-backup-store,omitempty" flag:"etcd-backup-store"`
-	EtcdImage                 *string  `json:"etcd-image,omitempty" flag:"etcd-image"`
-	EtcdLeaderElectionTimeout *string  `json:"etcd-election-timeout,omitempty" flag:"etcd-election-timeout"`
-	EtcdHearbeatInterval      *string  `json:"etcd-heartbeat-interval,omitempty" flag:"etcd-heartbeat-interval"`
-	InitializeRBAC            *bool    `json:"initializeRBAC,omitempty" flag:"initialize-rbac"`
-	LogLevel                  *int32   `json:"logLevel,omitempty" flag:"v"`
-	Master                    *bool    `json:"master,omitempty" flag:"master"`
-	PeerTLSCaFile             *string  `json:"peer-ca,omitempty" flag:"peer-ca"`
-	PeerTLSCertFile           *string  `json:"peer-cert,omitempty" flag:"peer-cert"`
-	PeerTLSKeyFile            *string  `json:"peer-key,omitempty" flag:"peer-key"`
-	TLSAuth                   *bool    `json:"tls-auth,omitempty" flag:"tls-auth"`
-	TLSCAFile                 *string  `json:"tls-ca,omitempty" flag:"tls-ca"`
-	TLSCertFile               *string  `json:"tls-cert,omitempty" flag:"tls-cert"`
-	TLSKeyFile                *string  `json:"tls-key,omitempty" flag:"tls-key"`
-	Zone                      []string `json:"zone,omitempty" flag:"zone"`
-
-	// ManageEtcd is true if protokube should manage etcd; being replaced by etcd-manager
-	ManageEtcd bool `json:"manageEtcd,omitempty" flag:"manage-etcd"`
+	Channels          []string `json:"channels,omitempty" flag:"channels"`
+	Cloud             *string  `json:"cloud,omitempty" flag:"cloud"`
+	Containerized     *bool    `json:"containerized,omitempty" flag:"containerized"`
+	DNSInternalSuffix *string  `json:"dnsInternalSuffix,omitempty" flag:"dns-internal-suffix"`
+	DNSProvider       *string  `json:"dnsProvider,omitempty" flag:"dns"`
+	InitializeRBAC    *bool    `json:"initializeRBAC,omitempty" flag:"initialize-rbac"`
+	LogLevel          *int32   `json:"logLevel,omitempty" flag:"v"`
+	Master            *bool    `json:"master,omitempty" flag:"master"`
+	Zone              []string `json:"zone,omitempty" flag:"zone"`
 
 	// RemoveDNSNames allows us to remove dns records, so that they can be managed elsewhere
 	// We use it e.g. for the switch to etcd-manager
@@ -229,82 +189,11 @@ type ProtokubeFlags struct {
 
 // ProtokubeFlags is responsible for building the command line flags for protokube
 func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*ProtokubeFlags, error) {
-	imageVersion := t.Cluster.Spec.EtcdClusters[0].Version
-	// overrides imageVersion if set
-	etcdContainerImage := t.Cluster.Spec.EtcdClusters[0].Image
-
-	var leaderElectionTimeout string
-	var heartbeatInterval string
-
-	if v := t.Cluster.Spec.EtcdClusters[0].LeaderElectionTimeout; v != nil {
-		leaderElectionTimeout = convEtcdSettingsToMs(v)
-	}
-
-	if v := t.Cluster.Spec.EtcdClusters[0].HeartbeatInterval; v != nil {
-		heartbeatInterval = convEtcdSettingsToMs(v)
-	}
-
 	f := &ProtokubeFlags{
-		Channels:                  t.NodeupConfig.Channels,
-		Containerized:             fi.Bool(false),
-		EtcdLeaderElectionTimeout: s(leaderElectionTimeout),
-		EtcdHearbeatInterval:      s(heartbeatInterval),
-		LogLevel:                  fi.Int32(4),
-		Master:                    b(t.IsMaster),
-	}
-
-	f.ManageEtcd = false
-	if len(t.NodeupConfig.EtcdManifests) == 0 {
-		klog.V(4).Infof("no EtcdManifests; protokube will manage etcd")
-		f.ManageEtcd = true
-	}
-
-	if f.ManageEtcd {
-		for _, e := range t.Cluster.Spec.EtcdClusters {
-			// Because we can only specify a single EtcdBackupStore at the moment, we only backup main, not events
-			if e.Name != "main" {
-				continue
-			}
-
-			if e.Backups != nil {
-				if f.EtcdBackupImage == "" {
-					f.EtcdBackupImage = e.Backups.Image
-				}
-
-				if f.EtcdBackupStore == "" {
-					f.EtcdBackupStore = e.Backups.BackupStore
-				}
-			}
-		}
-
-		// TODO this is duplicate code with etcd model
-		image := fmt.Sprintf("k8s.gcr.io/etcd:%s", imageVersion)
-		// override image if set as API value
-		if etcdContainerImage != "" {
-			image = etcdContainerImage
-		}
-		assets := assets.NewAssetBuilder(t.Cluster, false)
-		remapped, err := assets.RemapImage(image)
-		if err != nil {
-			return nil, fmt.Errorf("unable to remap container %q: %v", image, err)
-		}
-
-		image = remapped
-		f.EtcdImage = s(image)
-
-		// check if we are using tls and add the options to protokube
-		if t.UseEtcdTLS() {
-			f.PeerTLSCaFile = s(filepath.Join(t.PathSrvKubernetes(), "ca.crt"))
-			f.PeerTLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-peer.pem"))
-			f.PeerTLSKeyFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-peer-key.pem"))
-			f.TLSCAFile = s(filepath.Join(t.PathSrvKubernetes(), "ca.crt"))
-			f.TLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd.pem"))
-			f.TLSKeyFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-key.pem"))
-		}
-		if t.UseEtcdTLSAuth() {
-			enableAuth := true
-			f.TLSAuth = b(enableAuth)
-		}
+		Channels:      t.NodeupConfig.Channels,
+		Containerized: fi.Bool(false),
+		LogLevel:      fi.Int32(4),
+		Master:        b(t.IsMaster),
 	}
 
 	f.InitializeRBAC = fi.Bool(true)
@@ -376,8 +265,8 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		f.NodeName = nodeName
 	}
 
-	// Remove DNS names if we're using etcd-manager
-	if !f.ManageEtcd {
+	// Remove DNS names since we're using etcd-manager
+	{
 		var names []string
 
 		// Mirroring the logic used to construct DNS names in protokube/pkg/protokube/etcd_cluster.go

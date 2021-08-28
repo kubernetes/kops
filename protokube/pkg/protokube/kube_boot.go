@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"path/filepath"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,8 +27,6 @@ import (
 )
 
 var (
-	// Containerized indicates the etcd is containerized
-	Containerized = false
 	// RootFS is the root fs path
 	RootFS = "/"
 )
@@ -44,44 +41,12 @@ type KubeBoot struct {
 	InternalDNSSuffix string
 	// InternalIP is the internal ip address of the node
 	InternalIP net.IP
-	// ApplyTaints controls whether we set taints based on the master label
-	ApplyTaints bool
 	// DNS is the dns provider
 	DNS DNSProvider
-	// ModelDir is the model directory
-	ModelDir string
 	// Kubernetes holds a kubernetes client
 	Kubernetes *KubernetesContext
 	// Master indicates we are a master node
 	Master bool
-
-	// ManageEtcd is true if we should manage etcd.
-	// Deprecated in favor of etcd-manager.
-	ManageEtcd bool
-	// EtcdBackupImage is the image to use for backing up etcd
-	EtcdBackupImage string
-	// EtcdBackupStore is the VFS path to which we should backup etcd
-	EtcdBackupStore string
-	// Etcd container registry location.
-	EtcdImageSource string
-	// EtcdElectionTimeout is the leader election timeout
-	EtcdElectionTimeout string
-	// EtcdHeartbeatInterval is the heartbeat interval
-	EtcdHeartbeatInterval string
-	// TLSAuth indicates we should enforce peer and client verification
-	TLSAuth bool
-	// TLSCA is the path to a client ca for etcd
-	TLSCA string
-	// TLSCert is the path to a tls certificate for etcd
-	TLSCert string
-	// TLSKey is the path to a tls private key for etcd
-	TLSKey string
-	// PeerCA is the path to a peer ca for etcd
-	PeerCA string
-	// PeerCert is the path to a peer certificate for etcd
-	PeerCert string
-	// PeerKey is the path to a peer private key for etcd
-	PeerKey string
 
 	// BootstrapMasterNodeLabels controls the initial application of node labels to our node
 	// The node is found by matching NodeName
@@ -90,15 +55,6 @@ type KubeBoot struct {
 	// NodeName is the name of our node as it will be registered in k8s.
 	// Used by BootstrapMasterNodeLabels
 	NodeName string
-
-	volumeMounter   *VolumeMountController
-	etcdControllers map[string]*EtcdController
-}
-
-// Init is responsible for initializing the controllers
-func (k *KubeBoot) Init(volumesProvider Volumes) {
-	k.volumeMounter = newVolumeMountController(volumesProvider)
-	k.etcdControllers = make(map[string]*EtcdController)
 }
 
 // RunSyncLoop is responsible for provision the cluster
@@ -130,40 +86,10 @@ func (k *KubeBoot) RunSyncLoop() {
 }
 
 func (k *KubeBoot) syncOnce(ctx context.Context) error {
-	if k.Master && k.ManageEtcd {
-		// attempt to mount the volumes
-		volumes, err := k.volumeMounter.mountMasterVolumes()
-		if err != nil {
-			return err
-		}
-
-		for _, v := range volumes {
-			for _, etcdSpec := range v.Info.EtcdClusters {
-				key := etcdSpec.ClusterKey + "::" + etcdSpec.NodeName
-				etcdController := k.etcdControllers[key]
-				if etcdController == nil {
-					klog.Infof("Found etcd cluster spec on volume %q: %v", v.ID, etcdSpec)
-					etcdController, err := newEtcdController(k, v, etcdSpec)
-					if err != nil {
-						klog.Warningf("error building etcd controller: %v", err)
-					} else {
-						k.etcdControllers[key] = etcdController
-						go etcdController.RunSyncLoop()
-					}
-				}
-			}
-		}
-	}
-
 	if k.Master {
 		if k.BootstrapMasterNodeLabels {
 			if err := bootstrapMasterNodeLabels(ctx, k.Kubernetes, k.NodeName); err != nil {
 				klog.Warningf("error bootstrapping master node labels: %v", err)
-			}
-		}
-		if k.ApplyTaints {
-			if err := applyMasterTaints(ctx, k.Kubernetes); err != nil {
-				klog.Warningf("error updating master taints: %v", err)
 			}
 		}
 		if k.InitializeRBAC {
@@ -186,17 +112,6 @@ func pathFor(hostPath string) string {
 		klog.Fatalf("path was not absolute: %q", hostPath)
 	}
 	return RootFS + hostPath[1:]
-}
-
-func pathForSymlinks(hostPath string) string {
-	path := pathFor(hostPath)
-
-	symlink, err := filepath.EvalSymlinks(path)
-	if err != nil {
-		return path
-	}
-
-	return symlink
 }
 
 func (k *KubeBoot) String() string {

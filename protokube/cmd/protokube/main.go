@@ -63,20 +63,17 @@ func main() {
 // run is responsible for running the protokube service controller
 func run() error {
 	var zones []string
-	var applyTaints, initializeRBAC, containerized, master, tlsAuth bool
-	var cloud, clusterID, dnsServer, dnsProviderID, dnsInternalSuffix, gossipSecret, gossipListen, gossipProtocol, gossipSecretSecondary, gossipListenSecondary, gossipProtocolSecondary string
-	var flagChannels, tlsCert, tlsKey, tlsCA, peerCert, peerKey, peerCA string
-	var etcdBackupImage, etcdBackupStore, etcdImageSource, etcdElectionTimeout, etcdHeartbeatInterval string
+	var initializeRBAC, containerized, master bool
+	var cloud, clusterID, dnsProviderID, dnsInternalSuffix, gossipSecret, gossipListen, gossipProtocol, gossipSecretSecondary, gossipListenSecondary, gossipProtocolSecondary string
+	var flagChannels string
 	var dnsUpdateInterval int
 
-	flag.BoolVar(&applyTaints, "apply-taints", applyTaints, "Apply taints to nodes based on the role")
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized.")
 	flag.BoolVar(&initializeRBAC, "initialize-rbac", initializeRBAC, "Set if we should initialize RBAC")
 	flag.BoolVar(&master, "master", master, "Whether or not this node is a master")
 	flag.StringVar(&cloud, "cloud", "aws", "CloudProvider we are using (aws,digitalocean,gce,openstack)")
 	flag.StringVar(&clusterID, "cluster-id", clusterID, "Cluster ID")
 	flag.StringVar(&dnsInternalSuffix, "dns-internal-suffix", dnsInternalSuffix, "DNS suffix for internal domain names")
-	flag.StringVar(&dnsServer, "dns-server", dnsServer, "DNS Server")
 	flags.IntVar(&dnsUpdateInterval, "dns-update-interval", 5, "Configure interval at which to update DNS records.")
 	flag.StringVar(&flagChannels, "channels", flagChannels, "channels to install")
 	flag.StringVar(&gossipProtocol, "gossip-protocol", "mesh", "mesh/memberlist")
@@ -85,23 +82,8 @@ func run() error {
 	flag.StringVar(&gossipProtocolSecondary, "gossip-protocol-secondary", "memberlist", "mesh/memberlist")
 	flag.StringVar(&gossipListenSecondary, "gossip-listen-secondary", fmt.Sprintf("0.0.0.0:%d", wellknownports.ProtokubeGossipMemberlist), "address:port on which to bind for gossip")
 	flags.StringVar(&gossipSecretSecondary, "gossip-secret-secondary", gossipSecret, "Secret to use to secure gossip")
-	flag.StringVar(&peerCA, "peer-ca", peerCA, "Path to a file containing the peer ca in PEM format")
-	flag.StringVar(&peerCert, "peer-cert", peerCert, "Path to a file containing the peer certificate")
-	flag.StringVar(&peerKey, "peer-key", peerKey, "Path to a file containing the private key for the peers")
-	flag.BoolVar(&tlsAuth, "tls-auth", tlsAuth, "Indicates the peers and client should enforce authentication via CA")
-	flag.StringVar(&tlsCA, "tls-ca", tlsCA, "Path to a file containing the ca for client certificates")
-	flag.StringVar(&tlsCert, "tls-cert", tlsCert, "Path to a file containing the certificate for etcd server")
-	flag.StringVar(&tlsKey, "tls-key", tlsKey, "Path to a file containing the private key for etcd server")
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
 	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, digitalocean)")
-	flags.StringVar(&etcdBackupImage, "etcd-backup-image", "", "Set to override the image for (experimental) etcd backups")
-	flags.StringVar(&etcdBackupStore, "etcd-backup-store", "", "Set to enable (experimental) etcd backups")
-	flags.StringVar(&etcdImageSource, "etcd-image", "k8s.gcr.io/etcd:2.2.1", "Etcd Source Container Registry")
-	flags.StringVar(&etcdElectionTimeout, "etcd-election-timeout", etcdElectionTimeout, "time in ms for an election to timeout")
-	flags.StringVar(&etcdHeartbeatInterval, "etcd-heartbeat-interval", etcdHeartbeatInterval, "time in ms of a heartbeat interval")
-
-	manageEtcd := false
-	flag.BoolVar(&manageEtcd, "manage-etcd", manageEtcd, "Set to manage etcd (deprecated in favor of etcd-manager)")
 
 	bootstrapMasterNodeLabels := false
 	flag.BoolVar(&bootstrapMasterNodeLabels, "bootstrap-master-node-labels", bootstrapMasterNodeLabels, "Bootstrap the labels for master nodes (required in k8s 1.16)")
@@ -239,7 +221,6 @@ func run() error {
 	}
 
 	protokube.RootFS = rootfs
-	protokube.Containerized = containerized
 
 	var dnsProvider protokube.DNSProvider
 
@@ -384,41 +365,22 @@ func run() error {
 		removeDNSRecords(removeDNSNames, dnsProvider)
 	}()
 
-	modelDir := "model/etcd"
-
 	var channels []string
 	if flagChannels != "" {
 		channels = strings.Split(flagChannels, ",")
 	}
 
 	k := &protokube.KubeBoot{
-		ApplyTaints:               applyTaints,
 		BootstrapMasterNodeLabels: bootstrapMasterNodeLabels,
 		NodeName:                  nodeName,
 		Channels:                  channels,
 		DNS:                       dnsProvider,
-		ManageEtcd:                manageEtcd,
-		EtcdBackupImage:           etcdBackupImage,
-		EtcdBackupStore:           etcdBackupStore,
-		EtcdImageSource:           etcdImageSource,
-		EtcdElectionTimeout:       etcdElectionTimeout,
-		EtcdHeartbeatInterval:     etcdHeartbeatInterval,
 		InitializeRBAC:            initializeRBAC,
 		InternalDNSSuffix:         dnsInternalSuffix,
 		InternalIP:                internalIP,
 		Kubernetes:                protokube.NewKubernetesContext(),
 		Master:                    master,
-		ModelDir:                  modelDir,
-		PeerCA:                    peerCA,
-		PeerCert:                  peerCert,
-		PeerKey:                   peerKey,
-		TLSAuth:                   tlsAuth,
-		TLSCA:                     tlsCA,
-		TLSCert:                   tlsCert,
-		TLSKey:                    tlsKey,
 	}
-
-	k.Init(volumes)
 
 	if dnsProvider != nil {
 		go dnsProvider.Run()

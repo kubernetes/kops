@@ -10,7 +10,7 @@ spec:
   cloudProvider: aws
   configBase: memfs://logflags.example.com/minimal.example.com
   docker:
-    version: 17.03.2
+    version: 19.03.11
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-us-test-1a
@@ -22,7 +22,7 @@ spec:
     name: events
   iam:
     legacy: false
-  kubernetesVersion: v1.17.0
+  kubernetesVersion: v1.18.0
   masterInternalName: api.internal.logflags.example.com
   masterPublicName: api.logflags.example.com
   networkCIDR: 172.20.0.0/16
