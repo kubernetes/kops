@@ -165,12 +165,13 @@ spec:
     spec:
       containers:
       - args:
-        - --secure-port=4443
+        - --secure-port=443
         - --kubelet-use-node-status-port
+        - --metric-resolution=15s
         - --tls-cert-file=/srv/tls.crt
         - --tls-private-key-file=/srv/tls.key
         - --kubelet-insecure-tls
-        image: k8s.gcr.io/metrics-server/metrics-server:v0.4.4
+        image: k8s.gcr.io/metrics-server/metrics-server:v0.5.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -181,7 +182,7 @@ spec:
           periodSeconds: 10
         name: metrics-server
         ports:
-        - containerPort: 4443
+        - containerPort: 443
           name: https
           protocol: TCP
         readinessProbe:
@@ -190,6 +191,7 @@ spec:
             path: /readyz
             port: https
             scheme: HTTPS
+          initialDelaySeconds: 20
           periodSeconds: 10
         resources:
           requests:
