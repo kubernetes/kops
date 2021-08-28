@@ -115,11 +115,7 @@ func listRrsOrFail(t *testing.T, rrsets dnsprovider.ResourceRecordSets) []dnspro
 	if err != nil {
 		t.Fatalf("Failed to list recordsets: %v", err)
 	} else {
-		if len(rrset) < 0 {
-			t.Fatalf("Record set length=%d, expected >=0", len(rrset))
-		} else {
-			t.Logf("Got %d recordsets: %v", len(rrset), rrset)
-		}
+		t.Logf("Got %d recordsets: %v", len(rrset), rrset)
 	}
 	return rrset
 }

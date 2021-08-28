@@ -90,9 +90,8 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	instanceID := strings.TrimPrefix(providerID, "openstack://")
 	// instanceid looks like its openstack:/// but no idea is that really correct like that?
 	// this supports now both openstack:// and openstack:/// format
-	if strings.HasPrefix(instanceID, "/") {
-		instanceID = strings.TrimPrefix(instanceID, "/")
-	}
+
+	instanceID = strings.TrimPrefix(instanceID, "/")
 
 	kopsGroup, err := i.getInstanceGroup(instanceID)
 	if err != nil {
