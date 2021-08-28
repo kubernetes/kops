@@ -80,9 +80,9 @@ const (
 	starline = "*********************************************************************************"
 
 	// OldestSupportedKubernetesVersion is the oldest kubernetes version that is supported in kOps.
-	OldestSupportedKubernetesVersion = "1.17.0"
+	OldestSupportedKubernetesVersion = "1.18.0"
 	// OldestRecommendedKubernetesVersion is the oldest kubernetes version that is not deprecated in kOps.
-	OldestRecommendedKubernetesVersion = "1.19.0"
+	OldestRecommendedKubernetesVersion = "1.20.0"
 )
 
 var (
