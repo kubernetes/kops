@@ -83,7 +83,7 @@ spec:
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: k8s.gcr.io/kube-apiserver:v1.17.15
+    image: k8s.gcr.io/kube-apiserver:v1.18.15
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -107,7 +107,7 @@ spec:
     clusterCIDR: 100.96.0.0/11
     clusterName: privatecilium.example.com
     configureCloudRoutes: false
-    image: k8s.gcr.io/kube-controller-manager:v1.17.15
+    image: k8s.gcr.io/kube-controller-manager:v1.18.15
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -130,10 +130,10 @@ spec:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
     hostnameOverride: '@aws'
-    image: k8s.gcr.io/kube-proxy:v1.17.15
+    image: k8s.gcr.io/kube-proxy:v1.18.15
     logLevel: 2
   kubeScheduler:
-    image: k8s.gcr.io/kube-scheduler:v1.17.15
+    image: k8s.gcr.io/kube-scheduler:v1.18.15
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -154,7 +154,7 @@ spec:
     podManifestPath: /etc/kubernetes/manifests
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: 1.17.15
+  kubernetesVersion: 1.18.15
   masterInternalName: api.internal.privatecilium.example.com
   masterKubelet:
     anonymousAuth: false
