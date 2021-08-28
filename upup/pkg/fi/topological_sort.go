@@ -47,7 +47,7 @@ func FindTaskDependencies(tasks map[string]Task) map[string][]string {
 	edges := make(map[string][]string)
 
 	for k, t := range tasks {
-		task := t.(Task)
+		task := t
 
 		var dependencies []Task
 		if hd, ok := task.(HasDependencies); ok {

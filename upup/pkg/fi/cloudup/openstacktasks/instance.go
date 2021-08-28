@@ -276,7 +276,7 @@ func generateInstanceName(e *Instance) (string, error) {
 }
 
 func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Instance) error {
-	cloud := t.Cloud.(openstack.OpenstackCloud)
+	cloud := t.Cloud
 	if a == nil {
 		serverName, err := generateInstanceName(e)
 		if err != nil {
@@ -369,7 +369,7 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 }
 
 func associateFloatingIP(t *openstack.OpenstackAPITarget, e *Instance) error {
-	cloud := t.Cloud.(openstack.OpenstackCloud)
+	cloud := t.Cloud
 	client := cloud.NetworkingClient()
 
 	_, err := l3floatingip.Update(client, fi.StringValue(e.FloatingIP.ID), l3floatingip.UpdateOpts{

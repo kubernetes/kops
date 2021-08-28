@@ -333,7 +333,7 @@ func (s *LaunchSpec) CheckChanges(a, e, changes *LaunchSpec) error {
 }
 
 func (o *LaunchSpec) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LaunchSpec) error {
-	return o.createOrUpdate(t.Cloud.(awsup.AWSCloud), a, e, changes)
+	return o.createOrUpdate(t.Cloud, a, e, changes)
 }
 
 func (o *LaunchSpec) createOrUpdate(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) error {
