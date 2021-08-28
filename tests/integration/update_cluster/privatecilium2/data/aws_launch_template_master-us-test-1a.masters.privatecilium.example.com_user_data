@@ -170,7 +170,7 @@ kubeAPIServer:
   - https://127.0.0.1:4001
   etcdServersOverrides:
   - /events#https://127.0.0.1:4002
-  image: k8s.gcr.io/kube-apiserver:v1.17.15
+  image: k8s.gcr.io/kube-apiserver:v1.18.15
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -194,7 +194,7 @@ kubeControllerManager:
   clusterCIDR: 100.96.0.0/11
   clusterName: privatecilium.example.com
   configureCloudRoutes: false
-  image: k8s.gcr.io/kube-controller-manager:v1.17.15
+  image: k8s.gcr.io/kube-controller-manager:v1.18.15
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -203,10 +203,10 @@ kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
   hostnameOverride: '@aws'
-  image: k8s.gcr.io/kube-proxy:v1.17.15
+  image: k8s.gcr.io/kube-proxy:v1.18.15
   logLevel: 2
 kubeScheduler:
-  image: k8s.gcr.io/kube-scheduler:v1.17.15
+  image: k8s.gcr.io/kube-scheduler:v1.18.15
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -249,7 +249,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecilium.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: IQwoUVBQCc1d25ZLsKgV4Ntm4K4+Ruvk2q0kapuJ0Cg=
+NodeupConfigHash: Gckoc9dgRZU/9P9+/CBjyoWcsRaD57u+NH9O40FRL8w=
 
 __EOF_KUBE_ENV
 
