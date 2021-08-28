@@ -19,10 +19,8 @@ package model
 import (
 	"fmt"
 	"sort"
-	"strconv"
 
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -71,9 +69,4 @@ func addHostPathMapping(pod *v1.Pod, container *v1.Container, name, path string)
 	})
 
 	return &container.VolumeMounts[len(container.VolumeMounts)-1]
-}
-
-// convEtcdSettingsToMs converts etcd settings to a string rep of int milliseconds
-func convEtcdSettingsToMs(dur *metav1.Duration) string {
-	return strconv.FormatInt(dur.Nanoseconds()/1000000, 10)
 }

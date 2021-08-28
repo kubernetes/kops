@@ -898,7 +898,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 
 	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
 
-		if b.IsKubernetesGTE("1.18") && b.Cluster.Spec.ExternalCloudControllerManager != nil {
+		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
 			key := "aws-cloud-controller.addons.k8s.io"
 
 			{

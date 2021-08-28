@@ -233,8 +233,6 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 
 // buildPrecreateDNSHostnames returns the hostnames we should precreate
 func buildPrecreateDNSHostnames(cluster *kops.Cluster) []string {
-	dnsInternalSuffix := ".internal." + cluster.ObjectMeta.Name
-
 	var dnsHostnames []string
 
 	if cluster.Spec.MasterPublicName != "" {
@@ -247,21 +245,6 @@ func buildPrecreateDNSHostnames(cluster *kops.Cluster) []string {
 		dnsHostnames = append(dnsHostnames, cluster.Spec.MasterInternalName)
 	} else {
 		klog.Warningf("cannot pre-create MasterInternalName - not set")
-	}
-
-	for _, etcdCluster := range cluster.Spec.EtcdClusters {
-		if etcdCluster.Provider == kops.EtcdProviderTypeManager {
-			continue
-		}
-		etcClusterName := "etcd-" + etcdCluster.Name
-		if etcdCluster.Name == "main" {
-			// Special case
-			etcClusterName = "etcd"
-		}
-		for _, etcdClusterMember := range etcdCluster.Members {
-			name := etcClusterName + "-" + etcdClusterMember.Name + dnsInternalSuffix
-			dnsHostnames = append(dnsHostnames, name)
-		}
 	}
 
 	if apimodel.UseKopsControllerForNodeBootstrap(cluster) {

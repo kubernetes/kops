@@ -53,12 +53,6 @@ func TestPrecreateDNSNames(t *testing.T) {
 	expected := []string{
 		"api.cluster1.example.com",
 		"api.internal.cluster1.example.com",
-		"etcd-events-zonea.internal.cluster1.example.com",
-		"etcd-events-zoneb.internal.cluster1.example.com",
-		"etcd-events-zonec.internal.cluster1.example.com",
-		"etcd-zone1.internal.cluster1.example.com",
-		"etcd-zone2.internal.cluster1.example.com",
-		"etcd-zone3.internal.cluster1.example.com",
 	}
 
 	sort.Strings(actual)
