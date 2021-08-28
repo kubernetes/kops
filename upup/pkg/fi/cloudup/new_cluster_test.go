@@ -303,18 +303,6 @@ func TestSetupNetworking(t *testing.T) {
 		},
 		{
 			options: NewClusterOptions{
-				Networking: "lyftvpc",
-			},
-			expected: api.Cluster{
-				Spec: api.ClusterSpec{
-					Networking: &api.NetworkingSpec{
-						LyftVPC: &api.LyftVPCNetworkingSpec{},
-					},
-				},
-			},
-		},
-		{
-			options: NewClusterOptions{
 				Networking: "gce",
 			},
 			expected: api.Cluster{

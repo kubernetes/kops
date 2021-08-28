@@ -114,7 +114,7 @@ kops rolling-update cluster --yes
 
 This feature is in beta state.
 
-You can have Cilium provision AWS managed addresses and attach them directly to Pods much like Lyft VPC and AWS VPC. See [the Cilium docs for more information](https://docs.cilium.io/en/v1.6/concepts/ipam/eni/)
+You can have Cilium provision AWS managed addresses and attach them directly to Pods much like AWS VPC. See [the Cilium docs for more information](https://docs.cilium.io/en/v1.6/concepts/ipam/eni/)
 
 ```yaml
   networking:
