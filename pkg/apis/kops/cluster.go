@@ -761,8 +761,6 @@ func (c *Cluster) fillClusterSpecNetworkingSpec() {
 		// OK
 	} else if c.Spec.Networking.Cilium != nil {
 		// OK
-	} else if c.Spec.Networking.LyftVPC != nil {
-		// OK
 	} else if c.Spec.Networking.GCE != nil {
 		// OK
 	} else {
