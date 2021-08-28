@@ -104,7 +104,6 @@ nav:
       - Cilium: "networking/cilium.md"
       - Flannel: "networking/flannel.md"
       - Kube-Router: "networking/kube-router.md"
-      - Lyft VPC: "networking/lyft-vpc.md"
       - Weave: "networking/weave.md"
     - Run kOps in an existing VPC: "run_in_existing_vpc.md"
     - Supported network topologies: "topology.md"

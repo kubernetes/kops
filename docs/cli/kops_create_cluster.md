@@ -95,7 +95,7 @@ kops create cluster [CLUSTER] [flags]
       --master-volume-size int32         Instance volume size (in GB) for masters
       --master-zones strings             Zones in which to run masters (must be an odd number)
       --network-cidr string              Network CIDR to use
-      --networking string                Networking mode.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazonvpc, cilium, cilium-etcd, cni, lyftvpc. (default "kubenet")
+      --networking string                Networking mode.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazonvpc, cilium, cilium-etcd, cni. (default "kubenet")
       --node-count int32                 Total number of worker nodes. Defaults to one node per zone
       --node-image string                Machine image for worker nodes. Takes precedence over --image
       --node-security-groups strings     Additional precreated security groups to add to worker nodes.

@@ -3964,7 +3964,8 @@ spec:
                     type: object
                   lyftvpc:
                     description: LyftVPCNetworkingSpec declares that we want to use
-                      the cni-ipvlan-vpc-k8s CNI networking.
+                      the cni-ipvlan-vpc-k8s CNI networking. Lyft VPC is deprecated
+                      as of kOps 1.22 and removed as of kOps 1.23.
                     properties:
                       subnetTags:
                         additionalProperties:

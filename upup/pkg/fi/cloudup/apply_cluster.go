@@ -1048,14 +1048,6 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 		}
 		c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(cniAsset, cniAssetHash))
 
-		if c.Cluster.Spec.Networking.LyftVPC != nil {
-			lyftAsset, lyftAssetHash, err := findLyftVPCAssets(c.Cluster, assetBuilder, arch)
-			if err != nil {
-				return err
-			}
-			c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(lyftAsset, lyftAssetHash))
-		}
-
 		var containerRuntimeAssetUrl *url.URL
 		var containerRuntimeAssetHash *hashing.Hash
 		switch c.Cluster.Spec.ContainerRuntime {

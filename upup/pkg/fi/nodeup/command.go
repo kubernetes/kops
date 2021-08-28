@@ -308,7 +308,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &networking.CalicoBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &networking.CiliumBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &networking.KuberouterBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &networking.LyftVPCBuilder{NodeupModelContext: modelContext})
 
 	loader.Builders = append(loader.Builders, &model.BootstrapClientBuilder{NodeupModelContext: modelContext})
 	taskMap, err := loader.Build()
