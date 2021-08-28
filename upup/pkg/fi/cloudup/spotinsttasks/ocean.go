@@ -337,7 +337,7 @@ func (s *Ocean) CheckChanges(a, e, changes *Ocean) error {
 }
 
 func (o *Ocean) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ocean) error {
-	return o.createOrUpdate(t.Cloud.(awsup.AWSCloud), a, e, changes)
+	return o.createOrUpdate(t.Cloud, a, e, changes)
 }
 
 func (o *Ocean) createOrUpdate(cloud awsup.AWSCloud, a, e, changes *Ocean) error {

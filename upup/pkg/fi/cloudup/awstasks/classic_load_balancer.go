@@ -738,7 +738,7 @@ func (_ *ClassicLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 		tf.CrossZoneLoadBalancing = e.CrossZoneLoadBalancing.Enabled
 	}
 
-	var tags map[string]string = cloud.BuildTags(e.Name)
+	var tags = cloud.BuildTags(e.Name)
 	for k, v := range e.Tags {
 		tags[k] = v
 	}
@@ -882,7 +882,7 @@ func (_ *ClassicLoadBalancer) RenderCloudformation(t *cloudformation.Cloudformat
 		tf.CrossZoneLoadBalancing = e.CrossZoneLoadBalancing.Enabled
 	}
 
-	var tags map[string]string = cloud.BuildTags(e.Name)
+	var tags = cloud.BuildTags(e.Name)
 	for k, v := range e.Tags {
 		tags[k] = v
 	}

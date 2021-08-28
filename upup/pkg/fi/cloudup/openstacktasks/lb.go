@@ -107,7 +107,7 @@ func (s *LB) CompareWithID() *string {
 }
 
 func NewLBTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, lb *loadbalancers.LoadBalancer, find *LB) (*LB, error) {
-	osCloud := cloud.(openstack.OpenstackCloud)
+	osCloud := cloud
 	sub, err := subnets.Get(osCloud.NetworkingClient(), lb.VipSubnetID).Extract()
 	if err != nil {
 		return nil, err
