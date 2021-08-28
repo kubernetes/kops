@@ -21,7 +21,7 @@ APIServerConfig:
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: k8s.gcr.io/kube-apiserver:v1.17.15
+    image: k8s.gcr.io/kube-apiserver:v1.18.15
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -49,15 +49,15 @@ APIServerConfig:
     -----END RSA PUBLIC KEY-----
 Assets:
   amd64:
-  - 090a2a9829f1c5913672b679bfa24a97d434cbf4bc1edd05f4a3a37f97dfeb75@https://storage.googleapis.com/kubernetes-release/release/v1.17.15/bin/linux/amd64/kubelet
-  - a94f33ab8c5c68a2d9f177ad1e6654bbbd7ea52e80ed7ed9938fe6d6ca1f7d26@https://storage.googleapis.com/kubernetes-release/release/v1.17.15/bin/linux/amd64/kubectl
+  - 2d079bc9f7ac2c2d1f86df842df55f2ec8e74e01edc347994ccf1a054b9e6077@https://storage.googleapis.com/kubernetes-release/release/v1.18.15/bin/linux/amd64/kubelet
+  - eb5a5dd0a72795942ab81d1e4331625e80a90002c8bb39b2cb15aa707a3812c6@https://storage.googleapis.com/kubernetes-release/release/v1.18.15/bin/linux/amd64/kubectl
   - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
   - 5504d190eef37355231325c176686d51ade6e0cabe2da526d561a38d8611506f@https://download.docker.com/linux/static/stable/x86_64/docker-19.03.15.tgz
   - f90ed6dcef534e6d1ae17907dc7eb40614b8945ad4af7f0e98d2be7cde8165c6@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-amd64
   - 9992e7eb2a2e93f799e5a9e98eb718637433524bc65f630357201a79f49b13d0@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-amd64
   arm64:
-  - 3515d2ec6698371f1dcaeb3ff79829a0e04a277d738a33d844249b33678306c6@https://storage.googleapis.com/kubernetes-release/release/v1.17.15/bin/linux/arm64/kubelet
-  - a75af21eae2913aacd521cc8a052f7b9f1cb8b195f7bffbab478833abe024b0e@https://storage.googleapis.com/kubernetes-release/release/v1.17.15/bin/linux/arm64/kubectl
+  - c74f46e87aae7b9bb590319632fcb106b5efd998046dd47634c89bbb875d9fb6@https://storage.googleapis.com/kubernetes-release/release/v1.18.15/bin/linux/arm64/kubelet
+  - 6b4a63df325cdb523f16ffd8799745a8fdf979ef89e228c309a715671b6aa984@https://storage.googleapis.com/kubernetes-release/release/v1.18.15/bin/linux/arm64/kubectl
   - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
   - 264f3396630507606a8646fda6a28a98d3ced8927df84be8ee9a74ab73cc1566@https://download.docker.com/linux/static/stable/aarch64/docker-19.03.15.tgz
   - 2f599c3d54f4c4bdbcc95aaf0c7b513a845d8f9503ec5b34c9f86aa1bc34fc0c@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-arm64
