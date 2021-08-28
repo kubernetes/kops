@@ -175,11 +175,7 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 	}
 
 	basicAuthEnabled := false
-	if !util.IsKubernetesGTE("1.18", *k8sVersion) {
-		if cluster.Spec.KubeAPIServer == nil || cluster.Spec.KubeAPIServer.DisableBasicAuth == nil || !*cluster.Spec.KubeAPIServer.DisableBasicAuth {
-			basicAuthEnabled = true
-		}
-	} else if !util.IsKubernetesGTE("1.19", *k8sVersion) {
+	if !util.IsKubernetesGTE("1.19", *k8sVersion) {
 		if cluster.Spec.KubeAPIServer != nil && cluster.Spec.KubeAPIServer.DisableBasicAuth != nil && !*cluster.Spec.KubeAPIServer.DisableBasicAuth {
 			basicAuthEnabled = true
 		}

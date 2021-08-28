@@ -30,7 +30,6 @@ import (
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
-	version "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
@@ -1196,25 +1195,10 @@ func createEtcdCluster(etcdCluster string, masters []*api.InstanceGroup, encrypt
 func addCiliumNetwork(cluster *api.Cluster) {
 	cilium := &api.CiliumNetworkingSpec{}
 	cluster.Spec.Networking.Cilium = cilium
-	nodeport := false
-	if cluster.Spec.KubernetesVersion == "" {
-		nodeport = true
-	} else {
-		k8sVersion, err := version.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
-		if err == nil {
-			if version.IsKubernetesGTE("1.18", *k8sVersion) {
-				nodeport = true
-			}
-		} else {
-			klog.Error(err.Error())
-		}
+	cilium.EnableNodePort = true
+	if cluster.Spec.KubeProxy == nil {
+		cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
 	}
-	if nodeport {
-		cilium.EnableNodePort = true
-		if cluster.Spec.KubeProxy == nil {
-			cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
-		}
-		enabled := false
-		cluster.Spec.KubeProxy.Enabled = &enabled
-	}
+	enabled := false
+	cluster.Spec.KubeProxy.Enabled = &enabled
 }

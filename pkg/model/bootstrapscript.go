@@ -229,10 +229,7 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 		keypairs = append(keypairs, "etcd-client-cilium")
 	}
 	if ig.HasAPIServer() {
-		keypairs = append(keypairs, "apiserver-aggregator-ca", "service-account")
-		if b.UseEtcdManager() {
-			keypairs = append(keypairs, "etcd-clients-ca")
-		}
+		keypairs = append(keypairs, "apiserver-aggregator-ca", "service-account", "etcd-clients-ca")
 	} else if !model.UseKopsControllerForNodeBootstrap(b.Cluster) {
 		keypairs = append(keypairs, "kubelet", "kube-proxy")
 		if b.Cluster.Spec.Networking.Kuberouter != nil {

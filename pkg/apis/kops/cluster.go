@@ -540,12 +540,10 @@ type EtcdProviderType string
 
 const (
 	EtcdProviderTypeManager EtcdProviderType = "Manager"
-	EtcdProviderTypeLegacy  EtcdProviderType = "Legacy"
 )
 
 var SupportedEtcdProviderTypes = []string{
 	string(EtcdProviderTypeManager),
-	string(EtcdProviderTypeLegacy),
 }
 
 // EtcdClusterSpec is the etcd cluster specification

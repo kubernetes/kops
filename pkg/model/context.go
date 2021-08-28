@@ -310,17 +310,6 @@ func (b *KopsModelContext) UseNetworkLoadBalancer() bool {
 	return b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork
 }
 
-// UseEtcdManager checks to see if etcd manager is enabled
-func (b *KopsModelContext) UseEtcdManager() bool {
-	for _, x := range b.Cluster.Spec.EtcdClusters {
-		if x.Provider == kops.EtcdProviderTypeManager {
-			return true
-		}
-	}
-
-	return false
-}
-
 // UseEtcdTLS checks to see if etcd tls is enabled
 func (b *KopsModelContext) UseEtcdTLS() bool {
 	for _, x := range b.Cluster.Spec.EtcdClusters {

@@ -1244,10 +1244,8 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 		if isMaster {
 			for _, etcdCluster := range cluster.Spec.EtcdClusters {
-				if etcdCluster.Provider == kops.EtcdProviderTypeManager {
-					p := configBase.Join("manifests/etcd/" + etcdCluster.Name + ".yaml").Path()
-					etcdManifests[role] = append(etcdManifests[role], p)
-				}
+				p := configBase.Join("manifests/etcd/" + etcdCluster.Name + ".yaml").Path()
+				etcdManifests[role] = append(etcdManifests[role], p)
 			}
 		}
 	}
