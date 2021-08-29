@@ -35,8 +35,6 @@ var (
 type KubeBoot struct {
 	// Channels is a list of channel to apply
 	Channels []string
-	// InitializeRBAC should be set to true if we should create the core RBAC roles
-	InitializeRBAC bool
 	// InternalDNSSuffix is the dns zone we are living in
 	InternalDNSSuffix string
 	// InternalIP is the internal ip address of the node
@@ -90,11 +88,6 @@ func (k *KubeBoot) syncOnce(ctx context.Context) error {
 		if k.BootstrapMasterNodeLabels {
 			if err := bootstrapMasterNodeLabels(ctx, k.Kubernetes, k.NodeName); err != nil {
 				klog.Warningf("error bootstrapping master node labels: %v", err)
-			}
-		}
-		if k.InitializeRBAC {
-			if err := applyRBAC(ctx, k.Kubernetes); err != nil {
-				klog.Warningf("error initializing rbac: %v", err)
 			}
 		}
 		for _, channel := range k.Channels {
