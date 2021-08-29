@@ -106,7 +106,7 @@ definition: |
   Documentation=https://kops.sigs.k8s.io
 
   [Service]
-  ExecStart=/opt/kops/bin/protokube --bootstrap-master-node-labels=true --cloud=aws --containerized=false --dns-internal-suffix=.internal.minimal.example.com --dns=aws-route53 --etcd-backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd/main --etcd-image=k8s.gcr.io/etcd:3.4.3 --initialize-rbac=true --manage-etcd=true --master=true --node-name=master.hostname.invalid --peer-ca=/srv/kubernetes/ca.crt --peer-cert=/srv/kubernetes/etcd-peer.pem --peer-key=/srv/kubernetes/etcd-peer-key.pem --tls-auth=true --tls-ca=/srv/kubernetes/ca.crt --tls-cert=/srv/kubernetes/etcd.pem --tls-key=/srv/kubernetes/etcd-key.pem --v=4 --zone=*/Z1AFAKE1ZON3YO
+  ExecStart=/opt/kops/bin/protokube --bootstrap-master-node-labels=true --cloud=aws --containerized=false --dns-internal-suffix=.internal.minimal.example.com --dns=aws-route53 --initialize-rbac=true --master=true --node-name=master.hostname.invalid --remove-dns-names=etcd-master-us-test-1a.internal.minimal.example.com,etcd-events-master-us-test-1a.internal.minimal.example.com --v=4 --zone=*/Z1AFAKE1ZON3YO
   EnvironmentFile=/etc/sysconfig/protokube
   Restart=always
   RestartSec=3s

@@ -540,12 +540,10 @@ type EtcdProviderType string
 
 const (
 	EtcdProviderTypeManager EtcdProviderType = "Manager"
-	EtcdProviderTypeLegacy  EtcdProviderType = "Legacy"
 )
 
 var SupportedEtcdProviderTypes = []string{
 	string(EtcdProviderTypeManager),
-	string(EtcdProviderTypeLegacy),
 }
 
 // EtcdClusterSpec is the etcd cluster specification
@@ -760,8 +758,6 @@ func (c *Cluster) fillClusterSpecNetworkingSpec() {
 	} else if c.Spec.Networking.AmazonVPC != nil {
 		// OK
 	} else if c.Spec.Networking.Cilium != nil {
-		// OK
-	} else if c.Spec.Networking.LyftVPC != nil {
 		// OK
 	} else if c.Spec.Networking.GCE != nil {
 		// OK

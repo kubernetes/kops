@@ -108,7 +108,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if b.UseEtcdManager() {
+	{
 		c.AddTask(&nodetasks.File{
 			Path:     filepath.Join(pathSrvKAPI, "etcd-ca.crt"),
 			Contents: fi.NewStringResource(b.NodeupConfig.CAs["etcd-clients-ca"]),
@@ -130,8 +130,6 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		if err := issueCert.AddFileTasks(c, pathSrvKAPI, issueCert.Name, "", nil); err != nil {
 			return err
 		}
-	} else if b.UseEtcdTLS() {
-		kubeAPIServer.EtcdCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 	}
 	kubeAPIServer.EtcdCertFile = filepath.Join(pathSrvKAPI, "etcd-client.crt")
 	kubeAPIServer.EtcdKeyFile = filepath.Join(pathSrvKAPI, "etcd-client.key")
@@ -493,12 +491,7 @@ func (b *KubeAPIServerBuilder) writeStaticCredentials(c *fi.ModelBuilderContext,
 
 	// Support for basic auth was deprecated 1.16 and removed in 1.19
 	// https://github.com/kubernetes/kubernetes/pull/89069
-	if b.IsKubernetesLT("1.18") {
-		kubeAPIServer.TokenAuthFile = filepath.Join(pathSrvKAPI, "known_tokens.csv")
-		if kubeAPIServer.DisableBasicAuth == nil || !*kubeAPIServer.DisableBasicAuth {
-			kubeAPIServer.BasicAuthFile = filepath.Join(pathSrvKAPI, "basic_auth.csv")
-		}
-	} else if b.IsKubernetesLT("1.19") {
+	if b.IsKubernetesLT("1.19") {
 		if kubeAPIServer.DisableBasicAuth != nil && !*kubeAPIServer.DisableBasicAuth {
 			kubeAPIServer.BasicAuthFile = filepath.Join(pathSrvKAPI, "basic_auth.csv")
 		}

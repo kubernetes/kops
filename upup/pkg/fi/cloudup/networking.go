@@ -44,16 +44,6 @@ const (
 	// Environment variable for overriding CNI url
 	ENV_VAR_CNI_ASSET_URL  = "CNI_VERSION_URL"
 	ENV_VAR_CNI_ASSET_HASH = "CNI_ASSET_HASH_STRING"
-
-	// Default LyftVPC packages
-	defaultLyftVPCAssetAmd64       = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.6.0/cni-ipvlan-vpc-k8s-amd64-v0.6.0.tar.gz"
-	defaultLyftVPCAssetAmd64SHA256 = "871757d381035f64020a523e7a3e139b6177b98eb7a61b547813ff25957fc566"
-	defaultLyftVPCAssetArm64       = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.6.0/cni-ipvlan-vpc-k8s-arm64-v0.6.0.tar.gz"
-	defaultLyftVPCAssetArm64SHA256 = "3aadcb32ffda53990153790203eb72898e55a985207aa5b4451357f9862286f0"
-
-	// Environment variable for overriding LyftVPC url
-	ENV_VAR_LYFT_VPC_ASSET_URL  = "LYFT_VPC_DOWNLOAD_URL"
-	ENV_VAR_LYFT_VPC_ASSET_HASH = "LYFT_VPC_DOWNLOAD_HASH"
 )
 
 func findCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
@@ -110,45 +100,6 @@ func findCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch a
 	u, h, err := assetBuilder.RemapFileAndSHA(u)
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to remap CNI plugin binaries asset: %v", err)
-	}
-
-	return u, h, nil
-}
-
-func findLyftVPCAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
-	// Override LyftVPC packages from env vars
-	lyftAssetURL := os.Getenv(ENV_VAR_LYFT_VPC_ASSET_URL)
-	lyftAssetHash := os.Getenv(ENV_VAR_LYFT_VPC_ASSET_HASH)
-
-	if lyftAssetURL != "" && lyftAssetHash != "" {
-		klog.V(2).Infof("Using LyftVPC package URL %q, as set in %s", lyftAssetURL, ENV_VAR_LYFT_VPC_ASSET_URL)
-		klog.V(2).Infof("Using LyftVPC package hash %q, as set in %s", lyftAssetHash, ENV_VAR_LYFT_VPC_ASSET_HASH)
-	} else {
-		switch arch {
-		case architectures.ArchitectureAmd64:
-			lyftAssetURL = defaultLyftVPCAssetAmd64
-			lyftAssetHash = defaultLyftVPCAssetAmd64SHA256
-		case architectures.ArchitectureArm64:
-			lyftAssetURL = defaultLyftVPCAssetArm64
-			lyftAssetHash = defaultLyftVPCAssetArm64SHA256
-		default:
-			return nil, nil, fmt.Errorf("unknown arch for LyftVPC asset: %s", arch)
-		}
-	}
-
-	u, err := url.Parse(lyftAssetURL)
-	if err != nil {
-		return nil, nil, fmt.Errorf("unable to parse LyftVPC asset URL %q: %v", lyftAssetURL, err)
-	}
-
-	h, err := hashing.FromString(lyftAssetHash)
-	if err != nil {
-		return nil, nil, fmt.Errorf("unable to parse LyftVPC asset hash %q: %v", lyftAssetHash, err)
-	}
-
-	u, err = assetBuilder.RemapFileAndSHAValue(u, lyftAssetHash)
-	if err != nil {
-		return nil, nil, fmt.Errorf("unable to remap LyftVPC asset: %v", err)
 	}
 
 	return u, h, nil

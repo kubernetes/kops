@@ -17,7 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"fmt"
 	"strings"
 
 	"k8s.io/kops/pkg/rbac"
@@ -70,63 +69,6 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Signer:    defaultCA,
 		}
 		c.AddTask(t)
-	}
-
-	if b.UseEtcdManager() {
-		// We generate keypairs in the etcdmanager task itself
-	} else if b.UseEtcdTLS() {
-		// check if we need to generate certificates for etcd peers certificates from a different CA?
-		// @question i think we should use another KeyStore for this, perhaps registering a EtcdKeyStore given
-		// that mutual tls used to verify between the peers we don't want certificates for kubernetes able to act as a peer.
-		// For clients assuming we are using etcdv3 is can switch on user authentication and map the common names for auth.
-		servingNames := []string{fmt.Sprintf("*.internal.%s", b.ClusterName()), "localhost", "127.0.0.1"}
-		// @question should wildcard's be here instead of generating per node. If we ever provide the
-		// ability to resize the master, this will become a blocker
-		c.AddTask(&fitasks.Keypair{
-			AlternateNames: servingNames,
-			Lifecycle:      b.Lifecycle,
-			Name:           fi.String("etcd"),
-			Subject:        "cn=etcd",
-			// TODO: Can this be "server" now that we're not using it for peer connectivity?
-			Type:   "clientServer",
-			Signer: defaultCA,
-		})
-
-		// For peer authentication, the same cert is used both as a client
-		// cert and as a server cert (which is unusual).  Moreover, etcd
-		// 3.2 introduces some breaking changes to certificate validation
-		// where it tries to match any IP or DNS names to the client IP
-		// (including reverse DNS lookups!)  We _could_ include a wildcard
-		// reverse DNS name e.g. *.ec2.internal for EC2, but it seems
-		// better just to list the names that we expect peer connectivity
-		// to happen on.
-		var peerNames []string
-		for _, etcdCluster := range b.Cluster.Spec.EtcdClusters {
-			prefix := "etcd-" + etcdCluster.Name + "-"
-			if prefix == "etcd-main-" {
-				prefix = "etcd-"
-			}
-			for _, m := range etcdCluster.Members {
-				peerNames = append(peerNames, prefix+m.Name+".internal."+b.ClusterName())
-			}
-		}
-		c.AddTask(&fitasks.Keypair{
-			AlternateNames: peerNames,
-
-			Lifecycle: b.Lifecycle,
-			Name:      fi.String("etcd-peer"),
-			Subject:   "cn=etcd-peer",
-			Type:      "clientServer",
-			Signer:    defaultCA,
-		})
-
-		c.AddTask(&fitasks.Keypair{
-			Name:      fi.String("etcd-client"),
-			Lifecycle: b.Lifecycle,
-			Subject:   "cn=etcd-client",
-			Type:      "client",
-			Signer:    defaultCA,
-		})
 	}
 
 	if b.KopsModelContext.Cluster.Spec.Networking.Kuberouter != nil && !b.UseKopsControllerForNodeBootstrap() {

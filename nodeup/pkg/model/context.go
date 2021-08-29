@@ -357,17 +357,6 @@ func (c *NodeupModelContext) IsKubernetesLT(version string) bool {
 	return !c.IsKubernetesGTE(version)
 }
 
-// UseEtcdManager checks if the etcd cluster has etcd-manager enabled
-func (c *NodeupModelContext) UseEtcdManager() bool {
-	for _, x := range c.Cluster.Spec.EtcdClusters {
-		if x.Provider == kops.EtcdProviderTypeManager {
-			return true
-		}
-	}
-
-	return false
-}
-
 // UseEtcdTLS checks if the etcd cluster has TLS enabled bool
 func (c *NodeupModelContext) UseEtcdTLS() bool {
 	// @note: because we enforce that 'both' have to be enabled for TLS we only need to check one here.
@@ -410,7 +399,7 @@ func (c *NodeupModelContext) UseKopsControllerForNodeBootstrap() bool {
 
 // UsesSecondaryIP checks if the CNI in use attaches secondary interfaces to the host.
 func (c *NodeupModelContext) UsesSecondaryIP() bool {
-	return (c.Cluster.Spec.Networking.CNI != nil && c.Cluster.Spec.Networking.CNI.UsesSecondaryIP) || c.Cluster.Spec.Networking.AmazonVPC != nil || c.Cluster.Spec.Networking.LyftVPC != nil ||
+	return (c.Cluster.Spec.Networking.CNI != nil && c.Cluster.Spec.Networking.CNI.UsesSecondaryIP) || c.Cluster.Spec.Networking.AmazonVPC != nil ||
 		(c.Cluster.Spec.Networking.Cilium != nil && c.Cluster.Spec.Networking.Cilium.Ipam == kops.CiliumIpamEni)
 }
 
