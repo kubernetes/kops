@@ -4204,6 +4204,10 @@ spec:
                     description: 'Enabled enables the node termination handler. Default:
                       true'
                     type: boolean
+                  image:
+                    description: Image overrides the default docker image used for
+                      node termination handler addon.
+                    type: string
                   managedASGTag:
                     description: ManagedASGTag is the tag used to determine which
                       nodes NTH can take action on

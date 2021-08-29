@@ -897,6 +897,8 @@ type NodeTerminationHandlerConfig struct {
 	// Enabled enables the node termination handler.
 	// Default: true
 	Enabled *bool `json:"enabled,omitempty"`
+	// Image overrides the default docker image used for node termination handler addon.
+	Image *string `json:"image,omitempty"`
 	// EnableSpotInterruptionDraining makes node termination handler drain nodes when spot interruption termination notice is received.
 	// Default: true
 	EnableSpotInterruptionDraining *bool `json:"enableSpotInterruptionDraining,omitempty"`

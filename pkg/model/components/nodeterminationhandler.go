@@ -74,5 +74,9 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 		nth.MemoryRequest = &defaultMemoryRequest
 	}
 
+	if nth.Image == nil {
+		nth.Image = fi.String("public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.13.3")
+	}
+
 	return nil
 }

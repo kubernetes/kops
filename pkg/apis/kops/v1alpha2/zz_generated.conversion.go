@@ -6084,6 +6084,7 @@ func Convert_kops_NodeProblemDetectorConfig_To_v1alpha2_NodeProblemDetectorConfi
 
 func autoConvert_v1alpha2_NodeTerminationHandlerConfig_To_kops_NodeTerminationHandlerConfig(in *NodeTerminationHandlerConfig, out *kops.NodeTerminationHandlerConfig, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.Image = in.Image
 	out.EnableSpotInterruptionDraining = in.EnableSpotInterruptionDraining
 	out.EnableScheduledEventDraining = in.EnableScheduledEventDraining
 	out.EnableRebalanceMonitoring = in.EnableRebalanceMonitoring
@@ -6103,6 +6104,7 @@ func Convert_v1alpha2_NodeTerminationHandlerConfig_To_kops_NodeTerminationHandle
 
 func autoConvert_kops_NodeTerminationHandlerConfig_To_v1alpha2_NodeTerminationHandlerConfig(in *kops.NodeTerminationHandlerConfig, out *NodeTerminationHandlerConfig, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.Image = in.Image
 	out.EnableSpotInterruptionDraining = in.EnableSpotInterruptionDraining
 	out.EnableScheduledEventDraining = in.EnableScheduledEventDraining
 	out.EnableRebalanceMonitoring = in.EnableRebalanceMonitoring

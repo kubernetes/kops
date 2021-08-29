@@ -52,7 +52,7 @@ spec:
     selector: null
   - id: k8s-1.11
     manifest: node-termination-handler.aws/k8s-1.11.yaml
-    manifestHash: 964641df31815a1c0740ac78a342fc422676509c05ec8f090368b3c4b16a8e13
+    manifestHash: aff5c358e9068af057fc266041105328dd9e11e473cd051f393f67182edc47fb
     name: node-termination-handler.aws
     selector:
       k8s-addon: node-termination-handler.aws

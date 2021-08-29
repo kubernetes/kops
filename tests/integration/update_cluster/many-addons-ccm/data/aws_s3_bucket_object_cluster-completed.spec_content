@@ -201,6 +201,7 @@ spec:
     enableScheduledEventDraining: false
     enableSpotInterruptionDraining: true
     enabled: true
+    image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.13.3
     managedASGTag: aws-node-termination-handler/managed
     memoryRequest: 64Mi
     prometheusEnable: false

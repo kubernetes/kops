@@ -4068,6 +4068,11 @@ func (in *NodeTerminationHandlerConfig) DeepCopyInto(out *NodeTerminationHandler
 		*out = new(bool)
 		**out = **in
 	}
+	if in.Image != nil {
+		in, out := &in.Image, &out.Image
+		*out = new(string)
+		**out = **in
+	}
 	if in.EnableSpotInterruptionDraining != nil {
 		in, out := &in.EnableSpotInterruptionDraining, &out.EnableSpotInterruptionDraining
 		*out = new(bool)
