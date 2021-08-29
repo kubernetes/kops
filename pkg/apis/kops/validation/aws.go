@@ -53,10 +53,6 @@ func awsValidateExternalCloudControllerManager(cluster *kops.Cluster) (allErrs f
 		return allErrs
 	}
 	fldPath := field.NewPath("spec", "externalCloudControllerManager")
-	if !cluster.IsKubernetesGTE("1.18") {
-		allErrs = append(allErrs, field.Forbidden(fldPath, "AWS external CCM requires kubernetes 1.18+"))
-	}
-
 	if !hasAWSEBSCSIDriver(c) {
 		allErrs = append(allErrs, field.Forbidden(fldPath,
 			"AWS external CCM cannot be used without enabling spec.cloudConfig.AWSEBSCSIDriver."))

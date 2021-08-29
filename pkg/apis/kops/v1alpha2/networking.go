@@ -572,6 +572,7 @@ type HubbleSpec struct {
 }
 
 // LyftVPCNetworkingSpec declares that we want to use the cni-ipvlan-vpc-k8s CNI networking.
+// Lyft VPC is deprecated as of kOps 1.22 and removed as of kOps 1.23.
 type LyftVPCNetworkingSpec struct {
 	SubnetTags map[string]string `json:"subnetTags,omitempty"`
 }

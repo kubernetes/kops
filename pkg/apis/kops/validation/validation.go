@@ -637,13 +637,10 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 
 		if k.TopologyManagerPolicy != "" {
 			allErrs = append(allErrs, IsValidValue(kubeletPath.Child("topologyManagerPolicy"), &k.TopologyManagerPolicy, []string{"none", "best-effort", "restricted", "single-numa-node"})...)
-			if !c.IsKubernetesGTE("1.18") {
-				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("topologyManagerPolicy"), "topologyManagerPolicy requires at least Kubernetes 1.18"))
-			}
 		}
 
 		if k.EnableCadvisorJsonEndpoints != nil {
-			if c.IsKubernetesLT("1.18") && c.IsKubernetesGTE("1.21") {
+			if c.IsKubernetesGTE("1.21") {
 				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("enableCadvisorJsonEndpoints"), "enableCadvisorJsonEndpoints requires Kubernetes 1.18-1.20"))
 			}
 		}
@@ -756,14 +753,7 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 	}
 
 	if v.LyftVPC != nil {
-		if optionTaken {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("lyftvpc"), "only one networking option permitted"))
-		}
-		optionTaken = true
-
-		if c.CloudProvider != "aws" {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("lyftvpc"), "amazon-vpc-routed-eni networking is supported only in AWS"))
-		}
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("lyftvp"), "support for LyftVPC has been removed"))
 	}
 
 	if v.GCE != nil {
@@ -927,9 +917,6 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 		hasCiliumCluster := false
 		for _, cluster := range c.EtcdClusters {
 			if cluster.Name == "cilium" {
-				if cluster.Provider == kops.EtcdProviderTypeLegacy {
-					allErrs = append(allErrs, field.Invalid(fldPath.Root().Child("etcdClusters"), kops.EtcdProviderTypeLegacy, "Legacy etcd provider is not supported for the cilium cluster"))
-				}
 				hasCiliumCluster = true
 				break
 			}
@@ -1009,9 +996,6 @@ func validateEtcdClusterSpec(spec kops.EtcdClusterSpec, c *kops.Cluster, fieldPa
 	if spec.Provider != "" {
 		value := string(spec.Provider)
 		allErrs = append(allErrs, IsValidValue(fieldPath.Child("provider"), &value, kops.SupportedEtcdProviderTypes)...)
-		if spec.Provider == kops.EtcdProviderTypeLegacy && c.IsKubernetesGTE("1.18") {
-			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("provider"), "support for Legacy mode removed as of Kubernetes 1.18"))
-		}
 	}
 	if len(spec.Members) == 0 {
 		allErrs = append(allErrs, field.Required(fieldPath.Child("etcdMembers"), "No members defined in etcd cluster"))
