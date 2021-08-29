@@ -135,7 +135,7 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Enable health-check
-	if b.healthCheck() || (b.IsKubernetesLT("1.18") && b.Distribution.IsDebianFamily()) {
+	if b.healthCheck() {
 		c.AddTask(b.buildSystemdHealthCheckScript())
 		c.AddTask(b.buildSystemdHealthCheckService())
 		c.AddTask(b.buildSystemdHealthCheckTimer())

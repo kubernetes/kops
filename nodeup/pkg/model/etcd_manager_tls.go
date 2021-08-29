@@ -29,7 +29,7 @@ var _ fi.ModelBuilder = &EtcdManagerTLSBuilder{}
 
 // Build is responsible for TLS configuration for etcd-manager
 func (b *EtcdManagerTLSBuilder) Build(ctx *fi.ModelBuilderContext) error {
-	if !b.IsMaster || !b.UseEtcdManager() {
+	if !b.IsMaster {
 		return nil
 	}
 

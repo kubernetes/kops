@@ -194,27 +194,6 @@ func TestSetClusterFields(t *testing.T) {
 		},
 		{
 			Fields: []string{
-				"cluster.spec.etcdClusters[*].provider=Manager",
-			},
-			Input: kops.Cluster{
-				Spec: kops.ClusterSpec{
-					EtcdClusters: []kops.EtcdClusterSpec{
-						{Name: "one", Provider: kops.EtcdProviderTypeLegacy},
-						{Name: "two"},
-					},
-				},
-			},
-			Output: kops.Cluster{
-				Spec: kops.ClusterSpec{
-					EtcdClusters: []kops.EtcdClusterSpec{
-						{Name: "one", Provider: kops.EtcdProviderTypeManager},
-						{Name: "two", Provider: kops.EtcdProviderTypeManager},
-					},
-				},
-			},
-		},
-		{
-			Fields: []string{
 				"cluster.spec.etcdClusters[*].image=etcd-manager:v1.2.3",
 			},
 			Input: kops.Cluster{

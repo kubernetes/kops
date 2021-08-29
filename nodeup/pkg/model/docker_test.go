@@ -30,14 +30,6 @@ import (
 	"k8s.io/kops/util/pkg/distributions"
 )
 
-func TestDockerBuilder_Simple(t *testing.T) {
-	runDockerBuilderTest(t, "simple")
-}
-
-func TestDockerBuilder_18_06_3(t *testing.T) {
-	runDockerBuilderTest(t, "docker_18.06.3")
-}
-
 func TestDockerBuilder_19_03_11(t *testing.T) {
 	runDockerBuilderTest(t, "docker_19.03.11")
 }

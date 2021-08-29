@@ -67,10 +67,8 @@ const (
 	KubeProxyClusterRoleName = "system:node-proxier"
 
 	clusterRoleKind    = "ClusterRole"
-	roleKind           = "Role"
 	serviceAccountKind = "ServiceAccount"
 	rbacAPIGroup       = "rbac.authorization.k8s.io"
-	//anonymousUser            = "system:anonymous"
 
 	// Constants for what we name our ServiceAccounts with limited access to the cluster in case of RBAC
 	KubeDNSServiceAccountName   = "kube-dns"
@@ -106,38 +104,6 @@ func createServiceAccounts(ctx context.Context, clientset kubernetes.Interface) 
 
 func createClusterRoleBindings(ctx context.Context, clientset *kubernetes.Clientset) error {
 	clusterRoleBindings := []rbac.ClusterRoleBinding{
-		//{
-		//	ObjectMeta: metav1.ObjectMeta{
-		//		Name: "kubeadm:kubelet-bootstrap",
-		//	},
-		//	RoleRef: rbac.RoleRef{
-		//		APIGroup: rbacAPIGroup,
-		//		Kind:     clusterRoleKind,
-		//		Name:     NodeBootstrapperClusterRoleName,
-		//	},
-		//	Subjects: []rbac.Subject{
-		//		{
-		//			Kind: "Group",
-		//			Name: bootstrapapi.BootstrapGroup,
-		//		},
-		//	},
-		//},
-		//{
-		//	ObjectMeta: metav1.ObjectMeta{
-		//		Name: nodeAutoApproveBootstrap,
-		//	},
-		//	RoleRef: rbac.RoleRef{
-		//		APIGroup: rbacAPIGroup,
-		//		Kind:     clusterRoleKind,
-		//		Name:     nodeAutoApproveBootstrap,
-		//	},
-		//	Subjects: []rbac.Subject{
-		//		{
-		//			Kind: "Group",
-		//			Name: bootstrapapi.BootstrapGroup,
-		//		},
-		//	},
-		//},
 		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "kubeadm:node-proxier",

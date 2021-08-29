@@ -24,9 +24,6 @@ const (
 	// Used by e.g. dns-controller
 	Generic = 10001
 
-	// LegacyEtcd is the user id for the etcd user under the legacy provider
-	LegacyEtcd = 10002
-
 	// AWSAuthenticator is the user-id for the aws-iam-authenticator (built externally)
 	AWSAuthenticator = 10000
 
