@@ -63,13 +63,12 @@ func main() {
 // run is responsible for running the protokube service controller
 func run() error {
 	var zones []string
-	var initializeRBAC, containerized, master bool
+	var containerized, master bool
 	var cloud, clusterID, dnsProviderID, dnsInternalSuffix, gossipSecret, gossipListen, gossipProtocol, gossipSecretSecondary, gossipListenSecondary, gossipProtocolSecondary string
 	var flagChannels string
 	var dnsUpdateInterval int
 
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized.")
-	flag.BoolVar(&initializeRBAC, "initialize-rbac", initializeRBAC, "Set if we should initialize RBAC")
 	flag.BoolVar(&master, "master", master, "Whether or not this node is a master")
 	flag.StringVar(&cloud, "cloud", "aws", "CloudProvider we are using (aws,digitalocean,gce,openstack)")
 	flag.StringVar(&clusterID, "cluster-id", clusterID, "Cluster ID")
@@ -375,7 +374,6 @@ func run() error {
 		NodeName:                  nodeName,
 		Channels:                  channels,
 		DNS:                       dnsProvider,
-		InitializeRBAC:            initializeRBAC,
 		InternalDNSSuffix:         dnsInternalSuffix,
 		InternalIP:                internalIP,
 		Kubernetes:                protokube.NewKubernetesContext(),
