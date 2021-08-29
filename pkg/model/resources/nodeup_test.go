@@ -35,7 +35,7 @@ func Test_AWSNodeUpTemplate(t *testing.T) {
 	beforeScriptName := "some_script_required_to_run_before_nodeup.sh"
 	afterScriptName := "some_script.sh"
 
-    ig := &kops.InstanceGroup{
+	ig := &kops.InstanceGroup{
 		Spec: kops.InstanceGroupSpec{
 			AdditionalUserData: []kops.UserData{
 				{
@@ -52,14 +52,14 @@ echo "I run after nodeup.sh to setup some other stuff"
 
 echo "I run before nodeup.sh to fix some stuff"
 `,
-					Type: "text/x-shellscript",
+					Type:   "text/x-shellscript",
 					Before: true,
 				},
 			},
 		},
 	}
 
-    actual, err := AWSNodeUpTemplate(ig)
+	actual, err := AWSNodeUpTemplate(ig)
 	if err != nil {
 		t.Fatalf("got unexpected error: %v", err)
 	}
