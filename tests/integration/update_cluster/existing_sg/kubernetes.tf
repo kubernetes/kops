@@ -1046,6 +1046,15 @@ resource "aws_security_group" "masters-existingsg-example-com" {
   vpc_id = aws_vpc.existingsg-example-com.id
 }
 
+resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-icmp-3to4-api-elb-existingsg-example-com" {
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 3
+  protocol          = "icmp"
+  security_group_id = "sg-elb"
+  to_port           = 4
+  type              = "ingress"
+}
+
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-masters-existingsg-example-com" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 22
@@ -1107,6 +1116,33 @@ resource "aws_security_group_rule" "from-api-elb-existingsg-example-com-egress-a
   security_group_id = "sg-elb"
   to_port           = 0
   type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-api-elb-existingsg-example-com-ingress-tcp-443to443-masters-existingsg-example-com" {
+  from_port                = 443
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.masters-existingsg-example-com.id
+  source_security_group_id = "sg-elb"
+  to_port                  = 443
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "from-api-elb-existingsg-example-com-ingress-tcp-443to443-sg-master-1a-Master" {
+  from_port                = 443
+  protocol                 = "tcp"
+  security_group_id        = "sg-master-1a"
+  source_security_group_id = "sg-elb"
+  to_port                  = 443
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "from-api-elb-existingsg-example-com-ingress-tcp-443to443-sg-master-1b-Master" {
+  from_port                = 443
+  protocol                 = "tcp"
+  security_group_id        = "sg-master-1b"
+  source_security_group_id = "sg-elb"
+  to_port                  = 443
+  type                     = "ingress"
 }
 
 resource "aws_security_group_rule" "from-masters-existingsg-example-com-egress-all-0to0-0-0-0-0--0" {
@@ -1404,42 +1440,6 @@ resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-udp-1to65535-sg-m
   source_security_group_id = "sg-nodes"
   to_port                  = 65535
   type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "https-elb-to-master" {
-  from_port                = 443
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.masters-existingsg-example-com.id
-  source_security_group_id = "sg-elb"
-  to_port                  = 443
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "https-elb-to-master-sg-master-1a" {
-  from_port                = 443
-  protocol                 = "tcp"
-  security_group_id        = "sg-master-1a"
-  source_security_group_id = "sg-elb"
-  to_port                  = 443
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "https-elb-to-master-sg-master-1b" {
-  from_port                = 443
-  protocol                 = "tcp"
-  security_group_id        = "sg-master-1b"
-  source_security_group_id = "sg-elb"
-  to_port                  = 443
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 3
-  protocol          = "icmp"
-  security_group_id = "sg-elb"
-  to_port           = 4
-  type              = "ingress"
 }
 
 resource "aws_subnet" "us-test-1a-existingsg-example-com" {

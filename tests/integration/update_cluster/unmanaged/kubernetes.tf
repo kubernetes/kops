@@ -853,6 +853,15 @@ resource "aws_security_group" "nodes-unmanaged-example-com" {
   vpc_id = "vpc-12345678"
 }
 
+resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-icmp-3to4-api-elb-unmanaged-example-com" {
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 3
+  protocol          = "icmp"
+  security_group_id = aws_security_group.api-elb-unmanaged-example-com.id
+  to_port           = 4
+  type              = "ingress"
+}
+
 resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-elb-unmanaged-example-com" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 22
@@ -887,6 +896,15 @@ resource "aws_security_group_rule" "from-api-elb-unmanaged-example-com-egress-al
   security_group_id = aws_security_group.api-elb-unmanaged-example-com.id
   to_port           = 0
   type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-api-elb-unmanaged-example-com-ingress-tcp-443to443-masters-unmanaged-example-com" {
+  from_port                = 443
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.masters-unmanaged-example-com.id
+  source_security_group_id = aws_security_group.api-elb-unmanaged-example-com.id
+  to_port                  = 443
+  type                     = "ingress"
 }
 
 resource "aws_security_group_rule" "from-bastion-elb-unmanaged-example-com-egress-all-0to0-0-0-0-0--0" {
@@ -1049,24 +1067,6 @@ resource "aws_security_group_rule" "from-nodes-unmanaged-example-com-ingress-udp
   source_security_group_id = aws_security_group.nodes-unmanaged-example-com.id
   to_port                  = 65535
   type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "https-elb-to-master" {
-  from_port                = 443
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.masters-unmanaged-example-com.id
-  source_security_group_id = aws_security_group.api-elb-unmanaged-example-com.id
-  to_port                  = 443
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 3
-  protocol          = "icmp"
-  security_group_id = aws_security_group.api-elb-unmanaged-example-com.id
-  to_port           = 4
-  type              = "ingress"
 }
 
 resource "aws_subnet" "us-test-1a-unmanaged-example-com" {

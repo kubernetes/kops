@@ -576,6 +576,18 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
+    "AWSEC2SecurityGroupIngressfrom00000ingressicmp3to4mastersminimalipv6examplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
+        },
+        "FromPort": 3,
+        "ToPort": 4,
+        "IpProtocol": "icmp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
     "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22mastersminimalipv6examplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -612,6 +624,18 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
+    "AWSEC2SecurityGroupIngressfrom0ingressicmpv61to1mastersminimalipv6examplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
+        },
+        "FromPort": -1,
+        "ToPort": -1,
+        "IpProtocol": "icmpv6",
+        "CidrIpv6": "::/0"
+      }
+    },
     "AWSEC2SecurityGroupIngressfrom0ingresstcp22to22mastersminimalipv6examplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -646,6 +670,18 @@
         "ToPort": 443,
         "IpProtocol": "tcp",
         "CidrIpv6": "::/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom172200016ingresstcp443to443mastersminimalipv6examplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp",
+        "CidrIp": "172.20.0.0/16"
       }
     },
     "AWSEC2SecurityGroupIngressfrommastersminimalipv6examplecomingressall0to0mastersminimalipv6examplecom": {
@@ -744,42 +780,6 @@
         "FromPort": 1,
         "ToPort": 65535,
         "IpProtocol": "udp"
-      }
-    },
-    "AWSEC2SecurityGroupIngresshttpselbtomaster": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
-        },
-        "FromPort": 443,
-        "ToPort": 443,
-        "IpProtocol": "tcp",
-        "CidrIp": "172.20.0.0/16"
-      }
-    },
-    "AWSEC2SecurityGroupIngressicmppmtuapielb00000": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
-        },
-        "FromPort": 3,
-        "ToPort": 4,
-        "IpProtocol": "icmp",
-        "CidrIp": "0.0.0.0/0"
-      }
-    },
-    "AWSEC2SecurityGroupIngressicmpv6pmtuapielb0": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
-        },
-        "FromPort": -1,
-        "ToPort": -1,
-        "IpProtocol": "icmpv6",
-        "CidrIpv6": "::/0"
       }
     },
     "AWSEC2SecurityGroupapielbminimalipv6examplecom": {

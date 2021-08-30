@@ -375,7 +375,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			// Allow ICMP traffic required for PMTU discovery
 			if utils.IsIPv6CIDR(cidr) {
-				c.AddTask(&awstasks.SecurityGroupRule{
+				t := &awstasks.SecurityGroupRule{
 					Name:          fi.String("icmpv6-pmtu-api-elb-" + cidr),
 					Lifecycle:     b.SecurityLifecycle,
 					IPv6CIDR:      fi.String(cidr),
@@ -383,9 +383,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 					Protocol:      fi.String("icmpv6"),
 					SecurityGroup: lbSG,
 					ToPort:        fi.Int64(-1),
-				})
+				}
+				AddDirectionalGroupRule(c, t)
 			} else {
-				c.AddTask(&awstasks.SecurityGroupRule{
+				t := &awstasks.SecurityGroupRule{
 					Name:          fi.String("icmp-pmtu-api-elb-" + cidr),
 					Lifecycle:     b.SecurityLifecycle,
 					CIDR:          fi.String(cidr),
@@ -393,7 +394,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 					Protocol:      fi.String("icmp"),
 					SecurityGroup: lbSG,
 					ToPort:        fi.Int64(4),
-				})
+				}
+				AddDirectionalGroupRule(c, t)
 			}
 		}
 	}
@@ -426,7 +428,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 				// Allow ICMP traffic required for PMTU discovery
 				if utils.IsIPv6CIDR(cidr) {
-					c.AddTask(&awstasks.SecurityGroupRule{
+					t := &awstasks.SecurityGroupRule{
 						Name:          fi.String("icmpv6-pmtu-api-elb-" + cidr),
 						Lifecycle:     b.SecurityLifecycle,
 						IPv6CIDR:      fi.String(cidr),
@@ -434,9 +436,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 						Protocol:      fi.String("icmpv6"),
 						SecurityGroup: masterGroup.Task,
 						ToPort:        fi.Int64(-1),
-					})
+					}
+					AddDirectionalGroupRule(c, t)
 				} else {
-					c.AddTask(&awstasks.SecurityGroupRule{
+					t := &awstasks.SecurityGroupRule{
 						Name:          fi.String("icmp-pmtu-api-elb-" + cidr),
 						Lifecycle:     b.SecurityLifecycle,
 						CIDR:          fi.String(cidr),
@@ -444,7 +447,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 						Protocol:      fi.String("icmp"),
 						SecurityGroup: masterGroup.Task,
 						ToPort:        fi.Int64(4),
-					})
+					}
+					AddDirectionalGroupRule(c, t)
 				}
 
 				if b.Cluster.Spec.API != nil && b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
@@ -462,7 +466,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 					} else {
 						t.CIDR = fi.String(cidr)
 					}
-					c.AddTask(t)
+					AddDirectionalGroupRule(c, t)
 				}
 			}
 		}
@@ -488,7 +492,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
 		for _, masterGroup := range masterGroups {
 			suffix := masterGroup.Suffix
-			c.AddTask(&awstasks.SecurityGroupRule{
+			t := &awstasks.SecurityGroupRule{
 				Name:          fi.String(fmt.Sprintf("https-elb-to-master%s", suffix)),
 				Lifecycle:     b.SecurityLifecycle,
 				FromPort:      fi.Int64(443),
@@ -496,22 +500,26 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				SecurityGroup: masterGroup.Task,
 				SourceGroup:   lbSG,
 				ToPort:        fi.Int64(443),
-			})
+			}
+			AddDirectionalGroupRule(c, t)
 		}
 	} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
 		for _, masterGroup := range masterGroups {
 			suffix := masterGroup.Suffix
-			c.AddTask(&awstasks.SecurityGroupRule{
-				Name:          fi.String(fmt.Sprintf("https-elb-to-master%s", suffix)),
-				Lifecycle:     b.SecurityLifecycle,
-				FromPort:      fi.Int64(443),
-				Protocol:      fi.String("tcp"),
-				SecurityGroup: masterGroup.Task,
-				ToPort:        fi.Int64(443),
-				CIDR:          fi.String(b.Cluster.Spec.NetworkCIDR),
-			})
+			{
+				t := &awstasks.SecurityGroupRule{
+					Name:          fi.String(fmt.Sprintf("https-elb-to-master%s", suffix)),
+					Lifecycle:     b.SecurityLifecycle,
+					FromPort:      fi.Int64(443),
+					Protocol:      fi.String("tcp"),
+					SecurityGroup: masterGroup.Task,
+					ToPort:        fi.Int64(443),
+					CIDR:          fi.String(b.Cluster.Spec.NetworkCIDR),
+				}
+				AddDirectionalGroupRule(c, t)
+			}
 			for _, cidr := range b.Cluster.Spec.AdditionalNetworkCIDRs {
-				c.AddTask(&awstasks.SecurityGroupRule{
+				t := &awstasks.SecurityGroupRule{
 					Name:          fi.String(fmt.Sprintf("https-lb-to-master%s-%s", suffix, cidr)),
 					Lifecycle:     b.SecurityLifecycle,
 					FromPort:      fi.Int64(443),
@@ -519,7 +527,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 					SecurityGroup: masterGroup.Task,
 					ToPort:        fi.Int64(443),
 					CIDR:          fi.String(cidr),
-				})
+				}
+				AddDirectionalGroupRule(c, t)
 			}
 		}
 	}

@@ -49,6 +49,8 @@ type SecurityGroupRule struct {
 	SourceGroup *SecurityGroup
 
 	Egress *bool
+
+	Delete *bool
 }
 
 func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
@@ -316,9 +318,66 @@ func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Secu
 
 	}
 
+	if fi.BoolValue(e.Delete) {
+		ipPermission := e.createIpPermission()
+
+		if fi.BoolValue(e.Egress) {
+			request := &ec2.RevokeSecurityGroupEgressInput{
+				GroupId: e.SecurityGroup.ID,
+			}
+			request.IpPermissions = []*ec2.IpPermission{ipPermission}
+
+			klog.V(2).Infof("Calling EC2 RevokeSecurityGroupEgress")
+			_, err := t.Cloud.EC2().RevokeSecurityGroupEgress(request)
+			if err != nil {
+				return fmt.Errorf("error revoking security group egress: %w", err)
+			}
+		} else {
+			request := &ec2.RevokeSecurityGroupIngressInput{
+				GroupId: e.SecurityGroup.ID,
+			}
+			request.IpPermissions = []*ec2.IpPermission{ipPermission}
+
+			klog.V(2).Infof("Calling EC2 RevokeSecurityGroupIngress")
+			_, err := t.Cloud.EC2().RevokeSecurityGroupIngress(request)
+			if err != nil {
+				return fmt.Errorf("error revoking security group ingress: %w", err)
+			}
+		}
+	}
+
 	// No tags on security group rules (there are tags on the group though)
 
 	return nil
+}
+func (e *SecurityGroupRule) createIpPermission() *ec2.IpPermission {
+	protocol := e.Protocol
+	if protocol == nil {
+		protocol = aws.String("-1")
+	}
+
+	ipPermission := &ec2.IpPermission{
+		IpProtocol: protocol,
+		FromPort:   e.FromPort,
+		ToPort:     e.ToPort,
+	}
+
+	if e.SourceGroup != nil {
+		ipPermission.UserIdGroupPairs = []*ec2.UserIdGroupPair{
+			{
+				GroupId: e.SourceGroup.ID,
+			},
+		}
+	} else {
+		CIDR := e.CIDR
+		// Default to 0.0.0.0/0 ?
+		ipPermission.IpRanges = []*ec2.IpRange{
+			{CidrIp: CIDR},
+		}
+	}
+
+	return ipPermission
+
 }
 
 type terraformSecurityGroupIngress struct {

@@ -933,6 +933,18 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
+    "AWSEC2SecurityGroupIngressfrom00000ingressicmp3to4apielbprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivatecalicoexamplecom"
+        },
+        "FromPort": 3,
+        "ToPort": 4,
+        "IpProtocol": "icmp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
     "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22bastionelbprivatecalicoexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -955,6 +967,20 @@
         "ToPort": 443,
         "IpProtocol": "tcp",
         "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfromapielbprivatecalicoexamplecomingresstcp443to443mastersprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatecalicoexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivatecalicoexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp"
       }
     },
     "AWSEC2SecurityGroupIngressfrombastionelbprivatecalicoexamplecomingresstcp22to22bastionprivatecalicoexamplecom": {
@@ -1109,32 +1135,6 @@
         "FromPort": 1,
         "ToPort": 65535,
         "IpProtocol": "udp"
-      }
-    },
-    "AWSEC2SecurityGroupIngresshttpselbtomaster": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersprivatecalicoexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupapielbprivatecalicoexamplecom"
-        },
-        "FromPort": 443,
-        "ToPort": 443,
-        "IpProtocol": "tcp"
-      }
-    },
-    "AWSEC2SecurityGroupIngressicmppmtuapielb00000": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupapielbprivatecalicoexamplecom"
-        },
-        "FromPort": 3,
-        "ToPort": 4,
-        "IpProtocol": "icmp",
-        "CidrIp": "0.0.0.0/0"
       }
     },
     "AWSEC2SecurityGroupapielbprivatecalicoexamplecom": {

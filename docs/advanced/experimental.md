@@ -22,3 +22,4 @@ The following experimental features are currently available:
 * `+TerraformJSON` - Produce kubernetes.tf.json file instead of writing HCLv2 syntax. Can be consumed by terraform 0.12+
 * `+VFSVaultSupport` - Enables setting Vault as secret/keystore
 * `+APIServerNodes` - Enables support for dedicated API server nodes
+* `+DeleteUnknownSGRules` - Makes kOps delete unknown AWS security group rules 

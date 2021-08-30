@@ -19,10 +19,14 @@ package awsmodel
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
 	"k8s.io/klog/v2"
 )
@@ -295,6 +299,129 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeG
 	}
 
 	return masterGroups, nil
+}
+
+func (b *FirewallModelBuilder) FindDeletions(context *fi.ModelBuilderContext, cloud fi.Cloud) error {
+	awsCloud := cloud.(awsup.AWSCloud)
+
+	sgs, err := b.getClusterSecurityGroups(awsCloud)
+	if err != nil {
+		return err
+	}
+	for _, sg := range sgs {
+		name := fi.StringValue(sg.GroupName)
+		sgTask := context.Tasks["SecurityGroup/"+name].(*awstasks.SecurityGroup)
+
+		klog.V(4).Infof("found group %q with id %s", name, fi.StringValue(sg.GroupId))
+		// We assume that if the security group name ends with the cluster name it is owned by kOps.
+		// We must ignore security groups about which we don't know anything, as we cannot make tasks of them.
+		if !strings.HasSuffix(name, "."+b.ClusterName()) {
+			klog.V(4).Infof("skipping EC2 security group %q", name)
+			continue
+		}
+		for _, rule := range sg.IpPermissions {
+			ts := b.createRulesFromPermissions(sgTask, rule, false, sgs)
+			for _, task := range ts {
+				if _, ok := context.Tasks["SecurityGroupRule/"+*task.Name]; !ok {
+					if !featureflag.DeleteUnknownSGRules.Enabled() {
+						klog.Warningf("found unknown security group permission: %v", fi.DebugAsJsonString(task))
+						klog.Warning("you can delete this rule by using the DeleteUnknownSGRules feature gate")
+						klog.Warning(("a future version of kOps will remove this automatically"))
+					} else {
+						context.AddTask(task)
+					}
+				}
+			}
+		}
+		for _, rule := range sg.IpPermissionsEgress {
+			ts := b.createRulesFromPermissions(sgTask, rule, true, sgs)
+			for _, task := range ts {
+				if _, ok := context.Tasks["SecurityGroupRule/"+*task.Name]; !ok {
+					if !featureflag.DeleteUnknownSGRules.Enabled() {
+						klog.Warningf("found unknown security group permission: %v", fi.DebugAsJsonString(task))
+						klog.Warning("you can delete this rule by using the DeleteUnknownSGRules feature gate")
+						klog.Warning(("a future version of kOps will remove this automatically"))
+					} else {
+						context.AddTask(task)
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (b *FirewallModelBuilder) getClusterSecurityGroups(cloud awsup.AWSCloud) (map[string]*ec2.SecurityGroup, error) {
+	sgs := make(map[string]*ec2.SecurityGroup)
+
+	request := &ec2.DescribeSecurityGroupsInput{
+		Filters: []*ec2.Filter{
+			awsup.NewEC2Filter("tag:KubernetesCluster", b.ClusterName()),
+		},
+	}
+
+	response, err := cloud.EC2().DescribeSecurityGroups(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing EC2 security groups: %w", err)
+	}
+
+	for _, sg := range response.SecurityGroups {
+		sgs[fi.StringValue(sg.GroupId)] = sg
+	}
+	return sgs, nil
+
+}
+
+func (b *FirewallModelBuilder) createRulesFromPermissions(sg *awstasks.SecurityGroup, rule *ec2.IpPermission, egress bool, sgs map[string]*ec2.SecurityGroup) (tasks []*awstasks.SecurityGroupRule) {
+	for _, cidr := range rule.IpRanges {
+		// CIDRs with description starting with kubernetes.io are owned by CCM
+		if strings.HasPrefix(fi.StringValue(cidr.Description), "kubernetes.io") {
+			continue
+		}
+		rule := b.createBaseRuleForDeletion(sg, rule, egress)
+		rule.Egress = fi.Bool(egress)
+		rule.CIDR = cidr.CidrIp
+
+		rule.Name = fi.String(generateName(rule))
+		tasks = append(tasks, rule)
+	}
+	for _, p := range rule.UserIdGroupPairs {
+		rule := b.createBaseRuleForDeletion(sg, rule, egress)
+		rule.Egress = fi.Bool(egress)
+		pGroup := sgs[fi.StringValue(p.GroupId)]
+		groupName := fi.StringValue(pGroup.GroupName)
+		// We assume that if the security group name ends with the cluster name it is owned by kOps.
+		// We must ignore security groups about which we don't know anything, as we cannot make tasks of them.
+		if !strings.HasSuffix(groupName, b.ClusterName()) {
+			klog.V(4).Infof("Skipping rule; target EC2 security group %q not owned by kOps", groupName)
+			continue
+		}
+		source := &awstasks.SecurityGroup{Name: pGroup.GroupName}
+
+		rule.SourceGroup = source
+
+		rule.Name = fi.String(generateName(rule))
+		tasks = append(tasks, rule)
+	}
+	return tasks
+}
+
+func (b *FirewallModelBuilder) createBaseRuleForDeletion(sg *awstasks.SecurityGroup, rule *ec2.IpPermission, egress bool) *awstasks.SecurityGroupRule {
+
+	task := &awstasks.SecurityGroupRule{
+		SecurityGroup: sg,
+		FromPort:      rule.FromPort,
+		ToPort:        rule.ToPort,
+		Protocol:      rule.IpProtocol,
+		Egress:        fi.Bool(egress),
+		Lifecycle:     sg.Lifecycle,
+		Delete:        fi.Bool(true),
+	}
+	if fi.StringValue(task.Protocol) == "-1" {
+		task.Protocol = nil
+	}
+
+	return task
 }
 
 type SecurityGroupInfo struct {

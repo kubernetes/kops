@@ -933,6 +933,18 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
+    "AWSEC2SecurityGroupIngressfrom00000ingressicmp3to4apielbprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 3,
+        "ToPort": 4,
+        "IpProtocol": "icmp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
     "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22bastionelbprivateciliumadvancedexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -955,6 +967,20 @@
         "ToPort": 443,
         "IpProtocol": "tcp",
         "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfromapielbprivateciliumadvancedexamplecomingresstcp443to443mastersprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp"
       }
     },
     "AWSEC2SecurityGroupIngressfrombastionelbprivateciliumadvancedexamplecomingresstcp22to22bastionprivateciliumadvancedexamplecom": {
@@ -1095,32 +1121,6 @@
         "FromPort": 1,
         "ToPort": 65535,
         "IpProtocol": "udp"
-      }
-    },
-    "AWSEC2SecurityGroupIngresshttpselbtomaster": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupapielbprivateciliumadvancedexamplecom"
-        },
-        "FromPort": 443,
-        "ToPort": 443,
-        "IpProtocol": "tcp"
-      }
-    },
-    "AWSEC2SecurityGroupIngressicmppmtuapielb00000": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupapielbprivateciliumadvancedexamplecom"
-        },
-        "FromPort": 3,
-        "ToPort": 4,
-        "IpProtocol": "icmp",
-        "CidrIp": "0.0.0.0/0"
       }
     },
     "AWSEC2SecurityGroupapielbprivateciliumadvancedexamplecom": {

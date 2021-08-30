@@ -96,6 +96,8 @@ var (
 	AlphaAllowGCE = new("AlphaAllowGCE", Bool(false))
 	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha.
 	AlphaAllowALI = new("AlphaAllowALI", Bool(false))
+	// DeleteUnknownSGRules will remove AWS SecurityGroup rules that are unknown to kOps.
+	DeleteUnknownSGRules = new("DeleteUnknownSGRules", Bool(false))
 )
 
 // FeatureFlag defines a feature flag

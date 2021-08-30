@@ -721,6 +721,42 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
+    "AWSEC2SecurityGroupIngressfrom1010016ingresstcp443to443masterscomplexexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp",
+        "CidrIp": "10.1.0.0/16"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom1020016ingresstcp443to443masterscomplexexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp",
+        "CidrIp": "10.2.0.0/16"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom111024ingressicmp3to4masterscomplexexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "FromPort": 3,
+        "ToPort": 4,
+        "IpProtocol": "icmp",
+        "CidrIp": "1.1.1.0/24"
+      }
+    },
     "AWSEC2SecurityGroupIngressfrom111024ingresstcp443to443masterscomplexexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -729,6 +765,18 @@
         },
         "FromPort": 443,
         "ToPort": 443,
+        "IpProtocol": "tcp",
+        "CidrIp": "1.1.1.0/24"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom111024ingresstcp8443to8443masterscomplexexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "FromPort": 8443,
+        "ToPort": 8443,
         "IpProtocol": "tcp",
         "CidrIp": "1.1.1.0/24"
       }
@@ -755,6 +803,18 @@
         "ToPort": 22,
         "IpProtocol": "tcp",
         "CidrIp": "1.1.1.1/32"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom172200016ingresstcp443to443masterscomplexexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp",
+        "CidrIp": "172.20.0.0/16"
       }
     },
     "AWSEC2SecurityGroupIngressfrommasterscomplexexamplecomingressall0to0masterscomplexexamplecom": {
@@ -855,54 +915,6 @@
         "IpProtocol": "udp"
       }
     },
-    "AWSEC2SecurityGroupIngresshttpselbtomaster": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
-        },
-        "FromPort": 443,
-        "ToPort": 443,
-        "IpProtocol": "tcp",
-        "CidrIp": "172.20.0.0/16"
-      }
-    },
-    "AWSEC2SecurityGroupIngresshttpslbtomaster1010016": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
-        },
-        "FromPort": 443,
-        "ToPort": 443,
-        "IpProtocol": "tcp",
-        "CidrIp": "10.1.0.0/16"
-      }
-    },
-    "AWSEC2SecurityGroupIngresshttpslbtomaster1020016": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
-        },
-        "FromPort": 443,
-        "ToPort": 443,
-        "IpProtocol": "tcp",
-        "CidrIp": "10.2.0.0/16"
-      }
-    },
-    "AWSEC2SecurityGroupIngressicmppmtuapielb111024": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
-        },
-        "FromPort": 3,
-        "ToPort": 4,
-        "IpProtocol": "icmp",
-        "CidrIp": "1.1.1.0/24"
-      }
-    },
     "AWSEC2SecurityGroupIngressnodeporttcpexternaltonode102030024": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -949,18 +961,6 @@
         "ToPort": 32767,
         "IpProtocol": "udp",
         "CidrIp": "1.2.3.4/32"
-      }
-    },
-    "AWSEC2SecurityGroupIngresstcpapi111024": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
-        },
-        "FromPort": 8443,
-        "ToPort": 8443,
-        "IpProtocol": "tcp",
-        "CidrIp": "1.1.1.0/24"
       }
     },
     "AWSEC2SecurityGroupapielbcomplexexamplecom": {
