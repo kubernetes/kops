@@ -179,7 +179,7 @@ func (*Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *S
 				return fmt.Errorf("error appending tag to subnet: %v", err)
 			}
 		}
-		client := t.Cloud.(openstack.OpenstackCloud).NetworkingClient()
+		client := t.Cloud.NetworkingClient()
 
 		opt := subnets.UpdateOpts{}
 
