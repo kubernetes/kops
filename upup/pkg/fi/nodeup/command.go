@@ -374,7 +374,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.NodeupModelContext) error {
 	asgName := modelContext.BootConfig.InstanceGroupName + "." + modelContext.Cluster.GetName()
 	hookName := "kops-warmpool"
-	svc := cloud.(awsup.AWSCloud).Autoscaling()
+	svc := cloud.Autoscaling()
 	hooks, err := svc.DescribeLifecycleHooks(&autoscaling.DescribeLifecycleHooksInput{
 		AutoScalingGroupName: &asgName,
 		LifecycleHookNames:   []*string{&hookName},

@@ -260,7 +260,7 @@ func (_ *FloatingIP) ShouldCreate(a, e, changes *FloatingIP) (bool, error) {
 }
 
 func (f *FloatingIP) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *FloatingIP) error {
-	cloud := t.Cloud.(openstack.OpenstackCloud)
+	cloud := t.Cloud
 
 	if a == nil {
 		external, err := cloud.GetExternalNetwork()

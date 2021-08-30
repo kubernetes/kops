@@ -491,7 +491,7 @@ func (s *Elastigroup) CheckChanges(a, e, changes *Elastigroup) error {
 }
 
 func (eg *Elastigroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Elastigroup) error {
-	return eg.createOrUpdate(t.Cloud.(awsup.AWSCloud), a, e, changes)
+	return eg.createOrUpdate(t.Cloud, a, e, changes)
 }
 
 func (eg *Elastigroup) createOrUpdate(cloud awsup.AWSCloud, a, e, changes *Elastigroup) error {

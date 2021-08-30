@@ -164,7 +164,7 @@ func (c *azureCloudImplementation) AddClusterTags(tags map[string]*string) {
 
 func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	var ingresses []fi.ApiIngressStatus
-	var rg string = cluster.AzureResourceGroupName()
+	var rg = cluster.AzureResourceGroupName()
 
 	lbSpec := cluster.Spec.API.LoadBalancer
 	if lbSpec != nil {
