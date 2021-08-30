@@ -161,7 +161,6 @@ type ProtokubeFlags struct {
 	Containerized     *bool    `json:"containerized,omitempty" flag:"containerized"`
 	DNSInternalSuffix *string  `json:"dnsInternalSuffix,omitempty" flag:"dns-internal-suffix"`
 	DNSProvider       *string  `json:"dnsProvider,omitempty" flag:"dns"`
-	InitializeRBAC    *bool    `json:"initializeRBAC,omitempty" flag:"initialize-rbac"`
 	LogLevel          *int32   `json:"logLevel,omitempty" flag:"v"`
 	Master            *bool    `json:"master,omitempty" flag:"master"`
 	Zone              []string `json:"zone,omitempty" flag:"zone"`
@@ -195,8 +194,6 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		LogLevel:      fi.Int32(4),
 		Master:        b(t.IsMaster),
 	}
-
-	f.InitializeRBAC = fi.Bool(true)
 
 	zone := t.Cluster.Spec.DNSZone
 	if zone != "" {
