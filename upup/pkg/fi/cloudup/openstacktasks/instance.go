@@ -369,8 +369,7 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 }
 
 func associateFloatingIP(t *openstack.OpenstackAPITarget, e *Instance) error {
-	cloud := t.Cloud
-	client := cloud.NetworkingClient()
+	client := t.Cloud.NetworkingClient()
 
 	_, err := l3floatingip.Update(client, fi.StringValue(e.FloatingIP.ID), l3floatingip.UpdateOpts{
 		PortID: e.Port.ID,
