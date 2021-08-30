@@ -139,11 +139,7 @@ func assertHasRecord(t *testing.T, rrsets dnsprovider.ResourceRecordSets, rrset 
 			t.Fatalf("Failed to list recordsets: %v", err)
 		}
 	} else {
-		if len(rrs) < 0 {
-			t.Fatalf("Record set length=%d, expected >=0", len(rrs))
-		} else {
-			t.Logf("Got %d recordsets: %v", len(rrs), rrs)
-		}
+		t.Logf("Got %d recordsets: %v", len(rrs), rrs)
 
 		for _, r := range rrs {
 			if r.Name() != rrset.Name() || r.Type() != rrset.Type() {
