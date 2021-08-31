@@ -1,0 +1,32 @@
+name: Sync with upstream
+
+on:
+  schedule:
+  - cron: "*/15 * * * *" # every 15 minutes. set to whatever interval you like
+
+jobs:
+  repo-sync:
+    strategy:
+      matrix:
+        fork-suffix: ["bp"]
+        branch: ["master"] # , "release-1.20", "release-1.21", "release-1.22"]
+
+    name: Sync upstream ${{ matrix.branch }} with ${{ matrix.branch }}-${{ matrix.fork-suffix }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Sync repo to branch
+      uses: repo-sync/github-sync@v2
+      with:
+        source_repo: kubernetes/kops
+        source_branch: ${{ matrix.branch }}
+        destination_branch: ${{ matrix.branch }}-${{ matrix.fork-suffix }}-sync
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create pull request
+      uses: repo-sync/pull-request@v2
+      with:
+        source_branch: ${{ matrix.branch }}-${{ matrix.fork-suffix }}-sync
+        destination_branch: ${{ matrix.branch }}-${{ matrix.fork-suffix }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
