@@ -167,7 +167,7 @@ spec:
             - name: TAINT_NODE
               value: "false"
             - name: JSON_LOGGING
-              value: "false"
+              value: "true"
             - name: LOG_LEVEL
               value: "info"
             - name: WEBHOOK_PROXY
@@ -198,6 +198,8 @@ spec:
               value: "{{ .ManagedASGTag }}"
             - name: WORKERS
               value: "10"
+            - name: EMIT_KUBERNETES_EVENTS
+              value: "true"
           resources:
             requests:
               cpu: {{ .CPURequest }}
@@ -313,6 +315,8 @@ spec:
             value: "{{ .EnablePrometheusMetrics }}"
           - name: LOG_LEVEL
             value: "info"
+          - name: EMIT_KUBERNETES_EVENTS
+            value: "true"
           resources:
             requests:
               cpu: {{ .CPURequest }}
