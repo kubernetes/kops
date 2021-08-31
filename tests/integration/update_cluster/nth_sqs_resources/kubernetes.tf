@@ -229,6 +229,16 @@ resource "aws_cloudwatch_event_rule" "nthsqsresources-example-com-ASGLifecycle" 
   }
 }
 
+resource "aws_cloudwatch_event_rule" "nthsqsresources-example-com-InstanceStateChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_nthsqsresources.example.com-InstanceStateChange_event_pattern")
+  name          = "nthsqsresources.example.com-InstanceStateChange"
+  tags = {
+    "KubernetesCluster"                                 = "nthsqsresources.example.com"
+    "Name"                                              = "nthsqsresources.example.com-InstanceStateChange"
+    "kubernetes.io/cluster/nthsqsresources.example.com" = "owned"
+  }
+}
+
 resource "aws_cloudwatch_event_rule" "nthsqsresources-example-com-RebalanceRecommendation" {
   event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_nthsqsresources.example.com-RebalanceRecommendation_event_pattern")
   name          = "nthsqsresources.example.com-RebalanceRecommendation"
@@ -252,6 +262,11 @@ resource "aws_cloudwatch_event_rule" "nthsqsresources-example-com-SpotInterrupti
 resource "aws_cloudwatch_event_target" "nthsqsresources-example-com-ASGLifecycle-Target" {
   arn  = "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-example-com-nth"
   rule = aws_cloudwatch_event_rule.nthsqsresources-example-com-ASGLifecycle.id
+}
+
+resource "aws_cloudwatch_event_target" "nthsqsresources-example-com-InstanceStateChange-Target" {
+  arn  = "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-example-com-nth"
+  rule = aws_cloudwatch_event_rule.nthsqsresources-example-com-InstanceStateChange.id
 }
 
 resource "aws_cloudwatch_event_target" "nthsqsresources-example-com-RebalanceRecommendation-Target" {
