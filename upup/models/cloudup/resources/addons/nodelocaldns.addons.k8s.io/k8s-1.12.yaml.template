@@ -139,7 +139,7 @@ spec:
         operator: "Exists"
       containers:
       - name: node-cache
-        image: k8s.gcr.io/dns/k8s-dns-node-cache:1.17.4
+        image: {{ KubeDNS.NodeLocalDNS.Image }}
         resources:
           requests:
             cpu: {{ KubeDNS.NodeLocalDNS.CPURequest }}
