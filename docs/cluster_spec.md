@@ -224,6 +224,8 @@ etcdClusters:
       value: basic
 ```
 
+*Note:* If you are running multiple etcd clusters you need to expose the metrics on different ports for each cluster as etcd is running as a service on the master nodes.
+
 ### etcd backups retention
 {{ kops_feature_table(kops_added_default='1.18') }}
 
