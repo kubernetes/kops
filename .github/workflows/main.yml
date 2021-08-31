@@ -20,7 +20,25 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      src: ${{ steps.filter.outputs.src }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Detect changes
+      uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          src:
+            - '!.github/**'
+
   build-linux-amd64:
+    needs: changes
+    if: ${{ needs.changes.outputs.src == 'true' }}
     runs-on: ubuntu-20.04
     steps:
       - name: Set up go
@@ -56,6 +74,8 @@ jobs:
           retention-days: 1
 
   build-macos-amd64:
+    needs: changes
+    if: ${{ needs.changes.outputs.src == 'true' }}
     runs-on: macos-10.15
     steps:
       - name: Set up go
@@ -91,6 +111,8 @@ jobs:
           retention-days: 1
 
   build-windows-amd64:
+    needs: changes
+    if: ${{ needs.changes.outputs.src == 'true' }}
     runs-on: windows-2019
     steps:
       - name: Set up go
@@ -126,6 +148,8 @@ jobs:
           retention-days: 1
 
   verify:
+    needs: changes
+    if: ${{ needs.changes.outputs.src == 'true' }}
     runs-on: ubuntu-20.04
     steps:
       - name: Set up go
