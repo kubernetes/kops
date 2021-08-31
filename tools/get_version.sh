@@ -36,6 +36,7 @@ if [[ -n "${CI}" ]]; then
     EXACT_TAG=$(git describe --tags --exact-match 2>/dev/null || true)
     if [[ -n "${EXACT_TAG}" ]]; then
         VERSION="${EXACT_TAG#v}" # Remove the v prefix from the git tag
+        VERSION="${VERSION//-bp*/}" # remove the bearingpoint version from the tag
         if [[ "${VERSION}" != "${KOPS_RELEASE_VERSION}" ]]; then
             echo "Build was tagged with ${VERSION}, but version.go had version ${KOPS_RELEASE_VERSION}"
             exit 1
