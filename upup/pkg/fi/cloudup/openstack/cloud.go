@@ -690,7 +690,7 @@ func useLoadBalancerVIPACL(c OpenstackCloud) (bool, error) {
 		return false, err
 	}
 	// https://github.com/kubernetes/cloud-provider-openstack/blob/721615aa256bbddbd481cfb4a887c3ab180c5563/pkg/util/openstack/loadbalancer.go#L108
-	return ver.Compare(semver.MustParse("2.12")) > 0, nil
+	return ver.Compare(semver.MustParse("2.12.0")) > 0, nil
 }
 
 type Address struct {
