@@ -12,7 +12,7 @@ built into kOps, but it addresses some limitations also:
 * allows etcd2 -> etcd3 upgrade (along with minor upgrades)
 * allows cluster resizing (e.g. going from 1 to 3 nodes)
 
-When using kubernetes >= 1.12 etcd-manager will be used by default. See [../etcd3-migration.md] for upgrades from older clusters.
+When using kubernetes >= 1.12 etcd-manager will be used by default. See [etcd3-migration.md](../etcd3-migration.md) for upgrades from older clusters.
 
 ## Backups
 
