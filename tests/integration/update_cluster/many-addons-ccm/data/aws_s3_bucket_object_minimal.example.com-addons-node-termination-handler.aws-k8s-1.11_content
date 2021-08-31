@@ -162,6 +162,8 @@ spec:
           value: "false"
         - name: LOG_LEVEL
           value: info
+        - name: EMIT_KUBERNETES_EVENTS
+          value: "true"
         image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.13.3
         imagePullPolicy: IfNotPresent
         name: aws-node-termination-handler
