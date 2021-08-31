@@ -33,3 +33,8 @@ jobs:
           invalid-labels: 'do-not-merge, wip, wait-before-merge'
           disable-reviews: true
           github-token: '${{ secrets.GITHUB_TOKEN }}'
+
+      - name: Enable auto merge
+        uses: alexwilson/enable-github-automerge-action@main
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
