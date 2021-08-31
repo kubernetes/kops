@@ -41,7 +41,7 @@ spec:
       k8s-addon: dns-controller.addons.k8s.io
   - id: k8s-1.11
     manifest: node-termination-handler.aws/k8s-1.11.yaml
-    manifestHash: 2fbd4c41bf3c8cfd8651b82cc9335431f0ad5931abb82b92dbb4fe713df2e1aa
+    manifestHash: 0d47866cd451a44675257bc40b4902d3dce29ebe88ab3f9f43f31e246e6ce7f1
     name: node-termination-handler.aws
     selector:
       k8s-addon: node-termination-handler.aws
