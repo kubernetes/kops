@@ -1,5 +1,5 @@
 {{ with .NodeTerminationHandler }}
-# Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.13.0/all-resources.yaml
+# Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.13.3/all-resources.yaml
 ---
 # Source: aws-node-termination-handler/templates/serviceaccount.yaml
 apiVersion: v1
@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/instance: aws-node-termination-handler
     k8s-app: aws-node-termination-handler
-    app.kubernetes.io/version: "1.13.0"
+    app.kubernetes.io/version: "1.13.3"
 ---
 # Source: aws-node-termination-handler/templates/clusterrole.yaml
 kind: ClusterRole
@@ -78,7 +78,7 @@ metadata:
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/instance: aws-node-termination-handler
     k8s-app: aws-node-termination-handler
-    app.kubernetes.io/version: "1.13.0"
+    app.kubernetes.io/version: "1.13.3"
 spec:
   replicas: 1
   selector:
@@ -117,7 +117,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: aws-node-termination-handler
-          image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.13.0
+          image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.13.3
           imagePullPolicy: IfNotPresent
           securityContext:
             readOnlyRootFilesystem: true
@@ -167,7 +167,7 @@ spec:
             - name: TAINT_NODE
               value: "false"
             - name: JSON_LOGGING
-              value: "false"
+              value: "true"
             - name: LOG_LEVEL
               value: "info"
             - name: WEBHOOK_PROXY
@@ -198,6 +198,8 @@ spec:
               value: "{{ .ManagedASGTag }}"
             - name: WORKERS
               value: "10"
+            - name: EMIT_KUBERNETES_EVENTS
+              value: "true"
           resources:
             requests:
               cpu: {{ .CPURequest }}
@@ -220,7 +222,7 @@ metadata:
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/instance: aws-node-termination-handler
     k8s-app: aws-node-termination-handler
-    app.kubernetes.io/version: "1.13.0"
+    app.kubernetes.io/version: "1.13.3"
 spec:
   updateStrategy:
     rollingUpdate:
@@ -264,7 +266,7 @@ spec:
       dnsPolicy: "ClusterFirstWithHostNet"
       containers:
         - name: aws-node-termination-handler
-          image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.13.0
+          image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.13.3
           imagePullPolicy: IfNotPresent
           securityContext:
             readOnlyRootFilesystem: true
@@ -313,6 +315,8 @@ spec:
             value: "{{ .EnablePrometheusMetrics }}"
           - name: LOG_LEVEL
             value: "info"
+          - name: EMIT_KUBERNETES_EVENTS
+            value: "true"
           resources:
             requests:
               cpu: {{ .CPURequest }}
