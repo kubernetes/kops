@@ -989,6 +989,26 @@
         ]
       }
     },
+    "AWSEventsRulenthsqsresourcesexamplecomInstanceStateChange": {
+      "Type": "AWS::Events::Rule",
+      "Properties": {
+        "Name": "nthsqsresources.example.com-InstanceStateChange",
+        "EventPattern": {
+          "detail-type": [
+            "EC2 Instance State-change Notification"
+          ],
+          "source": [
+            "aws.ec2"
+          ]
+        },
+        "Targets": [
+          {
+            "Id": "1",
+            "Arn": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-example-com-nth"
+          }
+        ]
+      }
+    },
     "AWSEventsRulenthsqsresourcesexamplecomRebalanceRecommendation": {
       "Type": "AWS::Events::Rule",
       "Properties": {
