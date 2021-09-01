@@ -27,7 +27,7 @@ kops-up
 # shellcheck disable=SC2164
 cd "$(mktemp -dt kops.XXXXXXXXX)"
 
-git clone --branch v0.4.4 https://github.com/kubernetes-sigs/metrics-server.git .
+git clone --branch v0.5.0 https://github.com/kubernetes-sigs/metrics-server.git .
 
 # The prometheus test expects to have only one metrics-server pod, but we use two
 # We scale down to meet test expectation
