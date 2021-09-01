@@ -64,6 +64,10 @@ var (
 			name:    "RebalanceRecommendation",
 			pattern: `{"source": ["aws.ec2"],"detail-type": ["EC2 Instance Rebalance Recommendation"]}`,
 		},
+		{
+			name:    "InstanceStateChange",
+			pattern: `{"source": ["aws.ec2"],"detail-type": ["EC2 Instance State-change Notification"]}`,
+		},
 	}
 )
 
