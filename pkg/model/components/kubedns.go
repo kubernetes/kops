@@ -100,5 +100,9 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 		nodeLocalDNS.CPURequest = &defaultCPURequest
 	}
 
+	if nodeLocalDNS.Image == nil {
+		nodeLocalDNS.Image = fi.String("k8s.gcr.io/dns/k8s-dns-node-cache:1.20.0")
+	}
+
 	return nil
 }
