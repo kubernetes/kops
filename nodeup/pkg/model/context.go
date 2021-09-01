@@ -566,42 +566,33 @@ func (c *NodeupModelContext) BuildLegacyPrivateKeyTask(ctx *fi.ModelBuilderConte
 
 // NodeName returns the name of the local Node, as it will be created in k8s
 func (c *NodeupModelContext) NodeName() (string, error) {
-	// This mirrors nodeutil.GetHostName
+
+	// If user explicitly sets hostnameOverride, we respect that even though the CCM will likely just ignore this.
 	hostnameOverride := c.Cluster.Spec.Kubelet.HostnameOverride
 
 	if c.IsMaster && c.Cluster.Spec.MasterKubelet.HostnameOverride != "" {
 		hostnameOverride = c.Cluster.Spec.MasterKubelet.HostnameOverride
 	}
 
-	nodeName, err := EvaluateHostnameOverride(hostnameOverride)
-	if err != nil {
-		return "", fmt.Errorf("error evaluating hostname: %v", err)
+	if hostnameOverride != "" {
+		return hostnameOverride, nil
 	}
 
-	if nodeName == "" {
-		hostname, err := os.Hostname()
-		if err != nil {
-			klog.Fatalf("Couldn't determine hostname: %v", err)
-		}
-		nodeName = hostname
+	if kops.CloudProviderID(c.Cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
+		return evaluateAWSHostnameOverride()
 	}
+
+	hostname, err := os.Hostname()
+	if err != nil {
+		klog.Fatalf("Couldn't determine hostname: %v", err)
+	}
+	nodeName := hostname
 
 	return strings.ToLower(strings.TrimSpace(nodeName)), nil
 }
 
-// EvaluateHostnameOverride returns the hostname after replacing some well-known placeholders
-func EvaluateHostnameOverride(hostnameOverride string) (string, error) {
-	if hostnameOverride == "" || hostnameOverride == "@hostname" {
-		return "", nil
-	}
-	k := strings.TrimSpace(hostnameOverride)
-	k = strings.ToLower(k)
-
-	if k != "@aws" {
-		return hostnameOverride, nil
-	}
-
-	// We recognize @aws as meaning "the private DNS name from AWS", to generate this we need to get a few pieces of information
+// evaluateAWSHostnameOverride returns the node name that AWS CCM will use
+func evaluateAWSHostnameOverride() (string, error) {
 	azBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/placement/availability-zone")
 	if err != nil {
 		return "", fmt.Errorf("error reading availability zone from AWS metadata: %v", err)
