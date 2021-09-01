@@ -199,7 +199,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatesharedipexamplecom.Pro
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    hostnameOverride: '@aws'
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
   kubeScheduler:
@@ -216,7 +215,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatesharedipexamplecom.Pro
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -231,7 +229,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatesharedipexamplecom.Pro
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -246,7 +243,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatesharedipexamplecom.Pro
   ConfigBase: memfs://clusters.example.com/private-shared-ip.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: vzsI19SA9cfwASqka1Ok++hoE44ax9mZbLIf/IV4JKQ=
+  NodeupConfigHash: fs3vUdd0YbKbL9OYYQgotA9YtG8tE7OQh/S8mrwddlQ=
 
   __EOF_KUBE_ENV
 
@@ -391,7 +388,6 @@ Resources.AWSEC2LaunchTemplatenodesprivatesharedipexamplecom.Properties.LaunchTe
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    hostnameOverride: '@aws'
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
   kubelet:
@@ -403,7 +399,6 @@ Resources.AWSEC2LaunchTemplatenodesprivatesharedipexamplecom.Properties.LaunchTe
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -417,7 +412,7 @@ Resources.AWSEC2LaunchTemplatenodesprivatesharedipexamplecom.Properties.LaunchTe
   ConfigBase: memfs://clusters.example.com/private-shared-ip.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: vgYGO2A2XflnfzIMUqs/4w35aeGwCume6UZwFkCmOpk=
+  NodeupConfigHash: /lGpRkXKB6tMDNOH0auOV0S5PD4T++9foIRXtDkPkJw=
 
   __EOF_KUBE_ENV
 

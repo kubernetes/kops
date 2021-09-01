@@ -198,7 +198,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom.Propert
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    hostnameOverride: '@aws'
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
   kubeScheduler:
@@ -215,7 +214,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom.Propert
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -230,7 +228,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom.Propert
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -245,7 +242,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom.Propert
   ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: zYbO/e2M2Iy3fxtLkb+mOckni+m8gKTNLvqy5wTdQMA=
+  NodeupConfigHash: ms6pelO8IUV8BnBdkDjQMNCgAUEpO4TBfGwZKME+cPM=
 
   __EOF_KUBE_ENV
 
@@ -390,7 +387,6 @@ Resources.AWSEC2LaunchTemplatenodesminimalipv6examplecom.Properties.LaunchTempla
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    hostnameOverride: '@aws'
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
   kubelet:
@@ -402,7 +398,6 @@ Resources.AWSEC2LaunchTemplatenodesminimalipv6examplecom.Properties.LaunchTempla
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -416,7 +411,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalipv6examplecom.Properties.LaunchTempla
   ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: eS+raYY256IjzGPFBq7Hz7Ng6r1s0Q4dDeFuKmkGk6A=
+  NodeupConfigHash: rw5sTeVBIMSE3/B0e94a8ag23QaxAI0Nn4Vg/EHufdo=
 
   __EOF_KUBE_ENV
 

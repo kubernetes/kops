@@ -30,6 +30,8 @@ spec:
   iam: {}
   kubelet:
     anonymousAuth: false
+  kubeProxy:
+    hostnameOverride: '@aws'
   kubernetesVersion: https://storage.googleapis.com/kubernetes-release/release/v1.18.0
   masterInternalName: api.internal.minimal.example.com
   masterPublicName: api.minimal.example.com

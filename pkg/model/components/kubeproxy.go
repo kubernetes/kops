@@ -74,13 +74,6 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 
 	// Set the kube-proxy hostname-override (actually the NodeName), to avoid #2915 et al
 	cloudProvider := kops.CloudProviderID(clusterSpec.CloudProvider)
-	if cloudProvider == kops.CloudProviderAWS {
-		// Use the hostname from the AWS metadata service
-		// if hostnameOverride is not set.
-		if config.HostnameOverride == "" {
-			config.HostnameOverride = "@aws"
-		}
-	}
 
 	if cloudProvider == kops.CloudProviderDO {
 		if config.HostnameOverride == "" {

@@ -200,7 +200,6 @@ kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
   enabled: false
-  hostnameOverride: '@aws'
   image: k8s.gcr.io/kube-proxy:v1.21.0
   logLevel: 2
 kubeScheduler:
@@ -217,7 +216,6 @@ kubelet:
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-  hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
@@ -232,7 +230,6 @@ masterKubelet:
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-  hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
@@ -247,7 +244,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privateciliumadvanced.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: FzU3IcKcYEj83I/oyjYHlOlrvoZ5LIxOTn5oXLAMcW4=
+NodeupConfigHash: XfSSYesq/JTt6UMQgoB37jT7Rnt9v5uv06G6meYpwXY=
 
 __EOF_KUBE_ENV
 

@@ -20,7 +20,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -55,7 +54,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 )
 
@@ -404,23 +402,7 @@ func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.No
 func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config) error {
 	var err error
 
-	c.cluster.Spec.Kubelet.HostnameOverride, err = evaluateHostnameOverride(c.cluster.Spec.Kubelet.HostnameOverride)
-	if err != nil {
-		return err
-	}
-
-	c.cluster.Spec.MasterKubelet.HostnameOverride, err = evaluateHostnameOverride(c.cluster.Spec.MasterKubelet.HostnameOverride)
-	if err != nil {
-		return err
-	}
-
-	nodeupConfig.KubeletConfig.HostnameOverride, err = evaluateHostnameOverride(nodeupConfig.KubeletConfig.HostnameOverride)
-	if err != nil {
-		return err
-	}
-
 	if c.cluster.Spec.KubeProxy != nil {
-		c.cluster.Spec.KubeProxy.HostnameOverride, err = evaluateHostnameOverride(c.cluster.Spec.KubeProxy.HostnameOverride)
 		if err != nil {
 			return err
 		}
@@ -438,103 +420,6 @@ func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config) error {
 	}
 
 	return nil
-}
-
-func evaluateHostnameOverride(hostnameOverride string) (string, error) {
-	if hostnameOverride == "" || hostnameOverride == "@hostname" {
-		return "", nil
-	}
-	k := strings.TrimSpace(hostnameOverride)
-	k = strings.ToLower(k)
-
-	if k == "@aws" {
-		// We recognize @aws as meaning "the private DNS name from AWS", to generate this we need to get a few pieces of information
-		azBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/placement/availability-zone")
-		if err != nil {
-			return "", fmt.Errorf("error reading availability zone from AWS metadata: %v", err)
-		}
-
-		instanceIDBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/instance-id")
-		if err != nil {
-			return "", fmt.Errorf("error reading instance-id from AWS metadata: %v", err)
-		}
-		instanceID := string(instanceIDBytes)
-
-		config := aws.NewConfig()
-		config = config.WithCredentialsChainVerboseErrors(true)
-
-		s, err := session.NewSession(config)
-		if err != nil {
-			return "", fmt.Errorf("error starting new AWS session: %v", err)
-		}
-
-		svc := ec2.New(s, config.WithRegion(string(azBytes[:len(azBytes)-1])))
-
-		result, err := svc.DescribeInstances(&ec2.DescribeInstancesInput{
-			InstanceIds: []*string{&instanceID},
-		})
-		if err != nil {
-			return "", fmt.Errorf("error describing instances: %v", err)
-		}
-
-		if len(result.Reservations) != 1 {
-			return "", fmt.Errorf("Too many reservations returned for the single instance-id")
-		}
-
-		if len(result.Reservations[0].Instances) != 1 {
-			return "", fmt.Errorf("Too many instances returned for the single instance-id")
-		}
-		return *(result.Reservations[0].Instances[0].PrivateDnsName), nil
-	}
-
-	if k == "@gce" {
-		// We recognize @gce as meaning the hostname from the GCE metadata service
-		// This lets us tolerate broken hostnames (i.e. systemd)
-		b, err := vfs.Context.ReadFile("metadata://gce/instance/hostname")
-		if err != nil {
-			return "", fmt.Errorf("error reading hostname from GCE metadata: %v", err)
-		}
-
-		// We only want to use the first portion of the fully-qualified name
-		// e.g. foo.c.project.internal => foo
-		fullyQualified := string(b)
-		bareHostname := strings.Split(fullyQualified, ".")[0]
-		return bareHostname, nil
-	}
-
-	if k == "@digitalocean" {
-		// @digitalocean means to use the private ipv4 address of a droplet as the hostname override
-		vBytes, err := vfs.Context.ReadFile("metadata://digitalocean/interfaces/private/0/ipv4/address")
-		if err != nil {
-			return "", fmt.Errorf("error reading droplet private IP from DigitalOcean metadata: %v", err)
-		}
-
-		hostname := string(vBytes)
-		if hostname == "" {
-			return "", errors.New("private IP for digitalocean droplet was empty")
-		}
-
-		return hostname, nil
-	}
-
-	if k == "@alicloud" {
-		// @alicloud means to use the "{az}.{instance-id}" of a instance as the hostname override
-		azBytes, err := vfs.Context.ReadFile("metadata://alicloud/zone-id")
-		if err != nil {
-			return "", fmt.Errorf("error reading zone-id from Alicloud metadata: %v", err)
-		}
-		az := string(azBytes)
-
-		instanceIDBytes, err := vfs.Context.ReadFile("metadata://alicloud/instance-id")
-		if err != nil {
-			return "", fmt.Errorf("error reading instance-id from Alicloud metadata: %v", err)
-		}
-		instanceID := string(instanceIDBytes)
-
-		return fmt.Sprintf("%s.%s", az, instanceID), nil
-	}
-
-	return hostnameOverride, nil
 }
 
 func evaluateBindAddress(bindAddress string) (string, error) {

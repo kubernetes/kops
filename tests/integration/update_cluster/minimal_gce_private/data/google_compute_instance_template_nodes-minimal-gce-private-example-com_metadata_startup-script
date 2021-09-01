@@ -148,7 +148,6 @@ kubelet:
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
   hairpinMode: promiscuous-bridge
-  hostnameOverride: '@gce'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
@@ -162,7 +161,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce-private.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: SSOdbux9NYgbMwZRu7WuwzT2/JSHgjcdp6i+Dko9KIg=
+NodeupConfigHash: zAMFfO/LRiVPOAi1NyCl2m79FdojB0mYVXNYbZYjGgQ=
 
 __EOF_KUBE_ENV
 

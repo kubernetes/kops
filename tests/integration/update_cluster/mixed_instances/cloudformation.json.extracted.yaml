@@ -198,7 +198,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersmixedinstancesexamplecom.Prop
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    hostnameOverride: '@aws'
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
   kubeScheduler:
@@ -215,7 +214,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersmixedinstancesexamplecom.Prop
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -230,7 +228,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersmixedinstancesexamplecom.Prop
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -245,7 +242,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersmixedinstancesexamplecom.Prop
   ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: W4BBaOdm17QHqEE3z0mdDgdi2E12+ijfjv+tcfyXFyk=
+  NodeupConfigHash: 1hAJ//mYh3zgLljUBMvBp4c3IVf0Kge6x08h5rsHXlU=
 
   __EOF_KUBE_ENV
 
@@ -451,7 +448,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1bmastersmixedinstancesexamplecom.Prop
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    hostnameOverride: '@aws'
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
   kubeScheduler:
@@ -468,7 +464,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1bmastersmixedinstancesexamplecom.Prop
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -483,7 +478,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1bmastersmixedinstancesexamplecom.Prop
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -498,7 +492,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1bmastersmixedinstancesexamplecom.Prop
   ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
   InstanceGroupName: master-us-test-1b
   InstanceGroupRole: Master
-  NodeupConfigHash: W4BBaOdm17QHqEE3z0mdDgdi2E12+ijfjv+tcfyXFyk=
+  NodeupConfigHash: 1hAJ//mYh3zgLljUBMvBp4c3IVf0Kge6x08h5rsHXlU=
 
   __EOF_KUBE_ENV
 
@@ -704,7 +698,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1cmastersmixedinstancesexamplecom.Prop
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    hostnameOverride: '@aws'
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
   kubeScheduler:
@@ -721,7 +714,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1cmastersmixedinstancesexamplecom.Prop
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -736,7 +728,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1cmastersmixedinstancesexamplecom.Prop
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -751,7 +742,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1cmastersmixedinstancesexamplecom.Prop
   ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
   InstanceGroupName: master-us-test-1c
   InstanceGroupRole: Master
-  NodeupConfigHash: W4BBaOdm17QHqEE3z0mdDgdi2E12+ijfjv+tcfyXFyk=
+  NodeupConfigHash: 1hAJ//mYh3zgLljUBMvBp4c3IVf0Kge6x08h5rsHXlU=
 
   __EOF_KUBE_ENV
 
@@ -896,7 +887,6 @@ Resources.AWSEC2LaunchTemplatenodesmixedinstancesexamplecom.Properties.LaunchTem
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    hostnameOverride: '@aws'
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
   kubelet:
@@ -908,7 +898,6 @@ Resources.AWSEC2LaunchTemplatenodesmixedinstancesexamplecom.Properties.LaunchTem
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -922,7 +911,7 @@ Resources.AWSEC2LaunchTemplatenodesmixedinstancesexamplecom.Properties.LaunchTem
   ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: Yb81j5qaD65NaRI46dqk5mObtL+iKxJU1ffggd24Wkw=
+  NodeupConfigHash: vzLjVdfstlsoZN+9ZDfxLJ/iC9IcMPqrhtlZHcsuHk4=
 
   __EOF_KUBE_ENV
 

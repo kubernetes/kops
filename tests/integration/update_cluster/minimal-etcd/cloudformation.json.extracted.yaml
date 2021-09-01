@@ -214,7 +214,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimaletcdexamplecom.Propert
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    hostnameOverride: '@aws'
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
   kubeScheduler:
@@ -231,7 +230,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimaletcdexamplecom.Propert
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -246,7 +244,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimaletcdexamplecom.Propert
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -261,7 +258,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimaletcdexamplecom.Propert
   ConfigBase: memfs://clusters.example.com/minimal-etcd.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: W7/wjoITwtdyVXX6BtfOESF2XD1PmsG+bvat01A/V3Y=
+  NodeupConfigHash: 5yJ+6IhBYl/hWW7TExvjSFQG/1yfB3uCR2uMy7N27j0=
 
   __EOF_KUBE_ENV
 
@@ -406,7 +403,6 @@ Resources.AWSEC2LaunchTemplatenodesminimaletcdexamplecom.Properties.LaunchTempla
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    hostnameOverride: '@aws'
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
   kubelet:
@@ -418,7 +414,6 @@ Resources.AWSEC2LaunchTemplatenodesminimaletcdexamplecom.Properties.LaunchTempla
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -432,7 +427,7 @@ Resources.AWSEC2LaunchTemplatenodesminimaletcdexamplecom.Properties.LaunchTempla
   ConfigBase: memfs://clusters.example.com/minimal-etcd.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: 2FJ3+qnrBcxX9c+xAAPgIWtvEaSYM2iki6ZjBxJI9mk=
+  NodeupConfigHash: 8XdxwyXCIGbMkid5VSM33RV3BFOodbVf9zk9LtTt9n8=
 
   __EOF_KUBE_ENV
 

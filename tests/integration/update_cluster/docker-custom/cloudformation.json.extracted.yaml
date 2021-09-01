@@ -214,7 +214,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    hostnameOverride: '@aws'
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
   kubeScheduler:
@@ -231,7 +230,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -247,7 +245,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -263,7 +260,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
   ConfigBase: memfs://clusters.example.com/docker.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: imk1UXoCCs6yiCc1fQQkdx0kEvXA0OMpylH1JztAa+w=
+  NodeupConfigHash: ONxeg/nbvAGerdjdOS4hUkXB0/zd9eOa3TvGZ+fUkdc=
 
   __EOF_KUBE_ENV
 
@@ -424,7 +421,6 @@ Resources.AWSEC2LaunchTemplatenodesdockerexamplecom.Properties.LaunchTemplateDat
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    hostnameOverride: '@aws'
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
   kubelet:
@@ -436,7 +432,6 @@ Resources.AWSEC2LaunchTemplatenodesdockerexamplecom.Properties.LaunchTemplateDat
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
@@ -451,7 +446,7 @@ Resources.AWSEC2LaunchTemplatenodesdockerexamplecom.Properties.LaunchTemplateDat
   ConfigBase: memfs://clusters.example.com/docker.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: IUUmgKRx8/87kspoEHjZ9Q2XsW04SJhfvsctLdfPywA=
+  NodeupConfigHash: ZJav5qB5z1KCPNs5xEzwJNgIsfndzVeuPgIcku0dA6M=
 
   __EOF_KUBE_ENV
 

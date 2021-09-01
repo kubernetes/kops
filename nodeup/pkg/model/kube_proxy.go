@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
@@ -167,6 +168,14 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	if c.ConntrackMaxPerCore == nil {
 		defaultConntrackMaxPerCore := int32(131072)
 		c.ConntrackMaxPerCore = &defaultConntrackMaxPerCore
+	}
+
+	// KubeProxy has no means to find the AWS hostname, so we have to use metadata and override the instance hostname
+	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderAWS && c.HostnameOverride == "" {
+		c.HostnameOverride, err = b.NodeName()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	flags, err := flagbuilder.BuildFlagsList(c)

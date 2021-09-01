@@ -199,7 +199,6 @@ kubeControllerManager:
   useServiceAccountCredentials: true
 kubeProxy:
   cpuRequest: 100m
-  hostnameOverride: '@aws'
   image: k8s.gcr.io/kube-proxy:v1.21.0
   logLevel: 2
 kubeScheduler:
@@ -219,7 +218,6 @@ kubelet:
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
@@ -237,7 +235,6 @@ masterKubelet:
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
@@ -252,7 +249,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: 0EyRTJpK9KrCfzoGEoHxH6tQPsXj3MzWPbb38lNx3wM=
+NodeupConfigHash: eFQCYmmlzQjMM9l55G/OZvDd/fTPVFkJJ0PZIsa5rOY=
 
 __EOF_KUBE_ENV
 

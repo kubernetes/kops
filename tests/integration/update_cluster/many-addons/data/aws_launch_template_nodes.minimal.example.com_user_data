@@ -136,7 +136,6 @@ docker:
   skipInstall: true
 kubeProxy:
   cpuRequest: 100m
-  hostnameOverride: '@aws'
   image: k8s.gcr.io/kube-proxy:v1.21.0
   logLevel: 2
 kubelet:
@@ -151,7 +150,6 @@ kubelet:
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
@@ -165,7 +163,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: F0WszA284nAkmedaut8nHALr3jpxK0P+GANw5Q5Q8Bk=
+NodeupConfigHash: LXP5KNLWGXojTJqILJJRh1V25p7S9H2gtEJPSmogBZY=
 
 __EOF_KUBE_ENV
 
