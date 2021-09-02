@@ -739,6 +739,7 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 
 func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
 	annotations := make(map[string]string)
+	annotations["kubectl.kubernetes.io/default-container"] = "kube-apiserver"
 
 	if b.Cluster.Spec.API != nil {
 		if b.Cluster.Spec.API.LoadBalancer == nil || !b.Cluster.Spec.API.LoadBalancer.UseForInternalApi {
