@@ -591,7 +591,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 	}
 
-	nvidia := b.Cluster.Spec.Nvidia
+	nvidia := b.Cluster.Spec.Containerd.NvidiaGPU
 
 	if nvidia != nil && fi.BoolValue(nvidia.Enabled) {
 
