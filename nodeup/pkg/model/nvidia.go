@@ -41,7 +41,7 @@ func (b *NvidiaBuilder) Build(c *fi.ModelBuilderContext) error {
 			},
 		})
 		c.AddTask(&nodetasks.Package{Name: "nvidia-container-runtime"})
-		c.AddTask(&nodetasks.Package{Name: b.NodeupConfig.Nvidia.DriverPackage})
+		c.AddTask(&nodetasks.Package{Name: b.NodeupConfig.NvidiaGPU.DriverPackage})
 	}
 	return nil
 }

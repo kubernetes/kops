@@ -20,7 +20,10 @@ spec:
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.6
+    nvidiaGPU:
+      enabled: true
+      package: nvidia-headless-460-server
+    version: 1.4.9
   dnsZone: Z1AFAKE1ZON3YO
   docker:
     skipInstall: true
@@ -45,6 +48,8 @@ spec:
     name: events
     provider: Manager
     version: 3.4.13
+  externalDns:
+    provider: dns-controller
   iam:
     legacy: false
   keyStore: memfs://clusters.example.com/minimal.example.com/pki
@@ -113,6 +118,7 @@ spec:
     nodeLocalDNS:
       cpuRequest: 25m
       enabled: false
+      image: k8s.gcr.io/dns/k8s-dns-node-cache:1.20.0
       memoryRequest: 5Mi
     provider: CoreDNS
     replicas: 2
@@ -168,9 +174,6 @@ spec:
   networking:
     cni: {}
   nonMasqueradeCIDR: 100.64.0.0/10
-  nvidia:
-    enabled: true
-    package: nvidia-headless-460-server
   podCIDR: 100.96.0.0/11
   secretStore: memfs://clusters.example.com/minimal.example.com/secrets
   serviceClusterIPRange: 100.64.0.0/13

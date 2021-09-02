@@ -40,12 +40,6 @@ rules:
   verbs:
   - list
   - watch
-- apiGroups:
-  - ""
-  resources:
-  - nodes
-  verbs:
-  - get
 
 ---
 
@@ -90,10 +84,10 @@ data:
         forward . /etc/resolv.conf {
           max_concurrent 1000
         }
-        loop
         cache 30
-        loadbalance
+        loop
         reload
+        loadbalance
     }
 kind: ConfigMap
 metadata:
@@ -151,7 +145,7 @@ spec:
       - args:
         - -conf
         - /etc/coredns/Corefile
-        image: coredns/coredns:1.8.3
+        image: k8s.gcr.io/coredns/coredns:v1.8.4
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5
@@ -198,7 +192,7 @@ spec:
           readOnly: true
       dnsPolicy: Default
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
       priorityClassName: system-cluster-critical
       serviceAccountName: coredns
       tolerations:
@@ -374,12 +368,14 @@ spec:
         - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}}
         - --logtostderr=true
         - --v=2
-        image: k8s.gcr.io/cpa/cluster-proportional-autoscaler:1.8.3
+        image: k8s.gcr.io/cpa/cluster-proportional-autoscaler:1.8.4
         name: autoscaler
         resources:
           requests:
             cpu: 20m
             memory: 10Mi
+      nodeSelector:
+        kubernetes.io/os: linux
       priorityClassName: system-cluster-critical
       serviceAccountName: coredns-autoscaler
       tolerations:
