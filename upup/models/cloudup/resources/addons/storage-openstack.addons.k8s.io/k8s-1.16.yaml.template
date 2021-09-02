@@ -263,7 +263,7 @@ spec:
       serviceAccount: csi-cinder-controller-sa
       containers:
         - name: csi-attacher
-          image: quay.io/k8scsi/csi-attacher:v3.1.0
+          image: k8s.gcr.io/sig-storage/csi-attacher:v3.1.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -275,7 +275,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-provisioner
-          image: quay.io/k8scsi/csi-provisioner:v2.2.0
+          image: k8s.gcr.io/sig-storage/csi-provisioner:v2.2.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -291,7 +291,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-snapshotter
-          image: quay.io/k8scsi/csi-snapshotter:v4.0.0
+          image: k8s.gcr.io/sig-storage/csi-snapshotter:v4.0.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -304,7 +304,7 @@ spec:
             - mountPath: /var/lib/csi/sockets/pluginproxy/
               name: socket-dir
         - name: csi-resizer
-          image: quay.io/k8scsi/csi-resizer:v1.1.0
+          image: k8s.gcr.io/sig-storage/csi-resizer:v1.1.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
