@@ -36,4 +36,15 @@ type ContainerdConfig struct {
 	State *string `json:"state,omitempty" flag:"state"`
 	// Version used to pick the containerd package.
 	Version *string `json:"version,omitempty"`
+	// NvidiaGPU configures the Nvidia GPU runtime.
+	NvidiaGPU *NvidiaGPUConfig `json:"nvidiaGPU,omitempty"`
+}
+
+type NvidiaGPUConfig struct {
+	// Package is the name of the nvidia driver package that will be installed.
+	// Default is "nvidia-headless-460-server".
+	DriverPackage string `json:"package,omitempty"`
+	// Enabled determines if kOps will install the Nvidia GPU runtime and drivers.
+	// They will only be installed on intances that has an Nvidia GPU.
+	Enabled *bool `json:"enabled,omitempty"`
 }

@@ -277,7 +277,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 
 		// If Nvidia is enabled in the cluster, check if this instance has support for it.
-		nvidia := c.cluster.Spec.Nvidia
+		nvidia := c.cluster.Spec.Containerd.NvidiaGPU
 		if nvidia != nil && fi.BoolValue(nvidia.Enabled) {
 			awsCloud := cloud.(awsup.AWSCloud)
 			// Get the instance type's detailed information.

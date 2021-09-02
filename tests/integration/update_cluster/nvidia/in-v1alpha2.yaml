@@ -9,6 +9,9 @@ spec:
   channel: stable
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
+  containerd:
+    nvidiaGPU:
+      enabled: true
   containerRuntime: "containerd"
   etcdClusters:
   - etcdMembers:
@@ -29,8 +32,6 @@ spec:
   networking:
     cni: {}
   nonMasqueradeCIDR: 100.64.0.0/10
-  nvidia:
-    enabled: true
   sshAccess:
     - 0.0.0.0/0
   topology:

@@ -253,7 +253,7 @@ KubeletConfig:
   nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
-Nvidia:
+NvidiaGPU:
   enabled: true
   package: nvidia-headless-460-server
 UpdatePolicy: automatic
@@ -261,6 +261,9 @@ channels:
 - memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
 containerdConfig:
   logLevel: info
+  nvidiaGPU:
+    enabled: true
+    package: nvidia-headless-460-server
   version: 1.4.9
 etcdManifests:
 - memfs://clusters.example.com/minimal.example.com/manifests/etcd/main.yaml

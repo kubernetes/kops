@@ -161,7 +161,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		return nil, fmt.Errorf("unable to infer any Subnets for InstanceGroup %s ", ig.ObjectMeta.Name)
 	}
 
-	if cluster.Spec.Nvidia != nil && fi.BoolValue(cluster.Spec.Nvidia.Enabled) {
+	if cluster.Spec.Containerd.NvidiaGPU != nil && fi.BoolValue(cluster.Spec.Containerd.NvidiaGPU.Enabled) {
 		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 		case kops.CloudProviderAWS:
 			mt, err := awsup.GetMachineTypeInfo(cloud.(awsup.AWSCloud), ig.Spec.MachineType)

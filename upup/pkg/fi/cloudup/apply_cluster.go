@@ -1429,8 +1429,8 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		config.ContainerdConfig = cluster.Spec.Containerd
 	}
 
-	if cluster.Spec.Nvidia != nil {
-		config.Nvidia = cluster.Spec.Nvidia
+	if cluster.Spec.Containerd.NvidiaGPU != nil {
+		config.NvidiaGPU = cluster.Spec.Containerd.NvidiaGPU
 	}
 
 	if ig.Spec.WarmPool != nil || cluster.Spec.WarmPool != nil {

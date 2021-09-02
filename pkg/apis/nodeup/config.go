@@ -76,8 +76,8 @@ type Config struct {
 
 	// APIServerConfig is additional configuration for nodes running an APIServer.
 	APIServerConfig *APIServerConfig `json:",omitempty"`
-	// Nvidia contains the configuration for nvidia
-	Nvidia *kops.NvidiaConfig `json:",omitempty"`
+	// NvidiaGPU contains the configuration for nvidia
+	NvidiaGPU *kops.NvidiaGPUConfig `json:",omitempty"`
 }
 
 // BootConfig is the configuration for the nodeup binary that might be too big to fit in userdata.

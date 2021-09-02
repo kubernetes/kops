@@ -184,8 +184,10 @@ func TestMinimal(t *testing.T) {
 
 func TestNvidia(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "nvidia").
-		withAddons(dnsControllerAddon).
-		withAddons("nvidia.addons.k8s.io-k8s-1.16").
+		withAddons(
+			dnsControllerAddon,
+			"nvidia.addons.k8s.io-k8s-1.16",
+		).
 		runTestTerraformAWS(t)
 }
 

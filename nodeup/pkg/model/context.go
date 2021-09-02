@@ -704,7 +704,7 @@ func (c *NodeupModelContext) CNIConfDir() string {
 }
 
 func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
-	return c.NodeupConfig.Nvidia != nil &&
-		fi.BoolValue(c.NodeupConfig.Nvidia.Enabled) &&
+	return c.NodeupConfig.NvidiaGPU != nil &&
+		fi.BoolValue(c.NodeupConfig.NvidiaGPU.Enabled) &&
 		c.GPUVendor == architectures.GPUVendorNvidia
 }
