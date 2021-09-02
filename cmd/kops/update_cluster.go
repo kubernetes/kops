@@ -403,7 +403,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 				}
 			}
 			fmt.Fprintf(sb, " * the ubuntu user is specific to Ubuntu. If not using Ubuntu please use the appropriate user based on your OS.\n")
-			fmt.Fprintf(sb, " * read about installing addons at: https://kops.sigs.k8s.io/operations/addons.\n")
+			fmt.Fprintf(sb, " * read about installing addons at: <https://kops.sigs.k8s.io/addons/>.\n")
 			fmt.Fprintf(sb, "\n")
 		}
 
