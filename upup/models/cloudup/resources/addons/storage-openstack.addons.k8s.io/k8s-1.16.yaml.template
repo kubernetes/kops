@@ -20,17 +20,16 @@ metadata:
 rules:
   - apiGroups: [""]
     resources: ["persistentvolumes"]
-    verbs: ["get", "list", "watch", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["nodes"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["storage.k8s.io"]
-    resources: ["volumeattachments"]
-    verbs: ["get", "list", "watch", "update", "patch"]
+    verbs: ["get", "list", "watch", "patch"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["csinodes"]
     verbs: ["get", "list", "watch"]
-
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments/status"]
+    verbs: ["patch"]
 
 ---
 kind: ClusterRoleBinding
@@ -81,6 +80,9 @@ rules:
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshotcontents"]
     verbs: ["get", "list"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch"]
 
 ---
 kind: ClusterRoleBinding
@@ -108,20 +110,15 @@ metadata:
     k8s-addon: storage-openstack.addons.k8s.io
 rules:
   - apiGroups: [""]
-    resources: ["persistentvolumes"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: [""]
-    resources: ["persistentvolumeclaims"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: [""]
     resources: ["events"]
     verbs: ["list", "watch", "create", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get", "list"]
+  # Secret permission is optional.
+  # Enable it if your driver needs secret.
+  # For example, `csi.storage.k8s.io/snapshotter-secret-name` is set in VolumeSnapshotClass.
+  # See https://kubernetes-csi.github.io/docs/secrets-and-credentials.html for more details.
+  #  - apiGroups: [""]
+  #    resources: ["secrets"]
+  #    verbs: ["get", "list"]
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshotclasses"]
     verbs: ["get", "list", "watch"]
@@ -129,14 +126,8 @@ rules:
     resources: ["volumesnapshotcontents"]
     verbs: ["create", "get", "list", "watch", "update", "delete"]
   - apiGroups: ["snapshot.storage.k8s.io"]
-    resources: ["volumesnapshots"]
-    verbs: ["get", "list", "watch", "update"]
-  - apiGroups: ["snapshot.storage.k8s.io"]
-    resources: ["volumesnapshots/status"]
+    resources: ["volumesnapshotcontents/status"]
     verbs: ["update"]
-  - apiGroups: ["apiextensions.k8s.io"]
-    resources: ["customresourcedefinitions"]
-    verbs: ["create", "list", "watch", "delete"]
 
 ---
 kind: ClusterRoleBinding
@@ -170,16 +161,16 @@ rules:
   #   verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["persistentvolumes"]
-    verbs: ["get", "list", "watch", "update", "patch"]
+    verbs: ["get", "list", "watch", "patch"]
   - apiGroups: [""]
     resources: ["persistentvolumeclaims"]
     verbs: ["get", "list", "watch"]
   - apiGroups: [""]
-    resources: ["persistentvolumeclaims/status"]
-    verbs: ["update", "patch"]
-  - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses"]
+    resources: ["pods"]
     verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims/status"]
+    verbs: ["patch"]
   - apiGroups: [""]
     resources: ["events"]
     verbs: ["list", "watch", "create", "update", "patch"]
@@ -258,7 +249,7 @@ metadata:
   labels:
     k8s-addon: storage-openstack.addons.k8s.io
 spec:
-  serviceName: "csi-cinder-controller-service"
+  serviceName: csi-cinder-controller-service
   replicas: 1
   selector:
     matchLabels:
@@ -272,7 +263,7 @@ spec:
       serviceAccount: csi-cinder-controller-sa
       containers:
         - name: csi-attacher
-          image: quay.io/k8scsi/csi-attacher:v2.2.0
+          image: k8s.gcr.io/sig-storage/csi-attacher:v3.1.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -284,10 +275,11 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-provisioner
-          image: quay.io/k8scsi/csi-provisioner:v1.6.0
+          image: k8s.gcr.io/sig-storage/csi-provisioner:v2.2.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
+            - "--extra-create-metadata"
 {{ if WithDefaultBool .CloudConfig.Openstack.BlockStorage.CSITopologySupport false }}
             - --feature-gates=Topology=true
 {{ end }}
@@ -299,9 +291,11 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-snapshotter
-          image: quay.io/k8scsi/csi-snapshotter:v1.2.2
+          image: k8s.gcr.io/sig-storage/csi-snapshotter:v4.0.0
           args:
             - "--csi-address=$(ADDRESS)"
+            - "--timeout=3m"
+            - "--extra-create-metadata"
           env:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -310,9 +304,11 @@ spec:
             - mountPath: /var/lib/csi/sockets/pluginproxy/
               name: socket-dir
         - name: csi-resizer
-          image: quay.io/k8scsi/csi-resizer:v0.4.0
+          image: k8s.gcr.io/sig-storage/csi-resizer:v1.1.0
           args:
             - "--csi-address=$(ADDRESS)"
+            - "--timeout=3m"
+            - "--handle-volume-inuse-error=false"
           env:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -320,6 +316,16 @@ spec:
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
+        - name: liveness-probe
+          image: k8s.gcr.io/sig-storage/livenessprobe:v2.2.0
+          args:
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - mountPath: /var/lib/csi/sockets/pluginproxy/
+              name: socket-dir
         - name: cinder-csi-plugin
           image: "{{- if .CloudConfig.Openstack.BlockStorage.CSIPluginImage -}} {{ .CloudConfig.Openstack.BlockStorage.CSIPluginImage }} {{- else -}} docker.io/k8scloudprovider/cinder-csi-plugin:{{OpenStackCCMTag}} {{- end -}}"
           args:
@@ -340,6 +346,18 @@ spec:
             - name: CLUSTER_NAME
               value: kubernetes
           imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 9808
+              name: healthz
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /healthz
+              port: healthz
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+            periodSeconds: 60
           volumeMounts:
             - name: socket-dir
               mountPath: /csi
@@ -419,14 +437,10 @@ spec:
       hostNetwork: true
       containers:
         - name: node-driver-registrar
-          image: quay.io/k8scsi/csi-node-driver-registrar:v1.2.0
+          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)"
-          lifecycle:
-            preStop:
-              exec:
-                command: ["/bin/sh", "-c", "rm -rf /registration/cinder.csi.openstack.org /registration/cinder.csi.openstack.org-reg.sock"]
           env:
             - name: ADDRESS
               value: /csi/csi.sock
@@ -442,6 +456,13 @@ spec:
               mountPath: /csi
             - name: registration-dir
               mountPath: /registration
+        - name: liveness-probe
+          image: k8s.gcr.io/sig-storage/livenessprobe:v2.2.0
+          args:
+            - --csi-address=/csi/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
         - name: cinder-csi-plugin
           securityContext:
             privileged: true
@@ -472,9 +493,6 @@ spec:
             - name: kubelet-dir
               mountPath: /var/lib/kubelet
               mountPropagation: "Bidirectional"
-            - name: pods-cloud-data
-              mountPath: /var/lib/cloud/data
-              readOnly: true
             - name: pods-probe-dir
               mountPath: /dev
               mountPropagation: "HostToContainer"
@@ -493,10 +511,6 @@ spec:
         - name: kubelet-dir
           hostPath:
             path: /var/lib/kubelet
-            type: Directory
-        - name: pods-cloud-data
-          hostPath:
-            path: /var/lib/cloud/data
             type: Directory
         - name: pods-probe-dir
           hostPath:
