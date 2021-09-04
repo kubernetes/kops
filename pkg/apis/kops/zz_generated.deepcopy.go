@@ -3555,6 +3555,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 			(*out)[key] = val
 		}
 	}
+	if in.KernelMemcgNotification != nil {
+		in, out := &in.KernelMemcgNotification, &out.KernelMemcgNotification
+		*out = new(bool)
+		**out = **in
+	}
 	if in.KubeReserved != nil {
 		in, out := &in.KubeReserved, &out.KubeReserved
 		*out = make(map[string]string, len(*in))
