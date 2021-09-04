@@ -79,7 +79,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
 	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
-	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
+	golang.org/x/sys v0.0.0-20210817190340-bfb29a6856f2
 	google.golang.org/api v0.45.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
@@ -96,8 +96,8 @@ require (
 	k8s.io/kubectl v0.22.0
 	k8s.io/legacy-cloud-providers v0.22.0
 	k8s.io/mount-utils v0.22.0
-	k8s.io/utils v0.0.0-20210722164352-7f3ee0f31471
+	k8s.io/utils v0.0.0-20210802155522-efc7438f0176
 	rsc.io/letsencrypt v0.0.3 // indirect
-	sigs.k8s.io/controller-runtime v0.9.5
+	sigs.k8s.io/controller-runtime v0.9.7
 	sigs.k8s.io/yaml v1.2.0
 )
