@@ -42,6 +42,7 @@ go_library(
         "fcntl_darwin.go",
         "fcntl_linux_32bit.go",
         "fdset.go",
+        "ifreq_linux.go",
         "ioctl.go",
         "ioctl_linux.go",
         "pagesize_unix.go",
