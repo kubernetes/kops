@@ -217,8 +217,6 @@ struct ltchars {
 #include <linux/genetlink.h>
 #include <linux/hdreg.h>
 #include <linux/hidraw.h>
-#include <linux/icmp.h>
-#include <linux/icmpv6.h>
 #include <linux/if.h>
 #include <linux/if_addr.h>
 #include <linux/if_alg.h>
