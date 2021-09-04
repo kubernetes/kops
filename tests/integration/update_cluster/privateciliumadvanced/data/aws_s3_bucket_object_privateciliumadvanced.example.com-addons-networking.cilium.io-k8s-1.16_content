@@ -47,6 +47,7 @@ data:
   enable-endpoint-routes: "true"
   enable-ipv4: "true"
   enable-ipv6: "false"
+  enable-ipv6-masquerade: "false"
   enable-k8s-event-handover: "true"
   enable-l7-proxy: "true"
   enable-node-port: "true"

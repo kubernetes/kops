@@ -47,7 +47,7 @@ spec:
       k8s-addon: storage-aws.addons.k8s.io
   - id: k8s-1.16
     manifest: networking.cilium.io/k8s-1.16-v1.10.yaml
-    manifestHash: 0a788246369c559b83e9081ff293dcd241dcace0fcd695793ab7d898fdd554ca
+    manifestHash: a27941351ef6ecb7bee109b5cbd773a7e8bde30626d1cfb1fef8bdcfcb55b38b
     name: networking.cilium.io
     needsRollingUpdate: all
     selector:
