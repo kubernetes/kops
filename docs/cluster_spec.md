@@ -569,8 +569,6 @@ spec:
 ## externalDns
 
 This block contains configuration options for your `external-DNS` provider.
-The current external-DNS provider is the kOps `dns-controller`, which can set up DNS records for Kubernetes resources.
-`dns-controller` is scheduled to be phased out and replaced with `external-dns`.
 
 ```yaml
 spec:
@@ -579,6 +577,16 @@ spec:
 ```
 
 Default kOps behavior is false. `watchIngress: true` uses the default _dns-controller_ behavior which is to watch the ingress controller for changes. Set this option at risk of interrupting Service updates in some cases.
+
+The default external-DNS provider is the kOps `dns-controller`.
+
+You can use [external-dns](https://github.com/kubernetes-sigs/external-dns/) as provider instead by adding the following:
+
+```yaml
+spec:
+  externalDns:
+    provider: ExternalDNS
+```
 
 ## kubelet
 
