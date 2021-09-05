@@ -166,14 +166,8 @@ func (b *KopsBootstrapClient) QueryBootstrap(ctx context.Context, req *nodeup.Bo
 			return nil, fi.NewTryAgainLaterError(fmt.Sprintf("kops-controller DNS not setup yet (not found: %v)", dnsErr))
 		}
 		return nil, err
-	} else {
-		for _, ip := range ips {
-			if ip.String() != cloudup.PlaceholderIP {
-				break
-			} else {
-				return nil, fi.NewTryAgainLaterError(fmt.Sprintf("kops-controller DNS not setup yet (placeholder IP found: %v)", ips))
-			}
-		}
+	} else if len(ips) == 1 && ips[0].String() == cloudup.PlaceholderIP {
+		return nil, fi.NewTryAgainLaterError(fmt.Sprintf("kops-controller DNS not setup yet (placeholder IP found: %v)", ips))
 	}
 
 	reqBytes, err := json.Marshal(req)
