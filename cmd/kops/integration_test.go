@@ -260,6 +260,13 @@ func TestMinimalIPv6(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6").runTestCloudformation(t)
 }
 
+// TestIPv6CloudIPAM runs the test on a minimum IPv6 configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
+func TestIPv6CloudIPAM(t *testing.T) {
+	newIntegrationTest("minimal-ipv6.example.com", "ipv6-cloudipam").
+		withAddons(dnsControllerAddon).
+		runTestTerraformAWS(t)
+}
+
 // TestMinimalWarmPool runs the test on a minimum Warm Pool configuration
 func TestMinimalWarmPool(t *testing.T) {
 	newIntegrationTest("minimal-warmpool.example.com", "minimal-warmpool").
