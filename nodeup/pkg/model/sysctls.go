@@ -152,7 +152,7 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if b.Cluster.Spec.IsIPv6Only() {
 		sysctls = append(sysctls,
-			"net.ipv6.ip_forward=1",
+			"net.ipv6.conf.all.forwarding=1",
 			"net.ipv6.conf.all.accept_ra=2",
 			"")
 	} else {
