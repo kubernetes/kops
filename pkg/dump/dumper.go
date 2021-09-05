@@ -38,8 +38,9 @@ type logDumper struct {
 
 	artifactsDir string
 
-	services []string
-	files    []string
+	services     []string
+	files        []string
+	podSelectors []string
 }
 
 // NewLogDumper is the constructor for a logDumper
@@ -79,6 +80,10 @@ func NewLogDumper(sshConfig *ssh.ClientConfig, artifactsDir string) *logDumper {
 		"startupscript",
 		"kern",
 		"docker",
+	}
+	d.podSelectors = []string{
+		"k8s-app=external-dns",
+		"k8s-app=dns-controller",
 	}
 
 	return d
@@ -268,6 +273,14 @@ func (n *logDumperNode) dump(ctx context.Context) []error {
 			if err := n.shellToFile(ctx, "sudo cat '"+strings.ReplaceAll(f, "'", "'\\''")+"'", filepath.Join(n.dir, filepath.Base(f))); err != nil {
 				errors = append(errors, err)
 			}
+		}
+	}
+
+	for _, selector := range n.dumper.podSelectors {
+		kv := strings.Split(selector, "=")
+		app := kv[len(kv)-1]
+		if err := n.shellToFile(ctx, "if command -v kubectl &> /dev/null; then kubectl logs -n kube-system --all-containers -l \""+selector+"\"; fi", filepath.Join(n.dir, app)); err != nil {
+			errors = append(errors, err)
 		}
 	}
 
