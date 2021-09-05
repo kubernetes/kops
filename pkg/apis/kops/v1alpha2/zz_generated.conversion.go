@@ -5247,6 +5247,7 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.VolumePluginDirectory = in.VolumePluginDirectory
 	out.Taints = in.Taints
 	out.FeatureGates = in.FeatureGates
+	out.KernelMemcgNotification = in.KernelMemcgNotification
 	out.KubeReserved = in.KubeReserved
 	out.KubeReservedCgroup = in.KubeReservedCgroup
 	out.SystemReserved = in.SystemReserved
@@ -5343,6 +5344,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.VolumePluginDirectory = in.VolumePluginDirectory
 	out.Taints = in.Taints
 	out.FeatureGates = in.FeatureGates
+	out.KernelMemcgNotification = in.KernelMemcgNotification
 	out.KubeReserved = in.KubeReserved
 	out.KubeReservedCgroup = in.KubeReservedCgroup
 	out.SystemReserved = in.SystemReserved

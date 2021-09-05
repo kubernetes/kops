@@ -159,6 +159,8 @@ type KubeletConfigSpec struct {
 	Taints []string `json:"taints,omitempty" flag:"register-with-taints"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
+	// Integrate with the kernel memcg notification to determine if memory eviction thresholds are crossed rather than polling.
+	KernelMemcgNotification *bool `json:"kernelMemcgNotification,omitempty" flag:"kernel-memcg-notification"`
 	// Resource reservation for kubernetes system daemons like the kubelet, container runtime, node problem detector, etc.
 	KubeReserved map[string]string `json:"kubeReserved,omitempty" flag:"kube-reserved"`
 	// Control group for kube daemons.

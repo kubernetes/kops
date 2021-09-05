@@ -452,6 +452,10 @@ spec:
                       pulls If no pulling progress is made before this deadline, the
                       image pulling will be cancelled. (default 1m0s)
                     type: string
+                  kernelMemcgNotification:
+                    description: Integrate with the kernel memcg notification to determine
+                      if memory eviction thresholds are crossed rather than polling.
+                    type: boolean
                   kubeReserved:
                     additionalProperties:
                       type: string
