@@ -126,6 +126,10 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 	ctx := context.TODO()
 
 	clusterName := v.cluster.Name
+	dnsProvider := kops.ExternalDNSProviderDNSController
+	if v.cluster.Spec.ExternalDNS != nil && v.cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderExternalDNS {
+		dnsProvider = kops.ExternalDNSProviderExternalDNS
+	}
 
 	validation := &ValidationCluster{}
 
@@ -137,12 +141,12 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 		}
 
 		if hasPlaceHolderIPAddress != "" {
-			message := "Validation Failed\n\n" +
-				"The dns-controller Kubernetes deployment has not updated the Kubernetes cluster's API DNS entry to the correct IP address." +
-				"  The API DNS IP address is the placeholder address that kops creates: " + hasPlaceHolderIPAddress + "." +
-				"  Please wait about 5-10 minutes for a master to start, dns-controller to launch, and DNS to propagate." +
-				"  The protokube container and dns-controller deployment logs may contain more diagnostic information." +
-				"  Etcd and the API DNS entries must be updated for a kops Kubernetes cluster to start."
+			message := fmt.Sprintf("Validation Failed\n\n"+
+				"The %[1]v Kubernetes deployment has not updated the Kubernetes cluster's API DNS entry to the correct IP address."+
+				"  The API DNS IP address is the placeholder address that kops creates: %[2]v."+
+				"  Please wait about 5-10 minutes for a master to start, %[1]v to launch, and DNS to propagate."+
+				"  The protokube container and %[1]v deployment logs may contain more diagnostic information."+
+				"  Etcd and the API DNS entries must be updated for a kops Kubernetes cluster to start.", dnsProvider, hasPlaceHolderIPAddress)
 			validation.addError(&ValidationError{
 				Kind:    "dns",
 				Name:    "apiserver",
