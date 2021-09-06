@@ -22,10 +22,10 @@ import (
 	"regexp"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
-	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/install"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
@@ -40,14 +40,6 @@ func init() {
 	install.Install(Scheme)
 }
 
-func encoder(gv runtime.GroupVersioner, mediaType string) runtime.Encoder {
-	e, ok := runtime.SerializerInfoForMediaType(Codecs.SupportedMediaTypes(), mediaType)
-	if !ok {
-		klog.Fatalf("no %s serializer registered", mediaType)
-	}
-	return Codecs.EncoderForVersion(e.Serializer, gv)
-}
-
 func decoder() runtime.Decoder {
 	// TODO: Cache?
 	// Codecs provides access to encoding and decoding for the scheme
@@ -60,14 +52,32 @@ func ToVersionedYaml(obj runtime.Object) ([]byte, error) {
 	return ToVersionedYamlWithVersion(obj, v1alpha2.SchemeGroupVersion)
 }
 
-// ToVersionedYamlWithVersion encodes the object to YAML, in a specified API version
-func ToVersionedYamlWithVersion(obj runtime.Object, version runtime.GroupVersioner) ([]byte, error) {
+// ToMediaTypeWithVersion encodes the object to the specified mediaType, in a specified API version
+func ToMediaTypeWithVersion(obj runtime.Object, mediaType string, gv runtime.GroupVersioner) ([]byte, error) {
+	e, ok := runtime.SerializerInfoForMediaType(Codecs.SupportedMediaTypes(), mediaType)
+	if !ok {
+		return nil, fmt.Errorf("no serializer for %q", mediaType)
+	}
+
+	_, isUnstructured := obj.(*unstructured.Unstructured)
 	var w bytes.Buffer
-	err := encoder(version, "application/yaml").Encode(obj, &w)
-	if err != nil {
-		return nil, fmt.Errorf("error encoding %T: %v", obj, err)
+	if isUnstructured {
+		err := e.Serializer.Encode(obj, &w)
+		if err != nil {
+			return nil, fmt.Errorf("error encoding %T with unstructured encoder: %w", obj, err)
+		}
+	} else {
+		encoder := Codecs.EncoderForVersion(e.Serializer, gv)
+		if err := encoder.Encode(obj, &w); err != nil {
+			return nil, fmt.Errorf("error encoding %T with structured encoder: %w", obj, err)
+		}
 	}
 	return w.Bytes(), nil
+}
+
+// ToVersionedYamlWithVersion encodes the object to YAML, in a specified API version
+func ToVersionedYamlWithVersion(obj runtime.Object, version runtime.GroupVersioner) ([]byte, error) {
+	return ToMediaTypeWithVersion(obj, "application/yaml", version)
 }
 
 // ToVersionedJSON encodes the object to JSON
@@ -77,12 +87,7 @@ func ToVersionedJSON(obj runtime.Object) ([]byte, error) {
 
 // ToVersionedJSONWithVersion encodes the object to JSON, in a specified API version
 func ToVersionedJSONWithVersion(obj runtime.Object, version runtime.GroupVersioner) ([]byte, error) {
-	var w bytes.Buffer
-	err := encoder(version, "application/json").Encode(obj, &w)
-	if err != nil {
-		return nil, fmt.Errorf("error encoding %T: %v", obj, err)
-	}
-	return w.Bytes(), nil
+	return ToMediaTypeWithVersion(obj, "application/json", version)
 }
 
 // Decode decodes the specified data, with the specified default version
