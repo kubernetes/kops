@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/util/pkg/text"
 	"sigs.k8s.io/yaml"
@@ -34,6 +35,11 @@ type Object struct {
 // NewObject returns an Object wrapping the provided data
 func NewObject(data map[string]interface{}) *Object {
 	return &Object{data: data}
+}
+
+// ToUnstructured converts the object to an unstructured.Unstructured
+func (o *Object) ToUnstructured() *unstructured.Unstructured {
+	return &unstructured.Unstructured{Object: o.data}
 }
 
 // ObjectList describes a list of objects, allowing us to add bulk-methods
