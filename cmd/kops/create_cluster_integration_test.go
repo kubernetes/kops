@@ -260,6 +260,25 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 		yamlAll = append(yamlAll, actualYAML)
 	}
 
+	// Compare additional objects
+	addons, err := clientset.AddonsFor(&clusters.Items[0]).List()
+	if err != nil {
+		t.Fatalf("error listing addons: %v", err)
+	}
+
+	for _, addon := range addons {
+		u := addon.ToUnstructured()
+
+		actualYAMLBytes, err := kopscodecs.ToVersionedYamlWithVersion(u, schema.GroupVersion{Group: "kops.k8s.io", Version: version})
+		if err != nil {
+			t.Fatalf("unexpected error serializing Addon: %v", err)
+		}
+
+		actualYAML := strings.TrimSpace(string(actualYAMLBytes))
+
+		yamlAll = append(yamlAll, actualYAML)
+	}
+
 	actualYAML := strings.Join(yamlAll, "\n\n---\n\n")
 	golden.AssertMatchesFile(t, actualYAML, path.Join(srcDir, expectedClusterPath))
 }
