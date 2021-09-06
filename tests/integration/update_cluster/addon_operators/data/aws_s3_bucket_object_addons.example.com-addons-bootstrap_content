@@ -45,8 +45,13 @@ spec:
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
+  - manifest: packages/operator.coredns.addons.x-k8s.io/0.1.0-kops.1/manifest.yaml
+    manifestHash: d2a4af6675f4e785038464575899d4b2756786d3170dcfda9d82c55e2d003e64
+    name: operator.coredns.addons.x-k8s.io
+    selector:
+      k8s-addon: operator.coredns.addons.x-k8s.io
   - manifest: cluster-addons.kops.k8s.io/default.yaml
-    manifestHash: cf3ce40095c04824def5a7d063f4649424b66327166dd33619f55a5073b570d6
+    manifestHash: a89ff78d6c4464a4b24b5c78bc50360ebf1a7bdd8649aa0228669a3467a6d764
     name: cluster-addons.kops.k8s.io
     selector:
       k8s-addon: cluster-addons.kops.k8s.io

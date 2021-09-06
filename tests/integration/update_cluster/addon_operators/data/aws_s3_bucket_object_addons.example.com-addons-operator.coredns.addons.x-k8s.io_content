@@ -1,0 +1,318 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.5
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: operator.coredns.addons.x-k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: operator.coredns.addons.x-k8s.io
+  name: coredns.addons.x-k8s.io
+spec:
+  group: addons.x-k8s.io
+  names:
+    kind: CoreDNS
+    listKind: CoreDNSList
+    plural: coredns
+    singular: coredns
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: CoreDNS is the Schema for the coredns API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: CoreDNSSpec defines the desired state of CoreDNS
+          properties:
+            channel:
+              description: 'Channel specifies a channel that can be used to resolve
+                a specific addon, eg: stable It will be ignored if Version is specified'
+              type: string
+            corefile:
+              type: string
+            dnsDomain:
+              type: string
+            dnsIP:
+              type: string
+            patches:
+              items:
+                type: object
+              type: array
+            version:
+              description: Version specifies the exact addon version to be deployed,
+                eg 1.2.3 It should not be specified if Channel is specified
+              type: string
+          type: object
+        status:
+          description: CoreDNSStatus defines the observed state of CoreDNS
+          properties:
+            errors:
+              items:
+                type: string
+              type: array
+            healthy:
+              type: boolean
+          required:
+          - healthy
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: operator.coredns.addons.x-k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: operator.coredns.addons.x-k8s.io
+  name: coredns-system
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: operator.coredns.addons.x-k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: operator.coredns.addons.x-k8s.io
+    k8s-app: coredns-operator
+  name: coredns-operator
+  namespace: coredns-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: operator.coredns.addons.x-k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: operator.coredns.addons.x-k8s.io
+  name: coredns-operator
+rules:
+- apiGroups:
+  - addons.x-k8s.io
+  resources:
+  - coredns
+  verbs:
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - addons.x-k8s.io
+  resources:
+  - coredns/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - serviceaccounts
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resourceNames:
+  - coredns
+  resources:
+  - configmaps
+  - serviceaccounts
+  - services
+  verbs:
+  - delete
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - serviceaccounts
+  - services
+  verbs:
+  - create
+- apiGroups:
+  - apps
+  - extensions
+  resources:
+  - deployments
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  - extensions
+  resourceNames:
+  - coredns
+  resources:
+  - deployments
+  verbs:
+  - delete
+  - patch
+  - update
+- apiGroups:
+  - apps
+  - extensions
+  resources:
+  - deployments
+  verbs:
+  - create
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: operator.coredns.addons.x-k8s.io
+    addonmanager.kubernetes.io/mode: EnsureExists
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: operator.coredns.addons.x-k8s.io
+    kubernetes.io/bootstrapping: rbac-defaults
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: CoreDNS
+  name: system:coredns
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  - services
+  - pods
+  - namespaces
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: operator.coredns.addons.x-k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: operator.coredns.addons.x-k8s.io
+    k8s-app: coredns-operator
+  name: coredns-system:coredns-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: coredns-operator
+subjects:
+- kind: ServiceAccount
+  name: coredns-operator
+  namespace: coredns-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: operator.coredns.addons.x-k8s.io
+    addonmanager.kubernetes.io/mode: EnsureExists
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: operator.coredns.addons.x-k8s.io
+    kubernetes.io/bootstrapping: rbac-defaults
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: CoreDNS
+  name: system:coredns
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:coredns
+subjects:
+- kind: ServiceAccount
+  name: coredns
+  namespace: kube-system
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: operator.coredns.addons.x-k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: operator.coredns.addons.x-k8s.io
+    k8s-app: coredns-operator
+  name: coredns-operator
+  namespace: coredns-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: coredns-operator
+  template:
+    metadata:
+      labels:
+        k8s-app: coredns-operator
+    spec:
+      containers:
+      - args:
+        - --enable-leader-election=false
+        - --rbac-mode=ignore
+        command:
+        - /manager
+        image: justinsb/coredns-operator:latest
+        name: manager
+        resources:
+          limits:
+            cpu: 100m
+            memory: 30Mi
+          requests:
+            cpu: 100m
+            memory: 20Mi
+      serviceAccountName: coredns-operator
+      terminationGracePeriodSeconds: 10

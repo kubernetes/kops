@@ -102,7 +102,7 @@ spec:
 
 ---
 
-apiVersion: kops.io/v1alpha1
+apiVersion: addons.x-k8s.io/v1alpha1
 kind: ClusterPackage
 metadata:
   name: operator.coredns.addons.x-k8s.io
