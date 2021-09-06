@@ -24,11 +24,13 @@ import (
 
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/kopscodecs"
+	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/text"
 	"k8s.io/kops/util/pkg/vfs"
@@ -100,6 +102,8 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 		return err
 	}
 
+	addons := make(map[string]kubemanifest.ObjectList)
+
 	var clusterName = ""
 	//var cSpec = false
 	var sb bytes.Buffer
@@ -123,6 +127,24 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 			o, gvk, err := kopscodecs.Decode(section, nil)
 			if err != nil {
 				return fmt.Errorf("error parsing file %q: %v", f, err)
+			}
+
+			if gvk.Group != "kops.k8s.io" {
+				accessor, err := meta.Accessor(o)
+				if err != nil {
+					return fmt.Errorf("unable to get metadata for %T", o)
+				}
+				clusterName = accessor.GetLabels()[kopsapi.LabelClusterName]
+				if clusterName == "" {
+					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
+				}
+
+				addon, err := kubemanifest.FromRuntimeObject(o)
+				if err != nil {
+					return fmt.Errorf("error converting object %T: %w", o, err)
+				}
+				addons[clusterName] = append(addons[clusterName], addon)
+				continue
 			}
 
 			switch v := o.(type) {
@@ -202,8 +224,19 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 				return fmt.Errorf("Unhandled kind %q in %s", gvk, f)
 			}
 		}
-
 	}
+
+	for clusterName, objects := range addons {
+		cluster, err := clientset.GetCluster(ctx, clusterName)
+		if err != nil {
+			return err
+		}
+
+		if err := clientset.AddonsFor(cluster).Replace(objects); err != nil {
+			return err
+		}
+	}
+
 	{
 		// If there is a value in this sb, this should mean that we have something to deploy
 		// so let's advise the user how to engage the cloud provider and deploy

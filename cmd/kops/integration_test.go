@@ -699,6 +699,20 @@ func TestClusterNameDigit(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+
+// TestAddonOperators tests with addon operators
+func TestAddonOperators(t *testing.T) {
+	featureflag.ParseFlags("+UseAddonOperators")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-UseAddonOperators")
+	}
+	defer unsetFeatureFlags()
+	
+	newIntegrationTest("addons.example.com", "addon_operators").
+		runTestTerraformAWS(t)
+}
+
+
 func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
 	ctx := context.Background()
 
