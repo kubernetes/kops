@@ -52,6 +52,9 @@ type ChannelSpec struct {
 
 	// KubernetesVersions allows us to recommend/requires kubernetes versions
 	KubernetesVersions []KubernetesVersionSpec `json:"kubernetesVersions,omitempty"`
+
+	// Packages specifies the package versions that correspond to this channel.
+	Packages []PackageVersionSpec `json:"packages,omitempty"`
 }
 
 type KopsVersionSpec struct {
@@ -82,6 +85,15 @@ type ChannelImageSpec struct {
 	Name string `json:"name,omitempty"`
 
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
+}
+
+// PackageVersionSpec specifies the version of a package
+type PackageVersionSpec struct {
+	// Name is the name of the package.
+	Name string `json:"name"`
+
+	// Version is the version of the package.
+	Version string `json:"version"`
 }
 
 // ResolveChannel maps a channel to an absolute URL (possibly a VFS URL)
@@ -351,4 +363,50 @@ func (c *Channel) HasUpstreamImagePrefix(image string) bool {
 		strings.HasPrefix(image, "cos-cloud/cos-stable-") ||
 		strings.HasPrefix(image, "ubuntu-os-cloud/ubuntu-2004-focal-") ||
 		strings.HasPrefix(image, "Canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:")
+}
+
+// GetPackageVersion returns the version for the package, or an error if could not be found.
+func (c *Channel) GetPackageVersion(name string) (*Version, error) {
+	var matches []*PackageVersionSpec
+
+	for i := range c.Spec.Packages {
+		pkg := &c.Spec.Packages[i]
+		if pkg.Name != name {
+			continue
+		}
+
+		matches = append(matches, pkg)
+	}
+
+	if len(matches) == 0 {
+		return nil, fmt.Errorf("found no packages in channel for name=%q", name)
+	}
+
+	if len(matches) != 1 {
+		return nil, fmt.Errorf("found multiple packages in channel for name=%q", name)
+	}
+	v, err := ParseVersion(matches[0].Version)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing version %q for package %q", matches[0].Version, name)
+	}
+	return v, nil
+}
+
+// Version is our helper type for semver versions.
+type Version struct {
+	v semver.Version
+}
+
+// ParseVersion parses the semver version string into a Verison.
+func ParseVersion(s string) (*Version, error) {
+	v, err := semver.Parse(s)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing version %q: %w", s, err)
+	}
+	return &Version{v: v}, nil
+}
+
+// String returns a string representation of the object
+func (v *Version) String() string {
+	return v.v.String()
 }

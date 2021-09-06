@@ -48,7 +48,7 @@ import (
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubeconfig"
-	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/pkg/wellknownoperators"
 	"k8s.io/kops/pkg/zones"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -668,6 +668,24 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		fullInstanceGroups = append(fullInstanceGroups, fullGroup)
 	}
 
+	kubernetesVersion, err := kopsutil.ParseKubernetesVersion(clusterResult.Cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return fmt.Errorf("cannot parse KubernetesVersion %q in cluster: %w", clusterResult.Cluster.Spec.KubernetesVersion, err)
+	}
+
+	addons, err := wellknownoperators.CreateAddons(clusterResult.Channel, kubernetesVersion)
+	if err != nil {
+		return err
+	}
+
+	for _, p := range c.AddonPaths {
+		addon, err := clusteraddons.LoadClusterAddon(p)
+		if err != nil {
+			return fmt.Errorf("error loading cluster addon %s: %v", p, err)
+		}
+		addons = append(addons, addon.Objects...)
+	}
+
 	err = validation.DeepValidate(fullCluster, fullInstanceGroups, true, nil)
 	if err != nil {
 		return err
@@ -683,6 +701,11 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			group.ObjectMeta.Labels[api.LabelClusterName] = cluster.ObjectMeta.Name
 			obj = append(obj, group)
 		}
+
+		for _, o := range addons {
+			obj = append(obj, o.ToUnstructured())
+		}
+
 		switch c.Output {
 		case OutputYaml:
 			if err := fullOutputYAML(out, obj...); err != nil {
@@ -697,15 +720,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		default:
 			return fmt.Errorf("unsupported output type %q", c.Output)
 		}
-	}
-
-	var addons kubemanifest.ObjectList
-	for _, p := range c.AddonPaths {
-		addon, err := clusteraddons.LoadClusterAddon(p)
-		if err != nil {
-			return fmt.Errorf("error loading cluster addon %s: %v", p, err)
-		}
-		addons = append(addons, addon.Objects...)
 	}
 
 	// Note we perform as much validation as we can, before writing a bad config

@@ -32,6 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/testutils"
@@ -131,6 +132,17 @@ func TestCreateClusterPrivateSharedSubnets(t *testing.T) {
 // TestCreateClusterIPv6 runs kops create cluster --zones us-test-1a --master-zones us-test-1a --ipv6
 func TestCreateClusterIPv6(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ipv6", "v1alpha2")
+}
+
+// TestCreateClusterAddonOperators tests with addon operators
+func TestCreateClusterAddonOperators(t *testing.T) {
+	featureflag.ParseFlags("+UseAddonOperators")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-UseAddonOperators")
+	}
+	defer unsetFeatureFlags()
+
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/addon_operators", "v1alpha2")
 }
 
 func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string) {

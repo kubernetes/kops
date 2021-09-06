@@ -179,3 +179,8 @@ spec:
     recommendedVersion: "1.11.1"
     #requiredVersion: 1.10.0
     kubernetesVersion: 1.11.10
+  packages:
+  - name: operator.coredns.addons.x-k8s.io
+    version: 0.1.0-kops.1
+  - name: coredns
+    version: 1.7.0

@@ -17,16 +17,11 @@ limitations under the License.
 package wellknownoperators
 
 import (
-	"fmt"
-	"net/url"
-	"path"
-
+	"github.com/blang/semver/v4"
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 type WellKnownAddon struct {
@@ -46,57 +41,122 @@ func (b *Builder) Build() ([]*WellKnownAddon, kubemanifest.ObjectList, error) {
 	var addons []*WellKnownAddon
 	var crds kubemanifest.ObjectList
 
-	if b.Cluster.Spec.KubeDNS != nil && b.Cluster.Spec.KubeDNS.Provider == "CoreDNS" {
-		// TODO: Check that we haven't manually loaded a CoreDNS operator
-		// TODO: Check that we haven't manually created a CoreDNS CRD
+	// if b.Cluster.Spec.KubeDNS != nil && b.Cluster.Spec.KubeDNS.Provider == "CoreDNS" {
+	// 	// TODO: Autopopulate a CoreDNS operator if we don't have one?
+	// 	// TODO: Check that we haven't manually created a CoreDNS CRD
 
-		key := "coredns.addons.x-k8s.io"
-		version := "0.1.0-kops.1"
-		id := ""
+	// 	operatorKey := "operator.coredns.addons.x-k8s.io"
 
-		location := path.Join("operators", key, version, "manifest.yaml")
-		channelURL, err := kops.ResolveChannel(b.Cluster.Spec.Channel)
-		if err != nil {
-			return nil, nil, fmt.Errorf("error resolving channel %q: %v", b.Cluster.Spec.Channel, err)
-		}
+	// 	coreDNSVersion := lookupVersion("coredns", b.Cluster.Spec.Channel)
+	// 	operatorVersion := lookupVersion(operatorKey, b.Cluster.Spec.Channel)
 
-		locationURL := channelURL.ResolveReference(&url.URL{Path: location}).String()
+	// 	//key := "coredns.addons.x-k8s.io"
+	// 	//id := ""
 
-		manifestBytes, err := vfs.Context.ReadFile(locationURL)
-		if err != nil {
-			return nil, nil, fmt.Errorf("error reading operator manifest %q: %v", locationURL, err)
-		}
+	// 	location := path.Join("packages", operatorKey, operatorVersion, "manifest.yaml")
+	// 	channelURL, err := kops.ResolveChannel(b.Cluster.Spec.Channel)
+	// 	if err != nil {
+	// 		return nil, nil, fmt.Errorf("error resolving channel %q: %v", b.Cluster.Spec.Channel, err)
+	// 	}
 
-		addon := &WellKnownAddon{
-			Manifest: manifestBytes,
-			Spec: channelsapi.AddonSpec{
-				Name:     fi.String(key),
-				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.String(location),
-				Id:       id,
-			},
-		}
-		addons = append(addons, addon)
+	// 	locationURL := channelURL.ResolveReference(&url.URL{Path: location}).String()
 
-		{
-			metadata := map[string]interface{}{
-				"namespace": "kube-system",
-				"name":      "coredns",
-			}
-			spec := map[string]interface{}{
-				"dnsDomain": b.Cluster.Spec.KubeDNS.Domain,
-				"dnsIP":     b.Cluster.Spec.KubeDNS.ServerIP,
-			}
+	// 	manifestBytes, err := vfs.Context.ReadFile(locationURL)
+	// 	if err != nil {
+	// 		return nil, nil, fmt.Errorf("error reading operator manifest %q: %v", locationURL, err)
+	// 	}
 
-			crd := kubemanifest.NewObject(map[string]interface{}{
-				"apiVersion": "addons.x-k8s.io/v1alpha1",
-				"kind":       "CoreDNS",
-				"metadata":   metadata,
-				"spec":       spec,
-			})
-			crds = append(crds, crd)
-		}
-	}
+	// 	addon := &WellKnownAddon{
+	// 		Manifest: manifestBytes,
+	// 		Spec: channelsapi.AddonSpec{
+	// 			Name:     fi.String(operatorKey),
+	// 			Selector: map[string]string{"k8s-addon": operatorKey},
+	// 			Manifest: fi.String(location),
+	// 		},
+	// 	}
+	// 	addons = append(addons, addon)
+
+	// 	{
+	// 		metadata := map[string]interface{}{
+	// 			"namespace": "kube-system",
+	// 			"name":      "coredns",
+	// 		}
+	// 		spec := map[string]interface{}{
+	// 			"dnsDomain": b.Cluster.Spec.KubeDNS.Domain,
+	// 			"dnsIP":     b.Cluster.Spec.KubeDNS.ServerIP,
+
+	// 			//"channel": coreDNSChannel,
+	// 			"version": coreDNSVersion,
+	// 		}
+
+	// 		crd := kubemanifest.NewObject(map[string]interface{}{
+	// 			"apiVersion": "addons.x-k8s.io/v1alpha1",
+	// 			"kind":       "CoreDNS",
+	// 			"metadata":   metadata,
+	// 			"spec":       spec,
+	// 		})
+	// 		crds = append(crds, crd)
+	// 	}
+	// }
 
 	return addons, crds, nil
+}
+
+func CreateAddons(channel *kops.Channel, kubernetesVersion *semver.Version) (kubemanifest.ObjectList, error) {
+	var addons kubemanifest.ObjectList
+
+	if !featureflag.UseAddonOperators.Enabled() {
+		return addons, nil
+	}
+
+	{
+		operatorKey := "operator.coredns.addons.x-k8s.io"
+
+		operatorVersion, err := channel.GetPackageVersion(operatorKey)
+		if err != nil {
+			return nil, err
+		}
+
+		metadata := map[string]interface{}{
+			"name": operatorKey,
+		}
+		spec := map[string]interface{}{
+			"version": operatorVersion.String(),
+		}
+
+		addonPackage := kubemanifest.NewObject(map[string]interface{}{
+			"apiVersion": "kops.io/v1alpha1",
+			"kind":       "ClusterPackage",
+			"metadata":   metadata,
+			"spec":       spec,
+		})
+		addons = append(addons, addonPackage)
+	}
+
+	{
+		key := "coredns"
+		version, err := channel.GetPackageVersion(key)
+		if err != nil {
+			return nil, err
+		}
+		metadata := map[string]interface{}{
+			"namespace": "kube-system",
+			"name":      "coredns",
+		}
+		spec := map[string]interface{}{
+			// "dnsDomain": b.Cluster.Spec.KubeDNS.Domain,
+			// "dnsIP":     b.Cluster.Spec.KubeDNS.ServerIP,
+
+			"version": version.String(),
+		}
+
+		crd := kubemanifest.NewObject(map[string]interface{}{
+			"apiVersion": "addons.x-k8s.io/v1alpha1",
+			"kind":       "CoreDNS",
+			"metadata":   metadata,
+			"spec":       spec,
+		})
+		addons = append(addons, crd)
+	}
+	return addons, nil
 }
