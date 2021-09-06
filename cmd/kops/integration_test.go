@@ -262,6 +262,11 @@ func TestMinimalIPv6(t *testing.T) {
 
 // TestIPv6CloudIPAM runs the test on a minimum IPv6 configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestIPv6CloudIPAM(t *testing.T) {
+	featureflag.ParseFlags("+AWSIPv6")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-AWSIPv6")
+	}
+	defer unsetFeatureFlags()
 	newIntegrationTest("minimal-ipv6.example.com", "ipv6-cloudipam").
 		withAddons(dnsControllerAddon).
 		runTestTerraformAWS(t)
