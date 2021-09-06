@@ -1,0 +1,20 @@
+apiVersion: kops.io/v1alpha1
+kind: ClusterPackage
+metadata:
+  labels:
+    kops.k8s.io/cluster: addons.example.com
+  name: operator.coredns.addons.x-k8s.io
+spec:
+  version: 0.1.0-kops.1
+
+---
+
+apiVersion: addons.x-k8s.io/v1alpha1
+kind: CoreDNS
+metadata:
+  labels:
+    kops.k8s.io/cluster: addons.example.com
+  name: coredns
+  namespace: kube-system
+spec:
+  version: 1.7.0
