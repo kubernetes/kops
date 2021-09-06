@@ -280,6 +280,7 @@ spec:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
             - "--extra-create-metadata"
+            - "--default-fstype=ext4"
 {{ if WithDefaultBool .CloudConfig.Openstack.BlockStorage.CSITopologySupport false }}
             - --feature-gates=Topology=true
 {{ end }}
