@@ -552,9 +552,9 @@ resource "aws_s3_bucket_object" "addons-example-com-addons-limit-range-addons-k8
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "addons-example-com-addons-operator-coredns-addons-x-k8s-io" {
+resource "aws_s3_bucket_object" "addons-example-com-addons-operator-coredns-addons-x-k8s-io-0-1-0-kops-1" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_addons.example.com-addons-operator.coredns.addons.x-k8s.io_content")
+  content                = file("${path.module}/data/aws_s3_bucket_object_addons.example.com-addons-operator.coredns.addons.x-k8s.io-0.1.0-kops.1_content")
   key                    = "tests/addons.example.com/addons/packages/operator.coredns.addons.x-k8s.io/0.1.0-kops.1/manifest.yaml"
   server_side_encryption = "AES256"
 }

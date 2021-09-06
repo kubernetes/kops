@@ -75,11 +75,16 @@ func (b *Builder) Build(objects kubemanifest.ObjectList) ([]*Package, kubemanife
 
 func (b *Builder) loadClusterPackage(u *unstructured.Unstructured) (*Package, error) {
 	operatorKey := u.GetName()
+	if operatorKey == "" {
+		return nil, fmt.Errorf("could not get name from ClusterPackage")
+	}
 
 	operatorVersion, _, err := unstructured.NestedString(u.Object, "spec", "version")
 	if err != nil || operatorVersion == "" {
 		return nil, fmt.Errorf("could not get spec.version from ClusterPackage")
 	}
+
+	id := operatorVersion
 
 	location := path.Join("packages", operatorKey, operatorVersion, "manifest.yaml")
 	channelURL, err := kops.ResolveChannel(b.Cluster.Spec.Channel)
@@ -98,6 +103,7 @@ func (b *Builder) loadClusterPackage(u *unstructured.Unstructured) (*Package, er
 		Manifest: manifestBytes,
 		Spec: channelsapi.AddonSpec{
 			Name:     fi.String(operatorKey),
+			Id:       id,
 			Selector: map[string]string{"k8s-addon": operatorKey},
 			Manifest: fi.String(location),
 		},
