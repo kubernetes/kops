@@ -171,6 +171,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			if c.IPIPMode != "" {
 				return c.IPIPMode
 			}
+			if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderOpenstack {
+				return "Always"
+			}
 			return "CrossSubnet"
 		}
 		dest["CalicoIPv4PoolVXLANMode"] = func() string {
