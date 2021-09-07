@@ -585,8 +585,10 @@ You can use [external-dns](https://github.com/kubernetes-sigs/external-dns/) as 
 ```yaml
 spec:
   externalDns:
-    provider: ExternalDNS
+    provider: external-dns
 ```
+
+Note that you if you have dns-controller installed, you need to remove this deployment before updating the cluster with the new configuration.
 
 ## kubelet
 
