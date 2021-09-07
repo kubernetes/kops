@@ -186,35 +186,47 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 
 	for _, dnsHostname := range dnsHostnames {
 		dnsHostname = dns.EnsureDotSuffix(dnsHostname)
-		found := false
-		dnsRecord := recordsMap["A::"+dnsHostname]
-		if dnsRecord != nil {
-			rrdatas := dnsRecord.Rrdatas()
-			if len(rrdatas) > 0 {
-				klog.V(4).Infof("Found DNS record %s => %s; won't create", dnsHostname, rrdatas)
-				found = true
-			} else {
-				// This is probably an alias target; leave it alone...
-				klog.V(4).Infof("Found DNS record %s, but no records", dnsHostname)
-				found = true
+		foundA := false
+		{
+			dnsRecord := recordsMap["A::"+dnsHostname]
+			if dnsRecord != nil {
+				rrdatas := dnsRecord.Rrdatas()
+				if len(rrdatas) > 0 {
+					klog.V(4).Infof("Found DNS record %s => %s; won't create", dnsHostname, rrdatas)
+				} else {
+					// This is probably an alias target; leave it alone...
+					klog.V(4).Infof("Found DNS record %s, but no records", dnsHostname)
+				}
+				foundA = true
 			}
 		}
 
-		if found {
+		foundTXT := false
+		{
+			dnsRecord := recordsMap["TXT::"+dnsHostname]
+			if dnsRecord != nil {
+				foundTXT = true
+			}
+		}
+		if foundA && foundTXT {
 			continue
 		}
 
 		klog.V(2).Infof("Pre-creating DNS record %s => %s", dnsHostname, PlaceholderIP)
 
-		if cloud.ProviderID() == kops.CloudProviderDO {
-			changeset.Add(rrs.New(dnsHostname, []string{PlaceholderIP}, PlaceholderTTLDigitialOcean, rrstype.A))
-		} else {
-			changeset.Add(rrs.New(dnsHostname, []string{PlaceholderIP}, PlaceholderTTL, rrstype.A))
-			if cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderExternalDNS {
-				changeset.Add(rrs.New(dnsHostname, []string{fmt.Sprintf("\"heritage=external-dns,external-dns/owner=kops-%s\"", cluster.GetClusterName())}, PlaceholderTTL, rrstype.TXT))
+		if !foundA {
+			if cloud.ProviderID() == kops.CloudProviderDO {
+				changeset.Add(rrs.New(dnsHostname, []string{PlaceholderIP}, PlaceholderTTLDigitialOcean, rrstype.A))
+			} else {
+				changeset.Add(rrs.New(dnsHostname, []string{PlaceholderIP}, PlaceholderTTL, rrstype.A))
+
 			}
 		}
-
+		if !foundTXT {
+			if cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderExternalDNS {
+				changeset.Add(rrs.New(dnsHostname, []string{fmt.Sprintf("\"heritage=external-dns,external-dns/owner=kops-%s\"", cluster.ObjectMeta.Name)}, PlaceholderTTL, rrstype.TXT))
+			}
+		}
 		created = append(created, dnsHostname)
 	}
 
