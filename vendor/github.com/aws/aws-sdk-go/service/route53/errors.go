@@ -403,8 +403,8 @@ const (
 	// To request a higher limit, create a case (http://aws.amazon.com/route53-request)
 	// with the Amazon Web Services Support Center.
 	//
-	// You have reached the maximum number of active health checks for an account.
-	// To request a higher limit, create a case (http://aws.amazon.com/route53-request)
+	// You have reached the maximum number of active health checks for an Amazon
+	// Web Services account. To request a higher limit, create a case (http://aws.amazon.com/route53-request)
 	// with the Amazon Web Services Support Center.
 	ErrCodeTooManyHealthChecks = "TooManyHealthChecks"
 
