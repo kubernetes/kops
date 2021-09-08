@@ -5779,13 +5779,17 @@ func (c *AutoScaling) StartInstanceRefreshRequest(input *StartInstanceRefreshInp
 
 // StartInstanceRefresh API operation for Auto Scaling.
 //
-// Starts a new instance refresh operation, which triggers a rolling replacement
-// of previously launched instances in the Auto Scaling group with a new group
-// of instances.
+// Starts a new instance refresh operation. An instance refresh performs a rolling
+// replacement of all or some instances in an Auto Scaling group. Each instance
+// is terminated first and then replaced, which temporarily reduces the capacity
+// available within your Auto Scaling group.
 //
 // This operation is part of the instance refresh feature (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html)
 // in Amazon EC2 Auto Scaling, which helps you update instances in your Auto
-// Scaling group after you make configuration changes.
+// Scaling group. This feature is helpful, for example, when you have a new
+// AMI or a new user data script. You just need to create a new launch template
+// that specifies the new AMI or user data script. Then start an instance refresh
+// to immediately begin the process of updating instances in the group.
 //
 // If the call succeeds, it creates a new instance refresh request with a unique
 // ID that you can use to track its progress. To query its status, call the
@@ -10087,6 +10091,70 @@ func (s *DescribeWarmPoolOutput) SetWarmPoolConfiguration(v *WarmPoolConfigurati
 	return s
 }
 
+// Describes the desired configuration for an instance refresh.
+//
+// If you specify a desired configuration, you must specify either a LaunchTemplate
+// or a MixedInstancesPolicy.
+type DesiredConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// Describes the launch template and the version of the launch template that
+	// Amazon EC2 Auto Scaling uses to launch Amazon EC2 instances. For more information
+	// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
+	LaunchTemplate *LaunchTemplateSpecification `type:"structure"`
+
+	// Describes a mixed instances policy. A mixed instances policy contains the
+	// instance types Amazon EC2 Auto Scaling can launch, and other information
+	// Amazon EC2 Auto Scaling can use to launch instances to help you optimize
+	// your costs. For more information, see Auto Scaling groups with multiple instance
+	// types and purchase options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-purchase-options.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
+	MixedInstancesPolicy *MixedInstancesPolicy `type:"structure"`
+}
+
+// String returns the string representation
+func (s DesiredConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DesiredConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DesiredConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DesiredConfiguration"}
+	if s.LaunchTemplate != nil {
+		if err := s.LaunchTemplate.Validate(); err != nil {
+			invalidParams.AddNested("LaunchTemplate", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.MixedInstancesPolicy != nil {
+		if err := s.MixedInstancesPolicy.Validate(); err != nil {
+			invalidParams.AddNested("MixedInstancesPolicy", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLaunchTemplate sets the LaunchTemplate field's value.
+func (s *DesiredConfiguration) SetLaunchTemplate(v *LaunchTemplateSpecification) *DesiredConfiguration {
+	s.LaunchTemplate = v
+	return s
+}
+
+// SetMixedInstancesPolicy sets the MixedInstancesPolicy field's value.
+func (s *DesiredConfiguration) SetMixedInstancesPolicy(v *MixedInstancesPolicy) *DesiredConfiguration {
+	s.MixedInstancesPolicy = v
+	return s
+}
+
 type DetachInstancesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -11951,6 +12019,9 @@ type InstanceRefresh struct {
 	// The name of the Auto Scaling group.
 	AutoScalingGroupName *string `min:"1" type:"string"`
 
+	// Describes the specific update you want to deploy.
+	DesiredConfiguration *DesiredConfiguration `type:"structure"`
+
 	// The date and time at which the instance refresh ended.
 	EndTime *time.Time `type:"timestamp"`
 
@@ -11967,6 +12038,9 @@ type InstanceRefresh struct {
 	// the specified warm-up time passes, the instance is considered updated and
 	// is added to the percentage complete.
 	PercentageComplete *int64 `type:"integer"`
+
+	// Describes the preferences for an instance refresh.
+	Preferences *RefreshPreferences `type:"structure"`
 
 	// Additional progress details for an Auto Scaling group that has a warm pool.
 	ProgressDetails *InstanceRefreshProgressDetails `type:"structure"`
@@ -12012,6 +12086,12 @@ func (s *InstanceRefresh) SetAutoScalingGroupName(v string) *InstanceRefresh {
 	return s
 }
 
+// SetDesiredConfiguration sets the DesiredConfiguration field's value.
+func (s *InstanceRefresh) SetDesiredConfiguration(v *DesiredConfiguration) *InstanceRefresh {
+	s.DesiredConfiguration = v
+	return s
+}
+
 // SetEndTime sets the EndTime field's value.
 func (s *InstanceRefresh) SetEndTime(v time.Time) *InstanceRefresh {
 	s.EndTime = &v
@@ -12033,6 +12113,12 @@ func (s *InstanceRefresh) SetInstancesToUpdate(v int64) *InstanceRefresh {
 // SetPercentageComplete sets the PercentageComplete field's value.
 func (s *InstanceRefresh) SetPercentageComplete(v int64) *InstanceRefresh {
 	s.PercentageComplete = &v
+	return s
+}
+
+// SetPreferences sets the Preferences field's value.
+func (s *InstanceRefresh) SetPreferences(v *RefreshPreferences) *InstanceRefresh {
+	s.Preferences = v
 	return s
 }
 
@@ -12180,13 +12266,14 @@ func (s *InstanceRefreshWarmPoolProgress) SetPercentageComplete(v int64) *Instan
 // the Auto Scaling group allocates instance types to fulfill On-Demand and
 // Spot capacities.
 //
-// When you update SpotAllocationStrategy, SpotInstancePools, or SpotMaxPrice,
-// this update action does not deploy any changes across the running Amazon
-// EC2 instances in the group. Your existing Spot Instances continue to run
-// as long as the maximum price for those instances is higher than the current
-// Spot price. When scale out occurs, Amazon EC2 Auto Scaling launches instances
-// based on the new settings. When scale in occurs, Amazon EC2 Auto Scaling
-// terminates instances according to the group's termination policies.
+// When you modify SpotAllocationStrategy, SpotInstancePools, or SpotMaxPrice
+// in the UpdateAutoScalingGroup API call, this update action does not deploy
+// any changes across the running Amazon EC2 instances in the group. Your existing
+// Spot Instances continue to run as long as the maximum price for those instances
+// is higher than the current Spot price. When scale out occurs, Amazon EC2
+// Auto Scaling launches instances based on the new settings. When scale in
+// occurs, Amazon EC2 Auto Scaling terminates instances according to the group's
+// termination policies.
 type InstancesDistribution struct {
 	_ struct{} `type:"structure"`
 
@@ -12551,10 +12638,11 @@ func (s *LaunchConfiguration) SetUserData(v string) *LaunchConfiguration {
 //
 // You specify these properties as part of a mixed instances policy.
 //
-// When you update the launch template or overrides, existing Amazon EC2 instances
-// continue to run. When scale out occurs, Amazon EC2 Auto Scaling launches
-// instances to match the new settings. When scale in occurs, Amazon EC2 Auto
-// Scaling terminates instances according to the group's termination policies.
+// When you update the launch template or overrides in the UpdateAutoScalingGroup
+// API call, existing Amazon EC2 instances continue to run. When scale out occurs,
+// Amazon EC2 Auto Scaling launches instances to match the new settings. When
+// scale in occurs, Amazon EC2 Auto Scaling terminates instances according to
+// the group's termination policies.
 type LaunchTemplate struct {
 	_ struct{} `type:"structure"`
 
@@ -12701,12 +12789,9 @@ func (s *LaunchTemplateOverrides) SetWeightedCapacity(v string) *LaunchTemplateO
 	return s
 }
 
-// Describes the Amazon EC2 launch template and the launch template version
-// that can be used by an Auto Scaling group to configure Amazon EC2 instances.
-//
-// The launch template that is specified must be configured for use with an
-// Auto Scaling group. For more information, see Creating a launch template
-// for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-template.html)
+// Describes the launch template and the version of the launch template that
+// Amazon EC2 Auto Scaling uses to launch Amazon EC2 instances. For more information
+// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 type LaunchTemplateSpecification struct {
 	_ struct{} `type:"structure"`
@@ -13337,17 +13422,12 @@ func (s *MetricGranularityType) SetGranularity(v string) *MetricGranularityType 
 	return s
 }
 
-// Describes a mixed instances policy for an Auto Scaling group. With mixed
-// instances, your Auto Scaling group can provision a combination of On-Demand
-// Instances and Spot Instances across multiple instance types. For more information,
-// see Auto Scaling groups with multiple instance types and purchase options
-// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-purchase-options.html)
+// Describes a mixed instances policy. A mixed instances policy contains the
+// instance types Amazon EC2 Auto Scaling can launch, and other information
+// Amazon EC2 Auto Scaling can use to launch instances to help you optimize
+// your costs. For more information, see Auto Scaling groups with multiple instance
+// types and purchase options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-purchase-options.html)
 // in the Amazon EC2 Auto Scaling User Guide.
-//
-// You can create a mixed instances policy for a new Auto Scaling group, or
-// you can create it for an existing group by updating the group to specify
-// MixedInstancesPolicy as the top-level property instead of a launch configuration
-// or launch template.
 type MixedInstancesPolicy struct {
 	_ struct{} `type:"structure"`
 
@@ -13355,8 +13435,8 @@ type MixedInstancesPolicy struct {
 	// property in InstancesDistribution uses a default value.
 	InstancesDistribution *InstancesDistribution `type:"structure"`
 
-	// Specifies the launch template to use and optionally the instance types (overrides)
-	// that are used to provision EC2 instances to fulfill On-Demand and Spot capacities.
+	// Specifies the launch template to use and the instance types (overrides) that
+	// are used to provision EC2 instances to fulfill On-Demand and Spot capacities.
 	// Required when creating a mixed instances policy.
 	LaunchTemplate *LaunchTemplate `type:"structure"`
 }
@@ -15002,10 +15082,7 @@ func (s RecordLifecycleActionHeartbeatOutput) GoString() string {
 	return s.String()
 }
 
-// Describes information used to start an instance refresh.
-//
-// All properties are optional. However, if you specify a value for CheckpointDelay,
-// you must also provide a value for CheckpointPercentages.
+// Describes the preferences for an instance refresh.
 type RefreshPreferences struct {
 	_ struct{} `type:"structure"`
 
@@ -15030,10 +15107,21 @@ type RefreshPreferences struct {
 	InstanceWarmup *int64 `type:"integer"`
 
 	// The amount of capacity in the Auto Scaling group that must remain healthy
-	// during an instance refresh to allow the operation to continue, as a percentage
-	// of the desired capacity of the Auto Scaling group (rounded up to the nearest
-	// integer). The default is 90.
+	// during an instance refresh to allow the operation to continue. The value
+	// is expressed as a percentage of the desired capacity of the Auto Scaling
+	// group (rounded up to the nearest integer). The default is 90.
+	//
+	// Setting the minimum healthy percentage to 100 percent limits the rate of
+	// replacement to one instance at a time. In contrast, setting it to 0 percent
+	// has the effect of replacing all instances at the same time.
 	MinHealthyPercentage *int64 `type:"integer"`
+
+	// A boolean value that indicates whether skip matching is enabled. If true,
+	// then Amazon EC2 Auto Scaling skips replacing instances that match the desired
+	// configuration. If no desired configuration is specified, then it skips replacing
+	// instances that have the same configuration that is already set on the group.
+	// The default is false.
+	SkipMatching *bool `type:"boolean"`
 }
 
 // String returns the string representation
@@ -15067,6 +15155,12 @@ func (s *RefreshPreferences) SetInstanceWarmup(v int64) *RefreshPreferences {
 // SetMinHealthyPercentage sets the MinHealthyPercentage field's value.
 func (s *RefreshPreferences) SetMinHealthyPercentage(v int64) *RefreshPreferences {
 	s.MinHealthyPercentage = &v
+	return s
+}
+
+// SetSkipMatching sets the SkipMatching field's value.
+func (s *RefreshPreferences) SetSkipMatching(v bool) *RefreshPreferences {
+	s.SkipMatching = &v
 	return s
 }
 
@@ -15850,23 +15944,30 @@ type StartInstanceRefreshInput struct {
 	// AutoScalingGroupName is a required field
 	AutoScalingGroupName *string `min:"1" type:"string" required:"true"`
 
-	// Set of preferences associated with the instance refresh request.
+	// The desired configuration. For example, the desired configuration can specify
+	// a new launch template or a new version of the current launch template.
 	//
-	// If not provided, the default values are used. For MinHealthyPercentage, the
-	// default value is 90. For InstanceWarmup, the default is to use the value
-	// specified for the health check grace period for the Auto Scaling group.
+	// Once the instance refresh succeeds, Amazon EC2 Auto Scaling updates the settings
+	// of the Auto Scaling group to reflect the new desired configuration.
 	//
-	// For more information, see RefreshPreferences (https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_RefreshPreferences.html)
-	// in the Amazon EC2 Auto Scaling API Reference.
+	// When you specify a new launch template or a new version of the current launch
+	// template for your desired configuration, consider enabling the SkipMatching
+	// property in preferences. If it's enabled, Amazon EC2 Auto Scaling skips replacing
+	// instances that already use the specified launch template and version. This
+	// can help you reduce the number of replacements that are required to apply
+	// updates.
+	DesiredConfiguration *DesiredConfiguration `type:"structure"`
+
+	// Set of preferences associated with the instance refresh request. If not provided,
+	// the default values are used.
 	Preferences *RefreshPreferences `type:"structure"`
 
 	// The strategy to use for the instance refresh. The only valid value is Rolling.
 	//
-	// A rolling update is an update that is applied to all instances in an Auto
-	// Scaling group until all instances have been updated. A rolling update can
-	// fail due to failed health checks or if instances are on standby or are protected
-	// from scale in. If the rolling update process fails, any instances that were
-	// already replaced are not rolled back to their previous configuration.
+	// A rolling update helps you update your instances gradually. A rolling update
+	// can fail due to failed health checks or if instances are on standby or are
+	// protected from scale in. If the rolling update process fails, any instances
+	// that are replaced are not rolled back to their previous configuration.
 	Strategy *string `type:"string" enum:"RefreshStrategy"`
 }
 
@@ -15889,6 +15990,11 @@ func (s *StartInstanceRefreshInput) Validate() error {
 	if s.AutoScalingGroupName != nil && len(*s.AutoScalingGroupName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("AutoScalingGroupName", 1))
 	}
+	if s.DesiredConfiguration != nil {
+		if err := s.DesiredConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("DesiredConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -15899,6 +16005,12 @@ func (s *StartInstanceRefreshInput) Validate() error {
 // SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
 func (s *StartInstanceRefreshInput) SetAutoScalingGroupName(v string) *StartInstanceRefreshInput {
 	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetDesiredConfiguration sets the DesiredConfiguration field's value.
+func (s *StartInstanceRefreshInput) SetDesiredConfiguration(v *DesiredConfiguration) *StartInstanceRefreshInput {
+	s.DesiredConfiguration = v
 	return s
 }
 

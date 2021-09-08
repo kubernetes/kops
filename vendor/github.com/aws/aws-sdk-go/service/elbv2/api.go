@@ -6771,20 +6771,27 @@ type LoadBalancerAttribute struct {
 	//    are in OpenSSL format. The possible values for the attribute are true
 	//    and false. The default is false.
 	//
-	//    * routing.http2.enabled - Indicates whether HTTP/2 is enabled. The value
-	//    is true or false. The default is true. Elastic Load Balancing requires
-	//    that message header names contain only alphanumeric characters and hyphens.
+	//    * routing.http.xff_client_port.enabled - Indicates whether the X-Forwarded-For
+	//    header should preserve the source port that the client used to connect
+	//    to the load balancer. The possible values are true and false. The default
+	//    is false.
+	//
+	//    * routing.http2.enabled - Indicates whether HTTP/2 is enabled. The possible
+	//    values are true and false. The default is true. Elastic Load Balancing
+	//    requires that message header names contain only alphanumeric characters
+	//    and hyphens.
 	//
 	//    * waf.fail_open.enabled - Indicates whether to allow a WAF-enabled load
 	//    balancer to route requests to targets if it is unable to forward the request
-	//    to Amazon Web Services WAF. The value is true or false. The default is
-	//    false.
+	//    to Amazon Web Services WAF. The possible values are true and false. The
+	//    default is false.
 	//
 	// The following attribute is supported by Network Load Balancers and Gateway
 	// Load Balancers:
 	//
 	//    * load_balancing.cross_zone.enabled - Indicates whether cross-zone load
-	//    balancing is enabled. The value is true or false. The default is false.
+	//    balancing is enabled. The possible values are true and false. The default
+	//    is false.
 	Key *string `type:"string"`
 
 	// The value of the attribute.
