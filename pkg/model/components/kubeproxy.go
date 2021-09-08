@@ -59,7 +59,7 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 	// * dns is set up by dns-controller
 	// * dns-controller talks to the API using the kube-proxy configured kubernetes service
 
-	if config.ClusterCIDR == "" {
+	if config.ClusterCIDR == nil {
 		// If we're using the AmazonVPC networking, we should omit the ClusterCIDR
 		// because pod IPs are real, routable IPs in the VPC, and they are not in a specific
 		// CIDR range that allows us to distinguish them from other IPs.  Omitting the ClusterCIDR
@@ -68,7 +68,7 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 		// If we're not using the AmazonVPC networking, and the KubeControllerMananger has
 		// a ClusterCIDR, use that because most networking plug ins draw pod IPs from this range.
 		if clusterSpec.Networking.AmazonVPC == nil && clusterSpec.KubeControllerManager != nil {
-			config.ClusterCIDR = clusterSpec.KubeControllerManager.ClusterCIDR
+			config.ClusterCIDR = &clusterSpec.KubeControllerManager.ClusterCIDR
 		}
 	}
 
