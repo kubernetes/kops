@@ -618,30 +618,32 @@ func (c *EventBridge) CreatePartnerEventSourceRequest(input *CreatePartnerEventS
 // CreatePartnerEventSource API operation for Amazon EventBridge.
 //
 // Called by an SaaS partner to create a partner event source. This operation
-// is not used by AWS customers.
+// is not used by Amazon Web Services customers.
 //
-// Each partner event source can be used by one AWS account to create a matching
-// partner event bus in that AWS account. A SaaS partner must create one partner
-// event source for each AWS account that wants to receive those event types.
+// Each partner event source can be used by one Amazon Web Services account
+// to create a matching partner event bus in that Amazon Web Services account.
+// A SaaS partner must create one partner event source for each Amazon Web Services
+// account that wants to receive those event types.
 //
 // A partner event source creates events based on resources within the SaaS
 // partner's service or application.
 //
-// An AWS account that creates a partner event bus that matches the partner
-// event source can use that event bus to receive events from the partner, and
-// then process them using AWS Events rules and targets.
+// An Amazon Web Services account that creates a partner event bus that matches
+// the partner event source can use that event bus to receive events from the
+// partner, and then process them using Amazon Web Services Events rules and
+// targets.
 //
 // Partner event source names follow this format:
 //
 // partner_name/event_namespace/event_name
 //
 // partner_name is determined during partner registration and identifies the
-// partner to AWS customers. event_namespace is determined by the partner and
-// is a way for the partner to categorize their events. event_name is determined
-// by the partner, and should uniquely identify an event-generating resource
-// within the partner system. The combination of event_namespace and event_name
-// should help AWS customers decide whether to create an event bus to receive
-// these events.
+// partner to Amazon Web Services customers. event_namespace is determined by
+// the partner and is a way for the partner to categorize their events. event_name
+// is determined by the partner, and should uniquely identify an event-generating
+// resource within the partner system. The combination of event_namespace and
+// event_name should help Amazon Web Services customers decide whether to create
+// an event bus to receive these events.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -740,7 +742,7 @@ func (c *EventBridge) DeactivateEventSourceRequest(input *DeactivateEventSourceI
 // When you deactivate a partner event source, the source goes into PENDING
 // state. If it remains in PENDING state for more than two weeks, it is deleted.
 //
-// To activate a deactivated partner event source, use ActivateEventSource.
+// To activate a deactivated partner event source, use ActivateEventSource (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_ActivateEventSource.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1262,10 +1264,10 @@ func (c *EventBridge) DeletePartnerEventSourceRequest(input *DeletePartnerEventS
 // DeletePartnerEventSource API operation for Amazon EventBridge.
 //
 // This operation is used by SaaS partners to delete a partner event source.
-// This operation is not used by AWS customers.
+// This operation is not used by Amazon Web Services customers.
 //
 // When you delete an event source, the status of the corresponding partner
-// event bus in the AWS customer account becomes DELETED.
+// event bus in the Amazon Web Services customer account becomes DELETED.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1353,7 +1355,8 @@ func (c *EventBridge) DeleteRuleRequest(input *DeleteRuleInput) (req *request.Re
 //
 // Deletes the specified rule.
 //
-// Before you can delete the rule, you must remove all targets, using RemoveTargets.
+// Before you can delete the rule, you must remove all targets, using RemoveTargets
+// (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_RemoveTargets.html).
 //
 // When you delete a rule, incoming events might continue to match to the deleted
 // rule. Allow a short period of time for changes to take effect.
@@ -1362,11 +1365,11 @@ func (c *EventBridge) DeleteRuleRequest(input *DeleteRuleInput) (req *request.Re
 // succeed. When you call delete rule for a non-existent custom eventbus, ResourceNotFoundException
 // is returned.
 //
-// Managed rules are rules created and managed by another AWS service on your
-// behalf. These rules are created by those other AWS services to support functionality
-// in those services. You can delete these rules using the Force option, but
-// you should do so only if you are sure the other service is not still using
-// that rule.
+// Managed rules are rules created and managed by another Amazon Web Services
+// service on your behalf. These rules are created by those other Amazon Web
+// Services services to support functionality in those services. You can delete
+// these rules using the Force option, but you should do so only if you are
+// sure the other service is not still using that rule.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1380,12 +1383,12 @@ func (c *EventBridge) DeleteRuleRequest(input *DeleteRuleInput) (req *request.Re
 //   There is concurrent modification on a rule, target, archive, or replay.
 //
 //   * ManagedRuleException
-//   This rule was created by an AWS service on behalf of your account. It is
-//   managed by that service. If you see this error in response to DeleteRule
-//   or RemoveTargets, you can use the Force parameter in those calls to delete
-//   the rule or remove targets from the rule. You cannot modify these managed
-//   rules by using DisableRule, EnableRule, PutTargets, PutRule, TagResource,
-//   or UntagResource.
+//   This rule was created by an Amazon Web Services service on behalf of your
+//   account. It is managed by that service. If you see this error in response
+//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//   calls to delete the rule or remove targets from the rule. You cannot modify
+//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//   TagResource, or UntagResource.
 //
 //   * InternalException
 //   This exception occurs due to unexpected causes.
@@ -1709,14 +1712,15 @@ func (c *EventBridge) DescribeEventBusRequest(input *DescribeEventBusInput) (req
 // DescribeEventBus API operation for Amazon EventBridge.
 //
 // Displays details about an event bus in your account. This can include the
-// external AWS accounts that are permitted to write events to your default
-// event bus, and the associated policy. For custom event buses and partner
-// event buses, it displays the name, ARN, policy, state, and creation time.
+// external Amazon Web Services accounts that are permitted to write events
+// to your default event bus, and the associated policy. For custom event buses
+// and partner event buses, it displays the name, ARN, policy, state, and creation
+// time.
 //
 // To enable your account to receive events from other accounts on its default
-// event bus, use PutPermission.
+// event bus, use PutPermission (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutPermission.html).
 //
-// For more information about partner event buses, see CreateEventBus.
+// For more information about partner event buses, see CreateEventBus (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_CreateEventBus.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1885,9 +1889,10 @@ func (c *EventBridge) DescribePartnerEventSourceRequest(input *DescribePartnerEv
 // DescribePartnerEventSource API operation for Amazon EventBridge.
 //
 // An SaaS partner can use this operation to list details about a partner event
-// source that they have created. AWS customers do not use this operation. Instead,
-// AWS customers can use DescribeEventSource to see details about a partner
-// event source that is shared with them.
+// source that they have created. Amazon Web Services customers do not use this
+// operation. Instead, Amazon Web Services customers can use DescribeEventSource
+// (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_DescribeEventSource.html)
+// to see details about a partner event source that is shared with them.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2065,7 +2070,7 @@ func (c *EventBridge) DescribeRuleRequest(input *DescribeRuleInput) (req *reques
 // Describes the specified rule.
 //
 // DescribeRule does not list the targets of a rule. To see the targets associated
-// with a rule, use ListTargetsByRule.
+// with a rule, use ListTargetsByRule (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_ListTargetsByRule.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2169,12 +2174,12 @@ func (c *EventBridge) DisableRuleRequest(input *DisableRuleInput) (req *request.
 //   There is concurrent modification on a rule, target, archive, or replay.
 //
 //   * ManagedRuleException
-//   This rule was created by an AWS service on behalf of your account. It is
-//   managed by that service. If you see this error in response to DeleteRule
-//   or RemoveTargets, you can use the Force parameter in those calls to delete
-//   the rule or remove targets from the rule. You cannot modify these managed
-//   rules by using DisableRule, EnableRule, PutTargets, PutRule, TagResource,
-//   or UntagResource.
+//   This rule was created by an Amazon Web Services service on behalf of your
+//   account. It is managed by that service. If you see this error in response
+//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//   calls to delete the rule or remove targets from the rule. You cannot modify
+//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//   TagResource, or UntagResource.
 //
 //   * InternalException
 //   This exception occurs due to unexpected causes.
@@ -2267,12 +2272,12 @@ func (c *EventBridge) EnableRuleRequest(input *EnableRuleInput) (req *request.Re
 //   There is concurrent modification on a rule, target, archive, or replay.
 //
 //   * ManagedRuleException
-//   This rule was created by an AWS service on behalf of your account. It is
-//   managed by that service. If you see this error in response to DeleteRule
-//   or RemoveTargets, you can use the Force parameter in those calls to delete
-//   the rule or remove targets from the rule. You cannot modify these managed
-//   rules by using DisableRule, EnableRule, PutTargets, PutRule, TagResource,
-//   or UntagResource.
+//   This rule was created by an Amazon Web Services service on behalf of your
+//   account. It is managed by that service. If you see this error in response
+//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//   calls to delete the rule or remove targets from the rule. You cannot modify
+//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//   TagResource, or UntagResource.
 //
 //   * InternalException
 //   This exception occurs due to unexpected causes.
@@ -2665,8 +2670,8 @@ func (c *EventBridge) ListEventSourcesRequest(input *ListEventSourcesInput) (req
 // ListEventSources API operation for Amazon EventBridge.
 //
 // You can use this to see all the partner event sources that have been shared
-// with your AWS account. For more information about partner event sources,
-// see CreateEventBus.
+// with your Amazon Web Services account. For more information about partner
+// event sources, see CreateEventBus (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_CreateEventBus.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2748,9 +2753,9 @@ func (c *EventBridge) ListPartnerEventSourceAccountsRequest(input *ListPartnerEv
 
 // ListPartnerEventSourceAccounts API operation for Amazon EventBridge.
 //
-// An SaaS partner can use this operation to display the AWS account ID that
-// a particular partner event source name is associated with. This operation
-// is not used by AWS customers.
+// An SaaS partner can use this operation to display the Amazon Web Services
+// account ID that a particular partner event source name is associated with.
+// This operation is not used by Amazon Web Services customers.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2836,7 +2841,8 @@ func (c *EventBridge) ListPartnerEventSourcesRequest(input *ListPartnerEventSour
 // ListPartnerEventSources API operation for Amazon EventBridge.
 //
 // An SaaS partner can use this operation to list all the partner event source
-// names that they have created. This operation is not used by AWS customers.
+// names that they have created. This operation is not used by Amazon Web Services
+// customers.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3085,7 +3091,7 @@ func (c *EventBridge) ListRulesRequest(input *ListRulesInput) (req *request.Requ
 // you can provide a prefix to match to the rule names.
 //
 // ListRules does not list the targets of a rule. To see the targets associated
-// with a rule, use ListTargetsByRule.
+// with a rule, use ListTargetsByRule (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_ListTargetsByRule.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3413,7 +3419,7 @@ func (c *EventBridge) PutPartnerEventsRequest(input *PutPartnerEventsInput) (req
 // PutPartnerEvents API operation for Amazon EventBridge.
 //
 // This is used by SaaS partners to write events to a customer's partner event
-// bus. AWS customers do not use this operation.
+// bus. Amazon Web Services customers do not use this operation.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3496,27 +3502,27 @@ func (c *EventBridge) PutPermissionRequest(input *PutPermissionInput) (req *requ
 
 // PutPermission API operation for Amazon EventBridge.
 //
-// Running PutPermission permits the specified AWS account or AWS organization
-// to put events to the specified event bus. Amazon EventBridge (CloudWatch
-// Events) rules in your account are triggered by these events arriving to an
-// event bus in your account.
+// Running PutPermission permits the specified Amazon Web Services account or
+// Amazon Web Services organization to put events to the specified event bus.
+// Amazon EventBridge (CloudWatch Events) rules in your account are triggered
+// by these events arriving to an event bus in your account.
 //
 // For another account to send events to your account, that external account
 // must have an EventBridge rule with your account's event bus as a target.
 //
-// To enable multiple AWS accounts to put events to your event bus, run PutPermission
-// once for each of these accounts. Or, if all the accounts are members of the
-// same AWS organization, you can run PutPermission once specifying Principal
-// as "*" and specifying the AWS organization ID in Condition, to grant permissions
-// to all accounts in that organization.
+// To enable multiple Amazon Web Services accounts to put events to your event
+// bus, run PutPermission once for each of these accounts. Or, if all the accounts
+// are members of the same Amazon Web Services organization, you can run PutPermission
+// once specifying Principal as "*" and specifying the Amazon Web Services organization
+// ID in Condition, to grant permissions to all accounts in that organization.
 //
 // If you grant permissions using an organization, then accounts in that organization
 // must specify a RoleArn with proper permissions when they use PutTarget to
 // add your account's event bus as a target. For more information, see Sending
-// and Receiving Events Between AWS Accounts (https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-cross-account-event-delivery.html)
+// and Receiving Events Between Amazon Web Services Accounts (https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-cross-account-event-delivery.html)
 // in the Amazon EventBridge User Guide.
 //
-// The permission policy on the default event bus cannot exceed 10 KB in size.
+// The permission policy on the event bus cannot exceed 10 KB in size.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3608,14 +3614,14 @@ func (c *EventBridge) PutRuleRequest(input *PutRuleInput) (req *request.Request,
 // PutRule API operation for Amazon EventBridge.
 //
 // Creates or updates the specified rule. Rules are enabled by default, or based
-// on value of the state. You can disable a rule using DisableRule.
+// on value of the state. You can disable a rule using DisableRule (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_DisableRule.html).
 //
 // A single rule watches for events from a single event bus. Events generated
-// by AWS services go to your account's default event bus. Events generated
-// by SaaS partner services or applications go to the matching partner event
-// bus. If you have custom applications or services, you can specify whether
+// by Amazon Web Services services go to your account's default event bus. Events
+// generated by SaaS partner services or applications go to the matching partner
+// event bus. If you have custom applications or services, you can specify whether
 // their events go to your default event bus or a custom event bus that you
-// have created. For more information, see CreateEventBus.
+// have created. For more information, see CreateEventBus (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_CreateEventBus.html).
 //
 // If you are updating an existing rule, the rule is replaced with what you
 // specify in this PutRule command. If you omit arguments in PutRule, the old
@@ -3641,12 +3647,14 @@ func (c *EventBridge) PutRuleRequest(input *PutRuleInput) (req *request.Request,
 //
 // If you are updating an existing rule, any tags you specify in the PutRule
 // operation are ignored. To update the tags of an existing rule, use TagResource
-// and UntagResource.
+// (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_TagResource.html)
+// and UntagResource (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_UntagResource.html).
 //
-// Most services in AWS treat : or / as the same character in Amazon Resource
-// Names (ARNs). However, EventBridge uses an exact match in event patterns
-// and rules. Be sure to use the correct ARN characters when creating event
-// patterns so that they match the ARN syntax in the event you want to match.
+// Most services in Amazon Web Services treat : or / as the same character in
+// Amazon Resource Names (ARNs). However, EventBridge uses an exact match in
+// event patterns and rules. Be sure to use the correct ARN characters when
+// creating event patterns so that they match the ARN syntax in the event you
+// want to match.
 //
 // In EventBridge, it is possible to create rules that lead to infinite loops,
 // where a rule is fired repeatedly. For example, a rule might detect that ACLs
@@ -3681,12 +3689,12 @@ func (c *EventBridge) PutRuleRequest(input *PutRuleInput) (req *request.Request,
 //   There is concurrent modification on a rule, target, archive, or replay.
 //
 //   * ManagedRuleException
-//   This rule was created by an AWS service on behalf of your account. It is
-//   managed by that service. If you see this error in response to DeleteRule
-//   or RemoveTargets, you can use the Force parameter in those calls to delete
-//   the rule or remove targets from the rule. You cannot modify these managed
-//   rules by using DisableRule, EnableRule, PutTargets, PutRule, TagResource,
-//   or UntagResource.
+//   This rule was created by an Amazon Web Services service on behalf of your
+//   account. It is managed by that service. If you see this error in response
+//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//   calls to delete the rule or remove targets from the rule. You cannot modify
+//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//   TagResource, or UntagResource.
 //
 //   * InternalException
 //   This exception occurs due to unexpected causes.
@@ -3773,13 +3781,13 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 //
 //    * API Gateway
 //
-//    * AWS Batch job queue
+//    * Batch job queue
 //
 //    * CloudWatch Logs group
 //
 //    * CodeBuild project
 //
-//    * CodePineline
+//    * CodePipeline
 //
 //    * Amazon EC2 CreateSnapshot API call
 //
@@ -3791,9 +3799,9 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 //
 //    * Amazon ECS tasks
 //
-//    * Event bus in a different AWS account or Region. You can use an event
-//    bus in the US East (N. Virginia) us-east-1, US West (Oregon) us-west-2,
-//    or Europe (Ireland) eu-west-1 Regions as a target for a rule.
+//    * Event bus in a different Amazon Web Services account or Region. You
+//    can use an event bus in the US East (N. Virginia) us-east-1, US West (Oregon)
+//    us-west-2, or Europe (Ireland) eu-west-1 Regions as a target for a rule.
 //
 //    * Firehose delivery stream (Kinesis Data Firehose)
 //
@@ -3801,7 +3809,7 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 //
 //    * Kinesis stream (Kinesis Data Stream)
 //
-//    * AWS Lambda function
+//    * Lambda function
 //
 //    * Redshift clusters (Data API statement execution)
 //
@@ -3817,9 +3825,10 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 //
 //    * Step Functions state machines
 //
-// Creating rules with built-in targets is supported only in the AWS Management
-// Console. The built-in targets are EC2 CreateSnapshot API call, EC2 RebootInstances
-// API call, EC2 StopInstances API call, and EC2 TerminateInstances API call.
+// Creating rules with built-in targets is supported only in the Amazon Web
+// Services Management Console. The built-in targets are EC2 CreateSnapshot
+// API call, EC2 RebootInstances API call, EC2 StopInstances API call, and EC2
+// TerminateInstances API call.
 //
 // For some target types, PutTargets provides target-specific parameters. If
 // the target is a Kinesis data stream, you can optionally specify which shard
@@ -3828,35 +3837,35 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 // field.
 //
 // To be able to make API calls against the resources that you own, Amazon EventBridge
-// (CloudWatch Events) needs the appropriate permissions. For AWS Lambda and
-// Amazon SNS resources, EventBridge relies on resource-based policies. For
-// EC2 instances, Kinesis data streams, AWS Step Functions state machines and
-// API Gateway REST APIs, EventBridge relies on IAM roles that you specify in
-// the RoleARN argument in PutTargets. For more information, see Authentication
-// and Access Control (https://docs.aws.amazon.com/eventbridge/latest/userguide/auth-and-access-control-eventbridge.html)
+// needs the appropriate permissions. For Lambda and Amazon SNS resources, EventBridge
+// relies on resource-based policies. For EC2 instances, Kinesis Data Streams,
+// Step Functions state machines and API Gateway REST APIs, EventBridge relies
+// on IAM roles that you specify in the RoleARN argument in PutTargets. For
+// more information, see Authentication and Access Control (https://docs.aws.amazon.com/eventbridge/latest/userguide/auth-and-access-control-eventbridge.html)
 // in the Amazon EventBridge User Guide.
 //
-// If another AWS account is in the same region and has granted you permission
-// (using PutPermission), you can send events to that account. Set that account's
-// event bus as a target of the rules in your account. To send the matched events
-// to the other account, specify that account's event bus as the Arn value when
-// you run PutTargets. If your account sends events to another account, your
-// account is charged for each sent event. Each event sent to another account
-// is charged as a custom event. The account receiving the event is not charged.
-// For more information, see Amazon EventBridge (CloudWatch Events) Pricing
-// (https://aws.amazon.com/eventbridge/pricing/).
+// If another Amazon Web Services account is in the same region and has granted
+// you permission (using PutPermission), you can send events to that account.
+// Set that account's event bus as a target of the rules in your account. To
+// send the matched events to the other account, specify that account's event
+// bus as the Arn value when you run PutTargets. If your account sends events
+// to another account, your account is charged for each sent event. Each event
+// sent to another account is charged as a custom event. The account receiving
+// the event is not charged. For more information, see Amazon EventBridge Pricing
+// (http://aws.amazon.com/eventbridge/pricing/).
 //
 // Input, InputPath, and InputTransformer are not available with PutTarget if
-// the target is an event bus of a different AWS account.
+// the target is an event bus of a different Amazon Web Services account.
 //
 // If you are setting the event bus of another account as the target, and that
 // account granted permission to your account through an organization instead
 // of directly by the account ID, then you must specify a RoleArn with proper
 // permissions in the Target structure. For more information, see Sending and
-// Receiving Events Between AWS Accounts (https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-cross-account-event-delivery.html)
+// Receiving Events Between Amazon Web Services Accounts (https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-cross-account-event-delivery.html)
 // in the Amazon EventBridge User Guide.
 //
-// For more information about enabling cross-account events, see PutPermission.
+// For more information about enabling cross-account events, see PutPermission
+// (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutPermission.html).
 //
 // Input, InputPath, and InputTransformer are mutually exclusive and optional
 // parameters of a target. When a rule is triggered due to a matched event:
@@ -3908,12 +3917,12 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 //   service quota.
 //
 //   * ManagedRuleException
-//   This rule was created by an AWS service on behalf of your account. It is
-//   managed by that service. If you see this error in response to DeleteRule
-//   or RemoveTargets, you can use the Force parameter in those calls to delete
-//   the rule or remove targets from the rule. You cannot modify these managed
-//   rules by using DisableRule, EnableRule, PutTargets, PutRule, TagResource,
-//   or UntagResource.
+//   This rule was created by an Amazon Web Services service on behalf of your
+//   account. It is managed by that service. If you see this error in response
+//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//   calls to delete the rule or remove targets from the rule. You cannot modify
+//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//   TagResource, or UntagResource.
 //
 //   * InternalException
 //   This exception occurs due to unexpected causes.
@@ -3985,10 +3994,11 @@ func (c *EventBridge) RemovePermissionRequest(input *RemovePermissionInput) (req
 
 // RemovePermission API operation for Amazon EventBridge.
 //
-// Revokes the permission of another AWS account to be able to put events to
-// the specified event bus. Specify the account to revoke by the StatementId
-// value that you associated with the account when you granted it permission
-// with PutPermission. You can find the StatementId by using DescribeEventBus.
+// Revokes the permission of another Amazon Web Services account to be able
+// to put events to the specified event bus. Specify the account to revoke by
+// the StatementId value that you associated with the account when you granted
+// it permission with PutPermission. You can find the StatementId by using DescribeEventBus
+// (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_DescribeEventBus.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4103,12 +4113,12 @@ func (c *EventBridge) RemoveTargetsRequest(input *RemoveTargetsInput) (req *requ
 //   There is concurrent modification on a rule, target, archive, or replay.
 //
 //   * ManagedRuleException
-//   This rule was created by an AWS service on behalf of your account. It is
-//   managed by that service. If you see this error in response to DeleteRule
-//   or RemoveTargets, you can use the Force parameter in those calls to delete
-//   the rule or remove targets from the rule. You cannot modify these managed
-//   rules by using DisableRule, EnableRule, PutTargets, PutRule, TagResource,
-//   or UntagResource.
+//   This rule was created by an Amazon Web Services service on behalf of your
+//   account. It is managed by that service. If you see this error in response
+//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//   calls to delete the rule or remove targets from the rule. You cannot modify
+//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//   TagResource, or UntagResource.
 //
 //   * InternalException
 //   This exception occurs due to unexpected causes.
@@ -4286,8 +4296,8 @@ func (c *EventBridge) TagResourceRequest(input *TagResourceInput) (req *request.
 // change only resources with certain tag values. In EventBridge, rules and
 // event buses can be tagged.
 //
-// Tags don't have any semantic meaning to AWS and are interpreted strictly
-// as strings of characters.
+// Tags don't have any semantic meaning to Amazon Web Services and are interpreted
+// strictly as strings of characters.
 //
 // You can use the TagResource action with a resource that already has tags.
 // If you specify a new tag key, this tag is appended to the list of tags associated
@@ -4315,12 +4325,12 @@ func (c *EventBridge) TagResourceRequest(input *TagResourceInput) (req *request.
 //   This exception occurs due to unexpected causes.
 //
 //   * ManagedRuleException
-//   This rule was created by an AWS service on behalf of your account. It is
-//   managed by that service. If you see this error in response to DeleteRule
-//   or RemoveTargets, you can use the Force parameter in those calls to delete
-//   the rule or remove targets from the rule. You cannot modify these managed
-//   rules by using DisableRule, EnableRule, PutTargets, PutRule, TagResource,
-//   or UntagResource.
+//   This rule was created by an Amazon Web Services service on behalf of your
+//   account. It is managed by that service. If you see this error in response
+//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//   calls to delete the rule or remove targets from the rule. You cannot modify
+//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//   TagResource, or UntagResource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/TagResource
 func (c *EventBridge) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -4390,10 +4400,11 @@ func (c *EventBridge) TestEventPatternRequest(input *TestEventPatternInput) (req
 //
 // Tests whether the specified event pattern matches the provided event.
 //
-// Most services in AWS treat : or / as the same character in Amazon Resource
-// Names (ARNs). However, EventBridge uses an exact match in event patterns
-// and rules. Be sure to use the correct ARN characters when creating event
-// patterns so that they match the ARN syntax in the event you want to match.
+// Most services in Amazon Web Services treat : or / as the same character in
+// Amazon Resource Names (ARNs). However, EventBridge uses an exact match in
+// event patterns and rules. Be sure to use the correct ARN characters when
+// creating event patterns so that they match the ARN syntax in the event you
+// want to match.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4497,12 +4508,12 @@ func (c *EventBridge) UntagResourceRequest(input *UntagResourceInput) (req *requ
 //   There is concurrent modification on a rule, target, archive, or replay.
 //
 //   * ManagedRuleException
-//   This rule was created by an AWS service on behalf of your account. It is
-//   managed by that service. If you see this error in response to DeleteRule
-//   or RemoveTargets, you can use the Force parameter in those calls to delete
-//   the rule or remove targets from the rule. You cannot modify these managed
-//   rules by using DisableRule, EnableRule, PutTargets, PutRule, TagResource,
-//   or UntagResource.
+//   This rule was created by an Amazon Web Services service on behalf of your
+//   account. It is managed by that service. If you see this error in response
+//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//   calls to delete the rule or remove targets from the rule. You cannot modify
+//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//   TagResource, or UntagResource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/UntagResource
 func (c *EventBridge) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -5103,7 +5114,7 @@ func (s *AwsVpcConfiguration) SetSubnets(v []*string) *AwsVpcConfiguration {
 // The array properties for the submitted job, such as the size of the array.
 // The array size can be between 2 and 10,000. If you specify array properties
 // for a job, it becomes an array job. This parameter is used only if the target
-// is an AWS Batch job.
+// is an Batch job.
 type BatchArrayProperties struct {
 	_ struct{} `type:"structure"`
 
@@ -5128,30 +5139,30 @@ func (s *BatchArrayProperties) SetSize(v int64) *BatchArrayProperties {
 	return s
 }
 
-// The custom parameters to be used when the target is an AWS Batch job.
+// The custom parameters to be used when the target is an Batch job.
 type BatchParameters struct {
 	_ struct{} `type:"structure"`
 
 	// The array properties for the submitted job, such as the size of the array.
 	// The array size can be between 2 and 10,000. If you specify array properties
 	// for a job, it becomes an array job. This parameter is used only if the target
-	// is an AWS Batch job.
+	// is an Batch job.
 	ArrayProperties *BatchArrayProperties `type:"structure"`
 
-	// The ARN or name of the job definition to use if the event target is an AWS
-	// Batch job. This job definition must already exist.
+	// The ARN or name of the job definition to use if the event target is an Batch
+	// job. This job definition must already exist.
 	//
 	// JobDefinition is a required field
 	JobDefinition *string `type:"string" required:"true"`
 
-	// The name to use for this execution of the job, if the target is an AWS Batch
+	// The name to use for this execution of the job, if the target is an Batch
 	// job.
 	//
 	// JobName is a required field
 	JobName *string `type:"string" required:"true"`
 
-	// The retry strategy to use for failed jobs, if the target is an AWS Batch
-	// job. The retry strategy is the number of times to retry the failed job execution.
+	// The retry strategy to use for failed jobs, if the target is an Batch job.
+	// The retry strategy is the number of times to retry the failed job execution.
 	// Valid values are 1–10. When you specify a retry strategy here, it overrides
 	// the retry strategy defined in the job definition.
 	RetryStrategy *BatchRetryStrategy `type:"structure"`
@@ -5207,9 +5218,9 @@ func (s *BatchParameters) SetRetryStrategy(v *BatchRetryStrategy) *BatchParamete
 	return s
 }
 
-// The retry strategy to use for failed jobs, if the target is an AWS Batch
-// job. If you specify a retry strategy here, it overrides the retry strategy
-// defined in the job definition.
+// The retry strategy to use for failed jobs, if the target is an Batch job.
+// If you specify a retry strategy here, it overrides the retry strategy defined
+// in the job definition.
 type BatchRetryStrategy struct {
 	_ struct{} `type:"structure"`
 
@@ -5441,9 +5452,10 @@ func (s *ConcurrentModificationException) RequestID() string {
 
 // A JSON string which you can use to limit the event bus permissions you are
 // granting to only accounts that fulfill the condition. Currently, the only
-// supported condition is membership in a certain AWS organization. The string
-// must contain Type, Key, and Value fields. The Value field specifies the ID
-// of the AWS organization. Following is an example value for Condition:
+// supported condition is membership in a certain Amazon Web Services organization.
+// The string must contain Type, Key, and Value fields. The Value field specifies
+// the ID of the Amazon Web Services organization. Following is an example value
+// for Condition:
 //
 // '{"Type" : "StringEquals", "Key": "aws:PrincipalOrgID", "Value": "o-1234567890"}'
 type Condition struct {
@@ -6129,7 +6141,7 @@ type CreateArchiveInput struct {
 	// An event pattern to use to filter events sent to the archive.
 	EventPattern *string `type:"string"`
 
-	// The ARN of the event source associated with the archive.
+	// The ARN of the event bus that sends events to the archive.
 	//
 	// EventSourceArn is a required field
 	EventSourceArn *string `min:"1" type:"string" required:"true"`
@@ -6838,16 +6850,16 @@ func (s *CreateEventBusOutput) SetEventBusArn(v string) *CreateEventBusOutput {
 type CreatePartnerEventSourceInput struct {
 	_ struct{} `type:"structure"`
 
-	// The AWS account ID that is permitted to create a matching partner event bus
-	// for this partner event source.
+	// The Amazon Web Services account ID that is permitted to create a matching
+	// partner event bus for this partner event source.
 	//
 	// Account is a required field
 	Account *string `min:"12" type:"string" required:"true"`
 
 	// The name of the partner event source. This name must be unique and must be
-	// in the format partner_name/event_namespace/event_name . The AWS account that
-	// wants to use this partner event source must create a partner event bus with
-	// a name that matches the name of the partner event source.
+	// in the format partner_name/event_namespace/event_name . The Amazon Web Services
+	// account that wants to use this partner event source must create a partner
+	// event bus with a name that matches the name of the partner event source.
 	//
 	// Name is a required field
 	Name *string `min:"1" type:"string" required:"true"`
@@ -7383,8 +7395,8 @@ func (s DeleteEventBusOutput) GoString() string {
 type DeletePartnerEventSourceInput struct {
 	_ struct{} `type:"structure"`
 
-	// The AWS account ID of the AWS customer that the event source was created
-	// for.
+	// The Amazon Web Services account ID of the Amazon Web Services customer that
+	// the event source was created for.
 	//
 	// Account is a required field
 	Account *string `min:"12" type:"string" required:"true"`
@@ -7460,11 +7472,11 @@ type DeleteRuleInput struct {
 	// the default event bus is used.
 	EventBusName *string `min:"1" type:"string"`
 
-	// If this is a managed rule, created by an AWS service on your behalf, you
-	// must specify Force as True to delete the rule. This parameter is ignored
-	// for rules that are not managed rules. You can check whether a rule is a managed
-	// rule by using DescribeRule or ListRules and checking the ManagedBy field
-	// of the response.
+	// If this is a managed rule, created by an Amazon Web Services service on your
+	// behalf, you must specify Force as True to delete the rule. This parameter
+	// is ignored for rules that are not managed rules. You can check whether a
+	// rule is a managed rule by using DescribeRule or ListRules and checking the
+	// ManagedBy field of the response.
 	Force *bool `type:"boolean"`
 
 	// The name of the rule.
@@ -8500,8 +8512,9 @@ type DescribeRuleOutput struct {
 	// in the Amazon EventBridge User Guide.
 	EventPattern *string `type:"string"`
 
-	// If this is a managed rule, created by an AWS service on your behalf, this
-	// field displays the principal name of the AWS service that created the rule.
+	// If this is a managed rule, created by an Amazon Web Services service on your
+	// behalf, this field displays the principal name of the Amazon Web Services
+	// service that created the rule.
 	ManagedBy *string `min:"1" type:"string"`
 
 	// The name of the rule.
@@ -8682,15 +8695,16 @@ type EcsParameters struct {
 	// Specifies the launch type on which your task is running. The launch type
 	// that you specify here must match one of the launch type (compatibilities)
 	// of the target task. The FARGATE value is supported only in the Regions where
-	// AWS Fargate with Amazon ECS is supported. For more information, see AWS Fargate
-	// on Amazon ECS (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS-Fargate.html)
+	// Fargate witt Amazon ECS is supported. For more information, see Fargate on
+	// Amazon ECS (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS-Fargate.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	LaunchType *string `type:"string" enum:"LaunchType"`
 
-	// Use this structure if the ECS task uses the awsvpc network mode. This structure
-	// specifies the VPC subnets and security groups associated with the task, and
-	// whether a public IP address is to be used. This structure is required if
-	// LaunchType is FARGATE because the awsvpc mode is required for Fargate tasks.
+	// Use this structure if the Amazon ECS task uses the awsvpc network mode. This
+	// structure specifies the VPC subnets and security groups associated with the
+	// task, and whether a public IP address is to be used. This structure is required
+	// if LaunchType is FARGATE because the awsvpc mode is required for Fargate
+	// tasks.
 	//
 	// If you specify NetworkConfiguration when the target ECS task does not use
 	// the awsvpc network mode, the task fails.
@@ -8709,7 +8723,7 @@ type EcsParameters struct {
 	// of the platform version, such as 1.1.0.
 	//
 	// This structure is used only if LaunchType is FARGATE. For more information
-	// about valid platform versions, see AWS Fargate Platform Versions (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/platform_versions.html)
+	// about valid platform versions, see Fargate Platform Versions (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/platform_versions.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	PlatformVersion *string `type:"string"`
 
@@ -8946,9 +8960,10 @@ func (s EnableRuleOutput) GoString() string {
 
 // An event bus receives events from a source and routes them to rules associated
 // with that event bus. Your account's default event bus receives events from
-// AWS services. A custom event bus can receive events from your custom applications
-// and services. A partner event bus receives events from an event source created
-// by an SaaS partner. These events come from the partners services or applications.
+// Amazon Web Services services. A custom event bus can receive events from
+// your custom applications and services. A partner event bus receives events
+// from an event source created by an SaaS partner. These events come from the
+// partners services or applications.
 type EventBus struct {
 	_ struct{} `type:"structure"`
 
@@ -8958,8 +8973,8 @@ type EventBus struct {
 	// The name of the event bus.
 	Name *string `type:"string"`
 
-	// The permissions policy of the event bus, describing which other AWS accounts
-	// can write events to this event bus.
+	// The permissions policy of the event bus, describing which other Amazon Web
+	// Services accounts can write events to this event bus.
 	Policy *string `type:"string"`
 }
 
@@ -8992,8 +9007,8 @@ func (s *EventBus) SetPolicy(v string) *EventBus {
 }
 
 // A partner event source is created by an SaaS partner. If a customer creates
-// a partner event bus that matches this event source, that AWS account can
-// receive events from the partner's applications or services.
+// a partner event bus that matches this event source, that Amazon Web Services
+// account can receive events from the partner's applications or services.
 type EventSource struct {
 	_ struct{} `type:"structure"`
 
@@ -9006,8 +9021,8 @@ type EventSource struct {
 	// The date and time the event source was created.
 	CreationTime *time.Time `type:"timestamp"`
 
-	// The date and time that the event source will expire, if the AWS account doesn't
-	// create a matching event bus for it.
+	// The date and time that the event source will expire, if the Amazon Web Services
+	// account doesn't create a matching event bus for it.
 	ExpirationTime *time.Time `type:"timestamp"`
 
 	// The name of the event source.
@@ -9185,7 +9200,7 @@ type InputTransformer struct {
 	// path. You can have as many as 100 key-value pairs. You must use JSON dot
 	// notation, not bracket notation.
 	//
-	// The keys cannot start with "AWS."
+	// The keys cannot start with "Amazon Web Services."
 	InputPathsMap map[string]*string `type:"map"`
 
 	// Input template where you specify placeholders that will be filled with the
@@ -10268,7 +10283,7 @@ func (s *ListPartnerEventSourcesOutput) SetPartnerEventSources(v []*PartnerEvent
 type ListReplaysInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the event source associated with the replay.
+	// The ARN of the archive from which the events are replayed.
 	EventSourceArn *string `min:"1" type:"string"`
 
 	// The maximum number of replays to retrieve.
@@ -10771,12 +10786,12 @@ func (s *ListTargetsByRuleOutput) SetTargets(v []*Target) *ListTargetsByRuleOutp
 	return s
 }
 
-// This rule was created by an AWS service on behalf of your account. It is
-// managed by that service. If you see this error in response to DeleteRule
-// or RemoveTargets, you can use the Force parameter in those calls to delete
-// the rule or remove targets from the rule. You cannot modify these managed
-// rules by using DisableRule, EnableRule, PutTargets, PutRule, TagResource,
-// or UntagResource.
+// This rule was created by an Amazon Web Services service on behalf of your
+// account. It is managed by that service. If you see this error in response
+// to DeleteRule or RemoveTargets, you can use the Force parameter in those
+// calls to delete the rule or remove targets from the rule. You cannot modify
+// these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+// TagResource, or UntagResource.
 type ManagedRuleException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -10930,8 +10945,8 @@ func (s *OperationDisabledException) RequestID() string {
 }
 
 // A partner event source is created by an SaaS partner. If a customer creates
-// a partner event bus that matches this event source, that AWS account can
-// receive events from the partner's applications or services.
+// a partner event bus that matches this event source, that Amazon Web Services
+// account can receive events from the partner's applications or services.
 type PartnerEventSource struct {
 	_ struct{} `type:"structure"`
 
@@ -10964,18 +10979,20 @@ func (s *PartnerEventSource) SetName(v string) *PartnerEventSource {
 	return s
 }
 
-// The AWS account that a partner event source has been offered to.
+// The Amazon Web Services account that a partner event source has been offered
+// to.
 type PartnerEventSourceAccount struct {
 	_ struct{} `type:"structure"`
 
-	// The AWS account ID that the partner event source was offered to.
+	// The Amazon Web Services account ID that the partner event source was offered
+	// to.
 	Account *string `min:"12" type:"string"`
 
 	// The date and time the event source was created.
 	CreationTime *time.Time `type:"timestamp"`
 
-	// The date and time that the event source will expire, if the AWS account doesn't
-	// create a matching event bus for it.
+	// The date and time that the event source will expire, if the Amazon Web Services
+	// account doesn't create a matching event bus for it.
 	ExpirationTime *time.Time `type:"timestamp"`
 
 	// The state of the event source. If it is ACTIVE, you have already created
@@ -11062,7 +11079,7 @@ func (s *PlacementConstraint) SetType(v string) *PlacementConstraint {
 
 // The task placement strategy for a task or service. To learn more, see Task
 // Placement Strategies (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-placement-strategies.html)
-// in the Amazon Elastic Container Service Developer Guide.
+// in the Amazon Elastic Container Service Service Developer Guide.
 type PlacementStrategy struct {
 	_ struct{} `type:"structure"`
 
@@ -11265,22 +11282,23 @@ type PutEventsRequestEntry struct {
 	// this, the default event bus is used.
 	EventBusName *string `min:"1" type:"string"`
 
-	// AWS resources, identified by Amazon Resource Name (ARN), which the event
-	// primarily concerns. Any number, including zero, may be present.
+	// Amazon Web Services resources, identified by Amazon Resource Name (ARN),
+	// which the event primarily concerns. Any number, including zero, may be present.
 	Resources []*string `type:"list"`
 
 	// The source of the event.
 	Source *string `type:"string"`
 
 	// The time stamp of the event, per RFC3339 (https://www.rfc-editor.org/rfc/rfc3339.txt).
-	// If no time stamp is provided, the time stamp of the PutEvents call is used.
+	// If no time stamp is provided, the time stamp of the PutEvents (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html)
+	// call is used.
 	Time *time.Time `type:"timestamp"`
 
-	// An AWS X-Ray trade header, which is an http header (X-Amzn-Trace-Id) that
-	// contains the trace-id associated with the event.
+	// An X-Ray trade header, which is an http header (X-Amzn-Trace-Id) that contains
+	// the trace-id associated with the event.
 	//
 	// To learn more about X-Ray trace headers, see Tracing header (https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader)
-	// in the AWS X-Ray Developer Guide.
+	// in the X-Ray Developer Guide.
 	TraceHeader *string `min:"1" type:"string"`
 }
 
@@ -11490,11 +11508,11 @@ type PutPartnerEventsRequestEntry struct {
 	// A free-form string used to decide what fields to expect in the event detail.
 	DetailType *string `type:"string"`
 
-	// AWS resources, identified by Amazon Resource Name (ARN), which the event
-	// primarily concerns. Any number, including zero, may be present.
+	// Amazon Web Services resources, identified by Amazon Resource Name (ARN),
+	// which the event primarily concerns. Any number, including zero, may be present.
 	Resources []*string `type:"list"`
 
-	// The event source that is generating the evntry.
+	// The event source that is generating the entry.
 	Source *string `min:"1" type:"string"`
 
 	// The date and time of the event.
@@ -11599,19 +11617,18 @@ func (s *PutPartnerEventsResultEntry) SetEventId(v string) *PutPartnerEventsResu
 type PutPermissionInput struct {
 	_ struct{} `type:"structure"`
 
-	// The action that you are enabling the other account to perform. Currently,
-	// this must be events:PutEvents.
+	// The action that you are enabling the other account to perform.
 	Action *string `min:"1" type:"string"`
 
 	// This parameter enables you to limit the permission to accounts that fulfill
-	// a certain condition, such as being a member of a certain AWS organization.
-	// For more information about AWS Organizations, see What Is AWS Organizations
-	// (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_introduction.html)
-	// in the AWS Organizations User Guide.
+	// a certain condition, such as being a member of a certain Amazon Web Services
+	// organization. For more information about Amazon Web Services Organizations,
+	// see What Is Amazon Web Services Organizations (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_introduction.html)
+	// in the Amazon Web Services Organizations User Guide.
 	//
-	// If you specify Condition with an AWS organization ID, and specify "*" as
-	// the value for Principal, you grant permission to all the accounts in the
-	// named organization.
+	// If you specify Condition with an Amazon Web Services organization ID, and
+	// specify "*" as the value for Principal, you grant permission to all the accounts
+	// in the named organization.
 	//
 	// The Condition is a JSON string which must contain Type, Key, and Value fields.
 	Condition *Condition `type:"structure"`
@@ -11625,9 +11642,9 @@ type PutPermissionInput struct {
 	// Principal, or Condition parameters.
 	Policy *string `type:"string"`
 
-	// The 12-digit AWS account ID that you are permitting to put events to your
-	// default event bus. Specify "*" to permit any account to put events to your
-	// default event bus.
+	// The 12-digit Amazon Web Services account ID that you are permitting to put
+	// events to your default event bus. Specify "*" to permit any account to put
+	// events to your default event bus.
 	//
 	// If you specify "*" without specifying Condition, avoid creating rules that
 	// may match undesirable events. To create more secure rules, make sure that
@@ -11638,7 +11655,7 @@ type PutPermissionInput struct {
 
 	// An identifier string for the external account that you are granting permissions
 	// to. If you later want to revoke the permission for this external account,
-	// specify this StatementId when you run RemovePermission.
+	// specify this StatementId when you run RemovePermission (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_RemovePermission.html).
 	StatementId *string `min:"1" type:"string"`
 }
 
@@ -11749,6 +11766,11 @@ type PutRuleInput struct {
 	Name *string `min:"1" type:"string" required:"true"`
 
 	// The Amazon Resource Name (ARN) of the IAM role associated with the rule.
+	//
+	// If you're setting an event bus in another account as the target and that
+	// account granted permission to your account through an organization instead
+	// of directly by the account ID, you must specify a RoleArn with proper permissions
+	// in the Target structure, instead of here in this parameter.
 	RoleArn *string `min:"1" type:"string"`
 
 	// The scheduling expression. For example, "cron(0 20 * * ? *)" or "rate(5 minutes)".
@@ -12031,8 +12053,9 @@ func (s *PutTargetsResultEntry) SetTargetId(v string) *PutTargetsResultEntry {
 	return s
 }
 
-// These are custom parameters to be used when the target is a Redshift cluster
-// to invoke the Redshift Data API ExecuteStatement based on EventBridge events.
+// These are custom parameters to be used when the target is a Amazon Redshift
+// cluster to invoke the Amazon Redshift Data API ExecuteStatement based on
+// EventBridge events.
 type RedshiftDataParameters struct {
 	_ struct{} `type:"structure"`
 
@@ -12045,7 +12068,7 @@ type RedshiftDataParameters struct {
 	DbUser *string `min:"1" type:"string"`
 
 	// The name or ARN of the secret that enables access to the database. Required
-	// when authenticating using AWS Secrets Manager.
+	// when authenticating using Amazon Web Services Secrets Manager.
 	SecretManagerArn *string `min:"1" type:"string"`
 
 	// The SQL statement text to run.
@@ -12219,11 +12242,11 @@ type RemoveTargetsInput struct {
 	// the default event bus is used.
 	EventBusName *string `min:"1" type:"string"`
 
-	// If this is a managed rule, created by an AWS service on your behalf, you
-	// must specify Force as True to remove targets. This parameter is ignored for
-	// rules that are not managed rules. You can check whether a rule is a managed
-	// rule by using DescribeRule or ListRules and checking the ManagedBy field
-	// of the response.
+	// If this is a managed rule, created by an Amazon Web Services service on your
+	// behalf, you must specify Force as True to remove targets. This parameter
+	// is ignored for rules that are not managed rules. You can check whether a
+	// rule is a managed rule by using DescribeRule or ListRules and checking the
+	// ManagedBy field of the response.
 	Force *bool `type:"boolean"`
 
 	// The IDs of the targets to remove from the rule.
@@ -12701,17 +12724,25 @@ type Rule struct {
 	// in the Amazon EventBridge User Guide.
 	EventPattern *string `type:"string"`
 
-	// If the rule was created on behalf of your account by an AWS service, this
-	// field displays the principal name of the service that created the rule.
+	// If the rule was created on behalf of your account by an Amazon Web Services
+	// service, this field displays the principal name of the service that created
+	// the rule.
 	ManagedBy *string `min:"1" type:"string"`
 
 	// The name of the rule.
 	Name *string `min:"1" type:"string"`
 
 	// The Amazon Resource Name (ARN) of the role that is used for target invocation.
+	//
+	// If you're setting an event bus in another account as the target and that
+	// account granted permission to your account through an organization instead
+	// of directly by the account ID, you must specify a RoleArn with proper permissions
+	// in the Target structure, instead of here in this parameter.
 	RoleArn *string `min:"1" type:"string"`
 
 	// The scheduling expression. For example, "cron(0 20 * * ? *)", "rate(5 minutes)".
+	// For more information, see Creating an Amazon EventBridge rule that runs on
+	// a schedule (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-create-rule-schedule.html).
 	ScheduleExpression *string `type:"string"`
 
 	// The state of the rule.
@@ -13193,8 +13224,8 @@ func (s *StartReplayOutput) SetStateReason(v string) *StartReplayOutput {
 	return s
 }
 
-// A key-value pair associated with an AWS resource. In EventBridge, rules and
-// event buses support tagging.
+// A key-value pair associated with an Amazon Web Services resource. In EventBridge,
+// rules and event buses support tagging.
 type Tag struct {
 	_ struct{} `type:"structure"`
 
@@ -13331,13 +13362,14 @@ func (s TagResourceOutput) GoString() string {
 }
 
 // Targets are the resources to be invoked when a rule is triggered. For a complete
-// list of services and resources that can be set as a target, see PutTargets.
+// list of services and resources that can be set as a target, see PutTargets
+// (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutTargets.html).
 //
 // If you are setting the event bus of another account as the target, and that
 // account granted permission to your account through an organization instead
 // of directly by the account ID, then you must specify a RoleArn with proper
 // permissions in the Target structure. For more information, see Sending and
-// Receiving Events Between AWS Accounts (https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-cross-account-event-delivery.html)
+// Receiving Events Between Amazon Web Services Accounts (https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-cross-account-event-delivery.html)
 // in the Amazon EventBridge User Guide.
 type Target struct {
 	_ struct{} `type:"structure"`
@@ -13347,9 +13379,9 @@ type Target struct {
 	// Arn is a required field
 	Arn *string `min:"1" type:"string" required:"true"`
 
-	// If the event target is an AWS Batch job, this contains the job definition,
-	// job name, and other parameters. For more information, see Jobs (https://docs.aws.amazon.com/batch/latest/userguide/jobs.html)
-	// in the AWS Batch User Guide.
+	// If the event target is an Batch job, this contains the job definition, job
+	// name, and other parameters. For more information, see Jobs (https://docs.aws.amazon.com/batch/latest/userguide/jobs.html)
+	// in the Batch User Guide.
 	BatchParameters *BatchParameters `type:"structure"`
 
 	// The DeadLetterConfig that defines the target queue to send dead-letter queue
@@ -13373,7 +13405,7 @@ type Target struct {
 	// precedence.
 	HttpParameters *HttpParameters `type:"structure"`
 
-	// The ID of the target.
+	// The ID of the target. We recommend using a memorable and unique string.
 	//
 	// Id is a required field
 	Id *string `min:"1" type:"string" required:"true"`
@@ -13398,12 +13430,12 @@ type Target struct {
 	// default is to use the eventId as the partition key.
 	KinesisParameters *KinesisParameters `type:"structure"`
 
-	// Contains the Redshift Data API parameters to use when the target is a Redshift
-	// cluster.
+	// Contains the Amazon Redshift Data API parameters to use when the target is
+	// a Amazon Redshift cluster.
 	//
-	// If you specify a Redshift Cluster as a Target, you can use this to specify
-	// parameters to invoke the Redshift Data API ExecuteStatement based on EventBridge
-	// events.
+	// If you specify a Amazon Redshift Cluster as a Target, you can use this to
+	// specify parameters to invoke the Amazon Redshift Data API ExecuteStatement
+	// based on EventBridge events.
 	RedshiftDataParameters *RedshiftDataParameters `type:"structure"`
 
 	// The RetryPolicy object that contains the retry policy configuration to use
@@ -13613,7 +13645,7 @@ type TestEventPatternInput struct {
 	_ struct{} `type:"structure"`
 
 	// The event, in JSON format, to test against the event pattern. The JSON must
-	// follow the format specified in AWS Events (https://docs.aws.amazon.com/eventbridge/latest/userguide/aws-events.html),
+	// follow the format specified in Amazon Web Services Events (https://docs.aws.amazon.com/eventbridge/latest/userguide/aws-events.html),
 	// and the following fields are mandatory:
 	//
 	//    * id
@@ -14666,6 +14698,9 @@ const (
 
 	// LaunchTypeFargate is a LaunchType enum value
 	LaunchTypeFargate = "FARGATE"
+
+	// LaunchTypeExternal is a LaunchType enum value
+	LaunchTypeExternal = "EXTERNAL"
 )
 
 // LaunchType_Values returns all elements of the LaunchType enum
@@ -14673,6 +14708,7 @@ func LaunchType_Values() []string {
 	return []string{
 		LaunchTypeEc2,
 		LaunchTypeFargate,
+		LaunchTypeExternal,
 	}
 }
 

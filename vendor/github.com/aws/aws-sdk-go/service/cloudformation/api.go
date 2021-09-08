@@ -1879,7 +1879,7 @@ func (c *CloudFormation) DescribeStackInstanceRequest(input *DescribeStackInstan
 // DescribeStackInstance API operation for AWS CloudFormation.
 //
 // Returns the stack instance that's associated with the specified stack set,
-// account, and Region.
+// Amazon Web Services account, and Region.
 //
 // For a list of stack instances that are associated with a specific stack set,
 // use ListStackInstances.
@@ -4006,7 +4006,8 @@ func (c *CloudFormation) ListStackInstancesRequest(input *ListStackInstancesInpu
 //
 // Returns summary information about stack instances that are associated with
 // the specified stack set. You can filter for stack instances that are associated
-// with a specific account name or Region, or that have a specific status.
+// with a specific Amazon Web Services account name or Region, or that have
+// a specific status.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4559,8 +4560,8 @@ func (c *CloudFormation) ListStackSetsRequest(input *ListStackSetsInput) (req *r
 // user.
 //
 //    * [Self-managed permissions] If you set the CallAs parameter to SELF while
-//    signed in to your account, ListStackSets returns all self-managed stack
-//    sets in your account.
+//    signed in to your Amazon Web Services account, ListStackSets returns all
+//    self-managed stack sets in your Amazon Web Services account.
 //
 //    * [Service-managed permissions] If you set the CallAs parameter to SELF
 //    while signed in to the organization's management account, ListStackSets
@@ -5421,7 +5422,7 @@ func (c *CloudFormation) RegisterPublisherRequest(input *RegisterPublisherInput)
 //
 // Registers your account as a publisher of public extensions in the CloudFormation
 // registry. Public extensions are available for use by all CloudFormation users.
-// This publisher ID applies to your account in all Regions.
+// This publisher ID applies to your account in all Amazon Web Services Regions.
 //
 // For information on requirements for registering as a public extension publisher,
 // see Registering your account to publish CloudFormation extensions (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/publish-extension.html#publish-extension-prereqs)
@@ -5505,8 +5506,8 @@ func (c *CloudFormation) RegisterTypeRequest(input *RegisterTypeInput) (req *req
 // RegisterType API operation for AWS CloudFormation.
 //
 // Registers an extension with the CloudFormation service. Registering an extension
-// makes it available for use in CloudFormation templates in your account, and
-// includes:
+// makes it available for use in CloudFormation templates in your Amazon Web
+// Services account, and includes:
 //
 //    * Validating the extension schema
 //
@@ -5560,6 +5561,104 @@ func (c *CloudFormation) RegisterType(input *RegisterTypeInput) (*RegisterTypeOu
 // for more information on using Contexts.
 func (c *CloudFormation) RegisterTypeWithContext(ctx aws.Context, input *RegisterTypeInput, opts ...request.Option) (*RegisterTypeOutput, error) {
 	req, out := c.RegisterTypeRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opRollbackStack = "RollbackStack"
+
+// RollbackStackRequest generates a "aws/request.Request" representing the
+// client's request for the RollbackStack operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See RollbackStack for more information on using the RollbackStack
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the RollbackStackRequest method.
+//    req, resp := client.RollbackStackRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/RollbackStack
+func (c *CloudFormation) RollbackStackRequest(input *RollbackStackInput) (req *request.Request, output *RollbackStackOutput) {
+	op := &request.Operation{
+		Name:       opRollbackStack,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &RollbackStackInput{}
+	}
+
+	output = &RollbackStackOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// RollbackStack API operation for AWS CloudFormation.
+//
+// When specifying RollbackStack, you preserve the state of previously provisioned
+// resources when an operation fails. You can check the status of the stack
+// through the DescribeStacks API.
+//
+// Rolls back the specified stack to the last known stable state from CREATE_FAILED
+// or UPDATE_FAILED stack statuses.
+//
+// This operation will delete a stack if it doesn't contain a last known stable
+// state. A last known stable state includes any status in a *_COMPLETE. This
+// includes the following stack statuses.
+//
+//    * CREATE_COMPLETE
+//
+//    * UPDATE_COMPLETE
+//
+//    * UPDATE_ROLLBACK_COMPLETE
+//
+//    * IMPORT_COMPLETE
+//
+//    * IMPORT_ROLLBACK_COMPLETE
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CloudFormation's
+// API operation RollbackStack for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeTokenAlreadyExistsException "TokenAlreadyExistsException"
+//   A client request token already exists.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/RollbackStack
+func (c *CloudFormation) RollbackStack(input *RollbackStackInput) (*RollbackStackOutput, error) {
+	req, out := c.RollbackStackRequest(input)
+	return out, req.Send()
+}
+
+// RollbackStackWithContext is the same as RollbackStack with the addition of
+// the ability to pass a context and additional request options.
+//
+// See RollbackStack for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudFormation) RollbackStackWithContext(ctx aws.Context, input *RollbackStackInput, opts ...request.Option) (*RollbackStackOutput, error) {
+	req, out := c.RollbackStackRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -7420,14 +7519,14 @@ type CreateChangeSetInput struct {
 	// certain capabilities in order for CloudFormation to create the stack.
 	//
 	//    * CAPABILITY_IAM and CAPABILITY_NAMED_IAM Some stack templates might include
-	//    resources that can affect permissions in your account; for example, by
-	//    creating new Identity and Access Management (IAM) users. For those stacks,
-	//    you must explicitly acknowledge this by specifying one of these capabilities.
-	//    The following IAM resources require you to specify either the CAPABILITY_IAM
-	//    or CAPABILITY_NAMED_IAM capability. If you have IAM resources, you can
-	//    specify either capability. If you have IAM resources with custom names,
-	//    you must specify CAPABILITY_NAMED_IAM. If you don't specify either of
-	//    these capabilities, CloudFormation returns an InsufficientCapabilities
+	//    resources that can affect permissions in your Amazon Web Services account;
+	//    for example, by creating new Identity and Access Management (IAM) users.
+	//    For those stacks, you must explicitly acknowledge this by specifying one
+	//    of these capabilities. The following IAM resources require you to specify
+	//    either the CAPABILITY_IAM or CAPABILITY_NAMED_IAM capability. If you have
+	//    IAM resources, you can specify either capability. If you have IAM resources
+	//    with custom names, you must specify CAPABILITY_NAMED_IAM. If you don't
+	//    specify either of these capabilities, CloudFormation returns an InsufficientCapabilities
 	//    error. If your stack template contains these resources, we recommend that
 	//    you review all permissions associated with them and edit their permissions
 	//    if necessary. AWS::IAM::AccessKey (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-accesskey.html)
@@ -7787,14 +7886,14 @@ type CreateStackInput struct {
 	// certain capabilities in order for CloudFormation to create the stack.
 	//
 	//    * CAPABILITY_IAM and CAPABILITY_NAMED_IAM Some stack templates might include
-	//    resources that can affect permissions in your account; for example, by
-	//    creating new Identity and Access Management (IAM) users. For those stacks,
-	//    you must explicitly acknowledge this by specifying one of these capabilities.
-	//    The following IAM resources require you to specify either the CAPABILITY_IAM
-	//    or CAPABILITY_NAMED_IAM capability. If you have IAM resources, you can
-	//    specify either capability. If you have IAM resources with custom names,
-	//    you must specify CAPABILITY_NAMED_IAM. If you don't specify either of
-	//    these capabilities, CloudFormation returns an InsufficientCapabilities
+	//    resources that can affect permissions in your Amazon Web Services account;
+	//    for example, by creating new Identity and Access Management (IAM) users.
+	//    For those stacks, you must explicitly acknowledge this by specifying one
+	//    of these capabilities. The following IAM resources require you to specify
+	//    either the CAPABILITY_IAM or CAPABILITY_NAMED_IAM capability. If you have
+	//    IAM resources, you can specify either capability. If you have IAM resources
+	//    with custom names, you must specify CAPABILITY_NAMED_IAM. If you don't
+	//    specify either of these capabilities, CloudFormation returns an InsufficientCapabilities
 	//    error. If your stack template contains these resources, we recommend that
 	//    you review all permissions associated with them and edit their permissions
 	//    if necessary. AWS::IAM::AccessKey (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-accesskey.html)
@@ -7916,7 +8015,7 @@ type CreateStackInput struct {
 	// Region in which you are creating the stack.
 	//
 	// A stack name can contain only alphanumeric characters (case sensitive) and
-	// hyphens. It must start with an alphabetic character and cannot be longer
+	// hyphens. It must start with an alphabetical character and cannot be longer
 	// than 128 characters.
 	//
 	// StackName is a required field
@@ -8127,8 +8226,8 @@ func (s *CreateStackInput) SetTimeoutInMinutes(v int64) *CreateStackInput {
 type CreateStackInstancesInput struct {
 	_ struct{} `type:"structure"`
 
-	// [Self-managed permissions] The names of one or more accounts that you want
-	// to create stack instances in the specified Region(s) for.
+	// [Self-managed permissions] The names of one or more Amazon Web Services accounts
+	// that you want to create stack instances in the specified Region(s) for.
 	//
 	// You can specify Accounts or DeploymentTargets, but not both.
 	Accounts []*string `type:"list"`
@@ -8143,9 +8242,9 @@ type CreateStackInstancesInput struct {
 	//    * If you are signed in to the management account, specify SELF.
 	//
 	//    * If you are signed in to a delegated administrator account, specify DELEGATED_ADMIN.
-	//    Your account must be registered as a delegated administrator in the management
-	//    account. For more information, see Register a delegated administrator
-	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
+	//    Your Amazon Web Services account must be registered as a delegated administrator
+	//    in the management account. For more information, see Register a delegated
+	//    administrator (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
 	//    in the CloudFormation User Guide.
 	CallAs *string `type:"string" enum:"CallAs"`
 
@@ -8202,7 +8301,7 @@ type CreateStackInstancesInput struct {
 	ParameterOverrides []*Parameter `type:"list"`
 
 	// The names of one or more Regions where you want to create stack instances
-	// using the specified accounts.
+	// using the specified Amazon Web Services accounts.
 	//
 	// Regions is a required field
 	Regions []*string `type:"list" required:"true"`
@@ -8378,8 +8477,9 @@ type CreateStackSetInput struct {
 	//
 	//    * To create a stack set with service-managed permissions while signed
 	//    in to a delegated administrator account, specify DELEGATED_ADMIN. Your
-	//    account must be registered as a delegated admin in the management account.
-	//    For more information, see Register a delegated administrator (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
+	//    Amazon Web Services account must be registered as a delegated admin in
+	//    the management account. For more information, see Register a delegated
+	//    administrator (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
 	//    in the CloudFormation User Guide.
 	//
 	// Stack sets with service-managed permissions are created in the management
@@ -8391,17 +8491,17 @@ type CreateStackSetInput struct {
 	// set and related stack instances.
 	//
 	//    * CAPABILITY_IAM and CAPABILITY_NAMED_IAM Some stack templates might include
-	//    resources that can affect permissions in your account; for example, by
-	//    creating new Identity and Access Management (IAM) users. For those stack
-	//    sets, you must explicitly acknowledge this by specifying one of these
-	//    capabilities. The following IAM resources require you to specify either
-	//    the CAPABILITY_IAM or CAPABILITY_NAMED_IAM capability. If you have IAM
-	//    resources, you can specify either capability. If you have IAM resources
-	//    with custom names, you must specify CAPABILITY_NAMED_IAM. If you don't
-	//    specify either of these capabilities, CloudFormation returns an InsufficientCapabilities
-	//    error. If your stack template contains these resources, we recommend that
-	//    you review all permissions associated with them and edit their permissions
-	//    if necessary. AWS::IAM::AccessKey (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-accesskey.html)
+	//    resources that can affect permissions in your Amazon Web Services account;
+	//    for example, by creating new Identity and Access Management (IAM) users.
+	//    For those stack sets, you must explicitly acknowledge this by specifying
+	//    one of these capabilities. The following IAM resources require you to
+	//    specify either the CAPABILITY_IAM or CAPABILITY_NAMED_IAM capability.
+	//    If you have IAM resources, you can specify either capability. If you have
+	//    IAM resources with custom names, you must specify CAPABILITY_NAMED_IAM.
+	//    If you don't specify either of these capabilities, CloudFormation returns
+	//    an InsufficientCapabilities error. If your stack template contains these
+	//    resources, we recommend that you review all permissions associated with
+	//    them and edit their permissions if necessary. AWS::IAM::AccessKey (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-accesskey.html)
 	//    AWS::IAM::Group (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-group.html)
 	//    AWS::IAM::InstanceProfile (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-instanceprofile.html)
 	//    AWS::IAM::Policy (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-policy.html)
@@ -8908,8 +9008,8 @@ func (s *DeleteStackInput) SetStackName(v string) *DeleteStackInput {
 type DeleteStackInstancesInput struct {
 	_ struct{} `type:"structure"`
 
-	// [Self-managed permissions] The names of the accounts that you want to delete
-	// stack instances for.
+	// [Self-managed permissions] The names of the Amazon Web Services accounts
+	// that you want to delete stack instances for.
 	//
 	// You can specify Accounts or DeploymentTargets, but not both.
 	Accounts []*string `type:"list"`
@@ -8924,9 +9024,9 @@ type DeleteStackInstancesInput struct {
 	//    * If you are signed in to the management account, specify SELF.
 	//
 	//    * If you are signed in to a delegated administrator account, specify DELEGATED_ADMIN.
-	//    Your account must be registered as a delegated administrator in the management
-	//    account. For more information, see Register a delegated administrator
-	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
+	//    Your Amazon Web Services account must be registered as a delegated administrator
+	//    in the management account. For more information, see Register a delegated
+	//    administrator (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
 	//    in the CloudFormation User Guide.
 	CallAs *string `type:"string" enum:"CallAs"`
 
@@ -9113,9 +9213,9 @@ type DeleteStackSetInput struct {
 	//    * If you are signed in to the management account, specify SELF.
 	//
 	//    * If you are signed in to a delegated administrator account, specify DELEGATED_ADMIN.
-	//    Your account must be registered as a delegated administrator in the management
-	//    account. For more information, see Register a delegated administrator
-	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
+	//    Your Amazon Web Services account must be registered as a delegated administrator
+	//    in the management account. For more information, see Register a delegated
+	//    administrator (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
 	//    in the CloudFormation User Guide.
 	CallAs *string `type:"string" enum:"CallAs"`
 
@@ -9185,8 +9285,8 @@ func (s DeleteStackSetOutput) GoString() string {
 type DeploymentTargets struct {
 	_ struct{} `type:"structure"`
 
-	// The names of one or more accounts for which you want to deploy stack set
-	// updates.
+	// The names of one or more Amazon Web Services accounts for which you want
+	// to deploy stack set updates.
 	Accounts []*string `type:"list"`
 
 	// Returns the value of the AccountsUrl property.
@@ -10025,13 +10125,14 @@ type DescribeStackInstanceInput struct {
 	//    * If you are signed in to the management account, specify SELF.
 	//
 	//    * If you are signed in to a delegated administrator account, specify DELEGATED_ADMIN.
-	//    Your account must be registered as a delegated administrator in the management
-	//    account. For more information, see Register a delegated administrator
-	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
+	//    Your Amazon Web Services account must be registered as a delegated administrator
+	//    in the management account. For more information, see Register a delegated
+	//    administrator (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
 	//    in the CloudFormation User Guide.
 	CallAs *string `type:"string" enum:"CallAs"`
 
-	// The ID of an account that's associated with this stack instance.
+	// The ID of an Amazon Web Services account that's associated with this stack
+	// instance.
 	//
 	// StackInstanceAccount is a required field
 	StackInstanceAccount *string `type:"string" required:"true"`
@@ -10452,9 +10553,9 @@ type DescribeStackSetInput struct {
 	//    * If you are signed in to the management account, specify SELF.
 	//
 	//    * If you are signed in to a delegated administrator account, specify DELEGATED_ADMIN.
-	//    Your account must be registered as a delegated administrator in the management
-	//    account. For more information, see Register a delegated administrator
-	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
+	//    Your Amazon Web Services account must be registered as a delegated administrator
+	//    in the management account. For more information, see Register a delegated
+	//    administrator (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
 	//    in the CloudFormation User Guide.
 	CallAs *string `type:"string" enum:"CallAs"`
 
@@ -10512,9 +10613,9 @@ type DescribeStackSetOperationInput struct {
 	//    * If you are signed in to the management account, specify SELF.
 	//
 	//    * If you are signed in to a delegated administrator account, specify DELEGATED_ADMIN.
-	//    Your account must be registered as a delegated administrator in the management
-	//    account. For more information, see Register a delegated administrator
-	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
+	//    Your Amazon Web Services account must be registered as a delegated administrator
+	//    in the management account. For more information, see Register a delegated
+	//    administrator (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
 	//    in the CloudFormation User Guide.
 	CallAs *string `type:"string" enum:"CallAs"`
 
@@ -11475,9 +11576,9 @@ type DetectStackSetDriftInput struct {
 	//    * If you are signed in to the management account, specify SELF.
 	//
 	//    * If you are signed in to a delegated administrator account, specify DELEGATED_ADMIN.
-	//    Your account must be registered as a delegated administrator in the management
-	//    account. For more information, see Register a delegated administrator
-	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
+	//    Your Amazon Web Services account must be registered as a delegated administrator
+	//    in the management account. For more information, see Register a delegated
+	//    administrator (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
 	//    in the CloudFormation User Guide.
 	CallAs *string `type:"string" enum:"CallAs"`
 
@@ -11690,6 +11791,12 @@ type ExecuteChangeSetInput struct {
 	// received them.
 	ClientRequestToken *string `min:"1" type:"string"`
 
+	// Preserves the state of previously provisioned resources when an operation
+	// fails.
+	//
+	// Default: True
+	DisableRollback *bool `type:"boolean"`
+
 	// If you specified the name of a change set, specify the stack name or ID (ARN)
 	// that is associated with the change set you want to execute.
 	StackName *string `min:"1" type:"string"`
@@ -11736,6 +11843,12 @@ func (s *ExecuteChangeSetInput) SetChangeSetName(v string) *ExecuteChangeSetInpu
 // SetClientRequestToken sets the ClientRequestToken field's value.
 func (s *ExecuteChangeSetInput) SetClientRequestToken(v string) *ExecuteChangeSetInput {
 	s.ClientRequestToken = &v
+	return s
+}
+
+// SetDisableRollback sets the DisableRollback field's value.
+func (s *ExecuteChangeSetInput) SetDisableRollback(v bool) *ExecuteChangeSetInput {
+	s.DisableRollback = &v
 	return s
 }
 
@@ -11996,9 +12109,9 @@ type GetTemplateSummaryInput struct {
 	//    * If you are signed in to the management account, specify SELF.
 	//
 	//    * If you are signed in to a delegated administrator account, specify DELEGATED_ADMIN.
-	//    Your account must be registered as a delegated administrator in the management
-	//    account. For more information, see Register a delegated administrator
-	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
+	//    Your Amazon Web Services account must be registered as a delegated administrator
+	//    in the management account. For more information, see Register a delegated
+	//    administrator (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
 	//    in the CloudFormation User Guide.
 	CallAs *string `type:"string" enum:"CallAs"`
 
@@ -12586,9 +12699,9 @@ type ListStackInstancesInput struct {
 	//    * If you are signed in to the management account, specify SELF.
 	//
 	//    * If you are signed in to a delegated administrator account, specify DELEGATED_ADMIN.
-	//    Your account must be registered as a delegated administrator in the management
-	//    account. For more information, see Register a delegated administrator
-	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
+	//    Your Amazon Web Services account must be registered as a delegated administrator
+	//    in the management account. For more information, see Register a delegated
+	//    administrator (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
 	//    in the CloudFormation User Guide.
 	CallAs *string `type:"string" enum:"CallAs"`
 
@@ -12608,7 +12721,8 @@ type ListStackInstancesInput struct {
 	// response object's NextToken parameter is set to null.
 	NextToken *string `min:"1" type:"string"`
 
-	// The name of the account that you want to list stack instances for.
+	// The name of the Amazon Web Services account that you want to list stack instances
+	// for.
 	StackInstanceAccount *string `type:"string"`
 
 	// The name of the Region where you want to list stack instances.
@@ -12845,9 +12959,9 @@ type ListStackSetOperationResultsInput struct {
 	//    * If you are signed in to the management account, specify SELF.
 	//
 	//    * If you are signed in to a delegated administrator account, specify DELEGATED_ADMIN.
-	//    Your account must be registered as a delegated administrator in the management
-	//    account. For more information, see Register a delegated administrator
-	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
+	//    Your Amazon Web Services account must be registered as a delegated administrator
+	//    in the management account. For more information, see Register a delegated
+	//    administrator (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
 	//    in the CloudFormation User Guide.
 	CallAs *string `type:"string" enum:"CallAs"`
 
@@ -12991,9 +13105,9 @@ type ListStackSetOperationsInput struct {
 	//    * If you are signed in to the management account, specify SELF.
 	//
 	//    * If you are signed in to a delegated administrator account, specify DELEGATED_ADMIN.
-	//    Your account must be registered as a delegated administrator in the management
-	//    account. For more information, see Register a delegated administrator
-	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
+	//    Your Amazon Web Services account must be registered as a delegated administrator
+	//    in the management account. For more information, see Register a delegated
+	//    administrator (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
 	//    in the CloudFormation User Guide.
 	CallAs *string `type:"string" enum:"CallAs"`
 
@@ -13119,9 +13233,9 @@ type ListStackSetsInput struct {
 	//    * If you are signed in to the management account, specify SELF.
 	//
 	//    * If you are signed in to a delegated administrator account, specify DELEGATED_ADMIN.
-	//    Your account must be registered as a delegated administrator in the management
-	//    account. For more information, see Register a delegated administrator
-	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
+	//    Your Amazon Web Services account must be registered as a delegated administrator
+	//    in the management account. For more information, see Register a delegated
+	//    administrator (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
 	//    in the CloudFormation User Guide.
 	CallAs *string `type:"string" enum:"CallAs"`
 
@@ -14057,7 +14171,7 @@ type ParameterDeclaration struct {
 	Description *string `min:"1" type:"string"`
 
 	// Flag that indicates whether the parameter value is shown as plain text in
-	// logs and in the Management Console.
+	// logs and in the Amazon Web Services Management Console.
 	NoEcho *bool `type:"boolean"`
 
 	// The criteria that CloudFormation uses to validate parameter values.
@@ -15262,6 +15376,95 @@ func (s *RollbackConfiguration) SetRollbackTriggers(v []*RollbackTrigger) *Rollb
 	return s
 }
 
+type RollbackStackInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique identifier for this RollbackStack request.
+	ClientRequestToken *string `min:"1" type:"string"`
+
+	// The Amazon Resource Name (ARN) of an Identity and Access Management role
+	// that CloudFormation assumes to rollback the stack.
+	RoleARN *string `min:"20" type:"string"`
+
+	// The name that is associated with the stack.
+	//
+	// StackName is a required field
+	StackName *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s RollbackStackInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s RollbackStackInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RollbackStackInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RollbackStackInput"}
+	if s.ClientRequestToken != nil && len(*s.ClientRequestToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientRequestToken", 1))
+	}
+	if s.RoleARN != nil && len(*s.RoleARN) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("RoleARN", 20))
+	}
+	if s.StackName == nil {
+		invalidParams.Add(request.NewErrParamRequired("StackName"))
+	}
+	if s.StackName != nil && len(*s.StackName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StackName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientRequestToken sets the ClientRequestToken field's value.
+func (s *RollbackStackInput) SetClientRequestToken(v string) *RollbackStackInput {
+	s.ClientRequestToken = &v
+	return s
+}
+
+// SetRoleARN sets the RoleARN field's value.
+func (s *RollbackStackInput) SetRoleARN(v string) *RollbackStackInput {
+	s.RoleARN = &v
+	return s
+}
+
+// SetStackName sets the StackName field's value.
+func (s *RollbackStackInput) SetStackName(v string) *RollbackStackInput {
+	s.StackName = &v
+	return s
+}
+
+type RollbackStackOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique identifier of the stack.
+	StackId *string `type:"string"`
+}
+
+// String returns the string representation
+func (s RollbackStackOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s RollbackStackOutput) GoString() string {
+	return s.String()
+}
+
+// SetStackId sets the StackId field's value.
+func (s *RollbackStackOutput) SetStackId(v string) *RollbackStackOutput {
+	s.StackId = &v
+	return s
+}
+
 // A rollback trigger CloudFormation monitors during creation and updating of
 // stacks. If any of the alarms you specify goes to ALARM state during the stack
 // operation or within the specified monitoring period afterwards, CloudFormation
@@ -16229,8 +16432,8 @@ func (s *StackEvent) SetTimestamp(v time.Time) *StackEvent {
 type StackInstance struct {
 	_ struct{} `type:"structure"`
 
-	// [Self-managed permissions] The name of the account that the stack instance
-	// is associated with.
+	// [Self-managed permissions] The name of the Amazon Web Services account that
+	// the stack instance is associated with.
 	Account *string `type:"string"`
 
 	// Status of the stack instance's actual configuration compared to the expected
@@ -16263,7 +16466,8 @@ type StackInstance struct {
 	// in this stack instance.
 	ParameterOverrides []*Parameter `type:"list"`
 
-	// The name of the Region that the stack instance is associated with.
+	// The name of the Amazon Web Services Region that the stack instance is associated
+	// with.
 	Region *string `type:"string"`
 
 	// The ID of the stack instance.
@@ -16469,8 +16673,8 @@ func (s *StackInstanceFilter) SetValues(v string) *StackInstanceFilter {
 type StackInstanceSummary struct {
 	_ struct{} `type:"structure"`
 
-	// [Self-managed permissions] The name of the account that the stack instance
-	// is associated with.
+	// [Self-managed permissions] The name of the Amazon Web Services account that
+	// the stack instance is associated with.
 	Account *string `type:"string"`
 
 	// Status of the stack instance's actual configuration compared to the expected
@@ -16499,7 +16703,8 @@ type StackInstanceSummary struct {
 	// unit (OU) IDs that you specified for DeploymentTargets (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_DeploymentTargets.html).
 	OrganizationalUnitId *string `type:"string"`
 
-	// The name of the Region that the stack instance is associated with.
+	// The name of the Amazon Web Services Region that the stack instance is associated
+	// with.
 	Region *string `type:"string"`
 
 	// The ID of the stack instance.
@@ -17241,9 +17446,10 @@ func (s *StackResourceSummary) SetResourceType(v string) *StackResourceSummary {
 }
 
 // A structure that contains information about a stack set. A stack set enables
-// you to provision stacks into accounts and across Regions by using a single
-// CloudFormation template. In the stack set, you specify the template to use,
-// as well as any parameters and capabilities that the template requires.
+// you to provision stacks into Amazon Web Services accounts and across Regions
+// by using a single CloudFormation template. In the stack set, you specify
+// the template to use, as well as any parameters and capabilities that the
+// template requires.
 type StackSet struct {
 	_ struct{} `type:"structure"`
 
@@ -17262,10 +17468,10 @@ type StackSet struct {
 	AutoDeployment *AutoDeployment `type:"structure"`
 
 	// The capabilities that are allowed in the stack set. Some stack set templates
-	// might include resources that can affect permissions in your account—for
-	// example, by creating new Identity and Access Management (IAM) users. For
-	// more information, see Acknowledging IAM Resources in CloudFormation Templates.
-	// (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-iam-template.html#capabilities)
+	// might include resources that can affect permissions in your Amazon Web Services
+	// account—for example, by creating new Identity and Access Management (IAM)
+	// users. For more information, see Acknowledging IAM Resources in CloudFormation
+	// Templates. (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-iam-template.html#capabilities)
 	Capabilities []*string `type:"list"`
 
 	// A description of the stack set that you specify when the stack set is created
@@ -17878,7 +18084,8 @@ func (s *StackSetOperationPreferences) SetRegionOrder(v []*string) *StackSetOper
 type StackSetOperationResultSummary struct {
 	_ struct{} `type:"structure"`
 
-	// [Self-managed permissions] The name of the account for this operation result.
+	// [Self-managed permissions] The name of the Amazon Web Services account for
+	// this operation result.
 	Account *string `type:"string"`
 
 	// The results of the account gate function CloudFormation invokes, if present,
@@ -17889,7 +18096,7 @@ type StackSetOperationResultSummary struct {
 	// unit (OU) IDs that you specified for DeploymentTargets (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_DeploymentTargets.html).
 	OrganizationalUnitId *string `type:"string"`
 
-	// The name of the Region for this operation result.
+	// The name of the Amazon Web Services Region for this operation result.
 	Region *string `type:"string"`
 
 	// The result status of the stack set operation for the given account in the
@@ -18316,9 +18523,9 @@ type StopStackSetOperationInput struct {
 	//    * If you are signed in to the management account, specify SELF.
 	//
 	//    * If you are signed in to a delegated administrator account, specify DELEGATED_ADMIN.
-	//    Your account must be registered as a delegated administrator in the management
-	//    account. For more information, see Register a delegated administrator
-	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
+	//    Your Amazon Web Services account must be registered as a delegated administrator
+	//    in the management account. For more information, see Register a delegated
+	//    administrator (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
 	//    in the CloudFormation User Guide.
 	CallAs *string `type:"string" enum:"CallAs"`
 
@@ -19187,14 +19394,14 @@ type UpdateStackInput struct {
 	// certain capabilities in order for CloudFormation to update the stack.
 	//
 	//    * CAPABILITY_IAM and CAPABILITY_NAMED_IAM Some stack templates might include
-	//    resources that can affect permissions in your account; for example, by
-	//    creating new Identity and Access Management (IAM) users. For those stacks,
-	//    you must explicitly acknowledge this by specifying one of these capabilities.
-	//    The following IAM resources require you to specify either the CAPABILITY_IAM
-	//    or CAPABILITY_NAMED_IAM capability. If you have IAM resources, you can
-	//    specify either capability. If you have IAM resources with custom names,
-	//    you must specify CAPABILITY_NAMED_IAM. If you don't specify either of
-	//    these capabilities, CloudFormation returns an InsufficientCapabilities
+	//    resources that can affect permissions in your Amazon Web Services account;
+	//    for example, by creating new Identity and Access Management (IAM) users.
+	//    For those stacks, you must explicitly acknowledge this by specifying one
+	//    of these capabilities. The following IAM resources require you to specify
+	//    either the CAPABILITY_IAM or CAPABILITY_NAMED_IAM capability. If you have
+	//    IAM resources, you can specify either capability. If you have IAM resources
+	//    with custom names, you must specify CAPABILITY_NAMED_IAM. If you don't
+	//    specify either of these capabilities, CloudFormation returns an InsufficientCapabilities
 	//    error. If your stack template contains these resources, we recommend that
 	//    you review all permissions associated with them and edit their permissions
 	//    if necessary. AWS::IAM::AccessKey (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-accesskey.html)
@@ -19244,6 +19451,12 @@ type UpdateStackInput struct {
 	// stack operation . For example, if you create a stack using the console, each
 	// stack event would be assigned the same token in the following format: Console-CreateStack-7f59c3cf-00d2-40c7-b2ff-e75db0987002.
 	ClientRequestToken *string `min:"1" type:"string"`
+
+	// Preserve the state of previously provisioned resources when an operation
+	// fails.
+	//
+	// Default: False
+	DisableRollback *bool `type:"boolean"`
 
 	// Amazon Simple Notification Service topic Amazon Resource Names (ARNs) that
 	// CloudFormation associates with the stack. Specify an empty list to remove
@@ -19433,6 +19646,12 @@ func (s *UpdateStackInput) SetClientRequestToken(v string) *UpdateStackInput {
 	return s
 }
 
+// SetDisableRollback sets the DisableRollback field's value.
+func (s *UpdateStackInput) SetDisableRollback(v bool) *UpdateStackInput {
+	s.DisableRollback = &v
+	return s
+}
+
 // SetNotificationARNs sets the NotificationARNs field's value.
 func (s *UpdateStackInput) SetNotificationARNs(v []*string) *UpdateStackInput {
 	s.NotificationARNs = v
@@ -19520,10 +19739,10 @@ func (s *UpdateStackInput) SetUsePreviousTemplate(v bool) *UpdateStackInput {
 type UpdateStackInstancesInput struct {
 	_ struct{} `type:"structure"`
 
-	// [Self-managed permissions] The names of one or more accounts for which you
-	// want to update parameter values for stack instances. The overridden parameter
-	// values will be applied to all stack instances in the specified accounts and
-	// Regions.
+	// [Self-managed permissions] The names of one or more Amazon Web Services accounts
+	// for which you want to update parameter values for stack instances. The overridden
+	// parameter values will be applied to all stack instances in the specified
+	// accounts and Regions.
 	//
 	// You can specify Accounts or DeploymentTargets, but not both.
 	Accounts []*string `type:"list"`
@@ -19538,9 +19757,9 @@ type UpdateStackInstancesInput struct {
 	//    * If you are signed in to the management account, specify SELF.
 	//
 	//    * If you are signed in to a delegated administrator account, specify DELEGATED_ADMIN.
-	//    Your account must be registered as a delegated administrator in the management
-	//    account. For more information, see Register a delegated administrator
-	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
+	//    Your Amazon Web Services account must be registered as a delegated administrator
+	//    in the management account. For more information, see Register a delegated
+	//    administrator (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
 	//    in the CloudFormation User Guide.
 	CallAs *string `type:"string" enum:"CallAs"`
 
@@ -19799,9 +20018,9 @@ type UpdateStackSetInput struct {
 	//    * If you are signed in to the management account, specify SELF.
 	//
 	//    * If you are signed in to a delegated administrator account, specify DELEGATED_ADMIN.
-	//    Your account must be registered as a delegated administrator in the management
-	//    account. For more information, see Register a delegated administrator
-	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
+	//    Your Amazon Web Services account must be registered as a delegated administrator
+	//    in the management account. For more information, see Register a delegated
+	//    administrator (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html)
 	//    in the CloudFormation User Guide.
 	CallAs *string `type:"string" enum:"CallAs"`
 
@@ -19810,17 +20029,17 @@ type UpdateStackSetInput struct {
 	// and its associated stack instances.
 	//
 	//    * CAPABILITY_IAM and CAPABILITY_NAMED_IAM Some stack templates might include
-	//    resources that can affect permissions in your account; for example, by
-	//    creating new Identity and Access Management (IAM) users. For those stacks
-	//    sets, you must explicitly acknowledge this by specifying one of these
-	//    capabilities. The following IAM resources require you to specify either
-	//    the CAPABILITY_IAM or CAPABILITY_NAMED_IAM capability. If you have IAM
-	//    resources, you can specify either capability. If you have IAM resources
-	//    with custom names, you must specify CAPABILITY_NAMED_IAM. If you don't
-	//    specify either of these capabilities, CloudFormation returns an InsufficientCapabilities
-	//    error. If your stack template contains these resources, we recommend that
-	//    you review all permissions associated with them and edit their permissions
-	//    if necessary. AWS::IAM::AccessKey (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-accesskey.html)
+	//    resources that can affect permissions in your Amazon Web Services account;
+	//    for example, by creating new Identity and Access Management (IAM) users.
+	//    For those stacks sets, you must explicitly acknowledge this by specifying
+	//    one of these capabilities. The following IAM resources require you to
+	//    specify either the CAPABILITY_IAM or CAPABILITY_NAMED_IAM capability.
+	//    If you have IAM resources, you can specify either capability. If you have
+	//    IAM resources with custom names, you must specify CAPABILITY_NAMED_IAM.
+	//    If you don't specify either of these capabilities, CloudFormation returns
+	//    an InsufficientCapabilities error. If your stack template contains these
+	//    resources, we recommend that you review all permissions associated with
+	//    them and edit their permissions if necessary. AWS::IAM::AccessKey (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-accesskey.html)
 	//    AWS::IAM::Group (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-group.html)
 	//    AWS::IAM::InstanceProfile (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-instanceprofile.html)
 	//    AWS::IAM::Policy (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-policy.html)
@@ -21048,6 +21267,24 @@ const (
 
 	// ResourceStatusImportRollbackComplete is a ResourceStatus enum value
 	ResourceStatusImportRollbackComplete = "IMPORT_ROLLBACK_COMPLETE"
+
+	// ResourceStatusUpdateRollbackInProgress is a ResourceStatus enum value
+	ResourceStatusUpdateRollbackInProgress = "UPDATE_ROLLBACK_IN_PROGRESS"
+
+	// ResourceStatusUpdateRollbackComplete is a ResourceStatus enum value
+	ResourceStatusUpdateRollbackComplete = "UPDATE_ROLLBACK_COMPLETE"
+
+	// ResourceStatusUpdateRollbackFailed is a ResourceStatus enum value
+	ResourceStatusUpdateRollbackFailed = "UPDATE_ROLLBACK_FAILED"
+
+	// ResourceStatusRollbackInProgress is a ResourceStatus enum value
+	ResourceStatusRollbackInProgress = "ROLLBACK_IN_PROGRESS"
+
+	// ResourceStatusRollbackComplete is a ResourceStatus enum value
+	ResourceStatusRollbackComplete = "ROLLBACK_COMPLETE"
+
+	// ResourceStatusRollbackFailed is a ResourceStatus enum value
+	ResourceStatusRollbackFailed = "ROLLBACK_FAILED"
 )
 
 // ResourceStatus_Values returns all elements of the ResourceStatus enum
@@ -21069,6 +21306,12 @@ func ResourceStatus_Values() []string {
 		ResourceStatusImportRollbackInProgress,
 		ResourceStatusImportRollbackFailed,
 		ResourceStatusImportRollbackComplete,
+		ResourceStatusUpdateRollbackInProgress,
+		ResourceStatusUpdateRollbackComplete,
+		ResourceStatusUpdateRollbackFailed,
+		ResourceStatusRollbackInProgress,
+		ResourceStatusRollbackComplete,
+		ResourceStatusRollbackFailed,
 	}
 }
 
@@ -21389,6 +21632,9 @@ const (
 	// StackStatusUpdateComplete is a StackStatus enum value
 	StackStatusUpdateComplete = "UPDATE_COMPLETE"
 
+	// StackStatusUpdateFailed is a StackStatus enum value
+	StackStatusUpdateFailed = "UPDATE_FAILED"
+
 	// StackStatusUpdateRollbackInProgress is a StackStatus enum value
 	StackStatusUpdateRollbackInProgress = "UPDATE_ROLLBACK_IN_PROGRESS"
 
@@ -21435,6 +21681,7 @@ func StackStatus_Values() []string {
 		StackStatusUpdateInProgress,
 		StackStatusUpdateCompleteCleanupInProgress,
 		StackStatusUpdateComplete,
+		StackStatusUpdateFailed,
 		StackStatusUpdateRollbackInProgress,
 		StackStatusUpdateRollbackFailed,
 		StackStatusUpdateRollbackCompleteCleanupInProgress,
