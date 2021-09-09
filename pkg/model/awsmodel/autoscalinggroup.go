@@ -179,6 +179,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		CPUCredits:                   fi.String(fi.StringValue(ig.Spec.CPUCredits)),
 		HTTPPutResponseHopLimit:      fi.Int64(1),
 		HTTPTokens:                   fi.String(ec2.LaunchTemplateHttpTokensStateOptional),
+		HTTPProtocolIPv6:             fi.String(ec2.LaunchTemplateInstanceMetadataProtocolIpv6Disabled),
 		IAMInstanceProfile:           link,
 		ImageID:                      fi.String(ig.Spec.Image),
 		InstanceInterruptionBehavior: ig.Spec.InstanceInterruptionBehavior,
@@ -222,6 +223,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 				}
 				if clusterSubnet.IPv6CIDR != "" {
 					lt.IPv6AddressCount = fi.Int64(1)
+					lt.HTTPProtocolIPv6 = fi.String(ec2.LaunchTemplateInstanceMetadataProtocolIpv6Enabled)
 				}
 			}
 		}
