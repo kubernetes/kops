@@ -18,7 +18,13 @@ spec:
       enabled: true
       version: v1.2.0
     manageStorageClasses: true
-  cloudControllerManager: {}
+  cloudControllerManager:
+    allocateNodeCIDRs: true
+    cloudProvider: aws
+    clusterCIDR: 172.20.0.0/16
+    clusterName: minimal.example.com
+    configureCloudRoutes: false
+    image: k8s.gcr.io/provider-aws/cloud-controller-manager:v1.21.0-alpha.0
   cloudProvider: aws
   clusterAutoscaler:
     awsUseStaticInstanceList: false
