@@ -18,7 +18,12 @@ spec:
       enabled: true
       version: v1.2.1
     manageStorageClasses: true
-  cloudControllerManager: {}
+  cloudControllerManager:
+    allocateNodeCIDRs: true
+    cloudProvider: aws
+    clusterCIDR: 172.20.0.0/16
+    clusterName: minimal.example.com
+    configureCloudRoutes: false
   cloudProvider: aws
   clusterAutoscaler:
     awsUseStaticInstanceList: false

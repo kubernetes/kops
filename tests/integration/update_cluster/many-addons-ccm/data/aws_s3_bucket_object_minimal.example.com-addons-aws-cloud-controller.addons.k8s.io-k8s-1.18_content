@@ -22,6 +22,10 @@ spec:
       - args:
         - --v=2
         - --cloud-provider=aws
+        - --cluster-name=minimal.example.com
+        - --cluster-cidr=172.20.0.0/16
+        - --allocate-node-cidrs=true
+        - --configure-cloud-routes=false
         - --use-service-account-credentials=true
         env:
         - name: KUBERNETES_SERVICE_HOST
