@@ -17,7 +17,7 @@ spec:
     awsEBSCSIDriver:
       enabled: true
   cloudControllerManager:
-    provider: aws
+    cloudProvider: aws
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
   etcdClusters:
