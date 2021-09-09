@@ -46,7 +46,7 @@ require (
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1059
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.0.2
-	github.com/aws/aws-sdk-go v1.40.10
+	github.com/aws/aws-sdk-go v1.40.38
 	github.com/blang/semver/v4 v4.0.0
 	github.com/denverdino/aliyungo v0.0.0-20210425065611-55bee4942cba
 	github.com/digitalocean/godo v1.60.0
