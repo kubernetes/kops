@@ -205,6 +205,7 @@ func responseLaunchTemplateData(req *ec2.RequestLaunchTemplateData) *ec2.Respons
 		resp.MetadataOptions = &ec2.LaunchTemplateInstanceMetadataOptions{
 			HttpTokens:              req.MetadataOptions.HttpTokens,
 			HttpPutResponseHopLimit: req.MetadataOptions.HttpPutResponseHopLimit,
+			HttpProtocolIpv6:        req.MetadataOptions.HttpProtocolIpv6,
 		}
 	}
 	if req.Monitoring != nil {
