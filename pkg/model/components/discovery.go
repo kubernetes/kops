@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/util/pkg/vfs"
@@ -83,9 +82,7 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 				return fmt.Errorf("locationStore=%q is of unexpected type %T", store, base)
 			}
 		} else {
-			if dns.IsGossipHostname(clusterSpec.MasterInternalName) {
-				serviceAccountIssuer = "https://kubernetes.default"
-			} else if supportsPublicJWKS(clusterSpec) {
+			if supportsPublicJWKS(clusterSpec) {
 				serviceAccountIssuer = "https://" + clusterSpec.MasterPublicName
 			} else {
 				serviceAccountIssuer = "https://" + clusterSpec.MasterInternalName
