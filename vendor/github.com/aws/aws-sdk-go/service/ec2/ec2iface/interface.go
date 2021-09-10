@@ -1406,6 +1406,9 @@ type EC2API interface {
 	DescribeTrunkInterfaceAssociationsWithContext(aws.Context, *ec2.DescribeTrunkInterfaceAssociationsInput, ...request.Option) (*ec2.DescribeTrunkInterfaceAssociationsOutput, error)
 	DescribeTrunkInterfaceAssociationsRequest(*ec2.DescribeTrunkInterfaceAssociationsInput) (*request.Request, *ec2.DescribeTrunkInterfaceAssociationsOutput)
 
+	DescribeTrunkInterfaceAssociationsPages(*ec2.DescribeTrunkInterfaceAssociationsInput, func(*ec2.DescribeTrunkInterfaceAssociationsOutput, bool) bool) error
+	DescribeTrunkInterfaceAssociationsPagesWithContext(aws.Context, *ec2.DescribeTrunkInterfaceAssociationsInput, func(*ec2.DescribeTrunkInterfaceAssociationsOutput, bool) bool, ...request.Option) error
+
 	DescribeVolumeAttribute(*ec2.DescribeVolumeAttributeInput) (*ec2.DescribeVolumeAttributeOutput, error)
 	DescribeVolumeAttributeWithContext(aws.Context, *ec2.DescribeVolumeAttributeInput, ...request.Option) (*ec2.DescribeVolumeAttributeOutput, error)
 	DescribeVolumeAttributeRequest(*ec2.DescribeVolumeAttributeInput) (*request.Request, *ec2.DescribeVolumeAttributeOutput)

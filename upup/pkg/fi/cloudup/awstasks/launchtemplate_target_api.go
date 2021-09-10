@@ -45,6 +45,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 		MetadataOptions: &ec2.LaunchTemplateInstanceMetadataOptionsRequest{
 			HttpPutResponseHopLimit: t.HTTPPutResponseHopLimit,
 			HttpTokens:              t.HTTPTokens,
+			HttpProtocolIpv6:        t.HTTPProtocolIPv6,
 		},
 		NetworkInterfaces: []*ec2.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{
 			{
@@ -301,9 +302,10 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 	}
 
 	// @step: add instance metadata options
-	if lt.LaunchTemplateData.MetadataOptions != nil {
-		actual.HTTPPutResponseHopLimit = lt.LaunchTemplateData.MetadataOptions.HttpPutResponseHopLimit
-		actual.HTTPTokens = lt.LaunchTemplateData.MetadataOptions.HttpTokens
+	if options := lt.LaunchTemplateData.MetadataOptions; options != nil {
+		actual.HTTPPutResponseHopLimit = options.HttpPutResponseHopLimit
+		actual.HTTPTokens = options.HttpTokens
+		actual.HTTPProtocolIPv6 = options.HttpProtocolIpv6
 	}
 
 	// @step: to avoid spurious changes on ImageId
