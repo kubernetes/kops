@@ -369,7 +369,8 @@
         "metadata_options": {
           "http_endpoint": "enabled",
           "http_put_response_hop_limit": 1,
-          "http_tokens": "optional"
+          "http_tokens": "optional",
+          "http_protocol_ipv6": "disabled"
         },
         "monitoring": [
           {
@@ -463,7 +464,8 @@
         "metadata_options": {
           "http_endpoint": "enabled",
           "http_put_response_hop_limit": 1,
-          "http_tokens": "optional"
+          "http_tokens": "optional",
+          "http_protocol_ipv6": "disabled"
         },
         "monitoring": [
           {
@@ -854,7 +856,7 @@
     "required_providers": {
       "aws": {
         "source": "hashicorp/aws",
-        "version": "\u003e= 2.46.0"
+        "version": "\u003e= 3.59.0"
       }
     },
     "required_version": "\u003e= 0.12.26"
