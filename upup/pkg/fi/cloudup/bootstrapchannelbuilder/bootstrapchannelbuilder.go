@@ -591,6 +591,25 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 	}
 
+	nvidia := b.Cluster.Spec.Containerd.NvidiaGPU
+
+	if nvidia != nil && fi.BoolValue(nvidia.Enabled) {
+
+		key := "nvidia.addons.k8s.io"
+
+		{
+			location := key + "/k8s-1.16.yaml"
+			id := "k8s-1.16"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:     fi.String(key),
+				Selector: map[string]string{"k8s-addon": key},
+				Manifest: fi.String(location),
+				Id:       id,
+			})
+		}
+	}
+
 	if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
 
 		key := "aws-load-balancer-controller.addons.k8s.io"

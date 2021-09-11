@@ -31,6 +31,12 @@ const (
 	ArchitectureArm64 Architecture = "arm64"
 )
 
+type GPUVendor string
+
+const (
+	GPUVendorNvidia GPUVendor = "nvidia"
+)
+
 func FindArchitecture() (Architecture, error) {
 	switch runtime.GOARCH {
 	case "amd64":
