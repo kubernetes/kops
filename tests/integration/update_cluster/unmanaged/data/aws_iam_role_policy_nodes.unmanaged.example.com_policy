@@ -27,6 +27,7 @@
     {
       "Action": [
         "autoscaling:DescribeAutoScalingInstances",
+        "ec2:DescribeInstanceTypes",
         "ec2:DescribeInstances",
         "iam:GetServerCertificate",
         "iam:ListServerCertificates",

@@ -83,5 +83,9 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 		containerd.SkipInstall = true
 	}
 
+	if containerd.NvidiaGPU != nil && fi.BoolValue(containerd.NvidiaGPU.Enabled) && containerd.NvidiaGPU.DriverPackage == "" {
+		containerd.NvidiaGPU.DriverPackage = "nvidia-headless-460-server"
+	}
+
 	return nil
 }
