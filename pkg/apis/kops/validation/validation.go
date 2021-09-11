@@ -649,6 +649,12 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 			allErrs = append(allErrs, IsValidValue(kubeletPath.Child("logFormat"), &k.LogFormat, []string{"text", "json"})...)
 		}
 
+		if k.CPUCFSQuotaPeriod != nil {
+			if c.IsKubernetesGTE("1.20") {
+				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("cpuCFSQuotaPeriod"), "cpuCFSQuotaPeriod has been removed on Kubernetes >=1.20"))
+			}
+		}
+
 	}
 	return allErrs
 }
