@@ -74,22 +74,21 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 	}
 
 	if eccm.Image == "" {
-		var tag string
+		// See https://us.gcr.io/k8s-artifacts-prod/provider-aws/cloud-controller-manager
 		switch b.KubernetesVersion.Minor {
 		case 18:
-			tag = "v1.18.0-alpha.1"
+			eccm.Image = "k8s.gcr.io/provider-aws/cloud-controller-manager:v1.18.0-alpha.1"
 		case 19:
-			tag = "v1.19.0-alpha.1"
+			eccm.Image = "k8s.gcr.io/provider-aws/cloud-controller-manager:v1.19.0-alpha.1"
 		case 20:
-			tag = "v1.20.0-alpha.0"
+			eccm.Image = "k8s.gcr.io/provider-aws/cloud-controller-manager:v1.20.0-alpha.0"
 		case 21:
-			tag = "v1.21.0-alpha.0"
+			eccm.Image = "k8s.gcr.io/provider-aws/cloud-controller-manager:v1.21.0-alpha.0"
+		case 22:
+			eccm.Image = "k8s.gcr.io/provider-aws/cloud-controller-manager:v1.22.0-alpha.0"
 		default:
-			// There is no latest tag, so default to the latest that exists
-			// See https://console.cloud.google.com/gcr/images/k8s-artifacts-prod/us/provider-aws/cloud-controller-manager
-			tag = "v1.22.0-alpha.0"
+			eccm.Image = "gcr.io/k8s-staging-provider-aws/cloud-controller-manager:latest"
 		}
-		eccm.Image = fmt.Sprintf("k8s.gcr.io/provider-aws/cloud-controller-manager:%v", tag)
 	}
 
 	return nil
