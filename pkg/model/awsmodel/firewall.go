@@ -429,6 +429,12 @@ func AddDirectionalGroupRule(c *fi.ModelBuilderContext, t *awstasks.SecurityGrou
 
 	name := generateName(t)
 	t.Name = fi.String(name)
+	tags := make(map[string]string)
+	for key, value := range t.SecurityGroup.Tags {
+		tags[key] = value
+	}
+	tags["Name"] = *t.Name
+	t.Tags = tags
 
 	klog.V(8).Infof("Adding rule %v", name)
 	c.AddTask(t)

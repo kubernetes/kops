@@ -261,26 +261,24 @@ func (e *SecurityGroup) CloudformationLink() *cloudformation.Literal {
 }
 
 type deleteSecurityGroupRule struct {
-	groupID    *string
-	permission *ec2.IpPermission
-	egress     bool
+	rule *ec2.SecurityGroupRule
 }
 
 var _ fi.Deletion = &deleteSecurityGroupRule{}
 
 func (d *deleteSecurityGroupRule) Delete(t fi.Target) error {
-	klog.V(2).Infof("deleting security group permission: %v", fi.DebugAsJsonString(d.permission))
+	klog.V(2).Infof("deleting security group permission: %v", fi.DebugAsJsonString(d.rule))
 
 	awsTarget, ok := t.(*awsup.AWSAPITarget)
 	if !ok {
 		return fmt.Errorf("unexpected target type for deletion: %T", t)
 	}
 
-	if d.egress {
+	if fi.BoolValue(d.rule.IsEgress) {
 		request := &ec2.RevokeSecurityGroupEgressInput{
-			GroupId: d.groupID,
+			GroupId:              d.rule.GroupId,
+			SecurityGroupRuleIds: []*string{d.rule.SecurityGroupRuleId},
 		}
-		request.IpPermissions = []*ec2.IpPermission{d.permission}
 
 		klog.V(2).Infof("Calling EC2 RevokeSecurityGroupEgress")
 		_, err := awsTarget.Cloud.EC2().RevokeSecurityGroupEgress(request)
@@ -289,9 +287,9 @@ func (d *deleteSecurityGroupRule) Delete(t fi.Target) error {
 		}
 	} else {
 		request := &ec2.RevokeSecurityGroupIngressInput{
-			GroupId: d.groupID,
+			GroupId:              d.rule.GroupId,
+			SecurityGroupRuleIds: []*string{d.rule.SecurityGroupRuleId},
 		}
-		request.IpPermissions = []*ec2.IpPermission{d.permission}
 
 		klog.V(2).Infof("Calling EC2 RevokeSecurityGroupIngress")
 		_, err := awsTarget.Cloud.EC2().RevokeSecurityGroupIngress(request)
@@ -308,8 +306,8 @@ func (d *deleteSecurityGroupRule) TaskName() string {
 }
 
 func (d *deleteSecurityGroupRule) Item() string {
-	s := fi.StringValue(d.groupID) + ":"
-	p := d.permission
+	s := fi.StringValue(d.rule.GroupId) + ":"
+	p := d.rule
 	if aws.Int64Value(p.FromPort) != 0 {
 		s += fmt.Sprintf(" port=%d", aws.Int64Value(p.FromPort))
 		if aws.Int64Value(p.ToPort) != aws.Int64Value(p.FromPort) {
@@ -319,57 +317,15 @@ func (d *deleteSecurityGroupRule) Item() string {
 	if aws.StringValue(p.IpProtocol) != "-1" {
 		s += fmt.Sprintf(" protocol=%s", aws.StringValue(p.IpProtocol))
 	}
-	for _, ug := range p.UserIdGroupPairs {
-		s += fmt.Sprintf(" group=%s", aws.StringValue(ug.GroupId))
+	if p.ReferencedGroupInfo != nil {
+		s += fmt.Sprintf(" group=%s", aws.StringValue(p.ReferencedGroupInfo.GroupId))
 	}
-	for _, r := range p.IpRanges {
-		s += fmt.Sprintf(" ip=%s", aws.StringValue(r.CidrIp))
-	}
-	for _, r := range p.Ipv6Ranges {
-		s += fmt.Sprintf(" ipv6=%s", aws.StringValue(r.CidrIpv6))
-	}
+	s += fmt.Sprintf(" ip=%s", aws.StringValue(p.CidrIpv4))
+	s += fmt.Sprintf(" ipv6=%s", aws.StringValue(p.CidrIpv6))
 	//permissionString := fi.DebugAsJsonString(d.permission)
 	//s += permissionString
 
 	return s
-}
-
-func expandPermissions(sgID *string, permission *ec2.IpPermission, egress bool) []*ec2.IpPermission {
-	var rules []*ec2.IpPermission
-
-	master := &ec2.IpPermission{
-		FromPort:   permission.FromPort,
-		ToPort:     permission.ToPort,
-		IpProtocol: permission.IpProtocol,
-	}
-
-	for _, ipRange := range permission.IpRanges {
-		a := &ec2.IpPermission{}
-		*a = *master
-		a.IpRanges = []*ec2.IpRange{ipRange}
-		rules = append(rules, a)
-	}
-
-	for _, ipv6Range := range permission.Ipv6Ranges {
-		a := &ec2.IpPermission{}
-		*a = *master
-		a.Ipv6Ranges = []*ec2.Ipv6Range{ipv6Range}
-		rules = append(rules, a)
-	}
-
-	for _, ug := range permission.UserIdGroupPairs {
-		a := &ec2.IpPermission{}
-		*a = *master
-		a.UserIdGroupPairs = []*ec2.UserIdGroupPair{ug}
-		rules = append(rules, a)
-	}
-
-	if len(rules) == 0 {
-		// If there are no group or cidr restrictions, it is just a generic rule
-		rules = append(rules, master)
-	}
-
-	return rules
 }
 
 func (e *SecurityGroup) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
@@ -396,13 +352,20 @@ func (e *SecurityGroup) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 		return nil, nil
 	}
 
-	var ingress []*ec2.IpPermission
-	for _, permission := range sg.IpPermissions {
-		rules := expandPermissions(sg.GroupId, permission, false)
-		ingress = append(ingress, rules...)
+	cloud := c.Cloud.(awsup.AWSCloud)
+
+	request := &ec2.DescribeSecurityGroupRulesInput{
+		Filters: []*ec2.Filter{
+			awsup.NewEC2Filter("group-id", *e.ID),
+		},
 	}
 
-	for _, permission := range ingress {
+	response, err := cloud.EC2().DescribeSecurityGroupRules(request)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, permission := range response.SecurityGroupRules {
 		// Because of #478, we can't remove all non-matching security groups
 		// Instead we consider only certain rules to be 'in-scope'
 		// (in the model, we typically consider only rules on port 22 and 443)
@@ -436,34 +399,7 @@ func (e *SecurityGroup) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 		}
 		if !found {
 			removals = append(removals, &deleteSecurityGroupRule{
-				groupID:    sg.GroupId,
-				permission: permission,
-				egress:     false,
-			})
-		}
-	}
-
-	var egress []*ec2.IpPermission
-	for _, permission := range sg.IpPermissionsEgress {
-		rules := expandPermissions(sg.GroupId, permission, true)
-		egress = append(egress, rules...)
-	}
-	for _, permission := range egress {
-		found := false
-		for _, t := range c.AllTasks() {
-			er, ok := t.(*SecurityGroupRule)
-			if !ok {
-				continue
-			}
-			if er.matches(permission) {
-				found = true
-			}
-		}
-		if !found {
-			removals = append(removals, &deleteSecurityGroupRule{
-				groupID:    sg.GroupId,
-				permission: permission,
-				egress:     true,
+				rule: permission,
 			})
 		}
 	}
@@ -473,7 +409,7 @@ func (e *SecurityGroup) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 
 // RemovalRule is a rule that filters the permissions we should remove
 type RemovalRule interface {
-	Matches(permission *ec2.IpPermission) bool
+	Matches(permission *ec2.SecurityGroupRule) bool
 }
 
 // ParseRemovalRule parses our removal rule DSL into a RemovalRule
@@ -511,7 +447,7 @@ func (r *PortRemovalRule) String() string {
 	return fi.DebugAsJsonString(r)
 }
 
-func (r *PortRemovalRule) Matches(permission *ec2.IpPermission) bool {
+func (r *PortRemovalRule) Matches(permission *ec2.SecurityGroupRule) bool {
 	// Check if port matches
 	if permission.FromPort == nil || *permission.FromPort != int64(r.Port) {
 		return false
