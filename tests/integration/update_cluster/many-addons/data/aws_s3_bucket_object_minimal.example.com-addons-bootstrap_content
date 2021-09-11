@@ -78,7 +78,7 @@ spec:
       role.kubernetes.io/networking: "1"
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: 0c53680c3dec3a0f6cb36b7be64d8038e2babeb8aab3caf0d0b2d65d60e7fb27
+    manifestHash: 6b1d4a16671bece0de709ce50beba5b90c504f6681ba77e6aa459e7c50a52916
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
