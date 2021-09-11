@@ -838,6 +838,8 @@ type CloudConfiguration struct {
 	Multizone          *bool   `json:"multizone,omitempty"`
 	NodeTags           *string `json:"nodeTags,omitempty"`
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
+	// NodeIPFamilies controls the IP families reported for each node (AWS only).
+	NodeIPFamilies []string `json:"nodeIPFamilies,omitempty"`
 	// GCEServiceAccount specifies the service account with which the GCE VM runs
 	GCEServiceAccount string `json:"gceServiceAccount,omitempty"`
 	// AWS cloud-config options
