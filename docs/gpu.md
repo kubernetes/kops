@@ -1,8 +1,32 @@
 # GPU Support
 
-You can use [GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/overview.html) to install NVIDIA device drivers and tools to your cluster.
+## kOps managed device driver
 
-## Creating a cluster with GPU nodes
+{{ kops_feature_table(kops_added_default='1.22') }}
+
+kOps can install nvidia device drivers, plugin, and runtime, as well as configure containerd to make use of the runtime.
+
+kOps will also install a RuntimeClass `nvidia`. As the nvidia runtime is not the default runtime, you will need to add `runtimeClassName: nvidia` to any Pod spec you want to use for GPU workloads. The RuntimeClass also configures the appropriate node selectors and tolerations to run on GPU Nodes.
+
+kOps will add `kops.k8s.io/gpu="1"` as node selector as well as the following taint:
+
+```yaml
+  taints:
+  - effect: NoSchedule
+    key: nvidia.com/gpu
+```
+
+The taint will prevent you from accidentially scheduling workloads on GPU Nodes.
+
+You can enable nvidia by adding the following to your Cluster spec:
+
+```yaml
+  containerd:
+    nvidiaGPU:
+      enabled: true
+```
+
+## Creating an instance group with GPU nodeN
 
 Due to the cost of GPU instances you want to minimize the amount of pods running on them. Therefore start by provisioning a regular cluster following the [getting started documentation](https://kops.sigs.k8s.io/getting_started/aws/).
 
@@ -25,78 +49,4 @@ spec:
   role: Node
   subnets:
   - eu-central-1c
-  taints:
-  - nvidia.com/gpu=present:NoSchedule
-```
-
-Note the taint used above. This will prevent pods from being scheduled on GPU nodes unless we explicitly want to. The GPU Operator resources tolerate this taint by default.
-Also note the node label we set. This will be used to ensure the GPU Operator resources runs on GPU nodes. 
-
-## Install GPU Operator
-GPU Operator is installed using `helm`. See the [general install instructions for GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/getting-started.html#install-gpu-operator).
-
-In order to match the kOps environment, create a `values.yaml` file with the following content:
-
-```yaml
-operator:
-  nodeSelector:
-    kops.k8s.io/instancegroup: gpu-nodes
-  tolerations:
-  - key: nvidia.com/gpu
-    operator: Exists
-
-driver:
-  nodeSelector:
-    kops.k8s.io/instancegroup: gpu-nodes
-  tolerations:
-  - key: nvidia.com/gpu
-    operator: Exists
-
-toolkit:
-  nodeSelector:
-    kops.k8s.io/instancegroup: gpu-nodes
-  tolerations:
-  - key: nvidia.com/gpu
-    operator: Exists
-
-devicePlugin:
-  nodeSelector:
-    kops.k8s.io/instancegroup: gpu-nodes
-  tolerations:
-  - key: nvidia.com/gpu
-    operator: Exists
-
-dcgmExporter:
-  nodeSelector:
-    kops.k8s.io/instancegroup: gpu-nodes
-  tolerations:
-  - key: nvidia.com/gpu
-    operator: Exists
-
-gfd:
-  nodeSelector:
-    kops.k8s.io/instancegroup: gpu-nodes
-  tolerations:
-  - key: nvidia.com/gpu
-    operator: Exists
-
-node-feature-discovery:
-  worker:
-    nodeSelector:
-      kops.k8s.io/instancegroup: gpu-nodes
-    tolerations:
-    - key: nvidia.com/gpu
-      operator: Exists
-```
-
-Once you have installed the the _helm chart_ you should be able to see the GPU operator resources being spawned in the `gpu-operator-resources` namespace.
-
-You should now be able to schedule other workloads on the GPU by adding the following properties to the pod spec:
-```yaml
-spec:
-  nodeSelector:
-    kops.k8s.io/instancegroup: gpu-nodes
-  tolerations:
-  - key: nvidia.com/gpu
-    operator: Exists
 ```

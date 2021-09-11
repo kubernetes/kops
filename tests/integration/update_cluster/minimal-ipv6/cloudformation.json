@@ -1277,6 +1277,7 @@
                 "ec2:CreateSecurityGroup",
                 "ec2:CreateTags",
                 "ec2:DescribeAccountAttributes",
+                "ec2:DescribeInstanceTypes",
                 "ec2:DescribeInstances",
                 "ec2:DescribeRegions",
                 "ec2:DescribeRouteTables",
@@ -1401,6 +1402,7 @@
             {
               "Action": [
                 "autoscaling:DescribeAutoScalingInstances",
+                "ec2:DescribeInstanceTypes",
                 "ec2:DescribeInstances",
                 "iam:GetServerCertificate",
                 "iam:ListServerCertificates",
