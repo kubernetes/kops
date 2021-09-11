@@ -141,25 +141,6 @@
     },
     {
       "Action": [
-        "ec2:AuthorizeSecurityGroupIngress",
-        "ec2:DeleteSecurityGroup",
-        "ec2:RevokeSecurityGroupIngress",
-        "elasticloadbalancing:ModifyTargetGroupAttributes",
-        "elasticloadbalancing:ModifyRule",
-        "elasticloadbalancing:DeleteRule",
-        "elasticloadbalancing:AddTags",
-        "elasticloadbalancing:RemoveTags"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "aws:ResourceTag/elbv2.k8s.aws/cluster": "minimal.example.com"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": "*"
-    },
-    {
-      "Action": [
         "ec2:CreateTags"
       ],
       "Effect": "Allow",
@@ -169,6 +150,8 @@
     },
     {
       "Action": [
+        "acm:DescribeCertificate",
+        "acm:ListCertificates",
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeLaunchConfigurations",
@@ -237,15 +220,19 @@
         "elasticloadbalancing:DeleteListener",
         "elasticloadbalancing:DeleteLoadBalancer",
         "elasticloadbalancing:DeleteLoadBalancerListeners",
+        "elasticloadbalancing:DeleteRule",
         "elasticloadbalancing:DeleteTargetGroup",
         "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
         "elasticloadbalancing:DeregisterTargets",
         "elasticloadbalancing:DetachLoadBalancerFromSubnets",
         "elasticloadbalancing:ModifyListener",
         "elasticloadbalancing:ModifyLoadBalancerAttributes",
+        "elasticloadbalancing:ModifyRule",
         "elasticloadbalancing:ModifyTargetGroup",
+        "elasticloadbalancing:ModifyTargetGroupAttributes",
         "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
         "elasticloadbalancing:RegisterTargets",
+        "elasticloadbalancing:RemoveTags",
         "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
         "elasticloadbalancing:SetLoadBalancerPoliciesOfListener"
       ],
