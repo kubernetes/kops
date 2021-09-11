@@ -109,6 +109,7 @@ go_test(
         "//pkg/assets:go_default_library",
         "//pkg/client/simple/vfsclientset:go_default_library",
         "//pkg/configbuilder:go_default_library",
+        "//pkg/diff:go_default_library",
         "//pkg/flagbuilder:go_default_library",
         "//pkg/pki:go_default_library",
         "//pkg/testutils:go_default_library",

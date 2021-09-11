@@ -343,6 +343,12 @@ spec:
                   multizone:
                     description: GCE cloud-config options
                     type: boolean
+                  nodeIPFamilies:
+                    description: NodeIPFamilies controls the IP families reported
+                      for each node (AWS only).
+                    items:
+                      type: string
+                    type: array
                   nodeInstancePrefix:
                     type: string
                   nodeTags:
