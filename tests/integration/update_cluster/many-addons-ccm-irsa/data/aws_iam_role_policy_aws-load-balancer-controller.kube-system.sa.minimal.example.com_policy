@@ -2,25 +2,8 @@
   "Statement": [
     {
       "Action": [
-        "ec2:AuthorizeSecurityGroupIngress",
-        "ec2:DeleteSecurityGroup",
-        "ec2:RevokeSecurityGroupIngress",
-        "elasticloadbalancing:ModifyTargetGroupAttributes",
-        "elasticloadbalancing:ModifyRule",
-        "elasticloadbalancing:DeleteRule",
-        "elasticloadbalancing:AddTags",
-        "elasticloadbalancing:RemoveTags"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "aws:ResourceTag/elbv2.k8s.aws/cluster": "minimal.example.com"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": "*"
-    },
-    {
-      "Action": [
+        "acm:DescribeCertificate",
+        "acm:ListCertificates",
         "ec2:DescribeAvailabilityZones",
         "ec2:DescribeNetworkInterfaces",
         "elasticloadbalancing:CreateRule",
@@ -30,6 +13,25 @@
         "elasticloadbalancing:DescribeTargetGroupAttributes",
         "elasticloadbalancing:DescribeTargetHealth"
       ],
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": [
+        "ec2:AuthorizeSecurityGroupIngress",
+        "ec2:DeleteSecurityGroup",
+        "ec2:RevokeSecurityGroupIngress",
+        "elasticloadbalancing:AddTags",
+        "elasticloadbalancing:DeleteRule",
+        "elasticloadbalancing:ModifyRule",
+        "elasticloadbalancing:ModifyTargetGroupAttributes",
+        "elasticloadbalancing:RemoveTags"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/KubernetesCluster": "minimal.example.com"
+        }
+      },
       "Effect": "Allow",
       "Resource": "*"
     }
