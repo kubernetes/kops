@@ -42,6 +42,7 @@ type MockEC2 struct {
 
 	securityGroupNumber int
 	SecurityGroups      map[string]*ec2.SecurityGroup
+	SecurityGroupRules  map[string]*ec2.SecurityGroupRule
 
 	subnets map[string]*subnetInfo
 

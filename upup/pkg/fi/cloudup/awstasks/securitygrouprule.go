@@ -34,6 +34,7 @@ import (
 
 // +kops:fitask
 type SecurityGroupRule struct {
+	ID        *string
 	Name      *string
 	Lifecycle fi.Lifecycle
 
@@ -49,6 +50,8 @@ type SecurityGroupRule struct {
 	SourceGroup *SecurityGroup
 
 	Egress *bool
+
+	Tags map[string]string
 }
 
 func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
@@ -63,35 +66,24 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 		return nil, nil
 	}
 
-	request := &ec2.DescribeSecurityGroupsInput{
+	request := &ec2.DescribeSecurityGroupRulesInput{
 		Filters: []*ec2.Filter{
 			awsup.NewEC2Filter("group-id", *e.SecurityGroup.ID),
 		},
 	}
 
-	response, err := cloud.EC2().DescribeSecurityGroups(request)
+	response, err := cloud.EC2().DescribeSecurityGroupRules(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing SecurityGroup: %v", err)
 	}
 
-	if response == nil || len(response.SecurityGroups) == 0 {
+	if response == nil || len(response.SecurityGroupRules) == 0 {
 		return nil, nil
 	}
 
-	if len(response.SecurityGroups) != 1 {
-		klog.Fatalf("found multiple security groups for id=%s", *e.SecurityGroup.ID)
-	}
-	sg := response.SecurityGroups[0]
-	//klog.V(2).Info("found existing security group")
+	var foundRule *ec2.SecurityGroupRule
 
-	var foundRule *ec2.IpPermission
-
-	ipPermissions := sg.IpPermissions
-	if fi.BoolValue(e.Egress) {
-		ipPermissions = sg.IpPermissionsEgress
-	}
-
-	for _, rule := range ipPermissions {
+	for _, rule := range response.SecurityGroupRules {
 		if e.matches(rule) {
 			foundRule = rule
 			break
@@ -100,17 +92,30 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 
 	if foundRule != nil {
 		actual := &SecurityGroupRule{
+			ID:            foundRule.SecurityGroupRuleId,
 			Name:          e.Name,
 			SecurityGroup: &SecurityGroup{ID: e.SecurityGroup.ID},
 			FromPort:      foundRule.FromPort,
 			ToPort:        foundRule.ToPort,
 			Protocol:      foundRule.IpProtocol,
 			Egress:        e.Egress,
+
+			Tags: intersectTags(foundRule.Tags, e.Tags),
 		}
 
 		if aws.StringValue(actual.Protocol) == "-1" {
 			actual.Protocol = nil
 		}
+
+		if fi.StringValue(actual.Protocol) != "icmpv6" {
+			if fi.Int64Value(actual.FromPort) == int64(-1) {
+				actual.FromPort = nil
+			}
+			if fi.Int64Value(actual.ToPort) == int64(-1) {
+				actual.ToPort = nil
+			}
+		}
+
 		if e.CIDR != nil {
 			actual.CIDR = e.CIDR
 		}
@@ -124,17 +129,27 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 		// Avoid spurious changes
 		actual.Lifecycle = e.Lifecycle
 
+		e.ID = actual.ID
+
 		return actual, nil
 	}
-
 	return nil, nil
 }
 
-func (e *SecurityGroupRule) matches(rule *ec2.IpPermission) bool {
-	if aws.Int64Value(rule.FromPort) != aws.Int64Value(e.FromPort) {
+func (e *SecurityGroupRule) matches(rule *ec2.SecurityGroupRule) bool {
+	matchFromPort := int64(-1)
+	if e.FromPort != nil {
+		matchFromPort = *e.FromPort
+	}
+	if aws.Int64Value(rule.FromPort) != matchFromPort {
 		return false
 	}
-	if aws.Int64Value(rule.ToPort) != aws.Int64Value(e.ToPort) {
+
+	matchToPort := int64(-1)
+	if e.ToPort != nil {
+		matchToPort = *e.ToPort
+	}
+	if aws.Int64Value(rule.ToPort) != matchToPort {
 		return false
 	}
 
@@ -146,50 +161,19 @@ func (e *SecurityGroupRule) matches(rule *ec2.IpPermission) bool {
 		return false
 	}
 
-	if e.CIDR != nil {
-		match := false
-		for _, ipRange := range rule.IpRanges {
-			if aws.StringValue(ipRange.CidrIp) == *e.CIDR {
-				match = true
-				break
-			}
-		}
-		if !match {
-			return false
-		}
+	if fi.StringValue(e.CIDR) != fi.StringValue(rule.CidrIpv4) {
+		return false
 	}
 
-	if e.IPv6CIDR != nil {
-		match := false
-		for _, ipv6Range := range rule.Ipv6Ranges {
-			if aws.StringValue(ipv6Range.CidrIpv6) == *e.IPv6CIDR {
-				match = true
-				break
-			}
-		}
-		if !match {
-			return false
-		}
+	if fi.StringValue(e.IPv6CIDR) != fi.StringValue(rule.CidrIpv6) {
+		return false
 	}
 
-	if e.SourceGroup != nil {
-		match := false
-		for _, spec := range rule.UserIdGroupPairs {
-			if e.SourceGroup == nil {
-				continue
-			}
-
-			if e.SourceGroup.ID == nil {
-				klog.Warningf("SourceGroup had nil ID: %v", e.SourceGroup)
-				continue
-			}
-
-			if aws.StringValue(spec.GroupId) == *e.SourceGroup.ID {
-				match = true
-				break
-			}
+	if e.SourceGroup != nil || rule.ReferencedGroupInfo != nil {
+		if e.SourceGroup == nil || rule.ReferencedGroupInfo == nil {
+			return false
 		}
-		if !match {
+		if fi.StringValue(e.SourceGroup.ID) != fi.StringValue(rule.ReferencedGroupInfo.GroupId) {
 			return false
 		}
 	}
@@ -295,6 +279,7 @@ func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Secu
 				GroupId: e.SecurityGroup.ID,
 			}
 			request.IpPermissions = []*ec2.IpPermission{ipPermission}
+			request.TagSpecifications = awsup.EC2TagSpecification(ec2.ResourceTypeSecurityGroupRule, e.Tags)
 
 			klog.V(2).Infof("%s: Calling EC2 AuthorizeSecurityGroupEgress (%s)", name, description)
 			_, err := t.Cloud.EC2().AuthorizeSecurityGroupEgress(request)
@@ -306,6 +291,7 @@ func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Secu
 				GroupId: e.SecurityGroup.ID,
 			}
 			request.IpPermissions = []*ec2.IpPermission{ipPermission}
+			request.TagSpecifications = awsup.EC2TagSpecification(ec2.ResourceTypeSecurityGroupRule, e.Tags)
 
 			klog.V(2).Infof("%s: Calling EC2 AuthorizeSecurityGroupIngress (%s)", name, description)
 			_, err := t.Cloud.EC2().AuthorizeSecurityGroupIngress(request)
@@ -314,6 +300,8 @@ func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Secu
 			}
 		}
 
+	} else if changes.Tags != nil {
+		return t.AddAWSTags(*a.ID, e.Tags)
 	}
 
 	// No tags on security group rules (there are tags on the group though)

@@ -60,34 +60,34 @@ func testParsesAsPort(t *testing.T, rule string, port int) {
 
 func TestPortRemovalRule(t *testing.T) {
 	r := &PortRemovalRule{Port: 22}
-	testMatches(t, r, &ec2.IpPermission{FromPort: aws.Int64(22), ToPort: aws.Int64(22)})
+	testMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(22), ToPort: aws.Int64(22)})
 
-	testNotMatches(t, r, &ec2.IpPermission{FromPort: aws.Int64(0), ToPort: aws.Int64(0)})
-	testNotMatches(t, r, &ec2.IpPermission{FromPort: aws.Int64(23), ToPort: aws.Int64(23)})
-	testNotMatches(t, r, &ec2.IpPermission{FromPort: aws.Int64(20), ToPort: aws.Int64(22)})
-	testNotMatches(t, r, &ec2.IpPermission{FromPort: aws.Int64(22), ToPort: aws.Int64(23)})
-	testNotMatches(t, r, &ec2.IpPermission{ToPort: aws.Int64(22)})
-	testNotMatches(t, r, &ec2.IpPermission{FromPort: aws.Int64(22)})
-	testNotMatches(t, r, &ec2.IpPermission{})
+	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(0), ToPort: aws.Int64(0)})
+	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(23), ToPort: aws.Int64(23)})
+	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(20), ToPort: aws.Int64(22)})
+	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(22), ToPort: aws.Int64(23)})
+	testNotMatches(t, r, &ec2.SecurityGroupRule{ToPort: aws.Int64(22)})
+	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(22)})
+	testNotMatches(t, r, &ec2.SecurityGroupRule{})
 }
 
 func TestPortRemovalRule_Zero(t *testing.T) {
 	r := &PortRemovalRule{Port: 0}
-	testMatches(t, r, &ec2.IpPermission{FromPort: aws.Int64(0), ToPort: aws.Int64(0)})
+	testMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(0), ToPort: aws.Int64(0)})
 
-	testNotMatches(t, r, &ec2.IpPermission{FromPort: aws.Int64(0), ToPort: aws.Int64(20)})
-	testNotMatches(t, r, &ec2.IpPermission{ToPort: aws.Int64(0)})
-	testNotMatches(t, r, &ec2.IpPermission{FromPort: aws.Int64(0)})
-	testNotMatches(t, r, &ec2.IpPermission{})
+	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(0), ToPort: aws.Int64(20)})
+	testNotMatches(t, r, &ec2.SecurityGroupRule{ToPort: aws.Int64(0)})
+	testNotMatches(t, r, &ec2.SecurityGroupRule{FromPort: aws.Int64(0)})
+	testNotMatches(t, r, &ec2.SecurityGroupRule{})
 }
 
-func testMatches(t *testing.T, rule *PortRemovalRule, permission *ec2.IpPermission) {
+func testMatches(t *testing.T, rule *PortRemovalRule, permission *ec2.SecurityGroupRule) {
 	if !rule.Matches(permission) {
 		t.Fatalf("rule %q failed to match permission %q", rule, permission)
 	}
 }
 
-func testNotMatches(t *testing.T, rule *PortRemovalRule, permission *ec2.IpPermission) {
+func testNotMatches(t *testing.T, rule *PortRemovalRule, permission *ec2.SecurityGroupRule) {
 	if rule.Matches(permission) {
 		t.Fatalf("rule %q unexpectedly matched permission %q", rule, permission)
 	}
