@@ -102,8 +102,8 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 		if cloudConfig.ElbSecurityGroup != nil {
 			lines = append(lines, "ElbSecurityGroup = "+*cloudConfig.ElbSecurityGroup)
 		}
-		if b.Cluster.Spec.IsIPv6Only() {
-			lines = append(lines, "NodeIPFamilies = ipv6")
+		for _, family := range cloudConfig.NodeIPFamilies {
+			lines = append(lines, "NodeIPFamilies = "+family)
 		}
 	case "openstack":
 		osc := cloudConfig.Openstack
