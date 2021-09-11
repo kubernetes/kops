@@ -90,7 +90,7 @@ spec:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   - id: k8s-1.20
     manifest: snapshot-controller.addons.k8s.io/k8s-1.20.yaml
-    manifestHash: fe892771413f88df11a130f49be362a93a2ee33c9dc6ed14712ec53316b41493
+    manifestHash: 7629abf66390989fa8529a3e7ef2274cc6d0169957d28ce36c7ebf59d6af7191
     name: snapshot-controller.addons.k8s.io
     needsPKI: true
     selector:
