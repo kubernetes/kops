@@ -2021,6 +2021,7 @@ func autoConvert_v1alpha2_CloudConfiguration_To_kops_CloudConfiguration(in *Clou
 	out.Multizone = in.Multizone
 	out.NodeTags = in.NodeTags
 	out.NodeInstancePrefix = in.NodeInstancePrefix
+	out.NodeIPFamilies = in.NodeIPFamilies
 	out.GCEServiceAccount = in.GCEServiceAccount
 	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
 	out.ElbSecurityGroup = in.ElbSecurityGroup
@@ -2073,6 +2074,7 @@ func autoConvert_kops_CloudConfiguration_To_v1alpha2_CloudConfiguration(in *kops
 	out.Multizone = in.Multizone
 	out.NodeTags = in.NodeTags
 	out.NodeInstancePrefix = in.NodeInstancePrefix
+	out.NodeIPFamilies = in.NodeIPFamilies
 	out.GCEServiceAccount = in.GCEServiceAccount
 	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
 	out.ElbSecurityGroup = in.ElbSecurityGroup

@@ -24,6 +24,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -108,5 +109,60 @@ func TestBuildAzure(t *testing.T) {
 	}
 	if !reflect.DeepEqual(actual, expected) {
 		t.Errorf("expected %+v, but got %+v", expected, actual)
+	}
+}
+
+func TestBuildAWSCustomNodeIPFamilies(t *testing.T) {
+	cluster := &kops.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "testcluster.test.com",
+		},
+		Spec: kops.ClusterSpec{
+			CloudProvider: string(kops.CloudProviderAWS),
+			CloudConfig: &kops.CloudConfiguration{
+				NodeIPFamilies: []string{"ipv6"},
+			},
+			ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
+				CloudProvider: string(kops.CloudProviderAWS),
+			},
+			NonMasqueradeCIDR: "fd00:10:96::/64",
+		},
+	}
+
+	b := &CloudConfigBuilder{
+		NodeupModelContext: &NodeupModelContext{
+			Cluster: cluster,
+		},
+	}
+	ctx := &fi.ModelBuilderContext{
+		Tasks: map[string]fi.Task{},
+	}
+	if err := b.Build(ctx); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	var task *nodetasks.File
+	for _, v := range ctx.Tasks {
+		if f, ok := v.(*nodetasks.File); ok {
+			task = f
+			break
+		}
+	}
+	if task == nil {
+		t.Errorf("no File task found")
+	}
+	r, err := task.Contents.Open()
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	awsCloudConfig, err := ioutil.ReadAll(r)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	actual := string(awsCloudConfig)
+	expected := "[global]\nNodeIPFamilies = ipv6\n"
+	if actual != expected {
+		diffString := diff.FormatDiff(expected, actual)
+		t.Errorf("actual did not match expected:\n%s\n", diffString)
 	}
 }
