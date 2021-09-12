@@ -73,5 +73,23 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 		return fmt.Errorf("no networking mode set")
 	}
 
+	if eccm.Image == "" {
+		// See https://us.gcr.io/k8s-artifacts-prod/provider-aws/cloud-controller-manager
+		switch b.KubernetesVersion.Minor {
+		case 18:
+			eccm.Image = "k8s.gcr.io/provider-aws/cloud-controller-manager:v1.18.0-alpha.1"
+		case 19:
+			eccm.Image = "k8s.gcr.io/provider-aws/cloud-controller-manager:v1.19.0-alpha.1"
+		case 20:
+			eccm.Image = "k8s.gcr.io/provider-aws/cloud-controller-manager:v1.20.0-alpha.0"
+		case 21:
+			eccm.Image = "k8s.gcr.io/provider-aws/cloud-controller-manager:v1.21.0-alpha.0"
+		case 22:
+			eccm.Image = "k8s.gcr.io/provider-aws/cloud-controller-manager:v1.22.0-alpha.0"
+		default:
+			eccm.Image = "gcr.io/k8s-staging-provider-aws/cloud-controller-manager:latest"
+		}
+	}
+
 	return nil
 }

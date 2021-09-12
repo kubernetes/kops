@@ -22,6 +22,10 @@ spec:
       - args:
         - --v=2
         - --cloud-provider=aws
+        - --cluster-name=minimal.example.com
+        - --cluster-cidr=172.20.0.0/16
+        - --allocate-node-cidrs=true
+        - --configure-cloud-routes=false
         - --use-service-account-credentials=true
         env:
         - name: KUBERNETES_SERVICE_HOST
@@ -30,7 +34,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/aws-cloud-controller-manager.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: gcr.io/k8s-staging-provider-aws/cloud-controller-manager:latest
+        image: k8s.gcr.io/provider-aws/cloud-controller-manager:v1.21.0-alpha.0
         imagePullPolicy: IfNotPresent
         name: aws-cloud-controller-manager
         resources:
