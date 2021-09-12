@@ -213,7 +213,7 @@ func (m *MockEC2) RevokeSecurityGroupIngress(request *ec2.RevokeSecurityGroupIng
 		return nil, fmt.Errorf("SecurityGroup not found")
 	}
 
-	klog.Warningf("RevokeSecurityGroupIngress not implemented - does not actually revoke permissions")
+	klog.Warningf("RevokeSecurityGroupIngress mock not implemented - does not actually revoke permissions")
 
 	response := &ec2.RevokeSecurityGroupIngressOutput{}
 	return response, nil
@@ -268,6 +268,61 @@ func (m *MockEC2) AuthorizeSecurityGroupEgress(request *ec2.AuthorizeSecurityGro
 	sg.IpPermissionsEgress = append(sg.IpPermissionsEgress, request.IpPermissions...)
 
 	// TODO: We need to fold permissions
+
+	if m.SecurityGroupRules == nil {
+		m.SecurityGroupRules = make(map[string]*ec2.SecurityGroupRule)
+	}
+
+	for _, permission := range request.IpPermissions {
+
+		for _, iprange := range permission.IpRanges {
+
+			n := len(m.SecurityGroupRules) + 1
+			id := fmt.Sprintf("sgr-%d", n)
+			rule := &ec2.SecurityGroupRule{
+				SecurityGroupRuleId: &id,
+				GroupId:             sg.GroupId,
+				FromPort:            permission.FromPort,
+				ToPort:              permission.ToPort,
+				IsEgress:            aws.Bool(true),
+				CidrIpv4:            iprange.CidrIp,
+				IpProtocol:          permission.IpProtocol,
+				Tags:                tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeSecurityGroupRule),
+			}
+			if permission.FromPort == nil {
+				rule.FromPort = aws.Int64(int64(-1))
+			}
+			if permission.ToPort == nil {
+				rule.ToPort = aws.Int64(int64(-1))
+			}
+
+			m.SecurityGroupRules[id] = rule
+		}
+
+		for _, iprange := range permission.Ipv6Ranges {
+
+			n := len(m.SecurityGroupRules) + 1
+			id := fmt.Sprintf("sgr-%d", n)
+			rule := &ec2.SecurityGroupRule{
+				SecurityGroupRuleId: &id,
+				GroupId:             sg.GroupId,
+				FromPort:            permission.FromPort,
+				ToPort:              permission.ToPort,
+				IsEgress:            aws.Bool(true),
+				CidrIpv6:            iprange.CidrIpv6,
+				IpProtocol:          permission.IpProtocol,
+				Tags:                tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeSecurityGroupRule),
+			}
+			if permission.FromPort == nil {
+				rule.FromPort = aws.Int64(int64(-1))
+			}
+			if permission.ToPort == nil {
+				rule.ToPort = aws.Int64(int64(-1))
+			}
+
+			m.SecurityGroupRules[id] = rule
+		}
+	}
 
 	response := &ec2.AuthorizeSecurityGroupEgressOutput{}
 	return response, nil
@@ -325,6 +380,111 @@ func (m *MockEC2) AuthorizeSecurityGroupIngress(request *ec2.AuthorizeSecurityGr
 
 	// TODO: We need to fold permissions
 
+	if m.SecurityGroupRules == nil {
+		m.SecurityGroupRules = make(map[string]*ec2.SecurityGroupRule)
+	}
+
+	for _, permission := range request.IpPermissions {
+
+		for _, iprange := range permission.IpRanges {
+
+			n := len(m.SecurityGroupRules) + 1
+			id := fmt.Sprintf("sgr-%d", n)
+			rule := &ec2.SecurityGroupRule{
+				SecurityGroupRuleId: &id,
+				GroupId:             sg.GroupId,
+				FromPort:            permission.FromPort,
+				ToPort:              permission.ToPort,
+				IsEgress:            aws.Bool(false),
+				CidrIpv4:            iprange.CidrIp,
+				IpProtocol:          permission.IpProtocol,
+				Tags:                tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeSecurityGroupRule),
+			}
+			if permission.FromPort == nil {
+				rule.FromPort = aws.Int64(int64(-1))
+			}
+			if permission.ToPort == nil {
+				rule.ToPort = aws.Int64(int64(-1))
+			}
+
+			m.SecurityGroupRules[id] = rule
+		}
+
+		for _, iprange := range permission.Ipv6Ranges {
+
+			n := len(m.SecurityGroupRules) + 1
+			id := fmt.Sprintf("sgr-%d", n)
+			rule := &ec2.SecurityGroupRule{
+				SecurityGroupRuleId: &id,
+				GroupId:             sg.GroupId,
+				FromPort:            permission.FromPort,
+				ToPort:              permission.ToPort,
+				IsEgress:            aws.Bool(false),
+				CidrIpv6:            iprange.CidrIpv6,
+				IpProtocol:          permission.IpProtocol,
+				Tags:                tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeSecurityGroupRule),
+			}
+			if permission.FromPort == nil {
+				rule.FromPort = aws.Int64(int64(-1))
+			}
+			if permission.ToPort == nil {
+				rule.ToPort = aws.Int64(int64(-1))
+			}
+
+			m.SecurityGroupRules[id] = rule
+		}
+
+		for _, group := range permission.UserIdGroupPairs {
+
+			n := len(m.SecurityGroupRules) + 1
+			id := fmt.Sprintf("sgr-%d", n)
+			rule := &ec2.SecurityGroupRule{
+				SecurityGroupRuleId: &id,
+				GroupId:             sg.GroupId,
+				FromPort:            permission.FromPort,
+				ToPort:              permission.ToPort,
+				IsEgress:            aws.Bool(false),
+				ReferencedGroupInfo: &ec2.ReferencedSecurityGroup{
+					GroupId: group.GroupId,
+				},
+				IpProtocol: permission.IpProtocol,
+				Tags:       tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeSecurityGroupRule),
+			}
+			if permission.FromPort == nil {
+				rule.FromPort = aws.Int64(int64(-1))
+			}
+			if permission.ToPort == nil {
+				rule.ToPort = aws.Int64(int64(-1))
+			}
+
+			m.SecurityGroupRules[id] = rule
+		}
+	}
+
 	response := &ec2.AuthorizeSecurityGroupIngressOutput{}
 	return response, nil
+}
+
+func (m *MockEC2) DescribeSecurityGroupRules(request *ec2.DescribeSecurityGroupRulesInput) (*ec2.DescribeSecurityGroupRulesOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	rules := []*ec2.SecurityGroupRule{}
+
+	sgid := ""
+	for _, filter := range request.Filters {
+		if aws.StringValue(filter.Name) == "group-id" {
+			sgid = aws.StringValue(filter.Values[0])
+		}
+	}
+
+	for _, rule := range m.SecurityGroupRules {
+		if aws.StringValue(rule.GroupId) == sgid {
+			rules = append(rules, rule)
+		}
+	}
+
+	return &ec2.DescribeSecurityGroupRulesOutput{
+		SecurityGroupRules: rules,
+	}, nil
 }
