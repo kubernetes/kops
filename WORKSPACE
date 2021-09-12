@@ -6,10 +6,10 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "69de5c704a05ff37862f7e0f5534d4f479418afc21806c887db544a316f3cb6b",
+    sha256 = "8e968b5fcea1d2d64071872b12737bbb5514524ee5f0a4f54f5920266c261acb",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.27.0/rules_go-v0.27.0.tar.gz",
-        "https://github.com/bazelbuild/rules_go/releases/download/v0.27.0/rules_go-v0.27.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.28.0/rules_go-v0.28.0.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.28.0/rules_go-v0.28.0.zip",
     ],
 )
 
@@ -39,9 +39,9 @@ gazelle_dependencies()
 
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "4521794f0fba2e20f3bf15846ab5e01d5332e587e9ce81629c7f96c793bb7036",
-    strip_prefix = "rules_docker-0.14.4",
-    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.14.4/rules_docker-v0.14.4.tar.gz"],
+    sha256 = "1f4e59843b61981a96835dc4ac377ad4da9f8c334ebe5e0bb3f58f80c09735f4",
+    strip_prefix = "rules_docker-0.19.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.19.0/rules_docker-v0.19.0.tar.gz"],
 )
 
 load(
@@ -54,10 +54,6 @@ container_repositories()
 load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
 
 container_deps()
-
-load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", "pip_deps")
-
-pip_deps()
 
 load(
     "@io_bazel_rules_docker//repositories:go_repositories.bzl",
@@ -81,11 +77,11 @@ git_repository(
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "89a053218639b1c5e3589a859bb310e0a402dedbe4ee369560e66026ae5ef1f2",
-    strip_prefix = "bazel-toolchains-3.5.0",
+    sha256 = "179ec02f809e86abf56356d8898c8bd74069f1bd7c56044050c2cd3d79d0e024",
+    strip_prefix = "bazel-toolchains-4.1.0",
     urls = [
-        "https://github.com/bazelbuild/bazel-toolchains/releases/download/3.5.0/bazel-toolchains-3.5.0.tar.gz",
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/releases/download/3.5.0/bazel-toolchains-3.5.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/releases/download/4.1.0/bazel-toolchains-4.1.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/releases/download/4.1.0/bazel-toolchains-4.1.0.tar.gz",
     ],
 )
 
@@ -103,28 +99,28 @@ go_repository(
 # Start using distroless base
 container_pull(
     name = "distroless_base_amd64",
-    digest = "sha256:e7fa8d9d08846d634b16d4ac7d8ecac36b412bfeb1a13ce061183ff020551ba8",
+    digest = "sha256:ba7a315f86771332e76fa9c3d423ecfdbb8265879c6f1c264d6fff7d4fa460a4",
     registry = "gcr.io",
     repository = "distroless/base",
 )
 
 container_pull(
     name = "distroless_base_arm64",
-    digest = "sha256:c60be29941a0be6f748c8cf2e42832f95e9b73276042d3c44212af7cf4a152c9",
+    digest = "sha256:4f8aa0aba190e375a5a53bb71a303c89d9734c817714aeaca9bb23b82135ed91",
     registry = "gcr.io",
     repository = "distroless/base",
 )
 
 container_pull(
     name = "distroless_base_debug_amd64",
-    digest = "sha256:c9e0f9309fcf71590eb58e4ee51aba280a2c7f513bd18ddf712924e3d98f7615",
+    digest = "sha256:efd8711717d9e9b5d0dbb20ea10876dab0609c923bc05321b912f9239090ca80",
     registry = "gcr.io",
     repository = "distroless/base",
 )
 
 container_pull(
     name = "distroless_base_debug_arm64",
-    digest = "sha256:a50f1f26fc50ae5a14fee9efa88d7772898231b3bee950b13af5d07df3fe8364",
+    digest = "sha256:3aaeedaad3046eb02e90108150f3f754785d7baf635d263268328d64662df919",
     registry = "gcr.io",
     repository = "distroless/base",
 )
