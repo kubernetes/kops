@@ -31,12 +31,9 @@ type Literal struct {
 	// "${}" interpolation is supported.
 	Value string `cty:"value"`
 
-	// ResourceType represents the type of a resource in a literal reference
-	ResourceType string `cty:"resource_type"`
-	// ResourceName represents the name of a resource in a literal reference
-	ResourceName string `cty:"resource_name"`
-	// ResourceProp represents the property of a resource in a literal reference
-	ResourceProp string `cty:"resource_prop"`
+	// Tokens are portions of a literal reference joined by periods.
+	// example: {"aws_vpc", "foo", "id"}
+	Tokens []string `cty:"tokens"`
 
 	// FnName represents the name of a terraform function.
 	FnName string `cty:"fn_name"`
@@ -67,10 +64,16 @@ func LiteralProperty(resourceType, resourceName, prop string) *Literal {
 	tfName := sanitizeName(resourceName)
 	expr := "${" + resourceType + "." + tfName + "." + prop + "}"
 	return &Literal{
-		Value:        expr,
-		ResourceType: resourceType,
-		ResourceName: tfName,
-		ResourceProp: prop,
+		Value:  expr,
+		Tokens: []string{resourceType, tfName, prop},
+	}
+}
+
+func LiteralTokens(tokens ...string) *Literal {
+	expr := "${" + strings.Join(tokens, ".") + "}"
+	return &Literal{
+		Value:  expr,
+		Tokens: tokens,
 	}
 }
 
