@@ -451,22 +451,55 @@ func (e *FunctionCallExpr) Value(ctx *hcl.EvalContext) (cty.Value, hcl.Diagnosti
 				param = varParam
 			}
 
-			// this can happen if an argument is (incorrectly) null.
-			if i > len(e.Args)-1 {
-				diags = append(diags, &hcl.Diagnostic{
-					Severity: hcl.DiagError,
-					Summary:  "Invalid function argument",
-					Detail: fmt.Sprintf(
-						"Invalid value for %q parameter: %s.",
-						param.Name, err,
-					),
-					Subject:     args[len(params)].StartRange().Ptr(),
-					Context:     e.Range().Ptr(),
-					Expression:  e,
-					EvalContext: ctx,
-				})
+			if param == nil || i > len(args)-1 {
+				// Getting here means that the function we called has a bug:
+				// it returned an arg error that refers to an argument index
+				// that wasn't present in the call. For that situation
+				// we'll degrade to a less specific error just to give
+				// some sort of answer, but best to still fix the buggy
+				// function so that it only returns argument indices that
+				// are in range.
+				switch {
+				case param != nil:
+					// In this case we'll assume that the function was trying
+					// to talk about a final variadic parameter but the caller
+					// didn't actually provide any arguments for it. That means
+					// we can at least still name the parameter in the
+					// error message, but our source range will be the call
+					// as a whole because we don't have an argument expression
+					// to highlight specifically.
+					diags = append(diags, &hcl.Diagnostic{
+						Severity: hcl.DiagError,
+						Summary:  "Invalid function argument",
+						Detail: fmt.Sprintf(
+							"Invalid value for %q parameter: %s.",
+							param.Name, err,
+						),
+						Subject:     e.Range().Ptr(),
+						Expression:  e,
+						EvalContext: ctx,
+					})
+				default:
+					// This is the most degenerate case of all, where the
+					// index is out of range even for the declared parameters,
+					// and so we can't tell which parameter the function is
+					// trying to report an error for. Just a generic error
+					// report in that case.
+					diags = append(diags, &hcl.Diagnostic{
+						Severity: hcl.DiagError,
+						Summary:  "Error in function call",
+						Detail: fmt.Sprintf(
+							"Call to function %q failed: %s.",
+							e.Name, err,
+						),
+						Subject:     e.StartRange().Ptr(),
+						Context:     e.Range().Ptr(),
+						Expression:  e,
+						EvalContext: ctx,
+					})
+				}
 			} else {
-				argExpr := e.Args[i]
+				argExpr := args[i]
 
 				// TODO: we should also unpick a PathError here and show the
 				// path to the deep value where the error was detected.

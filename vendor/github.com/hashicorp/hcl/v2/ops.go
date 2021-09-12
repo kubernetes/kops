@@ -21,6 +21,8 @@ import (
 // though nil can be provided if the calling application is going to
 // ignore the subject of the returned diagnostics anyway.
 func Index(collection, key cty.Value, srcRange *Range) (cty.Value, Diagnostics) {
+	const invalidIndex = "Invalid index"
+
 	if collection.IsNull() {
 		return cty.DynamicVal, Diagnostics{
 			{
@@ -35,7 +37,7 @@ func Index(collection, key cty.Value, srcRange *Range) (cty.Value, Diagnostics) 
 		return cty.DynamicVal, Diagnostics{
 			{
 				Severity: DiagError,
-				Summary:  "Invalid index",
+				Summary:  invalidIndex,
 				Detail:   "Can't use a null value as an indexing key.",
 				Subject:  srcRange,
 			},
@@ -66,7 +68,7 @@ func Index(collection, key cty.Value, srcRange *Range) (cty.Value, Diagnostics) 
 			return cty.DynamicVal, Diagnostics{
 				{
 					Severity: DiagError,
-					Summary:  "Invalid index",
+					Summary:  invalidIndex,
 					Detail: fmt.Sprintf(
 						"The given key does not identify an element in this collection value: %s.",
 						keyErr.Error(),
@@ -88,32 +90,84 @@ func Index(collection, key cty.Value, srcRange *Range) (cty.Value, Diagnostics) 
 			}
 		}
 		if has.False() {
-			// We have a more specialized error message for the situation of
-			// using a fractional number to index into a sequence, because
-			// that will tend to happen if the user is trying to use division
-			// to calculate an index and not realizing that HCL does float
-			// division rather than integer division.
 			if (ty.IsListType() || ty.IsTupleType()) && key.Type().Equals(cty.Number) {
 				if key.IsKnown() && !key.IsNull() {
+					// NOTE: we don't know what any marks might've represented
+					// up at the calling application layer, so we must avoid
+					// showing the literal number value in these error messages
+					// in case the mark represents something important, such as
+					// a value being "sensitive".
 					key, _ := key.Unmark()
 					bf := key.AsBigFloat()
 					if _, acc := bf.Int(nil); acc != big.Exact {
+						// We have a more specialized error message for the
+						// situation of using a fractional number to index into
+						// a sequence, because that will tend to happen if the
+						// user is trying to use division to calculate an index
+						// and not realizing that HCL does float division
+						// rather than integer division.
 						return cty.DynamicVal, Diagnostics{
 							{
 								Severity: DiagError,
-								Summary:  "Invalid index",
-								Detail:   fmt.Sprintf("The given key does not identify an element in this collection value: indexing a sequence requires a whole number, but the given index (%g) has a fractional part.", bf),
+								Summary:  invalidIndex,
+								Detail:   "The given key does not identify an element in this collection value: indexing a sequence requires a whole number, but the given index has a fractional part.",
 								Subject:  srcRange,
 							},
+						}
+					}
+
+					if bf.Sign() < 0 {
+						// Some other languages allow negative indices to
+						// select "backwards" from the end of the sequence,
+						// but HCL doesn't do that in order to give better
+						// feedback if a dynamic index is calculated
+						// incorrectly.
+						return cty.DynamicVal, Diagnostics{
+							{
+								Severity: DiagError,
+								Summary:  invalidIndex,
+								Detail:   "The given key does not identify an element in this collection value: a negative number is not a valid index for a sequence.",
+								Subject:  srcRange,
+							},
+						}
+					}
+					if lenVal := collection.Length(); lenVal.IsKnown() && !lenVal.IsMarked() {
+						// Length always returns a number, and we already
+						// checked that it's a known number, so this is safe.
+						lenBF := lenVal.AsBigFloat()
+						var result big.Float
+						result.Sub(bf, lenBF)
+						if result.Sign() < 1 {
+							if lenBF.Sign() == 0 {
+								return cty.DynamicVal, Diagnostics{
+									{
+										Severity: DiagError,
+										Summary:  invalidIndex,
+										Detail:   "The given key does not identify an element in this collection value: the collection has no elements.",
+										Subject:  srcRange,
+									},
+								}
+							} else {
+								return cty.DynamicVal, Diagnostics{
+									{
+										Severity: DiagError,
+										Summary:  invalidIndex,
+										Detail:   "The given key does not identify an element in this collection value: the given index is greater than or equal to the length of the collection.",
+										Subject:  srcRange,
+									},
+								}
+							}
 						}
 					}
 				}
 			}
 
+			// If this is not one of the special situations we handled above
+			// then we'll fall back on a very generic message.
 			return cty.DynamicVal, Diagnostics{
 				{
 					Severity: DiagError,
-					Summary:  "Invalid index",
+					Summary:  invalidIndex,
 					Detail:   "The given key does not identify an element in this collection value.",
 					Subject:  srcRange,
 				},
@@ -123,12 +177,13 @@ func Index(collection, key cty.Value, srcRange *Range) (cty.Value, Diagnostics) 
 		return collection.Index(key), nil
 
 	case ty.IsObjectType():
+		wasNumber := key.Type() == cty.Number
 		key, keyErr := convert.Convert(key, cty.String)
 		if keyErr != nil {
 			return cty.DynamicVal, Diagnostics{
 				{
 					Severity: DiagError,
-					Summary:  "Invalid index",
+					Summary:  invalidIndex,
 					Detail: fmt.Sprintf(
 						"The given key does not identify an element in this collection value: %s.",
 						keyErr.Error(),
@@ -148,11 +203,20 @@ func Index(collection, key cty.Value, srcRange *Range) (cty.Value, Diagnostics) 
 		attrName := key.AsString()
 
 		if !ty.HasAttribute(attrName) {
+			var suggestion string
+			if wasNumber {
+				// We note this only as an addendum to an error we would've
+				// already returned anyway, because it is valid (albeit weird)
+				// to have an attribute whose name is just decimal digits
+				// and then access that attribute using a number whose
+				// decimal representation is the same digits.
+				suggestion = " An object only supports looking up attributes by name, not by numeric index."
+			}
 			return cty.DynamicVal, Diagnostics{
 				{
 					Severity: DiagError,
-					Summary:  "Invalid index",
-					Detail:   "The given key does not identify an element in this collection value.",
+					Summary:  invalidIndex,
+					Detail:   fmt.Sprintf("The given key does not identify an element in this collection value.%s", suggestion),
 					Subject:  srcRange,
 				},
 			}
@@ -160,11 +224,21 @@ func Index(collection, key cty.Value, srcRange *Range) (cty.Value, Diagnostics) 
 
 		return collection.GetAttr(attrName), nil
 
+	case ty.IsSetType():
+		return cty.DynamicVal, Diagnostics{
+			{
+				Severity: DiagError,
+				Summary:  invalidIndex,
+				Detail:   "Elements of a set are identified only by their value and don't have any separate index or key to select with, so it's only possible to perform operations across all elements of the set.",
+				Subject:  srcRange,
+			},
+		}
+
 	default:
 		return cty.DynamicVal, Diagnostics{
 			{
 				Severity: DiagError,
-				Summary:  "Invalid index",
+				Summary:  invalidIndex,
 				Detail:   "This value does not have any indices.",
 				Subject:  srcRange,
 			},
@@ -197,6 +271,8 @@ func GetAttr(obj cty.Value, attrName string, srcRange *Range) (cty.Value, Diagno
 		}
 	}
 
+	const unsupportedAttr = "Unsupported attribute"
+
 	ty := obj.Type()
 	switch {
 	case ty.IsObjectType():
@@ -204,7 +280,7 @@ func GetAttr(obj cty.Value, attrName string, srcRange *Range) (cty.Value, Diagno
 			return cty.DynamicVal, Diagnostics{
 				{
 					Severity: DiagError,
-					Summary:  "Unsupported attribute",
+					Summary:  unsupportedAttr,
 					Detail:   fmt.Sprintf("This object does not have an attribute named %q.", attrName),
 					Subject:  srcRange,
 				},
@@ -241,11 +317,69 @@ func GetAttr(obj cty.Value, attrName string, srcRange *Range) (cty.Value, Diagno
 		return obj.Index(idx), nil
 	case ty == cty.DynamicPseudoType:
 		return cty.DynamicVal, nil
+	case ty.IsListType() && ty.ElementType().IsObjectType():
+		// It seems a common mistake to try to access attributes on a whole
+		// list of objects rather than on a specific individual element, so
+		// we have some extra hints for that case.
+
+		switch {
+		case ty.ElementType().HasAttribute(attrName):
+			// This is a very strong indication that the user mistook the list
+			// of objects for a single object, so we can be a little more
+			// direct in our suggestion here.
+			return cty.DynamicVal, Diagnostics{
+				{
+					Severity: DiagError,
+					Summary:  unsupportedAttr,
+					Detail:   fmt.Sprintf("Can't access attributes on a list of objects. Did you mean to access attribute %q for a specific element of the list, or across all elements of the list?", attrName),
+					Subject:  srcRange,
+				},
+			}
+		default:
+			return cty.DynamicVal, Diagnostics{
+				{
+					Severity: DiagError,
+					Summary:  unsupportedAttr,
+					Detail:   "Can't access attributes on a list of objects. Did you mean to access an attribute for a specific element of the list, or across all elements of the list?",
+					Subject:  srcRange,
+				},
+			}
+		}
+
+	case ty.IsSetType() && ty.ElementType().IsObjectType():
+		// This is similar to the previous case, but we can't give such a
+		// direct suggestion because there is no mechanism to select a single
+		// item from a set.
+		// We could potentially suggest using a for expression or splat
+		// operator here, but we typically don't get into syntax specifics
+		// in hcl.GetAttr suggestions because it's a general function used in
+		// various other situations, such as in application-specific operations
+		// that might have a more constraint set of alternative approaches.
+
+		return cty.DynamicVal, Diagnostics{
+			{
+				Severity: DiagError,
+				Summary:  unsupportedAttr,
+				Detail:   "Can't access attributes on a set of objects. Did you mean to access an attribute across all elements of the set?",
+				Subject:  srcRange,
+			},
+		}
+
+	case ty.IsPrimitiveType():
+		return cty.DynamicVal, Diagnostics{
+			{
+				Severity: DiagError,
+				Summary:  unsupportedAttr,
+				Detail:   fmt.Sprintf("Can't access attributes on a primitive-typed value (%s).", ty.FriendlyName()),
+				Subject:  srcRange,
+			},
+		}
+
 	default:
 		return cty.DynamicVal, Diagnostics{
 			{
 				Severity: DiagError,
-				Summary:  "Unsupported attribute",
+				Summary:  unsupportedAttr,
 				Detail:   "This value does not have any attributes.",
 				Subject:  srcRange,
 			},
