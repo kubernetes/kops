@@ -293,18 +293,20 @@ Between the open and closing delimiters of these sequences, newline sequences
 are ignored as whitespace.
 
 There is a syntax ambiguity between _for expressions_ and collection values
-whose first element is a reference to a variable named `for`. The
-_for expression_ interpretation has priority, so to produce a tuple whose
-first element is the value of a variable named `for`, or an object with a
-key named `for`, use parentheses to disambiguate:
+whose first element starts with an identifier named `for`. The _for expression_
+interpretation has priority, so to write a key literally named `for`
+or an expression derived from a variable named `for` you must use parentheses
+or quotes to disambiguate:
 
 - `[for, foo, baz]` is a syntax error.
 - `[(for), foo, baz]` is a tuple whose first element is the value of variable
   `for`.
-- `{for: 1, baz: 2}` is a syntax error.
-- `{(for): 1, baz: 2}` is an object with an attribute literally named `for`.
-- `{baz: 2, for: 1}` is equivalent to the previous example, and resolves the
+- `{for = 1, baz = 2}` is a syntax error.
+- `{"for" = 1, baz = 2}` is an object with an attribute literally named `for`.
+- `{baz = 2, for = 1}` is equivalent to the previous example, and resolves the
   ambiguity by reordering.
+- `{(for) = 1, baz = 2}` is an object with a key with the same value as the
+  variable `for`.
 
 ### Template Expressions
 

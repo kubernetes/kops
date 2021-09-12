@@ -1661,7 +1661,7 @@ func (p *parser) parseQuotedStringLiteral() (string, hcl.Range, hcl.Diagnostics)
 
 	var diags hcl.Diagnostics
 	ret := &bytes.Buffer{}
-	var cQuote Token
+	var endRange hcl.Range
 
 Token:
 	for {
@@ -1669,7 +1669,7 @@ Token:
 		switch tok.Type {
 
 		case TokenCQuote:
-			cQuote = tok
+			endRange = tok.Range
 			break Token
 
 		case TokenQuotedLit:
@@ -1712,6 +1712,7 @@ Token:
 				Subject:  &tok.Range,
 				Context:  hcl.RangeBetween(oQuote.Range, tok.Range).Ptr(),
 			})
+			endRange = tok.Range
 			break Token
 
 		default:
@@ -1724,13 +1725,14 @@ Token:
 				Context:  hcl.RangeBetween(oQuote.Range, tok.Range).Ptr(),
 			})
 			p.recover(TokenCQuote)
+			endRange = tok.Range
 			break Token
 
 		}
 
 	}
 
-	return ret.String(), hcl.RangeBetween(oQuote.Range, cQuote.Range), diags
+	return ret.String(), hcl.RangeBetween(oQuote.Range, endRange), diags
 }
 
 // ParseStringLiteralToken processes the given token, which must be either a
