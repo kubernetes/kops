@@ -247,18 +247,17 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 func buildPrecreateDNSHostnames(cluster *kops.Cluster) []string {
 	dnsInternalSuffix := ".internal." + cluster.ObjectMeta.Name
 
-	var dnsHostnames []string
+	dnsHostnames := []string{}
 
-	if cluster.Spec.MasterPublicName != "" {
+	hasAPILoadbalancer := cluster.Spec.API != nil && cluster.Spec.API.LoadBalancer != nil
+	useLBForInternalAPI := hasAPILoadbalancer && cluster.Spec.API.LoadBalancer.UseForInternalApi
+
+	if cluster.Spec.MasterPublicName != "" && !hasAPILoadbalancer {
 		dnsHostnames = append(dnsHostnames, cluster.Spec.MasterPublicName)
-	} else {
-		klog.Warningf("cannot pre-create MasterPublicName - not set")
 	}
 
-	if cluster.Spec.MasterInternalName != "" {
+	if cluster.Spec.MasterInternalName != "" && !useLBForInternalAPI {
 		dnsHostnames = append(dnsHostnames, cluster.Spec.MasterInternalName)
-	} else {
-		klog.Warningf("cannot pre-create MasterInternalName - not set")
 	}
 
 	for _, etcdCluster := range cluster.Spec.EtcdClusters {
