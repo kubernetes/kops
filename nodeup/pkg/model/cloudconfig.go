@@ -102,6 +102,9 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 		if cloudConfig.ElbSecurityGroup != nil {
 			lines = append(lines, "ElbSecurityGroup = "+*cloudConfig.ElbSecurityGroup)
 		}
+		for _, family := range cloudConfig.NodeIPFamilies {
+			lines = append(lines, "NodeIPFamilies = "+family)
+		}
 	case "openstack":
 		osc := cloudConfig.Openstack
 		if osc == nil {

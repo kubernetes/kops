@@ -708,6 +708,11 @@ func (in *CloudConfiguration) DeepCopyInto(out *CloudConfiguration) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.NodeIPFamilies != nil {
+		in, out := &in.NodeIPFamilies, &out.NodeIPFamilies
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.DisableSecurityGroupIngress != nil {
 		in, out := &in.DisableSecurityGroupIngress, &out.DisableSecurityGroupIngress
 		*out = new(bool)
