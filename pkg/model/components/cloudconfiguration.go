@@ -52,5 +52,9 @@ func (b *CloudConfigurationOptionsBuilder) BuildOptions(o interface{}) error {
 		c.ManageStorageClasses = manage
 	}
 
+	if clusterSpec.IsIPv6Only() && len(c.NodeIPFamilies) == 0 {
+		c.NodeIPFamilies = []string{"ipv6", "ipv4"}
+	}
+
 	return nil
 }
