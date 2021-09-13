@@ -1506,6 +1506,21 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.MaxConcurrentDownloads != nil {
+		in, out := &in.MaxConcurrentDownloads, &out.MaxConcurrentDownloads
+		*out = new(int32)
+		**out = **in
+	}
+	if in.MaxConcurrentUploads != nil {
+		in, out := &in.MaxConcurrentUploads, &out.MaxConcurrentUploads
+		*out = new(int32)
+		**out = **in
+	}
+	if in.MaxDownloadAttempts != nil {
+		in, out := &in.MaxDownloadAttempts, &out.MaxDownloadAttempts
+		*out = new(int32)
+		**out = **in
+	}
 	if in.MetricsAddress != nil {
 		in, out := &in.MetricsAddress, &out.MetricsAddress
 		*out = new(string)
