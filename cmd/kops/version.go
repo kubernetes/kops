@@ -17,11 +17,15 @@ limitations under the License.
 package main
 
 import (
+	"context"
+	"fmt"
 	"io"
 
 	"github.com/spf13/cobra"
+	"k8s.io/kops"
 	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/pkg/commands"
+	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
@@ -38,21 +42,88 @@ var (
 
 // NewCmdVersion builds a cobra command for the kops version command
 func NewCmdVersion(f *util.Factory, out io.Writer) *cobra.Command {
-	options := &commands.VersionOptions{}
+	options := &VersionOptions{}
 
 	cmd := &cobra.Command{
 		Use:               "version",
 		Short:             versionShort,
 		Long:              versionLong,
 		Example:           versionExample,
-		Args:              cobra.NoArgs,
+		Args:              rootCommand.clusterNameArgsAllowNoCluster(&options.ClusterName),
 		ValidArgsFunction: cobra.NoFileCompletions,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return commands.RunVersion(f, out, options)
+			return RunVersion(f, out, options)
 		},
 	}
 
-	cmd.Flags().BoolVar(&options.Short, "short", options.Short, "only print the main kOps version. Useful for scripting.")
+	cmd.Flags().BoolVar(&options.short, "short", options.short, "only print the main kOps version. Useful for scripting.")
+	cmd.Flags().BoolVar(&options.server, "server", options.server, "show the kOps version that made the last change to the state store.")
 
 	return cmd
+}
+
+type VersionOptions struct {
+	short       bool
+	server      bool
+	ClusterName string
+}
+
+// RunVersion implements the version command logic
+func RunVersion(f *util.Factory, out io.Writer, options *VersionOptions) error {
+	if options.short {
+		s := kops.Version
+		_, err := fmt.Fprintf(out, "%s\n", s)
+		if err != nil {
+			return err
+		}
+		if options.server {
+			server := serverVersion(f, options)
+
+			_, err := fmt.Fprintf(out, "%s\n", server)
+			return err
+		}
+
+		return nil
+	} else {
+		client := kops.Version
+		if kops.GitVersion != "" {
+			client += " (git-" + kops.GitVersion + ")"
+		}
+
+		{
+			_, err := fmt.Fprintf(out, "Client version: %s\n", client)
+			if err != nil {
+				return err
+			}
+		}
+		if options.server {
+			server := serverVersion(f, options)
+
+			_, err := fmt.Fprintf(out, "Last applied server version: %s\n", server)
+			return err
+		}
+		return nil
+	}
+}
+
+func serverVersion(f *util.Factory, options *VersionOptions) string {
+	if options.ClusterName == "" {
+		return "No cluster selected"
+	}
+
+	ctx := context.Background()
+	cluster, err := GetCluster(ctx, f, options.ClusterName)
+	if err != nil {
+		return "could not fetch cluster"
+	}
+	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
+	if err != nil {
+		return "could not talk to vfs"
+	}
+
+	kopsVersionUpdatedBytes, err := configBase.Join(registry.PathKopsVersionUpdated).ReadFile()
+	if err != nil {
+		return "could get cluster version"
+	}
+	return string(kopsVersionUpdatedBytes)
 }
