@@ -120,6 +120,18 @@ rules:
   - list
   - watch
 - apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
   - ""
   resourceNames:
   - coredns
@@ -166,6 +178,13 @@ rules:
   - deployments
   verbs:
   - create
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -248,7 +267,7 @@ spec:
     spec:
       containers:
       - args:
-        - --enable-leader-election=false
+        - --leader-elect=false
         - --rbac-mode=ignore
         command:
         - /manager
