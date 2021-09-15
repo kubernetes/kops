@@ -22,8 +22,9 @@ kops version [flags]
 ### Options
 
 ```
-  -h, --help    help for version
-      --short   only print the main kOps version. Useful for scripting.
+  -h, --help     help for version
+      --server   show the kOps version that made the last change to the state store.
+      --short    only print the main kOps version. Useful for scripting.
 ```
 
 ### Options inherited from parent commands
