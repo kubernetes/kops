@@ -155,6 +155,8 @@ func osBuildCloudInstanceGroup(c OpenstackCloud, cluster *kops.Cluster, ig *kops
 
 		cm.Roles = []string{server.Metadata["KopsRole"]}
 
+		cm.State = cloudinstances.State(server.Status)
+
 	}
 	return cg, nil
 }
