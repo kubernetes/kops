@@ -116,9 +116,9 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	// Doesn't seem to be any real downside to always doing a leader election
 	kcm.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.Bool(true)}
 
-	kcm.AllocateNodeCIDRs = fi.Bool(true)
-	kcm.ConfigureCloudRoutes = fi.Bool(false)
-	if kcm.ClusterCIDR == "" {
+	kcm.AllocateNodeCIDRs = fi.Bool(!clusterSpec.PodCIDRFromCloud)
+
+	if kcm.ClusterCIDR == "" && !clusterSpec.PodCIDRFromCloud {
 		kcm.ClusterCIDR = clusterSpec.PodCIDR
 	}
 
@@ -156,10 +156,15 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		kcm.UseServiceAccountCredentials = fi.Bool(true)
 	}
 
-	// @check if the node authorization is enabled and if so enable the tokencleaner controller (disabled by default)
-	// This is responsible for cleaning up bootstrap tokens which have expired
-	if fi.BoolValue(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) && len(kcm.Controllers) <= 0 {
-		kcm.Controllers = []string{"*", "tokencleaner"}
+	if len(kcm.Controllers) == 0 {
+		// @check if the node authorization is enabled and if so enable the tokencleaner controller (disabled by default)
+		// This is responsible for cleaning up bootstrap tokens which have expired
+		if fi.BoolValue(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) {
+			kcm.Controllers = []string{"*", "tokencleaner"}
+		}
+		if clusterSpec.PodCIDRFromCloud {
+			kcm.Controllers = []string{"*", "-nodeipam"}
+		}
 	}
 
 	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {

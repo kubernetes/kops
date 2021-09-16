@@ -2367,6 +2367,7 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	out.ClusterDNSDomain = in.ClusterDNSDomain
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
 	out.PodCIDR = in.PodCIDR
+	out.PodCIDRFromCloud = in.PodCIDRFromCloud
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
 	out.SSHAccess = in.SSHAccess
 	out.NodePortAccess = in.NodePortAccess
@@ -2779,6 +2780,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 	out.ClusterDNSDomain = in.ClusterDNSDomain
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
 	out.PodCIDR = in.PodCIDR
+	out.PodCIDRFromCloud = in.PodCIDRFromCloud
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
 	out.SSHAccess = in.SSHAccess
 	out.NodePortAccess = in.NodePortAccess
