@@ -225,9 +225,10 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{
 				HTTPGet: &v1.HTTPGetAction{
-					Host: "127.0.0.1",
-					Path: "/healthz",
-					Port: intstr.FromInt(10251),
+					Host:   "127.0.0.1",
+					Path:   "/healthz",
+					Port:   intstr.FromInt(10259),
+					Scheme: "HTTPS",
 				},
 			},
 			InitialDelaySeconds: 15,
