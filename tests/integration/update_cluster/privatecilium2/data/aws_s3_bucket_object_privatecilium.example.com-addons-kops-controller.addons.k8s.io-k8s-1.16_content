@@ -66,12 +66,7 @@ spec:
       priorityClassName: system-node-critical
       serviceAccount: kops-controller
       tolerations:
-      - key: node.cloudprovider.kubernetes.io/uninitialized
-        operator: Exists
-      - key: node.kubernetes.io/not-ready
-        operator: Exists
-      - key: node-role.kubernetes.io/master
-        operator: Exists
+      - operator: Exists
       volumes:
       - configMap:
           name: kops-controller
