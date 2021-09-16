@@ -326,6 +326,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.KubeProxyBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KopsControllerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.WarmPoolBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.PrefixBuilder{NodeupModelContext: modelContext})
 
 	loader.Builders = append(loader.Builders, &networking.CommonBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &networking.CalicoBuilder{NodeupModelContext: modelContext})
@@ -353,7 +354,10 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	switch c.Target {
 	case "direct":
 		target = &local.LocalTarget{
-			CacheDir: c.CacheDir,
+			CacheDir:   c.CacheDir,
+			Cloud:      cloud,
+			InstanceID: modelContext.InstanceID,
+			Cluster:    c.cluster,
 		}
 	case "dryrun":
 		assetBuilder := assets.NewAssetBuilder(c.cluster, false)

@@ -120,7 +120,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.Tunnel == "" {
-		if c.Ipam == "eni" {
+		if c.Ipam == "eni" || clusterSpec.PodCIDRFromCloud {
 			c.Tunnel = "disabled"
 		} else {
 			c.Tunnel = "vxlan"

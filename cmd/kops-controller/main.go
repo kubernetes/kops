@@ -126,10 +126,28 @@ func main() {
 		os.Exit(1)
 	}
 
+	if opt.EnableCloudIPAM {
+		setupLog.Info("enabling IPAM controller")
+		if opt.Cloud != "aws" {
+			klog.Error("IPAM controller only supported by aws")
+			os.Exit(1)
+		}
+		ipamController, err := controllers.NewAWSIPAMReconciler(mgr)
+		if err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "IPAMController")
+			os.Exit(1)
+		}
+		if err := ipamController.SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "IPAMController")
+			os.Exit(1)
+		}
+	}
+
 	if err := addNodeController(mgr, &opt); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "NodeController")
 		os.Exit(1)
 	}
+
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")

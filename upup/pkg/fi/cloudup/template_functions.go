@@ -546,6 +546,10 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		}
 	}
 
+	if tf.Cluster.Spec.PodCIDRFromCloud {
+		config.EnableCloudIPAM = true
+	}
+
 	// To avoid indentation problems, we marshal as json.  json is a subset of yaml
 	b, err := json.Marshal(config)
 	if err != nil {
