@@ -39,12 +39,7 @@ spec:
     spec:
       priorityClassName: system-node-critical
       tolerations:
-      - key: node.cloudprovider.kubernetes.io/uninitialized
-        operator: Exists
-      - key: node.kubernetes.io/not-ready
-        operator: Exists
-      - key: node-role.kubernetes.io/master
-        operator: Exists
+      - operator: Exists
       nodeSelector:
         node-role.kubernetes.io/master: ""
         kops.k8s.io/kops-controller-pki: ""
