@@ -17,12 +17,15 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
 	"path"
 	"path/filepath"
 	"testing"
 
+	"github.com/pelletier/go-toml"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
@@ -200,10 +203,73 @@ func TestContainerdConfig(t *testing.T) {
 		},
 	}
 
-	config := b.buildContainerdConfig()
+	config, err := b.buildContainerdConfig()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	if config == "" {
 		t.Errorf("got unexpected empty containerd config")
+	}
+
+}
+
+func TestAppendGPURuntimeContainerdConfig(t *testing.T) {
+	originalConfig := `version = 2
+[plugins]
+  [plugins."io.containerd.grpc.v1.cri"]
+	[plugins."io.containerd.grpc.v1.cri".containerd]
+	  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+		[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+		  runtime_type = "io.containerd.runc.v2"
+		  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+			SystemdCgroup = true
+`
+
+	expectedNewConfig := `version = 2
+
+[plugins]
+
+  [plugins."io.containerd.grpc.v1.cri"]
+
+    [plugins."io.containerd.grpc.v1.cri".containerd]
+      default_runtime_name = "runc"
+
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia]
+          privileged_without_host_devices = false
+          runtime_engine = ""
+          runtime_root = ""
+          runtime_type = "io.containerd.runc.v1"
+
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia.options]
+            BinaryName = "/usr/bin/nvidia-container-runtime"
+            SystemdCgroup = true
+
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+          runtime_type = "io.containerd.runc.v2"
+
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+            SystemdCgroup = true
+`
+	config, err := toml.Load(originalConfig)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	if err := appendNvidiaGPURuntimeConfig(config); err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	newConfig, err := config.ToTomlString()
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	if newConfig != expectedNewConfig {
+		fmt.Println(diff.FormatDiff(expectedNewConfig, newConfig))
+		t.Error("new config did not match expected new config")
 	}
 
 }

@@ -214,7 +214,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	if spec.Containerd != nil {
-		allErrs = append(allErrs, validateContainerdConfig(spec.Containerd, fieldPath.Child("containerd"))...)
+		allErrs = append(allErrs, validateContainerdConfig(spec, spec.Containerd, fieldPath.Child("containerd"))...)
 	}
 
 	if spec.Docker != nil {
@@ -1272,7 +1272,7 @@ func validateContainerRuntime(runtime *string, fldPath *field.Path) field.ErrorL
 	return allErrs
 }
 
-func validateContainerdConfig(config *kops.ContainerdConfig, fldPath *field.Path) field.ErrorList {
+func validateContainerdConfig(spec *kops.ClusterSpec, config *kops.ContainerdConfig, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if config.Version != nil {
@@ -1327,6 +1327,10 @@ func validateContainerdConfig(config *kops.ContainerdConfig, fldPath *field.Path
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHashArm64"), config.Packages.HashArm64,
 				"Package URL must also be set"))
 		}
+	}
+
+	if config.NvidiaGPU != nil {
+		allErrs = append(allErrs, validateNvidiaConfig(spec, config.NvidiaGPU, fldPath.Child("nvidia"))...)
 	}
 
 	return allErrs
@@ -1400,6 +1404,19 @@ func validateDockerConfig(config *kops.DockerConfig, fldPath *field.Path) field.
 		}
 	}
 
+	return allErrs
+}
+
+func validateNvidiaConfig(spec *kops.ClusterSpec, nvidia *kops.NvidiaGPUConfig, fldPath *field.Path) (allErrs field.ErrorList) {
+	if !fi.BoolValue(nvidia.Enabled) {
+		return allErrs
+	}
+	if kops.CloudProviderID(spec.CloudProvider) != kops.CloudProviderAWS {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "Nvidia is only supported on AWS"))
+	}
+	if spec.ContainerRuntime != "containerd" {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "Nvidia is only supported using containerd"))
+	}
 	return allErrs
 }
 

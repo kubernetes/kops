@@ -664,6 +664,19 @@ spec:
                     description: LogLevel controls the logging details [trace, debug,
                       info, warn, error, fatal, panic] (default "info").
                     type: string
+                  nvidiaGPU:
+                    description: NvidiaGPU configures the Nvidia GPU runtime.
+                    properties:
+                      enabled:
+                        description: Enabled determines if kOps will install the Nvidia
+                          GPU runtime and drivers. They will only be installed on
+                          intances that has an Nvidia GPU.
+                        type: boolean
+                      package:
+                        description: Package is the name of the nvidia driver package
+                          that will be installed. Default is "nvidia-headless-460-server".
+                        type: string
+                    type: object
                   packages:
                     description: Packages overrides the URL and hash for the packages.
                     properties:

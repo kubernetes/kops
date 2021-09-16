@@ -777,6 +777,7 @@ func addNodeupPermissions(p *Policy, enableHookSupport bool) {
 	addASLifecyclePolicies(p, enableHookSupport)
 	p.unconditionalAction.Insert(
 		"ec2:DescribeInstances", // aws.go
+		"ec2:DescribeInstanceTypes",
 	)
 }
 
