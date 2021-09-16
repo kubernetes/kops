@@ -218,18 +218,22 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 		image = strings.Replace(image, "-amd64", "-"+string(b.Architecture), 1)
 	}
 
+	healthAction := &v1.HTTPGetAction{
+		Host: "127.0.0.1",
+		Path: "/healthz",
+		Port: intstr.FromInt(10251),
+	}
+	if b.IsKubernetesGTE("1.23") {
+		healthAction.Port = intstr.FromInt(10259)
+		healthAction.Scheme = v1.URISchemeHTTPS
+	}
+
 	container := &v1.Container{
 		Name:  "kube-scheduler",
 		Image: image,
 		Env:   proxy.GetProxyEnvVars(b.Cluster.Spec.EgressProxy),
 		LivenessProbe: &v1.Probe{
-			Handler: v1.Handler{
-				HTTPGet: &v1.HTTPGetAction{
-					Host: "127.0.0.1",
-					Path: "/healthz",
-					Port: intstr.FromInt(10251),
-				},
-			},
+			Handler:             v1.Handler{HTTPGet: healthAction},
 			InitialDelaySeconds: 15,
 			TimeoutSeconds:      15,
 		},
