@@ -246,11 +246,12 @@ resource "aws_autoscaling_group" "test" {
 }
 
 terraform {
-  required_version = ">= 0.12.26"
+  required_version = ">= 0.15.0"
   required_providers {
     aws = {
-      "source"  = "hashicorp/aws"
-      "version" = ">= 3.59.0"
+      "configuration_aliases" = [aws.files]
+      "source"                = "hashicorp/aws"
+      "version"               = ">= 3.59.0"
     }
   }
 }
@@ -320,11 +321,12 @@ resource "aws_autoscaling_group" "test1" {
 }
 
 terraform {
-  required_version = ">= 0.12.26"
+  required_version = ">= 0.15.0"
   required_providers {
     aws = {
-      "source"  = "hashicorp/aws"
-      "version" = ">= 3.59.0"
+      "configuration_aliases" = [aws.files]
+      "source"                = "hashicorp/aws"
+      "version"               = ">= 3.59.0"
     }
   }
 }
