@@ -126,12 +126,10 @@ func writeLiteral(body *hclwrite.Body, key string, literal *terraformWriter.Lite
 	}
 }
 
-// writeLiteralList writes a list of literals to a body
+// literalListTokens returns the tokens of a list of literals
 // Example:
 // key = [type1.name1.attr1, type2.name2.attr2, "stringliteral"]
-//
-// The HCL2 library does not support this natively. See https://github.com/hashicorp/hcl/issues/347
-func writeLiteralList(body *hclwrite.Body, key string, literals []*terraformWriter.Literal) {
+func literalListTokens(literals []*terraformWriter.Literal) hclwrite.Tokens {
 	tokens := hclwrite.Tokens{
 		{Type: hclsyntax.TokenOBrack, Bytes: []byte("["), SpacesBefore: 1},
 	}
@@ -157,7 +155,16 @@ func writeLiteralList(body *hclwrite.Body, key string, literals []*terraformWrit
 		}
 	}
 	tokens = append(tokens, &hclwrite.Token{Type: hclsyntax.TokenCBrack, Bytes: []byte("]")})
-	body.SetAttributeRaw(key, tokens)
+	return tokens
+}
+
+// writeLiteralList writes a list of literals to a body
+// Example:
+// key = [type1.name1.attr1, type2.name2.attr2, "stringliteral"]
+//
+// The HCL2 library does not support this natively. See https://github.com/hashicorp/hcl/issues/347
+func writeLiteralList(body *hclwrite.Body, key string, literals []*terraformWriter.Literal) {
+	body.SetAttributeRaw(key, literalListTokens(literals))
 }
 
 // writeMap writes a map's key-value pairs to a body spready across multiple lines.
@@ -192,11 +199,12 @@ func writeMap(body *hclwrite.Body, key string, values map[string]cty.Value) {
 		v := values[k]
 
 		refLiteral := reflect.New(reflect.TypeOf(terraformWriter.Literal{}))
-		err := gocty.FromCtyValue(v, refLiteral.Interface())
+		errLiteral := gocty.FromCtyValue(v, refLiteral.Interface())
+
+		refLiteralSlice := reflect.New(reflect.TypeOf([]*terraformWriter.Literal{}))
+		errLiteralSlice := gocty.FromCtyValue(v, refLiteralSlice.Interface())
 		// If this is a map of literals then do not surround the value with quotes
-		if literal, ok := refLiteral.Interface().(*terraformWriter.Literal); err == nil && ok {
-			// For maps of literals we currently only support file references
-			// If we ever need to support a map of strings to resource property references that can be added here
+		if literal, ok := refLiteral.Interface().(*terraformWriter.Literal); errLiteral == nil && ok {
 			if literal.FnName != "" {
 				tokens = append(tokens, &hclwrite.Token{
 					Type:  hclsyntax.TokenIdent,
@@ -209,6 +217,8 @@ func writeMap(body *hclwrite.Body, key string, values map[string]cty.Value) {
 					{Type: hclsyntax.TokenOQuote, Bytes: []byte{'"'}, SpacesBefore: 1},
 				}...)
 			}
+		} else if literals, ok := refLiteralSlice.Interface().(*[]*terraformWriter.Literal); errLiteralSlice == nil && ok {
+			tokens = append(tokens, literalListTokens(*literals)...)
 		} else {
 			tokens = append(tokens, []*hclwrite.Token{
 				{Type: hclsyntax.TokenOQuote, Bytes: []byte{'"'}, SpacesBefore: 1},
