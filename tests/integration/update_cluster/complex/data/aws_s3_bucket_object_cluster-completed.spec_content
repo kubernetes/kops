@@ -68,7 +68,7 @@ spec:
     provider: dns-controller
   iam:
     legacy: false
-    permissionsBoundary: arn:aws:iam:00000000000:policy/boundaries
+    permissionsBoundary: arn:aws:iam::000000000000:policy/boundaries
   keyStore: memfs://clusters.example.com/complex.example.com/pki
   kubeAPIServer:
     allowPrivileged: true
