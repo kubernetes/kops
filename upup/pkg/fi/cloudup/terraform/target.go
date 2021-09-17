@@ -75,8 +75,18 @@ func (t *TerraformTarget) ProcessDeletions() bool {
 func tfGetProviderExtraConfig(c *kops.TargetSpec) map[string]string {
 	if c != nil &&
 		c.Terraform != nil &&
-		c.Terraform.ProviderExtraConfig != nil {
+		c.Terraform.FilesProviderExtraConfig != nil {
 		return *c.Terraform.ProviderExtraConfig
+	}
+	return nil
+}
+
+// tfGetFilesProviderExtraConfig is a helper function to get extra config with safety checks on the pointers.
+func tfGetFilesProviderExtraConfig(c *kops.TargetSpec) map[string]string {
+	if c != nil &&
+		c.Terraform != nil &&
+		c.Terraform.FilesProviderExtraConfig != nil {
+		return *c.Terraform.FilesProviderExtraConfig
 	}
 	return nil
 }
