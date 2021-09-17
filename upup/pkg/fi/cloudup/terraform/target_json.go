@@ -91,7 +91,7 @@ func (t *TerraformTarget) finishJSON() error {
 	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
 		requiredProviderAWS := make(map[string]interface{})
 		requiredProviderAWS["source"] = "hashicorp/aws"
-		requiredProviderAWS["version"] = ">= 2.46.0"
+		requiredProviderAWS["version"] = ">= 3.59.0"
 		for k, v := range tfGetProviderExtraConfig(t.clusterSpecTarget) {
 			requiredProviderAWS[k] = v
 		}

@@ -123,6 +123,8 @@ type terraformLaunchTemplateInstanceMetadata struct {
 	HTTPPutResponseHopLimit *int64 `json:"http_put_response_hop_limit,omitempty" cty:"http_put_response_hop_limit"`
 	// HTTPTokens is the state of token usage for your instance metadata requests.
 	HTTPTokens *string `json:"http_tokens,omitempty" cty:"http_tokens"`
+	// HTTPProtocolIPv6 enables the IPv6 instance metadata endpoint
+	HTTPProtocolIPv6 *string `json:"http_protocol_ipv6,omitempty" cty:"http_protocol_ipv6"`
 }
 
 type terraformLaunchTemplate struct {
@@ -199,6 +201,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 			HTTPEndpoint:            fi.String("enabled"),
 			HTTPTokens:              e.HTTPTokens,
 			HTTPPutResponseHopLimit: e.HTTPPutResponseHopLimit,
+			HTTPProtocolIPv6:        e.HTTPProtocolIPv6,
 		},
 		NetworkInterfaces: []*terraformLaunchTemplateNetworkInterface{
 			{
