@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 type TerraformTarget struct {
@@ -40,15 +41,17 @@ type TerraformTarget struct {
 	outDir string
 	// extra config to add to the provider block
 	clusterSpecTarget *kops.TargetSpec
+	filesProvider     *vfs.TerraformProvider
 }
 
-func NewTerraformTarget(cloud fi.Cloud, project string, outDir string, clusterSpecTarget *kops.TargetSpec) *TerraformTarget {
+func NewTerraformTarget(cloud fi.Cloud, project string, filesProvider *vfs.TerraformProvider, outDir string, clusterSpecTarget *kops.TargetSpec) *TerraformTarget {
 	target := TerraformTarget{
 		Cloud:   cloud,
 		Project: project,
 
 		outDir:            outDir,
 		clusterSpecTarget: clusterSpecTarget,
+		filesProvider:     filesProvider,
 	}
 	target.InitTerraformWriter()
 	return &target
