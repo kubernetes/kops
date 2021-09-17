@@ -194,6 +194,15 @@ func (p *MemFSPath) Location() string {
 
 // Terraform support for integration tests.
 
+func (p *MemFSPath) TerraformProvider() (*TerraformProvider, error) {
+	return &TerraformProvider{
+		Name: "aws",
+		Arguments: map[string]string{
+			"region": "us-test-1",
+		},
+	}, nil
+}
+
 type terraformMemFSFile struct {
 	Bucket  string                   `json:"bucket" cty:"bucket"`
 	Key     string                   `json:"key" cty:"key"`

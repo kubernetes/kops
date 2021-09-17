@@ -87,6 +87,21 @@ func (p *S3Path) String() string {
 	return p.Path()
 }
 
+// TerraformProvider returns the provider name and necessary arguments
+func (p *S3Path) TerraformProvider() (*TerraformProvider, error) {
+	if err := p.ensureBucketDetails(); err != nil {
+		return nil, err
+	}
+
+	provider := &TerraformProvider{
+		Name: "aws",
+		Arguments: map[string]string{
+			"region": p.bucketDetails.region,
+		},
+	}
+	return provider, nil
+}
+
 func (p *S3Path) Remove() error {
 	client, err := p.client()
 	if err != nil {
