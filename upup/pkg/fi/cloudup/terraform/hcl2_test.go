@@ -211,6 +211,12 @@ func TestWriteLiteralList(t *testing.T) {
 }
 
 func TestWriteMap(t *testing.T) {
+	literalList := []*terraformWriter.Literal{
+		terraformWriter.LiteralTokens("aws", "files"),
+		terraformWriter.LiteralFromStringValue("foobar"),
+	}
+	literalListType, _ := gocty.ImpliedType(literalList)
+	literalListVal, _ := gocty.ToCtyValue(literalList, literalListType)
 	cases := []struct {
 		name     string
 		values   map[string]cty.Value
@@ -238,6 +244,16 @@ tags = {
 			expected: `
 tags = {
   "key1.k8s.local/foo" = "value1"
+}`,
+		},
+		{
+			name: "literal list",
+			values: map[string]cty.Value{
+				"foo": literalListVal,
+			},
+			expected: `
+tags = {
+  "foo" = [aws.files, "foobar"]
 }`,
 		},
 	}
