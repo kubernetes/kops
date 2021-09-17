@@ -295,7 +295,7 @@ resource "aws_iam_instance_profile" "nodes-complex-example-com" {
 resource "aws_iam_role" "masters-complex-example-com" {
   assume_role_policy   = file("${path.module}/data/aws_iam_role_masters.complex.example.com_policy")
   name                 = "masters.complex.example.com"
-  permissions_boundary = "arn:aws:iam:00000000000:policy/boundaries"
+  permissions_boundary = "arn:aws:iam::000000000000:policy/boundaries"
   tags = {
     "KubernetesCluster"                         = "complex.example.com"
     "Name"                                      = "masters.complex.example.com"
@@ -308,7 +308,7 @@ resource "aws_iam_role" "masters-complex-example-com" {
 resource "aws_iam_role" "nodes-complex-example-com" {
   assume_role_policy   = file("${path.module}/data/aws_iam_role_nodes.complex.example.com_policy")
   name                 = "nodes.complex.example.com"
-  permissions_boundary = "arn:aws:iam:00000000000:policy/boundaries"
+  permissions_boundary = "arn:aws:iam::000000000000:policy/boundaries"
   tags = {
     "KubernetesCluster"                         = "complex.example.com"
     "Name"                                      = "nodes.complex.example.com"
@@ -368,6 +368,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
   }
   metadata_options {
     http_endpoint               = "enabled"
+    http_protocol_ipv6          = "disabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "required"
   }
@@ -467,6 +468,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
   }
   metadata_options {
     http_endpoint               = "enabled"
+    http_protocol_ipv6          = "disabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
@@ -1131,7 +1133,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 3.34.0"
+      "version" = ">= 3.59.0"
     }
   }
 }
