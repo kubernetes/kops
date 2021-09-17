@@ -4881,6 +4881,17 @@ func (in *TerraformSpec) DeepCopyInto(out *TerraformSpec) {
 			}
 		}
 	}
+	if in.FilesProviderExtraConfig != nil {
+		in, out := &in.FilesProviderExtraConfig, &out.FilesProviderExtraConfig
+		*out = new(map[string]string)
+		if **in != nil {
+			in, out := *in, *out
+			*out = make(map[string]string, len(*in))
+			for key, val := range *in {
+				(*out)[key] = val
+			}
+		}
+	}
 	return
 }
 
