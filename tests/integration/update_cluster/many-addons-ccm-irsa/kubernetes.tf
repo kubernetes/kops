@@ -500,6 +500,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
   }
   metadata_options {
     http_endpoint               = "enabled"
+    http_protocol_ipv6          = "disabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
@@ -581,6 +582,7 @@ resource "aws_launch_template" "nodes-minimal-example-com" {
   }
   metadata_options {
     http_endpoint               = "enabled"
+    http_protocol_ipv6          = "disabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
@@ -1049,7 +1051,7 @@ terraform {
   required_providers {
     aws = {
       "source"  = "hashicorp/aws"
-      "version" = ">= 3.34.0"
+      "version" = ">= 3.59.0"
     }
   }
 }
