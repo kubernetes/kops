@@ -220,6 +220,12 @@ spec:
     name: us-east-1a-utility
     type: Utility
     zone: us-test-1a
+  target:
+    terraform:
+      filesProviderExtraConfig:
+        profile: foo
+      providerExtraConfig:
+        max_retries: "10"
   topology:
     dns:
       type: Public

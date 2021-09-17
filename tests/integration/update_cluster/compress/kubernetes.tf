@@ -80,6 +80,11 @@ provider "aws" {
   region = "us-test-1"
 }
 
+provider "aws" {
+  alias  = "files"
+  region = "us-test-1"
+}
+
 resource "aws_autoscaling_group" "master-us-test-1a-masters-compress-example-com" {
   enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
   launch_template {
@@ -474,6 +479,7 @@ resource "aws_s3_bucket_object" "cluster-completed-spec" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_cluster-completed.spec_content")
   key                    = "clusters.example.com/compress.example.com/cluster-completed.spec"
+  provider               = aws.files
   server_side_encryption = "AES256"
 }
 
@@ -481,6 +487,7 @@ resource "aws_s3_bucket_object" "compress-example-com-addons-bootstrap" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_compress.example.com-addons-bootstrap_content")
   key                    = "clusters.example.com/compress.example.com/addons/bootstrap-channel.yaml"
+  provider               = aws.files
   server_side_encryption = "AES256"
 }
 
@@ -488,6 +495,7 @@ resource "aws_s3_bucket_object" "compress-example-com-addons-core-addons-k8s-io"
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_compress.example.com-addons-core.addons.k8s.io_content")
   key                    = "clusters.example.com/compress.example.com/addons/core.addons.k8s.io/v1.4.0.yaml"
+  provider               = aws.files
   server_side_encryption = "AES256"
 }
 
@@ -495,6 +503,7 @@ resource "aws_s3_bucket_object" "compress-example-com-addons-coredns-addons-k8s-
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_compress.example.com-addons-coredns.addons.k8s.io-k8s-1.12_content")
   key                    = "clusters.example.com/compress.example.com/addons/coredns.addons.k8s.io/k8s-1.12.yaml"
+  provider               = aws.files
   server_side_encryption = "AES256"
 }
 
@@ -502,6 +511,7 @@ resource "aws_s3_bucket_object" "compress-example-com-addons-dns-controller-addo
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_compress.example.com-addons-dns-controller.addons.k8s.io-k8s-1.12_content")
   key                    = "clusters.example.com/compress.example.com/addons/dns-controller.addons.k8s.io/k8s-1.12.yaml"
+  provider               = aws.files
   server_side_encryption = "AES256"
 }
 
@@ -509,6 +519,7 @@ resource "aws_s3_bucket_object" "compress-example-com-addons-kops-controller-add
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_compress.example.com-addons-kops-controller.addons.k8s.io-k8s-1.16_content")
   key                    = "clusters.example.com/compress.example.com/addons/kops-controller.addons.k8s.io/k8s-1.16.yaml"
+  provider               = aws.files
   server_side_encryption = "AES256"
 }
 
@@ -516,6 +527,7 @@ resource "aws_s3_bucket_object" "compress-example-com-addons-kubelet-api-rbac-ad
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_compress.example.com-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content")
   key                    = "clusters.example.com/compress.example.com/addons/kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml"
+  provider               = aws.files
   server_side_encryption = "AES256"
 }
 
@@ -523,6 +535,7 @@ resource "aws_s3_bucket_object" "compress-example-com-addons-limit-range-addons-
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_compress.example.com-addons-limit-range.addons.k8s.io_content")
   key                    = "clusters.example.com/compress.example.com/addons/limit-range.addons.k8s.io/v1.5.0.yaml"
+  provider               = aws.files
   server_side_encryption = "AES256"
 }
 
@@ -530,6 +543,7 @@ resource "aws_s3_bucket_object" "compress-example-com-addons-storage-aws-addons-
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_compress.example.com-addons-storage-aws.addons.k8s.io-v1.15.0_content")
   key                    = "clusters.example.com/compress.example.com/addons/storage-aws.addons.k8s.io/v1.15.0.yaml"
+  provider               = aws.files
   server_side_encryption = "AES256"
 }
 
@@ -537,6 +551,7 @@ resource "aws_s3_bucket_object" "etcd-cluster-spec-events" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_etcd-cluster-spec-events_content")
   key                    = "clusters.example.com/compress.example.com/backups/etcd/events/control/etcd-cluster-spec"
+  provider               = aws.files
   server_side_encryption = "AES256"
 }
 
@@ -544,6 +559,7 @@ resource "aws_s3_bucket_object" "etcd-cluster-spec-main" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_etcd-cluster-spec-main_content")
   key                    = "clusters.example.com/compress.example.com/backups/etcd/main/control/etcd-cluster-spec"
+  provider               = aws.files
   server_side_encryption = "AES256"
 }
 
@@ -551,6 +567,7 @@ resource "aws_s3_bucket_object" "kops-version-txt" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_kops-version.txt_content")
   key                    = "clusters.example.com/compress.example.com/kops-version.txt"
+  provider               = aws.files
   server_side_encryption = "AES256"
 }
 
@@ -558,6 +575,7 @@ resource "aws_s3_bucket_object" "manifests-etcdmanager-events" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_manifests-etcdmanager-events_content")
   key                    = "clusters.example.com/compress.example.com/manifests/etcd/events.yaml"
+  provider               = aws.files
   server_side_encryption = "AES256"
 }
 
@@ -565,6 +583,7 @@ resource "aws_s3_bucket_object" "manifests-etcdmanager-main" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_manifests-etcdmanager-main_content")
   key                    = "clusters.example.com/compress.example.com/manifests/etcd/main.yaml"
+  provider               = aws.files
   server_side_encryption = "AES256"
 }
 
@@ -572,6 +591,7 @@ resource "aws_s3_bucket_object" "manifests-static-kube-apiserver-healthcheck" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_manifests-static-kube-apiserver-healthcheck_content")
   key                    = "clusters.example.com/compress.example.com/manifests/static/kube-apiserver-healthcheck.yaml"
+  provider               = aws.files
   server_side_encryption = "AES256"
 }
 
@@ -579,6 +599,7 @@ resource "aws_s3_bucket_object" "nodeupconfig-master-us-test-1a" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_nodeupconfig-master-us-test-1a_content")
   key                    = "clusters.example.com/compress.example.com/igconfig/master/master-us-test-1a/nodeupconfig.yaml"
+  provider               = aws.files
   server_side_encryption = "AES256"
 }
 
@@ -586,6 +607,7 @@ resource "aws_s3_bucket_object" "nodeupconfig-nodes" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_nodeupconfig-nodes_content")
   key                    = "clusters.example.com/compress.example.com/igconfig/node/nodes/nodeupconfig.yaml"
+  provider               = aws.files
   server_side_encryption = "AES256"
 }
 
@@ -779,11 +801,12 @@ resource "aws_vpc_dhcp_options_association" "compress-example-com" {
 }
 
 terraform {
-  required_version = ">= 0.12.26"
+  required_version = ">= 0.15.0"
   required_providers {
     aws = {
-      "source"  = "hashicorp/aws"
-      "version" = ">= 3.59.0"
+      "configuration_aliases" = [aws.files]
+      "source"                = "hashicorp/aws"
+      "version"               = ">= 3.59.0"
     }
   }
 }
