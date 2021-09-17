@@ -912,6 +912,45 @@ spec:
 
 The above will result in the flags `--kube-reserved=cpu=1,memory=2Gi,ephemeral-storage=1Gi --kube-reserved-cgroup=/kube-reserved --kubelet-cgroups=/kube-reserved --runtime-cgroups=/kube-reserved --system-reserved=cpu=500m,memory=1Gi,ephemeral-storage=1Gi --system-reserved-cgroup=/system-reserved --enforce-node-allocatable=pods,system-reserved,kube-reserved` being added to the kubelet.
 
+This assumes that the `kube-reserved` and `system-reserved` cgroups exist on the node prior to kubelet start. Depending on your node image, these may not exist and hence prevent the kubelet from starting. To ensure these exist, you can provision these cgroups with the following additions to each `InstanceGroup` spec:
+
+```
+kind: InstanceGroup
+...
+spec:
+  fileAssets:
+    - name: system-reserved-slice
+      path: /etc/systemd/system/system-reserved.slice
+      content: |
+        [Unit]
+        Description=Limited resources slice for System services
+        Documentation=man:systemd.special(7)
+        DefaultDependencies=no
+        Before=slices.target
+        Requires=-.slice
+        After=-.slice
+    - name: kube-reserved-slice
+      path: /etc/systemd/system/kube-reserved.slice
+      content: |
+        [Unit]
+        Description=Limited resources slice for Kubernetes services
+        Documentation=man:systemd.special(7)
+        DefaultDependencies=no
+        Before=slices.target
+        Requires=-.slice
+        After=-.slice
+    - name: kubelet-cgroup
+      path: /etc/systemd/system/kubelet.service.d/10-cgroup.conf
+      content: |
+        [Service]
+        Slice=kube-reserved.slice
+    - name: containerd-cgroup
+      path: /etc/systemd/system/containerd.service.d/10-cgroup.conf
+      content: |
+        [Service]
+        Slice=kube-reserved.slice
+```
+
 Learn more about reserving compute resources [here](https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/) and [here](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/).
 
 ## networkID
