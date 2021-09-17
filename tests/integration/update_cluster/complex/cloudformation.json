@@ -1887,7 +1887,7 @@
           ],
           "Version": "2012-10-17"
         },
-        "PermissionsBoundary": "arn:aws:iam:00000000000:policy/boundaries",
+        "PermissionsBoundary": "arn:aws:iam::000000000000:policy/boundaries",
         "Tags": [
           {
             "Key": "KubernetesCluster",
@@ -1928,7 +1928,7 @@
           ],
           "Version": "2012-10-17"
         },
-        "PermissionsBoundary": "arn:aws:iam:00000000000:policy/boundaries",
+        "PermissionsBoundary": "arn:aws:iam::000000000000:policy/boundaries",
         "Tags": [
           {
             "Key": "KubernetesCluster",
