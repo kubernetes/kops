@@ -518,11 +518,12 @@ func (p *S3Path) IsPublic() (bool, error) {
 }
 
 type terraformS3File struct {
-	Bucket  string                   `json:"bucket" cty:"bucket"`
-	Key     string                   `json:"key" cty:"key"`
-	Content *terraformWriter.Literal `json:"content,omitempty" cty:"content"`
-	Acl     *string                  `json:"acl,omitempty" cty:"acl"`
-	SSE     *string                  `json:"server_side_encryption,omitempty" cty:"server_side_encryption"`
+	Bucket   string                   `json:"bucket" cty:"bucket"`
+	Key      string                   `json:"key" cty:"key"`
+	Content  *terraformWriter.Literal `json:"content,omitempty" cty:"content"`
+	Acl      *string                  `json:"acl,omitempty" cty:"acl"`
+	SSE      *string                  `json:"server_side_encryption,omitempty" cty:"server_side_encryption"`
+	Provider *terraformWriter.Literal `json:"provider,omitempty" cty:"provider"`
 }
 
 func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string, data io.Reader, acl ACL) error {
@@ -547,11 +548,12 @@ func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 	}
 
 	tf := &terraformS3File{
-		Bucket:  p.Bucket(),
-		Key:     p.Key(),
-		Content: content,
-		SSE:     sse,
-		Acl:     requestACL,
+		Bucket:   p.Bucket(),
+		Key:      p.Key(),
+		Content:  content,
+		SSE:      sse,
+		Acl:      requestACL,
+		Provider: terraformWriter.LiteralTokens("aws", "files"),
 	}
 	return w.RenderResource("aws_s3_bucket_object", name, tf)
 }
