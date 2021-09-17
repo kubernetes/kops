@@ -680,8 +680,10 @@ func (t *TargetSpec) IsEmpty() bool {
 
 // TerraformSpec allows us to specify terraform config in an extensible way
 type TerraformSpec struct {
-	// ProviderExtraConfig contains key/value pairs to add to the rendered terraform "provider" block
+	// ProviderExtraConfig contains key/value pairs to add to the main terraform provider block
 	ProviderExtraConfig *map[string]string `json:"providerExtraConfig,omitempty"`
+	// FilesProviderExtraConfig contains key/value pairs to add to the terraform provider block used for managed files
+	FilesProviderExtraConfig *map[string]string `json:"filesProviderExtraConfig,omitempty"`
 }
 
 func (t *TerraformSpec) IsEmpty() bool {
