@@ -69,7 +69,6 @@ type integrationTest struct {
 	discovery                        bool
 	lifecycleOverrides               []string
 	sshKey                           bool
-	jsonOutput                       bool
 	bastionUserData                  bool
 	ciliumEtcd                       bool
 	// nth is true if we should check for files created by nth queue processor add on
@@ -109,11 +108,6 @@ func (i *integrationTest) withoutPolicies() *integrationTest {
 
 func (i *integrationTest) withLifecycleOverrides(lco []string) *integrationTest {
 	i.lifecycleOverrides = lco
-	return i
-}
-
-func (i *integrationTest) withJSONOutput() *integrationTest {
-	i.jsonOutput = true
 	return i
 }
 
@@ -297,19 +291,6 @@ func TestExistingSG(t *testing.T) {
 func TestBastionAdditionalUserData(t *testing.T) {
 	newIntegrationTest("bastionuserdata.example.com", "bastionadditional_user-data").withPrivate().
 		withBastionUserData().
-		withAddons(dnsControllerAddon).
-		runTestTerraformAWS(t)
-}
-
-// TestMinimalJSON runs the test on a minimal data set and outputs JSON
-func TestMinimalJSON(t *testing.T) {
-	featureflag.ParseFlags("+TerraformJSON")
-	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-TerraformJSON")
-	}
-	defer unsetFeatureFlags()
-
-	newIntegrationTest("minimal-json.example.com", "minimal-json").withJSONOutput().
 		withAddons(dnsControllerAddon).
 		runTestTerraformAWS(t)
 }
@@ -966,13 +947,8 @@ func storeKeyset(t *testing.T, keyStore fi.Keystore, name string, testingKeyset 
 }
 
 func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
-	tfFileName := ""
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
-
-	if i.jsonOutput {
-		tfFileName = "kubernetes.tf.json"
-	}
 
 	h.MockKopsVersion("1.21.0-alpha.1")
 	h.SetupMockAWS()
@@ -1049,7 +1025,7 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 	}
 	expectedFilenames = append(expectedFilenames, i.expectServiceAccountRolePolicies...)
 
-	i.runTest(t, h, expectedFilenames, tfFileName, tfFileName, nil)
+	i.runTest(t, h, expectedFilenames, "", "", nil)
 }
 
 func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
