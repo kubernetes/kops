@@ -29,10 +29,8 @@
     {
       "Action": [
         "autoscaling:DescribeAutoScalingInstances",
-        "ec2:AssignIpv6Addresses",
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeInstances",
-        "ec2:DescribeNetworkInterfaces",
         "ecr:BatchCheckLayerAvailability",
         "ecr:BatchGetImage",
         "ecr:DescribeRepositories",
