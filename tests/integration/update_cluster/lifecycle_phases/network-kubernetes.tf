@@ -45,6 +45,11 @@ provider "aws" {
   region = "us-test-1"
 }
 
+provider "aws" {
+  alias  = "files"
+  region = "us-test-1"
+}
+
 resource "aws_eip" "us-test-1a-lifecyclephases-example-com" {
   tags = {
     "KubernetesCluster"                                 = "lifecyclephases.example.com"
@@ -175,11 +180,12 @@ resource "aws_vpc_dhcp_options_association" "lifecyclephases-example-com" {
 }
 
 terraform {
-  required_version = ">= 0.12.26"
+  required_version = ">= 0.15.0"
   required_providers {
     aws = {
-      "source"  = "hashicorp/aws"
-      "version" = ">= 3.59.0"
+      "configuration_aliases" = [aws.files]
+      "source"                = "hashicorp/aws"
+      "version"               = ">= 3.59.0"
     }
   }
 }

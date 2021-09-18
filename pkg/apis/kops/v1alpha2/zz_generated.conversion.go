@@ -6760,6 +6760,7 @@ func Convert_kops_TargetSpec_To_v1alpha2_TargetSpec(in *kops.TargetSpec, out *Ta
 
 func autoConvert_v1alpha2_TerraformSpec_To_kops_TerraformSpec(in *TerraformSpec, out *kops.TerraformSpec, s conversion.Scope) error {
 	out.ProviderExtraConfig = in.ProviderExtraConfig
+	out.FilesProviderExtraConfig = in.FilesProviderExtraConfig
 	return nil
 }
 
@@ -6770,6 +6771,7 @@ func Convert_v1alpha2_TerraformSpec_To_kops_TerraformSpec(in *TerraformSpec, out
 
 func autoConvert_kops_TerraformSpec_To_v1alpha2_TerraformSpec(in *kops.TerraformSpec, out *TerraformSpec, s conversion.Scope) error {
 	out.ProviderExtraConfig = in.ProviderExtraConfig
+	out.FilesProviderExtraConfig = in.FilesProviderExtraConfig
 	return nil
 }
 

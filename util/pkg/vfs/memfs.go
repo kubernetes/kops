@@ -194,12 +194,22 @@ func (p *MemFSPath) Location() string {
 
 // Terraform support for integration tests.
 
+func (p *MemFSPath) TerraformProvider() (*TerraformProvider, error) {
+	return &TerraformProvider{
+		Name: "aws",
+		Arguments: map[string]string{
+			"region": "us-test-1",
+		},
+	}, nil
+}
+
 type terraformMemFSFile struct {
-	Bucket  string                   `json:"bucket" cty:"bucket"`
-	Key     string                   `json:"key" cty:"key"`
-	Content *terraformWriter.Literal `json:"content,omitempty" cty:"content"`
-	Acl     *string                  `json:"acl,omitempty" cty:"acl"`
-	SSE     string                   `json:"server_side_encryption,omitempty" cty:"server_side_encryption"`
+	Bucket   string                   `json:"bucket" cty:"bucket"`
+	Key      string                   `json:"key" cty:"key"`
+	Content  *terraformWriter.Literal `json:"content,omitempty" cty:"content"`
+	Acl      *string                  `json:"acl,omitempty" cty:"acl"`
+	SSE      string                   `json:"server_side_encryption,omitempty" cty:"server_side_encryption"`
+	Provider *terraformWriter.Literal `json:"provider,omitempty" cty:"provider"`
 }
 
 func (p *MemFSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name string, data io.Reader, acl ACL) error {
@@ -223,11 +233,12 @@ func (p *MemFSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name str
 	}
 
 	tf := &terraformMemFSFile{
-		Bucket:  "testingBucket",
-		Key:     p.location,
-		Content: content,
-		SSE:     "AES256",
-		Acl:     requestAcl,
+		Bucket:   "testingBucket",
+		Key:      p.location,
+		Content:  content,
+		SSE:      "AES256",
+		Acl:      requestAcl,
+		Provider: terraformWriter.LiteralTokens("aws", "files"),
 	}
 	return w.RenderResource("aws_s3_bucket_object", name, tf)
 }

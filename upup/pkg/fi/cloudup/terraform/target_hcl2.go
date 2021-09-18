@@ -53,6 +53,10 @@ func (t *TerraformTarget) finishHCL2() error {
 	}
 	rootBody.AppendNewline()
 
+	if err := t.writeFilesProvider(rootBody); err != nil {
+		return err
+	}
+
 	resourcesByType, err := t.GetResourcesByType()
 	if err != nil {
 		return err
@@ -96,7 +100,7 @@ func (t *TerraformTarget) finishHCL2() error {
 
 	terraformBlock := rootBody.AppendNewBlock("terraform", []string{})
 	terraformBody := terraformBlock.Body()
-	terraformBody.SetAttributeValue("required_version", cty.StringVal(">= 0.12.26"))
+	terraformBody.SetAttributeValue("required_version", cty.StringVal(">= 0.15.0"))
 
 	requiredProvidersBlock := terraformBody.AppendNewBlock("required_providers", []string{})
 	requiredProvidersBody := requiredProvidersBlock.Body()
@@ -107,9 +111,19 @@ func (t *TerraformTarget) finishHCL2() error {
 			"version": cty.StringVal(">= 2.19.0"),
 		})
 	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
+		configurationAliases := []*terraformWriter.Literal{terraformWriter.LiteralTokens("aws", "files")}
+		aliasesType, err := gocty.ImpliedType(configurationAliases)
+		if err != nil {
+			return err
+		}
+		aliasesVal, err := gocty.ToCtyValue(configurationAliases, aliasesType)
+		if err != nil {
+			return err
+		}
 		writeMap(requiredProvidersBody, "aws", map[string]cty.Value{
-			"source":  cty.StringVal("hashicorp/aws"),
-			"version": cty.StringVal(">= 3.59.0"),
+			"source":                cty.StringVal("hashicorp/aws"),
+			"version":               cty.StringVal(">= 3.59.0"),
+			"configuration_aliases": aliasesVal,
 		})
 		if featureflag.Spotinst.Enabled() {
 			writeMap(requiredProvidersBody, "spotinst", map[string]cty.Value{
@@ -172,5 +186,23 @@ func writeLocalsOutputs(body *hclwrite.Body, outputs map[string]terraformWriter.
 		existingOutputVars[tfName] = true
 		body.AppendNewline()
 	}
+	return nil
+}
+
+// writeFilesProvider adds the second provider definition for managed files
+func (t *TerraformTarget) writeFilesProvider(body *hclwrite.Body) error {
+	if t.filesProvider == nil {
+		return nil
+	}
+	providerBlock := body.AppendNewBlock("provider", []string{t.filesProvider.Name})
+	providerBody := providerBlock.Body()
+	providerBody.SetAttributeValue("alias", cty.StringVal("files"))
+	for k, v := range t.filesProvider.Arguments {
+		providerBody.SetAttributeValue(k, cty.StringVal(v))
+	}
+	for k, v := range tfGetFilesProviderExtraConfig(t.clusterSpecTarget) {
+		providerBody.SetAttributeValue(k, cty.StringVal(v))
+	}
+	body.AppendNewline()
 	return nil
 }
