@@ -947,8 +947,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 					Id:       id,
 				})
 			}
-
-			// Generate aws-load-balancer-controller ServiceAccount IAM permissions
 			if b.UseServiceAccountExternalPermissions() {
 				serviceAccountRoles = append(serviceAccountRoles, &awsebscsidriver.ServiceAccount{})
 			}
