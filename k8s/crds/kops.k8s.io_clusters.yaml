@@ -4410,11 +4410,18 @@ spec:
                     description: TerraformSpec allows us to specify terraform config
                       in an extensible way
                     properties:
+                      filesProviderExtraConfig:
+                        additionalProperties:
+                          type: string
+                        description: FilesProviderExtraConfig contains key/value pairs
+                          to add to the terraform provider block used for managed
+                          files
+                        type: object
                       providerExtraConfig:
                         additionalProperties:
                           type: string
                         description: ProviderExtraConfig contains key/value pairs
-                          to add to the rendered terraform "provider" block
+                          to add to the main terraform provider block
                         type: object
                     type: object
                 type: object
