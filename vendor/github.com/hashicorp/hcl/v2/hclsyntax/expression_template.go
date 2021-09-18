@@ -48,6 +48,12 @@ func (e *TemplateExpr) Value(ctx *hcl.EvalContext) (cty.Value, hcl.Diagnostics) 
 			continue
 		}
 
+		// Unmark the part and merge its marks into the set
+		unmarkedVal, partMarks := partVal.Unmark()
+		for k, v := range partMarks {
+			marks[k] = v
+		}
+
 		if !partVal.IsKnown() {
 			// If any part is unknown then the result as a whole must be
 			// unknown too. We'll keep on processing the rest of the parts
@@ -57,7 +63,7 @@ func (e *TemplateExpr) Value(ctx *hcl.EvalContext) (cty.Value, hcl.Diagnostics) 
 			continue
 		}
 
-		strVal, err := convert.Convert(partVal, cty.String)
+		strVal, err := convert.Convert(unmarkedVal, cty.String)
 		if err != nil {
 			diags = append(diags, &hcl.Diagnostic{
 				Severity: hcl.DiagError,
@@ -74,13 +80,7 @@ func (e *TemplateExpr) Value(ctx *hcl.EvalContext) (cty.Value, hcl.Diagnostics) 
 			continue
 		}
 
-		// Unmark the part and merge its marks into the set
-		unmarked, partMarks := strVal.Unmark()
-		for k, v := range partMarks {
-			marks[k] = v
-		}
-
-		buf.WriteString(unmarked.AsString())
+		buf.WriteString(strVal.AsString())
 	}
 
 	var ret cty.Value
