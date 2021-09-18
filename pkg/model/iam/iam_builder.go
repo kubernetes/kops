@@ -287,7 +287,7 @@ func NewPolicy(clusterName string) *Policy {
 func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	p := NewPolicy(b.Cluster.GetClusterName())
 
-	addNodeupPermissions(p, r.warmPool)
+	b.addNodeupPermissions(p, r.warmPool)
 
 	var err error
 	if p, err = b.AddS3Permissions(p); err != nil {
@@ -324,7 +324,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	p := NewPolicy(clusterName)
 
 	addEtcdManagerPermissions(p)
-	addNodeupPermissions(p, false)
+	b.addNodeupPermissions(p, false)
 
 	var err error
 	if p, err = b.AddS3Permissions(p); err != nil {
@@ -388,7 +388,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	p := NewPolicy(b.Cluster.GetClusterName())
 
-	addNodeupPermissions(p, r.enableLifecycleHookPermissions)
+	b.addNodeupPermissions(p, r.enableLifecycleHookPermissions)
 
 	var err error
 	if p, err = b.AddS3Permissions(p); err != nil {
@@ -759,16 +759,21 @@ func addCalicoSrcDstCheckPermissions(p *Policy) {
 	)
 }
 
-func addNodeupPermissions(p *Policy, enableHookSupport bool) {
+func (b *PolicyBuilder) addNodeupPermissions(p *Policy, enableHookSupport bool) {
 	addCertIAMPolicies(p)
 	addKMSGenerateRandomPolicies(p)
 	addASLifecyclePolicies(p, enableHookSupport)
 	p.unconditionalAction.Insert(
 		"ec2:DescribeInstances", // aws.go
 		"ec2:DescribeInstanceTypes",
-		"ec2:DescribeNetworkInterfaces",
-		"ec2:AssignIpv6Addresses",
 	)
+
+	if b.Cluster.Spec.PodCIDRFromCloud {
+		p.unconditionalAction.Insert(
+			"ec2:DescribeNetworkInterfaces",
+			"ec2:AssignIpv6Addresses",
+		)
+	}
 }
 
 func addEtcdManagerPermissions(p *Policy) {
