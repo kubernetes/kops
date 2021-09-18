@@ -229,7 +229,7 @@ etcdClusters:
 ### etcd backups retention
 {{ kops_feature_table(kops_added_default='1.18') }}
 
-You can set the retention duration for the hourly and yearly backups by defining env vars:
+You can set the retention duration for the hourly and daily backups by defining env vars:
 
 ```yaml
 etcdClusters:
