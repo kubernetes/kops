@@ -394,7 +394,7 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*resources.Resource, e
 					case "terminated", "shutting-down":
 						continue
 
-					case "running", "stopped":
+					case "running", "stopped", "pending":
 						// We need to delete
 						klog.V(4).Infof("instance %q has state=%q", id, stateName)
 
