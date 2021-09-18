@@ -49,19 +49,19 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|external.IP.is.not.assigned.to.a.node"
 		// https://github.com/cilium/cilium/issues/14287
 		skipRegex += "|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol"
+		if strings.HasSuffix(cluster.Spec.KubernetesVersion, "v1.23.0") {
+			// Reassess after https://github.com/kubernetes/kubernetes/pull/102643 is merged
+			// ref:
+			// https://github.com/kubernetes/kubernetes/issues/96717
+			// https://github.com/cilium/cilium/issues/5719
+			skipRegex += "|should.create.a.Pod.with.SCTP.HostPort"
+		}
 	} else if networking.Calico != nil {
 		skipRegex += "|Services.*functioning.*NodePort"
 	} else if networking.Kuberouter != nil {
 		skipRegex += "|load-balancer|hairpin|affinity\\stimeout|service\\.kubernetes\\.io|CLOSE_WAIT"
 	} else if networking.Kubenet != nil {
 		skipRegex += "|Services.*affinity"
-	}
-
-	if strings.HasSuffix(cluster.Spec.KubernetesVersion, "v1.23.0-alpha.0") {
-		// This matches `k8s_version='latest'` in build_jobs.py
-		// TODO(rifelpet): Remove once the next 1.23 pre-release tag has been created
-		// ref: https://github.com/kubernetes/kubernetes/pull/104061
-		skipRegex += "|MetricsGrabber.should.grab.all.metrics.from.a.ControllerManager"
 	}
 
 	// Ensure it is valid regex
