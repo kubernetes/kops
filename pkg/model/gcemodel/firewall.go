@@ -17,6 +17,7 @@ limitations under the License.
 package gcemodel
 
 import (
+	"fmt"
 	"net"
 	"strings"
 
@@ -37,18 +38,6 @@ var _ fi.ModelBuilder = &FirewallModelBuilder{}
 func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	klog.Warningf("TODO: Harmonize gcemodel with awsmodel for firewall - GCE model is way too open")
 
-	//// Allow all traffic from vms in our network
-	//// TODO: Is this a good idea?
-	//{
-	//	t := &gcetasks.FirewallRule{
-	//		Name:         s(b.SafeObjectName("kubernetes-internal")),
-	//		Network:      b.LinkToNetwork(),
-	//		SourceRanges: []string{b.Cluster.Spec.NetworkCIDR},
-	//		Allowed:      []string{"tcp:1-65535", "udp:1-65535", "icmp"},
-	//	}
-	//	c.AddTask(t)
-	//}
-
 	// Allow all traffic from nodes -> nodes
 	{
 		t := &gcetasks.FirewallRule{
@@ -60,19 +49,6 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Allowed:    []string{"tcp", "udp", "icmp", "esp", "ah", "sctp"},
 		}
 		c.AddTask(t)
-	}
-
-	if b.Cluster.Spec.NonMasqueradeCIDR != "" {
-		// The traffic is not recognized if it's on the overlay network?
-		klog.Warningf("Adding overlay network for X -> node rule - HACK")
-
-		b.AddFirewallRulesTasks(c, "cidr-to-node", &gcetasks.FirewallRule{
-			Lifecycle:    b.Lifecycle,
-			Network:      b.LinkToNetwork(),
-			SourceRanges: []string{b.Cluster.Spec.NonMasqueradeCIDR},
-			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
-			Allowed:      []string{"tcp", "udp", "icmp", "esp", "ah", "sctp"},
-		})
 	}
 
 	// Allow full traffic from master -> master
@@ -114,18 +90,23 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	if b.Cluster.Spec.NonMasqueradeCIDR != "" {
-		// The traffic is not recognized if it's on the overlay network?
-		klog.Warningf("Adding overlay network for X -> master rule - HACK")
+	if b.NetworkingIsIPAlias() || b.NetworkingIsGCERoutes() {
+		// When using IP alias or custom routes, SourceTags for identifying traffic don't work, and we must recognize by CIDR
 
-		b.AddFirewallRulesTasks(c, "cidr-to-master", &gcetasks.FirewallRule{
+		if b.Cluster.Spec.PodCIDR == "" {
+			return fmt.Errorf("expected PodCIDR to be set for IPAlias / kubenet")
+		}
+
+		c.AddTask(&gcetasks.FirewallRule{
+			Name:         s(b.SafeObjectName("pod-cidrs-to-node")),
 			Lifecycle:    b.Lifecycle,
 			Network:      b.LinkToNetwork(),
-			SourceRanges: []string{b.Cluster.Spec.NonMasqueradeCIDR},
-			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
-			Allowed:      []string{"tcp:443", "tcp:4194"},
+			SourceRanges: []string{b.Cluster.Spec.PodCIDR},
+			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
+			Allowed:      []string{"tcp", "udp", "icmp", "esp", "ah", "sctp"},
 		})
 	}
+
 	return nil
 }
 
