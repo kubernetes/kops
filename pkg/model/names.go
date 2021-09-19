@@ -206,58 +206,6 @@ func (b *KopsModelContext) LinkToSSHKey() (*awstasks.SSHKey, error) {
 	return &awstasks.SSHKey{Name: &sshKeyName}, nil
 }
 
-func (b *KopsModelContext) LinkToSubnet(z *kops.ClusterSubnetSpec) *awstasks.Subnet {
-	name := z.Name + "." + b.ClusterName()
-
-	return &awstasks.Subnet{Name: &name}
-}
-
-func (b *KopsModelContext) LinkToPublicSubnetInZone(zoneName string) (*awstasks.Subnet, error) {
-	var matches []*kops.ClusterSubnetSpec
-	for i := range b.Cluster.Spec.Subnets {
-		z := &b.Cluster.Spec.Subnets[i]
-		if z.Zone != zoneName {
-			continue
-		}
-		if z.Type != kops.SubnetTypePublic {
-			continue
-		}
-		matches = append(matches, z)
-	}
-	if len(matches) == 0 {
-		return nil, fmt.Errorf("could not find public subnet in zone: %q", zoneName)
-	}
-	if len(matches) > 1 {
-		// TODO: Support this (arbitrary choice I think, for ELBs)
-		return nil, fmt.Errorf("found multiple public subnets in zone: %q", zoneName)
-	}
-
-	return b.LinkToSubnet(matches[0]), nil
-}
-
-func (b *KopsModelContext) LinkToUtilitySubnetInZone(zoneName string) (*awstasks.Subnet, error) {
-	var matches []*kops.ClusterSubnetSpec
-	for i := range b.Cluster.Spec.Subnets {
-		s := &b.Cluster.Spec.Subnets[i]
-		if s.Zone != zoneName {
-			continue
-		}
-		if s.Type != kops.SubnetTypeUtility {
-			continue
-		}
-		matches = append(matches, s)
-	}
-	if len(matches) == 0 {
-		return nil, fmt.Errorf("could not find utility subnet in zone: %q", zoneName)
-	}
-	if len(matches) > 1 {
-		// TODO: Support this
-		return nil, fmt.Errorf("found multiple utility subnets in zone: %q", zoneName)
-	}
-
-	return b.LinkToSubnet(matches[0]), nil
-}
-
 func (b *KopsModelContext) NamePrivateRouteTableInZone(zoneName string) string {
 	return "private-" + zoneName + "." + b.ClusterName()
 }
