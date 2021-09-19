@@ -48,10 +48,6 @@ const (
 	typeDNSRecord            = "DNSRecord"
 )
 
-// Maximum number of `-` separated tokens in a name
-// Example: nodeport-external-to-node-ipv6
-const maxPrefixTokens = 5
-
 func ListResourcesGCE(gceCloud gce.GCECloud, clusterName string, region string) (map[string]*resources.Resource, error) {
 	if region == "" {
 		region = gceCloud.Region()
@@ -499,6 +495,10 @@ func (d *clusterDiscoveryGCE) listFirewallRules() ([]*resources.Resource, error)
 	}
 
 	for _, fr := range frs {
+		// Maximum number of `-` separated tokens in a name
+		// Example: nodeport-external-to-node-ipv6
+		maxPrefixTokens := 5
+
 		if !d.matchesClusterNameMultipart(fr.Name, maxPrefixTokens) {
 			continue
 		}
