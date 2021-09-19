@@ -52,9 +52,6 @@ spec:
   - name: us-test1
     region: us-test1
     type: Private
-  - name: utility-us-test1
-    region: us-test1
-    type: Utility
   topology:
     bastion:
       bastionPublicName: bastion.private.example.com
