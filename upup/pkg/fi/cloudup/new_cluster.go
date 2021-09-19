@@ -621,6 +621,8 @@ func getOpenstackZoneToSubnetProviderID(spec *api.ClusterSpec, zones []string, s
 }
 
 func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap map[string]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
+	cloudProvider := api.CloudProviderID(cluster.Spec.CloudProvider)
+
 	var masters []*api.InstanceGroup
 
 	// Build the master subnets
@@ -657,7 +659,7 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 		for i := 0; i < int(masterCount); i++ {
 			zone := masterZones[i%len(masterZones)]
 			name := zone
-			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderDO {
+			if cloudProvider == api.CloudProviderDO {
 				if int(masterCount) >= len(masterZones) {
 					name += "-" + strconv.Itoa(1+(i/len(masterZones)))
 				}
@@ -679,14 +681,16 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 			}
 
 			g.Spec.Subnets = []string{subnet.Name}
-			if cp := api.CloudProviderID(cluster.Spec.CloudProvider); cp == api.CloudProviderGCE || cp == api.CloudProviderAzure {
+			if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
 				g.Spec.Zones = []string{zone}
 			}
 
 			if cluster.IsKubernetesGTE("1.22") {
-				g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-					HTTPPutResponseHopLimit: fi.Int64(3),
-					HTTPTokens:              fi.String("required"),
+				if cloudProvider == api.CloudProviderAWS {
+					g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
+						HTTPPutResponseHopLimit: fi.Int64(3),
+						HTTPTokens:              fi.String("required"),
+					}
 				}
 			}
 
@@ -725,7 +729,7 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 		encryptEtcdStorage := false
 		if opt.EncryptEtcdStorage != nil {
 			encryptEtcdStorage = fi.BoolValue(opt.EncryptEtcdStorage)
-		} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+		} else if cloudProvider == api.CloudProviderAWS {
 			encryptEtcdStorage = true
 		}
 		for _, etcdCluster := range clusters {
@@ -768,6 +772,8 @@ func trimCommonPrefix(names []string) []string {
 }
 
 func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap map[string]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
+	cloudProvider := api.CloudProviderID(cluster.Spec.CloudProvider)
+
 	var nodes []*api.InstanceGroup
 
 	// The node count is the number of zones unless explicitly set
@@ -800,14 +806,16 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 		}
 
 		g.Spec.Subnets = []string{subnet.Name}
-		if cp := api.CloudProviderID(cluster.Spec.CloudProvider); cp == api.CloudProviderGCE || cp == api.CloudProviderAzure {
+		if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
 			g.Spec.Zones = []string{zone}
 		}
 
 		if cluster.IsKubernetesGTE("1.22") {
-			g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-				HTTPPutResponseHopLimit: fi.Int64(1),
-				HTTPTokens:              fi.String("required"),
+			if cloudProvider == api.CloudProviderAWS {
+				g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
+					HTTPPutResponseHopLimit: fi.Int64(1),
+					HTTPTokens:              fi.String("required"),
+				}
 			}
 		}
 
@@ -818,6 +826,8 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 }
 
 func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap map[string]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
+	cloudProvider := api.CloudProviderID(cluster.Spec.CloudProvider)
+
 	var nodes []*api.InstanceGroup
 
 	numZones := len(opt.Zones)
@@ -848,14 +858,16 @@ func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetM
 		}
 
 		g.Spec.Subnets = []string{subnet.Name}
-		if cp := api.CloudProviderID(cluster.Spec.CloudProvider); cp == api.CloudProviderGCE || cp == api.CloudProviderAzure {
+		if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
 			g.Spec.Zones = []string{zone}
 		}
 
 		if cluster.IsKubernetesGTE("1.22") {
-			g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-				HTTPPutResponseHopLimit: fi.Int64(1),
-				HTTPTokens:              fi.String("required"),
+			if cloudProvider == api.CloudProviderAWS {
+				g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
+					HTTPPutResponseHopLimit: fi.Int64(1),
+					HTTPTokens:              fi.String("required"),
+				}
 			}
 		}
 
