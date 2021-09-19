@@ -106,7 +106,6 @@
     {
       "Action": [
         "autoscaling:DescribeAutoScalingInstances",
-        "ec2:AssignIpv6Addresses",
         "ec2:AssignPrivateIpAddresses",
         "ec2:AttachNetworkInterface",
         "ec2:CreateNetworkInterface",
