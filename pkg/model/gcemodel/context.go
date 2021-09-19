@@ -89,3 +89,11 @@ func (c *GCEModelContext) NameForIPAddress(id string) string {
 func (c *GCEModelContext) NameForFirewallRule(id string) string {
 	return c.SafeObjectName(id)
 }
+
+func (c *GCEModelContext) NetworkingIsIPAlias() bool {
+	return c.Cluster.Spec.Networking != nil && c.Cluster.Spec.Networking.GCE != nil
+}
+
+func (c *GCEModelContext) NetworkingIsGCERoutes() bool {
+	return c.Cluster.Spec.Networking != nil && c.Cluster.Spec.Networking.Kubenet != nil
+}
