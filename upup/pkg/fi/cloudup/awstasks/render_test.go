@@ -56,7 +56,7 @@ func doRenderTests(t *testing.T, method string, cases []*renderTest) {
 
 		switch method {
 		case "RenderTerraform":
-			target = terraform.NewTerraformTarget(cloud, "test", outdir, nil)
+			target = terraform.NewTerraformTarget(cloud, "test", nil, outdir, nil)
 			filename = "kubernetes.tf"
 		case "RenderCloudformation":
 			target = cloudformation.NewCloudformationTarget(cloud, "test", outdir)

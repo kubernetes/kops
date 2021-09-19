@@ -82,6 +82,17 @@ type TerraformPath interface {
 	Path
 	// RenderTerraform renders the file to a TerraformWriter.
 	RenderTerraform(writer *terraformWriter.TerraformWriter, name string, data io.Reader, acl ACL) error
+
+	// TerraformProvider returns provider information
+	TerraformProvider() (*TerraformProvider, error)
+}
+
+// TerraformProvider is a provider definition for a TerraformPath
+type TerraformProvider struct {
+	// Name is the name of the terraform provider
+	Name string
+	// Arguments are additional settings used in the provider definition
+	Arguments map[string]string
 }
 
 type HasHash interface {
