@@ -107,7 +107,6 @@ func (c *ModelBuilderContext) setLifecycleOverride(task Task) Task {
 	// TODO - so that we can return an error here, rather than just returning.
 	// certain tasks have not implemented HasLifecycle interface
 	typeName := TypeNameForTask(task)
-	klog.V(8).Infof("testing task %q", typeName)
 
 	// typeName can be values like "InternetGateway"
 	value, ok := c.LifecycleOverrides[typeName]
@@ -118,7 +117,7 @@ func (c *ModelBuilderContext) setLifecycleOverride(task Task) Task {
 			return task
 		}
 
-		klog.Warningf("overriding task %s, lifecycle %s", task, value)
+		klog.Infof("overriding task %s, lifecycle %s", task, value)
 		hl.SetLifecycle(value)
 	}
 
