@@ -125,6 +125,16 @@ rules:
   - list
   - watch
   - patch
+{{- if GossipDomains }}
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  verbs:
+  - get
+  - list
+  - watch
+{{- end }}
 
 ---
 
@@ -187,6 +197,17 @@ rules:
   - leases
   verbs:
   - create
+{{- if GossipDomains }}
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - watch
+  - patch
+  resourceNames: [ "coredns" ]
+{{- end }}
 
 ---
 
