@@ -980,8 +980,6 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			cluster.Spec.Subnets[i].Type = api.SubnetTypePrivate
 		}
 
-		var utilitySubnets []api.ClusterSubnetSpec
-
 		var zoneToSubnetProviderID map[string]string
 		var err error
 		if len(opt.Zones) > 0 && len(opt.UtilitySubnetIDs) > 0 {
@@ -1001,22 +999,33 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			}
 		}
 
-		for _, s := range cluster.Spec.Subnets {
-			if s.Type == api.SubnetTypeUtility {
-				continue
-			}
-			subnet := api.ClusterSubnetSpec{
-				Name:   "utility-" + s.Name,
-				Zone:   s.Zone,
-				Type:   api.SubnetTypeUtility,
-				Region: s.Region,
-			}
-			if subnetID, ok := zoneToSubnetProviderID[s.Zone]; ok {
-				subnet.ProviderID = subnetID
-			}
-			utilitySubnets = append(utilitySubnets, subnet)
+		addUtilitySubnets := true
+		switch api.CloudProviderID(cluster.Spec.CloudProvider) {
+		case api.CloudProviderGCE:
+			// GCE does not need utility subnets
+			addUtilitySubnets = false
 		}
-		cluster.Spec.Subnets = append(cluster.Spec.Subnets, utilitySubnets...)
+
+		if addUtilitySubnets {
+			var utilitySubnets []api.ClusterSubnetSpec
+
+			for _, s := range cluster.Spec.Subnets {
+				if s.Type == api.SubnetTypeUtility {
+					continue
+				}
+				subnet := api.ClusterSubnetSpec{
+					Name:   "utility-" + s.Name,
+					Zone:   s.Zone,
+					Type:   api.SubnetTypeUtility,
+					Region: s.Region,
+				}
+				if subnetID, ok := zoneToSubnetProviderID[s.Zone]; ok {
+					subnet.ProviderID = subnetID
+				}
+				utilitySubnets = append(utilitySubnets, subnet)
+			}
+			cluster.Spec.Subnets = append(cluster.Spec.Subnets, utilitySubnets...)
+		}
 
 		if opt.Bastion {
 			bastionGroup := &api.InstanceGroup{}
