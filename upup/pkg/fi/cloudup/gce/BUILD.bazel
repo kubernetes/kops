@@ -23,6 +23,7 @@ go_library(
         "//dnsprovider/pkg/dnsprovider/providers/google/clouddns:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/cloudinstances:go_default_library",
+        "//pkg/util/subnet:go_default_library",
         "//protokube/pkg/etcd:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//vendor/golang.org/x/oauth2/google:go_default_library",

@@ -18,13 +18,13 @@ package gce
 
 import (
 	"context"
-	"encoding/binary"
 	"fmt"
 	"net"
 
 	compute "google.golang.org/api/compute/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/util/subnet"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -90,7 +90,7 @@ func performNetworkAssignmentsIPAliases(ctx context.Context, c *kops.Cluster, cl
 		subnets = append(subnets, l...)
 	}
 
-	var used cidrMap
+	var used subnet.CIDRMap
 	for _, subnet := range subnets {
 		if !subnetURLs[subnet.SelfLink] {
 			continue
@@ -109,90 +109,26 @@ func performNetworkAssignmentsIPAliases(ctx context.Context, c *kops.Cluster, cl
 	// CIDRs should be in the RFC1918 range, but otherwise we have no constraints
 	networkCIDR := "10.0.0.0/8"
 
-	podCIDR, err := used.Allocate(networkCIDR, 14)
+	podCIDR, err := used.Allocate(networkCIDR, net.CIDRMask(14, 32))
 	if err != nil {
 		return err
 	}
 
-	serviceCIDR, err := used.Allocate(networkCIDR, 20)
+	serviceCIDR, err := used.Allocate(networkCIDR, net.CIDRMask(20, 32))
 	if err != nil {
 		return err
 	}
 
-	nodeCIDR, err := used.Allocate(networkCIDR, 20)
+	nodeCIDR, err := used.Allocate(networkCIDR, net.CIDRMask(20, 32))
 	if err != nil {
 		return err
 	}
 
-	klog.Infof("Will use %s for Nodes, %s for Pods and %s for Services", nodeCIDR, podCIDR, serviceCIDR)
+	klog.Infof("Will use %v for Nodes, %v for Pods and %v for Services", nodeCIDR, podCIDR, serviceCIDR)
 
-	nodeSubnet.CIDR = nodeCIDR
-	c.Spec.PodCIDR = podCIDR
-	c.Spec.ServiceClusterIPRange = serviceCIDR
+	nodeSubnet.CIDR = nodeCIDR.String()
+	c.Spec.PodCIDR = podCIDR.String()
+	c.Spec.ServiceClusterIPRange = serviceCIDR.String()
 
 	return nil
-}
-
-// cidrMap is a helper structure to allocate unused CIDRs
-type cidrMap struct {
-	used []net.IPNet
-}
-
-func (c *cidrMap) MarkInUse(s string) error {
-	_, cidr, err := net.ParseCIDR(s)
-	if err != nil {
-		return fmt.Errorf("error parsing network cidr %q: %v", s, err)
-	}
-	c.used = append(c.used, *cidr)
-	return nil
-}
-
-func (c *cidrMap) Allocate(from string, mask int) (string, error) {
-	_, cidr, err := net.ParseCIDR(from)
-	if err != nil {
-		return "", fmt.Errorf("error parsing CIDR %q: %v", from, err)
-	}
-
-	i := *cidr
-	i.Mask = net.CIDRMask(mask, 32)
-
-	for {
-
-		ip4 := i.IP.To4()
-		if ip4 == nil {
-			return "", fmt.Errorf("expected IPv4 address: %v", from)
-		}
-
-		// Note we increment first, so we won't ever use the first range (e.g. 10.0.0.0/n)
-		n := binary.BigEndian.Uint32(ip4)
-		n += 1 << uint(32-mask)
-		binary.BigEndian.PutUint32(i.IP, n)
-
-		if !cidrsOverlap(cidr, &i) {
-			break
-		}
-
-		if !c.isInUse(&i) {
-			if err := c.MarkInUse(i.String()); err != nil {
-				return "", err
-			}
-			return i.String(), nil
-		}
-	}
-
-	return "", fmt.Errorf("cannot allocate CIDR of size %d", mask)
-}
-
-func (c *cidrMap) isInUse(n *net.IPNet) bool {
-	for i := range c.used {
-		if cidrsOverlap(&c.used[i], n) {
-			return true
-		}
-	}
-	return false
-}
-
-// cidrsOverlap returns true if and only if the two CIDRs are non-disjoint
-func cidrsOverlap(l, r *net.IPNet) bool {
-	return l.Contains(r.IP) || r.Contains(l.IP)
 }
