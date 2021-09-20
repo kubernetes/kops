@@ -29,6 +29,8 @@ type Options struct {
 
 	// EnableCloudIPAM enables the cloud IPAM controller.
 	EnableCloudIPAM bool `json:"enableCloudIPAM,omitempty"`
+
+	Gossip *GossipOptions `json:"gossip,omitempty"`
 }
 
 func (o *Options) PopulateDefaults() {
@@ -57,4 +59,10 @@ type ServerOptions struct {
 type ServerProviderOptions struct {
 	AWS *awsup.AWSVerifierOptions  `json:"aws,omitempty"`
 	GCE *gcetpm.TPMVerifierOptions `json:"gce,omitempty"`
+}
+
+// GossipOptions configures our support for gossip DNS (i.e. k8s.local)
+type GossipOptions struct {
+	// HostnameInternalAPIServer is the hostname for the internal apiserver.
+	HostnameInternalAPIServer string `json:"hostnameInternalAPIServer"`
 }
