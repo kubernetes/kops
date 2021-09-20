@@ -17,7 +17,6 @@ limitations under the License.
 package deployer
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path"
@@ -26,6 +25,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/resources"
 	"sigs.k8s.io/kubetest2/pkg/exec"
+	"sigs.k8s.io/yaml"
 )
 
 func (d *deployer) DumpClusterLogs() error {
@@ -111,13 +111,15 @@ func (d *deployer) dumpClusterInfoSSH() error {
 		"--ssh-user", d.SSHUser,
 		"-o", "yaml",
 	}
+	klog.Info(strings.Join(toolboxDumpArgs, " "))
+
 	cmd := exec.Command(toolboxDumpArgs[0], toolboxDumpArgs[1:]...)
 	dumpOutput, err := exec.Output(cmd)
 	if err != nil {
 		return err
 	}
 	var dump *resources.Dump
-	err = json.Unmarshal(dumpOutput, dump)
+	err = yaml.Unmarshal(dumpOutput, dump)
 	if err != nil {
 		return err
 	}
@@ -134,6 +136,8 @@ func (d *deployer) dumpClusterInfoSSH() error {
 		"-o", "yaml",
 		"--output-directory", "/tmp/cluster-info",
 	}
+	klog.Info(strings.Join(sshArgs, " "))
+
 	cmd = exec.Command(sshArgs[0], sshArgs[1:]...)
 	if err := cmd.Run(); err != nil {
 		return err
@@ -143,6 +147,8 @@ func (d *deployer) dumpClusterInfoSSH() error {
 		fmt.Sprintf("%v:/tmp/cluster-info", sshURL),
 		path.Join(d.ArtifactsDir, "cluster-info"),
 	}
+	klog.Info(strings.Join(scpArgs, " "))
+
 	cmd = exec.Command(scpArgs[0], scpArgs[1:]...)
 	if err := cmd.Run(); err != nil {
 		return err
@@ -152,6 +158,8 @@ func (d *deployer) dumpClusterInfoSSH() error {
 		"ssh", "-i", d.SSHPrivateKeyPath, sshURL,
 		"rm", "-rf", "/tmp/cluster-info",
 	}
+	klog.Info(strings.Join(rmArgs, " "))
+
 	cmd = exec.Command(rmArgs[0], rmArgs[1:]...)
 	if err := cmd.Run(); err != nil {
 		return err
