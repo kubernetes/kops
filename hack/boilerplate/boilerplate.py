@@ -219,7 +219,7 @@ def get_regexs():
     regexs["date"] = re.compile(get_dates())
     # strip // +build \n\n build constraints
     regexs["go_build_constraints"] = re.compile(
-        r"^(// \+build.*\n)+\n", re.MULTILINE)
+        r"^(//go:build.*\n// \+build.*\n)+\n", re.MULTILINE)
     # strip #!.* from scripts
     regexs["shebang"] = re.compile(r"^(#!.*\n)\n*", re.MULTILINE)
     # Search for generated files
