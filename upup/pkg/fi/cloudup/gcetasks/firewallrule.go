@@ -93,15 +93,9 @@ func (e *FirewallRule) Run(c *fi.Context) error {
 func (e *FirewallRule) sanityCheck() error {
 	if !e.Disabled {
 		// Treat it as an error if SourceRanges _and_ SourceTags empty with Disabled=false
-		// this is interpreted as SourceRanges="0.0.0.0/0", which is likely what was intended.
+		// this is interpreted as SourceRanges="0.0.0.0/0", which is likely not what was intended.
 		if len(e.SourceRanges) == 0 && len(e.SourceTags) == 0 {
 			return fmt.Errorf("either SourceRanges or SourceTags should be specified when Disabled is false")
-		}
-	} else {
-		// Treat it as an error if SourceRanges/SourceTags non-empty with Disabled
-		// this is allowed but is likely not what was intended.
-		if len(e.SourceRanges) != 0 || len(e.SourceTags) != 0 {
-			return fmt.Errorf("setting Disabled=true overrules SourceRanges or SourceTags")
 		}
 	}
 
@@ -267,14 +261,4 @@ func (_ *FirewallRule) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 	tf.Network = e.Network.TerraformName()
 
 	return t.RenderResource("google_compute_firewall", *e.Name, tf)
-}
-
-// DisableIfEmptySourceRanges sets Disabled if SourceRanges is empty.
-// This is helpful because empty SourceRanges and SourceTags are interpreted as allow everything,
-// but the intent is usually to block everything, which can be achieved with Disabled=true.
-func (e *FirewallRule) DisableIfEmptySourceRanges() *FirewallRule {
-	if len(e.SourceRanges) == 0 {
-		e.Disabled = true
-	}
-	return e
 }
