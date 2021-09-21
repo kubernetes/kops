@@ -19,6 +19,7 @@ package kops
 import (
 	"fmt"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -471,6 +472,10 @@ type KubeDNSConfig struct {
 	CacheMaxSize int `json:"cacheMaxSize,omitempty"`
 	// CacheMaxConcurrent is the maximum number of concurrent queries for dnsmasq
 	CacheMaxConcurrent int `json:"cacheMaxConcurrent,omitempty"`
+	// Tolerations	are tolerations to apply to the kube-dns deployment
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+	// Affinity is the kube-dns affinity, uses the same syntax as kubectl's affinity
+	Affinity *corev1.Affinity `json:"affinity,omitempty"`
 	// CoreDNSImage is used to override the default image used for CoreDNS
 	CoreDNSImage string `json:"coreDNSImage,omitempty"`
 	// CPAImage is used to override the default image used for Cluster Proportional Autoscaler
