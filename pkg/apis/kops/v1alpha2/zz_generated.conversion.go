@@ -5033,6 +5033,8 @@ func Convert_kops_KubeControllerManagerConfig_To_v1alpha2_KubeControllerManagerC
 func autoConvert_v1alpha2_KubeDNSConfig_To_kops_KubeDNSConfig(in *KubeDNSConfig, out *kops.KubeDNSConfig, s conversion.Scope) error {
 	out.CacheMaxSize = in.CacheMaxSize
 	out.CacheMaxConcurrent = in.CacheMaxConcurrent
+	out.Tolerations = in.Tolerations
+	out.Affinity = in.Affinity
 	out.CoreDNSImage = in.CoreDNSImage
 	out.CPAImage = in.CPAImage
 	out.Domain = in.Domain
@@ -5066,6 +5068,8 @@ func Convert_v1alpha2_KubeDNSConfig_To_kops_KubeDNSConfig(in *KubeDNSConfig, out
 func autoConvert_kops_KubeDNSConfig_To_v1alpha2_KubeDNSConfig(in *kops.KubeDNSConfig, out *KubeDNSConfig, s conversion.Scope) error {
 	out.CacheMaxSize = in.CacheMaxSize
 	out.CacheMaxConcurrent = in.CacheMaxConcurrent
+	out.Tolerations = in.Tolerations
+	out.Affinity = in.Affinity
 	out.CoreDNSImage = in.CoreDNSImage
 	out.CPAImage = in.CPAImage
 	out.Domain = in.Domain
