@@ -55,6 +55,7 @@ func TestBootstrapChannelBuilder_BuildTasks(t *testing.T) {
 	runChannelBuilderTest(t, "metrics-server/insecure-1.19", []string{"metrics-server.addons.k8s.io-k8s-1.11"})
 	runChannelBuilderTest(t, "metrics-server/secure-1.18", []string{"metrics-server.addons.k8s.io-k8s-1.11"})
 	runChannelBuilderTest(t, "metrics-server/secure-1.19", []string{"metrics-server.addons.k8s.io-k8s-1.11"})
+	runChannelBuilderTest(t, "coredns", []string{"coredns.addons.k8s.io-k8s-1.12"})
 }
 
 func TestBootstrapChannelBuilder_ServiceAccountIAM(t *testing.T) {
