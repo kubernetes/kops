@@ -291,10 +291,11 @@ resource "google_compute_firewall" "cidr-to-master-ipv6-ha-gce-example-com" {
     ports    = ["4194"]
     protocol = "tcp"
   }
-  disabled    = true
-  name        = "cidr-to-master-ipv6-ha-gce-example-com"
-  network     = google_compute_network.default.name
-  target_tags = ["ha-gce-example-com-k8s-io-role-master"]
+  disabled      = true
+  name          = "cidr-to-master-ipv6-ha-gce-example-com"
+  network       = google_compute_network.default.name
+  source_ranges = ["::/0"]
+  target_tags   = ["ha-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "cidr-to-node-ha-gce-example-com" {
@@ -342,10 +343,11 @@ resource "google_compute_firewall" "cidr-to-node-ipv6-ha-gce-example-com" {
   allow {
     protocol = "sctp"
   }
-  disabled    = true
-  name        = "cidr-to-node-ipv6-ha-gce-example-com"
-  network     = google_compute_network.default.name
-  target_tags = ["ha-gce-example-com-k8s-io-role-node"]
+  disabled      = true
+  name          = "cidr-to-node-ipv6-ha-gce-example-com"
+  network       = google_compute_network.default.name
+  source_ranges = ["::/0"]
+  target_tags   = ["ha-gce-example-com-k8s-io-role-node"]
 }
 
 resource "google_compute_firewall" "kubernetes-master-https-ha-gce-example-com" {
@@ -475,10 +477,11 @@ resource "google_compute_firewall" "nodeport-external-to-node-ha-gce-example-com
     ports    = ["30000-32767"]
     protocol = "udp"
   }
-  disabled    = true
-  name        = "nodeport-external-to-node-ha-gce-example-com"
-  network     = google_compute_network.default.name
-  target_tags = ["ha-gce-example-com-k8s-io-role-node"]
+  disabled      = true
+  name          = "nodeport-external-to-node-ha-gce-example-com"
+  network       = google_compute_network.default.name
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["ha-gce-example-com-k8s-io-role-node"]
 }
 
 resource "google_compute_firewall" "nodeport-external-to-node-ipv6-ha-gce-example-com" {
@@ -490,10 +493,11 @@ resource "google_compute_firewall" "nodeport-external-to-node-ipv6-ha-gce-exampl
     ports    = ["30000-32767"]
     protocol = "udp"
   }
-  disabled    = true
-  name        = "nodeport-external-to-node-ipv6-ha-gce-example-com"
-  network     = google_compute_network.default.name
-  target_tags = ["ha-gce-example-com-k8s-io-role-node"]
+  disabled      = true
+  name          = "nodeport-external-to-node-ipv6-ha-gce-example-com"
+  network       = google_compute_network.default.name
+  source_ranges = ["::/0"]
+  target_tags   = ["ha-gce-example-com-k8s-io-role-node"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-master-ha-gce-example-com" {
