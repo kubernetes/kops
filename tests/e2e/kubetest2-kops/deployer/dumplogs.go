@@ -118,8 +118,9 @@ func (d *deployer) dumpClusterInfoSSH() error {
 	if err != nil {
 		return err
 	}
-	var dump *resources.Dump
-	err = yaml.Unmarshal(dumpOutput, dump)
+
+	var dump resources.Dump
+	err = yaml.Unmarshal(dumpOutput, &dump)
 	if err != nil {
 		return err
 	}
@@ -130,7 +131,10 @@ func (d *deployer) dumpClusterInfoSSH() error {
 
 	sshURL := fmt.Sprintf("%v@%v", controlPlaneUser, controlPlaneIP)
 	sshArgs := []string{
-		"ssh", "-i", d.SSHPrivateKeyPath, sshURL,
+		"ssh", "-i", d.SSHPrivateKeyPath,
+		"-o", "StrictHostKeyChecking=no",
+		"-o", "UserKnownHostsFile=/dev/null",
+		sshURL, "--",
 		"kubectl", "cluster-info", "dump",
 		"--all-namespaces",
 		"-o", "yaml",
@@ -139,35 +143,46 @@ func (d *deployer) dumpClusterInfoSSH() error {
 	klog.Info(strings.Join(sshArgs, " "))
 
 	cmd = exec.Command(sshArgs[0], sshArgs[1:]...)
+	exec.InheritOutput(cmd)
+
 	if err := cmd.Run(); err != nil {
 		return err
 	}
 	scpArgs := []string{
-		"scp", "-i", d.SSHPrivateKeyPath, "-r",
+		"scp", "-i", d.SSHPrivateKeyPath,
+		"-o", "StrictHostKeyChecking=no",
+		"-o", "UserKnownHostsFile=/dev/null", "-r",
 		fmt.Sprintf("%v:/tmp/cluster-info", sshURL),
 		path.Join(d.ArtifactsDir, "cluster-info"),
 	}
 	klog.Info(strings.Join(scpArgs, " "))
 
 	cmd = exec.Command(scpArgs[0], scpArgs[1:]...)
+	exec.InheritOutput(cmd)
+
 	if err := cmd.Run(); err != nil {
 		return err
 	}
 
 	rmArgs := []string{
-		"ssh", "-i", d.SSHPrivateKeyPath, sshURL,
+		"ssh", "-i", d.SSHPrivateKeyPath,
+		"-o", "StrictHostKeyChecking=no",
+		"-o", "UserKnownHostsFile=/dev/null",
+		sshURL, "--",
 		"rm", "-rf", "/tmp/cluster-info",
 	}
 	klog.Info(strings.Join(rmArgs, " "))
 
 	cmd = exec.Command(rmArgs[0], rmArgs[1:]...)
+	exec.InheritOutput(cmd)
+
 	if err := cmd.Run(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func findControlPlaneIPUser(dump *resources.Dump) (string, string, bool) {
+func findControlPlaneIPUser(dump resources.Dump) (string, string, bool) {
 	for _, instance := range dump.Instances {
 		if len(instance.PublicAddresses) == 0 {
 			continue
