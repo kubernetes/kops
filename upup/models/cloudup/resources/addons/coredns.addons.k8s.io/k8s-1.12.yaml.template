@@ -117,11 +117,18 @@ spec:
       priorityClassName: system-cluster-critical
       serviceAccountName: coredns
       tolerations:
+        {{- if KubeDNS.Tolerations }}
+{{ ToYAML .KubeDNS.Tolerations | indent 8 }}
+        {{- else }}
         - key: "CriticalAddonsOnly"
           operator: "Exists"
+        {{- end }}
       nodeSelector:
         kubernetes.io/os: linux
       affinity:
+        {{- if .KubeDNS.Affinity }}
+{{ ToYAML .KubeDNS.Affinity | indent 8 }}
+        {{- else }}
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 100
@@ -132,6 +139,7 @@ spec:
                     operator: In
                     values: ["kube-dns"]
               topologyKey: kubernetes.io/hostname
+        {{- end }}
       containers:
       - name: coredns
         image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}k8s.gcr.io/coredns/coredns:v1.8.4{{ end }}
