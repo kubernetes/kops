@@ -650,7 +650,7 @@ spec:
         - name: CILIUM_ENABLE_POLICY
           value: {{ . }}
         {{ end }}
-        image: "quay.io/cilium/cilium:{{ .Version  }}"
+        image: "quay.io/cilium/cilium:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
