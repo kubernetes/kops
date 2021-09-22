@@ -66,6 +66,9 @@ fi
 # Verify kubeconfig-a still works
 kubectl get nodes -owide --kubeconfig "${KUBECONFIG_A}"
 
+# Sleep to ensure channels has done its thing
+sleep 60s
+
 "${KOPS_B}" rolling-update cluster
 "${KOPS_B}" rolling-update cluster --yes --validation-timeout 30m
 
