@@ -17,7 +17,11 @@ limitations under the License.
 package awsmodel
 
 import (
+	"reflect"
 	"testing"
+
+	"k8s.io/kops/pkg/model/iam"
+	"k8s.io/kops/pkg/util/stringorslice"
 )
 
 func TestIAMServiceEC2(t *testing.T) {
@@ -34,5 +38,87 @@ func TestIAMServiceEC2(t *testing.T) {
 		if principal != expect {
 			t.Errorf("expected %s for %s, but received %s", expect, region, principal)
 		}
+	}
+}
+
+func Test_formatAWSIAMStatement(t *testing.T) {
+	type args struct {
+		acountId     string
+		oidcProvider string
+		namespace    string
+		name         string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *iam.Statement
+		wantErr bool
+	}{
+		{
+			name: "namespace and name without wildcard",
+			args: args{
+				acountId:     "0123456789",
+				oidcProvider: "oidc-test",
+				namespace:    "test",
+				name:         "test",
+			},
+			wantErr: false,
+			want: &iam.Statement{
+				Effect: "Allow",
+				Principal: iam.Principal{
+					Federated: "arn:aws:iam::0123456789:oidc-provider/oidc-test",
+				},
+				Action: stringorslice.String("sts:AssumeRoleWithWebIdentity"),
+				Condition: map[string]interface{}{
+					"StringEquals": map[string]interface{}{
+						"oidc-test:sub": "system:serviceaccount:test:test",
+					},
+				},
+			},
+		},
+		{
+			name: "name contains wildcard",
+			args: args{
+				acountId:     "0123456789",
+				oidcProvider: "oidc-test",
+				namespace:    "test",
+				name:         "test-*",
+			},
+			wantErr: true,
+		},
+		{
+			name: "namespace contains wildcard",
+			args: args{
+				acountId:     "0123456789",
+				oidcProvider: "oidc-test",
+				namespace:    "test-*",
+				name:         "test",
+			},
+			wantErr: false,
+			want: &iam.Statement{
+				Effect: "Allow",
+				Principal: iam.Principal{
+					Federated: "arn:aws:iam::0123456789:oidc-provider/oidc-test",
+				},
+				Action: stringorslice.String("sts:AssumeRoleWithWebIdentity"),
+				Condition: map[string]interface{}{
+					"StringLike": map[string]interface{}{
+						"oidc-test:sub": "system:serviceaccount:test-*:test",
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := formatAWSIAMStatement(tt.args.acountId, tt.args.oidcProvider, tt.args.namespace, tt.args.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("formatAWSIAMStatement() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("formatAWSIAMStatement() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
