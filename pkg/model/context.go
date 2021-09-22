@@ -408,3 +408,8 @@ func (b *KopsModelContext) UseServiceAccountExternalPermissions() bool {
 	return b.Cluster.Spec.IAM != nil &&
 		fi.BoolValue(b.Cluster.Spec.IAM.UseServiceAccountExternalPermissions)
 }
+
+// NetworkingIsCalico returns true if we are using calico networking
+func (b *KopsModelContext) NetworkingIsCalico() bool {
+	return b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil
+}
