@@ -55,7 +55,12 @@ spec:
       priorityClassName: system-cluster-critical
       serviceAccount: dns-controller
       tolerations:
-      - operator: Exists
+      - key: node.cloudprovider.kubernetes.io/uninitialized
+        operator: Exists
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+      - key: node-role.kubernetes.io/master
+        operator: Exists
 
 ---
 
