@@ -671,6 +671,7 @@ func TestCustomIRSA(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "irsa").
 		withOIDCDiscovery().
 		withServiceAccountRole("myserviceaccount.default", false).
+		withServiceAccountRole("myserviceaccount.test-wildcard", false).
 		withServiceAccountRole("myotherserviceaccount.myapp", true).
 		withAddons(dnsControllerAddon).
 		runTestTerraformAWS(t)

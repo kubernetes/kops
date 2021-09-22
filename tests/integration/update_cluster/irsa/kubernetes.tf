@@ -1,25 +1,27 @@
 locals {
-  cluster_name                          = "minimal.example.com"
-  default-myserviceaccount_role_arn     = aws_iam_role.myserviceaccount-default-sa-minimal-example-com.arn
-  default-myserviceaccount_role_name    = aws_iam_role.myserviceaccount-default-sa-minimal-example-com.name
-  iam_openid_connect_provider_arn       = aws_iam_openid_connect_provider.minimal-example-com.arn
-  iam_openid_connect_provider_issuer    = "discovery.example.com/minimal.example.com"
-  master_autoscaling_group_ids          = [aws_autoscaling_group.master-us-test-1a-masters-minimal-example-com.id]
-  master_security_group_ids             = [aws_security_group.masters-minimal-example-com.id]
-  masters_role_arn                      = aws_iam_role.masters-minimal-example-com.arn
-  masters_role_name                     = aws_iam_role.masters-minimal-example-com.name
-  myapp-myotherserviceaccount_role_arn  = aws_iam_role.myotherserviceaccount-myapp-sa-minimal-example-com.arn
-  myapp-myotherserviceaccount_role_name = aws_iam_role.myotherserviceaccount-myapp-sa-minimal-example-com.name
-  node_autoscaling_group_ids            = [aws_autoscaling_group.nodes-minimal-example-com.id]
-  node_security_group_ids               = [aws_security_group.nodes-minimal-example-com.id]
-  node_subnet_ids                       = [aws_subnet.us-test-1a-minimal-example-com.id]
-  nodes_role_arn                        = aws_iam_role.nodes-minimal-example-com.arn
-  nodes_role_name                       = aws_iam_role.nodes-minimal-example-com.name
-  region                                = "us-test-1"
-  route_table_public_id                 = aws_route_table.minimal-example-com.id
-  subnet_us-test-1a_id                  = aws_subnet.us-test-1a-minimal-example-com.id
-  vpc_cidr_block                        = aws_vpc.minimal-example-com.cidr_block
-  vpc_id                                = aws_vpc.minimal-example-com.id
+  cluster_name                             = "minimal.example.com"
+  default-myserviceaccount_role_arn        = aws_iam_role.myserviceaccount-default-sa-minimal-example-com.arn
+  default-myserviceaccount_role_name       = aws_iam_role.myserviceaccount-default-sa-minimal-example-com.name
+  iam_openid_connect_provider_arn          = aws_iam_openid_connect_provider.minimal-example-com.arn
+  iam_openid_connect_provider_issuer       = "discovery.example.com/minimal.example.com"
+  master_autoscaling_group_ids             = [aws_autoscaling_group.master-us-test-1a-masters-minimal-example-com.id]
+  master_security_group_ids                = [aws_security_group.masters-minimal-example-com.id]
+  masters_role_arn                         = aws_iam_role.masters-minimal-example-com.arn
+  masters_role_name                        = aws_iam_role.masters-minimal-example-com.name
+  myapp-myotherserviceaccount_role_arn     = aws_iam_role.myotherserviceaccount-myapp-sa-minimal-example-com.arn
+  myapp-myotherserviceaccount_role_name    = aws_iam_role.myotherserviceaccount-myapp-sa-minimal-example-com.name
+  node_autoscaling_group_ids               = [aws_autoscaling_group.nodes-minimal-example-com.id]
+  node_security_group_ids                  = [aws_security_group.nodes-minimal-example-com.id]
+  node_subnet_ids                          = [aws_subnet.us-test-1a-minimal-example-com.id]
+  nodes_role_arn                           = aws_iam_role.nodes-minimal-example-com.arn
+  nodes_role_name                          = aws_iam_role.nodes-minimal-example-com.name
+  region                                   = "us-test-1"
+  route_table_public_id                    = aws_route_table.minimal-example-com.id
+  subnet_us-test-1a_id                     = aws_subnet.us-test-1a-minimal-example-com.id
+  test-wildcard-myserviceaccount_role_arn  = aws_iam_role.myserviceaccount-test-wildcard-sa-minimal-example-com.arn
+  test-wildcard-myserviceaccount_role_name = aws_iam_role.myserviceaccount-test-wildcard-sa-minimal-example-com.name
+  vpc_cidr_block                           = aws_vpc.minimal-example-com.cidr_block
+  vpc_id                                   = aws_vpc.minimal-example-com.id
 }
 
 output "cluster_name" {
@@ -96,6 +98,14 @@ output "route_table_public_id" {
 
 output "subnet_us-test-1a_id" {
   value = aws_subnet.us-test-1a-minimal-example-com.id
+}
+
+output "test-wildcard-myserviceaccount_role_arn" {
+  value = aws_iam_role.myserviceaccount-test-wildcard-sa-minimal-example-com.arn
+}
+
+output "test-wildcard-myserviceaccount_role_name" {
+  value = aws_iam_role.myserviceaccount-test-wildcard-sa-minimal-example-com.name
 }
 
 output "vpc_cidr_block" {
@@ -316,6 +326,16 @@ resource "aws_iam_role" "myserviceaccount-default-sa-minimal-example-com" {
   }
 }
 
+resource "aws_iam_role" "myserviceaccount-test-wildcard-sa-minimal-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_myserviceaccount.test-wildcard.sa.minimal.example.com_policy")
+  name               = "myserviceaccount.test-wildcard.sa.minimal.example.com"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "myserviceaccount.test-wildcard.sa.minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
+}
+
 resource "aws_iam_role" "nodes-minimal-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.minimal.example.com_policy")
   name               = "nodes.minimal.example.com"
@@ -347,6 +367,11 @@ resource "aws_iam_role_policy" "nodes-minimal-example-com" {
 resource "aws_iam_role_policy_attachment" "external-myserviceaccount-default-sa-minimal-example-com-3186075376" {
   policy_arn = "arn:aws:iam::123456789012:policy/UsersManageOwnCredentials"
   role       = aws_iam_role.myserviceaccount-default-sa-minimal-example-com.name
+}
+
+resource "aws_iam_role_policy_attachment" "external-myserviceaccount-test-wildcard-sa-minimal-example-com-3186075376" {
+  policy_arn = "arn:aws:iam::123456789012:policy/UsersManageOwnCredentials"
+  role       = aws_iam_role.myserviceaccount-test-wildcard-sa-minimal-example-com.name
 }
 
 resource "aws_internet_gateway" "minimal-example-com" {
