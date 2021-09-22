@@ -19,6 +19,7 @@ package iam
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -52,7 +53,7 @@ func (b *IAMModelContext) IAMNameForServiceAccountRole(role Subject) (string, er
 		return "", fmt.Errorf("role %v does not have ServiceAccount", role)
 	}
 
-	name := serviceAccount.Name + "." + serviceAccount.Namespace + ".sa." + b.ClusterName()
+	name := serviceAccount.Name + "." + strings.ReplaceAll(serviceAccount.Namespace, "*", "wildcard") + ".sa." + b.ClusterName()
 	name = awsup.TruncateString(name, awsup.TruncateStringOptions{MaxLength: MaxLengthIAMRoleName, AlwaysAddHash: false})
 
 	return name, nil
