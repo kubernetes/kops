@@ -38,6 +38,12 @@ var _ fi.ModelBuilder = &FirewallModelBuilder{}
 func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	klog.Warningf("TODO: Harmonize gcemodel with awsmodel for firewall - GCE model is way too open")
 
+	allProtocols := []string{"tcp", "udp", "icmp", "esp", "ah", "sctp"}
+
+	if b.NetworkingIsCalico() {
+		allProtocols = append(allProtocols, "ipip")
+	}
+
 	// Allow all traffic from nodes -> nodes
 	{
 		t := &gcetasks.FirewallRule{
@@ -46,7 +52,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Network:    b.LinkToNetwork(),
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
-			Allowed:    []string{"tcp", "udp", "icmp", "esp", "ah", "sctp"},
+			Allowed:    allProtocols,
 		}
 		c.AddTask(t)
 	}
@@ -59,7 +65,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Network:    b.LinkToNetwork(),
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
-			Allowed:    []string{"tcp", "udp", "icmp", "esp", "ah", "sctp"},
+			Allowed:    allProtocols,
 		}
 		c.AddTask(t)
 	}
@@ -72,7 +78,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Network:    b.LinkToNetwork(),
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
-			Allowed:    []string{"tcp", "udp", "icmp", "esp", "ah", "sctp"},
+			Allowed:    allProtocols,
 		}
 		c.AddTask(t)
 	}
@@ -103,7 +109,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Network:      b.LinkToNetwork(),
 			SourceRanges: []string{b.Cluster.Spec.PodCIDR},
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
-			Allowed:      []string{"tcp", "udp", "icmp", "esp", "ah", "sctp"},
+			Allowed:      allProtocols,
 		})
 	}
 
