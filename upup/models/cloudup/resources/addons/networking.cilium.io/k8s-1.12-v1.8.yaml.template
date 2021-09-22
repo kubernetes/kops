@@ -488,7 +488,7 @@ spec:
           value: {{ . }}
         {{ end }}
 {{ with .Networking.Cilium }}
-        image: "quay.io/cilium/cilium:{{ .Version  }}"
+        image: "quay.io/cilium/cilium:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:

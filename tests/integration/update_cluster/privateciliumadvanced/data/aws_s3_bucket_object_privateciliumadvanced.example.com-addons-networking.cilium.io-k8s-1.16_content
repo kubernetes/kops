@@ -444,10 +444,6 @@ spec:
             cpu: 25m
             memory: 128Mi
         securityContext:
-          capabilities:
-            add:
-            - NET_ADMIN
-            - SYS_MODULE
           privileged: true
         startupProbe:
           failureThreshold: 105
@@ -520,9 +516,6 @@ spec:
             cpu: 100m
             memory: 100Mi
         securityContext:
-          capabilities:
-            add:
-            - NET_ADMIN
           privileged: true
         volumeMounts:
         - mountPath: /sys/fs/bpf
