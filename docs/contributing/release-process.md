@@ -152,9 +152,11 @@ hub pull-request
 
 ### Propose promotion of artifacts
 
-The `cip` tool is from [kubernetes-sigs/k8s-container-image-promoter](https://github.com/kubernetes-sigs/k8s-container-image-promoter).
-The `kpromo` tool is from [kubernetes/release/](https://github.com/kubernetes/release/tree/master/cmd/kpromo).
-The `gsutil` tool may be obtained from `pip3`.
+The following tools are prerequisites:
+
+* [`gsutil`](https://cloud.google.com/storage/docs/gsutil_install)
+* [`cip`][promo-tools]
+* [`kpromo`][promo-tools]
 
 Create container promotion PR:
 
@@ -181,7 +183,6 @@ git push ${USER}
 hub pull-request -b main
 ```
 
-
 Create binary promotion PR:
 
 ```
@@ -207,8 +208,11 @@ git push ${USER}
 hub pull-request -b main
 ```
 
+Upon approval and merge of the binary promotion PR, artifacts will be promoted
+to artifacts.k8s.io via postsubmit. The process is described in detail
+[here](https://git.k8s.io/k8s.io/artifacts/README.md).
 
-### Promote to GitHub / S3 (legacy) / artifacts.k8s.io
+### Promote to GitHub / S3 (legacy)
 
 The `shipbot` tool is from [kopeio/shipbot](https://github.com/kopeio/shipbot).
 
@@ -224,31 +228,6 @@ Binaries to S3 bucket (only for stable releases < 1.22):
 
 ```
 aws s3 sync --acl public-read k8s-staging-kops/kops/releases/${VERSION}/ s3://kubeupv2/kops/${VERSION}/
-```
-
-Until the binary promoter is automatic, we also need to promote the binary artifacts manually (only for stable releases, requires elevated permissions):
-
-```
-mkdir -p /tmp/thin/artifacts/filestores/k8s-staging-kops/
-mkdir -p /tmp/thin/artifacts/manifests/k8s-staging-kops/
-
-cd ${GOPATH}/src/k8s.io/k8s.io
-cp artifacts/manifests/k8s-staging-kops/${VERSION}.yaml /tmp/thin/artifacts/manifests/k8s-staging-kops/
-
-cat > /tmp/thin/artifacts/filestores/k8s-staging-kops/filepromoter-manifest.yaml << EOF
-filestores:
-- base: gs://k8s-staging-kops/kops/releases/
-  src: true
-- base: gs://k8s-artifacts-prod/binaries/kops/
-  service-account: k8s-infra-gcr-promoter@k8s-artifacts-prod.iam.gserviceaccount.com
-EOF
-
-promobot-files --filestores /tmp/thin/artifacts/filestores/k8s-staging-kops/filepromoter-manifest.yaml --files /tmp/thin/artifacts/manifests/k8s-staging-kops/ --dry-run=true
-```
-
-After validation of the dry-run output:
-```
-promobot-files --filestores /tmp/thin/artifacts/filestores/k8s-staging-kops/filepromoter-manifest.yaml --files /tmp/thin/artifacts/manifests/k8s-staging-kops/ --dry-run=false --use-service-account
 ```
 
 ### Smoke test the release
@@ -315,3 +294,5 @@ Once we are satisfied the release is sound:
 Once we are satisfied the release is stable:
 
 * Bump the kOps recommended version in the stable channel
+
+[promo-tools]: https://sigs.k8s.io/promo-tools
