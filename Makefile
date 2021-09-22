@@ -455,6 +455,7 @@ pr:
 .PHONY: channels
 channels: ${CHANNELS}
 
+.PHONY: ${CHANNELS}
 ${CHANNELS}:
 	go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"-X k8s.io/kops.Version=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/channels/cmd/channels
 
