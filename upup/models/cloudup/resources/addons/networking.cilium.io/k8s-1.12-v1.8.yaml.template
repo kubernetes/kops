@@ -589,6 +589,7 @@ spec:
         - mountPath: /etc/ipsec
           name: cilium-ipsec-secrets
 {{ end }}
+      dnsPolicy: ClusterFirstWithHostNet
       hostNetwork: true
       initContainers:
       - command:
@@ -809,6 +810,7 @@ spec:
           name: etcd-secrets
           readOnly: true
 {{- end }}
+      dnsPolicy: ClusterFirstWithHostNet
       hostNetwork: true
       priorityClassName: system-cluster-critical
       restartPolicy: Always
