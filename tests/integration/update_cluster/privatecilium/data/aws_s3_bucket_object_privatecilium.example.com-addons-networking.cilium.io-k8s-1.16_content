@@ -467,6 +467,7 @@ spec:
           readOnly: true
         - mountPath: /run/xtables.lock
           name: xtables-lock
+      dnsPolicy: ClusterFirstWithHostNet
       hostNetwork: true
       initContainers:
       - command:
@@ -638,6 +639,7 @@ spec:
         - mountPath: /tmp/cilium/config-map
           name: cilium-config-path
           readOnly: true
+      dnsPolicy: ClusterFirstWithHostNet
       hostNetwork: true
       nodeSelector:
         node-role.kubernetes.io/master: ""

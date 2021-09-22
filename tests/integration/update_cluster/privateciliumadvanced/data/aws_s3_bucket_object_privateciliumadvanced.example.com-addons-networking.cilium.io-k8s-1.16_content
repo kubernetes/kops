@@ -487,6 +487,7 @@ spec:
           readOnly: true
         - mountPath: /run/xtables.lock
           name: xtables-lock
+      dnsPolicy: ClusterFirstWithHostNet
       hostNetwork: true
       initContainers:
       - command:
@@ -675,6 +676,7 @@ spec:
         - mountPath: /var/lib/etcd-secrets
           name: etcd-secrets
           readOnly: true
+      dnsPolicy: ClusterFirstWithHostNet
       hostNetwork: true
       nodeSelector:
         node-role.kubernetes.io/master: ""
