@@ -25,6 +25,11 @@ spec:
         aws:
           policyARNs:
           - arn:aws:iam::123456789012:policy/UsersManageOwnCredentials
+      - name: myserviceaccount
+        namespace: test-*
+        aws:
+          policyARNs:
+          - arn:aws:iam::123456789012:policy/UsersManageOwnCredentials
       - name: myotherserviceaccount
         namespace: myapp
         aws:

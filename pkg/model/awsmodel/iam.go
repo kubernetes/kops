@@ -256,7 +256,7 @@ func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.Subject, iamName string, i
 func (b *IAMModelBuilder) roleKey(role iam.Subject) (string, bool) {
 	serviceAccount, ok := role.ServiceAccount()
 	if ok {
-		return strings.ToLower(serviceAccount.Namespace + "-" + serviceAccount.Name), true
+		return strings.ToLower(strings.ReplaceAll(serviceAccount.Namespace+"-"+serviceAccount.Name, "*", "wildcard")), true
 	}
 
 	// This isn't great, but we have to be backwards compatible with the old names.
@@ -405,6 +405,33 @@ func IAMServiceEC2(region string) string {
 	return "ec2.amazonaws.com"
 }
 
+func formatAWSIAMStatement(accountId, oidcProvider, namespace, name string) (*iam.Statement, error) {
+	// disallow wildcard in the service account name
+	if strings.Contains(name, "*") {
+		return nil, fmt.Errorf("service account name cannot contain a wildcard %s", name)
+	}
+
+	// if the namespace contains a wildcard, use StringLike condition instead of StringEquals
+	condition := "StringEquals"
+	if strings.Contains(namespace, "*") {
+		condition = "StringLike"
+	}
+
+	return &iam.Statement{
+			Effect: "Allow",
+			Principal: iam.Principal{
+				Federated: "arn:aws:iam::" + accountId + ":oidc-provider/" + oidcProvider,
+			},
+			Action: stringorslice.String("sts:AssumeRoleWithWebIdentity"),
+			Condition: map[string]interface{}{
+				condition: map[string]interface{}{
+					oidcProvider + ":sub": "system:serviceaccount:" + namespace + ":" + name,
+				},
+			},
+		},
+		nil
+}
+
 // buildAWSIAMRolePolicy produces the AWS IAM role policy for the given role.
 func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role iam.Subject) (fi.Resource, error) {
 	var policy string
@@ -412,22 +439,14 @@ func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role iam.Subject) (fi.Resource, 
 	if ok {
 		oidcProvider := strings.TrimPrefix(*b.Cluster.Spec.KubeAPIServer.ServiceAccountIssuer, "https://")
 
+		statement, err := formatAWSIAMStatement(b.AWSAccountID, oidcProvider, serviceAccount.Namespace, serviceAccount.Name)
+		if err != nil {
+			return nil, err
+		}
+
 		iamPolicy := &iam.Policy{
-			Version: iam.PolicyDefaultVersion,
-			Statement: []*iam.Statement{
-				{
-					Effect: "Allow",
-					Principal: iam.Principal{
-						Federated: "arn:aws:iam::" + b.AWSAccountID + ":oidc-provider/" + oidcProvider,
-					},
-					Action: stringorslice.String("sts:AssumeRoleWithWebIdentity"),
-					Condition: map[string]interface{}{
-						"StringEquals": map[string]interface{}{
-							oidcProvider + ":sub": "system:serviceaccount:" + serviceAccount.Namespace + ":" + serviceAccount.Name,
-						},
-					},
-				},
-			},
+			Version:   iam.PolicyDefaultVersion,
+			Statement: []*iam.Statement{statement},
 		}
 		s, err := iamPolicy.AsJSON()
 		if err != nil {
