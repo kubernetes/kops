@@ -26,6 +26,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"golang.org/x/crypto/ssh"
 	corev1 "k8s.io/api/core/v1"
@@ -411,7 +412,9 @@ var _ sshClientFactory = &sshClientFactoryImplementation{}
 // Dial implements sshClientFactory::Dial
 func (f *sshClientFactoryImplementation) Dial(ctx context.Context, host string) (sshClient, error) {
 	addr := host + ":22"
-	d := net.Dialer{}
+	d := net.Dialer{
+		Timeout: 15 * time.Second,
+	}
 	conn, err := d.DialContext(ctx, "tcp", addr)
 	if err != nil {
 		return nil, err
