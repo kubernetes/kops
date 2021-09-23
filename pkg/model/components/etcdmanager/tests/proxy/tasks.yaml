@@ -63,8 +63,6 @@ Contents: |
   apiVersion: v1
   kind: Pod
   metadata:
-    annotations:
-      scheduler.alpha.kubernetes.io/critical-pod: ""
     creationTimestamp: null
     labels:
       k8s-app: etcd-manager-events
@@ -142,8 +140,6 @@ Contents: |
   apiVersion: v1
   kind: Pod
   metadata:
-    annotations:
-      scheduler.alpha.kubernetes.io/critical-pod: ""
     creationTimestamp: null
     labels:
       k8s-app: etcd-manager-main
