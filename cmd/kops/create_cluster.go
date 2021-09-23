@@ -224,7 +224,6 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	var validClouds []string
 	{
 		allClouds := clouds.SupportedClouds()
-		var validClouds []string
 		for _, c := range allClouds {
 			validClouds = append(validClouds, string(c))
 		}
