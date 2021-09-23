@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/zones"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -236,7 +237,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	cluster.Spec.CloudProvider = opt.CloudProvider
 	if cluster.Spec.CloudProvider == "" {
 		for _, zone := range allZones.List() {
-			cloud, known := fi.GuessCloudForZone(zone)
+			cloud, known := zones.GuessCloudForZone(zone)
 			if known {
 				klog.Infof("Inferred %q cloud provider from zone %q", cloud, zone)
 				cluster.Spec.CloudProvider = string(cloud)

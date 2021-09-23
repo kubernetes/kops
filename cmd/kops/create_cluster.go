@@ -24,6 +24,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -42,12 +43,14 @@ import (
 	kopsutil "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/clouds"
 	"k8s.io/kops/pkg/clusteraddons"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/pkg/zones"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -218,15 +221,24 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		})
 	}
 
-	cmd.Flags().StringVar(&options.CloudProvider, "cloud", options.CloudProvider, fmt.Sprintf("Cloud provider to use - %s", strings.Join(cloudup.SupportedClouds(), ", ")))
+	var validClouds []string
+	{
+		allClouds := clouds.SupportedClouds()
+		var validClouds []string
+		for _, c := range allClouds {
+			validClouds = append(validClouds, string(c))
+		}
+		sort.Strings(validClouds)
+	}
+	cmd.Flags().StringVar(&options.CloudProvider, "cloud", options.CloudProvider, fmt.Sprintf("Cloud provider to use - %s", strings.Join(validClouds, ", ")))
 	cmd.RegisterFlagCompletionFunc("cloud", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return cloudup.SupportedClouds(), cobra.ShellCompDirectiveNoFileComp
+		return validClouds, cobra.ShellCompDirectiveNoFileComp
 	})
 
 	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
-	cmd.RegisterFlagCompletionFunc("zones", completeZone)
+	cmd.RegisterFlagCompletionFunc("zones", completeZone(options))
 	cmd.Flags().StringSliceVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
-	cmd.RegisterFlagCompletionFunc("master-zones", completeZone)
+	cmd.RegisterFlagCompletionFunc("master-zones", completeZone(options))
 
 	if featureflag.ClusterAddons.Enabled() {
 		cmd.Flags().StringSliceVar(&options.AddonPaths, "add", options.AddonPaths, "Paths to addons we should add to the cluster")
@@ -829,9 +841,29 @@ func loadSSHPublicKeys(sshPublicKey string) (map[string][]byte, error) {
 	return sshPublicKeys, nil
 }
 
-func completeZone(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	// TODO call into cloud provider(s) to get list of valid zones
-	return nil, cobra.ShellCompDirectiveNoFileComp
+func completeZone(options *CreateClusterOptions) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		var allClouds []api.CloudProviderID
+		if options.CloudProvider != "" {
+			allClouds = []api.CloudProviderID{api.CloudProviderID(options.CloudProvider)}
+		} else {
+			allClouds = clouds.SupportedClouds()
+		}
+
+		var allZones []string
+		for _, c := range allClouds {
+			zones := zones.WellKnownZonesForCloud(c)
+			for _, z := range zones {
+				if options.CloudProvider == "" {
+					allZones = append(allZones, z+"\t"+string(c))
+				} else {
+					allZones = append(allZones, z)
+				}
+			}
+		}
+		sort.Strings(allZones)
+		return allZones, cobra.ShellCompDirectiveNoFileComp
+	}
 }
 
 func completeKubernetesVersion(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
