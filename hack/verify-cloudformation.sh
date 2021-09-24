@@ -32,7 +32,7 @@ function docker_build() {
 
 docker image inspect "${IMAGE}" >/dev/null 2>&1 || docker_build
 
-docker run --rm -v "${KOPS_ROOT}:/${KOPS_ROOT}" -v "${KOPS_ROOT}/hack/.cfnlintrc.yaml:/root/.cfnlintrc" "${IMAGE}" "/${KOPS_ROOT}/tests/integration/update_cluster/**/cloudformation.json"
+docker run --rm --network host -v "${KOPS_ROOT}:/${KOPS_ROOT}" -v "${KOPS_ROOT}/hack/.cfnlintrc.yaml:/root/.cfnlintrc" "${IMAGE}" "/${KOPS_ROOT}/tests/integration/update_cluster/**/cloudformation.json"
 RC=$?
 
 if [ $RC != 0 ]; then
