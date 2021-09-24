@@ -20,7 +20,7 @@ set -o pipefail
 
 . "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-TAG=v0.52.0
+TAG=v0.54.2
 IMAGE="cfn-python-lint:${TAG}"
 
 # There is no official docker image so build it locally
