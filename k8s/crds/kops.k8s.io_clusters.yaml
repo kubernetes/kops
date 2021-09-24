@@ -4460,6 +4460,10 @@ spec:
                             items:
                               type: string
                             type: array
+                          type:
+                            description: Type of load balancer to create, it can be
+                              Public or Internal.
+                            type: string
                         type: object
                     type: object
                   dns:
