@@ -460,7 +460,7 @@ func (e *NetworkLoadBalancer) Normalize() {
 	sort.Stable(OrderTargetGroupsByName(e.TargetGroups))
 }
 
-func (s *NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) error {
+func (*NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) error {
 	if a == nil {
 		if fi.StringValue(e.Name) == "" {
 			return fi.RequiredField("Name")
@@ -489,12 +489,12 @@ func (s *NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) e
 		if len(changes.SubnetMappings) > 0 {
 			expectedSubnets := make(map[string]*string)
 			for _, s := range e.SubnetMappings {
-				//expectedSubnets[*s.Subnet.ID] = s
 				if s.AllocationID != nil {
 					expectedSubnets[*s.Subnet.ID] = s.AllocationID
-				}
-				if s.PrivateIPv4Address != nil {
+				} else if s.PrivateIPv4Address != nil {
 					expectedSubnets[*s.Subnet.ID] = s.PrivateIPv4Address
+				} else {
+					expectedSubnets[*s.Subnet.ID] = nil
 				}
 			}
 
