@@ -139,6 +139,10 @@ data:
   # backend and affinity maps. (default 65536)
   bpf-lb-map-max: "{{ .BPFLBMapMax }}"
 
+  {{ if .ChainingMode }}
+  cni-chaining-mode: "{{ .ChainingMode }}"
+  {{ end }}
+
   # enable-bpf-masquerade enables masquerading packets from endpoints leaving
   # the host with BPF instead of iptables. (default false)
   enable-bpf-masquerade: "{{ .EnableBPFMasquerade }}"
