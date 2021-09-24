@@ -641,6 +641,13 @@ func (in *CiliumNetworkingSpec) DeepCopyInto(out *CiliumNetworkingSpec) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.AgentPodAnnotations != nil {
+		in, out := &in.AgentPodAnnotations, &out.AgentPodAnnotations
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	if in.EnableRemoteNodeIdentity != nil {
 		in, out := &in.EnableRemoteNodeIdentity, &out.EnableRemoteNodeIdentity
 		*out = new(bool)

@@ -555,6 +555,9 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: {{ printf "%q" .AgentPrometheusPort }}
         {{ end }}
+{{- with .AgentPodAnnotations }}
+        {{- . | nindent 8 }}
+{{- end }}
       labels:
         k8s-app: cilium
         kubernetes.io/cluster-service: "true"

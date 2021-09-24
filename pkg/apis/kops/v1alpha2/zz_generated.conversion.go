@@ -1849,6 +1849,7 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.LogstashProbeTimer = in.LogstashProbeTimer
 	out.DisableMasquerade = in.DisableMasquerade
 	out.Nat46Range = in.Nat46Range
+	out.AgentPodAnnotations = in.AgentPodAnnotations
 	out.Pprof = in.Pprof
 	out.PrefilterDevice = in.PrefilterDevice
 	out.PrometheusServeAddr = in.PrometheusServeAddr
@@ -1958,6 +1959,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	out.LogstashProbeTimer = in.LogstashProbeTimer
 	out.DisableMasquerade = in.DisableMasquerade
 	out.Nat46Range = in.Nat46Range
+	out.AgentPodAnnotations = in.AgentPodAnnotations
 	out.Pprof = in.Pprof
 	out.PrefilterDevice = in.PrefilterDevice
 	out.PrometheusServeAddr = in.PrometheusServeAddr
