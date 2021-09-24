@@ -30,7 +30,7 @@ while IFS= read -r -d '' -u 3 test_dir; do
   [ -f "${test_dir}/kubernetes.tf" ] || [ -f "${test_dir}/kubernetes.tf.json" ] || continue
   echo -e "${test_dir}\n"
 
-  docker run --rm -e "TF_PLUGIN_CACHE_DIR=${PROVIDER_CACHE}" -v "${PROVIDER_CACHE}:${PROVIDER_CACHE}" -v "${test_dir}":"${test_dir}" -w "${test_dir}" --entrypoint=sh hashicorp/terraform:${TF_TAG} -c '/bin/terraform init -upgrade >/dev/null && /bin/terraform validate' || RC=$?
+  docker run --rm --network host -e "TF_PLUGIN_CACHE_DIR=${PROVIDER_CACHE}" -v "${PROVIDER_CACHE}:${PROVIDER_CACHE}" -v "${test_dir}":"${test_dir}" -w "${test_dir}" --entrypoint=sh hashicorp/terraform:${TF_TAG} -c '/bin/terraform init -upgrade >/dev/null && /bin/terraform validate' || RC=$?
 done 3< <(find "${KOPS_ROOT}/tests/integration/update_cluster" -maxdepth 1 -type d -print0)
 
 if [ $RC != 0 ]; then
