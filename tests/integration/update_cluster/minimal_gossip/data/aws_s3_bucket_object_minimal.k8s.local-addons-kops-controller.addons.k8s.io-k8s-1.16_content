@@ -65,7 +65,7 @@ spec:
       nodeSelector:
         kops.k8s.io/kops-controller-pki: ""
         node-role.kubernetes.io/master: ""
-      priorityClassName: system-node-critical
+      priorityClassName: system-cluster-critical
       serviceAccount: kops-controller
       tolerations:
       - key: node-role.kubernetes.io/master

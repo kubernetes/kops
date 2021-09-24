@@ -37,7 +37,7 @@ spec:
         dns.alpha.kubernetes.io/internal: kops-controller.internal.{{ ClusterName }}
 {{ end }}
     spec:
-      priorityClassName: system-node-critical
+      priorityClassName: system-cluster-critical
       tolerations:
       - key: "node-role.kubernetes.io/master"
         operator: Exists
