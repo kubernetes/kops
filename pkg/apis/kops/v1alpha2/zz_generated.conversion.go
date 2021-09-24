@@ -1569,6 +1569,7 @@ func Convert_kops_AzureConfiguration_To_v1alpha2_AzureConfiguration(in *kops.Azu
 
 func autoConvert_v1alpha2_BastionLoadBalancerSpec_To_kops_BastionLoadBalancerSpec(in *BastionLoadBalancerSpec, out *kops.BastionLoadBalancerSpec, s conversion.Scope) error {
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
+	out.Type = kops.LoadBalancerType(in.Type)
 	return nil
 }
 
@@ -1579,6 +1580,7 @@ func Convert_v1alpha2_BastionLoadBalancerSpec_To_kops_BastionLoadBalancerSpec(in
 
 func autoConvert_kops_BastionLoadBalancerSpec_To_v1alpha2_BastionLoadBalancerSpec(in *kops.BastionLoadBalancerSpec, out *BastionLoadBalancerSpec, s conversion.Scope) error {
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
+	out.Type = LoadBalancerType(in.Type)
 	return nil
 }
 

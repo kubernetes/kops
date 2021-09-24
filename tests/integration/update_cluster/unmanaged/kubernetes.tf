@@ -349,7 +349,7 @@ resource "aws_elb" "bastion-unmanaged-example-com" {
   }
   name            = "bastion-unmanaged-example-d7bn3d"
   security_groups = [aws_security_group.bastion-elb-unmanaged-example-com.id]
-  subnets         = [aws_subnet.utility-us-test-1a-unmanaged-example-com.id]
+  subnets         = [aws_subnet.utility-us-test-1a-unmanaged-example-com.id, aws_subnet.utility-us-test-1b-unmanaged-example-com.id]
   tags = {
     "KubernetesCluster"                           = "unmanaged.example.com"
     "Name"                                        = "bastion.unmanaged.example.com"
