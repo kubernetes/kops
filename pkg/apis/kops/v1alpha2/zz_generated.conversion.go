@@ -1803,6 +1803,7 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.AllowLocalhost = in.AllowLocalhost
 	out.AutoIpv6NodeRoutes = in.AutoIpv6NodeRoutes
 	out.BPFRoot = in.BPFRoot
+	out.ChainingMode = in.ChainingMode
 	out.ContainerRuntime = in.ContainerRuntime
 	out.ContainerRuntimeEndpoint = in.ContainerRuntimeEndpoint
 	out.Debug = in.Debug
@@ -1911,6 +1912,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	out.AllowLocalhost = in.AllowLocalhost
 	out.AutoIpv6NodeRoutes = in.AutoIpv6NodeRoutes
 	out.BPFRoot = in.BPFRoot
+	out.ChainingMode = in.ChainingMode
 	out.ContainerRuntime = in.ContainerRuntime
 	out.ContainerRuntimeEndpoint = in.ContainerRuntimeEndpoint
 	out.Debug = in.Debug
