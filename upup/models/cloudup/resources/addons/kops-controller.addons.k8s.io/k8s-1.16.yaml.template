@@ -39,7 +39,11 @@ spec:
     spec:
       priorityClassName: system-cluster-critical
       tolerations:
-      - key: "node-role.kubernetes.io/master"
+      - key: node.cloudprovider.kubernetes.io/uninitialized
+        operator: Exists
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+      - key: node-role.kubernetes.io/master
         operator: Exists
       nodeSelector:
         node-role.kubernetes.io/master: ""
