@@ -434,6 +434,9 @@ type CiliumNetworkingSpec struct {
 	// Nat6Range is not implemented and may be removed in the future.
 	// Setting this has no effect.
 	Nat46Range string `json:"nat46Range,omitempty"`
+	// AgentPodAnnotations makes possible to add additional annotations to cilium agent.
+	// Default: none
+	AgentPodAnnotations map[string]string `json:"agentPodAnnotations,omitempty"`
 	// Pprof is not implemented and may be removed in the future.
 	// Setting this has no effect.
 	Pprof bool `json:"pprof,omitempty"`
