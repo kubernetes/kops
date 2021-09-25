@@ -67,6 +67,8 @@ type AddonSpec struct {
 
 	// NeedsPKI determines if channels should provision a CA and a cert-manager issuer for the addon.
 	NeedsPKI bool `json:"needsPKI,omitempty"`
+
+	Version string `json:"version,omitempty"`
 }
 
 func (a *Addons) Verify() error {
