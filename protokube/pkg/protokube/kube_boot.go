@@ -88,14 +88,14 @@ func (k *KubeBoot) RunSyncLoop() {
 
 func (k *KubeBoot) syncOnce(ctx context.Context) error {
 	if k.Master {
-		if k.BootstrapMasterNodeLabels {
-			if err := bootstrapMasterNodeLabels(ctx, k.Kubernetes, k.NodeName); err != nil {
-				klog.Warningf("error bootstrapping master node labels: %v", err)
-			}
-		}
 		for _, channel := range k.Channels {
 			if err := applyChannel(channel); err != nil {
 				klog.Warningf("error applying channel %q: %v", channel, err)
+			}
+		}
+		if k.BootstrapMasterNodeLabels {
+			if err := bootstrapMasterNodeLabels(ctx, k.Kubernetes, k.NodeName); err != nil {
+				klog.Warningf("error bootstrapping master node labels: %v", err)
 			}
 		}
 	}
