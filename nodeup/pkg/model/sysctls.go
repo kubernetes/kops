@@ -150,17 +150,10 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"")
 	}
 
-	if b.Cluster.Spec.IsIPv6Only() {
-		sysctls = append(sysctls,
-			"net.ipv6.conf.all.forwarding=1",
-			"net.ipv6.conf.all.accept_ra=2",
-			"")
-	} else {
-		sysctls = append(sysctls,
-			"# Prevent docker from changing iptables: https://github.com/kubernetes/kubernetes/issues/40182",
-			"net.ipv4.ip_forward=1",
-			"")
-	}
+	sysctls = append(sysctls,
+		"# Prevent docker from changing iptables: https://github.com/kubernetes/kubernetes/issues/40182",
+		"net.ipv4.ip_forward=1",
+		"")
 
 	if params := b.NodeupConfig.SysctlParameters; len(params) > 0 {
 		sysctls = append(sysctls,
