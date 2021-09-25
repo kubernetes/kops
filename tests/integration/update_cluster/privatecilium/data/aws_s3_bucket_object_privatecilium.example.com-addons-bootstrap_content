@@ -11,40 +11,47 @@ spec:
     needsRollingUpdate: control-plane
     selector:
       k8s-addon: kops-controller.addons.k8s.io
+    version: 9.99.0
   - manifest: core.addons.k8s.io/v1.4.0.yaml
     manifestHash: 90f8d3bd227dc1f4fdd46b561ac6bfc9355392477a7eedd6c3e2318614c375d8
     name: core.addons.k8s.io
     selector:
       k8s-addon: core.addons.k8s.io
+    version: 9.99.0
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
     manifestHash: 3bf8c29c45f0f7dbbb1671b577f302a19418b55d214f6847ff586f1ee9d1ba71
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
+    version: 9.99.0
   - id: k8s-1.9
     manifest: kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml
     manifestHash: 01c120e887bd98d82ef57983ad58a0b22bc85efb48108092a24c4b82e4c9ea81
     name: kubelet-api.rbac.addons.k8s.io
     selector:
       k8s-addon: kubelet-api.rbac.addons.k8s.io
+    version: 9.99.0
   - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
     manifestHash: 2d55c3bc5e354e84a3730a65b42f39aba630a59dc8d32b30859fcce3d3178bc2
     name: limit-range.addons.k8s.io
     selector:
       k8s-addon: limit-range.addons.k8s.io
+    version: 9.99.0
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
     manifestHash: 7934f73e3a3e56972beeb971f6cb30c5479cb97a6917a1d5c1628b06642ebc2a
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
+    version: 9.99.0
   - id: v1.15.0
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
     manifestHash: 065ae832ddac8d0931e9992d6a76f43a33a36975a38003b34f4c5d86a7d42780
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
+    version: 9.99.0
   - id: k8s-1.16
     manifest: networking.cilium.io/k8s-1.16-v1.10.yaml
     manifestHash: a9cdd10f3fdd52e32d0228bc377bfd524c18dfd46a9c678af17b22519dcf27e5
@@ -52,3 +59,4 @@ spec:
     needsRollingUpdate: all
     selector:
       role.kubernetes.io/networking: "1"
+    version: 9.99.0
