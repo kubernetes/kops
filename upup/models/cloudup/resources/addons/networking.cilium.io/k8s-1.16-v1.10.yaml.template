@@ -1,4 +1,5 @@
 {{ with .Networking.Cilium }}
+{{ $semver := (trimPrefix "v" .Version) }}
 {{- if CiliumSecret }}
 apiVersion: v1
 kind: Secret
@@ -192,8 +193,10 @@ data:
   # [0] http://docs.cilium.io/en/stable/policy/language/#dns-based
   # [1] http://docs.cilium.io/en/stable/install/upgrade/#changes-that-may-require-action
   tofqdns-enable-poller: "{{- if .ToFqdnsEnablePoller -}}true{{- else -}}false{{- end -}}"
+  {{- if not (semverCompare ">=1.10.4 || ~1.9.10" $semver) }}
   # wait-bpf-mount makes init container wait until bpf filesystem is mounted
   wait-bpf-mount: "false"
+  {{- end }}
   # Enable fetching of container-runtime specific metadata
   #
   # By default, the Kubernetes pod and namespace labels are retrieved and
@@ -687,7 +690,7 @@ spec:
         - name: CILIUM_ENABLE_POLICY
           value: {{ . }}
         {{ end }}
-        image: "quay.io/cilium/cilium:{{ .Version  }}"
+        image: "quay.io/cilium/cilium:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -716,14 +719,13 @@ spec:
         {{ end }}
 
         securityContext:
-          capabilities:
-            add:
-            - NET_ADMIN
-            - SYS_MODULE
           privileged: true
         volumeMounts:
         - mountPath: /sys/fs/bpf
           name: bpf-maps
+          {{- if semverCompare ">=1.10.4 || ~1.9.10" $semver }}
+          mountPropagation: Bidirectional
+          {{- end }}
         - mountPath: /var/run/cilium
           name: cilium-run
         - mountPath: /host/opt/cni/bin
@@ -776,24 +778,25 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
+        {{- if not (semverCompare ">=1.10.4 || ~1.9.10" $semver) }}
         - name: CILIUM_WAIT_BPF_MOUNT
           valueFrom:
             configMapKeyRef:
               key: wait-bpf-mount
               name: cilium-config
               optional: true
+        {{- end }}
         image: "quay.io/cilium/cilium:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         securityContext:
-          capabilities:
-            add:
-            - NET_ADMIN
           privileged: true
         volumeMounts:
         - mountPath: /sys/fs/bpf
           name: bpf-maps
+          {{- if not (semverCompare ">=1.10.4 || ~1.9.10" $semver) }}
           mountPropagation: HostToContainer
+          {{- end }}
          # Required to mount cgroup filesystem from the host to cilium agent pod
         - mountPath: /sys/fs/cgroup/unified
           name: cilium-cgroup
