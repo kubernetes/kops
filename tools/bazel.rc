@@ -1,3 +1,10 @@
+build --symlink_prefix=.bazel-
+test  --symlink_prefix=.bazel-
+
+# Also suppress the generation of the bazel-out symlink, which always appears,no
+# matter what you set --symlink_prefix to.
+build --experimental_no_product_name_out_symlink
+
 startup --expand_configs_in_place
 
 # TODO: Remove once we expect everyone is running bazel >= 0.18

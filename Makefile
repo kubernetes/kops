@@ -42,6 +42,8 @@ BAZEL_OPTIONS?=
 BAZEL_CONFIG?=
 API_OPTIONS?=
 GCFLAGS?=
+BAZEL_BIN=.bazel-bin
+
 
 UPLOAD_CMD=$(KOPS_ROOT)/hack/upload ${UPLOAD_ARGS}
 
@@ -237,19 +239,19 @@ bazel-version-ci: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm64
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
-	cp bazel-bin/cmd/kops/linux-amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops
+	cp ${BAZEL_BIN}/cmd/kops/linux-amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops.sha256
-	cp bazel-bin/cmd/nodeup/linux-amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
+	cp ${BAZEL_BIN}/cmd/nodeup/linux-amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
-	cp bazel-bin/cmd/nodeup/linux-arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup
+	cp ${BAZEL_BIN}/cmd/nodeup/linux-arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup.sha256
-	cp -fp bazel-bin/channels/cmd/channels/linux-amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels
+	cp -fp ${BAZEL_BIN}/channels/cmd/channels/linux-amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels.sha256
-	cp -fp bazel-bin/channels/cmd/channels/linux-arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels
+	cp -fp ${BAZEL_BIN}/channels/cmd/channels/linux-arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels.sha256
-	cp -fp bazel-bin/protokube/cmd/protokube/linux-amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube
+	cp -fp ${BAZEL_BIN}/protokube/cmd/protokube/linux-amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube.sha256
-	cp -fp bazel-bin/protokube/cmd/protokube/linux-arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube
+	cp -fp ${BAZEL_BIN}/protokube/cmd/protokube/linux-arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube.sha256
 	cp ${BAZELIMAGES}/kops-controller-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz
 	cp ${BAZELIMAGES}/kops-controller-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz.sha256
@@ -587,7 +589,7 @@ bazel-crossbuild-channels: bazel-build-channels-linux-amd64 bazel-build-channels
 bazel-push: bazel-build-nodeup-linux-amd64
 	ssh ${TARGET} touch /tmp/nodeup
 	ssh ${TARGET} chmod +w /tmp/nodeup
-	scp -C bazel-bin/cmd/nodeup/linux-amd64/nodeup  ${TARGET}:/tmp/
+	scp -C ${BAZEL_BIN}/cmd/nodeup/linux-amd64/nodeup  ${TARGET}:/tmp/
 
 .PHONY: bazel-push-gce-run
 bazel-push-gce-run: bazel-push
@@ -629,8 +631,8 @@ push-node-authorizer:
 bazel-kube-apiserver-healthcheck-export-linux-amd64 bazel-kube-apiserver-healthcheck-export-linux-arm64: bazel-kube-apiserver-healthcheck-export-linux-%:
 	mkdir -p ${BAZELIMAGES}
 	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} ${BAZEL} ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_$* //cmd/kube-apiserver-healthcheck:image-bundle-$*.tar.gz.sha256
-	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle-$*.tar.gz ${BAZELIMAGES}/kube-apiserver-healthcheck-$*.tar.gz
-	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle-$*.tar.gz.sha256 ${BAZELIMAGES}/kube-apiserver-healthcheck-$*.tar.gz.sha256
+	cp -fp ${BAZEL_BIN}/cmd/kube-apiserver-healthcheck/image-bundle-$*.tar.gz ${BAZELIMAGES}/kube-apiserver-healthcheck-$*.tar.gz
+	cp -fp ${BAZEL_BIN}/cmd/kube-apiserver-healthcheck/image-bundle-$*.tar.gz.sha256 ${BAZELIMAGES}/kube-apiserver-healthcheck-$*.tar.gz.sha256
 
 .PHONY: bazel-kube-apiserver-healthcheck-export
 bazel-kube-apiserver-healthcheck-export: bazel-kube-apiserver-healthcheck-export-linux-amd64 bazel-kube-apiserver-healthcheck-export-linux-arm64
@@ -640,8 +642,8 @@ bazel-kube-apiserver-healthcheck-export: bazel-kube-apiserver-healthcheck-export
 bazel-kops-controller-export-linux-amd64 bazel-kops-controller-export-linux-arm64: bazel-kops-controller-export-linux-%:
 	mkdir -p ${BAZELIMAGES}
 	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} ${BAZEL} ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_$* //cmd/kops-controller:image-bundle-$*.tar.gz.sha256
-	cp -fp bazel-bin/cmd/kops-controller/image-bundle-$*.tar.gz ${BAZELIMAGES}/kops-controller-$*.tar.gz
-	cp -fp bazel-bin/cmd/kops-controller/image-bundle-$*.tar.gz.sha256 ${BAZELIMAGES}/kops-controller-$*.tar.gz.sha256
+	cp -fp ${BAZEL_BIN}/cmd/kops-controller/image-bundle-$*.tar.gz ${BAZELIMAGES}/kops-controller-$*.tar.gz
+	cp -fp ${BAZEL_BIN}/cmd/kops-controller/image-bundle-$*.tar.gz.sha256 ${BAZELIMAGES}/kops-controller-$*.tar.gz.sha256
 
 .PHONY: bazel-kops-controller-export
 bazel-kops-controller-export: bazel-kops-controller-export-linux-amd64 bazel-kops-controller-export-linux-arm64
@@ -651,8 +653,8 @@ bazel-kops-controller-export: bazel-kops-controller-export-linux-amd64 bazel-kop
 bazel-dns-controller-export-linux-amd64 bazel-dns-controller-export-linux-arm64: bazel-dns-controller-export-linux-%:
 	mkdir -p ${BAZELIMAGES}
 	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} ${BAZEL} ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_$* //dns-controller/cmd/dns-controller:image-bundle-$*.tar.gz.sha256
-	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle-$*.tar.gz ${BAZELIMAGES}/dns-controller-$*.tar.gz
-	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle-$*.tar.gz.sha256 ${BAZELIMAGES}/dns-controller-$*.tar.gz.sha256
+	cp -fp ${BAZEL_BIN}/dns-controller/cmd/dns-controller/image-bundle-$*.tar.gz ${BAZELIMAGES}/dns-controller-$*.tar.gz
+	cp -fp ${BAZEL_BIN}/dns-controller/cmd/dns-controller/image-bundle-$*.tar.gz.sha256 ${BAZELIMAGES}/dns-controller-$*.tar.gz.sha256
 
 .PHONY: bazel-dns-controller-export
 bazel-dns-controller-export:
@@ -671,17 +673,17 @@ bazel-version-dist: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm6
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/darwin/arm64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
-	cp bazel-bin/cmd/nodeup/linux-amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
+	cp ${BAZEL_BIN}/cmd/nodeup/linux-amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
-	cp bazel-bin/cmd/nodeup/linux-arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup
+	cp ${BAZEL_BIN}/cmd/nodeup/linux-arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup.sha256
-	cp -fp bazel-bin/channels/cmd/channels/linux-amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels
+	cp -fp ${BAZEL_BIN}/channels/cmd/channels/linux-amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels.sha256
-	cp -fp bazel-bin/channels/cmd/channels/linux-arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels
+	cp -fp ${BAZEL_BIN}/channels/cmd/channels/linux-arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels.sha256
-	cp -fp bazel-bin/protokube/cmd/protokube/linux-amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube
+	cp -fp ${BAZEL_BIN}/protokube/cmd/protokube/linux-amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube.sha256
-	cp -fp bazel-bin/protokube/cmd/protokube/linux-arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube
+	cp -fp ${BAZEL_BIN}/protokube/cmd/protokube/linux-arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube.sha256
 	cp ${BAZELIMAGES}/kops-controller-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz
 	cp ${BAZELIMAGES}/kops-controller-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz.sha256
@@ -695,15 +697,15 @@ bazel-version-dist: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm6
 	cp ${BAZELIMAGES}/dns-controller-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-amd64.tar.gz.sha256
 	cp ${BAZELIMAGES}/dns-controller-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-arm64.tar.gz
 	cp ${BAZELIMAGES}/dns-controller-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-arm64.tar.gz.sha256
-	cp bazel-bin/cmd/kops/linux-amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops
+	cp ${BAZEL_BIN}/cmd/kops/linux-amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops.sha256
-	cp bazel-bin/cmd/kops/linux-arm64/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/kops
+	cp ${BAZEL_BIN}/cmd/kops/linux-arm64/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/kops
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/kops.sha256
-	cp bazel-bin/cmd/kops/darwin-amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops
+	cp ${BAZEL_BIN}/cmd/kops/darwin-amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha256
-	cp bazel-bin/cmd/kops/darwin-arm64/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/arm64/kops
+	cp ${BAZEL_BIN}/cmd/kops/darwin-arm64/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/arm64/kops
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/darwin/arm64/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/arm64/kops.sha256
-	cp bazel-bin/cmd/kops/windows-amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe
+	cp ${BAZEL_BIN}/cmd/kops/windows-amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha256
 	tar cfvz ${BAZELUPLOAD}/kops/${VERSION}/images/images.tar.gz -C ${BAZELIMAGES} --exclude "*.sha256" .
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/images.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/images.tar.gz.sha256
@@ -744,10 +746,10 @@ build-docs-netlify:
 .PHONY: dev-upload-nodeup
 dev-upload-nodeup: bazel-crossbuild-nodeup
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
-	cp -fp bazel-bin/cmd/nodeup/linux-amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
+	cp -fp ${BAZEL_BIN}/cmd/nodeup/linux-amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
-	cp -fp bazel-bin/cmd/nodeup/linux-arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup
+	cp -fp ${BAZEL_BIN}/cmd/nodeup/linux-arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup.sha256
 	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
@@ -755,10 +757,10 @@ dev-upload-nodeup: bazel-crossbuild-nodeup
 .PHONY: dev-upload-protokube
 dev-upload-protokube: bazel-crossbuild-protokube # Upload kops to GCS
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
-	cp -fp bazel-bin/protokube/cmd/protokube/linux-amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube
+	cp -fp ${BAZEL_BIN}/protokube/cmd/protokube/linux-amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube.sha256
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
-	cp -fp bazel-bin/protokube/cmd/protokube/linux-arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube
+	cp -fp ${BAZEL_BIN}/protokube/cmd/protokube/linux-arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube.sha256
 	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
@@ -766,10 +768,10 @@ dev-upload-protokube: bazel-crossbuild-protokube # Upload kops to GCS
 .PHONY: dev-upload-channels
 dev-upload-channels: bazel-crossbuild-channels
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
-	cp -fp bazel-bin/channels/cmd/channels/linux-amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels
+	cp -fp ${BAZEL_BIN}/channels/cmd/channels/linux-amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels.sha256
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
-	cp -fp bazel-bin/channels/cmd/channels/linux-arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels
+	cp -fp ${BAZEL_BIN}/channels/cmd/channels/linux-arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels.sha256
 	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
@@ -808,11 +810,11 @@ dev-upload-kube-apiserver-healthcheck: bazel-kube-apiserver-healthcheck-export #
 dev-upload-linux-amd64 dev-upload-linux-arm64: dev-upload-linux-%: bazel-build-nodeup-linux-% bazel-kops-controller-export-linux-% bazel-kube-apiserver-healthcheck-export-linux-% bazel-dns-controller-export-linux-% bazel-build-protokube-linux-% bazel-build-channels-linux-%
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/
-	cp -fp bazel-bin/cmd/nodeup/linux-$*/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/nodeup
+	cp -fp ${BAZEL_BIN}/cmd/nodeup/linux-$*/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/nodeup
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/nodeup.sha256
-	cp -fp bazel-bin/channels/cmd/channels/linux-$*/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/channels
+	cp -fp ${BAZEL_BIN}/channels/cmd/channels/linux-$*/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/channels
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/channels.sha256
-	cp -fp bazel-bin/protokube/cmd/protokube/linux-$*/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/protokube
+	cp -fp ${BAZEL_BIN}/protokube/cmd/protokube/linux-$*/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/protokube
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/protokube.sha256
 	cp -fp ${BAZELIMAGES}/kops-controller-$*.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-$*.tar.gz
 	cp -fp ${BAZELIMAGES}/kops-controller-$*.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-$*.tar.gz.sha256
@@ -869,6 +871,6 @@ kube-apiserver-healthcheck-manifest:
 cloudbuild-artifacts:
 	mkdir -p ${KOPS_ROOT}/cloudbuild/
 	cd ${BAZELUPLOAD}/kops/; find . -type f | sort | xargs sha256sum > ${KOPS_ROOT}/cloudbuild/files.sha256
-	cd ${KOPS_ROOT}/bazel-bin/; find . -name '*.digest' -type f | sort | xargs grep . > ${KOPS_ROOT}/cloudbuild/image-digests
+	cd ${KOPS_ROOT}/${BAZEL_BIN}/; find . -name '*.digest' -type f | sort | xargs grep . > ${KOPS_ROOT}/cloudbuild/image-digests
 	# ${BUILDER_OUTPUT}/output is a special cloudbuild target; the first 4KB is captured securely
 	cd ${KOPS_ROOT}/cloudbuild/; find -type f | sort | xargs sha256sum > ${BUILDER_OUTPUT}/output
