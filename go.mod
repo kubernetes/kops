@@ -34,7 +34,7 @@ replace (
 )
 
 require (
-	cloud.google.com/go v0.81.0
+	cloud.google.com/go v0.94.1
 	github.com/Azure/azure-pipeline-go v0.2.3
 	github.com/Azure/azure-sdk-for-go v55.0.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.13.0
@@ -54,7 +54,7 @@ require (
 	github.com/go-ini/ini v1.62.0
 	github.com/go-logr/logr v0.4.0
 	github.com/gogo/protobuf v1.3.2
-	github.com/google/go-cmp v0.5.5
+	github.com/google/go-cmp v0.5.6
 	github.com/google/go-containerregistry v0.5.1
 	github.com/google/uuid v1.2.0
 	github.com/gophercloud/gophercloud v0.18.0
@@ -77,10 +77,12 @@ require (
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	github.com/zclconf/go-cty v1.8.2
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
-	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
-	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
-	golang.org/x/sys v0.0.0-20210817190340-bfb29a6856f2
-	google.golang.org/api v0.45.0
+	golang.org/x/mod v0.5.1 // indirect
+	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d
+	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
+	golang.org/x/sys v0.0.0-20210925032602-92d5a993a665
+	golang.org/x/tools v0.1.6 // indirect
+	google.golang.org/api v0.57.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
 	gopkg.in/square/go-jose.v2 v2.5.1
