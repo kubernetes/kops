@@ -7,6 +7,7 @@ go_library(
     importpath = "google.golang.org/api/option/internaloption",
     visibility = ["//visibility:public"],
     deps = [
+        "//vendor/golang.org/x/oauth2/google:go_default_library",
         "//vendor/google.golang.org/api/internal:go_default_library",
         "//vendor/google.golang.org/api/option:go_default_library",
     ],
