@@ -16,6 +16,10 @@ limitations under the License.
 
 package bootstrap
 
+import (
+	"context"
+)
+
 // Authenticator generates authentication credentials for requests.
 type Authenticator interface {
 	CreateToken(body []byte) (string, error)
@@ -29,11 +33,11 @@ type VerifyResult struct {
 	// InstanceGroupName is the name of the kops InstanceGroup this node is a member of.
 	InstanceGroupName string
 
-	// CertificateNames is the names the node is authorized to use for certificates.
+	// CertificateNames is the alternate names the node is authorized to use for certificates.
 	CertificateNames []string
 }
 
 // Verifier verifies authentication credentials for requests.
 type Verifier interface {
-	VerifyToken(token string, body []byte) (*VerifyResult, error)
+	VerifyToken(ctx context.Context, token string, body []byte) (*VerifyResult, error)
 }
