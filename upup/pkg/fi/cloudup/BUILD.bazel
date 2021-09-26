@@ -65,6 +65,7 @@ go_library(
         "//upup/pkg/fi/cloudup/cloudformation:go_default_library",
         "//upup/pkg/fi/cloudup/do:go_default_library",
         "//upup/pkg/fi/cloudup/gce:go_default_library",
+        "//upup/pkg/fi/cloudup/gce/tpm:go_default_library",
         "//upup/pkg/fi/cloudup/openstack:go_default_library",
         "//upup/pkg/fi/cloudup/terraform:go_default_library",
         "//upup/pkg/fi/cloudup/terraformWriter:go_default_library",
