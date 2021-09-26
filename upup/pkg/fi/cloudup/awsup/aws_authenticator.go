@@ -28,6 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/bootstrap"
 )
 
@@ -71,7 +72,12 @@ func NewAWSAuthenticator(region string) (bootstrap.Authenticator, error) {
 	}, nil
 }
 
-func (a awsAuthenticator) CreateToken(body []byte) (string, error) {
+func (a awsAuthenticator) SignBootstrapRequest(req *nodeup.BootstrapRequest) (*bootstrap.SignedRequestData, error) {
+	body, err := json.Marshal(req)
+	if err != nil {
+		return nil, err
+	}
+
 	sha := sha256.Sum256(body)
 
 	stsRequest, _ := a.sts.GetCallerIdentityRequest(nil)
@@ -79,11 +85,14 @@ func (a awsAuthenticator) CreateToken(body []byte) (string, error) {
 	// Ensure the signature is only valid for this particular body content.
 	stsRequest.HTTPRequest.Header.Add("X-Kops-Request-SHA", base64.RawStdEncoding.EncodeToString(sha[:]))
 
-	err := stsRequest.Sign()
-	if err != nil {
-		return "", err
+	if err := stsRequest.Sign(); err != nil {
+		return nil, err
 	}
 
 	headers, _ := json.Marshal(stsRequest.HTTPRequest.Header)
-	return AWSAuthenticationTokenPrefix + base64.StdEncoding.EncodeToString(headers), nil
+	request := &bootstrap.SignedRequestData{
+		Body:          body,
+		Authorization: AWSAuthenticationTokenPrefix + base64.StdEncoding.EncodeToString(headers),
+	}
+	return request, nil
 }

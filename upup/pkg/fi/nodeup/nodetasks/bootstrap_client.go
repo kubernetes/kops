@@ -171,24 +171,22 @@ func (b *KopsBootstrapClient) QueryBootstrap(ctx context.Context, req *nodeup.Bo
 		return nil, fi.NewTryAgainLaterError(fmt.Sprintf("kops-controller DNS not setup yet (placeholder IP found: %v)", ips))
 	}
 
-	reqBytes, err := json.Marshal(req)
+	signedRequestData, err := b.Authenticator.SignBootstrapRequest(req)
 	if err != nil {
 		return nil, err
 	}
 
 	bootstrapURL := b.BaseURL
 	bootstrapURL.Path = path.Join(bootstrapURL.Path, "/bootstrap")
-	httpReq, err := http.NewRequestWithContext(ctx, "POST", bootstrapURL.String(), bytes.NewReader(reqBytes))
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", bootstrapURL.String(), bytes.NewReader(signedRequestData.Body))
 	if err != nil {
 		return nil, err
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
 
-	token, err := b.Authenticator.CreateToken(reqBytes)
-	if err != nil {
-		return nil, err
+	if signedRequestData.Authorization != "" {
+		httpReq.Header.Set("Authorization", signedRequestData.Authorization)
 	}
-	httpReq.Header.Set("Authorization", token)
 
 	resp, err := b.httpClient.Do(httpReq)
 	if err != nil {

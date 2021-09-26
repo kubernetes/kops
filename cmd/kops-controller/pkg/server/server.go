@@ -106,7 +106,9 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := s.verifier.VerifyToken(r.Header.Get("Authorization"), body)
+	ctx := r.Context()
+
+	id, err := s.verifier.Verify(ctx, r.Header.Get("Authorization"), body)
 	if err != nil {
 		klog.Infof("bootstrap %s verify err: %v", r.RemoteAddr, err)
 		w.WriteHeader(http.StatusForbidden)
@@ -114,14 +116,7 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req := &nodeup.BootstrapRequest{}
-	err = json.Unmarshal(body, req)
-	if err != nil {
-		klog.Infof("bootstrap %s decode err: %v", r.RemoteAddr, err)
-		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte(fmt.Sprintf("failed to decode: %v", err)))
-		return
-	}
+	req := id.Request
 
 	if req.APIVersion != nodeup.BootstrapAPIVersion {
 		klog.Infof("bootstrap %s wrong APIVersion", r.RemoteAddr)

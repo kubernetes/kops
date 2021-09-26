@@ -18,6 +18,7 @@ package awsup
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
@@ -36,6 +37,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/bootstrap"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 )
@@ -120,7 +122,11 @@ type ResponseMetadata struct {
 	RequestId string `xml:"RequestId"`
 }
 
-func (a awsVerifier) VerifyToken(token string, body []byte) (*bootstrap.VerifyResult, error) {
+func (a awsVerifier) Verify(ctx context.Context, token string, body []byte) (*bootstrap.VerifyResult, error) {
+	bootstrapRequest := &nodeup.BootstrapRequest{}
+	if err := json.Unmarshal(body, bootstrapRequest); err != nil {
+		return nil, fmt.Errorf("failed to decode request: %w", err)
+	}
 	if !strings.HasPrefix(token, AWSAuthenticationTokenPrefix) {
 		return nil, fmt.Errorf("incorrect authorization type")
 	}
@@ -238,6 +244,7 @@ func (a awsVerifier) VerifyToken(token string, body []byte) (*bootstrap.VerifyRe
 	}
 
 	result := &bootstrap.VerifyResult{
+		Request:          bootstrapRequest,
 		NodeName:         addrs[0],
 		CertificateNames: addrs,
 	}

@@ -16,13 +16,31 @@ limitations under the License.
 
 package bootstrap
 
+import (
+	"context"
+
+	"k8s.io/kops/pkg/apis/nodeup"
+)
+
 // Authenticator generates authentication credentials for requests.
 type Authenticator interface {
-	CreateToken(body []byte) (string, error)
+	SignBootstrapRequest(req *nodeup.BootstrapRequest) (*SignedRequestData, error)
+}
+
+// SignedRequestData holds info for the bootstrap request.
+type SignedRequestData struct {
+	// Body is the main content to send
+	Body []byte
+
+	// Authorization is the authorization header to use
+	Authorization string
 }
 
 // VerifyResult is the result of a successfully verified request.
 type VerifyResult struct {
+	// Request holds the deserialized (and verified) request
+	Request *nodeup.BootstrapRequest
+
 	// Nodename is the name that this node is authorized to use.
 	NodeName string
 
@@ -35,5 +53,5 @@ type VerifyResult struct {
 
 // Verifier verifies authentication credentials for requests.
 type Verifier interface {
-	VerifyToken(token string, body []byte) (*VerifyResult, error)
+	Verify(ctx context.Context, token string, body []byte) (*VerifyResult, error)
 }
