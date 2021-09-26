@@ -38,6 +38,7 @@ import (
 	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
 	nodeidentityos "k8s.io/kops/pkg/nodeidentity/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmverifier"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/yaml"
@@ -90,6 +91,12 @@ func main() {
 		var err error
 		if opt.Server.Provider.AWS != nil {
 			verifier, err = awsup.NewAWSVerifier(opt.Server.Provider.AWS)
+			if err != nil {
+				setupLog.Error(err, "unable to create verifier")
+				os.Exit(1)
+			}
+		} else if opt.Server.Provider.GCE != nil {
+			verifier, err = gcetpmverifier.NewTPMVerifier(opt.Server.Provider.GCE)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
