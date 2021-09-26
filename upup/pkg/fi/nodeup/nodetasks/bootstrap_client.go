@@ -33,6 +33,7 @@ import (
 	"time"
 
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -135,7 +136,7 @@ func (b *BootstrapClientTask) Run(c *fi.Context) error {
 
 type KopsBootstrapClient struct {
 	// Authenticator generates authentication credentials for requests.
-	Authenticator fi.Authenticator
+	Authenticator bootstrap.Authenticator
 	// CAs are the CA certificates for kops-controller.
 	CAs []byte
 

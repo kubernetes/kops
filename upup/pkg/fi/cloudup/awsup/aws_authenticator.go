@@ -28,7 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
-	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/pkg/bootstrap"
 )
 
 const AWSAuthenticationTokenPrefix = "x-aws-sts "
@@ -37,7 +37,7 @@ type awsAuthenticator struct {
 	sts *sts.STS
 }
 
-var _ fi.Authenticator = &awsAuthenticator{}
+var _ bootstrap.Authenticator = &awsAuthenticator{}
 
 // RegionFromMetadata returns the current region from the aws metdata
 func RegionFromMetadata(ctx context.Context) (string, error) {
@@ -57,7 +57,7 @@ func RegionFromMetadata(ctx context.Context) (string, error) {
 	return region, nil
 }
 
-func NewAWSAuthenticator(region string) (fi.Authenticator, error) {
+func NewAWSAuthenticator(region string) (bootstrap.Authenticator, error) {
 	config := aws.NewConfig().
 		WithCredentialsChainVerboseErrors(true).
 		WithRegion(region).

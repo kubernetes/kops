@@ -13,6 +13,7 @@ go_library(
         "//cmd/kops-controller/pkg/config:go_default_library",
         "//pkg/apis/kops/registry:go_default_library",
         "//pkg/apis/nodeup:go_default_library",
+        "//pkg/bootstrap:go_default_library",
         "//pkg/pki:go_default_library",
         "//pkg/rbac:go_default_library",
         "//upup/pkg/fi:go_default_library",
