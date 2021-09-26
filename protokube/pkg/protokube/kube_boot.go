@@ -59,21 +59,24 @@ type KubeBoot struct {
 func (k *KubeBoot) RunSyncLoop() {
 	ctx := context.Background()
 
-	client, err := k.Kubernetes.KubernetesClient()
-	if err != nil {
-		panic(fmt.Sprintf("could not create kubernetes client: %v", err))
+	if k.Master {
+		client, err := k.Kubernetes.KubernetesClient()
+		if err != nil {
+			panic(fmt.Sprintf("could not create kubernetes client: %v", err))
+		}
+
+		klog.Info("polling for apiserver readiness")
+		for {
+			_, err = client.CoreV1().Namespaces().Get(ctx, "kube-system", metav1.GetOptions{})
+			if err == nil {
+				klog.Info("successfully connected to the apiserver")
+				break
+			}
+			klog.Infof("failed to connect to the apiserver (will sleep and retry): %v", err)
+			time.Sleep(5 * time.Second)
+		}
 	}
 
-	klog.Info("polling for apiserver readiness")
-	for {
-		_, err = client.CoreV1().Namespaces().Get(ctx, "kube-system", metav1.GetOptions{})
-		if err == nil {
-			klog.Info("successfully connected to the apiserver")
-			break
-		}
-		klog.Infof("failed to connect to the apiserver (will sleep and retry): %v", err)
-		time.Sleep(5 * time.Second)
-	}
 	for {
 		if err := k.syncOnce(ctx); err != nil {
 			klog.Warningf("error during attempt to bootstrap (will sleep and retry): %v", err)
