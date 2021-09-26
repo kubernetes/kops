@@ -11,6 +11,8 @@ go_library(
         "cmsghdr_stub.go",
         "cmsghdr_unix.go",
         "cmsghdr_zos_s390x.go",
+        "complete_dontwait.go",
+        "complete_nodontwait.go",
         "empty.s",
         "error_unix.go",
         "error_windows.go",
