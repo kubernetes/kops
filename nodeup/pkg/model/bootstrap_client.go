@@ -23,6 +23,7 @@ import (
 	"strconv"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -39,7 +40,7 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	var authenticator fi.Authenticator
+	var authenticator bootstrap.Authenticator
 	var err error
 	switch kops.CloudProviderID(b.Cluster.Spec.CloudProvider) {
 	case kops.CloudProviderAWS:
