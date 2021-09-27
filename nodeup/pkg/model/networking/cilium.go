@@ -17,7 +17,9 @@ limitations under the License.
 package networking
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"golang.org/x/sys/unix"
@@ -50,7 +52,11 @@ func (b *CiliumBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if err := b.buildBPFMount(c); err != nil {
-		return err
+		return fmt.Errorf("failed to create bpf mount unit: %w", err)
+	}
+
+	if err := b.buildCgroup2Mount(c); err != nil {
+		return fmt.Errorf("failed to create cgroupv2 mount unit: %w", err)
 	}
 
 	return nil
@@ -93,6 +99,52 @@ WantedBy=multi-user.target
 			Name:       "sys-fs-bpf.mount",
 			Definition: fi.String(unit),
 		}
+		service.InitDefaults()
+		c.AddTask(service)
+	}
+
+	return nil
+}
+
+func (b *CiliumBuilder) buildCgroup2Mount(c *fi.ModelBuilderContext) error {
+
+	cgroupPath := "/run/cilium/cgroupv2"
+
+	var fsdata unix.Statfs_t
+	err := unix.Statfs(cgroupPath, &fsdata)
+
+	// If the path does not exist, systemd will create it
+	if !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("error checking for /run/cilium/cgroupv2: %v", err)
+	}
+
+	CGROUP_FS_MAGIC := uint32(0x63677270)
+
+	alreadyMounted := uint32(fsdata.Type) == CGROUP_FS_MAGIC
+
+	if !alreadyMounted {
+		unit := `
+[Unit]
+Description=Cilium Cgroup2 mounts
+Documentation=http://docs.cilium.io/
+DefaultDependencies=no
+Before=local-fs.target umount.target kubelet.service
+
+[Mount]
+What=cgroup2
+Where=/run/cilium/cgroupv2
+Type=cgroup2
+
+[Install]
+WantedBy=multi-user.target
+`
+
+		service := &nodetasks.Service{
+			Name:         "run-cilium-cgroupv2.mount",
+			Definition:   fi.String(unit),
+			SmartRestart: fi.Bool(false),
+		}
+		service.InitDefaults()
 		c.AddTask(service)
 	}
 
