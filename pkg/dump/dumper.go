@@ -285,6 +285,10 @@ func (n *logDumperNode) dump(ctx context.Context) []error {
 		}
 	}
 
+	if err := n.shellToFile(ctx, "cat /etc/hosts", filepath.Join(n.dir, "etchosts")); err != nil {
+		errors = append(errors, err)
+	}
+
 	return errors
 }
 
