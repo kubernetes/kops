@@ -317,6 +317,15 @@ func (t *Tester) addNodeOSArchFlag() error {
 	return nil
 }
 
+func (t *Tester) addNonBlockingTaintsFlag() {
+	if hasFlag(t.TestArgs, "non-blocking-taints") {
+		return
+	}
+	nbt := "node-role.kubernetes.io/master,node-role.kubernetes.io/api-server"
+	klog.Infof("Setting --non-blocking-taints=%s", nbt)
+	t.TestArgs += fmt.Sprintf(" --non-blocking-taints=%v", nbt)
+}
+
 func (t *Tester) execute() error {
 	fs, err := gpflag.Parse(t)
 	if err != nil {
@@ -373,6 +382,7 @@ func (t *Tester) execute() error {
 	if err := t.addNodeOSArchFlag(); err != nil {
 		return err
 	}
+	t.addNonBlockingTaintsFlag()
 
 	return t.Test()
 }
