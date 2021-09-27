@@ -45,6 +45,7 @@ go_library(
         "//pkg/apis/kops/model:go_default_library",
         "//pkg/apis/kops/util:go_default_library",
         "//pkg/apis/nodeup:go_default_library",
+        "//pkg/bootstrap:go_default_library",
         "//pkg/configbuilder:go_default_library",
         "//pkg/dns:go_default_library",
         "//pkg/flagbuilder:go_default_library",

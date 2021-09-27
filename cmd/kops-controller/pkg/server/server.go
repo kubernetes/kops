@@ -33,6 +33,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
@@ -44,14 +45,14 @@ type Server struct {
 	certNames  sets.String
 	keypairIDs map[string]string
 	server     *http.Server
-	verifier   fi.Verifier
+	verifier   bootstrap.Verifier
 	keystore   pki.Keystore
 
 	// configBase is the base of the configuration storage.
 	configBase vfs.Path
 }
 
-func NewServer(opt *config.Options, verifier fi.Verifier) (*Server, error) {
+func NewServer(opt *config.Options, verifier bootstrap.Verifier) (*Server, error) {
 	server := &http.Server{
 		Addr: opt.Server.Listen,
 		TLSConfig: &tls.Config{
@@ -168,7 +169,7 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 	klog.Infof("bootstrap %s %s success", r.RemoteAddr, id.NodeName)
 }
 
-func (s *Server) issueCert(name string, pubKey string, id *fi.VerifyResult, validHours uint32, keypairIDs map[string]string) (string, error) {
+func (s *Server) issueCert(name string, pubKey string, id *bootstrap.VerifyResult, validHours uint32, keypairIDs map[string]string) (string, error) {
 	block, _ := pem.Decode([]byte(pubKey))
 	if block.Type != "RSA PUBLIC KEY" {
 		return "", fmt.Errorf("unexpected key type %q", block.Type)
