@@ -39,6 +39,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/configserver"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi"
@@ -757,7 +758,7 @@ func seedRNG(ctx context.Context, bootConfig *nodeup.BootConfig, region string) 
 
 // getNodeConfigFromServer queries kops-controller for our node's configuration.
 func getNodeConfigFromServer(ctx context.Context, bootConfig *nodeup.BootConfig, region string) (*nodeup.BootstrapResponse, error) {
-	var authenticator fi.Authenticator
+	var authenticator bootstrap.Authenticator
 
 	switch api.CloudProviderID(bootConfig.CloudProvider) {
 	case api.CloudProviderAWS:

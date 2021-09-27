@@ -23,10 +23,10 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/nodeup"
-	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/pkg/bootstrap"
 )
 
-func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest, identity *fi.VerifyResult) (*nodeup.NodeConfig, error) {
+func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest, identity *bootstrap.VerifyResult) (*nodeup.NodeConfig, error) {
 	klog.Infof("getting node config for %+v", req)
 
 	instanceGroupName := identity.InstanceGroupName

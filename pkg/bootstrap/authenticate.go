@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package fi
+package bootstrap
 
 // Authenticator generates authentication credentials for requests.
 type Authenticator interface {
