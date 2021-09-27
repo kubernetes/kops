@@ -52,6 +52,7 @@ func (d *deployer) renderTemplate(values map[string]interface{}) error {
 		"--template", d.TemplatePath,
 		"--output", manifestPath,
 		"--values", valuesPath,
+		"--name", d.ClusterName,
 	}
 	klog.Info(strings.Join(args, " "))
 
