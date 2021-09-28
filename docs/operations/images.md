@@ -55,7 +55,7 @@ The following table provides the support status for various distros with regards
 
 ### Amazon Linux 2
 
-Amazon Linux 2 is based on Kernel version **4.14** which fixes some of the bugs present in RHEL/CentOS 7 and effects are less visible, but it's still quite old.
+Amazon Linux 2 has variants using Kernel versions 4.14 and 5.10. Be sure to use the 5.10 images as specified in the image filter below. More information is available in the [AWS Documentation](https://aws.amazon.com/amazon-linux-2/faqs/).
 
 For kOps versions 1.16 and 1.17, the only supported Docker version is `18.06.3`. Newer versions of Docker cannot be installed due to missing dependencies for `container-selinux`. This issue is fixed in kOps **1.18**.
 
@@ -65,7 +65,7 @@ Available images can be listed using:
 aws ec2 describe-images --region us-east-1 --output table \
   --owners 137112412989 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=amzn2-ami-hvm-2*-x86_64-gp2"
+  --filters "Name=name,Values=amzn2-ami-kernel-5.10-hvm-2*-x86_64-gp2"
 ```
 
 ### Debian 10 (Buster)
