@@ -55,6 +55,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/env"
+	"sigs.k8s.io/yaml"
 )
 
 // TemplateFunctions provides a collection of methods used throughout the templates
@@ -73,6 +74,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["EtcdScheme"] = tf.EtcdScheme
 	dest["SharedVPC"] = tf.SharedVPC
 	dest["ToJSON"] = tf.ToJSON
+	dest["ToYAML"] = tf.ToYAML
 	dest["UseBootstrapTokens"] = tf.UseBootstrapTokens
 	dest["UseEtcdTLS"] = tf.UseEtcdTLS
 	// Remember that we may be on a different arch from the target.  Hard-code for now.
@@ -261,6 +263,16 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 // ToJSON returns a json representation of the struct or on error an empty string
 func (tf *TemplateFunctions) ToJSON(data interface{}) string {
 	encoded, err := json.Marshal(data)
+	if err != nil {
+		return ""
+	}
+
+	return string(encoded)
+}
+
+// ToYAML returns a yaml representation of the struct or on error an empty string
+func (tf *TemplateFunctions) ToYAML(data interface{}) string {
+	encoded, err := yaml.Marshal(data)
 	if err != nil {
 		return ""
 	}
