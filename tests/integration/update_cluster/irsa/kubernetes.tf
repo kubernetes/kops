@@ -291,7 +291,7 @@ resource "aws_iam_instance_profile" "nodes-minimal-example-com" {
 }
 
 resource "aws_iam_openid_connect_provider" "minimal-example-com" {
-  client_id_list = ["amazonaws.com"]
+  client_id_list = ["amazonaws.com", "sts.amazonaws.com"]
   tags = {
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "minimal.example.com"
