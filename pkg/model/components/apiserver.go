@@ -161,7 +161,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 			"NamespaceLifecycle",
 			"LimitRanger",
 			"ServiceAccount",
-			"PersistentVolumeLabel",
+			//"PersistentVolumeLabel",
 			"DefaultStorageClass",
 			"DefaultTolerationSeconds",
 			"MutatingAdmissionWebhook",

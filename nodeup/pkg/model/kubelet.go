@@ -209,7 +209,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	// would be a degree of freedom we don't have (we'd have to write the config to different files)
 	// We can always add this later if it is needed.
 	if b.Cluster.Spec.CloudConfig != nil {
-		flags += " --cloud-config=" + CloudConfigFilePath
+		flags += " --cloud-config=" + InTreeCloudConfigFilePath
 	}
 
 	if b.UsesSecondaryIP() {
