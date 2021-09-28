@@ -303,6 +303,7 @@ spec:
         - --skip-nodes-with-system-pods=true
         - --scale-down-delay-after-add=10m0s
         - --new-pod-scale-up-delay=0s
+        - --max-node-provision-time=15m0s
         - --stderrthreshold=info
         - --v=2
         env:
