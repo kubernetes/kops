@@ -6686,6 +6686,7 @@ func Convert_kops_ServiceAccountExternalPermission_To_v1alpha2_ServiceAccountExt
 func autoConvert_v1alpha2_ServiceAccountIssuerDiscoveryConfig_To_kops_ServiceAccountIssuerDiscoveryConfig(in *ServiceAccountIssuerDiscoveryConfig, out *kops.ServiceAccountIssuerDiscoveryConfig, s conversion.Scope) error {
 	out.DiscoveryStore = in.DiscoveryStore
 	out.EnableAWSOIDCProvider = in.EnableAWSOIDCProvider
+	out.AdditionalAudiences = in.AdditionalAudiences
 	return nil
 }
 
@@ -6697,6 +6698,7 @@ func Convert_v1alpha2_ServiceAccountIssuerDiscoveryConfig_To_kops_ServiceAccount
 func autoConvert_kops_ServiceAccountIssuerDiscoveryConfig_To_v1alpha2_ServiceAccountIssuerDiscoveryConfig(in *kops.ServiceAccountIssuerDiscoveryConfig, out *ServiceAccountIssuerDiscoveryConfig, s conversion.Scope) error {
 	out.DiscoveryStore = in.DiscoveryStore
 	out.EnableAWSOIDCProvider = in.EnableAWSOIDCProvider
+	out.AdditionalAudiences = in.AdditionalAudiences
 	return nil
 }
 
