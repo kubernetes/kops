@@ -603,6 +603,10 @@ spec:
                     description: 'Image is the docker container used. Default: the
                       latest supported image for the specified kubernetes version.'
                     type: string
+                  maxNodeProvisionTime:
+                    description: MaxNodeProvisionTime determines how long CAS will
+                      wait for a node to join the cluster.
+                    type: string
                   memoryRequest:
                     anyOf:
                     - type: integer
