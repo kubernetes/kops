@@ -99,6 +99,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["GetNodeInstanceGroups"] = tf.GetNodeInstanceGroups
 	dest["HasHighlyAvailableControlPlane"] = tf.HasHighlyAvailableControlPlane
 	dest["ControlPlaneControllerReplicas"] = tf.ControlPlaneControllerReplicas
+	dest["APIServerNodeRole"] = tf.APIServerNodeRole
 
 	dest["CloudTags"] = tf.CloudTagsForInstanceGroup
 	dest["KubeDNS"] = func() *kops.KubeDNSConfig {
@@ -295,6 +296,13 @@ func (tf *TemplateFunctions) ControlPlaneControllerReplicas() int {
 		return 2
 	}
 	return 1
+}
+
+func (tf *TemplateFunctions) APIServerNodeRole() string {
+	if featureflag.APIServerNodes.Enabled() {
+		return "node-role.kubernetes.io/api-server"
+	}
+	return "node-role.kubernetes.io/master"
 }
 
 // HasHighlyAvailableControlPlane returns true of the cluster has more than one control plane node. False otherwise.
