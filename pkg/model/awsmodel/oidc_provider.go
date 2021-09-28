@@ -49,11 +49,16 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 		thumbprints = append(thumbprints, fi.String(fingerprint))
 	}
 
+	audiences := []string{defaultAudience}
+	if b.Cluster.Spec.ServiceAccountIssuerDiscovery.AdditionalAudiences != nil {
+		audiences = append(audiences, b.Cluster.Spec.ServiceAccountIssuerDiscovery.AdditionalAudiences...)
+	}
+
 	c.AddTask(&awstasks.IAMOIDCProvider{
 		Name:        fi.String(b.ClusterName()),
 		Lifecycle:   b.Lifecycle,
 		URL:         b.Cluster.Spec.KubeAPIServer.ServiceAccountIssuer,
-		ClientIDs:   []*string{fi.String(defaultAudience)},
+		ClientIDs:   fi.StringSlice(audiences),
 		Tags:        b.CloudTags(b.ClusterName(), false),
 		Thumbprints: thumbprints,
 	})

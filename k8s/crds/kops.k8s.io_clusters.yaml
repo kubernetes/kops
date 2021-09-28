@@ -4309,6 +4309,12 @@ spec:
                 description: ServiceAccountIssuerDiscovery configures the OIDC Issuer
                   for ServiceAccounts.
                 properties:
+                  additionalAudiences:
+                    description: AdditionalAudiences adds user defined audiences to
+                      the provisionned AWS OIDC provider
+                    items:
+                      type: string
+                    type: array
                   discoveryStore:
                     description: DiscoveryStore is the VFS path to where OIDC Issuer
                       Discovery metadata is stored.
