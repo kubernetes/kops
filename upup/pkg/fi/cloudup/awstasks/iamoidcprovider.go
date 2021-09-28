@@ -23,6 +23,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -110,9 +111,6 @@ func (s *IAMOIDCProvider) CheckChanges(a, e, changes *IAMOIDCProvider) error {
 	}
 
 	if a != nil {
-		if changes.ClientIDs != nil {
-			return fi.CannotChangeField("ClientIDs")
-		}
 		if changes.URL != nil {
 			return fi.CannotChangeField("URL")
 		}
@@ -175,6 +173,38 @@ func (p *IAMOIDCProvider) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMOID
 				_, err := t.Cloud.IAM().TagOpenIDConnectProvider(tagRequest)
 				if err != nil {
 					return fmt.Errorf("error tagging IAMOIDCProvider: %v", err)
+				}
+			}
+		}
+		if changes.ClientIDs != nil {
+			actual := sets.NewString()
+			for _, aud := range a.ClientIDs {
+				actual.Insert(*aud)
+			}
+			expected := sets.NewString()
+			for _, aud := range e.ClientIDs {
+				expected.Insert(*aud)
+			}
+			toRemove := actual.Difference(expected)
+			for _, elem := range toRemove.List() {
+				request := &iam.RemoveClientIDFromOpenIDConnectProviderInput{
+					OpenIDConnectProviderArn: a.arn,
+					ClientID:                 &elem,
+				}
+				_, err := t.Cloud.IAM().RemoveClientIDFromOpenIDConnectProvider(request)
+				if err != nil {
+					return fmt.Errorf("error removing audience %s to IAMOIDCProvider: %v", elem, err)
+				}
+			}
+			toAdd := expected.Difference(actual)
+			for _, elem := range toAdd.List() {
+				request := &iam.AddClientIDToOpenIDConnectProviderInput{
+					OpenIDConnectProviderArn: a.arn,
+					ClientID:                 &elem,
+				}
+				_, err := t.Cloud.IAM().AddClientIDToOpenIDConnectProvider(request)
+				if err != nil {
+					return fmt.Errorf("error adding audience %s to IAMOIDCProvider: %v", elem, err)
 				}
 			}
 		}
