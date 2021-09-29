@@ -58,6 +58,8 @@ spec:
   serviceAccountIssuerDiscovery:
     enableAWSOIDCProvider: true
     discoveryStore: memfs://discovery.example.com/minimal.example.com
+    additionalAudiences:
+      - sts.amazonaws.com
   sshAccess:
     - 0.0.0.0/0
   topology:
