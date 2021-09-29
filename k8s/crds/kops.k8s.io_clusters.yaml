@@ -4311,7 +4311,7 @@ spec:
                 properties:
                   additionalAudiences:
                     description: AdditionalAudiences adds user defined audiences to
-                      the provisionned AWS OIDC provider
+                      the provisioned AWS OIDC provider
                     items:
                       type: string
                     type: array
