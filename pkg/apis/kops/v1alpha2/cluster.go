@@ -222,6 +222,8 @@ type ServiceAccountIssuerDiscoveryConfig struct {
 	DiscoveryStore string `json:"discoveryStore,omitempty"`
 	// EnableAWSOIDCProvider will provision an AWS OIDC provider that trusts the ServiceAccount Issuer
 	EnableAWSOIDCProvider bool `json:"enableAWSOIDCProvider,omitempty"`
+	// AdditionalAudiences adds user defined audiences to the provisioned AWS OIDC provider
+	AdditionalAudiences []string `json:"additionalAudiences,omitempty"`
 }
 
 // ServiceAccountExternalPermissions grants a ServiceAccount permissions to external resources.
