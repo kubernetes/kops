@@ -64,6 +64,18 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|Services.*affinity"
 	}
 
+	if cluster.Spec.CloudProvider == "gce" {
+		// Firewall tests expect a specific format for cluster and control plane host names
+		// which kOps does not match
+		// ref: https://github.com/kubernetes/kubernetes/blob/1bd00776b5d78828a065b5c21e7003accc308a06/test/e2e/framework/providers/gce/firewall.go#L92-L100
+		skipRegex += "|Firewall"
+		// kube-dns tests are not skipped automatically if a cluster uses CoreDNS instead
+		skipRegex += "|kube-dns"
+		// this test assumes the cluster runs COS but kOps uses Ubuntu by default
+		// ref: https://github.com/kubernetes/test-infra/pull/22190
+		skipRegex += "|should.be.mountable.when.non-attachable"
+	}
+
 	// Ensure it is valid regex
 	if _, err := regexp.Compile(skipRegex); err != nil {
 		return err
