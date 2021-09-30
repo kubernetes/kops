@@ -1,11 +1,10 @@
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: iamidentitymappings.iamauthenticator.k8s.aws
 spec:
   group: iamauthenticator.k8s.aws
-  version: v1alpha1
   scope: Cluster
   names:
     plural: iamidentitymappings
@@ -13,25 +12,30 @@ spec:
     kind: IAMIdentityMapping
     categories:
     - all
-  subresources:
-    status: {}
-  validation:
-    openAPIV3Schema:
-      properties:
-        spec:
-          required:
-          - arn
-          - username
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
           properties:
-            arn:
-              type: string
-            username:
-              type: string
-            groups:
-              type: array
-              items:
-                type: string
-
+            spec:
+              type: object
+              required:
+              - arn
+              - username
+              properties:
+                arn:
+                  type: string
+                username:
+                  type: string
+                groups:
+                  type: array
+                  items:
+                    type: string
+      subresources:
+        status: {}
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -147,7 +151,7 @@ spec:
       # - output (output kubeconfig to plug into your apiserver configuration, mounted from the host)
       containers:
       - name: aws-iam-authenticator
-        image: {{ or .Authentication.Aws.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-iam-authenticator:v0.5.2-debian-stretch" }}
+        image: {{ or .Authentication.Aws.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-iam-authenticator:v0.5.3-debian-stretch" }}
         args:
         - server
         {{- if or (not .Authentication.Aws.BackendMode) (contains "MountedFile" .Authentication.Aws.BackendMode) }}

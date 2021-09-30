@@ -171,10 +171,6 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateAWSLoadBalancerController(c, spec.AWSLoadBalancerController, fieldPath.Child("awsLoadBalanceController"))...)
 	}
 
-	if spec.Authentication != nil && spec.Authentication.Aws != nil && c.IsKubernetesGTE("1.22") {
-		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("authentication", "aws"), "AWS IAM authenticator is supported only for Kubernetes 1.21 and lower"))
-	}
-
 	if spec.SnapshotController != nil {
 		allErrs = append(allErrs, validateSnapshotController(c, spec.SnapshotController, fieldPath.Child("snapshotController"))...)
 
