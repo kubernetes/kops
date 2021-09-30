@@ -169,7 +169,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
     - NamespaceLifecycle
     - LimitRanger
     - ServiceAccount
-    - PersistentVolumeLabel
     - DefaultStorageClass
     - DefaultTolerationSeconds
     - MutatingAdmissionWebhook
@@ -263,7 +262,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
   ConfigBase: memfs://clusters.example.com/docker.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: imk1UXoCCs6yiCc1fQQkdx0kEvXA0OMpylH1JztAa+w=
+  NodeupConfigHash: sWjOwigV1Op8L3/9Ua9YBkILaUUdJ7huisFgdb+xwGo=
 
   __EOF_KUBE_ENV
 

@@ -152,7 +152,6 @@ kubeAPIServer:
   - NamespaceLifecycle
   - LimitRanger
   - ServiceAccount
-  - PersistentVolumeLabel
   - DefaultStorageClass
   - DefaultTolerationSeconds
   - MutatingAdmissionWebhook
@@ -245,7 +244,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: Master
-NodeupConfigHash: UPW3etJDZvJybeZw7tBxz/1R65u8zXDWGycU5cuxZcY=
+NodeupConfigHash: QA7EfQAYkgG5RL3kAjirfOthbN7tKKAeyoINoE4tNS8=
 
 __EOF_KUBE_ENV
 

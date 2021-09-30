@@ -169,7 +169,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimaletcdexamplecom.Propert
     - NamespaceLifecycle
     - LimitRanger
     - ServiceAccount
-    - PersistentVolumeLabel
     - DefaultStorageClass
     - DefaultTolerationSeconds
     - MutatingAdmissionWebhook
@@ -261,7 +260,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimaletcdexamplecom.Propert
   ConfigBase: memfs://clusters.example.com/minimal-etcd.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: W7/wjoITwtdyVXX6BtfOESF2XD1PmsG+bvat01A/V3Y=
+  NodeupConfigHash: yUdSa4C8PzCit8V4ivh2O7J1JjMyI7ygAz96joTXc0I=
 
   __EOF_KUBE_ENV
 

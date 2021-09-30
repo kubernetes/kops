@@ -156,7 +156,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumadvancedexamplec
     - NamespaceLifecycle
     - LimitRanger
     - ServiceAccount
-    - PersistentVolumeLabel
     - DefaultStorageClass
     - DefaultTolerationSeconds
     - MutatingAdmissionWebhook
@@ -249,7 +248,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumadvancedexamplec
   ConfigBase: memfs://clusters.example.com/privateciliumadvanced.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: FzU3IcKcYEj83I/oyjYHlOlrvoZ5LIxOTn5oXLAMcW4=
+  NodeupConfigHash: 6hDaUSfx0pAT3A2POKlKIRBmzNba4xyZ3dTs5nH+CSs=
 
   __EOF_KUBE_ENV
 
