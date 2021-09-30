@@ -178,8 +178,8 @@ kubeAPIServer:
   requestheaderUsernameHeaders:
   - X-Remote-User
   securePort: 443
-  serviceAccountIssuer: https://api.internal.nthsqsresources.example.com
-  serviceAccountJWKSURI: https://api.internal.nthsqsresources.example.com/openid/v1/jwks
+  serviceAccountIssuer: https://api.internal.nthsqsresources.longclustername.example.com
+  serviceAccountJWKSURI: https://api.internal.nthsqsresources.longclustername.example.com/openid/v1/jwks
   serviceClusterIPRange: 100.64.0.0/13
   storageBackend: etcd3
 kubeControllerManager:
@@ -187,7 +187,7 @@ kubeControllerManager:
   attachDetachReconcileSyncPeriod: 1m0s
   cloudProvider: aws
   clusterCIDR: 100.96.0.0/11
-  clusterName: nthsqsresources.example.com
+  clusterName: nthsqsresources.longclustername.example.com
   configureCloudRoutes: false
   image: k8s.gcr.io/kube-controller-manager:v1.20.0
   leaderElection:
@@ -241,10 +241,10 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
-ConfigBase: memfs://clusters.example.com/nthsqsresources.example.com
+ConfigBase: memfs://clusters.example.com/nthsqsresources.longclustername.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: CQPZFIY4im/2GcHbUCIbx6Stn6kfDXPqRsy1xkyjSL0=
+NodeupConfigHash: sGrshxpFidkBKocZgsdNwpRH3cwwL2f5KPGr751qKmg=
 
 __EOF_KUBE_ENV
 
