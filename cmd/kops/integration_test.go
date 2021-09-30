@@ -639,11 +639,11 @@ func TestAPIServerNodes(t *testing.T) {
 
 // TestNTHQueueProcessor tests the output for resources required by NTH Queue Processor mode
 func TestNTHQueueProcessor(t *testing.T) {
-	newIntegrationTest("nthsqsresources.example.com", "nth_sqs_resources").
+	newIntegrationTest("nthsqsresources.longclustername.example.com", "nth_sqs_resources").
 		withNTH().
 		withAddons(dnsControllerAddon).
 		runTestTerraformAWS(t)
-	newIntegrationTest("nthsqsresources.example.com", "nth_sqs_resources").
+	newIntegrationTest("nthsqsresources.longclustername.example.com", "nth_sqs_resources").
 		runTestCloudformation(t)
 }
 

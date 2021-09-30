@@ -159,10 +159,10 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
-ConfigBase: memfs://clusters.example.com/nthsqsresources.example.com
+ConfigBase: memfs://clusters.example.com/nthsqsresources.longclustername.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: 5KnqQJ045S8OADWs9ZyNvtubFIYrD55hh4OiqPcn3z8=
+NodeupConfigHash: JDdsIp2tzHSnDmPELOQk6uvokC81/DO5ElOEu3937GY=
 
 __EOF_KUBE_ENV
 
