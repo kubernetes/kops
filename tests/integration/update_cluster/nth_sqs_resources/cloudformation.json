@@ -969,10 +969,10 @@
         ]
       }
     },
-    "AWSEventsRulenthsqsresourceslongclusternameexamplecomASGLifecycle": {
+    "AWSEventsRulenthsqsresourceslongclusternameefkbaohASGLifecycle": {
       "Type": "AWS::Events::Rule",
       "Properties": {
-        "Name": "nthsqsresources.longclustername.example.com-ASGLifecycle",
+        "Name": "nthsqsresources.longclustername.e-fkbaoh-ASGLifecycle",
         "EventPattern": {
           "detail-type": [
             "EC2 Instance-terminate Lifecycle Action"
@@ -989,10 +989,10 @@
         ]
       }
     },
-    "AWSEventsRulenthsqsresourceslongclusternameexamplecomInstanceStateChange": {
+    "AWSEventsRulenthsqsresourceslongclusternameefkbaohInstanceStateChange": {
       "Type": "AWS::Events::Rule",
       "Properties": {
-        "Name": "nthsqsresources.longclustername.example.com-InstanceStateChange",
+        "Name": "nthsqsresources.longclustername.e-fkbaoh-InstanceStateChange",
         "EventPattern": {
           "detail-type": [
             "EC2 Instance State-change Notification"
@@ -1009,10 +1009,10 @@
         ]
       }
     },
-    "AWSEventsRulenthsqsresourceslongclusternameexamplecomRebalanceRecommendation": {
+    "AWSEventsRulenthsqsresourceslongclusternameefkbaohRebalanceRecommendation": {
       "Type": "AWS::Events::Rule",
       "Properties": {
-        "Name": "nthsqsresources.longclustername.example.com-RebalanceRecommendation",
+        "Name": "nthsqsresources.longclustername.e-fkbaoh-RebalanceRecommendation",
         "EventPattern": {
           "detail-type": [
             "EC2 Instance Rebalance Recommendation"
@@ -1029,10 +1029,10 @@
         ]
       }
     },
-    "AWSEventsRulenthsqsresourceslongclusternameexamplecomSpotInterruption": {
+    "AWSEventsRulenthsqsresourceslongclusternameefkbaohSpotInterruption": {
       "Type": "AWS::Events::Rule",
       "Properties": {
-        "Name": "nthsqsresources.longclustername.example.com-SpotInterruption",
+        "Name": "nthsqsresources.longclustername.e-fkbaoh-SpotInterruption",
         "EventPattern": {
           "detail-type": [
             "EC2 Spot Instance Interruption Warning"

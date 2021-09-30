@@ -78,12 +78,13 @@ func ListEventBridgeRules(cloud fi.Cloud, clusterName string) ([]*resources.Reso
 	c := cloud.(awsup.AWSCloud)
 
 	klog.V(2).Infof("Listing EventBridge rules")
+	clusterNamePrefix := awsup.GetClusterName40(clusterName)
 
 	// rule names start with the cluster name so that we can search for them
 	request := &eventbridge.ListRulesInput{
 		EventBusName: nil,
 		Limit:        nil,
-		NamePrefix:   aws.String(clusterName),
+		NamePrefix:   aws.String(clusterNamePrefix),
 	}
 	response, err := c.EventBridge().ListRules(request)
 	if err != nil {
