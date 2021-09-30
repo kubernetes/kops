@@ -33,6 +33,8 @@ const (
 	// InstanceGroupNameTag is the key of the tag used to identify an
 	// instance group that VM ScaleSet belongs.
 	InstanceGroupNameTag = "kops.k8s.io_instancegroup"
+	// ClusterNodeTemplateAnnotation is the prefix used on node annotations when copying to cloud tags.
+	ClusterNodeTemplateAnnotation = "k8s.io_cluster_node-template_annotation_"
 	// ClusterNodeTemplateLabel is the prefix used on node labels when copying to cloud tags.
 	ClusterNodeTemplateLabel = "k8s.io_cluster_node-template_label_"
 	// cacheTTL is the expiration time of nodeidentity.Info cache.
@@ -103,19 +105,25 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	// TODO(kenji): Populate labels
 
 	info := &nodeidentity.Info{
-		InstanceID: vmssName,
-		Labels:     labels,
+		InstanceID:  vmssName,
+		Labels:      labels,
+		Annotations: map[string]string{},
 	}
 
 	for k, v := range vmss.Tags {
-		if !strings.HasPrefix(k, ClusterNodeTemplateLabel) {
-			continue
+		if strings.HasPrefix(k, ClusterNodeTemplateLabel) {
+			l := strings.SplitN(*v, "=", 2)
+			if len(l) <= 1 {
+				return nil, fmt.Errorf("malformed tag value %s", *v)
+			}
+			labels[l[0]] = l[1]
+		} else if strings.HasPrefix(k, ClusterNodeTemplateAnnotation) {
+			l := strings.SplitN(*v, "=", 2)
+			if len(l) <= 1 {
+				return nil, fmt.Errorf("malformed tag value %s", *v)
+			}
+			info.Annotations[l[0]] = l[1]
 		}
-		l := strings.SplitN(*v, "=", 2)
-		if len(l) <= 1 {
-			return nil, fmt.Errorf("malformed tag value %s", *v)
-		}
-		labels[l[0]] = l[1]
 	}
 
 	// If caching is enabled add the nodeidentity.Info to cache.

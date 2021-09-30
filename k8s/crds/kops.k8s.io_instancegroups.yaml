@@ -715,6 +715,12 @@ spec:
                     format: int64
                     type: integer
                 type: object
+              nodeAnnotations:
+                additionalProperties:
+                  type: string
+                description: NodeAnnotations indicates the kubernetes annotations
+                  for nodes in this instance group
+                type: object
               nodeLabels:
                 additionalProperties:
                   type: string

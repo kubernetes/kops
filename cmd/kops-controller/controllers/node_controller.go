@@ -89,22 +89,28 @@ func (r *NodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, fmt.Errorf("error identifying node %q: %v", node.Name, err)
 	}
 
-	labels := info.Labels
+	metadataUpdate := newMetadataUpdate()
 
-	updateLabels := make(map[string]string)
-	for k, v := range labels {
+	for k, v := range info.Labels {
 		actual, found := node.Labels[k]
 		if !found || actual != v {
-			updateLabels[k] = v
+			metadataUpdate.Labels[k] = v
 		}
 	}
 
-	if len(updateLabels) == 0 {
-		klog.V(4).Infof("no label changes needed for %s", node.Name)
+	for k, v := range info.Annotations {
+		actual, found := node.Annotations[k]
+		if !found || actual != v {
+			metadataUpdate.Annotations[k] = v
+		}
+	}
+
+	if len(metadataUpdate.Labels) == 0 && len(metadataUpdate.Annotations) == 0 {
+		klog.V(4).Infof("no label or annotation changes needed for %s", node.Name)
 		return ctrl.Result{}, nil
 	}
 
-	if err := patchNodeLabels(r.coreV1Client, ctx, node, updateLabels); err != nil {
+	if err := patchNodeLabels(r.coreV1Client, ctx, node, metadataUpdate); err != nil {
 		klog.Warningf("failed to patch node labels on %s: %v", node.Name, err)
 		return ctrl.Result{}, err
 	}
@@ -124,13 +130,15 @@ type nodePatch struct {
 }
 
 type nodePatchMetadata struct {
-	Labels map[string]string `json:"labels,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty"`
+	Labels      map[string]string `json:"labels,omitempty"`
 }
 
 // patchNodeLabels patches the node labels to set the specified labels
-func patchNodeLabels(client *corev1client.CoreV1Client, ctx context.Context, node *corev1.Node, setLabels map[string]string) error {
+func patchNodeLabels(client *corev1client.CoreV1Client, ctx context.Context, node *corev1.Node, metadataUpdate *nodeMetadataUpdate) error {
 	nodePatchMetadata := &nodePatchMetadata{
-		Labels: setLabels,
+		Labels:      metadataUpdate.Labels,
+		Annotations: metadataUpdate.Annotations,
 	}
 	nodePatch := &nodePatch{
 		Metadata: nodePatchMetadata,

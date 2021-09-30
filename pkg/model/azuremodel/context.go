@@ -82,8 +82,9 @@ func (c *AzureModelContext) NameForLoadBalancer() string {
 // doesn't allow "/" in tag keys.
 func (c *AzureModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) map[string]*string {
 	const (
-		clusterNodeTemplateLabel = "k8s.io_cluster_node-template_label_"
-		clusterNodeTemplateTaint = "k8s.io_cluster_node-template_taint_"
+		clusterNodeTemplateLabel      = "k8s.io_cluster_node-template_label_"
+		clusterNodeTemplateAnnotation = "k8s.io_cluster_node-template_annotation_"
+		clusterNodeTemplateTaint      = "k8s.io_cluster_node-template_taint_"
 	)
 
 	labels := make(map[string]string)
@@ -97,8 +98,17 @@ func (c *AzureModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) ma
 		labels[k] = v
 	}
 
-	// Apply labels for cluster node labels.
+	// Apply labels for cluster node annotations.
 	i := 0
+	for k, v := range ig.Spec.NodeAnnotations {
+		// Store the label key in the tag value
+		// so that we don't need to espace "/" in the label key.
+		labels[fmt.Sprintf("%s%d", clusterNodeTemplateAnnotation, i)] = fmt.Sprintf("%s=%s", k, v)
+		i++
+	}
+
+	// Apply labels for cluster node labels.
+	i = 0
 	for k, v := range ig.Spec.NodeLabels {
 		// Store the label key in the tag value
 		// so that we don't need to espace "/" in the label key.

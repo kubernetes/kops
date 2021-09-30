@@ -40,6 +40,8 @@ const (
 	CloudTagInstanceGroupName = "kops.k8s.io/instancegroup"
 	// ClusterAutoscalerNodeTemplateLabel is the prefix used on node labels when copying to cloud tags.
 	ClusterAutoscalerNodeTemplateLabel = "k8s.io/cluster-autoscaler/node-template/label/"
+	// ClusterAutoscalerNodeTemplateAnnotation is the prefix used on node annotations when copying to cloud tags.
+	ClusterAutoscalerNodeTemplateAnnotation = "k8s.io/cluster-autoscaler/node-template/annotation/"
 	// The expiration time of nodeidentity.Info cache.
 	cacheTTL = 60 * time.Minute
 )
@@ -141,13 +143,17 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	}
 
 	info := &nodeidentity.Info{
-		InstanceID: instanceID,
-		Labels:     labels,
+		InstanceID:  instanceID,
+		Labels:      labels,
+		Annotations: map[string]string{},
 	}
 
 	for _, tag := range instance.Tags {
-		if strings.HasPrefix(aws.StringValue(tag.Key), ClusterAutoscalerNodeTemplateLabel) {
-			info.Labels[strings.TrimPrefix(aws.StringValue(tag.Key), ClusterAutoscalerNodeTemplateLabel)] = aws.StringValue(tag.Value)
+		k := aws.StringValue(tag.Key)
+		if strings.HasPrefix(k, ClusterAutoscalerNodeTemplateLabel) {
+			info.Labels[strings.TrimPrefix(k, ClusterAutoscalerNodeTemplateLabel)] = aws.StringValue(tag.Value)
+		} else if strings.HasPrefix(k, ClusterAutoscalerNodeTemplateAnnotation) {
+			info.Annotations[strings.TrimPrefix(k, ClusterAutoscalerNodeTemplateAnnotation)] = aws.StringValue(tag.Value)
 		}
 	}
 

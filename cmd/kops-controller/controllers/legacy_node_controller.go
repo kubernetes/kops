@@ -122,20 +122,27 @@ func (r *LegacyNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		labels[fmt.Sprintf("node-role.kubernetes.io/%s-worker", lifecycle)] = "true"
 	}
 
-	updateLabels := make(map[string]string)
+	metadataUpdate := newMetadataUpdate()
 	for k, v := range labels {
 		actual, found := node.Labels[k]
 		if !found || actual != v {
-			updateLabels[k] = v
+			metadataUpdate.Labels[k] = v
 		}
 	}
 
-	if len(updateLabels) == 0 {
-		klog.V(4).Infof("no label changes needed for %s", node.Name)
+	for k, v := range ig.Annotations {
+		actual, found := node.Annotations[k]
+		if !found || actual != v {
+			metadataUpdate.Annotations[k] = v
+		}
+	}
+
+	if len(metadataUpdate.Labels) == 0 && len(metadataUpdate.Annotations) == 0 {
+		klog.V(4).Infof("no label or annotation changes needed for %s", node.Name)
 		return ctrl.Result{}, nil
 	}
 
-	if err := patchNodeLabels(r.coreV1Client, ctx, node, updateLabels); err != nil {
+	if err := patchNodeLabels(r.coreV1Client, ctx, node, metadataUpdate); err != nil {
 		klog.Warningf("failed to patch node labels on %s: %v", node.Name, err)
 		return ctrl.Result{}, err
 	}

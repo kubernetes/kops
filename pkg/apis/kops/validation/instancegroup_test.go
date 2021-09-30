@@ -233,6 +233,62 @@ func TestValidBootDevice(t *testing.T) {
 	}
 }
 
+func TestValidNodeAnnotations(t *testing.T) {
+	grid := []struct {
+		key      string
+		value    string
+		expected []string
+	}{
+		{
+			key:   "subdomain.domain.tld",
+			value: "the-value",
+		},
+		{
+			key:   "subdomain.domain.tld/foo",
+			value: "the-value",
+		},
+		{
+			key:   "subdomain.domain.tld/FOO",
+			value: "the-value",
+		},
+		{
+			key:   "subdomain.domain.tld/foo_-.BaR",
+			value: "the-value",
+		},
+		{
+			key:      "subdomain.domain.tld/foo/bar",
+			value:    "the-value",
+			expected: []string{"Invalid value::spec.nodeAnnotations"},
+		},
+		{
+			key:      "SUBdomain.domain.tld/foo",
+			value:    "the-value",
+			expected: []string{"Invalid value::spec.nodeAnnotations"},
+		},
+		{
+			key:      "subdomain.domain.tld/-foo",
+			value:    "the-value",
+			expected: []string{"Invalid value::spec.nodeAnnotations"},
+		},
+	}
+
+	for _, g := range grid {
+		ig := &kops.InstanceGroup{
+			ObjectMeta: v1.ObjectMeta{
+				Name: "some-ig",
+			},
+			Spec: kops.InstanceGroupSpec{
+				Role: "Node",
+			},
+		}
+		ig.Spec.NodeAnnotations = map[string]string{
+			g.key: g.value,
+		}
+		errs := ValidateInstanceGroup(ig, nil)
+		testErrors(t, g.key, errs, g.expected)
+	}
+}
+
 func TestValidNodeLabels(t *testing.T) {
 
 	grid := []struct {

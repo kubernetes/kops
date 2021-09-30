@@ -164,7 +164,7 @@ type nodePatchSpec struct {
 	PodCIDRs []string `json:"podCIDRs,omitempty"`
 }
 
-// patchNodeLabels patches the node labels to set the specified labels
+// patchNodePodCIDRs patches the node's pod CIDRs to set the cidr
 func patchNodePodCIDRs(client *corev1client.CoreV1Client, ctx context.Context, node *corev1.Node, cidr string) error {
 	klog.Infof("assigning cidr %q to node %q", cidr, node.ObjectMeta.Name)
 	nodePatchSpec := &nodePatchSpec{

@@ -103,6 +103,8 @@ type InstanceGroupSpec struct {
 	AdditionalSecurityGroups []string `json:"additionalSecurityGroups,omitempty"`
 	// CloudLabels defines additional tags or labels on cloud provider resources
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
+	// NodeAnnotations indicates the kubernetes annotations for nodes in this instance group
+	NodeAnnotations map[string]string `json:"nodeAnnotations,omitempty"`
 	// NodeLabels indicates the kubernetes labels for nodes in this instance group
 	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
 	// FileAssets is a collection of file assets for this instance group

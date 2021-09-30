@@ -37,6 +37,9 @@ func TestCloudTagsForInstanceGroup(t *testing.T) {
 	ig.Spec.NodeLabels = map[string]string{
 		"node_label/key": "node_label_value",
 	}
+	ig.Spec.NodeAnnotations = map[string]string{
+		"node_annotation/key": "node_annotation_value",
+	}
 	ig.Spec.Taints = []string{
 		"taint_key=taint_value",
 	}
@@ -47,6 +50,7 @@ func TestCloudTagsForInstanceGroup(t *testing.T) {
 		"ig_label_key":                                 fi.String("ig_label_value"),
 		"test_label":                                   fi.String("from_ig"),
 		"k8s.io_cluster_node-template_label_0":         fi.String("node_label/key=node_label_value"),
+		"k8s.io_cluster_node-template_annotation_0":    fi.String("node_annotation/key=node_annotation_value"),
 		"k8s.io_cluster_node-template_taint_taint_key": fi.String("taint_value"),
 		"k8s.io_role_node":                             fi.String("1"),
 		"kops.k8s.io_instancegroup":                    fi.String("nodes"),

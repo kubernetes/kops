@@ -24,6 +24,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -121,6 +122,10 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud) field.ErrorLis
 
 	if g.Spec.RollingUpdate != nil {
 		allErrs = append(allErrs, validateRollingUpdate(g.Spec.RollingUpdate, field.NewPath("spec", "rollingUpdate"), g.Spec.Role == kops.InstanceGroupRoleMaster)...)
+	}
+
+	if g.Spec.NodeAnnotations != nil {
+		allErrs = append(allErrs, validateNodeAnnotations(g.Spec.NodeAnnotations, field.NewPath("spec", "nodeAnnotations"))...)
 	}
 
 	if g.Spec.NodeLabels != nil {
@@ -302,6 +307,18 @@ func validateInstanceProfile(v *kops.IAMProfileSpec, fldPath *field.Path) field.
 				"Instance Group IAM Instance Profile must be a valid aws arn such as arn:aws:iam::123456789012:instance-profile/KopsExampleRole"))
 		}
 	}
+	return allErrs
+}
+
+func validateNodeAnnotations(annotations map[string]string, fldPath *field.Path) (allErrs field.ErrorList) {
+	for key := range annotations {
+		if errs := validation.IsQualifiedName(key); len(errs) != 0 {
+			for _, err := range errs {
+				allErrs = append(allErrs, field.Invalid(fldPath, key, err))
+			}
+		}
+	}
+
 	return allErrs
 }
 

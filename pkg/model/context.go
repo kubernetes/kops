@@ -153,6 +153,11 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 		labels[nodeidentityaws.ClusterAutoscalerNodeTemplateLabel+k] = v
 	}
 
+	// Apply labels for cluster autoscaler node annotations
+	for k, v := range ig.Spec.NodeAnnotations {
+		labels[nodeidentityaws.ClusterAutoscalerNodeTemplateAnnotation+k] = v
+	}
+
 	// Apply labels for cluster autoscaler node taints
 	for _, v := range ig.Spec.Taints {
 		splits := strings.SplitN(v, "=", 2)
