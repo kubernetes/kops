@@ -2,13 +2,13 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2016-12-10T22:42:27Z"
-  name: nthsqsresources.example.com
+  name: nthsqsresources.longclustername.example.com
 spec:
   kubernetesApiAccess:
     - 0.0.0.0/0
   channel: stable
   cloudProvider: aws
-  configBase: memfs://clusters.example.com/nthsqsresources.example.com
+  configBase: memfs://clusters.example.com/nthsqsresources.longclustername.example.com
   etcdClusters:
     - etcdMembers:
         - instanceGroup: master-us-test-1a
@@ -22,8 +22,8 @@ spec:
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.20.0
-  masterInternalName: api.internal.nthsqsresources.example.com
-  masterPublicName: api.nthsqsresources.example.com
+  masterInternalName: api.internal.nthsqsresources.longclustername.example.com
+  masterPublicName: api.nthsqsresources.longclustername.example.com
   networkCIDR: 172.20.0.0/16
   networking:
     cni: {}
@@ -50,7 +50,7 @@ metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
   name: nodes
   labels:
-    kops.k8s.io/cluster: nthsqsresources.example.com
+    kops.k8s.io/cluster: nthsqsresources.longclustername.example.com
 spec:
   associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
@@ -69,7 +69,7 @@ metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
   name: master-us-test-1a
   labels:
-    kops.k8s.io/cluster: nthsqsresources.example.com
+    kops.k8s.io/cluster: nthsqsresources.longclustername.example.com
 spec:
   associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21

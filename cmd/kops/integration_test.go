@@ -47,6 +47,7 @@ import (
 	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"sigs.k8s.io/yaml"
 )
@@ -627,11 +628,11 @@ func TestAPIServerNodes(t *testing.T) {
 
 // TestNTHQueueProcessor tests the output for resources required by NTH Queue Processor mode
 func TestNTHQueueProcessor(t *testing.T) {
-	newIntegrationTest("nthsqsresources.example.com", "nth_sqs_resources").
+	newIntegrationTest("nthsqsresources.longclustername.example.com", "nth_sqs_resources").
 		withNTH().
 		withAddons(dnsControllerAddon).
 		runTestTerraformAWS(t)
-	newIntegrationTest("nthsqsresources.example.com", "nth_sqs_resources").
+	newIntegrationTest("nthsqsresources.longclustername.example.com", "nth_sqs_resources").
 		runTestCloudformation(t)
 }
 
@@ -1016,10 +1017,10 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 		if i.nth {
 			expectedFilenames = append(expectedFilenames, []string{
 				"aws_s3_bucket_object_" + i.clusterName + "-addons-node-termination-handler.aws-k8s-1.11_content",
-				"aws_cloudwatch_event_rule_" + i.clusterName + "-ASGLifecycle_event_pattern",
-				"aws_cloudwatch_event_rule_" + i.clusterName + "-RebalanceRecommendation_event_pattern",
-				"aws_cloudwatch_event_rule_" + i.clusterName + "-SpotInterruption_event_pattern",
-				"aws_cloudwatch_event_rule_" + i.clusterName + "-InstanceStateChange_event_pattern",
+				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-ASGLifecycle_event_pattern",
+				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-RebalanceRecommendation_event_pattern",
+				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-SpotInterruption_event_pattern",
+				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-InstanceStateChange_event_pattern",
 				"aws_sqs_queue_" + strings.Replace(i.clusterName, ".", "-", -1) + "-nth_policy",
 			}...)
 		}

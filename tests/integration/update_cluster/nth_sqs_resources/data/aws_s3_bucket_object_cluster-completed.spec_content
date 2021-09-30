@@ -2,7 +2,7 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2016-12-10T22:42:27Z"
-  name: nthsqsresources.example.com
+  name: nthsqsresources.longclustername.example.com
 spec:
   api:
     dns: {}
@@ -15,8 +15,8 @@ spec:
     manageStorageClasses: true
   cloudProvider: aws
   clusterDNSDomain: cluster.local
-  configBase: memfs://clusters.example.com/nthsqsresources.example.com
-  configStore: memfs://clusters.example.com/nthsqsresources.example.com
+  configBase: memfs://clusters.example.com/nthsqsresources.longclustername.example.com
+  configStore: memfs://clusters.example.com/nthsqsresources.longclustername.example.com
   containerRuntime: containerd
   containerd:
     logLevel: info
@@ -26,7 +26,7 @@ spec:
     skipInstall: true
   etcdClusters:
   - backups:
-      backupStore: memfs://clusters.example.com/nthsqsresources.example.com/backups/etcd/main
+      backupStore: memfs://clusters.example.com/nthsqsresources.longclustername.example.com/backups/etcd/main
     enableEtcdTLS: true
     enableTLSAuth: true
     etcdMembers:
@@ -36,7 +36,7 @@ spec:
     provider: Manager
     version: 3.4.13
   - backups:
-      backupStore: memfs://clusters.example.com/nthsqsresources.example.com/backups/etcd/events
+      backupStore: memfs://clusters.example.com/nthsqsresources.longclustername.example.com/backups/etcd/events
     enableEtcdTLS: true
     enableTLSAuth: true
     etcdMembers:
@@ -49,7 +49,7 @@ spec:
     provider: dns-controller
   iam:
     legacy: false
-  keyStore: memfs://clusters.example.com/nthsqsresources.example.com/pki
+  keyStore: memfs://clusters.example.com/nthsqsresources.longclustername.example.com/pki
   kubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false
@@ -89,8 +89,8 @@ spec:
     requestheaderUsernameHeaders:
     - X-Remote-User
     securePort: 443
-    serviceAccountIssuer: https://api.internal.nthsqsresources.example.com
-    serviceAccountJWKSURI: https://api.internal.nthsqsresources.example.com/openid/v1/jwks
+    serviceAccountIssuer: https://api.internal.nthsqsresources.longclustername.example.com
+    serviceAccountJWKSURI: https://api.internal.nthsqsresources.longclustername.example.com/openid/v1/jwks
     serviceClusterIPRange: 100.64.0.0/13
     storageBackend: etcd3
   kubeControllerManager:
@@ -98,7 +98,7 @@ spec:
     attachDetachReconcileSyncPeriod: 1m0s
     cloudProvider: aws
     clusterCIDR: 100.96.0.0/11
-    clusterName: nthsqsresources.example.com
+    clusterName: nthsqsresources.longclustername.example.com
     configureCloudRoutes: false
     image: k8s.gcr.io/kube-controller-manager:v1.20.0
     leaderElection:
@@ -149,7 +149,7 @@ spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: 1.20.0
-  masterInternalName: api.internal.nthsqsresources.example.com
+  masterInternalName: api.internal.nthsqsresources.longclustername.example.com
   masterKubelet:
     anonymousAuth: false
     cgroupDriver: systemd
@@ -166,7 +166,7 @@ spec:
     nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
-  masterPublicName: api.nthsqsresources.example.com
+  masterPublicName: api.nthsqsresources.longclustername.example.com
   networkCIDR: 172.20.0.0/16
   networking:
     cni: {}
@@ -183,7 +183,7 @@ spec:
     prometheusEnable: false
   nonMasqueradeCIDR: 100.64.0.0/10
   podCIDR: 100.96.0.0/11
-  secretStore: memfs://clusters.example.com/nthsqsresources.example.com/secrets
+  secretStore: memfs://clusters.example.com/nthsqsresources.longclustername.example.com/secrets
   serviceClusterIPRange: 100.64.0.0/13
   sshAccess:
   - 0.0.0.0/0

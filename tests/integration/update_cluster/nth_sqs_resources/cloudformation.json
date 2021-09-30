@@ -1,16 +1,16 @@
 {
   "Resources": {
-    "AWSAutoScalingAutoScalingGroupmasterustest1amastersnthsqsresourcesexamplecom": {
+    "AWSAutoScalingAutoScalingGroupmasterustest1amastersnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
-        "AutoScalingGroupName": "master-us-test-1a.masters.nthsqsresources.example.com",
+        "AutoScalingGroupName": "master-us-test-1a.masters.nthsqsresources.longclustername.example.com",
         "LaunchTemplate": {
           "LaunchTemplateId": {
-            "Ref": "AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourcesexamplecom"
+            "Ref": "AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourceslongclusternameexamplecom"
           },
           "Version": {
             "Fn::GetAtt": [
-              "AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourcesexamplecom",
+              "AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourceslongclusternameexamplecom",
               "LatestVersionNumber"
             ]
           }
@@ -19,18 +19,18 @@
         "MinSize": "1",
         "VPCZoneIdentifier": [
           {
-            "Ref": "AWSEC2Subnetustest1anthsqsresourcesexamplecom"
+            "Ref": "AWSEC2Subnetustest1anthsqsresourceslongclusternameexamplecom"
           }
         ],
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "nthsqsresources.example.com",
+            "Value": "nthsqsresources.longclustername.example.com",
             "PropagateAtLaunch": true
           },
           {
             "Key": "Name",
-            "Value": "master-us-test-1a.masters.nthsqsresources.example.com",
+            "Value": "master-us-test-1a.masters.nthsqsresources.longclustername.example.com",
             "PropagateAtLaunch": true
           },
           {
@@ -74,7 +74,7 @@
             "PropagateAtLaunch": true
           },
           {
-            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
             "Value": "owned",
             "PropagateAtLaunch": true
           }
@@ -96,17 +96,17 @@
         ]
       }
     },
-    "AWSAutoScalingAutoScalingGroupnodesnthsqsresourcesexamplecom": {
+    "AWSAutoScalingAutoScalingGroupnodesnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
-        "AutoScalingGroupName": "nodes.nthsqsresources.example.com",
+        "AutoScalingGroupName": "nodes.nthsqsresources.longclustername.example.com",
         "LaunchTemplate": {
           "LaunchTemplateId": {
-            "Ref": "AWSEC2LaunchTemplatenodesnthsqsresourcesexamplecom"
+            "Ref": "AWSEC2LaunchTemplatenodesnthsqsresourceslongclusternameexamplecom"
           },
           "Version": {
             "Fn::GetAtt": [
-              "AWSEC2LaunchTemplatenodesnthsqsresourcesexamplecom",
+              "AWSEC2LaunchTemplatenodesnthsqsresourceslongclusternameexamplecom",
               "LatestVersionNumber"
             ]
           }
@@ -115,18 +115,18 @@
         "MinSize": "2",
         "VPCZoneIdentifier": [
           {
-            "Ref": "AWSEC2Subnetustest1anthsqsresourcesexamplecom"
+            "Ref": "AWSEC2Subnetustest1anthsqsresourceslongclusternameexamplecom"
           }
         ],
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "nthsqsresources.example.com",
+            "Value": "nthsqsresources.longclustername.example.com",
             "PropagateAtLaunch": true
           },
           {
             "Key": "Name",
-            "Value": "nodes.nthsqsresources.example.com",
+            "Value": "nodes.nthsqsresources.longclustername.example.com",
             "PropagateAtLaunch": true
           },
           {
@@ -155,7 +155,7 @@
             "PropagateAtLaunch": true
           },
           {
-            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
             "Value": "owned",
             "PropagateAtLaunch": true
           }
@@ -182,7 +182,7 @@
       "Properties": {
         "LifecycleHookName": "master-us-test-1a-NTHLifecycleHook",
         "AutoScalingGroupName": {
-          "Ref": "AWSAutoScalingAutoScalingGroupmasterustest1amastersnthsqsresourcesexamplecom"
+          "Ref": "AWSAutoScalingAutoScalingGroupmasterustest1amastersnthsqsresourceslongclusternameexamplecom"
         },
         "DefaultResult": "CONTINUE",
         "HeartbeatTimeout": 300,
@@ -194,14 +194,14 @@
       "Properties": {
         "LifecycleHookName": "nodes-NTHLifecycleHook",
         "AutoScalingGroupName": {
-          "Ref": "AWSAutoScalingAutoScalingGroupnodesnthsqsresourcesexamplecom"
+          "Ref": "AWSAutoScalingAutoScalingGroupnodesnthsqsresourceslongclusternameexamplecom"
         },
         "DefaultResult": "CONTINUE",
         "HeartbeatTimeout": 300,
         "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING"
       }
     },
-    "AWSEC2DHCPOptionsnthsqsresourcesexamplecom": {
+    "AWSEC2DHCPOptionsnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::DHCPOptions",
       "Properties": {
         "DomainName": "us-test-1.compute.internal",
@@ -211,42 +211,42 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "nthsqsresources.example.com"
+            "Value": "nthsqsresources.longclustername.example.com"
           },
           {
             "Key": "Name",
-            "Value": "nthsqsresources.example.com"
+            "Value": "nthsqsresources.longclustername.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2InternetGatewaynthsqsresourcesexamplecom": {
+    "AWSEC2InternetGatewaynthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::InternetGateway",
       "Properties": {
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "nthsqsresources.example.com"
+            "Value": "nthsqsresources.longclustername.example.com"
           },
           {
             "Key": "Name",
-            "Value": "nthsqsresources.example.com"
+            "Value": "nthsqsresources.longclustername.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourcesexamplecom": {
+    "AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::LaunchTemplate",
       "Properties": {
-        "LaunchTemplateName": "master-us-test-1a.masters.nthsqsresources.example.com",
+        "LaunchTemplateName": "master-us-test-1a.masters.nthsqsresources.longclustername.example.com",
         "LaunchTemplateData": {
           "BlockDeviceMappings": [
             {
@@ -267,12 +267,12 @@
           ],
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilemastersnthsqsresourcesexamplecom"
+              "Ref": "AWSIAMInstanceProfilemastersnthsqsresourceslongclusternameexamplecom"
             }
           },
           "ImageId": "ami-12345678",
           "InstanceType": "m3.medium",
-          "KeyName": "kubernetes.nthsqsresources.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "KeyName": "kubernetes.nthsqsresources.longclustername.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
           "MetadataOptions": {
             "HttpPutResponseHopLimit": 1,
             "HttpTokens": "optional"
@@ -288,7 +288,7 @@
               "Ipv6AddressCount": 0,
               "Groups": [
                 {
-                  "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
+                  "Ref": "AWSEC2SecurityGroupmastersnthsqsresourceslongclusternameexamplecom"
                 }
               ]
             }
@@ -299,11 +299,11 @@
               "Tags": [
                 {
                   "Key": "KubernetesCluster",
-                  "Value": "nthsqsresources.example.com"
+                  "Value": "nthsqsresources.longclustername.example.com"
                 },
                 {
                   "Key": "Name",
-                  "Value": "master-us-test-1a.masters.nthsqsresources.example.com"
+                  "Value": "master-us-test-1a.masters.nthsqsresources.longclustername.example.com"
                 },
                 {
                   "Key": "aws-node-termination-handler/managed",
@@ -338,7 +338,7 @@
                   "Value": "master-us-test-1a"
                 },
                 {
-                  "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+                  "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
                   "Value": "owned"
                 }
               ]
@@ -348,11 +348,11 @@
               "Tags": [
                 {
                   "Key": "KubernetesCluster",
-                  "Value": "nthsqsresources.example.com"
+                  "Value": "nthsqsresources.longclustername.example.com"
                 },
                 {
                   "Key": "Name",
-                  "Value": "master-us-test-1a.masters.nthsqsresources.example.com"
+                  "Value": "master-us-test-1a.masters.nthsqsresources.longclustername.example.com"
                 },
                 {
                   "Key": "aws-node-termination-handler/managed",
@@ -387,7 +387,7 @@
                   "Value": "master-us-test-1a"
                 },
                 {
-                  "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+                  "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
                   "Value": "owned"
                 }
               ]
@@ -397,10 +397,10 @@
         }
       }
     },
-    "AWSEC2LaunchTemplatenodesnthsqsresourcesexamplecom": {
+    "AWSEC2LaunchTemplatenodesnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::LaunchTemplate",
       "Properties": {
-        "LaunchTemplateName": "nodes.nthsqsresources.example.com",
+        "LaunchTemplateName": "nodes.nthsqsresources.longclustername.example.com",
         "LaunchTemplateData": {
           "BlockDeviceMappings": [
             {
@@ -417,12 +417,12 @@
           ],
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilenodesnthsqsresourcesexamplecom"
+              "Ref": "AWSIAMInstanceProfilenodesnthsqsresourceslongclusternameexamplecom"
             }
           },
           "ImageId": "ami-12345678",
           "InstanceType": "t2.medium",
-          "KeyName": "kubernetes.nthsqsresources.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "KeyName": "kubernetes.nthsqsresources.longclustername.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
           "MetadataOptions": {
             "HttpPutResponseHopLimit": 1,
             "HttpTokens": "optional"
@@ -438,7 +438,7 @@
               "Ipv6AddressCount": 0,
               "Groups": [
                 {
-                  "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
+                  "Ref": "AWSEC2SecurityGroupnodesnthsqsresourceslongclusternameexamplecom"
                 }
               ]
             }
@@ -449,11 +449,11 @@
               "Tags": [
                 {
                   "Key": "KubernetesCluster",
-                  "Value": "nthsqsresources.example.com"
+                  "Value": "nthsqsresources.longclustername.example.com"
                 },
                 {
                   "Key": "Name",
-                  "Value": "nodes.nthsqsresources.example.com"
+                  "Value": "nodes.nthsqsresources.longclustername.example.com"
                 },
                 {
                   "Key": "aws-node-termination-handler/managed",
@@ -476,7 +476,7 @@
                   "Value": "nodes"
                 },
                 {
-                  "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+                  "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
                   "Value": "owned"
                 }
               ]
@@ -486,11 +486,11 @@
               "Tags": [
                 {
                   "Key": "KubernetesCluster",
-                  "Value": "nthsqsresources.example.com"
+                  "Value": "nthsqsresources.longclustername.example.com"
                 },
                 {
                   "Key": "Name",
-                  "Value": "nodes.nthsqsresources.example.com"
+                  "Value": "nodes.nthsqsresources.longclustername.example.com"
                 },
                 {
                   "Key": "aws-node-termination-handler/managed",
@@ -513,7 +513,7 @@
                   "Value": "nodes"
                 },
                 {
-                  "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+                  "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
                   "Value": "owned"
                 }
               ]
@@ -527,11 +527,11 @@
       "Type": "AWS::EC2::Route",
       "Properties": {
         "RouteTableId": {
-          "Ref": "AWSEC2RouteTablenthsqsresourcesexamplecom"
+          "Ref": "AWSEC2RouteTablenthsqsresourceslongclusternameexamplecom"
         },
         "DestinationIpv6CidrBlock": "::/0",
         "GatewayId": {
-          "Ref": "AWSEC2InternetGatewaynthsqsresourcesexamplecom"
+          "Ref": "AWSEC2InternetGatewaynthsqsresourceslongclusternameexamplecom"
         }
       }
     },
@@ -539,31 +539,31 @@
       "Type": "AWS::EC2::Route",
       "Properties": {
         "RouteTableId": {
-          "Ref": "AWSEC2RouteTablenthsqsresourcesexamplecom"
+          "Ref": "AWSEC2RouteTablenthsqsresourceslongclusternameexamplecom"
         },
         "DestinationCidrBlock": "0.0.0.0/0",
         "GatewayId": {
-          "Ref": "AWSEC2InternetGatewaynthsqsresourcesexamplecom"
+          "Ref": "AWSEC2InternetGatewaynthsqsresourceslongclusternameexamplecom"
         }
       }
     },
-    "AWSEC2RouteTablenthsqsresourcesexamplecom": {
+    "AWSEC2RouteTablenthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2VPCnthsqsresourceslongclusternameexamplecom"
         },
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "nthsqsresources.example.com"
+            "Value": "nthsqsresources.longclustername.example.com"
           },
           {
             "Key": "Name",
-            "Value": "nthsqsresources.example.com"
+            "Value": "nthsqsresources.longclustername.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
             "Value": "owned"
           },
           {
@@ -573,11 +573,11 @@
         ]
       }
     },
-    "AWSEC2SecurityGroupEgressfrommastersnthsqsresourcesexamplecomegressall0to00": {
+    "AWSEC2SecurityGroupEgressfrommastersnthsqsresourceslongclusternameexamplecomegressall0to00": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourceslongclusternameexamplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
@@ -585,11 +585,11 @@
         "CidrIpv6": "::/0"
       }
     },
-    "AWSEC2SecurityGroupEgressfrommastersnthsqsresourcesexamplecomegressall0to000000": {
+    "AWSEC2SecurityGroupEgressfrommastersnthsqsresourceslongclusternameexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourceslongclusternameexamplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
@@ -597,11 +597,11 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupEgressfromnodesnthsqsresourcesexamplecomegressall0to00": {
+    "AWSEC2SecurityGroupEgressfromnodesnthsqsresourceslongclusternameexamplecomegressall0to00": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourceslongclusternameexamplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
@@ -609,11 +609,11 @@
         "CidrIpv6": "::/0"
       }
     },
-    "AWSEC2SecurityGroupEgressfromnodesnthsqsresourcesexamplecomegressall0to000000": {
+    "AWSEC2SecurityGroupEgressfromnodesnthsqsresourceslongclusternameexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourceslongclusternameexamplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
@@ -621,11 +621,11 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22mastersnthsqsresourcesexamplecom": {
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22mastersnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourceslongclusternameexamplecom"
         },
         "FromPort": 22,
         "ToPort": 22,
@@ -633,11 +633,11 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22nodesnthsqsresourcesexamplecom": {
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22nodesnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourceslongclusternameexamplecom"
         },
         "FromPort": 22,
         "ToPort": 22,
@@ -645,11 +645,11 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressfrom00000ingresstcp443to443mastersnthsqsresourcesexamplecom": {
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp443to443mastersnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourceslongclusternameexamplecom"
         },
         "FromPort": 443,
         "ToPort": 443,
@@ -657,186 +657,186 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressfrommastersnthsqsresourcesexamplecomingressall0to0mastersnthsqsresourcesexamplecom": {
+    "AWSEC2SecurityGroupIngressfrommastersnthsqsresourceslongclusternameexamplecomingressall0to0mastersnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourceslongclusternameexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourceslongclusternameexamplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
         "IpProtocol": "-1"
       }
     },
-    "AWSEC2SecurityGroupIngressfrommastersnthsqsresourcesexamplecomingressall0to0nodesnthsqsresourcesexamplecom": {
+    "AWSEC2SecurityGroupIngressfrommastersnthsqsresourceslongclusternameexamplecomingressall0to0nodesnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourceslongclusternameexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourceslongclusternameexamplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
         "IpProtocol": "-1"
       }
     },
-    "AWSEC2SecurityGroupIngressfromnodesnthsqsresourcesexamplecomingressall0to0nodesnthsqsresourcesexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesnthsqsresourceslongclusternameexamplecomingressall0to0nodesnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourceslongclusternameexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourceslongclusternameexamplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
         "IpProtocol": "-1"
       }
     },
-    "AWSEC2SecurityGroupIngressfromnodesnthsqsresourcesexamplecomingresstcp1to2379mastersnthsqsresourcesexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesnthsqsresourceslongclusternameexamplecomingresstcp1to2379mastersnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourceslongclusternameexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourceslongclusternameexamplecom"
         },
         "FromPort": 1,
         "ToPort": 2379,
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressfromnodesnthsqsresourcesexamplecomingresstcp2382to4000mastersnthsqsresourcesexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesnthsqsresourceslongclusternameexamplecomingresstcp2382to4000mastersnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourceslongclusternameexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourceslongclusternameexamplecom"
         },
         "FromPort": 2382,
         "ToPort": 4000,
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressfromnodesnthsqsresourcesexamplecomingresstcp4003to65535mastersnthsqsresourcesexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesnthsqsresourceslongclusternameexamplecomingresstcp4003to65535mastersnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourceslongclusternameexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourceslongclusternameexamplecom"
         },
         "FromPort": 4003,
         "ToPort": 65535,
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressfromnodesnthsqsresourcesexamplecomingressudp1to65535mastersnthsqsresourcesexamplecom": {
+    "AWSEC2SecurityGroupIngressfromnodesnthsqsresourceslongclusternameexamplecomingressudp1to65535mastersnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersnthsqsresourceslongclusternameexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesnthsqsresourceslongclusternameexamplecom"
         },
         "FromPort": 1,
         "ToPort": 65535,
         "IpProtocol": "udp"
       }
     },
-    "AWSEC2SecurityGroupmastersnthsqsresourcesexamplecom": {
+    "AWSEC2SecurityGroupmastersnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupName": "masters.nthsqsresources.example.com",
+        "GroupName": "masters.nthsqsresources.longclustername.example.com",
         "VpcId": {
-          "Ref": "AWSEC2VPCnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2VPCnthsqsresourceslongclusternameexamplecom"
         },
         "GroupDescription": "Security group for masters",
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "nthsqsresources.example.com"
+            "Value": "nthsqsresources.longclustername.example.com"
           },
           {
             "Key": "Name",
-            "Value": "masters.nthsqsresources.example.com"
+            "Value": "masters.nthsqsresources.longclustername.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2SecurityGroupnodesnthsqsresourcesexamplecom": {
+    "AWSEC2SecurityGroupnodesnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupName": "nodes.nthsqsresources.example.com",
+        "GroupName": "nodes.nthsqsresources.longclustername.example.com",
         "VpcId": {
-          "Ref": "AWSEC2VPCnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2VPCnthsqsresourceslongclusternameexamplecom"
         },
         "GroupDescription": "Security group for nodes",
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "nthsqsresources.example.com"
+            "Value": "nthsqsresources.longclustername.example.com"
           },
           {
             "Key": "Name",
-            "Value": "nodes.nthsqsresources.example.com"
+            "Value": "nodes.nthsqsresources.longclustername.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2SubnetRouteTableAssociationustest1anthsqsresourcesexamplecom": {
+    "AWSEC2SubnetRouteTableAssociationustest1anthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
         "SubnetId": {
-          "Ref": "AWSEC2Subnetustest1anthsqsresourcesexamplecom"
+          "Ref": "AWSEC2Subnetustest1anthsqsresourceslongclusternameexamplecom"
         },
         "RouteTableId": {
-          "Ref": "AWSEC2RouteTablenthsqsresourcesexamplecom"
+          "Ref": "AWSEC2RouteTablenthsqsresourceslongclusternameexamplecom"
         }
       }
     },
-    "AWSEC2Subnetustest1anthsqsresourcesexamplecom": {
+    "AWSEC2Subnetustest1anthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2VPCnthsqsresourceslongclusternameexamplecom"
         },
         "CidrBlock": "172.20.32.0/19",
         "AvailabilityZone": "us-test-1a",
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "nthsqsresources.example.com"
+            "Value": "nthsqsresources.longclustername.example.com"
           },
           {
             "Key": "Name",
-            "Value": "us-test-1a.nthsqsresources.example.com"
+            "Value": "us-test-1a.nthsqsresources.longclustername.example.com"
           },
           {
             "Key": "SubnetType",
             "Value": "Public"
           },
           {
-            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
             "Value": "owned"
           },
           {
@@ -854,34 +854,34 @@
       "Type": "AWS::EC2::VPCCidrBlock",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2VPCnthsqsresourceslongclusternameexamplecom"
         },
         "AmazonProvidedIpv6CidrBlock": true
       }
     },
-    "AWSEC2VPCDHCPOptionsAssociationnthsqsresourcesexamplecom": {
+    "AWSEC2VPCDHCPOptionsAssociationnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::VPCDHCPOptionsAssociation",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2VPCnthsqsresourceslongclusternameexamplecom"
         },
         "DhcpOptionsId": {
-          "Ref": "AWSEC2DHCPOptionsnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2DHCPOptionsnthsqsresourceslongclusternameexamplecom"
         }
       }
     },
-    "AWSEC2VPCGatewayAttachmentnthsqsresourcesexamplecom": {
+    "AWSEC2VPCGatewayAttachmentnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::VPCGatewayAttachment",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCnthsqsresourcesexamplecom"
+          "Ref": "AWSEC2VPCnthsqsresourceslongclusternameexamplecom"
         },
         "InternetGatewayId": {
-          "Ref": "AWSEC2InternetGatewaynthsqsresourcesexamplecom"
+          "Ref": "AWSEC2InternetGatewaynthsqsresourceslongclusternameexamplecom"
         }
       }
     },
-    "AWSEC2VPCnthsqsresourcesexamplecom": {
+    "AWSEC2VPCnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::VPC",
       "Properties": {
         "CidrBlock": "172.20.0.0/16",
@@ -890,20 +890,20 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "nthsqsresources.example.com"
+            "Value": "nthsqsresources.longclustername.example.com"
           },
           {
             "Key": "Name",
-            "Value": "nthsqsresources.example.com"
+            "Value": "nthsqsresources.longclustername.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2Volumeustest1aetcdeventsnthsqsresourcesexamplecom": {
+    "AWSEC2Volumeustest1aetcdeventsnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::Volume",
       "Properties": {
         "AvailabilityZone": "us-test-1a",
@@ -915,11 +915,11 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "nthsqsresources.example.com"
+            "Value": "nthsqsresources.longclustername.example.com"
           },
           {
             "Key": "Name",
-            "Value": "us-test-1a.etcd-events.nthsqsresources.example.com"
+            "Value": "us-test-1a.etcd-events.nthsqsresources.longclustername.example.com"
           },
           {
             "Key": "k8s.io/etcd/events",
@@ -930,13 +930,13 @@
             "Value": "1"
           },
           {
-            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2Volumeustest1aetcdmainnthsqsresourcesexamplecom": {
+    "AWSEC2Volumeustest1aetcdmainnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::EC2::Volume",
       "Properties": {
         "AvailabilityZone": "us-test-1a",
@@ -948,11 +948,11 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "nthsqsresources.example.com"
+            "Value": "nthsqsresources.longclustername.example.com"
           },
           {
             "Key": "Name",
-            "Value": "us-test-1a.etcd-main.nthsqsresources.example.com"
+            "Value": "us-test-1a.etcd-main.nthsqsresources.longclustername.example.com"
           },
           {
             "Key": "k8s.io/etcd/main",
@@ -963,16 +963,16 @@
             "Value": "1"
           },
           {
-            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEventsRulenthsqsresourcesexamplecomASGLifecycle": {
+    "AWSEventsRulenthsqsresourceslongclusternameefkbaohASGLifecycle": {
       "Type": "AWS::Events::Rule",
       "Properties": {
-        "Name": "nthsqsresources.example.com-ASGLifecycle",
+        "Name": "nthsqsresources.longclustername.e-fkbaoh-ASGLifecycle",
         "EventPattern": {
           "detail-type": [
             "EC2 Instance-terminate Lifecycle Action"
@@ -984,15 +984,15 @@
         "Targets": [
           {
             "Id": "1",
-            "Arn": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-example-com-nth"
+            "Arn": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
           }
         ]
       }
     },
-    "AWSEventsRulenthsqsresourcesexamplecomInstanceStateChange": {
+    "AWSEventsRulenthsqsresourceslongclusternameefkbaohInstanceStateChange": {
       "Type": "AWS::Events::Rule",
       "Properties": {
-        "Name": "nthsqsresources.example.com-InstanceStateChange",
+        "Name": "nthsqsresources.longclustername.e-fkbaoh-InstanceStateChange",
         "EventPattern": {
           "detail-type": [
             "EC2 Instance State-change Notification"
@@ -1004,15 +1004,15 @@
         "Targets": [
           {
             "Id": "1",
-            "Arn": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-example-com-nth"
+            "Arn": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
           }
         ]
       }
     },
-    "AWSEventsRulenthsqsresourcesexamplecomRebalanceRecommendation": {
+    "AWSEventsRulenthsqsresourceslongclusternameefkbaohRebalanceRecommendation": {
       "Type": "AWS::Events::Rule",
       "Properties": {
-        "Name": "nthsqsresources.example.com-RebalanceRecommendation",
+        "Name": "nthsqsresources.longclustername.e-fkbaoh-RebalanceRecommendation",
         "EventPattern": {
           "detail-type": [
             "EC2 Instance Rebalance Recommendation"
@@ -1024,15 +1024,15 @@
         "Targets": [
           {
             "Id": "1",
-            "Arn": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-example-com-nth"
+            "Arn": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
           }
         ]
       }
     },
-    "AWSEventsRulenthsqsresourcesexamplecomSpotInterruption": {
+    "AWSEventsRulenthsqsresourceslongclusternameefkbaohSpotInterruption": {
       "Type": "AWS::Events::Rule",
       "Properties": {
-        "Name": "nthsqsresources.example.com-SpotInterruption",
+        "Name": "nthsqsresources.longclustername.e-fkbaoh-SpotInterruption",
         "EventPattern": {
           "detail-type": [
             "EC2 Spot Instance Interruption Warning"
@@ -1044,40 +1044,40 @@
         "Targets": [
           {
             "Id": "1",
-            "Arn": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-example-com-nth"
+            "Arn": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
           }
         ]
       }
     },
-    "AWSIAMInstanceProfilemastersnthsqsresourcesexamplecom": {
+    "AWSIAMInstanceProfilemastersnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "masters.nthsqsresources.example.com",
+        "InstanceProfileName": "masters.nthsqsresources.longclustername.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemastersnthsqsresourcesexamplecom"
+            "Ref": "AWSIAMRolemastersnthsqsresourceslongclusternameexamplecom"
           }
         ]
       }
     },
-    "AWSIAMInstanceProfilenodesnthsqsresourcesexamplecom": {
+    "AWSIAMInstanceProfilenodesnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "nodes.nthsqsresources.example.com",
+        "InstanceProfileName": "nodes.nthsqsresources.longclustername.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolenodesnthsqsresourcesexamplecom"
+            "Ref": "AWSIAMRolenodesnthsqsresourceslongclusternameexamplecom"
           }
         ]
       }
     },
-    "AWSIAMPolicymastersnthsqsresourcesexamplecom": {
+    "AWSIAMPolicymastersnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "masters.nthsqsresources.example.com",
+        "PolicyName": "masters.nthsqsresources.longclustername.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemastersnthsqsresourcesexamplecom"
+            "Ref": "AWSIAMRolemastersnthsqsresourceslongclusternameexamplecom"
           }
         ],
         "PolicyDocument": {
@@ -1086,7 +1086,7 @@
               "Action": "ec2:AttachVolume",
               "Condition": {
                 "StringEquals": {
-                  "aws:ResourceTag/KubernetesCluster": "nthsqsresources.example.com",
+                  "aws:ResourceTag/KubernetesCluster": "nthsqsresources.longclustername.example.com",
                   "aws:ResourceTag/k8s.io/role/master": "1"
                 }
               },
@@ -1100,7 +1100,7 @@
                 "s3:Get*"
               ],
               "Effect": "Allow",
-              "Resource": "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.example.com/*"
+              "Resource": "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/*"
             },
             {
               "Action": [
@@ -1110,7 +1110,7 @@
                 "s3:PutObject"
               ],
               "Effect": "Allow",
-              "Resource": "arn:aws:s3:::placeholder-write-bucket/clusters.example.com/nthsqsresources.example.com/backups/etcd/main/*"
+              "Resource": "arn:aws:s3:::placeholder-write-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/backups/etcd/main/*"
             },
             {
               "Action": [
@@ -1120,7 +1120,7 @@
                 "s3:PutObject"
               ],
               "Effect": "Allow",
-              "Resource": "arn:aws:s3:::placeholder-write-bucket/clusters.example.com/nthsqsresources.example.com/backups/etcd/events/*"
+              "Resource": "arn:aws:s3:::placeholder-write-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/backups/etcd/events/*"
             },
             {
               "Action": [
@@ -1212,7 +1212,7 @@
               "Action": "ec2:DeleteTags",
               "Condition": {
                 "StringEquals": {
-                  "aws:ResourceTag/KubernetesCluster": "nthsqsresources.example.com"
+                  "aws:ResourceTag/KubernetesCluster": "nthsqsresources.longclustername.example.com"
                 }
               },
               "Effect": "Allow",
@@ -1291,7 +1291,7 @@
               ],
               "Condition": {
                 "StringEquals": {
-                  "aws:ResourceTag/KubernetesCluster": "nthsqsresources.example.com"
+                  "aws:ResourceTag/KubernetesCluster": "nthsqsresources.longclustername.example.com"
                 }
               },
               "Effect": "Allow",
@@ -1309,7 +1309,7 @@
               ],
               "Condition": {
                 "StringEquals": {
-                  "aws:RequestTag/KubernetesCluster": "nthsqsresources.example.com"
+                  "aws:RequestTag/KubernetesCluster": "nthsqsresources.longclustername.example.com"
                 }
               },
               "Effect": "Allow",
@@ -1320,13 +1320,13 @@
         }
       }
     },
-    "AWSIAMPolicynodesnthsqsresourcesexamplecom": {
+    "AWSIAMPolicynodesnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "nodes.nthsqsresources.example.com",
+        "PolicyName": "nodes.nthsqsresources.longclustername.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolenodesnthsqsresourcesexamplecom"
+            "Ref": "AWSIAMRolenodesnthsqsresourceslongclusternameexamplecom"
           }
         ],
         "PolicyDocument": {
@@ -1337,10 +1337,10 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.example.com/addons/*",
-                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.example.com/cluster-completed.spec",
-                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.example.com/igconfig/node/*",
-                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.example.com/secrets/dockerconfig"
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/addons/*",
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/cluster-completed.spec",
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/igconfig/node/*",
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/secrets/dockerconfig"
               ]
             },
             {
@@ -1372,10 +1372,10 @@
         }
       }
     },
-    "AWSIAMRolemastersnthsqsresourcesexamplecom": {
+    "AWSIAMRolemastersnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "masters.nthsqsresources.example.com",
+        "RoleName": "masters.nthsqsresources.longclustername.example.com",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -1391,23 +1391,23 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "nthsqsresources.example.com"
+            "Value": "nthsqsresources.longclustername.example.com"
           },
           {
             "Key": "Name",
-            "Value": "masters.nthsqsresources.example.com"
+            "Value": "masters.nthsqsresources.longclustername.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSIAMRolenodesnthsqsresourcesexamplecom": {
+    "AWSIAMRolenodesnthsqsresourceslongclusternameexamplecom": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "nodes.nthsqsresources.example.com",
+        "RoleName": "nodes.nthsqsresources.longclustername.example.com",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -1423,25 +1423,25 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "nthsqsresources.example.com"
+            "Value": "nthsqsresources.longclustername.example.com"
           },
           {
             "Key": "Name",
-            "Value": "nodes.nthsqsresources.example.com"
+            "Value": "nodes.nthsqsresources.longclustername.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSSQSQueuePolicynthsqsresourcesexamplecomnthPolicy": {
+    "AWSSQSQueuePolicynthsqsresourceslongclusternameexamplecomnthPolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
         "Queues": [
           {
-            "Ref": "AWSSQSQueuenthsqsresourcesexamplecomnth"
+            "Ref": "AWSSQSQueuenthsqsresourceslongclusternameexamplecomnth"
           }
         ],
         "PolicyDocument": {
@@ -1455,29 +1455,29 @@
                   "sqs.amazonaws.com"
                 ]
               },
-              "Resource": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-example-com-nth"
+              "Resource": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
             }
           ],
           "Version": "2012-10-17"
         }
       }
     },
-    "AWSSQSQueuenthsqsresourcesexamplecomnth": {
+    "AWSSQSQueuenthsqsresourceslongclusternameexamplecomnth": {
       "Type": "AWS::SQS::Queue",
       "Properties": {
-        "QueueName": "nthsqsresources-example-com-nth",
+        "QueueName": "nthsqsresources-longclustername-example-com-nth",
         "MessageRetentionPeriod": 300,
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "nthsqsresources.example.com"
+            "Value": "nthsqsresources.longclustername.example.com"
           },
           {
             "Key": "Name",
-            "Value": "nthsqsresources-example-com-nth"
+            "Value": "nthsqsresources-longclustername-example-com-nth"
           },
           {
-            "Key": "kubernetes.io/cluster/nthsqsresources.example.com",
+            "Key": "kubernetes.io/cluster/nthsqsresources.longclustername.example.com",
             "Value": "owned"
           }
         ]

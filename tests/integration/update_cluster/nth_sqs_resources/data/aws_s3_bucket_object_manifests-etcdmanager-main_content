@@ -14,13 +14,13 @@ spec:
     - /bin/sh
     - -c
     - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
-      --backup-store=memfs://clusters.example.com/nthsqsresources.example.com/backups/etcd/main
+      --backup-store=memfs://clusters.example.com/nthsqsresources.longclustername.example.com/backups/etcd/main
       --client-urls=https://__name__:4001 --cluster-name=etcd --containerized=true
-      --dns-suffix=.internal.nthsqsresources.example.com --grpc-port=3996 --peer-urls=https://__name__:2380
-      --quarantine-client-urls=https://__name__:3994 --v=6 --volume-name-tag=k8s.io/etcd/main
-      --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/master=1
-      --volume-tag=kubernetes.io/cluster/nthsqsresources.example.com=owned > /tmp/pipe
-      2>&1
+      --dns-suffix=.internal.nthsqsresources.longclustername.example.com --grpc-port=3996
+      --peer-urls=https://__name__:2380 --quarantine-client-urls=https://__name__:3994
+      --v=6 --volume-name-tag=k8s.io/etcd/main --volume-provider=aws --volume-tag=k8s.io/etcd/main
+      --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/nthsqsresources.longclustername.example.com=owned
+      > /tmp/pipe 2>&1
     image: k8s.gcr.io/etcdadm/etcd-manager:3.0.20210707
     name: etcd-manager
     resources:
