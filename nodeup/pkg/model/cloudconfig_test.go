@@ -142,7 +142,7 @@ func TestBuildAWSCustomNodeIPFamilies(t *testing.T) {
 	}
 	var task *nodetasks.File
 	for _, v := range ctx.Tasks {
-		if f, ok := v.(*nodetasks.File); ok {
+		if f, ok := v.(*nodetasks.File); ok && f.Path == CloudConfigFilePath {
 			task = f
 			break
 		}
