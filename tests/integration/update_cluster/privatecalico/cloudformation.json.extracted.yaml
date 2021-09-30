@@ -154,7 +154,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom.Prope
     - NamespaceLifecycle
     - LimitRanger
     - ServiceAccount
-    - PersistentVolumeLabel
     - DefaultStorageClass
     - DefaultTolerationSeconds
     - MutatingAdmissionWebhook
@@ -246,7 +245,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom.Prope
   ConfigBase: memfs://clusters.example.com/privatecalico.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: xsyLB/5s9LvDrreBvPJiHjVa6r3MOTaiAPNIopoE9IM=
+  NodeupConfigHash: 6aBr70AAY5fAA9yNeKoMovPE+ee+/6QuxvvQCeJItj8=
 
   __EOF_KUBE_ENV
 

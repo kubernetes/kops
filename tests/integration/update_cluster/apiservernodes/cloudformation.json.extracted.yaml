@@ -163,7 +163,7 @@ Resources.AWSEC2LaunchTemplateapiserverapiserversminimalexamplecom.Properties.La
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: apiserver
   InstanceGroupRole: APIServer
-  NodeupConfigHash: 6vn0oJtgVeSmj24GjGk02beYl7NwuMSg5qf1+LWNDYg=
+  NodeupConfigHash: xOIUiwWoN99L8+qbwWAsaYPlkNfMvCNHM94xJcD7Fcw=
 
   __EOF_KUBE_ENV
 
@@ -324,7 +324,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     - NamespaceLifecycle
     - LimitRanger
     - ServiceAccount
-    - PersistentVolumeLabel
     - DefaultStorageClass
     - DefaultTolerationSeconds
     - MutatingAdmissionWebhook
@@ -416,7 +415,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: WNVDq0wEQ5Vtq0yZnswckjtG1fwmgGajOnH/67g0vpc=
+  NodeupConfigHash: BDSsQ6aFwZhmBywQtTHiTetDTpkq+bdhNJS2aw7C8EQ=
 
   __EOF_KUBE_ENV
 

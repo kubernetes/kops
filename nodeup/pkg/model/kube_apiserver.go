@@ -564,7 +564,7 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 
 	// add cloud config file if needed
 	if b.Cluster.Spec.CloudConfig != nil {
-		flags = append(flags, fmt.Sprintf("--cloud-config=%s", CloudConfigFilePath))
+		flags = append(flags, fmt.Sprintf("--cloud-config=%s", InTreeCloudConfigFilePath))
 	}
 
 	pod := &v1.Pod{
@@ -693,7 +693,7 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 
 	// Add cloud config file if needed
 	if b.Cluster.Spec.CloudConfig != nil {
-		addHostPathMapping(pod, container, "cloudconfig", CloudConfigFilePath)
+		addHostPathMapping(pod, container, "cloudconfig", InTreeCloudConfigFilePath)
 	}
 
 	addHostPathMapping(pod, container, "kubernetesca", filepath.Join(b.PathSrvKubernetes(), "ca.crt"))
