@@ -218,6 +218,13 @@ func ELBv2Tags(tags map[string]string) []*elbv2.Tag {
 	return elbv2Tags
 }
 
+// GetClusterName40 will attempt to calculate a meaningful cluster name with a max length of 40
+func GetClusterName40(cluster string) string {
+	return TruncateString(cluster, TruncateStringOptions{
+		MaxLength: 40,
+	})
+}
+
 // GetResourceName32 will attempt to calculate a meaningful name for a resource given a prefix
 // Will never return a string longer than 32 chars
 func GetResourceName32(cluster string, prefix string) string {

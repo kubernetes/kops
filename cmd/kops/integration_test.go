@@ -42,6 +42,7 @@ import (
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 
 	"golang.org/x/crypto/ssh"
@@ -621,9 +622,9 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 		}
 		if i.nth {
 			expectedFilenames = append(expectedFilenames, []string{
-				"aws_cloudwatch_event_rule_" + i.clusterName + "-ASGLifecycle_event_pattern",
-				"aws_cloudwatch_event_rule_" + i.clusterName + "-RebalanceRecommendation_event_pattern",
-				"aws_cloudwatch_event_rule_" + i.clusterName + "-SpotInterruption_event_pattern",
+				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-ASGLifecycle_event_pattern",
+				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-RebalanceRecommendation_event_pattern",
+				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-SpotInterruption_event_pattern",
 				"aws_sqs_queue_" + strings.Replace(i.clusterName, ".", "-", -1) + "-nth_policy",
 			}...)
 		}

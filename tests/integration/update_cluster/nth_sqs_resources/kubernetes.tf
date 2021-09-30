@@ -219,49 +219,49 @@ resource "aws_autoscaling_lifecycle_hook" "nodes-NTHLifecycleHook" {
   name                   = "nodes-NTHLifecycleHook"
 }
 
-resource "aws_cloudwatch_event_rule" "nthsqsresources-longclustername-example-com-ASGLifecycle" {
-  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_nthsqsresources.longclustername.example.com-ASGLifecycle_event_pattern")
-  name          = "nthsqsresources.longclustername.example.com-ASGLifecycle"
+resource "aws_cloudwatch_event_rule" "nthsqsresources-longclustername-e-fkbaoh-ASGLifecycle" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_nthsqsresources.longclustername.e-fkbaoh-ASGLifecycle_event_pattern")
+  name          = "nthsqsresources.longclustername.e-fkbaoh-ASGLifecycle"
   tags = {
     "KubernetesCluster"                                                 = "nthsqsresources.longclustername.example.com"
-    "Name"                                                              = "nthsqsresources.longclustername.example.com-ASGLifecycle"
+    "Name"                                                              = "nthsqsresources.longclustername.e-fkbaoh-ASGLifecycle"
     "kubernetes.io/cluster/nthsqsresources.longclustername.example.com" = "owned"
   }
 }
 
-resource "aws_cloudwatch_event_rule" "nthsqsresources-longclustername-example-com-RebalanceRecommendation" {
-  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_nthsqsresources.longclustername.example.com-RebalanceRecommendation_event_pattern")
-  name          = "nthsqsresources.longclustername.example.com-RebalanceRecommendation"
+resource "aws_cloudwatch_event_rule" "nthsqsresources-longclustername-e-fkbaoh-RebalanceRecommendation" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_nthsqsresources.longclustername.e-fkbaoh-RebalanceRecommendation_event_pattern")
+  name          = "nthsqsresources.longclustername.e-fkbaoh-RebalanceRecommendation"
   tags = {
     "KubernetesCluster"                                                 = "nthsqsresources.longclustername.example.com"
-    "Name"                                                              = "nthsqsresources.longclustername.example.com-RebalanceRecommendation"
+    "Name"                                                              = "nthsqsresources.longclustername.e-fkbaoh-RebalanceRecommendation"
     "kubernetes.io/cluster/nthsqsresources.longclustername.example.com" = "owned"
   }
 }
 
-resource "aws_cloudwatch_event_rule" "nthsqsresources-longclustername-example-com-SpotInterruption" {
-  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_nthsqsresources.longclustername.example.com-SpotInterruption_event_pattern")
-  name          = "nthsqsresources.longclustername.example.com-SpotInterruption"
+resource "aws_cloudwatch_event_rule" "nthsqsresources-longclustername-e-fkbaoh-SpotInterruption" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_nthsqsresources.longclustername.e-fkbaoh-SpotInterruption_event_pattern")
+  name          = "nthsqsresources.longclustername.e-fkbaoh-SpotInterruption"
   tags = {
     "KubernetesCluster"                                                 = "nthsqsresources.longclustername.example.com"
-    "Name"                                                              = "nthsqsresources.longclustername.example.com-SpotInterruption"
+    "Name"                                                              = "nthsqsresources.longclustername.e-fkbaoh-SpotInterruption"
     "kubernetes.io/cluster/nthsqsresources.longclustername.example.com" = "owned"
   }
 }
 
-resource "aws_cloudwatch_event_target" "nthsqsresources-longclustername-example-com-ASGLifecycle-Target" {
+resource "aws_cloudwatch_event_target" "nthsqsresources-longclustername-e-fkbaoh-ASGLifecycle-Target" {
   arn  = "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
-  rule = aws_cloudwatch_event_rule.nthsqsresources-longclustername-example-com-ASGLifecycle.id
+  rule = aws_cloudwatch_event_rule.nthsqsresources-longclustername-e-fkbaoh-ASGLifecycle.id
 }
 
-resource "aws_cloudwatch_event_target" "nthsqsresources-longclustername-example-com-RebalanceRecommendation-Target" {
+resource "aws_cloudwatch_event_target" "nthsqsresources-longclustername-e-fkbaoh-RebalanceRecommendation-Target" {
   arn  = "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
-  rule = aws_cloudwatch_event_rule.nthsqsresources-longclustername-example-com-RebalanceRecommendation.id
+  rule = aws_cloudwatch_event_rule.nthsqsresources-longclustername-e-fkbaoh-RebalanceRecommendation.id
 }
 
-resource "aws_cloudwatch_event_target" "nthsqsresources-longclustername-example-com-SpotInterruption-Target" {
+resource "aws_cloudwatch_event_target" "nthsqsresources-longclustername-e-fkbaoh-SpotInterruption-Target" {
   arn  = "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
-  rule = aws_cloudwatch_event_rule.nthsqsresources-longclustername-example-com-SpotInterruption.id
+  rule = aws_cloudwatch_event_rule.nthsqsresources-longclustername-e-fkbaoh-SpotInterruption.id
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-events-nthsqsresources-longclustername-example-com" {
