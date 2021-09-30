@@ -22,6 +22,7 @@ import (
 	"k8s.io/kops/pkg/model"
 
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"k8s.io/kops/pkg/apis/kops"
@@ -143,9 +144,10 @@ func (b *NodeTerminationHandlerBuilder) buildEventBridgeRules(c *fi.ModelBuilder
 	accountID := b.AWSAccountID
 	targetArn := "arn:aws:sqs:" + region + ":" + accountID + ":" + queueName
 
+	clusterNamePrefix := awsup.GetClusterName40(clusterName)
 	for _, event := range events {
 		// build rule
-		ruleName := aws.String(clusterName + "-" + event.name)
+		ruleName := aws.String(clusterNamePrefix + "-" + event.name)
 		pattern := event.pattern
 
 		ruleTask := &awstasks.EventBridgeRule{
