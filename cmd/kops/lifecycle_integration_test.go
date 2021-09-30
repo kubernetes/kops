@@ -167,6 +167,7 @@ func TestLifecycleNodeTerminationHandlerQueueProcessor(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
 		t:      t,
 		SrcDir: "nth_sqs_resources",
+		ClusterName: "nthsqsresources.longclustername.example.com",
 	})
 }
 

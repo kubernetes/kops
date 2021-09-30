@@ -415,8 +415,8 @@ func TestAPIServerNodes(t *testing.T) {
 
 // TestNTHQueueProcessor tests the output for resources required by NTH Queue Processor mode
 func TestNTHQueueProcessor(t *testing.T) {
-	newIntegrationTest("nthsqsresources.example.com", "nth_sqs_resources").withNTH().runTestTerraformAWS(t)
-	newIntegrationTest("nthsqsresources.example.com", "nth_sqs_resources").runTestCloudformation(t)
+	newIntegrationTest("nthsqsresources.longclustername.example.com", "nth_sqs_resources").withNTH().runTestTerraformAWS(t)
+	newIntegrationTest("nthsqsresources.longclustername.example.com", "nth_sqs_resources").runTestCloudformation(t)
 }
 
 // TestCustomIRSA runs a simple configuration, but with some additional IAM roles for ServiceAccounts
