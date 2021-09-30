@@ -1,4 +1,5 @@
-Resources.AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourcesexamplecom.Properties.LaunchTemplateData.UserData: |
+? Resources.AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourceslongclusternameexamplecom.Properties.LaunchTemplateData.UserData
+: |
   #!/bin/bash
   set -o errexit
   set -o nounset
@@ -208,8 +209,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourcesexamplecom.Pro
     requestheaderUsernameHeaders:
     - X-Remote-User
     securePort: 443
-    serviceAccountIssuer: https://api.internal.nthsqsresources.example.com
-    serviceAccountJWKSURI: https://api.internal.nthsqsresources.example.com/openid/v1/jwks
+    serviceAccountIssuer: https://api.internal.nthsqsresources.longclustername.example.com
+    serviceAccountJWKSURI: https://api.internal.nthsqsresources.longclustername.example.com/openid/v1/jwks
     serviceClusterIPRange: 100.64.0.0/13
     storageBackend: etcd3
   kubeControllerManager:
@@ -217,7 +218,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourcesexamplecom.Pro
     attachDetachReconcileSyncPeriod: 1m0s
     cloudProvider: aws
     clusterCIDR: 100.96.0.0/11
-    clusterName: nthsqsresources.example.com
+    clusterName: nthsqsresources.longclustername.example.com
     configureCloudRoutes: false
     image: k8s.gcr.io/kube-controller-manager:v1.20.0
     leaderElection:
@@ -290,8 +291,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourcesexamplecom.Pro
     - 4eb9d5e2adf718cd7ee59f6951715f3113c9c4ee49c75c9efb9747f2c3457b2b@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.8.tgz
     - 2f599c3d54f4c4bdbcc95aaf0c7b513a845d8f9503ec5b34c9f86aa1bc34fc0c@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-arm64
     - 9d842e3636a95de2315cdea2be7a282355aac0658ef0b86d5dc2449066538f13@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-arm64
-  ClusterName: nthsqsresources.example.com
-  ConfigBase: memfs://clusters.example.com/nthsqsresources.example.com
+  ClusterName: nthsqsresources.longclustername.example.com
+  ConfigBase: memfs://clusters.example.com/nthsqsresources.longclustername.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
   KubeletConfig:
@@ -318,10 +319,10 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourcesexamplecom.Pro
     registerSchedulable: false
   UpdatePolicy: automatic
   channels:
-  - memfs://clusters.example.com/nthsqsresources.example.com/addons/bootstrap-channel.yaml
+  - memfs://clusters.example.com/nthsqsresources.longclustername.example.com/addons/bootstrap-channel.yaml
   etcdManifests:
-  - memfs://clusters.example.com/nthsqsresources.example.com/manifests/etcd/main.yaml
-  - memfs://clusters.example.com/nthsqsresources.example.com/manifests/etcd/events.yaml
+  - memfs://clusters.example.com/nthsqsresources.longclustername.example.com/manifests/etcd/main.yaml
+  - memfs://clusters.example.com/nthsqsresources.longclustername.example.com/manifests/etcd/events.yaml
   staticManifests:
   - key: kube-apiserver-healthcheck
     path: manifests/static/kube-apiserver-healthcheck.yaml
@@ -330,7 +331,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersnthsqsresourcesexamplecom.Pro
 
   download-release
   echo "== nodeup node config done =="
-Resources.AWSEC2LaunchTemplatenodesnthsqsresourcesexamplecom.Properties.LaunchTemplateData.UserData: |
+Resources.AWSEC2LaunchTemplatenodesnthsqsresourceslongclusternameexamplecom.Properties.LaunchTemplateData.UserData: |
   #!/bin/bash
   set -o errexit
   set -o nounset
@@ -536,8 +537,8 @@ Resources.AWSEC2LaunchTemplatenodesnthsqsresourcesexamplecom.Properties.LaunchTe
     - 25e4465870c99167e6c466623ed8f05a1d20fbcb48cab6688109389b52d87623@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/arm64/kubectl
     - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
     - 4eb9d5e2adf718cd7ee59f6951715f3113c9c4ee49c75c9efb9747f2c3457b2b@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.8.tgz
-  ClusterName: nthsqsresources.example.com
-  ConfigBase: memfs://clusters.example.com/nthsqsresources.example.com
+  ClusterName: nthsqsresources.longclustername.example.com
+  ConfigBase: memfs://clusters.example.com/nthsqsresources.longclustername.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
   KubeletConfig:
@@ -560,7 +561,7 @@ Resources.AWSEC2LaunchTemplatenodesnthsqsresourcesexamplecom.Properties.LaunchTe
     podManifestPath: /etc/kubernetes/manifests
   UpdatePolicy: automatic
   channels:
-  - memfs://clusters.example.com/nthsqsresources.example.com/addons/bootstrap-channel.yaml
+  - memfs://clusters.example.com/nthsqsresources.longclustername.example.com/addons/bootstrap-channel.yaml
 
   __EOF_KUBE_ENV
 

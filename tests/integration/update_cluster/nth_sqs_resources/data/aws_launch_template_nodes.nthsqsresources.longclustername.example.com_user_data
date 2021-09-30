@@ -162,77 +162,11 @@ containerd:
   version: 1.4.9
 docker:
   skipInstall: true
-encryptionConfig: null
-etcdClusters:
-  events:
-    version: 3.4.13
-  main:
-    version: 3.4.13
-kubeAPIServer:
-  allowPrivileged: true
-  anonymousAuth: false
-  apiAudiences:
-  - kubernetes.svc.default
-  apiServerCount: 1
-  authorizationMode: AlwaysAllow
-  bindAddress: 0.0.0.0
-  cloudProvider: aws
-  enableAdmissionPlugins:
-  - NamespaceLifecycle
-  - LimitRanger
-  - ServiceAccount
-  - PersistentVolumeLabel
-  - DefaultStorageClass
-  - DefaultTolerationSeconds
-  - MutatingAdmissionWebhook
-  - ValidatingAdmissionWebhook
-  - NodeRestriction
-  - ResourceQuota
-  etcdServers:
-  - https://127.0.0.1:4001
-  etcdServersOverrides:
-  - /events#https://127.0.0.1:4002
-  image: k8s.gcr.io/kube-apiserver:v1.20.0
-  kubeletPreferredAddressTypes:
-  - InternalIP
-  - Hostname
-  - ExternalIP
-  logLevel: 2
-  requestheaderAllowedNames:
-  - aggregator
-  requestheaderExtraHeaderPrefixes:
-  - X-Remote-Extra-
-  requestheaderGroupHeaders:
-  - X-Remote-Group
-  requestheaderUsernameHeaders:
-  - X-Remote-User
-  securePort: 443
-  serviceAccountIssuer: https://api.internal.nthsqsresources.example.com
-  serviceAccountJWKSURI: https://api.internal.nthsqsresources.example.com/openid/v1/jwks
-  serviceClusterIPRange: 100.64.0.0/13
-  storageBackend: etcd3
-kubeControllerManager:
-  allocateNodeCIDRs: true
-  attachDetachReconcileSyncPeriod: 1m0s
-  cloudProvider: aws
-  clusterCIDR: 100.96.0.0/11
-  clusterName: nthsqsresources.example.com
-  configureCloudRoutes: false
-  image: k8s.gcr.io/kube-controller-manager:v1.20.0
-  leaderElection:
-    leaderElect: true
-  logLevel: 2
-  useServiceAccountCredentials: true
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
   hostnameOverride: '@aws'
   image: k8s.gcr.io/kube-proxy:v1.20.0
-  logLevel: 2
-kubeScheduler:
-  image: k8s.gcr.io/kube-scheduler:v1.20.0
-  leaderElection:
-    leaderElect: true
   logLevel: 2
 kubelet:
   anonymousAuth: false
@@ -249,22 +183,6 @@ kubelet:
   networkPluginName: cni
   nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
-masterKubelet:
-  anonymousAuth: false
-  cgroupDriver: systemd
-  cgroupRoot: /
-  cloudProvider: aws
-  clusterDNS: 100.64.0.10
-  clusterDomain: cluster.local
-  enableDebuggingHandlers: true
-  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-  hostnameOverride: '@aws'
-  kubeconfigPath: /var/lib/kubelet/kubeconfig
-  logLevel: 2
-  networkPluginName: cni
-  nonMasqueradeCIDR: 100.64.0.0/10
-  podManifestPath: /etc/kubernetes/manifests
-  registerSchedulable: false
 
 __EOF_CLUSTER_SPEC
 
@@ -280,19 +198,15 @@ Assets:
   - a5895007f331f08d2e082eb12458764949559f30bcc5beae26c38f3e2724262c@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/amd64/kubectl
   - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
   - 9911479f86012d6eab7e0f532da8f807a8b0f555ee09ef89367d8c31243073bb@https://github.com/containerd/containerd/releases/download/v1.4.9/cri-containerd-cni-1.4.9-linux-amd64.tar.gz
-  - f90ed6dcef534e6d1ae17907dc7eb40614b8945ad4af7f0e98d2be7cde8165c6@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-amd64
-  - 9992e7eb2a2e93f799e5a9e98eb718637433524bc65f630357201a79f49b13d0@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-amd64
   arm64:
   - 47ab6c4273fc3bb0cb8ec9517271d915890c5a6b0e54b2991e7a8fbbe77b06e4@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/arm64/kubelet
   - 25e4465870c99167e6c466623ed8f05a1d20fbcb48cab6688109389b52d87623@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/arm64/kubectl
   - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
   - 4eb9d5e2adf718cd7ee59f6951715f3113c9c4ee49c75c9efb9747f2c3457b2b@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.8.tgz
-  - 2f599c3d54f4c4bdbcc95aaf0c7b513a845d8f9503ec5b34c9f86aa1bc34fc0c@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-arm64
-  - 9d842e3636a95de2315cdea2be7a282355aac0658ef0b86d5dc2449066538f13@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-arm64
-ClusterName: nthsqsresources.example.com
-ConfigBase: memfs://clusters.example.com/nthsqsresources.example.com
-InstanceGroupName: master-us-test-1a
-InstanceGroupRole: Master
+ClusterName: nthsqsresources.longclustername.example.com
+ConfigBase: memfs://clusters.example.com/nthsqsresources.longclustername.example.com
+InstanceGroupName: nodes
+InstanceGroupRole: Node
 KubeletConfig:
   anonymousAuth: false
   cgroupDriver: systemd
@@ -307,23 +221,13 @@ KubeletConfig:
   logLevel: 2
   networkPluginName: cni
   nodeLabels:
-    kops.k8s.io/kops-controller-pki: ""
-    kubernetes.io/role: master
-    node-role.kubernetes.io/control-plane: ""
-    node-role.kubernetes.io/master: ""
-    node.kubernetes.io/exclude-from-external-load-balancers: ""
+    kubernetes.io/role: node
+    node-role.kubernetes.io/node: ""
   nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
-  registerSchedulable: false
 UpdatePolicy: automatic
 channels:
-- memfs://clusters.example.com/nthsqsresources.example.com/addons/bootstrap-channel.yaml
-etcdManifests:
-- memfs://clusters.example.com/nthsqsresources.example.com/manifests/etcd/main.yaml
-- memfs://clusters.example.com/nthsqsresources.example.com/manifests/etcd/events.yaml
-staticManifests:
-- key: kube-apiserver-healthcheck
-  path: manifests/static/kube-apiserver-healthcheck.yaml
+- memfs://clusters.example.com/nthsqsresources.longclustername.example.com/addons/bootstrap-channel.yaml
 
 __EOF_KUBE_ENV
 

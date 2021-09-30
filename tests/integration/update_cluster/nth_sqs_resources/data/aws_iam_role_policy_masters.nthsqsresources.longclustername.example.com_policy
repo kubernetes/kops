@@ -43,7 +43,7 @@
       ],
       "Condition": {
         "StringEquals": {
-          "ec2:ResourceTag/KubernetesCluster": "nthsqsresources.example.com"
+          "ec2:ResourceTag/KubernetesCluster": "nthsqsresources.longclustername.example.com"
         }
       },
       "Effect": "Allow",
@@ -55,7 +55,7 @@
       "Action": "autoscaling:CompleteLifecycleAction",
       "Condition": {
         "StringEquals": {
-          "autoscaling:ResourceTag/KubernetesCluster": "nthsqsresources.example.com"
+          "autoscaling:ResourceTag/KubernetesCluster": "nthsqsresources.longclustername.example.com"
         }
       },
       "Effect": "Allow",
@@ -97,7 +97,7 @@
       ],
       "Condition": {
         "StringEquals": {
-          "autoscaling:ResourceTag/KubernetesCluster": "nthsqsresources.example.com"
+          "autoscaling:ResourceTag/KubernetesCluster": "nthsqsresources.longclustername.example.com"
         }
       },
       "Effect": "Allow",
@@ -112,7 +112,7 @@
       ],
       "Condition": {
         "StringEquals": {
-          "autoscaling:ResourceTag/KubernetesCluster": "nthsqsresources.example.com"
+          "autoscaling:ResourceTag/KubernetesCluster": "nthsqsresources.longclustername.example.com"
         }
       },
       "Effect": "Allow",

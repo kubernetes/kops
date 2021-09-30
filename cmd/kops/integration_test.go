@@ -42,6 +42,7 @@ import (
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 
 	"golang.org/x/crypto/ssh"
@@ -415,8 +416,8 @@ func TestAPIServerNodes(t *testing.T) {
 
 // TestNTHQueueProcessor tests the output for resources required by NTH Queue Processor mode
 func TestNTHQueueProcessor(t *testing.T) {
-	newIntegrationTest("nthsqsresources.example.com", "nth_sqs_resources").withNTH().runTestTerraformAWS(t)
-	newIntegrationTest("nthsqsresources.example.com", "nth_sqs_resources").runTestCloudformation(t)
+	newIntegrationTest("nthsqsresources.longclustername.example.com", "nth_sqs_resources").withNTH().runTestTerraformAWS(t)
+	newIntegrationTest("nthsqsresources.longclustername.example.com", "nth_sqs_resources").runTestCloudformation(t)
 }
 
 // TestCustomIRSA runs a simple configuration, but with some additional IAM roles for ServiceAccounts
@@ -621,9 +622,9 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 		}
 		if i.nth {
 			expectedFilenames = append(expectedFilenames, []string{
-				"aws_cloudwatch_event_rule_" + i.clusterName + "-ASGLifecycle_event_pattern",
-				"aws_cloudwatch_event_rule_" + i.clusterName + "-RebalanceRecommendation_event_pattern",
-				"aws_cloudwatch_event_rule_" + i.clusterName + "-SpotInterruption_event_pattern",
+				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-ASGLifecycle_event_pattern",
+				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-RebalanceRecommendation_event_pattern",
+				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-SpotInterruption_event_pattern",
 				"aws_sqs_queue_" + strings.Replace(i.clusterName, ".", "-", -1) + "-nth_policy",
 			}...)
 		}
