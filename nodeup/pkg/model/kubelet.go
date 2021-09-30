@@ -209,7 +209,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	// would be a degree of freedom we don't have (we'd have to write the config to different files)
 	// We can always add this later if it is needed.
 	if b.Cluster.Spec.CloudConfig != nil {
-		flags += " --cloud-config=" + CloudConfigFilePath
+		flags += " --cloud-config=" + InTreeCloudConfigFilePath
 	}
 
 	if b.UsesSecondaryIP() {
@@ -245,6 +245,10 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	if b.UseKopsControllerForNodeBootstrap() {
 		flags += " --tls-cert-file=" + b.PathSrvKubernetes() + "/kubelet-server.crt"
 		flags += " --tls-private-key-file=" + b.PathSrvKubernetes() + "/kubelet-server.key"
+	}
+
+	if b.Cluster.Spec.IsIPv6Only() {
+		flags += " --node-ip=::"
 	}
 
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"

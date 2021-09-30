@@ -154,7 +154,7 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 
 	// Add cloud config file if needed
 	if b.Cluster.Spec.CloudConfig != nil {
-		flags = append(flags, "--cloud-config="+CloudConfigFilePath)
+		flags = append(flags, "--cloud-config="+InTreeCloudConfigFilePath)
 	}
 
 	// Add kubeconfig flags
@@ -251,7 +251,7 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 
 	// Add cloud config file if needed
 	if b.Cluster.Spec.CloudConfig != nil {
-		addHostPathMapping(pod, container, "cloudconfig", CloudConfigFilePath)
+		addHostPathMapping(pod, container, "cloudconfig", InTreeCloudConfigFilePath)
 	}
 
 	addHostPathMapping(pod, container, "cabundle", filepath.Join(b.PathSrvKubernetes(), "ca.crt"))
