@@ -38,8 +38,8 @@ APIServerConfig:
     requestheaderUsernameHeaders:
     - X-Remote-User
     securePort: 443
-    serviceAccountIssuer: https://api.internal.nthsqsresources.example.com
-    serviceAccountJWKSURI: https://api.internal.nthsqsresources.example.com/openid/v1/jwks
+    serviceAccountIssuer: https://api.internal.nthsqsresources.longclustername.example.com
+    serviceAccountJWKSURI: https://api.internal.nthsqsresources.longclustername.example.com/openid/v1/jwks
     serviceClusterIPRange: 100.64.0.0/13
     storageBackend: etcd3
   ServiceAccountPublicKeys: |
@@ -218,7 +218,7 @@ CAs:
     MA0GCSqGSIb3DQEBCwUAA0EAVQVx5MUtuAIeePuP9o51xtpT2S6Fvfi8J4ICxnlA
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
-ClusterName: nthsqsresources.example.com
+ClusterName: nthsqsresources.longclustername.example.com
 Hooks:
 - null
 - null
@@ -255,13 +255,13 @@ KubeletConfig:
   registerSchedulable: false
 UpdatePolicy: automatic
 channels:
-- memfs://clusters.example.com/nthsqsresources.example.com/addons/bootstrap-channel.yaml
+- memfs://clusters.example.com/nthsqsresources.longclustername.example.com/addons/bootstrap-channel.yaml
 containerdConfig:
   logLevel: info
   version: 1.4.9
 etcdManifests:
-- memfs://clusters.example.com/nthsqsresources.example.com/manifests/etcd/main.yaml
-- memfs://clusters.example.com/nthsqsresources.example.com/manifests/etcd/events.yaml
+- memfs://clusters.example.com/nthsqsresources.longclustername.example.com/manifests/etcd/main.yaml
+- memfs://clusters.example.com/nthsqsresources.longclustername.example.com/manifests/etcd/events.yaml
 staticManifests:
 - key: kube-apiserver-healthcheck
   path: manifests/static/kube-apiserver-healthcheck.yaml

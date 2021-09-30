@@ -6,6 +6,6 @@
 				"Service": ["events.amazonaws.com", "sqs.amazonaws.com"]
 			},
 			"Action": "sqs:SendMessage",
-			"Resource": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-example-com-nth"
+			"Resource": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
 		}]
 	}
