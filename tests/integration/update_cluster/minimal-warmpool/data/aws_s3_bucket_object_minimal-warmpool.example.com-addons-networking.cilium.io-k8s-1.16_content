@@ -35,7 +35,7 @@ data:
   bpf-nat-global-max: "524288"
   bpf-neigh-global-max: "524288"
   bpf-policy-map-max: "16384"
-  cgroup-root: /sys/fs/cgroup/unified
+  cgroup-root: /run/cilium/cgroupv2
   cluster-name: default
   container-runtime: none
   debug: "false"
@@ -508,7 +508,7 @@ spec:
         - mountPath: /sys/fs/bpf
           mountPropagation: HostToContainer
           name: bpf-maps
-        - mountPath: /sys/fs/cgroup/unified
+        - mountPath: /run/cilium/cgroupv2
           mountPropagation: HostToContainer
           name: cilium-cgroup
         - mountPath: /var/run/cilium
@@ -534,8 +534,8 @@ spec:
           type: DirectoryOrCreate
         name: cni-path
       - hostPath:
-          path: /sys/fs/cgroup/unified
-          type: DirectoryOrCreate
+          path: /run/cilium/cgroupv2
+          type: Directory
         name: cilium-cgroup
       - hostPath:
           path: /etc/cni/net.d
