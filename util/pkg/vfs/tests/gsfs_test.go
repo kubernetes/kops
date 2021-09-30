@@ -47,6 +47,7 @@ func TestGSRenderTerraform(t *testing.T) {
 			{
 				"bucket": "foo",
 				"name": "bar",
+				"provider": "${google.files}",
 				"source": "\"${path.module}/data/google_storage_bucket_object_bar_content\""
 			}
 			`,
@@ -54,6 +55,7 @@ func TestGSRenderTerraform(t *testing.T) {
 			{
 				"bucket": "foo",
 				"object": "${google_storage_bucket_object.bar.output_name}",
+				"provider": "${google.files}",
 				"role_entity": [
 					"READER:user-foo-123@project.iam.gserviceaccount.com"
 				]

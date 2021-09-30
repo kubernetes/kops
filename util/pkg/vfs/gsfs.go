@@ -116,6 +116,15 @@ func (p *GSPath) String() string {
 	return p.Path()
 }
 
+// TerraformProvider returns the provider name and necessary arguments
+func (p *GSPath) TerraformProvider() (*TerraformProvider, error) {
+	provider := &TerraformProvider{
+		Name:      "google",
+		Arguments: map[string]string{}, // GCS doesn't need the project and region specified
+	}
+	return provider, nil
+}
+
 func (p *GSPath) Remove() error {
 	done, err := RetryWithBackoff(gcsWriteBackoff, func() (bool, error) {
 		err := p.client.Objects.Delete(p.bucket, p.key).Do()
@@ -378,15 +387,17 @@ func (p *GSPath) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
 }
 
 type terraformGSObject struct {
-	Bucket string `json:"bucket" cty:"bucket"`
-	Name   string `json:"name" cty:"name"`
-	Source string `json:"source" cty:"source"`
+	Bucket   string                   `json:"bucket" cty:"bucket"`
+	Name     string                   `json:"name" cty:"name"`
+	Source   string                   `json:"source" cty:"source"`
+	Provider *terraformWriter.Literal `json:"provider,omitempty" cty:"provider"`
 }
 
 type terraformGSObjectAccessControl struct {
 	Bucket     string                   `json:"bucket" cty:"bucket"`
 	Object     *terraformWriter.Literal `json:"object" cty:"object"`
 	RoleEntity []string                 `json:"role_entity" cty:"role_entity"`
+	Provider   *terraformWriter.Literal `json:"provider,omitempty" cty:"provider"`
 }
 
 func (p *GSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name string, data io.Reader, acl ACL) error {
@@ -401,9 +412,10 @@ func (p *GSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 	}
 
 	tf := &terraformGSObject{
-		Bucket: p.Bucket(),
-		Name:   p.Object(),
-		Source: content.FnArgs[0],
+		Bucket:   p.Bucket(),
+		Name:     p.Object(),
+		Source:   content.FnArgs[0],
+		Provider: terraformWriter.LiteralTokens("google", "files"),
 	}
 	err = w.RenderResource("google_storage_bucket_object", name, tf)
 	if err != nil {
@@ -414,6 +426,7 @@ func (p *GSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 		Bucket:     p.Bucket(),
 		Object:     p.TerraformLink(name),
 		RoleEntity: make([]string, 0),
+		Provider:   terraformWriter.LiteralTokens("google", "files"),
 	}
 	for _, re := range acl.(GSAcl).Acl {
 		// https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_object_acl#role_entity
