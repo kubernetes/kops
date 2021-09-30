@@ -4,7 +4,7 @@
       "Action": "ec2:AttachVolume",
       "Condition": {
         "StringEquals": {
-          "aws:ResourceTag/KubernetesCluster": "nthsqsresources.example.com",
+          "aws:ResourceTag/KubernetesCluster": "nthsqsresources.longclustername.example.com",
           "aws:ResourceTag/k8s.io/role/master": "1"
         }
       },
@@ -18,7 +18,7 @@
         "s3:Get*"
       ],
       "Effect": "Allow",
-      "Resource": "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.example.com/*"
+      "Resource": "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/*"
     },
     {
       "Action": [
@@ -28,7 +28,7 @@
         "s3:PutObject"
       ],
       "Effect": "Allow",
-      "Resource": "arn:aws:s3:::placeholder-write-bucket/clusters.example.com/nthsqsresources.example.com/backups/etcd/main/*"
+      "Resource": "arn:aws:s3:::placeholder-write-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/backups/etcd/main/*"
     },
     {
       "Action": [
@@ -38,7 +38,7 @@
         "s3:PutObject"
       ],
       "Effect": "Allow",
-      "Resource": "arn:aws:s3:::placeholder-write-bucket/clusters.example.com/nthsqsresources.example.com/backups/etcd/events/*"
+      "Resource": "arn:aws:s3:::placeholder-write-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/backups/etcd/events/*"
     },
     {
       "Action": [
@@ -130,7 +130,7 @@
       "Action": "ec2:DeleteTags",
       "Condition": {
         "StringEquals": {
-          "aws:ResourceTag/KubernetesCluster": "nthsqsresources.example.com"
+          "aws:ResourceTag/KubernetesCluster": "nthsqsresources.longclustername.example.com"
         }
       },
       "Effect": "Allow",
@@ -209,7 +209,7 @@
       ],
       "Condition": {
         "StringEquals": {
-          "aws:ResourceTag/KubernetesCluster": "nthsqsresources.example.com"
+          "aws:ResourceTag/KubernetesCluster": "nthsqsresources.longclustername.example.com"
         }
       },
       "Effect": "Allow",
@@ -227,7 +227,7 @@
       ],
       "Condition": {
         "StringEquals": {
-          "aws:RequestTag/KubernetesCluster": "nthsqsresources.example.com"
+          "aws:RequestTag/KubernetesCluster": "nthsqsresources.longclustername.example.com"
         }
       },
       "Effect": "Allow",
