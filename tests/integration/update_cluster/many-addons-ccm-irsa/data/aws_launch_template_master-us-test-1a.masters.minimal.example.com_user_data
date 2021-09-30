@@ -153,7 +153,6 @@ kubeAPIServer:
   - NamespaceLifecycle
   - LimitRanger
   - ServiceAccount
-  - PersistentVolumeLabel
   - DefaultStorageClass
   - DefaultTolerationSeconds
   - MutatingAdmissionWebhook
@@ -252,7 +251,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: 0EyRTJpK9KrCfzoGEoHxH6tQPsXj3MzWPbb38lNx3wM=
+NodeupConfigHash: FRFCRUdAc+VKAxvUVjCNxC9MVaqfUX89rznJSU9wVFU=
 
 __EOF_KUBE_ENV
 
