@@ -247,6 +247,10 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		flags += " --tls-private-key-file=" + b.PathSrvKubernetes() + "/kubelet-server.key"
 	}
 
+	if b.Cluster.Spec.IsIPv6Only() {
+		flags += " --node-ip=::"
+	}
+
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
 	// Makes kubelet read /root/.docker/config.json properly
 	sysconfig = sysconfig + "HOME=\"/root" + "\"\n"
