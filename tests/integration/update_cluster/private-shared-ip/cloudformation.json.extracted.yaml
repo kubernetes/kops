@@ -154,7 +154,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatesharedipexamplecom.Pro
     - NamespaceLifecycle
     - LimitRanger
     - ServiceAccount
-    - PersistentVolumeLabel
     - DefaultStorageClass
     - DefaultTolerationSeconds
     - MutatingAdmissionWebhook
@@ -246,7 +245,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatesharedipexamplecom.Pro
   ConfigBase: memfs://clusters.example.com/private-shared-ip.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: vzsI19SA9cfwASqka1Ok++hoE44ax9mZbLIf/IV4JKQ=
+  NodeupConfigHash: neJKfXJhHADg0OGM0iHc4oLl78kJvNmGWRTYbdOc7k0=
 
   __EOF_KUBE_ENV
 

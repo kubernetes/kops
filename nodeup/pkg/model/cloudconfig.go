@@ -28,7 +28,8 @@ import (
 )
 
 const (
-	CloudConfigFilePath = "/etc/kubernetes/cloud.config"
+	CloudConfigFilePath       = "/etc/kubernetes/cloud.config"
+	InTreeCloudConfigFilePath = "/etc/kubernetes/in-tree-cloud.config"
 
 	// VM UUID is set by cloud-init
 	VM_UUID_FILE_PATH = "/etc/vmware/vm_uuid"
@@ -72,6 +73,16 @@ type CloudConfigBuilder struct {
 var _ fi.ModelBuilder = &CloudConfigBuilder{}
 
 func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
+	if err := b.build(c, true); err != nil {
+		return err
+	}
+	if err := b.build(c, false); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error {
 	// Add cloud config file if needed
 	var lines []string
 
@@ -102,8 +113,10 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 		if cloudConfig.ElbSecurityGroup != nil {
 			lines = append(lines, "ElbSecurityGroup = "+*cloudConfig.ElbSecurityGroup)
 		}
-		for _, family := range cloudConfig.NodeIPFamilies {
-			lines = append(lines, "NodeIPFamilies = "+family)
+		if !inTree {
+			for _, family := range cloudConfig.NodeIPFamilies {
+				lines = append(lines, "NodeIPFamilies = "+family)
+			}
 		}
 	case "openstack":
 		osc := cloudConfig.Openstack
@@ -215,9 +228,12 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 	if requireGlobal {
 		config = "[global]\n" + strings.Join(lines, "\n") + "\n"
 	}
-
+	path := CloudConfigFilePath
+	if inTree {
+		path = InTreeCloudConfigFilePath
+	}
 	t := &nodetasks.File{
-		Path:     CloudConfigFilePath,
+		Path:     path,
 		Contents: fi.NewStringResource(config),
 		Type:     nodetasks.FileType_File,
 	}
