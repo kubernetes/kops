@@ -136,7 +136,7 @@ spec:
               fieldPath: spec.nodeName
         - name: CLUSTER_NAME
           value: minimal.example.com
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.9.0
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.9.1
         imagePullPolicy: Always
         livenessProbe:
           exec:
@@ -179,7 +179,7 @@ spec:
       - env:
         - name: DISABLE_TCP_EARLY_DEMUX
           value: "false"
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.9.0
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.9.1
         imagePullPolicy: Always
         name: aws-vpc-cni-init
         securityContext:
