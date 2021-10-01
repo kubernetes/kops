@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -26,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/klog/v2"
 
@@ -51,6 +53,17 @@ var (
 
 	getInstancesShort = i18n.T(`Display cluster instances.`)
 )
+
+type renderableCloudInstance struct {
+	ID            string   `json:"id"`
+	NodeName      string   `json:"nodeName"`
+	Status        string   `json:"status"`
+	Roles         []string `json:"roles"`
+	InternalIP    string   `json:"internalIP"`
+	InstanceGroup string   `json:"instanceGroup"`
+	MachineType   string   `json:"machineType"`
+	State         string   `json:"state"`
+}
 
 func NewCmdGetInstances(f *util.Factory, out io.Writer, options *GetOptions) *cobra.Command {
 	cmd := &cobra.Command{
@@ -124,6 +137,24 @@ func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, option
 	switch options.Output {
 	case OutputTable:
 		return instanceOutputTable(cloudInstances, out)
+	case OutputYaml:
+		y, err := yaml.Marshal(asRenderable(cloudInstances))
+		if err != nil {
+			return fmt.Errorf("unable to marshal YAML: %v", err)
+		}
+		if _, err := out.Write(y); err != nil {
+			return fmt.Errorf("error writing to output: %v", err)
+		}
+		return nil
+	case OutputJSON:
+		j, err := json.Marshal(asRenderable(cloudInstances))
+		if err != nil {
+			return fmt.Errorf("unable to marshal JSON: %v", err)
+		}
+		if _, err := out.Write(j); err != nil {
+			return fmt.Errorf("error writing to output: %v", err)
+		}
+		return nil
 	default:
 		return fmt.Errorf("unsupported output format: %q", options.Output)
 	}
@@ -181,4 +212,21 @@ func createK8sClient(cluster *kops.Cluster) (*kubernetes.Clientset, error) {
 	}
 	return k8sClient, nil
 
+}
+
+func asRenderable(instances []*cloudinstances.CloudInstance) []*renderableCloudInstance {
+	arr := make([]*renderableCloudInstance, len(instances))
+	for i, ci := range instances {
+		arr[i] = &renderableCloudInstance{
+			ID:            ci.ID,
+			NodeName:      ci.Node.Name,
+			Status:        ci.Status,
+			Roles:         ci.Roles,
+			InternalIP:    ci.PrivateIP,
+			InstanceGroup: ci.CloudInstanceGroup.HumanName,
+			MachineType:   ci.MachineType,
+			State:         string(ci.State),
+		}
+	}
+	return arr
 }
