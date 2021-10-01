@@ -140,6 +140,8 @@
         #   "value": "false"
         # - "name": "DISABLE_METRICS"
         #   "value": "false"
+        # - "name": "DISABLE_NETWORK_RESOURCE_PROVISIONING"
+        #   "value": "false"
         # - "name": "ENABLE_POD_ENI"
         #   "value": "false"
         # - "name": "ENABLE_PREFIX_DELEGATION"
@@ -154,7 +156,7 @@
         #   "value": "1"
         - "name": "CLUSTER_NAME"
           "value": "{{ ClusterName }}"
-        "image": "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.9.0" }}"
+        "image": "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.9.1" }}"
         "imagePullPolicy": "Always"
         "livenessProbe":
           "exec":
@@ -197,7 +199,7 @@
       - "env":
         - "name": "DISABLE_TCP_EARLY_DEMUX"
           "value": "false"
-        "image": "{{- or .Networking.AmazonVPC.InitImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.9.0" }}"
+        "image": "{{- or .Networking.AmazonVPC.InitImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.9.1" }}"
         "imagePullPolicy": "Always"
         "name": "aws-vpc-cni-init"
         "securityContext":
