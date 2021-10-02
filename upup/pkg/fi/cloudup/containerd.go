@@ -195,6 +195,7 @@ func findAllContainerdHashesAmd64() map[string]string {
 		"1.5.3":  "32a9bf1b7ab2adbd9d2a16b17bf1aa6e61592938655adfb5114c40d527aa9be7",
 		"1.5.4":  "591e4e087ea2f5007e6c64deb382df58d419b7b6922eab45a1923d843d57615f",
 		"1.5.5":  "45f02cfc65db47cf088c95555906e1dcba7baf5a3fbad3d947dd6b9af476a144",
+		"1.5.6":  "afc51718ebe46cb9b985edac816e63fe86c07e37d28cdd21b2c0302dec6fa7ae",
 	}
 
 	return hashes
