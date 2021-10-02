@@ -490,8 +490,10 @@ apimachinery-codegen:
 	# ref: https://github.com/kubernetes/gengo/issues/64
 	${KOPS_ROOT}/_output/bin/conversion-gen ${API_OPTIONS} --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.conversion \
 		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt"
+	grep 'requires manual conversion' ${KOPS_ROOT}/pkg/apis/kops/v1alpha2/zz_generated.conversion.go ; [ $$? -eq 1 ]
 	${KOPS_ROOT}/_output/bin/conversion-gen ${API_OPTIONS} --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha3 --v=0  --output-file-base=zz_generated.conversion \
 		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt"
+	grep 'requires manual conversion' ${KOPS_ROOT}/pkg/apis/kops/v1alpha3/zz_generated.conversion.go ; [ $$? -eq 1 ]
 	${KOPS_ROOT}/_output/bin/deepcopy-gen ${API_OPTIONS} --input-dirs k8s.io/kops/pkg/apis/kops --v=0  --output-file-base=zz_generated.deepcopy \
 		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt"
 	${KOPS_ROOT}/_output/bin/deepcopy-gen ${API_OPTIONS} --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.deepcopy \
