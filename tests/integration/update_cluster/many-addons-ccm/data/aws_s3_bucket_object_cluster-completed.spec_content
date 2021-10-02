@@ -31,7 +31,7 @@ spec:
     balanceSimilarNodeGroups: false
     enabled: true
     expander: random
-    image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.21.0
+    image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.21.1
     newPodScaleUpDelay: 0s
     scaleDownDelayAfterAdd: 10m0s
     scaleDownUtilizationThreshold: "0.5"
