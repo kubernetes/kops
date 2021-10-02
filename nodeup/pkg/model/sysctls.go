@@ -152,8 +152,8 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if b.Cluster.Spec.IsIPv6Only() {
 		sysctls = append(sysctls,
+			"# Enable IPv6 forwarding for network plugins that don't do it themselves",
 			"net.ipv6.conf.all.forwarding=1",
-			"net.ipv6.conf.all.accept_ra=2",
 			"")
 	} else {
 		sysctls = append(sysctls,
