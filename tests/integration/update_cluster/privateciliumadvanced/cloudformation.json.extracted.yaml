@@ -132,7 +132,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumadvancedexamplec
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.9
+    version: 1.4.10
   docker:
     skipInstall: true
   encryptionConfig: null
@@ -248,7 +248,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumadvancedexamplec
   ConfigBase: memfs://clusters.example.com/privateciliumadvanced.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: 6hDaUSfx0pAT3A2POKlKIRBmzNba4xyZ3dTs5nH+CSs=
+  NodeupConfigHash: WhT6xXzZxGxbtHTRyd0oi3ouvZK2iKR4S7fVw716aQk=
 
   __EOF_KUBE_ENV
 
@@ -387,7 +387,7 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumadvancedexamplecom.Properties.La
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.9
+    version: 1.4.10
   docker:
     skipInstall: true
   kubeProxy:
@@ -420,7 +420,7 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumadvancedexamplecom.Properties.La
   ConfigBase: memfs://clusters.example.com/privateciliumadvanced.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: 3zVYVrzVtEqtvLr7oIpFovp/KZJPk205VRTu9UH2QXg=
+  NodeupConfigHash: 4FsOFERifz+r0C+nQB2Sth3zupgFTkBgFdVW+gM1zXg=
 
   __EOF_KUBE_ENV
 
