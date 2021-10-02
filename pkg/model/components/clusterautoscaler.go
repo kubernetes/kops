@@ -46,13 +46,13 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 			case 23:
 				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.23.0"
 			case 22:
-				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.22.0"
+				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.22.1"
 			case 21:
-				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.21.0"
+				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.21.1"
 			case 20:
-				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.20.0"
+				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.20.1"
 			case 19:
-				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.19.1"
+				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.19.2"
 			case 18:
 				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.18.3"
 			}
