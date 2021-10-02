@@ -163,7 +163,7 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 		}
 	}
 
-	channelLocation := ""
+	channelLocation := options.channel
 	if channelLocation == "" {
 		channelLocation = kopsapi.DefaultChannel
 	}
