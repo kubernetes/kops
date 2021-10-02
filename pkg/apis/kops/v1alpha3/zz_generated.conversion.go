@@ -1569,6 +1569,7 @@ func Convert_kops_AzureConfiguration_To_v1alpha3_AzureConfiguration(in *kops.Azu
 
 func autoConvert_v1alpha3_BastionLoadBalancerSpec_To_kops_BastionLoadBalancerSpec(in *BastionLoadBalancerSpec, out *kops.BastionLoadBalancerSpec, s conversion.Scope) error {
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
+	out.Type = kops.LoadBalancerType(in.Type)
 	return nil
 }
 
@@ -1579,6 +1580,7 @@ func Convert_v1alpha3_BastionLoadBalancerSpec_To_kops_BastionLoadBalancerSpec(in
 
 func autoConvert_kops_BastionLoadBalancerSpec_To_v1alpha3_BastionLoadBalancerSpec(in *kops.BastionLoadBalancerSpec, out *BastionLoadBalancerSpec, s conversion.Scope) error {
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
+	out.Type = LoadBalancerType(in.Type)
 	return nil
 }
 
@@ -1803,6 +1805,7 @@ func autoConvert_v1alpha3_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.AllowLocalhost = in.AllowLocalhost
 	out.AutoIpv6NodeRoutes = in.AutoIpv6NodeRoutes
 	out.BPFRoot = in.BPFRoot
+	out.ChainingMode = in.ChainingMode
 	out.ContainerRuntime = in.ContainerRuntime
 	out.ContainerRuntimeEndpoint = in.ContainerRuntimeEndpoint
 	out.Debug = in.Debug
@@ -1911,6 +1914,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha3_CiliumNetworkingSpec(in *
 	out.AllowLocalhost = in.AllowLocalhost
 	out.AutoIpv6NodeRoutes = in.AutoIpv6NodeRoutes
 	out.BPFRoot = in.BPFRoot
+	out.ChainingMode = in.ChainingMode
 	out.ContainerRuntime = in.ContainerRuntime
 	out.ContainerRuntimeEndpoint = in.ContainerRuntimeEndpoint
 	out.Debug = in.Debug
@@ -5036,6 +5040,8 @@ func Convert_kops_KubeControllerManagerConfig_To_v1alpha3_KubeControllerManagerC
 func autoConvert_v1alpha3_KubeDNSConfig_To_kops_KubeDNSConfig(in *KubeDNSConfig, out *kops.KubeDNSConfig, s conversion.Scope) error {
 	out.CacheMaxSize = in.CacheMaxSize
 	out.CacheMaxConcurrent = in.CacheMaxConcurrent
+	out.Tolerations = in.Tolerations
+	out.Affinity = in.Affinity
 	out.CoreDNSImage = in.CoreDNSImage
 	out.CPAImage = in.CPAImage
 	out.Domain = in.Domain
@@ -5069,6 +5075,8 @@ func Convert_v1alpha3_KubeDNSConfig_To_kops_KubeDNSConfig(in *KubeDNSConfig, out
 func autoConvert_kops_KubeDNSConfig_To_v1alpha3_KubeDNSConfig(in *kops.KubeDNSConfig, out *KubeDNSConfig, s conversion.Scope) error {
 	out.CacheMaxSize = in.CacheMaxSize
 	out.CacheMaxConcurrent = in.CacheMaxConcurrent
+	out.Tolerations = in.Tolerations
+	out.Affinity = in.Affinity
 	out.CoreDNSImage = in.CoreDNSImage
 	out.CPAImage = in.CPAImage
 	out.Domain = in.Domain
@@ -6682,6 +6690,7 @@ func Convert_kops_ServiceAccountExternalPermission_To_v1alpha3_ServiceAccountExt
 func autoConvert_v1alpha3_ServiceAccountIssuerDiscoveryConfig_To_kops_ServiceAccountIssuerDiscoveryConfig(in *ServiceAccountIssuerDiscoveryConfig, out *kops.ServiceAccountIssuerDiscoveryConfig, s conversion.Scope) error {
 	out.DiscoveryStore = in.DiscoveryStore
 	out.EnableAWSOIDCProvider = in.EnableAWSOIDCProvider
+	out.AdditionalAudiences = in.AdditionalAudiences
 	return nil
 }
 
@@ -6693,6 +6702,7 @@ func Convert_v1alpha3_ServiceAccountIssuerDiscoveryConfig_To_kops_ServiceAccount
 func autoConvert_kops_ServiceAccountIssuerDiscoveryConfig_To_v1alpha3_ServiceAccountIssuerDiscoveryConfig(in *kops.ServiceAccountIssuerDiscoveryConfig, out *ServiceAccountIssuerDiscoveryConfig, s conversion.Scope) error {
 	out.DiscoveryStore = in.DiscoveryStore
 	out.EnableAWSOIDCProvider = in.EnableAWSOIDCProvider
+	out.AdditionalAudiences = in.AdditionalAudiences
 	return nil
 }
 
