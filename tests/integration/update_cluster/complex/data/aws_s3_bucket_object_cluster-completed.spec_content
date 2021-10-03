@@ -46,23 +46,17 @@ spec:
   etcdClusters:
   - backups:
       backupStore: memfs://clusters.example.com/complex.example.com/backups/etcd/main
-    enableEtcdTLS: true
-    enableTLSAuth: true
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: a
     name: main
-    provider: Manager
     version: 3.4.13
   - backups:
       backupStore: memfs://clusters.example.com/complex.example.com/backups/etcd/events
-    enableEtcdTLS: true
-    enableTLSAuth: true
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: a
     name: events
-    provider: Manager
     version: 3.4.13
   externalDns:
     provider: dns-controller
