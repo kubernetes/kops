@@ -27,8 +27,6 @@ spec:
   etcdClusters:
   - backups:
       backupStore: memfs://tests/minimal-gce.example.com/backups/etcd/main
-    enableEtcdTLS: true
-    enableTLSAuth: true
     etcdMembers:
     - instanceGroup: master-us-test1-a
       name: "1"
@@ -37,8 +35,6 @@ spec:
     version: 3.4.13
   - backups:
       backupStore: memfs://tests/minimal-gce.example.com/backups/etcd/events
-    enableEtcdTLS: true
-    enableTLSAuth: true
     etcdMembers:
     - instanceGroup: master-us-test1-a
       name: "1"
