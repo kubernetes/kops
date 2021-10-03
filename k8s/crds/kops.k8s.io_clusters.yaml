@@ -1217,7 +1217,7 @@ spec:
                   permissionsBoundary:
                     type: string
                   serviceAccountExternalPermissions:
-                    description: ServiceAccountExternalPermissions defines the relatinship
+                    description: ServiceAccountExternalPermissions defines the relationship
                       between Kubernetes ServiceAccounts and permissions with external
                       resources.
                     items:
