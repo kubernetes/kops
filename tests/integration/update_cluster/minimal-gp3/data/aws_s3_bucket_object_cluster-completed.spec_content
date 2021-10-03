@@ -35,7 +35,6 @@ spec:
       volumeThroughput: 125
       volumeType: gp3
     name: main
-    provider: Manager
     version: 3.4.13
   - backups:
       backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd/events
@@ -45,7 +44,6 @@ spec:
       volumeSize: 20
       volumeType: gp3
     name: events
-    provider: Manager
     version: 3.4.13
   externalDns:
     provider: dns-controller

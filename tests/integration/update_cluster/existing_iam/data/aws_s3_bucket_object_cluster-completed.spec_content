@@ -35,7 +35,6 @@ spec:
     - instanceGroup: master-us-test-1c
       name: c
     name: main
-    provider: Manager
     version: 3.4.13
   - backups:
       backupStore: memfs://tests/existing-iam.example.com/backups/etcd/events
@@ -47,7 +46,6 @@ spec:
     - instanceGroup: master-us-test-1c
       name: c
     name: events
-    provider: Manager
     version: 3.4.13
   externalDns:
     provider: dns-controller

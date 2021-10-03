@@ -42,7 +42,6 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: main
-    provider: Manager
     version: 3.4.3
   - backups:
       backupStore: memfs://clusters.example.com/privatecilium.example.com/backups/etcd/events
@@ -50,7 +49,6 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-    provider: Manager
     version: 3.4.3
   externalDns:
     provider: dns-controller
