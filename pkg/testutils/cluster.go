@@ -47,8 +47,6 @@ func BuildMinimalCluster(clusterName string) *kops.Cluster {
 		},
 	}
 
-	c.Spec.IAM = &kops.IAMSpec{}
-
 	c.Spec.Networking = &kops.NetworkingSpec{}
 
 	c.Spec.NetworkCIDR = "172.20.0.0/16"
