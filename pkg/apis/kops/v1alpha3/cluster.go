@@ -21,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 // +genclient
@@ -180,9 +181,8 @@ type ClusterSpec struct {
 	// Authentication field controls how the cluster is configured for authentication
 	Authentication *AuthenticationSpec `json:"authentication,omitempty"`
 	// Authorization field controls how the cluster is configured for authorization
-	Authorization *AuthorizationSpec `json:"authorization,omitempty"`
-	// NodeAuthorization defined the custom node authorization configuration
-	NodeAuthorization *NodeAuthorizationSpec `json:"nodeAuthorization,omitempty"`
+	Authorization     *AuthorizationSpec          `json:"authorization,omitempty"`
+	NodeAuthorization *kops.NodeAuthorizationSpec `json:"-"`
 	// CloudLabels defines additional tags or labels on cloud provider resources
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
 	// Hooks for custom actions e.g. on first installation
@@ -244,32 +244,6 @@ type AWSPermission struct {
 	InlinePolicy string `json:"inlinePolicy,omitempty"`
 }
 
-// NodeAuthorizationSpec is used to node authorization
-type NodeAuthorizationSpec struct {
-	// NodeAuthorizer defined the configuration for the node authorizer
-	NodeAuthorizer *NodeAuthorizerSpec `json:"nodeAuthorizer,omitempty"`
-}
-
-// NodeAuthorizerSpec defines the configuration for a node authorizer
-type NodeAuthorizerSpec struct {
-	// Authorizer is the authorizer to use
-	Authorizer string `json:"authorizer,omitempty"`
-	// Features is a series of authorizer features to enable or disable
-	Features []string `json:"features,omitempty"`
-	// Image is the location of container
-	Image string `json:"image,omitempty"`
-	// NodeURL is the node authorization service url
-	NodeURL string `json:"nodeURL,omitempty"`
-	// Port is the port the service is running on the master
-	Port int `json:"port,omitempty"`
-	// Interval the time between retires for authorization request
-	Interval *metav1.Duration `json:"interval,omitempty"`
-	// Timeout the max time for authorization request
-	Timeout *metav1.Duration `json:"timeout,omitempty"`
-	// TokenTTL is the max ttl for an issued token
-	TokenTTL *metav1.Duration `json:"tokenTTL,omitempty"`
-}
-
 // AddonSpec defines an addon that we want to install in the cluster
 type AddonSpec struct {
 	// Manifest is a path to the manifest that defines the addon
@@ -302,13 +276,13 @@ type Assets struct {
 
 // IAMSpec adds control over the IAM security policies applied to resources
 type IAMSpec struct {
-	Legacy                 bool    `json:"legacy"`
+	Legacy                 bool    `json:"-"`
 	AllowContainerRegistry bool    `json:"allowContainerRegistry,omitempty"`
 	PermissionsBoundary    *string `json:"permissionsBoundary,omitempty"`
 	// UseServiceAccountExternalPermissions determines if managed ServiceAccounts will use external permissions directly.
 	// If this is set to false, ServiceAccounts will assume external permissions from the instances they run on.
 	UseServiceAccountExternalPermissions *bool `json:"useServiceAccountExternalPermissions,omitempty"`
-	// ServiceAccountExternalPermissions defines the relatinship between Kubernetes ServiceAccounts and permissions with external resources.
+	// ServiceAccountExternalPermissions defines the relationship between Kubernetes ServiceAccounts and permissions with external resources.
 	ServiceAccountExternalPermissions []ServiceAccountExternalPermission `json:"serviceAccountExternalPermissions,omitempty"`
 }
 
@@ -546,33 +520,17 @@ type ExternalDNSConfig struct {
 	Provider ExternalDNSProvider `json:"provider,omitempty"`
 }
 
-// EtcdProviderType describes etcd cluster provisioning types (Standalone, Manager)
-type EtcdProviderType string
-
-const (
-	EtcdProviderTypeManager EtcdProviderType = "Manager"
-	EtcdProviderTypeLegacy  EtcdProviderType = "Legacy"
-)
-
 // EtcdClusterSpec is the etcd cluster specification
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)
-	Name string `json:"name,omitempty"`
-	// Provider is the provider used to run etcd: Manager, Legacy.
-	// Defaults to Manager.
-	Provider EtcdProviderType `json:"provider,omitempty"`
+	Name     string `json:"name,omitempty"`
+	Provider string `json:"-"`
 	// Members stores the configurations for each member of the cluster (including the data volume)
 	Members []EtcdMemberSpec `json:"etcdMembers,omitempty"`
-	// EnableEtcdTLS is unused.
-	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
-	// EnableTLSAuth is unused.
-	EnableTLSAuth bool `json:"enableTLSAuth,omitempty"`
 	// Version is the version of etcd to run.
-	Version string `json:"version,omitempty"`
-	// LeaderElectionTimeout is the time (in milliseconds) for an etcd leader election timeout
-	LeaderElectionTimeout *metav1.Duration `json:"leaderElectionTimeout,omitempty"`
-	// HeartbeatInterval is the time (in milliseconds) for an etcd heartbeat interval
-	HeartbeatInterval *metav1.Duration `json:"heartbeatInterval,omitempty"`
+	Version               string           `json:"version,omitempty"`
+	LeaderElectionTimeout *metav1.Duration `json:"-"`
+	HeartbeatInterval     *metav1.Duration `json:"-"`
 	// Image is the etcd docker image to use. Setting this will ignore the Version specified.
 	Image string `json:"image,omitempty"`
 	// Backups describes how we do backups of etcd
