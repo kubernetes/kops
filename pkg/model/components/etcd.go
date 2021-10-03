@@ -17,9 +17,6 @@ limitations under the License.
 package components
 
 import (
-	"fmt"
-	"strings"
-
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
@@ -43,10 +40,6 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 
 	for i := range spec.EtcdClusters {
 		c := &spec.EtcdClusters[i]
-		if c.Provider == "" {
-			c.Provider = kops.EtcdProviderTypeManager
-		}
-
 		// Ensure the version is set
 		if c.Version == "" {
 			// We run the k8s-recommended versions of etcd
@@ -57,12 +50,6 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 			} else {
 				c.Version = DefaultEtcd3Version_1_17
 			}
-		}
-
-		// We make sure that etcd v3 is used
-		version := strings.TrimPrefix(c.Version, "v")
-		if !strings.HasPrefix(version, "3.") {
-			return fmt.Errorf("unexpected etcd version %q", c.Version)
 		}
 	}
 

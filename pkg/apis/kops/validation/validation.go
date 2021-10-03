@@ -1004,7 +1004,7 @@ func validateEtcdClusterSpec(spec kops.EtcdClusterSpec, c *kops.Cluster, fieldPa
 	}
 	if spec.Provider != "" {
 		value := string(spec.Provider)
-		allErrs = append(allErrs, IsValidValue(fieldPath.Child("provider"), &value, kops.SupportedEtcdProviderTypes)...)
+		allErrs = append(allErrs, IsValidValue(fieldPath.Child("provider"), &value, []string{string(kops.EtcdProviderTypeManager)})...)
 	}
 	if len(spec.Members) == 0 {
 		allErrs = append(allErrs, field.Required(fieldPath.Child("etcdMembers"), "No members defined in etcd cluster"))
