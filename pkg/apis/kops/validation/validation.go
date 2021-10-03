@@ -201,7 +201,6 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 				allErrs = append(allErrs, validateEtcdClusterSpec(etcdCluster, c, fieldEtcdClusters.Index(i))...)
 			}
 			allErrs = append(allErrs, validateEtcdBackupStore(spec.EtcdClusters, fieldEtcdClusters)...)
-			allErrs = append(allErrs, validateEtcdTLS(spec.EtcdClusters, fieldEtcdClusters)...)
 			allErrs = append(allErrs, validateEtcdStorage(spec.EtcdClusters, fieldEtcdClusters)...)
 		}
 	}
@@ -222,10 +221,6 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		if spec.Assets.ContainerProxy != nil && spec.Assets.ContainerRegistry != nil {
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("assets", "containerProxy"), "containerProxy cannot be used in conjunction with containerRegistry"))
 		}
-	}
-
-	if spec.IAM == nil || spec.IAM.Legacy {
-		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("iam", "legacy"), "legacy IAM permissions are no longer supported"))
 	}
 
 	if spec.RollingUpdate != nil {
@@ -256,6 +251,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	if spec.IAM != nil {
+		if spec.IAM.Legacy {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("iam", "legacy"), "legacy IAM permissions are no longer supported"))
+		}
+
 		if len(spec.IAM.ServiceAccountExternalPermissions) > 0 {
 			if spec.ServiceAccountIssuerDiscovery == nil || !spec.ServiceAccountIssuerDiscovery.EnableAWSOIDCProvider {
 				allErrs = append(allErrs, field.Forbidden(fieldPath.Child("iam", "serviceAccountExternalPermissions"), "serviceAccountExternalPermissions requires AWS OIDC Provider to be enabled"))
@@ -1005,7 +1004,7 @@ func validateEtcdClusterSpec(spec kops.EtcdClusterSpec, c *kops.Cluster, fieldPa
 	}
 	if spec.Provider != "" {
 		value := string(spec.Provider)
-		allErrs = append(allErrs, IsValidValue(fieldPath.Child("provider"), &value, kops.SupportedEtcdProviderTypes)...)
+		allErrs = append(allErrs, IsValidValue(fieldPath.Child("provider"), &value, []string{string(kops.EtcdProviderTypeManager)})...)
 	}
 	if len(spec.Members) == 0 {
 		allErrs = append(allErrs, field.Required(fieldPath.Child("etcdMembers"), "No members defined in etcd cluster"))
@@ -1030,23 +1029,6 @@ func validateEtcdBackupStore(specs []kops.EtcdClusterSpec, fieldPath *field.Path
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Index(0).Child("backupStore"), "the backup store must be unique for each etcd cluster"))
 		}
 		etcdBackupStore[x.Name] = true
-	}
-
-	return allErrs
-}
-
-// validateEtcdTLS checks the TLS settings for etcd are valid
-func validateEtcdTLS(specs []kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-	var usingTLS int
-	for _, x := range specs {
-		if x.EnableEtcdTLS {
-			usingTLS++
-		}
-	}
-	// check both clusters are using tls if one is enabled
-	if usingTLS > 0 && usingTLS != len(specs) {
-		allErrs = append(allErrs, field.Forbidden(fieldPath.Index(0).Child("enableEtcdTLS"), "both etcd clusters must have TLS enabled or none at all"))
 	}
 
 	return allErrs
