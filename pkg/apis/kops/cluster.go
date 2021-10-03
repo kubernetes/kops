@@ -552,10 +552,6 @@ const (
 	EtcdProviderTypeManager EtcdProviderType = "Manager"
 )
 
-var SupportedEtcdProviderTypes = []string{
-	string(EtcdProviderTypeManager),
-}
-
 // EtcdClusterSpec is the etcd cluster specification
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)
