@@ -563,9 +563,9 @@ type EtcdClusterSpec struct {
 	Provider EtcdProviderType `json:"provider,omitempty"`
 	// Members stores the configurations for each member of the cluster (including the data volume)
 	Members []EtcdMemberSpec `json:"etcdMembers,omitempty"`
-	// EnableEtcdTLS indicates the etcd service should use TLS between peers and clients
+	// EnableEtcdTLS is unused.
 	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
-	// EnableTLSAuth indicates client and peer TLS auth should be enforced
+	// EnableTLSAuth is unused.
 	EnableTLSAuth bool `json:"enableTLSAuth,omitempty"`
 	// Version is the version of etcd to run.
 	Version string `json:"version,omitempty"`

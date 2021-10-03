@@ -71,12 +71,10 @@ type TemplateFunctions struct {
 func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretStore) (err error) {
 	cluster := tf.Cluster
 
-	dest["EtcdScheme"] = tf.EtcdScheme
 	dest["SharedVPC"] = tf.SharedVPC
 	dest["ToJSON"] = tf.ToJSON
 	dest["ToYAML"] = tf.ToYAML
 	dest["UseBootstrapTokens"] = tf.UseBootstrapTokens
-	dest["UseEtcdTLS"] = tf.UseEtcdTLS
 	// Remember that we may be on a different arch from the target.  Hard-code for now.
 	dest["replace"] = func(s, find, replace string) string {
 		return strings.Replace(s, find, replace, -1)
@@ -278,15 +276,6 @@ func (tf *TemplateFunctions) ToYAML(data interface{}) string {
 	}
 
 	return string(encoded)
-}
-
-// EtcdScheme parses and grabs the protocol to the etcd cluster
-func (tf *TemplateFunctions) EtcdScheme() string {
-	if tf.UseEtcdTLS() {
-		return "https"
-	}
-
-	return "http"
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer

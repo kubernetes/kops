@@ -201,7 +201,6 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 				allErrs = append(allErrs, validateEtcdClusterSpec(etcdCluster, c, fieldEtcdClusters.Index(i))...)
 			}
 			allErrs = append(allErrs, validateEtcdBackupStore(spec.EtcdClusters, fieldEtcdClusters)...)
-			allErrs = append(allErrs, validateEtcdTLS(spec.EtcdClusters, fieldEtcdClusters)...)
 			allErrs = append(allErrs, validateEtcdStorage(spec.EtcdClusters, fieldEtcdClusters)...)
 		}
 	}
@@ -1030,23 +1029,6 @@ func validateEtcdBackupStore(specs []kops.EtcdClusterSpec, fieldPath *field.Path
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Index(0).Child("backupStore"), "the backup store must be unique for each etcd cluster"))
 		}
 		etcdBackupStore[x.Name] = true
-	}
-
-	return allErrs
-}
-
-// validateEtcdTLS checks the TLS settings for etcd are valid
-func validateEtcdTLS(specs []kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-	var usingTLS int
-	for _, x := range specs {
-		if x.EnableEtcdTLS {
-			usingTLS++
-		}
-	}
-	// check both clusters are using tls if one is enabled
-	if usingTLS > 0 && usingTLS != len(specs) {
-		allErrs = append(allErrs, field.Forbidden(fieldPath.Index(0).Child("enableEtcdTLS"), "both etcd clusters must have TLS enabled or none at all"))
 	}
 
 	return allErrs
