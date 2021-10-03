@@ -939,12 +939,10 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     enableEtcdTLS:
-                      description: EnableEtcdTLS indicates the etcd service should
-                        use TLS between peers and clients
+                      description: EnableEtcdTLS is unused.
                       type: boolean
                     enableTLSAuth:
-                      description: EnableTLSAuth indicates client and peer TLS auth
-                        should be enforced
+                      description: EnableTLSAuth is unused.
                       type: boolean
                     etcdMembers:
                       description: Members stores the configurations for each member

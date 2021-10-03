@@ -141,15 +141,11 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	c.EtcdServersOverrides = nil
 
 	for _, etcdCluster := range clusterSpec.EtcdClusters {
-		protocol := "http"
-		if etcdCluster.EnableEtcdTLS {
-			protocol = "https"
-		}
 		switch etcdCluster.Name {
 		case "main":
-			c.EtcdServers = append(c.EtcdServers, protocol+"://127.0.0.1:4001")
+			c.EtcdServers = append(c.EtcdServers, "https://127.0.0.1:4001")
 		case "events":
-			c.EtcdServersOverrides = append(c.EtcdServersOverrides, "/events#"+protocol+"://127.0.0.1:4002")
+			c.EtcdServersOverrides = append(c.EtcdServersOverrides, "/events#https://127.0.0.1:4002")
 		}
 	}
 

@@ -359,39 +359,10 @@ func (c *NodeupModelContext) IsKubernetesLT(version string) bool {
 	return !c.IsKubernetesGTE(version)
 }
 
-// UseEtcdTLS checks if the etcd cluster has TLS enabled bool
-func (c *NodeupModelContext) UseEtcdTLS() bool {
-	// @note: because we enforce that 'both' have to be enabled for TLS we only need to check one here.
-	for _, x := range c.Cluster.Spec.EtcdClusters {
-		if x.EnableEtcdTLS {
-			return true
-		}
-	}
-
-	return false
-}
-
 // UseVolumeMounts is used to check if we have volume mounts enabled as we need to
 // insert requires and afters in various places
 func (c *NodeupModelContext) UseVolumeMounts() bool {
 	return len(c.NodeupConfig.VolumeMounts) > 0
-}
-
-// UseEtcdTLSAuth checks the peer-auth is set in both cluster
-// @NOTE: in retrospect i think we should have consolidated the common config in the wrapper struct; it
-// feels weird we set things like version, tls etc per cluster since they both have to be the same.
-func (c *NodeupModelContext) UseEtcdTLSAuth() bool {
-	if !c.UseEtcdTLS() {
-		return false
-	}
-
-	for _, x := range c.Cluster.Spec.EtcdClusters {
-		if x.EnableTLSAuth {
-			return true
-		}
-	}
-
-	return false
 }
 
 // UseKopsControllerForNodeBootstrap checks if nodeup should use kops-controller to bootstrap.
