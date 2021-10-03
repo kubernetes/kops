@@ -159,43 +159,6 @@ func TestUnsetClusterFields(t *testing.T) {
 		},
 		{
 			Fields: []string{
-				"cluster.spec.etcdClusters[*].enableEtcdTLS",
-			},
-			Input: kops.Cluster{
-				Spec: kops.ClusterSpec{
-					EtcdClusters: []kops.EtcdClusterSpec{
-						{Name: "one", EnableEtcdTLS: true},
-						{Name: "two", EnableEtcdTLS: true},
-					},
-				},
-			},
-			Output: kops.Cluster{
-				Spec: kops.ClusterSpec{
-					EtcdClusters: []kops.EtcdClusterSpec{
-						{Name: "one"},
-						{Name: "two"},
-					},
-				},
-			},
-		},
-		{
-			Fields: []string{
-				"cluster.spec.etcdClusters",
-			},
-			Input: kops.Cluster{
-				Spec: kops.ClusterSpec{
-					EtcdClusters: []kops.EtcdClusterSpec{
-						{Name: "one", EnableTLSAuth: true},
-						{Name: "two", EnableTLSAuth: true},
-					},
-				},
-			},
-			Output: kops.Cluster{
-				Spec: kops.ClusterSpec{},
-			},
-		},
-		{
-			Fields: []string{
 				"cluster.spec.etcdClusters[*].version",
 			},
 			Input: kops.Cluster{
