@@ -28,8 +28,6 @@ spec:
   etcdClusters:
   - backups:
       backupStore: memfs://clusters.example.com/minimal-warmpool.example.com/backups/etcd/main
-    enableEtcdTLS: true
-    enableTLSAuth: true
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
@@ -38,8 +36,6 @@ spec:
     version: 3.4.13
   - backups:
       backupStore: memfs://clusters.example.com/minimal-warmpool.example.com/backups/etcd/events
-    enableEtcdTLS: true
-    enableTLSAuth: true
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
