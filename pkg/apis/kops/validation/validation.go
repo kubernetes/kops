@@ -224,10 +224,6 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		}
 	}
 
-	if spec.IAM == nil || spec.IAM.Legacy {
-		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("iam", "legacy"), "legacy IAM permissions are no longer supported"))
-	}
-
 	if spec.RollingUpdate != nil {
 		allErrs = append(allErrs, validateRollingUpdate(spec.RollingUpdate, fieldPath.Child("rollingUpdate"), false)...)
 	}
@@ -256,6 +252,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	if spec.IAM != nil {
+		if spec.IAM.Legacy {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("iam", "legacy"), "legacy IAM permissions are no longer supported"))
+		}
+
 		if len(spec.IAM.ServiceAccountExternalPermissions) > 0 {
 			if spec.ServiceAccountIssuerDiscovery == nil || !spec.ServiceAccountIssuerDiscovery.EnableAWSOIDCProvider {
 				allErrs = append(allErrs, field.Forbidden(fieldPath.Child("iam", "serviceAccountExternalPermissions"), "serviceAccountExternalPermissions requires AWS OIDC Provider to be enabled"))
