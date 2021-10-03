@@ -168,7 +168,7 @@ func (b *PolicyBuilder) BuildAlicloudPolicyMaster() (*Policy, error) {
 		return nil, fmt.Errorf("failed to generate Alicloud RAM OSS access statements: %v", err)
 	}
 
-	if b.Cluster.Spec.IAM.AllowContainerRegistry {
+	if b.Cluster.Spec.IAM != nil && b.Cluster.Spec.IAM.AllowContainerRegistry {
 		addCRPermissions(p)
 	}
 
@@ -190,7 +190,7 @@ func (b *PolicyBuilder) BuildAlicloudPolicyNode() (*Policy, error) {
 		return nil, fmt.Errorf("failed to generate Alicloud RAM OSS access statements: %v", err)
 	}
 
-	if b.Cluster.Spec.IAM.AllowContainerRegistry {
+	if b.Cluster.Spec.IAM != nil && b.Cluster.Spec.IAM.AllowContainerRegistry {
 		addCRPermissions(p)
 	}
 
