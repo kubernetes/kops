@@ -64,9 +64,6 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 		if !strings.HasPrefix(version, "3.") {
 			return fmt.Errorf("unexpected etcd version %q", c.Version)
 		}
-
-		c.EnableEtcdTLS = true
-		c.EnableTLSAuth = true
 	}
 
 	return nil
