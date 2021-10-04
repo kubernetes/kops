@@ -140,7 +140,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom.Properties.
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.10
+    version: 1.4.11
   docker:
     skipInstall: true
   encryptionConfig: null
@@ -259,7 +259,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom.Properties.
   ConfigBase: memfs://clusters.example.com/complex.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: 1toVrC15L0E5a9xUX9Q6TpSSHEMZaPBsbXQdvM+6T0M=
+  NodeupConfigHash: aEseG8TJ19Yi5nDiXwDxxyGeoT3zlBmuw6o7D6GeLIw=
 
   __EOF_KUBE_ENV
 
@@ -418,7 +418,7 @@ Resources.AWSEC2LaunchTemplatenodescomplexexamplecom.Properties.LaunchTemplateDa
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.10
+    version: 1.4.11
   docker:
     skipInstall: true
   kubeProxy:
@@ -450,7 +450,7 @@ Resources.AWSEC2LaunchTemplatenodescomplexexamplecom.Properties.LaunchTemplateDa
   ConfigBase: memfs://clusters.example.com/complex.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: OQMG+oYAq3D0W/2731pmrffYAmfFBAALU2ZXLiE1kz0=
+  NodeupConfigHash: joAx/7Mo3/w6OEnr/uaopyKy9D3UB+VuZtgOinQrNRc=
 
   __EOF_KUBE_ENV
 
