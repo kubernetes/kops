@@ -75,8 +75,6 @@ type KubernetesVersionSpec struct {
 }
 
 type ChannelImageSpec struct {
-	Labels map[string]string `json:"labels,omitempty"`
-
 	ProviderID string `json:"providerID,omitempty"`
 
 	ArchitectureID string `json:"architectureID,omitempty"`
