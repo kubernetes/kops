@@ -133,7 +133,7 @@ containerd:
   nvidiaGPU:
     enabled: true
     package: nvidia-headless-460-server
-  version: 1.4.10
+  version: 1.4.11
 docker:
   skipInstall: true
 kubeProxy:
@@ -165,7 +165,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: XpkXsVv1ZwFd8MhmVoV7KlIEx0pC9KQr5aO8YRUR+MU=
+NodeupConfigHash: OYJRJ+iYy7mu72aI3o6MHxkXNYaHuk/Y3FWvAG42CXA=
 
 __EOF_KUBE_ENV
 
