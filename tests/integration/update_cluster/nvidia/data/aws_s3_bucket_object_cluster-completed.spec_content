@@ -23,7 +23,7 @@ spec:
     nvidiaGPU:
       enabled: true
       package: nvidia-headless-460-server
-    version: 1.4.10
+    version: 1.4.11
   dnsZone: Z1AFAKE1ZON3YO
   docker:
     skipInstall: true
