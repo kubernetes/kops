@@ -162,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecalico.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: QwQ9IUT+PLG/OgM+M0cko/riVhksXrMgCfPTvRpT0/o=
+NodeupConfigHash: sZlh74F+f/v1Xuc5v2EZaLrmR9fQ6D+7JBDpnYDuorI=
 
 __EOF_KUBE_ENV
 
