@@ -130,7 +130,7 @@ cloudConfig:
 containerRuntime: containerd
 containerd:
   logLevel: info
-  version: 1.4.10
+  version: 1.4.11
 docker:
   skipInstall: true
 encryptionConfig: null
@@ -246,7 +246,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privateciliumadvanced.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: WhT6xXzZxGxbtHTRyd0oi3ouvZK2iKR4S7fVw716aQk=
+NodeupConfigHash: G4fETSzjWTkLy2YN+EXJJmXtGAprQNzBdz/0r5PXjXc=
 
 __EOF_KUBE_ENV
 
