@@ -33,7 +33,6 @@ import (
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/pretty"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubectl/pkg/util/i18n"
@@ -140,12 +139,6 @@ func RunUpgradeCluster(ctx context.Context, f *util.Factory, out io.Writer, opti
 		return fmt.Errorf("error loading channel %q: %v", channelLocation, err)
 	}
 
-	channelClusterSpec := channel.Spec.Cluster
-	if channelClusterSpec == nil {
-		// Just to prevent too much nil handling
-		channelClusterSpec = &kopsapi.ClusterSpec{}
-	}
-
 	var currentKubernetesVersion *semver.Version
 	{
 		sv, err := kopsutil.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
@@ -215,28 +208,6 @@ func RunUpgradeCluster(ctx context.Context, f *util.Factory, out io.Writer, opti
 				}
 			} else {
 				klog.Infof("Custom image (%s) has been provided for Instance Group %q; not updating image", ig.Spec.Image, ig.GetName())
-			}
-		}
-	}
-
-	// Prompt to upgrade to overlayfs
-	if channelClusterSpec.Docker != nil {
-		if cluster.Spec.Docker == nil {
-			cluster.Spec.Docker = &kopsapi.DockerConfig{}
-		}
-		// TODO: make less hard-coded
-		if channelClusterSpec.Docker.Storage != nil {
-			dockerStorage := fi.StringValue(cluster.Spec.Docker.Storage)
-			if dockerStorage != fi.StringValue(channelClusterSpec.Docker.Storage) {
-				actions = append(actions, &upgradeAction{
-					Item:     "Cluster",
-					Property: "Docker.Storage",
-					Old:      dockerStorage,
-					New:      fi.StringValue(channelClusterSpec.Docker.Storage),
-					apply: func() {
-						cluster.Spec.Docker.Storage = channelClusterSpec.Docker.Storage
-					},
-				})
 			}
 		}
 	}
