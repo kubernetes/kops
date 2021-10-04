@@ -206,12 +206,13 @@ func findAllContainerdHashesAmd64() map[string]string {
 
 func findAllContainerdDockerMappings() map[string]string {
 	versions := map[string]string{
-		"1.3.7": "19.03.13",
-		"1.3.9": "19.03.14",
-		"1.4.3": "20.10.0",
-		"1.4.4": "20.10.6",
-		"1.4.6": "20.10.7",
-		"1.4.9": "20.10.8",
+		"1.3.7":  "19.03.13",
+		"1.3.9":  "19.03.14",
+		"1.4.3":  "20.10.0",
+		"1.4.4":  "20.10.6",
+		"1.4.6":  "20.10.7",
+		"1.4.9":  "20.10.8",
+		"1.4.11": "20.10.9",
 	}
 
 	return versions
