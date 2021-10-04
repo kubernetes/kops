@@ -1,6 +1,3 @@
-# ------------------------------------------------------------------------------
-# Config Map
-# ------------------------------------------------------------------------------
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -9,9 +6,6 @@ metadata:
 data:
   spotinst.cluster-identifier: {{ ClusterName }}
 ---
-# ------------------------------------------------------------------------------
-# Secret
-# ------------------------------------------------------------------------------
 apiVersion: v1
 kind: Secret
 metadata:
@@ -22,25 +16,19 @@ data:
   token: {{ SpotinstTokenBase64 }}
   account: {{ SpotinstAccountBase64 }}
 ---
-# ------------------------------------------------------------------------------
-# Service Account
-# ------------------------------------------------------------------------------
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: spotinst-kubernetes-cluster-controller
   namespace: kube-system
 ---
-# ------------------------------------------------------------------------------
-# Cluster Role
-# ------------------------------------------------------------------------------
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: spotinst-kubernetes-cluster-controller
 rules:
   # ----------------------------------------------------------------------------
-  # Required for functional operation (read-only).
+  # feature: ocean/readonly
   # ----------------------------------------------------------------------------
 - apiGroups: [""]
   resources: ["pods", "nodes", "services", "namespaces", "replicationcontrollers", "limitranges", "events", "persistentvolumes", "persistentvolumeclaims"]
@@ -72,7 +60,7 @@ rules:
 - nonResourceURLs: ["/version/", "/version"]
   verbs: ["get"]
   # ----------------------------------------------------------------------------
-  # Required by the draining feature and for functional operation.
+  # feature: ocean/draining
   # ----------------------------------------------------------------------------
 - apiGroups: [""]
   resources: ["nodes"]
@@ -84,13 +72,13 @@ rules:
   resources: ["pods/eviction"]
   verbs: ["create"]
   # ----------------------------------------------------------------------------
-  # Required by the Spotinst Cleanup feature.
+  # feature: ocean/cleanup
   # ----------------------------------------------------------------------------
 - apiGroups: [""]
   resources: ["nodes"]
   verbs: ["delete"]
   # ----------------------------------------------------------------------------
-  # Required by the Spotinst CSR Approval feature.
+  # feature: ocean/csr-approval
   # ----------------------------------------------------------------------------
 - apiGroups: ["certificates.k8s.io"]
   resources: ["certificatesigningrequests"]
@@ -103,7 +91,7 @@ rules:
   resourceNames: ["kubernetes.io/kubelet-serving", "kubernetes.io/kube-apiserver-client-kubelet"]
   verbs: ["approve"]
   # ----------------------------------------------------------------------------
-  # Required by the Spotinst Auto Update feature.
+  # feature: ocean/auto-update
   # ----------------------------------------------------------------------------
 - apiGroups: ["rbac.authorization.k8s.io"]
   resources: ["clusterroles"]
@@ -114,7 +102,7 @@ rules:
   resourceNames: ["spotinst-kubernetes-cluster-controller"]
   verbs: ["patch", "update"]
   # ----------------------------------------------------------------------------
-  # Required by the Spotinst Apply feature.
+  # feature: ocean/apply
   # ----------------------------------------------------------------------------
 - apiGroups: ["apps"]
   resources: ["deployments", "daemonsets"]
@@ -129,7 +117,7 @@ rules:
   resources: ["jobs"]
   verbs: ["get", "list", "patch", "update", "create", "delete"]
   # ----------------------------------------------------------------------------
-  # Required by Spotinst Wave.
+  # feature: wave
   # ----------------------------------------------------------------------------
 - apiGroups: ["sparkoperator.k8s.io"]
   resources: ["sparkapplications", "scheduledsparkapplications"]
@@ -137,10 +125,10 @@ rules:
 - apiGroups: ["wave.spot.io"]
   resources: ["sparkapplications", "wavecomponents", "waveenvironments"]
   verbs: ["get", "list"]
+- apiGroups: ["bigdata.spot.io"]
+  resources: ["bigdataenvironments"]
+  verbs: ["get", "list"]
 ---
-# ------------------------------------------------------------------------------
-# Cluster Role Binding
-# ------------------------------------------------------------------------------
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -154,9 +142,6 @@ subjects:
   name: spotinst-kubernetes-cluster-controller
   namespace: kube-system
 ---
-# ------------------------------------------------------------------------------
-# Deployment
-# ------------------------------------------------------------------------------
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -205,7 +190,7 @@ spec:
       containers:
       - name: spotinst-kubernetes-cluster-controller
         imagePullPolicy: Always
-        image: gcr.io/spotinst-artifacts/kubernetes-cluster-controller:1.0.77
+        image: gcr.io/spotinst-artifacts/kubernetes-cluster-controller:1.0.78
         livenessProbe:
           httpGet:
             path: /healthcheck
