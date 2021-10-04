@@ -130,7 +130,7 @@ cloudConfig:
 containerRuntime: containerd
 containerd:
   logLevel: info
-  version: 1.4.10
+  version: 1.4.11
 docker:
   skipInstall: true
 kubeProxy:
@@ -162,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecanal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: o7ydG+741mUabFm/rBxHrkPc+WpfTdrAkohLEXj/KWk=
+NodeupConfigHash: qluWFPBlP3VcauoPRUPBxtscdn0144b71EAOpnc0q/M=
 
 __EOF_KUBE_ENV
 
