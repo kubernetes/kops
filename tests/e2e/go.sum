@@ -2159,7 +2159,6 @@ k8s.io/utils v0.0.0-20200603063816-c1c6865ac451/go.mod h1:jPW/WVKK9YHAvNhRxK0md/
 k8s.io/utils v0.0.0-20200729134348-d5654de09c73/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
 k8s.io/utils v0.0.0-20200912215256-4140de9c8800/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
 k8s.io/utils v0.0.0-20210111153108-fddb29f9d009/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
-k8s.io/utils v0.0.0-20210802155522-efc7438f0176/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
 k8s.io/utils v0.0.0-20210819203725-bdf08cb9a70a h1:8dYfu/Fc9Gz2rNJKB9IQRGgQOh2clmRzNIPPY1xLY5g=
 k8s.io/utils v0.0.0-20210819203725-bdf08cb9a70a/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
 knative.dev/caching v0.0.0-20200116200605-67bca2c83dfa/go.mod h1:dHXFU6CGlLlbzaWc32g80cR92iuBSpsslDNBWI8C7eg=
@@ -2182,7 +2181,7 @@ sigs.k8s.io/boskos v0.0.0-20200710214748-f5935686c7fc/go.mod h1:ZO5RV+VxJS9mb6Dv
 sigs.k8s.io/controller-runtime v0.5.0/go.mod h1:REiJzC7Y00U+2YkMbT8wxgrsX5USpXKGhb2sCtAXiT8=
 sigs.k8s.io/controller-runtime v0.5.4/go.mod h1:JZUwSMVbxDupo0lTJSSFP5pimEyxGynROImSsqIOx1A=
 sigs.k8s.io/controller-runtime v0.6.2/go.mod h1:vhcq/rlnENJ09SIRp3EveTaZ0yqH526hjf9iJdbUJ/E=
-sigs.k8s.io/controller-runtime v0.9.7/go.mod h1:nExcHcQ2zvLMeoO9K7rOesGCmgu32srN5SENvpAEbGA=
+sigs.k8s.io/controller-runtime v0.10.2/go.mod h1:CQp8eyUQZ/Q7PJvnIrB6/hgfTC1kBkGylwsLgOQi1WY=
 sigs.k8s.io/controller-tools v0.2.9-0.20200414181213-645d44dca7c0/go.mod h1:YKE/iHvcKITCljdnlqHYe+kAt7ZldvtAwUzQff0k1T0=
 sigs.k8s.io/kubetest2 v0.0.0-20210423234514-1c731a5d2283 h1:8w3J6N9j8lUP3lb3B/2PGsJ5A6rtFF9wUpPPEk9/ctI=
 sigs.k8s.io/kubetest2 v0.0.0-20210423234514-1c731a5d2283/go.mod h1:miwZW11FA2Bvclxo4WqIVY+gHTR5B927inXdfxJYoAA=
