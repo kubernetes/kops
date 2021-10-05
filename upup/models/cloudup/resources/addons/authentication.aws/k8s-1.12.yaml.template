@@ -205,3 +205,19 @@ spec:
       - name: state
         hostPath:
           path: /srv/kubernetes/aws-iam-authenticator/
+{{- if and (and (.Authentication.Aws.BackendMode) (contains "CRD" .Authentication.Aws.BackendMode)) (.Authentication.Aws.IdentityMappings) }}
+---
+{{- range $i, $mapping := .Authentication.Aws.IdentityMappings }}
+apiVersion: iamauthenticator.k8s.aws/v1alpha1
+kind: IAMIdentityMapping
+metadata:
+  name: iam-identity-mapping-{{ $i }}
+  labels:
+    k8s-app: aws-iam-authenticator
+spec:
+  arn: {{ $mapping.ARN }}
+  username: {{ $mapping.Username }}
+  groups:
+{{ ToYAML $mapping.Groups | indent 4 }}
+{{- end }}
+{{- end }}

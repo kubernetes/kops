@@ -205,6 +205,26 @@ spec:
                           container. Default 10m
                         pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                         x-kubernetes-int-or-string: true
+                      identityMappings:
+                        description: IdentityMappings maps IAM Identities to Kubernetes
+                          users/groups
+                        items:
+                          properties:
+                            arn:
+                              description: Arn of the IAM User or IAM Role to be allowed
+                                to authenticate
+                              type: string
+                            groups:
+                              description: Groups to be attached to your users/roles
+                              items:
+                                type: string
+                              type: array
+                            username:
+                              description: Username that Kubernetes will see the user
+                                as
+                              type: string
+                          type: object
+                        type: array
                       image:
                         description: Image is the AWS IAM Authenticator docker image
                           to uses

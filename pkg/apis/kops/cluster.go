@@ -373,6 +373,17 @@ type AwsAuthenticationSpec struct {
 	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
 	// CPULimit CPU limit of AWS IAM Authenticator container. Default 10m
 	CPULimit *resource.Quantity `json:"cpuLimit,omitempty"`
+	// IdentityMappings maps IAM Identities to Kubernetes users/groups
+	IdentityMappings []AwsAuthenticationIdentityMappingSpec `json:"identityMappings,omitempty"`
+}
+
+type AwsAuthenticationIdentityMappingSpec struct {
+	// Arn of the IAM User or IAM Role to be allowed to authenticate
+	ARN string `json:"arn,omitempty"`
+	// Username that Kubernetes will see the user as
+	Username string `json:"username,omitempty"`
+	// Groups to be attached to your users/roles
+	Groups []string `json:"groups,omitempty"`
 }
 
 type AuthorizationSpec struct {

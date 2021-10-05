@@ -575,3 +575,73 @@ func TestLoadBalancerSubnets(t *testing.T) {
 		testErrors(t, test, errs, test.expected)
 	}
 }
+
+func TestAWSAuthentication(t *testing.T) {
+	tests := []struct {
+		backendMode      string
+		identityMappings []kops.AwsAuthenticationIdentityMappingSpec
+		expected         []string
+	}{
+		{ // valid
+			backendMode: "CRD",
+			identityMappings: []kops.AwsAuthenticationIdentityMappingSpec{
+				{
+					ARN:      "arn:aws:iam::123456789012:role/KopsExampleRole",
+					Username: "foo",
+				},
+				{
+					ARN:      "arn:aws:iam::123456789012:user/KopsExampleUser",
+					Username: "foo",
+				},
+			},
+		},
+		{ // valid, multiple backendModes
+			backendMode: "CRD,MountedFile",
+			identityMappings: []kops.AwsAuthenticationIdentityMappingSpec{
+				{
+					ARN:      "arn:aws:iam::123456789012:role/KopsExampleRole",
+					Username: "foo",
+				},
+				{
+					ARN:      "arn:aws:iam::123456789012:user/KopsExampleUser",
+					Username: "foo",
+				},
+			},
+		},
+		{ // forbidden backendMode
+			backendMode: "MountedFile",
+			identityMappings: []kops.AwsAuthenticationIdentityMappingSpec{
+				{
+					ARN:      "arn:aws:iam::123456789012:role/KopsExampleRole",
+					Username: "foo",
+				},
+			},
+			expected: []string{"Forbidden::spec.authentication.aws.backendMode"},
+		},
+		{ // invalid identity ARN
+			backendMode: "CRD",
+			identityMappings: []kops.AwsAuthenticationIdentityMappingSpec{
+				{
+					ARN:      "arn:aws:iam::123456789012:policy/KopsExampleRole",
+					Username: "foo",
+				},
+			},
+			expected: []string{"Invalid value::spec.authentication.aws.identityMappings[0].arn"},
+		},
+	}
+
+	for _, test := range tests {
+		cluster := kops.Cluster{
+			Spec: kops.ClusterSpec{
+				Authentication: &kops.AuthenticationSpec{
+					Aws: &kops.AwsAuthenticationSpec{
+						BackendMode:      test.backendMode,
+						IdentityMappings: test.identityMappings,
+					},
+				},
+			},
+		}
+		errs := awsValidateCluster(&cluster)
+		testErrors(t, test, errs, test.expected)
+	}
+}
