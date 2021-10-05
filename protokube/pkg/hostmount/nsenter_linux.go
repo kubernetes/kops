@@ -144,3 +144,7 @@ func (n *Mounter) Unmount(target string) error {
 func (n *Mounter) MountSensitiveWithoutSystemd(source string, target string, fstype string, options []string, sensitiveOptions []string) error {
 	return fmt.Errorf("MountSensitiveWithoutSystemd not implemented for containerized mounter")
 }
+
+func (n *Mounter) MountSensitiveWithoutSystemdWithMountFlags(source string, target string, fstype string, options []string, sensitiveOptions []string, mountFlags []string) error {
+	return fmt.Errorf("MountSensitiveWithoutSystemdWithMountFlags not implemented for containerized mounter")
+}
