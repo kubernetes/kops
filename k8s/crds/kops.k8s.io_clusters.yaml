@@ -4438,6 +4438,12 @@ spec:
                         items:
                           type: string
                         type: array
+                      agentPodAnnotations:
+                        additionalProperties:
+                          type: string
+                        description: 'AgentPodAnnotations makes possible to add additional
+                          annotations to the cilium agent. Default: none'
+                        type: object
                       agentPrometheusPort:
                         description: AgentPrometheusPort is the port to listen to
                           for Prometheus metrics. Defaults to 9090.
