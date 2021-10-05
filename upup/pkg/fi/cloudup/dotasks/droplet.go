@@ -154,8 +154,7 @@ func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
 			Tags:     e.Tags,
 			VPCUUID:  fi.StringValue(e.VPC),
 			UserData: userData,
-
-			SSHKeys: []godo.DropletCreateSSHKey{{Fingerprint: fi.StringValue(e.SSHKey)}},
+			SSHKeys:  []godo.DropletCreateSSHKey{{Fingerprint: fi.StringValue(e.SSHKey)}},
 		})
 
 		if err != nil {
