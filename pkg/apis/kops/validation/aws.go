@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -42,6 +43,10 @@ func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 	}
 
 	allErrs = append(allErrs, awsValidateExternalCloudControllerManager(c)...)
+
+	if c.Spec.Authentication != nil && c.Spec.Authentication.Aws != nil {
+		allErrs = append(allErrs, awsValidateIAMAuthenticator(field.NewPath("spec", "authentication", "aws"), c.Spec.Authentication.Aws)...)
+	}
 
 	return allErrs
 }
@@ -316,6 +321,22 @@ func awsValidateCPUCredits(fieldPath *field.Path, spec *kops.InstanceGroupSpec, 
 	allErrs := field.ErrorList{}
 
 	allErrs = append(allErrs, IsValidValue(fieldPath.Child("cpuCredits"), spec.CPUCredits, []string{"standard", "unlimited"})...)
+	return allErrs
+}
+
+func awsValidateIAMAuthenticator(fieldPath *field.Path, spec *kops.AwsAuthenticationSpec) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if !strings.Contains(spec.BackendMode, "CRD") && len(spec.IdentityMappings) > 0 {
+		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("backendMode"), "backendMode must be CRD if identityMappings is set"))
+	}
+	for i, mapping := range spec.IdentityMappings {
+		parsedARN, err := arn.Parse(mapping.ARN)
+		if err != nil || (!strings.HasPrefix(parsedARN.Resource, "role/") && !strings.HasPrefix(parsedARN.Resource, "user/")) {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("identityMappings").Index(i).Child("arn"), mapping.ARN,
+				"arn must be a valid IAM Role or User ARN such as arn:aws:iam::123456789012:role/KopsExampleRole"))
+		}
+	}
 	return allErrs
 }
 
