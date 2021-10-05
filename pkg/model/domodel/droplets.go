@@ -60,14 +60,12 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:      fi.String(name),
 			Lifecycle: d.Lifecycle,
 
-			// during alpha support we only allow 1 region
-			// validation for only 1 region is done at this point
+			// kops do supports allow only 1 region
 			Region: fi.String(d.Cluster.Spec.Subnets[0].Region),
 			Size:   fi.String(ig.Spec.MachineType),
 			Image:  fi.String(ig.Spec.Image),
 			SSHKey: fi.String(sshKeyFingerPrint),
-
-			Tags: []string{clusterTag},
+			Tags:   []string{clusterTag},
 		}
 
 		if ig.IsMaster() {
@@ -80,6 +78,10 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 			droplet.Tags = append(droplet.Tags, do.TagKubernetesInstanceGroup+":"+ig.Name)
 		} else {
 			droplet.Tags = append(droplet.Tags, do.TagKubernetesInstanceGroup+":"+ig.Name)
+		}
+
+		if d.Cluster.Spec.NetworkID != "" {
+			droplet.VPC = fi.String(d.Cluster.Spec.NetworkID)
 		}
 
 		userData, err := d.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
