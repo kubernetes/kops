@@ -1015,7 +1015,7 @@ k8s.io/api/scheduling/v1beta1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apiextensions-apiserver v0.21.4 => k8s.io/apiextensions-apiserver v0.22.2
+# k8s.io/apiextensions-apiserver v0.22.2 => k8s.io/apiextensions-apiserver v0.22.2
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1
@@ -1442,7 +1442,7 @@ k8s.io/utils/pointer
 k8s.io/utils/trace
 # rsc.io/letsencrypt v0.0.3
 ## explicit
-# sigs.k8s.io/controller-runtime v0.9.7
+# sigs.k8s.io/controller-runtime v0.10.2
 ## explicit
 sigs.k8s.io/controller-runtime
 sigs.k8s.io/controller-runtime/pkg/builder

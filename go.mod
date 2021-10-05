@@ -98,6 +98,6 @@ require (
 	k8s.io/mount-utils v0.22.2
 	k8s.io/utils v0.0.0-20210819203725-bdf08cb9a70a
 	rsc.io/letsencrypt v0.0.3 // indirect
-	sigs.k8s.io/controller-runtime v0.9.7
+	sigs.k8s.io/controller-runtime v0.10.2
 	sigs.k8s.io/yaml v1.2.0
 )
