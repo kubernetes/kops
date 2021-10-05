@@ -8,7 +8,7 @@ Assets:
   - 47ab6c4273fc3bb0cb8ec9517271d915890c5a6b0e54b2991e7a8fbbe77b06e4@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/arm64/kubelet
   - 25e4465870c99167e6c466623ed8f05a1d20fbcb48cab6688109389b52d87623@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/arm64/kubectl
   - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
-  - be8c9a5a06ebec8fb1d36e867cd00fb5777746a9812a0cae2966778ff899c525@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.7.tgz
+  - 0259f8b6572f02cf0dafd7388ca0e4adfdbbfaba81cfb1b7443e89fccbed22c7@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.9.tgz
 CAs:
   kubernetes-ca: |
     -----BEGIN CERTIFICATE-----

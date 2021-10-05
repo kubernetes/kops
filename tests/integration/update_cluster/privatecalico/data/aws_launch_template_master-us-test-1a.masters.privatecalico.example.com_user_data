@@ -243,7 +243,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecalico.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: 7jON/Pgsj+aWeaZkIVoXYS8hDPxMtkv7zd9Ormliqm4=
+NodeupConfigHash: SJXlQ0IBtqJTXWHh1ZLC5z7Yxnf5+g/CMpj6u4QLSzc=
 
 __EOF_KUBE_ENV
 

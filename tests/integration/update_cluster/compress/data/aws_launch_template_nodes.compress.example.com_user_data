@@ -133,7 +133,7 @@ ensure-install-dir
 
 echo "H4sIAAAAAAAA/3ySwW7bMAyG734KXopeOtkuumITetiWbGiApQuSJ2AsxhUik6koOcvbD3aTZtmAngz/P+2f/MgmSHYT4Y1vbQGAe/3+bTVZzabR9xQHCYAY14GchQ0GpQKgQ8aWVkkitjQJqEpqIcVMRSOc0DPFZebkO7Lwpriz6YYfB2l/Uk/BgueNFAA9RfXCFmpzZ+q6cNJsX3vQrd/NWBOGcMzZ5jUtovw+DHYTsiaKk9l0aaGuKvP53lSmKut6MHd5SS+ZNI1eVwA8iybGjn71FKN3ZOH6C+71ugDwHbZkYftJTdtE46Uckj7sxqi+Nre1qS56vx1bCZRGfCx86CTr15yez7yaNkreHZGCHjRR5970pUiyUI5zSHaLKL13QyHu9Tzc9Gn1Otv9nalMXf3lSIee7enVBGkwFKe1TWmd29Zz+4jsAsXTogCo903ywo8YnYWOOokHgz36MHz3UFfV3N+wONrohXx1Ev3w1B+R6OHj1c1I7r/Sk3pR+/4KBp7NeJELHCiWPcYy+HV5BF2eC/7ZBABT2kvcLkJuPT/heH/sB0N4jvqSKaKj86GMMKtyxLkTN0f2G9J0DKbUjGGRKZGW3dHV4g8AAAD//wEAAP//AW5cjzYDAAA=" | base64 -d | gzip -d > conf/cluster_spec.yaml
 
-echo "H4sIAAAAAAAA/1SNsU6FMBRA935Fv+CVxkRjEwdBAywIJLg37UWJbW/ppUL4emPexHKGc4ZTOcy2T/i7WEiK651YhWFevkpNoLgHP5MSwrhMGyS6waF9dHAz6IVBHxPQRbI20KaDgTphjp32oHhAC3QNIzpQvEML7B853qeNpm/FaXTzPoky/Uh5QrF+fB5T0by/DU7W/XM811f51I4PXfU4vLA/AAAA//8BAAD//4d63sHBAAAA" | base64 -d | gzip -d > conf/kube_env.yaml
+echo "H4sIAAAAAAAA/1SNMWuEMBhA9/yK7AVDQSgEuqjFOhism91C8tnmTPKFfOZO7tcfx00ub3hveK3HYqeMV2chS65vxFqMq/trNIHkAcJKUgjjC+2QqYJDh+ShMhiEwZAy0EmyIdKuo4E+Y0lKB5A8ogU6hxk9SK7QAnuipNf0W9O/5Pfh142XemmcGj62TuHciXo79D6+f/U2NMtU3pKnw/0sn+wBAAD//wEAAP///JnzXMEAAAA=" | base64 -d | gzip -d > conf/kube_env.yaml
 
 download-release
 echo "== nodeup node config done =="

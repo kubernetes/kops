@@ -10,7 +10,7 @@ Assets:
   - 17832b192be5ea314714f7e16efd5e5f65347974bbbf41def6b02f68931380c4@https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/arm64/kubelet
   - a4dd7100f547a40d3e2f83850d0bab75c6ea5eb553f0a80adcf73155bef1fd0d@https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/arm64/kubectl
   - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
-  - be8c9a5a06ebec8fb1d36e867cd00fb5777746a9812a0cae2966778ff899c525@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.7.tgz
+  - 0259f8b6572f02cf0dafd7388ca0e4adfdbbfaba81cfb1b7443e89fccbed22c7@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.9.tgz
   - 2f599c3d54f4c4bdbcc95aaf0c7b513a845d8f9503ec5b34c9f86aa1bc34fc0c@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-arm64
   - 9d842e3636a95de2315cdea2be7a282355aac0658ef0b86d5dc2449066538f13@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-arm64
 CAs:
