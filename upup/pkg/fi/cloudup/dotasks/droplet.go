@@ -39,6 +39,7 @@ type Droplet struct {
 	Size     *string
 	Image    *string
 	SSHKey   *string
+	VPC      *string
 	Tags     []string
 	Count    int
 	UserData fi.Resource
@@ -83,6 +84,7 @@ func (d *Droplet) Find(c *fi.Context) (*Droplet, error) {
 		Tags:      foundDroplet.Tags,
 		SSHKey:    d.SSHKey,   // TODO: get from droplet or ignore change
 		UserData:  d.UserData, // TODO: get from droplet or ignore change
+		VPC:       fi.String(foundDroplet.VPCUUID),
 		Lifecycle: d.Lifecycle,
 	}, nil
 }
@@ -150,6 +152,7 @@ func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
 			Size:     fi.StringValue(e.Size),
 			Image:    godo.DropletCreateImage{Slug: fi.StringValue(e.Image)},
 			Tags:     e.Tags,
+			VPCUUID:  fi.StringValue(e.VPC),
 			UserData: userData,
 			SSHKeys:  []godo.DropletCreateSSHKey{{Fingerprint: fi.StringValue(e.SSHKey)}},
 		})
