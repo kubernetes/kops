@@ -84,6 +84,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	sprigTxtFuncMap := sprig.TxtFuncMap()
+	dest["nindent"] = sprigTxtFuncMap["nindent"]
 	dest["indent"] = sprigTxtFuncMap["indent"]
 	dest["contains"] = sprigTxtFuncMap["contains"]
 	dest["trimPrefix"] = sprigTxtFuncMap["trimPrefix"]
