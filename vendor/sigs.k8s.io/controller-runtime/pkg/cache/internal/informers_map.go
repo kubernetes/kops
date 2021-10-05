@@ -34,6 +34,7 @@ import (
 	"k8s.io/client-go/metadata"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
+
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
 
@@ -52,6 +53,7 @@ func newSpecificInformersMap(config *rest.Config,
 	resync time.Duration,
 	namespace string,
 	selectors SelectorsByGVK,
+	disableDeepCopy DisableDeepCopyByGVK,
 	createListWatcher createListWatcherFunc) *specificInformersMap {
 	ip := &specificInformersMap{
 		config:            config,
@@ -65,6 +67,7 @@ func newSpecificInformersMap(config *rest.Config,
 		createListWatcher: createListWatcher,
 		namespace:         namespace,
 		selectors:         selectors,
+		disableDeepCopy:   disableDeepCopy,
 	}
 	return ip
 }
@@ -129,6 +132,9 @@ type specificInformersMap struct {
 	// selectors are the label or field selectors that will be added to the
 	// ListWatch ListOptions.
 	selectors SelectorsByGVK
+
+	// disableDeepCopy indicates not to deep copy objects during get or list objects.
+	disableDeepCopy DisableDeepCopyByGVK
 }
 
 // Start calls Run on each of the informers and sets started to true.  Blocks on the context.
@@ -226,15 +232,14 @@ func (ip *specificInformersMap) addInformerToMap(gvk schema.GroupVersionKind, ob
 		return nil, false, err
 	}
 
-	switch obj.(type) {
-	case *metav1.PartialObjectMetadata, *metav1.PartialObjectMetadataList:
-		ni = metadataSharedIndexInformerPreserveGVK(gvk, ni)
-	default:
-	}
-
 	i := &MapEntry{
 		Informer: ni,
-		Reader:   CacheReader{indexer: ni.GetIndexer(), groupVersionKind: gvk, scopeName: rm.Scope.Name()},
+		Reader: CacheReader{
+			indexer:          ni.GetIndexer(),
+			groupVersionKind: gvk,
+			scopeName:        rm.Scope.Name(),
+			disableDeepCopy:  ip.disableDeepCopy.IsDisabled(gvk),
+		},
 	}
 	ip.informersByGVK[gvk] = i
 
@@ -362,24 +367,83 @@ func createMetadataListWatch(gvk schema.GroupVersionKind, ip *specificInformersM
 	return &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
 			ip.selectors[gvk].ApplyToList(&opts)
+
+			var (
+				list *metav1.PartialObjectMetadataList
+				err  error
+			)
 			namespace := restrictNamespaceBySelector(ip.namespace, ip.selectors[gvk])
 			if namespace != "" && mapping.Scope.Name() != meta.RESTScopeNameRoot {
-				return client.Resource(mapping.Resource).Namespace(namespace).List(ctx, opts)
+				list, err = client.Resource(mapping.Resource).Namespace(namespace).List(ctx, opts)
+			} else {
+				list, err = client.Resource(mapping.Resource).List(ctx, opts)
 			}
-			return client.Resource(mapping.Resource).List(ctx, opts)
+			if list != nil {
+				for i := range list.Items {
+					list.Items[i].SetGroupVersionKind(gvk)
+				}
+			}
+			return list, err
 		},
 		// Setup the watch function
 		WatchFunc: func(opts metav1.ListOptions) (watch.Interface, error) {
 			ip.selectors[gvk].ApplyToList(&opts)
 			// Watch needs to be set to true separately
 			opts.Watch = true
+
+			var (
+				watcher watch.Interface
+				err     error
+			)
 			namespace := restrictNamespaceBySelector(ip.namespace, ip.selectors[gvk])
 			if namespace != "" && mapping.Scope.Name() != meta.RESTScopeNameRoot {
-				return client.Resource(mapping.Resource).Namespace(namespace).Watch(ctx, opts)
+				watcher, err = client.Resource(mapping.Resource).Namespace(namespace).Watch(ctx, opts)
+			} else {
+				watcher, err = client.Resource(mapping.Resource).Watch(ctx, opts)
 			}
-			return client.Resource(mapping.Resource).Watch(ctx, opts)
+			if watcher != nil {
+				watcher = newGVKFixupWatcher(gvk, watcher)
+			}
+			return watcher, err
 		},
 	}, nil
+}
+
+type gvkFixupWatcher struct {
+	watcher watch.Interface
+	ch      chan watch.Event
+	gvk     schema.GroupVersionKind
+	wg      sync.WaitGroup
+}
+
+func newGVKFixupWatcher(gvk schema.GroupVersionKind, watcher watch.Interface) watch.Interface {
+	ch := make(chan watch.Event)
+	w := &gvkFixupWatcher{
+		gvk:     gvk,
+		watcher: watcher,
+		ch:      ch,
+	}
+	w.wg.Add(1)
+	go w.run()
+	return w
+}
+
+func (w *gvkFixupWatcher) run() {
+	for e := range w.watcher.ResultChan() {
+		e.Object.GetObjectKind().SetGroupVersionKind(w.gvk)
+		w.ch <- e
+	}
+	w.wg.Done()
+}
+
+func (w *gvkFixupWatcher) Stop() {
+	w.watcher.Stop()
+	w.wg.Wait()
+	close(w.ch)
+}
+
+func (w *gvkFixupWatcher) ResultChan() <-chan watch.Event {
+	return w.ch
 }
 
 // resyncPeriod returns a function which generates a duration each time it is
