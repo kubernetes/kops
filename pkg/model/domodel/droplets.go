@@ -17,7 +17,6 @@ limitations under the License.
 package domodel
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -81,10 +80,8 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 			droplet.Tags = append(droplet.Tags, do.TagKubernetesInstanceGroup+":"+ig.Name)
 		}
 
-		fmt.Printf("Checking network id = %s \n", d.Cluster.Spec.NetworkID)
 		if d.Cluster.Spec.NetworkID != "" {
 			droplet.VPC = fi.String(d.Cluster.Spec.NetworkID)
-			fmt.Printf("Droplet info = %v \n", droplet)
 		}
 
 		userData, err := d.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
