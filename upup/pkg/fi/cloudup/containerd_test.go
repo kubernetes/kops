@@ -43,8 +43,8 @@ func TestContainerdVersionUrlHash(t *testing.T) {
 		{
 			arch:    architectures.ArchitectureArm64,
 			version: "1.3.4",
-			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-20.10.7.tgz",
-			hash:    "be8c9a5a06ebec8fb1d36e867cd00fb5777746a9812a0cae2966778ff899c525",
+			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-20.10.9.tgz",
+			hash:    "0259f8b6572f02cf0dafd7388ca0e4adfdbbfaba81cfb1b7443e89fccbed22c7",
 			err:     nil,
 		},
 		{
@@ -57,8 +57,8 @@ func TestContainerdVersionUrlHash(t *testing.T) {
 		{
 			arch:    architectures.ArchitectureArm64,
 			version: "1.3.10",
-			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-20.10.7.tgz",
-			hash:    "be8c9a5a06ebec8fb1d36e867cd00fb5777746a9812a0cae2966778ff899c525",
+			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-20.10.9.tgz",
+			hash:    "0259f8b6572f02cf0dafd7388ca0e4adfdbbfaba81cfb1b7443e89fccbed22c7",
 			err:     nil,
 		},
 		{
@@ -71,8 +71,8 @@ func TestContainerdVersionUrlHash(t *testing.T) {
 		{
 			arch:    architectures.ArchitectureArm64,
 			version: "1.4.1",
-			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-20.10.7.tgz",
-			hash:    "be8c9a5a06ebec8fb1d36e867cd00fb5777746a9812a0cae2966778ff899c525",
+			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-20.10.9.tgz",
+			hash:    "0259f8b6572f02cf0dafd7388ca0e4adfdbbfaba81cfb1b7443e89fccbed22c7",
 			err:     nil,
 		},
 		{
@@ -173,7 +173,7 @@ func TestContainerdVersionUrl(t *testing.T) {
 		{
 			arch:    architectures.ArchitectureArm64,
 			version: "1.3.4",
-			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-20.10.7.tgz",
+			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-20.10.9.tgz",
 			err:     nil,
 		},
 		{
@@ -185,7 +185,7 @@ func TestContainerdVersionUrl(t *testing.T) {
 		{
 			arch:    architectures.ArchitectureArm64,
 			version: "1.4.1",
-			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-20.10.7.tgz",
+			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-20.10.9.tgz",
 			err:     nil,
 		},
 		{
@@ -280,7 +280,7 @@ func TestContainerdVersionHash(t *testing.T) {
 		{
 			arch:    architectures.ArchitectureArm64,
 			version: "1.4.1",
-			hash:    "be8c9a5a06ebec8fb1d36e867cd00fb5777746a9812a0cae2966778ff899c525",
+			hash:    "0259f8b6572f02cf0dafd7388ca0e4adfdbbfaba81cfb1b7443e89fccbed22c7",
 			err:     nil,
 		},
 		{
