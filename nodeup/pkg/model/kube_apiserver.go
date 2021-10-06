@@ -672,12 +672,21 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 	addHostPathMapping(pod, container, "logfile", "/var/log/kube-apiserver.log").ReadOnly = false
 	// We use lighter containers that don't include shells
 	// But they have richer logging support via klog
-	container.Command = []string{"/usr/local/bin/kube-apiserver"}
-	container.Args = append(
-		sortedStrings(flags),
-		"--logtostderr=false", //https://github.com/kubernetes/klog/issues/60
-		"--alsologtostderr",
-		"--log-file=/var/log/kube-apiserver.log")
+	if b.IsKubernetesGTE("1.23") {
+		container.Command = []string{"/go-runner"}
+		container.Args = []string{
+			"--log-file=/var/log/kube-apiserver.log",
+			"/usr/local/bin/kube-apiserver",
+		}
+		container.Args = append(container.Args, sortedStrings(flags)...)
+	} else {
+		container.Command = []string{"/usr/local/bin/kube-apiserver"}
+		container.Args = append(
+			sortedStrings(flags),
+			"--logtostderr=false", //https://github.com/kubernetes/klog/issues/60
+			"--alsologtostderr",
+			"--log-file=/var/log/kube-apiserver.log")
+	}
 
 	for _, path := range b.SSLHostPaths() {
 		name := strings.Replace(path, "/", "", -1)
