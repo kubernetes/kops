@@ -10,6 +10,8 @@ contents: |
   spec:
     containers:
     - args:
+      - --log-file=/var/log/kube-scheduler.log
+      - /usr/local/bin/kube-scheduler
       - --authentication-kubeconfig=/var/lib/kube-scheduler/kubeconfig
       - --authorization-kubeconfig=/var/lib/kube-scheduler/kubeconfig
       - --config=/var/lib/kube-scheduler/config.yaml
@@ -17,17 +19,15 @@ contents: |
       - --tls-cert-file=/srv/kubernetes/kube-scheduler/server.crt
       - --tls-private-key-file=/srv/kubernetes/kube-scheduler/server.key
       - --v=2
-      - --logtostderr=false
-      - --alsologtostderr
-      - --log-file=/var/log/kube-scheduler.log
       command:
-      - /usr/local/bin/kube-scheduler
-      image: k8s.gcr.io/kube-scheduler:v1.18.0
+      - /go-runner
+      image: k8s.gcr.io/kube-scheduler:v1.23.0
       livenessProbe:
         httpGet:
           host: 127.0.0.1
           path: /healthz
-          port: 10251
+          port: 10259
+          scheme: HTTPS
         initialDelaySeconds: 15
         timeoutSeconds: 15
       name: kube-scheduler
@@ -95,7 +95,7 @@ path: /srv/kubernetes/kube-scheduler/server.key
 type: file
 ---
 contents: |
-  apiVersion: kubescheduler.config.k8s.io/v1alpha2
+  apiVersion: kubescheduler.config.k8s.io/v1beta2
   clientConnection:
     kubeconfig: /var/lib/kube-scheduler/kubeconfig
   kind: KubeSchedulerConfiguration
