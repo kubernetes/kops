@@ -61,6 +61,7 @@ go_library(
         "//pkg/wellknownusers:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
+        "//upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner:go_default_library",
         "//upup/pkg/fi/nodeup/nodetasks:go_default_library",
         "//util/pkg/architectures:go_default_library",
         "//util/pkg/distributions:go_default_library",
