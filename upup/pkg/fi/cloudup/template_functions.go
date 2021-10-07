@@ -54,6 +54,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
 	"k8s.io/kops/util/pkg/env"
 	"sigs.k8s.io/yaml"
 )
@@ -552,6 +553,16 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 			config.Server.Provider.AWS = &awsup.AWSVerifierOptions{
 				NodesRoles: nodesRoles.List(),
 				Region:     tf.Region,
+			}
+
+		case kops.CloudProviderGCE:
+			c := tf.cloud.(gce.GCECloud)
+
+			config.Server.Provider.GCE = &gcetpm.TPMVerifierOptions{
+				ProjectID:   c.Project(),
+				ClusterName: tf.ClusterName(),
+				Region:      tf.Region,
+				MaxTimeSkew: 300,
 			}
 		default:
 			return "", fmt.Errorf("unsupported cloud provider %s", cluster.Spec.CloudProvider)
