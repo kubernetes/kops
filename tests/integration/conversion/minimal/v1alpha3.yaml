@@ -28,8 +28,7 @@ spec:
       name: us-test-1a
     memoryRequest: 100Mi
     name: events
-  iam:
-    legacy: false
+  iam: {}
   kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: v1.14.0

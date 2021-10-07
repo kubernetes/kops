@@ -304,14 +304,13 @@ type Assets struct {
 
 // IAMSpec adds control over the IAM security policies applied to resources
 type IAMSpec struct {
-	// TODO: remove Legacy in next APIVersion
 	Legacy                 bool    `json:"legacy"`
 	AllowContainerRegistry bool    `json:"allowContainerRegistry,omitempty"`
 	PermissionsBoundary    *string `json:"permissionsBoundary,omitempty"`
 	// UseServiceAccountExternalPermissions determines if managed ServiceAccounts will use external permissions directly.
 	// If this is set to false, ServiceAccounts will assume external permissions from the instances they run on.
 	UseServiceAccountExternalPermissions *bool `json:"useServiceAccountExternalPermissions,omitempty"`
-	// ServiceAccountExternalPermissions defines the relatinship between Kubernetes ServiceAccounts and permissions with external resources.
+	// ServiceAccountExternalPermissions defines the relationship between Kubernetes ServiceAccounts and permissions with external resources.
 	ServiceAccountExternalPermissions []ServiceAccountExternalPermission `json:"serviceAccountExternalPermissions,omitempty"`
 }
 
@@ -561,10 +560,6 @@ type EtcdClusterSpec struct {
 	Provider EtcdProviderType `json:"provider,omitempty"`
 	// Members stores the configurations for each member of the cluster (including the data volume)
 	Members []EtcdMemberSpec `json:"etcdMembers,omitempty"`
-	// EnableEtcdTLS is unused.
-	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
-	// EnableTLSAuth is unused.
-	EnableTLSAuth bool `json:"enableTLSAuth,omitempty"`
 	// Version is the version of etcd to run.
 	Version string `json:"version,omitempty"`
 	// LeaderElectionTimeout is the time (in milliseconds) for an etcd leader election timeout
