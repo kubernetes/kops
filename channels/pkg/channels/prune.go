@@ -83,6 +83,7 @@ func (p *Pruner) pruneObjectsOfKind(ctx context.Context, gk schema.GroupKind, sp
 
 	var listOptions v1.ListOptions
 	listOptions.LabelSelector = spec.LabelSelector
+	listOptions.FieldSelector = spec.FieldSelector
 
 	baseResource := p.Client.Resource(gvr)
 	if len(spec.Namespaces) == 0 {
