@@ -23,6 +23,8 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog/v2"
+
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/kubemanifest"
 )
@@ -55,12 +57,42 @@ func (b *BootstrapChannelBuilder) addPruneDirectivesForAddon(addon *Addon) error
 		return fmt.Errorf("error parsing selector %v: %w", selectorMap, err)
 	}
 
+	// We always include a set of well-known group kinds,
+	// so that we prune even if we end up removing something from the manifest.
+	alwaysPruneGroupKinds := []schema.GroupKind{
+		{Group: "", Kind: "ConfigMap"},
+		{Group: "", Kind: "Service"},
+		{Group: "", Kind: "ServiceAccount"},
+		{Group: "apps", Kind: "Deployment"},
+		{Group: "apps", Kind: "DaemonSet"},
+		{Group: "apps", Kind: "StatefulSet"},
+		{Group: "rbac.authorization.k8s.io", Kind: "ClusterRole"},
+		{Group: "rbac.authorization.k8s.io", Kind: "ClusterRoleBinding"},
+		{Group: "rbac.authorization.k8s.io", Kind: "Role"},
+		{Group: "rbac.authorization.k8s.io", Kind: "RoleBinding"},
+		{Group: "policy", Kind: "PodDisruptionBudget"},
+	}
+	pruneGroupKind := make(map[schema.GroupKind]bool)
+	for _, gk := range alwaysPruneGroupKinds {
+		pruneGroupKind[gk] = true
+	}
+
+	// In addition, we deliberately exclude a few types that are riskier to delete:
+	//
+	//  * Namespace: because it deletes anything else that happens to be in the namespace
+	//
+	//  * CustomResourceDefinition: because it deletes all instances of the CRD
+	neverPruneGroupKinds := map[schema.GroupKind]bool{
+		{Group: "", Kind: "Namespace"}:                                    true,
+		{Group: "apiextensions.k8s.io", Kind: "CustomResourceDefinition"}: true,
+	}
+
+	// Parse the manifest; we use this to scope pruning to namespaces
 	objects, err := kubemanifest.LoadObjectsFrom(addon.ManifestData)
 	if err != nil {
 		return fmt.Errorf("failed to parse manifest: %w", err)
 	}
-
-	byGroupKind := make(map[schema.GroupKind][]*kubemanifest.Object)
+	objectsByGK := make(map[schema.GroupKind][]*kubemanifest.Object)
 	for _, object := range objects {
 		gv, err := schema.ParseGroupVersion(object.APIVersion())
 		if err != nil || gv.Version == "" {
@@ -72,13 +104,21 @@ func (b *BootstrapChannelBuilder) addPruneDirectivesForAddon(addon *Addon) error
 		}
 
 		gk := gvk.GroupKind()
-		byGroupKind[gk] = append(byGroupKind[gk], object)
+		objectsByGK[gk] = append(objectsByGK[gk], object)
+
+		// Warn if there are objects in the manifest that we haven't considered
+		if !pruneGroupKind[gk] {
+			if !neverPruneGroupKinds[gk] {
+				klog.Warningf("manifest includes an object of GroupKind %v, which will not be pruned", gk)
+			}
+		}
 	}
 
 	var groupKinds []schema.GroupKind
-	for gk := range byGroupKind {
+	for gk := range pruneGroupKind {
 		groupKinds = append(groupKinds, gk)
 	}
+
 	sort.Slice(groupKinds, func(i, j int) bool {
 		if groupKinds[i].Group != groupKinds[j].Group {
 			return groupKinds[i].Group < groupKinds[j].Group
@@ -92,7 +132,7 @@ func (b *BootstrapChannelBuilder) addPruneDirectivesForAddon(addon *Addon) error
 		pruneSpec.Kind = gk.Kind
 
 		namespaces := sets.NewString()
-		for _, object := range byGroupKind[gk] {
+		for _, object := range objectsByGK[gk] {
 			namespace := object.GetNamespace()
 			if namespace != "" {
 				namespaces.Insert(namespace)
