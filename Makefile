@@ -360,7 +360,7 @@ gomod: bazelisk gomod-prereqs
 
 .PHONY: gofmt
 gofmt:
-	find $(KOPS_ROOT) -name "*.go" | grep -v vendor | xargs ${BAZEL} run //:gofmt -- -w -s
+	find $(KOPS_ROOT) -name "*.go" | grep -v vendor | xargs ${BAZEL} run @go_sdk//:bin/gofmt -- -w -s
 
 .PHONY: goimports
 goimports:
