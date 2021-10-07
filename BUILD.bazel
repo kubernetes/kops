@@ -23,10 +23,3 @@ go_library(
     ],
     importpath = "k8s.io/kops",
 )
-
-load("@io_k8s_repo_infra//defs:run_in_workspace.bzl", "workspace_binary")
-
-workspace_binary(
-    name = "gofmt",
-    cmd = "@go_sdk//:bin/gofmt",
-)
