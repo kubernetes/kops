@@ -368,6 +368,17 @@ github.com/google/go-containerregistry/pkg/v1/stream
 github.com/google/go-containerregistry/pkg/v1/types
 # github.com/google/go-querystring v1.0.0
 github.com/google/go-querystring/query
+# github.com/google/go-tpm v0.3.2
+## explicit
+github.com/google/go-tpm/tpm2
+github.com/google/go-tpm/tpmutil
+github.com/google/go-tpm/tpmutil/tbs
+# github.com/google/go-tpm-tools v0.3.0-beta1
+## explicit
+github.com/google/go-tpm-tools/client
+github.com/google/go-tpm-tools/internal
+github.com/google/go-tpm-tools/proto/attest
+github.com/google/go-tpm-tools/proto/tpm
 # github.com/google/gofuzz v1.2.0
 github.com/google/gofuzz
 github.com/google/gofuzz/bytesource
