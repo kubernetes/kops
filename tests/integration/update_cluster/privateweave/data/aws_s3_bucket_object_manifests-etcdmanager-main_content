@@ -21,7 +21,7 @@ spec:
       --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/master=1
       --volume-tag=kubernetes.io/cluster/privateweave.example.com=owned > /tmp/pipe
       2>&1
-    image: k8s.gcr.io/etcdadm/etcd-manager:3.0.20210707
+    image: k8s.gcr.io/etcdadm/etcd-manager:3.0.20211007
     name: etcd-manager
     resources:
       requests:
