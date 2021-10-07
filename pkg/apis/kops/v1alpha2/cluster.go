@@ -308,7 +308,7 @@ type IAMSpec struct {
 	// UseServiceAccountExternalPermissions determines if managed ServiceAccounts will use external permissions directly.
 	// If this is set to false, ServiceAccounts will assume external permissions from the instances they run on.
 	UseServiceAccountExternalPermissions *bool `json:"useServiceAccountExternalPermissions,omitempty"`
-	// ServiceAccountExternalPermissions defines the relatinship between Kubernetes ServiceAccounts and permissions with external resources.
+	// ServiceAccountExternalPermissions defines the relationship between Kubernetes ServiceAccounts and permissions with external resources.
 	ServiceAccountExternalPermissions []ServiceAccountExternalPermission `json:"serviceAccountExternalPermissions,omitempty"`
 }
 
@@ -564,8 +564,10 @@ type EtcdClusterSpec struct {
 	// Members stores the configurations for each member of the cluster (including the data volume)
 	Members []EtcdMemberSpec `json:"etcdMembers,omitempty"`
 	// EnableEtcdTLS is unused.
+	// +k8s:conversion-gen=false
 	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
 	// EnableTLSAuth is unused.
+	// +k8s:conversion-gen=false
 	EnableTLSAuth bool `json:"enableTLSAuth,omitempty"`
 	// Version is the version of etcd to run.
 	Version string `json:"version,omitempty"`
