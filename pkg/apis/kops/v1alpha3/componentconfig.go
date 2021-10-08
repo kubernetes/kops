@@ -24,15 +24,15 @@ import (
 // KubeletConfigSpec defines the kubelet configuration
 type KubeletConfigSpec struct {
 	// APIServers is not used for clusters version 1.6 and later - flag removed
-	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
+	APIServers string `json:"-"`
 	// AnonymousAuth permits you to control auth to the kubelet api
 	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
 	// AuthorizationMode is the authorization mode the kubelet is running in
 	AuthorizationMode string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
 	// BootstrapKubeconfig is the path to a kubeconfig file that will be used to get client certificate for kubelet
 	BootstrapKubeconfig string `json:"bootstrapKubeconfig,omitempty" flag:"bootstrap-kubeconfig"`
-	// ClientCAFile is the path to a CA certificate
-	ClientCAFile string `json:"clientCaFile,omitempty" flag:"client-ca-file"`
+	// ClientCAFile is not admin-configurable.
+	ClientCAFile string `json:"-"`
 	// TODO: Remove unused TLSCertFile
 	TLSCertFile string `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
 	// TODO: Remove unused TLSPrivateKeyFile
@@ -43,8 +43,8 @@ type KubeletConfigSpec struct {
 	TLSMinVersion string `json:"tlsMinVersion,omitempty" flag:"tls-min-version"`
 	// KubeconfigPath is the path of kubeconfig for the kubelet
 	KubeconfigPath string `json:"kubeconfigPath,omitempty" flag:"kubeconfig"`
-	// RequireKubeconfig indicates a kubeconfig is required
-	RequireKubeconfig *bool `json:"requireKubeconfig,omitempty" flag:"require-kubeconfig"`
+	// RequireKubeconfig was removed.
+	RequireKubeconfig *bool `json:"-"`
 	// LogFormat is the logging format of the kubelet.
 	// Supported values: text, json.
 	// Default: text
@@ -59,8 +59,8 @@ type KubeletConfigSpec struct {
 	PodInfraContainerImage string `json:"podInfraContainerImage,omitempty" flag:"pod-infra-container-image"`
 	// SeccompProfileRoot is the directory path for seccomp profiles.
 	SeccompProfileRoot *string `json:"seccompProfileRoot,omitempty" flag:"seccomp-profile-root"`
-	// AllowPrivileged enables containers to request privileged mode (defaults to false)
-	AllowPrivileged *bool `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
+	// AllowPrivileged was removed.
+	AllowPrivileged *bool `json:"-"`
 	// EnableDebuggingHandlers enables server endpoints for log collection and local running of containers and commands
 	EnableDebuggingHandlers *bool `json:"enableDebuggingHandlers,omitempty" flag:"enable-debugging-handlers"`
 	// RegisterNode enables automatic registration with the apiserver.
@@ -88,8 +88,8 @@ type KubeletConfigSpec struct {
 	SystemCgroups string `json:"systemCgroups,omitempty" flag:"system-cgroups"`
 	// cgroupRoot is the root cgroup to use for pods. This is handled by the container runtime on a best effort basis.
 	CgroupRoot string `json:"cgroupRoot,omitempty" flag:"cgroup-root"`
-	// configureCBR0 enables the kubelet to configure cbr0 based on Node.Spec.PodCIDR.
-	ConfigureCBR0 *bool `json:"configureCbr0,omitempty" flag:"configure-cbr0"`
+	// configureCBR0 was removed.
+	ConfigureCBR0 *bool `json:"-"`
 	// How should the kubelet configure the container bridge for hairpin packets.
 	// Setting this flag allows endpoints in a Service to loadbalance back to
 	// themselves if they should try to access their own Service. Values:
@@ -100,33 +100,32 @@ type KubeletConfigSpec struct {
 	// one must set --hairpin-mode=veth-flag, because bridge assumes the
 	// existence of a container bridge named cbr0.
 	HairpinMode string `json:"hairpinMode,omitempty" flag:"hairpin-mode"`
-	// The node has babysitter process monitoring docker and kubelet. Removed as of 1.7
-	BabysitDaemons *bool `json:"babysitDaemons,omitempty" flag:"babysit-daemons"`
+	// Removed as of 1.7.
+	BabysitDaemons *bool `json:"-"`
 	// MaxPods is the number of pods that can run on this Kubelet.
 	MaxPods *int32 `json:"maxPods,omitempty" flag:"max-pods"`
-	// NvidiaGPUs is the number of NVIDIA GPU devices on this node.
-	NvidiaGPUs int32 `json:"nvidiaGPUs,omitempty" flag:"experimental-nvidia-gpus" flag-empty:"0"`
+	// NvidiaGPUs was removed.
+	NvidiaGPUs int32 `json:"-"`
 	// PodCIDR is the CIDR to use for pod IP addresses, only used in standalone mode.
 	// In cluster mode, this is obtained from the master.
 	PodCIDR string `json:"podCIDR,omitempty" flag:"pod-cidr"`
 	// ResolverConfig is the resolver configuration file used as the basis for the container DNS resolution configuration."), []
 	ResolverConfig *string `json:"resolvConf,omitempty" flag:"resolv-conf" flag-include-empty:"true"`
-	// ReconcileCIDR is Reconcile node CIDR with the CIDR specified by the
-	// API server. No-op if register-node or configure-cbr0 is false.
-	ReconcileCIDR *bool `json:"reconcileCIDR,omitempty" flag:"reconcile-cidr"`
-	// registerSchedulable tells the kubelet to register the node as schedulable. No-op if register-node is false.
-	RegisterSchedulable *bool `json:"registerSchedulable,omitempty" flag:"register-schedulable"`
+	// ReconcileCIDR was removed.
+	ReconcileCIDR *bool `json:"-"`
+	// registerSchedulable is not admin-configurable.
+	RegisterSchedulable *bool `json:"-"`
 	//// SerializeImagePulls when enabled, tells the Kubelet to pull images one
 	//// at a time. We recommend *not* changing the default value on nodes that
 	//// run docker daemon with version  < 1.9 or an Aufs storage backend.
 	//// Issue #10959 has more details.
 	SerializeImagePulls *bool `json:"serializeImagePulls,omitempty" flag:"serialize-image-pulls"`
-	// NodeLabels to add when registering the node in the cluster.
-	NodeLabels map[string]string `json:"nodeLabels,omitempty" flag:"node-labels"`
+	// NodeLabels is not admin-configurable.
+	NodeLabels map[string]string `json:"-"`
 	// NonMasqueradeCIDR configures masquerading: traffic to IPs outside this range will use IP masquerade.
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty" flag:"non-masquerade-cidr"`
-	// Enable gathering custom metrics.
-	EnableCustomMetrics *bool `json:"enableCustomMetrics,omitempty" flag:"enable-custom-metrics"`
+	// EnableCustomMetrics was removed.
+	EnableCustomMetrics *bool `json:"-"`
 	// NetworkPluginMTU is the MTU to be passed to the network plugin,
 	// and overrides the default MTU for cases where it cannot be automatically
 	// computed (such as IPSEC).
@@ -177,15 +176,14 @@ type KubeletConfigSpec struct {
 	VolumeStatsAggPeriod *metav1.Duration `json:"volumeStatsAggPeriod,omitempty" flag:"volume-stats-agg-period"`
 	// Tells the Kubelet to fail to start if swap is enabled on the node.
 	FailSwapOn *bool `json:"failSwapOn,omitempty" flag:"fail-swap-on"`
-	// ExperimentalAllowedUnsafeSysctls are passed to the kubelet config to whitelist allowable sysctls
-	// Was promoted to beta and renamed. https://github.com/kubernetes/kubernetes/pull/63717
-	ExperimentalAllowedUnsafeSysctls []string `json:"experimentalAllowedUnsafeSysctls,omitempty" flag:"experimental-allowed-unsafe-sysctls"`
+	// ExperimentalAllowedUnsafeSysctls was removed.
+	ExperimentalAllowedUnsafeSysctls []string `json:"-"`
 	// AllowedUnsafeSysctls are passed to the kubelet config to whitelist allowable sysctls
 	AllowedUnsafeSysctls []string `json:"allowedUnsafeSysctls,omitempty" flag:"allowed-unsafe-sysctls"`
 	// StreamingConnectionIdleTimeout is the maximum time a streaming connection can be idle before the connection is automatically closed
 	StreamingConnectionIdleTimeout *metav1.Duration `json:"streamingConnectionIdleTimeout,omitempty" flag:"streaming-connection-idle-timeout"`
-	// DockerDisableSharedPID uses a shared PID namespace for containers in a pod.
-	DockerDisableSharedPID *bool `json:"dockerDisableSharedPID,omitempty" flag:"docker-disable-shared-pid"`
+	// DockerDisableSharedPID was removed.
+	DockerDisableSharedPID *bool `json:"-"`
 	// RootDir is the directory path for managing kubelet files (volume mounts,etc)
 	RootDir string `json:"rootDir,omitempty" flag:"root-dir"`
 	// AuthenticationTokenWebhook uses the TokenReview API to determine authentication for bearer tokens.
@@ -317,38 +315,38 @@ type KubeAPIServerConfig struct {
 	EtcdServers []string `json:"etcdServers,omitempty" flag:"etcd-servers"`
 	// EtcdServersOverrides is per-resource etcd servers overrides, comma separated. The individual override format: group/resource#servers, where servers are http://ip:port, semicolon separated
 	EtcdServersOverrides []string `json:"etcdServersOverrides,omitempty" flag:"etcd-servers-overrides"`
-	// EtcdCAFile is the path to a ca certificate
-	EtcdCAFile string `json:"etcdCaFile,omitempty" flag:"etcd-cafile"`
-	// EtcdCertFile is the path to a certificate
-	EtcdCertFile string `json:"etcdCertFile,omitempty" flag:"etcd-certfile"`
-	// EtcdKeyFile is the path to a private key
-	EtcdKeyFile string `json:"etcdKeyFile,omitempty" flag:"etcd-keyfile"`
-	// TODO: Remove unused BasicAuthFile
-	BasicAuthFile string `json:"basicAuthFile,omitempty" flag:"basic-auth-file"`
+	// EtcdCAFile is not admin-configurable.
+	EtcdCAFile string `json:"-"`
+	// EtcdCertFile is not admin-configurable.
+	EtcdCertFile string `json:"-"`
+	// EtcdKeyFile is not admin-configurable.
+	EtcdKeyFile string `json:"-"`
+	// BasicAuthFile is not admin-configurable.
+	BasicAuthFile string `json:"-"`
 	// ClientCAFile is the file used by apisever that contains the client CA
 	ClientCAFile string `json:"clientCAFile,omitempty" flag:"client-ca-file"`
-	// TODO: Remove unused TLSCertFile
-	TLSCertFile string `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
-	// TODO: Remove unused TLSPrivateKeyFile
-	TLSPrivateKeyFile string `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
+	// TLSCertFile is not admin-configurable.
+	TLSCertFile string `json:"-"`
+	// TLSPrivateKeyFile is not admin-configurable.
+	TLSPrivateKeyFile string `json:"-"`
 	// TLSCipherSuites indicates the allowed TLS cipher suite
 	TLSCipherSuites []string `json:"tlsCipherSuites,omitempty" flag:"tls-cipher-suites"`
 	// TLSMinVersion indicates the minimum TLS version allowed
 	TLSMinVersion string `json:"tlsMinVersion,omitempty" flag:"tls-min-version"`
 	// TODO: Remove unused TokenAuthFile
 	TokenAuthFile string `json:"tokenAuthFile,omitempty" flag:"token-auth-file"`
-	// AllowPrivileged indicates if we can run privileged containers
-	AllowPrivileged *bool `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
+	// AllowPrivileged was removed.
+	AllowPrivileged *bool `json:"-"`
 	// APIServerCount is the number of api servers
 	APIServerCount *int32 `json:"apiServerCount,omitempty" flag:"apiserver-count"`
 	// RuntimeConfig is a series of keys/values are parsed into the `--runtime-config` parameters
 	RuntimeConfig map[string]string `json:"runtimeConfig,omitempty" flag:"runtime-config"`
-	// KubeletClientCertificate is the path of a certificate for secure communication between api and kubelet
-	KubeletClientCertificate string `json:"kubeletClientCertificate,omitempty" flag:"kubelet-client-certificate"`
+	// KubeletClientCertificate is not admin-configurable.
+	KubeletClientCertificate string `json:"-"`
 	// KubeletCertificateAuthority is the path of a certificate authority for secure communication between api and kubelet.
 	KubeletCertificateAuthority string `json:"kubeletCertificateAuthority,omitempty" flag:"kubelet-certificate-authority"`
-	// KubeletClientKey is the path of a private to secure communication between api and kubelet
-	KubeletClientKey string `json:"kubeletClientKey,omitempty" flag:"kubelet-client-key"`
+	// KubeletClientKey is not admin-configurable.
+	KubeletClientKey string `json:"-"`
 	// AnonymousAuth indicates if anonymous authentication is permitted
 	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
 	// KubeletPreferredAddressTypes is a list of the preferred NodeAddressTypes to use for kubelet connections
@@ -383,10 +381,10 @@ type KubeAPIServerConfig struct {
 	// OIDCCAFile if set, the OpenID server's certificate will be verified by one
 	// of the authorities in the oidc-ca-file
 	OIDCCAFile *string `json:"oidcCAFile,omitempty" flag:"oidc-ca-file"`
-	// The apiserver's client certificate used for outbound requests.
-	ProxyClientCertFile *string `json:"proxyClientCertFile,omitempty" flag:"proxy-client-cert-file"`
-	// The apiserver's client key used for outbound requests.
-	ProxyClientKeyFile *string `json:"proxyClientKeyFile,omitempty" flag:"proxy-client-key-file"`
+	// ProxyClientCertFile is not admin-configurable.
+	ProxyClientCertFile *string `json:"-"`
+	// ProxyClientKeyFile is not admin-configurable.
+	ProxyClientKeyFile *string `json:"-"`
 	// AuditLogFormat flag specifies the format type for audit log files.
 	AuditLogFormat *string `json:"auditLogFormat,omitempty" flag:"audit-log-format"`
 	// If set, all requests coming to the apiserver will be logged to this file.
@@ -429,12 +427,12 @@ type KubeAPIServerConfig struct {
 	AuthorizationWebhookCacheAuthorizedTTL *metav1.Duration `json:"authorizationWebhookCacheAuthorizedTtl,omitempty" flag:"authorization-webhook-cache-authorized-ttl"`
 	// The duration to cache authorized responses from the webhook token authorizer. Default is 30s. (default 30s)
 	AuthorizationWebhookCacheUnauthorizedTTL *metav1.Duration `json:"authorizationWebhookCacheUnauthorizedTtl,omitempty" flag:"authorization-webhook-cache-unauthorized-ttl"`
-	// AuthorizationRBACSuperUser is the name of the superuser for default rbac
-	AuthorizationRBACSuperUser *string `json:"authorizationRbacSuperUser,omitempty" flag:"authorization-rbac-super-user"`
+	// AuthorizationRBACSuperUser was removed.
+	AuthorizationRBACSuperUser *string `json:"-"`
 	// EncryptionProviderConfig enables encryption at rest for secrets.
 	EncryptionProviderConfig *string `json:"encryptionProviderConfig,omitempty" flag:"encryption-provider-config"`
-	// ExperimentalEncryptionProviderConfig enables encryption at rest for secrets.
-	ExperimentalEncryptionProviderConfig *string `json:"experimentalEncryptionProviderConfig,omitempty" flag:"experimental-encryption-provider-config"`
+	// ExperimentalEncryptionProviderConfig was removed.
+	ExperimentalEncryptionProviderConfig *string `json:"-"`
 
 	// List of request headers to inspect for usernames. X-Remote-User is common.
 	RequestheaderUsernameHeaders []string `json:"requestheaderUsernameHeaders,omitempty" flag:"requestheader-username-headers"`
@@ -442,8 +440,8 @@ type KubeAPIServerConfig struct {
 	RequestheaderGroupHeaders []string `json:"requestheaderGroupHeaders,omitempty" flag:"requestheader-group-headers"`
 	// List of request header prefixes to inspect. X-Remote-Extra- is suggested.
 	RequestheaderExtraHeaderPrefixes []string `json:"requestheaderExtraHeaderPrefixes,omitempty" flag:"requestheader-extra-headers-prefix"`
-	//Root certificate bundle to use to verify client certificates on incoming requests before trusting usernames in headers specified by --requestheader-username-headers
-	RequestheaderClientCAFile string `json:"requestheaderClientCAFile,omitempty" flag:"requestheader-client-ca-file"`
+	// RequestheaderClientCAFile is not admin-configurable.
+	RequestheaderClientCAFile string `json:"-"`
 	// List of client certificate common names to allow to provide usernames in headers specified by --requestheader-username-headers. If empty, any client certificate validated by the authorities in --requestheader-client-ca-file is allowed.
 	RequestheaderAllowedNames []string `json:"requestheaderAllowedNames,omitempty" flag:"requestheader-allowed-names"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
@@ -456,8 +454,8 @@ type KubeAPIServerConfig struct {
 	// HTTP2MaxStreamsPerConnection sets the limit that the server gives to clients for the maximum number of streams in an HTTP/2 connection. Zero means to use golang's default.
 	HTTP2MaxStreamsPerConnection *int32 `json:"http2MaxStreamsPerConnection,omitempty" flag:"http2-max-streams-per-connection"`
 
-	// EtcdQuorumRead configures the etcd-quorum-read flag, which forces consistent reads from etcd
-	EtcdQuorumRead *bool `json:"etcdQuorumRead,omitempty" flag:"etcd-quorum-read"`
+	// EtcdQuorumRead was removed.
+	EtcdQuorumRead *bool `json:"-"`
 
 	// RequestTimeout configures the duration a handler must keep a request open before timing it out. (default 1m0s)
 	RequestTimeout *metav1.Duration `json:"requestTimeout,omitempty" flag:"request-timeout"`

@@ -632,6 +632,12 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 			}
 		}
 
+		if k.ExperimentalAllowedUnsafeSysctls != nil {
+			allErrs = append(allErrs, field.Forbidden(
+				kubeletPath.Child("experimentalAllowedUnsafeSysctls"),
+				"experimentalAllowedUnsafeSysctls was renamed in k8s 1.11; please use allowedUnsafeSysctls instead"))
+		}
+
 		if k.BootstrapKubeconfig != "" {
 			if c.Spec.KubeAPIServer == nil {
 				allErrs = append(allErrs, field.Required(kubeletPath.Root().Child("spec").Child("kubeAPIServer"), "bootstrap token require the NodeRestriction admissions controller"))
