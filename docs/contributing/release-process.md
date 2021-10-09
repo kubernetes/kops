@@ -4,7 +4,7 @@ The kOps project is released on an as-needed basis. The process is as follows:
 
 ## Release branches
 
-We maintain a `release-1.17` branch for kOps 1.17.X, `release-1.18` for kOps 1.18.X,
+We maintain a `release-1.21` branch for kOps 1.21.X, `release-1.22` for kOps 1.22.X,
 etc.
 
 `master` is where development happens.  We create new branches from master as we
@@ -52,9 +52,9 @@ In order to create a new release branch off of master prior to a beta release, p
 
 ### Update versions
 
-See [1.19.0-alpha.1 PR](https://github.com/kubernetes/kops/pull/9494) for an example.
+See [1.22.0-beta.2 PR](https://github.com/kubernetes/kops/pull/12467) for an example.
 
-* Use the hack/set-version script to update versions:  `hack/set-version 1.20.0`
+* Use the hack/set-version script to update versions: `hack/set-version 1.22.0`
 
 The syntax is `hack/set-version <new-release-version>`
 
@@ -155,8 +155,7 @@ hub pull-request
 The following tools are prerequisites:
 
 * [`gsutil`](https://cloud.google.com/storage/docs/gsutil_install)
-* [`cip`][promo-tools]
-* [`kpromo`][promo-tools]
+* [`kpromo`](https://github.com/kubernetes-sigs/promo-tools)
 
 Create container promotion PR:
 
@@ -170,7 +169,7 @@ git checkout -b kops_images_${VERSION}
 cd k8s.gcr.io/images/k8s-staging-kops
 echo "" >> images.yaml
 echo "# ${VERSION}" >> images.yaml
-cip run --snapshot gcr.io/k8s-staging-kops --snapshot-tag ${VERSION} >> images.yaml
+kpromo cip run --snapshot gcr.io/k8s-staging-kops --snapshot-tag ${VERSION} >> images.yaml
 ```
 
 Currently we send the image and non-image artifact promotion PRs separately.
@@ -212,7 +211,7 @@ Upon approval and merge of the binary promotion PR, artifacts will be promoted
 to artifacts.k8s.io via postsubmit. The process is described in detail
 [here](https://git.k8s.io/k8s.io/artifacts/README.md).
 
-### Promote to GitHub / S3 (legacy)
+### Promote to GitHub (all releases)
 
 The `shipbot` tool is from [kopeio/shipbot](https://github.com/kopeio/shipbot).
 
@@ -224,10 +223,10 @@ git checkout v$VERSION
 shipbot -tag v${VERSION} -config .shipbot.yaml -src ${GOPATH}/src/k8s.io/k8s.io/k8s-staging-kops/kops/releases/${VERSION}/
 ```
 
-Binaries to S3 bucket (only for stable releases < 1.22):
+### Promote to S3 (stable releases < 1.22)
 
 ```
-aws s3 sync --acl public-read k8s-staging-kops/kops/releases/${VERSION}/ s3://kubeupv2/kops/${VERSION}/
+aws s3 sync --acl public-read ${GOPATH}/src/k8s.io/k8s.io/k8s-staging-kops/kops/releases/${VERSION}/ s3://kubeupv2/kops/${VERSION}/
 ```
 
 ### Smoke test the release
@@ -294,5 +293,3 @@ Once we are satisfied the release is sound:
 Once we are satisfied the release is stable:
 
 * Bump the kOps recommended version in the stable channel
-
-[promo-tools]: https://sigs.k8s.io/promo-tools
