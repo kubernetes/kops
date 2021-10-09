@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     k8s-addon: dns-controller.addons.k8s.io
     k8s-app: dns-controller
-    version: v1.21.1
+    version: v1.21.2
   name: dns-controller
   namespace: kube-system
 spec:
@@ -25,7 +25,7 @@ spec:
       labels:
         k8s-addon: dns-controller.addons.k8s.io
         k8s-app: dns-controller
-        version: v1.21.1
+        version: v1.21.2
     spec:
       containers:
       - command:
