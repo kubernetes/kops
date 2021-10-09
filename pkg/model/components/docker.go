@@ -48,7 +48,7 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 	// Set the Docker version for known Kubernetes versions
 	if fi.StringValue(clusterSpec.Docker.Version) == "" {
 		if b.IsKubernetesGTE("1.21") {
-			docker.Version = fi.String("20.10.8")
+			docker.Version = fi.String("20.10.9")
 		} else if b.IsKubernetesGTE("1.17") {
 			docker.Version = fi.String("19.03.15")
 		} else if b.IsKubernetesGTE("1.16") {
