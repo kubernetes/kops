@@ -189,12 +189,16 @@ func findAllContainerdHashesAmd64() map[string]string {
 		"1.4.7":  "daa14638344fe0772f645e190e4d8eb9549b52743364cb8000521490f9e410b8",
 		"1.4.8":  "96e815c9ab664a02dd5be35e31d15890ea6bef04dfaa39f99f14676c3d6561e8",
 		"1.4.9":  "9911479f86012d6eab7e0f532da8f807a8b0f555ee09ef89367d8c31243073bb",
+		"1.4.10": "5b256b372a02fd37c84939c87a6a81cae06058a7881a60d682525c11f6dea7d1",
+		"1.4.11": "a4a4af4776316833cad5996c66d59f8b4a2af4da716b7902b7a2d5f5ac362dcc",
 		"1.5.0":  "aee7b553ab88842fdafe43955757abe746b8e9995b2be55c603f0a236186ff9b",
 		"1.5.1":  "2fd97916b24396c13849cfcd89805170e1ef0265a2f7fce8e74ae044a6a6a169",
 		"1.5.2":  "e7adbb6c6f6e67639460579a8aa991e9ce4de2062ed36d3261e6e4865574d947",
 		"1.5.3":  "32a9bf1b7ab2adbd9d2a16b17bf1aa6e61592938655adfb5114c40d527aa9be7",
 		"1.5.4":  "591e4e087ea2f5007e6c64deb382df58d419b7b6922eab45a1923d843d57615f",
 		"1.5.5":  "45f02cfc65db47cf088c95555906e1dcba7baf5a3fbad3d947dd6b9af476a144",
+		"1.5.6":  "afc51718ebe46cb9b985edac816e63fe86c07e37d28cdd21b2c0302dec6fa7ae",
+		"1.5.7":  "7fce75bab43a39d6f9efb3c370de2da49723f0e1dbaa9732d68fa7f620d720c8",
 	}
 
 	return hashes
@@ -202,12 +206,13 @@ func findAllContainerdHashesAmd64() map[string]string {
 
 func findAllContainerdDockerMappings() map[string]string {
 	versions := map[string]string{
-		"1.3.7": "19.03.13",
-		"1.3.9": "19.03.14",
-		"1.4.3": "20.10.0",
-		"1.4.4": "20.10.6",
-		"1.4.6": "20.10.7",
-		"1.4.9": "20.10.8",
+		"1.3.7":  "19.03.13",
+		"1.3.9":  "19.03.14",
+		"1.4.3":  "20.10.0",
+		"1.4.4":  "20.10.6",
+		"1.4.6":  "20.10.7",
+		"1.4.9":  "20.10.8",
+		"1.4.11": "20.10.9",
 	}
 
 	return versions
