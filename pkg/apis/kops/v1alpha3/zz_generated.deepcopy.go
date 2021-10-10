@@ -2169,11 +2169,6 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(bool)
 		**out = **in
 	}
-	if in.RootVolumeDeleteOnTermination != nil {
-		in, out := &in.RootVolumeDeleteOnTermination, &out.RootVolumeDeleteOnTermination
-		*out = new(bool)
-		**out = **in
-	}
 	if in.RootVolumeEncryption != nil {
 		in, out := &in.RootVolumeEncryption, &out.RootVolumeEncryption
 		*out = new(bool)

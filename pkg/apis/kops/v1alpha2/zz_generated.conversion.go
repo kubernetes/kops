@@ -4161,7 +4161,7 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	out.RootVolumeIops = in.RootVolumeIops
 	out.RootVolumeThroughput = in.RootVolumeThroughput
 	out.RootVolumeOptimization = in.RootVolumeOptimization
-	out.RootVolumeDeleteOnTermination = in.RootVolumeDeleteOnTermination
+	// INFO: in.RootVolumeDeleteOnTermination opted out of conversion generation
 	out.RootVolumeEncryption = in.RootVolumeEncryption
 	out.RootVolumeEncryptionKey = in.RootVolumeEncryptionKey
 	if in.Volumes != nil {
@@ -4323,7 +4323,6 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 	out.RootVolumeIops = in.RootVolumeIops
 	out.RootVolumeThroughput = in.RootVolumeThroughput
 	out.RootVolumeOptimization = in.RootVolumeOptimization
-	out.RootVolumeDeleteOnTermination = in.RootVolumeDeleteOnTermination
 	out.RootVolumeEncryption = in.RootVolumeEncryption
 	out.RootVolumeEncryptionKey = in.RootVolumeEncryptionKey
 	if in.Volumes != nil {
