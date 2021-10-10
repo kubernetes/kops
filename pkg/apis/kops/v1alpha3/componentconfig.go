@@ -527,8 +527,8 @@ type KubeControllerManagerConfig struct {
 	LogFormat string `json:"logFormat,omitempty" flag:"logging-format" flag-empty:"text"`
 	// LogLevel is the defined logLevel
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
-	// ServiceAccountPrivateKeyFile is the location of the private key for service account token signing.
-	ServiceAccountPrivateKeyFile string `json:"serviceAccountPrivateKeyFile,omitempty" flag:"service-account-private-key-file"`
+	// ServiceAccountPrivateKeyFile is not admin-configurable.
+	ServiceAccountPrivateKeyFile string `json:"-"`
 	// Image is the docker image to use
 	Image string `json:"image,omitempty"`
 	// CloudProvider is the provider for cloud services.
@@ -547,8 +547,8 @@ type KubeControllerManagerConfig struct {
 	Controllers []string `json:"controllers,omitempty" flag:"controllers"`
 	// CIDRAllocatorType specifies the type of CIDR allocator to use.
 	CIDRAllocatorType *string `json:"cidrAllocatorType,omitempty" flag:"cidr-allocator-type"`
-	// rootCAFile is the root certificate authority will be included in service account's token secret. This must be a valid PEM-encoded CA bundle.
-	RootCAFile string `json:"rootCAFile,omitempty" flag:"root-ca-file"`
+	// RootCAFile is not admin-configurable.
+	RootCAFile string `json:"-"`
 	// LeaderElection defines the configuration of leader election client.
 	LeaderElection *LeaderElectionConfiguration `json:"leaderElection,omitempty"`
 	// ReconcilerSyncLoopPeriod is the amount of time the reconciler sync states loop
@@ -695,8 +695,8 @@ type KubeSchedulerConfig struct {
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 	// MaxPersistentVolumes changes the maximum number of persistent volumes the scheduler will scheduler onto the same
-	// node. Only takes into affect if value is positive. This corresponds to the KUBE_MAX_PD_VOLS environment variable,
-	// which has been supported as far back as Kubernetes 1.7. The default depends on the version and the cloud provider
+	// node. Only takes effect if value is positive. This corresponds to the KUBE_MAX_PD_VOLS environment variable.
+	// The default depends on the version and the cloud provider
 	// as outlined: https://kubernetes.io/docs/concepts/storage/storage-limits/
 	MaxPersistentVolumes *int32 `json:"maxPersistentVolumes,omitempty"`
 	// Qps sets the maximum qps to send to apiserver after the burst quota is exhausted
@@ -1030,26 +1030,4 @@ type AWSLoadBalancerControllerConfig struct {
 	Enabled *bool `json:"enabled,omitempty"`
 	// Version is the container image tag used.
 	Version *string `json:"version,omitempty"`
-}
-
-// HasAdmissionController checks if a specific admission controller is enabled
-func (c *KubeAPIServerConfig) HasAdmissionController(name string) bool {
-	for _, x := range c.AdmissionControl {
-		if x == name {
-			return true
-		}
-	}
-
-	for _, x := range c.DisableAdmissionPlugins {
-		if x == name {
-			return false
-		}
-	}
-	for _, x := range c.EnableAdmissionPlugins {
-		if x == name {
-			return true
-		}
-	}
-
-	return false
 }
