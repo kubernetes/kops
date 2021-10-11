@@ -142,7 +142,7 @@ spec:
         {{- end }}
       containers:
       - name: coredns
-        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}k8s.gcr.io/coredns/coredns:v1.8.4{{ end }}
+        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}k8s.gcr.io/coredns/coredns:v1.8.5{{ end }}
         imagePullPolicy: IfNotPresent
         resources:
           limits:
