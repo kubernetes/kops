@@ -3260,10 +3260,9 @@ spec:
                   maxPersistentVolumes:
                     description: 'MaxPersistentVolumes changes the maximum number
                       of persistent volumes the scheduler will scheduler onto the
-                      same node. Only takes into affect if value is positive. This
-                      corresponds to the KUBE_MAX_PD_VOLS environment variable, which
-                      has been supported as far back as Kubernetes 1.7. The default
-                      depends on the version and the cloud provider as outlined: https://kubernetes.io/docs/concepts/storage/storage-limits/'
+                      same node. Only takes effect if value is positive. This corresponds
+                      to the KUBE_MAX_PD_VOLS environment variable. The default depends
+                      on the version and the cloud provider as outlined: https://kubernetes.io/docs/concepts/storage/storage-limits/'
                     format: int32
                     type: integer
                   qps:
@@ -4276,8 +4275,7 @@ spec:
                           level. (Default: info)'
                         type: string
                       majorVersion:
-                        description: MajorVersion is deprecated as of kOps 1.20 and
-                          has no effect
+                        description: MajorVersion is unused.
                         type: string
                       mtu:
                         description: MTU to be set in the cni-network-config for calico.
@@ -4302,7 +4300,7 @@ spec:
                           process metrics collection
                         type: boolean
                       registry:
-                        description: Version overrides the Calico container image
+                        description: Registry overrides the Calico container image
                           registry.
                         type: string
                       typhaPrometheusMetricsEnabled:
@@ -4367,8 +4365,7 @@ spec:
                           FORWARD chain
                         type: boolean
                       disableTxChecksumOffloading:
-                        description: DisableTxChecksumOffloading is deprecated as
-                          of kOps 1.19 and has no effect.
+                        description: DisableTxChecksumOffloading is unused.
                         type: boolean
                       iptablesBackend:
                         description: 'IptablesBackend controls which variant of iptables
@@ -4889,8 +4886,7 @@ spec:
                           use (vxlan or udp)
                         type: string
                       disableTxChecksumOffloading:
-                        description: DisableTxChecksumOffloading is deprecated as
-                          of kOps 1.19 and has no effect.
+                        description: DisableTxChecksumOffloading is unused.
                         type: boolean
                       iptablesResyncSeconds:
                         description: IptablesResyncSeconds sets resync period for

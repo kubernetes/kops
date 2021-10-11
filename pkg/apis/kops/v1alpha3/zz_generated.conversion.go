@@ -234,16 +234,6 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
-	if err := s.AddGeneratedConversionFunc((*ClassicNetworkingSpec)(nil), (*kops.ClassicNetworkingSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_v1alpha3_ClassicNetworkingSpec_To_kops_ClassicNetworkingSpec(a.(*ClassicNetworkingSpec), b.(*kops.ClassicNetworkingSpec), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*kops.ClassicNetworkingSpec)(nil), (*ClassicNetworkingSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_kops_ClassicNetworkingSpec_To_v1alpha3_ClassicNetworkingSpec(a.(*kops.ClassicNetworkingSpec), b.(*ClassicNetworkingSpec), scope)
-	}); err != nil {
-		return err
-	}
 	if err := s.AddGeneratedConversionFunc((*CloudConfiguration)(nil), (*kops.CloudConfiguration)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1alpha3_CloudConfiguration_To_kops_CloudConfiguration(a.(*CloudConfiguration), b.(*kops.CloudConfiguration), scope)
 	}); err != nil {
@@ -784,16 +774,6 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
-	if err := s.AddGeneratedConversionFunc((*LyftVPCNetworkingSpec)(nil), (*kops.LyftVPCNetworkingSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_v1alpha3_LyftVPCNetworkingSpec_To_kops_LyftVPCNetworkingSpec(a.(*LyftVPCNetworkingSpec), b.(*kops.LyftVPCNetworkingSpec), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*kops.LyftVPCNetworkingSpec)(nil), (*LyftVPCNetworkingSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_kops_LyftVPCNetworkingSpec_To_v1alpha3_LyftVPCNetworkingSpec(a.(*kops.LyftVPCNetworkingSpec), b.(*LyftVPCNetworkingSpec), scope)
-	}); err != nil {
-		return err
-	}
 	if err := s.AddGeneratedConversionFunc((*MetricsServerConfig)(nil), (*kops.MetricsServerConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1alpha3_MetricsServerConfig_To_kops_MetricsServerConfig(a.(*MetricsServerConfig), b.(*kops.MetricsServerConfig), scope)
 	}); err != nil {
@@ -971,16 +951,6 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}
 	if err := s.AddGeneratedConversionFunc((*kops.RollingUpdate)(nil), (*RollingUpdate)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_kops_RollingUpdate_To_v1alpha3_RollingUpdate(a.(*kops.RollingUpdate), b.(*RollingUpdate), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*RomanaNetworkingSpec)(nil), (*kops.RomanaNetworkingSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_v1alpha3_RomanaNetworkingSpec_To_kops_RomanaNetworkingSpec(a.(*RomanaNetworkingSpec), b.(*kops.RomanaNetworkingSpec), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*kops.RomanaNetworkingSpec)(nil), (*RomanaNetworkingSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_kops_RomanaNetworkingSpec_To_v1alpha3_RomanaNetworkingSpec(a.(*kops.RomanaNetworkingSpec), b.(*RomanaNetworkingSpec), scope)
 	}); err != nil {
 		return err
 	}
@@ -1651,7 +1621,6 @@ func autoConvert_v1alpha3_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
-	out.MajorVersion = in.MajorVersion
 	out.TyphaPrometheusMetricsEnabled = in.TyphaPrometheusMetricsEnabled
 	out.TyphaPrometheusMetricsPort = in.TyphaPrometheusMetricsPort
 	out.TyphaReplicas = in.TyphaReplicas
@@ -1687,7 +1656,6 @@ func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha3_CalicoNetworkingSpec(in *
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
-	out.MajorVersion = in.MajorVersion
 	out.TyphaPrometheusMetricsEnabled = in.TyphaPrometheusMetricsEnabled
 	out.TyphaPrometheusMetricsPort = in.TyphaPrometheusMetricsPort
 	out.TyphaReplicas = in.TyphaReplicas
@@ -1706,7 +1674,6 @@ func autoConvert_v1alpha3_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *Ca
 	out.CPURequest = in.CPURequest
 	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
 	out.DisableFlannelForwardRules = in.DisableFlannelForwardRules
-	out.DisableTxChecksumOffloading = in.DisableTxChecksumOffloading
 	out.IptablesBackend = in.IptablesBackend
 	out.LogSeveritySys = in.LogSeveritySys
 	out.MTU = in.MTU
@@ -1730,7 +1697,6 @@ func autoConvert_kops_CanalNetworkingSpec_To_v1alpha3_CanalNetworkingSpec(in *ko
 	out.CPURequest = in.CPURequest
 	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
 	out.DisableFlannelForwardRules = in.DisableFlannelForwardRules
-	out.DisableTxChecksumOffloading = in.DisableTxChecksumOffloading
 	out.IptablesBackend = in.IptablesBackend
 	out.LogSeveritySys = in.LogSeveritySys
 	out.MTU = in.MTU
@@ -1993,24 +1959,6 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha3_CiliumNetworkingSpec(in *
 // Convert_kops_CiliumNetworkingSpec_To_v1alpha3_CiliumNetworkingSpec is an autogenerated conversion function.
 func Convert_kops_CiliumNetworkingSpec_To_v1alpha3_CiliumNetworkingSpec(in *kops.CiliumNetworkingSpec, out *CiliumNetworkingSpec, s conversion.Scope) error {
 	return autoConvert_kops_CiliumNetworkingSpec_To_v1alpha3_CiliumNetworkingSpec(in, out, s)
-}
-
-func autoConvert_v1alpha3_ClassicNetworkingSpec_To_kops_ClassicNetworkingSpec(in *ClassicNetworkingSpec, out *kops.ClassicNetworkingSpec, s conversion.Scope) error {
-	return nil
-}
-
-// Convert_v1alpha3_ClassicNetworkingSpec_To_kops_ClassicNetworkingSpec is an autogenerated conversion function.
-func Convert_v1alpha3_ClassicNetworkingSpec_To_kops_ClassicNetworkingSpec(in *ClassicNetworkingSpec, out *kops.ClassicNetworkingSpec, s conversion.Scope) error {
-	return autoConvert_v1alpha3_ClassicNetworkingSpec_To_kops_ClassicNetworkingSpec(in, out, s)
-}
-
-func autoConvert_kops_ClassicNetworkingSpec_To_v1alpha3_ClassicNetworkingSpec(in *kops.ClassicNetworkingSpec, out *ClassicNetworkingSpec, s conversion.Scope) error {
-	return nil
-}
-
-// Convert_kops_ClassicNetworkingSpec_To_v1alpha3_ClassicNetworkingSpec is an autogenerated conversion function.
-func Convert_kops_ClassicNetworkingSpec_To_v1alpha3_ClassicNetworkingSpec(in *kops.ClassicNetworkingSpec, out *ClassicNetworkingSpec, s conversion.Scope) error {
-	return autoConvert_kops_ClassicNetworkingSpec_To_v1alpha3_ClassicNetworkingSpec(in, out, s)
 }
 
 func autoConvert_v1alpha3_CloudConfiguration_To_kops_CloudConfiguration(in *CloudConfiguration, out *kops.CloudConfiguration, s conversion.Scope) error {
@@ -3759,7 +3707,6 @@ func Convert_kops_FileAssetSpec_To_v1alpha3_FileAssetSpec(in *kops.FileAssetSpec
 
 func autoConvert_v1alpha3_FlannelNetworkingSpec_To_kops_FlannelNetworkingSpec(in *FlannelNetworkingSpec, out *kops.FlannelNetworkingSpec, s conversion.Scope) error {
 	out.Backend = in.Backend
-	out.DisableTxChecksumOffloading = in.DisableTxChecksumOffloading
 	out.IptablesResyncSeconds = in.IptablesResyncSeconds
 	return nil
 }
@@ -3771,7 +3718,6 @@ func Convert_v1alpha3_FlannelNetworkingSpec_To_kops_FlannelNetworkingSpec(in *Fl
 
 func autoConvert_kops_FlannelNetworkingSpec_To_v1alpha3_FlannelNetworkingSpec(in *kops.FlannelNetworkingSpec, out *FlannelNetworkingSpec, s conversion.Scope) error {
 	out.Backend = in.Backend
-	out.DisableTxChecksumOffloading = in.DisableTxChecksumOffloading
 	out.IptablesResyncSeconds = in.IptablesResyncSeconds
 	return nil
 }
@@ -4123,7 +4069,6 @@ func autoConvert_v1alpha3_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	out.RootVolumeIops = in.RootVolumeIops
 	out.RootVolumeThroughput = in.RootVolumeThroughput
 	out.RootVolumeOptimization = in.RootVolumeOptimization
-	out.RootVolumeDeleteOnTermination = in.RootVolumeDeleteOnTermination
 	out.RootVolumeEncryption = in.RootVolumeEncryption
 	out.RootVolumeEncryptionKey = in.RootVolumeEncryptionKey
 	if in.Volumes != nil {
@@ -4285,7 +4230,6 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha3_InstanceGroupSpec(in *kops.I
 	out.RootVolumeIops = in.RootVolumeIops
 	out.RootVolumeThroughput = in.RootVolumeThroughput
 	out.RootVolumeOptimization = in.RootVolumeOptimization
-	out.RootVolumeDeleteOnTermination = in.RootVolumeDeleteOnTermination
 	out.RootVolumeEncryption = in.RootVolumeEncryption
 	out.RootVolumeEncryptionKey = in.RootVolumeEncryptionKey
 	if in.Volumes != nil {
@@ -5577,26 +5521,6 @@ func Convert_kops_LoadBalancerSubnetSpec_To_v1alpha3_LoadBalancerSubnetSpec(in *
 	return autoConvert_kops_LoadBalancerSubnetSpec_To_v1alpha3_LoadBalancerSubnetSpec(in, out, s)
 }
 
-func autoConvert_v1alpha3_LyftVPCNetworkingSpec_To_kops_LyftVPCNetworkingSpec(in *LyftVPCNetworkingSpec, out *kops.LyftVPCNetworkingSpec, s conversion.Scope) error {
-	out.SubnetTags = in.SubnetTags
-	return nil
-}
-
-// Convert_v1alpha3_LyftVPCNetworkingSpec_To_kops_LyftVPCNetworkingSpec is an autogenerated conversion function.
-func Convert_v1alpha3_LyftVPCNetworkingSpec_To_kops_LyftVPCNetworkingSpec(in *LyftVPCNetworkingSpec, out *kops.LyftVPCNetworkingSpec, s conversion.Scope) error {
-	return autoConvert_v1alpha3_LyftVPCNetworkingSpec_To_kops_LyftVPCNetworkingSpec(in, out, s)
-}
-
-func autoConvert_kops_LyftVPCNetworkingSpec_To_v1alpha3_LyftVPCNetworkingSpec(in *kops.LyftVPCNetworkingSpec, out *LyftVPCNetworkingSpec, s conversion.Scope) error {
-	out.SubnetTags = in.SubnetTags
-	return nil
-}
-
-// Convert_kops_LyftVPCNetworkingSpec_To_v1alpha3_LyftVPCNetworkingSpec is an autogenerated conversion function.
-func Convert_kops_LyftVPCNetworkingSpec_To_v1alpha3_LyftVPCNetworkingSpec(in *kops.LyftVPCNetworkingSpec, out *LyftVPCNetworkingSpec, s conversion.Scope) error {
-	return autoConvert_kops_LyftVPCNetworkingSpec_To_v1alpha3_LyftVPCNetworkingSpec(in, out, s)
-}
-
 func autoConvert_v1alpha3_MetricsServerConfig_To_kops_MetricsServerConfig(in *MetricsServerConfig, out *kops.MetricsServerConfig, s conversion.Scope) error {
 	out.Enabled = in.Enabled
 	out.Image = in.Image
@@ -5672,15 +5596,7 @@ func Convert_kops_NTPConfig_To_v1alpha3_NTPConfig(in *kops.NTPConfig, out *NTPCo
 }
 
 func autoConvert_v1alpha3_NetworkingSpec_To_kops_NetworkingSpec(in *NetworkingSpec, out *kops.NetworkingSpec, s conversion.Scope) error {
-	if in.Classic != nil {
-		in, out := &in.Classic, &out.Classic
-		*out = new(kops.ClassicNetworkingSpec)
-		if err := Convert_v1alpha3_ClassicNetworkingSpec_To_kops_ClassicNetworkingSpec(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.Classic = nil
-	}
+	out.Classic = in.Classic
 	if in.Kubenet != nil {
 		in, out := &in.Kubenet, &out.Kubenet
 		*out = new(kops.KubenetNetworkingSpec)
@@ -5762,15 +5678,7 @@ func autoConvert_v1alpha3_NetworkingSpec_To_kops_NetworkingSpec(in *NetworkingSp
 	} else {
 		out.Kuberouter = nil
 	}
-	if in.Romana != nil {
-		in, out := &in.Romana, &out.Romana
-		*out = new(kops.RomanaNetworkingSpec)
-		if err := Convert_v1alpha3_RomanaNetworkingSpec_To_kops_RomanaNetworkingSpec(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.Romana = nil
-	}
+	out.Romana = in.Romana
 	if in.AmazonVPC != nil {
 		in, out := &in.AmazonVPC, &out.AmazonVPC
 		*out = new(kops.AmazonVPCNetworkingSpec)
@@ -5789,15 +5697,7 @@ func autoConvert_v1alpha3_NetworkingSpec_To_kops_NetworkingSpec(in *NetworkingSp
 	} else {
 		out.Cilium = nil
 	}
-	if in.LyftVPC != nil {
-		in, out := &in.LyftVPC, &out.LyftVPC
-		*out = new(kops.LyftVPCNetworkingSpec)
-		if err := Convert_v1alpha3_LyftVPCNetworkingSpec_To_kops_LyftVPCNetworkingSpec(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.LyftVPC = nil
-	}
+	out.LyftVPC = in.LyftVPC
 	if in.GCE != nil {
 		in, out := &in.GCE, &out.GCE
 		*out = new(kops.GCENetworkingSpec)
@@ -5816,15 +5716,7 @@ func Convert_v1alpha3_NetworkingSpec_To_kops_NetworkingSpec(in *NetworkingSpec, 
 }
 
 func autoConvert_kops_NetworkingSpec_To_v1alpha3_NetworkingSpec(in *kops.NetworkingSpec, out *NetworkingSpec, s conversion.Scope) error {
-	if in.Classic != nil {
-		in, out := &in.Classic, &out.Classic
-		*out = new(ClassicNetworkingSpec)
-		if err := Convert_kops_ClassicNetworkingSpec_To_v1alpha3_ClassicNetworkingSpec(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.Classic = nil
-	}
+	out.Classic = in.Classic
 	if in.Kubenet != nil {
 		in, out := &in.Kubenet, &out.Kubenet
 		*out = new(KubenetNetworkingSpec)
@@ -5906,15 +5798,7 @@ func autoConvert_kops_NetworkingSpec_To_v1alpha3_NetworkingSpec(in *kops.Network
 	} else {
 		out.Kuberouter = nil
 	}
-	if in.Romana != nil {
-		in, out := &in.Romana, &out.Romana
-		*out = new(RomanaNetworkingSpec)
-		if err := Convert_kops_RomanaNetworkingSpec_To_v1alpha3_RomanaNetworkingSpec(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.Romana = nil
-	}
+	out.Romana = in.Romana
 	if in.AmazonVPC != nil {
 		in, out := &in.AmazonVPC, &out.AmazonVPC
 		*out = new(AmazonVPCNetworkingSpec)
@@ -5933,15 +5817,7 @@ func autoConvert_kops_NetworkingSpec_To_v1alpha3_NetworkingSpec(in *kops.Network
 	} else {
 		out.Cilium = nil
 	}
-	if in.LyftVPC != nil {
-		in, out := &in.LyftVPC, &out.LyftVPC
-		*out = new(LyftVPCNetworkingSpec)
-		if err := Convert_kops_LyftVPCNetworkingSpec_To_v1alpha3_LyftVPCNetworkingSpec(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.LyftVPC = nil
-	}
+	out.LyftVPC = in.LyftVPC
 	if in.GCE != nil {
 		in, out := &in.GCE, &out.GCE
 		*out = new(GCENetworkingSpec)
@@ -6427,28 +6303,6 @@ func autoConvert_kops_RollingUpdate_To_v1alpha3_RollingUpdate(in *kops.RollingUp
 // Convert_kops_RollingUpdate_To_v1alpha3_RollingUpdate is an autogenerated conversion function.
 func Convert_kops_RollingUpdate_To_v1alpha3_RollingUpdate(in *kops.RollingUpdate, out *RollingUpdate, s conversion.Scope) error {
 	return autoConvert_kops_RollingUpdate_To_v1alpha3_RollingUpdate(in, out, s)
-}
-
-func autoConvert_v1alpha3_RomanaNetworkingSpec_To_kops_RomanaNetworkingSpec(in *RomanaNetworkingSpec, out *kops.RomanaNetworkingSpec, s conversion.Scope) error {
-	out.DaemonServiceIP = in.DaemonServiceIP
-	out.EtcdServiceIP = in.EtcdServiceIP
-	return nil
-}
-
-// Convert_v1alpha3_RomanaNetworkingSpec_To_kops_RomanaNetworkingSpec is an autogenerated conversion function.
-func Convert_v1alpha3_RomanaNetworkingSpec_To_kops_RomanaNetworkingSpec(in *RomanaNetworkingSpec, out *kops.RomanaNetworkingSpec, s conversion.Scope) error {
-	return autoConvert_v1alpha3_RomanaNetworkingSpec_To_kops_RomanaNetworkingSpec(in, out, s)
-}
-
-func autoConvert_kops_RomanaNetworkingSpec_To_v1alpha3_RomanaNetworkingSpec(in *kops.RomanaNetworkingSpec, out *RomanaNetworkingSpec, s conversion.Scope) error {
-	out.DaemonServiceIP = in.DaemonServiceIP
-	out.EtcdServiceIP = in.EtcdServiceIP
-	return nil
-}
-
-// Convert_kops_RomanaNetworkingSpec_To_v1alpha3_RomanaNetworkingSpec is an autogenerated conversion function.
-func Convert_kops_RomanaNetworkingSpec_To_v1alpha3_RomanaNetworkingSpec(in *kops.RomanaNetworkingSpec, out *RomanaNetworkingSpec, s conversion.Scope) error {
-	return autoConvert_kops_RomanaNetworkingSpec_To_v1alpha3_RomanaNetworkingSpec(in, out, s)
 }
 
 func autoConvert_v1alpha3_SSHCredential_To_kops_SSHCredential(in *SSHCredential, out *kops.SSHCredential, s conversion.Scope) error {
