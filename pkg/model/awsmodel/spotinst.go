@@ -53,6 +53,10 @@ const (
 	// utilized.
 	SpotInstanceGroupLabelUtilizeReservedInstances = "spotinst.io/utilize-reserved-instances"
 
+	// SpotInstanceGroupLabelUtilizeCommitments is the metadata label used
+	// on the instance group to specify whether commitments should be utilized.
+	SpotInstanceGroupLabelUtilizeCommitments = "spotinst.io/utilize-commitments"
+
 	// SpotInstanceGroupLabelFallbackToOnDemand is the metadata label used on the
 	// instance group to specify whether fallback to on-demand instances should
 	// be enabled.
@@ -218,6 +222,12 @@ func (b *SpotInstanceGroupModelBuilder) buildElastigroup(c *fi.ModelBuilderConte
 				return err
 			}
 
+		case SpotInstanceGroupLabelUtilizeCommitments:
+			group.UtilizeCommitments, err = parseBool(v)
+			if err != nil {
+				return err
+			}
+
 		case SpotInstanceGroupLabelFallbackToOnDemand:
 			group.FallbackToOnDemand, err = parseBool(v)
 			if err != nil {
@@ -376,6 +386,12 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, ig
 		switch k {
 		case SpotInstanceGroupLabelUtilizeReservedInstances:
 			ocean.UtilizeReservedInstances, err = parseBool(v)
+			if err != nil {
+				return err
+			}
+
+		case SpotInstanceGroupLabelUtilizeCommitments:
+			ocean.UtilizeCommitments, err = parseBool(v)
 			if err != nil {
 				return err
 			}
