@@ -1671,7 +1671,7 @@ func autoConvert_v1alpha2_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
-	out.MajorVersion = in.MajorVersion
+	// INFO: in.MajorVersion opted out of conversion generation
 	out.TyphaPrometheusMetricsEnabled = in.TyphaPrometheusMetricsEnabled
 	out.TyphaPrometheusMetricsPort = in.TyphaPrometheusMetricsPort
 	out.TyphaReplicas = in.TyphaReplicas
@@ -1707,7 +1707,6 @@ func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha2_CalicoNetworkingSpec(in *
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
-	out.MajorVersion = in.MajorVersion
 	out.TyphaPrometheusMetricsEnabled = in.TyphaPrometheusMetricsEnabled
 	out.TyphaPrometheusMetricsPort = in.TyphaPrometheusMetricsPort
 	out.TyphaReplicas = in.TyphaReplicas
@@ -1726,7 +1725,7 @@ func autoConvert_v1alpha2_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *Ca
 	out.CPURequest = in.CPURequest
 	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
 	out.DisableFlannelForwardRules = in.DisableFlannelForwardRules
-	out.DisableTxChecksumOffloading = in.DisableTxChecksumOffloading
+	// INFO: in.DisableTxChecksumOffloading opted out of conversion generation
 	out.IptablesBackend = in.IptablesBackend
 	out.LogSeveritySys = in.LogSeveritySys
 	out.MTU = in.MTU
@@ -1750,7 +1749,6 @@ func autoConvert_kops_CanalNetworkingSpec_To_v1alpha2_CanalNetworkingSpec(in *ko
 	out.CPURequest = in.CPURequest
 	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
 	out.DisableFlannelForwardRules = in.DisableFlannelForwardRules
-	out.DisableTxChecksumOffloading = in.DisableTxChecksumOffloading
 	out.IptablesBackend = in.IptablesBackend
 	out.LogSeveritySys = in.LogSeveritySys
 	out.MTU = in.MTU
@@ -3797,7 +3795,7 @@ func Convert_kops_FileAssetSpec_To_v1alpha2_FileAssetSpec(in *kops.FileAssetSpec
 
 func autoConvert_v1alpha2_FlannelNetworkingSpec_To_kops_FlannelNetworkingSpec(in *FlannelNetworkingSpec, out *kops.FlannelNetworkingSpec, s conversion.Scope) error {
 	out.Backend = in.Backend
-	out.DisableTxChecksumOffloading = in.DisableTxChecksumOffloading
+	// INFO: in.DisableTxChecksumOffloading opted out of conversion generation
 	out.IptablesResyncSeconds = in.IptablesResyncSeconds
 	return nil
 }
@@ -3809,7 +3807,6 @@ func Convert_v1alpha2_FlannelNetworkingSpec_To_kops_FlannelNetworkingSpec(in *Fl
 
 func autoConvert_kops_FlannelNetworkingSpec_To_v1alpha2_FlannelNetworkingSpec(in *kops.FlannelNetworkingSpec, out *FlannelNetworkingSpec, s conversion.Scope) error {
 	out.Backend = in.Backend
-	out.DisableTxChecksumOffloading = in.DisableTxChecksumOffloading
 	out.IptablesResyncSeconds = in.IptablesResyncSeconds
 	return nil
 }
