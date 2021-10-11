@@ -95,7 +95,8 @@ type WeaveNetworkingSpec struct {
 type FlannelNetworkingSpec struct {
 	// Backend is the backend overlay type we want to use (vxlan or udp)
 	Backend string `json:"backend,omitempty"`
-	// DisableTxChecksumOffloading is deprecated as of kOps 1.19 and has no effect.
+	// DisableTxChecksumOffloading is unused.
+	// +k8s:conversion-gen=false
 	DisableTxChecksumOffloading bool `json:"disableTxChecksumOffloading,omitempty"`
 	// IptablesResyncSeconds sets resync period for iptables rules, in seconds
 	IptablesResyncSeconds *int32 `json:"iptablesResyncSeconds,omitempty"`
@@ -103,7 +104,7 @@ type FlannelNetworkingSpec struct {
 
 // CalicoNetworkingSpec declares that we want Calico networking
 type CalicoNetworkingSpec struct {
-	// Version overrides the Calico container image registry.
+	// Registry overrides the Calico container image registry.
 	Registry string `json:"registry,omitempty"`
 	// Version overrides the Calico container image tag.
 	Version string `json:"version,omitempty"`
@@ -175,7 +176,8 @@ type CalicoNetworkingSpec struct {
 	PrometheusGoMetricsEnabled bool `json:"prometheusGoMetricsEnabled,omitempty"`
 	// PrometheusProcessMetricsEnabled enables Prometheus process metrics collection
 	PrometheusProcessMetricsEnabled bool `json:"prometheusProcessMetricsEnabled,omitempty"`
-	// MajorVersion is deprecated as of kOps 1.20 and has no effect
+	// MajorVersion is unused.
+	// +k8s:conversion-gen=false
 	MajorVersion string `json:"majorVersion,omitempty"`
 	// TyphaPrometheusMetricsEnabled enables Prometheus metrics collection from Typha
 	// (default: false)
@@ -211,7 +213,8 @@ type CanalNetworkingSpec struct {
 	// DisableFlannelForwardRules configures Flannel to NOT add the
 	// default ACCEPT traffic rules to the iptables FORWARD chain
 	DisableFlannelForwardRules bool `json:"disableFlannelForwardRules,omitempty"`
-	// DisableTxChecksumOffloading is deprecated as of kOps 1.19 and has no effect.
+	// DisableTxChecksumOffloading is unused.
+	// +k8s:conversion-gen=false
 	DisableTxChecksumOffloading bool `json:"disableTxChecksumOffloading,omitempty"`
 	// IptablesBackend controls which variant of iptables binary Felix uses
 	// Default: Auto (other options: Legacy, NFT)

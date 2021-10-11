@@ -73,7 +73,8 @@ type InstanceGroupSpec struct {
 	RootVolumeThroughput *int32 `json:"rootVolumeThroughput,omitempty"`
 	// RootVolumeOptimization enables EBS optimization for an instance
 	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
-	// RootVolumeDeleteOnTermination is deprecated as of kOps 1.21 and has no effect
+	// RootVolumeDeleteOnTermination is unused.
+	// +k8s:conversion-gen=false
 	RootVolumeDeleteOnTermination *bool `json:"rootVolumeDeleteOnTermination,omitempty"`
 	// RootVolumeEncryption enables EBS root volume encryption for an instance
 	RootVolumeEncryption *bool `json:"rootVolumeEncryption,omitempty"`

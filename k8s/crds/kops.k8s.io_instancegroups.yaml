@@ -764,8 +764,7 @@ spec:
                     x-kubernetes-int-or-string: true
                 type: object
               rootVolumeDeleteOnTermination:
-                description: RootVolumeDeleteOnTermination is deprecated as of kOps
-                  1.21 and has no effect
+                description: RootVolumeDeleteOnTermination is unused.
                 type: boolean
               rootVolumeEncryption:
                 description: RootVolumeEncryption enables EBS root volume encryption
