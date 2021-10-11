@@ -127,7 +127,7 @@ rules:
   verbs: ["get", "list"]
 - apiGroups: ["bigdata.spot.io"]
   resources: ["bigdataenvironments"]
-  verbs: ["get", "list"]
+  verbs: ["get", "list", "create"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
