@@ -697,8 +697,8 @@ type KubeSchedulerConfig struct {
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 	// MaxPersistentVolumes changes the maximum number of persistent volumes the scheduler will scheduler onto the same
-	// node. Only takes into affect if value is positive. This corresponds to the KUBE_MAX_PD_VOLS environment variable,
-	// which has been supported as far back as Kubernetes 1.7. The default depends on the version and the cloud provider
+	// node. Only takes effect if value is positive. This corresponds to the KUBE_MAX_PD_VOLS environment variable.
+	// The default depends on the version and the cloud provider
 	// as outlined: https://kubernetes.io/docs/concepts/storage/storage-limits/
 	MaxPersistentVolumes *int32 `json:"maxPersistentVolumes,omitempty"`
 	// Qps sets the maximum qps to send to apiserver after the burst quota is exhausted
