@@ -379,6 +379,8 @@ spec:
                         description: OpenstackLoadbalancerConfig defines the config
                           for a neutron loadbalancer
                         properties:
+                          enableIngressHostname:
+                            type: boolean
                           floatingNetwork:
                             type: string
                           floatingNetworkID:
