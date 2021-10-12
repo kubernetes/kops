@@ -151,6 +151,7 @@ metadata:
 |---|---|---|
 | `spotinst.io/spot-percentage` | Specify the percentage of Spot instances that should spin up from the target capacity. | `100` |
 | `spotinst.io/utilize-reserved-instances` | Specify whether reserved instances should be utilized. | `true` |
+| `spotinst.io/utilize-commitments` | Specify whether reserved instance commitments should be utilized. | none |
 | `spotinst.io/fallback-to-ondemand` | Specify whether fallback to on-demand instances should be enabled. | `true` |
 | `spotinst.io/draining-timeout` | Specify a period of time, in seconds, after a node is marked for termination during which on running pods remains active. | none |
 | `spotinst.io/grace-period` | Specify a period of time, in seconds, that Ocean should wait before applying instance health checks. | none |
