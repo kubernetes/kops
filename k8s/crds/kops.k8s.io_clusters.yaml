@@ -4478,6 +4478,13 @@ spec:
                         description: 'BPFLBMapMax is the maximum number of entries
                           in bpf lb service, backend and affinity maps. Default: 65536'
                         type: integer
+                      bpfLBSockHostNSOnly:
+                        description: 'BPFLBSockHostNSOnly enables skipping socket
+                          LB for services when inside a pod namespace, in favor of
+                          service LB at the pod interface. Socket LB is still used
+                          when in the host namespace. Required by service mesh (e.g.,
+                          Istio, Linkerd). Default: false'
+                        type: boolean
                       bpfNATGlobalMax:
                         description: 'BPFNATGlobalMax is the the maximum number of
                           entries in the BPF NAT table. Default: 524288'
