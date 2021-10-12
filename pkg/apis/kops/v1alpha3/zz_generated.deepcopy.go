@@ -4228,6 +4228,11 @@ func (in *OpenstackLoadbalancerConfig) DeepCopyInto(out *OpenstackLoadbalancerCo
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EnableIngressHostname != nil {
+		in, out := &in.EnableIngressHostname, &out.EnableIngressHostname
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

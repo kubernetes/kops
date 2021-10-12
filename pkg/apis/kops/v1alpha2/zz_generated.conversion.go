@@ -6350,6 +6350,7 @@ func autoConvert_v1alpha2_OpenstackLoadbalancerConfig_To_kops_OpenstackLoadbalan
 	out.FloatingSubnet = in.FloatingSubnet
 	out.SubnetID = in.SubnetID
 	out.ManageSecGroups = in.ManageSecGroups
+	out.EnableIngressHostname = in.EnableIngressHostname
 	return nil
 }
 
@@ -6367,6 +6368,7 @@ func autoConvert_kops_OpenstackLoadbalancerConfig_To_v1alpha2_OpenstackLoadbalan
 	out.FloatingSubnet = in.FloatingSubnet
 	out.SubnetID = in.SubnetID
 	out.ManageSecGroups = in.ManageSecGroups
+	out.EnableIngressHostname = in.EnableIngressHostname
 	return nil
 }
 
