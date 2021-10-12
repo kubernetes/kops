@@ -45,6 +45,7 @@ type Ocean struct {
 	MinSize                  *int64
 	MaxSize                  *int64
 	UtilizeReservedInstances *bool
+	UtilizeCommitments       *bool
 	FallbackToOnDemand       *bool
 	DrainingTimeout          *int64
 	GracePeriod              *int64
@@ -149,6 +150,7 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 		if strategy := ocean.Strategy; strategy != nil {
 			actual.FallbackToOnDemand = strategy.FallbackToOnDemand
 			actual.UtilizeReservedInstances = strategy.UtilizeReservedInstances
+			actual.UtilizeCommitments = strategy.UtilizeCommitments
 
 			if strategy.DrainingTimeout != nil {
 				actual.DrainingTimeout = fi.Int64(int64(fi.IntValue(strategy.DrainingTimeout)))
@@ -377,6 +379,7 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 	{
 		ocean.Strategy.SetFallbackToOnDemand(e.FallbackToOnDemand)
 		ocean.Strategy.SetUtilizeReservedInstances(e.UtilizeReservedInstances)
+		ocean.Strategy.SetUtilizeCommitments(e.UtilizeCommitments)
 
 		if e.DrainingTimeout != nil {
 			ocean.Strategy.SetDrainingTimeout(fi.Int(int(*e.DrainingTimeout)))
@@ -614,6 +617,17 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 
 			ocean.Strategy.SetUtilizeReservedInstances(e.UtilizeReservedInstances)
 			changes.UtilizeReservedInstances = nil
+			changed = true
+		}
+
+		// Utilize commitments.
+		if changes.UtilizeCommitments != nil {
+			if ocean.Strategy == nil {
+				ocean.Strategy = new(aws.Strategy)
+			}
+
+			ocean.Strategy.SetUtilizeCommitments(e.UtilizeCommitments)
+			changes.UtilizeCommitments = nil
 			changed = true
 		}
 
@@ -993,6 +1007,7 @@ type terraformOcean struct {
 
 	FallbackToOnDemand       *bool  `json:"fallback_to_ondemand,omitempty" cty:"fallback_to_ondemand"`
 	UtilizeReservedInstances *bool  `json:"utilize_reserved_instances,omitempty" cty:"utilize_reserved_instances"`
+	UtilizeCommitments       *bool  `json:"utilize_commitments,omitempty" cty:"utilize_commitments"`
 	DrainingTimeout          *int64 `json:"draining_timeout,omitempty" cty:"draining_timeout"`
 	GracePeriod              *int64 `json:"grace_period,omitempty" cty:"grace_period"`
 
@@ -1021,6 +1036,7 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 
 		FallbackToOnDemand:       e.FallbackToOnDemand,
 		UtilizeReservedInstances: e.UtilizeReservedInstances,
+		UtilizeCommitments:       e.UtilizeCommitments,
 		DrainingTimeout:          e.DrainingTimeout,
 		GracePeriod:              e.GracePeriod,
 	}
