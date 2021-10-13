@@ -32,7 +32,7 @@ REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/aws-ebs-csi-driver/"
 cd "$(mktemp -dt kops.XXXXXXXXX)"
 go get github.com/onsi/ginkgo/ginkgo
 
-git clone --branch v1.2.1 https://github.com/kubernetes-sigs/aws-ebs-csi-driver.git .
+git clone --branch v1.4.0 https://github.com/kubernetes-sigs/aws-ebs-csi-driver.git .
 
 # shellcheck disable=SC2164
 cd tests/e2e-kubernetes/
