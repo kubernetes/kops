@@ -106,41 +106,6 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-  build-windows-amd64:
-    needs: changes
-    if: ${{ needs.changes.outputs.src == 'true' || startsWith(github.ref, 'refs/tags/') }}
-    runs-on: windows-2019
-    steps:
-      - name: Set up go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.18.1
-
-      - name: Checkout full
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          git clone ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} -b ${GITHUB_REF#refs/tags/} ${{ env.GOPATH }}/src/k8s.io/kops
-
-      - name: Checkout shallow
-        uses: actions/checkout@v2
-        if: startsWith(github.ref, 'refs/tags/') == false
-        with:
-          path: ${{ env.GOPATH }}/src/k8s.io/kops
-
-      - name: Make kops examples test
-        working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
-        run: |
-          make kops examples test-windows
-
-      - name: Upload windows binary
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/upload-artifact@v2
-        with:
-          name: kops-windows-amd64
-          path: ${{ env.GOPATH }}/src/k8s.io/kops/.build/local/kops
-          if-no-files-found: error
-          retention-days: 1
-
   verify:
     needs: changes
     if: ${{ needs.changes.outputs.src == 'true' || startsWith(github.ref, 'refs/tags/') }}
@@ -167,7 +132,6 @@ jobs:
     needs:
       - build-linux-amd64
       - build-macos-amd64
-      - build-windows-amd64
       - verify
     steps:
       - name: Download all kops binary artifacts
@@ -177,7 +141,6 @@ jobs:
         run: |
           mv kops-linux-amd64/kops kops-linux-amd64/kops-linux-amd64
           mv kops-darwin-amd64/kops kops-darwin-amd64/kops-darwin-amd64
-          mv kops-windows-amd64/kops kops-windows-amd64/kops-windows-amd64
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -186,4 +149,3 @@ jobs:
           files: |
             kops-linux-amd64/kops-linux-amd64
             kops-darwin-amd64/kops-darwin-amd64
-            kops-windows-amd64/kops-windows-amd64
