@@ -37,6 +37,8 @@ type Pruner struct {
 
 // Prune prunes objects not in the manifest, according to PruneSpec.
 func (p *Pruner) Prune(ctx context.Context, manifest []byte, spec *api.PruneSpec) error {
+	klog.Infof("Prune spec: %v", spec)
+
 	if spec == nil {
 		return nil
 	}
@@ -74,6 +76,8 @@ func (p *Pruner) Prune(ctx context.Context, manifest []byte, spec *api.PruneSpec
 }
 
 func (p *Pruner) pruneObjectsOfKind(ctx context.Context, gk schema.GroupKind, spec *api.PruneKindSpec, keepObjects []*kubemanifest.Object) error {
+	klog.Infof("pruning objects of kind: %v", gk)
+
 	restMapping, err := p.RESTMapper.RESTMapping(gk)
 	if err != nil {
 		return fmt.Errorf("unable to find resource for %s: %w", gk, err)
