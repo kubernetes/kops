@@ -596,12 +596,13 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 			location := key + "/k8s-1.11.yaml"
 			id := "k8s-1.11"
 
-			addons.Add(&channelsapi.AddonSpec{
+			addon := addons.Add(&channelsapi.AddonSpec{
 				Name:     fi.String(key),
 				Selector: map[string]string{"k8s-addon": key},
 				Manifest: fi.String(location),
 				Id:       id,
 			})
+			addon.BuildPrune = true
 		}
 
 		if b.UseServiceAccountExternalPermissions() {

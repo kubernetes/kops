@@ -62,6 +62,42 @@ spec:
     manifest: node-termination-handler.aws/k8s-1.11.yaml
     manifestHash: 4197a26e91677e28e68617b12e8b2e9f2825d397578dcd7d8b6500e47a05c4c2
     name: node-termination-handler.aws
+    prune:
+      kinds:
+      - kind: ConfigMap
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+      - kind: Service
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+      - kind: ServiceAccount
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: apps
+        kind: DaemonSet
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: apps
+        kind: Deployment
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+      - group: apps
+        kind: StatefulSet
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+      - group: policy
+        kind: PodDisruptionBudget
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRole
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRoleBinding
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: Role
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: RoleBinding
+        labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
     selector:
       k8s-addon: node-termination-handler.aws
     version: 9.99.0
