@@ -19,7 +19,7 @@ source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
 function haveds() {
 	local ds=0
-	kubectl get ds -n kube-system aws-node-termination-handler || ds=$?
+	kubectl get ds -n kube-system aws-node-termination-handler --show-labels || ds=$?
 	return $ds
 }
 
@@ -53,8 +53,8 @@ kops edit cluster "${CLUSTER_NAME}" "--set=cluster.spec.nodeTerminationHandler.e
 kops update cluster --allow-kops-downgrade
 kops update cluster --yes --allow-kops-downgrade
 
-# wait for channels to deploy
-sleep 90s
+# Rolling-upgrade is needed so we get the new channels binary that supports prune
+kops rolling-update cluster --instance-group-roles=master --yes
 
 # just make sure pods are ready
 kops validate cluster --wait=5m
