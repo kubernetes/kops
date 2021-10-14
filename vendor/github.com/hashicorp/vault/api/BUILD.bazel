@@ -40,6 +40,7 @@ go_library(
     importpath = "github.com/hashicorp/vault/api",
     visibility = ["//visibility:public"],
     deps = [
+        "//vendor/github.com/cenkalti/backoff/v3:go_default_library",
         "//vendor/github.com/hashicorp/errwrap:go_default_library",
         "//vendor/github.com/hashicorp/go-cleanhttp:go_default_library",
         "//vendor/github.com/hashicorp/go-multierror:go_default_library",

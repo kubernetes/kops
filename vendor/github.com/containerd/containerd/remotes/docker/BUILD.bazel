@@ -3,7 +3,6 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "auth.go",
         "authorizer.go",
         "converter.go",
         "errcode.go",
@@ -28,8 +27,11 @@ go_library(
         "//vendor/github.com/containerd/containerd/log:go_default_library",
         "//vendor/github.com/containerd/containerd/reference:go_default_library",
         "//vendor/github.com/containerd/containerd/remotes:go_default_library",
+        "//vendor/github.com/containerd/containerd/remotes/docker/auth:go_default_library",
         "//vendor/github.com/containerd/containerd/remotes/docker/schema1:go_default_library",
+        "//vendor/github.com/containerd/containerd/remotes/errors:go_default_library",
         "//vendor/github.com/containerd/containerd/version:go_default_library",
+        "//vendor/github.com/moby/locker:go_default_library",
         "//vendor/github.com/opencontainers/go-digest:go_default_library",
         "//vendor/github.com/opencontainers/image-spec/specs-go/v1:go_default_library",
         "//vendor/github.com/pkg/errors:go_default_library",
