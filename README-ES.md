@@ -80,13 +80,13 @@ particular de Kubernetes.
 
 #### Compatibilidad Matrix
 
-| kOps version  | k8s 1.17.x | k8s 1.18.x | k8s 1.19.x | k8s 1.20.x | k8s 1.21.x |
+| kOps version  | k8s 1.18.x | k8s 1.19.x | k8s 1.20.x | k8s 1.21.x | k8s 1.22.x |
 |---------------|------------|------------|------------|------------|------------|
-| 1.21.0        | ✔          | ✔          | ✔          | ✔          | ✔          |
-| 1.20.x        | ✔          | ✔          | ✔          | ✔          | ⚫         |
-| ~~1.19.x~~    | ✔          | ✔          | ✔          | ⚫         | ⚫         |
-| ~~1.18.x~~    | ✔          | ✔          | ⚫         | ⚫         | ⚫         |
-| ~~1.17.x~~    | ✔          | ⚫         | ⚫         | ⚫         | ⚫         |
+| 1.22.0        | ✔          | ✔          | ✔          | ✔          | ✔          |
+| 1.21.x        | ✔          | ✔          | ✔          | ✔          | ⚫         |
+| ~~1.20.x~~    | ✔          | ✔          | ✔          | ⚫         | ⚫         |
+| ~~1.19.x~~    | ✔          | ✔          | ⚫         | ⚫         | ⚫         |
+| ~~1.18.x~~    | ✔          | ⚫         | ⚫         | ⚫         | ⚫         |
 
 Utilice la última versión de kOps para todas las versiones de Kubernetes, con la advertencia de que las versiones más altas de Kubernetes no cuentan con el respaldo _oficial_ de kOps.
 
