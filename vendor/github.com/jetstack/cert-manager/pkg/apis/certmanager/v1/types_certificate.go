@@ -53,7 +53,7 @@ type CertificateList struct {
 	Items []Certificate `json:"items"`
 }
 
-// +kubebuilder:validation:Enum=RSA;ECDSA
+// +kubebuilder:validation:Enum=RSA;ECDSA;Ed25519
 type PrivateKeyAlgorithm string
 
 const (
@@ -62,6 +62,9 @@ const (
 
 	// Denotes the ECDSA private key type.
 	ECDSAKeyAlgorithm PrivateKeyAlgorithm = "ECDSA"
+
+	// Denotes the Ed25519 private key type.
+	Ed25519KeyAlgorithm PrivateKeyAlgorithm = "Ed25519"
 )
 
 // +kubebuilder:validation:Enum=PKCS1;PKCS8
@@ -96,21 +99,20 @@ type CertificateSpec struct {
 	// +optional
 	CommonName string `json:"commonName,omitempty"`
 
-	// The requested 'duration' (i.e. lifetime) of the Certificate.
-	// This option may be ignored/overridden by some issuer types.
-	// If unset this defaults to 90 days.
-	// If overridden and `renewBefore` is greater than the actual certificate
-	// duration, the certificate will be automatically renewed 2/3rds of the
-	// way through the certificate's duration.
+	// The requested 'duration' (i.e. lifetime) of the Certificate. This option
+	// may be ignored/overridden by some issuer types. If unset this defaults to
+	// 90 days. Certificate will be renewed either 2/3 through its duration or
+	// `renewBefore` period before its expiry, whichever is later. Minimum
+	// accepted duration is 1 hour. Value must be in units accepted by Go
+	// time.ParseDuration https://golang.org/pkg/time/#ParseDuration
 	// +optional
 	Duration *metav1.Duration `json:"duration,omitempty"`
 
-	// The amount of time before the currently issued certificate's `notAfter`
-	// time that cert-manager will begin to attempt to renew the certificate.
-	// If unset this defaults to 30 days.
-	// If this value is greater than the total duration of the certificate
-	// (i.e. notAfter - notBefore), it will be automatically renewed 2/3rds of
-	// the way through the certificate's duration.
+	// How long before the currently issued certificate's expiry
+	// cert-manager should renew the certificate. The default is 2/3 of the
+	// issued certificate's duration. Minimum accepted value is 5 minutes.
+	// Value must be in units accepted by Go time.ParseDuration
+	// https://golang.org/pkg/time/#ParseDuration
 	// +optional
 	RenewBefore *metav1.Duration `json:"renewBefore,omitempty"`
 
@@ -135,6 +137,13 @@ type CertificateSpec struct {
 	// It will be populated with a private key and certificate, signed by the
 	// denoted issuer.
 	SecretName string `json:"secretName"`
+
+	// SecretTemplate defines annotations and labels to be propagated
+	// to the Kubernetes Secret when it is created or updated. Once created,
+	// labels and annotations are not yet removed from the Secret when they are
+	// removed from the template. See https://github.com/jetstack/cert-manager/issues/4292
+	// +optional
+	SecretTemplate *CertificateSecretTemplate `json:"secretTemplate,omitempty"`
 
 	// Keystores configures additional keystore output formats stored in the
 	// `secretName` Secret resource.
@@ -205,10 +214,11 @@ type CertificatePrivateKey struct {
 	Encoding PrivateKeyEncoding `json:"encoding,omitempty"`
 
 	// Algorithm is the private key algorithm of the corresponding private key
-	// for this certificate. If provided, allowed values are either `RSA` or `ECDSA`
+	// for this certificate. If provided, allowed values are either `RSA`,`Ed25519` or `ECDSA`
 	// If `algorithm` is specified and `size` is not provided,
 	// key size of 256 will be used for `ECDSA` key algorithm and
 	// key size of 2048 will be used for `RSA` key algorithm.
+	// key size is ignored when using the `Ed25519` key algorithm.
 	// +optional
 	Algorithm PrivateKeyAlgorithm `json:"algorithm,omitempty"`
 
@@ -217,6 +227,7 @@ type CertificatePrivateKey struct {
 	// and will default to `2048` if not specified.
 	// If `algorithm` is set to `ECDSA`, valid values are `256`, `384` or `521`,
 	// and will default to `256` if not specified.
+	// If `algorithm` is set to `Ed25519`, Size is ignored.
 	// No other values are allowed.
 	// +optional
 	Size int `json:"size,omitempty"` // Validated by webhook. Be mindful of adding OpenAPI validation- see https://github.com/jetstack/cert-manager/issues/3644
@@ -436,3 +447,15 @@ const (
 	// It will be removed by the 'issuing' controller upon completing issuance.
 	CertificateConditionIssuing CertificateConditionType = "Issuing"
 )
+
+// CertificateSecretTemplate defines the default labels and annotations
+// to be copied to the Kubernetes Secret resource named in `CertificateSpec.secretName`.
+type CertificateSecretTemplate struct {
+	// Annotations is a key value map to be copied to the target Kubernetes Secret.
+	// +optional
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// Labels is a key value map to be copied to the target Kubernetes Secret.
+	// +optional
+	Labels map[string]string `json:"labels,omitempty"`
+}
