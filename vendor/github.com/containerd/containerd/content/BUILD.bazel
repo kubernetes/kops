@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "adaptor.go",
         "content.go",
         "helpers.go",
     ],
@@ -11,6 +12,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/containerd/containerd/errdefs:go_default_library",
+        "//vendor/github.com/containerd/containerd/filters:go_default_library",
         "//vendor/github.com/opencontainers/go-digest:go_default_library",
         "//vendor/github.com/opencontainers/image-spec/specs-go/v1:go_default_library",
         "//vendor/github.com/pkg/errors:go_default_library",

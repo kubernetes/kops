@@ -5,6 +5,10 @@ go_library(
     srcs = [
         "block.go",
         "debug_stub.go",
+        "decode_amd64.go",
+        "decode_amd64.s",
+        "decode_other.go",
+        "errors.go",
         "lz4.go",
         "lz4_go1.10.go",
         "lz4_notgo1.10.go",
