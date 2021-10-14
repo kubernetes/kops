@@ -199,10 +199,10 @@ type VaultIssuer struct {
 	// +optional
 	Namespace string `json:"namespace,omitempty"`
 
-	// PEM encoded CA bundle used to validate Vault server certificate. Only used
-	// if the Server URL is using HTTPS protocol. This parameter is ignored for
-	// plain HTTP protocol connection. If not set the system root certificates
-	// are used to validate the TLS connection.
+	// PEM-encoded CA bundle (base64-encoded) used to validate Vault server
+	// certificate. Only used if the Server URL is using HTTPS protocol. This
+	// parameter is ignored for plain HTTP protocol connection. If not set the
+	// system root certificates are used to validate the TLS connection.
 	// +optional
 	CABundle []byte `json:"caBundle,omitempty"`
 }

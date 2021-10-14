@@ -25,26 +25,30 @@ import (
 	"golang.org/x/time/rate"
 )
 
-const EnvVaultAddress = "VAULT_ADDR"
-const EnvVaultAgentAddr = "VAULT_AGENT_ADDR"
-const EnvVaultCACert = "VAULT_CACERT"
-const EnvVaultCAPath = "VAULT_CAPATH"
-const EnvVaultClientCert = "VAULT_CLIENT_CERT"
-const EnvVaultClientKey = "VAULT_CLIENT_KEY"
-const EnvVaultClientTimeout = "VAULT_CLIENT_TIMEOUT"
-const EnvVaultSRVLookup = "VAULT_SRV_LOOKUP"
-const EnvVaultSkipVerify = "VAULT_SKIP_VERIFY"
-const EnvVaultNamespace = "VAULT_NAMESPACE"
-const EnvVaultTLSServerName = "VAULT_TLS_SERVER_NAME"
-const EnvVaultWrapTTL = "VAULT_WRAP_TTL"
-const EnvVaultMaxRetries = "VAULT_MAX_RETRIES"
-const EnvVaultToken = "VAULT_TOKEN"
-const EnvVaultMFA = "VAULT_MFA"
-const EnvRateLimit = "VAULT_RATE_LIMIT"
+const (
+	EnvVaultAddress       = "VAULT_ADDR"
+	EnvVaultAgentAddr     = "VAULT_AGENT_ADDR"
+	EnvVaultCACert        = "VAULT_CACERT"
+	EnvVaultCAPath        = "VAULT_CAPATH"
+	EnvVaultClientCert    = "VAULT_CLIENT_CERT"
+	EnvVaultClientKey     = "VAULT_CLIENT_KEY"
+	EnvVaultClientTimeout = "VAULT_CLIENT_TIMEOUT"
+	EnvVaultSRVLookup     = "VAULT_SRV_LOOKUP"
+	EnvVaultSkipVerify    = "VAULT_SKIP_VERIFY"
+	EnvVaultNamespace     = "VAULT_NAMESPACE"
+	EnvVaultTLSServerName = "VAULT_TLS_SERVER_NAME"
+	EnvVaultWrapTTL       = "VAULT_WRAP_TTL"
+	EnvVaultMaxRetries    = "VAULT_MAX_RETRIES"
+	EnvVaultToken         = "VAULT_TOKEN"
+	EnvVaultMFA           = "VAULT_MFA"
+	EnvRateLimit          = "VAULT_RATE_LIMIT"
+)
 
 // Deprecated values
-const EnvVaultAgentAddress = "VAULT_AGENT_ADDR"
-const EnvVaultInsecure = "VAULT_SKIP_VERIFY"
+const (
+	EnvVaultAgentAddress = "VAULT_AGENT_ADDR"
+	EnvVaultInsecure     = "VAULT_SKIP_VERIFY"
+)
 
 // WrappingLookupFunc is a function that, given an HTTP verb and a path,
 // returns an optional string duration to be used for response wrapping (e.g.
@@ -75,6 +79,14 @@ type Config struct {
 	// (or http.DefaultClient).
 	HttpClient *http.Client
 
+	// MinRetryWait controls the minimum time to wait before retrying when a 5xx
+	// error occurs. Defaults to 1000 milliseconds.
+	MinRetryWait time.Duration
+
+	// MaxRetryWait controls the maximum time to wait before retrying when a 5xx
+	// error occurs. Defaults to 1500 milliseconds.
+	MaxRetryWait time.Duration
+
 	// MaxRetries controls the maximum number of times to retry when a 5xx
 	// error occurs. Set to 0 to disable retrying. Defaults to 2 (for a total
 	// of three tries).
@@ -92,6 +104,9 @@ type Config struct {
 
 	// The CheckRetry function to use; a default is used if not provided
 	CheckRetry retryablehttp.CheckRetry
+
+	// Logger is the leveled logger to provide to the retryable HTTP client.
+	Logger retryablehttp.LeveledLogger
 
 	// Limiter is the rate limiter used by the client.
 	// If this pointer is nil, then there will be no limit set.
@@ -146,11 +161,13 @@ type TLSConfig struct {
 // If an error is encountered, this will return nil.
 func DefaultConfig() *Config {
 	config := &Config{
-		Address:    "https://127.0.0.1:8200",
-		HttpClient: cleanhttp.DefaultPooledClient(),
-		Timeout:    time.Second * 60,
-		MaxRetries: 2,
-		Backoff:    retryablehttp.LinearJitterBackoff,
+		Address:      "https://127.0.0.1:8200",
+		HttpClient:   cleanhttp.DefaultPooledClient(),
+		Timeout:      time.Second * 60,
+		MinRetryWait: time.Millisecond * 1000,
+		MaxRetryWait: time.Millisecond * 1500,
+		MaxRetries:   2,
+		Backoff:      retryablehttp.LinearJitterBackoff,
 	}
 
 	transport := config.HttpClient.Transport.(*http.Transport)
@@ -359,7 +376,6 @@ func (c *Config) ReadEnvironment() error {
 }
 
 func parseRateLimit(val string) (rate float64, burst int, err error) {
-
 	_, err = fmt.Sscanf(val, "%f:%d", &rate, &burst)
 	if err != nil {
 		rate, err = strconv.ParseFloat(val, 64)
@@ -370,7 +386,6 @@ func parseRateLimit(val string) (rate float64, burst int, err error) {
 	}
 
 	return rate, burst, err
-
 }
 
 // Client is the client to the Vault API. Create a client with NewClient.
@@ -410,6 +425,14 @@ func NewClient(c *Config) (*Client, error) {
 
 	c.modifyLock.Lock()
 	defer c.modifyLock.Unlock()
+
+	if c.MinRetryWait == 0 {
+		c.MinRetryWait = def.MinRetryWait
+	}
+
+	if c.MaxRetryWait == 0 {
+		c.MaxRetryWait = def.MaxRetryWait
+	}
 
 	if c.HttpClient == nil {
 		c.HttpClient = def.HttpClient
@@ -471,10 +494,13 @@ func (c *Client) CloneConfig() *Config {
 	newConfig := DefaultConfig()
 	newConfig.Address = c.config.Address
 	newConfig.AgentAddress = c.config.AgentAddress
+	newConfig.MinRetryWait = c.config.MinRetryWait
+	newConfig.MaxRetryWait = c.config.MaxRetryWait
 	newConfig.MaxRetries = c.config.MaxRetries
 	newConfig.Timeout = c.config.Timeout
 	newConfig.Backoff = c.config.Backoff
 	newConfig.CheckRetry = c.config.CheckRetry
+	newConfig.Logger = c.config.Logger
 	newConfig.Limiter = c.config.Limiter
 	newConfig.OutputCurlString = c.config.OutputCurlString
 	newConfig.SRVLookup = c.config.SRVLookup
@@ -532,6 +558,44 @@ func (c *Client) Limiter() *rate.Limiter {
 	defer c.config.modifyLock.RUnlock()
 
 	return c.config.Limiter
+}
+
+// SetMinRetryWait sets the minimum time to wait before retrying in the case of certain errors.
+func (c *Client) SetMinRetryWait(retryWait time.Duration) {
+	c.modifyLock.RLock()
+	defer c.modifyLock.RUnlock()
+	c.config.modifyLock.Lock()
+	defer c.config.modifyLock.Unlock()
+
+	c.config.MinRetryWait = retryWait
+}
+
+func (c *Client) MinRetryWait() time.Duration {
+	c.modifyLock.RLock()
+	defer c.modifyLock.RUnlock()
+	c.config.modifyLock.RLock()
+	defer c.config.modifyLock.RUnlock()
+
+	return c.config.MinRetryWait
+}
+
+// SetMaxRetryWait sets the maximum time to wait before retrying in the case of certain errors.
+func (c *Client) SetMaxRetryWait(retryWait time.Duration) {
+	c.modifyLock.RLock()
+	defer c.modifyLock.RUnlock()
+	c.config.modifyLock.Lock()
+	defer c.config.modifyLock.Unlock()
+
+	c.config.MaxRetryWait = retryWait
+}
+
+func (c *Client) MaxRetryWait() time.Duration {
+	c.modifyLock.RLock()
+	defer c.modifyLock.RUnlock()
+	c.config.modifyLock.RLock()
+	defer c.config.modifyLock.RUnlock()
+
+	return c.config.MaxRetryWait
 }
 
 // SetMaxRetries sets the number of retries that will be used in the case of certain errors
@@ -736,6 +800,15 @@ func (c *Client) SetBackoff(backoff retryablehttp.Backoff) {
 	c.config.Backoff = backoff
 }
 
+func (c *Client) SetLogger(logger retryablehttp.LeveledLogger) {
+	c.modifyLock.RLock()
+	defer c.modifyLock.RUnlock()
+	c.config.modifyLock.Lock()
+	defer c.config.modifyLock.Unlock()
+
+	c.config.Logger = logger
+}
+
 // Clone creates a new client with the same configuration. Note that the same
 // underlying http.Client is used; modifying the client from more than one
 // goroutine at once may not be safe, so modify the client as needed and then
@@ -755,10 +828,13 @@ func (c *Client) Clone() (*Client, error) {
 	newConfig := &Config{
 		Address:          config.Address,
 		HttpClient:       config.HttpClient,
+		MinRetryWait:     config.MinRetryWait,
+		MaxRetryWait:     config.MaxRetryWait,
 		MaxRetries:       config.MaxRetries,
 		Timeout:          config.Timeout,
 		Backoff:          config.Backoff,
 		CheckRetry:       config.CheckRetry,
+		Logger:           config.Logger,
 		Limiter:          config.Limiter,
 		OutputCurlString: config.OutputCurlString,
 		AgentAddress:     config.AgentAddress,
@@ -793,7 +869,7 @@ func (c *Client) NewRequest(method, requestPath string) *Request {
 	policyOverride := c.policyOverride
 	c.modifyLock.RUnlock()
 
-	var host = addr.Host
+	host := addr.Host
 	// if SRV records exist (see https://tools.ietf.org/html/draft-andrews-http-srv-02), lookup the SRV
 	// record and take the highest match; this is not designed for high-availability, just discovery
 	// Internet Draft specifies that the SRV record is ignored if a port is given
@@ -857,12 +933,15 @@ func (c *Client) RawRequestWithContext(ctx context.Context, r *Request) (*Respon
 
 	c.config.modifyLock.RLock()
 	limiter := c.config.Limiter
+	minRetryWait := c.config.MinRetryWait
+	maxRetryWait := c.config.MaxRetryWait
 	maxRetries := c.config.MaxRetries
 	checkRetry := c.config.CheckRetry
 	backoff := c.config.Backoff
 	httpClient := c.config.HttpClient
 	timeout := c.config.Timeout
 	outputCurlString := c.config.OutputCurlString
+	logger := c.config.Logger
 	c.config.modifyLock.RUnlock()
 
 	c.modifyLock.RUnlock()
@@ -894,7 +973,10 @@ START:
 	}
 
 	if outputCurlString {
-		LastOutputStringError = &OutputStringError{Request: req}
+		LastOutputStringError = &OutputStringError{
+			Request:       req,
+			TLSSkipVerify: c.config.HttpClient.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify,
+		}
 		return nil, LastOutputStringError
 	}
 
@@ -917,11 +999,12 @@ START:
 
 	client := &retryablehttp.Client{
 		HTTPClient:   httpClient,
-		RetryWaitMin: 1000 * time.Millisecond,
-		RetryWaitMax: 1500 * time.Millisecond,
+		RetryWaitMin: minRetryWait,
+		RetryWaitMax: maxRetryWait,
 		RetryMax:     maxRetries,
 		Backoff:      backoff,
 		CheckRetry:   checkRetry,
+		Logger:       logger,
 		ErrorHandler: retryablehttp.PassthroughErrorHandler,
 	}
 
@@ -985,8 +1068,10 @@ START:
 	return result, nil
 }
 
-type RequestCallback func(*Request)
-type ResponseCallback func(*Response)
+type (
+	RequestCallback  func(*Request)
+	ResponseCallback func(*Response)
+)
 
 // WithRequestCallbacks makes a shallow clone of Client, modifies it to use
 // the given callbacks, and returns it.  Each of the callbacks will be invoked
