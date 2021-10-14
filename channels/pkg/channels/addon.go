@@ -73,7 +73,7 @@ func (m *AddonMenu) MergeAddons(o *AddonMenu) {
 		if existing == nil {
 			m.Addons[k] = v
 		} else {
-			if v.ChannelVersion().replaces(existing.ChannelVersion()) {
+			if v.ChannelVersion().replaces(k, existing.ChannelVersion()) {
 				m.Addons[k] = v
 			}
 		}
@@ -82,9 +82,10 @@ func (m *AddonMenu) MergeAddons(o *AddonMenu) {
 
 func (a *Addon) ChannelVersion() *ChannelVersion {
 	return &ChannelVersion{
-		Channel:      &a.ChannelName,
-		Id:           a.Spec.Id,
-		ManifestHash: a.Spec.ManifestHash,
+		Channel:          &a.ChannelName,
+		Id:               a.Spec.Id,
+		ManifestHash:     a.Spec.ManifestHash,
+		SystemGeneration: CurrentSystemGeneration,
 	}
 }
 
@@ -120,7 +121,7 @@ func (a *Addon) GetRequiredUpdates(ctx context.Context, k8sClient kubernetes.Int
 		}
 	}
 
-	if existingVersion != nil && !newVersion.replaces(existingVersion) {
+	if existingVersion != nil && !newVersion.replaces(a.Name, existingVersion) {
 		newVersion = nil
 	}
 

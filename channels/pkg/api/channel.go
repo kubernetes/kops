@@ -46,7 +46,7 @@ type AddonSpec struct {
 	// Manifest is the URL to the manifest that should be applied
 	Manifest *string `json:"manifest,omitempty"`
 
-	// Manifesthash is the sha256 hash of our manifest
+	// ManifestHash is the sha256 hash of our manifest
 	ManifestHash string `json:"manifestHash,omitempty"`
 
 	// KubernetesVersion is a semver version range on which this version of the addon can be applied
