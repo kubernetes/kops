@@ -30,6 +30,7 @@ go_library(
         "links.go",
         "load_balancers.go",
         "meta.go",
+        "monitoring.go",
         "projects.go",
         "regions.go",
         "registry.go",
