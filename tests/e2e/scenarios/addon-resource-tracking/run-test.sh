@@ -39,7 +39,10 @@ ${KUBETEST2} \
     --create-args="$ARGS"
 
 
-haveds
+if ! haveds; then
+  echo "Expected aws-node-termination-handler to exist"
+  exit 1
+fi
 
 # Upgrade to a version that should adopt existing resources and apply the change below
 kops-acquire-latest
@@ -60,4 +63,7 @@ kops rolling-update cluster --instance-group-roles=master --yes
 kops validate cluster --wait=5m
 
 # We should no longer have a daemonset called aws-node-termination-handler
-haveds && exit 1
+if haveds; then
+  echo "Expected aws-node-termination-handler to have been pruned"
+  exit 1
+fi
