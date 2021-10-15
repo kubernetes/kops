@@ -140,9 +140,10 @@ func (b *NodeTerminationHandlerBuilder) buildSQSQueue(c *fi.ModelBuilderContext)
 func (b *NodeTerminationHandlerBuilder) buildEventBridgeRules(c *fi.ModelBuilderContext) error {
 	clusterName := b.ClusterName()
 	queueName := model.QueueNamePrefix(clusterName) + "-nth"
+	partition := b.AWSPartition
 	region := b.Region
 	accountID := b.AWSAccountID
-	targetArn := "arn:aws:sqs:" + region + ":" + accountID + ":" + queueName
+	targetArn := "arn:" + partition + ":sqs:" + region + ":" + accountID + ":" + queueName
 
 	clusterNamePrefix := awsup.GetClusterName40(clusterName)
 	for _, event := range events {
