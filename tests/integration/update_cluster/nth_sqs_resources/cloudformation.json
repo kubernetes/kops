@@ -984,7 +984,7 @@
         "Targets": [
           {
             "Id": "1",
-            "Arn": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
+            "Arn": "arn:aws-test:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
           }
         ]
       }
@@ -1004,7 +1004,7 @@
         "Targets": [
           {
             "Id": "1",
-            "Arn": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
+            "Arn": "arn:aws-test:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
           }
         ]
       }
@@ -1024,7 +1024,7 @@
         "Targets": [
           {
             "Id": "1",
-            "Arn": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
+            "Arn": "arn:aws-test:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
           }
         ]
       }
@@ -1044,7 +1044,7 @@
         "Targets": [
           {
             "Id": "1",
-            "Arn": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
+            "Arn": "arn:aws-test:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
           }
         ]
       }
