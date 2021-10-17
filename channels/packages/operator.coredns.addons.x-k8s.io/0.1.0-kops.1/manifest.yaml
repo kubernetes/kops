@@ -1,3 +1,50 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+    kubernetes.io/bootstrapping: rbac-defaults
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: CoreDNS
+  name: system:coredns
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  - services
+  - pods
+  - namespaces
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+    kubernetes.io/bootstrapping: rbac-defaults
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: CoreDNS
+  name: system:coredns
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:coredns
+subjects:
+- kind: ServiceAccount
+  name: coredns
+  namespace: kube-system
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -187,33 +234,6 @@ rules:
   - patch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  labels:
-    addonmanager.kubernetes.io/mode: EnsureExists
-    kubernetes.io/bootstrapping: rbac-defaults
-    kubernetes.io/cluster-service: "true"
-    kubernetes.io/name: CoreDNS
-  name: system:coredns
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - endpoints
-  - services
-  - pods
-  - namespaces
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - nodes
-  verbs:
-  - get
----
-apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
@@ -227,26 +247,6 @@ subjects:
 - kind: ServiceAccount
   name: coredns-operator
   namespace: coredns-system
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  annotations:
-    rbac.authorization.kubernetes.io/autoupdate: "true"
-  labels:
-    addonmanager.kubernetes.io/mode: EnsureExists
-    kubernetes.io/bootstrapping: rbac-defaults
-    kubernetes.io/cluster-service: "true"
-    kubernetes.io/name: CoreDNS
-  name: system:coredns
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:coredns
-subjects:
-- kind: ServiceAccount
-  name: coredns
-  namespace: kube-system
 ---
 apiVersion: apps/v1
 kind: Deployment
