@@ -9,14 +9,14 @@ do our best to support previous releases for some period.
 kOps does not, however, support Kubernetes releases that have either a greater major
 release number or greater minor release number than it.
 (The numbers before the first and second dots are the major and minor release numbers, respectively.)
-For example, kOps 1.16.0 does not support Kubernetes 1.17.0, but does
-support Kubernetes 1.16.5, 1.15.2, and several previous Kubernetes versions.
+For example, kOps 1.20.0 does not support Kubernetes 1.21.0, but does
+support Kubernetes 1.20.5, 1.19.2, and several previous Kubernetes versions.
 
 ## Compatibility Matrix
 
 | kOps version  | k8s 1.18.x | k8s 1.19.x | k8s 1.20.x | k8s 1.21.x | k8s 1.22.x |
 |---------------|------------|------------|------------|------------|------------|
-| 1.22.0        | ✔          | ✔          | ✔          | ✔          | ✔          |
+| 1.22.x        | ✔          | ✔          | ✔          | ✔          | ✔          |
 | 1.21.x        | ✔          | ✔          | ✔          | ✔          | ⚫         |
 | ~~1.20.x~~    | ✔          | ✔          | ✔          | ⚫         | ⚫         |
 | ~~1.19.x~~    | ✔          | ✔          | ⚫         | ⚫         | ⚫         |
@@ -25,7 +25,8 @@ support Kubernetes 1.16.5, 1.15.2, and several previous Kubernetes versions.
 
 Use the latest version of kOps for all releases of Kubernetes, with the caveat
 that higher versions of Kubernetes are not _officially_ supported by kOps.
-Releases which are ~~crossed out~~ _should_ work, but we suggest they be upgraded soon.
+Releases which are ~~crossed out~~ _should_ work, but are unlikely to get security or other fixes.
+We suggest they be upgraded soon.
 
 ## Release Schedule
 
