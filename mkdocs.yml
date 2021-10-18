@@ -72,6 +72,7 @@ nav:
     - Addons: "addons.md"
   - Operations:
     - Updates & Upgrades: "operations/updates_and_upgrades.md"
+    - Rolling Updates: "operations/rolling-update.md"
     - Working with Instance Groups: "tutorial/working-with-instancegroups.md"
     - Using Manifests and Customizing: "manifests_and_customizing_via_api.md"
     - High Availability: "operations/high_availability.md"
