@@ -544,6 +544,11 @@ func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContex
 		}
 	}
 
+	policy := ig.Spec.MixedInstancesPolicy
+	if len(launchSpec.InstanceTypes) == 0 && policy != nil && len(policy.Instances) > 0 {
+		launchSpec.InstanceTypes = policy.Instances
+	}
+
 	// Capacity.
 	minSize, maxSize := b.buildCapacity(ig)
 	ocean.MinSize = fi.Int64(fi.Int64Value(ocean.MinSize) + fi.Int64Value(minSize))
