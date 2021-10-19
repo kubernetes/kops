@@ -111,11 +111,62 @@ func (b *Builder) loadClusterPackage(u *unstructured.Unstructured) (*Package, er
 	return addon, nil
 }
 
-func CreateAddons(channel *kops.Channel, kubernetesVersion *semver.Version) (kubemanifest.ObjectList, error) {
+func CreateAddons(channel *kops.Channel, kubernetesVersion *semver.Version, cluster *kops.Cluster) (kubemanifest.ObjectList, error) {
 	var addons kubemanifest.ObjectList
 
 	if !featureflag.UseAddonOperators.Enabled() {
 		return addons, nil
+	}
+
+	if cluster.Spec.Networking != nil && cluster.Spec.Networking.Kopeio != nil {
+	   // TODO: Check that we haven't manually loaded a kopeio-networking operator
+              // TODO: Check that we haven't manually created a kopeio-networking CRD
+
+           	{
+			operatorKey := "operator.networking.addons.kope.io"
+
+			operatorVersion, err := channel.GetPackageVersion(operatorKey)
+			if err != nil {
+				return nil, err
+			}
+
+			metadata := map[string]interface{}{
+				"name": operatorKey,
+			}
+			spec := map[string]interface{}{
+				"version": operatorVersion.String(),
+			}
+
+			addonPackage := kubemanifest.NewObject(map[string]interface{}{
+				"apiVersion": "addons.x-k8s.io/v1alpha1",
+				"kind":       "ClusterPackage",
+				"metadata":   metadata,
+				"spec":       spec,
+			})
+			addons = append(addons, addonPackage)
+		}
+
+		{
+			key := "networking.addons.kope.io"
+			version, err := channel.GetPackageVersion(key)
+			if err != nil {
+				return nil, err
+			}
+			metadata := map[string]interface{}{
+				"name": "networking",
+			}
+			spec := map[string]interface{}{
+				"version": version.String(),
+			}
+
+			crd := kubemanifest.NewObject(map[string]interface{}{
+				"apiVersion": "addons.kope.io/v1alpha1",
+				"kind":       "Networking",
+				"metadata":   metadata,
+				"spec":       spec,
+			})
+			addons = append(addons, crd)
+		}
 	}
 
 	{

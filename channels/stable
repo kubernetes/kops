@@ -184,3 +184,7 @@ spec:
     version: 0.1.0-kops.1
   - name: coredns
     version: 1.7.0
+  - name: operator.networking.addons.kope.io
+    version: 0.1.0-kops.1
+  - name: networking.addons.kope.io
+    version: 1.0.20210815

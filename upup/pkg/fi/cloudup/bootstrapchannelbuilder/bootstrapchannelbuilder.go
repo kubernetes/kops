@@ -757,7 +757,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 		}
 	}
 
-	if b.Cluster.Spec.Networking.Kopeio != nil {
+	if b.Cluster.Spec.Networking.Kopeio != nil && !featureflag.UseAddonOperators.Enabled() {
 		key := "networking.kope.io"
 
 		{

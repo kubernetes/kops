@@ -1,0 +1,245 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kopeio-networking-system
+  labels:
+    k8s-addon: operator.networking.addons.kope.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kopeio-networking-agent
+  namespace: kopeio-networking-system
+  labels:
+    k8s-addon: operator.networking.addons.kope.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    k8s-addon: operator.networking.addons.kope.io
+  name: kopeio:networking-agent
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    k8s-addon: operator.networking.addons.kope.io
+  name: kopeio:networking-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kopeio:networking-agent
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: system:serviceaccount:kopeio-networking-system:kopeio-networking-agent
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    k8s-app: kopeio-networking-operator
+  name: kopeio-networking-system
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
+  labels:
+    k8s-app: kopeio-networking-operator
+  name: networkings.addons.kope.io
+spec:
+  group: addons.kope.io
+  names:
+    kind: Networking
+    listKind: NetworkingList
+    plural: networkings
+    singular: networking
+  scope: Cluster
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Networking is the Schema for the networkings API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: NetworkingSpec defines the desired state of Networking
+            properties:
+              channel:
+                description: 'Channel specifies a channel that can be used to resolve
+                  a specific addon, eg: stable It will be ignored if Version is specified'
+                type: string
+              patches:
+                items:
+                  type: object
+                type: array
+              version:
+                description: Version specifies the exact addon version to be deployed,
+                  eg 1.2.3 It should not be specified if Channel is specified
+                type: string
+            type: object
+          status:
+            description: NetworkingStatus defines the observed state of Networking
+            properties:
+              errors:
+                items:
+                  type: string
+                type: array
+              healthy:
+                type: boolean
+              phase:
+                type: string
+            required:
+            - healthy
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    k8s-app: kopeio-networking-operator
+  name: kopeio-networking-operator
+  namespace: kopeio-networking-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    k8s-app: kopeio-networking-operator
+  name: kopeio-networking-operator
+rules:
+- apiGroups:
+  - addons.kope.io
+  resources:
+  - networkings
+  verbs:
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - addons.kope.io
+  resources:
+  - networkings/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resourceNames:
+  - kopeio-networking-agent
+  resources:
+  - daemonsets
+  verbs:
+  - delete
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    k8s-app: kopeio-networking-operator
+  name: kopeio-networking-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kopeio-networking-operator
+subjects:
+- kind: ServiceAccount
+  name: kopeio-networking-operator
+  namespace: kopeio-networking-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: kopeio-networking-operator
+  name: kopeio-networking-operator
+  namespace: kopeio-networking-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: kopeio-networking-operator
+  template:
+    metadata:
+      labels:
+        k8s-app: kopeio-networking-operator
+    spec:
+      containers:
+      - args:
+        - --leader-elect=false
+        - --rbac-mode=ignore
+        command:
+        - /manager
+        image: justinsb/kopeio-networking-operator:latest
+        name: manager
+        resources:
+          limits:
+            cpu: 100m
+            memory: 30Mi
+          requests:
+            cpu: 100m
+            memory: 20Mi
+      serviceAccountName: kopeio-networking-operator
+      terminationGracePeriodSeconds: 10
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
