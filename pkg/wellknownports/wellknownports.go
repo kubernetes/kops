@@ -17,6 +17,9 @@ limitations under the License.
 package wellknownports
 
 const (
+	// KubeAPIServer is the port where kube-apiserver listens.
+	KubeAPIServer = 443
+
 	// KopsControllerPort is the port where kops-controller listens.
 	KopsControllerPort = 3988
 
