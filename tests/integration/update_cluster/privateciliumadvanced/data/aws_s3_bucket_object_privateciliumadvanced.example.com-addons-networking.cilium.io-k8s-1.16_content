@@ -34,6 +34,7 @@ data:
   bpf-lb-algorithm: random
   bpf-lb-maglev-table-size: "16381"
   bpf-lb-map-max: "65536"
+  bpf-lb-sock-hostns-only: "false"
   bpf-nat-global-max: "524288"
   bpf-neigh-global-max: "524288"
   bpf-policy-map-max: "16384"
