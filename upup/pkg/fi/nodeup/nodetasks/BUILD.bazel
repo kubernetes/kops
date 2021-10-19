@@ -35,6 +35,7 @@ go_library(
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/nodeup/cloudinit:go_default_library",
         "//upup/pkg/fi/nodeup/local:go_default_library",
+        "//upup/pkg/fi/nodeup/nodetasks/dnstasks:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
         "//util/pkg/distributions:go_default_library",
         "//util/pkg/hashing:go_default_library",

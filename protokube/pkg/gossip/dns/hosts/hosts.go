@@ -37,7 +37,77 @@ const (
 
 var hostsFileMutex sync.Mutex
 
-func UpdateHostsFileWithRecords(p string, addrToHosts map[string][]string) error {
+// HostMap holds a set of host to address mappings, a simplification of /etc/hosts.
+type HostMap struct {
+	records []hostMapRecord
+}
+
+// ParseHostMap parses lines from /etc/hosts (expected to be our guarded block) into a HostMap structure.
+// It parses as much as it can, and returns invalid lines (which should ideally be empty)
+func (m *HostMap) Parse(existing []string) []string {
+	var badLines []string
+
+	for _, line := range existing {
+		tokens := strings.Fields(line)
+		if len(tokens) == 0 {
+			continue
+		}
+		if strings.HasPrefix(tokens[0], "#") {
+			// Comments shouldn't really happen in our guarded block
+			if line == GUARD_BEGIN || line == GUARD_END {
+				klog.Warningf("ignoring extra guard line in /etc/hosts: %q", line)
+			} else {
+				badLines = append(badLines, line)
+			}
+			continue
+		}
+
+		if len(tokens) == 1 {
+			badLines = append(badLines, line)
+			continue
+		}
+
+		address := tokens[0]
+		for _, hostname := range tokens[1:] {
+			m.records = append(m.records, hostMapRecord{
+				Address:  address,
+				Hostname: hostname,
+			})
+		}
+	}
+
+	return badLines
+}
+
+// hostMap holds a single host-name to address mapping.
+type hostMapRecord struct {
+	Hostname string
+	Address  string
+}
+
+// ReplaceRecords replaces all the addresses for the given hostname.
+func (m *HostMap) ReplaceRecords(hostname string, addresses []string) {
+	var newRecords []hostMapRecord
+
+	for _, address := range addresses {
+		newRecords = append(newRecords, hostMapRecord{
+			Hostname: hostname,
+			Address:  address,
+		})
+	}
+
+	for _, record := range m.records {
+		if record.Hostname == hostname {
+			continue
+		}
+		newRecords = append(newRecords, record)
+	}
+
+	m.records = newRecords
+}
+
+// UpdateHostsFileWithRecords updates /etc/hosts by applying the given mutation function.
+func UpdateHostsFileWithRecords(p string, mutator func(guarded []string) (*HostMap, error)) error {
 	// For safety / sanity, we avoid concurrent updates from one process
 	hostsFileMutex.Lock()
 	defer hostsFileMutex.Unlock()
@@ -52,6 +122,7 @@ func UpdateHostsFileWithRecords(p string, addrToHosts map[string][]string) error
 		return fmt.Errorf("error reading file %q: %v", p, err)
 	}
 
+	var guarded []string
 	var out []string
 	inGuardBlock := false
 	for _, line := range strings.Split(string(data), "\n") {
@@ -63,7 +134,9 @@ func UpdateHostsFileWithRecords(p string, addrToHosts map[string][]string) error
 			inGuardBlock = true
 		}
 
-		if !inGuardBlock {
+		if inGuardBlock {
+			guarded = append(guarded, line)
+		} else {
 			out = append(out, line)
 		}
 
@@ -92,7 +165,16 @@ func UpdateHostsFileWithRecords(p string, addrToHosts map[string][]string) error
 	}
 	out = append(out, "")
 
+	hosts, err := mutator(guarded)
+	if err != nil {
+		return err
+	}
+
 	var block []string
+	addrToHosts := make(map[string][]string)
+	for _, record := range hosts.records {
+		addrToHosts[record.Address] = append(addrToHosts[record.Address], record.Hostname)
+	}
 	for addr, hosts := range addrToHosts {
 		sort.Strings(hosts)
 		block = append(block, addr+"\t"+strings.Join(hosts, " "))
