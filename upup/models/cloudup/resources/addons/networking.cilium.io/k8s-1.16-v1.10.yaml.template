@@ -140,6 +140,11 @@ data:
   # backend and affinity maps. (default 65536)
   bpf-lb-map-max: "{{ .BPFLBMapMax }}"
 
+  # bpf-lb-sock-hostns-only enables skipping socket LB for services when inside a pod namespace,
+  # in favor of service LB at the pod interface. Socket LB is still used when in the host namespace.
+  # Required by service mesh (e.g., Istio, Linkerd). (default false)
+  bpf-lb-sock-hostns-only: "{{ .BPFLBSockHostNSOnly }}"
+
   {{ if .ChainingMode }}
   cni-chaining-mode: "{{ .ChainingMode }}"
   {{ end }}
