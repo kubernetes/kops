@@ -88,10 +88,12 @@ func Catalog(ctx context.Context, target name.Registry, options ...Option) ([]st
 	}
 
 	uri := &url.URL{
-		Scheme:   target.Scheme(),
-		Host:     target.RegistryStr(),
-		Path:     "/v2/_catalog",
-		RawQuery: "n=10000",
+		Scheme: target.Scheme(),
+		Host:   target.RegistryStr(),
+		Path:   "/v2/_catalog",
+		// ECR returns an error if n > 1000:
+		// https://github.com/google/go-containerregistry/issues/1091
+		RawQuery: "n=1000",
 	}
 
 	client := http.Client{Transport: tr}
