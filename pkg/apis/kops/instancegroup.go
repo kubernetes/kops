@@ -193,10 +193,17 @@ const (
 	SpotAllocationStrategyDiversified = "diversified"
 	// SpotAllocationStrategyCapacityOptimized indicates a capacity optimized strategy
 	SpotAllocationStrategyCapacityOptimized = "capacity-optimized"
+	// SpotAllocationStrategyCapacityOptimizedPrioritized indicates a capacity optimized prioritized strategy
+	SpotAllocationStrategyCapacityOptimizedPrioritized = "capacity-optimized-prioritized"
 )
 
 // SpotAllocationStrategies is a collection of supported strategies
-var SpotAllocationStrategies = []string{SpotAllocationStrategyLowestPrices, SpotAllocationStrategyDiversified, SpotAllocationStrategyCapacityOptimized}
+var SpotAllocationStrategies = []string{
+	SpotAllocationStrategyLowestPrices,
+	SpotAllocationStrategyDiversified,
+	SpotAllocationStrategyCapacityOptimized,
+	SpotAllocationStrategyCapacityOptimizedPrioritized,
+}
 
 // InstanceMetadataOptions defines the EC2 instance metadata service options (AWS Only)
 type InstanceMetadataOptions struct {
