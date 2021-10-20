@@ -1098,6 +1098,7 @@
                 "ec2:DescribeAccountAttributes",
                 "ec2:DescribeInstanceTypes",
                 "ec2:DescribeInstances",
+                "ec2:DescribeLaunchTemplateVersions",
                 "ec2:DescribeRegions",
                 "ec2:DescribeRouteTables",
                 "ec2:DescribeSecurityGroups",
