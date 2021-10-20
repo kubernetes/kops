@@ -31,14 +31,16 @@ type tags struct {
 	Tags []string `json:"tags"`
 }
 
-// List wraps ListWithContext using the background context.
-func List(repo name.Repository, options ...Option) ([]string, error) {
-	return ListWithContext(context.Background(), repo, options...)
+// ListWithContext calls List with the given context.
+//
+// Deprecated: Use List and WithContext. This will be removed in a future release.
+func ListWithContext(ctx context.Context, repo name.Repository, options ...Option) ([]string, error) {
+	return List(repo, append(options, WithContext(ctx))...)
 }
 
-// ListWithContext calls /tags/list for the given repository, returning the list of tags
+// List calls /tags/list for the given repository, returning the list of tags
 // in the "tags" property.
-func ListWithContext(ctx context.Context, repo name.Repository, options ...Option) ([]string, error) {
+func List(repo name.Repository, options ...Option) ([]string, error) {
 	o, err := makeOptions(repo, options...)
 	if err != nil {
 		return nil, err
@@ -58,13 +60,6 @@ func ListWithContext(ctx context.Context, repo name.Repository, options ...Optio
 		RawQuery: "n=1000",
 	}
 
-	// This is lazy, but I want to make sure List(..., WithContext(ctx)) works
-	// without calling makeOptions() twice (which can have side effects).
-	// This means ListWithContext(ctx, ..., WithContext(ctx2)) prefers ctx2.
-	if o.context != context.Background() {
-		ctx = o.context
-	}
-
 	client := http.Client{Transport: tr}
 	tagList := []string{}
 	parsed := tags{}
@@ -72,16 +67,15 @@ func ListWithContext(ctx context.Context, repo name.Repository, options ...Optio
 	// get responses until there is no next page
 	for {
 		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
+		case <-o.context.Done():
+			return nil, o.context.Err()
 		default:
 		}
 
-		req, err := http.NewRequest("GET", uri.String(), nil)
+		req, err := http.NewRequestWithContext(o.context, "GET", uri.String(), nil)
 		if err != nil {
 			return nil, err
 		}
-		req = req.WithContext(ctx)
 
 		resp, err := client.Do(req)
 		if err != nil {
