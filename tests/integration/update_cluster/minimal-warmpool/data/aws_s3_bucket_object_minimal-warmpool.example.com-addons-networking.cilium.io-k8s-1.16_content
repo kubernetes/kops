@@ -40,6 +40,7 @@ data:
   cluster-name: default
   container-runtime: none
   debug: "false"
+  disable-cnp-status-updates: "true"
   disable-endpoint-crd: "false"
   enable-bpf-masquerade: "false"
   enable-endpoint-health-checking: "true"
