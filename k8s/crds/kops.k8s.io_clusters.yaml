@@ -4561,6 +4561,10 @@ spec:
                         description: Device is not implemented and may be removed
                           in the future. Setting this has no effect.
                         type: string
+                      disableCNPStatusUpdates:
+                        description: Determines if CNP NodeStatus updates will be
+                          sent to the Kubernetes api-server.
+                        type: boolean
                       disableConntrack:
                         description: DisableConntrack is not implemented and may be
                           removed in the future. Setting this has no effect.
