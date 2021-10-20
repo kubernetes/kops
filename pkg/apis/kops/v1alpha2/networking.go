@@ -559,6 +559,8 @@ type CiliumNetworkingSpec struct {
 	// CniBinPath is not implemented and may be removed in the future.
 	// Setting this has no effect.
 	CniBinPath string `json:"cniBinPath,omitempty"`
+	// Determines if CNP NodeStatus updates will be sent to the Kubernetes api-server.
+	DisableCNPStatusUpdates *bool `json:"disableCNPStatusUpdates,omitempty"`
 }
 
 // HubbleSpec configures the Hubble service on the Cilium agent.

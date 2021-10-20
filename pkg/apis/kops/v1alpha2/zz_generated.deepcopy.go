@@ -573,6 +573,11 @@ func (in *CiliumNetworkingSpec) DeepCopyInto(out *CiliumNetworkingSpec) {
 		*out = new(HubbleSpec)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.DisableCNPStatusUpdates != nil {
+		in, out := &in.DisableCNPStatusUpdates, &out.DisableCNPStatusUpdates
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

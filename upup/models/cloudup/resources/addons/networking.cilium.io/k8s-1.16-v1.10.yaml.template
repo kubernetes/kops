@@ -243,6 +243,8 @@ data:
 
   cgroup-root: /run/cilium/cgroupv2
 
+  disable-cnp-status-updates: "{{ .DisableCNPStatusUpdates }}"
+
   {{ if WithDefaultBool .Hubble.Enabled false }}
   # Enable Hubble gRPC service.
   enable-hubble: "true"
