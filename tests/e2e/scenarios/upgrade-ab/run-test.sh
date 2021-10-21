@@ -30,6 +30,15 @@ if [[ "$K8S_VERSION_B" == "latest" ]]; then
 fi
 
 export KOPS_BASE_URL
+
+echo "Cleaning up any leaked resources from previous cluster"
+KOPS_BASE_URL=$(kops-base-from-marker "${KOPS_VERSION_B}")
+KOPS_BASE_URL_B="${KOPS_BASE_URL}"
+KOPS_B=$(kops-download-from-base)
+${KUBETEST2} \
+		--down \
+		--kops-binary-path="${KOPS_B}" || echo "kubetest2 down failed"
+
 KOPS_BASE_URL=$(kops-base-from-marker "${KOPS_VERSION_A}")
 KOPS_A=$(kops-download-from-base)
 KOPS="${KOPS_A}"
@@ -47,8 +56,7 @@ KUBECONFIG_A=$(mktemp -t kops.XXXXXXXXX)
 # Verify kubeconfig-a
 kubectl get nodes -owide --kubeconfig="${KUBECONFIG_A}"
 
-KOPS_BASE_URL=$(kops-base-from-marker "${KOPS_VERSION_B}")
-KOPS_B=$(kops-download-from-base)
+KOPS_BASE_URL="${KOPS_BASE_URL_B}"
 
 KOPS="${KOPS_B}"
 
