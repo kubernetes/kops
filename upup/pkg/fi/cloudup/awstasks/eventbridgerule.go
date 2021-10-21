@@ -37,7 +37,7 @@ type EventBridgeRule struct {
 	Lifecycle fi.Lifecycle
 
 	EventPattern *string
-	TargetArn    *string // required for cloudformation rendering
+	SQSQueue     *SQS
 
 	Tags map[string]string
 }
@@ -81,7 +81,7 @@ func (eb *EventBridgeRule) Find(c *fi.Context) (*EventBridgeRule, error) {
 		Name:         eb.Name,
 		Lifecycle:    eb.Lifecycle,
 		EventPattern: rule.EventPattern,
-		TargetArn:    eb.TargetArn,
+		SQSQueue:     eb.SQSQueue,
 		Tags:         mapEventBridgeTagsToMap(tagResponse.Tags),
 	}
 	return actual, nil
@@ -153,7 +153,7 @@ func (eb *EventBridgeRule) TerraformLink() *terraformWriter.Literal {
 
 type cloudformationTarget struct {
 	Id  *string
-	Arn *string
+	Arn *cloudformation.Literal
 }
 
 type cloudformationEventBridgeRule struct {
@@ -176,7 +176,7 @@ func (_ *EventBridgeRule) RenderCloudformation(t *cloudformation.CloudformationT
 
 	target := &cloudformationTarget{
 		Id:  s("1"),
-		Arn: e.TargetArn,
+		Arn: e.SQSQueue.CloudformationLink(),
 	}
 
 	cf := &cloudformationEventBridgeRule{
