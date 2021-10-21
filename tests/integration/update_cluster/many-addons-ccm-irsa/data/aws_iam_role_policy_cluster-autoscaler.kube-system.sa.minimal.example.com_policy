@@ -4,7 +4,8 @@
       "Action": [
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeAutoScalingInstances",
-        "autoscaling:DescribeLaunchConfigurations"
+        "autoscaling:DescribeLaunchConfigurations",
+        "ec2:DescribeLaunchTemplateVersions"
       ],
       "Effect": "Allow",
       "Resource": "*"
