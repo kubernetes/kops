@@ -753,8 +753,6 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 
 		if c.CloudProvider != "aws" {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("amazonvpc"), "amazon-vpc-routed-eni networking is supported only in AWS"))
-		} else if cluster.IsKubernetesGTE("1.22") {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("amazonvpc"), "amazon-vpc-routed-eni networking is supported only for Kubernetes 1.21 and lower"))
 		}
 	}
 
