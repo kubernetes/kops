@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	certmanager "github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
@@ -38,10 +39,20 @@ type Channel struct {
 	Name      string
 }
 
+// CurrentSystemGeneration holds our current SystemGeneration value.
+// Version history:
+//   0  Pre-history (and the default value); versions prior to prune.
+//   1  Prune functionality introduced.
+const CurrentSystemGeneration = 1
+
 type ChannelVersion struct {
 	Channel      *string `json:"channel,omitempty"`
 	Id           string  `json:"id,omitempty"`
 	ManifestHash string  `json:"manifestHash,omitempty"`
+
+	// SystemGeneration holds the generation of the channels functionality.
+	// It is used so that we reapply when we introduce new features, such as prune.
+	SystemGeneration int `json:"systemGeneration,omitempty"`
 }
 
 func stringValue(s *string) string {
@@ -59,6 +70,7 @@ func (c *ChannelVersion) String() string {
 	if c.ManifestHash != "" {
 		s += " ManifestHash=" + c.ManifestHash
 	}
+	s += " SystemGeneration=" + strconv.Itoa(c.SystemGeneration)
 	return s
 }
 
@@ -102,21 +114,31 @@ func (c *Channel) AnnotationName() string {
 	return AnnotationPrefix + c.Name
 }
 
-func (c *ChannelVersion) replaces(existing *ChannelVersion) bool {
-	klog.V(4).Infof("Checking existing channel: %v compared to new channel: %v", existing, c)
+func (c *ChannelVersion) replaces(name string, existing *ChannelVersion) bool {
+	klog.V(6).Infof("Checking existing config for %q: %v compared to new channel: %v", name, existing, c)
 
-	if c.Id == existing.Id {
-		// Same id; check manifests
-		if c.ManifestHash == existing.ManifestHash {
-			klog.V(4).Infof("Manifest Match")
-			return false
-		}
-		klog.V(4).Infof("Channels had same ids %q, %q but different ManifestHash (%q vs %q); will replace", c.Id, c.ManifestHash, existing.ManifestHash)
-	} else {
-		klog.V(4).Infof("Channels had different ids (%q vs %q); will replace", c.Id, existing.Id)
+	if c.Id != existing.Id {
+		klog.V(4).Infof("cluster has different ids for %q (%q vs %q); will replace", name, c.Id, existing.Id)
+		return true
 	}
 
-	return true
+	if c.ManifestHash != existing.ManifestHash {
+		klog.V(4).Infof("cluster has different ManifestHash for %q (%q vs %q); will replace", name, c.ManifestHash, existing.ManifestHash)
+		return true
+	}
+
+	if existing.SystemGeneration != c.SystemGeneration {
+		if existing.SystemGeneration > c.SystemGeneration {
+			klog.V(4).Infof("cluster has newer SystemGeneration for %q (%v vs %v), will not replace", name, existing.SystemGeneration, c.SystemGeneration)
+			return false
+		} else {
+			klog.V(4).Infof("cluster has different SystemGeneration for %q (%v vs %v); will replace", name, existing.SystemGeneration, c.SystemGeneration)
+			return true
+		}
+	}
+
+	klog.V(4).Infof("manifest Match for %q: %v", name, existing)
+	return false
 }
 
 func (c *Channel) GetInstalledVersion(ctx context.Context, k8sClient kubernetes.Interface) (*ChannelVersion, error) {

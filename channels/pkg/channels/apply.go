@@ -25,18 +25,12 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 // Apply calls kubectl apply to apply the manifest.
 // We will likely in future change this to create things directly (or more likely embed this logic into kubectl itself)
-func Apply(manifest string) error {
+func Apply(data []byte) error {
 	// We copy the manifest to a temp file because it is likely e.g. an s3 URL, which kubectl can't read
-	data, err := vfs.Context.ReadFile(manifest)
-	if err != nil {
-		return fmt.Errorf("error reading manifest: %v", err)
-	}
-
 	tmpDir, err := ioutil.TempDir("", "channel")
 	if err != nil {
 		return fmt.Errorf("error creating temp dir: %v", err)
