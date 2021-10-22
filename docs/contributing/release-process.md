@@ -50,23 +50,26 @@ In order to create a new release branch off of master prior to a beta release, p
 
 ## Creating releases
 
-### Update versions
+### Send Pull Request to propose a release
 
 See [1.22.0-beta.2 PR](https://github.com/kubernetes/kops/pull/12467) for an example.
 
-* Use the hack/set-version script to update versions: `hack/set-version 1.22.0`
+Use the hack/set-version script to update versions, using the new version as the argument.
+Then update the golden tests.
 
-The syntax is `hack/set-version <new-release-version>`
+```
+hack/set-version 1.22.0
+hack/update-expected.sh
+```
 
-`new-release-version` is the version you are releasing.
+Commit the changes (without pushing yet):
 
-* Update the golden tests: `hack/update-expected.sh`
+```
+VERSION=$(tools/get_version.sh | grep VERSION | awk '{print $2}')
+git add . && git commit -m "Release ${VERSION}"
+```
 
-* Commit the changes (without pushing yet): `git add . && git commit -m "Release 1.X.Y"`
-
-* This is the "release commit".
-
-### Send Pull Request to propose a release
+This is the "release commit". Push and create a PR.
 
 ```
 git push $USER
@@ -93,11 +96,6 @@ Check out the release commit.
 Make sure you are not on a newer one! Do not tag the merge commit!
 
 ```
-VERSION=$(tools/get_version.sh | grep VERSION | awk '{print $2}')
-echo ${VERSION}
-```
-
-```
 git tag -a -m "Release ${VERSION}" v${VERSION}
 git show v${VERSION}
 ```
@@ -116,7 +114,7 @@ The staging CI job should now see the tag, and build it (from the trusted prow c
 
 The job is here: https://testgrid.k8s.io/sig-cluster-lifecycle-kops#kops-postsubmit-push-to-staging
 
-It (currently) takes about 10 minutes to run.
+It (currently) takes about 30 minutes to run.
 
 In the meantime, you can compile the release notes...
 
