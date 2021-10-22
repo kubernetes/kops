@@ -990,6 +990,8 @@ type ClusterAutoscalerConfig struct {
 	// CPURequest of cluster autoscaler container.
 	// Default: 100m
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
+	// MaxNodeProvisionTime determines how long CAS will wait for a node to join the cluster.
+	MaxNodeProvisionTime string `json:"maxNodeProvisionTime,omitempty"`
 }
 
 // MetricsServerConfig determines the metrics server configuration.

@@ -2166,6 +2166,7 @@ func autoConvert_v1alpha3_ClusterAutoscalerConfig_To_kops_ClusterAutoscalerConfi
 	out.Image = in.Image
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
+	out.MaxNodeProvisionTime = in.MaxNodeProvisionTime
 	return nil
 }
 
@@ -2187,6 +2188,7 @@ func autoConvert_kops_ClusterAutoscalerConfig_To_v1alpha3_ClusterAutoscalerConfi
 	out.Image = in.Image
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
+	out.MaxNodeProvisionTime = in.MaxNodeProvisionTime
 	return nil
 }
 

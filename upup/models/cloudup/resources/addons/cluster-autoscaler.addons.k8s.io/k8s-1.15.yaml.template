@@ -296,6 +296,7 @@ spec:
             - --skip-nodes-with-system-pods={{ .SkipNodesWithSystemPods }}
             - --scale-down-delay-after-add={{ .ScaleDownDelayAfterAdd }}
             - --new-pod-scale-up-delay={{ .NewPodScaleUpDelay }}
+            - --max-node-provision-time={{ .MaxNodeProvisionTime }}
             - --stderrthreshold=info
             - --v=2
           env:
