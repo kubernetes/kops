@@ -85,6 +85,9 @@ func Test_Filtering(t *testing.T) {
 }
 
 func Test_Replacement(t *testing.T) {
+	hash1 := "3544de6578b2b582c0323b15b7b05a28c60b9430"
+	hash2 := "ea9e79bf29adda450446487d65a8fc6b3fdf8c2b"
+
 	grid := []struct {
 		Old      *ChannelVersion
 		New      *ChannelVersion
@@ -92,23 +95,38 @@ func Test_Replacement(t *testing.T) {
 	}{
 		//Test ManifestHash Changes
 		{
-			Old:      &ChannelVersion{Id: "a", ManifestHash: "3544de6578b2b582c0323b15b7b05a28c60b9430"},
-			New:      &ChannelVersion{Id: "a", ManifestHash: "3544de6578b2b582c0323b15b7b05a28c60b9430"},
+			Old:      &ChannelVersion{Id: "a", ManifestHash: hash1},
+			New:      &ChannelVersion{Id: "a", ManifestHash: hash1},
 			Replaces: false,
 		},
 		{
 			Old:      &ChannelVersion{Id: "a", ManifestHash: ""},
-			New:      &ChannelVersion{Id: "a", ManifestHash: "3544de6578b2b582c0323b15b7b05a28c60b9430"},
+			New:      &ChannelVersion{Id: "a", ManifestHash: hash1},
 			Replaces: true,
 		},
 		{
-			Old:      &ChannelVersion{Id: "a", ManifestHash: "3544de6578b2b582c0323b15b7b05a28c60b9430"},
-			New:      &ChannelVersion{Id: "a", ManifestHash: "ea9e79bf29adda450446487d65a8fc6b3fdf8c2b"},
+			Old:      &ChannelVersion{Id: "a", ManifestHash: hash1},
+			New:      &ChannelVersion{Id: "a", ManifestHash: hash2},
 			Replaces: true,
+		},
+		{
+			Old:      &ChannelVersion{Id: "a", ManifestHash: hash1},
+			New:      &ChannelVersion{Id: "a", ManifestHash: hash1, SystemGeneration: 1},
+			Replaces: true,
+		},
+		{
+			Old:      &ChannelVersion{Id: "a", ManifestHash: hash1, SystemGeneration: 1},
+			New:      &ChannelVersion{Id: "a", ManifestHash: hash1},
+			Replaces: false,
+		},
+		{
+			Old:      &ChannelVersion{Id: "a", ManifestHash: hash1, SystemGeneration: 1},
+			New:      &ChannelVersion{Id: "a", ManifestHash: hash1, SystemGeneration: 1},
+			Replaces: false,
 		},
 	}
 	for _, g := range grid {
-		actual := g.New.replaces(g.Old)
+		actual := g.New.replaces(t.Name(), g.Old)
 		if actual != g.Replaces {
 			t.Errorf("unexpected result from %v -> %v, expect %t.  actual %v", g.Old, g.New, g.Replaces, actual)
 		}
@@ -218,7 +236,7 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 		ctx := context.Background()
 
 		annotations := map[string]string{
-			"addons.k8s.io/test": "{\"manifestHash\":\"originalHash\"}",
+			"addons.k8s.io/test": "{\"manifestHash\":\"originalHash\",\"systemGeneration\": 1}",
 		}
 		if len(g.originalAnnotations) > 0 {
 			annotations = g.originalAnnotations

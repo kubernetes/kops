@@ -92,7 +92,7 @@ func (b *UpdateServiceBuilder) buildDebianPackage(c *fi.ModelBuilderContext) {
 `
 	} else {
 
-		klog.Infof("Detected OS %s; installing %s package", b.Distribution, debianPackageName)
+		klog.Infof("Detected OS %v; installing %s package", b.Distribution, debianPackageName)
 		c.AddTask(&nodetasks.Package{Name: debianPackageName})
 
 		contents = `APT::Periodic::Update-Package-Lists "1";
