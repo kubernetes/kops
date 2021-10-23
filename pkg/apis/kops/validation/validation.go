@@ -1313,6 +1313,10 @@ func validateContainerdConfig(spec *kops.ClusterSpec, config *kops.ContainerdCon
 		allErrs = append(allErrs, validateNvidiaConfig(spec, config.NvidiaGPU, fldPath.Child("nvidia"))...)
 	}
 
+	if config.RegistryMirrors != nil {
+		allErrs = append(allErrs, validateRegistryMirrorsConfig(config.RegistryMirrorAuthConfigs, fldPath.Child("registryMirrors"))...)
+	}
+
 	return allErrs
 }
 
@@ -1396,6 +1400,23 @@ func validateNvidiaConfig(spec *kops.ClusterSpec, nvidia *kops.NvidiaGPUConfig, 
 	}
 	if spec.ContainerRuntime != "containerd" {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "Nvidia is only supported using containerd"))
+	}
+	return allErrs
+}
+
+func validateRegistryMirrorsConfig(mirrors []kops.RegistryMirrorAuthConfig, fldPath *field.Path) (allErrs field.ErrorList) {
+	for _, mirror := range mirrors {
+		if fi.IsNilOrEmpty(mirror.EndpointUrl) {
+			allErrs = append(allErrs, field.Forbidden(fldPath, "Containerd registry mirror requires an EndpointUrl"))
+		}
+
+		if !fi.IsNilOrEmpty(mirror.AuthUsername) && fi.IsNilOrEmpty(mirror.AuthPassword) {
+			allErrs = append(allErrs, field.Forbidden(fldPath, "Containerd registry username requires both username and password"))
+		}
+
+		if !fi.IsNilOrEmpty(mirror.AuthPassword) && fi.IsNilOrEmpty(mirror.AuthUsername) {
+			allErrs = append(allErrs, field.Forbidden(fldPath, "Containerd registry password requires both username and password"))
+		}
 	}
 	return allErrs
 }

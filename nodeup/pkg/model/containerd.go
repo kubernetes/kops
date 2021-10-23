@@ -456,6 +456,19 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 	for name, endpoints := range containerd.RegistryMirrors {
 		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "registry", "mirrors", name, "endpoint"}, endpoints)
 	}
+
+	for _, mirror := range containerd.RegistryMirrorAuthConfigs {
+		// Use Username/Password for registry authentication if defined
+		if fi.StringValue(mirror.AuthUsername) != "" && fi.StringValue(mirror.AuthPassword) != "" {
+			config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "registry", "auths", fi.StringValue(mirror.EndpointUrl), "username"}, fi.StringValue(mirror.AuthUsername))
+			config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "registry", "auths", fi.StringValue(mirror.EndpointUrl), "password"}, fi.StringValue(mirror.AuthPassword))
+		}
+
+		if fi.StringValue(mirror.AuthToken) != "" {
+			config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "registry", "auths", fi.StringValue(mirror.EndpointUrl), "auth"}, fi.StringValue(mirror.AuthToken))
+		}
+	}
+
 	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "runtime_type"}, "io.containerd.runc.v2")
 	// only enable systemd cgroups for kubernetes >= 1.20
 	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "options", "SystemdCgroup"}, cluster.IsKubernetesGTE("1.20"))

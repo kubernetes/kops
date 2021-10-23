@@ -1358,3 +1358,88 @@ func Test_Validate_Nvdia(t *testing.T) {
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
+
+func Test_Validate_Containerd(t *testing.T) {
+
+	grid := []struct {
+		Input          kops.ClusterSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.ClusterSpec{
+				Containerd: &kops.ContainerdConfig{
+					RegistryMirrors: map[string][]string{
+						"docker": {"https://registry-1.docker.io"},
+					},
+					RegistryMirrorAuthConfigs: []kops.RegistryMirrorAuthConfig{
+						{
+							EndpointUrl:  fi.String("https://registry-1.docker.io"),
+							AuthPassword: fi.String("foobar"),
+							AuthUsername: fi.String("foopass"),
+						},
+					},
+				},
+				CloudProvider:    "aws",
+				ContainerRuntime: "containerd",
+			},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Containerd: &kops.ContainerdConfig{
+					RegistryMirrors: map[string][]string{
+						"docker": {"https://registry-1.docker.io"},
+					},
+					RegistryMirrorAuthConfigs: []kops.RegistryMirrorAuthConfig{
+						{
+							EndpointUrl: fi.String("https://registry-1.docker.io"),
+							AuthToken:   fi.String("footok"),
+						},
+					},
+				},
+				CloudProvider:    "aws",
+				ContainerRuntime: "containerd",
+			},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Containerd: &kops.ContainerdConfig{
+					RegistryMirrors: map[string][]string{
+						"docker": {"https://registry-1.docker.io"},
+					},
+					RegistryMirrorAuthConfigs: []kops.RegistryMirrorAuthConfig{
+						{
+							EndpointUrl:  fi.String("https://registry-1.docker.io"),
+							AuthUsername: fi.String("foopass"),
+						},
+					},
+				},
+				CloudProvider:    "aws",
+				ContainerRuntime: "containerd",
+			},
+			ExpectedErrors: []string{"Forbidden::containerd.RegistryMirrorAuthConfigs"},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Containerd: &kops.ContainerdConfig{
+					RegistryMirrors: map[string][]string{
+						"docker": {"https://registry-1.docker.io"},
+					},
+					RegistryMirrorAuthConfigs: []kops.RegistryMirrorAuthConfig{
+						{
+							EndpointUrl:  fi.String("https://registry-1.docker.io"),
+							AuthPassword: fi.String("foobar"),
+						},
+					},
+				},
+				CloudProvider:    "aws",
+				ContainerRuntime: "containerd",
+			},
+			ExpectedErrors: []string{"Forbidden::containerd.RegistryMirrorAuthConfigs"},
+		},
+	}
+	for _, g := range grid {
+		fi.DebugPrint(g.Input.Containerd.RegistryMirrors)
+		errs := validateRegistryMirrorsConfig(g.Input.Containerd.RegistryMirrorAuthConfigs, field.NewPath("containerd", "RegistryMirrorAuthConfigs"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}

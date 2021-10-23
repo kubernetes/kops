@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ type ContainerdConfig struct {
 	Packages *PackagesConfig `json:"packages,omitempty"`
 	// RegistryMirrors is list of image registries
 	RegistryMirrors map[string][]string `json:"registryMirrors,omitempty"`
+	// RegistryMirrorAuthConfigs List of auth configurations for each registry.
+	RegistryMirrorAuthConfigs []RegistryMirrorAuthConfig `json:"registryMirrorAuths,omitempty"`
 	// Root directory for persistent data (default "/var/lib/containerd").
 	Root *string `json:"root,omitempty" flag:"root"`
 	// SkipInstall prevents kOps from installing and modifying containerd in any way (default "false").
@@ -38,6 +40,18 @@ type ContainerdConfig struct {
 	Version *string `json:"version,omitempty"`
 	// NvidiaGPU configures the Nvidia GPU runtime.
 	NvidiaGPU *NvidiaGPUConfig `json:"nvidiaGPU,omitempty"`
+}
+
+// RegistryMirrorAuth configuration for containerd
+type RegistryMirrorAuthConfig struct {
+	// Registry name
+	EndpointUrl *string `json:"name,omitempty"`
+	// Registry authentication Username
+	AuthUsername *string `json:"username,omitempty"`
+	// Registry authentication Password
+	AuthPassword *string `json:"password,omitempty"`
+	// Registry Auth Token
+	AuthToken *string `json:"auth,omitempty"`
 }
 
 type NvidiaGPUConfig struct {

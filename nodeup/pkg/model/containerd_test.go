@@ -214,6 +214,48 @@ func TestContainerdConfig(t *testing.T) {
 
 }
 
+func TestContainerdRegistryMirrorsConfig(t *testing.T) {
+	cluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			ContainerRuntime:  "containerd",
+			Containerd:        &kops.ContainerdConfig{},
+			KubernetesVersion: "1.21.0",
+			Networking: &kops.NetworkingSpec{
+				Kubenet: &kops.KubenetNetworkingSpec{},
+			},
+		},
+	}
+
+	b := &ContainerdBuilder{
+		NodeupModelContext: &NodeupModelContext{
+			Cluster: cluster,
+			NodeupConfig: &nodeup.Config{
+				ContainerdConfig: &kops.ContainerdConfig{
+					RegistryMirrors: map[string][]string{
+						"docker": {"https://registry-1.docker.io"},
+					},
+					RegistryMirrorAuthConfigs: []kops.RegistryMirrorAuthConfig{
+						{
+							EndpointUrl:  fi.String("https://registry-1.docker.io"),
+							AuthPassword: fi.String("foobar"),
+							AuthUsername: fi.String("foopass"),
+						},
+					},
+				},
+			},
+		},
+	}
+
+	config, err := b.buildContainerdConfig()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if config == "" {
+		t.Errorf("got unexpected empty containerd config")
+	}
+}
+
 func TestAppendGPURuntimeContainerdConfig(t *testing.T) {
 	originalConfig := `version = 2
 [plugins]
