@@ -668,3 +668,8 @@ func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
 		fi.BoolValue(c.NodeupConfig.NvidiaGPU.Enabled) &&
 		c.GPUVendor == architectures.GPUVendorNvidia
 }
+
+// RunningOnGCE returns true if we are running on GCE
+func (c *NodeupModelContext) RunningOnGCE() bool {
+	return kops.CloudProviderID(c.Cluster.Spec.CloudProvider) == kops.CloudProviderGCE
+}
