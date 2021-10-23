@@ -59,7 +59,8 @@ func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if b.Distribution.IsDebianFamily() {
-		if b.Distribution.IsUbuntu() {
+		// Ubuntu recommends systemd-timesyncd, but on ubuntu on GCE systemd-timesyncd is blocked (in favor of chrony)
+		if b.Distribution.IsUbuntu() && !b.RunningOnGCE() {
 			if ntpHost != "" {
 				c.AddTask(b.buildTimesyncdConf("/etc/systemd/timesyncd.conf", ntpHost))
 			}
