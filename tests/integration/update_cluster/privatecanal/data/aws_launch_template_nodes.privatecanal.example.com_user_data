@@ -125,7 +125,8 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   awsEBSCSIDriver:
-    enabled: false
+    enabled: true
+    version: v1.2.1
   manageStorageClasses: true
 containerRuntime: containerd
 containerd:
@@ -137,7 +138,7 @@ kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
   hostnameOverride: '@aws'
-  image: k8s.gcr.io/kube-proxy:v1.21.0
+  image: k8s.gcr.io/kube-proxy:v1.22.0
   logLevel: 2
 kubelet:
   anonymousAuth: false
@@ -148,12 +149,16 @@ kubelet:
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  featureGates:
+    CSIMigrationAWS: "true"
+    InTreePluginAWSUnregister: "true"
   hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
   nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
+  protectKernelDefaults: true
 
 __EOF_CLUSTER_SPEC
 
@@ -162,7 +167,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecanal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: GbTQ9y60njLR8mZO898FmHzRH7QpWPe3zvOE4j5T0UE=
+NodeupConfigHash: yaHIJa6pnpGnjNVhmc6Q+KUAQEfb2aZQnSNqwggjxms=
 
 __EOF_KUBE_ENV
 

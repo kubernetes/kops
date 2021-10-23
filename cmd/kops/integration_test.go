@@ -365,7 +365,7 @@ func TestPrivateCiliumAdvanced(t *testing.T) {
 func TestPrivateCanal(t *testing.T) {
 	newIntegrationTest("privatecanal.example.com", "privatecanal").
 		withPrivate().
-		withAddons("networking.projectcalico.org.canal-k8s-1.16", dnsControllerAddon).
+		withAddons("networking.projectcalico.org.canal-k8s-1.22", "aws-ebs-csi-driver.addons.k8s.io-k8s-1.17", dnsControllerAddon).
 		runTestTerraformAWS(t)
 }
 

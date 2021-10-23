@@ -47,15 +47,22 @@ spec:
     version: 9.99.0
   - id: v1.15.0
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
-    manifestHash: 065ae832ddac8d0931e9992d6a76f43a33a36975a38003b34f4c5d86a7d42780
+    manifestHash: 4e2cda50cd5048133aad1b5e28becb60f4629d3f9e09c514a2757c27998b4200
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
     version: 9.99.0
-  - id: k8s-1.16
-    manifest: networking.projectcalico.org.canal/k8s-1.16.yaml
-    manifestHash: 95eac57e6511368d555dde5c7e50ed95f5b6e9bec9c65c4e846fe8b0437edeef
+  - id: k8s-1.22
+    manifest: networking.projectcalico.org.canal/k8s-1.22.yaml
+    manifestHash: b026de0876284d3167c957c3eec392866900c5b0c81ce92ef458e7bac343644a
     name: networking.projectcalico.org.canal
     selector:
       role.kubernetes.io/networking: "1"
+    version: 9.99.0
+  - id: k8s-1.17
+    manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
+    manifestHash: 0d3a6184bef7c81993a0a8055a0323ce87768255811a54417eaa0ad79be86932
+    name: aws-ebs-csi-driver.addons.k8s.io
+    selector:
+      k8s-addon: aws-ebs-csi-driver.addons.k8s.io
     version: 9.99.0
