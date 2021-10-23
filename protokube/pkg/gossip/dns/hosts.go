@@ -31,23 +31,29 @@ var _ DNSTarget = &HostsFile{}
 func (h *HostsFile) Update(snapshot *DNSViewSnapshot) error {
 	klog.V(2).Infof("Updating hosts file with snapshot version %v", snapshot.version)
 
-	addrToHosts := make(map[string][]string)
+	mutator := func(existing []string) (*hosts.HostMap, error) {
+		hostMap := &hosts.HostMap{}
+		badLines := hostMap.Parse(existing)
+		if len(badLines) != 0 {
+			klog.Warningf("ignoring unexpected lines in /etc/hosts: %v", badLines)
+		}
 
-	zones := snapshot.ListZones()
-	for _, zone := range zones {
-		records := snapshot.RecordsForZone(zone)
+		zones := snapshot.ListZones()
+		for _, zone := range zones {
+			records := snapshot.RecordsForZone(zone)
 
-		for _, record := range records {
-			if record.RrsType != "A" {
-				klog.Warningf("skipping record of unhandled type: %v", record)
-				continue
-			}
+			for _, record := range records {
+				if record.RrsType != "A" {
+					klog.Warningf("skipping record of unhandled type: %v", record)
+					continue
+				}
 
-			for _, addr := range record.Rrdatas {
-				addrToHosts[addr] = append(addrToHosts[addr], record.Name)
+				hostMap.ReplaceRecords(record.Name, record.Rrdatas)
 			}
 		}
+
+		return hostMap, nil
 	}
 
-	return hosts.UpdateHostsFileWithRecords(h.Path, addrToHosts)
+	return hosts.UpdateHostsFileWithRecords(h.Path, mutator)
 }

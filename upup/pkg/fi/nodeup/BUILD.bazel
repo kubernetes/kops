@@ -10,6 +10,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//nodeup/pkg/model:go_default_library",
+        "//nodeup/pkg/model/dns:go_default_library",
         "//nodeup/pkg/model/networking:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/registry:go_default_library",
