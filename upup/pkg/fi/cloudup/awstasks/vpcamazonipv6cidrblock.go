@@ -138,6 +138,8 @@ func findVPCIPv6CIDR(cloud awsup.AWSCloud, vpcID *string) (*string, error) {
 		return nil, err
 	}
 
+	var byoIPv6CidrBlock *string
+
 	for _, association := range vpc.Ipv6CidrBlockAssociationSet {
 		if association == nil || association.Ipv6CidrBlockState == nil {
 			continue
@@ -151,7 +153,11 @@ func findVPCIPv6CIDR(cloud awsup.AWSCloud, vpcID *string) (*string, error) {
 		if aws.StringValue(association.Ipv6Pool) == "Amazon" {
 			return association.Ipv6CidrBlock, nil
 		}
+
+		if byoIPv6CidrBlock == nil {
+			byoIPv6CidrBlock = association.Ipv6CidrBlock
+		}
 	}
 
-	return nil, nil
+	return byoIPv6CidrBlock, nil
 }
