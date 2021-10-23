@@ -229,7 +229,7 @@ run it over SSH with the output viewable locally:
 For more complete testing though, you will likely want to do a private build of
 nodeup and launch a cluster from scratch.
 
-To do this, you can repoint the nodeup source url by setting the `KOPS_BASE_URL` env var,
+To do this, you can repoint the nodeup source url by setting the `KOPS_BASE_URL_AMD64` env var,
 and then push nodeup using:
 
 

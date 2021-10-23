@@ -21,6 +21,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strings"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops"
@@ -34,7 +35,7 @@ const (
 	defaultKopsBaseURL = "https://artifacts.k8s.io/binaries/kops/%s/"
 )
 
-var kopsBaseURL *url.URL
+var kopsBaseURL map[architectures.Architecture]*url.URL
 
 // nodeUpAsset caches the nodeup binary download url/hash
 var nodeUpAsset map[architectures.Architecture]*mirrors.MirroredAsset
@@ -46,32 +47,46 @@ var protokubeAsset map[architectures.Architecture]*mirrors.MirroredAsset
 var channelsAsset map[architectures.Architecture]*mirrors.MirroredAsset
 
 // BaseURL returns the base url for the distribution of kops - in particular for nodeup & docker images
-func BaseURL() (*url.URL, error) {
-	// returning cached value
-	// Avoid repeated logging
-	if kopsBaseURL != nil {
-		klog.V(8).Infof("Using cached kopsBaseUrl url: %q", kopsBaseURL.String())
-		return copyBaseURL(kopsBaseURL)
+func baseURL(arch architectures.Architecture) (*url.URL, error) {
+	if kopsBaseURL == nil {
+		kopsBaseURL = make(map[architectures.Architecture]*url.URL)
 	}
 
-	baseURLString := os.Getenv("KOPS_BASE_URL")
+	// returning cached value
+	// Avoid repeated logging
+	if kopsBaseURL[arch] != nil {
+		klog.V(8).Infof("Using cached kopsBaseUrl url: %q", kopsBaseURL[arch].String())
+		return copyBaseURL(kopsBaseURL[arch])
+	}
+
+	envVar := "KOPS_BASE_URL_" + strings.ToUpper(string(arch))
+	baseURLString := os.Getenv(envVar)
 	var err error
+	if baseURLString == "" {
+		envVar = "KOPS_BASE_URL"
+		baseURLString = os.Getenv(envVar)
+		arch = "all"
+		if kopsBaseURL[arch] != nil {
+			klog.V(8).Infof("Using cached kopsBaseUrl url: %q", kopsBaseURL[arch].String())
+			return copyBaseURL(kopsBaseURL[arch])
+		}
+	}
 	if baseURLString == "" {
 		baseURLString = fmt.Sprintf(defaultKopsBaseURL, kops.Version)
 		klog.V(8).Infof("Using default base url: %q", baseURLString)
-		kopsBaseURL, err = url.Parse(baseURLString)
+		kopsBaseURL[arch], err = url.Parse(baseURLString)
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse %q as a url: %v", baseURLString, err)
 		}
 	} else {
-		kopsBaseURL, err = url.Parse(baseURLString)
+		kopsBaseURL[arch], err = url.Parse(baseURLString)
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse env var KOPS_BASE_URL %q as a url: %v", baseURLString, err)
+			return nil, fmt.Errorf("unable to parse env var %s %q as a url: %v", envVar, baseURLString, err)
 		}
-		klog.Warningf("Using base url from KOPS_BASE_URL env var: %q", baseURLString)
+		klog.Warningf("Using base url from %s env var: %q", envVar, baseURLString)
 	}
 
-	return copyBaseURL(kopsBaseURL)
+	return copyBaseURL(kopsBaseURL[arch])
 }
 
 // copyBaseURL makes a copy of the base url or the path.Joins can append stuff to this URL
@@ -94,7 +109,7 @@ func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architec
 		return nodeUpAsset[arch], nil
 	}
 
-	u, hash, err := KopsFileURL(fmt.Sprintf("linux/%s/nodeup", arch), assetsBuilder)
+	u, hash, err := kopsFileURL("nodeup", arch, assetsBuilder)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +129,7 @@ func ProtokubeAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Archi
 		return protokubeAsset[arch], nil
 	}
 
-	u, hash, err := KopsFileURL(fmt.Sprintf("linux/%s/protokube", arch), assetsBuilder)
+	u, hash, err := kopsFileURL("protokube", arch, assetsBuilder)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +149,7 @@ func ChannelsAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Archit
 		return channelsAsset[arch], nil
 	}
 
-	u, hash, err := KopsFileURL(fmt.Sprintf("linux/%s/channels", arch), assetsBuilder)
+	u, hash, err := kopsFileURL("channels", arch, assetsBuilder)
 	if err != nil {
 		return nil, err
 	}
@@ -145,13 +160,13 @@ func ChannelsAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Archit
 }
 
 // KopsFileURL returns the base url for the distribution of kops - in particular for nodeup & docker images
-func KopsFileURL(file string, assetBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash, error) {
-	base, err := BaseURL()
+func kopsFileURL(file string, arch architectures.Architecture, assetBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash, error) {
+	base, err := baseURL(arch)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	base.Path = path.Join(base.Path, file)
+	base.Path = path.Join(base.Path, "linux", string(arch), file)
 
 	fileURL, hash, err := assetBuilder.RemapFileAndSHA(base)
 	if err != nil {

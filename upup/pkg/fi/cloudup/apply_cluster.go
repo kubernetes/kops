@@ -1203,49 +1203,61 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 		// `docker load` our images when using a KOPS_BASE_URL, so we
 		// don't need to push/pull from a registry
-		if os.Getenv("KOPS_BASE_URL") != "" && isMaster {
+		if isMaster {
 			for _, arch := range architectures.GetSupported() {
 				for _, name := range []string{"kops-controller", "dns-controller", "kube-apiserver-healthcheck"} {
-					baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
-					if err != nil {
-						return nil, err
+					baseURLString := os.Getenv("KOPS_BASE_URL_" + strings.ToUpper(string(arch)))
+					if baseURLString == "" {
+						baseURLString = os.Getenv("KOPS_BASE_URL")
 					}
+					if baseURLString != "" {
+						baseURL, err := url.Parse(baseURLString)
+						if err != nil {
+							return nil, err
+						}
 
-					baseURL.Path = path.Join(baseURL.Path, "/images/"+name+"-"+string(arch)+".tar.gz")
+						baseURL.Path = path.Join(baseURL.Path, "/images/"+name+"-"+string(arch)+".tar.gz")
 
-					u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
-					if err != nil {
-						return nil, err
+						u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+						if err != nil {
+							return nil, err
+						}
+
+						image := &nodeup.Image{
+							Sources: []string{u.String()},
+							Hash:    hash.Hex(),
+						}
+						images[role][arch] = append(images[role][arch], image)
 					}
-
-					image := &nodeup.Image{
-						Sources: []string{u.String()},
-						Hash:    hash.Hex(),
-					}
-					images[role][arch] = append(images[role][arch], image)
 				}
 			}
 		}
-		if os.Getenv("KOPS_BASE_URL") != "" && isAPIServer {
+		if isAPIServer {
 			for _, arch := range architectures.GetSupported() {
 				for _, name := range []string{"kube-apiserver-healthcheck"} {
-					baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
-					if err != nil {
-						return nil, err
+					baseURLString := os.Getenv("KOPS_BASE_URL_" + strings.ToUpper(string(arch)))
+					if baseURLString == "" {
+						baseURLString = os.Getenv("KOPS_BASE_URL")
 					}
+					if baseURLString != "" {
+						baseURL, err := url.Parse(baseURLString)
+						if err != nil {
+							return nil, err
+						}
 
-					baseURL.Path = path.Join(baseURL.Path, "/images/"+name+"-"+string(arch)+".tar.gz")
+						baseURL.Path = path.Join(baseURL.Path, "/images/"+name+"-"+string(arch)+".tar.gz")
 
-					u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
-					if err != nil {
-						return nil, err
+						u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+						if err != nil {
+							return nil, err
+						}
+
+						image := &nodeup.Image{
+							Sources: []string{u.String()},
+							Hash:    hash.Hex(),
+						}
+						images[role][arch] = append(images[role][arch], image)
 					}
-
-					image := &nodeup.Image{
-						Sources: []string{u.String()},
-						Hash:    hash.Hex(),
-					}
-					images[role][arch] = append(images[role][arch], image)
 				}
 			}
 		}
