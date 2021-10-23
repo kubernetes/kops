@@ -114,6 +114,15 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 		}
 		e.IPv6CIDR = subnetIPv6CIDR
 	}
+	if actual.IPv6CIDR != nil && strings.HasPrefix(aws.StringValue(e.IPv6CIDR), "/") {
+		cidr, err := findVPCIPv6CIDR(c.Cloud.(awsup.AWSCloud), e.VPC.ID)
+		if err == nil && cidr != nil {
+			subnetIPv6CIDR, err := calculateSubnetCIDR(cidr, e.IPv6CIDR)
+			if err == nil {
+				e.IPv6CIDR = subnetIPv6CIDR
+			}
+		}
+	}
 
 	// Prevent spurious changes
 	actual.Lifecycle = e.Lifecycle // Not materialized in AWS
