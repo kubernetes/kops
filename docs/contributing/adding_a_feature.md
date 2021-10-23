@@ -239,6 +239,7 @@ make kops-install dev-upload UPLOAD_DEST=s3://${S3_BUCKET_NAME}
 
 KOPS_VERSION=`bazelisk run //cmd/kops version -- --short`
 export KOPS_BASE_URL=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/${KOPS_VERSION}/
+export KOPS_ARCH=amd64
 kops create cluster <clustername> --zones us-east-1b
 ...
 ```
