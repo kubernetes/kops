@@ -840,6 +840,14 @@ resource "aws_s3_bucket_object" "nodeupconfig-nodes" {
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_bucket_object" "privatecanal-example-com-addons-aws-ebs-csi-driver-addons-k8s-io-k8s-1-17" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_privatecanal.example.com-addons-aws-ebs-csi-driver.addons.k8s.io-k8s-1.17_content")
+  key                    = "clusters.example.com/privatecanal.example.com/addons/aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_bucket_object" "privatecanal-example-com-addons-bootstrap" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_privatecanal.example.com-addons-bootstrap_content")
@@ -896,10 +904,10 @@ resource "aws_s3_bucket_object" "privatecanal-example-com-addons-limit-range-add
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "privatecanal-example-com-addons-networking-projectcalico-org-canal-k8s-1-16" {
+resource "aws_s3_bucket_object" "privatecanal-example-com-addons-networking-projectcalico-org-canal-k8s-1-22" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_privatecanal.example.com-addons-networking.projectcalico.org.canal-k8s-1.16_content")
-  key                    = "clusters.example.com/privatecanal.example.com/addons/networking.projectcalico.org.canal/k8s-1.16.yaml"
+  content                = file("${path.module}/data/aws_s3_bucket_object_privatecanal.example.com-addons-networking.projectcalico.org.canal-k8s-1.22_content")
+  key                    = "clusters.example.com/privatecanal.example.com/addons/networking.projectcalico.org.canal/k8s-1.22.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
