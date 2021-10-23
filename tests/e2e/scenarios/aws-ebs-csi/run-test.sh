@@ -22,6 +22,7 @@ kops-acquire-latest
 OVERRIDES="${OVERRIDES-} --override=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=true"
 OVERRIDES="$OVERRIDES --override=cluster.spec.snapshotController.enabled=true"
 OVERRIDES="$OVERRIDES --override=cluster.spec.certManager.enabled=true"
+OVERRIDES="$OVERRIDES --master-size=t3.medium --node-size=c5.large"
 
 kops-up
 
