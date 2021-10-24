@@ -3796,7 +3796,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: calico/typha:v3.13.4
+      - image: calico/typha:v3.20.2
         name: calico-typha
         ports:
         - containerPort: 5473
