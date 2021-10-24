@@ -257,8 +257,7 @@ func (_ *FirewallRule) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 		Disabled:     g.Disabled,
 	}
 
-	// TODO: This doesn't seem right, but it looks like a TF problem
-	tf.Network = e.Network.TerraformName()
+	tf.Network = e.Network.TerraformLink()
 
 	return t.RenderResource("google_compute_firewall", *e.Name, tf)
 }
