@@ -35,6 +35,8 @@ type Network struct {
 	Mode      string
 
 	CIDR *string
+
+	Shared *bool
 }
 
 var _ fi.CompareWithID = &Network{}
@@ -71,6 +73,13 @@ func (e *Network) Find(c *fi.Context) (*Network, error) {
 
 	// Ignore "system" fields
 	actual.Lifecycle = e.Lifecycle
+	actual.Shared = e.Shared
+	actual.Name = e.Name
+
+	// Match unspecified values
+	if e.Mode == "" {
+		e.Mode = actual.Mode
+	}
 
 	return actual, nil
 }
@@ -117,6 +126,14 @@ func (_ *Network) CheckChanges(a, e, changes *Network) error {
 }
 
 func (_ *Network) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Network) error {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		// Verify the network was found
+		if a == nil {
+			return fmt.Errorf("Network with name %q not found", fi.StringValue(e.Name))
+		}
+	}
+
 	if a == nil {
 		klog.V(2).Infof("Creating Network with CIDR: %q", fi.StringValue(e.CIDR))
 
@@ -139,9 +156,12 @@ func (_ *Network) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Network) error {
 			// the default value.
 			network.ForceSendFields = []string{"AutoCreateSubnetworks"}
 		}
-		_, err := t.Cloud.Compute().Networks().Insert(t.Cloud.Project(), network)
+		op, err := t.Cloud.Compute().Networks().Insert(t.Cloud.Project(), network)
 		if err != nil {
 			return fmt.Errorf("error creating Network: %v", err)
+		}
+		if err := t.Cloud.WaitForOp(op); err != nil {
+			return fmt.Errorf("error waiting for Network creation to complete: %w", err)
 		}
 	} else {
 		if a.Mode == "legacy" {
@@ -163,6 +183,12 @@ type terraformNetwork struct {
 }
 
 func (_ *Network) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Network) error {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		// Not terraform owned / managed
+		return nil
+	}
+
 	tf := &terraformNetwork{
 		Name: e.Name,
 	}
@@ -181,6 +207,16 @@ func (_ *Network) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *N
 	return t.RenderResource("google_compute_network", *e.Name, tf)
 }
 
-func (i *Network) TerraformName() *terraformWriter.Literal {
-	return terraformWriter.LiteralProperty("google_compute_network", *i.Name, "name")
+func (e *Network) TerraformLink() *terraformWriter.Literal {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		if e.Name == nil {
+			klog.Fatalf("Name must be set, if network is shared: %#v", e)
+		}
+
+		klog.V(4).Infof("reusing existing network with name %q", *e.Name)
+		return terraformWriter.LiteralFromStringValue(*e.Name)
+	}
+
+	return terraformWriter.LiteralProperty("google_compute_network", *e.Name, "name")
 }
