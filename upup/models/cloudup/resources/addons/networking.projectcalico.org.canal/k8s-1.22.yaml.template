@@ -4017,9 +4017,6 @@ spec:
             # Disable IPv6 on Kubernetes.
             - name: FELIX_IPV6SUPPORT
               value: "false"
-            # Set Felix logging to "info"
-            - name: FELIX_LOGSEVERITYSCREEN
-              value: "{{- or .Networking.Canal.LogSeveritySys "info" }}"
             - name: FELIX_HEALTHENABLED
               value: "true"
 
@@ -4030,6 +4027,9 @@ spec:
             # Set Felix iptables binary variant, Legacy or NFT
             - name: FELIX_IPTABLESBACKEND
               value: "{{- or .Networking.Canal.IptablesBackend "Auto" }}"
+            # Controls the log level
+            - name: FELIX_LOGSEVERITYSCREEN
+              value: "{{- or .Networking.Canal.LogSeveritySys "info" }}"
             # Set to enable the experimental Prometheus metrics server
             - name: FELIX_PROMETHEUSMETRICSENABLED
               value: "{{- or .Networking.Canal.PrometheusMetricsEnabled "false" }}"
