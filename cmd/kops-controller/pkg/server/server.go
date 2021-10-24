@@ -88,6 +88,7 @@ func (s *Server) Start() error {
 		return err
 	}
 
+	klog.Infof("kops-controller listening on %s", s.opt.Server.Listen)
 	return s.server.ListenAndServeTLS(s.opt.Server.ServerCertificatePath, s.opt.Server.ServerKeyPath)
 }
 
