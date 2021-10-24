@@ -114,6 +114,9 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 			actual.IPv6CIDR = association.Ipv6CidrBlock
 			e.IPv6CIDR = association.Ipv6CidrBlock
 			break
+		} else if actual.IPv6CIDR == nil {
+			actual.IPv6CIDR = association.Ipv6CidrBlock
+			e.IPv6CIDR = association.Ipv6CidrBlock
 		}
 	}
 
