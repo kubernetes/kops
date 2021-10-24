@@ -47,6 +47,7 @@ go_library(
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/external:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/networks:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/subnets:go_default_library",
+        "//vendor/google.golang.org/api/compute/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
