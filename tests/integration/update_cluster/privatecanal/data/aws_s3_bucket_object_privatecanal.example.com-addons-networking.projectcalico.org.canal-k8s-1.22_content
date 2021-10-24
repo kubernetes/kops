@@ -44,7 +44,7 @@ data:
       }
     }
   typha_service_name: none
-  veth_mtu: "1440"
+  veth_mtu: "0"
 kind: ConfigMap
 metadata:
   creationTimestamp: null
@@ -3863,22 +3863,22 @@ spec:
           value: ACCEPT
         - name: FELIX_IPV6SUPPORT
           value: "false"
-        - name: FELIX_LOGSEVERITYSCREEN
-          value: info
         - name: FELIX_HEALTHENABLED
           value: "true"
         - name: FELIX_CHAININSERTMODE
           value: insert
         - name: FELIX_IPTABLESBACKEND
           value: Auto
+        - name: FELIX_LOGSEVERITYSCREEN
+          value: info
         - name: FELIX_PROMETHEUSMETRICSENABLED
           value: "false"
         - name: FELIX_PROMETHEUSMETRICSPORT
           value: "9091"
         - name: FELIX_PROMETHEUSGOMETRICSENABLED
-          value: "true"
+          value: "false"
         - name: FELIX_PROMETHEUSPROCESSMETRICSENABLED
-          value: "true"
+          value: "false"
         envFrom:
         - configMapRef:
             name: kubernetes-services-endpoint
