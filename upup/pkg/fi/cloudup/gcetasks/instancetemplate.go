@@ -501,7 +501,7 @@ func addNetworks(network *Network, subnet *Subnet, networkInterfaces []*compute.
 	for _, g := range networkInterfaces {
 		tf := &terraformNetworkInterface{}
 		if network != nil {
-			tf.Network = network.TerraformName()
+			tf.Network = network.TerraformLink()
 		}
 		if subnet != nil {
 			tf.Subnetwork = subnet.TerraformName()

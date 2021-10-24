@@ -39,6 +39,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		Lifecycle: b.Lifecycle,
 		Mode:      "auto", // Automatically create subnets, but stop using legacy mode
 	}
+	network.Shared = fi.Bool(b.NameForNetwork() == "default")
 	c.AddTask(network)
 
 	if gce.UsesIPAliases(b.Cluster) {

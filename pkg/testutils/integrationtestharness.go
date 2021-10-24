@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"google.golang.org/api/compute/v1"
 	"k8s.io/kops/cloudmock/aws/mockeventbridge"
 	"k8s.io/kops/cloudmock/aws/mocksqs"
 
@@ -294,7 +295,23 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 
 // SetupMockGCE configures a mock GCE cloud provider
 func (h *IntegrationTestHarness) SetupMockGCE() *gcemock.MockGCECloud {
-	return gcemock.InstallMockGCECloud("us-test1", "testproject")
+	project := "testproject"
+	region := "us-test1"
+
+	cloud := gcemock.InstallMockGCECloud(region, project)
+
+	cloud.Compute().Networks().Insert(project, &compute.Network{
+		Name:                  "default",
+		AutoCreateSubnetworks: true,
+	})
+
+	cloud.Compute().Subnetworks().Insert(project, region, &compute.Subnetwork{
+		Name:    "default",
+		Network: "default",
+		Region:  region,
+	})
+
+	return cloud
 }
 
 func SetupMockOpenstack() *openstack.MockCloud {
