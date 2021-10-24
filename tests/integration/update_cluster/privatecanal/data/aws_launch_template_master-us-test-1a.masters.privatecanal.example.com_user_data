@@ -125,7 +125,8 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   awsEBSCSIDriver:
-    enabled: false
+    enabled: true
+    version: v1.4.0
   manageStorageClasses: true
 containerRuntime: containerd
 containerd:
@@ -136,9 +137,9 @@ docker:
 encryptionConfig: null
 etcdClusters:
   events:
-    version: 3.4.13
+    version: 3.5.0
   main:
-    version: 3.4.13
+    version: 3.5.0
 kubeAPIServer:
   allowPrivileged: true
   anonymousAuth: false
@@ -162,7 +163,7 @@ kubeAPIServer:
   - https://127.0.0.1:4001
   etcdServersOverrides:
   - /events#https://127.0.0.1:4002
-  image: k8s.gcr.io/kube-apiserver:v1.21.0
+  image: k8s.gcr.io/kube-apiserver:v1.22.0
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -188,7 +189,9 @@ kubeControllerManager:
   clusterCIDR: 100.96.0.0/11
   clusterName: privatecanal.example.com
   configureCloudRoutes: false
-  image: k8s.gcr.io/kube-controller-manager:v1.21.0
+  featureGates:
+    CSIMigrationAWS: "true"
+  image: k8s.gcr.io/kube-controller-manager:v1.22.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -197,10 +200,10 @@ kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
   hostnameOverride: '@aws'
-  image: k8s.gcr.io/kube-proxy:v1.21.0
+  image: k8s.gcr.io/kube-proxy:v1.22.0
   logLevel: 2
 kubeScheduler:
-  image: k8s.gcr.io/kube-scheduler:v1.21.0
+  image: k8s.gcr.io/kube-scheduler:v1.22.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -213,12 +216,16 @@ kubelet:
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  featureGates:
+    CSIMigrationAWS: "true"
+    InTreePluginAWSUnregister: "true"
   hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
   nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
+  protectKernelDefaults: true
 masterKubelet:
   anonymousAuth: false
   cgroupDriver: systemd
@@ -228,12 +235,16 @@ masterKubelet:
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  featureGates:
+    CSIMigrationAWS: "true"
+    InTreePluginAWSUnregister: "true"
   hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
   nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
+  protectKernelDefaults: true
   registerSchedulable: false
 
 __EOF_CLUSTER_SPEC
@@ -243,7 +254,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecanal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: KYvsy5BReL0Xr64Y49pvZchubc2wvbhQhVQHvRI5Exw=
+NodeupConfigHash: cDWy7b28g2HeI4L2fYq3N4v96GeAjsauylqNFQvNTEI=
 
 __EOF_KUBE_ENV
 
