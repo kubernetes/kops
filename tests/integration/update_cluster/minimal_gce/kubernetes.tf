@@ -284,7 +284,7 @@ resource "google_compute_firewall" "node-to-master-minimal-gce-example-com" {
     protocol = "tcp"
   }
   allow {
-    ports    = ["4194"]
+    ports    = ["3988"]
     protocol = "tcp"
   }
   disabled    = false
