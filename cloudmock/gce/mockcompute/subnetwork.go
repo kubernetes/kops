@@ -66,14 +66,16 @@ func (c *subnetworkClient) Insert(project, region string, sub *compute.Subnetwor
 		subs = map[string]*compute.Subnetwork{}
 		regions[region] = subs
 	}
+	sub.Region = fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/regions/%s", project, region)
 	sub.SelfLink = fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/regions/%s/subnetworks/%s", project, region, sub.Name)
 	subs[sub.Name] = sub
 	return doneOperation(), nil
 }
 
 func (c *subnetworkClient) Patch(project, region, name string, sub *compute.Subnetwork) (*compute.Operation, error) {
-	c.Lock()
-	defer c.Unlock()
+	// Insert does the locking here
+	// c.Lock()
+	// defer c.Unlock()
 	return c.Insert(project, region, sub)
 }
 

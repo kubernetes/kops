@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strings"
@@ -41,6 +42,8 @@ import (
 // Please do all after-market logic here.
 //
 func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
+	ctx := context.TODO()
+
 	// Topology support
 	// TODO Kris: Unsure if this needs to be here, or if the API conversion code will handle it
 	if c.Spec.Topology == nil {
@@ -52,7 +55,7 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 	}
 
 	if cloud.ProviderID() == kops.CloudProviderGCE {
-		if err := gce.PerformNetworkAssignments(c, cloud); err != nil {
+		if err := gce.PerformNetworkAssignments(ctx, c, cloud); err != nil {
 			return err
 		}
 	}

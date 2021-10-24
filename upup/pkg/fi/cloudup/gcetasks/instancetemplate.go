@@ -504,7 +504,7 @@ func addNetworks(network *Network, subnet *Subnet, networkInterfaces []*compute.
 			tf.Network = network.TerraformLink()
 		}
 		if subnet != nil {
-			tf.Subnetwork = subnet.TerraformName()
+			tf.Subnetwork = subnet.TerraformLink()
 		}
 		for _, gac := range g.AccessConfigs {
 			tac := &terraformAccessConfig{}
