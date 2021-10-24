@@ -913,30 +913,22 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy) {
 		"elasticloadbalancing:DescribeTargetHealth",
 		"elasticloadbalancing:DescribeListenerCertificates",
 		"elasticloadbalancing:CreateRule",
+		"acm:ListCertificates",
+		"acm:DescribeCertificate",
 	)
-	p.Statement = append(p.Statement,
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
-				"ec2:AuthorizeSecurityGroupIngress", // aws.go
-				"ec2:DeleteSecurityGroup",           // aws.go
-				"ec2:RevokeSecurityGroupIngress",    // aws.go
+	p.clusterTaggedAction.Insert(
+		"ec2:AuthorizeSecurityGroupIngress", // aws.go
+		"ec2:DeleteSecurityGroup",           // aws.go
+		"ec2:RevokeSecurityGroupIngress",    // aws.go
 
-				"elasticloadbalancing:ModifyTargetGroupAttributes",
-				"elasticloadbalancing:ModifyRule",
-				"elasticloadbalancing:DeleteRule",
+		"elasticloadbalancing:ModifyTargetGroupAttributes",
+		"elasticloadbalancing:ModifyRule",
+		"elasticloadbalancing:DeleteRule",
 
-				"elasticloadbalancing:AddTags",
-				"elasticloadbalancing:RemoveTags",
-			),
-			Resource: stringorslice.String("*"),
-			Condition: Condition{
-				"StringEquals": map[string]string{
-					"aws:ResourceTag/elbv2.k8s.aws/cluster": p.clusterName,
-				},
-			},
-		},
+		"elasticloadbalancing:AddTags",
+		"elasticloadbalancing:RemoveTags",
 	)
+
 }
 
 func AddClusterAutoscalerPermissions(p *Policy) {
