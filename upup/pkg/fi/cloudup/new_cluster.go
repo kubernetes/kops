@@ -457,10 +457,19 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 					Name:   subnetName,
 					Region: region,
 				}
+				if len(opt.SubnetIDs) != 0 {
+					// We don't support multi-region clusters, so we can't have more than one subnet
+					if len(opt.SubnetIDs) != 1 {
+						return nil, fmt.Errorf("expected exactly one subnet for GCE, got %d", len(opt.SubnetIDs))
+					}
+					providerID := opt.SubnetIDs[0]
+					subnet.ProviderID = providerID
+				}
 				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
 			}
 			zoneToSubnetMap[zoneName] = subnet
 		}
+
 		return zoneToSubnetMap, nil
 
 	case api.CloudProviderDO:

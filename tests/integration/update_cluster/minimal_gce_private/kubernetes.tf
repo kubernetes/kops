@@ -209,7 +209,7 @@ resource "google_compute_firewall" "kubernetes-master-https-ipv6-minimal-gce-pri
   }
   disabled      = true
   name          = "kubernetes-master-https-ipv6-minimal-gce-private-example-com"
-  network       = "default"
+  network       = google_compute_network.minimal-gce-private-example-com.name
   source_ranges = ["::/0"]
   target_tags   = ["minimal-gce-private-example-com-k8s-io-role-master"]
 }
@@ -221,7 +221,7 @@ resource "google_compute_firewall" "kubernetes-master-https-minimal-gce-private-
   }
   disabled      = false
   name          = "kubernetes-master-https-minimal-gce-private-example-com"
-  network       = "default"
+  network       = google_compute_network.minimal-gce-private-example-com.name
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["minimal-gce-private-example-com-k8s-io-role-master"]
 }
@@ -247,7 +247,7 @@ resource "google_compute_firewall" "master-to-master-minimal-gce-private-example
   }
   disabled    = false
   name        = "master-to-master-minimal-gce-private-example-com"
-  network     = "default"
+  network     = google_compute_network.minimal-gce-private-example-com.name
   source_tags = ["minimal-gce-private-example-com-k8s-io-role-master"]
   target_tags = ["minimal-gce-private-example-com-k8s-io-role-master"]
 }
@@ -273,7 +273,7 @@ resource "google_compute_firewall" "master-to-node-minimal-gce-private-example-c
   }
   disabled    = false
   name        = "master-to-node-minimal-gce-private-example-com"
-  network     = "default"
+  network     = google_compute_network.minimal-gce-private-example-com.name
   source_tags = ["minimal-gce-private-example-com-k8s-io-role-master"]
   target_tags = ["minimal-gce-private-example-com-k8s-io-role-node"]
 }
@@ -289,7 +289,7 @@ resource "google_compute_firewall" "node-to-master-minimal-gce-private-example-c
   }
   disabled    = false
   name        = "node-to-master-minimal-gce-private-example-com"
-  network     = "default"
+  network     = google_compute_network.minimal-gce-private-example-com.name
   source_tags = ["minimal-gce-private-example-com-k8s-io-role-node"]
   target_tags = ["minimal-gce-private-example-com-k8s-io-role-master"]
 }
@@ -315,7 +315,7 @@ resource "google_compute_firewall" "node-to-node-minimal-gce-private-example-com
   }
   disabled    = false
   name        = "node-to-node-minimal-gce-private-example-com"
-  network     = "default"
+  network     = google_compute_network.minimal-gce-private-example-com.name
   source_tags = ["minimal-gce-private-example-com-k8s-io-role-node"]
   target_tags = ["minimal-gce-private-example-com-k8s-io-role-node"]
 }
@@ -331,7 +331,7 @@ resource "google_compute_firewall" "nodeport-external-to-node-ipv6-minimal-gce-p
   }
   disabled      = true
   name          = "nodeport-external-to-node-ipv6-minimal-gce-private-example-com"
-  network       = "default"
+  network       = google_compute_network.minimal-gce-private-example-com.name
   source_ranges = ["::/0"]
   target_tags   = ["minimal-gce-private-example-com-k8s-io-role-node"]
 }
@@ -347,7 +347,7 @@ resource "google_compute_firewall" "nodeport-external-to-node-minimal-gce-privat
   }
   disabled      = true
   name          = "nodeport-external-to-node-minimal-gce-private-example-com"
-  network       = "default"
+  network       = google_compute_network.minimal-gce-private-example-com.name
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["minimal-gce-private-example-com-k8s-io-role-node"]
 }
@@ -359,7 +359,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ipv6-minimal-gce-priv
   }
   disabled      = true
   name          = "ssh-external-to-master-ipv6-minimal-gce-private-example-com"
-  network       = "default"
+  network       = google_compute_network.minimal-gce-private-example-com.name
   source_ranges = ["::/0"]
   target_tags   = ["minimal-gce-private-example-com-k8s-io-role-master"]
 }
@@ -371,7 +371,7 @@ resource "google_compute_firewall" "ssh-external-to-master-minimal-gce-private-e
   }
   disabled      = false
   name          = "ssh-external-to-master-minimal-gce-private-example-com"
-  network       = "default"
+  network       = google_compute_network.minimal-gce-private-example-com.name
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["minimal-gce-private-example-com-k8s-io-role-master"]
 }
@@ -383,7 +383,7 @@ resource "google_compute_firewall" "ssh-external-to-node-ipv6-minimal-gce-privat
   }
   disabled      = true
   name          = "ssh-external-to-node-ipv6-minimal-gce-private-example-com"
-  network       = "default"
+  network       = google_compute_network.minimal-gce-private-example-com.name
   source_ranges = ["::/0"]
   target_tags   = ["minimal-gce-private-example-com-k8s-io-role-node"]
 }
@@ -395,7 +395,7 @@ resource "google_compute_firewall" "ssh-external-to-node-minimal-gce-private-exa
   }
   disabled      = false
   name          = "ssh-external-to-node-minimal-gce-private-example-com"
-  network       = "default"
+  network       = google_compute_network.minimal-gce-private-example-com.name
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["minimal-gce-private-example-com-k8s-io-role-node"]
 }
@@ -444,7 +444,8 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-priva
   }
   name_prefix = "master-us-test1-a-minimal-asf34c-"
   network_interface {
-    network = "default"
+    network    = google_compute_network.minimal-gce-private-example-com.name
+    subnetwork = google_compute_subnetwork.us-test1-minimal-gce-private-example-com.name
   }
   scheduling {
     automatic_restart   = true
@@ -482,7 +483,8 @@ resource "google_compute_instance_template" "nodes-minimal-gce-private-example-c
   }
   name_prefix = "nodes-minimal-gce-private-4aopo5-"
   network_interface {
-    network = "default"
+    network    = google_compute_network.minimal-gce-private-example-com.name
+    subnetwork = google_compute_subnetwork.us-test1-minimal-gce-private-example-com.name
   }
   scheduling {
     automatic_restart   = true
@@ -496,9 +498,14 @@ resource "google_compute_instance_template" "nodes-minimal-gce-private-example-c
   tags = ["minimal-gce-private-example-com-k8s-io-role-node"]
 }
 
+resource "google_compute_network" "minimal-gce-private-example-com" {
+  auto_create_subnetworks = false
+  name                    = "minimal-gce-private-example-com"
+}
+
 resource "google_compute_router" "nat-minimal-gce-private-example-com" {
   name    = "nat-minimal-gce-private-example-com"
-  network = "default"
+  network = google_compute_network.minimal-gce-private-example-com.name
 }
 
 resource "google_compute_router_nat" "nat-minimal-gce-private-example-com" {
@@ -507,6 +514,13 @@ resource "google_compute_router_nat" "nat-minimal-gce-private-example-com" {
   region                             = "us-test1"
   router                             = "nat-minimal-gce-private-example-com"
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+}
+
+resource "google_compute_subnetwork" "us-test1-minimal-gce-private-example-com" {
+  ip_cidr_range = "10.0.16.0/20"
+  name          = "us-test1-minimal-gce-private-example-com"
+  network       = google_compute_network.minimal-gce-private-example-com.name
+  region        = "us-test1"
 }
 
 terraform {
