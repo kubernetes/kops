@@ -90,3 +90,17 @@ func (c *networkClient) Get(project, name string) (*compute.Network, error) {
 	}
 	return network, nil
 }
+
+func (c *networkClient) List(project string) (*compute.NetworkList, error) {
+	c.Lock()
+	defer c.Unlock()
+	networks, ok := c.networks[project]
+	if !ok {
+		return nil, notFoundError()
+	}
+	networkList := &compute.NetworkList{}
+	for _, network := range networks {
+		networkList.Items = append(networkList.Items, network)
+	}
+	return networkList, nil
+}
