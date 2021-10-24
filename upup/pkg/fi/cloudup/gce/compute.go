@@ -211,6 +211,8 @@ func (c *zoneClientImpl) List(ctx context.Context, project string) ([]*compute.Z
 type NetworkClient interface {
 	Insert(project string, nw *compute.Network) (*compute.Operation, error)
 	Get(project, name string) (*compute.Network, error)
+	Delete(project, name string) (*compute.Operation, error)
+	List(project string) (*compute.NetworkList, error)
 }
 
 type networkClientImpl struct {
@@ -223,8 +225,16 @@ func (c *networkClientImpl) Insert(project string, nw *compute.Network) (*comput
 	return c.srv.Insert(project, nw).Do()
 }
 
+func (c *networkClientImpl) Delete(project string, name string) (*compute.Operation, error) {
+	return c.srv.Delete(project, name).Do()
+}
+
 func (c *networkClientImpl) Get(project, name string) (*compute.Network, error) {
 	return c.srv.Get(project, name).Do()
+}
+
+func (c *networkClientImpl) List(project string) (*compute.NetworkList, error) {
+	return c.srv.List(project).Do()
 }
 
 type SubnetworkClient interface {
