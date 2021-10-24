@@ -9,7 +9,7 @@ metadata:
   name: canal-config
   namespace: kube-system
 data:
-  # Typha is disabled.
+  # You must set a non-zero value for Typha replicas below.
   typha_service_name: "{{ if .Networking.Canal.TyphaReplicas }}calico-typha{{ else }}none{{ end }}"
 
   # The interface used by canal for host <-> host communication.
@@ -27,7 +27,7 @@ data:
   {{- if .Networking.Canal.MTU }}
   veth_mtu: "{{ .Networking.Canal.MTU }}"
   {{- else }}
-  veth_mtu: "{{- if eq .CloudProvider "openstack" -}}1430{{- else -}}1440{{- end -}}"
+  veth_mtu: "0"
   {{- end }}
 
   # The CNI network configuration to install on each node. The special
@@ -3796,7 +3796,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: calico/typha:v3.13.4
+      - image: calico/typha:v3.20.2
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -3820,7 +3820,7 @@ spec:
           - name: TYPHA_HEALTHENABLED
             value: "true"
           - name: TYPHA_PROMETHEUSMETRICSENABLED
-            value: "{{- or .Networking.Canal.TyphaPrometheusMetricsEnabled "false" }}"
+            value: "{{- .Networking.Canal.TyphaPrometheusMetricsEnabled }}"
           - name: TYPHA_PROMETHEUSMETRICSPORT
             value: "{{- or .Networking.Canal.TyphaPrometheusMetricsPort "9093" }}"
         livenessProbe:
@@ -4017,9 +4017,6 @@ spec:
             # Disable IPv6 on Kubernetes.
             - name: FELIX_IPV6SUPPORT
               value: "false"
-            # Set Felix logging to "info"
-            - name: FELIX_LOGSEVERITYSCREEN
-              value: "{{- or .Networking.Canal.LogSeveritySys "info" }}"
             - name: FELIX_HEALTHENABLED
               value: "true"
 
@@ -4030,18 +4027,21 @@ spec:
             # Set Felix iptables binary variant, Legacy or NFT
             - name: FELIX_IPTABLESBACKEND
               value: "{{- or .Networking.Canal.IptablesBackend "Auto" }}"
+            # Controls the log level
+            - name: FELIX_LOGSEVERITYSCREEN
+              value: "{{- or .Networking.Canal.LogSeveritySys "info" }}"
             # Set to enable the experimental Prometheus metrics server
             - name: FELIX_PROMETHEUSMETRICSENABLED
-              value: "{{- or .Networking.Canal.PrometheusMetricsEnabled "false" }}"
+              value: "{{- .Networking.Canal.PrometheusMetricsEnabled }}"
             # TCP port that the Prometheus metrics server should bind to
             - name: FELIX_PROMETHEUSMETRICSPORT
               value: "{{- or .Networking.Canal.PrometheusMetricsPort "9091" }}"
             # Enable Prometheus Go runtime metrics collection
             - name: FELIX_PROMETHEUSGOMETRICSENABLED
-              value: "{{- or .Networking.Canal.PrometheusGoMetricsEnabled "true" }}"
+              value: "{{- .Networking.Canal.PrometheusGoMetricsEnabled }}"
             # Enable Prometheus process metrics collection
             - name: FELIX_PROMETHEUSPROCESSMETRICSENABLED
-              value: "{{- or .Networking.Canal.PrometheusProcessMetricsEnabled "true" }}"
+              value: "{{- .Networking.Canal.PrometheusProcessMetricsEnabled }}"
           securityContext:
             privileged: true
           resources:
@@ -4124,7 +4124,7 @@ spec:
                 configMapKeyRef:
                   name: canal-config
                   key: masquerade
-            {{- if eq .Networking.Canal.DisableFlannelForwardRules true }}
+            {{- if .Networking.Canal.DisableFlannelForwardRules }}
             - name: FLANNELD_IPTABLES_FORWARD_RULES
               value: "false"
             {{- end }}
