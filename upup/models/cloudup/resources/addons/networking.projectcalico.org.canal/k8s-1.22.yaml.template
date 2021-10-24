@@ -2335,6 +2335,249 @@ status:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  name: kubecontrollersconfigurations.crd.projectcalico.org
+spec:
+  group: crd.projectcalico.org
+  names:
+    kind: KubeControllersConfiguration
+    listKind: KubeControllersConfigurationList
+    plural: kubecontrollersconfigurations
+    singular: kubecontrollersconfiguration
+  scope: Cluster
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: KubeControllersConfigurationSpec contains the values of the
+              Kubernetes controllers configuration.
+            properties:
+              controllers:
+                description: Controllers enables and configures individual Kubernetes
+                  controllers
+                properties:
+                  namespace:
+                    description: Namespace enables and configures the namespace controller.
+                      Enabled by default, set to nil to disable.
+                    properties:
+                      reconcilerPeriod:
+                        description: 'ReconcilerPeriod is the period to perform reconciliation
+                          with the Calico datastore. [Default: 5m]'
+                        type: string
+                    type: object
+                  node:
+                    description: Node enables and configures the node controller.
+                      Enabled by default, set to nil to disable.
+                    properties:
+                      hostEndpoint:
+                        description: HostEndpoint controls syncing nodes to host endpoints.
+                          Disabled by default, set to nil to disable.
+                        properties:
+                          autoCreate:
+                            description: 'AutoCreate enables automatic creation of
+                              host endpoints for every node. [Default: Disabled]'
+                            type: string
+                        type: object
+                      leakGracePeriod:
+                        description: 'LeakGracePeriod is the period used by the controller
+                          to determine if an IP address has been leaked. Set to 0
+                          to disable IP garbage collection. [Default: 15m]'
+                        type: string
+                      reconcilerPeriod:
+                        description: 'ReconcilerPeriod is the period to perform reconciliation
+                          with the Calico datastore. [Default: 5m]'
+                        type: string
+                      syncLabels:
+                        description: 'SyncLabels controls whether to copy Kubernetes
+                          node labels to Calico nodes. [Default: Enabled]'
+                        type: string
+                    type: object
+                  policy:
+                    description: Policy enables and configures the policy controller.
+                      Enabled by default, set to nil to disable.
+                    properties:
+                      reconcilerPeriod:
+                        description: 'ReconcilerPeriod is the period to perform reconciliation
+                          with the Calico datastore. [Default: 5m]'
+                        type: string
+                    type: object
+                  serviceAccount:
+                    description: ServiceAccount enables and configures the service
+                      account controller. Enabled by default, set to nil to disable.
+                    properties:
+                      reconcilerPeriod:
+                        description: 'ReconcilerPeriod is the period to perform reconciliation
+                          with the Calico datastore. [Default: 5m]'
+                        type: string
+                    type: object
+                  workloadEndpoint:
+                    description: WorkloadEndpoint enables and configures the workload
+                      endpoint controller. Enabled by default, set to nil to disable.
+                    properties:
+                      reconcilerPeriod:
+                        description: 'ReconcilerPeriod is the period to perform reconciliation
+                          with the Calico datastore. [Default: 5m]'
+                        type: string
+                    type: object
+                type: object
+              etcdV3CompactionPeriod:
+                description: 'EtcdV3CompactionPeriod is the period between etcdv3
+                  compaction requests. Set to 0 to disable. [Default: 10m]'
+                type: string
+              healthChecks:
+                description: 'HealthChecks enables or disables support for health
+                  checks [Default: Enabled]'
+                type: string
+              logSeverityScreen:
+                description: 'LogSeverityScreen is the log severity above which logs
+                  are sent to the stdout. [Default: Info]'
+                type: string
+              prometheusMetricsPort:
+                description: 'PrometheusMetricsPort is the TCP port that the Prometheus
+                  metrics server should bind to. Set to 0 to disable. [Default: 9094]'
+                type: integer
+            required:
+            - controllers
+            type: object
+          status:
+            description: KubeControllersConfigurationStatus represents the status
+              of the configuration. It's useful for admins to be able to see the actual
+              config that was applied, which can be modified by environment variables
+              on the kube-controllers process.
+            properties:
+              environmentVars:
+                additionalProperties:
+                  type: string
+                description: EnvironmentVars contains the environment variables on
+                  the kube-controllers that influenced the RunningConfig.
+                type: object
+              runningConfig:
+                description: RunningConfig contains the effective config that is running
+                  in the kube-controllers pod, after merging the API resource with
+                  any environment variables.
+                properties:
+                  controllers:
+                    description: Controllers enables and configures individual Kubernetes
+                      controllers
+                    properties:
+                      namespace:
+                        description: Namespace enables and configures the namespace
+                          controller. Enabled by default, set to nil to disable.
+                        properties:
+                          reconcilerPeriod:
+                            description: 'ReconcilerPeriod is the period to perform
+                              reconciliation with the Calico datastore. [Default:
+                              5m]'
+                            type: string
+                        type: object
+                      node:
+                        description: Node enables and configures the node controller.
+                          Enabled by default, set to nil to disable.
+                        properties:
+                          hostEndpoint:
+                            description: HostEndpoint controls syncing nodes to host
+                              endpoints. Disabled by default, set to nil to disable.
+                            properties:
+                              autoCreate:
+                                description: 'AutoCreate enables automatic creation
+                                  of host endpoints for every node. [Default: Disabled]'
+                                type: string
+                            type: object
+                          leakGracePeriod:
+                            description: 'LeakGracePeriod is the period used by the
+                              controller to determine if an IP address has been leaked.
+                              Set to 0 to disable IP garbage collection. [Default:
+                              15m]'
+                            type: string
+                          reconcilerPeriod:
+                            description: 'ReconcilerPeriod is the period to perform
+                              reconciliation with the Calico datastore. [Default:
+                              5m]'
+                            type: string
+                          syncLabels:
+                            description: 'SyncLabels controls whether to copy Kubernetes
+                              node labels to Calico nodes. [Default: Enabled]'
+                            type: string
+                        type: object
+                      policy:
+                        description: Policy enables and configures the policy controller.
+                          Enabled by default, set to nil to disable.
+                        properties:
+                          reconcilerPeriod:
+                            description: 'ReconcilerPeriod is the period to perform
+                              reconciliation with the Calico datastore. [Default:
+                              5m]'
+                            type: string
+                        type: object
+                      serviceAccount:
+                        description: ServiceAccount enables and configures the service
+                          account controller. Enabled by default, set to nil to disable.
+                        properties:
+                          reconcilerPeriod:
+                            description: 'ReconcilerPeriod is the period to perform
+                              reconciliation with the Calico datastore. [Default:
+                              5m]'
+                            type: string
+                        type: object
+                      workloadEndpoint:
+                        description: WorkloadEndpoint enables and configures the workload
+                          endpoint controller. Enabled by default, set to nil to disable.
+                        properties:
+                          reconcilerPeriod:
+                            description: 'ReconcilerPeriod is the period to perform
+                              reconciliation with the Calico datastore. [Default:
+                              5m]'
+                            type: string
+                        type: object
+                    type: object
+                  etcdV3CompactionPeriod:
+                    description: 'EtcdV3CompactionPeriod is the period between etcdv3
+                      compaction requests. Set to 0 to disable. [Default: 10m]'
+                    type: string
+                  healthChecks:
+                    description: 'HealthChecks enables or disables support for health
+                      checks [Default: Enabled]'
+                    type: string
+                  logSeverityScreen:
+                    description: 'LogSeverityScreen is the log severity above which
+                      logs are sent to the stdout. [Default: Info]'
+                    type: string
+                  prometheusMetricsPort:
+                    description: 'PrometheusMetricsPort is the TCP port that the Prometheus
+                      metrics server should bind to. Set to 0 to disable. [Default:
+                      9094]'
+                    type: integer
+                required:
+                - controllers
+                type: object
+            type: object
+        type: object
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
   name: networkpolicies.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -3219,6 +3462,97 @@ status:
   storedVersions: []
 
 ---
+---
+# Source: calico/templates/calico-kube-controllers-rbac.yaml
+
+# Include a clusterrole for the kube-controllers component,
+# and bind it to the calico-kube-controllers serviceaccount.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: calico-kube-controllers
+rules:
+  # Nodes are watched to monitor for deletions.
+  - apiGroups: [""]
+    resources:
+      - nodes
+    verbs:
+      - watch
+      - list
+      - get
+  # Pods are watched to check for existence as part of IPAM controller.
+  - apiGroups: [""]
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+  # IPAM resources are manipulated when nodes are deleted.
+  - apiGroups: ["crd.projectcalico.org"]
+    resources:
+      - ippools
+    verbs:
+      - list
+  - apiGroups: ["crd.projectcalico.org"]
+    resources:
+      - blockaffinities
+      - ipamblocks
+      - ipamhandles
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - delete
+      - watch
+  # kube-controllers manages hostendpoints.
+  - apiGroups: ["crd.projectcalico.org"]
+    resources:
+      - hostendpoints
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - delete
+  # Needs access to update clusterinformations.
+  - apiGroups: ["crd.projectcalico.org"]
+    resources:
+      - clusterinformations
+    verbs:
+      - get
+      - create
+      - update
+  # KubeControllersConfiguration is where it gets its config
+  - apiGroups: ["crd.projectcalico.org"]
+    resources:
+      - kubecontrollersconfigurations
+    verbs:
+      # read its own config
+      - get
+      # create a default if none exists
+      - create
+      # update status
+      - update
+      # watch for changes
+      - watch
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: calico-kube-controllers
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: calico-kube-controllers
+subjects:
+- kind: ServiceAccount
+  name: calico-kube-controllers
+  namespace: kube-system
+---
+
+---
 # Source: calico/templates/calico-node-rbac.yaml
 # Include a clusterrole for the calico-node DaemonSet,
 # and bind it to the calico-node serviceaccount.
@@ -3851,3 +4185,99 @@ kind: ServiceAccount
 metadata:
   name: canal
   namespace: kube-system
+
+---
+# Source: calico/templates/calico-kube-controllers.yaml
+# See https://github.com/projectcalico/kube-controllers
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calico-kube-controllers
+  namespace: kube-system
+  labels:
+    k8s-app: calico-kube-controllers
+spec:
+  # The controllers can only have a single active instance.
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: calico-kube-controllers
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      name: calico-kube-controllers
+      namespace: kube-system
+      labels:
+        k8s-app: calico-kube-controllers
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      tolerations:
+        # Mark the pod as a critical add-on for rescheduling.
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+      serviceAccountName: calico-kube-controllers
+      priorityClassName: system-cluster-critical
+      containers:
+        - name: calico-kube-controllers
+          image: docker.io/calico/kube-controllers:v3.20.2
+          env:
+            # Choose which controllers to run.
+            - name: ENABLED_CONTROLLERS
+              value: node
+            - name: DATASTORE_TYPE
+              value: kubernetes
+          livenessProbe:
+            exec:
+              command:
+              - /usr/bin/check-status
+              - -l
+            periodSeconds: 10
+            initialDelaySeconds: 10
+            failureThreshold: 6
+            timeoutSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+              - /usr/bin/check-status
+              - -r
+            periodSeconds: 10
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: calico-kube-controllers
+  namespace: kube-system
+
+---
+
+# This manifest creates a Pod Disruption Budget for Controller to allow K8s Cluster Autoscaler to evict
+
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: calico-kube-controllers
+  namespace: kube-system
+  labels:
+    k8s-app: calico-kube-controllers
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      k8s-app: calico-kube-controllers
+
+---
+# Source: calico/templates/calico-etcd-secrets.yaml
+
+---
+# Source: calico/templates/calico-typha.yaml
+
+---
+# Source: calico/templates/configure-canal.yaml
+
+
