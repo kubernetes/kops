@@ -699,6 +699,26 @@ spec:
                         description: UrlArm64 overrides the URL for the ARM64 package.
                         type: string
                     type: object
+                  registryMirrorAuths:
+                    description: RegistryMirrorAuthConfigs List of auth configurations
+                      for each registry.
+                    items:
+                      description: RegistryMirrorAuth configuration for containerd
+                      properties:
+                        auth:
+                          description: Registry Auth Token
+                          type: string
+                        name:
+                          description: Registry name
+                          type: string
+                        password:
+                          description: Registry authentication Password
+                          type: string
+                        username:
+                          description: Registry authentication Username
+                          type: string
+                      type: object
+                    type: array
                   registryMirrors:
                     additionalProperties:
                       items:
