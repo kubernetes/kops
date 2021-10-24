@@ -220,7 +220,7 @@ type terraformSubnetRange struct {
 func (_ *Subnet) RenderSubnet(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
 	tf := &terraformSubnet{
 		Name:    e.GCEName,
-		Network: e.Network.TerraformName(),
+		Network: e.Network.TerraformLink(),
 		Region:  e.Region,
 		CIDR:    e.CIDR,
 	}
