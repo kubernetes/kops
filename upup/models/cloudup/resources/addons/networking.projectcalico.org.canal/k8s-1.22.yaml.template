@@ -9,7 +9,7 @@ metadata:
   name: canal-config
   namespace: kube-system
 data:
-  # Typha is disabled.
+  # You must set a non-zero value for Typha replicas below.
   typha_service_name: "{{ if .Networking.Canal.TyphaReplicas }}calico-typha{{ else }}none{{ end }}"
 
   # The interface used by canal for host <-> host communication.
