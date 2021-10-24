@@ -14,22 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-/*
-Copyright 2021 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package gcetasks
 
 import (
@@ -58,7 +42,7 @@ type Router struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	Network *string
+	Network *Network
 	Region  *string
 
 	NATIPAllocationOption         *string
@@ -96,7 +80,7 @@ func (r *Router) Find(c *fi.Context) (*Router, error) {
 	return &Router{
 		Name:                          &found.Name,
 		Lifecycle:                     r.Lifecycle,
-		Network:                       &found.Network,
+		Network:                       &Network{Name: fi.String(lastComponent(found.Network))},
 		Region:                        fi.String(lastComponent(found.Region)),
 		NATIPAllocationOption:         &nat.NatIpAllocateOption,
 		SourceSubnetworkIPRangesToNAT: &nat.SourceSubnetworkIpRangesToNat,
@@ -142,11 +126,14 @@ func (*Router) CheckChanges(a, e, changes *Router) error {
 
 // RenderGCE creates or updates a Router.
 func (*Router) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Router) error {
+	cloud := t.Cloud
+	project := cloud.Project()
+
 	if a == nil {
 		klog.V(2).Infof("Creating Cloud NAT Gateway %v", e.Name)
 		router := &compute.Router{
 			Name:    *e.Name,
-			Network: *e.Network,
+			Network: e.Network.URL(project),
 			Nats: []*compute.RouterNat{
 				{
 					Name:                          *e.Name,
@@ -176,16 +163,18 @@ type terraformRouterNat struct {
 }
 
 type terraformRouter struct {
-	Name    *string `json:"name,omitempty" cty:"name"`
-	Network *string `json:"network,omitempty" cty:"network"`
-	Region  *string `json:"region,omitempty" cty:"region"`
+	Name    *string                  `json:"name,omitempty" cty:"name"`
+	Network *terraformWriter.Literal `json:"network,omitempty" cty:"network"`
+	Region  *string                  `json:"region,omitempty" cty:"region"`
 }
 
 // RenderTerraform renders the Terraform config.
 func (*Router) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Router) error {
 	tr := &terraformRouter{
-		Name:    e.Name,
-		Network: e.Network,
+		Name: e.Name,
+	}
+	if e.Network != nil {
+		tr.Network = e.Network.TerraformLink()
 	}
 	err := t.RenderResource("google_compute_router", *e.Name, tr)
 	if err != nil {
@@ -202,7 +191,7 @@ func (*Router) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rout
 	return t.RenderResource("google_compute_router_nat", *e.Name, trn)
 }
 
-// TerraformName returns the Terraform name.
-func (r *Router) TerraformName() *terraformWriter.Literal {
+// TerraformLink returns an expression for the name.
+func (r *Router) TerraformLink() *terraformWriter.Literal {
 	return terraformWriter.LiteralProperty("google_compute_router_nat", *r.Name, "name")
 }
