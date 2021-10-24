@@ -144,11 +144,13 @@ func (k *Keyset) ToCertificateBytes() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	for _, key := range keys {
 		item := k.Items[key]
-		certificate, err := item.Certificate.AsBytes()
-		if err != nil {
-			return nil, fmt.Errorf("public key %s: %v", item.Id, err)
+		if item.Certificate != nil {
+			certificate, err := item.Certificate.AsBytes()
+			if err != nil {
+				return nil, fmt.Errorf("public key %s: %v", item.Id, err)
+			}
+			buf.Write(certificate)
 		}
-		buf.Write(certificate)
 	}
 	return buf.Bytes(), nil
 }
@@ -167,12 +169,14 @@ func (k *Keyset) ToPublicKeys() (string, error) {
 	buf := new(strings.Builder)
 	for _, key := range keys {
 		item := k.Items[key]
-		publicKeyData, err := x509.MarshalPKIXPublicKey(item.Certificate.PublicKey)
-		if err != nil {
-			return "", fmt.Errorf("marshalling public key %s: %v", item.Id, err)
-		}
-		if err = pem.Encode(buf, &pem.Block{Type: "RSA PUBLIC KEY", Bytes: publicKeyData}); err != nil {
-			return "", fmt.Errorf("encoding public key %s: %v", item.Id, err)
+		if item.Certificate != nil {
+			publicKeyData, err := x509.MarshalPKIXPublicKey(item.Certificate.PublicKey)
+			if err != nil {
+				return "", fmt.Errorf("marshalling public key %s: %v", item.Id, err)
+			}
+			if err = pem.Encode(buf, &pem.Block{Type: "RSA PUBLIC KEY", Bytes: publicKeyData}); err != nil {
+				return "", fmt.Errorf("encoding public key %s: %v", item.Id, err)
+			}
 		}
 	}
 	return buf.String(), nil
