@@ -19,6 +19,7 @@ package gcetasks
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	compute "google.golang.org/api/compute/v1"
 	"k8s.io/klog/v2"
@@ -31,8 +32,14 @@ import (
 const (
 	// NATIPAllocationOptionAutoOnly is specified when NAT IPs are allocated by Google Cloud.
 	NATIPAllocationOptionAutoOnly = "AUTO_ONLY"
+
 	// SourceSubnetworkIPRangesAll is specified when all of the IP ranges in every subnetwork are allowed to be NAT-ed.
 	SourceSubnetworkIPRangesAll = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+	// SourceSubnetworkIPRangesSpecificSubnets is specified when we should NAT only specific listed subnets.
+	SourceSubnetworkIPRangesSpecificSubnets = "LIST_OF_SUBNETWORKS"
+
+	// subnetNatAllIPRanges specifies that we should NAT all IP ranges in the subnet.
+	subnetNatAllIPRanges = "ALL_IP_RANGES"
 )
 
 // +kops:fitask
@@ -47,6 +54,8 @@ type Router struct {
 
 	NATIPAllocationOption         *string
 	SourceSubnetworkIPRangesToNAT *string
+
+	Subnetworks []*Subnet
 }
 
 var _ fi.CompareWithID = &Router{}
@@ -65,7 +74,7 @@ func (r *Router) Find(c *fi.Context) (*Router, error) {
 		if gce.IsNotFound(err) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("error listing Routers: %v", err)
+		return nil, fmt.Errorf("error listing Routers: %w", err)
 	}
 
 	if len(found.Nats) != 1 {
@@ -77,14 +86,25 @@ func (r *Router) Find(c *fi.Context) (*Router, error) {
 		klog.Warningf("SelfLink did not match URL: %q vs %q", a, e)
 	}
 
-	return &Router{
+	actual := &Router{
 		Name:                          &found.Name,
 		Lifecycle:                     r.Lifecycle,
 		Network:                       &Network{Name: fi.String(lastComponent(found.Network))},
 		Region:                        fi.String(lastComponent(found.Region)),
 		NATIPAllocationOption:         &nat.NatIpAllocateOption,
 		SourceSubnetworkIPRangesToNAT: &nat.SourceSubnetworkIpRangesToNat,
-	}, nil
+	}
+
+	for _, subnet := range nat.Subnetworks {
+		if strings.Join(subnet.SourceIpRangesToNat, ",") != subnetNatAllIPRanges {
+			klog.Warningf("ignoring NAT router %q with nats.subnetworks.sourceIpRangesToNat != %s", found.SelfLink, subnetNatAllIPRanges)
+			return nil, nil
+		}
+
+		subnetName := lastComponent(subnet.Name)
+		actual.Subnetworks = append(actual.Subnetworks, &Subnet{Name: &subnetName})
+	}
+	return actual, nil
 
 }
 
@@ -128,6 +148,7 @@ func (*Router) CheckChanges(a, e, changes *Router) error {
 func (*Router) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Router) error {
 	cloud := t.Cloud
 	project := cloud.Project()
+	region := fi.StringValue(e.Region)
 
 	if a == nil {
 		klog.V(2).Infof("Creating Cloud NAT Gateway %v", e.Name)
@@ -142,8 +163,19 @@ func (*Router) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Router) error {
 				},
 			},
 		}
-		if _, err := t.Cloud.Compute().Routers().Insert(t.Cloud.Project(), *e.Region, router); err != nil {
-			return fmt.Errorf("error creating Router: %v", err)
+
+		for _, subnet := range e.Subnetworks {
+			router.Nats[0].Subnetworks = append(router.Nats[0].Subnetworks, &compute.RouterNatSubnetworkToNat{
+				Name:                subnet.URL(project, region),
+				SourceIpRangesToNat: []string{subnetNatAllIPRanges},
+			})
+		}
+		op, err := t.Cloud.Compute().Routers().Insert(project, region, router)
+		if err != nil {
+			return fmt.Errorf("error creating Router: %w", err)
+		}
+		if err := t.Cloud.WaitForOp(op); err != nil {
+			return fmt.Errorf("error waiting for router creation: %w", err)
 		}
 	} else {
 		if !reflect.DeepEqual(changes, &Router{}) {
@@ -155,11 +187,17 @@ func (*Router) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Router) error {
 }
 
 type terraformRouterNat struct {
-	Name                          *string `json:"name,omitempty" cty:"name"`
-	Region                        *string `json:"region,omitempty" cty:"region"`
-	Router                        *string `json:"router,omitempty" cty:"router"`
-	NATIPAllocateOption           *string `json:"nat_ip_allocate_option,omitempty" cty:"nat_ip_allocate_option"`
-	SourceSubnetworkIPRangesToNat *string `json:"source_subnetwork_ip_ranges_to_nat,omitempty" cty:"source_subnetwork_ip_ranges_to_nat"`
+	Name                          *string                         `json:"name,omitempty" cty:"name"`
+	Region                        *string                         `json:"region,omitempty" cty:"region"`
+	Router                        *string                         `json:"router,omitempty" cty:"router"`
+	NATIPAllocateOption           *string                         `json:"nat_ip_allocate_option,omitempty" cty:"nat_ip_allocate_option"`
+	SourceSubnetworkIPRangesToNat *string                         `json:"source_subnetwork_ip_ranges_to_nat,omitempty" cty:"source_subnetwork_ip_ranges_to_nat"`
+	Subnetworks                   []*terraformRouterNatSubnetwork `json:"subnetwork,omitempty" cty:"subnetwork"`
+}
+
+type terraformRouterNatSubnetwork struct {
+	Name                *terraformWriter.Literal `json:"name,omitempty" cty:"name"`
+	SourceIPRangesToNat []string                 `json:"source_ip_ranges_to_nat,omitempty" cty:"source_ip_ranges_to_nat"`
 }
 
 type terraformRouter struct {
@@ -187,6 +225,12 @@ func (*Router) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rout
 		Router:                        e.Name,
 		NATIPAllocateOption:           e.NATIPAllocationOption,
 		SourceSubnetworkIPRangesToNat: e.SourceSubnetworkIPRangesToNAT,
+	}
+	for _, subnet := range e.Subnetworks {
+		trn.Subnetworks = append(trn.Subnetworks, &terraformRouterNatSubnetwork{
+			Name:                subnet.TerraformLink(),
+			SourceIPRangesToNat: []string{subnetNatAllIPRanges},
+		})
 	}
 	return t.RenderResource("google_compute_router_nat", *e.Name, trn)
 }
