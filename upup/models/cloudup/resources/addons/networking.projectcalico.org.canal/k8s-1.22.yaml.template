@@ -3820,7 +3820,7 @@ spec:
           - name: TYPHA_HEALTHENABLED
             value: "true"
           - name: TYPHA_PROMETHEUSMETRICSENABLED
-            value: "{{- or .Networking.Canal.TyphaPrometheusMetricsEnabled "false" }}"
+            value: "{{- .Networking.Canal.TyphaPrometheusMetricsEnabled }}"
           - name: TYPHA_PROMETHEUSMETRICSPORT
             value: "{{- or .Networking.Canal.TyphaPrometheusMetricsPort "9093" }}"
         livenessProbe:
@@ -4032,16 +4032,16 @@ spec:
               value: "{{- or .Networking.Canal.LogSeveritySys "info" }}"
             # Set to enable the experimental Prometheus metrics server
             - name: FELIX_PROMETHEUSMETRICSENABLED
-              value: "{{- or .Networking.Canal.PrometheusMetricsEnabled "false" }}"
+              value: "{{- .Networking.Canal.PrometheusMetricsEnabled }}"
             # TCP port that the Prometheus metrics server should bind to
             - name: FELIX_PROMETHEUSMETRICSPORT
               value: "{{- or .Networking.Canal.PrometheusMetricsPort "9091" }}"
             # Enable Prometheus Go runtime metrics collection
             - name: FELIX_PROMETHEUSGOMETRICSENABLED
-              value: "{{- or .Networking.Canal.PrometheusGoMetricsEnabled "true" }}"
+              value: "{{- .Networking.Canal.PrometheusGoMetricsEnabled }}"
             # Enable Prometheus process metrics collection
             - name: FELIX_PROMETHEUSPROCESSMETRICSENABLED
-              value: "{{- or .Networking.Canal.PrometheusProcessMetricsEnabled "true" }}"
+              value: "{{- .Networking.Canal.PrometheusProcessMetricsEnabled }}"
           securityContext:
             privileged: true
           resources:
@@ -4124,7 +4124,7 @@ spec:
                 configMapKeyRef:
                   name: canal-config
                   key: masquerade
-            {{- if eq .Networking.Canal.DisableFlannelForwardRules true }}
+            {{- if .Networking.Canal.DisableFlannelForwardRules }}
             - name: FLANNELD_IPTABLES_FORWARD_RULES
               value: "false"
             {{- end }}
