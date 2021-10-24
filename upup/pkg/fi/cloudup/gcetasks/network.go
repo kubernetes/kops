@@ -57,7 +57,6 @@ func (e *Network) Find(c *fi.Context) (*Network, error) {
 	}
 
 	actual := &Network{}
-	actual.Name = &r.Name
 	if r.IPv4Range != "" {
 		actual.Mode = "legacy"
 		actual.CIDR = &r.IPv4Range

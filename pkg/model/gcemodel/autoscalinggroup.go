@@ -48,7 +48,7 @@ var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
 
 // Build the GCE instance template object for an InstanceGroup
 // We are then able to extract out the fields when running with the clusterapi.
-func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) (*gcetasks.InstanceTemplate, error) {
+func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderContext, ig *kops.InstanceGroup, subnet *kops.ClusterSubnetSpec) (*gcetasks.InstanceTemplate, error) {
 	// Indented to keep diff manageable
 	// TODO: Remove spurious indent
 	{
@@ -144,10 +144,10 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				t.AliasIPRanges = map[string]string{
 					b.NameForIPAliasRange("pods"): "/24",
 				}
-				t.Subnet = b.LinkToIPAliasSubnet()
 			} else {
 				t.CanIPForward = fi.Bool(true)
 			}
+			t.Subnet = b.LinkToSubnet(subnet)
 
 			if b.Cluster.Spec.CloudConfig.GCEServiceAccount != "" {
 				klog.Infof("VMs using Service Account: %v", b.Cluster.Spec.CloudConfig.GCEServiceAccount)
@@ -225,11 +225,23 @@ func (b *AutoscalingGroupModelBuilder) splitToZones(ig *kops.InstanceGroup) (map
 
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
-		instanceTemplate, err := b.buildInstanceTemplate(c, ig)
+		subnets, err := b.GatherSubnets(ig)
 		if err != nil {
 			return err
 		}
 
+		// On GCE, instance groups cannot have multiple subnets.
+		// Because subnets are regional on GCE, this should not be limiting.
+		// (IGs can in theory support multiple zones, but in practice we don't recommend this)
+		if len(subnets) != 1 {
+			return fmt.Errorf("instanceGroup %q has multiple subnets", ig.Name)
+		}
+		subnet := subnets[0]
+
+		instanceTemplate, err := b.buildInstanceTemplate(c, ig, subnet)
+		if err != nil {
+			return err
+		}
 		c.AddTask(instanceTemplate)
 
 		instanceCountByZone, err := b.splitToZones(ig)
