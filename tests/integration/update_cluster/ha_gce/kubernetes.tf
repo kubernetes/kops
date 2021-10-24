@@ -273,7 +273,7 @@ resource "google_compute_firewall" "kubernetes-master-https-ha-gce-example-com" 
   }
   disabled      = false
   name          = "kubernetes-master-https-ha-gce-example-com"
-  network       = google_compute_network.default.name
+  network       = "default"
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["ha-gce-example-com-k8s-io-role-master"]
 }
@@ -285,7 +285,7 @@ resource "google_compute_firewall" "kubernetes-master-https-ipv6-ha-gce-example-
   }
   disabled      = false
   name          = "kubernetes-master-https-ipv6-ha-gce-example-com"
-  network       = google_compute_network.default.name
+  network       = "default"
   source_ranges = ["::/0"]
   target_tags   = ["ha-gce-example-com-k8s-io-role-master"]
 }
@@ -311,7 +311,7 @@ resource "google_compute_firewall" "master-to-master-ha-gce-example-com" {
   }
   disabled    = false
   name        = "master-to-master-ha-gce-example-com"
-  network     = google_compute_network.default.name
+  network     = "default"
   source_tags = ["ha-gce-example-com-k8s-io-role-master"]
   target_tags = ["ha-gce-example-com-k8s-io-role-master"]
 }
@@ -337,7 +337,7 @@ resource "google_compute_firewall" "master-to-node-ha-gce-example-com" {
   }
   disabled    = false
   name        = "master-to-node-ha-gce-example-com"
-  network     = google_compute_network.default.name
+  network     = "default"
   source_tags = ["ha-gce-example-com-k8s-io-role-master"]
   target_tags = ["ha-gce-example-com-k8s-io-role-node"]
 }
@@ -353,7 +353,7 @@ resource "google_compute_firewall" "node-to-master-ha-gce-example-com" {
   }
   disabled    = false
   name        = "node-to-master-ha-gce-example-com"
-  network     = google_compute_network.default.name
+  network     = "default"
   source_tags = ["ha-gce-example-com-k8s-io-role-node"]
   target_tags = ["ha-gce-example-com-k8s-io-role-master"]
 }
@@ -379,7 +379,7 @@ resource "google_compute_firewall" "node-to-node-ha-gce-example-com" {
   }
   disabled    = false
   name        = "node-to-node-ha-gce-example-com"
-  network     = google_compute_network.default.name
+  network     = "default"
   source_tags = ["ha-gce-example-com-k8s-io-role-node"]
   target_tags = ["ha-gce-example-com-k8s-io-role-node"]
 }
@@ -395,7 +395,7 @@ resource "google_compute_firewall" "nodeport-external-to-node-ha-gce-example-com
   }
   disabled      = true
   name          = "nodeport-external-to-node-ha-gce-example-com"
-  network       = google_compute_network.default.name
+  network       = "default"
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["ha-gce-example-com-k8s-io-role-node"]
 }
@@ -411,7 +411,7 @@ resource "google_compute_firewall" "nodeport-external-to-node-ipv6-ha-gce-exampl
   }
   disabled      = true
   name          = "nodeport-external-to-node-ipv6-ha-gce-example-com"
-  network       = google_compute_network.default.name
+  network       = "default"
   source_ranges = ["::/0"]
   target_tags   = ["ha-gce-example-com-k8s-io-role-node"]
 }
@@ -423,7 +423,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ha-gce-example-com" {
   }
   disabled      = false
   name          = "ssh-external-to-master-ha-gce-example-com"
-  network       = google_compute_network.default.name
+  network       = "default"
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["ha-gce-example-com-k8s-io-role-master"]
 }
@@ -435,7 +435,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ipv6-ha-gce-example-c
   }
   disabled      = false
   name          = "ssh-external-to-master-ipv6-ha-gce-example-com"
-  network       = google_compute_network.default.name
+  network       = "default"
   source_ranges = ["::/0"]
   target_tags   = ["ha-gce-example-com-k8s-io-role-master"]
 }
@@ -447,7 +447,7 @@ resource "google_compute_firewall" "ssh-external-to-node-ha-gce-example-com" {
   }
   disabled      = false
   name          = "ssh-external-to-node-ha-gce-example-com"
-  network       = google_compute_network.default.name
+  network       = "default"
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["ha-gce-example-com-k8s-io-role-node"]
 }
@@ -459,7 +459,7 @@ resource "google_compute_firewall" "ssh-external-to-node-ipv6-ha-gce-example-com
   }
   disabled      = false
   name          = "ssh-external-to-node-ipv6-ha-gce-example-com"
-  network       = google_compute_network.default.name
+  network       = "default"
   source_ranges = ["::/0"]
   target_tags   = ["ha-gce-example-com-k8s-io-role-node"]
 }
@@ -550,7 +550,7 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
   network_interface {
     access_config {
     }
-    network = google_compute_network.default.name
+    network = "default"
   }
   scheduling {
     automatic_restart   = true
@@ -590,7 +590,7 @@ resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-co
   network_interface {
     access_config {
     }
-    network = google_compute_network.default.name
+    network = "default"
   }
   scheduling {
     automatic_restart   = true
@@ -630,7 +630,7 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
   network_interface {
     access_config {
     }
-    network = google_compute_network.default.name
+    network = "default"
   }
   scheduling {
     automatic_restart   = true
@@ -670,7 +670,7 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
   network_interface {
     access_config {
     }
-    network = google_compute_network.default.name
+    network = "default"
   }
   scheduling {
     automatic_restart   = true
@@ -682,11 +682,6 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_only"]
   }
   tags = ["ha-gce-example-com-k8s-io-role-node"]
-}
-
-resource "google_compute_network" "default" {
-  auto_create_subnetworks = true
-  name                    = "default"
 }
 
 terraform {
