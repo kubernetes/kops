@@ -82,7 +82,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			r := &gcetasks.Router{
 				Name:                          s(b.SafeObjectName("nat")),
 				Lifecycle:                     b.Lifecycle,
-				Network:                       s(b.LinkToNetwork().URL(b.Cluster.Spec.Project)),
+				Network:                       b.LinkToNetwork(),
 				Region:                        s(b.Region),
 				NATIPAllocationOption:         s(gcetasks.NATIPAllocationOptionAutoOnly),
 				SourceSubnetworkIPRangesToNAT: s(gcetasks.SourceSubnetworkIPRangesAll),

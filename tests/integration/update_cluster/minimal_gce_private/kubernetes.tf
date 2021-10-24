@@ -498,7 +498,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-private-example-c
 
 resource "google_compute_router" "nat-minimal-gce-private-example-com" {
   name    = "nat-minimal-gce-private-example-com"
-  network = "https://www.googleapis.com/compute/v1/projects/testproject/global/networks/default"
+  network = "default"
 }
 
 resource "google_compute_router_nat" "nat-minimal-gce-private-example-com" {
