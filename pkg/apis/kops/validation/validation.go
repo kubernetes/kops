@@ -815,10 +815,6 @@ func validateNetworkingCanal(c *kops.Cluster, v *kops.CanalNetworkingSpec, fldPa
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("iptablesBackend"), &v.IptablesBackend, valid)...)
 	}
 
-	if c.IsKubernetesGTE("1.22") {
-		allErrs = append(allErrs, field.Forbidden(fldPath, "Canal is supported only for Kubernetes 1.21 and lower"))
-	}
-
 	return allErrs
 }
 
