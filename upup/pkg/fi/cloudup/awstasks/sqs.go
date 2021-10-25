@@ -173,16 +173,17 @@ func (q *SQS) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SQS) error {
 			return fmt.Errorf("error creating SQS queue: %v", err)
 		}
 
-		q.URL = response.QueueUrl
+		url := response.QueueUrl
 
 		attributes, err := t.Cloud.SQS().GetQueueAttributes(&sqs.GetQueueAttributesInput{
 			AttributeNames: []*string{s("QueueArn")},
-			QueueUrl:       q.URL,
+			QueueUrl:       url,
 		})
 		if err != nil {
 			return fmt.Errorf("error getting SQS queue attributes: %v", err)
 		}
-		q.ARN = attributes.Attributes["QueueArn"]
+		e.ARN = attributes.Attributes["QueueArn"]
+		e.URL = url
 	}
 
 	return nil
