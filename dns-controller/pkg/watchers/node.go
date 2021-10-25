@@ -165,7 +165,7 @@ func (c *NodeController) updateNodeRecords(node *v1.Node) string {
 
 	// node/<name>/external -> ExternalIP
 	for _, a := range node.Status.Addresses {
-		if a.Type != v1.NodeExternalIP {
+		if a.Type != v1.NodeExternalIP && (a.Type != v1.NodeInternalIP || !utils.IsIPv6IP(a.Address)) {
 			continue
 		}
 		var recordType dns.RecordType = dns.RecordTypeA
