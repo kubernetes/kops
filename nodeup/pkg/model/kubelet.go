@@ -468,29 +468,25 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 			return nil, err
 		}
 
-		// Default maximum pods per node defined by KubeletConfiguration, but
-		// respect any value the user sets explicitly.
-		maxPods := int32(110)
-		if c.MaxPods != nil {
-			maxPods = *c.MaxPods
-		}
+		// Respect any MaxPods value the user sets explicitly.
+		if c.MaxPods == nil {
+			// Default maximum pods per node defined by KubeletConfiguration
+			maxPods := 110
 
-		// AWS VPC CNI plugin-specific maximum pod calculation based on:
-		// https://github.com/aws/amazon-vpc-cni-k8s/blob/f52ad45/README.md
-		//
-		// Treat the calculated value as a hard max, since networking with the CNI
-		// plugin won't work correctly once we exceed that maximum.
-		enis := instanceType.InstanceENIs
-		ips := instanceType.InstanceIPsPerENI
-		if enis > 0 && ips > 0 {
-			instanceMaxPods := enis*(ips-1) + 2
-			if int32(instanceMaxPods) < maxPods {
-				maxPods = int32(instanceMaxPods)
+			// AWS VPC CNI plugin-specific maximum pod calculation based on:
+			// https://github.com/aws/amazon-vpc-cni-k8s/blob/v1.9.3/README.md#setup
+			enis := instanceType.InstanceENIs
+			ips := instanceType.InstanceIPsPerENI
+			if enis > 0 && ips > 0 {
+				instanceMaxPods := enis*(ips-1) + 2
+				if instanceMaxPods < maxPods {
+					maxPods = instanceMaxPods
+				}
 			}
-		}
 
-		// Write back values that could have changed
-		c.MaxPods = &maxPods
+			// Write back values that could have changed
+			c.MaxPods = fi.Int32(int32(maxPods))
+		}
 	}
 
 	// Use --register-with-taints
