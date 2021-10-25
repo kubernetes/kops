@@ -50,7 +50,7 @@ type SQS struct {
 var _ fi.CompareWithID = &SQS{}
 
 func (q *SQS) CompareWithID() *string {
-	return q.URL
+	return q.ARN
 }
 
 func (q *SQS) Find(c *fi.Context) (*SQS, error) {
@@ -130,7 +130,7 @@ func (q *SQS) Find(c *fi.Context) (*SQS, error) {
 	}
 
 	//Avoid flapping
-	q.Name = actual.Name
+	q.ARN = actual.ARN
 
 	return actual, nil
 }
@@ -173,17 +173,15 @@ func (q *SQS) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SQS) error {
 			return fmt.Errorf("error creating SQS queue: %v", err)
 		}
 
-		url := response.QueueUrl
-
 		attributes, err := t.Cloud.SQS().GetQueueAttributes(&sqs.GetQueueAttributesInput{
 			AttributeNames: []*string{s("QueueArn")},
-			QueueUrl:       url,
+			QueueUrl:       response.QueueUrl,
 		})
 		if err != nil {
 			return fmt.Errorf("error getting SQS queue attributes: %v", err)
 		}
+
 		e.ARN = attributes.Attributes["QueueArn"]
-		e.URL = url
 	}
 
 	return nil
