@@ -97,6 +97,16 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				fmt.Sprintf("tcp:%d", wellknownports.KopsControllerPort),
 			},
 		}
+		if b.IsGossip() {
+			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.DNSControllerGossipMemberlist))
+			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.ProtokubeGossipMemberlist))
+		}
+		if b.NetworkingIsCalico() {
+			t.Allowed = append(t.Allowed, "ipip")
+		}
+		if b.NetworkingIsCilium() {
+			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.VxlanUDP))
+		}
 		c.AddTask(t)
 	}
 
