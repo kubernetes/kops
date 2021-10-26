@@ -36,6 +36,9 @@ func (b *CalicoOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	c.EncapsulationMode = "ipip"
+	if clusterSpec.IsIPv6Only() {
+		c.EncapsulationMode = "none"
+	}
 
 	return nil
 }
