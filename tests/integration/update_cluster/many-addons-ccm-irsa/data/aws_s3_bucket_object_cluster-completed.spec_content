@@ -32,6 +32,7 @@ spec:
     enabled: true
     expander: random
     image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.21.1
+    maxNodeProvisionTime: 15m0s
     newPodScaleUpDelay: 0s
     scaleDownDelayAfterAdd: 10m0s
     scaleDownUtilizationThreshold: "0.5"
