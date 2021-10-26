@@ -4537,12 +4537,7 @@ spec:
                           may be removed in the future. Setting this has no effect.
                         type: object
                       containerRuntimeLabels:
-                        description: 'ContainerRuntimeLabels enables fetching of container-runtime
-                          labels from the specified container runtime and associating
-                          them with endpoints. Supported values are: "none", "containerd",
-                          "crio", "docker", "auto" As of Cilium 1.7.0, Cilium no longer
-                          fetches information from the container runtime and this
-                          field is ignored. Default: none'
+                        description: ContainerRuntimeLabels is unused.
                         type: string
                       cpuRequest:
                         anyOf:

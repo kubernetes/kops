@@ -38,7 +38,6 @@ data:
   bpf-policy-map-max: "16384"
   cgroup-root: /run/cilium/cgroupv2
   cluster-name: default
-  container-runtime: none
   debug: "false"
   disable-cnp-status-updates: "true"
   disable-endpoint-crd: "false"
