@@ -808,6 +808,10 @@ func AddLegacyCCMPermissions(p *Policy) {
 	p.unconditionalAction.Insert(
 		"ec2:CreateSecurityGroup",
 		"ec2:CreateTags",
+		"elasticloadbalancing:CreateTargetGroup",
+		"elasticloadbalancing:AddTags",
+		"elasticloadbalancing:RegisterTargets",
+		"elasticloadbalancing:CreateListener",
 	)
 }
 
