@@ -4432,12 +4432,10 @@ spec:
                           Default: false'
                         type: boolean
                       accessLog:
-                        description: AccessLog is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: AccessLog is unused.
                         type: string
                       agentLabels:
-                        description: AgentLabels is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: AgentLabels is unused.
                         items:
                           type: string
                         type: array
@@ -4452,16 +4450,14 @@ spec:
                           for Prometheus metrics. Defaults to 9090.
                         type: integer
                       allowLocalhost:
-                        description: AllowLocalhost is not implemented and may be
-                          removed in the future. Setting this has no effect.
+                        description: AllowLocalhost is unused.
                         type: string
                       autoDirectNodeRoutes:
                         description: 'AutoDirectNodeRoutes adds automatic L2 routing
                           between nodes. Default: false'
                         type: boolean
                       autoIpv6NodeRoutes:
-                        description: AutoIpv6NodeRoutes is not implemented and may
-                          be removed in the future. Setting this has no effect.
+                        description: AutoIpv6NodeRoutes is unused.
                         type: boolean
                       bpfCTGlobalAnyMax:
                         description: 'BPFCTGlobalAnyMax is the maximum number of entries
@@ -4504,11 +4500,10 @@ spec:
                           in endpoint policy map. Default: 16384'
                         type: integer
                       bpfRoot:
-                        description: BPFRoot is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: BPFRoot is unused.
                         type: string
                       chainingMode:
-                        description: 'ChainingMode allows to use Cilium in combination
+                        description: 'ChainingMode allows using Cilium in combination
                           with other CNI plugins. With Cilium CNI chaining, the base
                           network connectivity and IP address management is managed
                           by the non-Cilium CNI plugin, but Cilium attaches eBPF programs
@@ -4521,20 +4516,17 @@ spec:
                           only relevant when building a mesh of clusters.
                         type: string
                       cniBinPath:
-                        description: CniBinPath is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: CniBinPath is unused.
                         type: string
                       containerRuntime:
-                        description: ContainerRuntime is not implemented and may be
-                          removed in the future. Setting this has no effect.
+                        description: ContainerRuntime is unused.
                         items:
                           type: string
                         type: array
                       containerRuntimeEndpoint:
                         additionalProperties:
                           type: string
-                        description: ContainerRuntimeEndpoint is not implemented and
-                          may be removed in the future. Setting this has no effect.
+                        description: ContainerRuntimeEndpoint is unused.
                         type: object
                       containerRuntimeLabels:
                         description: 'ContainerRuntimeLabels enables fetching of container-runtime
@@ -4556,34 +4548,29 @@ spec:
                         description: Debug runs Cilium in debug mode.
                         type: boolean
                       debugVerbose:
-                        description: DebugVerbose is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: DebugVerbose is unused.
                         items:
                           type: string
                         type: array
                       device:
-                        description: Device is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: Device is unused.
                         type: string
                       disableCNPStatusUpdates:
-                        description: Determines if CNP NodeStatus updates will be
-                          sent to the Kubernetes api-server.
+                        description: DisableCNPStatusUpdates determines if CNP NodeStatus
+                          updates will be sent to the Kubernetes api-server.
                         type: boolean
                       disableConntrack:
-                        description: DisableConntrack is not implemented and may be
-                          removed in the future. Setting this has no effect.
+                        description: DisableConntrack is unused.
                         type: boolean
                       disableEndpointCRD:
                         description: 'DisableEndpointCRD disables usage of CiliumEndpoint
                           CRD. Default: false'
                         type: boolean
                       disableIpv4:
-                        description: 'DisableIpv4 is deprecated: Use EnableIpv4 instead.
-                          Setting this flag has no effect.'
+                        description: DisableIpv4 is unused.
                         type: boolean
                       disableK8sServices:
-                        description: DisableK8sServices is not implemented and may
-                          be removed in the future. Setting this has no effect.
+                        description: DisableK8sServices is unused.
                         type: boolean
                       disableMasquerade:
                         description: DisableMasquerade disables masquerading traffic
@@ -4630,28 +4617,24 @@ spec:
                           endpoint for both the agent and the operator.
                         type: boolean
                       enableRemoteNodeIdentity:
-                        description: 'EnableRemoteNodeIdentity enables the remote-node-identity
-                          added in Cilium 1.7.0. Default: true'
+                        description: 'EnableRemoteNodeIdentity enables the remote-node-identity.
+                          Default: true'
                         type: boolean
                       enableTracing:
-                        description: EnableTracing is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: EnableTracing is unused.
                         type: boolean
                       enableipv4:
-                        description: EnableIpv4 is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: EnableIpv4 is unused.
                         type: boolean
                       enableipv6:
-                        description: EnableIpv6 is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: EnableIpv6 is unused.
                         type: boolean
                       encryptionType:
                         description: 'EncryptionType specifies Cilium Encryption method
                           ("ipsec", "wireguard"). Default: ipsec'
                         type: string
                       envoyLog:
-                        description: EnvoyLog is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: EnvoyLog is unused.
                         type: string
                       etcdManaged:
                         description: 'EtcdManagd installs an additional etcd cluster
@@ -4682,104 +4665,82 @@ spec:
                           to wait before using a changed identity. Default: 5s'
                         type: string
                       ipam:
-                        description: Ipam specifies the IP address allocation mode
+                        description: 'Ipam specifies the IP address allocation mode
                           to use. Possible values are "crd" and "eni". "eni" will
                           use AWS native networking for pods. Eni requires masquerade
                           to be set to false. "crd" will use CRDs for controlling
                           IP address management. "hostscope" will use hostscope IPAM
                           mode. "kubernetes" will use addersing based on node pod
-                          CIDR. Empty value will use hostscope for cilum <= 1.7 and
-                          "kubernetes" otherwise.
+                          CIDR. Default: "kubernetes".'
                         type: string
                       ipv4ClusterCidrMaskSize:
-                        description: Ipv4ClusterCIDRMaskSize is not implemented and
-                          may be removed in the future. Setting this has no effect.
+                        description: Ipv4ClusterCIDRMaskSize is unused.
                         type: integer
                       ipv4Node:
-                        description: Ipv4Node is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: Ipv4Node is unused.
                         type: string
                       ipv4Range:
-                        description: Ipv4Range is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: Ipv4Range is unused.
                         type: string
                       ipv4ServiceRange:
-                        description: Ipv4ServiceRange is not implemented and may be
-                          removed in the future. Setting this has no effect.
+                        description: Ipv4ServiceRange is unused.
                         type: string
                       ipv6ClusterAllocCidr:
-                        description: Ipv6ClusterAllocCidr is not implemented and may
-                          be removed in the future. Setting this has no effect.
+                        description: Ipv6ClusterAllocCidr is unused.
                         type: string
                       ipv6Node:
-                        description: Ipv6Node is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: Ipv6Node is unused.
                         type: string
                       ipv6Range:
-                        description: Ipv6Range is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: Ipv6Range is unused.
                         type: string
                       ipv6ServiceRange:
-                        description: Ipv6ServiceRange is not implemented and may be
-                          removed in the future. Setting this has no effect.
+                        description: Ipv6ServiceRange is unused.
                         type: string
                       k8sApiServer:
-                        description: K8sAPIServer is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: K8sAPIServer is unused.
                         type: string
                       k8sKubeconfigPath:
-                        description: K8sKubeconfigPath is not implemented and may
-                          be removed in the future. Setting this has no effect.
+                        description: K8sKubeconfigPath is unused.
                         type: string
                       keepBpfTemplates:
-                        description: KeepBPFTemplates is not implemented and may be
-                          removed in the future. Setting this has no effect.
+                        description: KeepBPFTemplates is unused.
                         type: boolean
                       keepConfig:
-                        description: KeepConfig is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: KeepConfig is unused.
                         type: boolean
                       labelPrefixFile:
-                        description: LabelPrefixFile is not implemented and may be
-                          removed in the future. Setting this has currently no effect
+                        description: LabelPrefixFile is unused.
                         type: string
                       labels:
-                        description: Labels is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: Labels is unused.
                         items:
                           type: string
                         type: array
                       lb:
-                        description: LB is not implemented and may be removed in the
-                          future. Setting this has no effect.
+                        description: LB is unused.
                         type: string
                       libDir:
-                        description: LibDir is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: LibDir is unused.
                         type: string
                       logDriver:
-                        description: LogDrivers is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: LogDrivers is unused.
                         items:
                           type: string
                         type: array
                       logOpt:
                         additionalProperties:
                           type: string
-                        description: LogOpt is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: LogOpt is unused.
                         type: object
                       logstash:
-                        description: Logstash is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: Logstash is unused.
                         type: boolean
                       logstashAgent:
-                        description: LogstashAgent is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: LogstashAgent is unused.
                         type: string
                       logstashProbeTimer:
-                        description: LogstashProbeTimer is not implemented and may
-                          be removed in the future. Setting this has no effect.
+                        description: LogstashProbeTimer is unused.
                         format: int32
                         type: integer
                       memoryRequest:
@@ -4796,44 +4757,35 @@ spec:
                           Default: medium'
                         type: string
                       nat46Range:
-                        description: Nat6Range is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: Nat46Range is unused.
                         type: string
                       nodeInitBootstrapFile:
-                        description: NodeInitBootstrapFile is not implemented and
-                          may be removed in the future. Setting this has no effect.
+                        description: NodeInitBootstrapFile is unused.
                         type: string
                       pprof:
-                        description: Pprof is not implemented and may be removed in
-                          the future. Setting this has no effect.
+                        description: Pprof is unused.
                         type: boolean
                       preallocateBPFMaps:
                         description: 'PreallocateBPFMaps reduces the per-packet latency
                           at the expense of up-front memory allocation. Default: true'
                         type: boolean
                       prefilterDevice:
-                        description: PrefilterDevice is not implemented and may be
-                          removed in the future. Setting this has no effect.
+                        description: PrefilterDevice is unused.
                         type: string
                       prometheusServeAddr:
-                        description: PrometheusServeAddr is deprecated. Use EnablePrometheusMetrics
-                          and AgentPrometheusPort instead. Setting this has no effect.
+                        description: PrometheusServeAddr is unused.
                         type: string
                       reconfigureKubelet:
-                        description: ReconfigureKubelet is not implemented and may
-                          be removed in the future. Setting this has no effect.
+                        description: ReconfigureKubelet is unused.
                         type: boolean
                       removeCbrBridge:
-                        description: RemoveCbrBridge is not implemented and may be
-                          removed in the future. Setting this has no effect.
+                        description: RemoveCbrBridge is unused.
                         type: boolean
                       restartPods:
-                        description: RestartPods is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: RestartPods is unused.
                         type: boolean
                       restore:
-                        description: Restore is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: Restore is unused.
                         type: boolean
                       sidecarIstioProxyImage:
                         description: 'SidecarIstioProxyImage is the regular expression
@@ -4841,16 +4793,13 @@ spec:
                           image names. Default: cilium/istio_proxy'
                         type: string
                       singleClusterRoute:
-                        description: SingleClusterRoute is not implemented and may
-                          be removed in the future. Setting this has no effect.
+                        description: SingleClusterRoute is unused.
                         type: boolean
                       socketPath:
-                        description: SocketPath is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: SocketPath is unused.
                         type: string
                       stateDir:
-                        description: StateDir is not implemented and may be removed
-                          in the future. Setting this has no effect.
+                        description: StateDir is unused.
                         type: string
                       toFqdnsDnsRejectResponseCode:
                         description: 'ToFqdnsDNSRejectResponseCode sets the DNS response
@@ -4863,8 +4812,7 @@ spec:
                           implementation. Default: false'
                         type: boolean
                       tracePayloadlen:
-                        description: TracePayloadLen is not implemented and may be
-                          removed in the future. Setting this has no effect.
+                        description: TracePayloadLen is unused.
                         type: integer
                       tunnel:
                         description: 'Tunnel specifies the Cilium tunnelling mode.

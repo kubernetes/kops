@@ -506,28 +506,6 @@ func (in *CiliumNetworkingSpec) DeepCopyInto(out *CiliumNetworkingSpec) {
 		x := (*in).DeepCopy()
 		*out = &x
 	}
-	if in.AgentLabels != nil {
-		in, out := &in.AgentLabels, &out.AgentLabels
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
-	if in.ContainerRuntime != nil {
-		in, out := &in.ContainerRuntime, &out.ContainerRuntime
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
-	if in.ContainerRuntimeEndpoint != nil {
-		in, out := &in.ContainerRuntimeEndpoint, &out.ContainerRuntimeEndpoint
-		*out = make(map[string]string, len(*in))
-		for key, val := range *in {
-			(*out)[key] = val
-		}
-	}
-	if in.DebugVerbose != nil {
-		in, out := &in.DebugVerbose, &out.DebugVerbose
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
 	if in.EnableL7Proxy != nil {
 		in, out := &in.EnableL7Proxy, &out.EnableL7Proxy
 		*out = new(bool)
@@ -542,23 +520,6 @@ func (in *CiliumNetworkingSpec) DeepCopyInto(out *CiliumNetworkingSpec) {
 		in, out := &in.EnableEndpointHealthChecking, &out.EnableEndpointHealthChecking
 		*out = new(bool)
 		**out = **in
-	}
-	if in.Labels != nil {
-		in, out := &in.Labels, &out.Labels
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
-	if in.LogDrivers != nil {
-		in, out := &in.LogDrivers, &out.LogDrivers
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
-	if in.LogOpt != nil {
-		in, out := &in.LogOpt, &out.LogOpt
-		*out = make(map[string]string, len(*in))
-		for key, val := range *in {
-			(*out)[key] = val
-		}
 	}
 	if in.DisableMasquerade != nil {
 		in, out := &in.DisableMasquerade, &out.DisableMasquerade
