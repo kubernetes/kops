@@ -1874,7 +1874,7 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.ClusterName = in.ClusterName
 	out.ToFqdnsDNSRejectResponseCode = in.ToFqdnsDNSRejectResponseCode
 	out.ToFqdnsEnablePoller = in.ToFqdnsEnablePoller
-	out.ContainerRuntimeLabels = in.ContainerRuntimeLabels
+	// INFO: in.ContainerRuntimeLabels opted out of conversion generation
 	out.Ipam = in.Ipam
 	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
 	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
@@ -1986,7 +1986,6 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	out.ClusterName = in.ClusterName
 	out.ToFqdnsDNSRejectResponseCode = in.ToFqdnsDNSRejectResponseCode
 	out.ToFqdnsEnablePoller = in.ToFqdnsEnablePoller
-	out.ContainerRuntimeLabels = in.ContainerRuntimeLabels
 	out.Ipam = in.Ipam
 	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
 	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
