@@ -502,12 +502,6 @@ type CiliumNetworkingSpec struct {
 	// with the less powerful legacy implementation.
 	// Default: false
 	ToFqdnsEnablePoller bool `json:"toFqdnsEnablePoller,omitempty"`
-	// ContainerRuntimeLabels enables fetching of container-runtime labels from the specified container runtime and associating them with endpoints.
-	// Supported values are: "none", "containerd", "crio", "docker", "auto"
-	// As of Cilium 1.7.0, Cilium no longer fetches information from the
-	// container runtime and this field is ignored.
-	// Default: none
-	ContainerRuntimeLabels string `json:"containerRuntimeLabels,omitempty"`
 	// Ipam specifies the IP address allocation mode to use.
 	// Possible values are "crd" and "eni".
 	// "eni" will use AWS native networking for pods. Eni requires masquerade to be set to false.
