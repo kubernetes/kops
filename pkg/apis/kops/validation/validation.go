@@ -1110,10 +1110,7 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e kops.EtcdClusterSp
 	}
 
 	if v.EncapsulationMode != "" {
-		// Don't tolerate "None" for now, which would disable encapsulation in the default IPPool
-		// object. Note that with no encapsulation, we'd need to select the "bird" networking
-		// backend in order to allow use of BGP to distribute routes for pod traffic.
-		valid := []string{"ipip", "vxlan"}
+		valid := []string{"ipip", "vxlan", "none"}
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("encapsulationMode"), &v.EncapsulationMode, valid)...)
 	}
 

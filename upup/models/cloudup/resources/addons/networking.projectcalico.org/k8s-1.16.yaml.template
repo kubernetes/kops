@@ -26,7 +26,7 @@ data:
   # You must set a non-zero value for Typha replicas below.
   typha_service_name: "{{- if .Networking.Calico.TyphaReplicas -}}calico-typha{{- else -}}none{{- end -}}"
   # Configure the backend to use.
-  calico_backend: "{{- if eq .Networking.Calico.EncapsulationMode "vxlan" -}}vxlan{{- else -}}bird{{- end -}}"
+  calico_backend: "{{- if eq .Networking.Calico.EncapsulationMode "ipip" -}}bird{{- else -}}{{ .Networking.Calico.EncapsulationMode }}{{- end -}}"
 
   # Configure the MTU to use for workload interfaces and tunnels.
   # By default, MTU is auto-detected, and explicitly setting this field should not be required.
@@ -54,7 +54,12 @@ data:
           "ipam": {
               "assign_ipv4": "{{ not IsIPv6Only }}",
               "assign_ipv6": "{{ IsIPv6Only }}",
+              {{- if not IsIPv6Only }}
               "type": "calico-ipam"
+              {{- else }}
+              "type": "host-local",
+              "ranges": [[{ "subnet": "usePodCidr" }]]
+              {{- end }}
           },
           "policy": {
               "type": "k8s"
@@ -3997,6 +4002,11 @@ spec:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
               value: "kubernetes"
+            {{- if IsIPv6Only }}
+            # Configure route aggregation based on pod CIDR.
+            - name: USE_POD_CIDR
+              value: "true"
+            {{- end }}
             {{- if .Networking.Calico.TyphaReplicas }}
             # Typha support: controlled by the ConfigMap.
             - name: FELIX_TYPHAK8SSERVICENAME
@@ -4027,10 +4037,17 @@ spec:
               value: "{{- if not IsIPv6Only -}}autodetect{{- else -}}none{{- end -}}"
             - name: IP6
               value: "{{- if IsIPv6Only -}}autodetect{{- else -}}none{{- end -}}"
+            {{- if not IsIPv6Only }}
             - name: IP_AUTODETECTION_METHOD
               value: "{{- or .Networking.Calico.IPv4AutoDetectionMethod "first-found" }}"
             - name: IP6_AUTODETECTION_METHOD
+              value: "{{- or .Networking.Calico.IPv6AutoDetectionMethod "none" }}"
+            {{- else }}
+            - name: IP_AUTODETECTION_METHOD
+              value: "{{- or .Networking.Calico.IPv4AutoDetectionMethod "none" }}"
+            - name: IP6_AUTODETECTION_METHOD
               value: "{{- or .Networking.Calico.IPv6AutoDetectionMethod "first-found" }}"
+            {{- end }}
             # Enable IPIP
             - name: CALICO_IPV4POOL_IPIP
               value: "{{ CalicoIPv4PoolIPIPMode }}"
@@ -4059,12 +4076,10 @@ spec:
             # chosen from this range. Changing this value after installation will have
             # no effect. This should fall within `--cluster-cidr`.
             {{- if IsIPv6Only }}
-            - name: CALICO_IPV6POOL_CIDR
-              value: "{{ .KubeControllerManager.ClusterCIDR }}"
-            - name: CALICO_IPV6POOL_NAT_OUTGOING
-              value: "true"
             - name: CALICO_ROUTER_ID
               value: "hash"
+            - name: NO_DEFAULT_POOLS
+              value: "true"
             {{- else }}
             - name: CALICO_IPV4POOL_CIDR
               value: "{{ .KubeControllerManager.ClusterCIDR }}"
@@ -4136,10 +4151,11 @@ spec:
               - /bin/calico-node
               - -felix-live
               {{- if eq .Networking.Calico.EncapsulationMode "ipip" }}
+              {{- if not IsIPv6Only }}
               - -bird-live
-              {{- end }}
-              {{- if IsIPv6Only }}
+              {{- else }}
               - -bird6-live
+              {{- end }}
               {{- end }}
             periodSeconds: 10
             initialDelaySeconds: 10
@@ -4151,10 +4167,11 @@ spec:
               - /bin/calico-node
               - -felix-ready
               {{- if eq .Networking.Calico.EncapsulationMode "ipip" }}
+              {{- if not IsIPv6Only }}
               - -bird-ready
-              {{- end }}
-              {{- if IsIPv6Only }}
+              {{- else }}
               - -bird6-ready
+              {{- end }}
               {{- end }}
             periodSeconds: 10
             timeoutSeconds: 10
