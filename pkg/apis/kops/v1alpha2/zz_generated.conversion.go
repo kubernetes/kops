@@ -1797,68 +1797,68 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.Version = in.Version
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
-	out.AccessLog = in.AccessLog
-	out.AgentLabels = in.AgentLabels
+	// INFO: in.AccessLog opted out of conversion generation
+	// INFO: in.AgentLabels opted out of conversion generation
 	out.AgentPrometheusPort = in.AgentPrometheusPort
-	out.AllowLocalhost = in.AllowLocalhost
-	out.AutoIpv6NodeRoutes = in.AutoIpv6NodeRoutes
-	out.BPFRoot = in.BPFRoot
+	// INFO: in.AllowLocalhost opted out of conversion generation
+	// INFO: in.AutoIpv6NodeRoutes opted out of conversion generation
+	// INFO: in.BPFRoot opted out of conversion generation
 	out.ChainingMode = in.ChainingMode
-	out.ContainerRuntime = in.ContainerRuntime
-	out.ContainerRuntimeEndpoint = in.ContainerRuntimeEndpoint
+	// INFO: in.ContainerRuntime opted out of conversion generation
+	// INFO: in.ContainerRuntimeEndpoint opted out of conversion generation
 	out.Debug = in.Debug
-	out.DebugVerbose = in.DebugVerbose
-	out.Device = in.Device
-	out.DisableConntrack = in.DisableConntrack
+	// INFO: in.DebugVerbose opted out of conversion generation
+	// INFO: in.Device opted out of conversion generation
+	// INFO: in.DisableConntrack opted out of conversion generation
 	out.DisableEndpointCRD = in.DisableEndpointCRD
-	out.DisableIpv4 = in.DisableIpv4
-	out.DisableK8sServices = in.DisableK8sServices
+	// INFO: in.DisableIpv4 opted out of conversion generation
+	// INFO: in.DisableK8sServices opted out of conversion generation
 	out.EnablePolicy = in.EnablePolicy
 	out.EnableL7Proxy = in.EnableL7Proxy
 	out.EnableBPFMasquerade = in.EnableBPFMasquerade
 	out.EnableEndpointHealthChecking = in.EnableEndpointHealthChecking
-	out.EnableTracing = in.EnableTracing
+	// INFO: in.EnableTracing opted out of conversion generation
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnableEncryption = in.EnableEncryption
 	out.EncryptionType = kops.CiliumEncryptionType(in.EncryptionType)
-	out.EnvoyLog = in.EnvoyLog
+	// INFO: in.EnvoyLog opted out of conversion generation
 	out.IdentityAllocationMode = in.IdentityAllocationMode
 	out.IdentityChangeGracePeriod = in.IdentityChangeGracePeriod
-	out.Ipv4ClusterCIDRMaskSize = in.Ipv4ClusterCIDRMaskSize
-	out.Ipv4Node = in.Ipv4Node
-	out.Ipv4Range = in.Ipv4Range
-	out.Ipv4ServiceRange = in.Ipv4ServiceRange
-	out.Ipv6ClusterAllocCidr = in.Ipv6ClusterAllocCidr
-	out.Ipv6Node = in.Ipv6Node
-	out.Ipv6Range = in.Ipv6Range
-	out.Ipv6ServiceRange = in.Ipv6ServiceRange
-	out.K8sAPIServer = in.K8sAPIServer
-	out.K8sKubeconfigPath = in.K8sKubeconfigPath
-	out.KeepBPFTemplates = in.KeepBPFTemplates
-	out.KeepConfig = in.KeepConfig
-	out.LabelPrefixFile = in.LabelPrefixFile
-	out.Labels = in.Labels
-	out.LB = in.LB
-	out.LibDir = in.LibDir
-	out.LogDrivers = in.LogDrivers
-	out.LogOpt = in.LogOpt
-	out.Logstash = in.Logstash
-	out.LogstashAgent = in.LogstashAgent
-	out.LogstashProbeTimer = in.LogstashProbeTimer
+	// INFO: in.Ipv4ClusterCIDRMaskSize opted out of conversion generation
+	// INFO: in.Ipv4Node opted out of conversion generation
+	// INFO: in.Ipv4Range opted out of conversion generation
+	// INFO: in.Ipv4ServiceRange opted out of conversion generation
+	// INFO: in.Ipv6ClusterAllocCidr opted out of conversion generation
+	// INFO: in.Ipv6Node opted out of conversion generation
+	// INFO: in.Ipv6Range opted out of conversion generation
+	// INFO: in.Ipv6ServiceRange opted out of conversion generation
+	// INFO: in.K8sAPIServer opted out of conversion generation
+	// INFO: in.K8sKubeconfigPath opted out of conversion generation
+	// INFO: in.KeepBPFTemplates opted out of conversion generation
+	// INFO: in.KeepConfig opted out of conversion generation
+	// INFO: in.LabelPrefixFile opted out of conversion generation
+	// INFO: in.Labels opted out of conversion generation
+	// INFO: in.LB opted out of conversion generation
+	// INFO: in.LibDir opted out of conversion generation
+	// INFO: in.LogDrivers opted out of conversion generation
+	// INFO: in.LogOpt opted out of conversion generation
+	// INFO: in.Logstash opted out of conversion generation
+	// INFO: in.LogstashAgent opted out of conversion generation
+	// INFO: in.LogstashProbeTimer opted out of conversion generation
 	out.DisableMasquerade = in.DisableMasquerade
-	out.Nat46Range = in.Nat46Range
+	// INFO: in.Nat46Range opted out of conversion generation
 	out.AgentPodAnnotations = in.AgentPodAnnotations
-	out.Pprof = in.Pprof
-	out.PrefilterDevice = in.PrefilterDevice
-	out.PrometheusServeAddr = in.PrometheusServeAddr
-	out.Restore = in.Restore
-	out.SingleClusterRoute = in.SingleClusterRoute
-	out.SocketPath = in.SocketPath
-	out.StateDir = in.StateDir
-	out.TracePayloadLen = in.TracePayloadLen
+	// INFO: in.Pprof opted out of conversion generation
+	// INFO: in.PrefilterDevice opted out of conversion generation
+	// INFO: in.PrometheusServeAddr opted out of conversion generation
+	// INFO: in.Restore opted out of conversion generation
+	// INFO: in.SingleClusterRoute opted out of conversion generation
+	// INFO: in.SocketPath opted out of conversion generation
+	// INFO: in.StateDir opted out of conversion generation
+	// INFO: in.TracePayloadLen opted out of conversion generation
 	out.Tunnel = in.Tunnel
-	out.EnableIpv6 = in.EnableIpv6
-	out.EnableIpv4 = in.EnableIpv4
+	// INFO: in.EnableIpv6 opted out of conversion generation
+	// INFO: in.EnableIpv4 opted out of conversion generation
 	out.MonitorAggregation = in.MonitorAggregation
 	out.BPFCTGlobalTCPMax = in.BPFCTGlobalTCPMax
 	out.BPFCTGlobalAnyMax = in.BPFCTGlobalAnyMax
@@ -1891,11 +1891,11 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	} else {
 		out.Hubble = nil
 	}
-	out.RemoveCbrBridge = in.RemoveCbrBridge
-	out.RestartPods = in.RestartPods
-	out.ReconfigureKubelet = in.ReconfigureKubelet
-	out.NodeInitBootstrapFile = in.NodeInitBootstrapFile
-	out.CniBinPath = in.CniBinPath
+	// INFO: in.RemoveCbrBridge opted out of conversion generation
+	// INFO: in.RestartPods opted out of conversion generation
+	// INFO: in.ReconfigureKubelet opted out of conversion generation
+	// INFO: in.NodeInitBootstrapFile opted out of conversion generation
+	// INFO: in.CniBinPath opted out of conversion generation
 	out.DisableCNPStatusUpdates = in.DisableCNPStatusUpdates
 	return nil
 }
@@ -1909,68 +1909,22 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	out.Version = in.Version
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
-	out.AccessLog = in.AccessLog
-	out.AgentLabels = in.AgentLabels
 	out.AgentPrometheusPort = in.AgentPrometheusPort
-	out.AllowLocalhost = in.AllowLocalhost
-	out.AutoIpv6NodeRoutes = in.AutoIpv6NodeRoutes
-	out.BPFRoot = in.BPFRoot
 	out.ChainingMode = in.ChainingMode
-	out.ContainerRuntime = in.ContainerRuntime
-	out.ContainerRuntimeEndpoint = in.ContainerRuntimeEndpoint
 	out.Debug = in.Debug
-	out.DebugVerbose = in.DebugVerbose
-	out.Device = in.Device
-	out.DisableConntrack = in.DisableConntrack
 	out.DisableEndpointCRD = in.DisableEndpointCRD
-	out.DisableIpv4 = in.DisableIpv4
-	out.DisableK8sServices = in.DisableK8sServices
 	out.EnablePolicy = in.EnablePolicy
 	out.EnableL7Proxy = in.EnableL7Proxy
 	out.EnableBPFMasquerade = in.EnableBPFMasquerade
 	out.EnableEndpointHealthChecking = in.EnableEndpointHealthChecking
-	out.EnableTracing = in.EnableTracing
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnableEncryption = in.EnableEncryption
 	out.EncryptionType = CiliumEncryptionType(in.EncryptionType)
-	out.EnvoyLog = in.EnvoyLog
 	out.IdentityAllocationMode = in.IdentityAllocationMode
 	out.IdentityChangeGracePeriod = in.IdentityChangeGracePeriod
-	out.Ipv4ClusterCIDRMaskSize = in.Ipv4ClusterCIDRMaskSize
-	out.Ipv4Node = in.Ipv4Node
-	out.Ipv4Range = in.Ipv4Range
-	out.Ipv4ServiceRange = in.Ipv4ServiceRange
-	out.Ipv6ClusterAllocCidr = in.Ipv6ClusterAllocCidr
-	out.Ipv6Node = in.Ipv6Node
-	out.Ipv6Range = in.Ipv6Range
-	out.Ipv6ServiceRange = in.Ipv6ServiceRange
-	out.K8sAPIServer = in.K8sAPIServer
-	out.K8sKubeconfigPath = in.K8sKubeconfigPath
-	out.KeepBPFTemplates = in.KeepBPFTemplates
-	out.KeepConfig = in.KeepConfig
-	out.LabelPrefixFile = in.LabelPrefixFile
-	out.Labels = in.Labels
-	out.LB = in.LB
-	out.LibDir = in.LibDir
-	out.LogDrivers = in.LogDrivers
-	out.LogOpt = in.LogOpt
-	out.Logstash = in.Logstash
-	out.LogstashAgent = in.LogstashAgent
-	out.LogstashProbeTimer = in.LogstashProbeTimer
 	out.DisableMasquerade = in.DisableMasquerade
-	out.Nat46Range = in.Nat46Range
 	out.AgentPodAnnotations = in.AgentPodAnnotations
-	out.Pprof = in.Pprof
-	out.PrefilterDevice = in.PrefilterDevice
-	out.PrometheusServeAddr = in.PrometheusServeAddr
-	out.Restore = in.Restore
-	out.SingleClusterRoute = in.SingleClusterRoute
-	out.SocketPath = in.SocketPath
-	out.StateDir = in.StateDir
-	out.TracePayloadLen = in.TracePayloadLen
 	out.Tunnel = in.Tunnel
-	out.EnableIpv6 = in.EnableIpv6
-	out.EnableIpv4 = in.EnableIpv4
 	out.MonitorAggregation = in.MonitorAggregation
 	out.BPFCTGlobalTCPMax = in.BPFCTGlobalTCPMax
 	out.BPFCTGlobalAnyMax = in.BPFCTGlobalAnyMax
@@ -2003,11 +1957,6 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	} else {
 		out.Hubble = nil
 	}
-	out.RemoveCbrBridge = in.RemoveCbrBridge
-	out.RestartPods = in.RestartPods
-	out.ReconfigureKubelet = in.ReconfigureKubelet
-	out.NodeInitBootstrapFile = in.NodeInitBootstrapFile
-	out.CniBinPath = in.CniBinPath
 	out.DisableCNPStatusUpdates = in.DisableCNPStatusUpdates
 	return nil
 }
