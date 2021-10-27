@@ -17,6 +17,8 @@ limitations under the License.
 package gcemodel
 
 import (
+	"fmt"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -81,23 +83,49 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Create a CloudNAT for private topology.
-	if b.Cluster.Spec.Topology.Masters == kops.TopologyPrivate {
-		var hasPrivateSubnet bool
-		for _, subnet := range b.Cluster.Spec.Subnets {
-			if subnet.Type == kops.SubnetTypePrivate {
-				hasPrivateSubnet = true
-				break
+	{
+		// We only consider private subnets.
+		// Then if we are creating subnet, we will create a NAT gateway tied to those subnets.
+		// This can be over-ridden by specifying "external", in which case we will not create a NAT gateway.
+		// If we are reusing an existing subnet, we assume that the NAT gateway is already configured.
+
+		var subnetworks []*gcetasks.Subnet
+
+		for i := range b.Cluster.Spec.Subnets {
+			subnet := &b.Cluster.Spec.Subnets[i]
+			// Only need to deal with private subnets
+			if subnet.Type != kops.SubnetTypePrivate {
+				continue
+			}
+
+			// If we're in an existing subnet, we assume egress is already configured.
+			if subnet.ProviderID != "" {
+				continue
+			}
+
+			switch subnet.Egress {
+			case kops.EgressExternal:
+				// User has request we ignore this
+				continue
+
+			case kops.EgressNatGateway, "":
+				// OK, should create
+				subnetworks = append(subnetworks, b.LinkToSubnet(subnet))
+
+			default:
+				return fmt.Errorf("egress mode %q is not supported", subnet.Egress)
 			}
 		}
 
-		if hasPrivateSubnet {
+		if len(subnetworks) != 0 {
 			r := &gcetasks.Router{
 				Name:                          s(b.SafeObjectName("nat")),
 				Lifecycle:                     b.Lifecycle,
 				Network:                       b.LinkToNetwork(),
 				Region:                        s(b.Region),
 				NATIPAllocationOption:         s(gcetasks.NATIPAllocationOptionAutoOnly),
-				SourceSubnetworkIPRangesToNAT: s(gcetasks.SourceSubnetworkIPRangesAll),
+				SourceSubnetworkIPRangesToNAT: s(gcetasks.SourceSubnetworkIPRangesSpecificSubnets),
+				Subnetworks:                   subnetworks,
 			}
 			c.AddTask(r)
 		}
