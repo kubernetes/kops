@@ -36,8 +36,8 @@ type EventBridgeTarget struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	Rule      *EventBridgeRule
-	TargetArn *string
+	Rule     *EventBridgeRule
+	SQSQueue *SQS
 }
 
 var _ fi.CompareWithID = &EventBridgeTarget{}
@@ -49,7 +49,7 @@ func (eb *EventBridgeTarget) CompareWithID() *string {
 func (eb *EventBridgeTarget) Find(c *fi.Context) (*EventBridgeTarget, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
-	if eb.Rule == nil || eb.TargetArn == nil {
+	if eb.Rule == nil || eb.SQSQueue == nil {
 		return nil, nil
 	}
 
@@ -74,13 +74,13 @@ func (eb *EventBridgeTarget) Find(c *fi.Context) (*EventBridgeTarget, error) {
 		return nil, nil
 	}
 	for _, target := range response.Targets {
-		if *target.Arn == *eb.TargetArn {
+		if fi.StringValue(target.Arn) == fi.StringValue(eb.SQSQueue.ARN) {
 			actual := &EventBridgeTarget{
 				ID:        target.Id,
 				Name:      eb.Name,
 				Lifecycle: eb.Lifecycle,
 				Rule:      eb.Rule,
-				TargetArn: eb.TargetArn,
+				SQSQueue:  eb.SQSQueue,
 			}
 			return actual, nil
 		}
@@ -98,8 +98,8 @@ func (_ *EventBridgeTarget) CheckChanges(a, e, changes *EventBridgeTarget) error
 		if e.Rule == nil {
 			return field.Required(field.NewPath("Rule"), "")
 		}
-		if e.TargetArn == nil {
-			return field.Required(field.NewPath("TargetArn"), "")
+		if e.SQSQueue == nil {
+			return field.Required(field.NewPath("SQSQueue"), "")
 		}
 	}
 
@@ -109,7 +109,7 @@ func (_ *EventBridgeTarget) CheckChanges(a, e, changes *EventBridgeTarget) error
 func (eb *EventBridgeTarget) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EventBridgeTarget) error {
 	if a == nil {
 		target := &eventbridge.Target{
-			Arn: eb.TargetArn,
+			Arn: eb.SQSQueue.ARN,
 			Id:  aws.String("1"),
 		}
 
@@ -129,13 +129,13 @@ func (eb *EventBridgeTarget) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Eve
 
 type terraformEventBridgeTarget struct {
 	RuleName  *terraformWriter.Literal `json:"rule" cty:"rule"`
-	TargetArn *string                  `json:"arn" cty:"arn"`
+	TargetArn *terraformWriter.Literal `json:"arn" cty:"arn"`
 }
 
 func (_ *EventBridgeTarget) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EventBridgeTarget) error {
 	tf := &terraformEventBridgeTarget{
 		RuleName:  e.Rule.TerraformLink(),
-		TargetArn: e.TargetArn,
+		TargetArn: e.SQSQueue.TerraformLink(),
 	}
 
 	return t.RenderResource("aws_cloudwatch_event_target", *e.Name, tf)

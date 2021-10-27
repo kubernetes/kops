@@ -87,12 +87,7 @@ func (b *NodeTerminationHandlerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	err := b.buildSQSQueue(c)
-	if err != nil {
-		return err
-	}
-
-	err = b.buildEventBridgeRules(c)
+	err := b.build(c)
 	if err != nil {
 		return err
 	}
@@ -118,13 +113,13 @@ func (b *NodeTerminationHandlerBuilder) configureASG(c *fi.ModelBuilderContext, 
 	return nil
 }
 
-func (b *NodeTerminationHandlerBuilder) buildSQSQueue(c *fi.ModelBuilderContext) error {
+func (b *NodeTerminationHandlerBuilder) build(c *fi.ModelBuilderContext) error {
 	queueName := model.QueueNamePrefix(b.ClusterName()) + "-nth"
 	policy := strings.ReplaceAll(NTHTemplate, "{{ AWS_REGION }}", b.Region)
 	policy = strings.ReplaceAll(policy, "{{ ACCOUNT_ID }}", b.AWSAccountID)
 	policy = strings.ReplaceAll(policy, "{{ SQS_QUEUE_NAME }}", queueName)
 
-	task := &awstasks.SQS{
+	queue := &awstasks.SQS{
 		Name:                   aws.String(queueName),
 		Lifecycle:              b.Lifecycle,
 		Policy:                 fi.NewStringResource(policy),
@@ -132,18 +127,9 @@ func (b *NodeTerminationHandlerBuilder) buildSQSQueue(c *fi.ModelBuilderContext)
 		Tags:                   b.CloudTags(queueName, false),
 	}
 
-	c.AddTask(task)
+	c.AddTask(queue)
 
-	return nil
-}
-
-func (b *NodeTerminationHandlerBuilder) buildEventBridgeRules(c *fi.ModelBuilderContext) error {
 	clusterName := b.ClusterName()
-	queueName := model.QueueNamePrefix(clusterName) + "-nth"
-	partition := b.AWSPartition
-	region := b.Region
-	accountID := b.AWSAccountID
-	targetArn := "arn:" + partition + ":sqs:" + region + ":" + accountID + ":" + queueName
 
 	clusterNamePrefix := awsup.GetClusterName40(clusterName)
 	for _, event := range events {
@@ -157,7 +143,7 @@ func (b *NodeTerminationHandlerBuilder) buildEventBridgeRules(c *fi.ModelBuilder
 			Tags:      b.CloudTags(*ruleName, false),
 
 			EventPattern: &pattern,
-			TargetArn:    &targetArn,
+			SQSQueue:     queue,
 		}
 
 		c.AddTask(ruleTask)
@@ -167,8 +153,8 @@ func (b *NodeTerminationHandlerBuilder) buildEventBridgeRules(c *fi.ModelBuilder
 			Name:      aws.String(*ruleName + "-Target"),
 			Lifecycle: b.Lifecycle,
 
-			Rule:      ruleTask,
-			TargetArn: &targetArn,
+			Rule:     ruleTask,
+			SQSQueue: queue,
 		}
 
 		c.AddTask(targetTask)

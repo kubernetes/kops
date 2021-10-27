@@ -39,6 +39,7 @@ type SQS struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
+	ARN                    *string
 	URL                    *string
 	MessageRetentionPeriod int
 	Policy                 fi.Resource
@@ -49,7 +50,7 @@ type SQS struct {
 var _ fi.CompareWithID = &SQS{}
 
 func (q *SQS) CompareWithID() *string {
-	return q.URL
+	return q.ARN
 }
 
 func (q *SQS) Find(c *fi.Context) (*SQS, error) {
@@ -75,13 +76,14 @@ func (q *SQS) Find(c *fi.Context) (*SQS, error) {
 	url := response.QueueUrls[0]
 
 	attributes, err := cloud.SQS().GetQueueAttributes(&sqs.GetQueueAttributesInput{
-		AttributeNames: []*string{s("MessageRetentionPeriod"), s("Policy")},
+		AttributeNames: []*string{s("MessageRetentionPeriod"), s("Policy"), s("QueueArn")},
 		QueueUrl:       url,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error getting SQS queue attributes: %v", err)
 	}
 	actualPolicy := *attributes.Attributes["Policy"]
+	actualARN := *attributes.Attributes["QueueArn"]
 	period, err := strconv.Atoi(*attributes.Attributes["MessageRetentionPeriod"])
 	if err != nil {
 		return nil, fmt.Errorf("error coverting MessageRetentionPeriod to int: %v", err)
@@ -118,6 +120,7 @@ func (q *SQS) Find(c *fi.Context) (*SQS, error) {
 	}
 
 	actual := &SQS{
+		ARN:                    s(actualARN),
 		Name:                   q.Name,
 		URL:                    url,
 		Lifecycle:              q.Lifecycle,
@@ -127,7 +130,7 @@ func (q *SQS) Find(c *fi.Context) (*SQS, error) {
 	}
 
 	//Avoid flapping
-	q.Name = actual.Name
+	q.ARN = actual.ARN
 
 	return actual, nil
 }
@@ -170,7 +173,15 @@ func (q *SQS) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SQS) error {
 			return fmt.Errorf("error creating SQS queue: %v", err)
 		}
 
-		q.URL = response.QueueUrl
+		attributes, err := t.Cloud.SQS().GetQueueAttributes(&sqs.GetQueueAttributesInput{
+			AttributeNames: []*string{s("QueueArn")},
+			QueueUrl:       response.QueueUrl,
+		})
+		if err != nil {
+			return fmt.Errorf("error getting SQS queue attributes: %v", err)
+		}
+
+		e.ARN = attributes.Attributes["QueueArn"]
 	}
 
 	return nil
@@ -197,6 +208,10 @@ func (_ *SQS) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SQS) 
 	}
 
 	return t.RenderResource("aws_sqs_queue", *e.Name, tf)
+}
+
+func (e *SQS) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("aws_sqs_queue", *e.Name, "arn")
 }
 
 type cloudformationSQSQueue struct {
@@ -241,6 +256,10 @@ func (_ *SQS) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e,
 		PolicyDocument: data,
 	}
 	return t.RenderResource("AWS::SQS::QueuePolicy", *e.Name+"Policy", cfQueuePolicy)
+}
+
+func (e *SQS) CloudformationLink() *cloudformation.Literal {
+	return cloudformation.Ref("AWS::SQS::Queue", *e.Name)
 }
 
 // change tags to format required by CreateQueue
