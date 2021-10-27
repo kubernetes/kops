@@ -189,7 +189,7 @@ func (*Router) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Router) error {
 type terraformRouterNat struct {
 	Name                          *string                         `json:"name,omitempty" cty:"name"`
 	Region                        *string                         `json:"region,omitempty" cty:"region"`
-	Router                        *string                         `json:"router,omitempty" cty:"router"`
+	Router                        *terraformWriter.Literal        `json:"router,omitempty" cty:"router"`
 	NATIPAllocateOption           *string                         `json:"nat_ip_allocate_option,omitempty" cty:"nat_ip_allocate_option"`
 	SourceSubnetworkIPRangesToNat *string                         `json:"source_subnetwork_ip_ranges_to_nat,omitempty" cty:"source_subnetwork_ip_ranges_to_nat"`
 	Subnetworks                   []*terraformRouterNatSubnetwork `json:"subnetwork,omitempty" cty:"subnetwork"`
@@ -222,7 +222,7 @@ func (*Router) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rout
 	trn := &terraformRouterNat{
 		Name:                          e.Name,
 		Region:                        e.Region,
-		Router:                        e.Name,
+		Router:                        e.TerraformLink(),
 		NATIPAllocateOption:           e.NATIPAllocationOption,
 		SourceSubnetworkIPRangesToNat: e.SourceSubnetworkIPRangesToNAT,
 	}
@@ -237,5 +237,5 @@ func (*Router) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rout
 
 // TerraformLink returns an expression for the name.
 func (r *Router) TerraformLink() *terraformWriter.Literal {
-	return terraformWriter.LiteralProperty("google_compute_router_nat", *r.Name, "name")
+	return terraformWriter.LiteralProperty("google_compute_router", *r.Name, "name")
 }
