@@ -131,7 +131,8 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 		if d.GCPProject != "" {
 			args = appendIfUnset(args, "--project", d.GCPProject)
 		}
-		args = appendIfUnset(args, "--vpc", strings.Split(d.ClusterName, ".")[0])
+		// We used to set the --vpc flag to split clusters into different networks, this is now the default.
+		// args = appendIfUnset(args, "--vpc", strings.Split(d.ClusterName, ".")[0])
 	case "digitalocean":
 		args = appendIfUnset(args, "--master-size", "c2-16vcpu-32gb")
 		args = appendIfUnset(args, "--node-size", "c2-16vcpu-32gb")

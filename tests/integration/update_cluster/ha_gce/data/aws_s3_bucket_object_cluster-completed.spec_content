@@ -181,7 +181,8 @@ spec:
   - 0.0.0.0/0
   - ::/0
   subnets:
-  - name: us-test1
+  - cidr: 10.0.16.0/20
+    name: us-test1
     region: us-test1
     type: Public
   topology:
