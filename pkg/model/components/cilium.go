@@ -103,10 +103,6 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 		c.ToFqdnsDNSRejectResponseCode = "refused"
 	}
 
-	if c.ContainerRuntimeLabels == "" {
-		c.ContainerRuntimeLabels = "none"
-	}
-
 	if c.AgentPrometheusPort == 0 {
 		c.AgentPrometheusPort = wellknownports.CiliumPrometheusPort
 	}
