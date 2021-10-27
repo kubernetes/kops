@@ -512,7 +512,7 @@ resource "google_compute_router_nat" "nat-minimal-gce-private-example-com" {
   name                               = "nat-minimal-gce-private-example-com"
   nat_ip_allocate_option             = "AUTO_ONLY"
   region                             = "us-test1"
-  router                             = "nat-minimal-gce-private-example-com"
+  router                             = google_compute_router.nat-minimal-gce-private-example-com.name
   source_subnetwork_ip_ranges_to_nat = "LIST_OF_SUBNETWORKS"
   subnetwork {
     name                    = google_compute_subnetwork.us-test1-minimal-gce-private-example-com.name
