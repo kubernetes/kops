@@ -30,7 +30,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	apimodel "k8s.io/kops/pkg/apis/kops/model"
 	kopsdns "k8s.io/kops/pkg/dns"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
@@ -134,10 +133,6 @@ func validateDNS(cluster *kops.Cluster, cloud fi.Cloud) error {
 
 func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) error {
 	// TODO: Move to update
-	if !featureflag.DNSPreCreate.Enabled() {
-		klog.V(4).Infof("Skipping DNS record pre-creation because feature flag not enabled")
-		return nil
-	}
 
 	// We precreate some DNS names (where they don't exist), with a dummy IP address
 	// This avoids hitting negative TTL on DNS lookups, which tend to be very long
