@@ -265,22 +265,22 @@ resource "aws_cloudwatch_event_rule" "nthsqsresources-longclustername-e-fkbaoh-S
 }
 
 resource "aws_cloudwatch_event_target" "nthsqsresources-longclustername-e-fkbaoh-ASGLifecycle-Target" {
-  arn  = "arn:aws-test:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
+  arn  = aws_sqs_queue.nthsqsresources-longclustername-example-com-nth.arn
   rule = aws_cloudwatch_event_rule.nthsqsresources-longclustername-e-fkbaoh-ASGLifecycle.id
 }
 
 resource "aws_cloudwatch_event_target" "nthsqsresources-longclustername-e-fkbaoh-InstanceStateChange-Target" {
-  arn  = "arn:aws-test:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
+  arn  = aws_sqs_queue.nthsqsresources-longclustername-example-com-nth.arn
   rule = aws_cloudwatch_event_rule.nthsqsresources-longclustername-e-fkbaoh-InstanceStateChange.id
 }
 
 resource "aws_cloudwatch_event_target" "nthsqsresources-longclustername-e-fkbaoh-RebalanceRecommendation-Target" {
-  arn  = "arn:aws-test:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
+  arn  = aws_sqs_queue.nthsqsresources-longclustername-example-com-nth.arn
   rule = aws_cloudwatch_event_rule.nthsqsresources-longclustername-e-fkbaoh-RebalanceRecommendation.id
 }
 
 resource "aws_cloudwatch_event_target" "nthsqsresources-longclustername-e-fkbaoh-SpotInterruption-Target" {
-  arn  = "arn:aws-test:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
+  arn  = aws_sqs_queue.nthsqsresources-longclustername-example-com-nth.arn
   rule = aws_cloudwatch_event_rule.nthsqsresources-longclustername-e-fkbaoh-SpotInterruption.id
 }
 
