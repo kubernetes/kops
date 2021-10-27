@@ -180,7 +180,6 @@ spec:
       bpfNeighGlobalMax: 524288
       bpfPolicyMapMax: 16384
       clusterName: default
-      containerRuntimeLabels: none
       cpuRequest: 25m
       disableCNPStatusUpdates: true
       disableMasquerade: false
