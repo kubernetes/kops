@@ -50,8 +50,6 @@ var (
 	// CacheNodeidentityInfo enables NodeidentityInfo caching
 	// in order to reduce the number of EC2 DescribeInstance calls.
 	CacheNodeidentityInfo = new("CacheNodeidentityInfo", Bool(false))
-	// DNSPreCreate controls whether we pre-create DNS records.
-	DNSPreCreate = new("DNSPreCreate", Bool(true))
 	// EnableSeparateConfigBase allows a config-base that is different from the state store
 	EnableSeparateConfigBase = new("EnableSeparateConfigBase", Bool(false))
 	// ExperimentalClusterDNS allows for setting the kubelet dns flag to experimental values.
