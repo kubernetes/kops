@@ -19,6 +19,7 @@ package tests
 import (
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -29,7 +30,16 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
+var credsFile = "./mock_gcp_credentials.json"
+
 func TestGSRenderTerraform(t *testing.T) {
+	creds, err := filepath.Abs(credsFile)
+	if err != nil {
+		t.Fatalf("failed to prepare mock gcp credentials: %v", err)
+		t.FailNow()
+	}
+	t.Setenv("GOOGLE_APPLICATION_CREDENTIALS", creds)
+
 	content := "hello world"
 	grid := []struct {
 		expectedPath       string
