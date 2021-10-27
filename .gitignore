@@ -69,11 +69,16 @@ network_closure.sh
 # tags
 
 # Bazel output directories
-bazel-bin
+# bazel-bin is now a symlink to .bazel-bin
 bazel-genfiles
 bazel-kops
 bazel-out
 bazel-testlogs
+.bazel-bin
+.bazel-genfiles
+.bazel-kops
+.bazel-out
+.bazel-testlogs
 
 # Ignore default apiserver config
 apiserver.local.config
