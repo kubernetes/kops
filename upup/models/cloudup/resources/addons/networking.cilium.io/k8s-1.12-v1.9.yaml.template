@@ -201,7 +201,6 @@ data:
   # - none
   # - auto (automatically detect the container runtime)
   #
-  container-runtime: "{{ .ContainerRuntimeLabels }}"
   masquerade: "{{- if WithDefaultBool .DisableMasquerade false -}}false{{- else -}}true{{- end -}}"
   install-iptables-rules: "{{- if .IPTablesRulesNoinstall -}}false{{- else -}}true{{- end -}}"
   auto-direct-node-routes: "{{ .AutoDirectNodeRoutes }}"
