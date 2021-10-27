@@ -8,6 +8,7 @@ package(default_visibility = ["//visibility:public"])
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 # gazelle:proto disable_global
+# gazelle:exclude .bazel-*/**
 gazelle(
     name = "gazelle",
     command = "fix",
@@ -21,11 +22,4 @@ go_library(
         "version.go",
     ],
     importpath = "k8s.io/kops",
-)
-
-load("@io_k8s_repo_infra//defs:run_in_workspace.bzl", "workspace_binary")
-
-workspace_binary(
-    name = "gofmt",
-    cmd = "@go_sdk//:bin/gofmt",
 )
