@@ -326,7 +326,7 @@ func (c *populateClusterSpec) assignSubnets(cluster *kopsapi.Cluster) error {
 		cluster.Spec.KubeControllerManager = &kopsapi.KubeControllerManagerConfig{}
 	}
 
-	if cluster.Spec.PodCIDR == "" {
+	if cluster.Spec.PodCIDR == "" && nmOnes > 0 {
 		// Allocate as big a range as possible: the NonMasqueradeCIDR mask + 1, with a '1' in the extra bit
 		ip := nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask)
 		if nmBits > 32 && nmOnes < 95 {
@@ -342,14 +342,18 @@ func (c *populateClusterSpec) assignSubnets(cluster *kopsapi.Cluster) error {
 	}
 
 	if cluster.Spec.ServiceClusterIPRange == "" {
-		// Allocate from the '0' subnet; but only carve off 1/4 of that (i.e. add 1 + 2 bits to the netmask)
-		serviceOnes := nmOnes + 3
-		// Max size of network is 20 bits
-		if nmBits-serviceOnes > 20 {
-			serviceOnes = nmBits - 20
+		if nmBits > 32 && nmOnes == 0 {
+			cluster.Spec.ServiceClusterIPRange = "fd00:5e4f:ce::/108"
+		} else {
+			// Allocate from the '0' subnet; but only carve off 1/4 of that (i.e. add 1 + 2 bits to the netmask)
+			serviceOnes := nmOnes + 3
+			// Max size of network is 20 bits
+			if nmBits-serviceOnes > 20 {
+				serviceOnes = nmBits - 20
+			}
+			cidr := net.IPNet{IP: nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask), Mask: net.CIDRMask(serviceOnes, nmBits)}
+			cluster.Spec.ServiceClusterIPRange = cidr.String()
 		}
-		cidr := net.IPNet{IP: nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask), Mask: net.CIDRMask(serviceOnes, nmBits)}
-		cluster.Spec.ServiceClusterIPRange = cidr.String()
 		klog.V(2).Infof("Defaulted ServiceClusterIPRange to %v", cluster.Spec.ServiceClusterIPRange)
 	}
 
