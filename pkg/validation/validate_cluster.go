@@ -27,6 +27,7 @@ import (
 	"k8s.io/client-go/tools/pager"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -90,7 +91,7 @@ func hasPlaceHolderIP(host string) (bool, error) {
 	}
 
 	for _, h := range hostAddrs {
-		if h == "203.0.113.123" {
+		if h == cloudup.PlaceholderIP || h == cloudup.PlaceholderIPv6 {
 			return true, nil
 		}
 	}
