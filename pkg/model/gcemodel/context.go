@@ -30,16 +30,12 @@ type GCEModelContext struct {
 
 // LinkToNetwork returns the GCE Network object the cluster is located in
 func (c *GCEModelContext) LinkToNetwork() *gcetasks.Network {
-	return &gcetasks.Network{Name: s(c.NameForNetwork())}
-}
-
-// NameForNetwork returns the name for the GCE Network the cluster is located in
-func (c *GCEModelContext) NameForNetwork() string {
-	networkName := c.Cluster.Spec.NetworkID
-	if networkName == "" {
-		networkName = "default"
+	name := c.Cluster.Spec.NetworkID
+	if name == "" {
+		name = c.SafeClusterName()
 	}
-	return networkName
+
+	return &gcetasks.Network{Name: s(name)}
 }
 
 // NameForIPAliasRange returns the name for the secondary IP range attached to a subnet
@@ -51,19 +47,24 @@ func (c *GCEModelContext) NameForIPAliasRange(key string) string {
 	return c.SafeObjectName(key)
 }
 
-// NameForIPAliasSubnet returns the name for the GCE subnet used for ip aliases
-func (c *GCEModelContext) NameForIPAliasSubnet() string {
-	return c.SafeObjectName("default")
-}
+// LinkToSubnet returns a link to the GCE subnet object
+func (c *GCEModelContext) LinkToSubnet(subnet *kops.ClusterSubnetSpec) *gcetasks.Subnet {
+	name := subnet.ProviderID
+	if name == "" {
+		name = c.SafeObjectName(subnet.Name)
+	}
 
-// LinkToIPAliasSubnet returns the GCE subnet object used for ip aliases
-func (c *GCEModelContext) LinkToIPAliasSubnet() *gcetasks.Subnet {
-	return &gcetasks.Subnet{Name: s(c.NameForIPAliasSubnet())}
+	return &gcetasks.Subnet{Name: s(name)}
 }
 
 // SafeObjectName returns the object name and cluster name escaped for GCE
 func (c *GCEModelContext) SafeObjectName(name string) string {
 	return gce.SafeObjectName(name, c.Cluster.ObjectMeta.Name)
+}
+
+// SafeClusterName returns the cluster name escaped for use as a GCE resource name
+func (c *GCEModelContext) SafeClusterName() string {
+	return gce.SafeClusterName(c.Cluster.ObjectMeta.Name)
 }
 
 func (c *GCEModelContext) GCETagForRole(role kops.InstanceGroupRole) string {

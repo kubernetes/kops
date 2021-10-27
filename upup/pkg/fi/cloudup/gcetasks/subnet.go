@@ -33,12 +33,13 @@ type Subnet struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	GCEName *string
 	Network *Network
 	Region  *string
 	CIDR    *string
 
 	SecondaryIpRanges map[string]string
+
+	Shared *bool
 }
 
 var _ fi.CompareWithID = &Subnet{}
@@ -50,32 +51,39 @@ func (e *Subnet) CompareWithID() *string {
 func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
-	s, err := cloud.Compute().Subnetworks().Get(cloud.Project(), cloud.Region(), *e.GCEName)
+	s, err := cloud.Compute().Subnetworks().Get(cloud.Project(), cloud.Region(), *e.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("error listing Subnets: %v", err)
+		return nil, fmt.Errorf("error listing Subnets: %w", err)
 	}
 
 	actual := &Subnet{}
-	actual.Name = e.Name
-	actual.GCEName = &s.Name
+	actual.Name = &s.Name
 	actual.Network = &Network{Name: fi.String(lastComponent(s.Network))}
 	actual.Region = fi.String(lastComponent(s.Region))
 	actual.CIDR = &s.IpCidrRange
 
+	shared := fi.BoolValue(e.Shared)
 	{
 		actual.SecondaryIpRanges = make(map[string]string)
 		for _, r := range s.SecondaryIpRanges {
-			if _, found := e.SecondaryIpRanges[r.RangeName]; found {
-				actual.SecondaryIpRanges[r.RangeName] = r.IpCidrRange
+			if shared {
+				// In the shared case, only show differences on the ranges we specified
+				if _, found := e.SecondaryIpRanges[r.RangeName]; !found {
+					continue
+				}
 			}
+
+			actual.SecondaryIpRanges[r.RangeName] = r.IpCidrRange
 		}
 	}
 
 	// Prevent spurious changes
 	actual.Lifecycle = e.Lifecycle
+	actual.Name = e.Name
+	actual.Shared = e.Shared
 
 	return actual, nil
 }
@@ -89,6 +97,14 @@ func (_ *Subnet) CheckChanges(a, e, changes *Subnet) error {
 }
 
 func (_ *Subnet) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Subnet) error {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		// Verify the subnet was found
+		if a == nil {
+			return fmt.Errorf("Subnet with name %q not found", fi.StringValue(e.Name))
+		}
+	}
+
 	cloud := t.Cloud
 	project := cloud.Project()
 
@@ -96,8 +112,8 @@ func (_ *Subnet) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Subnet) error {
 		klog.V(2).Infof("Creating Subnet with CIDR: %q", fi.StringValue(e.CIDR))
 
 		subnet := &compute.Subnetwork{
-			IpCidrRange: *e.CIDR,
-			Name:        *e.GCEName,
+			IpCidrRange: fi.StringValue(e.CIDR),
+			Name:        *e.Name,
 			Network:     e.Network.URL(project),
 		}
 
@@ -108,84 +124,97 @@ func (_ *Subnet) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Subnet) error {
 			})
 		}
 
-		_, err := cloud.Compute().Subnetworks().Insert(t.Cloud.Project(), t.Cloud.Region(), subnet)
+		op, err := cloud.Compute().Subnetworks().Insert(t.Cloud.Project(), t.Cloud.Region(), subnet)
 		if err != nil {
 			return fmt.Errorf("error creating Subnet: %v", err)
 		}
-	} else {
-		subnet, err := cloud.Compute().Subnetworks().Get(cloud.Project(), cloud.Region(), *e.GCEName)
-		if err != nil {
-			return fmt.Errorf("error fetching subnet for patch: %v", err)
+		if err := t.Cloud.WaitForOp(op); err != nil {
+			return fmt.Errorf("error waiting for Subnet creation to complete: %w", err)
 		}
-
-		{
-			rangeMap := make(map[string]string)
-			for _, r := range subnet.SecondaryIpRanges {
-				rangeMap[r.RangeName] = r.IpCidrRange
+	} else {
+		if changes.SecondaryIpRanges != nil {
+			// Update is split into two calls as GCE does not allow us to add and remove ranges in the same call
+			if err := updateSecondaryRanges(cloud, "add", e); err != nil {
+				return err
 			}
 
-			// Cannot add and remove ranges in the same call
-
-			patch := true
-			for k, v := range e.SecondaryIpRanges {
-				if rangeMap[k] != v {
-					rangeMap[k] = v
-					subnet.SecondaryIpRanges = append(subnet.SecondaryIpRanges, &compute.SubnetworkSecondaryRange{
-						RangeName:   k,
-						IpCidrRange: v,
-					})
-					patch = true
+			if !shared {
+				if err := updateSecondaryRanges(cloud, "remove", e); err != nil {
+					return err
 				}
-			}
-			if patch {
-				_, err = t.Cloud.Compute().Subnetworks().Patch(t.Cloud.Project(), t.Cloud.Region(), subnet.Name, subnet)
-				if err != nil {
-					return fmt.Errorf("error patching Subnet: %v", err)
-				}
-				patch = false
-				subnet, err = cloud.Compute().Subnetworks().Get(cloud.Project(), cloud.Region(), *e.GCEName)
-				if err != nil {
-					return fmt.Errorf("error fetching subnet for patch: %v", err)
-				}
-				rangeMap = make(map[string]string)
-				for _, r := range subnet.SecondaryIpRanges {
-					rangeMap[r.RangeName] = r.IpCidrRange
-				}
-			}
-
-			for k, v := range rangeMap {
-				if e.SecondaryIpRanges[k] != v {
-					delete(rangeMap, k)
-					patch = true
-				}
-			}
-
-			if patch {
-				subnet.SecondaryIpRanges = nil
-				for k, v := range rangeMap {
-					subnet.SecondaryIpRanges = append(subnet.SecondaryIpRanges, &compute.SubnetworkSecondaryRange{
-						RangeName:   k,
-						IpCidrRange: v,
-					})
-				}
-				_, err = t.Cloud.Compute().Subnetworks().Patch(t.Cloud.Project(), t.Cloud.Region(), subnet.Name, subnet)
-				if err != nil {
-					return fmt.Errorf("error patching Subnet: %v", err)
-				}
-				_, err = cloud.Compute().Subnetworks().Get(cloud.Project(), cloud.Region(), *e.GCEName)
-				if err != nil {
-					return fmt.Errorf("error fetching subnet for patch: %v", err)
-				}
-
 			}
 
 			changes.SecondaryIpRanges = nil
 		}
 
-		empty := &Network{}
+		empty := &Subnet{}
 		if !reflect.DeepEqual(empty, changes) {
 			return fmt.Errorf("cannot apply changes to Subnet: %v", changes)
 		}
+	}
+
+	return nil
+}
+
+func updateSecondaryRanges(cloud gce.GCECloud, op string, e *Subnet) error {
+	// We need to refetch to patch it
+	subnet, err := cloud.Compute().Subnetworks().Get(cloud.Project(), cloud.Region(), *e.Name)
+	if err != nil {
+		return fmt.Errorf("error fetching subnet for patch: %w", err)
+	}
+
+	expectedRanges := e.SecondaryIpRanges
+
+	actualRanges := make(map[string]string)
+	for _, r := range subnet.SecondaryIpRanges {
+		actualRanges[r.RangeName] = r.IpCidrRange
+	}
+
+	// Cannot add and remove ranges in the same call
+	if op == "add" {
+		patch := false
+		for k, v := range expectedRanges {
+			if actualRanges[k] != v {
+				actualRanges[k] = v
+				subnet.SecondaryIpRanges = append(subnet.SecondaryIpRanges, &compute.SubnetworkSecondaryRange{
+					RangeName:   k,
+					IpCidrRange: v,
+				})
+				patch = true
+			}
+		}
+
+		if !patch {
+			return nil
+		}
+	} else if op == "remove" {
+		patch := false
+		if len(actualRanges) != len(expectedRanges) {
+			patch = true
+		} else {
+			for k := range expectedRanges {
+				if actualRanges[k] != e.SecondaryIpRanges[k] {
+					patch = true
+				}
+			}
+		}
+
+		if !patch {
+			return nil
+		}
+
+		subnet.SecondaryIpRanges = nil
+		for k, v := range expectedRanges {
+			subnet.SecondaryIpRanges = append(subnet.SecondaryIpRanges, &compute.SubnetworkSecondaryRange{
+				RangeName:   k,
+				IpCidrRange: v,
+			})
+		}
+	}
+
+	_, err = cloud.Compute().Subnetworks().Patch(cloud.Project(), cloud.Region(), subnet.Name, subnet)
+	if err != nil {
+		return fmt.Errorf("error patching Subnet: %w", err)
 	}
 
 	return nil
@@ -195,7 +224,7 @@ func (e *Subnet) URL(project string, region string) string {
 	u := gce.GoogleCloudURL{
 		Version: "v1",
 		Project: project,
-		Name:    *e.GCEName,
+		Name:    *e.Name,
 		Type:    "subnetworks",
 		Region:  region,
 	}
@@ -218,8 +247,14 @@ type terraformSubnetRange struct {
 }
 
 func (_ *Subnet) RenderSubnet(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		// Not terraform owned / managed
+		return nil
+	}
+
 	tf := &terraformSubnet{
-		Name:    e.GCEName,
+		Name:    e.Name,
 		Network: e.Network.TerraformLink(),
 		Region:  e.Region,
 		CIDR:    e.CIDR,
@@ -235,6 +270,16 @@ func (_ *Subnet) RenderSubnet(t *terraform.TerraformTarget, a, e, changes *Subne
 	return t.RenderResource("google_compute_subnetwork", *e.Name, tf)
 }
 
-func (i *Subnet) TerraformName() *terraformWriter.Literal {
-	return terraformWriter.LiteralProperty("google_compute_subnetwork", *i.Name, "name")
+func (e *Subnet) TerraformLink() *terraformWriter.Literal {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		if e.Name == nil {
+			klog.Fatalf("GCEName must be set, if subnet is shared: %#v", e)
+		}
+
+		klog.V(4).Infof("reusing existing subnet with name %q", *e.Name)
+		return terraformWriter.LiteralFromStringValue(*e.Name)
+	}
+
+	return terraformWriter.LiteralProperty("google_compute_subnetwork", *e.Name, "name")
 }

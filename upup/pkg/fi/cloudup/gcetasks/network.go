@@ -57,7 +57,6 @@ func (e *Network) Find(c *fi.Context) (*Network, error) {
 	}
 
 	actual := &Network{}
-	actual.Name = &r.Name
 	if r.IPv4Range != "" {
 		actual.Mode = "legacy"
 		actual.CIDR = &r.IPv4Range
@@ -117,6 +116,13 @@ func (_ *Network) CheckChanges(a, e, changes *Network) error {
 	case "auto":
 	case "custom":
 	case "legacy":
+		// Known
+
+	case "":
+		// Treated as "keep existing", only allowed for shared mode
+		if !fi.BoolValue(e.Shared) {
+			return fmt.Errorf("must specify mode for (non-shared) Network")
+		}
 
 	default:
 		return fmt.Errorf("unknown mode %q for Network", e.Mode)
@@ -155,7 +161,11 @@ func (_ *Network) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Network) error {
 			// the auto-create subnetworks default of "true". Explicitly send
 			// the default value.
 			network.ForceSendFields = []string{"AutoCreateSubnetworks"}
+
+		default:
+			return fmt.Errorf("unhandled mode %q", e.Mode)
 		}
+
 		op, err := t.Cloud.Compute().Networks().Insert(t.Cloud.Project(), network)
 		if err != nil {
 			return fmt.Errorf("error creating Network: %v", err)
