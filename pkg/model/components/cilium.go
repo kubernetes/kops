@@ -116,7 +116,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.Tunnel == "" {
-		if c.Ipam == "eni" || clusterSpec.PodCIDRFromCloud {
+		if c.Ipam == "eni" || clusterSpec.IsIPv6Only() {
 			c.Tunnel = "disabled"
 		} else {
 			c.Tunnel = "vxlan"
