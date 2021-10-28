@@ -79,9 +79,19 @@ func (d *deployer) Up() error {
 			return err
 		}
 	} else {
-		err := d.createCluster(zones, adminAccess)
-		if err != nil {
-			return err
+		if d.terraform != nil {
+			if err := d.createCluster(zones, adminAccess, true); err != nil {
+				return err
+			}
+		} else {
+			// For the non-terraform case, we want to see the preview output.
+			// So run a create (which logs the output), then do an update
+			if err := d.createCluster(zones, adminAccess, false); err != nil {
+				return err
+			}
+			if err := d.updateCluster(true); err != nil {
+				return err
+			}
 		}
 	}
 	isUp, err := d.IsUp()
@@ -95,7 +105,7 @@ func (d *deployer) Up() error {
 	return nil
 }
 
-func (d *deployer) createCluster(zones []string, adminAccess string) error {
+func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) error {
 
 	args := []string{
 		d.KopsBinaryPath, "create", "cluster",
@@ -104,7 +114,9 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 		"--kubernetes-version", d.KubernetesVersion,
 		"--ssh-public-key", d.SSHPublicKeyPath,
 		"--override", "cluster.spec.nodePortAccess=0.0.0.0/0",
-		"--yes",
+	}
+	if yes {
+		args = append(args, "--yes")
 	}
 
 	if d.CreateArgs != "" {
@@ -156,6 +168,29 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 		if err := d.terraform.InitApply(); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (d *deployer) updateCluster(yes bool) error {
+
+	args := []string{
+		d.KopsBinaryPath, "update", "cluster",
+		"--name", d.ClusterName,
+	}
+	if yes {
+		args = append(args, "--yes")
+	}
+
+	klog.Info(strings.Join(args, " "))
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.SetEnv(d.env()...)
+
+	exec.InheritOutput(cmd)
+	err := cmd.Run()
+	if err != nil {
+		return err
 	}
 
 	return nil
