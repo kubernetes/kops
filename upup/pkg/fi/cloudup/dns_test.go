@@ -21,6 +21,7 @@ import (
 	"sort"
 	"testing"
 
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 	"k8s.io/kops/pkg/apis/kops"
 )
 
@@ -28,13 +29,25 @@ func TestPrecreateDNSNames(t *testing.T) {
 
 	grid := []struct {
 		cluster  *kops.Cluster
-		expected []string
+		expected []recordKey
 	}{
 		{
 			cluster: &kops.Cluster{},
-			expected: []string{
-				"api.cluster1.example.com",
-				"api.internal.cluster1.example.com",
+			expected: []recordKey{
+				{"api.cluster1.example.com", rrstype.A},
+				{"api.internal.cluster1.example.com", rrstype.A},
+			},
+		},
+		{
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					NonMasqueradeCIDR: "::/0",
+				},
+			},
+			expected: []recordKey{
+				{"api.cluster1.example.com", rrstype.A},
+				{"api.cluster1.example.com", rrstype.AAAA},
+				{"api.internal.cluster1.example.com", rrstype.AAAA},
 			},
 		},
 		{
@@ -45,8 +58,21 @@ func TestPrecreateDNSNames(t *testing.T) {
 					},
 				},
 			},
-			expected: []string{
-				"api.internal.cluster1.example.com",
+			expected: []recordKey{
+				{"api.internal.cluster1.example.com", rrstype.A},
+			},
+		},
+		{
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					API: &kops.AccessSpec{
+						LoadBalancer: &kops.LoadBalancerAccessSpec{},
+					},
+					NonMasqueradeCIDR: "::/0",
+				},
+			},
+			expected: []recordKey{
+				{"api.internal.cluster1.example.com", rrstype.AAAA},
 			},
 		},
 		{
@@ -59,7 +85,35 @@ func TestPrecreateDNSNames(t *testing.T) {
 					},
 				},
 			},
-			expected: []string{},
+			expected: nil,
+		},
+		{
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					CloudProvider:     "aws",
+					KubernetesVersion: "1.22.0",
+				},
+			},
+			expected: []recordKey{
+				{"api.cluster1.example.com", rrstype.A},
+				{"api.internal.cluster1.example.com", rrstype.A},
+				{"kops-controller.internal.cluster1.example.com", rrstype.A},
+			},
+		},
+		{
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					CloudProvider:     "aws",
+					KubernetesVersion: "1.22.0",
+					NonMasqueradeCIDR: "::/0",
+				},
+			},
+			expected: []recordKey{
+				{"api.cluster1.example.com", rrstype.A},
+				{"api.cluster1.example.com", rrstype.AAAA},
+				{"api.internal.cluster1.example.com", rrstype.AAAA},
+				{"kops-controller.internal.cluster1.example.com", rrstype.AAAA},
+			},
 		},
 	}
 
@@ -91,8 +145,15 @@ func TestPrecreateDNSNames(t *testing.T) {
 		actual := buildPrecreateDNSHostnames(cluster)
 
 		expected := g.expected
-		sort.Strings(actual)
-		sort.Strings(expected)
+		sort.Slice(actual, func(i, j int) bool {
+			if actual[i].hostname < actual[j].hostname {
+				return true
+			}
+			if actual[i].hostname == actual[j].hostname && actual[i].rrsType < actual[j].rrsType {
+				return true
+			}
+			return false
+		})
 
 		if !reflect.DeepEqual(expected, actual) {
 			t.Errorf("unexpected records.  expected=%v actual=%v", expected, actual)

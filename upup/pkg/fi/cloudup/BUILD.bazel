@@ -115,6 +115,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/rrstype:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/validation:go_default_library",
         "//pkg/assets:go_default_library",
