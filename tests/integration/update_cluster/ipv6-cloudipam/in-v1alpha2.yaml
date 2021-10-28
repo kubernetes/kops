@@ -35,8 +35,7 @@ spec:
   networkCIDR: 172.20.0.0/16
   networking:
     cni: {}
-  nonMasqueradeCIDR: 100.64.0.0/10
-  podCIDRFromCloud: true
+  nonMasqueradeCIDR: ::/0
   topology:
     masters: public
     nodes: public
