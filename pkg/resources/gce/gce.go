@@ -53,6 +53,9 @@ const (
 // Example: nodeport-external-to-node-ipv6
 const maxPrefixTokens = 5
 
+// Maximum length of a GCE route name
+const maxGCERouteNameLength = 63
+
 func ListResourcesGCE(gceCloud gce.GCECloud, clusterName string, region string) (map[string]*resources.Resource, error) {
 	if region == "" {
 		region = gceCloud.Region()
@@ -566,17 +569,15 @@ func (d *clusterDiscoveryGCE) listRoutes(resourceMap map[string]*resources.Resou
 		}
 	}
 
-	prefix := gce.SafeClusterName(d.clusterName) + "-"
-
 	ctx := context.Background()
 
 	// TODO: Push-down prefix?
 	routes, err := c.Compute().Routes().List(ctx, c.Project())
 	if err != nil {
-		return nil, fmt.Errorf("error listing Routes: %v", err)
+		return nil, fmt.Errorf("error listing Routes: %w", err)
 	}
 	for _, r := range routes {
-		if !strings.HasPrefix(r.Name, prefix) {
+		if !d.matchesClusterNameWithUUID(r.Name, maxGCERouteNameLength) {
 			continue
 		}
 		remove := false
@@ -927,6 +928,26 @@ func (d *clusterDiscoveryGCE) matchesClusterNameMultipart(name string, maxParts 
 		}
 	}
 	return false
+}
+
+// matchesClusterNameWithUUID checks if the name is the clusterName with a UUID on the end.
+// This is used by GCE routes (in "classic" mode)
+func (d *clusterDiscoveryGCE) matchesClusterNameWithUUID(name string, maxLength int) bool {
+	const uuidLength = 36 // e.g. 51a343e2-c285-4e73-b933-18a6ea44c3e4
+
+	// Format is <cluster-name>-<uuid>
+	// <cluster-name> is truncated to ensure it fits into the GCE max length
+	if len(name) < uuidLength {
+		return false
+	}
+	withoutUUID := name[:len(name)-uuidLength]
+
+	clusterPrefix := gce.SafeClusterName(d.clusterName) + "-"
+	if len(clusterPrefix) > maxLength-uuidLength {
+		clusterPrefix = gce.SafeClusterName(d.clusterName)[:maxLength-uuidLength-1] + "-"
+	}
+
+	return clusterPrefix == withoutUUID
 }
 
 func (d *clusterDiscoveryGCE) clusterDNSName() string {
