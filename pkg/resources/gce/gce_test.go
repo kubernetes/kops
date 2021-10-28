@@ -62,3 +62,53 @@ func TestNameMatch(t *testing.T) {
 		}
 	}
 }
+
+func TestMatchesClusterNameWithUUID(t *testing.T) {
+	grid := []struct {
+		Name        string
+		ClusterName string
+		Want        bool
+	}{
+		{
+			Name:        "e2e-5e08b256bc-d3d02-k8s-l-51a343e2-c285-4e73-b933-0123456789ab",
+			ClusterName: "e2e-5e08b256bc-d3d02.k8s.local",
+			Want:        true,
+		},
+		{
+			// UUID is one character too short
+			Name:        "e2e-5e08b256bc-d3d02-k8s-l-51a343e2-c285-4e73-b933-0123456789a",
+			ClusterName: "e2e-5e08b256bc-d3d02.k8s.local",
+			Want:        false,
+		},
+		{
+			// UUID is one character too short and prefix fills the gap
+			Name:        "e2e-5e08b256bc-d3d02-k8s-lo-51a343e2-c285-4e73-b933-0123456789a",
+			ClusterName: "e2e-5e08b256bc-d3d02.k8s.local",
+			Want:        false,
+		},
+		{
+			Name:        "example-k8s-local-51a343e2-c285-4e73-b933-0123456789ab",
+			ClusterName: "example.k8s.local",
+			Want:        true,
+		},
+		{
+			Name:        "",
+			ClusterName: "example.k8s.local",
+			Want:        false,
+		},
+		{
+			Name:        "51a343e2-c285-4e73-b933-0123456789ab",
+			ClusterName: "example.k8s.local",
+			Want:        false,
+		},
+	}
+	for _, g := range grid {
+		d := &clusterDiscoveryGCE{
+			clusterName: g.ClusterName,
+		}
+		got := d.matchesClusterNameWithUUID(g.Name, maxGCERouteNameLength)
+		if got != g.Want {
+			t.Errorf("{clusterName=%q}.matchesClusterNameWithUUID(%q) got %v, want %v", g.ClusterName, g.Name, got, g.Want)
+		}
+	}
+}
