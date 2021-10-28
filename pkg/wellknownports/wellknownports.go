@@ -69,6 +69,9 @@ const (
 
 	// VxlanUDP is the port used by VXLAN tunneling over UDP
 	VxlanUDP = 8472
+
+	// CalicoBGP is used for BGP route propagation by calico
+	CalicoBGP = 179
 )
 
 type PortRange struct {

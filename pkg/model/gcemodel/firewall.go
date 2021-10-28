@@ -102,11 +102,14 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.ProtokubeGossipMemberlist))
 		}
 		if b.NetworkingIsCalico() {
+			// Allow BGP and IPIP tunneling when we're using calico
 			t.Allowed = append(t.Allowed, "ipip")
+			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.CalicoBGP))
 		}
 		if b.NetworkingIsCilium() {
 			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.VxlanUDP))
 		}
+
 		c.AddTask(t)
 	}
 
