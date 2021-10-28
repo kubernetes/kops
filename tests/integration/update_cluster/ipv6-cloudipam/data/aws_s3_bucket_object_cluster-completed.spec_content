@@ -15,6 +15,9 @@ spec:
     awsEBSCSIDriver:
       enabled: false
     manageStorageClasses: true
+    nodeIPFamilies:
+    - ipv6
+    - ipv4
   cloudProvider: aws
   clusterDNSDomain: cluster.local
   configBase: memfs://clusters.example.com/minimal-ipv6.example.com
@@ -53,7 +56,7 @@ spec:
     - kubernetes.svc.default
     apiServerCount: 1
     authorizationMode: AlwaysAllow
-    bindAddress: 0.0.0.0
+    bindAddress: '::'
     cloudProvider: aws
     enableAdmissionPlugins:
     - NamespaceLifecycle
@@ -86,7 +89,7 @@ spec:
     securePort: 443
     serviceAccountIssuer: https://api.internal.minimal-ipv6.example.com
     serviceAccountJWKSURI: https://api.internal.minimal-ipv6.example.com/openid/v1/jwks
-    serviceClusterIPRange: 100.64.0.0/13
+    serviceClusterIPRange: fd00:5e4f:ce::/108
     storageBackend: etcd3
   kubeControllerManager:
     allocateNodeCIDRs: false
@@ -116,7 +119,9 @@ spec:
       memoryRequest: 5Mi
     provider: CoreDNS
     replicas: 2
-    serverIP: 100.64.0.10
+    serverIP: fd00:5e4f:ce::a
+    upstreamNameservers:
+    - fd00:ec2::253
   kubeProxy:
     cpuRequest: 100m
     hostnameOverride: '@aws'
@@ -132,7 +137,7 @@ spec:
     cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: aws
-    clusterDNS: 100.64.0.10
+    clusterDNS: fd00:5e4f:ce::a
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
@@ -140,7 +145,7 @@ spec:
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: 100.64.0.0/10
+    nonMasqueradeCIDR: ::/0
     podManifestPath: /etc/kubernetes/manifests
   kubernetesApiAccess:
   - 0.0.0.0/0
@@ -152,7 +157,7 @@ spec:
     cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: aws
-    clusterDNS: 100.64.0.10
+    clusterDNS: fd00:5e4f:ce::a
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
@@ -160,18 +165,16 @@ spec:
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: 100.64.0.0/10
+    nonMasqueradeCIDR: ::/0
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
   masterPublicName: api.minimal-ipv6.example.com
   networkCIDR: 172.20.0.0/16
   networking:
     cni: {}
-  nonMasqueradeCIDR: 100.64.0.0/10
-  podCIDR: 100.96.0.0/11
-  podCIDRFromCloud: true
+  nonMasqueradeCIDR: ::/0
   secretStore: memfs://clusters.example.com/minimal-ipv6.example.com/secrets
-  serviceClusterIPRange: 100.64.0.0/13
+  serviceClusterIPRange: fd00:5e4f:ce::/108
   sshAccess:
   - 0.0.0.0/0
   - ::/0
