@@ -120,7 +120,6 @@ func (d *deployer) createCluster(zones []string, adminAccess string) error {
 	args = appendIfUnset(args, "--node-count", "4")
 	args = appendIfUnset(args, "--node-volume-size", "48")
 	args = appendIfUnset(args, "--override", adminAccess)
-	args = appendIfUnset(args, "--admin-access", adminAccess)
 	args = appendIfUnset(args, "--zones", strings.Join(zones, ","))
 
 	switch d.CloudProvider {
