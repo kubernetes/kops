@@ -168,7 +168,7 @@ spec:
         - --secure-port=443
         - --kubelet-use-node-status-port
         - --metric-resolution=15s
-        - --kubelet-preferred-address-types=InternalIP
+        - --kubelet-preferred-address-types=Hostname
         - --cert-dir=/tmp
         - --kubelet-insecure-tls
         image: k8s.gcr.io/metrics-server/metrics-server:v0.5.0
