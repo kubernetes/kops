@@ -116,9 +116,9 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	// Doesn't seem to be any real downside to always doing a leader election
 	kcm.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.Bool(true)}
 
-	kcm.AllocateNodeCIDRs = fi.Bool(!clusterSpec.PodCIDRFromCloud)
+	kcm.AllocateNodeCIDRs = fi.Bool(!clusterSpec.IsKopsControllerIPAM())
 
-	if kcm.ClusterCIDR == "" && !clusterSpec.PodCIDRFromCloud {
+	if kcm.ClusterCIDR == "" && !clusterSpec.IsKopsControllerIPAM() {
 		kcm.ClusterCIDR = clusterSpec.PodCIDR
 	}
 
@@ -163,7 +163,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		if fi.BoolValue(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) {
 			changes = append(changes, "tokencleaner")
 		}
-		if clusterSpec.PodCIDRFromCloud {
+		if clusterSpec.IsKopsControllerIPAM() {
 			changes = append(changes, "-nodeipam")
 		}
 		if len(changes) != 0 {
