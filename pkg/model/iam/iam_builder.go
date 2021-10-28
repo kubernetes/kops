@@ -770,7 +770,6 @@ func (b *PolicyBuilder) addNodeupPermissions(p *Policy, enableHookSupport bool) 
 
 	if b.Cluster.Spec.PodCIDRFromCloud {
 		p.unconditionalAction.Insert(
-			"ec2:DescribeNetworkInterfaces",
 			"ec2:AssignIpv6Addresses",
 		)
 	}
