@@ -178,6 +178,7 @@ func (d *deployer) updateCluster(yes bool) error {
 	args := []string{
 		d.KopsBinaryPath, "update", "cluster",
 		"--name", d.ClusterName,
+		"--admin",
 	}
 	if yes {
 		args = append(args, "--yes")
