@@ -127,6 +127,9 @@ cloudConfig:
   awsEBSCSIDriver:
     enabled: false
   manageStorageClasses: true
+  nodeIPFamilies:
+  - ipv6
+  - ipv4
 containerRuntime: containerd
 containerd:
   logLevel: info
@@ -143,7 +146,7 @@ kubelet:
   cgroupDriver: systemd
   cgroupRoot: /
   cloudProvider: aws
-  clusterDNS: 100.64.0.10
+  clusterDNS: fd00:5e4f:ce::a
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
@@ -151,7 +154,7 @@ kubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
-  nonMasqueradeCIDR: 100.64.0.0/10
+  nonMasqueradeCIDR: ::/0
   podManifestPath: /etc/kubernetes/manifests
 
 __EOF_CLUSTER_SPEC
@@ -161,7 +164,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: oLOgAfNuXTV6ZrJSk0ddFu5+Jr/oeJ7LLMCtUQygY1w=
+NodeupConfigHash: Mqfc35n7HWWI03aEiC/9tG99xKZd6sr0kJSCwJvzhKA=
 
 __EOF_KUBE_ENV
 

@@ -45,7 +45,7 @@ data:
   enable-endpoint-health-checking: "true"
   enable-ipv4: "true"
   enable-ipv6: "false"
-  enable-ipv6-masquerade: "true"
+  enable-ipv6-masquerade: "false"
   enable-l7-proxy: "true"
   enable-node-port: "false"
   enable-remote-node-identity: "true"
