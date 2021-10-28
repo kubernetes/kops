@@ -6,7 +6,7 @@ APIServerConfig:
     - kubernetes.svc.default
     apiServerCount: 1
     authorizationMode: AlwaysAllow
-    bindAddress: 0.0.0.0
+    bindAddress: '::'
     cloudProvider: aws
     enableAdmissionPlugins:
     - NamespaceLifecycle
@@ -39,7 +39,7 @@ APIServerConfig:
     securePort: 443
     serviceAccountIssuer: https://api.internal.minimal-ipv6.example.com
     serviceAccountJWKSURI: https://api.internal.minimal-ipv6.example.com/openid/v1/jwks
-    serviceClusterIPRange: 100.64.0.0/13
+    serviceClusterIPRange: fd00:5e4f:ce::/108
     storageBackend: etcd3
   ServiceAccountPublicKeys: |
     -----BEGIN RSA PUBLIC KEY-----
@@ -235,7 +235,7 @@ KubeletConfig:
   cgroupDriver: systemd
   cgroupRoot: /
   cloudProvider: aws
-  clusterDNS: 100.64.0.10
+  clusterDNS: fd00:5e4f:ce::a
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
@@ -249,7 +249,7 @@ KubeletConfig:
     node-role.kubernetes.io/control-plane: ""
     node-role.kubernetes.io/master: ""
     node.kubernetes.io/exclude-from-external-load-balancers: ""
-  nonMasqueradeCIDR: 100.64.0.0/10
+  nonMasqueradeCIDR: ::/0
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
 UpdatePolicy: automatic
