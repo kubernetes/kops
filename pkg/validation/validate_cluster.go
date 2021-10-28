@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"sort"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -80,23 +81,24 @@ type ValidationNode struct {
 }
 
 // hasPlaceHolderIP checks if the API DNS has been updated.
-func hasPlaceHolderIP(host string) (bool, error) {
+func hasPlaceHolderIP(host string) (string, error) {
 	apiAddr, err := url.Parse(host)
 	if err != nil {
-		return true, fmt.Errorf("unable to parse Kubernetes cluster API URL: %v", err)
+		return "", fmt.Errorf("unable to parse Kubernetes cluster API URL: %v", err)
 	}
 	hostAddrs, err := net.LookupHost(apiAddr.Hostname())
 	if err != nil {
-		return true, fmt.Errorf("unable to resolve Kubernetes cluster API URL dns: %v", err)
+		return "", fmt.Errorf("unable to resolve Kubernetes cluster API URL dns: %v", err)
 	}
 
+	sort.Strings(hostAddrs)
 	for _, h := range hostAddrs {
 		if h == cloudup.PlaceholderIP || h == cloudup.PlaceholderIPv6 {
-			return true, nil
+			return h, nil
 		}
 	}
 
-	return false, nil
+	return "", nil
 }
 
 func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, host string, k8sClient kubernetes.Interface) (ClusterValidator, error) {
@@ -134,10 +136,10 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 			return nil, err
 		}
 
-		if hasPlaceHolderIPAddress {
+		if hasPlaceHolderIPAddress != "" {
 			message := "Validation Failed\n\n" +
 				"The dns-controller Kubernetes deployment has not updated the Kubernetes cluster's API DNS entry to the correct IP address." +
-				"  The API DNS IP address is the placeholder address that kops creates: 203.0.113.123." +
+				"  The API DNS IP address is the placeholder address that kops creates: " + hasPlaceHolderIPAddress + "." +
 				"  Please wait about 5-10 minutes for a master to start, dns-controller to launch, and DNS to propagate." +
 				"  The protokube container and dns-controller deployment logs may contain more diagnostic information." +
 				"  Etcd and the API DNS entries must be updated for a kops Kubernetes cluster to start."
