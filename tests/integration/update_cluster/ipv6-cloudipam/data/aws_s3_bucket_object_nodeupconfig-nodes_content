@@ -42,7 +42,7 @@ KubeletConfig:
   cgroupDriver: systemd
   cgroupRoot: /
   cloudProvider: aws
-  clusterDNS: 100.64.0.10
+  clusterDNS: fd00:5e4f:ce::a
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
@@ -53,7 +53,7 @@ KubeletConfig:
   nodeLabels:
     kubernetes.io/role: node
     node-role.kubernetes.io/node: ""
-  nonMasqueradeCIDR: 100.64.0.0/10
+  nonMasqueradeCIDR: ::/0
   podManifestPath: /etc/kubernetes/manifests
 UpdatePolicy: automatic
 channels:
