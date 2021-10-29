@@ -171,7 +171,35 @@ spec:
   masterPublicName: api.minimal-ipv6.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    cni: {}
+    cilium:
+      agentPrometheusPort: 9090
+      bpfCTGlobalAnyMax: 262144
+      bpfCTGlobalTCPMax: 524288
+      bpfLBAlgorithm: random
+      bpfLBMaglevTableSize: "16381"
+      bpfLBMapMax: 65536
+      bpfNATGlobalMax: 524288
+      bpfNeighGlobalMax: 524288
+      bpfPolicyMapMax: 16384
+      clusterName: default
+      cpuRequest: 25m
+      disableCNPStatusUpdates: true
+      disableMasquerade: false
+      enableBPFMasquerade: false
+      enableEndpointHealthChecking: true
+      enableL7Proxy: true
+      enableRemoteNodeIdentity: true
+      hubble:
+        enabled: false
+      identityAllocationMode: crd
+      identityChangeGracePeriod: 5s
+      ipam: kubernetes
+      memoryRequest: 128Mi
+      monitorAggregation: medium
+      sidecarIstioProxyImage: cilium/istio_proxy
+      toFqdnsDnsRejectResponseCode: refused
+      tunnel: disabled
+      version: v1.10.4
   nonMasqueradeCIDR: ::/0
   secretStore: memfs://clusters.example.com/minimal-ipv6.example.com/secrets
   serviceClusterIPRange: fd00:5e4f:ce::/108
