@@ -112,9 +112,6 @@ type ClusterSpec struct {
 	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty"`
 	// PodCIDR is the CIDR from which we allocate IPs for pods
 	PodCIDR string `json:"podCIDR,omitempty"`
-	// PodCIDRFromCloud determines if the Node's podCIDR should be set by the cloud provider.
-	// This requires ipv6 enabled and that instances can be given full ipv6 prefixes.
-	PodCIDRFromCloud bool `json:"podCIDRFromCloud,omitempty"`
 	// NonMasqueradeCIDR is the CIDR for the internal k8s network (on which pods & services live)
 	// It cannot overlap ServiceClusterIPRange
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`
@@ -833,6 +830,10 @@ func (c *Cluster) IsSharedAzureRouteTable() bool {
 
 func (c *ClusterSpec) IsIPv6Only() bool {
 	return utils.IsIPv6CIDR(c.NonMasqueradeCIDR)
+}
+
+func (c *ClusterSpec) IsKopsControllerIPAM() bool {
+	return c.IsIPv6Only()
 }
 
 // EnvVar represents an environment variable present in a Container.

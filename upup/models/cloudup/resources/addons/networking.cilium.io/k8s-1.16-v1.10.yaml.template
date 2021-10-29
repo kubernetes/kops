@@ -151,7 +151,7 @@ data:
 
   # enable-bpf-masquerade enables masquerading packets from endpoints leaving
   # the host with BPF instead of iptables. (default false)
-  enable-bpf-masquerade: "{{ .EnableBPFMasquerade }}"
+  enable-bpf-masquerade: "{{ and (WithDefaultBool .EnableBPFMasquerade false) (not IsIPv6Only) }}"
 
   # Pre-allocation of map entries allows per-packet latency to be reduced, at
   # the expense of up-front memory allocation for the entries in the maps. The
@@ -221,8 +221,8 @@ data:
   # - none
   # - auto (automatically detect the container runtime)
   #
-  masquerade: "{{- if WithDefaultBool .DisableMasquerade false -}}false{{- else -}}true{{- end -}}"
-  enable-ipv6-masquerade: "{{- if WithDefaultBool .DisableMasquerade false -}}false{{- else -}}true{{- end -}}"
+  masquerade: "{{- not (or IsIPv6Only (WithDefaultBool .DisableMasquerade false) ) -}}"
+  enable-ipv6-masquerade: "false"
   install-iptables-rules: "{{- if .IPTablesRulesNoinstall -}}false{{- else -}}true{{- end -}}"
   auto-direct-node-routes: "{{ .AutoDirectNodeRoutes }}"
   {{ if .EnableHostReachableServices }}
