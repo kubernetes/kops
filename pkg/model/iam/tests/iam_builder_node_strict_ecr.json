@@ -6,12 +6,12 @@
       ],
       "Effect": "Allow",
       "Resource": [
-        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/addons/*",
-        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/cluster-completed.spec",
-        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/igconfig/node/*",
-        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/pki/private/kube-proxy/*",
-        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/pki/private/kubelet/*",
-        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/secrets/dockerconfig"
+        "arn:aws-test:s3:::kops-tests/iam-builder-test.k8s.local/addons/*",
+        "arn:aws-test:s3:::kops-tests/iam-builder-test.k8s.local/cluster-completed.spec",
+        "arn:aws-test:s3:::kops-tests/iam-builder-test.k8s.local/igconfig/node/*",
+        "arn:aws-test:s3:::kops-tests/iam-builder-test.k8s.local/pki/private/kube-proxy/*",
+        "arn:aws-test:s3:::kops-tests/iam-builder-test.k8s.local/pki/private/kubelet/*",
+        "arn:aws-test:s3:::kops-tests/iam-builder-test.k8s.local/secrets/dockerconfig"
       ]
     },
     {
@@ -23,7 +23,7 @@
       ],
       "Effect": "Allow",
       "Resource": [
-        "arn:aws:s3:::kops-tests"
+        "arn:aws-test:s3:::kops-tests"
       ]
     },
     {
