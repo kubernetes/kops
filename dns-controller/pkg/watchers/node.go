@@ -37,19 +37,26 @@ import (
 // Unlike other watchers, NodeController only creates alias records referenced by records from other controllers
 type NodeController struct {
 	util.Stoppable
-	client kubernetes.Interface
-	scope  dns.Scope
+	client   kubernetes.Interface
+	scope    dns.Scope
+	haveType map[dns.RecordType]bool
 }
 
 // NewNodeController creates a NodeController
-func NewNodeController(client kubernetes.Interface, dns dns.Context) (*NodeController, error) {
-	scope, err := dns.CreateScope("node")
+func NewNodeController(client kubernetes.Interface, dnsContext dns.Context, internalRecordTypes []dns.RecordType) (*NodeController, error) {
+	scope, err := dnsContext.CreateScope("node")
 	if err != nil {
 		return nil, fmt.Errorf("error building dns scope: %v", err)
 	}
+
 	c := &NodeController{
-		client: client,
-		scope:  scope,
+		client:   client,
+		scope:    scope,
+		haveType: map[dns.RecordType]bool{},
+	}
+
+	for _, recordType := range internalRecordTypes {
+		c.haveType[recordType] = true
 	}
 
 	return c, nil
@@ -154,6 +161,9 @@ func (c *NodeController) updateNodeRecords(node *v1.Node) string {
 		var recordType dns.RecordType = dns.RecordTypeA
 		if utils.IsIPv6IP(a.Address) {
 			recordType = dns.RecordTypeAAAA
+		}
+		if !c.haveType[recordType] {
+			continue
 		}
 		records = append(records, dns.Record{
 			RecordType:  recordType,
