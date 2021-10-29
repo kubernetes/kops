@@ -664,6 +664,14 @@ resource "aws_s3_bucket_object" "minimal-ipv6-example-com-addons-limit-range-add
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_bucket_object" "minimal-ipv6-example-com-addons-networking-projectcalico-org-k8s-1-16" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_minimal-ipv6.example.com-addons-networking.projectcalico.org-k8s-1.16_content")
+  key                    = "clusters.example.com/minimal-ipv6.example.com/addons/networking.projectcalico.org/k8s-1.16.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_bucket_object" "minimal-ipv6-example-com-addons-storage-aws-addons-k8s-io-v1-15-0" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_minimal-ipv6.example.com-addons-storage-aws.addons.k8s.io-v1.15.0_content")
@@ -827,6 +835,15 @@ resource "aws_security_group_rule" "from-nodes-minimal-ipv6-example-com-egress-a
   security_group_id = aws_security_group.nodes-minimal-ipv6-example-com.id
   to_port           = 0
   type              = "egress"
+}
+
+resource "aws_security_group_rule" "from-nodes-minimal-ipv6-example-com-ingress-4-0to0-masters-minimal-ipv6-example-com" {
+  from_port                = 0
+  protocol                 = "4"
+  security_group_id        = aws_security_group.masters-minimal-ipv6-example-com.id
+  source_security_group_id = aws_security_group.nodes-minimal-ipv6-example-com.id
+  to_port                  = 65535
+  type                     = "ingress"
 }
 
 resource "aws_security_group_rule" "from-nodes-minimal-ipv6-example-com-ingress-all-0to0-nodes-minimal-ipv6-example-com" {
