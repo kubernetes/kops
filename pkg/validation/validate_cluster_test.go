@@ -71,6 +71,11 @@ func (c *MockCloud) GetCloudGroups(cluster *kopsapi.Cluster, instancegroups []*k
 func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceGroup, objects []runtime.Object) (*ValidationCluster, error) {
 	cluster := &kopsapi.Cluster{
 		ObjectMeta: metav1.ObjectMeta{Name: "testcluster.k8s.local"},
+		Spec: kopsapi.ClusterSpec{
+			ExternalDNS: &kopsapi.ExternalDNSConfig{
+				Provider: kopsapi.ExternalDNSProviderDNSController,
+			},
+		},
 	}
 
 	if len(groups) == 0 {
@@ -131,6 +136,11 @@ func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceG
 func Test_ValidateCloudGroupMissing(t *testing.T) {
 	cluster := &kopsapi.Cluster{
 		ObjectMeta: metav1.ObjectMeta{Name: "testcluster.k8s.local"},
+		Spec: kopsapi.ClusterSpec{
+			ExternalDNS: &kopsapi.ExternalDNSConfig{
+				Provider: kopsapi.ExternalDNSProviderDNSController,
+			},
+		},
 	}
 
 	instanceGroups := []kopsapi.InstanceGroup{
