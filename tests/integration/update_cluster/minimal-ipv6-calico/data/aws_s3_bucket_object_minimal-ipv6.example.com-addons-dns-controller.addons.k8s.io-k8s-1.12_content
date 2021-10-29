@@ -32,6 +32,7 @@ spec:
         - --watch-ingress=false
         - --dns=aws-route53
         - --zone=*/Z1AFAKE1ZON3YO
+        - --internal-ipv6
         - --zone=*/*
         - -v=2
         env:
