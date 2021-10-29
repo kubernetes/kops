@@ -676,6 +676,20 @@
         "IpProtocol": "-1"
       }
     },
+    "AWSEC2SecurityGroupIngressfromnodesminimalipv6examplecomingress40to0mastersminimalipv6examplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalipv6examplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 65535,
+        "IpProtocol": "4"
+      }
+    },
     "AWSEC2SecurityGroupIngressfromnodesminimalipv6examplecomingressall0to0nodesminimalipv6examplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -1274,10 +1288,13 @@
                 "autoscaling:DescribeAutoScalingInstances",
                 "autoscaling:DescribeLaunchConfigurations",
                 "autoscaling:DescribeTags",
+                "ec2:AssignIpv6Addresses",
                 "ec2:CreateSecurityGroup",
                 "ec2:CreateTags",
                 "ec2:DescribeAccountAttributes",
+                "ec2:DescribeInstanceTypes",
                 "ec2:DescribeInstances",
+                "ec2:DescribeLaunchTemplateVersions",
                 "ec2:DescribeRegions",
                 "ec2:DescribeRouteTables",
                 "ec2:DescribeSecurityGroups",
@@ -1286,12 +1303,17 @@
                 "ec2:DescribeVolumes",
                 "ec2:DescribeVolumesModifications",
                 "ec2:DescribeVpcs",
+                "ec2:ModifyNetworkInterfaceAttribute",
+                "elasticloadbalancing:AddTags",
+                "elasticloadbalancing:CreateListener",
+                "elasticloadbalancing:CreateTargetGroup",
                 "elasticloadbalancing:DescribeListeners",
                 "elasticloadbalancing:DescribeLoadBalancerAttributes",
                 "elasticloadbalancing:DescribeLoadBalancerPolicies",
                 "elasticloadbalancing:DescribeLoadBalancers",
                 "elasticloadbalancing:DescribeTargetGroups",
                 "elasticloadbalancing:DescribeTargetHealth",
+                "elasticloadbalancing:RegisterTargets",
                 "iam:GetServerCertificate",
                 "iam:ListServerCertificates",
                 "kms:DescribeKey",
@@ -1401,7 +1423,10 @@
             {
               "Action": [
                 "autoscaling:DescribeAutoScalingInstances",
+                "ec2:AssignIpv6Addresses",
+                "ec2:DescribeInstanceTypes",
                 "ec2:DescribeInstances",
+                "ec2:ModifyNetworkInterfaceAttribute",
                 "iam:GetServerCertificate",
                 "iam:ListServerCertificates",
                 "kms:GenerateRandom"
