@@ -12,8 +12,8 @@
       },
       "Effect": "Allow",
       "Resource": [
-        "arn:aws:ec2:*:*:volume/*",
-        "arn:aws:ec2:*:*:snapshot/*"
+        "arn:aws-test:ec2:*:*:volume/*",
+        "arn:aws-test:ec2:*:*:snapshot/*"
       ]
     },
     {
