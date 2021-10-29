@@ -478,6 +478,13 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 			argv = append(argv, "--zone=*/"+zone)
 		}
 	}
+
+	if cluster.Spec.IsIPv6Only() {
+		argv = append(argv, "--internal-ipv6")
+	} else {
+		argv = append(argv, "--internal-ipv4")
+	}
+
 	// permit wildcard updates
 	argv = append(argv, "--zone=*/*")
 	// Verbose, but not crazy logging
