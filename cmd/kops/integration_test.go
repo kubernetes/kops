@@ -802,6 +802,21 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 				golden.AssertMatchesFile(t, string(actualDataContent), path.Join(expectedDataPath, dataFileName))
 			}
 		}
+
+		existingExpectedFiles, err := ioutil.ReadDir(expectedDataPath)
+		if err != nil {
+			t.Fatalf("failed to read data dir: %v", err)
+		}
+		existingExpectedFilenames := make([]string, len(existingExpectedFiles))
+		for i, f := range existingExpectedFiles {
+			existingExpectedFilenames[i] = f.Name()
+		}
+		for j := 0; j < len(existingExpectedFilenames) && j < len(expectedDataFilenames); j++ {
+			if existingExpectedFilenames[j] != expectedDataFilenames[j] {
+				t.Errorf("diff with source directory @%d: %q vs %q", j, existingExpectedFilenames[j], expectedDataFilenames[j])
+				break
+			}
+		}
 	}
 }
 
