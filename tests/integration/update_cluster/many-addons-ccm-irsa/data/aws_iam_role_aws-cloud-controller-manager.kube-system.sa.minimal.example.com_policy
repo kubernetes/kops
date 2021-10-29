@@ -9,7 +9,7 @@
       },
       "Effect": "Allow",
       "Principal": {
-        "Federated": "arn:aws:iam::123456789012:oidc-provider/discovery.example.com/minimal.example.com"
+        "Federated": "arn:aws-test:iam::123456789012:oidc-provider/discovery.example.com/minimal.example.com"
       }
     }
   ],
