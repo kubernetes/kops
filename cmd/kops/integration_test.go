@@ -247,7 +247,7 @@ func TestExternalPolicies(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
-// TestMinimalIPv6 runs the test on a minimum IPv6 configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
+// TestMinimalIPv6 runs the test on a minimum IPv6 configuration
 func TestMinimalIPv6(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6").
 		withAddons(dnsControllerAddon).
@@ -255,16 +255,30 @@ func TestMinimalIPv6(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6").runTestCloudformation(t)
 }
 
-// TestIPv6CloudIPAM runs the test on a minimum IPv6 configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
-func TestIPv6CloudIPAM(t *testing.T) {
+// TestMinimalIPv6Calico runs the test on a minimum IPv6 configuration with Calico
+func TestMinimalIPv6Calico(t *testing.T) {
 	featureflag.ParseFlags("+AWSIPv6")
 	unsetFeatureFlags := func() {
 		featureflag.ParseFlags("-AWSIPv6")
 	}
 	defer unsetFeatureFlags()
-	newIntegrationTest("minimal-ipv6.example.com", "ipv6-cloudipam").
-		withAddons(dnsControllerAddon).
+	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-calico").
+		withAddons(calicoAddon, dnsControllerAddon).
 		runTestTerraformAWS(t)
+	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-calico").runTestCloudformation(t)
+}
+
+// TestMinimalIPv6Calico runs the test on a minimum IPv6 configuration with Cilium
+func TestMinimalIPv6Cilium(t *testing.T) {
+	featureflag.ParseFlags("+AWSIPv6")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-AWSIPv6")
+	}
+	defer unsetFeatureFlags()
+	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-cilium").
+		withAddons(ciliumAddon, dnsControllerAddon).
+		runTestTerraformAWS(t)
+	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-cilium").runTestCloudformation(t)
 }
 
 // TestMinimalWarmPool runs the test on a minimum Warm Pool configuration
@@ -326,11 +340,13 @@ func TestPrivateFlannel(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+const calicoAddon = "networking.projectcalico.org-k8s-1.16"
+
 // TestPrivateCalico runs the test on a configuration with private topology, calico networking
 func TestPrivateCalico(t *testing.T) {
 	newIntegrationTest("privatecalico.example.com", "privatecalico").
 		withPrivate().
-		withAddons("networking.projectcalico.org-k8s-1.16", dnsControllerAddon).
+		withAddons(calicoAddon, dnsControllerAddon).
 		runTestTerraformAWS(t)
 	newIntegrationTest("privatecalico.example.com", "privatecalico").
 		withPrivate().
