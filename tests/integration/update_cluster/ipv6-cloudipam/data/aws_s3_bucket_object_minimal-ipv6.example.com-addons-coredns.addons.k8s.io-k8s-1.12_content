@@ -81,7 +81,7 @@ data:
           ttl 30
         }
         prometheus :9153
-        forward . /etc/resolv.conf {
+        forward . fd00:ec2::253 {
           max_concurrent 1000
         }
         cache 30
@@ -226,7 +226,7 @@ metadata:
   namespace: kube-system
   resourceVersion: "0"
 spec:
-  clusterIP: 100.64.0.10
+  clusterIP: fd00:5e4f:ce::a
   ports:
   - name: dns
     port: 53

@@ -127,6 +127,9 @@ cloudConfig:
   awsEBSCSIDriver:
     enabled: false
   manageStorageClasses: true
+  nodeIPFamilies:
+  - ipv6
+  - ipv4
 containerRuntime: containerd
 containerd:
   logLevel: info
@@ -146,7 +149,7 @@ kubeAPIServer:
   - kubernetes.svc.default
   apiServerCount: 1
   authorizationMode: AlwaysAllow
-  bindAddress: 0.0.0.0
+  bindAddress: '::'
   cloudProvider: aws
   enableAdmissionPlugins:
   - NamespaceLifecycle
@@ -179,7 +182,7 @@ kubeAPIServer:
   securePort: 443
   serviceAccountIssuer: https://api.internal.minimal-ipv6.example.com
   serviceAccountJWKSURI: https://api.internal.minimal-ipv6.example.com/openid/v1/jwks
-  serviceClusterIPRange: 100.64.0.0/13
+  serviceClusterIPRange: fd00:5e4f:ce::/108
   storageBackend: etcd3
 kubeControllerManager:
   allocateNodeCIDRs: false
@@ -210,7 +213,7 @@ kubelet:
   cgroupDriver: systemd
   cgroupRoot: /
   cloudProvider: aws
-  clusterDNS: 100.64.0.10
+  clusterDNS: fd00:5e4f:ce::a
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
@@ -218,14 +221,14 @@ kubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
-  nonMasqueradeCIDR: 100.64.0.0/10
+  nonMasqueradeCIDR: ::/0
   podManifestPath: /etc/kubernetes/manifests
 masterKubelet:
   anonymousAuth: false
   cgroupDriver: systemd
   cgroupRoot: /
   cloudProvider: aws
-  clusterDNS: 100.64.0.10
+  clusterDNS: fd00:5e4f:ce::a
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
@@ -233,7 +236,7 @@ masterKubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
-  nonMasqueradeCIDR: 100.64.0.0/10
+  nonMasqueradeCIDR: ::/0
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
 
@@ -244,7 +247,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: yrj4teDAp1g5GdFmTTsqdvkO9tGX3EVpiqHmwEPCLw4=
+NodeupConfigHash: E/2UN3GhVLTRD3ByNw5y9wNYgvXfvosAyFhP1X5utsw=
 
 __EOF_KUBE_ENV
 

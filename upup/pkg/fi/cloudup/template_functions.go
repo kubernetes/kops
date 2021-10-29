@@ -569,7 +569,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		}
 	}
 
-	if tf.Cluster.Spec.PodCIDRFromCloud {
+	if tf.Cluster.Spec.IsKopsControllerIPAM() {
 		config.EnableCloudIPAM = true
 	}
 
