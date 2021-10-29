@@ -8,7 +8,7 @@
       ],
       "Effect": "Allow",
       "Resource": [
-        "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
+        "arn:aws-test:route53:::hostedzone/Z1AFAKE1ZON3YO"
       ]
     },
     {
@@ -17,7 +17,7 @@
       ],
       "Effect": "Allow",
       "Resource": [
-        "arn:aws:route53:::change/*"
+        "arn:aws-test:route53:::change/*"
       ]
     },
     {
