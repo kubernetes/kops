@@ -184,6 +184,7 @@ func TestNvidia(t *testing.T) {
 			"nvidia.addons.k8s.io-k8s-1.16",
 		).
 		runTestTerraformAWS(t)
+	newIntegrationTest("minimal.example.com", "nvidia").runTestCloudformation(t)
 }
 
 // TestMinimal runs the test on a minimum gossip configuration
@@ -538,6 +539,7 @@ func TestExternalDNS(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "external_dns").
 		withAddons("external-dns.addons.k8s.io-k8s-1.12").
 		runTestTerraformAWS(t)
+	newIntegrationTest("minimal.example.com", "external_dns").runTestCloudformation(t)
 }
 
 func TestExternalDNSIRSA(t *testing.T) {
