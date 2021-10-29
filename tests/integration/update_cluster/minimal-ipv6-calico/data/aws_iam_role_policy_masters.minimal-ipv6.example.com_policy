@@ -160,6 +160,7 @@
         "ec2:DescribeVolumes",
         "ec2:DescribeVolumesModifications",
         "ec2:DescribeVpcs",
+        "ec2:ModifyNetworkInterfaceAttribute",
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:CreateListener",
         "elasticloadbalancing:CreateTargetGroup",
