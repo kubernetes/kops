@@ -1460,7 +1460,7 @@
                   "sqs.amazonaws.com"
                 ]
               },
-              "Resource": "arn:aws:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
+              "Resource": "arn:aws-test:sqs:us-test-1:123456789012:nthsqsresources-longclustername-example-com-nth"
             }
           ],
           "Version": "2012-10-17"
