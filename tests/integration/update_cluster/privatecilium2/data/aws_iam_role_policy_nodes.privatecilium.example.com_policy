@@ -6,12 +6,12 @@
       ],
       "Effect": "Allow",
       "Resource": [
-        "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/addons/*",
-        "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/cluster-completed.spec",
-        "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/igconfig/node/*",
-        "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/pki/private/kube-proxy/*",
-        "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/pki/private/kubelet/*",
-        "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/secrets/dockerconfig"
+        "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/addons/*",
+        "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/cluster-completed.spec",
+        "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/igconfig/node/*",
+        "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/pki/private/kube-proxy/*",
+        "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/pki/private/kubelet/*",
+        "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/privatecilium.example.com/secrets/dockerconfig"
       ]
     },
     {
@@ -23,7 +23,7 @@
       ],
       "Effect": "Allow",
       "Resource": [
-        "arn:aws:s3:::placeholder-read-bucket"
+        "arn:aws-test:s3:::placeholder-read-bucket"
       ]
     },
     {

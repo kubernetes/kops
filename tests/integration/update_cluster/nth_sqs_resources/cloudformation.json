@@ -1108,7 +1108,7 @@
                 "s3:Get*"
               ],
               "Effect": "Allow",
-              "Resource": "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/*"
+              "Resource": "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/*"
             },
             {
               "Action": [
@@ -1118,7 +1118,7 @@
                 "s3:PutObject"
               ],
               "Effect": "Allow",
-              "Resource": "arn:aws:s3:::placeholder-write-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/backups/etcd/main/*"
+              "Resource": "arn:aws-test:s3:::placeholder-write-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/backups/etcd/main/*"
             },
             {
               "Action": [
@@ -1128,7 +1128,7 @@
                 "s3:PutObject"
               ],
               "Effect": "Allow",
-              "Resource": "arn:aws:s3:::placeholder-write-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/backups/etcd/events/*"
+              "Resource": "arn:aws-test:s3:::placeholder-write-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/backups/etcd/events/*"
             },
             {
               "Action": [
@@ -1139,7 +1139,7 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                "arn:aws:s3:::placeholder-read-bucket"
+                "arn:aws-test:s3:::placeholder-read-bucket"
               ]
             },
             {
@@ -1151,7 +1151,7 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                "arn:aws:s3:::placeholder-write-bucket"
+                "arn:aws-test:s3:::placeholder-write-bucket"
               ]
             },
             {
@@ -1162,7 +1162,7 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
+                "arn:aws-test:route53:::hostedzone/Z1AFAKE1ZON3YO"
               ]
             },
             {
@@ -1171,7 +1171,7 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                "arn:aws:route53:::change/*"
+                "arn:aws-test:route53:::change/*"
               ]
             },
             {
@@ -1196,8 +1196,8 @@
               },
               "Effect": "Allow",
               "Resource": [
-                "arn:aws:ec2:*:*:volume/*",
-                "arn:aws:ec2:*:*:snapshot/*"
+                "arn:aws-test:ec2:*:*:volume/*",
+                "arn:aws-test:ec2:*:*:snapshot/*"
               ]
             },
             {
@@ -1212,8 +1212,8 @@
               },
               "Effect": "Allow",
               "Resource": [
-                "arn:aws:ec2:*:*:volume/*",
-                "arn:aws:ec2:*:*:snapshot/*"
+                "arn:aws-test:ec2:*:*:volume/*",
+                "arn:aws-test:ec2:*:*:snapshot/*"
               ]
             },
             {
@@ -1225,8 +1225,8 @@
               },
               "Effect": "Allow",
               "Resource": [
-                "arn:aws:ec2:*:*:volume/*",
-                "arn:aws:ec2:*:*:snapshot/*"
+                "arn:aws-test:ec2:*:*:volume/*",
+                "arn:aws-test:ec2:*:*:snapshot/*"
               ]
             },
             {
@@ -1350,10 +1350,10 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/addons/*",
-                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/cluster-completed.spec",
-                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/igconfig/node/*",
-                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/secrets/dockerconfig"
+                "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/addons/*",
+                "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/cluster-completed.spec",
+                "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/igconfig/node/*",
+                "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/secrets/dockerconfig"
               ]
             },
             {
@@ -1365,7 +1365,7 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                "arn:aws:s3:::placeholder-read-bucket"
+                "arn:aws-test:s3:::placeholder-read-bucket"
               ]
             },
             {
