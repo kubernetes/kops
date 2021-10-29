@@ -32,7 +32,7 @@ var _ iam.Subject = &ServiceAccount{}
 func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, error) {
 	clusterName := b.Cluster.ObjectMeta.Name
 	p := iam.NewPolicy(clusterName)
-	iam.AddCCMPermissions(p, b.Cluster.Spec.Networking.Kubenet != nil)
+	iam.AddCCMPermissions(p, b.Partition, b.Cluster.Spec.Networking.Kubenet != nil)
 	iam.AddLegacyCCMPermissions(p)
 	return p, nil
 }

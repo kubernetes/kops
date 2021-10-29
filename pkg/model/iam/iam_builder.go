@@ -33,7 +33,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -247,6 +246,7 @@ type PolicyBuilder struct {
 	HostedZoneID                          string
 	KMSKeys                               []string
 	Region                                string
+	Partition                             string
 	ResourceARN                           *string
 	Role                                  Subject
 	UseServiceAccountExternalPermisssions bool
@@ -303,7 +303,7 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		addAmazonVPCCNIPermissions(p, b.IAMPrefix())
+		addAmazonVPCCNIPermissions(p, b.Partition)
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
@@ -344,17 +344,17 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 	// If cluster does not use external CCM, the master IAM Role needs CCM permissions
 	if b.Cluster.Spec.ExternalCloudControllerManager == nil {
-		AddCCMPermissions(p, b.Cluster.Spec.Networking.Kubenet != nil)
+		AddCCMPermissions(p, b.Partition, b.Cluster.Spec.Networking.Kubenet != nil)
 		AddLegacyCCMPermissions(p)
 	}
 
 	if !b.UseServiceAccountExternalPermisssions {
 		esc := b.Cluster.Spec.SnapshotController != nil &&
 			fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled)
-		AddAWSEBSCSIDriverPermissions(p, esc)
+		AddAWSEBSCSIDriverPermissions(p, b.Partition, esc)
 
 		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
-			AddCCMPermissions(p, b.Cluster.Spec.Networking.Kubenet != nil)
+			AddCCMPermissions(p, b.Partition, b.Cluster.Spec.Networking.Kubenet != nil)
 			AddLegacyCCMPermissions(p)
 		}
 
@@ -374,7 +374,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		addAmazonVPCCNIPermissions(p, b.IAMPrefix())
+		addAmazonVPCCNIPermissions(p, b.Partition)
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
@@ -408,7 +408,7 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		addAmazonVPCCNIPermissions(p, b.IAMPrefix())
+		addAmazonVPCCNIPermissions(p, b.Partition)
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
@@ -431,19 +431,6 @@ func (r *NodeRoleBastion) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	p.unconditionalAction.Insert("ec2:DescribeRegions")
 
 	return p, nil
-}
-
-// IAMPrefix returns the prefix for AWS ARNs in the current region, for use with IAM
-// it is arn:aws in the default aws partition but different in other isolated or non-standard partitions
-func (b *PolicyBuilder) IAMPrefix() string {
-	partitions := endpoints.DefaultPartitions()
-	for _, p := range partitions {
-		if _, ok := p.Regions()[b.Region]; ok {
-			arn := "arn:" + p.ID()
-			return arn
-		}
-	}
-	return "arn:aws"
 }
 
 // AddS3Permissions builds an IAM Policy, with statements granting tailored
@@ -568,7 +555,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 				"s3:ListBucketVersions",
 			),
 			Resource: stringorslice.Slice([]string{
-				strings.Join([]string{b.IAMPrefix(), ":s3:::", s3Bucket}, ""),
+				fmt.Sprintf("arn:%v:s3:::%v", b.Partition, s3Bucket),
 			}),
 		})
 	}
@@ -586,7 +573,7 @@ func (b *PolicyBuilder) buildS3WriteStatements(p *Policy, iamS3Path string) {
 			"s3:PutObject",
 		}),
 		Resource: stringorslice.Of(
-			strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/*"}, ""),
+			fmt.Sprintf("arn:%v:s3:::%v/*", b.Partition, iamS3Path),
 		),
 	})
 
@@ -604,7 +591,7 @@ func (b *PolicyBuilder) buildS3GetStatements(p *Policy, iamS3Path string) error 
 
 		// Add the prefix for IAM
 		for i, r := range resources {
-			resources[i] = b.IAMPrefix() + ":s3:::" + iamS3Path + r
+			resources[i] = fmt.Sprintf("arn:%v:s3:::%v%v", b.Partition, iamS3Path, r)
 		}
 
 		p.Statement = append(p.Statement, &Statement{
@@ -815,7 +802,7 @@ func AddLegacyCCMPermissions(p *Policy) {
 	)
 }
 
-func AddCCMPermissions(p *Policy, cloudRoutes bool) {
+func AddCCMPermissions(p *Policy, partition string, cloudRoutes bool) {
 	p.unconditionalAction.Insert(
 		"autoscaling:DescribeAutoScalingGroups",
 		"autoscaling:DescribeTags",
@@ -884,8 +871,8 @@ func AddCCMPermissions(p *Policy, cloudRoutes bool) {
 			),
 			Resource: stringorslice.Slice(
 				[]string{
-					"arn:aws:ec2:*:*:volume/*",
-					"arn:aws:ec2:*:*:snapshot/*",
+					fmt.Sprintf("arn:%v:ec2:*:*:volume/*", partition),
+					fmt.Sprintf("arn:%v:ec2:*:*:snapshot/*", partition),
 				},
 			),
 			Condition: Condition{
@@ -949,7 +936,7 @@ func AddClusterAutoscalerPermissions(p *Policy) {
 }
 
 // AddAWSEBSCSIDriverPermissions appens policy statements that the AWS EBS CSI Driver needs to operate.
-func AddAWSEBSCSIDriverPermissions(p *Policy, appendSnapshotPermissions bool) {
+func AddAWSEBSCSIDriverPermissions(p *Policy, partition string, appendSnapshotPermissions bool) {
 
 	if appendSnapshotPermissions {
 		addSnapshotPersmissions(p)
@@ -981,8 +968,8 @@ func AddAWSEBSCSIDriverPermissions(p *Policy, appendSnapshotPermissions bool) {
 			),
 			Resource: stringorslice.Slice(
 				[]string{
-					"arn:aws:ec2:*:*:volume/*",
-					"arn:aws:ec2:*:*:snapshot/*",
+					fmt.Sprintf("arn:%v:ec2:*:*:volume/*", partition),
+					fmt.Sprintf("arn:%v:ec2:*:*:snapshot/*", partition),
 				},
 			),
 			Condition: Condition{
@@ -1002,8 +989,8 @@ func AddAWSEBSCSIDriverPermissions(p *Policy, appendSnapshotPermissions bool) {
 			),
 			Resource: stringorslice.Slice(
 				[]string{
-					"arn:aws:ec2:*:*:volume/*",
-					"arn:aws:ec2:*:*:snapshot/*",
+					fmt.Sprintf("arn:%v:ec2:*:*:volume/*", partition),
+					fmt.Sprintf("arn:%v:ec2:*:*:snapshot/*", partition),
 				},
 			),
 			Condition: Condition{
@@ -1044,13 +1031,13 @@ func AddDNSControllerPermissions(b *PolicyBuilder, p *Policy) {
 		Action: stringorslice.Of("route53:ChangeResourceRecordSets",
 			"route53:ListResourceRecordSets",
 			"route53:GetHostedZone"),
-		Resource: stringorslice.Slice([]string{b.IAMPrefix() + ":route53:::hostedzone/" + hostedZoneID}),
+		Resource: stringorslice.Slice([]string{fmt.Sprintf("arn:%v:route53:::hostedzone/%v", b.Partition, hostedZoneID)}),
 	})
 
 	p.Statement = append(p.Statement, &Statement{
 		Effect:   StatementEffectAllow,
 		Action:   stringorslice.Slice([]string{"route53:GetChange"}),
-		Resource: stringorslice.Slice([]string{b.IAMPrefix() + ":route53:::change/*"}),
+		Resource: stringorslice.Slice([]string{fmt.Sprintf("arn:%v:route53:::change/*", b.Partition)}),
 	})
 
 	wildcard := stringorslice.Slice([]string{"*"})
@@ -1137,7 +1124,7 @@ func addCiliumEniPermissions(p *Policy) {
 	)
 }
 
-func addAmazonVPCCNIPermissions(p *Policy, iamPrefix string) {
+func addAmazonVPCCNIPermissions(p *Policy, partition string) {
 	p.unconditionalAction.Insert(
 		"ec2:AssignPrivateIpAddresses",
 		"ec2:AttachNetworkInterface",
@@ -1158,7 +1145,7 @@ func addAmazonVPCCNIPermissions(p *Policy, iamPrefix string) {
 				"ec2:CreateTags",
 			}),
 			Resource: stringorslice.Slice([]string{
-				strings.Join([]string{iamPrefix, ":ec2:*:*:network-interface/*"}, ""),
+				strings.Join([]string{"arn:", partition, ":ec2:*:*:network-interface/*"}, ""),
 			})},
 	)
 }

@@ -18,7 +18,7 @@
         "s3:Get*"
       ],
       "Effect": "Allow",
-      "Resource": "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/*"
+      "Resource": "arn:aws-test:s3:::kops-tests/iam-builder-test.k8s.local/*"
     },
     {
       "Action": [
@@ -29,7 +29,7 @@
       ],
       "Effect": "Allow",
       "Resource": [
-        "arn:aws:s3:::kops-tests"
+        "arn:aws-test:s3:::kops-tests"
       ]
     },
     {
@@ -44,8 +44,8 @@
       },
       "Effect": "Allow",
       "Resource": [
-        "arn:aws:ec2:*:*:volume/*",
-        "arn:aws:ec2:*:*:snapshot/*"
+        "arn:aws-test:ec2:*:*:volume/*",
+        "arn:aws-test:ec2:*:*:snapshot/*"
       ]
     },
     {
@@ -60,8 +60,8 @@
       },
       "Effect": "Allow",
       "Resource": [
-        "arn:aws:ec2:*:*:volume/*",
-        "arn:aws:ec2:*:*:snapshot/*"
+        "arn:aws-test:ec2:*:*:volume/*",
+        "arn:aws-test:ec2:*:*:snapshot/*"
       ]
     },
     {
@@ -73,8 +73,8 @@
       },
       "Effect": "Allow",
       "Resource": [
-        "arn:aws:ec2:*:*:volume/*",
-        "arn:aws:ec2:*:*:snapshot/*"
+        "arn:aws-test:ec2:*:*:volume/*",
+        "arn:aws-test:ec2:*:*:snapshot/*"
       ]
     },
     {

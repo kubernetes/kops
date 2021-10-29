@@ -227,6 +227,7 @@ func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.Subject, iamName string, i
 			Cluster:                               b.Cluster,
 			Role:                                  role,
 			Region:                                b.Region,
+			Partition:                             b.AWSPartition,
 			UseServiceAccountExternalPermisssions: b.UseServiceAccountExternalPermissions(),
 		},
 	}
@@ -405,7 +406,7 @@ func IAMServiceEC2(region string) string {
 	return "ec2.amazonaws.com"
 }
 
-func formatAWSIAMStatement(accountId, oidcProvider, namespace, name string) (*iam.Statement, error) {
+func formatAWSIAMStatement(accountId, partition, oidcProvider, namespace, name string) (*iam.Statement, error) {
 	// disallow wildcard in the service account name
 	if strings.Contains(name, "*") {
 		return nil, fmt.Errorf("service account name cannot contain a wildcard %s", name)
@@ -420,7 +421,7 @@ func formatAWSIAMStatement(accountId, oidcProvider, namespace, name string) (*ia
 	return &iam.Statement{
 			Effect: "Allow",
 			Principal: iam.Principal{
-				Federated: "arn:aws:iam::" + accountId + ":oidc-provider/" + oidcProvider,
+				Federated: "arn:" + partition + ":iam::" + accountId + ":oidc-provider/" + oidcProvider,
 			},
 			Action: stringorslice.String("sts:AssumeRoleWithWebIdentity"),
 			Condition: map[string]interface{}{
@@ -439,7 +440,7 @@ func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role iam.Subject) (fi.Resource, 
 	if ok {
 		oidcProvider := strings.TrimPrefix(*b.Cluster.Spec.KubeAPIServer.ServiceAccountIssuer, "https://")
 
-		statement, err := formatAWSIAMStatement(b.AWSAccountID, oidcProvider, serviceAccount.Namespace, serviceAccount.Name)
+		statement, err := formatAWSIAMStatement(b.AWSAccountID, b.AWSPartition, oidcProvider, serviceAccount.Namespace, serviceAccount.Name)
 		if err != nil {
 			return nil, err
 		}
