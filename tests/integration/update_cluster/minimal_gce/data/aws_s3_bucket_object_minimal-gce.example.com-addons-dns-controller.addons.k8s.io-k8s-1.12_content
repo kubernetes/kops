@@ -32,6 +32,7 @@ spec:
         - --watch-ingress=false
         - --dns=google-clouddns
         - --zone=*/1
+        - --internal-ipv4
         - --zone=*/*
         - -v=2
         env:
