@@ -54,6 +54,7 @@ func main() {
 	fmt.Printf("dns-controller version %s\n", BuildVersion)
 	var dnsServer, dnsProviderID, gossipListen, gossipSecret, watchNamespace, metricsListen, gossipProtocol, gossipSecretSecondary, gossipListenSecondary, gossipProtocolSecondary string
 	var gossipSeeds, gossipSeedsSecondary, zones []string
+	var internalIpv4, internalIpv6 bool
 	var watchIngress bool
 	var updateInterval int
 
@@ -73,6 +74,8 @@ func main() {
 	flag.StringVar(&gossipListenSecondary, "gossip-listen-secondary", fmt.Sprintf("0.0.0.0:%d", wellknownports.DNSControllerGossipMemberlist), "address:port on which to bind for gossip")
 	flags.StringVar(&gossipSecretSecondary, "gossip-secret-secondary", gossipSecret, "Secret to use to secure gossip")
 	flags.StringSliceVar(&gossipSeedsSecondary, "gossip-seed-secondary", gossipSeedsSecondary, "If set, will enable gossip zones and seed using the provided addresses")
+	flags.BoolVar(&internalIpv4, "internal-ipv4", internalIpv4, "Internal network has IPv4")
+	flags.BoolVar(&internalIpv6, "internal-ipv6", internalIpv6, "Internal network has IPv6")
 	flags.StringVar(&watchNamespace, "watch-namespace", "", "Limits the functionality for pods, services and ingress to specific namespace, by default all")
 	flag.IntVar(&route53.MaxBatchSize, "route53-batch-size", route53.MaxBatchSize, "Maximum number of operations performed per changeset batch")
 	flag.StringVar(&metricsListen, "metrics-listen", "", "The address on which to listen for Prometheus metrics.")
@@ -84,6 +87,18 @@ func main() {
 	flag.Set("logtostderr", "true")
 	flags.AddGoFlagSet(flag.CommandLine)
 	flags.Parse(os.Args)
+
+	var internalRecordTypes []dns.RecordType
+	if internalIpv4 {
+		internalRecordTypes = append(internalRecordTypes, dns.RecordTypeA)
+	}
+	if internalIpv6 {
+		internalRecordTypes = append(internalRecordTypes, dns.RecordTypeAAAA)
+	}
+	if len(internalRecordTypes) == 0 {
+		klog.Errorf("must specify at least one of --internal-ipv4 or --internal-ipv6")
+		os.Exit(1)
+	}
 
 	if metricsListen != "" {
 		go func() {
@@ -185,7 +200,7 @@ func main() {
 	}
 
 	// @step: initialize the watchers
-	if err := initializeWatchers(client, dnsController, watchNamespace, watchIngress); err != nil {
+	if err := initializeWatchers(client, dnsController, watchNamespace, watchIngress, internalRecordTypes); err != nil {
 		klog.Errorf("%s", err)
 		os.Exit(1)
 	}
@@ -195,10 +210,10 @@ func main() {
 }
 
 // initializeWatchers is responsible for creating the watchers
-func initializeWatchers(client kubernetes.Interface, dnsctl *dns.DNSController, namespace string, watchIngress bool) error {
+func initializeWatchers(client kubernetes.Interface, dnsctl *dns.DNSController, namespace string, watchIngress bool, internalRecordTypes []dns.RecordType) error {
 	klog.V(1).Infof("initializing the watch controllers, namespace: %q", namespace)
 
-	nodeController, err := watchers.NewNodeController(client, dnsctl)
+	nodeController, err := watchers.NewNodeController(client, dnsctl, internalRecordTypes)
 	if err != nil {
 		return fmt.Errorf("failed to initialize the node controller, error: %v", err)
 	}
