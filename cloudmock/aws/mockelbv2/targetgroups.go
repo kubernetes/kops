@@ -103,7 +103,7 @@ func (m *MockELBV2) CreateTargetGroup(request *elbv2.CreateTargetGroupInput) (*e
 	}
 
 	m.tgCount++
-	arn := fmt.Sprintf("arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/%v/%v", aws.StringValue(request.Name), m.tgCount)
+	arn := fmt.Sprintf("arn:aws-test:elasticloadbalancing:us-test-1:000000000000:targetgroup/%v/%v", aws.StringValue(request.Name), m.tgCount)
 	tg.TargetGroupArn = aws.String(arn)
 
 	if m.TargetGroups == nil {

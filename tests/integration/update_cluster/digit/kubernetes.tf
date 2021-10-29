@@ -349,8 +349,8 @@ resource "aws_iam_role_policy" "nodes-123-example-com" {
   role   = aws_iam_role.nodes-123-example-com.name
 }
 
-resource "aws_iam_role_policy_attachment" "external-myserviceaccount-default-sa-123-example-com-3186075376" {
-  policy_arn = "arn:aws:iam::123456789012:policy/UsersManageOwnCredentials"
+resource "aws_iam_role_policy_attachment" "external-myserviceaccount-default-sa-123-example-com-3197825879" {
+  policy_arn = "arn:aws-test:iam::123456789012:policy/UsersManageOwnCredentials"
   role       = aws_iam_role.myserviceaccount-default-sa-123-example-com.name
 }
 
