@@ -56,7 +56,7 @@ func (m *MockSQS) CreateQueue(input *sqs.CreateQueueInput) (*sqs.CreateQueueOutp
 		tags:       input.Tags,
 	}
 
-	arn := fmt.Sprintf("arn:aws:sqs:us-test-1:000000000000:queue/%v", aws.StringValue(input.QueueName))
+	arn := fmt.Sprintf("arn:aws-test:sqs:us-test-1:000000000000:queue/%v", aws.StringValue(input.QueueName))
 	queue.attributes["QueueArn"] = &arn
 
 	m.Queues[name] = queue

@@ -46,12 +46,12 @@ spec:
     serviceAccountExternalPermissions:
     - aws:
         policyARNs:
-        - arn:aws:iam::123456789012:policy/UsersManageOwnCredentials
+        - arn:aws-test:iam::123456789012:policy/UsersManageOwnCredentials
       name: myserviceaccount
       namespace: default
     - aws:
         policyARNs:
-        - arn:aws:iam::123456789012:policy/UsersManageOwnCredentials
+        - arn:aws-test:iam::123456789012:policy/UsersManageOwnCredentials
       name: myserviceaccount
       namespace: test-*
     - aws:
