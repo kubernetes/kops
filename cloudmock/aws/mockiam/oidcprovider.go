@@ -84,7 +84,7 @@ func (m *MockIAM) CreateOpenIDConnectProvider(request *iam.CreateOpenIDConnectPr
 
 	klog.Infof("CreateOpenIDConnectProvider: %v", request)
 
-	arn := fmt.Sprintf("arn:aws:iam::0000000000:oidc-provider/%s", *request.Url)
+	arn := fmt.Sprintf("arn:aws-test:iam::0000000000:oidc-provider/%s", *request.Url)
 
 	p := &iam.GetOpenIDConnectProviderOutput{
 		ClientIDList:   request.ClientIDList,
