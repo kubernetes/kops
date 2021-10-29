@@ -302,7 +302,7 @@ resource "aws_iam_instance_profile" "nodes-complex-example-com" {
 resource "aws_iam_role" "masters-complex-example-com" {
   assume_role_policy   = file("${path.module}/data/aws_iam_role_masters.complex.example.com_policy")
   name                 = "masters.complex.example.com"
-  permissions_boundary = "arn:aws:iam::000000000000:policy/boundaries"
+  permissions_boundary = "arn:aws-test:iam::000000000000:policy/boundaries"
   tags = {
     "KubernetesCluster"                         = "complex.example.com"
     "Name"                                      = "masters.complex.example.com"
@@ -315,7 +315,7 @@ resource "aws_iam_role" "masters-complex-example-com" {
 resource "aws_iam_role" "nodes-complex-example-com" {
   assume_role_policy   = file("${path.module}/data/aws_iam_role_nodes.complex.example.com_policy")
   name                 = "nodes.complex.example.com"
-  permissions_boundary = "arn:aws:iam::000000000000:policy/boundaries"
+  permissions_boundary = "arn:aws-test:iam::000000000000:policy/boundaries"
   tags = {
     "KubernetesCluster"                         = "complex.example.com"
     "Name"                                      = "nodes.complex.example.com"
@@ -355,7 +355,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
       delete_on_termination = true
       encrypted             = true
       iops                  = 3000
-      kms_key_id            = "arn:aws:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+      kms_key_id            = "arn:aws-test:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab"
       throughput            = 125
       volume_size           = 64
       volume_type           = "gp3"
@@ -457,7 +457,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
     ebs {
       delete_on_termination = true
       encrypted             = true
-      kms_key_id            = "arn:aws:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+      kms_key_id            = "arn:aws-test:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab"
       volume_size           = 20
       volume_type           = "gp2"
     }
@@ -555,7 +555,7 @@ resource "aws_lb" "api-complex-example-com" {
 }
 
 resource "aws_lb_listener" "api-complex-example-com-443" {
-  certificate_arn = "arn:aws:acm:us-test-1:000000000000:certificate/123456789012-1234-1234-1234-12345678"
+  certificate_arn = "arn:aws-test:acm:us-test-1:000000000000:certificate/123456789012-1234-1234-1234-12345678"
   default_action {
     target_group_arn = aws_lb_target_group.tls-complex-example-com-5nursn.id
     type             = "forward"

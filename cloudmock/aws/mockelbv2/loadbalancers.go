@@ -113,7 +113,7 @@ func (m *MockELBV2) CreateLoadBalancer(request *elbv2.CreateLoadBalancerInput) (
 	lb.VpcId = aws.String("vpc-1")
 
 	m.lbCount++
-	arn := fmt.Sprintf("arn:aws:elasticloadbalancing:us-test-1:000000000000:loadbalancer/net/%v/%v", aws.StringValue(request.Name), m.lbCount)
+	arn := fmt.Sprintf("arn:aws-test:elasticloadbalancing:us-test-1:000000000000:loadbalancer/net/%v/%v", aws.StringValue(request.Name), m.lbCount)
 
 	lb.LoadBalancerArn = aws.String(arn)
 

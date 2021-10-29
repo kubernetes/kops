@@ -16,7 +16,7 @@ spec:
       - sg-exampleid6
       class: Network
       crossZoneLoadBalancing: true
-      sslCertificate: arn:aws:acm:us-test-1:000000000000:certificate/123456789012-1234-1234-1234-12345678
+      sslCertificate: arn:aws-test:acm:us-test-1:000000000000:certificate/123456789012-1234-1234-1234-12345678
       sslPolicy: ELBSecurityPolicy-2016-08
       subnets:
       - allocationId: eipalloc-012345a678b9cdefa
@@ -68,7 +68,7 @@ spec:
     provider: dns-controller
   iam:
     legacy: false
-    permissionsBoundary: arn:aws:iam::000000000000:policy/boundaries
+    permissionsBoundary: arn:aws-test:iam::000000000000:policy/boundaries
   keyStore: memfs://clusters.example.com/complex.example.com/pki
   kubeAPIServer:
     allowPrivileged: true

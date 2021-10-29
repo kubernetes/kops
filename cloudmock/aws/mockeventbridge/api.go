@@ -39,7 +39,7 @@ func (m *MockEventBridge) PutRule(input *eventbridge.PutRuleInput) (*eventbridge
 	defer m.mutex.Unlock()
 
 	name := *input.Name
-	arn := "arn:aws:events:us-east-1:012345678901:rule/" + name
+	arn := "arn:aws-test:events:us-east-1:012345678901:rule/" + name
 
 	rule := &eventbridge.Rule{
 		Arn:          &arn,

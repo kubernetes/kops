@@ -274,7 +274,7 @@
                 "Throughput": 125,
                 "DeleteOnTermination": true,
                 "Encrypted": true,
-                "KmsKeyId": "arn:aws:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+                "KmsKeyId": "arn:aws-test:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab"
               }
             },
             {
@@ -447,7 +447,7 @@
                 "VolumeSize": 20,
                 "DeleteOnTermination": true,
                 "Encrypted": true,
-                "KmsKeyId": "arn:aws:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+                "KmsKeyId": "arn:aws-test:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab"
               }
             }
           ],
@@ -1386,7 +1386,7 @@
       "Properties": {
         "Certificates": [
           {
-            "CertificateArn": "arn:aws:acm:us-test-1:000000000000:certificate/123456789012-1234-1234-1234-12345678"
+            "CertificateArn": "arn:aws-test:acm:us-test-1:000000000000:certificate/123456789012-1234-1234-1234-12345678"
           }
         ],
         "DefaultActions": [
@@ -1888,7 +1888,7 @@
           ],
           "Version": "2012-10-17"
         },
-        "PermissionsBoundary": "arn:aws:iam::000000000000:policy/boundaries",
+        "PermissionsBoundary": "arn:aws-test:iam::000000000000:policy/boundaries",
         "Tags": [
           {
             "Key": "KubernetesCluster",
@@ -1929,7 +1929,7 @@
           ],
           "Version": "2012-10-17"
         },
-        "PermissionsBoundary": "arn:aws:iam::000000000000:policy/boundaries",
+        "PermissionsBoundary": "arn:aws-test:iam::000000000000:policy/boundaries",
         "Tags": [
           {
             "Key": "KubernetesCluster",
