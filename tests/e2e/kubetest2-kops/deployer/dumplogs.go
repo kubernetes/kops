@@ -97,6 +97,68 @@ func (d *deployer) dumpClusterInfo() error {
 			return err
 		}
 	}
+
+	resourceTypes := []string{"csinodes", "csidrivers", "storageclasses", "persistentvolumes",
+		"mutatingwebhookconfigurations", "validatingwebhookconfigurations"}
+	for _, resType := range resourceTypes {
+		yamlFile, err := os.Create(path.Join(d.ArtifactsDir, "cluster-info", fmt.Sprintf("%v.yaml", resType)))
+		if err != nil {
+			panic(err)
+		}
+		defer yamlFile.Close()
+
+		args = []string{
+			"kubectl", "get", resType,
+			"--all-namespaces",
+			"-o", "yaml",
+		}
+		klog.Info(strings.Join(args, " "))
+
+		cmd := exec.Command(args[0], args[1:]...)
+		cmd.SetEnv(d.env()...)
+		cmd.SetStdout(yamlFile)
+		if err := cmd.Run(); err != nil {
+			if err = d.dumpClusterInfoSSH(); err != nil {
+				klog.Warningf("Failed to get %v: %v", resType, err)
+			}
+		}
+	}
+
+	nsCmd := exec.Command(
+		"kubectl", "get", "namespaces", "--no-headers", "-o", "custom-columns=name:.metadata.name",
+	)
+	namespaces, err := exec.OutputLines(nsCmd)
+	if err != nil {
+		return fmt.Errorf("failed to get namespaces: %s", err)
+	}
+
+	namespacedResourceTypes := []string{"configmaps", "endpoints", "endpointslices", "leases", "persistentvolumeclaims"}
+	for _, namespace := range namespaces {
+		namespace = strings.TrimSpace(namespace)
+		for _, resType := range namespacedResourceTypes {
+			yamlFile, err := os.Create(path.Join(d.ArtifactsDir, "cluster-info", namespace, fmt.Sprintf("%v.yaml", resType)))
+			if err != nil {
+				panic(err)
+			}
+			defer yamlFile.Close()
+
+			args = []string{
+				"kubectl", "get", resType,
+				"-n", namespace,
+				"-o", "yaml",
+			}
+			klog.Info(strings.Join(args, " "))
+
+			cmd := exec.Command(args[0], args[1:]...)
+			cmd.SetEnv(d.env()...)
+			cmd.SetStdout(yamlFile)
+			if err := cmd.Run(); err != nil {
+				if err = d.dumpClusterInfoSSH(); err != nil {
+					klog.Warningf("Failed to get %v: %v", resType, err)
+				}
+			}
+		}
+	}
 	return nil
 }
 
