@@ -299,31 +299,6 @@ func (c *DNSController) runOnce() error {
 		}
 	}
 
-	// Look for records of wrong record type.
-	for k := range newValueMap {
-		switch k.RecordType {
-		case RecordTypeA:
-			k.RecordType = RecordTypeAAAA
-		case RecordTypeAAAA:
-			k.RecordType = RecordTypeA
-		default:
-			continue
-		}
-
-		if c.StopRequested() {
-			return fmt.Errorf("stop requested")
-		}
-
-		newValues := newValueMap[k]
-		if newValues == nil {
-			err := op.deleteRecords(k)
-			if err != nil {
-				klog.Infof("error deleting records for %s: %v", k, err)
-				errors = append(errors, err)
-			}
-		}
-	}
-
 	// Look for deleted hostnames
 	for k := range oldValueMap {
 		if c.StopRequested() {
