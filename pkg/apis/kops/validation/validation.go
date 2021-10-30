@@ -671,6 +671,10 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 
 	if v.Kubenet != nil {
 		optionTaken = true
+
+		if cluster.Spec.IsIPv6Only() {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kubenet"), "Kubenet does not support IPv6"))
+		}
 	}
 
 	if v.External != nil {
@@ -685,6 +689,10 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kopeio"), "only one networking option permitted"))
 		}
 		optionTaken = true
+
+		if cluster.Spec.IsIPv6Only() {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kopeio"), "Kopeio does not support IPv6"))
+		}
 	}
 
 	if v.CNI != nil && optionTaken {
@@ -696,6 +704,10 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("weave"), "only one networking option permitted"))
 		}
 		optionTaken = true
+
+		if cluster.Spec.IsIPv6Only() {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("weave"), "Weave does not support IPv6"))
+		}
 	}
 
 	if v.Flannel != nil {
@@ -704,7 +716,7 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		}
 		optionTaken = true
 
-		allErrs = append(allErrs, validateNetworkingFlannel(v.Flannel, fldPath.Child("flannel"))...)
+		allErrs = append(allErrs, validateNetworkingFlannel(cluster, v.Flannel, fldPath.Child("flannel"))...)
 	}
 
 	if v.Calico != nil {
@@ -731,6 +743,10 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 			allErrs = append(allErrs, field.Forbidden(fldPath.Root().Child("spec", "kubeProxy", "enabled"), "kube-router requires kubeProxy to be disabled"))
 		}
 		optionTaken = true
+
+		if cluster.Spec.IsIPv6Only() {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kuberouter"), "kube-router does not support IPv6"))
+		}
 	}
 
 	if v.Romana != nil {
@@ -746,6 +762,11 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		if c.CloudProvider != "aws" {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("amazonvpc"), "amazon-vpc-routed-eni networking is supported only in AWS"))
 		}
+
+		if cluster.Spec.IsIPv6Only() {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("amazonvpc"), "amazon-vpc-routed-eni networking does not support IPv6"))
+		}
+
 	}
 
 	if v.Cilium != nil {
@@ -772,8 +793,12 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 	return allErrs
 }
 
-func validateNetworkingFlannel(v *kops.FlannelNetworkingSpec, fldPath *field.Path) field.ErrorList {
+func validateNetworkingFlannel(c *kops.Cluster, v *kops.FlannelNetworkingSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
+
+	if c.Spec.IsIPv6Only() {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "Flannel does not support IPv6"))
+	}
 
 	if v.Backend == "" {
 		allErrs = append(allErrs, field.Required(fldPath.Child("backend"), "Flannel backend must be specified"))
@@ -786,6 +811,10 @@ func validateNetworkingFlannel(v *kops.FlannelNetworkingSpec, fldPath *field.Pat
 
 func validateNetworkingCanal(c *kops.Cluster, v *kops.CanalNetworkingSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
+
+	if c.Spec.IsIPv6Only() {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "Canal does not support IPv6"))
+	}
 
 	if v.DefaultEndpointToHostAction != "" {
 		valid := []string{"ACCEPT", "DROP", "RETURN"}
@@ -930,7 +959,11 @@ func validateNetworkingGCE(c *kops.ClusterSpec, v *kops.GCENetworkingSpec, fldPa
 	allErrs := field.ErrorList{}
 
 	if c.CloudProvider != "gce" {
-		allErrs = append(allErrs, field.Forbidden(fldPath, "gce networking is supported only when on GCP"))
+		allErrs = append(allErrs, field.Forbidden(fldPath, "GCE networking is supported only when on GCP"))
+	}
+
+	if c.IsIPv6Only() {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "GCE networking does not support IPv6"))
 	}
 
 	return allErrs
