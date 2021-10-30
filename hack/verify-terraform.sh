@@ -31,6 +31,15 @@ while IFS= read -r -d '' -u 3 test_dir; do
   echo -e "${test_dir}\n"
 
   docker run --rm --network host -e "TF_PLUGIN_CACHE_DIR=${PROVIDER_CACHE}" -v "${PROVIDER_CACHE}:${PROVIDER_CACHE}" -v "${test_dir}":"${test_dir}" -w "${test_dir}" --entrypoint=sh hashicorp/terraform:${TF_TAG} -c '/bin/terraform init -upgrade >/dev/null && /bin/terraform validate' || RC=$?
+
+  if grep -qr "arn:aws:" "${test_dir}"; then
+    echo -e "\nARN reference uses hardcoded partition in ${test_dir}\n"
+    RC=1
+  fi
+  if grep -qr "arn::" "${test_dir}"; then
+    echo -e "\nARN reference is missing partition in ${test_dir}\n"
+    RC=1
+  fi
 done 3< <(find "${KOPS_ROOT}/tests/integration/update_cluster" -maxdepth 1 -type d -print0)
 
 if [ $RC != 0 ]; then
