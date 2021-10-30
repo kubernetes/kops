@@ -35,6 +35,7 @@ spec:
         - --gossip-protocol-secondary=memberlist
         - --gossip-listen-secondary=0.0.0.0:3993
         - --gossip-seed-secondary=127.0.0.1:4000
+        - --internal-ipv4
         - --zone=*/*
         - -v=2
         env:

@@ -89,8 +89,7 @@ func TestPodController(t *testing.T) {
 	want := map[string][]dns.Record{
 		"kube-system/somepod": {
 			{RecordType: "_alias", FQDN: "a.foo.com.", Value: "node/my-node/external"},
-			{RecordType: "A", FQDN: "internal.a.foo.com.", Value: "10.0.0.1"},
-			{RecordType: "AAAA", FQDN: "internal.a.foo.com.", Value: "2001:db8:0:0:0:ff00:42:8329"},
+			{RecordType: "_alias", FQDN: "internal.a.foo.com.", Value: "node/my-node/internal"},
 		},
 	}
 	if diff := cmp.Diff(scope.records, want); diff != "" {
