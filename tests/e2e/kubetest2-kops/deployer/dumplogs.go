@@ -29,6 +29,11 @@ import (
 )
 
 func (d *deployer) DumpClusterLogs() error {
+	yamlFile, err := os.Create(path.Join(d.ArtifactsDir, "toolbox-dump.yaml"))
+	if err != nil {
+		panic(err)
+	}
+	defer yamlFile.Close()
 
 	args := []string{
 		d.KopsBinaryPath, "toolbox", "dump",
@@ -40,7 +45,8 @@ func (d *deployer) DumpClusterLogs() error {
 	klog.Info(strings.Join(args, " "))
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.SetEnv(d.env()...)
-	if err := runWithOutput(cmd); err != nil {
+	cmd.SetStdout(yamlFile)
+	if err := cmd.Run(); err != nil {
 		return err
 	}
 
