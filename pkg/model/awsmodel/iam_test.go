@@ -44,6 +44,7 @@ func TestIAMServiceEC2(t *testing.T) {
 func Test_formatAWSIAMStatement(t *testing.T) {
 	type args struct {
 		acountId     string
+		partition    string
 		oidcProvider string
 		namespace    string
 		name         string
@@ -58,6 +59,7 @@ func Test_formatAWSIAMStatement(t *testing.T) {
 			name: "namespace and name without wildcard",
 			args: args{
 				acountId:     "0123456789",
+				partition:    "aws-test",
 				oidcProvider: "oidc-test",
 				namespace:    "test",
 				name:         "test",
@@ -66,7 +68,7 @@ func Test_formatAWSIAMStatement(t *testing.T) {
 			want: &iam.Statement{
 				Effect: "Allow",
 				Principal: iam.Principal{
-					Federated: "arn:aws:iam::0123456789:oidc-provider/oidc-test",
+					Federated: "arn:aws-test:iam::0123456789:oidc-provider/oidc-test",
 				},
 				Action: stringorslice.String("sts:AssumeRoleWithWebIdentity"),
 				Condition: map[string]interface{}{
@@ -80,6 +82,7 @@ func Test_formatAWSIAMStatement(t *testing.T) {
 			name: "name contains wildcard",
 			args: args{
 				acountId:     "0123456789",
+				partition:    "aws-test",
 				oidcProvider: "oidc-test",
 				namespace:    "test",
 				name:         "test-*",
@@ -90,6 +93,7 @@ func Test_formatAWSIAMStatement(t *testing.T) {
 			name: "namespace contains wildcard",
 			args: args{
 				acountId:     "0123456789",
+				partition:    "aws-test",
 				oidcProvider: "oidc-test",
 				namespace:    "test-*",
 				name:         "test",
@@ -98,7 +102,7 @@ func Test_formatAWSIAMStatement(t *testing.T) {
 			want: &iam.Statement{
 				Effect: "Allow",
 				Principal: iam.Principal{
-					Federated: "arn:aws:iam::0123456789:oidc-provider/oidc-test",
+					Federated: "arn:aws-test:iam::0123456789:oidc-provider/oidc-test",
 				},
 				Action: stringorslice.String("sts:AssumeRoleWithWebIdentity"),
 				Condition: map[string]interface{}{
@@ -111,7 +115,7 @@ func Test_formatAWSIAMStatement(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := formatAWSIAMStatement(tt.args.acountId, tt.args.oidcProvider, tt.args.namespace, tt.args.name)
+			got, err := formatAWSIAMStatement(tt.args.acountId, tt.args.partition, tt.args.oidcProvider, tt.args.namespace, tt.args.name)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("formatAWSIAMStatement() error = %v, wantErr %v", err, tt.wantErr)
 				return
