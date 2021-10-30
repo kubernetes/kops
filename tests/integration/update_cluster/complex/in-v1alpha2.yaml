@@ -12,7 +12,7 @@ spec:
       - sg-exampleid6
       crossZoneLoadBalancing: true
       class: Network
-      sslCertificate: arn:aws:acm:us-test-1:000000000000:certificate/123456789012-1234-1234-1234-12345678
+      sslCertificate: arn:aws-test:acm:us-test-1:000000000000:certificate/123456789012-1234-1234-1234-12345678
       sslPolicy: ELBSecurityPolicy-2016-08
       subnets:
         - name: us-test-1a
@@ -37,7 +37,7 @@ spec:
       name: a
     name: events
   iam:
-    permissionsBoundary: arn:aws:iam::000000000000:policy/boundaries
+    permissionsBoundary: arn:aws-test:iam::000000000000:policy/boundaries
   kubeAPIServer:
     serviceNodePortRange: 28000-32767
     auditWebhookBatchThrottleQps: 3.14
@@ -125,7 +125,7 @@ spec:
     size: 20
     type: gp2
     encrypted: true
-    key: arn:aws:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab
+    key: arn:aws-test:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab
   additionalUserData:
   - name: myscript.sh
     type: text/x-shellscript
@@ -152,7 +152,7 @@ spec:
   minSize: 1
   role: Master
   rootVolumeEncryption: true
-  rootVolumeEncryptionKey: arn:aws:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab
+  rootVolumeEncryptionKey: arn:aws-test:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab
   subnets:
   - us-test-1a
   instanceMetadata:

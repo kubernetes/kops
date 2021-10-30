@@ -58,7 +58,7 @@ spec:
   subnets:
   - us-test-1a
   externalLoadBalancers:
-  - targetGroupArn: arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-1/1
+  - targetGroupArn: arn:aws-test:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-1/1
   - loadBalancerName: my-external-elb-1
 
 ---
@@ -80,9 +80,9 @@ spec:
   subnets:
   - us-test-1a
   externalLoadBalancers:
-  - targetGroupArn: arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-2/2
-  - targetGroupArn: arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-1/1
-  - targetGroupArn: arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-3/3
+  - targetGroupArn: arn:aws-test:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-2/2
+  - targetGroupArn: arn:aws-test:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-1/1
+  - targetGroupArn: arn:aws-test:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-3/3
   - loadBalancerName: my-external-elb-2
   - loadBalancerName: my-external-elb-1
   - loadBalancerName: my-external-elb-3
