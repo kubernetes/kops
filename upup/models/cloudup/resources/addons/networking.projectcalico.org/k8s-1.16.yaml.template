@@ -54,11 +54,11 @@ data:
           "ipam": {
               "assign_ipv4": "{{ not IsIPv6Only }}",
               "assign_ipv6": "{{ IsIPv6Only }}",
-              {{- if not IsIPv6Only }}
-              "type": "calico-ipam"
-              {{- else }}
+              {{- if IsIPv6Only }}
               "type": "host-local",
               "ranges": [[{ "subnet": "usePodCidr" }]]
+              {{- else }}
+              "type": "calico-ipam"
               {{- end }}
           },
           "policy": {
@@ -4037,16 +4037,16 @@ spec:
               value: "{{- if not IsIPv6Only -}}autodetect{{- else -}}none{{- end -}}"
             - name: IP6
               value: "{{- if IsIPv6Only -}}autodetect{{- else -}}none{{- end -}}"
-            {{- if not IsIPv6Only }}
-            - name: IP_AUTODETECTION_METHOD
-              value: "{{- or .Networking.Calico.IPv4AutoDetectionMethod "first-found" }}"
-            - name: IP6_AUTODETECTION_METHOD
-              value: "{{- or .Networking.Calico.IPv6AutoDetectionMethod "none" }}"
-            {{- else }}
+            {{- if IsIPv6Only }}
             - name: IP_AUTODETECTION_METHOD
               value: "{{- or .Networking.Calico.IPv4AutoDetectionMethod "none" }}"
             - name: IP6_AUTODETECTION_METHOD
               value: "{{- or .Networking.Calico.IPv6AutoDetectionMethod "first-found" }}"
+            {{- else }}
+            - name: IP_AUTODETECTION_METHOD
+              value: "{{- or .Networking.Calico.IPv4AutoDetectionMethod "first-found" }}"
+            - name: IP6_AUTODETECTION_METHOD
+              value: "{{- or .Networking.Calico.IPv6AutoDetectionMethod "none" }}"
             {{- end }}
             # Enable IPIP
             - name: CALICO_IPV4POOL_IPIP
@@ -4151,10 +4151,10 @@ spec:
               - /bin/calico-node
               - -felix-live
               {{- if eq .Networking.Calico.EncapsulationMode "ipip" }}
-              {{- if not IsIPv6Only }}
-              - -bird-live
-              {{- else }}
+              {{- if IsIPv6Only }}
               - -bird6-live
+              {{- else }}
+              - -bird-live
               {{- end }}
               {{- end }}
             periodSeconds: 10
@@ -4167,10 +4167,10 @@ spec:
               - /bin/calico-node
               - -felix-ready
               {{- if eq .Networking.Calico.EncapsulationMode "ipip" }}
-              {{- if not IsIPv6Only }}
-              - -bird-ready
-              {{- else }}
+              {{- if IsIPv6Only }}
               - -bird6-ready
+              {{- else }}
+              - -bird-ready
               {{- end }}
               {{- end }}
             periodSeconds: 10
