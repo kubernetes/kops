@@ -184,6 +184,7 @@ func TestNvidia(t *testing.T) {
 			"nvidia.addons.k8s.io-k8s-1.16",
 		).
 		runTestTerraformAWS(t)
+	newIntegrationTest("minimal.example.com", "nvidia").runTestCloudformation(t)
 }
 
 // TestMinimal runs the test on a minimum gossip configuration
@@ -538,6 +539,7 @@ func TestExternalDNS(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "external_dns").
 		withAddons("external-dns.addons.k8s.io-k8s-1.12").
 		runTestTerraformAWS(t)
+	newIntegrationTest("minimal.example.com", "external_dns").runTestCloudformation(t)
 }
 
 func TestExternalDNSIRSA(t *testing.T) {
@@ -798,6 +800,21 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 					t.Fatalf("failed to read actual data file: %v", err)
 				}
 				golden.AssertMatchesFile(t, string(actualDataContent), path.Join(expectedDataPath, dataFileName))
+			}
+		}
+
+		existingExpectedFiles, err := ioutil.ReadDir(expectedDataPath)
+		if err != nil {
+			t.Fatalf("failed to read data dir: %v", err)
+		}
+		existingExpectedFilenames := make([]string, len(existingExpectedFiles))
+		for i, f := range existingExpectedFiles {
+			existingExpectedFilenames[i] = f.Name()
+		}
+		for j := 0; j < len(existingExpectedFilenames) && j < len(expectedDataFilenames); j++ {
+			if existingExpectedFilenames[j] != expectedDataFilenames[j] {
+				t.Errorf("diff with source directory @%d: %q vs %q", j, existingExpectedFilenames[j], expectedDataFilenames[j])
+				break
 			}
 		}
 	}
