@@ -29,7 +29,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
-	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // PodController watches for Pods with dns annotations
@@ -177,10 +176,10 @@ func (c *PodController) updatePodRecords(pod *v1.Pod) string {
 
 	specInternal := pod.Annotations[AnnotationNameDNSInternal]
 	if specInternal != "" {
-		var ips []string
+		var aliases []string
 		if pod.Spec.HostNetwork {
-			for _, ip := range pod.Status.PodIPs {
-				ips = append(ips, ip.IP)
+			if pod.Spec.NodeName != "" {
+				aliases = append(aliases, "node/"+pod.Spec.NodeName+"/internal")
 			}
 		} else {
 			klog.V(4).Infof("Pod %q had %s=%s, but was not HostNetwork", pod.Name, AnnotationNameDNSInternal, specInternal)
@@ -191,16 +190,11 @@ func (c *PodController) updatePodRecords(pod *v1.Pod) string {
 			token = strings.TrimSpace(token)
 
 			fqdn := dns.EnsureDotSuffix(token)
-			for _, ip := range ips {
-				var recordType dns.RecordType = dns.RecordTypeA
-				if utils.IsIPv6IP(ip) {
-					recordType = dns.RecordTypeAAAA
-				}
-
+			for _, alias := range aliases {
 				records = append(records, dns.Record{
-					RecordType: recordType,
+					RecordType: dns.RecordTypeAlias,
 					FQDN:       fqdn,
-					Value:      ip,
+					Value:      alias,
 				})
 			}
 		}
