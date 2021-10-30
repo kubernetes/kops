@@ -3827,7 +3827,7 @@ spec:
         - name: IP_AUTODETECTION_METHOD
           value: first-found
         - name: IP6_AUTODETECTION_METHOD
-          value: first-found
+          value: none
         - name: CALICO_IPV4POOL_IPIP
           value: CrossSubnet
         - name: CALICO_IPV4POOL_VXLAN

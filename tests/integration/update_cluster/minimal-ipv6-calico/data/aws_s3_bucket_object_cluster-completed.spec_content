@@ -172,7 +172,7 @@ spec:
   networkCIDR: 172.20.0.0/16
   networking:
     calico:
-      encapsulationMode: ipip
+      encapsulationMode: none
   nonMasqueradeCIDR: ::/0
   secretStore: memfs://clusters.example.com/minimal-ipv6.example.com/secrets
   serviceClusterIPRange: fd00:5e4f:ce::/108
