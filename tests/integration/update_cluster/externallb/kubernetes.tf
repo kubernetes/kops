@@ -147,7 +147,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-externallb-example-c
     propagate_at_launch = true
     value               = "owned"
   }
-  target_group_arns   = ["arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-1/1", "arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-2/2", "arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-3/3"]
+  target_group_arns   = ["arn:aws-test:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-1/1", "arn:aws-test:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-2/2", "arn:aws-test:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-3/3"]
   vpc_zone_identifier = [aws_subnet.us-test-1a-externallb-example-com.id]
 }
 
@@ -198,7 +198,7 @@ resource "aws_autoscaling_group" "nodes-externallb-example-com" {
     propagate_at_launch = true
     value               = "owned"
   }
-  target_group_arns   = ["arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-1/1"]
+  target_group_arns   = ["arn:aws-test:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-1/1"]
   vpc_zone_identifier = [aws_subnet.us-test-1a-externallb-example-com.id]
 }
 

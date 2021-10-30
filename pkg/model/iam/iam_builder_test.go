@@ -30,25 +30,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-func TestIAMPrefix(t *testing.T) {
-	var expectations = map[string]string{
-		"us-east-1":      "arn:aws",
-		"us-iso-east-1":  "arn:aws-iso",
-		"us-isob-east-1": "arn:aws-iso-b",
-		"us-gov-east-1":  "arn:aws-us-gov",
-		"randomunknown":  "arn:aws",
-		"cn-north-1":     "arn:aws-cn",
-		"cn-northwest-1": "arn:aws-cn",
-	}
-
-	for region, expect := range expectations {
-		arn := (&PolicyBuilder{Region: region}).IAMPrefix()
-		if arn != expect {
-			t.Errorf("expected %s for %s, received %s", expect, region, arn)
-		}
-	}
-}
-
 func TestRoundTrip(t *testing.T) {
 	grid := []struct {
 		IAM  *Statement
@@ -192,7 +173,8 @@ func TestPolicyGeneration(t *testing.T) {
 					},
 				},
 			},
-			Role: x.Role,
+			Role:      x.Role,
+			Partition: "aws-test",
 		}
 		b.Cluster.SetName("iam-builder-test.k8s.local")
 
