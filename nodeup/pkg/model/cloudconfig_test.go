@@ -125,7 +125,7 @@ func TestBuildAWSCustomNodeIPFamilies(t *testing.T) {
 			ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 				CloudProvider: string(kops.CloudProviderAWS),
 			},
-			NonMasqueradeCIDR: "fd00:10:96::/64",
+			NonMasqueradeCIDR: "::/0",
 		},
 	}
 
