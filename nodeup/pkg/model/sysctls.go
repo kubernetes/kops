@@ -151,6 +151,11 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if b.Cluster.Spec.IsIPv6Only() {
+		if b.Distribution == distributions.DistributionDebian11 {
+			sysctls = append(sysctls,
+				"# Enable Router Advertisements to get the default IPv6 route",
+				"net.ipv6.conf.ens5.accept_ra=2")
+		}
 		sysctls = append(sysctls,
 			"# Enable IPv6 forwarding for network plugins that don't do it themselves",
 			"net.ipv6.conf.all.forwarding=1",
