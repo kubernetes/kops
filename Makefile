@@ -621,12 +621,6 @@ check-markdown-links:
 
 #-----------------------------------------------------------
 
-.PHONY: push-node-authorizer
-push-node-authorizer:
-	${BAZEL} run ${BAZEL_CONFIG} //node-authorizer/images:node-authorizer
-	docker tag bazel/node-authorizer/images:node-authorizer ${DOCKER_REGISTRY}/node-authorizer:${DOCKER_TAG}
-	docker push ${DOCKER_REGISTRY}/node-authorizer:${DOCKER_TAG}
-
 .PHONY: bazel-kube-apiserver-healthcheck-export-linux-amd64 bazel-kube-apiserver-healthcheck-export-linux-arm64
 bazel-kube-apiserver-healthcheck-export-linux-amd64 bazel-kube-apiserver-healthcheck-export-linux-arm64: bazel-kube-apiserver-healthcheck-export-linux-%:
 	mkdir -p ${BAZELIMAGES}
