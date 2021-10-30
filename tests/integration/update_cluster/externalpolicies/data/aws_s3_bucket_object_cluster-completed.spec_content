@@ -57,11 +57,11 @@ spec:
     provider: dns-controller
   externalPolicies:
     bastion:
-    - arn:aws:iam::123456789000:policy/test-policy
+    - arn:aws-test:iam::123456789000:policy/test-policy
     master:
-    - arn:aws:iam::123456789000:policy/test-policy
+    - arn:aws-test:iam::123456789000:policy/test-policy
     node:
-    - arn:aws:iam::123456789000:policy/test-policy
+    - arn:aws-test:iam::123456789000:policy/test-policy
   iam:
     legacy: false
   keyStore: memfs://clusters.example.com/externalpolicies.example.com/pki
