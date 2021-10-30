@@ -106,6 +106,7 @@ nav:
       - Flannel: "networking/flannel.md"
       - Kube-Router: "networking/kube-router.md"
       - Weave: "networking/weave.md"
+    - IPv6: "networking/ipv6.md"
     - Run kOps in an existing VPC: "run_in_existing_vpc.md"
     - Supported network topologies: "topology.md"
     - Subdomain setup: "creating_subdomain.md"
