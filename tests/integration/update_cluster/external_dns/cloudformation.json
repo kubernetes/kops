@@ -243,6 +243,9 @@
             "HttpPutResponseHopLimit": 1,
             "HttpTokens": "optional"
           },
+          "Monitoring": {
+            "Enabled": false
+          },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,
@@ -381,6 +384,9 @@
           "MetadataOptions": {
             "HttpPutResponseHopLimit": 1,
             "HttpTokens": "optional"
+          },
+          "Monitoring": {
+            "Enabled": false
           },
           "NetworkInterfaces": [
             {
@@ -947,97 +953,11 @@
         "PolicyDocument": {
           "Statement": [
             {
-              "Action": [
-                "ec2:DescribeAccountAttributes",
-                "ec2:DescribeInstances",
-                "ec2:DescribeInternetGateways",
-                "ec2:DescribeRegions",
-                "ec2:DescribeRouteTables",
-                "ec2:DescribeSecurityGroups",
-                "ec2:DescribeSubnets",
-                "ec2:DescribeVolumes"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Action": [
-                "ec2:CreateSecurityGroup",
-                "ec2:CreateTags",
-                "ec2:ModifyInstanceAttribute"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Action": [
-                "ec2:AttachVolume",
-                "ec2:AuthorizeSecurityGroupIngress",
-                "ec2:CreateRoute",
-                "ec2:DeleteRoute",
-                "ec2:DeleteSecurityGroup",
-                "ec2:RevokeSecurityGroupIngress"
-              ],
+              "Action": "ec2:AttachVolume",
               "Condition": {
                 "StringEquals": {
-                  "ec2:ResourceTag/KubernetesCluster": "minimal.example.com"
-                }
-              },
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Action": "autoscaling:CompleteLifecycleAction",
-              "Condition": {
-                "StringEquals": {
-                  "autoscaling:ResourceTag/KubernetesCluster": "minimal.example.com"
-                }
-              },
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Action": "autoscaling:DescribeLifecycleHooks",
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Action": "autoscaling:DescribeAutoScalingInstances",
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Action": [
-                "autoscaling:DescribeAutoScalingGroups",
-                "autoscaling:DescribeLaunchConfigurations",
-                "autoscaling:DescribeTags",
-                "ec2:DescribeLaunchTemplateVersions"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Action": [
-                "autoscaling:CompleteLifecycleAction",
-                "autoscaling:DescribeAutoScalingInstances"
-              ],
-              "Condition": {
-                "StringEquals": {
-                  "autoscaling:ResourceTag/KubernetesCluster": "minimal.example.com"
+                  "aws:ResourceTag/KubernetesCluster": "minimal.example.com",
+                  "aws:ResourceTag/k8s.io/role/master": "1"
                 }
               },
               "Effect": "Allow",
@@ -1047,57 +967,53 @@
             },
             {
               "Action": [
-                "ec2:DescribeVpcs",
-                "elasticloadbalancing:DescribeLoadBalancers",
-                "elasticloadbalancing:DescribeLoadBalancerAttributes",
-                "elasticloadbalancing:DescribeListeners",
-                "elasticloadbalancing:DescribeLoadBalancerPolicies",
-                "elasticloadbalancing:DescribeTargetGroups",
-                "elasticloadbalancing:DescribeTargetHealth",
-                "elasticloadbalancing:CreateListener",
-                "elasticloadbalancing:CreateTargetGroup",
-                "elasticloadbalancing:CreateLoadBalancer",
-                "elasticloadbalancing:CreateLoadBalancerPolicy",
-                "elasticloadbalancing:CreateLoadBalancerListeners",
-                "elasticloadbalancing:DeleteLoadBalancer",
-                "elasticloadbalancing:DeleteLoadBalancerListeners",
-                "elasticloadbalancing:DeleteListener",
-                "elasticloadbalancing:DeleteTargetGroup",
-                "elasticloadbalancing:AddTags",
-                "elasticloadbalancing:ModifyLoadBalancerAttributes",
-                "elasticloadbalancing:ModifyListener",
-                "elasticloadbalancing:ModifyTargetGroup",
-                "elasticloadbalancing:AttachLoadBalancerToSubnets",
-                "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
-                "elasticloadbalancing:ConfigureHealthCheck",
-                "elasticloadbalancing:DetachLoadBalancerFromSubnets",
-                "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
-                "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
-                "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
-                "elasticloadbalancing:DeregisterTargets",
-                "elasticloadbalancing:RegisterTargets",
-                "elasticloadbalancing:SetLoadBalancerPoliciesOfListener"
+                "s3:Get*"
+              ],
+              "Effect": "Allow",
+              "Resource": "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/*"
+            },
+            {
+              "Action": [
+                "s3:GetObject",
+                "s3:DeleteObject",
+                "s3:DeleteObjectVersion",
+                "s3:PutObject"
+              ],
+              "Effect": "Allow",
+              "Resource": "arn:aws:s3:::placeholder-write-bucket/clusters.example.com/minimal.example.com/backups/etcd/main/*"
+            },
+            {
+              "Action": [
+                "s3:GetObject",
+                "s3:DeleteObject",
+                "s3:DeleteObjectVersion",
+                "s3:PutObject"
+              ],
+              "Effect": "Allow",
+              "Resource": "arn:aws:s3:::placeholder-write-bucket/clusters.example.com/minimal.example.com/backups/etcd/events/*"
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetEncryptionConfiguration",
+                "s3:ListBucket",
+                "s3:ListBucketVersions"
               ],
               "Effect": "Allow",
               "Resource": [
-                "*"
+                "arn:aws:s3:::placeholder-read-bucket"
               ]
             },
             {
               "Action": [
-                "iam:ListServerCertificates",
-                "iam:GetServerCertificate"
+                "s3:GetBucketLocation",
+                "s3:GetEncryptionConfiguration",
+                "s3:ListBucket",
+                "s3:ListBucketVersions"
               ],
               "Effect": "Allow",
               "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Action": "kms:GenerateRandom",
-              "Effect": "Allow",
-              "Resource": [
-                "*"
+                "arn:aws:s3:::placeholder-write-bucket"
               ]
             },
             {
@@ -1131,43 +1047,20 @@
               ]
             },
             {
-              "Action": [
-                "ec2:DescribeAccountAttributes",
-                "ec2:DescribeInstances",
-                "ec2:DescribeVolumes",
-                "ec2:DescribeVolumesModifications",
-                "ec2:DescribeTags"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            },
-            {
-              "Action": [
-                "ec2:CreateVolume"
-              ],
+              "Action": "ec2:CreateTags",
               "Condition": {
                 "StringEquals": {
-                  "aws:RequestTag/KubernetesCluster": "minimal.example.com"
+                  "ec2:CreateAction": [
+                    "CreateVolume",
+                    "CreateSnapshot"
+                  ]
                 }
               },
               "Effect": "Allow",
-              "Resource": "*"
-            },
-            {
-              "Action": [
-                "ec2:ModifyVolume",
-                "ec2:ModifyInstanceAttribute",
-                "ec2:AttachVolume",
-                "ec2:DeleteVolume",
-                "ec2:DetachVolume"
-              ],
-              "Condition": {
-                "StringEquals": {
-                  "aws:ResourceTag/KubernetesCluster": "minimal.example.com"
-                }
-              },
-              "Effect": "Allow",
-              "Resource": "*"
+              "Resource": [
+                "arn:aws:ec2:*:*:volume/*",
+                "arn:aws:ec2:*:*:snapshot/*"
+              ]
             },
             {
               "Action": "ec2:CreateTags",
@@ -1189,7 +1082,7 @@
               "Action": "ec2:DeleteTags",
               "Condition": {
                 "StringEquals": {
-                  "ec2:ResourceTag/KubernetesCluster": "minimal.example.com"
+                  "aws:ResourceTag/KubernetesCluster": "minimal.example.com"
                 }
               },
               "Effect": "Allow",
@@ -1200,14 +1093,77 @@
             },
             {
               "Action": [
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeTags",
+                "ec2:CreateSecurityGroup",
+                "ec2:CreateTags",
+                "ec2:DescribeAccountAttributes",
+                "ec2:DescribeInstanceTypes",
+                "ec2:DescribeInstances",
+                "ec2:DescribeLaunchTemplateVersions",
+                "ec2:DescribeRegions",
+                "ec2:DescribeRouteTables",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeTags",
+                "ec2:DescribeVolumes",
+                "ec2:DescribeVolumesModifications",
+                "ec2:DescribeVpcs",
+                "elasticloadbalancing:AddTags",
+                "elasticloadbalancing:CreateListener",
+                "elasticloadbalancing:CreateTargetGroup",
+                "elasticloadbalancing:DescribeListeners",
+                "elasticloadbalancing:DescribeLoadBalancerAttributes",
+                "elasticloadbalancing:DescribeLoadBalancerPolicies",
+                "elasticloadbalancing:DescribeLoadBalancers",
+                "elasticloadbalancing:DescribeTargetGroups",
+                "elasticloadbalancing:DescribeTargetHealth",
+                "elasticloadbalancing:RegisterTargets",
+                "iam:GetServerCertificate",
+                "iam:ListServerCertificates",
+                "kms:DescribeKey",
+                "kms:GenerateRandom"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Action": [
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup",
                 "ec2:AttachVolume",
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:DeleteRoute",
+                "ec2:DeleteSecurityGroup",
                 "ec2:DeleteVolume",
                 "ec2:DetachVolume",
-                "ec2:RevokeSecurityGroupIngress"
+                "ec2:ModifyInstanceAttribute",
+                "ec2:ModifyVolume",
+                "ec2:RevokeSecurityGroupIngress",
+                "elasticloadbalancing:AddTags",
+                "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
+                "elasticloadbalancing:AttachLoadBalancerToSubnets",
+                "elasticloadbalancing:ConfigureHealthCheck",
+                "elasticloadbalancing:DeleteListener",
+                "elasticloadbalancing:DeleteLoadBalancer",
+                "elasticloadbalancing:DeleteLoadBalancerListeners",
+                "elasticloadbalancing:DeleteTargetGroup",
+                "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                "elasticloadbalancing:DeregisterTargets",
+                "elasticloadbalancing:DetachLoadBalancerFromSubnets",
+                "elasticloadbalancing:ModifyListener",
+                "elasticloadbalancing:ModifyLoadBalancerAttributes",
+                "elasticloadbalancing:ModifyTargetGroup",
+                "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                "elasticloadbalancing:RegisterTargets",
+                "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
+                "elasticloadbalancing:SetLoadBalancerPoliciesOfListener"
               ],
               "Condition": {
                 "StringEquals": {
-                  "ec2:ResourceTag/KubernetesCluster": "minimal.example.com"
+                  "aws:ResourceTag/KubernetesCluster": "minimal.example.com"
                 }
               },
               "Effect": "Allow",
@@ -1215,29 +1171,21 @@
             },
             {
               "Action": [
-                "autoscaling:SetDesiredCapacity",
-                "autoscaling:TerminateInstanceInAutoScalingGroup"
+                "ec2:CreateSecurityGroup",
+                "ec2:CreateVolume",
+                "elasticloadbalancing:CreateListener",
+                "elasticloadbalancing:CreateLoadBalancer",
+                "elasticloadbalancing:CreateLoadBalancerListeners",
+                "elasticloadbalancing:CreateLoadBalancerPolicy",
+                "elasticloadbalancing:CreateTargetGroup"
               ],
               "Condition": {
                 "StringEquals": {
-                  "autoscaling:ResourceTag/KubernetesCluster": "minimal.example.com"
+                  "aws:RequestTag/KubernetesCluster": "minimal.example.com"
                 }
               },
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Action": [
-                "autoscaling:DescribeAutoScalingGroups",
-                "autoscaling:DescribeAutoScalingInstances",
-                "autoscaling:DescribeLaunchConfigurations"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": "*"
             }
           ],
           "Version": "2012-10-17"
@@ -1257,27 +1205,39 @@
           "Statement": [
             {
               "Action": [
-                "ec2:DescribeInstances",
-                "ec2:DescribeRegions"
+                "s3:Get*"
               ],
               "Effect": "Allow",
               "Resource": [
-                "*"
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/addons/*",
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/cluster-completed.spec",
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/igconfig/node/*",
+                "arn:aws:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/secrets/dockerconfig"
               ]
             },
             {
-              "Action": "autoscaling:DescribeAutoScalingInstances",
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetEncryptionConfiguration",
+                "s3:ListBucket",
+                "s3:ListBucketVersions"
+              ],
               "Effect": "Allow",
               "Resource": [
-                "*"
+                "arn:aws:s3:::placeholder-read-bucket"
               ]
             },
             {
-              "Action": "kms:GenerateRandom",
+              "Action": [
+                "autoscaling:DescribeAutoScalingInstances",
+                "ec2:DescribeInstanceTypes",
+                "ec2:DescribeInstances",
+                "iam:GetServerCertificate",
+                "iam:ListServerCertificates",
+                "kms:GenerateRandom"
+              ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": "*"
             }
           ],
           "Version": "2012-10-17"

@@ -131,7 +131,10 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.6
+    nvidiaGPU:
+      enabled: true
+      package: nvidia-headless-460-server
+    version: 1.4.11
   docker:
     skipInstall: true
   encryptionConfig: null
@@ -153,7 +156,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     - NamespaceLifecycle
     - LimitRanger
     - ServiceAccount
-    - PersistentVolumeLabel
     - DefaultStorageClass
     - DefaultTolerationSeconds
     - MutatingAdmissionWebhook
@@ -245,7 +247,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: M484KjV19wtMDGWwO7cf5eb6cEAQW2nh2IqShjgpbHU=
+  NodeupConfigHash: N7p2va9tPSRTapQ/idYkE3zTSMGc04Er5uSryOA+EJY=
 
   __EOF_KUBE_ENV
 
@@ -384,7 +386,10 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.6
+    nvidiaGPU:
+      enabled: true
+      package: nvidia-headless-460-server
+    version: 1.4.11
   docker:
     skipInstall: true
   kubeProxy:
@@ -416,7 +421,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: A0AyiJo03pbqluaXrVtbacjofP1NmBexAl0w2y4oS5o=
+  NodeupConfigHash: OyVtiYq+TGC8i2VY0pYPlgnx1r3FYU53FSn5Y0bLIQ4=
 
   __EOF_KUBE_ENV
 
