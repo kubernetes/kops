@@ -26,7 +26,7 @@ or are "service-account" by performing the following procedure. Other keypairs w
 automatically reissued by a non-dryrun `kops update cluster` when their issuing
 CA is rotated.
 
-### Create and stage new keypair
+### 1. Create and stage new keypair
 
 Create a new keypair for each keyset that you are going to rotate.
 Then update the cluster and perform a rolling update.
@@ -47,7 +47,7 @@ A failure at this stage is unlikely. To roll back this change:
 * Then use `kops update cluster --yes`
 * Then use `kops rolling-update cluster --yes`
 
-### Export and distribute new kubeconfig certificate-authority-data
+### 2. Export and distribute new kubeconfig certificate-authority-data
 
 If you are rotating the Kubernetes general CA ("kubernetes-ca" or "all") and
 you are not using a load balancer for the Kubernetes API with its own separate
@@ -65,7 +65,7 @@ Kubernetes API.
 
 To roll back this change, distribute the previous kubeconfig `certificate-authority-data`.
 
-### Promote the new keypairs
+### 3. Promote the new keypairs
 
 Promote the new keypairs to primary with:
 
@@ -96,7 +96,7 @@ To roll back this change:
 * Then use `kops update cluster --yes`
 * Then use `kops rolling-update cluster --yes`
 
-### Export and distribute new kubeconfig admin credentials
+### 4. Export and distribute new kubeconfig admin credentials
 
 If you are rotating the Kubernetes general CA ("kubernetes-ca" or "all") and
 have kubeconfigs with cluster admin credentials, export new kubeconfigs
@@ -114,7 +114,7 @@ Distribute the new credentials to all clients that require them.
 
 To roll back this change, distribute the previous kubeconfig admin credentials.
 
-### Distrust the previous keypairs
+### 5. Distrust the previous keypairs
 
 Remove trust in the previous keypairs with:
 
@@ -137,7 +137,7 @@ To roll back this change:
 * Then use `kops update cluster --yes`
 * Then use `kops rolling-update cluster --force --yes`
 
-### Export and distribute new kubeconfig certificate-authority-data
+### 6. Export and distribute new kubeconfig certificate-authority-data
 
 If you are rotating the Kubernetes general CA ("kubernetes-ca" or "all") and
 you are not using a load balancer for the Kubernetes API with its own separate
@@ -192,7 +192,7 @@ prior to 1.22.
 
 **This is a disruptive procedure.**
 
-### Delete all secrets
+### 1. Delete all secrets
 
 Delete all secrets & keypairs that kOps is holding:
 
@@ -202,7 +202,7 @@ kops get secrets  | grep '^Secret' | awk '{print $2}' | xargs -I {} kops delete 
 kops get secrets  | grep '^Keypair' | awk '{print $2}' | xargs -I {} kops delete secret keypair {}
 ```
 
-### Recreate all secrets
+### 2. Recreate all secrets
 
 Now run `kops update` to regenerate the secrets & keypairs.
 ```
@@ -212,7 +212,7 @@ kops update cluster --yes
 
 kOps may fail to recreate all the keys on first try. If you get errors about ca key for 'ca' not being found, run `kops update cluster --yes` once more.
 
-### Force cluster to use new secrets
+### 3. Force cluster to use new secrets
 
 Now you will have to remove the etcd certificates from every master.
 
@@ -241,7 +241,7 @@ Re-export kubecfg with new settings:
 kops export kubecfg
 ```
 
-### Recreate all service accounts
+### 4. Recreate all service accounts
 
 Now the service account tokens will need to be regenerated inside the cluster:
 
@@ -262,7 +262,7 @@ pkill -f kube-controller-manager
 kubectl delete pods --all --all-namespaces
 ```
 
-### Verify the cluster is back up
+### 5. Verify the cluster is back up
 
 The last command from the previous section will take some time. Meanwhile you can check validation to see the cluster gradually coming back online.
 
