@@ -626,7 +626,7 @@ func Test_Validate_Calico(t *testing.T) {
 			},
 		},
 		{
-			Description: "unknown Calico encapsulation mode",
+			Description: "encapsulation none with IPv4",
 			Input: caliInput{
 				Cluster: &kops.ClusterSpec{
 					NonMasqueradeCIDR: "100.64.0.0/10",
@@ -635,10 +635,10 @@ func Test_Validate_Calico(t *testing.T) {
 					EncapsulationMode: "none",
 				},
 			},
-			ExpectedErrors: []string{"Unsupported value::calico.encapsulationMode"},
+			ExpectedErrors: []string{"Forbidden::calico.encapsulationMode"},
 		},
 		{
-			Description: "unknown Calico encapsulation mode IPIP for IPv6",
+			Description: "encapsulation mode IPIP for IPv6",
 			Input: caliInput{
 				Cluster: &kops.ClusterSpec{
 					NonMasqueradeCIDR: "::/0",
@@ -647,10 +647,10 @@ func Test_Validate_Calico(t *testing.T) {
 					EncapsulationMode: "ipip",
 				},
 			},
-			ExpectedErrors: []string{"Unsupported value::calico.encapsulationMode"},
+			ExpectedErrors: []string{"Forbidden::calico.encapsulationMode"},
 		},
 		{
-			Description: "unknown Calico encapsulation mode VXLAN for IPv6",
+			Description: "encapsulation mode VXLAN for IPv6",
 			Input: caliInput{
 				Cluster: &kops.ClusterSpec{
 					NonMasqueradeCIDR: "::/0",
@@ -659,7 +659,7 @@ func Test_Validate_Calico(t *testing.T) {
 					EncapsulationMode: "vxlan",
 				},
 			},
-			ExpectedErrors: []string{"Unsupported value::calico.encapsulationMode"},
+			ExpectedErrors: []string{"Forbidden::calico.encapsulationMode"},
 		},
 		{
 			Description: "unknown Calico IPIP mode",

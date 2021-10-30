@@ -1143,17 +1143,18 @@ func validateNetworkingCalico(c *kops.ClusterSpec, v *kops.CalicoNetworkingSpec,
 	}
 
 	if v.EncapsulationMode != "" {
-		if c.IsIPv6Only() {
+		valid := []string{"ipip", "vxlan", "none"}
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("encapsulationMode"), &v.EncapsulationMode, valid)...)
+
+		if v.EncapsulationMode != "none" && c.IsIPv6Only() {
 			// IPv6 doesn't support encapsulation and kops only uses the "none" networking backend.
 			// The bird networking backend could also be added in the future if there's any valid use case.
-			valid := []string{"none"}
-			allErrs = append(allErrs, IsValidValue(fldPath.Child("encapsulationMode"), &v.EncapsulationMode, valid)...)
-		} else {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("encapsulationMode"), "IPv6 requires an encapsulationMode of \"none\""))
+		} else if v.EncapsulationMode == "none" && !c.IsIPv6Only() {
 			// Don't tolerate "None" for now, which would disable encapsulation in the default IPPool
 			// object. Note that with no encapsulation, we'd need to select the "bird" networking
 			// backend in order to allow use of BGP to distribute routes for pod traffic.
-			valid := []string{"ipip", "vxlan"}
-			allErrs = append(allErrs, IsValidValue(fldPath.Child("encapsulationMode"), &v.EncapsulationMode, valid)...)
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("encapsulationMode"), "encapsulationMode \"none\" is only supported for IPv6 clusters"))
 		}
 	}
 
