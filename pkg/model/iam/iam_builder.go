@@ -326,6 +326,10 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	addEtcdManagerPermissions(p)
 	b.addNodeupPermissions(p, false)
 
+	if b.Cluster.Spec.IsKopsControllerIPAM() {
+		addKopsControllerIPAMPermissions(p)
+	}
+
 	var err error
 	if p, err = b.AddS3Permissions(p); err != nil {
 		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
@@ -773,6 +777,12 @@ func (b *PolicyBuilder) addNodeupPermissions(p *Policy, enableHookSupport bool) 
 			"ec2:AssignIpv6Addresses",
 		)
 	}
+}
+
+func addKopsControllerIPAMPermissions(p *Policy) {
+	p.unconditionalAction.Insert(
+		"ec2:DescribeNetworkInterfaces",
+	)
 }
 
 func addEtcdManagerPermissions(p *Policy) {
