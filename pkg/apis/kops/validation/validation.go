@@ -142,7 +142,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	if spec.Networking != nil {
 		allErrs = append(allErrs, validateNetworking(c, spec.Networking, fieldPath.Child("networking"))...)
 		if spec.Networking.Calico != nil {
-			allErrs = append(allErrs, validateNetworkingCalico(spec.Networking.Calico, spec.EtcdClusters[0], fieldPath.Child("networking", "calico"))...)
+			allErrs = append(allErrs, validateNetworkingCalico(&c.Spec, spec.Networking.Calico, fieldPath.Child("networking", "calico"))...)
 		}
 	}
 
@@ -1080,7 +1080,7 @@ func validateEtcdMemberSpec(spec kops.EtcdMemberSpec, fieldPath *field.Path) fie
 	return allErrs
 }
 
-func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e kops.EtcdClusterSpec, fldPath *field.Path) field.ErrorList {
+func validateNetworkingCalico(c *kops.ClusterSpec, v *kops.CalicoNetworkingSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if v.AWSSrcDstCheck != "" {
@@ -1110,8 +1110,18 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e kops.EtcdClusterSp
 	}
 
 	if v.EncapsulationMode != "" {
-		valid := []string{"ipip", "vxlan", "none"}
-		allErrs = append(allErrs, IsValidValue(fldPath.Child("encapsulationMode"), &v.EncapsulationMode, valid)...)
+		if c.IsIPv6Only() {
+			// IPv6 doesn't support encapsulation and kops only uses the "none" networking backend.
+			// The bird networking backend could also be added in the future if there's any valid use case.
+			valid := []string{"none"}
+			allErrs = append(allErrs, IsValidValue(fldPath.Child("encapsulationMode"), &v.EncapsulationMode, valid)...)
+		} else {
+			// Don't tolerate "None" for now, which would disable encapsulation in the default IPPool
+			// object. Note that with no encapsulation, we'd need to select the "bird" networking
+			// backend in order to allow use of BGP to distribute routes for pod traffic.
+			valid := []string{"ipip", "vxlan"}
+			allErrs = append(allErrs, IsValidValue(fldPath.Child("encapsulationMode"), &v.EncapsulationMode, valid)...)
+		}
 	}
 
 	if v.IPIPMode != "" {
