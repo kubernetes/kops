@@ -127,7 +127,6 @@ nav:
     - Custom CA: "custom_ca.md"
     - Horizontal Pod Autoscaling: "horizontal_pod_autoscaling.md"
     - Egress Proxy: "http_proxy.md"
-    - Node Authorization: "node_authorization.md"
     - Node Resource Allocation: "node_resource_handling.md"
     - Terraform: "terraform.md"
     - Authentication: "authentication.md"
