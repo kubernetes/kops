@@ -125,7 +125,8 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   awsEBSCSIDriver:
-    enabled: false
+    enabled: true
+    version: v1.4.0
   manageStorageClasses: true
   nodeIPFamilies:
   - ipv6
@@ -145,11 +146,14 @@ kubelet:
   anonymousAuth: false
   cgroupDriver: systemd
   cgroupRoot: /
-  cloudProvider: aws
+  cloudProvider: external
   clusterDNS: fd00:5e4f:ce::a
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  featureGates:
+    CSIMigrationAWS: "true"
+    InTreePluginAWSUnregister: "true"
   hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
@@ -164,7 +168,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: Mqfc35n7HWWI03aEiC/9tG99xKZd6sr0kJSCwJvzhKA=
+NodeupConfigHash: 9h7LnzYSzFeNnL+RwVKqe/4j529/rW24+xn5QSl0qoo=
 
 __EOF_KUBE_ENV
 

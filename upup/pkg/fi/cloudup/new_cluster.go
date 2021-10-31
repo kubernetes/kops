@@ -969,11 +969,11 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 
 		if opt.IPv6 {
 			cluster.Spec.NonMasqueradeCIDR = "::/0"
+			cluster.Spec.ExternalCloudControllerManager = &api.CloudControllerManagerConfig{}
 			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
 				klog.Warningf("IPv6 support is EXPERIMENTAL and can be changed or removed at any time in the future!!!")
 				for i := range cluster.Spec.Subnets {
 					// Start IPv6 CIDR numbering from "1" to reserve /64#0 for later use
-					// with NonMasqueradeCIDR, ClusterCIDR and ServiceClusterIPRange
 					cluster.Spec.Subnets[i].IPv6CIDR = fmt.Sprintf("/64#%x", i+1)
 				}
 			} else {

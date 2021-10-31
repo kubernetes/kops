@@ -111,13 +111,10 @@
       ]
     },
     {
-      "Action": "ec2:CreateTags",
+      "Action": "ec2:DeleteTags",
       "Condition": {
         "StringEquals": {
-          "ec2:CreateAction": [
-            "CreateVolume",
-            "CreateSnapshot"
-          ]
+          "aws:ResourceTag/KubernetesCluster": "minimal-ipv6.example.com"
         }
       },
       "Effect": "Allow",
@@ -127,10 +124,13 @@
       ]
     },
     {
-      "Action": "ec2:DeleteTags",
+      "Action": "ec2:CreateTags",
       "Condition": {
         "StringEquals": {
-          "aws:ResourceTag/KubernetesCluster": "minimal-ipv6.example.com"
+          "ec2:CreateAction": [
+            "CreateVolume",
+            "CreateSnapshot"
+          ]
         }
       },
       "Effect": "Allow",
