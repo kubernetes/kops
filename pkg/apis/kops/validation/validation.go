@@ -123,6 +123,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateKubeAPIServer(spec.KubeAPIServer, c, fieldPath.Child("kubeAPIServer"))...)
 	}
 
+	if spec.ExternalCloudControllerManager == nil && spec.IsIPv6Only() {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("cloudControllerManager"), "IPv6 requires external Cloud Controller Manager"))
+	}
+
 	if spec.KubeProxy != nil {
 		allErrs = append(allErrs, validateKubeProxy(spec.KubeProxy, fieldPath.Child("kubeProxy"))...)
 	}
