@@ -608,6 +608,22 @@ resource "aws_s3_bucket_object" "manifests-static-kube-apiserver-healthcheck" {
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_bucket_object" "minimal-ipv6-example-com-addons-aws-cloud-controller-addons-k8s-io-k8s-1-18" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_minimal-ipv6.example.com-addons-aws-cloud-controller.addons.k8s.io-k8s-1.18_content")
+  key                    = "clusters.example.com/minimal-ipv6.example.com/addons/aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_bucket_object" "minimal-ipv6-example-com-addons-aws-ebs-csi-driver-addons-k8s-io-k8s-1-17" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_minimal-ipv6.example.com-addons-aws-ebs-csi-driver.addons.k8s.io-k8s-1.17_content")
+  key                    = "clusters.example.com/minimal-ipv6.example.com/addons/aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_bucket_object" "minimal-ipv6-example-com-addons-bootstrap" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_minimal-ipv6.example.com-addons-bootstrap_content")

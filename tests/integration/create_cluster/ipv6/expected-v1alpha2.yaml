@@ -9,6 +9,7 @@ spec:
   authorization:
     rbac: {}
   channel: stable
+  cloudControllerManager: {}
   cloudProvider: aws
   configBase: memfs://tests/ipv6.example.com
   etcdClusters:
