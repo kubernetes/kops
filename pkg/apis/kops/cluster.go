@@ -834,7 +834,7 @@ func (c *ClusterSpec) IsIPv6Only() bool {
 }
 
 func (c *ClusterSpec) IsKopsControllerIPAM() bool {
-	return c.IsIPv6Only()
+	return c.IsIPv6Only() && (c.Networking == nil || c.Networking.AmazonVPC == nil)
 }
 
 // EnvVar represents an environment variable present in a Container.

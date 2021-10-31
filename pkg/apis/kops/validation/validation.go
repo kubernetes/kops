@@ -766,11 +766,6 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		if c.CloudProvider != "aws" {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("amazonvpc"), "amazon-vpc-routed-eni networking is supported only in AWS"))
 		}
-
-		if cluster.Spec.IsIPv6Only() {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("amazonvpc"), "amazon-vpc-routed-eni networking does not support IPv6"))
-		}
-
 	}
 
 	if v.Cilium != nil {

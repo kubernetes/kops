@@ -303,7 +303,7 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		addAmazonVPCCNIPermissions(p, b.Partition)
+		addAmazonVPCCNIPermissions(p, b.Partition, b.Cluster.Spec.IsIPv6Only())
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.Ipam == kops.CiliumIpamEni {
@@ -374,7 +374,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		addAmazonVPCCNIPermissions(p, b.Partition)
+		addAmazonVPCCNIPermissions(p, b.Partition, b.Cluster.Spec.IsIPv6Only())
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.Ipam == kops.CiliumIpamEni {
@@ -404,7 +404,7 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		addAmazonVPCCNIPermissions(p, b.Partition)
+		addAmazonVPCCNIPermissions(p, b.Partition, b.Cluster.Spec.IsIPv6Only())
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "DoNothing" {
@@ -759,7 +759,7 @@ func (b *PolicyBuilder) addNodeupPermissions(p *Policy, enableHookSupport bool) 
 		"ec2:DescribeInstanceTypes",
 	)
 
-	if b.Cluster.Spec.IsKopsControllerIPAM() {
+	if b.Cluster.Spec.IsIPv6Only() {
 		p.unconditionalAction.Insert(
 			"ec2:AssignIpv6Addresses",
 		)
@@ -1110,20 +1110,26 @@ func addCiliumEniPermissions(p *Policy) {
 	)
 }
 
-func addAmazonVPCCNIPermissions(p *Policy, partition string) {
+func addAmazonVPCCNIPermissions(p *Policy, partition string, isIPv6Only bool) {
 	p.unconditionalAction.Insert(
-		"ec2:AssignPrivateIpAddresses",
-		"ec2:AttachNetworkInterface",
-		"ec2:CreateNetworkInterface",
-		"ec2:DeleteNetworkInterface",
 		"ec2:DescribeInstances",
 		"ec2:DescribeInstanceTypes",
 		"ec2:DescribeTags",
 		"ec2:DescribeNetworkInterfaces",
-		"ec2:DetachNetworkInterface",
-		"ec2:ModifyNetworkInterfaceAttribute",
-		"ec2:UnassignPrivateIpAddresses",
 	)
+	if isIPv6Only {
+		p.unconditionalAction.Insert("ec2:AssignIPv6Addresses")
+	} else {
+		p.unconditionalAction.Insert(
+			"ec2:AssignPrivateIpAddresses",
+			"ec2:AttachNetworkInterface",
+			"ec2:CreateNetworkInterface",
+			"ec2:DeleteNetworkInterface",
+			"ec2:DetachNetworkInterface",
+			"ec2:ModifyNetworkInterfaceAttribute",
+			"ec2:UnassignPrivateIpAddresses",
+		)
+	}
 	p.Statement = append(p.Statement,
 		&Statement{
 			Effect: StatementEffectAllow,

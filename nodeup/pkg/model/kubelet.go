@@ -205,7 +205,9 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		flags += " --cloud-config=" + InTreeCloudConfigFilePath
 	}
 
-	if b.UsesSecondaryIP() {
+	if b.Cluster.Spec.IsIPv6Only() {
+		flags += " --node-ip=::"
+	} else if b.UsesSecondaryIP() {
 		sess := session.Must(session.NewSession())
 		metadata := ec2metadata.New(sess)
 		localIpv4, err := metadata.GetMetadata("local-ipv4")
@@ -220,7 +222,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		flags += " --experimental-mounter-path=" + path.Join(containerizedMounterHome, "mounter")
 	}
 
-	// Add container runtime spcific flags
+	// Add container runtime specific flags
 	switch b.Cluster.Spec.ContainerRuntime {
 	case "docker", "":
 		flags += " --cni-bin-dir=" + b.CNIBinDir()
@@ -238,10 +240,6 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	if b.UseKopsControllerForNodeBootstrap() {
 		flags += " --tls-cert-file=" + b.PathSrvKubernetes() + "/kubelet-server.crt"
 		flags += " --tls-private-key-file=" + b.PathSrvKubernetes() + "/kubelet-server.key"
-	}
-
-	if b.Cluster.Spec.IsIPv6Only() {
-		flags += " --node-ip=::"
 	}
 
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
@@ -443,7 +441,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		c.BootstrapKubeconfig = ""
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil && !b.Cluster.Spec.IsIPv6Only() {
 		sess := session.Must(session.NewSession())
 		metadata := ec2metadata.New(sess)
 

@@ -99,7 +99,7 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 
 func (*KubeProxyOptionsBuilder) needsClusterCIDR(clusterSpec *kops.ClusterSpec) bool {
 	// If we use podCIDR from cloud, we should not set cluster cidr.
-	if clusterSpec.IsKopsControllerIPAM() {
+	if clusterSpec.IsIPv6Only() {
 		return false
 	}
 
