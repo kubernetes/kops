@@ -13,11 +13,13 @@ spec:
   channel: stable
   cloudConfig:
     awsEBSCSIDriver:
-      enabled: false
+      enabled: true
+      version: v1.4.0
     manageStorageClasses: true
     nodeIPFamilies:
     - ipv6
     - ipv4
+  cloudControllerManager: {}
   cloudProvider: aws
   clusterDNSDomain: cluster.local
   configBase: memfs://clusters.example.com/minimal-ipv6.example.com
@@ -57,7 +59,7 @@ spec:
     apiServerCount: 1
     authorizationMode: AlwaysAllow
     bindAddress: '::'
-    cloudProvider: aws
+    cloudProvider: external
     enableAdmissionPlugins:
     - NamespaceLifecycle
     - LimitRanger
@@ -94,12 +96,14 @@ spec:
   kubeControllerManager:
     allocateNodeCIDRs: false
     attachDetachReconcileSyncPeriod: 1m0s
-    cloudProvider: aws
+    cloudProvider: external
     clusterName: minimal-ipv6.example.com
     configureCloudRoutes: false
     controllers:
     - '*'
     - -nodeipam
+    featureGates:
+      CSIMigrationAWS: "true"
     image: k8s.gcr.io/kube-controller-manager:v1.21.0
     leaderElection:
       leaderElect: true
@@ -136,11 +140,14 @@ spec:
     anonymousAuth: false
     cgroupDriver: systemd
     cgroupRoot: /
-    cloudProvider: aws
+    cloudProvider: external
     clusterDNS: fd00:5e4f:ce::a
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
     hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
@@ -156,11 +163,14 @@ spec:
     anonymousAuth: false
     cgroupDriver: systemd
     cgroupRoot: /
-    cloudProvider: aws
+    cloudProvider: external
     clusterDNS: fd00:5e4f:ce::a
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
     hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
