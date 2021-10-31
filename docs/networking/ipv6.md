@@ -1,6 +1,6 @@
 # IPv6
 
-{{ kops_feature_table(kops_added_ff='1.22') }}
+{{ kops_feature_table(kops_added_ff='1.23') }}
 
 kOps has experimental support for configuring clusters with IPv6-only pods and dual-stack nodes.
 
