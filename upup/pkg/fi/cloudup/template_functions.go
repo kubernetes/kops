@@ -162,6 +162,12 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			for _, e := range c.Env {
 				envVars[e.Name] = e.Value
 			}
+			envVars["ENABLE_IPv4"] = strconv.FormatBool(!cluster.Spec.IsIPv6Only())
+			envVars["ENABLE_IPv6"] = strconv.FormatBool(cluster.Spec.IsIPv6Only())
+			if cluster.Spec.IsIPv6Only() {
+				envVars["ENABLE_PREFIX_DELEGATION"] = "true"
+				envVars["WARM_PREFIX_TARGET"] = "1"
+			}
 			return envVars
 		}
 	}
