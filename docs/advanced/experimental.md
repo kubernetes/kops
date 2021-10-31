@@ -11,7 +11,6 @@ The following experimental features are currently available:
 * `+EnableSeparateConfigBase` - Allow a config-base that is different from the state store.
 * `+SpecOverrideFlag` - Allow setting spec values on `kops create`.
 * `+ExperimentalClusterDNS` - Turns off validation of the kubelet cluster dns flag.
-* `+EnableNodeAuthorization` - Enable support of Node Authorization, see [node_authorization.md](../node_authorization.md).
 * `+GoogleCloudBucketAcl` - Enables setting the ACL on the state store bucket when using GCS
 * `+KeepLaunchConfigurations` - Prevents garbage collection of old launch configurations
 * `+Spotinst` - Enables the use of the Spot integration
