@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"net"
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -152,9 +153,21 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if b.Cluster.Spec.IsIPv6Only() {
 		if b.Distribution == distributions.DistributionDebian11 {
-			sysctls = append(sysctls,
-				"# Enable Router Advertisements to get the default IPv6 route",
-				"net.ipv6.conf.ens5.accept_ra=2")
+			// Accepting Router Advertisements must be enabled for each existing network interface to take effect.
+			// net.ipv6.conf.all.accept_ra takes effect only for newly created network interfaces.
+			// https://bugzilla.kernel.org/show_bug.cgi?id=11655
+			sysctls = append(sysctls, "# Enable Router Advertisements to get the default IPv6 route")
+			ifaces, err := net.Interfaces()
+			if err != nil {
+				return err
+			}
+			for _, iface := range ifaces {
+				// Accept Router Advertisements for ethernet network interfaces with slot position.
+				// https://www.freedesktop.org/software/systemd/man/systemd.net-naming-scheme.html
+				if strings.HasPrefix(iface.Name, "ens") {
+					sysctls = append(sysctls, fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", iface.Name))
+				}
+			}
 		}
 		sysctls = append(sysctls,
 			"# Enable IPv6 forwarding for network plugins that don't do it themselves",
