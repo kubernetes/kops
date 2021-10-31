@@ -168,6 +168,8 @@ func (i *integrationTest) withAddons(addons ...string) *integrationTest {
 }
 
 const dnsControllerAddon = "dns-controller.addons.k8s.io-k8s-1.12"
+const awsCCMAddon = "aws-cloud-controller.addons.k8s.io-k8s-1.18"
+const awsEBSCSIAddon = "aws-ebs-csi-driver.addons.k8s.io-k8s-1.17"
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimal(t *testing.T) {
@@ -251,7 +253,7 @@ func TestExternalPolicies(t *testing.T) {
 // TestMinimalIPv6 runs the test on a minimum IPv6 configuration
 func TestMinimalIPv6(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6").
-		withAddons(dnsControllerAddon).
+		withAddons(awsCCMAddon, awsEBSCSIAddon, dnsControllerAddon).
 		runTestTerraformAWS(t)
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6").runTestCloudformation(t)
 }
@@ -264,7 +266,7 @@ func TestMinimalIPv6Calico(t *testing.T) {
 	}
 	defer unsetFeatureFlags()
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-calico").
-		withAddons(calicoAddon, dnsControllerAddon).
+		withAddons(awsCCMAddon, awsEBSCSIAddon, calicoAddon, dnsControllerAddon).
 		runTestTerraformAWS(t)
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-calico").runTestCloudformation(t)
 }
@@ -277,7 +279,7 @@ func TestMinimalIPv6Cilium(t *testing.T) {
 	}
 	defer unsetFeatureFlags()
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-cilium").
-		withAddons(ciliumAddon, dnsControllerAddon).
+		withAddons(awsCCMAddon, awsEBSCSIAddon, ciliumAddon, dnsControllerAddon).
 		runTestTerraformAWS(t)
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-cilium").runTestCloudformation(t)
 }
