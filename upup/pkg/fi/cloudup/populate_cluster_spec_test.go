@@ -85,6 +85,8 @@ func TestPopulateCluster_Subnets(t *testing.T) {
 		t.Run(tc.NonMasqueradeCIDR, func(t *testing.T) {
 			cloud, c := buildMinimalCluster()
 			c.Spec.NonMasqueradeCIDR = tc.NonMasqueradeCIDR
+			c.Spec.Networking.Kubenet = nil
+			c.Spec.Networking.CNI = &kopsapi.CNINetworkingSpec{}
 
 			err := PerformAssignments(c, cloud)
 			require.NoError(t, err, "PerformAssignments")
