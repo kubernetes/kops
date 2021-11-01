@@ -19,7 +19,12 @@ spec:
     nodeIPFamilies:
     - ipv6
     - ipv4
-  cloudControllerManager: {}
+  cloudControllerManager:
+    allocateNodeCIDRs: true
+    clusterCIDR: ::/0
+    clusterName: minimal-ipv6.example.com
+    configureCloudRoutes: false
+    image: k8s.gcr.io/provider-aws/cloud-controller-manager:v1.21.0-alpha.0
   cloudProvider: aws
   clusterDNSDomain: cluster.local
   configBase: memfs://clusters.example.com/minimal-ipv6.example.com
