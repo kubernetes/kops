@@ -38,7 +38,7 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 
 	eccm := clusterSpec.ExternalCloudControllerManager
 
-	if eccm == nil || kops.CloudProviderID(eccm.CloudProvider) != kops.CloudProviderAWS {
+	if eccm == nil || kops.CloudProviderID(clusterSpec.CloudProvider) != kops.CloudProviderAWS {
 		return nil
 	}
 
