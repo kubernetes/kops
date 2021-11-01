@@ -66,14 +66,15 @@ Commit the changes (without pushing yet):
 
 ```
 VERSION=$(tools/get_version.sh | grep VERSION | awk '{print $2}')
+git checkout -b release_${VERSION}
 git add . && git commit -m "Release ${VERSION}"
 ```
 
 This is the "release commit". Push and create a PR.
 
 ```
-git push $USER
-hub pull-request
+git push -u origin release_${VERSION}
+gh pr create -f
 ```
 
 Wait for the PR to merge.
@@ -104,15 +105,12 @@ Double check it is the release commit!
 
 ```
 git push git@github.com:kubernetes/kops v${VERSION}
-git fetch origin
 ```
 
 
 ### Wait for CI job to complete
 
-The staging CI job should now see the tag, and build it (from the trusted prow cluster, using Google Cloud Build).
-
-The job is here: https://testgrid.k8s.io/sig-cluster-lifecycle-kops#kops-postsubmit-push-to-staging
+The [staging CI job](https://testgrid.k8s.io/sig-cluster-lifecycle-kops#kops-postsubmit-push-to-staging) should now see the tag, and build it (from the trusted prow cluster, using Google Cloud Build).
 
 It (currently) takes about 30 minutes to run.
 
@@ -129,7 +127,7 @@ For example:
 
 ```
 git checkout master
-git pull
+git pull upstream master
 git checkout -b relnotes_${VERSION}
 
 FROM=1.21.0-alpha.2 # Replace "1.21.0-alpha.2" with the previous version
@@ -144,8 +142,8 @@ Review then send a PR with the release notes:
 ```
 git add -p docs/releases/${DOC}-NOTES.md
 git commit -m "Release notes for ${VERSION}"
-git push ${USER}
-hub pull-request
+git push -u origin relnotes_${VERSION}
+gh pr create -f
 ```
 
 ### Propose promotion of artifacts
@@ -161,7 +159,7 @@ Create container promotion PR:
 cd ${GOPATH}/src/k8s.io/k8s.io
 
 git checkout main
-git pull
+git pull upstream main
 git checkout -b kops_images_${VERSION}
 
 cd k8s.gcr.io/images/k8s-staging-kops
@@ -176,8 +174,8 @@ Currently we send the image and non-image artifact promotion PRs separately.
 cd ${GOPATH}/src/k8s.io/k8s.io
 git add -p k8s.gcr.io/images/k8s-staging-kops/images.yaml
 git commit -m "Promote kOps $VERSION images"
-git push ${USER}
-hub pull-request -b main
+git push -u origin kops_images_${VERSION}
+gh pr create -f
 ```
 
 Create binary promotion PR:
@@ -186,7 +184,7 @@ Create binary promotion PR:
 cd ${GOPATH}/src/k8s.io/k8s.io
 
 git checkout main
-git pull
+git pull upstream main
 git checkout -b kops_artifacts_${VERSION}
 
 rm -rf ./k8s-staging-kops/kops/releases
@@ -201,8 +199,8 @@ Verify, then send a PR:
 ```
 git add artifacts/manifests/k8s-staging-kops/${VERSION}.yaml
 git commit -m "Promote kOps $VERSION binary artifacts"
-git push ${USER}
-hub pull-request -b main
+git push -u origin kops_artifacts_${VERSION}
+gh pr create -f
 ```
 
 Upon approval and merge of the binary promotion PR, artifacts will be promoted
