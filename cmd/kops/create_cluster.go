@@ -555,6 +555,9 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			group.Spec.Image = c.NodeImage
 		}
 	}
+	for _, group := range instanceGroups {
+		group.Spec.Image = "136693071363/debian-11-amd64-20211011-792"
+	}
 
 	if c.AssociatePublicIP != nil {
 		for _, group := range instanceGroups {
