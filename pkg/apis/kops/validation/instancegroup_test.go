@@ -218,16 +218,9 @@ func TestValidBootDevice(t *testing.T) {
 	}
 
 	for _, g := range grid {
-		ig := &kops.InstanceGroup{
-			ObjectMeta: v1.ObjectMeta{
-				Name: "some-ig",
-			},
-			Spec: kops.InstanceGroupSpec{
-				Role:           "Node",
-				RootVolumeType: fi.String(g.volumeType),
-			},
-		}
-		errs := CrossValidateInstanceGroup(ig, cluster, nil)
+		ig := createMinimalInstanceGroup()
+		ig.Spec.RootVolumeType = fi.String(g.volumeType)
+		errs := CrossValidateInstanceGroup(ig, cluster, nil, true)
 		testErrors(t, g.volumeType, errs, g.expected)
 	}
 }
@@ -253,17 +246,11 @@ func TestValidNodeLabels(t *testing.T) {
 	}
 
 	for _, g := range grid {
-		ig := &kops.InstanceGroup{
-			ObjectMeta: v1.ObjectMeta{
-				Name: "some-ig",
-			},
-			Spec: kops.InstanceGroupSpec{
-				Role:       "Node",
-				NodeLabels: make(map[string]string),
-			},
-		}
+
+		ig := createMinimalInstanceGroup()
+		ig.Spec.NodeLabels = make(map[string]string)
 		ig.Spec.NodeLabels[g.label] = "placeholder"
-		errs := ValidateInstanceGroup(ig, nil)
+		errs := ValidateInstanceGroup(ig, nil, true)
 		testErrors(t, g.label, errs, g.expected)
 	}
 }
@@ -289,17 +276,10 @@ func TestValidateIGCloudLabels(t *testing.T) {
 	}
 
 	for _, g := range grid {
-		ig := &kops.InstanceGroup{
-			ObjectMeta: v1.ObjectMeta{
-				Name: "some-ig",
-			},
-			Spec: kops.InstanceGroupSpec{
-				Role:        "Node",
-				CloudLabels: make(map[string]string),
-			},
-		}
+		ig := createMinimalInstanceGroup()
+
 		ig.Spec.CloudLabels[g.label] = "placeholder"
-		errs := ValidateInstanceGroup(ig, nil)
+		errs := ValidateInstanceGroup(ig, nil, true)
 		testErrors(t, g.label, errs, g.expected)
 	}
 }
@@ -319,17 +299,10 @@ func TestIGCloudLabelIsIGName(t *testing.T) {
 	}
 
 	for _, g := range grid {
-		ig := &kops.InstanceGroup{
-			ObjectMeta: v1.ObjectMeta{
-				Name: "some-ig",
-			},
-			Spec: kops.InstanceGroupSpec{
-				Role:        "Node",
-				CloudLabels: make(map[string]string),
-			},
-		}
+		ig := createMinimalInstanceGroup()
+
 		ig.Spec.CloudLabels[aws.CloudTagInstanceGroupName] = g.label
-		errs := ValidateInstanceGroup(ig, nil)
+		errs := ValidateInstanceGroup(ig, nil, true)
 		testErrors(t, g.label, errs, g.expected)
 	}
 }
@@ -363,18 +336,11 @@ func TestIGUpdatePolicy(t *testing.T) {
 			expected: []string{unsupportedValueError},
 		},
 	} {
-		ig := kops.InstanceGroup{
-			ObjectMeta: v1.ObjectMeta{
-				Name: "some-ig",
-			},
-			Spec: kops.InstanceGroupSpec{
-				Role:        "Node",
-				CloudLabels: make(map[string]string),
-			},
-		}
+		ig := createMinimalInstanceGroup()
+
 		t.Run(test.label, func(t *testing.T) {
 			ig.Spec.UpdatePolicy = test.policy
-			errs := ValidateInstanceGroup(&ig, nil)
+			errs := ValidateInstanceGroup(ig, nil, true)
 			testErrors(t, test.label, errs, test.expected)
 		})
 	}
@@ -394,6 +360,9 @@ func TestValidInstanceGroup(t *testing.T) {
 				Spec: kops.InstanceGroupSpec{
 					Role:    kops.InstanceGroupRoleMaster,
 					Subnets: []string{"eu-central-1a"},
+					MaxSize: fi.Int32(1),
+					MinSize: fi.Int32(1),
+					Image:   "my-image",
 				},
 			},
 			ExpectedErrors: 0,
@@ -407,6 +376,9 @@ func TestValidInstanceGroup(t *testing.T) {
 				Spec: kops.InstanceGroupSpec{
 					Role:    kops.InstanceGroupRoleAPIServer,
 					Subnets: []string{"eu-central-1a"},
+					MaxSize: fi.Int32(1),
+					MinSize: fi.Int32(1),
+					Image:   "my-image",
 				},
 			},
 			ExpectedErrors: 0,
@@ -420,6 +392,9 @@ func TestValidInstanceGroup(t *testing.T) {
 				Spec: kops.InstanceGroupSpec{
 					Role:    kops.InstanceGroupRoleNode,
 					Subnets: []string{"eu-central-1a"},
+					MaxSize: fi.Int32(1),
+					MinSize: fi.Int32(1),
+					Image:   "my-image",
 				},
 			},
 			ExpectedErrors: 0,
@@ -433,6 +408,9 @@ func TestValidInstanceGroup(t *testing.T) {
 				Spec: kops.InstanceGroupSpec{
 					Role:    kops.InstanceGroupRoleBastion,
 					Subnets: []string{"eu-central-1a"},
+					MaxSize: fi.Int32(1),
+					MinSize: fi.Int32(1),
+					Image:   "my-image",
 				},
 			},
 			ExpectedErrors: 0,
@@ -440,7 +418,23 @@ func TestValidInstanceGroup(t *testing.T) {
 		},
 	}
 	for _, g := range grid {
-		errList := ValidateInstanceGroup(g.IG, nil)
+		errList := ValidateInstanceGroup(g.IG, nil, true)
 		testErrors(t, g.Description, errList, []string{})
 	}
+}
+
+func createMinimalInstanceGroup() *kops.InstanceGroup {
+	ig := &kops.InstanceGroup{
+		ObjectMeta: v1.ObjectMeta{
+			Name: "some-ig",
+		},
+		Spec: kops.InstanceGroupSpec{
+			CloudLabels: make(map[string]string),
+			Role:        "Node",
+			MaxSize:     fi.Int32(1),
+			MinSize:     fi.Int32(1),
+			Image:       "my-image",
+		},
+	}
+	return ig
 }
