@@ -41,7 +41,7 @@
       "Action": "autoscaling:CompleteLifecycleAction",
       "Condition": {
         "StringEquals": {
-          "aws:ResourceTag/KubernetesCluster": ""
+          "aws:ResourceTag/KubernetesCluster": "minimal-warmpool.example.com"
         }
       },
       "Effect": "Allow",
