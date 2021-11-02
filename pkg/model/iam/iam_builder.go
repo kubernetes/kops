@@ -285,7 +285,7 @@ func NewPolicy(clusterName string) *Policy {
 
 // BuildAWSPolicy generates a custom policy for a Kubernetes master.
 func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
-	p := NewPolicy(b.Cluster.GetClusterName())
+	p := NewPolicy(b.Cluster.GetName())
 
 	addNodeupPermissions(p, r.warmPool)
 
@@ -394,7 +394,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 // BuildAWSPolicy generates a custom policy for a Kubernetes node.
 func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
-	p := NewPolicy(b.Cluster.GetClusterName())
+	p := NewPolicy(b.Cluster.GetName())
 
 	addNodeupPermissions(p, r.enableLifecycleHookPermissions)
 
@@ -424,7 +424,7 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 // BuildAWSPolicy generates a custom policy for a bastion host.
 func (r *NodeRoleBastion) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
-	p := NewPolicy(b.Cluster.GetClusterName())
+	p := NewPolicy(b.Cluster.GetName())
 
 	// Bastion hosts currently don't require any specific permissions.
 	// A trivial permission is granted, because empty policies are not allowed.
