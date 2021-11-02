@@ -11,8 +11,6 @@ contents: |
   spec:
     containers:
     - args:
-      - --log-file=/var/log/kube-proxy.log
-      - /usr/local/bin/kube-proxy
       - --cluster-cidr=100.96.0.0/11
       - --conntrack-max-per-core=131072
       - --hostname-override=@aws
@@ -20,8 +18,11 @@ contents: |
       - --master=https://127.0.0.1
       - --oom-score-adj=-998
       - --v=2
+      - --logtostderr=false
+      - --alsologtostderr
+      - --log-file=/var/log/kube-proxy.log
       command:
-      - /go-runner
+      - /usr/local/bin/kube-proxy
       image: k8s.gcr.io/kube-proxy:v1.23.0
       name: kube-proxy
       resources:
