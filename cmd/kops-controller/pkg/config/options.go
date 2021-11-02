@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"k8s.io/kops/pkg/ipaddr"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
 )
@@ -65,4 +66,7 @@ type ServerProviderOptions struct {
 type GossipOptions struct {
 	// HostnameInternalAPIServer is the hostname for the internal apiserver.
 	HostnameInternalAPIServer string `json:"hostnameInternalAPIServer"`
+
+	// InternalAddressFamilies holds the families of the internal addresses we should publish.
+	InternalAddressFamilies []ipaddr.Family `json:"internalAddressFamilies"`
 }

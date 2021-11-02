@@ -48,6 +48,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/ipaddr"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/pkg/wellknownports"
@@ -593,6 +594,11 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 	if dns.IsGossipHostname(cluster.Spec.MasterInternalName) {
 		config.Gossip = &kopscontrollerconfig.GossipOptions{
 			HostnameInternalAPIServer: cluster.Spec.MasterInternalName,
+		}
+		if cluster.Spec.IsIPv6Only() {
+			config.Gossip.InternalAddressFamilies = []ipaddr.Family{ipaddr.FamilyIPV6}
+		} else {
+			config.Gossip.InternalAddressFamilies = []ipaddr.Family{ipaddr.FamilyIPV4}
 		}
 	}
 

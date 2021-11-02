@@ -32,6 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/ipaddr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -58,15 +59,23 @@ type HostsReconciler struct {
 
 	// lastUpdate holds the last value we updated, to reduce spurious updates.
 	lastUpdate *managedConfigMap
+
+	// addressFamilies holds the list of address families we should populate for internal IPs
+	addressFamilies map[ipaddr.Family]bool
 }
 
 // NewHostsReconciler is the constructor for a HostsReconciler
-func NewHostsReconciler(mgr manager.Manager, configMapID types.NamespacedName, hostnameInternalAPIServer string) (*HostsReconciler, error) {
+func NewHostsReconciler(mgr manager.Manager, configMapID types.NamespacedName, hostnameInternalAPIServer string, addressFamilies []ipaddr.Family) (*HostsReconciler, error) {
 	r := &HostsReconciler{
 		client:                    mgr.GetClient(),
 		log:                       ctrl.Log.WithName("controllers").WithName("Hosts"),
 		configMapID:               configMapID,
 		hostnameInternalAPIServer: hostnameInternalAPIServer,
+	}
+
+	r.addressFamilies = make(map[ipaddr.Family]bool)
+	for _, addressFamily := range addressFamilies {
+		r.addressFamilies[addressFamily] = true
 	}
 
 	dynamicClient, err := dynamic.NewForConfig(mgr.GetConfig())
@@ -114,7 +123,21 @@ func (r *HostsReconciler) updateHosts(ctx context.Context, nodes *corev1.NodeLis
 		for j := range node.Status.Addresses {
 			address := &node.Status.Addresses[j]
 
-			if address.Type == corev1.NodeInternalIP && address.Address != "" {
+			if address.Type == corev1.NodeInternalIP {
+				if address.Address == "" {
+					continue
+				}
+
+				family, err := ipaddr.GetFamily(address.Address)
+				if err != nil {
+					klog.Warningf("cannot get family for address %q: %w", address.Address, err)
+					continue
+				}
+
+				if !r.addressFamilies[family] {
+					continue
+				}
+
 				addrToHosts[address.Address] = append(addrToHosts[address.Address], r.hostnameInternalAPIServer)
 			}
 		}
