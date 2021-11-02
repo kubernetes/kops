@@ -210,21 +210,13 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	addHostPathMapping(pod, container, "logfile", "/var/log/kube-proxy.log").ReadOnly = false
 	// We use lighter containers that don't include shells
 	// But they have richer logging support via klog
-	if b.IsKubernetesGTE("1.23") {
-		container.Command = []string{"/go-runner"}
-		container.Args = []string{
-			"--log-file=/var/log/kube-proxy.log",
-			"/usr/local/bin/kube-proxy",
-		}
-		container.Args = append(container.Args, sortedStrings(flags)...)
-	} else {
-		container.Command = []string{"/usr/local/bin/kube-proxy"}
-		container.Args = append(
-			sortedStrings(flags),
-			"--logtostderr=false", //https://github.com/kubernetes/klog/issues/60
-			"--alsologtostderr",
-			"--log-file=/var/log/kube-proxy.log")
-	}
+	container.Command = []string{"/usr/local/bin/kube-proxy"}
+	container.Args = append(
+		sortedStrings(flags),
+		"--logtostderr=false", //https://github.com/kubernetes/klog/issues/60
+		"--alsologtostderr",
+		"--log-file=/var/log/kube-proxy.log")
+
 	{
 		addHostPathMapping(pod, container, "kubeconfig", "/var/lib/kube-proxy/kubeconfig")
 		// @note: mapping the host modules directory to fix the missing ipvs kernel module
