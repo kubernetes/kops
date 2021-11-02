@@ -106,10 +106,13 @@ func (d *deployer) dumpClusterInfo() error {
 
 	resourceTypes := []string{"csinodes", "csidrivers", "storageclasses", "persistentvolumes",
 		"mutatingwebhookconfigurations", "validatingwebhookconfigurations"}
+	if err := os.MkdirAll(path.Join(d.ArtifactsDir, "cluster-info"), 0755); err != nil {
+		return err
+	}
 	for _, resType := range resourceTypes {
 		yamlFile, err := os.Create(path.Join(d.ArtifactsDir, "cluster-info", fmt.Sprintf("%v.yaml", resType)))
 		if err != nil {
-			panic(err)
+			return err
 		}
 		defer yamlFile.Close()
 
@@ -124,9 +127,7 @@ func (d *deployer) dumpClusterInfo() error {
 		cmd.SetEnv(d.env()...)
 		cmd.SetStdout(yamlFile)
 		if err := cmd.Run(); err != nil {
-			if err = d.dumpClusterInfoSSH(); err != nil {
-				klog.Warningf("Failed to get %v: %v", resType, err)
-			}
+			klog.Warningf("Failed to get %v: %v", resType, err)
 		}
 	}
 
@@ -141,10 +142,13 @@ func (d *deployer) dumpClusterInfo() error {
 	namespacedResourceTypes := []string{"configmaps", "endpoints", "endpointslices", "leases", "persistentvolumeclaims"}
 	for _, namespace := range namespaces {
 		namespace = strings.TrimSpace(namespace)
+		if err := os.MkdirAll(path.Join(d.ArtifactsDir, "cluster-info", namespace), 0755); err != nil {
+			return err
+		}
 		for _, resType := range namespacedResourceTypes {
 			yamlFile, err := os.Create(path.Join(d.ArtifactsDir, "cluster-info", namespace, fmt.Sprintf("%v.yaml", resType)))
 			if err != nil {
-				panic(err)
+				return err
 			}
 			defer yamlFile.Close()
 
