@@ -117,7 +117,7 @@ func (d *deployer) dumpClusterInfo() error {
 		defer yamlFile.Close()
 
 		args = []string{
-			"kubectl", "get", resType,
+			"kubectl", "--request-timeout", "5s", "get", resType,
 			"--all-namespaces",
 			"-o", "yaml",
 		}
@@ -132,7 +132,7 @@ func (d *deployer) dumpClusterInfo() error {
 	}
 
 	nsCmd := exec.Command(
-		"kubectl", "get", "namespaces", "--no-headers", "-o", "custom-columns=name:.metadata.name",
+		"kubectl", "--request-timeout", "5s", "get", "namespaces", "--no-headers", "-o", "custom-columns=name:.metadata.name",
 	)
 	namespaces, err := exec.OutputLines(nsCmd)
 	if err != nil {
