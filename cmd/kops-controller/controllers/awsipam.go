@@ -138,15 +138,15 @@ func (r *AWSIPAMReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			return ctrl.Result{}, err
 		}
 
-		if len(eni.NetworkInterfaces) != 1 {
-			return ctrl.Result{}, fmt.Errorf("unexpected number of network interfaces for instance %q: %v", instanceID, len(eni.NetworkInterfaces))
-		}
+		//if len(eni.NetworkInterfaces) != 1 {
+		//	return ctrl.Result{}, fmt.Errorf("unexpected number of network interfaces for instance %q: %v", instanceID, len(eni.NetworkInterfaces))
+		//}
+		//
+		//if len(eni.NetworkInterfaces[0].Ipv6Prefixes) != 1 {
+		//	return ctrl.Result{}, fmt.Errorf("unexpected amount of ipv6 prefixes on interface %q: %v", *eni.NetworkInterfaces[0].NetworkInterfaceId, len(eni.NetworkInterfaces[0].Ipv6Prefixes))
+		//}
 
-		if len(eni.NetworkInterfaces[0].Ipv6Prefixes) != 1 {
-			return ctrl.Result{}, fmt.Errorf("unexpected amount of ipv6 prefixes on interface %q: %v", *eni.NetworkInterfaces[0].NetworkInterfaceId, len(eni.NetworkInterfaces[0].Ipv6Prefixes))
-		}
-
-		patchNodePodCIDRs(r.coreV1Client, ctx, node, *eni.NetworkInterfaces[0].Ipv6Prefixes[0].Ipv6Prefix)
+		patchNodePodCIDRs(r.coreV1Client, ctx, node, *eni.NetworkInterfaces[1].Ipv6Prefixes[0].Ipv6Prefix)
 
 	}
 

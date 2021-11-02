@@ -54,6 +54,11 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 				DeviceIndex:              fi.Int64(0),
 				Ipv6AddressCount:         t.IPv6AddressCount,
 			},
+			{
+				DeleteOnTermination: aws.Bool(true),
+				DeviceIndex:         fi.Int64(1),
+				Ipv6PrefixCount:     t.IPv6AddressCount,
+			},
 		},
 	}
 

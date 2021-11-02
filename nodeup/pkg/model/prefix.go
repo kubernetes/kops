@@ -18,7 +18,6 @@ package model
 
 import (
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
 type PrefixBuilder struct {
@@ -28,11 +27,11 @@ type PrefixBuilder struct {
 var _ fi.ModelBuilder = &PrefixBuilder{}
 
 func (b *PrefixBuilder) Build(c *fi.ModelBuilderContext) error {
-	if !b.Cluster.Spec.IsKopsControllerIPAM() {
-		return nil
-	}
-	c.AddTask(&nodetasks.Prefix{
-		Name: "prefix",
-	})
+	//if !b.Cluster.Spec.IsKopsControllerIPAM() {
+	//	return nil
+	//}
+	//c.AddTask(&nodetasks.Prefix{
+	//	Name: "prefix",
+	//})
 	return nil
 }
