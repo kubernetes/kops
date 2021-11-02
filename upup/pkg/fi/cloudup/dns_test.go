@@ -45,7 +45,6 @@ func TestPrecreateDNSNames(t *testing.T) {
 				},
 			},
 			expected: []recordKey{
-				{"api.cluster1.example.com", rrstype.A},
 				{"api.cluster1.example.com", rrstype.AAAA},
 				{"api.internal.cluster1.example.com", rrstype.AAAA},
 			},
@@ -109,8 +108,23 @@ func TestPrecreateDNSNames(t *testing.T) {
 				},
 			},
 			expected: []recordKey{
-				{"api.cluster1.example.com", rrstype.A},
 				{"api.cluster1.example.com", rrstype.AAAA},
+				{"api.internal.cluster1.example.com", rrstype.AAAA},
+				{"kops-controller.internal.cluster1.example.com", rrstype.AAAA},
+			},
+		},
+		{
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					API: &kops.AccessSpec{
+						LoadBalancer: &kops.LoadBalancerAccessSpec{},
+					},
+					CloudProvider:     "aws",
+					KubernetesVersion: "1.22.0",
+					NonMasqueradeCIDR: "::/0",
+				},
+			},
+			expected: []recordKey{
 				{"api.internal.cluster1.example.com", rrstype.AAAA},
 				{"kops-controller.internal.cluster1.example.com", rrstype.AAAA},
 			},
