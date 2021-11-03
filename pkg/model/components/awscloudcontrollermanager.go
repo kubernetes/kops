@@ -24,7 +24,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
-// KubeControllerManagerOptionsBuilder adds options for the kubernetes controller manager to the model.
+// AWSCloudControllerManagerOptionsBuilder adds options for the kubernetes controller manager to the model.
 type AWSCloudControllerManagerOptionsBuilder struct {
 	*OptionsContext
 }
@@ -38,7 +38,15 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 
 	eccm := clusterSpec.ExternalCloudControllerManager
 
-	if eccm == nil || kops.CloudProviderID(clusterSpec.CloudProvider) != kops.CloudProviderAWS {
+	if kops.CloudProviderID(clusterSpec.CloudProvider) != kops.CloudProviderAWS {
+		return nil
+	}
+
+	if eccm == nil && b.IsKubernetesGTE("1.24") {
+		eccm = &kops.CloudControllerManagerConfig{}
+	}
+
+	if eccm == nil {
 		return nil
 	}
 
@@ -89,6 +97,10 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 		default:
 			eccm.Image = "gcr.io/k8s-staging-provider-aws/cloud-controller-manager:latest"
 		}
+	}
+
+	if b.IsKubernetesGTE("1.24") && b.IsKubernetesLT("1.25") {
+		eccm.EnableLeaderMigration = fi.Bool(true)
 	}
 
 	return nil

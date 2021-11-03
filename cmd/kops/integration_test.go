@@ -184,6 +184,7 @@ func TestMinimal_v1_23(t *testing.T) {
 		withAddons(
 			awsEBSCSIAddon,
 			dnsControllerAddon,
+			"leader-migration.rbac.addons.k8s.io-k8s-1.23",
 		).
 		runTestTerraformAWS(t)
 	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
