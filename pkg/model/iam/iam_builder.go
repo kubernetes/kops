@@ -799,10 +799,10 @@ func AddLegacyCCMPermissions(p *Policy) {
 	p.unconditionalAction.Insert(
 		"ec2:CreateSecurityGroup",
 		"ec2:CreateTags",
-		"elasticloadbalancing:CreateTargetGroup",
 		"elasticloadbalancing:AddTags",
-		"elasticloadbalancing:RegisterTargets",
 		"elasticloadbalancing:CreateListener",
+		"elasticloadbalancing:CreateTargetGroup",
+		"elasticloadbalancing:RegisterTargets",
 	)
 }
 
@@ -817,12 +817,31 @@ func AddCCMPermissions(p *Policy, partition string, cloudRoutes bool) {
 		"ec2:DescribeSubnets",
 		"ec2:DescribeVolumes",
 		"ec2:DescribeVpcs",
+		"elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
+		"elasticloadbalancing:AttachLoadBalancerToSubnets",
+		"elasticloadbalancing:ConfigureHealthCheck",
+		"elasticloadbalancing:CreateLoadBalancerPolicy",
+		"elasticloadbalancing:CreateLoadBalancerListeners",
+		"elasticloadbalancing:DeleteListener",
+		"elasticloadbalancing:DeleteLoadBalancer",
+		"elasticloadbalancing:DeleteLoadBalancerListeners",
+		"elasticloadbalancing:DeleteTargetGroup",
+		"elasticloadbalancing:DeregisterTargets",
 		"elasticloadbalancing:DescribeLoadBalancers",
 		"elasticloadbalancing:DescribeLoadBalancerAttributes",
 		"elasticloadbalancing:DescribeListeners",
 		"elasticloadbalancing:DescribeLoadBalancerPolicies",
 		"elasticloadbalancing:DescribeTargetGroups",
 		"elasticloadbalancing:DescribeTargetHealth",
+		"elasticloadbalancing:DetachLoadBalancerFromSubnets",
+		"elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+		"elasticloadbalancing:ModifyListener",
+		"elasticloadbalancing:ModifyLoadBalancerAttributes",
+		"elasticloadbalancing:ModifyTargetGroup",
+		"elasticloadbalancing:RegisterTargets",
+		"elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+		"elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
+		"elasticloadbalancing:SetLoadBalancerPoliciesOfListener",
 		"kms:DescribeKey",
 	)
 
@@ -837,33 +856,13 @@ func AddCCMPermissions(p *Policy, partition string, cloudRoutes bool) {
 		"ec2:DetachVolume",
 		"ec2:RevokeSecurityGroupIngress",
 		"elasticloadbalancing:AddTags",
-		"elasticloadbalancing:AttachLoadBalancerToSubnets",
-		"elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
-		"elasticloadbalancing:ConfigureHealthCheck",
-		"elasticloadbalancing:DeleteLoadBalancer",
-		"elasticloadbalancing:DeleteLoadBalancerListeners",
-		"elasticloadbalancing:DetachLoadBalancerFromSubnets",
-		"elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
-		"elasticloadbalancing:ModifyLoadBalancerAttributes",
-		"elasticloadbalancing:RegisterInstancesWithLoadBalancer",
-		"elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
-		"elasticloadbalancing:AddTags",
-		"elasticloadbalancing:DeleteListener",
-		"elasticloadbalancing:DeleteTargetGroup",
-		"elasticloadbalancing:ModifyListener",
-		"elasticloadbalancing:ModifyTargetGroup",
-		"elasticloadbalancing:RegisterTargets",
-		"elasticloadbalancing:DeregisterTargets",
-		"elasticloadbalancing:SetLoadBalancerPoliciesOfListener",
 	)
 
 	p.clusterTaggedCreateAction.Insert(
-		"elasticloadbalancing:CreateLoadBalancer",
-		"elasticloadbalancing:CreateLoadBalancerPolicy",
-		"elasticloadbalancing:CreateLoadBalancerListeners",
 		"ec2:CreateSecurityGroup",
 		"ec2:CreateVolume",
 		"elasticloadbalancing:CreateListener",
+		"elasticloadbalancing:CreateLoadBalancer",
 		"elasticloadbalancing:CreateTargetGroup",
 	)
 
@@ -902,12 +901,15 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy) {
 	p.unconditionalAction.Insert(
 		"ec2:DescribeAvailabilityZones",
 		"ec2:DescribeNetworkInterfaces",
+		"elasticloadbalancing:CreateRule",
+		"elasticloadbalancing:DeleteRule",
 		"elasticloadbalancing:DescribeTags",
 		"elasticloadbalancing:DescribeTargetGroupAttributes",
 		"elasticloadbalancing:DescribeRules",
 		"elasticloadbalancing:DescribeTargetHealth",
 		"elasticloadbalancing:DescribeListenerCertificates",
-		"elasticloadbalancing:CreateRule",
+		"elasticloadbalancing:ModifyRule",
+		"elasticloadbalancing:ModifyTargetGroupAttributes",
 		"acm:ListCertificates",
 		"acm:DescribeCertificate",
 	)
@@ -915,10 +917,6 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy) {
 		"ec2:AuthorizeSecurityGroupIngress", // aws.go
 		"ec2:DeleteSecurityGroup",           // aws.go
 		"ec2:RevokeSecurityGroupIngress",    // aws.go
-
-		"elasticloadbalancing:ModifyTargetGroupAttributes",
-		"elasticloadbalancing:ModifyRule",
-		"elasticloadbalancing:DeleteRule",
 
 		"elasticloadbalancing:AddTags",
 		"elasticloadbalancing:RemoveTags",

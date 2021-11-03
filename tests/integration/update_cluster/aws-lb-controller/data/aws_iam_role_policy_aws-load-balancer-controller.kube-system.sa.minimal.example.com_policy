@@ -7,11 +7,14 @@
         "ec2:DescribeAvailabilityZones",
         "ec2:DescribeNetworkInterfaces",
         "elasticloadbalancing:CreateRule",
+        "elasticloadbalancing:DeleteRule",
         "elasticloadbalancing:DescribeListenerCertificates",
         "elasticloadbalancing:DescribeRules",
         "elasticloadbalancing:DescribeTags",
         "elasticloadbalancing:DescribeTargetGroupAttributes",
-        "elasticloadbalancing:DescribeTargetHealth"
+        "elasticloadbalancing:DescribeTargetHealth",
+        "elasticloadbalancing:ModifyRule",
+        "elasticloadbalancing:ModifyTargetGroupAttributes"
       ],
       "Effect": "Allow",
       "Resource": "*"
@@ -22,9 +25,6 @@
         "ec2:DeleteSecurityGroup",
         "ec2:RevokeSecurityGroupIngress",
         "elasticloadbalancing:AddTags",
-        "elasticloadbalancing:DeleteRule",
-        "elasticloadbalancing:ModifyRule",
-        "elasticloadbalancing:ModifyTargetGroupAttributes",
         "elasticloadbalancing:RemoveTags"
       ],
       "Condition": {
