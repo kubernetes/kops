@@ -1292,6 +1292,8 @@
                 "ec2:DescribeVpcs",
                 "elasticloadbalancing:AddTags",
                 "elasticloadbalancing:CreateListener",
+                "elasticloadbalancing:CreateLoadBalancerListeners",
+                "elasticloadbalancing:CreateLoadBalancerPolicy",
                 "elasticloadbalancing:CreateTargetGroup",
                 "elasticloadbalancing:DescribeListeners",
                 "elasticloadbalancing:DescribeLoadBalancerAttributes",
@@ -1354,8 +1356,6 @@
                 "ec2:CreateVolume",
                 "elasticloadbalancing:CreateListener",
                 "elasticloadbalancing:CreateLoadBalancer",
-                "elasticloadbalancing:CreateLoadBalancerListeners",
-                "elasticloadbalancing:CreateLoadBalancerPolicy",
                 "elasticloadbalancing:CreateTargetGroup"
               ],
               "Condition": {

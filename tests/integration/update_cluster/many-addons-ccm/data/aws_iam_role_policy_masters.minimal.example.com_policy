@@ -183,6 +183,8 @@
         "ec2:UnassignPrivateIpAddresses",
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:CreateListener",
+        "elasticloadbalancing:CreateLoadBalancerListeners",
+        "elasticloadbalancing:CreateLoadBalancerPolicy",
         "elasticloadbalancing:CreateRule",
         "elasticloadbalancing:CreateTargetGroup",
         "elasticloadbalancing:DescribeListenerCertificates",
@@ -255,8 +257,6 @@
         "ec2:CreateVolume",
         "elasticloadbalancing:CreateListener",
         "elasticloadbalancing:CreateLoadBalancer",
-        "elasticloadbalancing:CreateLoadBalancerListeners",
-        "elasticloadbalancing:CreateLoadBalancerPolicy",
         "elasticloadbalancing:CreateTargetGroup"
       ],
       "Condition": {
