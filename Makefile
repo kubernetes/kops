@@ -747,6 +747,20 @@ dev-upload-nodeup: bazel-crossbuild-nodeup
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup.sha256
 	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
+.PHONY: dev-upload-nodeup-amd64
+dev-upload-nodeup-amd64: bazel-build-nodeup-linux-amd64
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
+	cp -fp ${BAZEL_BIN}/cmd/nodeup/linux-amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
+	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+
+.PHONY: dev-upload-nodeup-arm64
+dev-upload-nodeup-arm64: bazel-build-nodeup-linux-arm64
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
+	cp -fp ${BAZEL_BIN}/cmd/nodeup/linux-arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup.sha256
+	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+
 # dev-upload-protokube uploads protokube to GCS
 .PHONY: dev-upload-protokube
 dev-upload-protokube: bazel-crossbuild-protokube # Upload kops to GCS
