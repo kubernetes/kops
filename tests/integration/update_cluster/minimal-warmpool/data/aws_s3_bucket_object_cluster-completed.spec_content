@@ -216,4 +216,5 @@ spec:
       type: Public
     masters: public
     nodes: public
-  warmPool: {}
+  warmPool:
+    enableLifecycleHook: true

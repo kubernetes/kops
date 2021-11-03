@@ -41,7 +41,8 @@ spec:
     name: us-test-1a
     type: Public
     zone: us-test-1a
-  warmPool: {}
+  warmPool:
+    enableLifecycleHook: true
 
 ---
 
