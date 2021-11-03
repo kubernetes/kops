@@ -198,6 +198,14 @@ resource "aws_autoscaling_group" "nodes-minimal-warmpool-example-com" {
   vpc_zone_identifier = [aws_subnet.us-test-1a-minimal-warmpool-example-com.id]
 }
 
+resource "aws_autoscaling_lifecycle_hook" "kops-warmpool-nodes" {
+  autoscaling_group_name = aws_autoscaling_group.nodes-minimal-warmpool-example-com.id
+  default_result         = "ABANDON"
+  heartbeat_timeout      = 600
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_LAUNCHING"
+  name                   = "kops-warmpool"
+}
+
 resource "aws_ebs_volume" "us-test-1a-etcd-events-minimal-warmpool-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false

@@ -27,12 +27,23 @@
     {
       "Action": [
         "autoscaling:DescribeAutoScalingInstances",
+        "autoscaling:DescribeLifecycleHooks",
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeInstances",
         "iam:GetServerCertificate",
         "iam:ListServerCertificates",
         "kms:GenerateRandom"
       ],
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": "autoscaling:CompleteLifecycleAction",
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/KubernetesCluster": "minimal-warmpool.example.com"
+        }
+      },
       "Effect": "Allow",
       "Resource": "*"
     }
