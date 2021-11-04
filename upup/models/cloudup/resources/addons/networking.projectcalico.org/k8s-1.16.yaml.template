@@ -61,6 +61,11 @@ data:
               "type": "calico-ipam"
               {{- end }}
           },
+          {{- if .Networking.Calico.AllowIPForwarding }}
+          "container_settings": {
+              "allow_ip_forwarding": true
+          },
+          {{- end }}
           "policy": {
               "type": "k8s"
           },
