@@ -2041,6 +2041,7 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*resources.R
 			Deleter: DeleteIAMInstanceProfile,
 			Obj:     profile,
 		}
+		resourceTracker.Blocks = append(resourceTracker.Blocks, "iam-role:"+name)
 
 		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
