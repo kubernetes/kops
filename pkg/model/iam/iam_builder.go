@@ -839,6 +839,8 @@ func AddCCMPermissions(p *Policy, partition string, cloudRoutes bool) {
 		"elasticloadbalancing:AddTags",
 		"elasticloadbalancing:AttachLoadBalancerToSubnets",
 		"elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
+		"elasticloadbalancing:CreateLoadBalancerListeners",
+		"elasticloadbalancing:CreateLoadBalancerPolicy",
 		"elasticloadbalancing:ConfigureHealthCheck",
 		"elasticloadbalancing:DeleteLoadBalancer",
 		"elasticloadbalancing:DeleteLoadBalancerListeners",
@@ -859,8 +861,6 @@ func AddCCMPermissions(p *Policy, partition string, cloudRoutes bool) {
 
 	p.clusterTaggedCreateAction.Insert(
 		"elasticloadbalancing:CreateLoadBalancer",
-		"elasticloadbalancing:CreateLoadBalancerPolicy",
-		"elasticloadbalancing:CreateLoadBalancerListeners",
 		"ec2:CreateSecurityGroup",
 		"ec2:CreateVolume",
 		"elasticloadbalancing:CreateListener",
