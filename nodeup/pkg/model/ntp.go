@@ -58,20 +58,17 @@ func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
 		ntpHost = ""
 	}
 
-	if b.Distribution.IsDebianFamily() {
-		// Ubuntu recommends systemd-timesyncd, but on ubuntu on GCE systemd-timesyncd is blocked (in favor of chrony)
-		if b.Distribution.IsUbuntu() && !b.RunningOnGCE() {
-			if ntpHost != "" {
-				c.AddTask(b.buildTimesyncdConf("/etc/systemd/timesyncd.conf", ntpHost))
-			}
-			c.AddTask((&nodetasks.Service{Name: "systemd-timesyncd"}).InitDefaults())
-		} else {
-			c.AddTask(&nodetasks.Package{Name: "chrony"})
-			if ntpHost != "" {
-				c.AddTask(b.buildChronydConf("/etc/chrony/chrony.conf", ntpHost))
-			}
-			c.AddTask((&nodetasks.Service{Name: "chrony"}).InitDefaults())
+	if !b.RunningOnGCE() && b.Distribution.IsUbuntu() && b.Distribution.Version() <= 20.04 {
+		if ntpHost != "" {
+			c.AddTask(b.buildTimesyncdConf("/etc/systemd/timesyncd.conf", ntpHost))
 		}
+		c.AddTask((&nodetasks.Service{Name: "systemd-timesyncd"}).InitDefaults())
+	} else if b.Distribution.IsDebianFamily() {
+		c.AddTask(&nodetasks.Package{Name: "chrony"})
+		if ntpHost != "" {
+			c.AddTask(b.buildChronydConf("/etc/chrony/chrony.conf", ntpHost))
+		}
+		c.AddTask((&nodetasks.Service{Name: "chrony"}).InitDefaults())
 	} else if b.Distribution.IsRHELFamily() {
 		c.AddTask(&nodetasks.Package{Name: "chrony"})
 		if ntpHost != "" {
@@ -87,7 +84,7 @@ func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 func (b *NTPBuilder) buildChronydConf(path string, host string) *nodetasks.File {
-	conf := `# Built by Kops - do NOT edit
+	conf := `# Built by kOps - do NOT edit
 
 pool ` + host + ` prefer iburst
 driftfile /var/lib/chrony/drift
