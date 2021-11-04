@@ -186,8 +186,6 @@
         "elasticloadbalancing:AttachLoadBalancerToSubnets",
         "elasticloadbalancing:ConfigureHealthCheck",
         "elasticloadbalancing:CreateListener",
-        "elasticloadbalancing:CreateLoadBalancerListeners",
-        "elasticloadbalancing:CreateLoadBalancerPolicy",
         "elasticloadbalancing:CreateRule",
         "elasticloadbalancing:CreateTargetGroup",
         "elasticloadbalancing:DeleteListener",
@@ -256,6 +254,8 @@
         "ec2:CreateVolume",
         "elasticloadbalancing:CreateListener",
         "elasticloadbalancing:CreateLoadBalancer",
+        "elasticloadbalancing:CreateLoadBalancerListeners",
+        "elasticloadbalancing:CreateLoadBalancerPolicy",
         "elasticloadbalancing:CreateTargetGroup"
       ],
       "Condition": {
