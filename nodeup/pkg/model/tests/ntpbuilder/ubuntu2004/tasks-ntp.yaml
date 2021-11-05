@@ -1,0 +1,14 @@
+contents: |
+  # Built by kOps - do NOT edit
+
+  [Time]
+  NTP=169.254.169.123
+mode: "0644"
+path: /etc/systemd/timesyncd.conf
+type: file
+---
+Name: systemd-timesyncd
+enabled: true
+manageState: true
+running: true
+smartRestart: true

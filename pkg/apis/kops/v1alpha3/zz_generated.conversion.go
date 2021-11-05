@@ -5533,6 +5533,7 @@ func Convert_kops_MixedInstancesPolicySpec_To_v1alpha3_MixedInstancesPolicySpec(
 
 func autoConvert_v1alpha3_NTPConfig_To_kops_NTPConfig(in *NTPConfig, out *kops.NTPConfig, s conversion.Scope) error {
 	out.Managed = in.Managed
+	out.Chrony = in.Chrony
 	return nil
 }
 
@@ -5543,6 +5544,7 @@ func Convert_v1alpha3_NTPConfig_To_kops_NTPConfig(in *NTPConfig, out *kops.NTPCo
 
 func autoConvert_kops_NTPConfig_To_v1alpha3_NTPConfig(in *kops.NTPConfig, out *NTPConfig, s conversion.Scope) error {
 	out.Managed = in.Managed
+	out.Chrony = in.Chrony
 	return nil
 }
 

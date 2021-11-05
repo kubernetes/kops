@@ -5156,6 +5156,10 @@ spec:
               ntp:
                 description: NTPConfig is the configuration for NTP.
                 properties:
+                  chrony:
+                    description: Chrony replaces timesyncd for Ubuntu 20.04 and older
+                      when set to true.
+                    type: boolean
                   managed:
                     description: Managed controls if the NTP configuration is managed
                       by kOps. The NTP configuration task is skipped if this is set

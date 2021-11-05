@@ -58,7 +58,7 @@ func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
 		ntpHost = ""
 	}
 
-	if !b.RunningOnGCE() && b.Distribution.IsUbuntu() && b.Distribution.Version() <= 20.04 {
+	if !b.chrony() && !b.RunningOnGCE() && b.Distribution.IsUbuntu() && b.Distribution.Version() <= 20.04 {
 		if ntpHost != "" {
 			c.AddTask(b.buildTimesyncdConf("/etc/systemd/timesyncd.conf", ntpHost))
 		}
@@ -103,7 +103,7 @@ rtcsync
 }
 
 func (b *NTPBuilder) buildTimesyncdConf(path string, host string) *nodetasks.File {
-	conf := `# Built by Kops - do NOT edit
+	conf := `# Built by kOps - do NOT edit
 
 [Time]
 NTP=` + host + `
@@ -122,4 +122,10 @@ func (b *NTPBuilder) managed() bool {
 	// Consider the NTP is managed when the NTP configuration
 	// is not specified (for backward compatibility).
 	return n == nil || n.Managed == nil || *n.Managed
+}
+
+// chrony determines if kops should use chrony instead of timesyncd for Ubuntu 20.04 and older
+func (b *NTPBuilder) chrony() bool {
+	n := b.Cluster.Spec.NTP
+	return n != nil && n.Chrony
 }

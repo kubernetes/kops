@@ -21,4 +21,7 @@ type NTPConfig struct {
 	// Managed controls if the NTP configuration is managed by kOps.
 	// The NTP configuration task is skipped if this is set to false.
 	Managed *bool `json:"managed,omitempty"`
+	// Chrony replaces timesyncd for Ubuntu 20.04 and older when set
+	// to true.
+	Chrony bool `json:"chrony,omitempty"`
 }

@@ -1,0 +1,21 @@
+contents: |
+  # Built by kOps - do NOT edit
+
+  pool 169.254.169.123 prefer iburst
+  driftfile /var/lib/chrony/drift
+  leapsectz right/UTC
+  logdir /var/log/chrony
+  makestep 1.0 3
+  maxupdateskew 100.0
+  rtcsync
+mode: "0644"
+path: /etc/chrony.conf
+type: file
+---
+Name: chrony
+---
+Name: chronyd
+enabled: true
+manageState: true
+running: true
+smartRestart: true
