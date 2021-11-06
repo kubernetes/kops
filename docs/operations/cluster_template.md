@@ -146,6 +146,27 @@ maxSize: {{ '{{ default "10" $node.max_size }}' }}
 minSize: {{ '{{ default "1" $node.min_size }}' }}
 ```
 
+Assigning entire arrays is also supported with Sprig's [toJson function](https://masterminds.github.io/sprig/defaults.html).
+
+```yaml
+# template
+spec:
+  kubernetesApiAccess: {{ '{{.allowedIPs | toJson }}' }}
+```
+
+```yaml
+# values
+allowedIPs:
+- 1.2.3.4/32
+- 4.3.2.1/32
+```
+
+```yaml
+# rendered
+spec:
+  kubernetesApiAccess: ["1.2.3.4/32","4.3.2.1/32"]
+```
+
 ### Formatting
 
 Formatting in golang templates is a pain! At the start or at the end of a statement can be infuriating to get right, so a `--format-yaml=true` *(defaults to false)* command line option has been added. This will first unmarshal the generated content *(performing a syntax verification)* and then marshal back the content removing all those nasty formatting issues, newlines etc.
