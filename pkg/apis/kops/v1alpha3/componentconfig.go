@@ -647,6 +647,8 @@ type KubeControllerManagerConfig struct {
 
 	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
+	// EnableLeaderMigration enables controller leader migration.
+	EnableLeaderMigration *bool `json:"enableLeaderMigration,omitempty" flag:"enable-leader-migration"`
 }
 
 // CloudControllerManagerConfig is the configuration of the cloud controller
@@ -674,6 +676,8 @@ type CloudControllerManagerConfig struct {
 	LeaderElection *LeaderElectionConfiguration `json:"leaderElection,omitempty"`
 	// UseServiceAccountCredentials controls whether we use individual service account credentials for each controller.
 	UseServiceAccountCredentials *bool `json:"useServiceAccountCredentials,omitempty" flag:"use-service-account-credentials"`
+	// EnableLeaderMigration enables controller leader migration.
+	EnableLeaderMigration *bool `json:"enableLeaderMigration,omitempty" flag:"enable-leader-migration"`
 }
 
 // KubeSchedulerConfig is the configuration for the kube-scheduler
