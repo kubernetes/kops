@@ -28,6 +28,7 @@ spec:
       - args:
         - --provider=aws
         - --events
+        - --source=ingress
         - --source=pod
         - --source=service
         - --compatibility=kops-dns-controller
