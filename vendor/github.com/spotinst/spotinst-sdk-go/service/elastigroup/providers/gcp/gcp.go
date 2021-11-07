@@ -370,10 +370,11 @@ type ScalingPolicy struct {
 
 // Strategy defines the strategy attributes of a Group.
 type Strategy struct {
-	DrainingTimeout       *int  `json:"drainingTimeout,omitempty"`
-	FallbackToOnDemand    *bool `json:"fallbackToOd,omitempty"`
-	PreemptiblePercentage *int  `json:"preemptiblePercentage,omitempty"`
-	OnDemandCount         *int  `json:"onDemandCount,omitempty"`
+	DrainingTimeout       *int    `json:"drainingTimeout,omitempty"`
+	FallbackToOnDemand    *bool   `json:"fallbackToOd,omitempty"`
+	PreemptiblePercentage *int    `json:"preemptiblePercentage,omitempty"`
+	OnDemandCount         *int    `json:"onDemandCount,omitempty"`
+	ProvisioningModel     *string `json:"provisioningModel,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -2160,6 +2161,13 @@ func (o *Strategy) SetPreemptiblePercentage(v *int) *Strategy {
 func (o *Strategy) SetOnDemandCount(v *int) *Strategy {
 	if o.OnDemandCount = v; o.OnDemandCount == nil {
 		o.nullFields = append(o.nullFields, "OnDemandCount")
+	}
+	return o
+}
+
+func (o *Strategy) SetProvisioningModel(v *string) *Strategy {
+	if o.ProvisioningModel = v; o.ProvisioningModel == nil {
+		o.nullFields = append(o.nullFields, "ProvisioningModel")
 	}
 	return o
 }
