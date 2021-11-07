@@ -1,24 +1,13 @@
 apiVersion: v1
-kind: Namespace
-metadata:
-  name: kopeio-networking-system
-  labels:
-    k8s-addon: operator.networking.addons.kope.io
----
-apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: kopeio-networking-agent
   namespace: kopeio-networking-system
-  labels:
-    k8s-addon: operator.networking.addons.kope.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  labels:
-    k8s-addon: operator.networking.addons.kope.io
-  name: kopeio:networking-agent
+  name: kopeio-networking-system:kopeio-networking-agent
 rules:
 - apiGroups:
   - ""
@@ -39,13 +28,11 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  labels:
-    k8s-addon: operator.networking.addons.kope.io
-  name: kopeio:networking-agent
+  name: kopeio-networking-system:kopeio-networking-agent
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: kopeio:networking-agent
+  name: kopeio-networking-system:kopeio-networking-agent
 subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: User
@@ -144,31 +131,21 @@ metadata:
   namespace: kopeio-networking-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
   creationTimestamp: null
   labels:
     k8s-app: kopeio-networking-operator
   name: kopeio-networking-operator
+  namespace: kopeio-networking-system
 rules:
 - apiGroups:
-  - addons.kope.io
+  - ""
   resources:
-  - networkings
+  - events
   verbs:
-  - get
-  - list
+  - create
   - patch
-  - update
-  - watch
-- apiGroups:
-  - addons.kope.io
-  resources:
-  - networkings/status
-  verbs:
-  - get
-  - patch
-  - update
 - apiGroups:
   - apps
   resources:
@@ -188,17 +165,72 @@ rules:
   - delete
   - patch
   - update
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    k8s-app: kopeio-networking-operator
+  name: kopeio-networking-system:kopeio-networking-operator
+rules:
+- apiGroups:
+  - addons.kope.io
+  resources:
+  - networkings
+  verbs:
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - addons.kope.io
+  resources:
+  - networkings/status
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    k8s-app: kopeio-networking-operator
+  name: kopeio-networking-operator
+  namespace: kopeio-networking-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kopeio-networking-operator
+subjects:
+- kind: ServiceAccount
+  name: kopeio-networking-operator
+  namespace: kopeio-networking-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
     k8s-app: kopeio-networking-operator
-  name: kopeio-networking-operator
+  name: kopeio-networking-system:kopeio-networking-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: kopeio-networking-operator
+  name: kopeio-networking-system:kopeio-networking-operator
 subjects:
 - kind: ServiceAccount
   name: kopeio-networking-operator
@@ -225,16 +257,13 @@ spec:
       - args:
         - --leader-elect=false
         - --rbac-mode=ignore
-        command:
-        - /manager
         image: justinsb/kopeio-networking-operator:latest
         name: manager
         resources:
           limits:
-            cpu: 100m
             memory: 30Mi
           requests:
-            cpu: 100m
+            cpu: 10m
             memory: 20Mi
       serviceAccountName: kopeio-networking-operator
       terminationGracePeriodSeconds: 10
