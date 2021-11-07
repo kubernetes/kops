@@ -623,7 +623,7 @@ func (tf *TemplateFunctions) ExternalDNSArgv() ([]string, error) {
 	}
 
 	argv = append(argv, "--events")
-	if fi.BoolValue(externalDNS.WatchIngress) {
+	if externalDNS.WatchIngress == nil || *externalDNS.WatchIngress {
 		argv = append(argv, "--source=ingress")
 	}
 	argv = append(argv, "--source=pod")

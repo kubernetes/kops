@@ -1109,8 +1109,9 @@ spec:
                       will use kubernetes-sigs/external-dns.
                     type: string
                   watchIngress:
-                    description: WatchIngress indicates you want the dns-controller
-                      to watch and create dns entries for ingress resources
+                    description: 'WatchIngress indicates you want the dns-controller
+                      to watch and create dns entries for ingress resources. Default:
+                      true if provider is ''external-dns'', false otherwise.'
                     type: boolean
                   watchNamespace:
                     description: WatchNamespace is namespace to watch, defaults to
