@@ -26,6 +26,8 @@ type Service interface {
 
 	ImportOceanGKECluster(ctx context.Context, input *ImportOceanGKEClusterInput) (*ImportOceanGKEClusterOutput, error)
 	ImportOceanGKELaunchSpec(ctx context.Context, input *ImportOceanGKELaunchSpecInput) (*ImportOceanGKELaunchSpecOutput, error)
+
+	CreateRoll(context.Context, *CreateRollInput) (*CreateRollOutput, error)
 }
 
 type ServiceOp struct {

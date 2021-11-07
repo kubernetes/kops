@@ -44,7 +44,6 @@ type Elastigroup struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	ID                       *string
 	Region                   *string
 	MinSize                  *int64
 	MaxSize                  *int64
@@ -68,7 +67,7 @@ type Elastigroup struct {
 	Subnets                  []*awstasks.Subnet
 	SecurityGroups           []*awstasks.SecurityGroup
 	Monitoring               *bool
-	AssociatePublicIP        *bool
+	AssociatePublicIPAddress *bool
 	Tenancy                  *string
 	RootVolumeOpts           *RootVolumeOpts
 	AutoScalerOpts           *AutoScalerOpts
@@ -164,26 +163,26 @@ func (e *Elastigroup) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	return deps
 }
 
-func (e *Elastigroup) find(svc spotinst.InstanceGroupService, name string) (*aws.Group, error) {
-	klog.V(4).Infof("Attempting to find Elastigroup: %q", name)
+func (e *Elastigroup) find(svc spotinst.InstanceGroupService) (*aws.Group, error) {
+	klog.V(4).Infof("Attempting to find Elastigroup: %q", fi.StringValue(e.Name))
 
 	groups, err := svc.List(context.Background())
 	if err != nil {
-		return nil, fmt.Errorf("spotinst: failed to find elastigroup %s: %v", name, err)
+		return nil, fmt.Errorf("spotinst: failed to find elastigroup %s: %v", fi.StringValue(e.Name), err)
 	}
 
 	var out *aws.Group
 	for _, group := range groups {
-		if group.Name() == name {
+		if group.Name() == fi.StringValue(e.Name) {
 			out = group.Obj().(*aws.Group)
 			break
 		}
 	}
 	if out == nil {
-		return nil, fmt.Errorf("spotinst: failed to find elastigroup %q", name)
+		return nil, fmt.Errorf("spotinst: failed to find elastigroup %q", fi.StringValue(e.Name))
 	}
 
-	klog.V(4).Infof("Elastigroup/%s: %s", name, stringutil.Stringify(out))
+	klog.V(4).Infof("Elastigroup/%s: %s", fi.StringValue(e.Name), stringutil.Stringify(out))
 	return out, nil
 }
 
@@ -192,13 +191,12 @@ var _ fi.HasCheckExisting = &Elastigroup{}
 func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
-	group, err := e.find(cloud.Spotinst().Elastigroup(), *e.Name)
+	group, err := e.find(cloud.Spotinst().Elastigroup())
 	if err != nil {
 		return nil, err
 	}
 
 	actual := &Elastigroup{}
-	actual.ID = group.ID
 	actual.Name = group.Name
 	actual.Region = group.Region
 
@@ -351,7 +349,7 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 				}
 			}
 
-			actual.AssociatePublicIP = fi.Bool(associatePublicIP)
+			actual.AssociatePublicIPAddress = fi.Bool(associatePublicIP)
 		}
 
 		// Load balancers.
@@ -479,7 +477,7 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 
 func (e *Elastigroup) CheckExisting(c *fi.Context) bool {
 	cloud := c.Cloud.(awsup.AWSCloud)
-	group, err := e.find(cloud.Spotinst().Elastigroup(), *e.Name)
+	group, err := e.find(cloud.Spotinst().Elastigroup())
 	return err == nil && group != nil
 }
 
@@ -643,12 +641,12 @@ func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 
 			// Public IP.
 			{
-				if e.AssociatePublicIP != nil {
+				if e.AssociatePublicIPAddress != nil {
 					iface := &aws.NetworkInterface{
 						Description:              fi.String("eth0"),
 						DeviceIndex:              fi.Int(0),
 						DeleteOnTermination:      fi.Bool(true),
-						AssociatePublicIPAddress: e.AssociatePublicIP,
+						AssociatePublicIPAddress: e.AssociatePublicIPAddress,
 					}
 
 					group.Compute.LaunchSpecification.SetNetworkInterfaces([]*aws.NetworkInterface{iface})
@@ -766,9 +764,8 @@ readyLoop:
 		}
 
 		// Create the Elastigroup.
-		id, err := cloud.Spotinst().Elastigroup().Create(context.Background(), eg)
+		_, err = cloud.Spotinst().Elastigroup().Create(context.Background(), eg)
 		if err == nil {
-			e.ID = fi.String(id)
 			break
 		}
 
@@ -795,7 +792,7 @@ readyLoop:
 func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) error {
 	klog.V(2).Infof("Updating Elastigroup %q", *e.Name)
 
-	actual, err := e.find(cloud.Spotinst().Elastigroup(), *e.Name)
+	actual, err := e.find(cloud.Spotinst().Elastigroup())
 	if err != nil {
 		klog.Errorf("Unable to resolve Elastigroup %q, error: %v", *e.Name, err)
 		return err
@@ -997,7 +994,7 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 
 			// Network interfaces.
 			{
-				if changes.AssociatePublicIP != nil {
+				if changes.AssociatePublicIPAddress != nil {
 					if group.Compute == nil {
 						group.Compute = new(aws.Compute)
 					}
@@ -1009,11 +1006,11 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 						Description:              fi.String("eth0"),
 						DeviceIndex:              fi.Int(0),
 						DeleteOnTermination:      fi.Bool(true),
-						AssociatePublicIPAddress: changes.AssociatePublicIP,
+						AssociatePublicIPAddress: changes.AssociatePublicIPAddress,
 					}
 
 					group.Compute.LaunchSpecification.SetNetworkInterfaces([]*aws.NetworkInterface{iface})
-					changes.AssociatePublicIP = nil
+					changes.AssociatePublicIPAddress = nil
 					changed = true
 				}
 			}
@@ -1327,15 +1324,15 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 
 	empty := &Elastigroup{}
 	if !reflect.DeepEqual(empty, changes) {
-		klog.Warningf("Not all changes applied to Elastigroup %q: %v", *group.ID, changes)
+		klog.Warningf("Not all changes applied to Elastigroup %q: %v", *e.Name, changes)
 	}
 
 	if !changed {
-		klog.V(2).Infof("No changes detected in Elastigroup %q", *group.ID)
+		klog.V(2).Infof("No changes detected in Elastigroup %q", *e.Name)
 		return nil
 	}
 
-	klog.V(2).Infof("Updating Elastigroup %q (config: %s)", *group.ID, stringutil.Stringify(group))
+	klog.V(2).Infof("Updating Elastigroup %q (config: %s)", *e.Name, stringutil.Stringify(group))
 
 	// Wrap the raw object as an Elastigroup.
 	eg, err := spotinst.NewElastigroup(cloud.ProviderID(), group)
@@ -1572,12 +1569,12 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 	}
 
 	// Public IP.
-	if e.AssociatePublicIP != nil {
+	if e.AssociatePublicIPAddress != nil {
 		tf.NetworkInterfaces = append(tf.NetworkInterfaces, &terraformElastigroupNetworkInterface{
 			Description:              fi.String("eth0"),
 			DeviceIndex:              fi.Int(0),
 			DeleteOnTermination:      fi.Bool(true),
-			AssociatePublicIPAddress: e.AssociatePublicIP,
+			AssociatePublicIPAddress: e.AssociatePublicIPAddress,
 		})
 	}
 
