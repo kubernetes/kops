@@ -70,6 +70,7 @@ Make sure to set up [a dedicated IAM user](./aws.md#setup-iam-user), [DNS record
 |---|---|
 | `+Spotinst` | Enables the use of the Spot integration. |
 | `+SpotinstOcean` | Enables the use of the Spot Ocean integration. |
+| `+SpotinstOceanTemplate` - Enables the use of Spot Ocean object as a template for Virtual Node Groups. |
 | `+SpotinstHybrid` | Toggles between hybrid and full instance group implementations. Allows you to gradually integrate with Spot Ocean by continuing to use instance groups through AWS Auto Scaling groups, except for specific instance groups labeled with a predefined [metadata label](#metadata-labels). |
 | `-SpotinstController` | Toggles the installation of the Spot controller addon off. Please note that the feature flag must be prefixed with a minus (`-`) sign to set its value to `false`, which results in disabling the controller. |
 
@@ -79,7 +80,7 @@ You can add an Ocean instance group to new or existing clusters. To create a new
 
 ```bash
 # configure the feature flags
-export KOPS_FEATURE_FLAGS="Spotinst,SpotinstOcean"
+export KOPS_FEATURE_FLAGS="Spotinst,SpotinstOcean,SpotinstOceanTemplate"
 
 # create the cluster
 kops create cluster --zones=us-west-2a example
@@ -124,7 +125,7 @@ To create a new instance group, run:
 
 ```bash
 # configure the feature flags
-export KOPS_FEATURE_FLAGS="Spotinst,SpotinstOcean"
+export KOPS_FEATURE_FLAGS="Spotinst,SpotinstOcean,SpotinstOceanTemplate"
 
 # create the instance group
 kops create instancegroup --role=node --name=example
