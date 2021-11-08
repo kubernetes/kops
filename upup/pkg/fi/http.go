@@ -89,7 +89,7 @@ func downloadURLAlways(url string, destPath string, dirMode os.FileMode) error {
 				KeepAlive: 30 * time.Second,
 			}).DialContext,
 			TLSHandshakeTimeout:   10 * time.Second,
-			ResponseHeaderTimeout: 10 * time.Second,
+			ResponseHeaderTimeout: 30 * time.Second,
 			IdleConnTimeout:       30 * time.Second,
 		},
 	}
