@@ -19,6 +19,7 @@ package instancegroups
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 	"testing"
@@ -1349,6 +1350,34 @@ func TestRollingUpdateMaxSurgeGreaterThanNeedUpdate(t *testing.T) {
 
 	assertGroupInstanceCount(t, cloud, "node-1", 1)
 	assert.Equal(t, 2, countDetach.Count)
+}
+
+type failDetachAutoscaling struct {
+	autoscalingiface.AutoScalingAPI
+}
+
+func (m *failDetachAutoscaling) DetachInstances(input *autoscaling.DetachInstancesInput) (*autoscaling.DetachInstancesOutput, error) {
+	return nil, fmt.Errorf("testing error")
+}
+
+func TestRollingUpdateDetachFails(t *testing.T) {
+
+	c, cloud := getTestSetup()
+
+	cloud.MockAutoscaling = &failDetachAutoscaling{AutoScalingAPI: cloud.MockAutoscaling}
+	cloud.MockEC2 = &ec2IgnoreTags{EC2API: cloud.MockEC2}
+
+	ten := intstr.FromInt(10)
+	c.Cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
+		MaxSurge: &ten,
+	}
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 3, 2)
+	err := c.RollingUpdate(groups, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "node-1", 1)
 }
 
 // Request validate (1)            -->
