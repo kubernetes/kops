@@ -151,13 +151,16 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(group *cloudinstances.
 	if maxSurge > 0 && !c.CloudOnly {
 		skippedNodes := 0
 		for numSurge := 1; numSurge <= maxSurge; numSurge++ {
-			u := update[len(update)-numSurge+skippedNodes]
+			u := update[len(update)-numSurge-skippedNodes]
 			if u.Status != cloudinstances.CloudInstanceStatusDetached {
 				if err := c.detachInstance(u); err != nil {
 					// If detaching a node fails, we simply proceed to the next one instead of
 					// bubbling up the error.
 					skippedNodes++
 					numSurge--
+					if maxSurge > len(update)-skippedNodes {
+						maxSurge = len(update) - skippedNodes
+					}
 				}
 
 				// If noneReady, wait until after one node is detached and its replacement validates
