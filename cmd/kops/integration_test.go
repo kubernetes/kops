@@ -29,7 +29,6 @@ import (
 	"io"
 	"os"
 	"path"
-	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
@@ -72,9 +71,6 @@ type integrationTest struct {
 	sshKey                           bool
 	bastionUserData                  bool
 	ciliumEtcd                       bool
-
-	// expectAllFiles is true if all the files should be in the output dir
-	expectAllFiles bool
 
 	// nth is true if we should check for files created by nth queue processor add on
 	nth bool
@@ -160,12 +156,6 @@ func (i *integrationTest) withManagedFiles(files ...string) *integrationTest {
 		i.expectTerraformFilenames = append(i.expectTerraformFilenames,
 			"aws_s3_bucket_object_"+file+"_content")
 	}
-	return i
-}
-
-// withExpectAllFiles indicates all the generated files should be present
-func (i *integrationTest) withExpectAllFiles() *integrationTest {
-	i.expectAllFiles = true
 	return i
 }
 
@@ -719,7 +709,6 @@ func TestAddonOperators(t *testing.T) {
 	defer unsetFeatureFlags()
 
 	newIntegrationTest("addons.example.com", "addon_operators").
-		withExpectAllFiles().
 		runTestTerraformAWS(t)
 }
 
@@ -761,25 +750,6 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 		_, err := RunUpdateCluster(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running update cluster %q: %v", i.clusterName, err)
-		}
-	}
-
-	if i.expectAllFiles {
-		expectedDataFilenames = []string{}
-
-		expectedDataPath := filepath.Join(i.srcDir, "data")
-		if os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != "" {
-			// Generate from the actual data
-			expectedDataPath = filepath.Join(h.TempDir, "out", "data")
-		}
-
-		files, err := ioutil.ReadDir(expectedDataPath)
-		if err != nil {
-			t.Errorf("failed to read data dir %q: %v", expectedDataPath, err)
-		} else {
-			for _, file := range files {
-				expectedDataFilenames = append(expectedDataFilenames, file.Name())
-			}
 		}
 	}
 
