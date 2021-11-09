@@ -154,12 +154,12 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 			"",
 		)
 
-		ingressHostnameSuffix := "nip.io"
-		if fi.StringValue(lb.IngressHostnameSuffix) != "" {
-			ingressHostnameSuffix = fi.StringValue(lb.IngressHostnameSuffix)
-		}
-
 		if lb := osc.Loadbalancer; lb != nil {
+			ingressHostnameSuffix := "nip.io"
+			if fi.StringValue(lb.IngressHostnameSuffix) != "" {
+				ingressHostnameSuffix = fi.StringValue(lb.IngressHostnameSuffix)
+			}
+
 			lines = append(lines,
 				"[LoadBalancer]",
 				fmt.Sprintf("floating-network-id=%s", fi.StringValue(lb.FloatingNetworkID)),
