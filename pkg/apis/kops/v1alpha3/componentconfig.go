@@ -760,6 +760,7 @@ type OpenstackLoadbalancerConfig struct {
 	SubnetID              *string `json:"subnetID,omitempty"`
 	ManageSecGroups       *bool   `json:"manageSecurityGroups,omitempty"`
 	EnableIngressHostname *bool   `json:"enableIngressHostname,omitempty"`
+	IngressHostnameSuffix *string `json:"ingressHostnameSuffix,omitempty"`
 }
 
 type OpenstackBlockStorageConfig struct {
