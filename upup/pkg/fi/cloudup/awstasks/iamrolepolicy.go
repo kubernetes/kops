@@ -22,6 +22,7 @@ import (
 	"hash/fnv"
 	"net/url"
 	"sort"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -296,9 +297,9 @@ func (e *IAMRolePolicy) policyDocumentString() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	policySize := len(policy)
+	policySize := len(strings.Join(strings.Fields(policy), ""))
 	if policySize > 10240 {
-		return "", fmt.Errorf("policy size was %d. Policy cannot exceed 10240 bytes.", policySize)
+		return "", fmt.Errorf("policy size was %d. Policy cannot exceed 10240 bytes", policySize)
 	}
 	return policy, err
 }
