@@ -126,12 +126,12 @@ cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   awsEBSCSIDriver:
     enabled: true
-    version: v1.2.0
+    version: v1.4.0
   manageStorageClasses: true
 containerRuntime: containerd
 containerd:
   logLevel: info
-  version: 1.4.9
+  version: 1.4.11
 docker:
   skipInstall: true
 encryptionConfig: null
@@ -157,7 +157,6 @@ kubeAPIServer:
   - NamespaceLifecycle
   - LimitRanger
   - ServiceAccount
-  - PersistentVolumeLabel
   - DefaultStorageClass
   - DefaultTolerationSeconds
   - MutatingAdmissionWebhook
@@ -259,7 +258,7 @@ CloudProvider: aws
 ConfigBase: memfs://tests/addons.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: hw+ql9uRMV9XgdRxLh6p1KPOvd6ge4TD32G3gW2wxyw=
+NodeupConfigHash: TteUNIJvQif5+y1f5NmnG0a6cQ2v8vcgl6rDW2ajPnI=
 
 __EOF_KUBE_ENV
 

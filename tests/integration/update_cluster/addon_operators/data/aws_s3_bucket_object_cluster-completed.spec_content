@@ -12,7 +12,7 @@ spec:
   cloudConfig:
     awsEBSCSIDriver:
       enabled: true
-      version: v1.2.0
+      version: v1.4.0
     manageStorageClasses: true
   cloudProvider: aws
   clusterDNSDomain: cluster.local
@@ -21,7 +21,7 @@ spec:
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.9
+    version: 1.4.11
   dnsZone: Z1AFAKE1ZON3YO
   docker:
     skipInstall: true
@@ -29,28 +29,22 @@ spec:
   - backups:
       backupStore: memfs://tests/addons.example.com/backups/etcd/main
     cpuRequest: 200m
-    enableEtcdTLS: true
-    enableTLSAuth: true
     etcdMembers:
     - encryptedVolume: true
       instanceGroup: master-us-test-1a
       name: a
     memoryRequest: 100Mi
     name: main
-    provider: Manager
     version: 3.5.0
   - backups:
       backupStore: memfs://tests/addons.example.com/backups/etcd/events
     cpuRequest: 100m
-    enableEtcdTLS: true
-    enableTLSAuth: true
     etcdMembers:
     - encryptedVolume: true
       instanceGroup: master-us-test-1a
       name: a
     memoryRequest: 100Mi
     name: events
-    provider: Manager
     version: 3.5.0
   externalDns:
     provider: dns-controller
@@ -71,7 +65,6 @@ spec:
     - NamespaceLifecycle
     - LimitRanger
     - ServiceAccount
-    - PersistentVolumeLabel
     - DefaultStorageClass
     - DefaultTolerationSeconds
     - MutatingAdmissionWebhook

@@ -6,10 +6,10 @@
       ],
       "Effect": "Allow",
       "Resource": [
-        "arn:aws:s3:::placeholder-read-bucket/tests/addons.example.com/addons/*",
-        "arn:aws:s3:::placeholder-read-bucket/tests/addons.example.com/cluster-completed.spec",
-        "arn:aws:s3:::placeholder-read-bucket/tests/addons.example.com/igconfig/node/*",
-        "arn:aws:s3:::placeholder-read-bucket/tests/addons.example.com/secrets/dockerconfig"
+        "arn:aws-test:s3:::placeholder-read-bucket/tests/addons.example.com/addons/*",
+        "arn:aws-test:s3:::placeholder-read-bucket/tests/addons.example.com/cluster-completed.spec",
+        "arn:aws-test:s3:::placeholder-read-bucket/tests/addons.example.com/igconfig/node/*",
+        "arn:aws-test:s3:::placeholder-read-bucket/tests/addons.example.com/secrets/dockerconfig"
       ]
     },
     {
@@ -21,12 +21,13 @@
       ],
       "Effect": "Allow",
       "Resource": [
-        "arn:aws:s3:::placeholder-read-bucket"
+        "arn:aws-test:s3:::placeholder-read-bucket"
       ]
     },
     {
       "Action": [
         "autoscaling:DescribeAutoScalingInstances",
+        "ec2:DescribeInstanceTypes",
         "ec2:DescribeInstances",
         "ecr:BatchCheckLayerAvailability",
         "ecr:BatchGetImage",
