@@ -759,7 +759,7 @@ func (b *PolicyBuilder) addNodeupPermissions(p *Policy, enableHookSupport bool) 
 		"ec2:DescribeInstanceTypes",
 	)
 
-	if b.Cluster.Spec.IsIPv6Only() {
+	if b.Cluster.Spec.IsKopsControllerIPAM() {
 		p.unconditionalAction.Insert(
 			"ec2:AssignIpv6Addresses",
 		)

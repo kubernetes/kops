@@ -28,7 +28,7 @@ type PrefixBuilder struct {
 var _ fi.ModelBuilder = &PrefixBuilder{}
 
 func (b *PrefixBuilder) Build(c *fi.ModelBuilderContext) error {
-	if !b.Cluster.Spec.IsIPv6Only() {
+	if !b.Cluster.Spec.IsKopsControllerIPAM() {
 		return nil
 	}
 	c.AddTask(&nodetasks.Prefix{
