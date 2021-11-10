@@ -121,13 +121,13 @@ rules:
   # ----------------------------------------------------------------------------
 - apiGroups: ["sparkoperator.k8s.io"]
   resources: ["sparkapplications", "scheduledsparkapplications"]
-  verbs: ["get", "list", "create"]
+  verbs: ["get", "list", "patch", "update", "create", "delete"]
 - apiGroups: ["wave.spot.io"]
   resources: ["sparkapplications", "wavecomponents", "waveenvironments"]
   verbs: ["get", "list"]
 - apiGroups: ["bigdata.spot.io"]
   resources: ["bigdataenvironments"]
-  verbs: ["get", "list", "create"]
+  verbs: ["get", "list", "patch", "update", "create", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -190,7 +190,7 @@ spec:
       containers:
       - name: spotinst-kubernetes-cluster-controller
         imagePullPolicy: Always
-        image: gcr.io/spotinst-artifacts/kubernetes-cluster-controller:1.0.78
+        image: gcr.io/spotinst-artifacts/kubernetes-cluster-controller:1.0.79
         livenessProbe:
           httpGet:
             path: /healthcheck
@@ -262,6 +262,12 @@ spec:
             configMapKeyRef:
               name: spotinst-kubernetes-cluster-controller-config
               key: base-url
+              optional: true
+        - name: USER_ENV_CERTIFICATES
+          valueFrom:
+            secretKeyRef:
+              name: spotinst-kubernetes-cluster-controller-ca-bundle
+              key: userEnvCertificates.pem
               optional: true
         - name: POD_ID
           valueFrom:
