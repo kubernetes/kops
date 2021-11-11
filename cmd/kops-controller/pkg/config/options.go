@@ -64,8 +64,11 @@ type ServerProviderOptions struct {
 
 // GossipOptions configures our support for gossip DNS (i.e. k8s.local)
 type GossipOptions struct {
-	// HostnameInternalAPIServer is the hostname for the internal apiserver.
-	HostnameInternalAPIServer string `json:"hostnameInternalAPIServer"`
+	// RoleControlPlaneHostnames lists the DNS hostnames we should populate for the (full) control-plane nodes.
+	RoleControlPlaneHostnames []string `json:"roleControlPlaneHostnames"`
+
+	// RoleAPIServerHostnames lists the DNS hostnames we should populate for apiserver-only nodes.
+	RoleAPIServerHostnames []string `json:"roleAPIServerHostnames"`
 
 	// InternalAddressFamilies holds the families of the internal addresses we should publish.
 	InternalAddressFamilies []ipaddr.Family `json:"internalAddressFamilies"`

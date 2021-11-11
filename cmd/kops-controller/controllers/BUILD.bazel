@@ -13,6 +13,8 @@ go_library(
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/registry:go_default_library",
+        "//pkg/apis/kops/util:go_default_library",
+        "//pkg/ipaddr:go_default_library",
         "//pkg/kopscodecs:go_default_library",
         "//pkg/nodeidentity:go_default_library",
         "//pkg/nodelabels:go_default_library",
@@ -34,7 +36,9 @@ go_library(
         "//vendor/k8s.io/client-go/kubernetes/typed/core/v1:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/builder:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/client:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/event:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/manager:go_default_library",
     ],
 )

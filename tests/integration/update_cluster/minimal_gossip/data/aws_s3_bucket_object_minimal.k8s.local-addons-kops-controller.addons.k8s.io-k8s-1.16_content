@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   config.yaml: |
-    {"cloud":"aws","configBase":"memfs://clusters.example.com/minimal.k8s.local","server":{"Listen":":3988","provider":{"aws":{"nodesRoles":["nodes.minimal.k8s.local"],"Region":"us-test-1"}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy"]},"gossip":{"hostnameInternalAPIServer":"api.internal.minimal.k8s.local","internalAddressFamilies":["ipv4"]}}
+    {"cloud":"aws","configBase":"memfs://clusters.example.com/minimal.k8s.local","server":{"Listen":":3988","provider":{"aws":{"nodesRoles":["nodes.minimal.k8s.local"],"Region":"us-test-1"}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy"]},"gossip":{"roleControlPlaneHostnames":["api.internal.minimal.k8s.local","main.etcd.minimal.k8s.local","events.etcd.minimal.k8s.local","kops-controller.internal.minimal.k8s.local"],"roleAPIServerHostnames":null,"internalAddressFamilies":["ipv4"]}}
 kind: ConfigMap
 metadata:
   creationTimestamp: null

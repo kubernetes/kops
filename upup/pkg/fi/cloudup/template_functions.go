@@ -592,9 +592,26 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 	}
 
 	if dns.IsGossipHostname(cluster.Spec.MasterInternalName) {
+		// apiserver records
 		config.Gossip = &kopscontrollerconfig.GossipOptions{
-			HostnameInternalAPIServer: cluster.Spec.MasterInternalName,
+			RoleControlPlaneHostnames: []string{
+				cluster.Spec.MasterInternalName,
+			},
 		}
+		if featureflag.APIServerNodes.Enabled() {
+			config.Gossip.RoleAPIServerHostnames = append(config.Gossip.RoleAPIServerHostnames, cluster.Spec.MasterInternalName)
+		}
+
+		// etcd records
+		domain := cluster.Name
+		for i := range cluster.Spec.EtcdClusters {
+			etcdCluster := &cluster.Spec.EtcdClusters[i]
+			config.Gossip.RoleControlPlaneHostnames = append(config.Gossip.RoleControlPlaneHostnames, etcdCluster.Name+".etcd."+domain)
+		}
+
+		// kops-controller records
+		config.Gossip.RoleControlPlaneHostnames = append(config.Gossip.RoleControlPlaneHostnames, "kops-controller.internal."+domain)
+
 		if cluster.Spec.IsIPv6Only() {
 			config.Gossip.InternalAddressFamilies = []ipaddr.Family{ipaddr.FamilyIPV6}
 		} else {

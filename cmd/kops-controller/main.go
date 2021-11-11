@@ -253,7 +253,7 @@ func addGossipController(mgr manager.Manager, opt *config.Options) error {
 		return nil
 	}
 
-	if opt.Gossip.HostnameInternalAPIServer == "" {
+	if len(opt.Gossip.RoleControlPlaneHostnames) == 0 && len(opt.Gossip.RoleAPIServerHostnames) == 0 {
 		return nil
 	}
 
@@ -262,7 +262,7 @@ func addGossipController(mgr manager.Manager, opt *config.Options) error {
 		Name:      "coredns",
 	}
 
-	controller, err := controllers.NewHostsReconciler(mgr, configMapID, opt.Gossip.HostnameInternalAPIServer, opt.Gossip.InternalAddressFamilies)
+	controller, err := controllers.NewHostsReconciler(mgr, configMapID, opt.Gossip.RoleControlPlaneHostnames, opt.Gossip.RoleAPIServerHostnames, opt.Gossip.InternalAddressFamilies)
 	if err != nil {
 		return err
 	}
