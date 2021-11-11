@@ -124,7 +124,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 
 	// We now double check that the instance is indeed managed by the MIG
 	// this can't be spoofed without GCE API access
-	migMember, err := i.getManagedInstance(mig, instance.Id)
+	migMember, err := i.getManagedInstance(ctx, mig, instance.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -179,29 +179,29 @@ func (i *nodeIdentifier) getMIG(zone string, migName string) (*compute.InstanceG
 }
 
 // getMIGMember queries GCE for the instance from the MIG
-func (i *nodeIdentifier) getManagedInstance(mig *compute.InstanceGroupManager, instanceID uint64) (*compute.ManagedInstance, error) {
+func (i *nodeIdentifier) getManagedInstance(ctx context.Context, mig *compute.InstanceGroupManager, instanceID uint64) (*compute.ManagedInstance, error) {
+	var matches []*compute.ManagedInstance
+
 	filter := "id=" + strconv.FormatUint(instanceID, 10)
 	zone := lastComponent(mig.Zone)
-	instances, err := i.computeService.InstanceGroupManagers.ListManagedInstances(i.project, zone, mig.Name).Filter(filter).Do()
-	if err != nil {
+	if err := i.computeService.InstanceGroupManagers.ListManagedInstances(i.project, zone, mig.Name).Filter(filter).Pages(ctx, func(page *compute.InstanceGroupManagersListManagedInstancesResponse) error {
+		// Post-filter... filters aren't implemented (b/27605549)
+		for _, instance := range page.ManagedInstances {
+			if instance.Id != instanceID {
+				continue
+			}
+			matches = append(matches, instance)
+		}
+		return nil
+	}); err != nil {
 		return nil, fmt.Errorf("error fetching GCE managed instance group members for %q: %v", mig.Name, err)
 	}
 
-	// Post-filter... seeing some odd results
-	var matches []*compute.ManagedInstance
-	for _, instance := range instances.ManagedInstances {
-		if instance.Id != instanceID {
-			// Should be impossible - shows that filters are not working
-			klog.Warningf("found instances with mismatched id %v", instance.Id)
-			continue
-		}
-		matches = append(matches, instance)
-	}
 	if len(matches) == 0 {
 		return nil, fmt.Errorf("instance %v not managed by mig %s", instanceID, mig.Name)
 	}
 	if len(matches) > 1 {
-		// Should be impossible - shows that filters are not working
+		// Should be impossible - shows that filters / post-filters are not working
 		return nil, fmt.Errorf("found multiple instances with id %v managed by mig %s", instanceID, mig.Name)
 	}
 
