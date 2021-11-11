@@ -60,7 +60,11 @@ func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) m
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
-		if featureflag.APIServerNodes.Enabled() {
+		// Note: featureflag is not available here - we're in kops-controller.
+		// We keep the featureflag as a placeholder to change the logic;
+		// when we drop the featureflag we should just always include the label, even for
+		// full control-plane nodes.
+		if isAPIServer || featureflag.APIServerNodes.Enabled() {
 			nodeLabels[RoleLabelAPIServer16] = ""
 		}
 		nodeLabels[RoleLabelName15] = RoleAPIServerLabelValue15
