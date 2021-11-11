@@ -134,6 +134,10 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
 				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleMaster))
 
+			case kops.InstanceGroupRoleAPIServer:
+				// We need to figure out what to do here ... on AWS we map both to the same security groups
+				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleMaster))
+
 			case kops.InstanceGroupRoleNode:
 				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleNode))
 			}

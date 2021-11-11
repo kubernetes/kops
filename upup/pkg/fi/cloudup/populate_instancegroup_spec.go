@@ -193,7 +193,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 	case kops.CloudProviderGCE:
 		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleMaster:
+		case kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleAPIServer:
 			return defaultMasterMachineTypeGCE, nil
 
 		case kops.InstanceGroupRoleNode:

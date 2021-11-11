@@ -187,8 +187,14 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 		allErrs = append(allErrs, ValidateMasterInstanceGroup(g, cluster)...)
 	}
 
-	if g.Spec.Role == kops.InstanceGroupRoleAPIServer && kops.CloudProviderID(cluster.Spec.CloudProvider) != kops.CloudProviderAWS {
-		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "Apiserver role only supported on AWS"))
+	if g.Spec.Role == kops.InstanceGroupRoleAPIServer {
+		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+		case kops.CloudProviderAWS, kops.CloudProviderGCE:
+			// Allowed
+
+		default:
+			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "Apiserver role only supported on AWS and GCE"))
+		}
 	}
 
 	// Check that instance groups are defined in subnets that are defined in the cluster
