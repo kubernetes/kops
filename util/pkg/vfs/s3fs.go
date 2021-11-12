@@ -21,7 +21,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -527,7 +526,7 @@ type terraformS3File struct {
 }
 
 func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string, data io.Reader, acl ACL) error {
-	bytes, err := ioutil.ReadAll(data)
+	bytes, err := io.ReadAll(data)
 	if err != nil {
 		return fmt.Errorf("reading data: %v", err)
 	}

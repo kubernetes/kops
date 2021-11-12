@@ -18,14 +18,13 @@ package vfs
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
 )
 
 func TestCreateFile(t *testing.T) {
-	TempDir, err := ioutil.TempDir("", "test")
+	TempDir, err := os.MkdirTemp("", "test")
 	if err != nil {
 		t.Fatalf("error creating temp dir: %v", err)
 	}
@@ -71,7 +70,7 @@ func TestCreateFile(t *testing.T) {
 }
 
 func TestWriteTo(t *testing.T) {
-	TempDir, err := ioutil.TempDir("", "test")
+	TempDir, err := os.MkdirTemp("", "test")
 	if err != nil {
 		t.Fatalf("error creating temp dir: %v", err)
 	}

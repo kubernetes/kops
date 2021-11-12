@@ -17,7 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
-	"io/ioutil"
+	"os"
 	"path"
 	"testing"
 
@@ -86,7 +86,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 	basedir := path.Join("tests/bootstrapchannelbuilder/", key)
 
 	clusterYamlPath := path.Join(basedir, "cluster.yaml")
-	clusterYaml, err := ioutil.ReadFile(clusterYamlPath)
+	clusterYaml, err := os.ReadFile(clusterYamlPath)
 	if err != nil {
 		t.Fatalf("error reading cluster yaml file %q: %v", clusterYamlPath, err)
 	}

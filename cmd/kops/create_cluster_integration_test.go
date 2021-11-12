@@ -19,7 +19,7 @@ package main
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 	"testing"
@@ -179,7 +179,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 	factory := util.NewFactory(factoryOptions)
 
 	{
-		optionsBytes, err := ioutil.ReadFile(path.Join(srcDir, optionsYAML))
+		optionsBytes, err := os.ReadFile(path.Join(srcDir, optionsYAML))
 		if err != nil {
 			t.Fatalf("error reading options file: %v", err)
 		}
@@ -197,7 +197,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 
 		// Use the public key we produced
 		{
-			publicKey, err := ioutil.ReadFile(publicKeyPath)
+			publicKey, err := os.ReadFile(publicKeyPath)
 			if err != nil {
 				t.Fatalf("error reading public key %q: %v", publicKeyPath, err)
 			}

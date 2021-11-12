@@ -19,7 +19,7 @@ package vfs
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -228,7 +228,7 @@ func (c *VFSContext) readHTTPLocation(httpURL string, httpHeaders map[string]str
 		if err != nil {
 			return false, fmt.Errorf("error fetching %q: %v", httpURL, err)
 		}
-		body, err = ioutil.ReadAll(response.Body)
+		body, err = io.ReadAll(response.Body)
 		if err != nil {
 			return false, fmt.Errorf("error reading response for %q: %v", httpURL, err)
 		}

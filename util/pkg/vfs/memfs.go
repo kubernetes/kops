@@ -19,7 +19,6 @@ package vfs
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -103,7 +102,7 @@ func (p *MemFSPath) Join(relativePath ...string) Path {
 }
 
 func (p *MemFSPath) WriteFile(r io.ReadSeeker, acl ACL) error {
-	data, err := ioutil.ReadAll(r)
+	data, err := io.ReadAll(r)
 	if err != nil {
 		return fmt.Errorf("error reading data: %v", err)
 	}
@@ -213,7 +212,7 @@ type terraformMemFSFile struct {
 }
 
 func (p *MemFSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name string, data io.Reader, acl ACL) error {
-	bytes, err := ioutil.ReadAll(data)
+	bytes, err := io.ReadAll(data)
 	if err != nil {
 		return fmt.Errorf("reading data: %v", err)
 	}

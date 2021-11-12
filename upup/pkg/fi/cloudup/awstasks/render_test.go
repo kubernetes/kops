@@ -17,7 +17,6 @@ limitations under the License.
 package awstasks
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"reflect"
@@ -36,7 +35,7 @@ type renderTest struct {
 }
 
 func doRenderTests(t *testing.T, method string, cases []*renderTest) {
-	outdir, err := ioutil.TempDir("", "kops-render-")
+	outdir, err := os.MkdirTemp("", "kops-render-")
 	if err != nil {
 		t.Errorf("failed to create local render directory: %s", err)
 		t.FailNow()
@@ -88,7 +87,7 @@ func doRenderTests(t *testing.T, method string, cases []*renderTest) {
 
 			// @step: check the render is as expected
 			if c.Expected != "" {
-				content, err := ioutil.ReadFile(path.Join(outdir, filename))
+				content, err := os.ReadFile(path.Join(outdir, filename))
 				if err != nil {
 					return err
 				}
