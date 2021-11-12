@@ -325,3 +325,18 @@ func TestContainerdVersionsHashesAmd64(t *testing.T) {
 		})
 	}
 }
+
+func TestContainerdVersionsHashesArm64(t *testing.T) {
+	if os.Getenv("VERIFY_HASHES") == "" {
+		t.Skip("VERIFY_HASHES not set, won't download & verify docker hashes")
+	}
+
+	for version, hash := range findAllContainerdHashesArm64() {
+		t.Run(version+"-arm64", func(t *testing.T) {
+			url, _ := findContainerdVersionUrl(architectures.ArchitectureArm64, version)
+			if err := verifyPackageHash(url, hash); err != nil {
+				t.Errorf("error verifying package %q: %v", url, err)
+			}
+		})
+	}
+}
