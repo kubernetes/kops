@@ -51,6 +51,8 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	k8s_aws "k8s.io/legacy-cloud-providers/aws"
+
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	dnsproviderroute53 "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
 	"k8s.io/kops/pkg/apis/kops"
@@ -60,7 +62,6 @@ import (
 	identity_aws "k8s.io/kops/pkg/nodeidentity/aws"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
-	k8s_aws "k8s.io/legacy-cloud-providers/aws"
 )
 
 // By default, aws-sdk-go only retries 3 times, which doesn't give
@@ -1887,6 +1888,10 @@ func findVPCInfo(c AWSCloud, vpcID string) (*fi.VPCInfo, error) {
 					ID:   aws.StringValue(subnet.SubnetId),
 					CIDR: aws.StringValue(subnet.CidrBlock),
 					Zone: aws.StringValue(subnet.AvailabilityZone),
+				}
+
+				if len(subnet.Ipv6CidrBlockAssociationSet) > 0 {
+					subnetInfo.IPv6CIDR = *subnet.Ipv6CidrBlockAssociationSet[0].Ipv6CidrBlock
 				}
 
 				vpcInfo.Subnets = append(vpcInfo.Subnets, subnetInfo)

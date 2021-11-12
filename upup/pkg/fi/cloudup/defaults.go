@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -120,7 +121,7 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 		// TODO: Use vpcInfo
 		err := assignCIDRsToSubnets(c, cloud)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to assign CIDRs to subnets: %w", err)
 		}
 	}
 

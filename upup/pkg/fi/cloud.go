@@ -18,6 +18,7 @@ package fi
 
 import (
 	v1 "k8s.io/api/core/v1"
+
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
@@ -61,9 +62,10 @@ type VPCInfo struct {
 }
 
 type SubnetInfo struct {
-	ID   string
-	Zone string
-	CIDR string
+	ID       string
+	Zone     string
+	CIDR     string
+	IPv6CIDR string
 }
 
 // ApiIngressStatus represents the status of an ingress point:

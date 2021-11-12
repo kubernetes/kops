@@ -22,6 +22,7 @@ import (
 	"sort"
 
 	"k8s.io/klog/v2"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/util/subnet"
 	"k8s.io/kops/upup/pkg/fi"
@@ -73,13 +74,25 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 				if cloudSubnet == nil {
 					return fmt.Errorf("Subnet %q not found in VPC %q", subnet.ProviderID, c.Spec.NetworkID)
 				}
+
+				if cloudSubnet.CIDR == "" && cloudSubnet.IPv6CIDR == "" {
+					return fmt.Errorf("Subnet %q did not have any IPv4 or IPv6 CIDR", subnet.ProviderID)
+				}
+
 				if subnet.CIDR == "" {
-					subnet.CIDR = cloudSubnet.CIDR
-					if subnet.CIDR == "" {
-						return fmt.Errorf("Subnet %q did not have CIDR", subnet.ProviderID)
+					if cloudSubnet.CIDR != "" {
+						subnet.CIDR = cloudSubnet.CIDR
 					}
 				} else if subnet.CIDR != cloudSubnet.CIDR {
 					return fmt.Errorf("Subnet %q has configured CIDR %q, but the actual CIDR found was %q", subnet.ProviderID, subnet.CIDR, cloudSubnet.CIDR)
+				}
+
+				if subnet.IPv6CIDR == "" {
+					if cloudSubnet.IPv6CIDR != "" {
+						subnet.IPv6CIDR = cloudSubnet.IPv6CIDR
+					}
+				} else if subnet.IPv6CIDR != cloudSubnet.IPv6CIDR {
+					return fmt.Errorf("Subnet %q has configured IPv6CIDR %q, but the actual IPv6CIDR found was %q", subnet.ProviderID, subnet.IPv6CIDR, cloudSubnet.IPv6CIDR)
 				}
 
 				if subnet.Zone != cloudSubnet.Zone {
@@ -205,7 +218,7 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 func allSubnetsHaveCIDRs(c *kops.Cluster) bool {
 	for i := range c.Spec.Subnets {
 		subnet := &c.Spec.Subnets[i]
-		if subnet.CIDR == "" {
+		if subnet.CIDR == "" && subnet.IPv6CIDR == "" {
 			return false
 		}
 	}

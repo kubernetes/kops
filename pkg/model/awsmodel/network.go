@@ -253,10 +253,12 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle:        b.Lifecycle,
 			VPC:              b.LinkToVPC(),
 			AvailabilityZone: fi.String(subnetSpec.Zone),
-			CIDR:             fi.String(subnetSpec.CIDR),
 			Shared:           fi.Bool(sharedSubnet),
 			Tags:             tags,
 			DNS64:            fi.Bool(false),
+		}
+		if subnetSpec.CIDR != "" {
+			subnet.CIDR = fi.String(subnetSpec.CIDR)
 		}
 
 		if subnetSpec.IPv6CIDR != "" {

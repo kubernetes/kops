@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/featureflag"
@@ -182,7 +183,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("nonMasqueradeCIDR"), "IPv6 clusters must have a nonMasqueradeCIDR of \"::/0\""))
 				}
 
-				if networkCIDR != nil && subnet.Overlap(nonMasqueradeCIDR, networkCIDR) && c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC == nil && (c.Spec.Networking.Cilium == nil || c.Spec.Networking.Cilium.IPAM != kops.CiliumIpamEni) {
+				if networkCIDR != nil && nonMasqueradeCIDRString != "::/0" && subnet.Overlap(nonMasqueradeCIDR, networkCIDR) && c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC == nil && (c.Spec.Networking.Cilium == nil || c.Spec.Networking.Cilium.IPAM != kops.CiliumIpamEni) {
 					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("nonMasqueradeCIDR"), fmt.Sprintf("nonMasqueradeCIDR %q cannot overlap with networkCIDR %q", nonMasqueradeCIDRString, c.Spec.NetworkCIDR)))
 				}
 
@@ -343,11 +344,12 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	{
 		for i, s := range c.Spec.Subnets {
 			fieldSubnet := fieldSpec.Child("subnets").Index(i)
-			if s.CIDR == "" {
+			if s.CIDR == "" && s.IPv6CIDR == "" {
 				if requiresSubnetCIDR && strict {
 					allErrs = append(allErrs, field.Required(fieldSubnet.Child("cidr"), "subnet did not have a cidr set"))
 				}
-			} else {
+			}
+			if s.CIDR != "" {
 				_, subnetCIDR, err := net.ParseCIDR(s.CIDR)
 				if err != nil {
 					allErrs = append(allErrs, field.Invalid(fieldSubnet.Child("cidr"), s.CIDR, "subnet had an invalid cidr"))
@@ -355,6 +357,16 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 					allErrs = append(allErrs, field.Forbidden(fieldSubnet.Child("cidr"), fmt.Sprintf("subnet %q had a cidr %q that was not a subnet of the networkCIDR %q", s.Name, s.CIDR, c.Spec.NetworkCIDR)))
 				}
 			}
+			/*
+				if s.IPv6CIDR != "" {
+					_, subnetCIDR, err := net.ParseCIDR(s.IPv6CIDR)
+					if err != nil {
+						allErrs = append(allErrs, field.Invalid(fieldSubnet.Child("cidr"), s.IPv6CIDR, fmt.Sprintf("subnet had an invalid cidr: %v", err)))
+					} else if networkCIDR != nil && !validateSubnetCIDR(networkCIDR, additionalNetworkCIDRs, subnetCIDR) {
+						allErrs = append(allErrs, field.Forbidden(fieldSubnet.Child("cidr"), fmt.Sprintf("subnet %q had a cidr %q that was not a subnet of the networkCIDR %q", s.Name, s.IPv6CIDR, c.Spec.NetworkCIDR)))
+					}
+				}
+			*/
 		}
 	}
 
