@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -138,7 +137,7 @@ func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options
 		if strings.HasPrefix(privateKeyPath, "~/") {
 			privateKeyPath = filepath.Join(os.Getenv("HOME"), privateKeyPath[2:])
 		}
-		key, err := ioutil.ReadFile(privateKeyPath)
+		key, err := os.ReadFile(privateKeyPath)
 		if err != nil {
 			return fmt.Errorf("error reading private key %q: %v", privateKeyPath, err)
 		}

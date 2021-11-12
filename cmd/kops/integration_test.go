@@ -27,7 +27,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"reflect"
@@ -732,7 +731,7 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 
 	// Compare main files
 	{
-		files, err := ioutil.ReadDir(path.Join(h.TempDir, "out"))
+		files, err := os.ReadDir(path.Join(h.TempDir, "out"))
 		if err != nil {
 			t.Fatalf("failed to read dir: %v", err)
 		}
@@ -754,7 +753,7 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 			t.Fatalf("unexpected files.  actual=%q, expected=%q, test=%q", actualFilenames, expectedFilenames, testDataTFPath)
 		}
 
-		actualTF, err := ioutil.ReadFile(path.Join(h.TempDir, "out", actualTFPath))
+		actualTF, err := os.ReadFile(path.Join(h.TempDir, "out", actualTFPath))
 		if err != nil {
 			t.Fatalf("unexpected error reading actual terraform output: %v", err)
 		}
@@ -765,7 +764,7 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 	// Compare data files if they are provided
 	if len(expectedDataFilenames) > 0 {
 		actualDataPath := path.Join(h.TempDir, "out", "data")
-		files, err := ioutil.ReadDir(actualDataPath)
+		files, err := os.ReadDir(actualDataPath)
 		if err != nil {
 			t.Fatalf("failed to read data dir: %v", err)
 		}
@@ -797,7 +796,7 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 		{
 			for _, dataFileName := range expectedDataFilenames {
 				actualDataContent, err :=
-					ioutil.ReadFile(path.Join(actualDataPath, dataFileName))
+					os.ReadFile(path.Join(actualDataPath, dataFileName))
 				if err != nil {
 					t.Fatalf("failed to read actual data file: %v", err)
 				}
@@ -805,7 +804,7 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 			}
 		}
 
-		existingExpectedFiles, err := ioutil.ReadDir(expectedDataPath)
+		existingExpectedFiles, err := os.ReadDir(expectedDataPath)
 		if err != nil {
 			t.Fatalf("failed to read data dir: %v", err)
 		}
@@ -1202,7 +1201,7 @@ func (i *integrationTest) runTestCloudformation(t *testing.T) {
 
 	// Compare main files
 	{
-		files, err := ioutil.ReadDir(path.Join(h.TempDir, "out"))
+		files, err := os.ReadDir(path.Join(h.TempDir, "out"))
 		if err != nil {
 			t.Fatalf("failed to read dir: %v", err)
 		}
@@ -1220,7 +1219,7 @@ func (i *integrationTest) runTestCloudformation(t *testing.T) {
 		}
 
 		actualPath := path.Join(h.TempDir, "out", "kubernetes.json")
-		actualCF, err := ioutil.ReadFile(actualPath)
+		actualCF, err := os.ReadFile(actualPath)
 		if err != nil {
 			t.Fatalf("unexpected error reading actual cloudformation output: %v", err)
 		}
@@ -1295,7 +1294,7 @@ func MakeSSHKeyPair(publicKeyPath string, privateKeyPath string) error {
 	if err := pem.Encode(&privateKeyBytes, privateKeyPEM); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(privateKeyPath, privateKeyBytes.Bytes(), os.FileMode(0700)); err != nil {
+	if err := os.WriteFile(privateKeyPath, privateKeyBytes.Bytes(), os.FileMode(0700)); err != nil {
 		return err
 	}
 
@@ -1304,7 +1303,7 @@ func MakeSSHKeyPair(publicKeyPath string, privateKeyPath string) error {
 		return err
 	}
 	publicKeyBytes := ssh.MarshalAuthorizedKey(publicKey)
-	if err := ioutil.WriteFile(publicKeyPath, publicKeyBytes, os.FileMode(0744)); err != nil {
+	if err := os.WriteFile(publicKeyPath, publicKeyBytes, os.FileMode(0744)); err != nil {
 		return err
 	}
 

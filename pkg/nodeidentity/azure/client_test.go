@@ -17,13 +17,13 @@ limitations under the License.
 package azure
 
 import (
-	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
 )
 
 func TestUnmarshalMetadata(t *testing.T) {
-	data, err := ioutil.ReadFile("testdata/metadata.json")
+	data, err := os.ReadFile("testdata/metadata.json")
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}

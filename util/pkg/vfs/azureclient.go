@@ -19,7 +19,7 @@ package vfs
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -107,7 +107,7 @@ func getAccessTokenFromInstanceMetadataService() (string, error) {
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("error reading a response from the metadata server: %s", err)
 	}

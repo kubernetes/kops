@@ -19,7 +19,6 @@ package fi
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -65,7 +64,7 @@ func writeFileContents(destPath string, src Resource, fileMode os.FileMode) erro
 
 	dir := filepath.Dir(destPath)
 
-	tempFile, err := ioutil.TempFile(dir, ".writefile")
+	tempFile, err := os.CreateTemp(dir, ".writefile")
 	if err != nil {
 		return fmt.Errorf("error creating temp file in %q: %w", dir, err)
 	}

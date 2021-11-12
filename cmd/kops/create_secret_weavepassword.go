@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/pkg/commands/commandutils"
@@ -117,7 +117,7 @@ func RunCreateSecretWeavePassword(ctx context.Context, f *util.Factory, out io.W
 				return fmt.Errorf("reading Weave password file from stdin: %v", err)
 			}
 		} else {
-			data, err = ioutil.ReadFile(options.WeavePasswordFilePath)
+			data, err = os.ReadFile(options.WeavePasswordFilePath)
 			if err != nil {
 				return fmt.Errorf("reading Weave password file %v: %v", options.WeavePasswordFilePath, err)
 			}

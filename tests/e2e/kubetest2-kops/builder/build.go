@@ -18,7 +18,6 @@ package builder
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -54,7 +53,7 @@ func (b *BuildOptions) Build() error {
 	}
 	p := filepath.Join(metaDir, "kops-base-url")
 	kopsBaseURL := strings.Replace(b.StageLocation, "gs://", "https://storage.googleapis.com/", 1)
-	if err := ioutil.WriteFile(p, []byte(kopsBaseURL), 0644); err != nil {
+	if err := os.WriteFile(p, []byte(kopsBaseURL), 0644); err != nil {
 		return fmt.Errorf("failed to WriteFile(%q): %w", p, err)
 	}
 

@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -280,7 +280,7 @@ func TestRemove(t *testing.T) {
 			Response: &http.Response{},
 		}
 		resp.StatusCode = http.StatusOK
-		resp.Body = ioutil.NopCloser(bytes.NewBufferString("error!"))
+		resp.Body = io.NopCloser(bytes.NewBufferString("error!"))
 		return resp, errors.New("error!")
 	}
 	client.Domains = fake

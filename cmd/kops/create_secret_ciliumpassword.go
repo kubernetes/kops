@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
@@ -108,7 +108,7 @@ func RunCreateSecretCiliumEncryptionConfig(ctx context.Context, f *util.Factory,
 			return fmt.Errorf("reading Cilium IPSec config from stdin: %v", err)
 		}
 	} else {
-		data, err = ioutil.ReadFile(options.CiliumPasswordFilePath)
+		data, err = os.ReadFile(options.CiliumPasswordFilePath)
 		if err != nil {
 			return fmt.Errorf("reading Cilium IPSec config %v: %v", options.CiliumPasswordFilePath, err)
 		}
