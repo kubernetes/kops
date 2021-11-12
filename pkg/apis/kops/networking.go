@@ -106,6 +106,9 @@ type CalicoNetworkingSpec struct {
 	// Version overrides the Calico container image tag.
 	Version string `json:"version,omitempty"`
 
+	// AllowIPForwarding enable ip_forwarding setting within the container namespace.
+	// (default: false)
+	AllowIPForwarding bool `json:"allowIPForwarding,omitempty"`
 	// AWSSrcDstCheck enables/disables ENI source/destination checks (AWS only)
 	// Options: Disable (default), Enable, or DoNothing
 	AWSSrcDstCheck string `json:"awsSrcDstCheck,omitempty"`
