@@ -751,12 +751,14 @@ spec:
             periodSeconds: 10
             initialDelaySeconds: 10
             failureThreshold: 6
+            timeoutSeconds: 10
           readinessProbe:
             httpGet:
               path: /readiness
               port: 9099
               host: localhost
             periodSeconds: 10
+            timeoutSeconds: 10
           volumeMounts:
             - mountPath: /lib/modules
               name: lib-modules
