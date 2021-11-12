@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -96,7 +96,7 @@ func RunCreateSSHPublicKey(ctx context.Context, f *util.Factory, out io.Writer, 
 		return err
 	}
 
-	data, err := ioutil.ReadFile(options.PublicKeyPath)
+	data, err := os.ReadFile(options.PublicKeyPath)
 	if err != nil {
 		return fmt.Errorf("error reading SSH public key %v: %v", options.PublicKeyPath, err)
 	}

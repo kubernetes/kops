@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
@@ -106,7 +106,7 @@ func RunCreateSecretEncryptionConfig(ctx context.Context, f *util.Factory, out i
 			return fmt.Errorf("reading encryption config from stdin: %v", err)
 		}
 	} else {
-		data, err = ioutil.ReadFile(options.EncryptionConfigPath)
+		data, err = os.ReadFile(options.EncryptionConfigPath)
 		if err != nil {
 			return fmt.Errorf("reading encryption config %v: %v", options.EncryptionConfigPath, err)
 		}

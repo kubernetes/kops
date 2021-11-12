@@ -18,7 +18,7 @@ package server
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 
 	"k8s.io/kops/pkg/pki"
@@ -49,7 +49,7 @@ func newKeystore(basePath string, cas []string) (pki.Keystore, map[string]string
 		keys: map[string]keystoreEntry{},
 	}
 	for _, name := range cas {
-		certBytes, err := ioutil.ReadFile(path.Join(basePath, name+".crt"))
+		certBytes, err := os.ReadFile(path.Join(basePath, name+".crt"))
 		if err != nil {
 			return nil, nil, fmt.Errorf("reading %q certificate: %v", name, err)
 		}
@@ -58,7 +58,7 @@ func newKeystore(basePath string, cas []string) (pki.Keystore, map[string]string
 			return nil, nil, fmt.Errorf("parsing %q certificate: %v", name, err)
 		}
 
-		keyBytes, err := ioutil.ReadFile(path.Join(basePath, name+".key"))
+		keyBytes, err := os.ReadFile(path.Join(basePath, name+".key"))
 		if err != nil {
 			return nil, nil, fmt.Errorf("reading %q key: %v", name, err)
 		}
@@ -74,7 +74,7 @@ func newKeystore(basePath string, cas []string) (pki.Keystore, map[string]string
 	}
 
 	var keypairIDs map[string]string
-	keypairIDsBytes, err := ioutil.ReadFile(path.Join(basePath, "keypair-ids.yaml"))
+	keypairIDsBytes, err := os.ReadFile(path.Join(basePath, "keypair-ids.yaml"))
 	if err != nil {
 		return nil, nil, fmt.Errorf("reading keypair-ids.yaml")
 	}

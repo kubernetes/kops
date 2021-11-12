@@ -19,7 +19,6 @@ package hosts
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	math_rand "math/rand"
 	"os"
 	"sort"
@@ -117,7 +116,7 @@ func UpdateHostsFileWithRecords(p string, mutator func(guarded []string) (*HostM
 		return fmt.Errorf("error getting file status of %q: %v", p, err)
 	}
 
-	data, err := ioutil.ReadFile(p)
+	data, err := os.ReadFile(p)
 	if err != nil {
 		return fmt.Errorf("error reading file %q: %v", p, err)
 	}
@@ -218,7 +217,7 @@ func pseudoAtomicWrite(p string, b []byte, mode os.FileMode) error {
 			return fmt.Errorf("failed to consistently write file %q - too many retries", p)
 		}
 
-		if err := ioutil.WriteFile(p, b, mode); err != nil {
+		if err := os.WriteFile(p, b, mode); err != nil {
 			klog.Warningf("error writing file %q: %v", p, err)
 			continue
 		}
@@ -226,7 +225,7 @@ func pseudoAtomicWrite(p string, b []byte, mode os.FileMode) error {
 		n := 1 + math_rand.Intn(20)
 		time.Sleep(time.Duration(n) * time.Millisecond)
 
-		contents, err := ioutil.ReadFile(p)
+		contents, err := os.ReadFile(p)
 		if err != nil {
 			klog.Warningf("error re-reading file %q: %v", p, err)
 			continue

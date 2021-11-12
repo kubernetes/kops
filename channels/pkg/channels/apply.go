@@ -18,7 +18,6 @@ package channels
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -31,7 +30,7 @@ import (
 // We will likely in future change this to create things directly (or more likely embed this logic into kubectl itself)
 func Apply(data []byte) error {
 	// We copy the manifest to a temp file because it is likely e.g. an s3 URL, which kubectl can't read
-	tmpDir, err := ioutil.TempDir("", "channel")
+	tmpDir, err := os.MkdirTemp("", "channel")
 	if err != nil {
 		return fmt.Errorf("error creating temp dir: %v", err)
 	}
@@ -43,7 +42,7 @@ func Apply(data []byte) error {
 	}()
 
 	localManifestFile := path.Join(tmpDir, "manifest.yaml")
-	if err := ioutil.WriteFile(localManifestFile, data, 0600); err != nil {
+	if err := os.WriteFile(localManifestFile, data, 0600); err != nil {
 		return fmt.Errorf("error writing temp file: %v", err)
 	}
 
