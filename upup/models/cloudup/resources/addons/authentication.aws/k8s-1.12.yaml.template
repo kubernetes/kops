@@ -34,6 +34,13 @@ spec:
                   type: array
                   items:
                     type: string
+            status:
+              type: object
+              properties:
+                canonicalARN:
+                  type: string
+                userID:
+                  type: string
       subresources:
         status: {}
 ---
