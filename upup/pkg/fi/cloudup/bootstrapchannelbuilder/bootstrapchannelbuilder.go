@@ -162,12 +162,13 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Cluster: b.Cluster,
 		}
 
-		wellKnownAddons, crds, err := ob.Build()
+		addonPackages, clusterAddons, err := ob.Build(b.ClusterAddons)
 		if err != nil {
 			return fmt.Errorf("error building well-known operators: %v", err)
 		}
+		b.ClusterAddons = clusterAddons
 
-		for _, a := range wellKnownAddons {
+		for _, a := range addonPackages {
 			key := *a.Spec.Name
 			if a.Spec.Id != "" {
 				key = key + "-" + a.Spec.Id
@@ -205,8 +206,6 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 			addon := addons.Add(&a.Spec)
 			addon.ManifestData = manifestBytes
 		}
-
-		b.ClusterAddons = append(b.ClusterAddons, crds...)
 	}
 
 	if b.ClusterAddons != nil {
@@ -811,7 +810,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 		}
 	}
 
-	if b.Cluster.Spec.Networking.Kopeio != nil {
+	if b.Cluster.Spec.Networking.Kopeio != nil && !featureflag.UseAddonOperators.Enabled() {
 		key := "networking.kope.io"
 
 		{
