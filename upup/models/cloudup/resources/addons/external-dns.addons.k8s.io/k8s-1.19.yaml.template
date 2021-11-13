@@ -1,0 +1,141 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-dns
+  namespace: kube-system
+  labels:
+    k8s-addon: external-dns.addons.k8s.io
+    k8s-app: external-dns
+    version: v0.10.1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: external-dns
+  template:
+    metadata:
+      labels:
+        k8s-addon: external-dns.addons.k8s.io
+        k8s-app: external-dns
+        version: v0.10.1
+    spec:
+      priorityClassName: system-cluster-critical
+      serviceAccountName: external-dns
+      securityContext:
+        fsGroup: 65534
+      tolerations:
+      - key: "node-role.kubernetes.io/master"
+        effect: NoSchedule
+      - key: "node.kubernetes.io/not-ready"
+        effect: NoSchedule
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
+      hostNetwork: true
+      containers:
+      - name: external-dns
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+        image: k8s.gcr.io/external-dns/external-dns:v0.10.1
+        args:
+{{ range $arg := ExternalDnsArgv }}
+        - "{{ $arg }}"
+{{ end }}
+        env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: "127.0.0.1"
+        - name: KUBERNETES_SERVICE_PORT
+          value: "443"
+        ports:
+        - name: http
+          protocol: TCP
+          containerPort: 7979
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 2
+          successThreshold: 1
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+          successThreshold: 1
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    k8s-addon: external-dns.addons.k8s.io
+  name: kops:external-dns
+spec:
+  type: ClusterIP
+  selector:
+    k8s-app: external-dns
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: external-dns
+  namespace: kube-system
+  labels:
+    k8s-addon: external-dns.addons.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    k8s-addon: external-dns.addons.k8s.io
+  name: kops:external-dns
+rules:
+- apiGroups: [""]
+  resources: ["services","endpoints","pods"]
+  verbs: ["get","watch","list"]
+- apiGroups: ["extensions","networking.k8s.io"]
+  resources: ["ingresses"]
+  verbs: ["get","watch","list"]
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["list","watch"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    k8s-addon: external-dns.addons.k8s.io
+  name: kops:external-dns
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kops:external-dns
+subjects:
+- kind: ServiceAccount
+  name: external-dns
+  namespace: kube-system
