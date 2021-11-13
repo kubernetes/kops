@@ -2043,7 +2043,6 @@ func autoConvert_v1alpha3_CloudControllerManagerConfig_To_kops_CloudControllerMa
 		out.LeaderElection = nil
 	}
 	out.UseServiceAccountCredentials = in.UseServiceAccountCredentials
-	out.EnableLeaderMigration = in.EnableLeaderMigration
 	return nil
 }
 
@@ -2072,7 +2071,6 @@ func autoConvert_kops_CloudControllerManagerConfig_To_v1alpha3_CloudControllerMa
 		out.LeaderElection = nil
 	}
 	out.UseServiceAccountCredentials = in.UseServiceAccountCredentials
-	out.EnableLeaderMigration = in.EnableLeaderMigration
 	return nil
 }
 
@@ -4824,7 +4822,6 @@ func autoConvert_v1alpha3_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths
 	out.ExternalCloudVolumePlugin = in.ExternalCloudVolumePlugin
 	out.EnableProfiling = in.EnableProfiling
-	out.EnableLeaderMigration = in.EnableLeaderMigration
 	return nil
 }
 
@@ -4894,7 +4891,6 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha3_KubeControllerMana
 	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths
 	out.ExternalCloudVolumePlugin = in.ExternalCloudVolumePlugin
 	out.EnableProfiling = in.EnableProfiling
-	out.EnableLeaderMigration = in.EnableLeaderMigration
 	return nil
 }
 
