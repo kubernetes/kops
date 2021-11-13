@@ -46,6 +46,7 @@ var (
 	DistributionUbuntu2010   = Distribution{packageFormat: "deb", project: "ubuntu", id: "groovy", version: 20.10}
 	DistributionUbuntu2104   = Distribution{packageFormat: "deb", project: "ubuntu", id: "hirsute", version: 21.04}
 	DistributionUbuntu2110   = Distribution{packageFormat: "deb", project: "ubuntu", id: "impish", version: 21.10}
+	DistributionUbuntu2204   = Distribution{packageFormat: "deb", project: "ubuntu", id: "jammy", version: 22.04}
 	DistributionAmazonLinux2 = Distribution{packageFormat: "rpm", project: "amazonlinux2", id: "amazonlinux2", version: 0}
 	DistributionRhel7        = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel7", version: 7}
 	DistributionCentos7      = Distribution{packageFormat: "rpm", project: "centos", id: "centos7", version: 7}
