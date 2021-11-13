@@ -18,7 +18,7 @@ package main
 
 import (
 	"bytes"
-	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 	"testing"
@@ -41,13 +41,13 @@ func TestConversionMinimal(t *testing.T) {
 func runTest(t *testing.T, srcDir string, fromVersion string, toVersion string) {
 	t.Run(fromVersion+"-"+toVersion, func(t *testing.T) {
 		sourcePath := path.Join(srcDir, fromVersion+".yaml")
-		sourceBytes, err := ioutil.ReadFile(sourcePath)
+		sourceBytes, err := os.ReadFile(sourcePath)
 		if err != nil {
 			t.Fatalf("unexpected error reading sourcePath %q: %v", sourcePath, err)
 		}
 
 		expectedPath := path.Join(srcDir, toVersion+".yaml")
-		expectedBytes, err := ioutil.ReadFile(expectedPath)
+		expectedBytes, err := os.ReadFile(expectedPath)
 		if err != nil {
 			t.Fatalf("unexpected error reading expectedPath %q: %v", expectedPath, err)
 		}

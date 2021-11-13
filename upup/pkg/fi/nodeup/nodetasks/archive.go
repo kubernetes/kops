@@ -19,7 +19,6 @@ package nodetasks
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -93,7 +92,7 @@ func (e *Archive) Dir() string {
 func (e *Archive) Find(c *fi.Context) (*Archive, error) {
 	// We write a marker file to prevent re-execution
 	localStateFile := path.Join(localArchiveStateDir, e.Name)
-	stateBytes, err := ioutil.ReadFile(localStateFile)
+	stateBytes, err := os.ReadFile(localStateFile)
 	if err != nil {
 		if os.IsNotExist(err) {
 			stateBytes = nil
@@ -201,7 +200,7 @@ func (_ *Archive) RenderLocal(t *local.LocalTarget, a, e, changes *Archive) erro
 			return fmt.Errorf("error marshaling archive state: %v", err)
 		}
 
-		if err := ioutil.WriteFile(localStateFile, state, 0644); err != nil {
+		if err := os.WriteFile(localStateFile, state, 0644); err != nil {
 			return fmt.Errorf("error writing archive state: %v", err)
 		}
 	} else {

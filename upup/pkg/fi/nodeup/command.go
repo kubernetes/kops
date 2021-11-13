@@ -23,7 +23,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/url"
 	"os"
@@ -666,7 +665,7 @@ func evaluateDockerSpecStorage(spec *api.DockerConfig) error {
 
 // kernelHasFilesystem checks if /proc/filesystems contains the specified filesystem
 func kernelHasFilesystem(fs string) (bool, error) {
-	contents, err := ioutil.ReadFile("/proc/filesystems")
+	contents, err := os.ReadFile("/proc/filesystems")
 	if err != nil {
 		return false, fmt.Errorf("error reading /proc/filesystems: %v", err)
 	}

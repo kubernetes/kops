@@ -17,7 +17,6 @@ limitations under the License.
 package hosts
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -113,7 +112,7 @@ func TestRecoversFromBadNesting(t *testing.T) {
 }
 
 func runTest(t *testing.T, in string, expected string) {
-	dir, err := ioutil.TempDir("", "")
+	dir, err := os.MkdirTemp("", "")
 	if err != nil {
 		t.Fatalf("error creating temp dir: %v", err)
 	}
@@ -131,7 +130,7 @@ func runTest(t *testing.T, in string, expected string) {
 		"c": {},
 	}
 
-	if err := ioutil.WriteFile(p, []byte(in), 0755); err != nil {
+	if err := os.WriteFile(p, []byte(in), 0755); err != nil {
 		t.Fatalf("error writing hosts file: %v", err)
 	}
 
@@ -154,7 +153,7 @@ func runTest(t *testing.T, in string, expected string) {
 			t.Fatalf("error updating hosts file: %v", err)
 		}
 
-		b, err := ioutil.ReadFile(p)
+		b, err := os.ReadFile(p)
 		if err != nil {
 			t.Fatalf("error reading output file: %v", err)
 		}

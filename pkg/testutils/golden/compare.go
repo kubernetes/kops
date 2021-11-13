@@ -17,7 +17,6 @@ limitations under the License.
 package golden
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -40,7 +39,7 @@ func AssertMatchesFile(t *testing.T, actual string, p string) {
 		p = abs
 	}
 
-	expectedBytes, err := ioutil.ReadFile(p)
+	expectedBytes, err := os.ReadFile(p)
 	if err != nil {
 		if !os.IsNotExist(err) || os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") == "" {
 			t.Fatalf("error reading file %q: %v", p, err)
@@ -64,7 +63,7 @@ func AssertMatchesFile(t *testing.T, actual string, p string) {
 		if err := os.MkdirAll(path.Dir(p), 0755); err != nil {
 			t.Errorf("error creating directory %s: %v", path.Dir(p), err)
 		}
-		if err := ioutil.WriteFile(p, []byte(actual), 0644); err != nil {
+		if err := os.WriteFile(p, []byte(actual), 0644); err != nil {
 			t.Errorf("error writing expected output %s: %v", p, err)
 		}
 
