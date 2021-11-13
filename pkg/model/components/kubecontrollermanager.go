@@ -79,11 +79,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	kcm.ClusterName = b.ClusterName
 	switch kops.CloudProviderID(clusterSpec.CloudProvider) {
 	case kops.CloudProviderAWS:
-		if b.IsKubernetesGTE("1.24") {
-			kcm.CloudProvider = "external"
-		} else {
-			kcm.CloudProvider = "aws"
-		}
+		kcm.CloudProvider = "aws"
 
 	case kops.CloudProviderGCE:
 		kcm.CloudProvider = "gce"
@@ -105,11 +101,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		return fmt.Errorf("unknown cloudprovider %q", clusterSpec.CloudProvider)
 	}
 
-	if clusterSpec.ExternalCloudControllerManager == nil {
-		if kcm.CloudProvider == "aws" && b.IsKubernetesGTE("1.23") {
-			kcm.EnableLeaderMigration = fi.Bool(true)
-		}
-	} else {
+	if clusterSpec.ExternalCloudControllerManager != nil {
 		kcm.CloudProvider = "external"
 	}
 
