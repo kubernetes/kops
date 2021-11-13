@@ -19,7 +19,6 @@ package fi
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"strings"
@@ -66,7 +65,7 @@ func NewContext(target Target, cluster *kops.Cluster, cloud Cloud, keystore Keys
 		tasks:             tasks,
 	}
 
-	t, err := ioutil.TempDir("", "deploy")
+	t, err := os.MkdirTemp("", "deploy")
 	if err != nil {
 		return nil, fmt.Errorf("error creating temporary directory: %v", err)
 	}
@@ -102,7 +101,7 @@ func (c *Context) Close() {
 //}
 
 func (c *Context) NewTempDir(prefix string) (string, error) {
-	t, err := ioutil.TempDir(c.Tmpdir, prefix)
+	t, err := os.MkdirTemp(c.Tmpdir, prefix)
 	if err != nil {
 		return "", fmt.Errorf("error creating temporary directory: %v", err)
 	}

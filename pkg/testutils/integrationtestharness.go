@@ -17,7 +17,6 @@ limitations under the License.
 package testutils
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -77,7 +76,7 @@ type IntegrationTestHarness struct {
 
 func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
 	h := &IntegrationTestHarness{}
-	tempDir, err := ioutil.TempDir("", "test")
+	tempDir, err := os.MkdirTemp("", "test")
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}

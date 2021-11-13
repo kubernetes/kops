@@ -18,7 +18,7 @@ package testutils
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"sort"
 	"strings"
@@ -41,7 +41,7 @@ type Model struct {
 // LoadModel loads a cluster and instancegroups from a cluster.yaml file found in basedir
 func LoadModel(basedir string) (*Model, error) {
 	clusterYamlPath := path.Join(basedir, "cluster.yaml")
-	clusterYaml, err := ioutil.ReadFile(clusterYamlPath)
+	clusterYaml, err := os.ReadFile(clusterYamlPath)
 	if err != nil {
 		return nil, fmt.Errorf("error reading file %q: %v", clusterYamlPath, err)
 	}

@@ -19,7 +19,6 @@ package terraform
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -117,7 +116,7 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 			return fmt.Errorf("error creating output directory %q: %v", path.Dir(p), err)
 		}
 
-		err = ioutil.WriteFile(p, contents, os.FileMode(0644))
+		err = os.WriteFile(p, contents, os.FileMode(0644))
 		if err != nil {
 			return fmt.Errorf("error writing terraform data to output file %q: %v", p, err)
 		}

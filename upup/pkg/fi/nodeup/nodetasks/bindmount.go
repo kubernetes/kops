@@ -18,7 +18,7 @@ package nodetasks
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -94,7 +94,7 @@ func findTaskInSlice(tasks []fi.Task, task fi.Task) int {
 }
 
 func (e *BindMount) Find(c *fi.Context) (*BindMount, error) {
-	mounts, err := ioutil.ReadFile("/proc/self/mountinfo")
+	mounts, err := os.ReadFile("/proc/self/mountinfo")
 	if err != nil {
 		return nil, fmt.Errorf("error reading /proc/self/mountinfo: %v", err)
 	}

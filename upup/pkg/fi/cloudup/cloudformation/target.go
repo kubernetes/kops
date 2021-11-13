@@ -19,7 +19,6 @@ package cloudformation
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -160,7 +159,7 @@ func (t *CloudformationTarget) Finish(taskMap map[string]fi.Task) error {
 			return fmt.Errorf("error creating output directory %q: %v", path.Dir(p), err)
 		}
 
-		err = ioutil.WriteFile(p, contents, os.FileMode(0644))
+		err = os.WriteFile(p, contents, os.FileMode(0644))
 		if err != nil {
 			return fmt.Errorf("error writing cloudformation data to output file %q: %v", p, err)
 		}

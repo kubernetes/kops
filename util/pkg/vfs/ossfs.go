@@ -21,7 +21,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -150,7 +149,7 @@ func (p *OSSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 			return false, fmt.Errorf("error seeking to start of data stream for write to %s: %v", p, err)
 		}
 
-		bytes, err := ioutil.ReadAll(data)
+		bytes, err := io.ReadAll(data)
 		if err != nil {
 			return false, fmt.Errorf("error reading from data stream: %v", err)
 		}

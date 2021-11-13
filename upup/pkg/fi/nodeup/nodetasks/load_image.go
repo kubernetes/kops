@@ -18,7 +18,6 @@ package nodetasks
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -125,7 +124,7 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 	// TODO: Improve the naive gzip format detection by checking the content type bytes "\x1F\x8B\x08"
 	var tarFile string
 	if strings.HasSuffix(localFile, "gz") {
-		tmpDir, err := ioutil.TempDir("", "loadimage")
+		tmpDir, err := os.MkdirTemp("", "loadimage")
 		if err != nil {
 			return fmt.Errorf("error creating temp dir: %v", err)
 		}

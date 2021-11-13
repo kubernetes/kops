@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
@@ -113,7 +113,7 @@ func RunCreateSecretDockerConfig(ctx context.Context, f *util.Factory, out io.Wr
 			return fmt.Errorf("reading Docker config from stdin: %v", err)
 		}
 	} else {
-		data, err = ioutil.ReadFile(options.DockerConfigPath)
+		data, err = os.ReadFile(options.DockerConfigPath)
 		if err != nil {
 			return fmt.Errorf("reading Docker config %v: %v", options.DockerConfigPath, err)
 		}

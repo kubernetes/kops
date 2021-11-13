@@ -19,7 +19,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -116,7 +116,7 @@ func up(ctx context.Context) error {
 	// Add a public key
 	{
 		f := utils.ExpandPath(sshPublicKey)
-		pubKey, err := ioutil.ReadFile(f)
+		pubKey, err := os.ReadFile(f)
 		if err != nil {
 			return fmt.Errorf("error reading SSH key file %q: %v", f, err)
 		}

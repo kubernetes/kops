@@ -17,7 +17,7 @@ limitations under the License.
 package assets
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -169,7 +169,7 @@ func TestRemapEmptySection(t *testing.T) {
 	inputPath := filepath.Join(testdir, key+".input.yaml")
 	expectedPath := filepath.Join(testdir, key+".expected.yaml")
 
-	input, err := ioutil.ReadFile(inputPath)
+	input, err := os.ReadFile(inputPath)
 	if err != nil {
 		t.Errorf("error reading file %q: %v", inputPath, err)
 	}
