@@ -202,7 +202,6 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 				return fmt.Errorf("Unhandled kind %q in %s", gvk, f)
 			}
 		}
-
 	}
 	{
 		// If there is a value in this sb, this should mean that we have something to deploy
