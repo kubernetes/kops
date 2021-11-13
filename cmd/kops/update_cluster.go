@@ -21,7 +21,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -229,7 +229,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 		fmt.Fprintf(out, "--ssh-public-key on update is deprecated - please use `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub` instead\n", cluster.ObjectMeta.Name)
 
 		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
-		authorized, err := ioutil.ReadFile(c.SSHPublicKey)
+		authorized, err := os.ReadFile(c.SSHPublicKey)
 		if err != nil {
 			return results, fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
 		}

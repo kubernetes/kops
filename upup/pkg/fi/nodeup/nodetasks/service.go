@@ -18,7 +18,6 @@ package nodetasks
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -169,7 +168,7 @@ func (e *Service) Find(c *fi.Context) (*Service, error) {
 
 	servicePath := path.Join(systemdSystemPath, e.Name)
 
-	d, err := ioutil.ReadFile(servicePath)
+	d, err := os.ReadFile(servicePath)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return nil, fmt.Errorf("Error reading systemd file %q: %v", servicePath, err)

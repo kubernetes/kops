@@ -19,7 +19,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	coordinationv1 "k8s.io/api/coordination/v1"
@@ -76,7 +75,7 @@ func main() {
 	opt.PopulateDefaults()
 
 	{
-		b, err := ioutil.ReadFile(configPath)
+		b, err := os.ReadFile(configPath)
 		if err != nil {
 			klog.Fatalf("failed to read configuration file %q: %v", configPath, err)
 		}

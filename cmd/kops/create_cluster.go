@@ -22,7 +22,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"sort"
 	"strings"
@@ -830,7 +829,7 @@ func loadSSHPublicKeys(sshPublicKey string) (map[string][]byte, error) {
 	sshPublicKeys := make(map[string][]byte)
 	if sshPublicKey != "" {
 		sshPublicKey = utils.ExpandPath(sshPublicKey)
-		authorized, err := ioutil.ReadFile(sshPublicKey)
+		authorized, err := os.ReadFile(sshPublicKey)
 		if err != nil {
 			return nil, err
 		}

@@ -18,7 +18,6 @@ package vfs
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"regexp"
@@ -329,7 +328,7 @@ func bruteforceBucketLocation(region *string, request *s3.GetBucketLocationInput
 func isRunningOnEC2() (bool, error) {
 	if runtime.GOOS == "linux" {
 		// Approach based on https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/identify_ec2_instances.html
-		productUUID, err := ioutil.ReadFile("/sys/devices/virtual/dmi/id/product_uuid")
+		productUUID, err := os.ReadFile("/sys/devices/virtual/dmi/id/product_uuid")
 		if err != nil {
 			klog.V(2).Infof("unable to read /sys/devices/virtual/dmi/id/product_uuid, assuming not running on EC2: %v", err)
 			return false, err

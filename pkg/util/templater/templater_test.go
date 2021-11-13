@@ -17,7 +17,6 @@ limitations under the License.
 package templater
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -189,7 +188,7 @@ func TestAllowForMissingVars(t *testing.T) {
 
 func TestRenderIntegration(t *testing.T) {
 	var cases []renderTest
-	content, err := ioutil.ReadFile("integration_tests.yml")
+	content, err := os.ReadFile("integration_tests.yml")
 	if err != nil {
 		t.Fatalf("unable to load the integration tests, error: %s", err)
 	}

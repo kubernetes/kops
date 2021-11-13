@@ -20,7 +20,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 
@@ -74,7 +74,7 @@ func awsAuth(client *vault.Client, host string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	requestBody, err := ioutil.ReadAll(stsRequest.HTTPRequest.Body)
+	requestBody, err := io.ReadAll(stsRequest.HTTPRequest.Body)
 	if err != nil {
 		return "", err
 	}
