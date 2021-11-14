@@ -52,9 +52,9 @@ spec:
     selector:
       k8s-addon: dns-controller.addons.k8s.io
     version: 9.99.0
-  - id: v1.7.0
-    manifest: storage-gce.addons.k8s.io/v1.7.0.yaml
-    manifestHash: 101aceff3d82b4d7066f75fdf537f272eccec6da767d508e2a72bff5e11b0b6d
+  - id: k8s-1.22
+    manifest: storage-gce.addons.k8s.io/k8s-1.22.yaml
+    manifestHash: 4e56a200288e4efe246af214a723906bad0cef3cf494c4e02fdb8f77abe61e89
     name: storage-gce.addons.k8s.io
     selector:
       k8s-addon: storage-gce.addons.k8s.io

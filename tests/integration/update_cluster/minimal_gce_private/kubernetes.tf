@@ -154,10 +154,10 @@ resource "aws_s3_bucket_object" "minimal-gce-private-example-com-addons-rbac-add
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "minimal-gce-private-example-com-addons-storage-gce-addons-k8s-io-v1-7-0" {
+resource "aws_s3_bucket_object" "minimal-gce-private-example-com-addons-storage-gce-addons-k8s-io-k8s-1-22" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_minimal-gce-private.example.com-addons-storage-gce.addons.k8s.io-v1.7.0_content")
-  key                    = "tests/minimal-gce-private.example.com/addons/storage-gce.addons.k8s.io/v1.7.0.yaml"
+  content                = file("${path.module}/data/aws_s3_bucket_object_minimal-gce-private.example.com-addons-storage-gce.addons.k8s.io-k8s-1.22_content")
+  key                    = "tests/minimal-gce-private.example.com/addons/storage-gce.addons.k8s.io/k8s-1.22.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }

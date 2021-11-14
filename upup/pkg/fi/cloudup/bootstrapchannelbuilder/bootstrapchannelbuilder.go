@@ -711,8 +711,22 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderGCE {
 		key := "storage-gce.addons.k8s.io"
 
+		// in-tree provider
 		{
 			id := "v1.7.0"
+			location := key + "/" + id + ".yaml"
+
+			addons.Add(&channelsapi.AddonSpec{
+				Name:     fi.String(key),
+				Selector: map[string]string{"k8s-addon": key},
+				Manifest: fi.String(location),
+				Id:       id,
+			})
+		}
+
+		// CSI
+		{
+			id := "k8s-1.17"
 			location := key + "/" + id + ".yaml"
 
 			addons.Add(&channelsapi.AddonSpec{

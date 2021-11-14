@@ -784,7 +784,7 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 		for _, f := range files {
 			actualDataFilenames = append(actualDataFilenames, f.Name())
 		}
-
+		sort.Strings(actualDataFilenames)
 		sort.Strings(expectedDataFilenames)
 		if !reflect.DeepEqual(actualDataFilenames, expectedDataFilenames) {
 			for j := 0; j < len(actualDataFilenames) && j < len(expectedDataFilenames); j++ {
@@ -823,6 +823,7 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 		for i, f := range existingExpectedFiles {
 			existingExpectedFilenames[i] = f.Name()
 		}
+		sort.Strings(existingExpectedFilenames)
 		for j := 0; j < len(existingExpectedFilenames) && j < len(expectedDataFilenames); j++ {
 			if existingExpectedFilenames[j] != expectedDataFilenames[j] {
 				t.Errorf("diff with source directory @%d: %q vs %q", j, existingExpectedFilenames[j], expectedDataFilenames[j])
@@ -1161,7 +1162,7 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 		"aws_s3_bucket_object_"+i.clusterName+"-addons-limit-range.addons.k8s.io_content",
 		"aws_s3_bucket_object_"+i.clusterName+"-addons-metadata-proxy.addons.k8s.io-v0.1.12_content",
 		"aws_s3_bucket_object_"+i.clusterName+"-addons-rbac.addons.k8s.io-k8s-1.8_content",
-		"aws_s3_bucket_object_"+i.clusterName+"-addons-storage-gce.addons.k8s.io-v1.7.0_content")
+		"aws_s3_bucket_object_"+i.clusterName+"-addons-storage-gce.addons.k8s.io-k8s-1.17_content")
 
 	for j := 0; j < i.zones; j++ {
 		zone := "us-test1-" + string([]byte{byte('a') + byte(j)})
