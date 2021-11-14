@@ -40,6 +40,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 const (
@@ -57,6 +58,8 @@ type NewClusterOptions struct {
 	Channel string
 	// ConfigBase is the location where we will store the configuration. It defaults to the state store.
 	ConfigBase string
+	// DiscoveryStore is the location where we will store public OIDC-compatible discovery documents, under a cluster-specific directory. It defaults to not publishing discovery documents.
+	DiscoveryStore string
 	// KubernetesVersion is the version of Kubernetes to deploy. It defaults to the version recommended by the channel.
 	KubernetesVersion string
 	// AdminAccess is the set of CIDR blocks permitted to connect to the Kubernetes API. It defaults to "0.0.0.0/0" and "::/0".
@@ -252,6 +255,20 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				return nil, fmt.Errorf("must specify --zones or --cloud")
 			}
 			return nil, fmt.Errorf("unable to infer cloud provider from zones. pass in the cloud provider explicitly using --cloud")
+		}
+	}
+
+	if opt.DiscoveryStore != "" {
+		discoveryPath, err := vfs.Context.BuildVfsPath(opt.DiscoveryStore)
+		if err != nil {
+			return nil, fmt.Errorf("error building DiscoveryStore for cluster: %v", err)
+		}
+		cluster.Spec.ServiceAccountIssuerDiscovery = &api.ServiceAccountIssuerDiscoveryConfig{
+			DiscoveryStore: discoveryPath.Join(cluster.Name).Path(),
+		}
+		if cluster.Spec.CloudProvider == string(api.CloudProviderAWS) {
+			cluster.Spec.ServiceAccountIssuerDiscovery.EnableAWSOIDCProvider = true
+			cluster.Spec.IAM.UseServiceAccountExternalPermissions = fi.Bool(true)
 		}
 	}
 
