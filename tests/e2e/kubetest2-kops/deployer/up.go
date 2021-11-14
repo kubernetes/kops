@@ -114,6 +114,7 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		"--kubernetes-version", d.KubernetesVersion,
 		"--ssh-public-key", d.SSHPublicKeyPath,
 		"--override", "cluster.spec.nodePortAccess=0.0.0.0/0",
+		"--override", "spec.authentication.aws.backendMode=CRD",
 	}
 	if yes {
 		args = append(args, "--yes")
@@ -132,7 +133,8 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 	args = appendIfUnset(args, "--node-count", "4")
 	args = appendIfUnset(args, "--node-volume-size", "48")
 	args = appendIfUnset(args, "--override", adminAccess)
-	args = appendIfUnset(args, "--zones", strings.Join(zones, ","))
+	args = appendIfUnset(args, "--zones", "us-east-1a")
+	args = appendIfUnset(args, "--node-image", "092701018921/bottlerocket-aws-k8s-1.21-x86_64-v1.4.0-42360701")
 
 	switch d.CloudProvider {
 	case "aws":
@@ -161,6 +163,24 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 	err := cmd.Run()
 	if err != nil {
 		return err
+	}
+
+	{
+		args := []string{
+			d.KopsBinaryPath, "edit", "instancegroup",
+			"--name", d.ClusterName,
+			"nodes-us-east-1a",
+			"--set", "spec.imageFamily.bottlerocket=",
+		}
+		klog.Info(strings.Join(args, " "))
+		cmd := exec.Command(args[0], args[1:]...)
+		cmd.SetEnv(d.env()...)
+
+		exec.InheritOutput(cmd)
+		err := cmd.Run()
+		if err != nil {
+			return err
+		}
 	}
 
 	if d.terraform != nil {

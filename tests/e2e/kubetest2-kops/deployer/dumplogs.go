@@ -105,7 +105,8 @@ func (d *deployer) dumpClusterInfo() error {
 	}
 
 	resourceTypes := []string{"csinodes", "csidrivers", "storageclasses", "persistentvolumes",
-		"mutatingwebhookconfigurations", "validatingwebhookconfigurations"}
+		"mutatingwebhookconfigurations", "validatingwebhookconfigurations", "customresourcedefinitions",
+		"iamidentitymappings", "clusterroles", "clusterrolebindings", "certificatesigningrequests"}
 	if err := os.MkdirAll(path.Join(d.ArtifactsDir, "cluster-info"), 0755); err != nil {
 		return err
 	}
@@ -139,7 +140,7 @@ func (d *deployer) dumpClusterInfo() error {
 		return fmt.Errorf("failed to get namespaces: %s", err)
 	}
 
-	namespacedResourceTypes := []string{"configmaps", "endpoints", "endpointslices", "leases", "persistentvolumeclaims"}
+	namespacedResourceTypes := []string{"configmaps", "endpoints", "endpointslices", "leases", "persistentvolumeclaims", "roles", "rolebindings", "serviceaccounts"}
 	for _, namespace := range namespaces {
 		namespace = strings.TrimSpace(namespace)
 		if err := os.MkdirAll(path.Join(d.ArtifactsDir, "cluster-info", namespace), 0755); err != nil {

@@ -223,6 +223,7 @@ func (d *deployer) featureFlags() string {
 	ff := []string{
 		"+SpecOverrideFlag",
 		"+AlphaAllowGCE",
+		"+Bottlerocket",
 	}
 	val := strings.Join(ff, ",")
 	for _, env := range d.Env {
