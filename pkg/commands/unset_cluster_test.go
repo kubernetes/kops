@@ -63,6 +63,23 @@ func TestUnsetClusterFields(t *testing.T) {
 			},
 		},
 		{
+			Fields: []string{
+				"spec.api.dns",
+			},
+			Input: kops.Cluster{
+				Spec: kops.ClusterSpec{
+					API: &kops.AccessSpec{
+						DNS: &kops.DNSAccessSpec{},
+					},
+				},
+			},
+			Output: kops.Cluster{
+				Spec: kops.ClusterSpec{
+					API: &kops.AccessSpec{},
+				},
+			},
+		},
+		{
 			Fields: []string{"spec.kubelet.authorizationMode"},
 			Input: kops.Cluster{
 				Spec: kops.ClusterSpec{
