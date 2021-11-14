@@ -129,6 +129,8 @@ func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) 
 		HealthyThreshold:       5,
 	}
 
+	klog.Infof("In RenderDO: loadbalancer")
+
 	// check if load balancer exist.
 	loadBalancers, err := t.Cloud.GetAllLoadBalancers()
 
@@ -147,7 +149,7 @@ func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) 
 	}
 
 	// load balancer doesn't exist. Create one.
-	klog.V(10).Infof("Creating load balancer for DO now..")
+	klog.Infof("Creating load balancer for DO")
 
 	loadBalancerService := t.Cloud.LoadBalancersService()
 	loadbalancer, _, err := loadBalancerService.Create(context.TODO(), &godo.LoadBalancerRequest{

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
@@ -62,10 +63,11 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Create LoadBalancer for API LB
 	loadbalancer := &dotasks.LoadBalancer{
-		Name:       fi.String(loadbalancerName),
-		Region:     fi.String(b.Cluster.Spec.Subnets[0].Region),
-		DropletTag: fi.String(clusterMasterTag),
-		Lifecycle:  b.Lifecycle,
+		Name:         fi.String(loadbalancerName),
+		Region:       fi.String(b.Cluster.Spec.Subnets[0].Region),
+		DropletTag:   fi.String(clusterMasterTag),
+		Lifecycle:    b.Lifecycle,
+		ForAPIServer: true,
 	}
 	c.AddTask(loadbalancer)
 
@@ -75,6 +77,8 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// if we're not going to use an alias for it
 		loadbalancer.ForAPIServer = true
 	}
+
+	klog.Infof("In Building loadbalancer = %v", loadbalancer)
 
 	return nil
 
