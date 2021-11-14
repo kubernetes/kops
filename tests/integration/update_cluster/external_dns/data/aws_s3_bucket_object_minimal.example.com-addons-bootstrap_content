@@ -38,9 +38,9 @@ spec:
     selector:
       k8s-addon: limit-range.addons.k8s.io
     version: 9.99.0
-  - id: k8s-1.12
-    manifest: external-dns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: c56e7a43d0d3e268d8d5d47fb014fd71309e933729ce186ded43624bb4270037
+  - id: k8s-1.19
+    manifest: external-dns.addons.k8s.io/k8s-1.19.yaml
+    manifestHash: 4ce9ba518a83cac3fae0cb1385085e18c581ee285eec08161a44422144e8a766
     name: external-dns.addons.k8s.io
     selector:
       k8s-addon: external-dns.addons.k8s.io
