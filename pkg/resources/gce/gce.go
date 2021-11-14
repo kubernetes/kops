@@ -23,7 +23,6 @@ import (
 
 	compute "google.golang.org/api/compute/v1"
 	clouddns "google.golang.org/api/dns/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/resources"
@@ -57,6 +56,8 @@ const maxPrefixTokens = 5
 const maxGCERouteNameLength = 63
 
 func ListResourcesGCE(gceCloud gce.GCECloud, clusterName string, region string) (map[string]*resources.Resource, error) {
+	ctx := context.TODO()
+
 	if region == "" {
 		region = gceCloud.Region()
 	}
@@ -71,7 +72,7 @@ func ListResourcesGCE(gceCloud gce.GCECloud, clusterName string, region string) 
 
 	{
 		// TODO: Only zones in api.Cluster object, if we have one?
-		gceZones, err := d.gceCloud.Compute().Zones().List(context.Background(), d.gceCloud.Project())
+		gceZones, err := d.gceCloud.Compute().Zones().List(ctx, d.gceCloud.Project())
 		if err != nil {
 			return nil, fmt.Errorf("error listing zones: %v", err)
 		}
@@ -116,10 +117,8 @@ func ListResourcesGCE(gceCloud gce.GCECloud, clusterName string, region string) 
 	}
 
 	// We try to clean up orphaned routes.
-	// Technically we still have a race condition here - until the master(s) are terminated, they will keep
-	// creating routes.  Another option might be to have a post-destroy cleanup, and only remove routes with no target.
 	{
-		resourceTrackers, err := d.listRoutes(resources)
+		resourceTrackers, err := d.listRoutes(ctx, resources)
 		if err != nil {
 			return nil, err
 		}
@@ -557,19 +556,17 @@ func deleteFirewallRule(cloud fi.Cloud, r *resources.Resource) error {
 	return c.WaitForOp(op)
 }
 
-func (d *clusterDiscoveryGCE) listRoutes(resourceMap map[string]*resources.Resource) ([]*resources.Resource, error) {
+func (d *clusterDiscoveryGCE) listRoutes(ctx context.Context, resourceMap map[string]*resources.Resource) ([]*resources.Resource, error) {
 	c := d.gceCloud
 
 	var resourceTrackers []*resources.Resource
 
-	instances := sets.NewString()
+	instancesToDelete := make(map[string]*resources.Resource)
 	for _, resource := range resourceMap {
 		if resource.Type == typeInstance {
-			instances.Insert(resource.ID)
+			instancesToDelete[resource.ID] = resource
 		}
 	}
-
-	ctx := context.Background()
 
 	// TODO: Push-down prefix?
 	routes, err := c.Compute().Routes().List(ctx, c.Project())
@@ -596,7 +593,7 @@ func (d *clusterDiscoveryGCE) listRoutes(resourceMap map[string]*resources.Resou
 				klog.Warningf("error parsing URL for NextHopInstance=%q", r.NextHopInstance)
 			}
 
-			if instances.Has(u.Zone + "/" + u.Name) {
+			if instancesToDelete[u.Zone+"/"+u.Name] != nil {
 				remove = true
 			}
 		}
@@ -610,10 +607,11 @@ func (d *clusterDiscoveryGCE) listRoutes(resourceMap map[string]*resources.Resou
 				Obj:     r,
 			}
 
-			// We don't need to block
-			//if r.NextHopInstance != "" {
-			//	resourceTracker.Blocked = append(resourceTracker.Blocks, typeInstance+":"+gce.LastComponent(r.NextHopInstance))
-			//}
+			// To avoid race conditions where the control-plane re-adds the routes, we delete routes
+			// only after we have deleted all the instances.
+			for _, instance := range instancesToDelete {
+				resourceTracker.Blocked = append(resourceTracker.Blocked, typeInstance+":"+instance.ID)
+			}
 
 			klog.V(4).Infof("Found resource: %s", r.SelfLink)
 			resourceTrackers = append(resourceTrackers, resourceTracker)
