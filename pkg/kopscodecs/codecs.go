@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	kubeyaml "k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/install"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
@@ -38,13 +39,6 @@ var ParameterCodec = runtime.NewParameterCodec(Scheme)
 func init() {
 	metav1.AddToGroupVersion(Scheme, schema.GroupVersion{Version: "v1"})
 	install.Install(Scheme)
-}
-
-func decoder() runtime.Decoder {
-	// TODO: Cache?
-	// Codecs provides access to encoding and decoding for the scheme
-	codec := Codecs.UniversalDecoder(kops.SchemeGroupVersion)
-	return codec
 }
 
 // ToVersionedYaml encodes the object to YAML
@@ -92,12 +86,29 @@ func ToVersionedJSONWithVersion(obj runtime.Object, version runtime.GroupVersion
 
 // Decode decodes the specified data, with the specified default version
 func Decode(data []byte, defaultReadVersion *schema.GroupVersionKind) (runtime.Object, *schema.GroupVersionKind, error) {
-	data = rewriteAPIGroup(data)
+	u := &unstructured.Unstructured{}
 
-	decoder := decoder()
+	// First decode into unstructured.Unstructured so we get the GVK
+	unstructuredDecoder := kubeyaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
+	obj, gvk, err := unstructuredDecoder.Decode(data, nil, u)
+	if err != nil {
+		return obj, gvk, err
+	}
 
-	object, gvk, err := decoder.Decode(data, defaultReadVersion, nil)
-	return object, gvk, err
+	// If this isn't a kOps type, return it as unstructured
+	if gvk.Group != "kops.k8s.io" && gvk.Group != "kops" {
+		return u, gvk, nil
+	}
+
+	// Remap the "kops" group => kops.k8s.io
+	if gvk.Group == "kops" {
+		data = rewriteAPIGroup(data)
+	}
+
+	// Decode into kops types
+	// TODO: Cache kopsDecoder?
+	kopsDecoder := Codecs.UniversalDecoder(kops.SchemeGroupVersion)
+	return kopsDecoder.Decode(data, defaultReadVersion, nil)
 }
 
 // rewriteAPIGroup rewrites the apiVersion from kops/v1alphaN -> kops.k8s.io/v1alphaN
