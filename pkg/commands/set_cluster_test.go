@@ -63,6 +63,21 @@ func TestSetClusterFields(t *testing.T) {
 			},
 		},
 		{
+			Fields: []string{
+				"spec.api.dns=",
+			},
+			Input: kops.Cluster{
+				Spec: kops.ClusterSpec{},
+			},
+			Output: kops.Cluster{
+				Spec: kops.ClusterSpec{
+					API: &kops.AccessSpec{
+						DNS: &kops.DNSAccessSpec{},
+					},
+				},
+			},
+		},
+		{
 			Fields: []string{"spec.kubelet.authorizationMode=Webhook"},
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
