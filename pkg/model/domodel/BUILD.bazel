@@ -16,5 +16,6 @@ go_library(
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/do:go_default_library",
         "//upup/pkg/fi/cloudup/dotasks:go_default_library",
+        "//vendor/k8s.io/klog/v2:go_default_library",
     ],
 )
