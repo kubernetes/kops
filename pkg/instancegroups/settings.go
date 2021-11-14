@@ -54,7 +54,7 @@ func resolveSettings(cluster *kops.Cluster, group *kops.InstanceGroup, numInstan
 	}
 
 	if rollingUpdate.MaxSurge.Type == intstr.String {
-		surge, _ := intstr.GetValueFromIntOrPercent(rollingUpdate.MaxSurge, numInstances, true)
+		surge, _ := intstr.GetScaledValueFromIntOrPercent(rollingUpdate.MaxSurge, numInstances, true)
 		surgeInt := intstr.FromInt(surge)
 		rollingUpdate.MaxSurge = &surgeInt
 	}
@@ -68,7 +68,7 @@ func resolveSettings(cluster *kops.Cluster, group *kops.InstanceGroup, numInstan
 	}
 
 	if rollingUpdate.MaxUnavailable.Type == intstr.String {
-		unavailable, _ := intstr.GetValueFromIntOrPercent(rollingUpdate.MaxUnavailable, numInstances, false)
+		unavailable, _ := intstr.GetScaledValueFromIntOrPercent(rollingUpdate.MaxUnavailable, numInstances, false)
 		if unavailable <= 0 {
 			// While we round down, percentages should resolve to a minimum of 1
 			unavailable = 1
