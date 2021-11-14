@@ -30,6 +30,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"k8s.io/klog/v2"
+
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 	"k8s.io/kops/util/pkg/hashing"
 )
@@ -48,9 +49,11 @@ type S3Path struct {
 	sse bool
 }
 
-var _ Path = &S3Path{}
-var _ TerraformPath = &S3Path{}
-var _ HasHash = &S3Path{}
+var (
+	_ Path          = &S3Path{}
+	_ TerraformPath = &S3Path{}
+	_ HasHash       = &S3Path{}
+)
 
 // S3Acl is an ACL implementation for objects on S3
 type S3Acl struct {
@@ -483,7 +486,7 @@ func (p *S3Path) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
 	return &hashing.Hash{Algorithm: hashing.HashAlgorithmMD5, HashValue: md5Bytes}, nil
 }
 
-func (p *S3Path) GetHTTPsUrl() (string, error) {
+func (p *S3Path) GetHTTPsUrl(dualstack bool) (string, error) {
 	if p.bucketDetails == nil {
 		bucketDetails, err := p.s3Context.getDetailsForBucket(p.bucket)
 		if err != nil {
@@ -491,7 +494,12 @@ func (p *S3Path) GetHTTPsUrl() (string, error) {
 		}
 		p.bucketDetails = bucketDetails
 	}
-	url := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", p.bucketDetails.name, p.bucketDetails.region, p.Key())
+	var url string
+	if dualstack {
+		url = fmt.Sprintf("https://s3.dualstack.%s.amazonaws.com/%s/%s", p.bucketDetails.region, p.bucketDetails.name, p.Key())
+	} else {
+		url = fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", p.bucketDetails.name, p.bucketDetails.region, p.Key())
+	}
 	return strings.TrimSuffix(url, "/"), nil
 }
 
