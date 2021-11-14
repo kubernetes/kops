@@ -549,7 +549,7 @@ func TestCCM(t *testing.T) {
 
 func TestExternalDNS(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "external_dns").
-		withAddons("external-dns.addons.k8s.io-k8s-1.12").
+		withAddons("external-dns.addons.k8s.io-k8s-1.19").
 		runTestTerraformAWS(t)
 	newIntegrationTest("minimal.example.com", "external_dns").runTestCloudformation(t)
 }
@@ -557,7 +557,7 @@ func TestExternalDNS(t *testing.T) {
 func TestExternalDNSIRSA(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "external_dns_irsa").
 		withOIDCDiscovery().
-		withAddons("external-dns.addons.k8s.io-k8s-1.12").
+		withAddons("external-dns.addons.k8s.io-k8s-1.19").
 		withServiceAccountRole("external-dns.kube-system", true).
 		runTestTerraformAWS(t)
 }
