@@ -137,7 +137,7 @@ func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) 
 	}
 
 	for _, loadbalancer := range loadBalancers {
-		klog.V(10).Infof("load balancer retrieved=%s, e.Name=%s", loadbalancer.Name, fi.StringValue(e.Name))
+		klog.Infof("load balancer retrieved=%s, e.Name=%s", loadbalancer.Name, fi.StringValue(e.Name))
 		if strings.Contains(loadbalancer.Name, fi.StringValue(e.Name)) {
 			// load balancer already exists.
 			e.ID = fi.String(loadbalancer.ID)
@@ -147,7 +147,7 @@ func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) 
 	}
 
 	// load balancer doesn't exist. Create one.
-	klog.V(10).Infof("Creating load balancer for DO")
+	klog.V(10).Infof("Creating load balancer for DO now..")
 
 	loadBalancerService := t.Cloud.LoadBalancersService()
 	loadbalancer, _, err := loadBalancerService.Create(context.TODO(), &godo.LoadBalancerRequest{
@@ -216,7 +216,7 @@ func (lb *LoadBalancer) FindIPAddress(c *fi.Context) (*string, error) {
 	}
 
 	const lbWaitTime = 10 * time.Second
-	klog.Warningf("IP address for LB %s not yet available -- sleeping %s", fi.StringValue(lb.Name), lbWaitTime)
+	klog.Warningf("IP address for Loadbalancer id(name) %s(%s) not yet available -- sleeping %s", fi.StringValue(lb.ID), fi.StringValue(lb.Name), lbWaitTime)
 	time.Sleep(lbWaitTime)
 
 	return nil, errors.New("IP Address is still empty.")
