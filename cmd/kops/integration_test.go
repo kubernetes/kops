@@ -178,6 +178,17 @@ func TestMinimal(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
 }
 
+// TestMinimal runs the test on a minimum configuration
+func TestMinimal_v1_23(t *testing.T) {
+	newIntegrationTest("minimal.example.com", "minimal-1.23").
+		withAddons(
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+		).
+		runTestTerraformAWS(t)
+	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
+}
+
 func TestNvidia(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "nvidia").
 		withAddons(
