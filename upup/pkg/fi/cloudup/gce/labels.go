@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 const (
@@ -58,4 +60,9 @@ func DecodeGCELabel(s string) (string, error) {
 		return "", fmt.Errorf("cannot decode GCE label: %q", s)
 	}
 	return v, nil
+}
+
+// TagForRole return the instance (network) tag used for instances with the given role.
+func TagForRole(clusterName string, role kops.InstanceGroupRole) string {
+	return SafeClusterName(clusterName) + "-" + GceLabelNameRolePrefix + strings.ToLower(string(role))
 }

@@ -34,6 +34,7 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcemetadata"
 )
 
 type GCECloud interface {
@@ -323,20 +324,7 @@ func FindInstanceTemplates(c GCECloud, clusterName string) ([]*compute.InstanceT
 
 	var matches []*compute.InstanceTemplate
 	for _, t := range ts {
-		match := false
-		for _, item := range t.Properties.Metadata.Items {
-			if item.Key == "cluster-name" {
-				value := fi.StringValue(item.Value)
-				if strings.TrimSpace(value) == findClusterName {
-					match = true
-				} else {
-					match = false
-					break
-				}
-			}
-		}
-
-		if !match {
+		if !gcemetadata.MetadataMatchesClusterName(findClusterName, t.Properties.Metadata) {
 			continue
 		}
 

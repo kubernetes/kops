@@ -48,9 +48,13 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 		authenticator, err = awsup.NewAWSAuthenticator(b.Cloud.Region())
 	case kops.CloudProviderGCE:
 		authenticator, err = gcetpmsigner.NewTPMAuthenticator()
+		// We don't use the custom resolver here in gossip mode (though we could);
+		// instead we use this as a check that protokube has now started.
+
 	default:
-		return fmt.Errorf("unsupported cloud provider %s", b.Cluster.Spec.CloudProvider)
+		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.Cluster.Spec.CloudProvider)
 	}
+
 	if err != nil {
 		return err
 	}
