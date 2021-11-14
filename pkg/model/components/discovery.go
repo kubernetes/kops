@@ -68,7 +68,7 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 			}
 			switch base := base.(type) {
 			case *vfs.S3Path:
-				serviceAccountIssuer, err = base.GetHTTPsUrl()
+				serviceAccountIssuer, err = base.GetHTTPsUrl(clusterSpec.IsIPv6Only())
 				if err != nil {
 					return err
 				}

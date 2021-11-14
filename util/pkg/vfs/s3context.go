@@ -36,13 +36,11 @@ import (
 	"k8s.io/klog/v2"
 )
 
-var (
-	// matches all regional naming conventions of S3:
-	// https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
-	// TODO: perhaps make region regex more specific, i.e. (us|eu|ap|cn|ca|sa), to prevent matching bucket names that match region format?
-	//       but that will mean updating this list when AWS introduces new regions
-	s3UrlRegexp = regexp.MustCompile(`(s3([-.](?P<region>\w{2}-\w+-\d{1})|[-.](?P<bucket>[\w.\-\_]+)|)?|(?P<bucket>[\w.\-\_]+)[.]s3([.](?P<region>\w{2}-\w+-\d{1}))?)[.]amazonaws[.]com([.]cn)?(?P<path>.*)?`)
-)
+// matches all regional naming conventions of S3:
+// https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+// TODO: perhaps make region regex more specific, i.e. (us|eu|ap|cn|ca|sa), to prevent matching bucket names that match region format?
+//       but that will mean updating this list when AWS introduces new regions
+var s3UrlRegexp = regexp.MustCompile(`(s3([-.](?P<region>\w{2}-\w+-\d{1})|[-.](?P<bucket>[\w.\-\_]+)|)?|(?P<bucket>[\w.\-\_]+)[.]s3([.](?P<region>\w{2}-\w+-\d{1}))?)[.]amazonaws[.]com([.]cn)?(?P<path>.*)?`)
 
 type S3BucketDetails struct {
 	// context is the S3Context we are associated with
@@ -84,7 +82,7 @@ func (s *S3Context) getClient(region string) (*s3.S3, error) {
 		var err error
 		endpoint := os.Getenv("S3_ENDPOINT")
 		if endpoint == "" {
-			config = aws.NewConfig().WithRegion(region)
+			config = aws.NewConfig().WithRegion(region).WithUseDualStack(true)
 			config = config.WithCredentialsChainVerboseErrors(true)
 		} else {
 			// Use customized S3 storage
@@ -363,7 +361,6 @@ func getRegionFromMetadata() (string, error) {
 
 	metadata := ec2metadata.New(metadataSession)
 	metadataRegion, err := metadata.Region()
-
 	if err != nil {
 		return "", fmt.Errorf("unable to get region from metadata: %v", err)
 	}
