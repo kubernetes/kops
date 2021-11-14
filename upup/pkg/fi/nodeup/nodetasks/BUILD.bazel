@@ -30,6 +30,7 @@ go_library(
         "//pkg/bootstrap:go_default_library",
         "//pkg/kubeconfig:go_default_library",
         "//pkg/pki:go_default_library",
+        "//pkg/resolver:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
