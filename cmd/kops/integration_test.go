@@ -1162,6 +1162,7 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 		"aws_s3_bucket_object_"+i.clusterName+"-addons-limit-range.addons.k8s.io_content",
 		"aws_s3_bucket_object_"+i.clusterName+"-addons-metadata-proxy.addons.k8s.io-v0.1.12_content",
 		"aws_s3_bucket_object_"+i.clusterName+"-addons-rbac.addons.k8s.io-k8s-1.8_content",
+		"aws_s3_bucket_object_"+i.clusterName+"-addons-storage-gce.addons.k8s.io-v1.7.0_content",
 		"aws_s3_bucket_object_"+i.clusterName+"-addons-storage-gce.addons.k8s.io-k8s-1.17_content")
 
 	for j := 0; j < i.zones; j++ {
