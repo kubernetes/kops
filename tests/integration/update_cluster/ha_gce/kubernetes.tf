@@ -122,10 +122,18 @@ resource "aws_s3_bucket_object" "ha-gce-example-com-addons-rbac-addons-k8s-io-k8
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "ha-gce-example-com-addons-storage-gce-addons-k8s-io-k8s-1-22" {
+resource "aws_s3_bucket_object" "ha-gce-example-com-addons-storage-gce-addons-k8s-io-k8s-1-17" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_ha-gce.example.com-addons-storage-gce.addons.k8s.io-k8s-1.22_content")
-  key                    = "tests/ha-gce.example.com/addons/storage-gce.addons.k8s.io/k8s-1.22.yaml"
+  content                = file("${path.module}/data/aws_s3_bucket_object_ha-gce.example.com-addons-storage-gce.addons.k8s.io-k8s-1.17_content")
+  key                    = "tests/ha-gce.example.com/addons/storage-gce.addons.k8s.io/k8s-1.17.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_bucket_object" "ha-gce-example-com-addons-storage-gce-addons-k8s-io-v1-7-0" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_ha-gce.example.com-addons-storage-gce.addons.k8s.io-v1.7.0_content")
+  key                    = "tests/ha-gce.example.com/addons/storage-gce.addons.k8s.io/v1.7.0.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
