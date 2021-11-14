@@ -1404,7 +1404,7 @@ func validateNvidiaConfig(spec *kops.ClusterSpec, nvidia *kops.NvidiaGPUConfig, 
 	if kops.CloudProviderID(spec.CloudProvider) != kops.CloudProviderAWS {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "Nvidia is only supported on AWS"))
 	}
-	if spec.ContainerRuntime != "containerd" {
+	if spec.ContainerRuntime != "" && spec.ContainerRuntime != "containerd" {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "Nvidia is only supported using containerd"))
 	}
 	return allErrs
