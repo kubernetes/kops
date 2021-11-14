@@ -113,6 +113,10 @@ func setPrimitive(v reflect.Value, newValue string) error {
 		return nil
 	}
 
+	if newValue == "" && (v.Type().Kind() == reflect.Map || v.Type().Kind() == reflect.Struct) {
+		return nil
+	}
+
 	if v.Type().Kind() == reflect.Ptr {
 		val := reflect.New(v.Type().Elem())
 		if err := setPrimitive(val.Elem(), newValue); err != nil {
