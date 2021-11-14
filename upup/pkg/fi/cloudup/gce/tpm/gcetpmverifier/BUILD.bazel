@@ -9,6 +9,7 @@ go_library(
         "//pkg/bootstrap:go_default_library",
         "//pkg/nodeidentity/gce:go_default_library",
         "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/gce/gcemetadata:go_default_library",
         "//upup/pkg/fi/cloudup/gce/tpm:go_default_library",
         "//vendor/google.golang.org/api/compute/v1:go_default_library",
         "//vendor/google.golang.org/api/googleapi:go_default_library",

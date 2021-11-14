@@ -28,6 +28,7 @@ import (
 	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcemetadata"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 )
 
@@ -97,7 +98,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				Metadata: map[string]fi.Resource{
 					"startup-script": startupScript,
 					//"config": resources/config.yaml $nodeset.Name
-					"cluster-name": fi.NewStringResource(b.ClusterName()),
+					gcemetadata.MetadataKeyClusterName:           fi.NewStringResource(b.ClusterName()),
 					nodeidentitygce.MetadataKeyInstanceGroupName: fi.NewStringResource(ig.Name),
 				},
 			}
