@@ -163,6 +163,8 @@ func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) 
 		return err
 	}
 
+	klog.Infof("Load balancer created with ID=%s", loadbalancer.ID)
+
 	e.ID = fi.String(loadbalancer.ID)
 	e.IPAddress = fi.String(loadbalancer.IP) // This will be empty on create, but will be filled later on FindIPAddress invokation.
 
