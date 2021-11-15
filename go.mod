@@ -4,9 +4,6 @@ go 1.17
 
 // Version kubernetes-1.22.2 => tag v0.22.2
 
-// This should match hack/go.mod
-replace k8s.io/code-generator => k8s.io/code-generator v0.22.2
-
 replace (
 	k8s.io/api => k8s.io/api v0.22.2
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.22.2
