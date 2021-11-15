@@ -28,6 +28,4 @@ import (
 	_ "honnef.co/go/tools/cmd/staticcheck"
 
 	_ "sigs.k8s.io/controller-tools/cmd/controller-gen"
-
-	_ "k8s.io/code-generator"
 )
