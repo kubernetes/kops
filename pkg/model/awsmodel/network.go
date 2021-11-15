@@ -256,6 +256,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			CIDR:             fi.String(subnetSpec.CIDR),
 			Shared:           fi.Bool(sharedSubnet),
 			Tags:             tags,
+			DNS64:            fi.Bool(false),
 		}
 
 		if subnetSpec.IPv6CIDR != "" {
@@ -263,6 +264,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				subnet.AmazonIPv6CIDR = b.LinkToAmazonVPCIPv6CIDR()
 			}
 			subnet.IPv6CIDR = fi.String(subnetSpec.IPv6CIDR)
+			// TODO: set this to true once NAT64 is in place
+			subnet.DNS64 = fi.Bool(false)
 		}
 		if subnetSpec.ProviderID != "" {
 			subnet.ID = fi.String(subnetSpec.ProviderID)

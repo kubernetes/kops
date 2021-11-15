@@ -23,6 +23,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -123,6 +124,7 @@ func TestSubnetCreate(t *testing.T) {
 			Tags: buildTags(map[string]string{
 				"Name": "subnet1",
 			}),
+			EnableDns64: aws.Bool(false),
 		}
 		actual := c.FindSubnet(*subnet1.ID)
 		if actual == nil {
@@ -216,6 +218,7 @@ func TestSubnetCreateIPv6(t *testing.T) {
 			Tags: buildTags(map[string]string{
 				"Name": "subnet1",
 			}),
+			EnableDns64: aws.Bool(false),
 		}
 		actual := c.FindSubnet(*subnet1.ID)
 		if actual == nil {
@@ -309,6 +312,7 @@ func TestSubnetCreateIPv6NetNum(t *testing.T) {
 			Tags: buildTags(map[string]string{
 				"Name": "subnet1",
 			}),
+			EnableDns64: aws.Bool(false),
 		}
 		actual := c.FindSubnet(*subnet1.ID)
 		if actual == nil {
@@ -432,6 +436,7 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 				"Name": "ExistingSubnet",
 				"kubernetes.io/cluster/cluster.example.com": "shared",
 			}),
+			EnableDns64: aws.Bool(false),
 		}
 
 		mockec2.SortTags(expected.Tags)

@@ -72,6 +72,7 @@ func (m *MockEC2) CreateSubnetWithId(request *ec2.CreateSubnetInput, id string) 
 		VpcId:            request.VpcId,
 		CidrBlock:        request.CidrBlock,
 		AvailabilityZone: request.AvailabilityZone,
+		EnableDns64:      aws.Bool(false),
 	}
 
 	if request.Ipv6CidrBlock != nil {
@@ -248,4 +249,11 @@ func (m *MockEC2) DeleteSubnetWithContext(aws.Context, *ec2.DeleteSubnetInput, .
 
 func (m *MockEC2) DeleteSubnetRequest(*ec2.DeleteSubnetInput) (*request.Request, *ec2.DeleteSubnetOutput) {
 	panic("Not implemented")
+}
+
+func (m *MockEC2) ModifySubnetAttribute(request *ec2.ModifySubnetAttributeInput) (*ec2.ModifySubnetAttributeOutput, error) {
+	id := *request.SubnetId
+	subnet := m.subnets[id]
+	subnet.main.EnableDns64 = request.EnableDns64.Value
+	return nil, nil
 }
