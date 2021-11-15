@@ -170,5 +170,3 @@ replace k8s.io/kubelet => k8s.io/kubelet v0.22.2
 replace k8s.io/cli-runtime => k8s.io/cli-runtime v0.22.2
 
 replace k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.22.2
-
-replace k8s.io/code-generator => k8s.io/code-generator v0.22.2
