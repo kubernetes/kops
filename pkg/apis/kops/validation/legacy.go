@@ -82,6 +82,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		requiresSubnetCIDR = false
 		requiresNetworkCIDR = false
 	case kops.CloudProviderAWS:
+		requiresNetworkCIDR = c.Spec.NetworkID == ""
 	case kops.CloudProviderAzure:
 	case kops.CloudProviderOpenstack:
 		requiresNetworkCIDR = false
