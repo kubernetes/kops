@@ -21,11 +21,12 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+	"k8s.io/legacy-cloud-providers/aws"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/legacy-cloud-providers/aws"
 )
 
 // NetworkModelBuilder configures network objects
@@ -253,6 +254,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			CIDR:             fi.String(subnetSpec.CIDR),
 			Shared:           fi.Bool(sharedSubnet),
 			Tags:             tags,
+			DNS64:            fi.Bool(false),
 		}
 
 		if subnetSpec.IPv6CIDR != "" {
@@ -260,6 +262,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				subnet.AmazonIPv6CIDR = b.LinkToAmazonVPCIPv6CIDR()
 			}
 			subnet.IPv6CIDR = fi.String(subnetSpec.IPv6CIDR)
+			// TODO: set this to true once NAT64 is in place
+			subnet.DNS64 = fi.Bool(false)
 		}
 		if subnetSpec.ProviderID != "" {
 			subnet.ID = fi.String(subnetSpec.ProviderID)
@@ -411,7 +415,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			} else {
 				return fmt.Errorf("kops currently only supports re-use of either NAT EC2 Instances or NAT Gateways. We will support more eventually! Please see https://github.com/kubernetes/kops/issues/1530")
 			}
-
 		} else {
 
 			// Every NGW needs a public (Elastic) IP address, every private
@@ -439,7 +442,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			// using a network address translation (NAT) gateway that resides
 			// in the public subnet.
 
-			//var ngw = &awstasks.NatGateway{}
+			// var ngw = &awstasks.NatGateway{}
 			ngw = &awstasks.NatGateway{
 				Name:                 fi.String(zone + "." + b.ClusterName()),
 				Lifecycle:            b.Lifecycle,
@@ -474,7 +477,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Will route IPv4 to the NAT Gateway
 		var r *awstasks.Route
 		if in != nil {
-
 			r = &awstasks.Route{
 				Name:       fi.String("private-" + zone + "-0.0.0.0/0"),
 				Lifecycle:  b.Lifecycle,
@@ -482,9 +484,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				RouteTable: rt,
 				Instance:   in,
 			}
-
 		} else {
-
 			r = &awstasks.Route{
 				Name:       fi.String("private-" + zone + "-0.0.0.0/0"),
 				Lifecycle:  b.Lifecycle,

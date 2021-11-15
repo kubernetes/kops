@@ -72,6 +72,7 @@ func (m *MockEC2) CreateSubnetWithId(request *ec2.CreateSubnetInput, id string) 
 		VpcId:            request.VpcId,
 		CidrBlock:        request.CidrBlock,
 		AvailabilityZone: request.AvailabilityZone,
+		EnableDns64:      aws.Bool(false),
 	}
 
 	if request.Ipv6CidrBlock != nil {
@@ -217,9 +218,11 @@ func (m *MockEC2) AssociateRouteTable(request *ec2.AssociateRouteTableInput) (*e
 	}
 	return response, nil
 }
+
 func (m *MockEC2) AssociateRouteTableWithContext(aws.Context, *ec2.AssociateRouteTableInput, ...request.Option) (*ec2.AssociateRouteTableOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) AssociateRouteTableRequest(*ec2.AssociateRouteTableInput) (*request.Request, *ec2.AssociateRouteTableOutput) {
 	panic("Not implemented")
 }
@@ -243,6 +246,14 @@ func (m *MockEC2) DeleteSubnet(request *ec2.DeleteSubnetInput) (*ec2.DeleteSubne
 func (m *MockEC2) DeleteSubnetWithContext(aws.Context, *ec2.DeleteSubnetInput, ...request.Option) (*ec2.DeleteSubnetOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) DeleteSubnetRequest(*ec2.DeleteSubnetInput) (*request.Request, *ec2.DeleteSubnetOutput) {
 	panic("Not implemented")
+}
+
+func (m *MockEC2) ModifySubnetAttribute(request *ec2.ModifySubnetAttributeInput) (*ec2.ModifySubnetAttributeOutput, error) {
+	id := *request.SubnetId
+	subnet := m.subnets[id]
+	subnet.main.EnableDns64 = request.EnableDns64.Value
+	return nil, nil
 }
