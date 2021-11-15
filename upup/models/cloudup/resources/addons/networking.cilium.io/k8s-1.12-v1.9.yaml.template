@@ -549,7 +549,7 @@ spec:
         # Annotation required for prometheus auto-discovery scraping
         # https://docs.cilium.io/en/v1.9/operations/metrics/#installation
         prometheus.io/scrape: "true"
-        prometheus.io/port: {{ printf "%q" .AgentPrometheusPort }}
+        prometheus.io/port: "{{ .AgentPrometheusPort }}"
         {{ end }}
       labels:
         k8s-app: cilium
