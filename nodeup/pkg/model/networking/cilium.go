@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 
 	"golang.org/x/sys/unix"
+
 	"k8s.io/kops/nodeup/pkg/model"
 	apiModel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/upup/pkg/fi"
@@ -60,14 +61,11 @@ func (b *CiliumBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	return nil
-
 }
 
 func (b *CiliumBuilder) buildBPFMount(c *fi.ModelBuilderContext) error {
-
 	var fsdata unix.Statfs_t
 	err := unix.Statfs("/sys/fs/bpf", &fsdata)
-
 	if err != nil {
 		return fmt.Errorf("error checking for /sys/fs/bpf: %v", err)
 	}
@@ -107,14 +105,13 @@ WantedBy=multi-user.target
 }
 
 func (b *CiliumBuilder) buildCgroup2Mount(c *fi.ModelBuilderContext) error {
-
 	cgroupPath := "/run/cilium/cgroupv2"
 
 	var fsdata unix.Statfs_t
 	err := unix.Statfs(cgroupPath, &fsdata)
 
 	// If the path does not exist, systemd will create it
-	if !errors.Is(err, os.ErrNotExist) {
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("error checking for /run/cilium/cgroupv2: %v", err)
 	}
 
