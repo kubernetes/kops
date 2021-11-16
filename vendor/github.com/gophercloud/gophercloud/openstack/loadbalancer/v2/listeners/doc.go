@@ -31,6 +31,7 @@ Example to Create a Listener
 		AdminStateUp:           gophercloud.Enabled,
 		DefaultPoolID:          "41efe233-7591-43c5-9cf7-923964759f9e",
 		ProtocolPort:           3306,
+		Tags:                   []string{"test", "stage"},
 	}
 
 	listener, err := listeners.Create(networkClient, createOpts).Extract()
@@ -44,10 +45,12 @@ Example to Update a Listener
 
 	i1001 := 1001
 	i181000 := 181000
+	newTags := []string{"prod"}
 	updateOpts := listeners.UpdateOpts{
 		ConnLimit: &i1001,
 		TimeoutClientData: &i181000,
 		TimeoutMemberData: &i181000,
+		Tags: &newTags,
 	}
 
 	listener, err := listeners.Update(networkClient, listenerID, updateOpts).Extract()

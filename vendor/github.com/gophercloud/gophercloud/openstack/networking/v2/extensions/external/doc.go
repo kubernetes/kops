@@ -29,7 +29,7 @@ Example to List Networks with External Information
 	}
 
 	for _, network := range allNetworks {
-		fmt.Println("%+v\n", network)
+		fmt.Printf("%+v\n", network)
 	}
 
 Example to Create a Network with External Information

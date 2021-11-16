@@ -86,6 +86,10 @@ type Listener struct {
 
 	// A list of TLS protocol versions. Available from microversion 2.17
 	TLSVersions []string `json:"tls_versions"`
+
+	// Tags is a list of resource tags. Tags are arbitrarily defined strings
+	// attached to the resource. New in version 2.5
+	Tags []string `json:"tags"`
 }
 
 type Stats struct {

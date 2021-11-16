@@ -154,18 +154,18 @@ type UpdateOptsBuilder interface {
 type UpdateOpts struct {
 	Metadata               map[string]string
 	RemoveMetadata         []string
-	ContainerRead          string `h:"X-Container-Read"`
-	ContainerSyncTo        string `h:"X-Container-Sync-To"`
-	ContainerSyncKey       string `h:"X-Container-Sync-Key"`
-	ContainerWrite         string `h:"X-Container-Write"`
-	ContentType            string `h:"Content-Type"`
-	DetectContentType      bool   `h:"X-Detect-Content-Type"`
-	RemoveVersionsLocation string `h:"X-Remove-Versions-Location"`
-	VersionsLocation       string `h:"X-Versions-Location"`
-	RemoveHistoryLocation  string `h:"X-Remove-History-Location"`
-	HistoryLocation        string `h:"X-History-Location"`
-	TempURLKey             string `h:"X-Container-Meta-Temp-URL-Key"`
-	TempURLKey2            string `h:"X-Container-Meta-Temp-URL-Key-2"`
+	ContainerRead          *string `h:"X-Container-Read"`
+	ContainerSyncTo        *string `h:"X-Container-Sync-To"`
+	ContainerSyncKey       *string `h:"X-Container-Sync-Key"`
+	ContainerWrite         *string `h:"X-Container-Write"`
+	ContentType            *string `h:"Content-Type"`
+	DetectContentType      *bool   `h:"X-Detect-Content-Type"`
+	RemoveVersionsLocation string  `h:"X-Remove-Versions-Location"`
+	VersionsLocation       string  `h:"X-Versions-Location"`
+	RemoveHistoryLocation  string  `h:"X-Remove-History-Location"`
+	HistoryLocation        string  `h:"X-History-Location"`
+	TempURLKey             string  `h:"X-Container-Meta-Temp-URL-Key"`
+	TempURLKey2            string  `h:"X-Container-Meta-Temp-URL-Key-2"`
 }
 
 // ToContainerUpdateMap formats a UpdateOpts into a map of headers.
