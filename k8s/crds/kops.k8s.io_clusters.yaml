@@ -407,6 +407,8 @@ spec:
                             type: string
                           floatingSubnet:
                             type: string
+                          ingressHostnameSuffix:
+                            type: string
                           manageSecurityGroups:
                             type: boolean
                           method:
