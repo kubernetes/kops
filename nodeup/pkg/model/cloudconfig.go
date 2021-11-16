@@ -155,6 +155,11 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 		)
 
 		if lb := osc.Loadbalancer; lb != nil {
+			ingressHostnameSuffix := "nip.io"
+			if fi.StringValue(lb.IngressHostnameSuffix) != "" {
+				ingressHostnameSuffix = fi.StringValue(lb.IngressHostnameSuffix)
+			}
+
 			lines = append(lines,
 				"[LoadBalancer]",
 				fmt.Sprintf("floating-network-id=%s", fi.StringValue(lb.FloatingNetworkID)),
@@ -163,6 +168,7 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 				fmt.Sprintf("use-octavia=%t", fi.BoolValue(lb.UseOctavia)),
 				fmt.Sprintf("manage-security-groups=%t", fi.BoolValue(lb.ManageSecGroups)),
 				fmt.Sprintf("enable-ingress-hostname=%t", fi.BoolValue(lb.EnableIngressHostname)),
+				fmt.Sprintf("ingress-hostname-suffix=%s", ingressHostnameSuffix),
 				"",
 			)
 
