@@ -55,7 +55,7 @@ require (
 	github.com/google/go-tpm v0.3.2
 	github.com/google/go-tpm-tools v0.3.0-beta1
 	github.com/google/uuid v1.2.0
-	github.com/gophercloud/gophercloud v0.18.0
+	github.com/gophercloud/gophercloud v0.23.0
 	github.com/hashicorp/hcl/v2 v2.10.1
 	github.com/hashicorp/vault/api v1.1.1
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7

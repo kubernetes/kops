@@ -71,10 +71,13 @@ func List(c *gophercloud.ServiceClient, opts ListOptsBuilder) pagination.Pager {
 
 // Constants that represent approved monitoring types.
 const (
-	TypePING  = "PING"
-	TypeTCP   = "TCP"
-	TypeHTTP  = "HTTP"
-	TypeHTTPS = "HTTPS"
+	TypePING       = "PING"
+	TypeTCP        = "TCP"
+	TypeHTTP       = "HTTP"
+	TypeHTTPS      = "HTTPS"
+	TypeTLSHELLO   = "TLS-HELLO"
+	TypeUDPConnect = "UDP-CONNECT"
+	TypeSCTP       = "SCTP"
 )
 
 var (

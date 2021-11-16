@@ -394,12 +394,12 @@ type UpdateOptsBuilder interface {
 type UpdateOpts struct {
 	Metadata           map[string]string
 	RemoveMetadata     []string
-	ContentDisposition string `h:"Content-Disposition"`
-	ContentEncoding    string `h:"Content-Encoding"`
-	ContentType        string `h:"Content-Type"`
-	DeleteAfter        int64  `h:"X-Delete-After"`
-	DeleteAt           int64  `h:"X-Delete-At"`
-	DetectContentType  bool   `h:"X-Detect-Content-Type"`
+	ContentDisposition *string `h:"Content-Disposition"`
+	ContentEncoding    *string `h:"Content-Encoding"`
+	ContentType        *string `h:"Content-Type"`
+	DeleteAfter        *int64  `h:"X-Delete-After"`
+	DeleteAt           *int64  `h:"X-Delete-At"`
+	DetectContentType  *bool   `h:"X-Detect-Content-Type"`
 }
 
 // ToObjectUpdateMap formats a UpdateOpts into a map of headers.

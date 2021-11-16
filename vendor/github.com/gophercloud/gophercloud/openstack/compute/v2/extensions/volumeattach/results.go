@@ -19,6 +19,14 @@ type VolumeAttachment struct {
 
 	// ServerID is the ID of the instance that has the volume attached.
 	ServerID string `json:"serverId"`
+
+	// Tag is a device role tag that can be applied to a volume when attaching
+	// it to the VM. Requires 2.70 microversion
+	Tag *string `json:"tag"`
+
+	// DeleteOnTermination specifies whether or not to delete the volume when the server
+	// is destroyed. Requires 2.79 microversion
+	DeleteOnTermination *bool `json:"delete_on_termination"`
 }
 
 // VolumeAttachmentPage stores a single page all of VolumeAttachment

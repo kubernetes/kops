@@ -31,7 +31,7 @@ func (c *openstackCloud) GetKeypair(name string) (*keypairs.KeyPair, error) {
 func getKeypair(c OpenstackCloud, name string) (*keypairs.KeyPair, error) {
 	var k *keypairs.KeyPair
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		rs, err := keypairs.Get(c.ComputeClient(), name).Extract()
+		rs, err := keypairs.Get(c.ComputeClient(), name, nil).Extract()
 		if err != nil {
 			if err.Error() == ErrNotFound {
 				return true, nil
@@ -80,7 +80,7 @@ func (c *openstackCloud) DeleteKeyPair(name string) error {
 
 func deleteKeyPair(c OpenstackCloud, name string) error {
 	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
-		err := keypairs.Delete(c.ComputeClient(), name).ExtractErr()
+		err := keypairs.Delete(c.ComputeClient(), name, nil).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting keypair: %v", err)
 		}
@@ -105,7 +105,7 @@ func (c *openstackCloud) ListKeypairs() ([]keypairs.KeyPair, error) {
 func listKeypairs(c OpenstackCloud) ([]keypairs.KeyPair, error) {
 	var k []keypairs.KeyPair
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := keypairs.List(c.ComputeClient()).AllPages()
+		allPages, err := keypairs.List(c.ComputeClient(), nil).AllPages()
 		if err != nil {
 			return false, fmt.Errorf("error listing keypairs: %v", err)
 		}
