@@ -74,9 +74,6 @@ const (
 	ResourceTypeSubnet       = "subnets"
 )
 
-// ErrNotFound is used to inform that the object is not found
-var ErrNotFound = "Resource not found"
-
 // readBackoff is the backoff strategy for openstack read retries.
 var readBackoff = wait.Backoff{
 	Duration: time.Second,
@@ -790,6 +787,10 @@ func getIPIngressStatus(c OpenstackCloud, cluster *kops.Cluster) (ingresses []fi
 
 func isNotFound(err error) bool {
 	if _, ok := err.(gophercloud.ErrDefault404); ok {
+		return true
+	}
+
+	if _, ok := err.(gophercloud.ErrResourceNotFound); ok {
 		return true
 	}
 
