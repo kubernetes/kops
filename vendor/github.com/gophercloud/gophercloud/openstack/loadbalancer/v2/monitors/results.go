@@ -18,6 +18,9 @@ type PoolID struct {
 // TCP: used to connect to the members using TCP.
 // HTTP: used to send an HTTP request to the member.
 // HTTPS: used to send a secure HTTP request to the member.
+// TLS-HELLO: used to send TLS-HELLO request to the member.
+// UDP-CONNECT: used to send UDP-CONNECT request to the member.
+// SCTP: used to send SCTP request to the member.
 //
 // When a pool has several monitors associated with it, each member of the pool
 // is monitored by all these monitors. If any monitor declares the member as
@@ -35,7 +38,7 @@ type Monitor struct {
 	ProjectID string `json:"project_id"`
 
 	// The type of probe sent by the load balancer to verify the member state,
-	// which is PING, TCP, HTTP, or HTTPS.
+	// which is PING, TCP, HTTP, HTTPS, TLS-HELLO, UDP-CONNECT or SCTP.
 	Type string `json:"type"`
 
 	// The time, in seconds, between sending probes to members.

@@ -27,6 +27,9 @@ type KeyPair struct {
 
 	// UserID is the user who owns this KeyPair.
 	UserID string `json:"user_id"`
+
+	// The type of the keypair
+	Type string `json:"type"`
 }
 
 // KeyPairPage stores a single page of all KeyPair results from a List call.

@@ -373,6 +373,20 @@ func (r ReplaceImageMinRam) ToImagePatchMap() map[string]interface{} {
 	}
 }
 
+// ReplaceImageProtected represents an updated protected property request.
+type ReplaceImageProtected struct {
+	NewProtected bool
+}
+
+// ToImagePatchMap assembles a request body based on ReplaceImageProtected
+func (r ReplaceImageProtected) ToImagePatchMap() map[string]interface{} {
+	return map[string]interface{}{
+		"op":    "replace",
+		"path":  "/protected",
+		"value": r.NewProtected,
+	}
+}
+
 // UpdateOp represents a valid update operation.
 type UpdateOp string
 
