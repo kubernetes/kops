@@ -26,6 +26,14 @@ type CreateOpts struct {
 
 	// VolumeID is the ID of the volume to attach to the instance.
 	VolumeID string `json:"volumeId" required:"true"`
+
+	// Tag is a device role tag that can be applied to a volume when attaching
+	// it to the VM. Requires 2.49 microversion
+	Tag string `json:"tag,omitempty"`
+
+	// DeleteOnTermination specifies whether or not to delete the volume when the server
+	// is destroyed. Requires 2.79 microversion
+	DeleteOnTermination bool `json:"delete_on_termination,omitempty"`
 }
 
 // ToVolumeAttachmentCreateMap constructs a request body from CreateOpts.

@@ -135,6 +135,9 @@ type CreateOpts struct {
 	// This is only possible to use when creating a fully populated
 	// Loadbalancer.
 	Monitor *monitors.CreateOpts `json:"healthmonitor,omitempty"`
+
+	// Tags is a set of resource tags. New in version 2.5
+	Tags []string `json:"tags,omitempty"`
 }
 
 // ToPoolCreateMap builds a request body from CreateOpts.
@@ -185,6 +188,9 @@ type UpdateOpts struct {
 	// The administrative state of the Pool. A valid value is true (UP)
 	// or false (DOWN).
 	AdminStateUp *bool `json:"admin_state_up,omitempty"`
+
+	// Tags is a set of resource tags. New in version 2.5
+	Tags *[]string `json:"tags,omitempty"`
 }
 
 // ToPoolUpdateMap builds a request body from UpdateOpts.

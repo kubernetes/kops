@@ -102,6 +102,10 @@ type Pool struct {
 
 	// The operating status of the pool.
 	OperatingStatus string `json:"operating_status"`
+
+	// Tags is a list of resource tags. Tags are arbitrarily defined strings
+	// attached to the resource. New in version 2.5
+	Tags []string `json:"tags"`
 }
 
 // PoolPage is the page returned by a pager when traversing over a
