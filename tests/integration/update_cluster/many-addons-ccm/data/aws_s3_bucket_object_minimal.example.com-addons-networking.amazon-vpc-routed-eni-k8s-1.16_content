@@ -159,13 +159,17 @@ spec:
       - env:
         - name: AWS_VPC_K8S_CNI_CONFIGURE_RPFILTER
           value: "false"
+        - name: ENABLE_IPv4
+          value: "true"
+        - name: ENABLE_IPv6
+          value: "false"
         - name: MY_NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
         - name: CLUSTER_NAME
           value: minimal.example.com
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.9.3
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.10.1
         imagePullPolicy: Always
         livenessProbe:
           exec:
@@ -214,7 +218,7 @@ spec:
       - env:
         - name: DISABLE_TCP_EARLY_DEMUX
           value: "false"
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.9.3
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.10.1
         imagePullPolicy: Always
         name: aws-vpc-cni-init
         securityContext:
