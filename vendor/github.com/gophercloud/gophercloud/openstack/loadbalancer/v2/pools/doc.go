@@ -28,6 +28,7 @@ Example to Create a Pool
 		LBMethod:       pools.LBMethodRoundRobin,
 		Protocol:       "HTTP",
 		Name:           "Example pool",
+		Tags:           []string{"test"},
 		LoadbalancerID: "79e05663-7f03-45d2-a092-8b94062f22ab",
 	}
 
@@ -40,8 +41,10 @@ Example to Update a Pool
 
 	poolID := "d67d56a6-4a86-4688-a282-f46444705c64"
 
+	newTags := []string{"prod"}
 	updateOpts := pools.UpdateOpts{
 		Name: "new-name",
+		Tags: &newTags,
 	}
 
 	pool, err := pools.Update(networkClient, poolID, updateOpts).Extract()

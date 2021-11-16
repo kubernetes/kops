@@ -54,10 +54,10 @@ type UpdateOptsBuilder interface {
 type UpdateOpts struct {
 	Metadata          map[string]string
 	RemoveMetadata    []string
-	ContentType       string `h:"Content-Type"`
-	DetectContentType bool   `h:"X-Detect-Content-Type"`
-	TempURLKey        string `h:"X-Account-Meta-Temp-URL-Key"`
-	TempURLKey2       string `h:"X-Account-Meta-Temp-URL-Key-2"`
+	ContentType       *string `h:"Content-Type"`
+	DetectContentType *bool   `h:"X-Detect-Content-Type"`
+	TempURLKey        string  `h:"X-Account-Meta-Temp-URL-Key"`
+	TempURLKey2       string  `h:"X-Account-Meta-Temp-URL-Key-2"`
 }
 
 // ToAccountUpdateMap formats an UpdateOpts into a map[string]string of headers.

@@ -167,6 +167,9 @@ type CreateOpts struct {
 
 	// A list of TLS protocol versions. Available from microversion 2.17
 	TLSVersions []TLSVersion `json:"tls_versions,omitempty"`
+
+	// Tags is a set of resource tags. New in version 2.5
+	Tags []string `json:"tags,omitempty"`
 }
 
 // ToListenerCreateMap builds a request body from CreateOpts.
@@ -249,6 +252,9 @@ type UpdateOpts struct {
 
 	// A list of TLS protocol versions. Available from microversion 2.17
 	TLSVersions *[]TLSVersion `json:"tls_versions,omitempty"`
+
+	// Tags is a set of resource tags. New in version 2.5
+	Tags *[]string `json:"tags,omitempty"`
 }
 
 // ToListenerUpdateMap builds a request body from UpdateOpts.
