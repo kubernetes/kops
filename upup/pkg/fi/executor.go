@@ -183,7 +183,7 @@ func (e *executor) forkJoin(tasks []*taskState) []error {
 		go func(ts *taskState, index int) {
 			results[index] = fmt.Errorf("function panic")
 			defer wg.Done()
-			klog.V(2).Infof("Executing task %q: %v\n", ts.key, ts.task)
+			klog.Infof("Sri testing..Executing task %q: %v\n", ts.key, ts.task)
 			results[index] = ts.task.Run(e.context)
 		}(tasks[i], i)
 	}
