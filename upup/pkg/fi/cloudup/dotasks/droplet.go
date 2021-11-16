@@ -121,6 +121,9 @@ func (d *Droplet) Run(c *fi.Context) error {
 }
 
 func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
+	if a == nil {
+		klog.V(2).Infof("In Droplet Render DO..")
+	}
 	userData, err := fi.ResourceAsString(e.UserData)
 	if err != nil {
 		return err
