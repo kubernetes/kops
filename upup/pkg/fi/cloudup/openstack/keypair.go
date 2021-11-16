@@ -33,7 +33,7 @@ func getKeypair(c OpenstackCloud, name string) (*keypairs.KeyPair, error) {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
 		rs, err := keypairs.Get(c.ComputeClient(), name, nil).Extract()
 		if err != nil {
-			if err.Error() == ErrNotFound {
+			if isNotFound(err) {
 				return true, nil
 			}
 			return false, fmt.Errorf("error listing keypair: %v", err)
