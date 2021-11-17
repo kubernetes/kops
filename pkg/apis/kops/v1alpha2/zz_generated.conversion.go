@@ -1892,6 +1892,7 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.ReconfigureKubelet = in.ReconfigureKubelet
 	out.NodeInitBootstrapFile = in.NodeInitBootstrapFile
 	out.CniBinPath = in.CniBinPath
+	out.DisableCNPStatusUpdates = in.DisableCNPStatusUpdates
 	return nil
 }
 
@@ -2000,6 +2001,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	out.ReconfigureKubelet = in.ReconfigureKubelet
 	out.NodeInitBootstrapFile = in.NodeInitBootstrapFile
 	out.CniBinPath = in.CniBinPath
+	out.DisableCNPStatusUpdates = in.DisableCNPStatusUpdates
 	return nil
 }
 

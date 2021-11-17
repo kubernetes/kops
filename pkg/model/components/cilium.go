@@ -139,6 +139,10 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 		c.EnableL7Proxy = fi.Bool(true)
 	}
 
+	if c.DisableCNPStatusUpdates == nil {
+		c.DisableCNPStatusUpdates = fi.Bool(false)
+	}
+
 	if c.CPURequest == nil {
 		defaultCPURequest := resource.MustParse("25m")
 		c.CPURequest = &defaultCPURequest
