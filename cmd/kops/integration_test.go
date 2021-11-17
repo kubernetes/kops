@@ -268,6 +268,13 @@ func TestMinimalIPv6(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6").runTestCloudformation(t)
 }
 
+// TestMinimalIPv6 runs the test on a minimum IPv6 configuration
+func TestMinimalIPv6Private(t *testing.T) {
+	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-private").
+		withAddons(awsCCMAddon, awsEBSCSIAddon, dnsControllerAddon).
+		runTestTerraformAWS(t)
+}
+
 // TestMinimalIPv6Calico runs the test on a minimum IPv6 configuration with Calico
 func TestMinimalIPv6Calico(t *testing.T) {
 	featureflag.ParseFlags("+AWSIPv6")
