@@ -69,6 +69,7 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 		// EC2 VPC
 		ListDhcpOptions,
 		ListInternetGateways,
+		ListEgressOnlyInternetGateways,
 		ListRouteTables,
 		ListSubnets,
 		ListVPCs,
@@ -1108,6 +1109,81 @@ func DescribeInternetGatewaysIgnoreTags(cloud fi.Cloud) ([]*ec2.InternetGateway,
 	var gateways []*ec2.InternetGateway
 
 	gateways = append(gateways, response.InternetGateways...)
+
+	return gateways, nil
+}
+
+func DeleteEgressOnlyInternetGateway(cloud fi.Cloud, r *resources.Resource) error {
+	c := cloud.(awsup.AWSCloud)
+
+	id := r.ID
+
+	{
+		klog.V(2).Infof("Deleting EC2 EgressOnlyInternetGateway %q", id)
+		request := &ec2.DeleteEgressOnlyInternetGatewayInput{
+			EgressOnlyInternetGatewayId: &id,
+		}
+		_, err := c.EC2().DeleteEgressOnlyInternetGateway(request)
+		if err != nil {
+			if IsDependencyViolation(err) {
+				return err
+			}
+			if awsup.AWSErrorCode(err) == "InvalidEgressOnlyInternetGatewayID.NotFound" {
+				klog.Infof("Egress-only internet gateway %q not found; assuming already deleted", id)
+				return nil
+			}
+			return fmt.Errorf("error deleting EgressOnlyInternetGateway %q: %v", id, err)
+		}
+	}
+
+	return nil
+}
+
+func ListEgressOnlyInternetGateways(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	gateways, err := DescribeEgressOnlyInternetGateways(cloud)
+	if err != nil {
+		return nil, err
+	}
+
+	var resourceTrackers []*resources.Resource
+
+	for _, o := range gateways {
+		resourceTracker := &resources.Resource{
+			Name:    FindName(o.Tags),
+			ID:      aws.StringValue(o.EgressOnlyInternetGatewayId),
+			Type:    "egress-only-internet-gateway",
+			Deleter: DeleteEgressOnlyInternetGateway,
+			Shared:  HasSharedTag(ec2.ResourceTypeEgressOnlyInternetGateway+":"+aws.StringValue(o.EgressOnlyInternetGatewayId), o.Tags, clusterName),
+		}
+
+		var blocks []string
+		for _, a := range o.Attachments {
+			if aws.StringValue(a.VpcId) != "" {
+				blocks = append(blocks, "vpc:"+aws.StringValue(a.VpcId))
+			}
+		}
+		resourceTracker.Blocks = blocks
+
+		resourceTrackers = append(resourceTrackers, resourceTracker)
+	}
+
+	return resourceTrackers, nil
+}
+
+func DescribeEgressOnlyInternetGateways(cloud fi.Cloud) ([]*ec2.EgressOnlyInternetGateway, error) {
+	c := cloud.(awsup.AWSCloud)
+
+	klog.V(2).Infof("Listing EC2 EgressOnlyInternetGateways")
+	request := &ec2.DescribeEgressOnlyInternetGatewaysInput{
+		Filters: BuildEC2Filters(cloud),
+	}
+	response, err := c.EC2().DescribeEgressOnlyInternetGateways(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing EgressOnlyInternetGateway: %v", err)
+	}
+
+	var gateways []*ec2.EgressOnlyInternetGateway
+	gateways = append(gateways, response.EgressOnlyInternetGateways...)
 
 	return gateways, nil
 }

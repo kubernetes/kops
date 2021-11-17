@@ -137,6 +137,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	allSubnetsUnmanaged := true
+	allPrivateSubnetsUnmanaged := true
 	allSubnetsShared := true
 	allSubnetsSharedInZone := make(map[string]bool)
 	for i := range b.Cluster.Spec.Subnets {
@@ -154,6 +155,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		if !isUnmanaged(subnetSpec) {
 			allSubnetsUnmanaged = false
+			if subnetSpec.Type == kops.SubnetTypePrivate {
+				allPrivateSubnetsUnmanaged = false
+			}
 		}
 	}
 
@@ -299,6 +303,21 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Set up private route tables & egress
+
+	// The instances in the private subnet can access the IPv6 Internet by
+	// using an egress-only internet gateway.
+	var eigw *awstasks.EgressOnlyInternetGateway
+	if !allPrivateSubnetsUnmanaged && b.IsIPv6Only() {
+		eigw = &awstasks.EgressOnlyInternetGateway{
+			Name:      fi.String(b.ClusterName()),
+			Lifecycle: b.Lifecycle,
+			VPC:       b.LinkToVPC(),
+			Shared:    fi.Bool(sharedVPC),
+		}
+		eigw.Tags = b.CloudTags(*eigw.Name, *eigw.Shared)
+		c.AddTask(eigw)
+	}
+
 	for zone, info := range infoByZone {
 		if len(info.PrivateSubnets) == 0 {
 			continue
@@ -416,7 +435,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			//
 			// All private subnets will need a NGW, one per zone
 			//
-			// The instances in the private subnet can access the Internet by
+			// The instances in the private subnet can access the IPv4 Internet by
 			// using a network address translation (NAT) gateway that resides
 			// in the public subnet.
 
@@ -434,7 +453,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// Private Route Table
 		//
-		// The private route table that will route to the NAT Gateway
 		// We create an owned route table if we created any subnet in that zone.
 		// Otherwise we consider it shared.
 		routeTableShared := allSubnetsSharedInZone[zone]
@@ -453,7 +471,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Private Routes
 		//
 		// Routes for the private route table.
-		// Will route to the NAT Gateway
+		// Will route IPv4 to the NAT Gateway
 		var r *awstasks.Route
 		if in != nil {
 
@@ -478,6 +496,17 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 		}
 		c.AddTask(r)
+
+		if b.IsIPv6Only() {
+			// Route IPv6 to the Egress-only Internet Gateway.
+			c.AddTask(&awstasks.Route{
+				Name:                      fi.String("private-" + zone + "-::/0"),
+				Lifecycle:                 b.Lifecycle,
+				IPv6CIDR:                  fi.String("::/0"),
+				RouteTable:                rt,
+				EgressOnlyInternetGateway: eigw,
+			})
+		}
 
 	}
 

@@ -54,7 +54,8 @@ type MockEC2 struct {
 
 	Vpcs map[string]*vpcInfo
 
-	InternetGateways map[string]*ec2.InternetGateway
+	InternetGateways           map[string]*ec2.InternetGateway
+	EgressOnlyInternetGateways map[string]*ec2.EgressOnlyInternetGateway
 
 	launchTemplateNumber int
 	LaunchTemplates      map[string]*launchTemplateInfo
@@ -98,6 +99,9 @@ func (m *MockEC2) All() map[string]interface{} {
 		all[id] = o
 	}
 	for id, o := range m.InternetGateways {
+		all[id] = o
+	}
+	for id, o := range m.EgressOnlyInternetGateways {
 		all[id] = o
 	}
 	for id, o := range m.LaunchTemplates {
