@@ -140,7 +140,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.DisableCNPStatusUpdates == nil {
-		c.DisableCNPStatusUpdates = fi.Bool(true)
+		c.DisableCNPStatusUpdates = fi.Bool(false)
 	}
 
 	if c.CPURequest == nil {

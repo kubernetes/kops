@@ -194,7 +194,7 @@ spec:
       clusterName: default
       containerRuntimeLabels: none
       cpuRequest: 25m
-      disableCNPStatusUpdates: true
+      disableCNPStatusUpdates: false
       disableMasquerade: true
       enableBPFMasquerade: false
       enableEndpointHealthChecking: true
