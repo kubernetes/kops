@@ -41,9 +41,10 @@ type Route struct {
 
 	// Exactly one of the below fields
 	// MUST be provided.
-	InternetGateway  *InternetGateway
-	NatGateway       *NatGateway
-	TransitGatewayID *string
+	EgressOnlyInternetGateway *EgressOnlyInternetGateway
+	InternetGateway           *InternetGateway
+	NatGateway                *NatGateway
+	TransitGatewayID          *string
 }
 
 func (e *Route) Find(c *fi.Context) (*Route, error) {
@@ -84,14 +85,17 @@ func (e *Route) Find(c *fi.Context) (*Route, error) {
 				CIDR:       r.DestinationCidrBlock,
 				IPv6CIDR:   r.DestinationIpv6CidrBlock,
 			}
+			if r.EgressOnlyInternetGatewayId != nil {
+				actual.EgressOnlyInternetGateway = &EgressOnlyInternetGateway{ID: r.EgressOnlyInternetGatewayId}
+			}
 			if r.GatewayId != nil {
 				actual.InternetGateway = &InternetGateway{ID: r.GatewayId}
 			}
-			if r.NatGatewayId != nil {
-				actual.NatGateway = &NatGateway{ID: r.NatGatewayId}
-			}
 			if r.InstanceId != nil {
 				actual.Instance = &Instance{ID: r.InstanceId}
+			}
+			if r.NatGatewayId != nil {
+				actual.NatGateway = &NatGateway{ID: r.NatGatewayId}
 			}
 			if r.TransitGatewayId != nil {
 				actual.TransitGatewayID = r.TransitGatewayId
@@ -130,9 +134,15 @@ func (s *Route) CheckChanges(a, e, changes *Route) error {
 			return fi.RequiredField("CIDR/IPv6CIDR")
 		}
 		if e.CIDR != nil && e.IPv6CIDR != nil {
-			return fmt.Errorf("cannot set more than 1 CIDR or IPv6CIDR")
+			return fmt.Errorf("cannot set more than one CIDR or IPv6CIDR")
 		}
 		targetCount := 0
+		if e.EgressOnlyInternetGateway != nil {
+			targetCount++
+			if e.CIDR != nil {
+				return fmt.Errorf("cannot route IPv4 to an EgressOnlyInternetGateway")
+			}
+		}
 		if e.InternetGateway != nil {
 			targetCount++
 		}
@@ -146,10 +156,10 @@ func (s *Route) CheckChanges(a, e, changes *Route) error {
 			targetCount++
 		}
 		if targetCount == 0 {
-			return fmt.Errorf("InternetGateway, Instance, NatGateway, or TransitGateway is required")
+			return fmt.Errorf("EgressOnlyInternetGateway, InternetGateway, Instance, NatGateway, or TransitGateway is required")
 		}
 		if targetCount != 1 {
-			return fmt.Errorf("cannot set more than 1 InternetGateway, Instance, NatGateway, or TransitGateway")
+			return fmt.Errorf("cannot set more than one EgressOnlyInternetGateway, InternetGateway, Instance, NatGateway, or TransitGateway")
 		}
 	}
 
@@ -179,8 +189,10 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 			klog.Fatal("both CIDR and IPv6CIDR were unexpectedly nil")
 		}
 
-		if e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil {
+		if e.EgressOnlyInternetGateway == nil && e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil {
 			return fmt.Errorf("missing target for route")
+		} else if e.EgressOnlyInternetGateway != nil {
+			request.EgressOnlyInternetGatewayId = checkNotNil(e.EgressOnlyInternetGateway.ID)
 		} else if e.InternetGateway != nil {
 			request.GatewayId = checkNotNil(e.InternetGateway.ID)
 		} else if e.NatGateway != nil {
@@ -259,13 +271,14 @@ func checkNotNil(s *string) *string {
 }
 
 type terraformRoute struct {
-	RouteTableID      *terraformWriter.Literal `json:"route_table_id" cty:"route_table_id"`
-	CIDR              *string                  `json:"destination_cidr_block,omitempty" cty:"destination_cidr_block"`
-	IPv6CIDR          *string                  `json:"destination_ipv6_cidr_block,omitempty" cty:"destination_ipv6_cidr_block"`
-	InternetGatewayID *terraformWriter.Literal `json:"gateway_id,omitempty" cty:"gateway_id"`
-	NATGatewayID      *terraformWriter.Literal `json:"nat_gateway_id,omitempty" cty:"nat_gateway_id"`
-	TransitGatewayID  *string                  `json:"transit_gateway_id,omitempty" cty:"transit_gateway_id"`
-	InstanceID        *terraformWriter.Literal `json:"instance_id,omitempty" cty:"instance_id"`
+	RouteTableID                *terraformWriter.Literal `json:"route_table_id" cty:"route_table_id"`
+	CIDR                        *string                  `json:"destination_cidr_block,omitempty" cty:"destination_cidr_block"`
+	IPv6CIDR                    *string                  `json:"destination_ipv6_cidr_block,omitempty" cty:"destination_ipv6_cidr_block"`
+	EgressOnlyInternetGatewayID *terraformWriter.Literal `json:"egress_onlygateway_id,omitempty" cty:"egress_only_gateway_id"`
+	InternetGatewayID           *terraformWriter.Literal `json:"gateway_id,omitempty" cty:"gateway_id"`
+	NATGatewayID                *terraformWriter.Literal `json:"nat_gateway_id,omitempty" cty:"nat_gateway_id"`
+	TransitGatewayID            *string                  `json:"transit_gateway_id,omitempty" cty:"transit_gateway_id"`
+	InstanceID                  *terraformWriter.Literal `json:"instance_id,omitempty" cty:"instance_id"`
 }
 
 func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Route) error {
@@ -275,8 +288,10 @@ func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rou
 		IPv6CIDR:     e.IPv6CIDR,
 	}
 
-	if e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil {
+	if e.EgressOnlyInternetGateway == nil && e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil {
 		return fmt.Errorf("missing target for route")
+	} else if e.EgressOnlyInternetGateway != nil {
+		tf.EgressOnlyInternetGatewayID = e.EgressOnlyInternetGateway.TerraformLink()
 	} else if e.InternetGateway != nil {
 		tf.InternetGatewayID = e.InternetGateway.TerraformLink()
 	} else if e.NatGateway != nil {

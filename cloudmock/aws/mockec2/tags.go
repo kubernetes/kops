@@ -61,6 +61,8 @@ func (m *MockEC2) addTags(resourceId string, tags ...*ec2.Tag) {
 		resourceType = ec2.ResourceTypeVolume
 	} else if strings.HasPrefix(resourceId, "igw-") {
 		resourceType = ec2.ResourceTypeInternetGateway
+	} else if strings.HasPrefix(resourceId, "eigw-") {
+		resourceType = ec2.ResourceTypeEgressOnlyInternetGateway
 	} else if strings.HasPrefix(resourceId, "nat-") {
 		resourceType = ec2.ResourceTypeNatgateway
 	} else if strings.HasPrefix(resourceId, "dopt-") {
