@@ -131,7 +131,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom.Propert
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.11
+    version: 1.4.12
   docker:
     skipInstall: true
   encryptionConfig: null
@@ -244,7 +244,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom.Propert
   ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: yrj4teDAp1g5GdFmTTsqdvkO9tGX3EVpiqHmwEPCLw4=
+  NodeupConfigHash: Gt7+ekwDK6ZqW/zvDFVpBrx1npeC915sJ4yNgbmWjUM=
 
   __EOF_KUBE_ENV
 
@@ -383,7 +383,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalipv6examplecom.Properties.LaunchTempla
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.11
+    version: 1.4.12
   docker:
     skipInstall: true
   kubeProxy:
@@ -415,7 +415,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalipv6examplecom.Properties.LaunchTempla
   ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: oLOgAfNuXTV6ZrJSk0ddFu5+Jr/oeJ7LLMCtUQygY1w=
+  NodeupConfigHash: GXrKO5kDei0KDXrV15Ic0SbeWR4Sx2E47Bei3M+6edg=
 
   __EOF_KUBE_ENV
 
