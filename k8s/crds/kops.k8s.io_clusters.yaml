@@ -803,6 +803,11 @@ spec:
                     items:
                       type: string
                     type: array
+                  dns:
+                    description: DNS is the IP address of the DNS server
+                    items:
+                      type: string
+                    type: array
                   execOpt:
                     description: ExecOpt is a series of options passed to the runtime
                     items:
