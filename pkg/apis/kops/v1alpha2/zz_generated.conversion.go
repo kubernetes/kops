@@ -3347,6 +3347,7 @@ func autoConvert_v1alpha2_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.DataRoot = in.DataRoot
 	out.DefaultUlimit = in.DefaultUlimit
 	out.DefaultRuntime = in.DefaultRuntime
+	out.DNS = in.DNS
 	out.ExecOpt = in.ExecOpt
 	out.ExecRoot = in.ExecRoot
 	out.Experimental = in.Experimental
@@ -3394,6 +3395,7 @@ func autoConvert_kops_DockerConfig_To_v1alpha2_DockerConfig(in *kops.DockerConfi
 	out.DataRoot = in.DataRoot
 	out.DefaultUlimit = in.DefaultUlimit
 	out.DefaultRuntime = in.DefaultRuntime
+	out.DNS = in.DNS
 	out.ExecOpt = in.ExecOpt
 	out.ExecRoot = in.ExecRoot
 	out.Experimental = in.Experimental
