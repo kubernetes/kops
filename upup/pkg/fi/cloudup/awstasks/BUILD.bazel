@@ -22,6 +22,8 @@ go_library(
         "dnszone_fitask.go",
         "ebsvolume.go",
         "ebsvolume_fitask.go",
+        "egressonlyinternetgateway.go",
+        "egressonlyinternetgateway_fitask.go",
         "elastic_ip.go",
         "elasticip_fitask.go",
         "eventbridgerule.go",
@@ -120,6 +122,7 @@ go_test(
     srcs = [
         "autoscalinggroup_test.go",
         "ebsvolume_test.go",
+        "egressonlyinternetgateway_test.go",
         "elastic_ip_test.go",
         "internetgateway_test.go",
         "launchtemplate_target_cloudformation_test.go",
