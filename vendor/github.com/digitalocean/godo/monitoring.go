@@ -23,7 +23,7 @@ const (
 
 // MonitoringService is an interface for interfacing with the
 // monitoring endpoints of the DigitalOcean API
-// See: https://developers.digitalocean.com/documentation/v2#monitoring
+// See: https://docs.digitalocean.com/reference/api/api-reference/#tag/Monitoring
 type MonitoringService interface {
 	ListAlertPolicies(context.Context, *ListOptions) ([]AlertPolicy, *Response, error)
 	GetAlertPolicy(context.Context, string) (*AlertPolicy, *Response, error)
