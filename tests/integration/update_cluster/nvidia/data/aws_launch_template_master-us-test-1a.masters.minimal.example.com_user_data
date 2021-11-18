@@ -133,7 +133,7 @@ containerd:
   nvidiaGPU:
     enabled: true
     package: nvidia-headless-460-server
-  version: 1.4.11
+  version: 1.4.12
 docker:
   skipInstall: true
 encryptionConfig: null
@@ -246,7 +246,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: N7p2va9tPSRTapQ/idYkE3zTSMGc04Er5uSryOA+EJY=
+NodeupConfigHash: BnBiCCXm3uYSzkYNxqh7P0ZTil+gsxMQPQZ2Wli4O/o=
 
 __EOF_KUBE_ENV
 
