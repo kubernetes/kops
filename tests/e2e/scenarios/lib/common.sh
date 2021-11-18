@@ -32,6 +32,11 @@ if [[ -z "${WORKSPACE-}" ]]; then
     WORKSPACE=$(mktemp -dt kops.XXXXXXXXX)
 fi
 
+if [[ -z "${LOGDIR-}" ]]; then
+    export LOGDIR="logs/"
+fi
+mkdir -p "${LOGDIR}"
+
 if [[ -z "${NETWORKING-}" ]]; then
     export NETWORKING="calico"
 fi

@@ -47,7 +47,7 @@ ${KUBETEST2} \
 		--up \
 		--kops-binary-path="${KOPS_A}" \
 		--kubernetes-version="${K8S_VERSION_A}" \
-		--create-args="--networking calico"
+		--create-args="--networking calico" 2>&1 | tee ${LOGDIR}/`date +%Y%m%dT%H%M%S`-kubetest-up.log
 
 # Export kubeconfig-a
 KUBECONFIG_A=$(mktemp -t kops.XXXXXXXXX)
@@ -66,10 +66,10 @@ else
   "${KOPS_B}" edit cluster "${CLUSTER_NAME}" "--set=cluster.spec.kubernetesVersion=${K8S_VERSION_B}"
 fi
 
-"${KOPS_B}" update cluster
-"${KOPS_B}" update cluster --admin --yes
+"${KOPS_B}" update cluster 2>&1 | tee ${LOGDIR}/`date +%Y%m%dT%H%M%S`-kops-update-cluster-preview.log
+"${KOPS_B}" update cluster --admin --yes 2>&1 | tee ${LOGDIR}/`date +%Y%m%dT%H%M%S`-kops-update-cluster.log
 # Verify no additional changes
-"${KOPS_B}" update cluster
+"${KOPS_B}" update cluster 2>&1 | tee ${LOGDIR}/`date +%Y%m%dT%H%M%S`-kops-update-cluster-check.log
 
 # Verify kubeconfig-a still works
 kubectl get nodes -owide --kubeconfig "${KUBECONFIG_A}"
@@ -77,10 +77,10 @@ kubectl get nodes -owide --kubeconfig "${KUBECONFIG_A}"
 # Sleep to ensure channels has done its thing
 sleep 60s
 
-"${KOPS_B}" rolling-update cluster
-"${KOPS_B}" rolling-update cluster --yes --validation-timeout 30m
+"${KOPS_B}" rolling-update cluster 2>&1 | tee ${LOGDIR}/`date +%Y%m%dT%H%M%S`-kops-rolling-update-cluster-preview.log
+"${KOPS_B}" rolling-update cluster --yes --validation-timeout 30m 2>&1 | tee ${LOGDIR}/`date +%Y%m%dT%H%M%S`-kops-rolling-update-cluster.log
 
-"${KOPS_B}" validate cluster
+"${KOPS_B}" validate cluster 2>&1 | tee ${LOGDIR}/`date +%Y%m%dT%H%M%S`-kops-validate-cluster.log
 
 # Verify kubeconfig-a still works
 kubectl get nodes -owide --kubeconfig="${KUBECONFIG_A}"
@@ -96,4 +96,4 @@ ${KUBETEST2} \
 		-- \
 		--test-package-version="${K8S_VERSION_B}" \
 		--parallel 25 \
-		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|TCP.CLOSE_WAIT|Projected.configMap.optional.updates|Invalid.AWS.KMS.key|Volume.limits.should.verify.that.all.nodes.have.volume.limits"
+		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|TCP.CLOSE_WAIT|Projected.configMap.optional.updates|Invalid.AWS.KMS.key|Volume.limits.should.verify.that.all.nodes.have.volume.limits"  2>&1 | tee ${LOGDIR}/`date +%Y%m%dT%H%M%S`-kubetest-test.log
