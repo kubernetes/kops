@@ -130,7 +130,7 @@ cloudConfig:
 containerRuntime: containerd
 containerd:
   logLevel: info
-  version: 1.4.11
+  version: 1.4.12
 docker:
   skipInstall: true
 kubeProxy:
@@ -162,7 +162,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce-private.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: TqScgZph8TdT1KvgsB9qS2B72HlJnWc2gQ48wx7PRTk=
+NodeupConfigHash: InFMqIsDiXLR7os8eQnCmWGP1NLPGB1QqFxJLBsiiYU=
 
 __EOF_KUBE_ENV
 
