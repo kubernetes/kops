@@ -99,6 +99,9 @@ data:
         bind {{ KubeDNS.NodeLocalDNS.LocalIP }}
         forward . __PILLAR__UPSTREAM__SERVERS__
         prometheus :9253
+        {{- if IsIPv6Only }}
+        dns64
+        {{- end }}
     }
     {{- end }}
 ---
