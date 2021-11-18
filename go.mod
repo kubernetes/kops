@@ -33,7 +33,7 @@ replace (
 require (
 	cloud.google.com/go v0.94.1
 	github.com/Azure/azure-pipeline-go v0.2.3
-	github.com/Azure/azure-sdk-for-go v56.0.0+incompatible
+	github.com/Azure/azure-sdk-for-go v56.2.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.13.0
 	github.com/Azure/go-autorest/autorest v0.11.19
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.7
@@ -46,7 +46,7 @@ require (
 	github.com/aws/aws-sdk-go v1.42.5
 	github.com/blang/semver/v4 v4.0.0
 	github.com/denverdino/aliyungo v0.0.0-20210425065611-55bee4942cba
-	github.com/digitalocean/godo v1.64.2
+	github.com/digitalocean/godo v1.65.0
 	github.com/go-ini/ini v1.62.0
 	github.com/go-logr/logr v0.4.0
 	github.com/gogo/protobuf v1.3.2
@@ -54,12 +54,12 @@ require (
 	github.com/google/go-containerregistry v0.6.0
 	github.com/google/go-tpm v0.3.2
 	github.com/google/go-tpm-tools v0.3.0-beta1
-	github.com/google/uuid v1.2.0
+	github.com/google/uuid v1.3.0
 	github.com/gophercloud/gophercloud v0.23.0
 	github.com/hashicorp/hcl/v2 v2.10.1
 	github.com/hashicorp/vault/api v1.1.1
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
-	github.com/jetstack/cert-manager v1.5.4
+	github.com/jetstack/cert-manager v1.6.1
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/pelletier/go-toml v1.9.3
 	github.com/pkg/sftp v1.13.0
@@ -72,7 +72,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	github.com/zclconf/go-cty v1.8.2
-	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
 	golang.org/x/sys v0.0.0-20210925032602-92d5a993a665
@@ -102,7 +102,7 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.9.14 // indirect
 	github.com/Azure/go-autorest/autorest/azure/cli v0.4.2 // indirect
 	github.com/Azure/go-autorest/autorest/date v0.3.0 // indirect
-	github.com/Azure/go-autorest/autorest/validation v0.3.0 // indirect
+	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/GoogleCloudPlatform/k8s-cloud-provider v0.0.0-20200415212048-7901bc822317 // indirect
@@ -120,7 +120,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/chai2010/gettext-go v0.0.0-20160711120539-c6fed771bfd5 // indirect
 	github.com/containerd/containerd v1.5.7 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/docker/cli v20.10.7+incompatible // indirect
@@ -169,7 +169,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.11 // indirect
-	github.com/klauspost/compress v1.13.0 // indirect
+	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
@@ -220,8 +220,8 @@ require (
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20210903162649-d08c68adba83 // indirect
-	google.golang.org/grpc v1.40.0 // indirect
+	google.golang.org/genproto v0.0.0-20211005153810-c76a74d43a8e // indirect
+	google.golang.org/grpc v1.41.0 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
