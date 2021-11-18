@@ -117,7 +117,7 @@ spec:
     nodeLocalDNS:
       cpuRequest: 25m
       enabled: false
-      image: k8s.gcr.io/dns/k8s-dns-node-cache:1.20.0
+      image: k8s.gcr.io/dns/k8s-dns-node-cache:1.21.1
       memoryRequest: 5Mi
     provider: CoreDNS
     replicas: 2
