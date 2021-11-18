@@ -49,6 +49,17 @@ func (a OrderSubnetMappingsByID) Less(i, j int) bool {
 	return v1 < v2
 }
 
+// OrderSubnetMappingsByName implements sort.Interface for []Subnet, based on Name
+type OrderSubnetMappingsByName []*SubnetMapping
+
+func (a OrderSubnetMappingsByName) Len() int      { return len(a) }
+func (a OrderSubnetMappingsByName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a OrderSubnetMappingsByName) Less(i, j int) bool {
+	v1 := fi.StringValue(a[i].Subnet.Name)
+	v2 := fi.StringValue(a[j].Subnet.Name)
+	return v1 < v2
+}
+
 func subnetMappingSlicesEqualIgnoreOrder(l, r []*SubnetMapping) bool {
 	lBySubnet := make(map[string]*SubnetMapping)
 	for _, s := range l {
