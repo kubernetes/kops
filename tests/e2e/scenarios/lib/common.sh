@@ -90,7 +90,9 @@ function kops-download-from-base() {
 }
 
 function kops-base-from-marker() {
-    if [[ "${1}" == "latest" ]]; then
+    if [[ "${1}" =~ ^https: ]]; then
+        echo "${1}"
+    elif [[ "${1}" == "latest" ]]; then
         curl -s "https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt"
     else
         curl -s "https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-${1}/latest-ci.txt"
