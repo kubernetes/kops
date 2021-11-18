@@ -455,7 +455,7 @@ func (e *NetworkLoadBalancer) Run(c *fi.Context) error {
 
 func (e *NetworkLoadBalancer) Normalize() {
 	// We need to sort our arrays consistently, so we don't get spurious changes
-	sort.Stable(OrderSubnetMappingsByID(e.SubnetMappings))
+	sort.Stable(OrderSubnetMappingsByName(e.SubnetMappings))
 	sort.Stable(OrderListenersByPort(e.Listeners))
 	sort.Stable(OrderTargetGroupsByName(e.TargetGroups))
 }
