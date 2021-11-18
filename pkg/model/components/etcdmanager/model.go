@@ -179,7 +179,7 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-  - image: k8s.gcr.io/etcdadm/etcd-manager:3.0.20211007
+  - image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20211117
     name: etcd-manager
     resources:
       requests:
