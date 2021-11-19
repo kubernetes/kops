@@ -482,19 +482,37 @@ type ACMEIssuerDNS01ProviderAzureDNS struct {
 	// +optional
 	ClientSecret *cmmeta.SecretKeySelector `json:"clientSecretSecretRef,omitempty"`
 
+	// ID of the Azure subscription
 	SubscriptionID string `json:"subscriptionID"`
 
 	// when specifying ClientID and ClientSecret then this field is also needed
 	// +optional
 	TenantID string `json:"tenantID,omitempty"`
 
+	// resource group the DNS zone is located in
 	ResourceGroupName string `json:"resourceGroupName"`
 
+	// name of the DNS zone that should be used
 	// +optional
 	HostedZoneName string `json:"hostedZoneName,omitempty"`
 
+	// name of the Azure environment (default AzurePublicCloud)
 	// +optional
 	Environment AzureDNSEnvironment `json:"environment,omitempty"`
+
+	// managed identity configuration, can not be used at the same time as clientID, clientSecretSecretRef or tenantID
+	// +optional
+	ManagedIdentity *AzureManagedIdentity `json:"managedIdentity,omitempty"`
+}
+
+type AzureManagedIdentity struct {
+	// client ID of the managed identity, can not be used at the same time as resourceID
+	// +optional
+	ClientID string `json:"clientID,omitempty"`
+
+	// resource ID of the managed identity, can not be used at the same time as clientID
+	// +optional
+	ResourceID string `json:"resourceID,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=AzurePublicCloud;AzureChinaCloud;AzureGermanCloud;AzureUSGovernmentCloud

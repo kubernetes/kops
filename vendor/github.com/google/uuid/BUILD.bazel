@@ -10,6 +10,7 @@ go_library(
         "node.go",
         "node_js.go",
         "node_net.go",
+        "null.go",
         "sql.go",
         "time.go",
         "util.go",
