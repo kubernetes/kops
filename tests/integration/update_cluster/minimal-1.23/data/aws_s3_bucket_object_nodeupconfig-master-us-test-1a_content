@@ -55,14 +55,14 @@ Assets:
   - aa66282f5bdb7745e5a39654b98ed1d4236670c9ca444eebff315431f3fce6f8@https://storage.googleapis.com/kubernetes-release/release/v1.23.0-alpha.4/bin/linux/amd64/kubelet
   - 9b502fb33d7a802f2b7ea46e3d61fd2d28c12a55b85d34a1e7b07810a69bd1c8@https://storage.googleapis.com/kubernetes-release/release/v1.23.0-alpha.4/bin/linux/amd64/kubectl
   - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
-  - 617044417781ea9a700187955834f712f141b37fe94f2ab173b5f7a5ed2c26a7@https://github.com/containerd/containerd/releases/download/v1.6.0-beta.2/cri-containerd-cni-1.6.0-beta.2-linux-amd64.tar.gz
+  - b7faafc73404ab95a522b7d17f273c863c3544911edb4dc2dfa5cd6e2c2bacb0@https://github.com/containerd/containerd/releases/download/v1.6.0-beta.3/cri-containerd-cni-1.6.0-beta.3-linux-amd64.tar.gz
   - f90ed6dcef534e6d1ae17907dc7eb40614b8945ad4af7f0e98d2be7cde8165c6@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-amd64
   - 9992e7eb2a2e93f799e5a9e98eb718637433524bc65f630357201a79f49b13d0@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-amd64
   arm64:
   - ef8d731df3599011019a91ba77c56e1b43c674caf781afdc78182df995f1b507@https://storage.googleapis.com/kubernetes-release/release/v1.23.0-alpha.4/bin/linux/arm64/kubelet
   - a213c95fcfb4fe96896dc1f5039e14e8d3c8f497d857fbe6e40f6b3fae52ef8e@https://storage.googleapis.com/kubernetes-release/release/v1.23.0-alpha.4/bin/linux/arm64/kubectl
   - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
-  - 8c55169cce0a198265ab9b8cad1691174c5d055f6b2468d159ac8b911fa3c0ec@https://github.com/containerd/containerd/releases/download/v1.6.0-beta.2/cri-containerd-cni-1.6.0-beta.2-linux-arm64.tar.gz
+  - 9381d0ec59d44497290752e41b9e8185f769f9225982522a3f12aab51f72481b@https://github.com/containerd/containerd/releases/download/v1.6.0-beta.3/cri-containerd-cni-1.6.0-beta.3-linux-arm64.tar.gz
   - 2f599c3d54f4c4bdbcc95aaf0c7b513a845d8f9503ec5b34c9f86aa1bc34fc0c@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-arm64
   - 9d842e3636a95de2315cdea2be7a282355aac0658ef0b86d5dc2449066538f13@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-arm64
 CAs:
@@ -262,7 +262,7 @@ channels:
 - memfs://tests/minimal.example.com/addons/bootstrap-channel.yaml
 containerdConfig:
   logLevel: info
-  version: 1.6.0-beta.2
+  version: 1.6.0-beta.3
 etcdManifests:
 - memfs://tests/minimal.example.com/manifests/etcd/main.yaml
 - memfs://tests/minimal.example.com/manifests/etcd/events.yaml
