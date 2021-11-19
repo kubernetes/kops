@@ -48,7 +48,9 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/components/kopscontroller"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
@@ -72,9 +74,11 @@ type TemplateFunctions struct {
 func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretStore) (err error) {
 	cluster := tf.Cluster
 
-	dest["SharedVPC"] = tf.SharedVPC
 	dest["ToJSON"] = tf.ToJSON
 	dest["ToYAML"] = tf.ToYAML
+	dest["KubeObjectToApplyYAML"] = kubemanifest.KubeObjectToApplyYAML
+
+	dest["SharedVPC"] = tf.SharedVPC
 	dest["UseBootstrapTokens"] = tf.UseBootstrapTokens
 	// Remember that we may be on a different arch from the target.  Hard-code for now.
 	dest["replace"] = func(s, find, replace string) string {
@@ -122,6 +126,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["KopsControllerArgv"] = tf.KopsControllerArgv
 	dest["KopsControllerConfig"] = tf.KopsControllerConfig
+	kopscontroller.AddTemplateFunctions(cluster, dest)
 	dest["DnsControllerArgv"] = tf.DNSControllerArgv
 	dest["ExternalDnsArgv"] = tf.ExternalDNSArgv
 	dest["CloudControllerConfigArgv"] = tf.CloudControllerConfigArgv

@@ -205,3 +205,8 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: User
   name: system:serviceaccount:kube-system:kops-controller
+
+{{- range $service := KopsController.GossipServices }}
+---
+{{ KubeObjectToApplyYAML $service }}
+{{- end }}

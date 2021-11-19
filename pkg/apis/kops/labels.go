@@ -28,4 +28,8 @@ const (
 
 	// UpdatePolicyExternal is a value for ClusterSpec.UpdatePolicy and InstanceGroup.UpdatePolicy indicating that upgrades are done externally, and we should disable automatic upgrades
 	UpdatePolicyExternal = "external"
+
+	// DiscoveryLabelKey is the label we use for services that should be exposed internally.
+	// Endpoints get the same labels as their services.
+	DiscoveryLabelKey = "discovery.kops.k8s.io/internal-name"
 )
