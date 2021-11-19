@@ -197,18 +197,18 @@ func validateAWSVolume(name, volumeType string, volumeSize, volumeIops, volumeTh
 	volumeThroughputIopsRatio := float64(volumeThroughput) / float64(volumeIops)
 	switch volumeType {
 	case ec2.VolumeTypeIo1:
-		if volumeIopsSizeRatio >= 50.0 {
+		if volumeIopsSizeRatio > 50.0 {
 			return fmt.Errorf("volumeIops to volumeSize ratio must be lower than 50. For %s ratio is %.02f", name, volumeIopsSizeRatio)
 		}
 	case ec2.VolumeTypeIo2:
-		if volumeIopsSizeRatio >= 500.0 {
+		if volumeIopsSizeRatio > 500.0 {
 			return fmt.Errorf("volumeIops to volumeSize ratio must be lower than 500. For %s ratio is %.02f", name, volumeIopsSizeRatio)
 		}
 	case ec2.VolumeTypeGp3:
-		if volumeIops > 3000 && volumeIopsSizeRatio >= 500.0 {
+		if volumeIops > 3000 && volumeIopsSizeRatio > 500.0 {
 			return fmt.Errorf("volumeIops to volumeSize ratio must be lower than 500. For %s ratio is %.02f", name, volumeIopsSizeRatio)
 		}
-		if volumeThroughputIopsRatio >= 0.25 {
+		if volumeThroughputIopsRatio > 0.25 {
 			return fmt.Errorf("volumeThroughput to volumeIops ratio must be lower than 0.25. For %s ratio is %.02f", name, volumeThroughputIopsRatio)
 		}
 	}
