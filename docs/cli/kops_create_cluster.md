@@ -86,6 +86,7 @@ kops create cluster [CLUSTER] [flags]
       --gce-service-account string       Service account with which the GCE VM runs. Warning: if not set, VMs will run as default compute service account.
   -h, --help                             help for cluster
       --image string                     Machine image for all instances
+      --ipv6                             Use IPv6 for the pod network (AWS only)
       --kubernetes-version string        Version of kubernetes to run (defaults to version in channel)
       --master-count int32               Number of masters. Defaults to one master per master-zone
       --master-image string              Machine image for masters. Takes precedence over --image

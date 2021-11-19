@@ -314,9 +314,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	// TODO: Can we deprecate this flag - it is awkward?
 	cmd.Flags().BoolVar(&associatePublicIP, "associate-public-ip", false, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
 
-	if featureflag.AWSIPv6.Enabled() {
-		cmd.Flags().BoolVar(&options.IPv6, "ipv6", false, "Allocate IPv6 CIDRs to subnets for clusters with public topology (AWS only)")
-	}
+	cmd.Flags().BoolVar(&options.IPv6, "ipv6", false, "Use IPv6 for the pod network (AWS only)")
 
 	cmd.Flags().StringSliceVar(&options.NodeSecurityGroups, "node-security-groups", options.NodeSecurityGroups, "Additional precreated security groups to add to worker nodes.")
 	cmd.RegisterFlagCompletionFunc("node-security-groups", completeSecurityGroup)
