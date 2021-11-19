@@ -86,8 +86,6 @@ var (
 	APIServerNodes = new("APIServerNodes", Bool(false))
 	// UseAddonOperators activates experimental addon operator support
 	UseAddonOperators = new("UseAddonOperators", Bool(false))
-	// AWSIPv6 activates experimental AWS IPv6 support.
-	AWSIPv6 = new("AWSIPv6", Bool(false))
 	// TerraformManagedFiles enables rendering managed files into the Terraform configuration.
 	TerraformManagedFiles = new("TerraformManagedFiles", Bool(true))
 	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha.
