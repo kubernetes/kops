@@ -1,5 +1,11 @@
 # Change Log
 
+## [v1.65.0] - 2021-08-05
+
+- #468 - @notxarb - New alerts feature for App Platform
+- #467 - @andrewsomething - docs: Update links to API documentation.
+- #466 - @andrewsomething - Mark Response.Monitor as deprecated.
+
 ## [v1.64.2] - 2021-07-23
 
 - #464 - @bsnyder788 - insights: update HTTP method for alert policy update

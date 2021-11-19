@@ -38,8 +38,9 @@ go_library(
     importpath = "github.com/klauspost/compress/zstd",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/github.com/golang/snappy:go_default_library",
+        "//vendor/github.com/klauspost/compress:go_default_library",
         "//vendor/github.com/klauspost/compress/huff0:go_default_library",
+        "//vendor/github.com/klauspost/compress/internal/snapref:go_default_library",
         "//vendor/github.com/klauspost/compress/zstd/internal/xxhash:go_default_library",
     ],
 )
