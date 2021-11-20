@@ -265,10 +265,8 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 	} else {
 		clientHost = "__name__"
 	}
-	clientPort := 4001
 
 	clusterName := "etcd-" + etcdCluster.Name
-	peerPort := 2380
 	backupStore := ""
 	if etcdCluster.Backups != nil {
 		backupStore = etcdCluster.Backups.BackupStore
@@ -287,12 +285,9 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 	if pod.Labels == nil {
 		pod.Labels = make(map[string]string)
 	}
-	pod.Labels["k8s-app"] = pod.Name
-
-	// TODO: Use a socket file for the quarantine port
-	quarantinedClientPort := wellknownports.EtcdMainQuarantinedClientPort
-
-	grpcPort := wellknownports.EtcdMainGRPC
+	for k, v := range SelectorForCluster(etcdCluster) {
+		pod.Labels[k] = v
+	}
 
 	// The dns suffix logic mirrors the existing logic, so we should be compatible with existing clusters
 	// (etcd makes it difficult to change peer urls, treating it as a cluster event, for reasons unknown)
@@ -307,20 +302,19 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 		dnsInternalSuffix = ".internal." + b.Cluster.ObjectMeta.Name
 	}
 
+	ports, err := PortsForCluster(etcdCluster)
+	if err != nil {
+		return nil, err
+	}
+
 	switch etcdCluster.Name {
 	case "main":
 		clusterName = "etcd"
 
 	case "events":
-		clientPort = 4002
-		peerPort = 2381
-		grpcPort = wellknownports.EtcdEventsGRPC
-		quarantinedClientPort = wellknownports.EtcdEventsQuarantinedClientPort
+		// ok
+
 	case "cilium":
-		clientPort = 4003
-		peerPort = 2382
-		grpcPort = wellknownports.EtcdCiliumGRPC
-		quarantinedClientPort = wellknownports.EtcdCiliumQuarantinedClientPort
 		if !featureflag.APIServerNodes.Enabled() {
 			clientHost = b.Cluster.Spec.MasterInternalName
 		}
@@ -343,7 +337,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 		Containerized: true,
 		ClusterName:   clusterName,
 		BackupStore:   backupStore,
-		GrpcPort:      grpcPort,
+		GrpcPort:      ports.GRPCPort,
 		DNSSuffix:     dnsInternalSuffix,
 	}
 
@@ -361,9 +355,9 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 	{
 		scheme := "https"
 
-		config.PeerUrls = fmt.Sprintf("%s://__name__:%d", scheme, peerPort)
-		config.ClientUrls = fmt.Sprintf("%s://%s:%d", scheme, clientHost, clientPort)
-		config.QuarantineClientUrls = fmt.Sprintf("%s://__name__:%d", scheme, quarantinedClientPort)
+		config.PeerUrls = fmt.Sprintf("%s://__name__:%d", scheme, ports.PeerPort)
+		config.ClientUrls = fmt.Sprintf("%s://%s:%d", scheme, clientHost, ports.ClientPort)
+		config.QuarantineClientUrls = fmt.Sprintf("%s://__name__:%d", scheme, ports.QuarantinedGRPCPort)
 
 		// TODO: We need to wire these into the etcd-manager spec
 		// // add timeout/heartbeat settings
@@ -572,4 +566,51 @@ type config struct {
 	VolumeTag             []string `flag:"volume-tag,repeat"`
 	VolumeNameTag         string   `flag:"volume-name-tag"`
 	DNSSuffix             string   `flag:"dns-suffix"`
+}
+
+// SelectorForCluster returns the selector that should be used to select our pods (from services)
+func SelectorForCluster(etcdCluster kops.EtcdClusterSpec) map[string]string {
+	return map[string]string{
+		"k8s-app": "etcd-manager-" + etcdCluster.Name,
+	}
+}
+
+type Ports struct {
+	ClientPort          int
+	PeerPort            int
+	GRPCPort            int
+	QuarantinedGRPCPort int
+}
+
+// PortsForCluster returns the ports that the cluster users.
+func PortsForCluster(etcdCluster kops.EtcdClusterSpec) (Ports, error) {
+	switch etcdCluster.Name {
+	case "main":
+		return Ports{
+			GRPCPort: wellknownports.EtcdMainGRPC,
+			// TODO: Use a socket file for the quarantine port
+			QuarantinedGRPCPort: wellknownports.EtcdMainQuarantinedClientPort,
+			ClientPort:          4001,
+			PeerPort:            2380,
+		}, nil
+
+	case "events":
+		return Ports{
+			GRPCPort:            wellknownports.EtcdEventsGRPC,
+			QuarantinedGRPCPort: wellknownports.EtcdEventsQuarantinedClientPort,
+			ClientPort:          4002,
+			PeerPort:            2381,
+		}, nil
+	case "cilium":
+		return Ports{
+			GRPCPort:            wellknownports.EtcdCiliumGRPC,
+			QuarantinedGRPCPort: wellknownports.EtcdCiliumQuarantinedClientPort,
+			ClientPort:          4003,
+			PeerPort:            2382,
+		}, nil
+
+	default:
+		return Ports{}, fmt.Errorf("unknown etcd cluster key %q", etcdCluster.Name)
+	}
+
 }
