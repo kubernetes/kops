@@ -18,8 +18,10 @@ package edit
 
 import (
 	"bytes"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime"
+
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -51,7 +53,11 @@ func HasExtraFields(yaml string, object runtime.Object) (string, error) {
 
 	if !bytes.Equal(editedYaml, newYaml) {
 		discardedChanges := diff.FormatDiff(string(newYaml), string(editedYaml))
-		return discardedChanges, nil
+		for _, line := range strings.Split(discardedChanges, "\n") {
+			if strings.HasPrefix(line, "-") {
+				return discardedChanges, nil
+			}
+		}
 	}
 
 	return "", nil
