@@ -76,6 +76,12 @@ data:
           fallthrough in-addr.arpa ip6.arpa
           ttl 30
         }
+    {{- if GossipDomains }}
+        hosts /etc/coredns/hosts {{ join GossipDomains " " }} {
+          ttl 30
+          fallthrough
+        }
+    {{- end }}
         prometheus :9153
         forward . {{ or (join KubeDNS.UpstreamNameservers " ") "/etc/resolv.conf" }} {
           max_concurrent 1000
@@ -192,9 +198,6 @@ spec:
         - name: config-volume
           configMap:
             name: coredns
-            items:
-            - key: Corefile
-              path: Corefile
 ---
 apiVersion: v1
 kind: Service

@@ -48,7 +48,9 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/components/kopscontroller"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
@@ -72,9 +74,11 @@ type TemplateFunctions struct {
 func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretStore) (err error) {
 	cluster := tf.Cluster
 
-	dest["SharedVPC"] = tf.SharedVPC
 	dest["ToJSON"] = tf.ToJSON
 	dest["ToYAML"] = tf.ToYAML
+	dest["KubeObjectToApplyYAML"] = kubemanifest.KubeObjectToApplyYAML
+
+	dest["SharedVPC"] = tf.SharedVPC
 	dest["UseBootstrapTokens"] = tf.UseBootstrapTokens
 	// Remember that we may be on a different arch from the target.  Hard-code for now.
 	dest["replace"] = func(s, find, replace string) string {
@@ -110,6 +114,16 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return cluster.Spec.KubeDNS
 	}
 
+	dest["GossipDomains"] = func() []string {
+		var names []string
+
+		if dns.IsGossipHostname(cluster.Spec.MasterInternalName) {
+			names = append(names, "k8s.local")
+		}
+
+		return names
+	}
+
 	dest["NodeLocalDNSClusterIP"] = func() string {
 		if cluster.Spec.KubeProxy.ProxyMode == "ipvs" {
 			return cluster.Spec.KubeDNS.ServerIP
@@ -122,6 +136,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["KopsControllerArgv"] = tf.KopsControllerArgv
 	dest["KopsControllerConfig"] = tf.KopsControllerConfig
+	kopscontroller.AddTemplateFunctions(cluster, dest)
 	dest["DnsControllerArgv"] = tf.DNSControllerArgv
 	dest["ExternalDnsArgv"] = tf.ExternalDNSArgv
 	dest["CloudControllerConfigArgv"] = tf.CloudControllerConfigArgv
@@ -584,6 +599,12 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 
 	if tf.Cluster.Spec.IsKopsControllerIPAM() {
 		config.EnableCloudIPAM = true
+	}
+
+	if dns.IsGossipHostname(cluster.Spec.MasterInternalName) {
+		config.Discovery = &kopscontrollerconfig.DiscoveryOptions{
+			Enabled: true,
+		}
 	}
 
 	// To avoid indentation problems, we marshal as json.  json is a subset of yaml
