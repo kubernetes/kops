@@ -23,19 +23,22 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
 	"k8s.io/kops/pkg/apis/kops"
 )
 
-var testTimestamp = metav1.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)}
-var testObj = kops.Cluster{
-	ObjectMeta: metav1.ObjectMeta{
-		CreationTimestamp: testTimestamp,
-		Name:              "hello",
-	},
-	Spec: kops.ClusterSpec{
-		KubernetesVersion: "1.2.3",
-	},
-}
+var (
+	testTimestamp = metav1.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)}
+	testObj       = kops.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			CreationTimestamp: testTimestamp,
+			Name:              "hello",
+		},
+		Spec: kops.ClusterSpec{
+			KubernetesVersion: "1.2.3",
+		},
+	}
+)
 
 func TestHasExtraFields(t *testing.T) {
 	tests := []struct {
@@ -56,6 +59,27 @@ func TestHasExtraFields(t *testing.T) {
 			`),
 			expected: "",
 		},
+
+		{
+			obj: &testObj,
+			yaml: heredoc.Doc(`
+			apiVersion: kops.k8s.io/v1alpha2
+			kind: Cluster
+			metadata:
+			  creationTimestamp: "2017-01-01T00:00:00Z"
+			  name: hello
+			extraFields: true
+			spec:
+			  kubernetesVersion: 1.2.3
+			`),
+			expected: heredoc.Doc(`
+			  apiVersion: kops.k8s.io/v1alpha2
+			+ extraFields: true
+			  kind: Cluster
+			  metadata:
+			...
+			`),
+		},
 		{
 			obj: &testObj,
 			yaml: heredoc.Doc(`
@@ -74,6 +98,20 @@ func TestHasExtraFields(t *testing.T) {
 			- spec:
 			    kubernetesVersion: 1.2.3
 			`),
+		},
+		{
+			obj: &testObj,
+			yaml: heredoc.Doc(`
+			apiVersion: kops.k8s.io/v1alpha2
+			kind: Cluster
+			metadata:
+			  creationTimestamp: "2017-01-01T00:00:00Z"
+			  name: hello
+			spec:
+			  kubernetesVersion: 1.2.3
+			  isolateMasters: false
+			`),
+			expected: "",
 		},
 	}
 
