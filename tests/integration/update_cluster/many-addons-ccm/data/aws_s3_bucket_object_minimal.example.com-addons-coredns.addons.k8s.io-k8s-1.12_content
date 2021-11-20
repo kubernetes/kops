@@ -200,9 +200,6 @@ spec:
         operator: Exists
       volumes:
       - configMap:
-          items:
-          - key: Corefile
-            path: Corefile
           name: coredns
         name: config-volume
 

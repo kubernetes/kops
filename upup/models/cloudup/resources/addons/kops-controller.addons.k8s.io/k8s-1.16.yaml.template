@@ -125,6 +125,16 @@ rules:
   - list
   - watch
   - patch
+{{- if GossipDomains }}
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  verbs:
+  - get
+  - list
+  - watch
+{{- end }}
 
 ---
 
@@ -187,6 +197,17 @@ rules:
   - leases
   verbs:
   - create
+{{- if GossipDomains }}
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - watch
+  - patch
+  resourceNames: [ "coredns" ]
+{{- end }}
 
 ---
 
@@ -205,3 +226,8 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: User
   name: system:serviceaccount:kube-system:kops-controller
+
+{{- range $service := KopsController.GossipServices }}
+---
+{{ KubeObjectToApplyYAML $service }}
+{{- end }}
