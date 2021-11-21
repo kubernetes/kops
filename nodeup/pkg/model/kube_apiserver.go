@@ -253,7 +253,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 		return nil
 	}
 
-	if b.Cluster.Spec.Authentication.Aws != nil {
+	if b.Cluster.Spec.Authentication.AWS != nil {
 		id := "aws-iam-authenticator"
 		kubeAPIServer.AuthenticationTokenWebhookConfigFile = fi.String(PathAuthnConfig)
 
@@ -720,7 +720,7 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 	}
 
 	if b.Cluster.Spec.Authentication != nil {
-		if b.Cluster.Spec.Authentication.Kopeio != nil || b.Cluster.Spec.Authentication.Aws != nil {
+		if b.Cluster.Spec.Authentication.Kopeio != nil || b.Cluster.Spec.Authentication.AWS != nil {
 			addHostPathMapping(pod, container, "authn-config", PathAuthnConfig)
 		}
 	}
@@ -744,7 +744,7 @@ func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
 	annotations["kubectl.kubernetes.io/default-container"] = "kube-apiserver"
 
 	if b.Cluster.Spec.API != nil {
-		if b.Cluster.Spec.API.LoadBalancer == nil || !b.Cluster.Spec.API.LoadBalancer.UseForInternalApi {
+		if b.Cluster.Spec.API.LoadBalancer == nil || !b.Cluster.Spec.API.LoadBalancer.UseForInternalAPI {
 			annotations["dns.alpha.kubernetes.io/internal"] = b.Cluster.Spec.MasterInternalName
 		}
 

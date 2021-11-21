@@ -343,17 +343,17 @@ type ExecContainerAction struct {
 
 type AuthenticationSpec struct {
 	Kopeio *KopeioAuthenticationSpec `json:"kopeio,omitempty"`
-	Aws    *AwsAuthenticationSpec    `json:"aws,omitempty"`
+	AWS    *AWSAuthenticationSpec    `json:"aws,omitempty"`
 }
 
 func (s *AuthenticationSpec) IsEmpty() bool {
-	return s.Kopeio == nil && s.Aws == nil
+	return s.Kopeio == nil && s.AWS == nil
 }
 
 type KopeioAuthenticationSpec struct {
 }
 
-type AwsAuthenticationSpec struct {
+type AWSAuthenticationSpec struct {
 	// Image is the AWS IAM Authenticator docker image to uses
 	Image string `json:"image,omitempty"`
 	// BackendMode is the AWS IAM Authenticator backend to use. Default MountedFile
@@ -369,10 +369,10 @@ type AwsAuthenticationSpec struct {
 	// CPULimit CPU limit of AWS IAM Authenticator container. Default 10m
 	CPULimit *resource.Quantity `json:"cpuLimit,omitempty"`
 	// IdentityMappings maps IAM Identities to Kubernetes users/groups
-	IdentityMappings []AwsAuthenticationIdentityMappingSpec `json:"identityMappings,omitempty"`
+	IdentityMappings []AWSAuthenticationIdentityMappingSpec `json:"identityMappings,omitempty"`
 }
 
-type AwsAuthenticationIdentityMappingSpec struct {
+type AWSAuthenticationIdentityMappingSpec struct {
 	// Arn of the IAM User or IAM Role to be allowed to authenticate
 	ARN string `json:"arn,omitempty"`
 	// Username that Kubernetes will see the user as
@@ -463,8 +463,8 @@ type LoadBalancerAccessSpec struct {
 	SecurityGroupOverride *string `json:"securityGroupOverride,omitempty"`
 	// AdditionalSecurityGroups attaches additional security groups (e.g. sg-123456).
 	AdditionalSecurityGroups []string `json:"additionalSecurityGroups,omitempty"`
-	// UseForInternalApi indicates whether the LB should be used by the kubelet
-	UseForInternalApi bool `json:"useForInternalApi,omitempty"`
+	// UseForInternalAPI indicates whether the LB should be used by the kubelet
+	UseForInternalAPI bool `json:"useForInternalApi,omitempty"`
 	// SSLCertificate allows you to specify the ACM cert to be used the LB
 	SSLCertificate string `json:"sslCertificate,omitempty"`
 	// SSLPolicy allows you to overwrite the LB listener's Security Policy
@@ -629,13 +629,13 @@ type EtcdMemberSpec struct {
 	// VolumeType is the underlying cloud storage class
 	VolumeType *string `json:"volumeType,omitempty"`
 	// If volume type is io1, then we need to specify the number of Iops.
-	VolumeIops *int32 `json:"volumeIops,omitempty"`
+	VolumeIOPS *int32 `json:"volumeIops,omitempty"`
 	// Parameter for disks that support provisioned throughput
 	VolumeThroughput *int32 `json:"volumeThroughput,omitempty"`
 	// VolumeSize is the underlying cloud volume size
 	VolumeSize *int32 `json:"volumeSize,omitempty"`
-	// KmsKeyId is a AWS KMS ID used to encrypt the volume
-	KmsKeyId *string `json:"kmsKeyId,omitempty"`
+	// KmsKeyID is a AWS KMS ID used to encrypt the volume
+	KmsKeyID *string `json:"kmsKeyId,omitempty"`
 	// EncryptedVolume indicates you want to encrypt the volume
 	EncryptedVolume *bool `json:"encryptedVolume,omitempty"`
 }
