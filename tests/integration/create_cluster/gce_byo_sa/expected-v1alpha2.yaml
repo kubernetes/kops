@@ -64,7 +64,7 @@ metadata:
     kops.k8s.io/cluster: gce.example.com
   name: master-us-test1-a
 spec:
-  image: ubuntu-os-cloud/ubuntu-2004-focal-v20210927
+  image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
   machineType: n1-standard-1
   maxSize: 1
   minSize: 1
@@ -87,7 +87,7 @@ metadata:
     kops.k8s.io/cluster: gce.example.com
   name: nodes-us-test1-a
 spec:
-  image: ubuntu-os-cloud/ubuntu-2004-focal-v20210927
+  image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
   machineType: n1-standard-2
   maxSize: 1
   minSize: 1
