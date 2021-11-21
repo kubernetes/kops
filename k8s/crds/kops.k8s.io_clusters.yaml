@@ -3153,7 +3153,7 @@ spec:
                   image:
                     type: string
                   ipvsExcludeCidrs:
-                    description: IPVSExcludeCIDRS is comma-separated list of CIDR's
+                    description: IPVSExcludeCIDRs is comma-separated list of CIDR's
                       which the ipvs proxier should not touch when cleaning up IPVS
                       rules
                     items:

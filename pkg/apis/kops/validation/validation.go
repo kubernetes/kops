@@ -592,7 +592,7 @@ func validateKubeProxy(k *kops.KubeProxyConfig, fldPath *field.Path) field.Error
 
 	master := k.Master
 
-	for i, x := range k.IPVSExcludeCIDRS {
+	for i, x := range k.IPVSExcludeCIDRs {
 		if _, _, err := net.ParseCIDR(x); err != nil {
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("ipvsExcludeCidrs").Index(i), x, "Invalid network CIDR"))
 		}
