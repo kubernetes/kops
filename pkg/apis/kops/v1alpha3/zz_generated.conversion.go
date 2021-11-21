@@ -4628,7 +4628,7 @@ func autoConvert_v1alpha3_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.EtcdQuorumRead = in.EtcdQuorumRead
 	out.RequestTimeout = in.RequestTimeout
 	out.MinRequestTimeout = in.MinRequestTimeout
-	out.TargetRamMb = in.TargetRamMb
+	out.TargetRamMB = in.TargetRamMB
 	out.ServiceAccountKeyFile = in.ServiceAccountKeyFile
 	out.ServiceAccountSigningKeyFile = in.ServiceAccountSigningKeyFile
 	out.ServiceAccountIssuer = in.ServiceAccountIssuer
@@ -4739,7 +4739,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha3_KubeAPIServerConfig(in *ko
 	out.EtcdQuorumRead = in.EtcdQuorumRead
 	out.RequestTimeout = in.RequestTimeout
 	out.MinRequestTimeout = in.MinRequestTimeout
-	out.TargetRamMb = in.TargetRamMb
+	out.TargetRamMB = in.TargetRamMB
 	out.ServiceAccountKeyFile = in.ServiceAccountKeyFile
 	out.ServiceAccountSigningKeyFile = in.ServiceAccountSigningKeyFile
 	out.ServiceAccountIssuer = in.ServiceAccountIssuer
@@ -4818,7 +4818,7 @@ func autoConvert_v1alpha3_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.ConcurrentServiceSyncs = in.ConcurrentServiceSyncs
 	out.ConcurrentResourceQuotaSyncs = in.ConcurrentResourceQuotaSyncs
 	out.ConcurrentServiceaccountTokenSyncs = in.ConcurrentServiceaccountTokenSyncs
-	out.ConcurrentRcSyncs = in.ConcurrentRcSyncs
+	out.ConcurrentRCSyncs = in.ConcurrentRCSyncs
 	out.AuthenticationKubeconfig = in.AuthenticationKubeconfig
 	out.AuthorizationKubeconfig = in.AuthorizationKubeconfig
 	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths
@@ -4887,7 +4887,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha3_KubeControllerMana
 	out.ConcurrentServiceSyncs = in.ConcurrentServiceSyncs
 	out.ConcurrentResourceQuotaSyncs = in.ConcurrentResourceQuotaSyncs
 	out.ConcurrentServiceaccountTokenSyncs = in.ConcurrentServiceaccountTokenSyncs
-	out.ConcurrentRcSyncs = in.ConcurrentRcSyncs
+	out.ConcurrentRCSyncs = in.ConcurrentRCSyncs
 	out.AuthenticationKubeconfig = in.AuthenticationKubeconfig
 	out.AuthorizationKubeconfig = in.AuthorizationKubeconfig
 	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths
@@ -4985,7 +4985,7 @@ func autoConvert_v1alpha3_KubeProxyConfig_To_kops_KubeProxyConfig(in *KubeProxyC
 	out.MetricsBindAddress = in.MetricsBindAddress
 	out.Enabled = in.Enabled
 	out.ProxyMode = in.ProxyMode
-	out.IPVSExcludeCIDRS = in.IPVSExcludeCIDRS
+	out.IPVSExcludeCIDRs = in.IPVSExcludeCIDRs
 	out.IPVSMinSyncPeriod = in.IPVSMinSyncPeriod
 	out.IPVSScheduler = in.IPVSScheduler
 	out.IPVSSyncPeriod = in.IPVSSyncPeriod
@@ -5014,7 +5014,7 @@ func autoConvert_kops_KubeProxyConfig_To_v1alpha3_KubeProxyConfig(in *kops.KubeP
 	out.MetricsBindAddress = in.MetricsBindAddress
 	out.Enabled = in.Enabled
 	out.ProxyMode = in.ProxyMode
-	out.IPVSExcludeCIDRS = in.IPVSExcludeCIDRS
+	out.IPVSExcludeCIDRs = in.IPVSExcludeCIDRs
 	out.IPVSMinSyncPeriod = in.IPVSMinSyncPeriod
 	out.IPVSScheduler = in.IPVSScheduler
 	out.IPVSSyncPeriod = in.IPVSSyncPeriod
