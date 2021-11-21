@@ -285,7 +285,7 @@ spec:
         - name: ebs-plugin
           securityContext:
             privileged: true
-          image: k8s.gcr.io/provider-aws/aws-ebs-csi-driver:{{ .Version }}
+          image: hakman/aws-ebs-csi-driver:test-aws-sdk-go-1-42
           args:
             - node
             - --endpoint=$(CSI_ENDPOINT)
@@ -296,6 +296,8 @@ spec:
             - --v=2
           env:
             {{- if IsIPv6Only }}
+            - name: AWS_USE_DUALSTACK_ENDPOINT
+              value: "true"
             - name: AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE
               value: IPv6
             {{- end }}
@@ -429,7 +431,7 @@ spec:
       {{ end }}
       containers:
         - name: ebs-plugin
-          image: k8s.gcr.io/provider-aws/aws-ebs-csi-driver:{{ .Version }}
+          image: hakman/aws-ebs-csi-driver:test-aws-sdk-go-1-42
           imagePullPolicy: IfNotPresent
           args:
             - controller
@@ -437,13 +439,12 @@ spec:
             - --logtostderr
             - --k8s-tag-cluster-id={{ ClusterName }}
             - "--extra-tags={{ CloudLabels }}"
-            - --v=5
+            - --v=9
+            - --aws-sdk-debug-log
           env:
             {{- if IsIPv6Only }}
-            # TODO: Replace with "AWS_USE_DUALSTACK_ENDPOINT=true" when the relevant PR is merged:
-            # https://github.com/aws/aws-sdk-go/pull/3938
-            - name: AWS_EC2_ENDPOINT
-              value: https://api.ec2.{{ Region }}.aws
+            - name: AWS_USE_DUALSTACK_ENDPOINT
+              value: "true"
             - name: AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE
               value: IPv6
             {{- end }}
