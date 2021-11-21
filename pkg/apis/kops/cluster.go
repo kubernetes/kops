@@ -105,7 +105,7 @@ type ClusterSpec struct {
 	// DNSControllerGossipConfig for the cluster assuming the use of gossip DNS
 	DNSControllerGossipConfig *DNSControllerGossipConfig `json:"dnsControllerGossipConfig,omitempty"`
 	// AdditionalSANs adds additional Subject Alternate Names to apiserver cert that kops generates
-	AdditionalSANs []string `json:"additionalSans,omitempty"`
+	AdditionalSANs []string `json:"additionalSANs,omitempty"`
 	// ClusterDNSDomain is the suffix we use for internal DNS names (normally cluster.local)
 	ClusterDNSDomain string `json:"clusterDNSDomain,omitempty"`
 	// ServiceClusterIPRange is the CIDR, from the internal network, where we allocate IPs for services
@@ -124,7 +124,7 @@ type ClusterSpec struct {
 	// SSHKeyName specifies a preexisting SSH key to use
 	SSHKeyName *string `json:"sshKeyName,omitempty"`
 	// KubernetesAPIAccess is a list of the CIDRs that can access the Kubernetes API endpoint (master HTTPS)
-	KubernetesAPIAccess []string `json:"kubernetesApiAccess,omitempty"`
+	KubernetesAPIAccess []string `json:"kubernetesAPIAccess,omitempty"`
 	// IsolateMasters determines whether we should lock down masters so that they are not on the pod network.
 	// true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master
 	// if they have hostNetwork=true.
@@ -158,7 +158,7 @@ type ClusterSpec struct {
 	Kubelet                        *KubeletConfigSpec            `json:"kubelet,omitempty"`
 	MasterKubelet                  *KubeletConfigSpec            `json:"masterKubelet,omitempty"`
 	CloudConfig                    *CloudConfiguration           `json:"cloudConfig,omitempty"`
-	ExternalDNS                    *ExternalDNSConfig            `json:"externalDns,omitempty"`
+	ExternalDNS                    *ExternalDNSConfig            `json:"externalDNS,omitempty"`
 	NTP                            *NTPConfig                    `json:"ntp,omitempty"`
 
 	// NodeTerminationHandler determines the node termination handler configuration.
@@ -345,17 +345,17 @@ type ExecContainerAction struct {
 
 type AuthenticationSpec struct {
 	Kopeio *KopeioAuthenticationSpec `json:"kopeio,omitempty"`
-	Aws    *AwsAuthenticationSpec    `json:"aws,omitempty"`
+	AWS    *AWSAuthenticationSpec    `json:"aws,omitempty"`
 }
 
 func (s *AuthenticationSpec) IsEmpty() bool {
-	return s.Kopeio == nil && s.Aws == nil
+	return s.Kopeio == nil && s.AWS == nil
 }
 
 type KopeioAuthenticationSpec struct {
 }
 
-type AwsAuthenticationSpec struct {
+type AWSAuthenticationSpec struct {
 	// Image is the AWS IAM Authenticator docker image to use
 	Image string `json:"image,omitempty"`
 	// BackendMode is the AWS IAM Authenticator backend to use. Default MountedFile
@@ -371,10 +371,10 @@ type AwsAuthenticationSpec struct {
 	// CPULimit CPU limit of AWS IAM Authenticator container. Default 10m
 	CPULimit *resource.Quantity `json:"cpuLimit,omitempty"`
 	// IdentityMappings maps IAM Identities to Kubernetes users/groups
-	IdentityMappings []AwsAuthenticationIdentityMappingSpec `json:"identityMappings,omitempty"`
+	IdentityMappings []AWSAuthenticationIdentityMappingSpec `json:"identityMappings,omitempty"`
 }
 
-type AwsAuthenticationIdentityMappingSpec struct {
+type AWSAuthenticationIdentityMappingSpec struct {
 	// Arn of the IAM User or IAM Role to be allowed to authenticate
 	ARN string `json:"arn,omitempty"`
 	// Username that Kubernetes will see the user as
@@ -446,7 +446,7 @@ type LoadBalancerSubnetSpec struct {
 	// PrivateIPv4Address specifies the private IPv4 address to use for a NLB
 	PrivateIPv4Address *string `json:"privateIPv4Address,omitempty"`
 	// AllocationID specifies the Elastic IP Allocation ID for use by a NLB
-	AllocationID *string `json:"allocationId,omitempty"`
+	AllocationID *string `json:"allocationID,omitempty"`
 }
 
 // LoadBalancerAccessSpec provides configuration details related to API LoadBalancer and its access
@@ -461,8 +461,8 @@ type LoadBalancerAccessSpec struct {
 	SecurityGroupOverride *string `json:"securityGroupOverride,omitempty"`
 	// AdditionalSecurityGroups attaches additional security groups (e.g. sg-123456).
 	AdditionalSecurityGroups []string `json:"additionalSecurityGroups,omitempty"`
-	// UseForInternalApi indicates whether the LB should be used by the kubelet
-	UseForInternalApi bool `json:"useForInternalApi,omitempty"`
+	// UseForInternalAPI indicates whether the LB should be used by the kubelet
+	UseForInternalAPI bool `json:"useForInternalAPI,omitempty"`
 	// SSLCertificate allows you to specify the ACM cert to be used the LB
 	SSLCertificate string `json:"sslCertificate,omitempty"`
 	// SSLPolicy allows you to overwrite the LB listener's Security Policy
@@ -620,13 +620,13 @@ type EtcdMemberSpec struct {
 	// VolumeType is the underlying cloud storage class
 	VolumeType *string `json:"volumeType,omitempty"`
 	// If volume type is io1, then we need to specify the number of Iops.
-	VolumeIops *int32 `json:"volumeIops,omitempty"`
+	VolumeIOPS *int32 `json:"volumeIOPS,omitempty"`
 	// Parameter for disks that support provisioned throughput
 	VolumeThroughput *int32 `json:"volumeThroughput,omitempty"`
 	// VolumeSize is the underlying cloud volume size
 	VolumeSize *int32 `json:"volumeSize,omitempty"`
-	// KmsKeyId is a AWS KMS ID used to encrypt the volume
-	KmsKeyId *string `json:"kmsKeyId,omitempty"`
+	// KmsKeyID is a AWS KMS ID used to encrypt the volume
+	KmsKeyID *string `json:"kmsKeyID,omitempty"`
 	// EncryptedVolume indicates you want to encrypt the volume
 	EncryptedVolume *bool `json:"encryptedVolume,omitempty"`
 }

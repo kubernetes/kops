@@ -258,8 +258,8 @@ func (b *PolicyBuilder) BuildAWSPolicy() (*Policy, error) {
 	// Retrieve all the KMS Keys in use
 	for _, e := range b.Cluster.Spec.EtcdClusters {
 		for _, m := range e.Members {
-			if m.KmsKeyId != nil {
-				b.KMSKeys = append(b.KMSKeys, *m.KmsKeyId)
+			if m.KmsKeyID != nil {
+				b.KMSKeys = append(b.KMSKeys, *m.KmsKeyID)
 			}
 		}
 	}
