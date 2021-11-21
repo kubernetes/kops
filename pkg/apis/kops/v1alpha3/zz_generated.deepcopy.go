@@ -3035,8 +3035,8 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 		*out = new(int32)
 		**out = **in
 	}
-	if in.ConcurrentRcSyncs != nil {
-		in, out := &in.ConcurrentRcSyncs, &out.ConcurrentRcSyncs
+	if in.ConcurrentRCSyncs != nil {
+		in, out := &in.ConcurrentRCSyncs, &out.ConcurrentRCSyncs
 		*out = new(int32)
 		**out = **in
 	}
@@ -3149,8 +3149,8 @@ func (in *KubeProxyConfig) DeepCopyInto(out *KubeProxyConfig) {
 		*out = new(bool)
 		**out = **in
 	}
-	if in.IPVSExcludeCIDRS != nil {
-		in, out := &in.IPVSExcludeCIDRS, &out.IPVSExcludeCIDRS
+	if in.IPVSExcludeCIDRs != nil {
+		in, out := &in.IPVSExcludeCIDRs, &out.IPVSExcludeCIDRs
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
