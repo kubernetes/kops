@@ -271,7 +271,7 @@ func (b *KopsModelContext) UseLoadBalancerForAPI() bool {
 // HA - see https://github.com/kubernetes/kops/issues/4252
 func (b *KopsModelContext) UseLoadBalancerForInternalAPI() bool {
 	return b.UseLoadBalancerForAPI() &&
-		b.Cluster.Spec.API.LoadBalancer.UseForInternalApi
+		b.Cluster.Spec.API.LoadBalancer.UseForInternalAPI
 }
 
 // APILoadBalancerClass returns which type of load balancer to use for the api

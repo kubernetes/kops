@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: "2016-12-10T22:42:27Z"
   name: minimal.example.com
 spec:
-  additionalSans:
+  additionalSANs:
   - proxy.api.minimal.example.com
   addons:
   - manifest: s3://somebucket/example.yaml
@@ -29,7 +29,7 @@ spec:
     memoryRequest: 100Mi
     name: events
   iam: {}
-  kubernetesApiAccess:
+  kubernetesAPIAccess:
   - 0.0.0.0/0
   kubernetesVersion: v1.14.0
   masterInternalName: api.internal.minimal.example.com

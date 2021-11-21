@@ -129,7 +129,7 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 	if volumeType == "" {
 		volumeType = DefaultAWSEtcdVolumeType
 	}
-	volumeIops := fi.Int32Value(m.VolumeIops)
+	volumeIops := fi.Int32Value(m.VolumeIOPS)
 	volumeThroughput := fi.Int32Value(m.VolumeThroughput)
 	switch volumeType {
 	case ec2.VolumeTypeIo1, ec2.VolumeTypeIo2:
@@ -175,7 +175,7 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 		AvailabilityZone: fi.String(zone),
 		SizeGB:           fi.Int64(int64(volumeSize)),
 		VolumeType:       fi.String(volumeType),
-		KmsKeyId:         m.KmsKeyId,
+		KmsKeyId:         m.KmsKeyID,
 		Encrypted:        fi.Bool(encrypted),
 		Tags:             tags,
 	}

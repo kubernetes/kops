@@ -906,7 +906,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 				})
 			}
 		}
-		if b.Cluster.Spec.Authentication.Aws != nil {
+		if b.Cluster.Spec.Authentication.AWS != nil {
 			key := "authentication.aws"
 
 			{
