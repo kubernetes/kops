@@ -817,12 +817,12 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Ipam: "crd",
+				IPAM: "crd",
 			},
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Ipam: "eni",
+				IPAM: "eni",
 			},
 			Spec: kops.ClusterSpec{
 				CloudProvider: "aws",
@@ -831,7 +831,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		{
 			Cilium: kops.CiliumNetworkingSpec{
 				DisableMasquerade: fi.Bool(true),
-				Ipam:              "eni",
+				IPAM:              "eni",
 			},
 			Spec: kops.ClusterSpec{
 				CloudProvider: "aws",
@@ -839,14 +839,14 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Ipam: "foo",
+				IPAM: "foo",
 			},
 			ExpectedErrors: []string{"Unsupported value::cilium.ipam"},
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
 				DisableMasquerade: fi.Bool(false),
-				Ipam:              "eni",
+				IPAM:              "eni",
 			},
 			Spec: kops.ClusterSpec{
 				CloudProvider: "aws",
@@ -865,7 +865,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Ipam: "eni",
+				IPAM: "eni",
 			},
 			Spec: kops.ClusterSpec{
 				CloudProvider: "gce",
