@@ -210,14 +210,14 @@ func TestMinimalGossip(t *testing.T) {
 // TestMinimalGCE runs tests on a minimal GCE configuration
 func TestMinimalGCE(t *testing.T) {
 	newIntegrationTest("minimal-gce.example.com", "minimal_gce").
-		withAddons(dnsControllerAddon).
+		withAddons(dnsControllerAddon, "gcp-pd-csi-driver.addons.k8s.io-k8s-1.23").
 		runTestTerraformGCE(t)
 }
 
 // TestMinimalGCE runs tests on a minimal GCE configuration with private topology.
 func TestMinimalGCEPrivate(t *testing.T) {
 	newIntegrationTest("minimal-gce-private.example.com", "minimal_gce_private").
-		withAddons(dnsControllerAddon).
+		withAddons(dnsControllerAddon, "rbac.addons.k8s.io-k8s-1.8").
 		runTestTerraformGCE(t)
 }
 
@@ -232,7 +232,7 @@ func TestHA(t *testing.T) {
 // --zones us-test1-a,us-test1-b,us-test1-c --master-count=3
 func TestHighAvailabilityGCE(t *testing.T) {
 	newIntegrationTest("ha-gce.example.com", "ha_gce").withZones(3).
-		withAddons(dnsControllerAddon).
+		withAddons(dnsControllerAddon, "rbac.addons.k8s.io-k8s-1.8").
 		runTestTerraformGCE(t)
 }
 
@@ -1168,7 +1168,6 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 		"aws_s3_bucket_object_"+i.clusterName+"-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content",
 		"aws_s3_bucket_object_"+i.clusterName+"-addons-limit-range.addons.k8s.io_content",
 		"aws_s3_bucket_object_"+i.clusterName+"-addons-metadata-proxy.addons.k8s.io-v0.1.12_content",
-		"aws_s3_bucket_object_"+i.clusterName+"-addons-rbac.addons.k8s.io-k8s-1.8_content",
 		"aws_s3_bucket_object_"+i.clusterName+"-addons-storage-gce.addons.k8s.io-v1.7.0_content")
 
 	for j := 0; j < i.zones; j++ {
