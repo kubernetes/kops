@@ -997,7 +997,7 @@ spec:
                             type: string
                           volumeIops:
                             description: If volume type is io1, then we need to specify
-                              the number of Iops.
+                              the number of IOPS.
                             format: int32
                             type: integer
                           volumeSize:
