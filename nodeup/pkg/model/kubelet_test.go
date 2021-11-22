@@ -333,7 +333,7 @@ const nextKey = "-----BEGIN RSA PRIVATE KEY-----\nMIIBOgIBAAJBAKOE64nZbH+GM91AIr
 func simplePrivateKeyset(cert, key string) *kops.Keyset {
 	return &kops.Keyset{
 		Spec: kops.KeysetSpec{
-			PrimaryId: "3",
+			PrimaryID: "3",
 			Keys: []kops.KeysetItem{
 				{
 					Id:              "3",
