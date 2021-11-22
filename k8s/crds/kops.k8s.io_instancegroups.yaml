@@ -775,7 +775,7 @@ spec:
                   root volume encryption
                 type: string
               rootVolumeIops:
-                description: RootVolumeIops is the provisioned IOPS when the volume
+                description: RootVolumeIOPS is the provisioned IOPS when the volume
                   type is io1, io2 or gp3 (AWS only).
                 format: int32
                 type: integer
@@ -890,7 +890,7 @@ spec:
                       description: Encrypted indicates you want to encrypt the volume
                       type: boolean
                     iops:
-                      description: Iops is the provisioned IOPS for the volume when
+                      description: IOPS is the provisioned IOPS for the volume when
                         the volume type is io1, io2 or gp3 (AWS only).
                       format: int64
                       type: integer
