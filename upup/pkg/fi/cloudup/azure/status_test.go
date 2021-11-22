@@ -127,15 +127,15 @@ func TestFindEtcdStatus(t *testing.T) {
 	expected := map[string]*kops.EtcdMemberStatus{
 		"a": {
 			Name:     "a",
-			VolumeId: "d0",
+			VolumeID: "d0",
 		},
 		"b": {
 			Name:     "b",
-			VolumeId: "d1",
+			VolumeID: "d1",
 		},
 		"c": {
 			Name:     "c",
-			VolumeId: "d2",
+			VolumeID: "d2",
 		},
 	}
 
