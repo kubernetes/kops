@@ -415,7 +415,7 @@ spec:
       clusters:
       - name: server
         cluster:
-          server: https://my-webook-receiver
+          server: https://my-webhook-receiver
       contexts:
       - context:
           cluster: server
