@@ -320,7 +320,7 @@ func findEtcdStatus(c *doCloudImplementation, cluster *kops.Cluster) ([]kops.Etc
 						memberName := etcdClusterSpec.NodeName
 						status.Members = append(status.Members, &kops.EtcdMemberStatus{
 							Name:     memberName,
-							VolumeId: volume.ID,
+							VolumeID: volume.ID,
 						})
 					}
 				}

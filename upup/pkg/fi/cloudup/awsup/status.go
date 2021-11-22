@@ -109,7 +109,7 @@ func findEtcdStatus(c AWSCloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus
 		memberName := etcdClusterSpec.NodeName
 		status.Members = append(status.Members, &kops.EtcdMemberStatus{
 			Name:     memberName,
-			VolumeId: aws.StringValue(volume.VolumeId),
+			VolumeID: aws.StringValue(volume.VolumeId),
 		})
 	}
 
