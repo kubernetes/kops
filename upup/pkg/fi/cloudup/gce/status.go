@@ -131,7 +131,7 @@ func (c *gceCloudImplementation) findEtcdStatus(cluster *kops.Cluster) ([]kops.E
 
 		status.Members = append(status.Members, &kops.EtcdMemberStatus{
 			Name:     etcdClusterSpec.NodeName,
-			VolumeId: disk.Name,
+			VolumeID: disk.Name,
 		})
 	}
 
