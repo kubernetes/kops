@@ -20,6 +20,7 @@ go_library(
         "cloudup/resources/addons/dns-controller.addons.k8s.io/k8s-1.12.yaml.template",
         "cloudup/resources/addons/external-dns.addons.k8s.io/README.md",
         "cloudup/resources/addons/external-dns.addons.k8s.io/k8s-1.12.yaml.template",
+        "cloudup/resources/addons/gcp-pd-csi-driver.addons.k8s.io/k8s-1.23.yaml.template",
         "cloudup/resources/addons/kops-controller.addons.k8s.io/k8s-1.16.yaml.template",
         "cloudup/resources/addons/kube-dns.addons.k8s.io/k8s-1.12.yaml.template",
         "cloudup/resources/addons/kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml",
