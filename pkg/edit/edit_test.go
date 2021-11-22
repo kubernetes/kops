@@ -28,14 +28,23 @@ import (
 )
 
 var (
-	testTimestamp = metav1.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)}
-	testObj       = kops.Cluster{
+	testTimestamp  = metav1.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)}
+	testClusterObj = kops.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			CreationTimestamp: testTimestamp,
 			Name:              "hello",
 		},
 		Spec: kops.ClusterSpec{
 			KubernetesVersion: "1.2.3",
+		},
+	}
+	testIGObj = kops.InstanceGroup{
+		ObjectMeta: metav1.ObjectMeta{
+			CreationTimestamp: testTimestamp,
+			Name:              "hello",
+		},
+		Spec: kops.InstanceGroupSpec{
+			Role: kops.InstanceGroupRoleNode,
 		},
 	}
 )
@@ -47,7 +56,7 @@ func TestHasExtraFields(t *testing.T) {
 		expected string
 	}{
 		{
-			obj: &testObj,
+			obj: &testClusterObj,
 			yaml: heredoc.Doc(`
 			apiVersion: kops.k8s.io/v1alpha2
 			kind: Cluster
@@ -61,7 +70,7 @@ func TestHasExtraFields(t *testing.T) {
 		},
 
 		{
-			obj: &testObj,
+			obj: &testClusterObj,
 			yaml: heredoc.Doc(`
 			apiVersion: kops.k8s.io/v1alpha2
 			kind: Cluster
@@ -81,7 +90,7 @@ func TestHasExtraFields(t *testing.T) {
 			`),
 		},
 		{
-			obj: &testObj,
+			obj: &testClusterObj,
 			yaml: heredoc.Doc(`
 			apiVersion: kops.k8s.io/v1alpha2
 			kind: Cluster
@@ -100,7 +109,7 @@ func TestHasExtraFields(t *testing.T) {
 			`),
 		},
 		{
-			obj: &testObj,
+			obj: &testClusterObj,
 			yaml: heredoc.Doc(`
 			apiVersion: kops.k8s.io/v1alpha2
 			kind: Cluster
@@ -110,6 +119,19 @@ func TestHasExtraFields(t *testing.T) {
 			spec:
 			  kubernetesVersion: 1.2.3
 			  isolateMasters: false
+			`),
+			expected: "",
+		},
+		{
+			obj: &testIGObj,
+			yaml: heredoc.Doc(`
+			apiVersion: kops.k8s.io/v1alpha2
+			kind: InstanceGroup
+			metadata:
+			  creationTimestamp: "2017-01-01T00:00:00Z"
+			  name: hello
+			spec:
+			  role: Node
 			`),
 			expected: "",
 		},
