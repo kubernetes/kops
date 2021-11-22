@@ -236,7 +236,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		if spec.API.LoadBalancer.SSLCertificate != "" && spec.API.LoadBalancer.Class != kops.LoadBalancerClassNetwork && c.IsKubernetesGTE("1.19") {
 			allErrs = append(allErrs, field.Forbidden(fieldPath, "sslCertificate requires network loadbalancer for K8s 1.19+ see https://github.com/kubernetes/kops/blob/master/permalinks/acm_nlb.md"))
 		}
-		if spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork && spec.API.LoadBalancer.UseForInternalApi && spec.API.LoadBalancer.Type == kops.LoadBalancerTypeInternal {
+		if spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork && spec.API.LoadBalancer.UseForInternalAPI && spec.API.LoadBalancer.Type == kops.LoadBalancerTypeInternal {
 			allErrs = append(allErrs, field.Forbidden(fieldPath, "useForInternalApi cannot be used with internal NLB due lack of hairpinning support"))
 		}
 	}
@@ -592,7 +592,7 @@ func validateKubeProxy(k *kops.KubeProxyConfig, fldPath *field.Path) field.Error
 
 	master := k.Master
 
-	for i, x := range k.IPVSExcludeCIDRS {
+	for i, x := range k.IPVSExcludeCIDRs {
 		if _, _, err := net.ParseCIDR(x); err != nil {
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("ipvsExcludeCidrs").Index(i), x, "Invalid network CIDR"))
 		}

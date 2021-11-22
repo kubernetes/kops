@@ -145,10 +145,10 @@ func TestPolicyGeneration(t *testing.T) {
 						{
 							Members: []kops.EtcdMemberSpec{
 								{
-									KmsKeyId: aws.String("key-id-1"),
+									KmsKeyID: aws.String("key-id-1"),
 								},
 								{
-									KmsKeyId: aws.String("key-id-2"),
+									KmsKeyID: aws.String("key-id-2"),
 								},
 							},
 						},
@@ -158,7 +158,7 @@ func TestPolicyGeneration(t *testing.T) {
 						{
 							Members: []kops.EtcdMemberSpec{
 								{
-									KmsKeyId: aws.String("key-id-3"),
+									KmsKeyID: aws.String("key-id-3"),
 								},
 							},
 						},

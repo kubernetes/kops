@@ -158,19 +158,19 @@ spec:
       # - output (output kubeconfig to plug into your apiserver configuration, mounted from the host)
       containers:
       - name: aws-iam-authenticator
-        image: {{ or .Authentication.Aws.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-iam-authenticator:v0.5.3-debian-stretch" }}
+        image: {{ or .Authentication.AWS.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-iam-authenticator:v0.5.3-debian-stretch" }}
         args:
         - server
-        {{- if or (not .Authentication.Aws.BackendMode) (contains "MountedFile" .Authentication.Aws.BackendMode) }}
+        {{- if or (not .Authentication.AWS.BackendMode) (contains "MountedFile" .Authentication.AWS.BackendMode) }}
         - --config=/etc/aws-iam-authenticator/config.yaml
         {{- end }}
-        {{- if or .Authentication.Aws.ClusterID (and .Authentication.Aws.BackendMode (not (contains "MountedFile" .Authentication.Aws.BackendMode)))}}
-        - --cluster-id={{ or .Authentication.Aws.ClusterID ClusterName }}
+        {{- if or .Authentication.AWS.ClusterID (and .Authentication.AWS.BackendMode (not (contains "MountedFile" .Authentication.AWS.BackendMode)))}}
+        - --cluster-id={{ or .Authentication.AWS.ClusterID ClusterName }}
         {{- end }}
         - --state-dir=/var/aws-iam-authenticator
         - --kubeconfig-pregenerated=true
-        {{- if .Authentication.Aws.BackendMode }}
-        - --backend-mode={{ .Authentication.Aws.BackendMode }}
+        {{- if .Authentication.AWS.BackendMode }}
+        - --backend-mode={{ .Authentication.AWS.BackendMode }}
         {{- end }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -180,11 +180,11 @@ spec:
 
         resources:
           requests:
-            memory: {{ or .Authentication.Aws.MemoryRequest "20Mi" }}
-            cpu: {{ or .Authentication.Aws.CPURequest "10m" }}
+            memory: {{ or .Authentication.AWS.MemoryRequest "20Mi" }}
+            cpu: {{ or .Authentication.AWS.CPURequest "10m" }}
           limits:
-            memory: {{ or .Authentication.Aws.MemoryLimit "20Mi" }}
-            cpu: {{ or .Authentication.Aws.CPULimit "100m" }}
+            memory: {{ or .Authentication.AWS.MemoryLimit "20Mi" }}
+            cpu: {{ or .Authentication.AWS.CPULimit "100m" }}
         livenessProbe:
           httpGet:
             host: 127.0.0.1
@@ -192,7 +192,7 @@ spec:
             port: 21362
             scheme: HTTPS
         volumeMounts:
-        {{- if or (not .Authentication.Aws.BackendMode) (contains "MountedFile" .Authentication.Aws.BackendMode) }}
+        {{- if or (not .Authentication.AWS.BackendMode) (contains "MountedFile" .Authentication.AWS.BackendMode) }}
         - name: config
           mountPath: /etc/aws-iam-authenticator/
         {{- end }}
@@ -201,7 +201,7 @@ spec:
         - name: output
           mountPath: /etc/kubernetes/aws-iam-authenticator/
       volumes:
-      {{- if or (not .Authentication.Aws.BackendMode) (contains "MountedFile" .Authentication.Aws.BackendMode) }}
+      {{- if or (not .Authentication.AWS.BackendMode) (contains "MountedFile" .Authentication.AWS.BackendMode) }}
       - name: config
         configMap:
           name: aws-iam-authenticator
@@ -212,8 +212,8 @@ spec:
       - name: state
         hostPath:
           path: /srv/kubernetes/aws-iam-authenticator/
-{{- if and (and (.Authentication.Aws.BackendMode) (contains "CRD" .Authentication.Aws.BackendMode)) (.Authentication.Aws.IdentityMappings) }}
-{{- range $i, $mapping := .Authentication.Aws.IdentityMappings }}
+{{- if and (and (.Authentication.AWS.BackendMode) (contains "CRD" .Authentication.AWS.BackendMode)) (.Authentication.AWS.IdentityMappings) }}
+{{- range $i, $mapping := .Authentication.AWS.IdentityMappings }}
 ---
 apiVersion: iamauthenticator.k8s.aws/v1alpha1
 kind: IAMIdentityMapping

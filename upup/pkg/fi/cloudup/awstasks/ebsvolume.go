@@ -141,7 +141,7 @@ func (_ *EBSVolume) CheckChanges(a, e, changes *EBSVolume) error {
 			return fi.CannotChangeField("Encrypted")
 		}
 		if changes.KmsKeyId != nil {
-			return fi.CannotChangeField("KmsKeyId")
+			return fi.CannotChangeField("KmsKeyID")
 		}
 	}
 	return nil
