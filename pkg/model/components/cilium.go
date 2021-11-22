@@ -18,6 +18,7 @@ package components
 
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
@@ -39,7 +40,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.Version == "" {
-		c.Version = "v1.10.4"
+		c.Version = "v1.10.5"
 	}
 
 	if c.EnableEndpointHealthChecking == nil {
@@ -56,7 +57,6 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if c.BPFCTGlobalAnyMax == 0 {
 		c.BPFCTGlobalAnyMax = 262144
-
 	}
 
 	if c.BPFCTGlobalTCPMax == 0 {
@@ -165,5 +165,4 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	return nil
-
 }
