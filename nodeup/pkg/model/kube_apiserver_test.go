@@ -101,7 +101,7 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 		},
 		{
 			kops.KubeAPIServerConfig{
-				TargetRamMb: 320,
+				TargetRamMB: 320,
 			},
 			"--insecure-port=0 --secure-port=0 --target-ram-mb=320",
 		},

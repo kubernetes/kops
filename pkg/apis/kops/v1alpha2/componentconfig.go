@@ -255,8 +255,8 @@ type KubeProxyConfig struct {
 	Enabled *bool `json:"enabled,omitempty"`
 	// Which proxy mode to use: (userspace, iptables, ipvs)
 	ProxyMode string `json:"proxyMode,omitempty" flag:"proxy-mode"`
-	// IPVSExcludeCIDRS is comma-separated list of CIDR's which the ipvs proxier should not touch when cleaning up IPVS rules
-	IPVSExcludeCIDRS []string `json:"ipvsExcludeCidrs,omitempty" flag:"ipvs-exclude-cidrs"`
+	// IPVSExcludeCIDRs is comma-separated list of CIDR's which the ipvs proxier should not touch when cleaning up IPVS rules
+	IPVSExcludeCIDRs []string `json:"ipvsExcludeCidrs,omitempty" flag:"ipvs-exclude-cidrs"`
 	// IPVSMinSyncPeriod is the minimum interval of how often the ipvs rules can be refreshed as endpoints and services change (e.g. '5s', '1m', '2h22m')
 	IPVSMinSyncPeriod *metav1.Duration `json:"ipvsMinSyncPeriod,omitempty" flag:"ipvs-min-sync-period"`
 	// IPVSScheduler is the ipvs scheduler type when proxy mode is ipvs
@@ -467,7 +467,7 @@ type KubeAPIServerConfig struct {
 	MinRequestTimeout *int32 `json:"minRequestTimeout,omitempty" flag:"min-request-timeout"`
 
 	// Memory limit for apiserver in MB (used to configure sizes of caches, etc.)
-	TargetRamMb int32 `json:"targetRamMb,omitempty" flag:"target-ram-mb" flag-empty:"0"`
+	TargetRamMB int32 `json:"targetRamMb,omitempty" flag:"target-ram-mb" flag-empty:"0"`
 
 	// File containing PEM-encoded x509 RSA or ECDSA private or public keys, used to verify ServiceAccount tokens.
 	// The specified file can contain multiple keys, and the flag can be specified multiple times with different files.
@@ -637,7 +637,7 @@ type KubeControllerManagerConfig struct {
 	ConcurrentServiceaccountTokenSyncs *int32 `json:"concurrentServiceaccountTokenSyncs,omitempty" flag:"concurrent-serviceaccount-token-syncs"`
 	// The number of replicationcontroller objects that are allowed to sync concurrently.
 	// This only works on kubernetes >= 1.14
-	ConcurrentRcSyncs *int32 `json:"concurrentRcSyncs,omitempty" flag:"concurrent-rc-syncs"`
+	ConcurrentRCSyncs *int32 `json:"concurrentRcSyncs,omitempty" flag:"concurrent-rc-syncs"`
 	// AuthenticationKubeconfig is the path to an Authentication Kubeconfig
 	AuthenticationKubeconfig string `json:"authenticationKubeconfig,omitempty" flag:"authentication-kubeconfig"`
 	// AuthorizationKubeconfig is the path to an Authorization Kubeconfig

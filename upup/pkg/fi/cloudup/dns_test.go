@@ -80,7 +80,7 @@ func TestPrecreateDNSNames(t *testing.T) {
 				Spec: kops.ClusterSpec{
 					API: &kops.AccessSpec{
 						LoadBalancer: &kops.LoadBalancerAccessSpec{
-							UseForInternalApi: true,
+							UseForInternalAPI: true,
 						},
 					},
 				},

@@ -32,7 +32,7 @@ type KubeletConfigSpec struct {
 	// BootstrapKubeconfig is the path to a kubeconfig file that will be used to get client certificate for kubelet
 	BootstrapKubeconfig string `json:"bootstrapKubeconfig,omitempty" flag:"bootstrap-kubeconfig"`
 	// ClientCAFile is the path to a CA certificate
-	ClientCAFile string `json:"clientCaFile,omitempty" flag:"client-ca-file"`
+	ClientCAFile string `json:"clientCAFile,omitempty" flag:"client-ca-file"`
 	// TODO: Remove unused TLSCertFile
 	TLSCertFile string `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
 	// TODO: Remove unused TLSPrivateKeyFile
@@ -191,7 +191,7 @@ type KubeletConfigSpec struct {
 	// AuthenticationTokenWebhook uses the TokenReview API to determine authentication for bearer tokens.
 	AuthenticationTokenWebhook *bool `json:"authenticationTokenWebhook,omitempty" flag:"authentication-token-webhook"`
 	// AuthenticationTokenWebhook sets the duration to cache responses from the webhook token authenticator. Default is 2m. (default 2m0s)
-	AuthenticationTokenWebhookCacheTTL *metav1.Duration `json:"authenticationTokenWebhookCacheTtl,omitempty" flag:"authentication-token-webhook-cache-ttl"`
+	AuthenticationTokenWebhookCacheTTL *metav1.Duration `json:"authenticationTokenWebhookCacheTTL,omitempty" flag:"authentication-token-webhook-cache-ttl"`
 	// CPUCFSQuota enables CPU CFS quota enforcement for containers that specify CPU limits
 	CPUCFSQuota *bool `json:"cpuCFSQuota,omitempty" flag:"cpu-cfs-quota"`
 	// CPUCFSQuotaPeriod sets CPU CFS quota period value, cpu.cfs_period_us, defaults to Linux Kernel default
@@ -255,8 +255,8 @@ type KubeProxyConfig struct {
 	Enabled *bool `json:"enabled,omitempty"`
 	// Which proxy mode to use: (userspace, iptables(default), ipvs)
 	ProxyMode string `json:"proxyMode,omitempty" flag:"proxy-mode"`
-	// IPVSExcludeCIDRS is comma-separated list of CIDR's which the ipvs proxier should not touch when cleaning up IPVS rules
-	IPVSExcludeCIDRS []string `json:"ipvsExcludeCidrs,omitempty" flag:"ipvs-exclude-cidrs"`
+	// IPVSExcludeCIDRs is comma-separated list of CIDR's which the ipvs proxier should not touch when cleaning up IPVS rules
+	IPVSExcludeCIDRs []string `json:"ipvsExcludeCIDRs,omitempty" flag:"ipvs-exclude-cidrs"`
 	// IPVSMinSyncPeriod is the minimum interval of how often the ipvs rules can be refreshed as endpoints and services change (e.g. '5s', '1m', '2h22m')
 	IPVSMinSyncPeriod *metav1.Duration `json:"ipvsMinSyncPeriod,omitempty" flag:"ipvs-min-sync-period"`
 	// IPVSScheduler is the ipvs scheduler type when proxy mode is ipvs
@@ -318,7 +318,7 @@ type KubeAPIServerConfig struct {
 	// EtcdServersOverrides is per-resource etcd servers overrides, comma separated. The individual override format: group/resource#servers, where servers are http://ip:port, semicolon separated
 	EtcdServersOverrides []string `json:"etcdServersOverrides,omitempty" flag:"etcd-servers-overrides"`
 	// EtcdCAFile is the path to a ca certificate
-	EtcdCAFile string `json:"etcdCaFile,omitempty" flag:"etcd-cafile"`
+	EtcdCAFile string `json:"etcdCAFile,omitempty" flag:"etcd-cafile"`
 	// EtcdCertFile is the path to a certificate
 	EtcdCertFile string `json:"etcdCertFile,omitempty" flag:"etcd-certfile"`
 	// EtcdKeyFile is the path to a private key
@@ -426,11 +426,11 @@ type KubeAPIServerConfig struct {
 	// File with webhook configuration for authorization in kubeconfig format. The API server will query the remote service to determine whether to authorize the request.
 	AuthorizationWebhookConfigFile *string `json:"authorizationWebhookConfigFile,omitempty" flag:"authorization-webhook-config-file"`
 	// The duration to cache authorized responses from the webhook token authorizer. Default is 5m. (default 5m0s)
-	AuthorizationWebhookCacheAuthorizedTTL *metav1.Duration `json:"authorizationWebhookCacheAuthorizedTtl,omitempty" flag:"authorization-webhook-cache-authorized-ttl"`
+	AuthorizationWebhookCacheAuthorizedTTL *metav1.Duration `json:"authorizationWebhookCacheAuthorizedTTL,omitempty" flag:"authorization-webhook-cache-authorized-ttl"`
 	// The duration to cache authorized responses from the webhook token authorizer. Default is 30s. (default 30s)
-	AuthorizationWebhookCacheUnauthorizedTTL *metav1.Duration `json:"authorizationWebhookCacheUnauthorizedTtl,omitempty" flag:"authorization-webhook-cache-unauthorized-ttl"`
+	AuthorizationWebhookCacheUnauthorizedTTL *metav1.Duration `json:"authorizationWebhookCacheUnauthorizedTTL,omitempty" flag:"authorization-webhook-cache-unauthorized-ttl"`
 	// AuthorizationRBACSuperUser is the name of the superuser for default rbac
-	AuthorizationRBACSuperUser *string `json:"authorizationRbacSuperUser,omitempty" flag:"authorization-rbac-super-user"`
+	AuthorizationRBACSuperUser *string `json:"authorizationRBACSuperUser,omitempty" flag:"authorization-rbac-super-user"`
 	// EncryptionProviderConfig enables encryption at rest for secrets.
 	EncryptionProviderConfig *string `json:"encryptionProviderConfig,omitempty" flag:"encryption-provider-config"`
 	// ExperimentalEncryptionProviderConfig enables encryption at rest for secrets.
@@ -467,7 +467,7 @@ type KubeAPIServerConfig struct {
 	MinRequestTimeout *int32 `json:"minRequestTimeout,omitempty" flag:"min-request-timeout"`
 
 	// Memory limit for apiserver in MB (used to configure sizes of caches, etc.)
-	TargetRamMb int32 `json:"targetRamMb,omitempty" flag:"target-ram-mb" flag-empty:"0"`
+	TargetRamMB int32 `json:"targetRamMB,omitempty" flag:"target-ram-mb" flag-empty:"0"`
 
 	// File containing PEM-encoded x509 RSA or ECDSA private or public keys, used to verify ServiceAccount tokens.
 	// The specified file can contain multiple keys, and the flag can be specified multiple times with different files.
@@ -636,7 +636,7 @@ type KubeControllerManagerConfig struct {
 	// The number of serviceaccount objects that are allowed to sync concurrently to create tokens.
 	ConcurrentServiceaccountTokenSyncs *int32 `json:"concurrentServiceaccountTokenSyncs,omitempty" flag:"concurrent-serviceaccount-token-syncs"`
 	// The number of replicationcontroller objects that are allowed to sync concurrently.
-	ConcurrentRcSyncs *int32 `json:"concurrentRcSyncs,omitempty" flag:"concurrent-rc-syncs"`
+	ConcurrentRCSyncs *int32 `json:"concurrentRCSyncs,omitempty" flag:"concurrent-rc-syncs"`
 	// AuthenticationKubeconfig is the path to an Authentication Kubeconfig
 	AuthenticationKubeconfig string `json:"authenticationKubeconfig,omitempty" flag:"authentication-kubeconfig"`
 	// AuthorizationKubeconfig is the path to an Authorization Kubeconfig
@@ -814,7 +814,7 @@ type AzureConfiguration struct {
 	// SubscriptionID specifies the subscription used for the cluster installation.
 	SubscriptionID string `json:"subscriptionId,omitempty"`
 	// TenantID is the ID of the tenant that the cluster is deployed in.
-	TenantID string `json:"tenantId"`
+	TenantID string `json:"tenantID"`
 	// ResourceGroupName specifies the name of the resource group
 	// where the cluster is built.
 	// If this is empty, kops will create a new resource group
