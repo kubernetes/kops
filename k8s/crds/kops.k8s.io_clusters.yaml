@@ -355,6 +355,13 @@ spec:
                     description: GCEServiceAccount specifies the service account with
                       which the GCE VM runs
                     type: string
+                  gcpPDCSIDriver:
+                    description: GCPPDCSIDriver is the config for the GCP PD CSI driver
+                    properties:
+                      enabled:
+                        description: Enabled enables the GCP PD CSI driver
+                        type: boolean
+                    type: object
                   manageStorageClasses:
                     description: ManageStorageClasses specifies whether kOps should
                       create and maintain a set of StorageClasses, one of which it
