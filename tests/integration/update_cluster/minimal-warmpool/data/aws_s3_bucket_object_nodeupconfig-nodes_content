@@ -70,5 +70,5 @@ warmPoolImages:
 - k8s.gcr.io/provider-aws/aws-ebs-csi-driver:v1.4.0
 - k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0
 - k8s.gcr.io/sig-storage/livenessprobe:v2.2.0
-- quay.io/cilium/cilium:v1.10.4
-- quay.io/cilium/operator:v1.10.4
+- quay.io/cilium/cilium:v1.10.5
+- quay.io/cilium/operator:v1.10.5
