@@ -926,11 +926,11 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 		allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableL7Proxy"), "Cilium L7 Proxy requires IPTablesRules to be installed."))
 	}
 
-	if v.Ipam != "" {
+	if v.IPAM != "" {
 		// "azure" not supported by kops
-		allErrs = append(allErrs, IsValidValue(fldPath.Child("ipam"), &v.Ipam, []string{"hostscope", "kubernetes", "crd", "eni"})...)
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("ipam"), &v.IPAM, []string{"hostscope", "kubernetes", "crd", "eni"})...)
 
-		if v.Ipam == kops.CiliumIpamEni {
+		if v.IPAM == kops.CiliumIpamEni {
 			if c.CloudProvider != string(kops.CloudProviderAWS) {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("ipam"), "Cilum ENI IPAM is supported only in AWS"))
 			}

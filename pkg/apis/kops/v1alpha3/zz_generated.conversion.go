@@ -1832,9 +1832,9 @@ func autoConvert_v1alpha3_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.PreallocateBPFMaps = in.PreallocateBPFMaps
 	out.SidecarIstioProxyImage = in.SidecarIstioProxyImage
 	out.ClusterName = in.ClusterName
-	out.ToFqdnsDNSRejectResponseCode = in.ToFqdnsDNSRejectResponseCode
-	out.ToFqdnsEnablePoller = in.ToFqdnsEnablePoller
-	out.Ipam = in.Ipam
+	out.ToFQDNsDNSRejectResponseCode = in.ToFQDNsDNSRejectResponseCode
+	out.ToFQDNsEnablePoller = in.ToFQDNsEnablePoller
+	out.IPAM = in.IPAM
 	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
 	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
 	out.EnableHostReachableServices = in.EnableHostReachableServices
@@ -1892,9 +1892,9 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha3_CiliumNetworkingSpec(in *
 	out.PreallocateBPFMaps = in.PreallocateBPFMaps
 	out.SidecarIstioProxyImage = in.SidecarIstioProxyImage
 	out.ClusterName = in.ClusterName
-	out.ToFqdnsDNSRejectResponseCode = in.ToFqdnsDNSRejectResponseCode
-	out.ToFqdnsEnablePoller = in.ToFqdnsEnablePoller
-	out.Ipam = in.Ipam
+	out.ToFQDNsDNSRejectResponseCode = in.ToFQDNsDNSRejectResponseCode
+	out.ToFQDNsEnablePoller = in.ToFQDNsEnablePoller
+	out.IPAM = in.IPAM
 	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
 	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
 	out.EnableHostReachableServices = in.EnableHostReachableServices
