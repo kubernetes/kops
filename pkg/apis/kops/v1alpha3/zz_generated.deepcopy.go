@@ -2132,8 +2132,8 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.RootVolumeIops != nil {
-		in, out := &in.RootVolumeIops, &out.RootVolumeIops
+	if in.RootVolumeIOPS != nil {
+		in, out := &in.RootVolumeIOPS, &out.RootVolumeIOPS
 		*out = new(int32)
 		**out = **in
 	}
@@ -4728,8 +4728,8 @@ func (in *VolumeSpec) DeepCopyInto(out *VolumeSpec) {
 		*out = new(bool)
 		**out = **in
 	}
-	if in.Iops != nil {
-		in, out := &in.Iops, &out.Iops
+	if in.IOPS != nil {
+		in, out := &in.IOPS, &out.IOPS
 		*out = new(int64)
 		**out = **in
 	}
