@@ -524,6 +524,9 @@ spec:
                     description: ConfigureCloudRoutes enables CIDRs allocated with
                       to be configured on the cloud provider.
                     type: boolean
+                  enableLeaderMigration:
+                    description: EnableLeaderMigration enables controller leader migration.
+                    type: boolean
                   image:
                     description: Image is the OCI image of the cloud controller manager.
                     type: string
@@ -1883,6 +1886,9 @@ spec:
                     description: DisableAttachDetachReconcileSync disables the reconcile
                       sync loop in the attach-detach controller. This can cause volumes
                       to become mismatched with pods
+                    type: boolean
+                  enableLeaderMigration:
+                    description: EnableLeaderMigration enables controller leader migration.
                     type: boolean
                   enableProfiling:
                     description: EnableProfiling enables profiling via web interface
