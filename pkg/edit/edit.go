@@ -35,8 +35,14 @@ import (
 func HasExtraFields(yamlString string, object runtime.Object) (string, error) {
 	switch object.(type) {
 	case *kops.Cluster:
-		editedClusterObj := kops.Cluster{}
-		err := yaml.UnmarshalStrict([]byte(yamlString), &editedClusterObj)
+		editedObj := kops.Cluster{}
+		err := yaml.UnmarshalStrict([]byte(yamlString), &editedObj)
+		if err == nil {
+			return "", nil
+		}
+	case *kops.InstanceGroup:
+		editedObj := kops.InstanceGroup{}
+		err := yaml.UnmarshalStrict([]byte(yamlString), &editedObj)
 		if err == nil {
 			return "", nil
 		}
