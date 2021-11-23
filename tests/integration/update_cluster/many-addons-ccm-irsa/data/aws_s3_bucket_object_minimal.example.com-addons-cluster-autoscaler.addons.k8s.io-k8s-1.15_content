@@ -8,6 +8,7 @@ metadata:
     k8s-addon: cluster-autoscaler.addons.k8s.io
     k8s-app: cluster-autoscaler
   name: cluster-autoscaler
+  namespace: kube-system
 spec:
   maxUnavailable: 1
   selector:
