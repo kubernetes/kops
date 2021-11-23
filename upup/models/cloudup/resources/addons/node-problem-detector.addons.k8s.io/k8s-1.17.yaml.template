@@ -1,6 +1,31 @@
 {{ with .NodeProblemDetector }}
 # Sourced from https://github.com/kubernetes/node-problem-detector/tree/v0.8.8
 ---
+# We need service account and role binding for node-problem-detector
+# see: https://github.com/kubernetes/node-problem-detector/issues/149 for details
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: node-problem-detector
+  namespace: kube-system
+  labels:
+    app: node-problem-detector
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: node-problem-detector
+  labels:
+    app: node-problem-detector
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:node-problem-detector
+subjects:
+- kind: ServiceAccount
+  name: node-problem-detector
+  namespace: kube-system
+---
 # Source: node-problem-detector/deployment/node-problem-detector.yaml
 apiVersion: apps/v1
 kind: DaemonSet
