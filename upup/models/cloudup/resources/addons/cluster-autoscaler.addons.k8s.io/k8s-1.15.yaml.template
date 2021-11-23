@@ -9,6 +9,7 @@ metadata:
     k8s-addon: cluster-autoscaler.addons.k8s.io
     k8s-app: cluster-autoscaler
   name: cluster-autoscaler
+  namespace: kube-system
 spec:
   selector:
     matchLabels:
@@ -253,7 +254,7 @@ spec:
                 - cluster-autoscaler
             topologyKey: kubernetes.com/hostname
           preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100 
+          - weight: 100
             podAffinityTerm:
               labelSelector:
                 matchExpressions:
