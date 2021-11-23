@@ -407,7 +407,7 @@ spec:
                 - ebs-csi-controller
             topologyKey: kubernetes.com/hostname
           preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100 
+          - weight: 100
             podAffinityTerm:
               labelSelector:
                 matchExpressions:
@@ -559,6 +559,7 @@ apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
   name: ebs-csi-controller
+  namespace: kube-system
   labels:
     app.kubernetes.io/name: aws-ebs-csi-driver
     app.kubernetes.io/instance: aws-ebs-csi-driver

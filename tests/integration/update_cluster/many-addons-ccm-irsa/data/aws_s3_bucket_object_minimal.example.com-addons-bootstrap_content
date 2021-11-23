@@ -47,7 +47,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.15
     manifest: cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml
-    manifestHash: e9e6f6bf84e258ed32878bb654ceab2083d3bf3ee5f2e42e272e13e4be1ea512
+    manifestHash: 10afed066006ee64e85e5b9f3bc2bac645a2dcd756e074e1ae983bca45c43808
     name: cluster-autoscaler.addons.k8s.io
     selector:
       k8s-addon: cluster-autoscaler.addons.k8s.io
@@ -133,7 +133,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: ab6e7bdfe63fd878acd739297ae675d839f81e316064a4bd1beaee671ed34e76
+    manifestHash: ef8dedd6651c52df4fcdd5d963b0ef972219cc80df4779594eef975c1852f45a
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
