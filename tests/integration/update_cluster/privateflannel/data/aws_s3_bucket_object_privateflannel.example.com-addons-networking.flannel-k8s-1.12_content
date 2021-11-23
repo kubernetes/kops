@@ -215,7 +215,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: quay.io/coreos/flannel:v0.13.0
+        image: quay.io/coreos/flannel:v0.15.1
         name: kube-flannel
         resources:
           limits:
@@ -244,7 +244,7 @@ spec:
         - /etc/cni/net.d/10-flannel.conflist
         command:
         - cp
-        image: quay.io/coreos/flannel:v0.13.0
+        image: quay.io/coreos/flannel:v0.15.1
         name: install-cni
         volumeMounts:
         - mountPath: /etc/cni/net.d
