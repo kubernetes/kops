@@ -818,6 +818,7 @@ metadata:
     app.kubernetes.io/version: v1.4.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-csi-controller
+  namespace: kube-system
 spec:
   maxUnavailable: 1
   selector:
