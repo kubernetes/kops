@@ -461,21 +461,13 @@ spec:
           args:
             - "--v=5"
             - "--endpoint=unix:/csi/csi.sock"
-          env:
-            - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: "/etc/cloud-sa/cloud-sa.json"
+            - "--extra-labels=k8s-io-cluster-name={{ replace ClusterName "." "-" }}"
           volumeMounts:
             - name: socket-dir
               mountPath: /csi
-            - name: cloud-sa-volume
-              readOnly: true
-              mountPath: "/etc/cloud-sa"
       volumes:
         - name: socket-dir
           emptyDir: {}
-        - name: cloud-sa-volume
-          secret:
-            secretName: cloud-sa
 
 ---
 apiVersion: storage.k8s.io/v1

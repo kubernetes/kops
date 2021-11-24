@@ -694,17 +694,12 @@ spec:
       - args:
         - --v=5
         - --endpoint=unix:/csi/csi.sock
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/cloud-sa/cloud-sa.json
+        - --extra-labels=k8s-io-cluster-name=minimal-gce-example-com
         image: gke.gcr.io/gcp-compute-persistent-disk-csi-driver:v1.3.4
         name: gce-pd-driver
         volumeMounts:
         - mountPath: /csi
           name: socket-dir
-        - mountPath: /etc/cloud-sa
-          name: cloud-sa-volume
-          readOnly: true
       hostNetwork: true
       nodeSelector:
         kubernetes.io/os: linux
@@ -713,9 +708,6 @@ spec:
       volumes:
       - emptyDir: {}
         name: socket-dir
-      - name: cloud-sa-volume
-        secret:
-          secretName: cloud-sa
 
 ---
 
