@@ -264,6 +264,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			subnet.IPv6CIDR = fi.String(subnetSpec.IPv6CIDR)
 			// TODO: set this to true once NAT64 is in place
 			subnet.DNS64 = fi.Bool(false)
+			subnet.ResourceBasedNaming = fi.Bool(true)
 		}
 		if subnetSpec.ProviderID != "" {
 			subnet.ID = fi.String(subnetSpec.ProviderID)
