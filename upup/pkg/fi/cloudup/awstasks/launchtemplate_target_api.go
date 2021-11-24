@@ -55,6 +55,11 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 				Ipv6AddressCount:         t.IPv6AddressCount,
 			},
 		},
+		PrivateDnsNameOptions: &ec2.LaunchTemplatePrivateDnsNameOptionsRequest{
+			EnableResourceNameDnsAAAARecord: fi.Bool(*t.IPv6AddressCount > 0),
+			EnableResourceNameDnsARecord:    fi.Bool(true),
+			HostnameType:                    t.HostnameType,
+		},
 	}
 
 	// @step: add the actual block device mappings
@@ -199,6 +204,7 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 
 	actual := &LaunchTemplate{
 		AssociatePublicIP:      fi.Bool(false),
+		HostnameType:           fi.String(ec2.HostnameTypeIpName),
 		ID:                     lt.LaunchTemplateId,
 		ImageID:                lt.LaunchTemplateData.ImageId,
 		InstanceMonitoring:     fi.Bool(false),
@@ -236,6 +242,11 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 	// @step: add the tenancy
 	if lt.LaunchTemplateData.Placement != nil {
 		actual.Tenancy = lt.LaunchTemplateData.Placement.Tenancy
+	}
+	if lt.LaunchTemplateData.PrivateDnsNameOptions != nil {
+		if lt.LaunchTemplateData.PrivateDnsNameOptions.HostnameType != nil {
+			actual.HostnameType = lt.LaunchTemplateData.PrivateDnsNameOptions.HostnameType
+		}
 	}
 	// @step: add the ssh if there is one
 	if lt.LaunchTemplateData.KeyName != nil {
