@@ -157,6 +157,7 @@ type terraformLaunchTemplate struct {
 	NetworkInterfaces []*terraformLaunchTemplateNetworkInterface `json:"network_interfaces,omitempty" cty:"network_interfaces"`
 	// Placement are the tenancy options
 	Placement []*terraformLaunchTemplatePlacement `json:"placement,omitempty" cty:"placement"`
+	// TODO implement PrivateDnsNameOptions
 	// Tags is a map of tags applied to the launch template itself
 	Tags map[string]string `json:"tags,omitempty" cty:"tags"`
 	// TagSpecifications are the tags to apply to a resource when it is created.

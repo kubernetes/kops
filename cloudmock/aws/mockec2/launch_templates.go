@@ -278,6 +278,13 @@ func responseLaunchTemplateData(req *ec2.RequestLaunchTemplateData) *ec2.Respons
 			})
 		}
 	}
+	if req.PrivateDnsNameOptions != nil {
+		resp.PrivateDnsNameOptions = &ec2.LaunchTemplatePrivateDnsNameOptions{
+			EnableResourceNameDnsAAAARecord: req.PrivateDnsNameOptions.EnableResourceNameDnsAAAARecord,
+			EnableResourceNameDnsARecord:    req.PrivateDnsNameOptions.EnableResourceNameDnsARecord,
+			HostnameType:                    req.PrivateDnsNameOptions.HostnameType,
+		}
+	}
 	if len(req.TagSpecifications) > 0 {
 		for _, x := range req.TagSpecifications {
 			resp.TagSpecifications = append(resp.TagSpecifications, &ec2.LaunchTemplateTagSpecification{
