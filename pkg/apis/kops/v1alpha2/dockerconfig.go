@@ -30,6 +30,8 @@ type DockerConfig struct {
 	DefaultUlimit []string `json:"defaultUlimit,omitempty" flag:"default-ulimit,repeat"`
 	// DefaultRuntime is the default OCI runtime for containers (default "runc")
 	DefaultRuntime *string `json:"defaultRuntime,omitempty" flag:"default-runtime"`
+	// DNS is the IP address of the DNS server
+	DNS []string `json:"dns,omitempty" flag:"dns,repeat"`
 	// ExecOpt is a series of options passed to the runtime
 	ExecOpt []string `json:"execOpt,omitempty" flag:"exec-opt,repeat"`
 	// ExecRoot is the root directory for execution state files (default "/var/run/docker")
