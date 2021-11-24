@@ -695,7 +695,7 @@ spec:
         - --v=5
         - --endpoint=unix:/csi/csi.sock
         - --extra-labels=k8s-io-cluster-name=minimal-gce-example-com
-        image: gke.gcr.io/gcp-compute-persistent-disk-csi-driver:v1.3.4
+        image: k8s.gcr.io/cloud-provider-gcp/gcp-compute-persistent-disk-csi-driver:v1.3.4
         name: gce-pd-driver
         volumeMounts:
         - mountPath: /csi
@@ -766,7 +766,7 @@ spec:
         - --v=5
         - --endpoint=unix:/csi/csi.sock
         - --run-controller-service=false
-        image: gke.gcr.io/gcp-compute-persistent-disk-csi-driver:v1.3.4
+        image: k8s.gcr.io/cloud-provider-gcp/gcp-compute-persistent-disk-csi-driver:v1.3.4
         name: gce-pd-driver
         securityContext:
           privileged: true
