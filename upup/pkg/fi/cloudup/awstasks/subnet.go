@@ -44,14 +44,15 @@ type Subnet struct {
 
 	Lifecycle fi.Lifecycle
 
-	ID               *string
-	VPC              *VPC
-	AmazonIPv6CIDR   *VPCAmazonIPv6CIDRBlock
-	AvailabilityZone *string
-	CIDR             *string
-	IPv6CIDR         *string
-	Shared           *bool
-	DNS64            *bool
+	ID                  *string
+	VPC                 *VPC
+	AmazonIPv6CIDR      *VPCAmazonIPv6CIDRBlock
+	AvailabilityZone    *string
+	CIDR                *string
+	IPv6CIDR            *string
+	Shared              *bool
+	DNS64               *bool
+	ResourceBasedNaming *bool
 
 	Tags map[string]string
 }
@@ -82,14 +83,15 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 	}
 
 	actual := &Subnet{
-		ID:               subnet.SubnetId,
-		AvailabilityZone: subnet.AvailabilityZone,
-		VPC:              &VPC{ID: subnet.VpcId},
-		CIDR:             subnet.CidrBlock,
-		Name:             findNameTag(subnet.Tags),
-		Shared:           e.Shared,
-		Tags:             intersectTags(subnet.Tags, e.Tags),
-		DNS64:            subnet.EnableDns64,
+		ID:                  subnet.SubnetId,
+		AvailabilityZone:    subnet.AvailabilityZone,
+		VPC:                 &VPC{ID: subnet.VpcId},
+		CIDR:                subnet.CidrBlock,
+		Name:                findNameTag(subnet.Tags),
+		Shared:              e.Shared,
+		Tags:                intersectTags(subnet.Tags, e.Tags),
+		DNS64:               subnet.EnableDns64,
+		ResourceBasedNaming: subnet.PrivateDnsNameOptionsOnLaunch.EnableResourceNameDnsAAAARecord,
 	}
 
 	for _, association := range subnet.Ipv6CidrBlockAssociationSet {
@@ -269,14 +271,34 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 			}
 		}
 	}
+
 	if changes.DNS64 != nil {
 		request := &ec2.ModifySubnetAttributeInput{
-			EnableDns64: &ec2.AttributeBooleanValue{Value: e.DNS64},
 			SubnetId:    e.ID,
+			EnableDns64: &ec2.AttributeBooleanValue{Value: e.DNS64},
 		}
 		_, err := t.Cloud.EC2().ModifySubnetAttribute(request)
 		if err != nil {
-			return fmt.Errorf("error enabling DNS64: %v", err)
+			return fmt.Errorf("error enabling DNS64 on subnet: %v", err)
+		}
+	}
+
+	if changes.ResourceBasedNaming != nil {
+		request := &ec2.ModifySubnetAttributeInput{
+			SubnetId:                                e.ID,
+			EnableResourceNameDnsAAAARecordOnLaunch: &ec2.AttributeBooleanValue{Value: e.ResourceBasedNaming},
+		}
+		_, err := t.Cloud.EC2().ModifySubnetAttribute(request)
+		if err != nil {
+			return fmt.Errorf("error enabling resource based dns on subnet: %v", err)
+		}
+		request = &ec2.ModifySubnetAttributeInput{
+			SubnetId:                             e.ID,
+			EnableResourceNameDnsARecordOnLaunch: &ec2.AttributeBooleanValue{Value: e.ResourceBasedNaming},
+		}
+		_, err = t.Cloud.EC2().ModifySubnetAttribute(request)
+		if err != nil {
+			return fmt.Errorf("error enabling resource based dns on subnet: %v", err)
 		}
 	}
 
