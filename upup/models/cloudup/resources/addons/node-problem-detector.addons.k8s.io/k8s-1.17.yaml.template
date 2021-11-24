@@ -108,6 +108,7 @@ spec:
           - key: docker-monitor.json
             path: docker-monitor.json
       priorityClassName: system-node-critical
+      serviceAccountName: node-problem-detector
       tolerations:
         - effect: NoSchedule
           operator: Exists
