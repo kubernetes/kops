@@ -4442,7 +4442,7 @@ type CreateLoadBalancerInput struct {
 
 	// The type of IP addresses used by the subnets for your load balancer. The
 	// possible values are ipv4 (for IPv4 addresses) and dualstack (for IPv4 and
-	// IPv6 addresses). Internal load balancers must use ipv4.
+	// IPv6 addresses).
 	IpAddressType *string `type:"string" enum:"IpAddressType"`
 
 	// The name of the load balancer.
@@ -7251,6 +7251,11 @@ type LoadBalancerAttribute struct {
 	//    * access_logs.s3.prefix - The prefix for the location in the S3 bucket
 	//    for the access logs.
 	//
+	//    * ipv6.deny-all-igw-traffic - Blocks internet gateway (IGW) access to
+	//    the load balancer. It is set to false for internet-facing load balancers
+	//    and true for internal load balancers, preventing unintended access to
+	//    your internal load balancer through an internet gateway.
+	//
 	// The following attributes are supported by only Application Load Balancers:
 	//
 	//    * idle_timeout.timeout_seconds - The idle timeout value, in seconds. The
@@ -8864,9 +8869,8 @@ type SetIpAddressTypeInput struct {
 	_ struct{} `type:"structure"`
 
 	// The IP address type. The possible values are ipv4 (for IPv4 addresses) and
-	// dualstack (for IPv4 and IPv6 addresses). Internal load balancers must use
-	// ipv4. You can’t specify dualstack for a load balancer with a UDP or TCP_UDP
-	// listener.
+	// dualstack (for IPv4 and IPv6 addresses). You can’t specify dualstack for
+	// a load balancer with a UDP or TCP_UDP listener.
 	//
 	// IpAddressType is a required field
 	IpAddressType *string `type:"string" required:"true" enum:"IpAddressType"`
@@ -9138,8 +9142,7 @@ type SetSubnetsInput struct {
 	// [Network Load Balancers] The type of IP addresses used by the subnets for
 	// your load balancer. The possible values are ipv4 (for IPv4 addresses) and
 	// dualstack (for IPv4 and IPv6 addresses). You can’t specify dualstack for
-	// a load balancer with a UDP or TCP_UDP listener. Internal load balancers must
-	// use ipv4.
+	// a load balancer with a UDP or TCP_UDP listener. .
 	IpAddressType *string `type:"string" enum:"IpAddressType"`
 
 	// The Amazon Resource Name (ARN) of the load balancer.
