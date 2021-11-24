@@ -1,8 +1,35 @@
 # https://github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver/tree/v1.3.4/deploy/kubernetes
+
+{{ if WithDefaultBool .CloudConfig.ManageStorageClasses true }}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard-csi
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+  labels:
+    kubernetes.io/cluster-service: "true"
+    k8s-addon: gcp-pd-csi-driver.addons.k8s.io
+provisioner: pd.csi.storage.gke.io
+parameters:
+  type: pd-standard
+volumeBindingMode: WaitForFirstConsumer
+{{ end }}
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gce-pd-csi-driver
+
+
+---
 ##### Node Service Account, Roles, RoleBindings
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  namespace: gce-pd-csi-driver
   name: csi-gce-pd-node-sa
 
 ---
@@ -10,6 +37,7 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  namespace: gce-pd-csi-driver
   name: csi-gce-pd-controller-sa
 
 ---
@@ -59,6 +87,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: csi-gce-pd-controller-sa
+    namespace: gce-pd-csi-driver
 roleRef:
   kind: ClusterRole
   name: csi-gce-pd-provisioner-role
@@ -95,6 +124,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: csi-gce-pd-controller-sa
+    namespace: gce-pd-csi-driver
 roleRef:
   kind: ClusterRole
   name: csi-gce-pd-attacher-role
@@ -153,6 +183,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: csi-gce-pd-controller-sa
+    namespace: gce-pd-csi-driver
 roleRef:
   kind: ClusterRole
   name: csi-gce-pd-resizer-role
@@ -180,6 +211,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: csi-gce-pd-controller-sa
+    namespace: gce-pd-csi-driver
 
 ---
 
@@ -206,6 +238,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: csi-gce-pd-node-sa
+  namespace: gce-pd-csi-driver
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -219,6 +252,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: csi-gce-pd-controller-sa
+  namespace: gce-pd-csi-driver
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -248,6 +282,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: csi-gce-pd-controller-sa
+    namespace: gce-pd-csi-driver
 roleRef:
   kind: ClusterRole
   name: csi-gce-pd-snapshotter-role
@@ -288,6 +323,7 @@ roleRef:
 kind: Deployment
 apiVersion: apps/v1
 metadata:
+  namespace: gce-pd-csi-driver
   name: csi-gce-pd-controller
 spec:
   replicas: 1
@@ -310,7 +346,7 @@ spec:
       priorityClassName: csi-gce-pd-controller
       containers:
         - name: csi-provisioner
-          image: k8s.gcr.io/sig-storage/csi-provisioner
+          image: k8s.gcr.io/sig-storage/csi-provisioner:v2.1.0
           args:
             - "--v=5"
             - "--csi-address=/csi/csi.sock"
@@ -344,7 +380,7 @@ spec:
             - name: socket-dir
               mountPath: /csi
         - name: csi-attacher
-          image: k8s.gcr.io/sig-storage/csi-attacher
+          image: k8s.gcr.io/sig-storage/csi-attacher:v3.1.0
           args:
             - "--v=5"
             - "--csi-address=/csi/csi.sock"
@@ -373,7 +409,7 @@ spec:
             - name: socket-dir
               mountPath: /csi
         - name: csi-resizer
-          image: k8s.gcr.io/sig-storage/csi-resizer
+          image: k8s.gcr.io/sig-storage/csi-resizer:v1.1.0
           args:
             - "--v=5"
             - "--csi-address=/csi/csi.sock"
@@ -402,7 +438,7 @@ spec:
             - name: socket-dir
               mountPath: /csi
         - name: csi-snapshotter
-          image: k8s.gcr.io/sig-storage/csi-snapshotter
+          image: k8s.gcr.io/sig-storage/csi-snapshotter:v3.0.3
           args:
             - "--v=5"
             - "--csi-address=/csi/csi.sock"
@@ -421,7 +457,7 @@ spec:
         - name: gce-pd-driver
           # Don't change base image without changing pdImagePlaceholder in
           # test/k8s-integration/main.go
-          image: gke.gcr.io/gcp-compute-persistent-disk-csi-driver
+          image: gke.gcr.io/gcp-compute-persistent-disk-csi-driver:v1.3.4
           args:
             - "--v=5"
             - "--endpoint=unix:/csi/csi.sock"
@@ -454,6 +490,7 @@ spec:
 kind: DaemonSet
 apiVersion: apps/v1
 metadata:
+  namespace: gce-pd-csi-driver
   name: csi-gce-pd-node
 spec:
   selector:
@@ -475,7 +512,7 @@ spec:
         kubernetes.io/os: linux
       containers:
         - name: csi-driver-registrar
-          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar
+          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0
           args:
             - "--v=5"
             - "--csi-address=/csi/csi.sock"
@@ -493,7 +530,7 @@ spec:
         - name: gce-pd-driver
           # Don't change base image without changing pdImagePlaceholder in
           # test/k8s-integration/main.go
-          image: gke.gcr.io/gcp-compute-persistent-disk-csi-driver
+          image: gke.gcr.io/gcp-compute-persistent-disk-csi-driver:v1.3.4
           args:
             - "--v=5"
             - "--endpoint=unix:/csi/csi.sock"
