@@ -457,7 +457,7 @@ spec:
         - name: gce-pd-driver
           # Don't change base image without changing pdImagePlaceholder in
           # test/k8s-integration/main.go
-          image: gke.gcr.io/gcp-compute-persistent-disk-csi-driver:v1.3.4
+          image: k8s.gcr.io/cloud-provider-gcp/gcp-compute-persistent-disk-csi-driver:v1.3.4
           args:
             - "--v=5"
             - "--endpoint=unix:/csi/csi.sock"
@@ -522,7 +522,7 @@ spec:
         - name: gce-pd-driver
           # Don't change base image without changing pdImagePlaceholder in
           # test/k8s-integration/main.go
-          image: gke.gcr.io/gcp-compute-persistent-disk-csi-driver:v1.3.4
+          image: k8s.gcr.io/cloud-provider-gcp/gcp-compute-persistent-disk-csi-driver:v1.3.4
           args:
             - "--v=5"
             - "--endpoint=unix:/csi/csi.sock"
