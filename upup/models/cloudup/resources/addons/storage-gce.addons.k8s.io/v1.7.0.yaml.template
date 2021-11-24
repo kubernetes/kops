@@ -3,8 +3,10 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: standard
+{{ if or (eq .CloudConfig.GCPPDCSIDriver nil) (not (WithDefaultBool .CloudConfig.GCPPDCSIDriver.Enabled false))}}
   annotations:
     storageclass.kubernetes.io/is-default-class: "true"
+{{ end }}
   labels:
     kubernetes.io/cluster-service: "true"
     k8s-addon: storage-gce.addons.k8s.io
