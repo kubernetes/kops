@@ -1937,6 +1937,10 @@ type EC2API interface {
 	ModifyNetworkInterfaceAttributeWithContext(aws.Context, *ec2.ModifyNetworkInterfaceAttributeInput, ...request.Option) (*ec2.ModifyNetworkInterfaceAttributeOutput, error)
 	ModifyNetworkInterfaceAttributeRequest(*ec2.ModifyNetworkInterfaceAttributeInput) (*request.Request, *ec2.ModifyNetworkInterfaceAttributeOutput)
 
+	ModifyPrivateDnsNameOptions(*ec2.ModifyPrivateDnsNameOptionsInput) (*ec2.ModifyPrivateDnsNameOptionsOutput, error)
+	ModifyPrivateDnsNameOptionsWithContext(aws.Context, *ec2.ModifyPrivateDnsNameOptionsInput, ...request.Option) (*ec2.ModifyPrivateDnsNameOptionsOutput, error)
+	ModifyPrivateDnsNameOptionsRequest(*ec2.ModifyPrivateDnsNameOptionsInput) (*request.Request, *ec2.ModifyPrivateDnsNameOptionsOutput)
+
 	ModifyReservedInstances(*ec2.ModifyReservedInstancesInput) (*ec2.ModifyReservedInstancesOutput, error)
 	ModifyReservedInstancesWithContext(aws.Context, *ec2.ModifyReservedInstancesInput, ...request.Option) (*ec2.ModifyReservedInstancesOutput, error)
 	ModifyReservedInstancesRequest(*ec2.ModifyReservedInstancesInput) (*request.Request, *ec2.ModifyReservedInstancesOutput)
