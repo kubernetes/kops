@@ -47,6 +47,8 @@ type LaunchTemplate struct {
 	HTTPTokens *string
 	// HTTPProtocolIPv6 enables the IPv6 instance metadata endpoint
 	HTTPProtocolIPv6 *string
+	// HostnameType specifies the type of hostname to assign to an instance.
+	HostnameType *string
 	// IAMInstanceProfile is the IAM profile to assign to the nodes
 	IAMInstanceProfile *IAMInstanceProfile
 	// ImageID is the AMI to use for the instances
