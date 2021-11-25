@@ -51,3 +51,24 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 	}
 	return nil
 }
+
+func Convert_v1alpha2_ExternalDNSConfig_To_kops_ExternalDNSConfig(in *ExternalDNSConfig, out *kops.ExternalDNSConfig, s conversion.Scope) error {
+	if err := autoConvert_v1alpha2_ExternalDNSConfig_To_kops_ExternalDNSConfig(in, out, s); err != nil {
+		return err
+	}
+	if in.Disable {
+		out.Provider = kops.ExternalDNSProviderNone
+	}
+	return nil
+}
+
+func Convert_kops_ExternalDNSConfig_To_v1alpha2_ExternalDNSConfig(in *kops.ExternalDNSConfig, out *ExternalDNSConfig, s conversion.Scope) error {
+	if err := autoConvert_kops_ExternalDNSConfig_To_v1alpha2_ExternalDNSConfig(in, out, s); err != nil {
+		return err
+	}
+	if in.Provider == kops.ExternalDNSProviderNone {
+		out.Disable = true
+		out.Provider = ""
+	}
+	return nil
+}
