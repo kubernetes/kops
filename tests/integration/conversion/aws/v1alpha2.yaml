@@ -29,6 +29,12 @@ spec:
       name: us-test-1a
     memoryRequest: 100Mi
     name: events
+  hooks:
+  - disabled: true
+    name: hookDisabled
+  - name: hookDefault
+  - disabled: false
+    name: hookEnabled
   iam:
     legacy: false
   kubernetesApiAccess:
