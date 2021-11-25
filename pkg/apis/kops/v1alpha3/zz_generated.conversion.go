@@ -1731,7 +1731,7 @@ func autoConvert_v1alpha3_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *Ca
 	out.ChainInsertMode = in.ChainInsertMode
 	out.CPURequest = in.CPURequest
 	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
-	out.DisableFlannelForwardRules = in.DisableFlannelForwardRules
+	out.FlanneldIptablesForwardRules = in.FlanneldIptablesForwardRules
 	out.IptablesBackend = in.IptablesBackend
 	out.LogSeveritySys = in.LogSeveritySys
 	out.MTU = in.MTU
@@ -1754,7 +1754,7 @@ func autoConvert_kops_CanalNetworkingSpec_To_v1alpha3_CanalNetworkingSpec(in *ko
 	out.ChainInsertMode = in.ChainInsertMode
 	out.CPURequest = in.CPURequest
 	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
-	out.DisableFlannelForwardRules = in.DisableFlannelForwardRules
+	out.FlanneldIptablesForwardRules = in.FlanneldIptablesForwardRules
 	out.IptablesBackend = in.IptablesBackend
 	out.LogSeveritySys = in.LogSeveritySys
 	out.MTU = in.MTU

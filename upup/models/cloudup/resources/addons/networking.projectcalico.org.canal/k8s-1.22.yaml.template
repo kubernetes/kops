@@ -4464,7 +4464,7 @@ spec:
                 configMapKeyRef:
                   name: canal-config
                   key: masquerade
-            {{- if .Networking.Canal.DisableFlannelForwardRules }}
+            {{- if not (WithDefaultBool .Networking.Canal.FlanneldIptablesForwardRules true) }}
             - name: FLANNELD_IPTABLES_FORWARD_RULES
               value: "false"
             {{- end }}
