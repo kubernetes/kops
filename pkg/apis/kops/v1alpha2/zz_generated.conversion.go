@@ -2664,8 +2664,7 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 		out.IAM = nil
 	}
 	out.EncryptionConfig = in.EncryptionConfig
-	// INFO: in.DisableSubnetTags opted out of conversion generation
-	// INFO: in.TagSubnets opted out of conversion generation
+	out.TagSubnets = in.TagSubnets
 	if in.Target != nil {
 		in, out := &in.Target, &out.Target
 		*out = new(kops.TargetSpec)

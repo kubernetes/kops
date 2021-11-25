@@ -191,10 +191,7 @@ type ClusterSpec struct {
 	// EncryptionConfig holds the encryption config
 	EncryptionConfig *bool `json:"encryptionConfig,omitempty"`
 	// DisableSubnetTags controls if subnets are tagged in AWS
-	// +k8s:conversion-gen=false
-	DisableSubnetTags bool `json:"DisableSubnetTags,omitempty"`
-	// +k8s:conversion-gen=false
-	TagSubnets *bool `json:"-"`
+	TagSubnets *bool `json:"DisableSubnetTags,omitempty"`
 	// Target allows for us to nest extra config for targets such as terraform
 	Target *TargetSpec `json:"target,omitempty"`
 	// UseHostCertificates will mount /etc/ssl/certs to inside needed containers.
