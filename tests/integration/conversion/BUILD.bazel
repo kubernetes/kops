@@ -18,6 +18,9 @@ go_test(
 
 filegroup(
     name = "exported_testdata",
-    srcs = glob(["minimal/**"]),
+    srcs = glob([
+        "aws/**",
+        "minimal/**",
+    ]),
     visibility = ["//visibility:public"],
 )

@@ -38,6 +38,11 @@ func TestConversionMinimal(t *testing.T) {
 	runTest(t, "minimal", "v1alpha3", "v1alpha2")
 }
 
+func TestConversionAWS(t *testing.T) {
+	runTest(t, "aws", "v1alpha2", "v1alpha3")
+	runTest(t, "aws", "v1alpha3", "v1alpha2")
+}
+
 func runTest(t *testing.T, srcDir string, fromVersion string, toVersion string) {
 	t.Run(fromVersion+"-"+toVersion, func(t *testing.T) {
 		sourcePath := path.Join(srcDir, fromVersion+".yaml")

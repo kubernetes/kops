@@ -620,7 +620,9 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		cluster.Spec.NetworkCIDR = c.NetworkCIDR
 	}
 
-	cluster.Spec.DisableSubnetTags = c.DisableSubnetTags
+	if c.DisableSubnetTags {
+		cluster.Spec.TagSubnets = fi.Bool(false)
+	}
 
 	if c.MasterPublicName != "" {
 		cluster.Spec.MasterPublicName = c.MasterPublicName

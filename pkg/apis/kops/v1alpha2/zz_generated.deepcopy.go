@@ -1197,6 +1197,11 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.TagSubnets != nil {
+		in, out := &in.TagSubnets, &out.TagSubnets
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Target != nil {
 		in, out := &in.Target, &out.Target
 		*out = new(TargetSpec)
