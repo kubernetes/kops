@@ -26,8 +26,8 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 	if err := autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in, out, s); err != nil {
 		return err
 	}
-	if in.DisableSubnetTags {
-		out.TagSubnets = values.Bool(false)
+	if in.TagSubnets != nil {
+		out.TagSubnets = values.Bool(!*in.TagSubnets)
 	}
 	return nil
 }
@@ -36,8 +36,8 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 	if err := autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in, out, s); err != nil {
 		return err
 	}
-	if in.TagSubnets != nil && !*in.TagSubnets {
-		out.DisableSubnetTags = true
+	if in.TagSubnets != nil {
+		out.TagSubnets = values.Bool(!*in.TagSubnets)
 	}
 	return nil
 }
