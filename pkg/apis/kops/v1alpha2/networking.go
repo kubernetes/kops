@@ -215,7 +215,7 @@ type CanalNetworkingSpec struct {
 	DefaultEndpointToHostAction string `json:"defaultEndpointToHostAction,omitempty"`
 	// DisableFlannelForwardRules configures Flannel to NOT add the
 	// default ACCEPT traffic rules to the iptables FORWARD chain
-	DisableFlannelForwardRules bool `json:"disableFlannelForwardRules,omitempty"`
+	FlanneldIptablesForwardRules *bool `json:"disableFlannelForwardRules,omitempty"`
 	// DisableTxChecksumOffloading is unused.
 	// +k8s:conversion-gen=false
 	DisableTxChecksumOffloading bool `json:"disableTxChecksumOffloading,omitempty"`

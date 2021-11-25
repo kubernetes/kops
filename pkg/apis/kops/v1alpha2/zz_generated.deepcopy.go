@@ -466,6 +466,11 @@ func (in *CanalNetworkingSpec) DeepCopyInto(out *CanalNetworkingSpec) {
 		x := (*in).DeepCopy()
 		*out = &x
 	}
+	if in.FlanneldIptablesForwardRules != nil {
+		in, out := &in.FlanneldIptablesForwardRules, &out.FlanneldIptablesForwardRules
+		*out = new(bool)
+		**out = **in
+	}
 	if in.MTU != nil {
 		in, out := &in.MTU, &out.MTU
 		*out = new(int32)

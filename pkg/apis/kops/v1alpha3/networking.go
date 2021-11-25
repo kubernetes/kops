@@ -205,9 +205,9 @@ type CanalNetworkingSpec struct {
 	// for traffic between pod to host after calico rules have been processed.
 	// Default: ACCEPT (other options: DROP, RETURN)
 	DefaultEndpointToHostAction string `json:"defaultEndpointToHostAction,omitempty"`
-	// DisableFlannelForwardRules configures Flannel to NOT add the
-	// default ACCEPT traffic rules to the iptables FORWARD chain
-	DisableFlannelForwardRules bool `json:"disableFlannelForwardRules,omitempty"`
+	// FlanneldIptablesForwardRules configures Flannel to add the
+	// default ACCEPT traffic rules to the iptables FORWARD chain. (default: true)
+	FlanneldIptablesForwardRules *bool `json:"flanneldIptablesForwardRules,omitempty"`
 	// IptablesBackend controls which variant of iptables binary Felix uses
 	// Default: Auto (other options: Legacy, NFT)
 	IptablesBackend string `json:"iptablesBackend,omitempty"`
