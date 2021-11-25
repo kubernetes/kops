@@ -820,6 +820,11 @@ func (in *CloudControllerManagerConfig) DeepCopyInto(out *CloudControllerManager
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EnableLeaderMigration != nil {
+		in, out := &in.EnableLeaderMigration, &out.EnableLeaderMigration
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
@@ -3226,6 +3231,11 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 	}
 	if in.EnableProfiling != nil {
 		in, out := &in.EnableProfiling, &out.EnableProfiling
+		*out = new(bool)
+		**out = **in
+	}
+	if in.EnableLeaderMigration != nil {
+		in, out := &in.EnableLeaderMigration, &out.EnableLeaderMigration
 		*out = new(bool)
 		**out = **in
 	}
