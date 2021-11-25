@@ -2087,10 +2087,16 @@ func GetInstanceCertificateNames(instances *ec2.DescribeInstancesOutput) (addrs 
 	}
 
 	instance := instances.Reservations[0].Instances[0]
+	{
+		if *instance.PrivateDnsNameOptions.HostnameType == ec2.HostnameTypeResourceName {
+			name := *instance.InstanceId
+			addrs = append(addrs, name)
+		} else {
+			name := *instance.PrivateDnsName
+			addrs = append(addrs, name)
 
-	name := *instance.PrivateDnsName
-
-	addrs = append(addrs, name)
+		}
+	}
 
 	// We only use data for the first interface, and only the first IP
 	for _, iface := range instance.NetworkInterfaces {

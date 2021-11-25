@@ -484,7 +484,11 @@ func evaluateHostnameOverride(cloudProvider api.CloudProviderID) (string, error)
 		if err != nil {
 			return "", fmt.Errorf("error reading local-hostname from AWS metadata: %v", err)
 		}
-		return string(hostnameBytes), nil
+		hostname := string(hostnameBytes)
+		if strings.HasPrefix(hostname, "i-") {
+			return "", nil
+		}
+		return hostname, nil
 	case api.CloudProviderGCE:
 		// This lets us tolerate broken hostnames (i.e. systemd)
 		b, err := vfs.Context.ReadFile("metadata://gce/instance/hostname")

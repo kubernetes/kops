@@ -27,10 +27,10 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/nodelabels"
@@ -189,6 +189,8 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	if b.UseBootstrapTokens() && b.IsMaster {
 		kubeletConfig.BootstrapKubeconfig = ""
 	}
+
+	kubeletConfig.HostnameOverride = ""
 
 	// TODO: Dump the separate file for flags - just complexity!
 	flags, err := flagbuilder.BuildFlags(kubeletConfig)
@@ -599,25 +601,12 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.ModelBuilderContex
 }
 
 func (b *KubeletBuilder) kubeletNames() ([]string, error) {
-	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) != kops.CloudProviderAWS {
-		name, err := os.Hostname()
-		if err != nil {
-			return nil, err
-		}
-
-		addrs, _ := net.LookupHost(name)
-
-		return append(addrs, name), nil
-	}
-
-	cloud := b.Cloud.(awsup.AWSCloud)
-
-	result, err := cloud.EC2().DescribeInstances(&ec2.DescribeInstancesInput{
-		InstanceIds: []*string{&b.InstanceID},
-	})
+	name, err := os.Hostname()
 	if err != nil {
-		return nil, fmt.Errorf("error describing instances: %v", err)
+		return nil, err
 	}
 
-	return awsup.GetInstanceCertificateNames(result)
+	addrs, _ := net.LookupHost(name)
+
+	return append(addrs, name), nil
 }
