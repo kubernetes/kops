@@ -1930,10 +1930,10 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.PreallocateBPFMaps = in.PreallocateBPFMaps
 	out.SidecarIstioProxyImage = in.SidecarIstioProxyImage
 	out.ClusterName = in.ClusterName
-	out.ToFqdnsDNSRejectResponseCode = in.ToFqdnsDNSRejectResponseCode
-	out.ToFqdnsEnablePoller = in.ToFqdnsEnablePoller
+	out.ToFQDNsDNSRejectResponseCode = in.ToFQDNsDNSRejectResponseCode
+	out.ToFQDNsEnablePoller = in.ToFQDNsEnablePoller
 	// INFO: in.ContainerRuntimeLabels opted out of conversion generation
-	out.Ipam = in.Ipam
+	out.IPAM = in.IPAM
 	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
 	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
 	out.EnableHostReachableServices = in.EnableHostReachableServices
@@ -1996,9 +1996,9 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	out.PreallocateBPFMaps = in.PreallocateBPFMaps
 	out.SidecarIstioProxyImage = in.SidecarIstioProxyImage
 	out.ClusterName = in.ClusterName
-	out.ToFqdnsDNSRejectResponseCode = in.ToFqdnsDNSRejectResponseCode
-	out.ToFqdnsEnablePoller = in.ToFqdnsEnablePoller
-	out.Ipam = in.Ipam
+	out.ToFQDNsDNSRejectResponseCode = in.ToFQDNsDNSRejectResponseCode
+	out.ToFQDNsEnablePoller = in.ToFQDNsEnablePoller
+	out.IPAM = in.IPAM
 	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
 	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
 	out.EnableHostReachableServices = in.EnableHostReachableServices
@@ -4169,7 +4169,7 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	out.MachineType = in.MachineType
 	out.RootVolumeSize = in.RootVolumeSize
 	out.RootVolumeType = in.RootVolumeType
-	out.RootVolumeIops = in.RootVolumeIops
+	out.RootVolumeIOPS = in.RootVolumeIOPS
 	out.RootVolumeThroughput = in.RootVolumeThroughput
 	out.RootVolumeOptimization = in.RootVolumeOptimization
 	// INFO: in.RootVolumeDeleteOnTermination opted out of conversion generation
@@ -4331,7 +4331,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 	out.MachineType = in.MachineType
 	out.RootVolumeSize = in.RootVolumeSize
 	out.RootVolumeType = in.RootVolumeType
-	out.RootVolumeIops = in.RootVolumeIops
+	out.RootVolumeIOPS = in.RootVolumeIOPS
 	out.RootVolumeThroughput = in.RootVolumeThroughput
 	out.RootVolumeOptimization = in.RootVolumeOptimization
 	out.RootVolumeEncryption = in.RootVolumeEncryption
@@ -4609,7 +4609,7 @@ func Convert_kops_KeysetList_To_v1alpha2_KeysetList(in *kops.KeysetList, out *Ke
 
 func autoConvert_v1alpha2_KeysetSpec_To_kops_KeysetSpec(in *KeysetSpec, out *kops.KeysetSpec, s conversion.Scope) error {
 	out.Type = kops.KeysetType(in.Type)
-	out.PrimaryId = in.PrimaryId
+	out.PrimaryID = in.PrimaryID
 	if in.Keys != nil {
 		in, out := &in.Keys, &out.Keys
 		*out = make([]kops.KeysetItem, len(*in))
@@ -4631,7 +4631,7 @@ func Convert_v1alpha2_KeysetSpec_To_kops_KeysetSpec(in *KeysetSpec, out *kops.Ke
 
 func autoConvert_kops_KeysetSpec_To_v1alpha2_KeysetSpec(in *kops.KeysetSpec, out *KeysetSpec, s conversion.Scope) error {
 	out.Type = KeysetType(in.Type)
-	out.PrimaryId = in.PrimaryId
+	out.PrimaryID = in.PrimaryID
 	if in.Keys != nil {
 		in, out := &in.Keys, &out.Keys
 		*out = make([]KeysetItem, len(*in))
@@ -6921,7 +6921,7 @@ func autoConvert_v1alpha2_VolumeSpec_To_kops_VolumeSpec(in *VolumeSpec, out *kop
 	out.DeleteOnTermination = in.DeleteOnTermination
 	out.Device = in.Device
 	out.Encrypted = in.Encrypted
-	out.Iops = in.Iops
+	out.IOPS = in.IOPS
 	out.Throughput = in.Throughput
 	out.Key = in.Key
 	out.Size = in.Size
@@ -6938,7 +6938,7 @@ func autoConvert_kops_VolumeSpec_To_v1alpha2_VolumeSpec(in *kops.VolumeSpec, out
 	out.DeleteOnTermination = in.DeleteOnTermination
 	out.Device = in.Device
 	out.Encrypted = in.Encrypted
-	out.Iops = in.Iops
+	out.IOPS = in.IOPS
 	out.Throughput = in.Throughput
 	out.Key = in.Key
 	out.Size = in.Size

@@ -245,7 +245,7 @@ func TestUnsetClusterFields(t *testing.T) {
 				Spec: kops.ClusterSpec{
 					Networking: &kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
-							Ipam: "on",
+							IPAM: "on",
 						},
 					},
 				},
@@ -399,7 +399,7 @@ func TestUnsetCiliumFields(t *testing.T) {
 					},
 					Networking: &kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
-							Ipam:              "eni",
+							IPAM:              "eni",
 							EnableNodePort:    true,
 							DisableMasquerade: fi.Bool(true),
 						},

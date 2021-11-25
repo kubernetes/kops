@@ -90,7 +90,7 @@ func (c *azureCloudImplementation) findEtcdStatus(disks []compute.Disk) ([]kops.
 		}
 		status.Members = append(status.Members, &kops.EtcdMemberStatus{
 			Name:     etcdClusterSpec.NodeName,
-			VolumeId: *disk.Name,
+			VolumeID: *disk.Name,
 		})
 	}
 

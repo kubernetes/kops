@@ -1005,7 +1005,7 @@ spec:
                             type: string
                           volumeIops:
                             description: If volume type is io1, then we need to specify
-                              the number of Iops.
+                              the number of IOPS.
                             format: int32
                             type: integer
                           volumeSize:
@@ -4698,7 +4698,7 @@ spec:
                           to wait before using a changed identity. Default: 5s'
                         type: string
                       ipam:
-                        description: 'Ipam specifies the IP address allocation mode
+                        description: 'IPAM specifies the IP address allocation mode
                           to use. Possible values are "crd" and "eni". "eni" will
                           use AWS native networking for pods. Eni requires masquerade
                           to be set to false. "crd" will use CRDs for controlling
@@ -4835,12 +4835,12 @@ spec:
                         description: StateDir is unused.
                         type: string
                       toFqdnsDnsRejectResponseCode:
-                        description: 'ToFqdnsDNSRejectResponseCode sets the DNS response
+                        description: 'ToFQDNsDNSRejectResponseCode sets the DNS response
                           code for rejecting DNS requests. Possible values are "nameError"
                           or "refused". Default: refused'
                         type: string
                       toFqdnsEnablePoller:
-                        description: 'ToFqdnsEnablePoller replaces the DNS proxy-based
+                        description: 'ToFQDNsEnablePoller replaces the DNS proxy-based
                           implementation of FQDN policies with the less powerful legacy
                           implementation. Default: false'
                         type: boolean
