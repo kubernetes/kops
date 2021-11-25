@@ -166,7 +166,7 @@ func (k *Keyset) ToAPIObject(name string) (*kops.Keyset, error) {
 		o.Spec.Keys = append(o.Spec.Keys, oki)
 	}
 	if k.Primary != nil {
-		o.Spec.PrimaryId = k.Primary.Id
+		o.Spec.PrimaryID = k.Primary.Id
 	}
 	return o, nil
 }

@@ -370,22 +370,22 @@ type CiliumNetworkingSpec struct {
 	SidecarIstioProxyImage string `json:"sidecarIstioProxyImage,omitempty"`
 	// ClusterName is the name of the cluster. It is only relevant when building a mesh of clusters.
 	ClusterName string `json:"clusterName,omitempty"`
-	// ToFqdnsDNSRejectResponseCode sets the DNS response code for rejecting DNS requests.
+	// ToFQDNsDNSRejectResponseCode sets the DNS response code for rejecting DNS requests.
 	// Possible values are "nameError" or "refused".
 	// Default: refused
-	ToFqdnsDNSRejectResponseCode string `json:"toFqdnsDnsRejectResponseCode,omitempty"`
-	// ToFqdnsEnablePoller replaces the DNS proxy-based implementation of FQDN policies
+	ToFQDNsDNSRejectResponseCode string `json:"toFQDNsDNSRejectResponseCode,omitempty"`
+	// ToFQDNsEnablePoller replaces the DNS proxy-based implementation of FQDN policies
 	// with the less powerful legacy implementation.
 	// Default: false
-	ToFqdnsEnablePoller bool `json:"toFqdnsEnablePoller,omitempty"`
-	// Ipam specifies the IP address allocation mode to use.
+	ToFQDNsEnablePoller bool `json:"toFQDNsEnablePoller,omitempty"`
+	// IPAM specifies the IP address allocation mode to use.
 	// Possible values are "crd" and "eni".
 	// "eni" will use AWS native networking for pods. Eni requires masquerade to be set to false.
 	// "crd" will use CRDs for controlling IP address management.
 	// "hostscope" will use hostscope IPAM mode.
 	// "kubernetes" will use addersing based on node pod CIDR.
 	// Default: "kubernetes".
-	Ipam string `json:"ipam,omitempty"`
+	IPAM string `json:"ipam,omitempty"`
 	// IPTablesRulesNoinstall disables installing the base IPTables rules used for masquerading and kube-proxy.
 	// Default: false
 	IPTablesRulesNoinstall bool `json:"IPTablesRulesNoinstall,omitempty"`

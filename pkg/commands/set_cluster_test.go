@@ -195,7 +195,7 @@ func TestSetClusterFields(t *testing.T) {
 				Spec: kops.ClusterSpec{
 					Networking: &kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
-							Ipam: "on",
+							IPAM: "on",
 						},
 					},
 				},
@@ -317,7 +317,7 @@ func TestSetCiliumFields(t *testing.T) {
 					},
 					Networking: &kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
-							Ipam:              "eni",
+							IPAM:              "eni",
 							EnableNodePort:    true,
 							DisableMasquerade: fi.Bool(true),
 						},

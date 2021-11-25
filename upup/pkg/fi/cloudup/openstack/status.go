@@ -103,7 +103,7 @@ func findEtcdStatus(c OpenstackCloud, cluster *kops.Cluster) ([]kops.EtcdCluster
 		memberName := etcdClusterSpec.NodeName
 		status.Members = append(status.Members, &kops.EtcdMemberStatus{
 			Name:     memberName,
-			VolumeId: volume.ID,
+			VolumeID: volume.ID,
 		})
 	}
 	var status []kops.EtcdClusterStatus

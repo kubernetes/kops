@@ -127,7 +127,7 @@ func findEtcdStatus(c ALICloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus
 		memberName := etcdClusterSpec.NodeName
 		status.Members = append(status.Members, &kops.EtcdMemberStatus{
 			Name:     memberName,
-			VolumeId: disk.DiskId,
+			VolumeID: disk.DiskId,
 		})
 	}
 

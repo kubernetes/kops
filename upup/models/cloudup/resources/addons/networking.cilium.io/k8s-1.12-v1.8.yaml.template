@@ -114,7 +114,7 @@ data:
 
   # DNS response code for rejecting DNS requests,
   # available options are "nameError" and "refused"
-  tofqdns-dns-reject-response-code: "{{ .ToFqdnsDNSRejectResponseCode }}"
+  tofqdns-dns-reject-response-code: "{{ .ToFQDNsDNSRejectResponseCode }}"
   # This option is disabled by default starting from version 1.4.x in favor
   # of a more powerful DNS proxy-based implementation, see [0] for details.
   # Enable this option if you want to use FQDN policies but do not want to use
@@ -126,7 +126,7 @@ data:
   #
   # [0] http://docs.cilium.io/en/stable/policy/language/#dns-based
   # [1] http://docs.cilium.io/en/stable/install/upgrade/#changes-that-may-require-action
-  tofqdns-enable-poller: "{{- if .ToFqdnsEnablePoller -}}true{{- else -}}false{{- end -}}"
+  tofqdns-enable-poller: "{{- if .ToFQDNsEnablePoller -}}true{{- else -}}false{{- end -}}"
   # wait-bpf-mount makes init container wait until bpf filesystem is mounted
   wait-bpf-mount: "false"
   # Enable fetching of container-runtime specific metadata
@@ -157,7 +157,7 @@ data:
   enable-node-port: "{{ .EnableNodePort }}"
   kube-proxy-replacement: "{{- if .EnableNodePort -}}strict{{- else -}}partial{{- end -}}"
   enable-remote-node-identity: "{{ .EnableRemoteNodeIdentity -}}"
-  {{ with .Ipam }}
+  {{ with .IPAM }}
   ipam: {{ . }}
   {{ if eq . "eni" }}
   enable-endpoint-routes: "true"
@@ -834,7 +834,7 @@ spec:
           type: Directory
 {{- end }}
 
-      {{ if eq .Ipam "eni" }}
+      {{ if eq .IPAM "eni" }}
       nodeSelector:
         node-role.kubernetes.io/master: ""
       tolerations:
