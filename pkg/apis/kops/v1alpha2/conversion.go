@@ -44,6 +44,26 @@ func Convert_kops_CanalNetworkingSpec_To_v1alpha2_CanalNetworkingSpec(in *kops.C
 	return nil
 }
 
+func Convert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *CiliumNetworkingSpec, out *kops.CiliumNetworkingSpec, s conversion.Scope) error {
+	if err := autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in, out, s); err != nil {
+		return err
+	}
+	if in.Masquerade != nil {
+		out.Masquerade = values.Bool(!*in.Masquerade)
+	}
+	return nil
+}
+
+func Convert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *kops.CiliumNetworkingSpec, out *CiliumNetworkingSpec, s conversion.Scope) error {
+	if err := autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in, out, s); err != nil {
+		return err
+	}
+	if in.Masquerade != nil {
+		out.Masquerade = values.Bool(!*in.Masquerade)
+	}
+	return nil
+}
+
 func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops.ClusterSpec, s conversion.Scope) error {
 	if err := autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in, out, s); err != nil {
 		return err
