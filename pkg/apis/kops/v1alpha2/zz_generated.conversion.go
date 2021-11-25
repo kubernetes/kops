@@ -3928,7 +3928,7 @@ func Convert_kops_HTTPProxy_To_v1alpha2_HTTPProxy(in *kops.HTTPProxy, out *HTTPP
 
 func autoConvert_v1alpha2_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec, s conversion.Scope) error {
 	out.Name = in.Name
-	out.Disabled = in.Disabled
+	out.Enabled = in.Enabled
 	if in.Roles != nil {
 		in, out := &in.Roles, &out.Roles
 		*out = make([]kops.InstanceGroupRole, len(*in))
@@ -3961,7 +3961,7 @@ func Convert_v1alpha2_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec
 
 func autoConvert_kops_HookSpec_To_v1alpha2_HookSpec(in *kops.HookSpec, out *HookSpec, s conversion.Scope) error {
 	out.Name = in.Name
-	out.Disabled = in.Disabled
+	out.Enabled = in.Enabled
 	if in.Roles != nil {
 		in, out := &in.Roles, &out.Roles
 		*out = make([]InstanceGroupRole, len(*in))

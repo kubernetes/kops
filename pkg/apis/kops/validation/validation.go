@@ -486,7 +486,7 @@ func validateHookSpec(v *kops.HookSpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	// if this unit is disabled, short-circuit and do not validate
-	if v.Disabled {
+	if v.Enabled != nil && !*v.Enabled {
 		return allErrs
 	}
 

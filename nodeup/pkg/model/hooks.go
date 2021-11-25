@@ -64,7 +64,7 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 			hookNames[name] = true
 
 			// are we disabling the service?
-			if hook.Disabled {
+			if hook.Enabled != nil && !*hook.Enabled {
 				enabled := false
 				managed := true
 				c.AddTask(&nodetasks.Service{
