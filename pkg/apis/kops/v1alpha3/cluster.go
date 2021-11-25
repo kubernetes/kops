@@ -516,8 +516,6 @@ const (
 
 // ExternalDNSConfig are options of the dns-controller
 type ExternalDNSConfig struct {
-	// Disable indicates we do not wish to run the dns-controller addon
-	Disable bool `json:"disable,omitempty"`
 	// WatchIngress indicates you want the dns-controller to watch and create dns entries for ingress resources.
 	// Default: true if provider is 'external-dns', false otherwise.
 	WatchIngress *bool `json:"watchIngress,omitempty"`

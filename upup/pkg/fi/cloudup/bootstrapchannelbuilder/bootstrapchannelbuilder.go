@@ -495,28 +495,24 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 	}
 
 	if b.Cluster.Spec.ExternalDNS == nil || b.Cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderDNSController {
-		// @check the dns-controller has not been disabled
-		externalDNS := b.Cluster.Spec.ExternalDNS
-		if externalDNS == nil || !externalDNS.Disable {
-			{
-				key := "dns-controller.addons.k8s.io"
-				location := key + "/k8s-1.12.yaml"
-				id := "k8s-1.12"
+		{
+			key := "dns-controller.addons.k8s.io"
+			location := key + "/k8s-1.12.yaml"
+			id := "k8s-1.12"
 
-				addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.String(key),
-					Selector: map[string]string{"k8s-addon": key},
-					Manifest: fi.String(location),
-					Id:       id,
-				})
-			}
-
-			// Generate dns-controller ServiceAccount IAM permissions
-			if b.UseServiceAccountExternalPermissions() {
-				serviceAccountRoles = append(serviceAccountRoles, &dnscontroller.ServiceAccount{})
-			}
+			addons.Add(&channelsapi.AddonSpec{
+				Name:     fi.String(key),
+				Selector: map[string]string{"k8s-addon": key},
+				Manifest: fi.String(location),
+				Id:       id,
+			})
 		}
-	} else {
+
+		// Generate dns-controller ServiceAccount IAM permissions
+		if b.UseServiceAccountExternalPermissions() {
+			serviceAccountRoles = append(serviceAccountRoles, &dnscontroller.ServiceAccount{})
+		}
+	} else if b.Cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderExternalDNS {
 		{
 			key := "external-dns.addons.k8s.io"
 
