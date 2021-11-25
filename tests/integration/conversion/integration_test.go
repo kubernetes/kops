@@ -48,6 +48,11 @@ func TestConversionCanal(t *testing.T) {
 	runTest(t, "canal", "v1alpha3", "v1alpha2")
 }
 
+func TestConversionCilium(t *testing.T) {
+	runTest(t, "cilium", "v1alpha2", "v1alpha3")
+	runTest(t, "cilium", "v1alpha3", "v1alpha2")
+}
+
 func runTest(t *testing.T, srcDir string, fromVersion string, toVersion string) {
 	t.Run(fromVersion+"-"+toVersion, func(t *testing.T) {
 		sourcePath := path.Join(srcDir, fromVersion+".yaml")

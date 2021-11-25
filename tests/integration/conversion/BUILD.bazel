@@ -21,6 +21,7 @@ filegroup(
     srcs = glob([
         "aws/**",
         "canal/**",
+        "cilium/**",
         "minimal/**",
     ]),
     visibility = ["//visibility:public"],

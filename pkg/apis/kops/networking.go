@@ -321,8 +321,9 @@ type CiliumNetworkingSpec struct {
 	// IdentityChangeGracePeriod specifies the duration to wait before using a changed identity.
 	// Default: 5s
 	IdentityChangeGracePeriod string `json:"identityChangeGracePeriod,omitempty"`
-	// DisableMasquerade disables masquerading traffic to external destinations behind the node IP.
-	DisableMasquerade *bool `json:"disableMasquerade,omitempty"`
+	// Masquerade enables masquerading IPv4 traffic to external destinations behind the node IP.
+	// Default: false if IPAM is "eni" or in IPv6 mode, otherwise true
+	Masquerade *bool `json:"masquerade,omitempty"`
 	// AgentPodAnnotations makes possible to add additional annotations to cilium agent.
 	// Default: none
 	AgentPodAnnotations map[string]string `json:"agentPodAnnotations,omitempty"`
