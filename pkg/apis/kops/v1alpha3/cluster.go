@@ -190,8 +190,8 @@ type ClusterSpec struct {
 	IAM *IAMSpec `json:"iam,omitempty"`
 	// EncryptionConfig holds the encryption config
 	EncryptionConfig *bool `json:"encryptionConfig,omitempty"`
-	// DisableSubnetTags controls if subnets are tagged in AWS
-	DisableSubnetTags bool `json:"DisableSubnetTags,omitempty"`
+	// TagSubnets controls if tags are added to subnets to enable use by load balancers (AWS only). Default: true.
+	TagSubnets *bool `json:"tagSubnets,omitempty"`
 	// Target allows for us to nest extra config for targets such as terraform
 	Target *TargetSpec `json:"target,omitempty"`
 	// UseHostCertificates will mount /etc/ssl/certs to inside needed containers.
