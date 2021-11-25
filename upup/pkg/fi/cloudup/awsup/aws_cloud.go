@@ -51,6 +51,8 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	k8s_aws "k8s.io/legacy-cloud-providers/aws"
+
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	dnsproviderroute53 "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
 	"k8s.io/kops/pkg/apis/kops"
@@ -60,7 +62,6 @@ import (
 	identity_aws "k8s.io/kops/pkg/nodeidentity/aws"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
-	k8s_aws "k8s.io/legacy-cloud-providers/aws"
 )
 
 // By default, aws-sdk-go only retries 3 times, which doesn't give
@@ -69,21 +70,29 @@ import (
 // backoff along the way.
 const ClientMaxRetries = 13
 
-const DescribeTagsMaxAttempts = 120
-const DescribeTagsRetryInterval = 2 * time.Second
-const DescribeTagsLogInterval = 10 // this is in "retry intervals"
+const (
+	DescribeTagsMaxAttempts   = 120
+	DescribeTagsRetryInterval = 2 * time.Second
+	DescribeTagsLogInterval   = 10 // this is in "retry intervals"
+)
 
-const CreateTagsMaxAttempts = 120
-const CreateTagsRetryInterval = 2 * time.Second
-const CreateTagsLogInterval = 10 // this is in "retry intervals"
+const (
+	CreateTagsMaxAttempts   = 120
+	CreateTagsRetryInterval = 2 * time.Second
+	CreateTagsLogInterval   = 10 // this is in "retry intervals"
+)
 
-const DeleteTagsMaxAttempts = 120
-const DeleteTagsRetryInterval = 2 * time.Second
-const DeleteTagsLogInterval = 10 // this is in "retry intervals"
+const (
+	DeleteTagsMaxAttempts   = 120
+	DeleteTagsRetryInterval = 2 * time.Second
+	DeleteTagsLogInterval   = 10 // this is in "retry intervals"
+)
 
-const TagClusterName = "KubernetesCluster"
-const TagNameRolePrefix = "k8s.io/role/"
-const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
+const (
+	TagClusterName           = "KubernetesCluster"
+	TagNameRolePrefix        = "k8s.io/role/"
+	TagNameEtcdClusterPrefix = "k8s.io/etcd/"
+)
 
 const TagRoleMaster = "master"
 
@@ -382,7 +391,6 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 }
 
 func (c *awsCloudImplementation) addHandlers(regionName string, h *request.Handlers) {
-
 	delayer := c.getCrossRequestRetryDelay(regionName)
 	if delayer != nil {
 		h.Sign.PushFrontNamed(request.NamedHandler{
@@ -650,7 +658,6 @@ func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.In
 	}
 
 	return groups, nil
-
 }
 
 // FindAutoscalingGroups finds autoscaling groups matching the specified tags
@@ -715,7 +722,6 @@ func FindAutoscalingGroups(c AWSCloud, tags map[string]string) ([]*autoscaling.G
 				return nil, fmt.Errorf("error listing autoscaling groups: %v", err)
 			}
 		}
-
 	}
 
 	return asgs, nil
@@ -771,7 +777,7 @@ func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscaling.Group) (
 	}
 
 	version := aws.StringValue(launchTemplate.Version)
-	//Correctly Handle Default and Latest Versions
+	// Correctly Handle Default and Latest Versions
 	klog.V(4).Infof("Launch Template Version Specified By ASG: %v", version)
 	if version == "" || version == "$Default" || version == "$Latest" {
 		input := &ec2.DescribeLaunchTemplatesInput{
@@ -949,7 +955,6 @@ func findInstances(c AWSCloud, ig *kops.InstanceGroup) (map[string]*ec2.Instance
 		}
 	}
 	return instances, nil
-
 }
 
 func findDetachedInstances(c AWSCloud, g *autoscaling.Group) ([]*string, error) {
@@ -1316,6 +1321,7 @@ func removeELBTags(c AWSCloud, loadBalancerName string, tags map[string]string) 
 
 	return nil
 }
+
 func (c *awsCloudImplementation) RemoveELBV2Tags(ResourceArn string, tags map[string]string) error {
 	return removeELBV2Tags(c, ResourceArn, tags)
 }
@@ -2082,10 +2088,16 @@ func GetInstanceCertificateNames(instances *ec2.DescribeInstancesOutput) (addrs 
 	}
 
 	instance := instances.Reservations[0].Instances[0]
+	{
+		if *instance.PrivateDnsNameOptions.HostnameType == ec2.HostnameTypeResourceName {
+			name := *instance.InstanceId
+			addrs = append(addrs, name)
+		} else {
+			name := *instance.PrivateDnsName
+			addrs = append(addrs, name)
 
-	name := *instance.PrivateDnsName
-
-	addrs = append(addrs, name)
+		}
+	}
 
 	// We only use data for the first interface, and only the first IP
 	for _, iface := range instance.NetworkInterfaces {
