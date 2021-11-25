@@ -219,9 +219,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		tags := map[string]string{}
 
 		// Apply tags so that Kubernetes knows which subnets should be used for internal/external ELBs
-		if b.Cluster.Spec.DisableSubnetTags {
-			klog.V(2).Infof("skipping subnet tags. Ensure these are maintained externally.")
-		} else {
+		if b.Cluster.Spec.TagSubnets == nil || *b.Cluster.Spec.TagSubnets {
 			klog.V(2).Infof("applying subnet tags")
 			tags = b.CloudTags(subnetName, sharedSubnet)
 			tags["SubnetType"] = string(subnetSpec.Type)
@@ -242,6 +240,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			default:
 				klog.V(2).Infof("unable to properly tag subnet %q because it has unknown type %q. Load balancers may be created in incorrect subnets", subnetSpec.Name, subnetSpec.Type)
 			}
+		} else {
+			klog.V(2).Infof("skipping subnet tags. Ensure these are maintained externally.")
 		}
 
 		subnet := &awstasks.Subnet{
