@@ -126,7 +126,7 @@ func FindPrimary(keyset *kops.Keyset) *kops.KeysetItem {
 	var primary *kops.KeysetItem
 	var primaryVersion *big.Int
 
-	primaryId := keyset.Spec.PrimaryId
+	primaryId := keyset.Spec.PrimaryID
 
 	for i := range keyset.Spec.Keys {
 		item := &keyset.Spec.Keys[i]

@@ -99,24 +99,24 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 		c.SidecarIstioProxyImage = "cilium/istio_proxy"
 	}
 
-	if c.ToFqdnsDNSRejectResponseCode == "" {
-		c.ToFqdnsDNSRejectResponseCode = "refused"
+	if c.ToFQDNsDNSRejectResponseCode == "" {
+		c.ToFQDNsDNSRejectResponseCode = "refused"
 	}
 
 	if c.AgentPrometheusPort == 0 {
 		c.AgentPrometheusPort = wellknownports.CiliumPrometheusPort
 	}
 
-	if c.Ipam == "" {
-		c.Ipam = "kubernetes"
+	if c.IPAM == "" {
+		c.IPAM = "kubernetes"
 	}
 
 	if c.DisableMasquerade == nil {
-		c.DisableMasquerade = fi.Bool(c.Ipam == "eni")
+		c.DisableMasquerade = fi.Bool(c.IPAM == "eni")
 	}
 
 	if c.Tunnel == "" {
-		if c.Ipam == "eni" || clusterSpec.IsIPv6Only() {
+		if c.IPAM == "eni" || clusterSpec.IsIPv6Only() {
 			c.Tunnel = "disabled"
 		} else {
 			c.Tunnel = "vxlan"

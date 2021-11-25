@@ -102,8 +102,8 @@ type InstanceGroupSpec struct {
 	RootVolumeSize *int32 `json:"rootVolumeSize,omitempty"`
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
 	RootVolumeType *string `json:"rootVolumeType,omitempty"`
-	// RootVolumeIops is the provisioned IOPS when the volume type is io1, io2 or gp3 (AWS only).
-	RootVolumeIops *int32 `json:"rootVolumeIops,omitempty"`
+	// RootVolumeIOPS is the provisioned IOPS when the volume type is io1, io2 or gp3 (AWS only).
+	RootVolumeIOPS *int32 `json:"rootVolumeIOPS,omitempty"`
 	// RootVolumeThroughput is the volume throughput in MBps when the volume type is gp3 (AWS only).
 	RootVolumeThroughput *int32 `json:"rootVolumeThroughput,omitempty"`
 	// RootVolumeOptimization enables EBS optimization for an instance
@@ -130,7 +130,7 @@ type InstanceGroupSpec struct {
 	// CPUCredits is the credit option for CPU Usage on burstable instance types (AWS only)
 	CPUCredits *string `json:"cpuCredits,omitempty"`
 	// AssociatePublicIP is true if we want instances to have a public IP
-	AssociatePublicIP *bool `json:"associatePublicIp,omitempty"`
+	AssociatePublicIP *bool `json:"associatePublicIP,omitempty"`
 	// AdditionalSecurityGroups attaches additional security groups (e.g. i-123456)
 	AdditionalSecurityGroups []string `json:"additionalSecurityGroups,omitempty"`
 	// CloudLabels defines additional tags or labels on cloud provider resources
@@ -255,8 +255,8 @@ type VolumeSpec struct {
 	Device string `json:"device,omitempty"`
 	// Encrypted indicates you want to encrypt the volume
 	Encrypted *bool `json:"encrypted,omitempty"`
-	// Iops is the provisioned IOPS for the volume when the volume type is io1, io2 or gp3 (AWS only).
-	Iops *int64 `json:"iops,omitempty"`
+	// IOPS is the provisioned IOPS for the volume when the volume type is io1, io2 or gp3 (AWS only).
+	IOPS *int64 `json:"iops,omitempty"`
 	// Throughput is the volume throughput in MBps when the volume type is gp3 (AWS only).
 	Throughput *int64 `json:"throughput,omitempty"`
 	// Key is the encryption key identifier for the volume
@@ -336,5 +336,5 @@ type LoadBalancer struct {
 	// LoadBalancerName to associate with this instance group (AWS ELB)
 	LoadBalancerName *string `json:"loadBalancerName,omitempty"`
 	// TargetGroupARN to associate with this instance group (AWS ALB/NLB)
-	TargetGroupARN *string `json:"targetGroupArn,omitempty"`
+	TargetGroupARN *string `json:"targetGroupARN,omitempty"`
 }

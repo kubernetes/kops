@@ -584,7 +584,7 @@ type EtcdMemberSpec struct {
 	InstanceGroup *string `json:"instanceGroup,omitempty"`
 	// VolumeType is the underlying cloud storage class
 	VolumeType *string `json:"volumeType,omitempty"`
-	// If volume type is io1, then we need to specify the number of Iops.
+	// If volume type is io1, then we need to specify the number of IOPS.
 	VolumeIOPS *int32 `json:"volumeIOPS,omitempty"`
 	// Parameter for disks that support provisioned throughput
 	VolumeThroughput *int32 `json:"volumeThroughput,omitempty"`

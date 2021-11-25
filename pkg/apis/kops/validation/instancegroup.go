@@ -66,8 +66,8 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud) field.ErrorLis
 		}
 	}
 
-	if fi.Int32Value(g.Spec.RootVolumeIops) < 0 {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "rootVolumeIops"), g.Spec.RootVolumeIops, "RootVolumeIops must be greater than 0"))
+	if fi.Int32Value(g.Spec.RootVolumeIOPS) < 0 {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "rootVolumeIops"), g.Spec.RootVolumeIOPS, "RootVolumeIOPS must be greater than 0"))
 	}
 
 	if fi.Int32Value(g.Spec.RootVolumeThroughput) < 0 {

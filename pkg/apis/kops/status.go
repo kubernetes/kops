@@ -33,6 +33,6 @@ type EtcdMemberStatus struct {
 	// Name is the name of the member within the etcd cluster
 	Name string `json:"name,omitempty"`
 
-	// volumeId is the id of the cloud volume (e.g. the AWS volume id)
-	VolumeId string `json:"volumeId,omitempty"`
+	// VolumeID is the id of the cloud volume (e.g. the AWS volume id)
+	VolumeID string `json:"volumeID,omitempty"`
 }
