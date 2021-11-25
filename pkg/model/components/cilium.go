@@ -111,8 +111,8 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 		c.IPAM = "kubernetes"
 	}
 
-	if c.DisableMasquerade == nil {
-		c.DisableMasquerade = fi.Bool(c.IPAM == "eni")
+	if c.Masquerade == nil {
+		c.Masquerade = fi.Bool(!clusterSpec.IsIPv6Only() && c.IPAM != "eni")
 	}
 
 	if c.Tunnel == "" {

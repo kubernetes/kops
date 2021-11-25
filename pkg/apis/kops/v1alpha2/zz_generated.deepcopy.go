@@ -592,8 +592,8 @@ func (in *CiliumNetworkingSpec) DeepCopyInto(out *CiliumNetworkingSpec) {
 			(*out)[key] = val
 		}
 	}
-	if in.DisableMasquerade != nil {
-		in, out := &in.DisableMasquerade, &out.DisableMasquerade
+	if in.Masquerade != nil {
+		in, out := &in.Masquerade, &out.Masquerade
 		*out = new(bool)
 		**out = **in
 	}
