@@ -29,6 +29,11 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 	if in.TagSubnets != nil {
 		out.TagSubnets = values.Bool(!*in.TagSubnets)
 	}
+	for i, hook := range in.Hooks {
+		if hook.Enabled != nil {
+			out.Hooks[i].Enabled = values.Bool(!*hook.Enabled)
+		}
+	}
 	return nil
 }
 
@@ -38,6 +43,11 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 	}
 	if in.TagSubnets != nil {
 		out.TagSubnets = values.Bool(!*in.TagSubnets)
+	}
+	for i, hook := range in.Hooks {
+		if hook.Enabled != nil {
+			out.Hooks[i].Enabled = values.Bool(!*hook.Enabled)
+		}
 	}
 	return nil
 }

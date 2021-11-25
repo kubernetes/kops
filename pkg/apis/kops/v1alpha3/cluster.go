@@ -287,8 +287,8 @@ type IAMSpec struct {
 type HookSpec struct {
 	// Name is an optional name for the hook, otherwise the name is kops-hook-<index>
 	Name string `json:"name,omitempty"`
-	// Disabled indicates if you want the unit switched off
-	Disabled bool `json:"disabled,omitempty"`
+	// Enabled indicates if you want the unit switched on. Default: true
+	Enabled *bool `json:"enabled,omitempty"`
 	// Roles is an optional list of roles the hook should be rolled out to, defaults to all
 	Roles []InstanceGroupRole `json:"roles,omitempty"`
 	// Requires is a series of systemd units the action requires
