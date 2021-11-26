@@ -904,6 +904,12 @@ spec:
                   to false. This reduces the number of metrics reported, reducing
                   Prometheus load. [Default: true]'
                 type: boolean
+              prometheusWireGuardMetricsEnabled:
+                description: 'PrometheusWireGuardMetricsEnabled disables wireguard
+                  metrics collection, which the Prometheus client does by default,
+                  when set to false. This reduces the number of metrics reported,
+                  reducing Prometheus load. [Default: true]'
+                type: boolean
               removeExternalRoutes:
                 description: Whether or not to remove device routes that have not
                   been programmed by Felix. Disabling this will allow external applications
@@ -984,6 +990,10 @@ spec:
               wireguardEnabled:
                 description: 'WireguardEnabled controls whether Wireguard is enabled.
                   [Default: false]'
+                type: boolean
+              wireguardHostEncryptionEnabled:
+                description: 'WireguardHostEncryptionEnabled controls whether Wireguard
+                  host-to-host encryption is enabled. [Default: false]'
                 type: boolean
               wireguardInterfaceName:
                 description: 'WireguardInterfaceName specifies the name to use for
@@ -3887,7 +3897,13 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/node:v3.20.2
+        image: docker.io/calico/node:v3.20.3
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/calico-node
+              - -shutdown
         livenessProbe:
           exec:
             command:
@@ -3955,7 +3971,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.20.2
+        image: docker.io/calico/cni:v3.20.3
         name: upgrade-ipam
         securityContext:
           privileged: true
@@ -3989,7 +4005,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.20.2
+        image: docker.io/calico/cni:v3.20.3
         name: install-cni
         securityContext:
           privileged: true
@@ -3998,7 +4014,7 @@ spec:
           name: cni-bin-dir
         - mountPath: /host/etc/cni/net.d
           name: cni-net-dir
-      - image: docker.io/calico/pod2daemon-flexvol:v3.20.2
+      - image: docker.io/calico/pod2daemon-flexvol:v3.20.3
         name: flexvol-driver
         securityContext:
           privileged: true
@@ -4106,7 +4122,7 @@ spec:
           value: node
         - name: DATASTORE_TYPE
           value: kubernetes
-        image: docker.io/calico/kube-controllers:v3.20.2
+        image: docker.io/calico/kube-controllers:v3.20.3
         livenessProbe:
           exec:
             command:
