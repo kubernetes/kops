@@ -60,7 +60,7 @@ KOPS_BASE_URL="${KOPS_BASE_URL_B}"
 
 KOPS="${KOPS_B}"
 
-if [[ "${KOPS_B}" =~ v1.2[01] ]]; then
+if [[ "${KOPS_VERSION_B}" =~ v1.2[01] ]]; then
   "${KOPS_B}" set cluster "${CLUSTER_NAME}" "cluster.spec.kubernetesVersion=${K8S_VERSION_B}"
 else
   "${KOPS_B}" edit cluster "${CLUSTER_NAME}" "--set=cluster.spec.kubernetesVersion=${K8S_VERSION_B}"
