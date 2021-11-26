@@ -23,11 +23,15 @@ kops-acquire-latest
 # shellcheck disable=SC2034
 NETWORKING="amazonvpc"
 
-OVERRIDES="${OVERRIDES-} --override=cluster.spec.awsLoadBalancerController.enabled=true"
-OVERRIDES="${OVERRIDES} --override=cluster.spec.certManager.enabled=true"
+OVERRIDES="${OVERRIDES-} --set=cluster.spec.awsLoadBalancerController.enabled=true"
+OVERRIDES="${OVERRIDES} --set=cluster.spec.certManager.enabled=true"
 
 # shellcheck disable=SC2034
 ZONES="eu-west-1a,eu-west-1b,eu-west-1c"
+
+# TODO remove when kops#11689 is addressed
+K8S_VERSION="1.21.6"
+export K8S_VERSION
 
 kops-up
 
