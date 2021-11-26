@@ -38,6 +38,7 @@ spec:
   networkCIDR: 172.20.0.0/16
   networking:
     cilium:
+      IPTablesRulesNoinstall: true
       disableMasquerade: true
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
