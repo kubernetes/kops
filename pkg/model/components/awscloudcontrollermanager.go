@@ -36,15 +36,15 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 
 	clusterSpec := o.(*kops.ClusterSpec)
 
-	eccm := clusterSpec.ExternalCloudControllerManager
-
 	if kops.CloudProviderID(clusterSpec.CloudProvider) != kops.CloudProviderAWS {
 		return nil
 	}
 
-	if eccm == nil && b.IsKubernetesGTE("1.24") {
-		eccm = &kops.CloudControllerManagerConfig{}
+	if clusterSpec.ExternalCloudControllerManager == nil && b.IsKubernetesGTE("1.24") {
+		clusterSpec.ExternalCloudControllerManager = &kops.CloudControllerManagerConfig{}
 	}
+
+	eccm := clusterSpec.ExternalCloudControllerManager
 
 	if eccm == nil {
 		return nil
