@@ -922,8 +922,8 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 		}
 	}
 
-	if fi.BoolValue(v.EnableL7Proxy) && v.IPTablesRulesNoinstall {
-		allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableL7Proxy"), "Cilium L7 Proxy requires IPTablesRules to be installed."))
+	if fi.BoolValue(v.EnableL7Proxy) && v.InstallIptablesRules != nil && !*v.InstallIptablesRules {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableL7Proxy"), "Cilium L7 Proxy requires installIptablesRules."))
 	}
 
 	if v.IPAM != "" {

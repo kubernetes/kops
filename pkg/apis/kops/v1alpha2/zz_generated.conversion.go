@@ -1924,7 +1924,7 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.ToFQDNsEnablePoller = in.ToFQDNsEnablePoller
 	// INFO: in.ContainerRuntimeLabels opted out of conversion generation
 	out.IPAM = in.IPAM
-	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
+	out.InstallIptablesRules = in.InstallIptablesRules
 	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
 	out.EnableHostReachableServices = in.EnableHostReachableServices
 	out.EnableNodePort = in.EnableNodePort
@@ -1984,7 +1984,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	out.ToFQDNsDNSRejectResponseCode = in.ToFQDNsDNSRejectResponseCode
 	out.ToFQDNsEnablePoller = in.ToFQDNsEnablePoller
 	out.IPAM = in.IPAM
-	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
+	out.InstallIptablesRules = in.InstallIptablesRules
 	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
 	out.EnableHostReachableServices = in.EnableHostReachableServices
 	out.EnableNodePort = in.EnableNodePort

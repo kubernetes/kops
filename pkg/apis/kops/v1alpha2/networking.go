@@ -538,7 +538,7 @@ type CiliumNetworkingSpec struct {
 	IPAM string `json:"ipam,omitempty"`
 	// IPTablesRulesNoinstall disables installing the base IPTables rules used for masquerading and kube-proxy.
 	// Default: false
-	IPTablesRulesNoinstall bool `json:"IPTablesRulesNoinstall,omitempty"`
+	InstallIptablesRules *bool `json:"IPTablesRulesNoinstall,omitempty"`
 	// AutoDirectNodeRoutes adds automatic L2 routing between nodes.
 	// Default: false
 	AutoDirectNodeRoutes bool `json:"autoDirectNodeRoutes,omitempty"`

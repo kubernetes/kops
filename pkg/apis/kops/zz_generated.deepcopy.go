@@ -642,6 +642,11 @@ func (in *CiliumNetworkingSpec) DeepCopyInto(out *CiliumNetworkingSpec) {
 			(*out)[key] = val
 		}
 	}
+	if in.InstallIptablesRules != nil {
+		in, out := &in.InstallIptablesRules, &out.InstallIptablesRules
+		*out = new(bool)
+		**out = **in
+	}
 	if in.EnableRemoteNodeIdentity != nil {
 		in, out := &in.EnableRemoteNodeIdentity, &out.EnableRemoteNodeIdentity
 		*out = new(bool)
