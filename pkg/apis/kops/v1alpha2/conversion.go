@@ -48,6 +48,9 @@ func Convert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *Cili
 	if err := autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in, out, s); err != nil {
 		return err
 	}
+	if in.InstallIptablesRules != nil {
+		out.InstallIptablesRules = values.Bool(!*in.InstallIptablesRules)
+	}
 	if in.Masquerade != nil {
 		out.Masquerade = values.Bool(!*in.Masquerade)
 	}
@@ -57,6 +60,9 @@ func Convert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *Cili
 func Convert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *kops.CiliumNetworkingSpec, out *CiliumNetworkingSpec, s conversion.Scope) error {
 	if err := autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in, out, s); err != nil {
 		return err
+	}
+	if in.InstallIptablesRules != nil {
+		out.InstallIptablesRules = values.Bool(!*in.InstallIptablesRules)
 	}
 	if in.Masquerade != nil {
 		out.Masquerade = values.Bool(!*in.Masquerade)
