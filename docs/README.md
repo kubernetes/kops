@@ -89,7 +89,7 @@ For a better viewing experience please check out our live documentation site at 
 ## Security
 
 * [Bastion setup](bastion.md)
-* [IAM roles](iam_roles.md)
+* [Instance IAM roles](iam_roles.md)
 * [MFA setup](mfa.md)
     * how to set up MFA for `kops`
 * [Security](security.md)
