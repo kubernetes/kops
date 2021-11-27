@@ -498,6 +498,17 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(r)
 
 		if b.IsIPv6Only() {
+			// Route NAT64 well-known prefix to the NAT gateway
+			c.AddTask(&awstasks.Route{
+				Name:       fi.String("private-" + zone + "-64:ff9b::/96"),
+				Lifecycle:  b.Lifecycle,
+				IPv6CIDR:   fi.String("64:ff9b::/96"),
+				RouteTable: rt,
+				// Only one of these will be not nil
+				NatGateway:       ngw,
+				TransitGatewayID: tgwID,
+			})
+
 			// Route IPv6 to the Egress-only Internet Gateway.
 			c.AddTask(&awstasks.Route{
 				Name:                      fi.String("private-" + zone + "-::/0"),
