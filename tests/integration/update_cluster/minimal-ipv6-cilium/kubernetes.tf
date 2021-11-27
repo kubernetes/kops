@@ -1,19 +1,20 @@
 locals {
-  cluster_name                 = "minimal-ipv6.example.com"
-  master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-minimal-ipv6-example-com.id]
-  master_security_group_ids    = [aws_security_group.masters-minimal-ipv6-example-com.id]
-  masters_role_arn             = aws_iam_role.masters-minimal-ipv6-example-com.arn
-  masters_role_name            = aws_iam_role.masters-minimal-ipv6-example-com.name
-  node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-minimal-ipv6-example-com.id]
-  node_security_group_ids      = [aws_security_group.nodes-minimal-ipv6-example-com.id]
-  node_subnet_ids              = [aws_subnet.us-test-1a-minimal-ipv6-example-com.id]
-  nodes_role_arn               = aws_iam_role.nodes-minimal-ipv6-example-com.arn
-  nodes_role_name              = aws_iam_role.nodes-minimal-ipv6-example-com.name
-  region                       = "us-test-1"
-  route_table_public_id        = aws_route_table.minimal-ipv6-example-com.id
-  subnet_us-test-1a_id         = aws_subnet.us-test-1a-minimal-ipv6-example-com.id
-  vpc_cidr_block               = aws_vpc.minimal-ipv6-example-com.cidr_block
-  vpc_id                       = aws_vpc.minimal-ipv6-example-com.id
+  cluster_name                     = "minimal-ipv6.example.com"
+  master_autoscaling_group_ids     = [aws_autoscaling_group.master-us-test-1a-masters-minimal-ipv6-example-com.id]
+  master_security_group_ids        = [aws_security_group.masters-minimal-ipv6-example-com.id]
+  masters_role_arn                 = aws_iam_role.masters-minimal-ipv6-example-com.arn
+  masters_role_name                = aws_iam_role.masters-minimal-ipv6-example-com.name
+  node_autoscaling_group_ids       = [aws_autoscaling_group.nodes-minimal-ipv6-example-com.id]
+  node_security_group_ids          = [aws_security_group.nodes-minimal-ipv6-example-com.id]
+  node_subnet_ids                  = [aws_subnet.us-test-1a-minimal-ipv6-example-com.id]
+  nodes_role_arn                   = aws_iam_role.nodes-minimal-ipv6-example-com.arn
+  nodes_role_name                  = aws_iam_role.nodes-minimal-ipv6-example-com.name
+  region                           = "us-test-1"
+  route_table_public-us-test-1a_id = aws_route_table.public-us-test-1a-minimal-ipv6-example-com.id
+  route_table_public_id            = aws_route_table.minimal-ipv6-example-com.id
+  subnet_us-test-1a_id             = aws_subnet.us-test-1a-minimal-ipv6-example-com.id
+  vpc_cidr_block                   = aws_vpc.minimal-ipv6-example-com.cidr_block
+  vpc_id                           = aws_vpc.minimal-ipv6-example-com.id
 }
 
 output "cluster_name" {
@@ -58,6 +59,10 @@ output "nodes_role_name" {
 
 output "region" {
   value = "us-test-1"
+}
+
+output "route_table_public-us-test-1a_id" {
+  value = aws_route_table.public-us-test-1a-minimal-ipv6-example-com.id
 }
 
 output "route_table_public_id" {
@@ -229,6 +234,15 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-minimal-ipv6-example-com" {
   }
   throughput = 125
   type       = "gp3"
+}
+
+resource "aws_eip" "us-test-1a-minimal-ipv6-example-com" {
+  tags = {
+    "KubernetesCluster"                              = "minimal-ipv6.example.com"
+    "Name"                                           = "us-test-1a.minimal-ipv6.example.com"
+    "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
+  }
+  vpc = true
 }
 
 resource "aws_iam_instance_profile" "masters-minimal-ipv6-example-com" {
@@ -503,6 +517,16 @@ resource "aws_lb_target_group" "tcp-minimal-ipv6-example--bne5ih" {
   vpc_id = aws_vpc.minimal-ipv6-example-com.id
 }
 
+resource "aws_nat_gateway" "us-test-1a-minimal-ipv6-example-com" {
+  allocation_id = aws_eip.us-test-1a-minimal-ipv6-example-com.id
+  subnet_id     = aws_subnet.us-test-1a-minimal-ipv6-example-com.id
+  tags = {
+    "KubernetesCluster"                              = "minimal-ipv6.example.com"
+    "Name"                                           = "us-test-1a.minimal-ipv6.example.com"
+    "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
+  }
+}
+
 resource "aws_route" "route-0-0-0-0--0" {
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.minimal-ipv6-example-com.id
@@ -513,6 +537,24 @@ resource "aws_route" "route-__--0" {
   destination_ipv6_cidr_block = "::/0"
   gateway_id                  = aws_internet_gateway.minimal-ipv6-example-com.id
   route_table_id              = aws_route_table.minimal-ipv6-example-com.id
+}
+
+resource "aws_route" "route-public-us-test-1a-0-0-0-0--0" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.minimal-ipv6-example-com.id
+  route_table_id         = aws_route_table.public-us-test-1a-minimal-ipv6-example-com.id
+}
+
+resource "aws_route" "route-public-us-test-1a-64_ff9b__--96" {
+  destination_ipv6_cidr_block = "64:ff9b::/96"
+  nat_gateway_id              = aws_nat_gateway.us-test-1a-minimal-ipv6-example-com.id
+  route_table_id              = aws_route_table.public-us-test-1a-minimal-ipv6-example-com.id
+}
+
+resource "aws_route" "route-public-us-test-1a-__--0" {
+  destination_ipv6_cidr_block = "::/0"
+  gateway_id                  = aws_internet_gateway.minimal-ipv6-example-com.id
+  route_table_id              = aws_route_table.public-us-test-1a-minimal-ipv6-example-com.id
 }
 
 resource "aws_route53_record" "api-minimal-ipv6-example-com" {
@@ -547,8 +589,18 @@ resource "aws_route_table" "minimal-ipv6-example-com" {
   vpc_id = aws_vpc.minimal-ipv6-example-com.id
 }
 
-resource "aws_route_table_association" "us-test-1a-minimal-ipv6-example-com" {
-  route_table_id = aws_route_table.minimal-ipv6-example-com.id
+resource "aws_route_table" "public-us-test-1a-minimal-ipv6-example-com" {
+  tags = {
+    "KubernetesCluster"                              = "minimal-ipv6.example.com"
+    "Name"                                           = "public-us-test-1a.minimal-ipv6.example.com"
+    "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
+    "kubernetes.io/kops/role"                        = "public-us-test-1a"
+  }
+  vpc_id = aws_vpc.minimal-ipv6-example-com.id
+}
+
+resource "aws_route_table_association" "public-us-test-1a-minimal-ipv6-example-com" {
+  route_table_id = aws_route_table.public-us-test-1a-minimal-ipv6-example-com.id
   subnet_id      = aws_subnet.us-test-1a-minimal-ipv6-example-com.id
 }
 
