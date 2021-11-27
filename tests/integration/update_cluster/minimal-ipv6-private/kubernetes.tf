@@ -596,6 +596,12 @@ resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
   route_table_id         = aws_route_table.private-us-test-1a-minimal-ipv6-example-com.id
 }
 
+resource "aws_route" "route-private-us-test-1a-64_ff9b__--96" {
+  destination_ipv6_cidr_block = "64:ff9b::/96"
+  nat_gateway_id              = aws_nat_gateway.us-test-1a-minimal-ipv6-example-com.id
+  route_table_id              = aws_route_table.private-us-test-1a-minimal-ipv6-example-com.id
+}
+
 resource "aws_route" "route-private-us-test-1a-__--0" {
   destination_ipv6_cidr_block = "::/0"
   egress_only_gateway_id      = aws_egress_only_internet_gateway.minimal-ipv6-example-com.id
@@ -606,6 +612,12 @@ resource "aws_route" "route-private-us-test-1b-0-0-0-0--0" {
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.us-test-1b-minimal-ipv6-example-com.id
   route_table_id         = aws_route_table.private-us-test-1b-minimal-ipv6-example-com.id
+}
+
+resource "aws_route" "route-private-us-test-1b-64_ff9b__--96" {
+  destination_ipv6_cidr_block = "64:ff9b::/96"
+  nat_gateway_id              = aws_nat_gateway.us-test-1b-minimal-ipv6-example-com.id
+  route_table_id              = aws_route_table.private-us-test-1b-minimal-ipv6-example-com.id
 }
 
 resource "aws_route" "route-private-us-test-1b-__--0" {
