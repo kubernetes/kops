@@ -233,14 +233,14 @@ func TestSetClusterFields(t *testing.T) {
 		},
 		{
 			Fields: []string{
-				"cluster.spec.networking.cilium.disableMasquerade=true",
+				"cluster.spec.networking.cilium.masquerade=false",
 			},
 			Input: kops.Cluster{},
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
 					Networking: &kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
-							DisableMasquerade: fi.Bool(true),
+							Masquerade: fi.Bool(false),
 						},
 					},
 				},
@@ -304,7 +304,7 @@ func TestSetCiliumFields(t *testing.T) {
 			Fields: []string{
 				"cluster.spec.networking.cilium.ipam=eni",
 				"cluster.spec.networking.cilium.enableNodePort=true",
-				"cluster.spec.networking.cilium.disableMasquerade=true",
+				"cluster.spec.networking.cilium.masquerade=false",
 				"cluster.spec.kubeProxy.enabled=false",
 			},
 			Input: kops.Cluster{
@@ -317,9 +317,9 @@ func TestSetCiliumFields(t *testing.T) {
 					},
 					Networking: &kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
-							IPAM:              "eni",
-							EnableNodePort:    true,
-							DisableMasquerade: fi.Bool(true),
+							IPAM:           "eni",
+							EnableNodePort: true,
+							Masquerade:     fi.Bool(false),
 						},
 					},
 				},

@@ -215,7 +215,7 @@ type CanalNetworkingSpec struct {
 	DefaultEndpointToHostAction string `json:"defaultEndpointToHostAction,omitempty"`
 	// DisableFlannelForwardRules configures Flannel to NOT add the
 	// default ACCEPT traffic rules to the iptables FORWARD chain
-	DisableFlannelForwardRules bool `json:"disableFlannelForwardRules,omitempty"`
+	FlanneldIptablesForwardRules *bool `json:"disableFlannelForwardRules,omitempty"`
 	// DisableTxChecksumOffloading is unused.
 	// +k8s:conversion-gen=false
 	DisableTxChecksumOffloading bool `json:"disableTxChecksumOffloading,omitempty"`
@@ -436,7 +436,7 @@ type CiliumNetworkingSpec struct {
 	// +k8s:conversion-gen=false
 	LogstashProbeTimer uint32 `json:"logstashProbeTimer,omitempty"`
 	// DisableMasquerade disables masquerading traffic to external destinations behind the node IP.
-	DisableMasquerade *bool `json:"disableMasquerade,omitempty"`
+	Masquerade *bool `json:"disableMasquerade,omitempty"`
 	// Nat46Range is unused.
 	// +k8s:conversion-gen=false
 	Nat46Range string `json:"nat46Range,omitempty"`
@@ -538,7 +538,7 @@ type CiliumNetworkingSpec struct {
 	IPAM string `json:"ipam,omitempty"`
 	// IPTablesRulesNoinstall disables installing the base IPTables rules used for masquerading and kube-proxy.
 	// Default: false
-	IPTablesRulesNoinstall bool `json:"IPTablesRulesNoinstall,omitempty"`
+	InstallIptablesRules *bool `json:"IPTablesRulesNoinstall,omitempty"`
 	// AutoDirectNodeRoutes adds automatic L2 routing between nodes.
 	// Default: false
 	AutoDirectNodeRoutes bool `json:"autoDirectNodeRoutes,omitempty"`

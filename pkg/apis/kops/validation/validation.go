@@ -486,7 +486,7 @@ func validateHookSpec(v *kops.HookSpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	// if this unit is disabled, short-circuit and do not validate
-	if v.Disabled {
+	if v.Enabled != nil && !*v.Enabled {
 		return allErrs
 	}
 
@@ -922,8 +922,8 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 		}
 	}
 
-	if fi.BoolValue(v.EnableL7Proxy) && v.IPTablesRulesNoinstall {
-		allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableL7Proxy"), "Cilium L7 Proxy requires IPTablesRules to be installed."))
+	if fi.BoolValue(v.EnableL7Proxy) && v.InstallIptablesRules != nil && !*v.InstallIptablesRules {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableL7Proxy"), "Cilium L7 Proxy requires installIptablesRules."))
 	}
 
 	if v.IPAM != "" {
@@ -934,8 +934,8 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			if c.CloudProvider != string(kops.CloudProviderAWS) {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("ipam"), "Cilum ENI IPAM is supported only in AWS"))
 			}
-			if v.DisableMasquerade != nil && !*v.DisableMasquerade {
-				allErrs = append(allErrs, field.Forbidden(fldPath.Child("disableMasquerade"), "Masquerade must be disabled when ENI IPAM is used"))
+			if v.Masquerade != nil && *v.Masquerade {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("masquerade"), "Masquerade must be disabled when ENI IPAM is used"))
 			}
 			if c.IsIPv6Only() {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("ipam"), "Cilium ENI IPAM does not support IPv6"))
@@ -1496,7 +1496,7 @@ func validateClusterAutoscaler(cluster *kops.Cluster, spec *kops.ClusterAutoscal
 }
 
 func validateExternalDNS(cluster *kops.Cluster, spec *kops.ExternalDNSConfig, fldPath *field.Path) (allErrs field.ErrorList) {
-	allErrs = append(allErrs, IsValidValue(fldPath.Child("provider"), (*string)(&spec.Provider), []string{"", "dns-controller", "external-dns"})...)
+	allErrs = append(allErrs, IsValidValue(fldPath.Child("provider"), (*string)(&spec.Provider), []string{"", "dns-controller", "external-dns", "none"})...)
 
 	if spec.WatchNamespace != "" {
 		if spec.WatchNamespace != "kube-system" {

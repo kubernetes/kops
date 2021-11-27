@@ -830,8 +830,8 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				DisableMasquerade: fi.Bool(true),
-				IPAM:              "eni",
+				Masquerade: fi.Bool(false),
+				IPAM:       "eni",
 			},
 			Spec: kops.ClusterSpec{
 				CloudProvider: "aws",
@@ -845,18 +845,18 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				DisableMasquerade: fi.Bool(false),
-				IPAM:              "eni",
+				Masquerade: fi.Bool(true),
+				IPAM:       "eni",
 			},
 			Spec: kops.ClusterSpec{
 				CloudProvider: "aws",
 			},
-			ExpectedErrors: []string{"Forbidden::cilium.disableMasquerade"},
+			ExpectedErrors: []string{"Forbidden::cilium.masquerade"},
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				EnableL7Proxy:          fi.Bool(true),
-				IPTablesRulesNoinstall: true,
+				EnableL7Proxy:        fi.Bool(true),
+				InstallIptablesRules: fi.Bool(false),
 			},
 			Spec: kops.ClusterSpec{
 				CloudProvider: "aws",

@@ -201,8 +201,8 @@ data:
   # - none
   # - auto (automatically detect the container runtime)
   #
-  masquerade: "{{- if WithDefaultBool .DisableMasquerade false -}}false{{- else -}}true{{- end -}}"
-  install-iptables-rules: "{{- if .IPTablesRulesNoinstall -}}false{{- else -}}true{{- end -}}"
+  masquerade: "{{ .Masquerade }}"
+  install-iptables-rules: "{{ WithDefaultBool .InstallIptablesRules true }}"
   auto-direct-node-routes: "{{ .AutoDirectNodeRoutes }}"
   {{ if .EnableHostReachableServices }}
   enable-host-reachable-services: "{{ .EnableHostReachableServices }}"
