@@ -20,6 +20,8 @@ filegroup(
     name = "exported_testdata",
     srcs = glob([
         "aws/**",
+        "canal/**",
+        "cilium/**",
         "minimal/**",
     ]),
     visibility = ["//visibility:public"],

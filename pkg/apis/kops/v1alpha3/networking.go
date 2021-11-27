@@ -205,9 +205,9 @@ type CanalNetworkingSpec struct {
 	// for traffic between pod to host after calico rules have been processed.
 	// Default: ACCEPT (other options: DROP, RETURN)
 	DefaultEndpointToHostAction string `json:"defaultEndpointToHostAction,omitempty"`
-	// DisableFlannelForwardRules configures Flannel to NOT add the
-	// default ACCEPT traffic rules to the iptables FORWARD chain
-	DisableFlannelForwardRules bool `json:"disableFlannelForwardRules,omitempty"`
+	// FlanneldIptablesForwardRules configures Flannel to add the
+	// default ACCEPT traffic rules to the iptables FORWARD chain. (default: true)
+	FlanneldIptablesForwardRules *bool `json:"flanneldIptablesForwardRules,omitempty"`
 	// IptablesBackend controls which variant of iptables binary Felix uses
 	// Default: Auto (other options: Legacy, NFT)
 	IptablesBackend string `json:"iptablesBackend,omitempty"`
@@ -305,8 +305,9 @@ type CiliumNetworkingSpec struct {
 	// IdentityChangeGracePeriod specifies the duration to wait before using a changed identity.
 	// Default: 5s
 	IdentityChangeGracePeriod string `json:"identityChangeGracePeriod,omitempty"`
-	// DisableMasquerade disables masquerading traffic to external destinations behind the node IP.
-	DisableMasquerade *bool `json:"disableMasquerade,omitempty"`
+	// Masquerade enables masquerading IPv4 traffic to external destinations behind the node IP.
+	// Default: false if IPAM is "eni" or in IPv6 mode, otherwise true
+	Masquerade *bool `json:"masquerade,omitempty"`
 	// AgentPodAnnotations makes possible to add additional annotations to the cilium agent.
 	// Default: none
 	AgentPodAnnotations map[string]string `json:"agentPodAnnotations,omitempty"`
@@ -370,9 +371,9 @@ type CiliumNetworkingSpec struct {
 	// "kubernetes" will use addersing based on node pod CIDR.
 	// Default: "kubernetes".
 	IPAM string `json:"ipam,omitempty"`
-	// IPTablesRulesNoinstall disables installing the base IPTables rules used for masquerading and kube-proxy.
-	// Default: false
-	IPTablesRulesNoinstall bool `json:"IPTablesRulesNoinstall,omitempty"`
+	// InstallIptablesRules enables installing the base IPTables rules used for masquerading and kube-proxy.
+	// Default: true
+	InstallIptablesRules *bool `json:"installIptablesRules,omitempty"`
 	// AutoDirectNodeRoutes adds automatic L2 routing between nodes.
 	// Default: false
 	AutoDirectNodeRoutes bool `json:"autoDirectNodeRoutes,omitempty"`
