@@ -195,6 +195,26 @@
         ]
       }
     },
+    "AWSEC2EIPustest1aminimalipv6examplecom": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal-ipv6.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.minimal-ipv6.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
     "AWSEC2InternetGatewayminimalipv6examplecom": {
       "Type": "AWS::EC2::InternetGateway",
       "Properties": {
@@ -478,6 +498,34 @@
         }
       }
     },
+    "AWSEC2NatGatewayustest1aminimalipv6examplecom": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "AWSEC2EIPustest1aminimalipv6examplecom",
+            "AllocationId"
+          ]
+        },
+        "SubnetId": {
+          "Ref": "AWSEC2Subnetustest1aminimalipv6examplecom"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal-ipv6.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.minimal-ipv6.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
     "AWSEC2Route0": {
       "Type": "AWS::EC2::Route",
       "Properties": {
@@ -526,6 +574,68 @@
             "Value": "public"
           }
         ]
+      }
+    },
+    "AWSEC2RouteTablepublicustest1aminimalipv6examplecom": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCminimalipv6examplecom"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal-ipv6.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "public-us-test-1a.minimal-ipv6.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/kops/role",
+            "Value": "public-us-test-1a"
+          }
+        ]
+      }
+    },
+    "AWSEC2Routepublicustest1a0": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTablepublicustest1aminimalipv6examplecom"
+        },
+        "DestinationIpv6CidrBlock": "::/0",
+        "GatewayId": {
+          "Ref": "AWSEC2InternetGatewayminimalipv6examplecom"
+        }
+      }
+    },
+    "AWSEC2Routepublicustest1a00000": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTablepublicustest1aminimalipv6examplecom"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "AWSEC2InternetGatewayminimalipv6examplecom"
+        }
+      }
+    },
+    "AWSEC2Routepublicustest1a64ff9b96": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTablepublicustest1aminimalipv6examplecom"
+        },
+        "DestinationIpv6CidrBlock": "64:ff9b::/96",
+        "NatGatewayId": {
+          "Ref": "AWSEC2NatGatewayustest1aminimalipv6examplecom"
+        }
       }
     },
     "AWSEC2SecurityGroupEgressfrommastersminimalipv6examplecomegressall0to00": {
@@ -868,14 +978,14 @@
         ]
       }
     },
-    "AWSEC2SubnetRouteTableAssociationustest1aminimalipv6examplecom": {
+    "AWSEC2SubnetRouteTableAssociationpublicustest1aminimalipv6examplecom": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
         "SubnetId": {
           "Ref": "AWSEC2Subnetustest1aminimalipv6examplecom"
         },
         "RouteTableId": {
-          "Ref": "AWSEC2RouteTableminimalipv6examplecom"
+          "Ref": "AWSEC2RouteTablepublicustest1aminimalipv6examplecom"
         }
       }
     },
