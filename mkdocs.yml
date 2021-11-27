@@ -114,7 +114,7 @@ nav:
     - Security: "security.md"
     - Advisories: "advisories/README.md"
     - Bastion setup: "bastion.md"
-    - IAM roles: "iam_roles.md"
+    - Instance IAM roles: "iam_roles.md"
     - MFA setup: "mfa.md"
     - Security Groups: "security_groups.md"
   - Advanced:

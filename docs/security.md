@@ -30,10 +30,10 @@ If you are using a private registry such as quay.io, you may be familiar with th
 
 This stores the [config.json](https://docs.docker.com/engine/reference/commandline/login/) in `/root/.docker/config.json` on all nodes (include masters) so that both Kubernetes and system containers may use registries defined in it.
 
-## IAM roles
+## Instance IAM roles
 
 All Pods running on your cluster have access to underlying instance IAM role.
-Currently permission scope is quite broad. See [iam_roles.md](iam_roles.md) for details and ways to mitigate that.
+Currently, permission scope is quite broad. See [iam_roles.md](iam_roles.md) for details and ways to mitigate that.
 
 ## Kubernetes API
 
