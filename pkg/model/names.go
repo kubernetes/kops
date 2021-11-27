@@ -206,6 +206,14 @@ func (b *KopsModelContext) LinkToSSHKey() (*awstasks.SSHKey, error) {
 	return &awstasks.SSHKey{Name: &sshKeyName}, nil
 }
 
+func (b *KopsModelContext) NamePublicRouteTableInZone(zoneName string) string {
+	return "public-" + zoneName + "." + b.ClusterName()
+}
+
+func (b *KopsModelContext) LinkToPublicRouteTableInZone(zoneName string) *awstasks.RouteTable {
+	return &awstasks.RouteTable{Name: fi.String(b.NamePublicRouteTableInZone(zoneName))}
+}
+
 func (b *KopsModelContext) NamePrivateRouteTableInZone(zoneName string) string {
 	return "private-" + zoneName + "." + b.ClusterName()
 }

@@ -37,7 +37,9 @@ type NetworkModelBuilder struct {
 var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 type zoneInfo struct {
-	PrivateSubnets []*kops.ClusterSubnetSpec
+	NATSubnets           []*kops.ClusterSubnetSpec
+	HaveIPv6PublicSubnet bool
+	HavePrivateSubnet    bool
 }
 
 func isUnmanaged(subnet *kops.ClusterSubnetSpec) bool {
@@ -163,9 +165,10 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// We always have a public route table, though for private networks it is only used for NGWs and ELBs
 	var publicRouteTable *awstasks.RouteTable
+	var igw *awstasks.InternetGateway
 	if !allSubnetsUnmanaged {
 		// The internet gateway is the main entry point to the cluster.
-		igw := &awstasks.InternetGateway{
+		igw = &awstasks.InternetGateway{
 			Name:      fi.String(b.ClusterName()),
 			Lifecycle: b.Lifecycle,
 			VPC:       b.LinkToVPC(),
@@ -269,12 +272,28 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		switch subnetSpec.Type {
 		case kops.SubnetTypePublic, kops.SubnetTypeUtility:
 			if !sharedSubnet && !isUnmanaged(subnetSpec) {
-				c.AddTask(&awstasks.RouteTableAssociation{
-					Name:       fi.String(subnetSpec.Name + "." + b.ClusterName()),
-					Lifecycle:  b.Lifecycle,
-					RouteTable: publicRouteTable,
-					Subnet:     subnet,
-				})
+				if b.IsIPv6Only() && subnetSpec.Type == kops.SubnetTypePublic && subnetSpec.IPv6CIDR != "" {
+					// Public IPv6-capable subnets route NAT64 to a NAT gateway
+					c.AddTask(&awstasks.RouteTableAssociation{
+						Name:       fi.String("public-" + subnetSpec.Name + "." + b.ClusterName()),
+						Lifecycle:  b.Lifecycle,
+						RouteTable: b.LinkToPublicRouteTableInZone(subnetSpec.Zone),
+						Subnet:     subnet,
+					})
+
+					if infoByZone[subnetSpec.Zone] == nil {
+						infoByZone[subnetSpec.Zone] = &zoneInfo{}
+					}
+					infoByZone[subnetSpec.Zone].NATSubnets = append(infoByZone[subnetSpec.Zone].NATSubnets, subnetSpec)
+					infoByZone[subnetSpec.Zone].HaveIPv6PublicSubnet = true
+				} else {
+					c.AddTask(&awstasks.RouteTableAssociation{
+						Name:       fi.String(subnetSpec.Name + "." + b.ClusterName()),
+						Lifecycle:  b.Lifecycle,
+						RouteTable: publicRouteTable,
+						Subnet:     subnet,
+					})
+				}
 			}
 
 		case kops.SubnetTypePrivate:
@@ -295,7 +314,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				if infoByZone[subnetSpec.Zone] == nil {
 					infoByZone[subnetSpec.Zone] = &zoneInfo{}
 				}
-				infoByZone[subnetSpec.Zone].PrivateSubnets = append(infoByZone[subnetSpec.Zone].PrivateSubnets, subnetSpec)
+				infoByZone[subnetSpec.Zone].NATSubnets = append(infoByZone[subnetSpec.Zone].NATSubnets, subnetSpec)
+				infoByZone[subnetSpec.Zone].HavePrivateSubnet = true
 			}
 		default:
 			return fmt.Errorf("subnet %q has unknown type %q", subnetSpec.Name, subnetSpec.Type)
@@ -319,20 +339,29 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	for zone, info := range infoByZone {
-		if len(info.PrivateSubnets) == 0 {
+		if len(info.NATSubnets) == 0 {
 			continue
 		}
 
-		utilitySubnet, err := b.LinkToUtilitySubnetInZone(zone)
+		var egressSubnet *awstasks.Subnet
+		var egressRouteTable *awstasks.RouteTable
+		var err error
+		if info.HavePrivateSubnet {
+			egressSubnet, err = b.LinkToUtilitySubnetInZone(zone)
+			egressRouteTable = b.LinkToPrivateRouteTableInZone(zone)
+		} else {
+			egressSubnet, err = b.LinkToPublicSubnetInZone(zone)
+			egressRouteTable = b.LinkToPublicRouteTableInZone(zone)
+		}
 		if err != nil {
 			return err
 		}
 
-		egress := info.PrivateSubnets[0].Egress
-		publicIP := info.PrivateSubnets[0].PublicIP
+		egress := info.NATSubnets[0].Egress
+		publicIP := info.NATSubnets[0].PublicIP
 
 		allUnmanaged := true
-		for _, subnetSpec := range info.PrivateSubnets {
+		for _, subnetSpec := range info.NATSubnets {
 			if !isUnmanaged(subnetSpec) {
 				allUnmanaged = false
 			}
@@ -343,12 +372,12 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		// Verify we don't have mixed values for egress/publicIP - the code doesn't handle it
-		for _, subnet := range info.PrivateSubnets {
+		for _, subnet := range info.NATSubnets {
 			if subnet.Egress != egress {
-				return fmt.Errorf("cannot mix egress values in private subnets")
+				return fmt.Errorf("cannot mix egress values in private or IPv6-capable subnets")
 			}
 			if subnet.PublicIP != publicIP {
-				return fmt.Errorf("cannot mix publicIP values in private subnets")
+				return fmt.Errorf("cannot mix publicIP values in private or IPv6-capable subnets")
 			}
 		}
 
@@ -361,9 +390,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				ngw = &awstasks.NatGateway{
 					Name:                 fi.String(zone + "." + b.ClusterName()),
 					Lifecycle:            b.Lifecycle,
-					Subnet:               utilitySubnet,
+					Subnet:               egressSubnet,
 					ID:                   fi.String(egress),
-					AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+					AssociatedRouteTable: egressRouteTable,
 					// If we're here, it means this NatGateway was specified, so we are Shared
 					Shared: fi.Bool(true),
 					Tags:   b.CloudTags(zone+"."+b.ClusterName(), true),
@@ -377,7 +406,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					Name:                           fi.String(zone + "." + b.ClusterName()),
 					ID:                             fi.String(egress),
 					Lifecycle:                      b.Lifecycle,
-					AssociatedNatGatewayRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+					AssociatedNatGatewayRouteTable: egressRouteTable,
 					Shared:                         fi.Bool(true),
 					Tags:                           b.CloudTags(zone+"."+b.ClusterName(), true),
 				}
@@ -386,9 +415,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				ngw = &awstasks.NatGateway{
 					Name:                 fi.String(zone + "." + b.ClusterName()),
 					Lifecycle:            b.Lifecycle,
-					Subnet:               utilitySubnet,
+					Subnet:               egressSubnet,
 					ElasticIP:            eip,
-					AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+					AssociatedRouteTable: egressRouteTable,
 					Tags:                 b.CloudTags(zone+"."+b.ClusterName(), false),
 				}
 				c.AddTask(ngw)
@@ -420,7 +449,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			eip := &awstasks.ElasticIP{
 				Name:                           fi.String(zone + "." + b.ClusterName()),
 				Lifecycle:                      b.Lifecycle,
-				AssociatedNatGatewayRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+				AssociatedNatGatewayRouteTable: egressRouteTable,
 			}
 
 			if publicIP != "" {
@@ -443,64 +472,121 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			ngw = &awstasks.NatGateway{
 				Name:                 fi.String(zone + "." + b.ClusterName()),
 				Lifecycle:            b.Lifecycle,
-				Subnet:               utilitySubnet,
+				Subnet:               egressSubnet,
 				ElasticIP:            eip,
-				AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+				AssociatedRouteTable: egressRouteTable,
 				Tags:                 b.CloudTags(zone+"."+b.ClusterName(), false),
 			}
 			c.AddTask(ngw)
 		}
 
-		// Private Route Table
-		//
-		// We create an owned route table if we created any subnet in that zone.
-		// Otherwise we consider it shared.
-		routeTableShared := allSubnetsSharedInZone[zone]
-		routeTableTags := b.CloudTags(b.NamePrivateRouteTableInZone(zone), routeTableShared)
-		routeTableTags[awsup.TagNameKopsRole] = "private-" + zone
-		rt := &awstasks.RouteTable{
-			Name:      fi.String(b.NamePrivateRouteTableInZone(zone)),
-			VPC:       b.LinkToVPC(),
-			Lifecycle: b.Lifecycle,
+		if info.HavePrivateSubnet {
+			// Private Route Table
+			//
+			// We create an owned route table if we created any private subnet in that zone.
+			// Otherwise we consider it shared.
+			routeTableShared := allSubnetsSharedInZone[zone]
+			routeTableTags := b.CloudTags(b.NamePrivateRouteTableInZone(zone), routeTableShared)
+			routeTableTags[awsup.TagNameKopsRole] = "private-" + zone
+			rt := &awstasks.RouteTable{
+				Name:      fi.String(b.NamePrivateRouteTableInZone(zone)),
+				VPC:       b.LinkToVPC(),
+				Lifecycle: b.Lifecycle,
 
-			Shared: fi.Bool(routeTableShared),
-			Tags:   routeTableTags,
-		}
-		c.AddTask(rt)
-
-		// Private Routes
-		//
-		// Routes for the private route table.
-		// Will route IPv4 to the NAT Gateway
-		var r *awstasks.Route
-		if in != nil {
-
-			r = &awstasks.Route{
-				Name:       fi.String("private-" + zone + "-0.0.0.0/0"),
-				Lifecycle:  b.Lifecycle,
-				CIDR:       fi.String("0.0.0.0/0"),
-				RouteTable: rt,
-				Instance:   in,
+				Shared: fi.Bool(routeTableShared),
+				Tags:   routeTableTags,
 			}
+			c.AddTask(rt)
 
-		} else {
+			// Private Routes
+			//
+			// Routes for the private route table.
+			// Will route IPv4 to the NAT Gateway
+			var r *awstasks.Route
+			if in != nil {
 
-			r = &awstasks.Route{
-				Name:       fi.String("private-" + zone + "-0.0.0.0/0"),
-				Lifecycle:  b.Lifecycle,
-				CIDR:       fi.String("0.0.0.0/0"),
-				RouteTable: rt,
-				// Only one of these will be not nil
-				NatGateway:       ngw,
-				TransitGatewayID: tgwID,
+				r = &awstasks.Route{
+					Name:       fi.String("private-" + zone + "-0.0.0.0/0"),
+					Lifecycle:  b.Lifecycle,
+					CIDR:       fi.String("0.0.0.0/0"),
+					RouteTable: rt,
+					Instance:   in,
+				}
+
+			} else {
+
+				r = &awstasks.Route{
+					Name:       fi.String("private-" + zone + "-0.0.0.0/0"),
+					Lifecycle:  b.Lifecycle,
+					CIDR:       fi.String("0.0.0.0/0"),
+					RouteTable: rt,
+					// Only one of these will be not nil
+					NatGateway:       ngw,
+					TransitGatewayID: tgwID,
+				}
+			}
+			c.AddTask(r)
+
+			if b.IsIPv6Only() {
+				// Route NAT64 well-known prefix to the NAT gateway
+				c.AddTask(&awstasks.Route{
+					Name:       fi.String("private-" + zone + "-64:ff9b::/96"),
+					Lifecycle:  b.Lifecycle,
+					IPv6CIDR:   fi.String("64:ff9b::/96"),
+					RouteTable: rt,
+					// Only one of these will be not nil
+					NatGateway:       ngw,
+					TransitGatewayID: tgwID,
+				})
+
+				// Route IPv6 to the Egress-only Internet Gateway.
+				c.AddTask(&awstasks.Route{
+					Name:                      fi.String("private-" + zone + "-::/0"),
+					Lifecycle:                 b.Lifecycle,
+					IPv6CIDR:                  fi.String("::/0"),
+					RouteTable:                rt,
+					EgressOnlyInternetGateway: eigw,
+				})
 			}
 		}
-		c.AddTask(r)
 
-		if b.IsIPv6Only() {
+		if info.HaveIPv6PublicSubnet {
+			// Public Route Table
+			//
+			// We create an owned route table if we created any IPv6-capable public subnet in that zone.
+			// Otherwise we consider it shared.
+			routeTableShared := allSubnetsSharedInZone[zone]
+			routeTableTags := b.CloudTags(b.NamePublicRouteTableInZone(zone), routeTableShared)
+			routeTableTags[awsup.TagNameKopsRole] = "public-" + zone
+			rt := &awstasks.RouteTable{
+				Name:      fi.String(b.NamePublicRouteTableInZone(zone)),
+				VPC:       b.LinkToVPC(),
+				Lifecycle: b.Lifecycle,
+
+				Shared: fi.Bool(routeTableShared),
+				Tags:   routeTableTags,
+			}
+			c.AddTask(rt)
+
+			// Routes for the public route table.
+			c.AddTask(&awstasks.Route{
+				Name:            fi.String("public-" + zone + "-0.0.0.0/0"),
+				Lifecycle:       b.Lifecycle,
+				CIDR:            fi.String("0.0.0.0/0"),
+				RouteTable:      rt,
+				InternetGateway: igw,
+			})
+			c.AddTask(&awstasks.Route{
+				Name:            fi.String("public-" + zone + "-::/0"),
+				Lifecycle:       b.Lifecycle,
+				IPv6CIDR:        fi.String("::/0"),
+				RouteTable:      rt,
+				InternetGateway: igw,
+			})
+
 			// Route NAT64 well-known prefix to the NAT gateway
 			c.AddTask(&awstasks.Route{
-				Name:       fi.String("private-" + zone + "-64:ff9b::/96"),
+				Name:       fi.String("public-" + zone + "-64:ff9b::/96"),
 				Lifecycle:  b.Lifecycle,
 				IPv6CIDR:   fi.String("64:ff9b::/96"),
 				RouteTable: rt,
@@ -508,17 +594,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				NatGateway:       ngw,
 				TransitGatewayID: tgwID,
 			})
-
-			// Route IPv6 to the Egress-only Internet Gateway.
-			c.AddTask(&awstasks.Route{
-				Name:                      fi.String("private-" + zone + "-::/0"),
-				Lifecycle:                 b.Lifecycle,
-				IPv6CIDR:                  fi.String("::/0"),
-				RouteTable:                rt,
-				EgressOnlyInternetGateway: eigw,
-			})
 		}
-
 	}
 
 	return nil
