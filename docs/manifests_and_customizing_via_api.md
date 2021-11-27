@@ -299,7 +299,7 @@ More information about some of the elements in the `ClusterSpec` is available in
 -  Cluster Spec [document](cluster_spec.md) which outlines some of the values in the Cluster Specification.
 - [Etcd Encryption](operations/etcd_backup_restore_encryption.md)
 - [GPU](gpu.md) setup
-- [IAM Roles](iam_roles.md) - adding additional IAM roles.
+- [Instance IAM Roles](iam_roles.md) - adding additional instance IAM roles.
 - [Labels](labels.md)
 - [Run In Existing VPC](run_in_existing_vpc.md)
 
