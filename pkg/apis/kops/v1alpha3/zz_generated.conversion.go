@@ -1731,7 +1731,7 @@ func autoConvert_v1alpha3_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *Ca
 	out.ChainInsertMode = in.ChainInsertMode
 	out.CPURequest = in.CPURequest
 	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
-	out.DisableFlannelForwardRules = in.DisableFlannelForwardRules
+	out.FlanneldIptablesForwardRules = in.FlanneldIptablesForwardRules
 	out.IptablesBackend = in.IptablesBackend
 	out.LogSeveritySys = in.LogSeveritySys
 	out.MTU = in.MTU
@@ -1754,7 +1754,7 @@ func autoConvert_kops_CanalNetworkingSpec_To_v1alpha3_CanalNetworkingSpec(in *ko
 	out.ChainInsertMode = in.ChainInsertMode
 	out.CPURequest = in.CPURequest
 	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
-	out.DisableFlannelForwardRules = in.DisableFlannelForwardRules
+	out.FlanneldIptablesForwardRules = in.FlanneldIptablesForwardRules
 	out.IptablesBackend = in.IptablesBackend
 	out.LogSeveritySys = in.LogSeveritySys
 	out.MTU = in.MTU
@@ -1816,7 +1816,7 @@ func autoConvert_v1alpha3_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.EncryptionType = kops.CiliumEncryptionType(in.EncryptionType)
 	out.IdentityAllocationMode = in.IdentityAllocationMode
 	out.IdentityChangeGracePeriod = in.IdentityChangeGracePeriod
-	out.DisableMasquerade = in.DisableMasquerade
+	out.Masquerade = in.Masquerade
 	out.AgentPodAnnotations = in.AgentPodAnnotations
 	out.Tunnel = in.Tunnel
 	out.MonitorAggregation = in.MonitorAggregation
@@ -1835,7 +1835,7 @@ func autoConvert_v1alpha3_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.ToFQDNsDNSRejectResponseCode = in.ToFQDNsDNSRejectResponseCode
 	out.ToFQDNsEnablePoller = in.ToFQDNsEnablePoller
 	out.IPAM = in.IPAM
-	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
+	out.InstallIptablesRules = in.InstallIptablesRules
 	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
 	out.EnableHostReachableServices = in.EnableHostReachableServices
 	out.EnableNodePort = in.EnableNodePort
@@ -1876,7 +1876,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha3_CiliumNetworkingSpec(in *
 	out.EncryptionType = CiliumEncryptionType(in.EncryptionType)
 	out.IdentityAllocationMode = in.IdentityAllocationMode
 	out.IdentityChangeGracePeriod = in.IdentityChangeGracePeriod
-	out.DisableMasquerade = in.DisableMasquerade
+	out.Masquerade = in.Masquerade
 	out.AgentPodAnnotations = in.AgentPodAnnotations
 	out.Tunnel = in.Tunnel
 	out.MonitorAggregation = in.MonitorAggregation
@@ -1895,7 +1895,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha3_CiliumNetworkingSpec(in *
 	out.ToFQDNsDNSRejectResponseCode = in.ToFQDNsDNSRejectResponseCode
 	out.ToFQDNsEnablePoller = in.ToFQDNsEnablePoller
 	out.IPAM = in.IPAM
-	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
+	out.InstallIptablesRules = in.InstallIptablesRules
 	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
 	out.EnableHostReachableServices = in.EnableHostReachableServices
 	out.EnableNodePort = in.EnableNodePort
@@ -3580,7 +3580,6 @@ func Convert_kops_ExecContainerAction_To_v1alpha3_ExecContainerAction(in *kops.E
 }
 
 func autoConvert_v1alpha3_ExternalDNSConfig_To_kops_ExternalDNSConfig(in *ExternalDNSConfig, out *kops.ExternalDNSConfig, s conversion.Scope) error {
-	out.Disable = in.Disable
 	out.WatchIngress = in.WatchIngress
 	out.WatchNamespace = in.WatchNamespace
 	out.Provider = kops.ExternalDNSProvider(in.Provider)
@@ -3593,7 +3592,6 @@ func Convert_v1alpha3_ExternalDNSConfig_To_kops_ExternalDNSConfig(in *ExternalDN
 }
 
 func autoConvert_kops_ExternalDNSConfig_To_v1alpha3_ExternalDNSConfig(in *kops.ExternalDNSConfig, out *ExternalDNSConfig, s conversion.Scope) error {
-	out.Disable = in.Disable
 	out.WatchIngress = in.WatchIngress
 	out.WatchNamespace = in.WatchNamespace
 	out.Provider = ExternalDNSProvider(in.Provider)
@@ -3797,7 +3795,7 @@ func Convert_kops_HTTPProxy_To_v1alpha3_HTTPProxy(in *kops.HTTPProxy, out *HTTPP
 
 func autoConvert_v1alpha3_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec, s conversion.Scope) error {
 	out.Name = in.Name
-	out.Disabled = in.Disabled
+	out.Enabled = in.Enabled
 	if in.Roles != nil {
 		in, out := &in.Roles, &out.Roles
 		*out = make([]kops.InstanceGroupRole, len(*in))
@@ -3830,7 +3828,7 @@ func Convert_v1alpha3_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec
 
 func autoConvert_kops_HookSpec_To_v1alpha3_HookSpec(in *kops.HookSpec, out *HookSpec, s conversion.Scope) error {
 	out.Name = in.Name
-	out.Disabled = in.Disabled
+	out.Enabled = in.Enabled
 	if in.Roles != nil {
 		in, out := &in.Roles, &out.Roles
 		*out = make([]InstanceGroupRole, len(*in))

@@ -191,10 +191,7 @@ type ClusterSpec struct {
 	// EncryptionConfig holds the encryption config
 	EncryptionConfig *bool `json:"encryptionConfig,omitempty"`
 	// DisableSubnetTags controls if subnets are tagged in AWS
-	// +k8s:conversion-gen=false
-	DisableSubnetTags bool `json:"DisableSubnetTags,omitempty"`
-	// +k8s:conversion-gen=false
-	TagSubnets *bool `json:"-"`
+	TagSubnets *bool `json:"DisableSubnetTags,omitempty"`
 	// Target allows for us to nest extra config for targets such as terraform
 	Target *TargetSpec `json:"target,omitempty"`
 	// UseHostCertificates will mount /etc/ssl/certs to inside needed containers.
@@ -317,7 +314,7 @@ type HookSpec struct {
 	// Name is an optional name for the hook, otherwise the name is kops-hook-<index>
 	Name string `json:"name,omitempty"`
 	// Disabled indicates if you want the unit switched off
-	Disabled bool `json:"disabled,omitempty"`
+	Enabled *bool `json:"disabled,omitempty"`
 	// Roles is an optional list of roles the hook should be rolled out to, defaults to all
 	Roles []InstanceGroupRole `json:"roles,omitempty"`
 	// Requires is a series of systemd units the action requires
@@ -546,6 +543,7 @@ const (
 // ExternalDNSConfig are options of the dns-controller
 type ExternalDNSConfig struct {
 	// Disable indicates we do not wish to run the dns-controller addon
+	// +k8s:conversion-gen=false
 	Disable bool `json:"disable,omitempty"`
 	// WatchIngress indicates you want the dns-controller to watch and create dns entries for ingress resources.
 	// Default: true if provider is 'external-dns', false otherwise.

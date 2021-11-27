@@ -28,14 +28,6 @@ spec:
       name: us-test-1a
     memoryRequest: 100Mi
     name: events
-  externalDNS:
-    provider: none
-  hooks:
-  - enabled: false
-    name: hookDisabled
-  - name: hookDefault
-  - enabled: true
-    name: hookEnabled
   iam: {}
   kubernetesAPIAccess:
   - 0.0.0.0/0
@@ -44,7 +36,8 @@ spec:
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    kubenet: {}
+    canal:
+      flanneldIptablesForwardRules: false
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
@@ -53,7 +46,6 @@ spec:
     name: us-test-1a
     type: Public
     zone: us-test-1a
-  tagSubnets: false
   topology:
     dns:
       type: Public

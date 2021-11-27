@@ -214,16 +214,6 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
-	if err := s.AddGeneratedConversionFunc((*CanalNetworkingSpec)(nil), (*kops.CanalNetworkingSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_v1alpha2_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(a.(*CanalNetworkingSpec), b.(*kops.CanalNetworkingSpec), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*kops.CanalNetworkingSpec)(nil), (*CanalNetworkingSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_kops_CanalNetworkingSpec_To_v1alpha2_CanalNetworkingSpec(a.(*kops.CanalNetworkingSpec), b.(*CanalNetworkingSpec), scope)
-	}); err != nil {
-		return err
-	}
 	if err := s.AddGeneratedConversionFunc((*CertManagerConfig)(nil), (*kops.CertManagerConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1alpha2_CertManagerConfig_To_kops_CertManagerConfig(a.(*CertManagerConfig), b.(*kops.CertManagerConfig), scope)
 	}); err != nil {
@@ -231,16 +221,6 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}
 	if err := s.AddGeneratedConversionFunc((*kops.CertManagerConfig)(nil), (*CertManagerConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_kops_CertManagerConfig_To_v1alpha2_CertManagerConfig(a.(*kops.CertManagerConfig), b.(*CertManagerConfig), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*CiliumNetworkingSpec)(nil), (*kops.CiliumNetworkingSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(a.(*CiliumNetworkingSpec), b.(*kops.CiliumNetworkingSpec), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*kops.CiliumNetworkingSpec)(nil), (*CiliumNetworkingSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(a.(*kops.CiliumNetworkingSpec), b.(*CiliumNetworkingSpec), scope)
 	}); err != nil {
 		return err
 	}
@@ -441,16 +421,6 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}
 	if err := s.AddGeneratedConversionFunc((*kops.ExecContainerAction)(nil), (*ExecContainerAction)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_kops_ExecContainerAction_To_v1alpha2_ExecContainerAction(a.(*kops.ExecContainerAction), b.(*ExecContainerAction), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*ExternalDNSConfig)(nil), (*kops.ExternalDNSConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_v1alpha2_ExternalDNSConfig_To_kops_ExternalDNSConfig(a.(*ExternalDNSConfig), b.(*kops.ExternalDNSConfig), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*kops.ExternalDNSConfig)(nil), (*ExternalDNSConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_kops_ExternalDNSConfig_To_v1alpha2_ExternalDNSConfig(a.(*kops.ExternalDNSConfig), b.(*ExternalDNSConfig), scope)
 	}); err != nil {
 		return err
 	}
@@ -1144,13 +1114,43 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddConversionFunc((*kops.CanalNetworkingSpec)(nil), (*CanalNetworkingSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_kops_CanalNetworkingSpec_To_v1alpha2_CanalNetworkingSpec(a.(*kops.CanalNetworkingSpec), b.(*CanalNetworkingSpec), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddConversionFunc((*kops.CiliumNetworkingSpec)(nil), (*CiliumNetworkingSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(a.(*kops.CiliumNetworkingSpec), b.(*CiliumNetworkingSpec), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddConversionFunc((*kops.ClusterSpec)(nil), (*ClusterSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(a.(*kops.ClusterSpec), b.(*ClusterSpec), scope)
 	}); err != nil {
 		return err
 	}
+	if err := s.AddConversionFunc((*kops.ExternalDNSConfig)(nil), (*ExternalDNSConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_kops_ExternalDNSConfig_To_v1alpha2_ExternalDNSConfig(a.(*kops.ExternalDNSConfig), b.(*ExternalDNSConfig), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddConversionFunc((*CanalNetworkingSpec)(nil), (*kops.CanalNetworkingSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha2_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(a.(*CanalNetworkingSpec), b.(*kops.CanalNetworkingSpec), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddConversionFunc((*CiliumNetworkingSpec)(nil), (*kops.CiliumNetworkingSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(a.(*CiliumNetworkingSpec), b.(*kops.CiliumNetworkingSpec), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddConversionFunc((*ClusterSpec)(nil), (*kops.ClusterSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(a.(*ClusterSpec), b.(*kops.ClusterSpec), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddConversionFunc((*ExternalDNSConfig)(nil), (*kops.ExternalDNSConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha2_ExternalDNSConfig_To_kops_ExternalDNSConfig(a.(*ExternalDNSConfig), b.(*kops.ExternalDNSConfig), scope)
 	}); err != nil {
 		return err
 	}
@@ -1782,7 +1782,7 @@ func autoConvert_v1alpha2_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *Ca
 	out.ChainInsertMode = in.ChainInsertMode
 	out.CPURequest = in.CPURequest
 	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
-	out.DisableFlannelForwardRules = in.DisableFlannelForwardRules
+	out.FlanneldIptablesForwardRules = in.FlanneldIptablesForwardRules
 	// INFO: in.DisableTxChecksumOffloading opted out of conversion generation
 	out.IptablesBackend = in.IptablesBackend
 	out.LogSeveritySys = in.LogSeveritySys
@@ -1797,16 +1797,11 @@ func autoConvert_v1alpha2_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *Ca
 	return nil
 }
 
-// Convert_v1alpha2_CanalNetworkingSpec_To_kops_CanalNetworkingSpec is an autogenerated conversion function.
-func Convert_v1alpha2_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *CanalNetworkingSpec, out *kops.CanalNetworkingSpec, s conversion.Scope) error {
-	return autoConvert_v1alpha2_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in, out, s)
-}
-
 func autoConvert_kops_CanalNetworkingSpec_To_v1alpha2_CanalNetworkingSpec(in *kops.CanalNetworkingSpec, out *CanalNetworkingSpec, s conversion.Scope) error {
 	out.ChainInsertMode = in.ChainInsertMode
 	out.CPURequest = in.CPURequest
 	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
-	out.DisableFlannelForwardRules = in.DisableFlannelForwardRules
+	out.FlanneldIptablesForwardRules = in.FlanneldIptablesForwardRules
 	out.IptablesBackend = in.IptablesBackend
 	out.LogSeveritySys = in.LogSeveritySys
 	out.MTU = in.MTU
@@ -1818,11 +1813,6 @@ func autoConvert_kops_CanalNetworkingSpec_To_v1alpha2_CanalNetworkingSpec(in *ko
 	out.TyphaPrometheusMetricsPort = in.TyphaPrometheusMetricsPort
 	out.TyphaReplicas = in.TyphaReplicas
 	return nil
-}
-
-// Convert_kops_CanalNetworkingSpec_To_v1alpha2_CanalNetworkingSpec is an autogenerated conversion function.
-func Convert_kops_CanalNetworkingSpec_To_v1alpha2_CanalNetworkingSpec(in *kops.CanalNetworkingSpec, out *CanalNetworkingSpec, s conversion.Scope) error {
-	return autoConvert_kops_CanalNetworkingSpec_To_v1alpha2_CanalNetworkingSpec(in, out, s)
 }
 
 func autoConvert_v1alpha2_CertManagerConfig_To_kops_CertManagerConfig(in *CertManagerConfig, out *kops.CertManagerConfig, s conversion.Scope) error {
@@ -1903,7 +1893,7 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	// INFO: in.Logstash opted out of conversion generation
 	// INFO: in.LogstashAgent opted out of conversion generation
 	// INFO: in.LogstashProbeTimer opted out of conversion generation
-	out.DisableMasquerade = in.DisableMasquerade
+	out.Masquerade = in.Masquerade
 	// INFO: in.Nat46Range opted out of conversion generation
 	out.AgentPodAnnotations = in.AgentPodAnnotations
 	// INFO: in.Pprof opted out of conversion generation
@@ -1934,7 +1924,7 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.ToFQDNsEnablePoller = in.ToFQDNsEnablePoller
 	// INFO: in.ContainerRuntimeLabels opted out of conversion generation
 	out.IPAM = in.IPAM
-	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
+	out.InstallIptablesRules = in.InstallIptablesRules
 	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
 	out.EnableHostReachableServices = in.EnableHostReachableServices
 	out.EnableNodePort = in.EnableNodePort
@@ -1958,11 +1948,6 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	return nil
 }
 
-// Convert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec is an autogenerated conversion function.
-func Convert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *CiliumNetworkingSpec, out *kops.CiliumNetworkingSpec, s conversion.Scope) error {
-	return autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in, out, s)
-}
-
 func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *kops.CiliumNetworkingSpec, out *CiliumNetworkingSpec, s conversion.Scope) error {
 	out.Version = in.Version
 	out.MemoryRequest = in.MemoryRequest
@@ -1980,7 +1965,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	out.EncryptionType = CiliumEncryptionType(in.EncryptionType)
 	out.IdentityAllocationMode = in.IdentityAllocationMode
 	out.IdentityChangeGracePeriod = in.IdentityChangeGracePeriod
-	out.DisableMasquerade = in.DisableMasquerade
+	out.Masquerade = in.Masquerade
 	out.AgentPodAnnotations = in.AgentPodAnnotations
 	out.Tunnel = in.Tunnel
 	out.MonitorAggregation = in.MonitorAggregation
@@ -1999,7 +1984,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	out.ToFQDNsDNSRejectResponseCode = in.ToFQDNsDNSRejectResponseCode
 	out.ToFQDNsEnablePoller = in.ToFQDNsEnablePoller
 	out.IPAM = in.IPAM
-	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
+	out.InstallIptablesRules = in.InstallIptablesRules
 	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
 	out.EnableHostReachableServices = in.EnableHostReachableServices
 	out.EnableNodePort = in.EnableNodePort
@@ -2016,11 +2001,6 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	}
 	out.DisableCNPStatusUpdates = in.DisableCNPStatusUpdates
 	return nil
-}
-
-// Convert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec is an autogenerated conversion function.
-func Convert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *kops.CiliumNetworkingSpec, out *CiliumNetworkingSpec, s conversion.Scope) error {
-	return autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in, out, s)
 }
 
 func autoConvert_v1alpha2_ClassicNetworkingSpec_To_kops_ClassicNetworkingSpec(in *ClassicNetworkingSpec, out *kops.ClassicNetworkingSpec, s conversion.Scope) error {
@@ -2664,8 +2644,7 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 		out.IAM = nil
 	}
 	out.EncryptionConfig = in.EncryptionConfig
-	// INFO: in.DisableSubnetTags opted out of conversion generation
-	// INFO: in.TagSubnets opted out of conversion generation
+	out.TagSubnets = in.TagSubnets
 	if in.Target != nil {
 		in, out := &in.Target, &out.Target
 		*out = new(kops.TargetSpec)
@@ -3711,29 +3690,18 @@ func Convert_kops_ExecContainerAction_To_v1alpha2_ExecContainerAction(in *kops.E
 }
 
 func autoConvert_v1alpha2_ExternalDNSConfig_To_kops_ExternalDNSConfig(in *ExternalDNSConfig, out *kops.ExternalDNSConfig, s conversion.Scope) error {
-	out.Disable = in.Disable
+	// INFO: in.Disable opted out of conversion generation
 	out.WatchIngress = in.WatchIngress
 	out.WatchNamespace = in.WatchNamespace
 	out.Provider = kops.ExternalDNSProvider(in.Provider)
 	return nil
 }
 
-// Convert_v1alpha2_ExternalDNSConfig_To_kops_ExternalDNSConfig is an autogenerated conversion function.
-func Convert_v1alpha2_ExternalDNSConfig_To_kops_ExternalDNSConfig(in *ExternalDNSConfig, out *kops.ExternalDNSConfig, s conversion.Scope) error {
-	return autoConvert_v1alpha2_ExternalDNSConfig_To_kops_ExternalDNSConfig(in, out, s)
-}
-
 func autoConvert_kops_ExternalDNSConfig_To_v1alpha2_ExternalDNSConfig(in *kops.ExternalDNSConfig, out *ExternalDNSConfig, s conversion.Scope) error {
-	out.Disable = in.Disable
 	out.WatchIngress = in.WatchIngress
 	out.WatchNamespace = in.WatchNamespace
 	out.Provider = ExternalDNSProvider(in.Provider)
 	return nil
-}
-
-// Convert_kops_ExternalDNSConfig_To_v1alpha2_ExternalDNSConfig is an autogenerated conversion function.
-func Convert_kops_ExternalDNSConfig_To_v1alpha2_ExternalDNSConfig(in *kops.ExternalDNSConfig, out *ExternalDNSConfig, s conversion.Scope) error {
-	return autoConvert_kops_ExternalDNSConfig_To_v1alpha2_ExternalDNSConfig(in, out, s)
 }
 
 func autoConvert_v1alpha2_ExternalNetworkingSpec_To_kops_ExternalNetworkingSpec(in *ExternalNetworkingSpec, out *kops.ExternalNetworkingSpec, s conversion.Scope) error {
@@ -3929,7 +3897,7 @@ func Convert_kops_HTTPProxy_To_v1alpha2_HTTPProxy(in *kops.HTTPProxy, out *HTTPP
 
 func autoConvert_v1alpha2_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec, s conversion.Scope) error {
 	out.Name = in.Name
-	out.Disabled = in.Disabled
+	out.Enabled = in.Enabled
 	if in.Roles != nil {
 		in, out := &in.Roles, &out.Roles
 		*out = make([]kops.InstanceGroupRole, len(*in))
@@ -3962,7 +3930,7 @@ func Convert_v1alpha2_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec
 
 func autoConvert_kops_HookSpec_To_v1alpha2_HookSpec(in *kops.HookSpec, out *HookSpec, s conversion.Scope) error {
 	out.Name = in.Name
-	out.Disabled = in.Disabled
+	out.Enabled = in.Enabled
 	if in.Roles != nil {
 		in, out := &in.Roles, &out.Roles
 		*out = make([]InstanceGroupRole, len(*in))

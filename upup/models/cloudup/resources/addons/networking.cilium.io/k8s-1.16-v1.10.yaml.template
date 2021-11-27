@@ -221,9 +221,9 @@ data:
   # - none
   # - auto (automatically detect the container runtime)
   #
-  masquerade: "{{- not (or IsIPv6Only (WithDefaultBool .DisableMasquerade false) ) -}}"
+  masquerade: "{{ .Masquerade }}"
   enable-ipv6-masquerade: "false"
-  install-iptables-rules: "{{- if .IPTablesRulesNoinstall -}}false{{- else -}}true{{- end -}}"
+  install-iptables-rules: "{{ WithDefaultBool .InstallIptablesRules true }}"
   auto-direct-node-routes: "{{ .AutoDirectNodeRoutes }}"
   {{ if .EnableHostReachableServices }}
   enable-host-reachable-services: "{{ .EnableHostReachableServices }}"
