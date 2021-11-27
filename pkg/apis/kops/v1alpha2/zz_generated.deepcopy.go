@@ -1376,6 +1376,11 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.DNS != nil {
+		in, out := &in.DNS, &out.DNS
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.ExecOpt != nil {
 		in, out := &in.ExecOpt, &out.ExecOpt
 		*out = make([]string, len(*in))
