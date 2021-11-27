@@ -1,6 +1,6 @@
-# IAM Roles
+# Instance IAM Roles
 
-By default kOps creates two IAM roles for the cluster: one for the masters, and one for the nodes.
+By default, kOps creates two instance IAM roles for the cluster: one for the control plane and one for the worker nodes.
 
 > As of kOps 1.22, new clusters running Kubernetes 1.22 on AWS will restrict Pod access to the instance metadata service.
 > This means that Pods will also be prevented from directly assuming instance roles.
@@ -14,12 +14,11 @@ The default IAM roles will not grant nodes access to the AWS EC2 Container Regis
 ```yaml
 iam:
   allowContainerRegistry: true
-  legacy: false
 ```
 
 Adding ECR permissions will extend the IAM policy documents as below:
-- Master Nodes: https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_master_strict_ecr.json
-- Compute Nodes: https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_node_strict_ecr.json
+- Control Plane Nodes: https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_master_strict_ecr.json
+- Worker Nodes: https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_node_strict_ecr.json
 
 The additional permissions are:
 ```json
@@ -57,7 +56,7 @@ iam:
 
 {{ kops_feature_table(kops_added_default='1.18') }}
 
-At times you may want to attach policies shared to you by another AWS account or that are maintained by an outside application. You can specify managed policies through the `policyOverrides` spec field.
+At times, you may want to attach policies shared to you by another AWS account or that are maintained by an outside application. You can specify managed policies through the `policyOverrides` spec field.
 
 Policy Overrides are specified by their ARN on AWS and are grouped by their role type. See the example below:
 
@@ -72,13 +71,13 @@ spec:
     - arn:aws:iam::123456789000:policy/test-policy
 ```
 
-External Policy attachments are treated declaritively. Any policies declared will be attached to the role, any policies not specified will be detached _after_ new policies are attached. This does not replace or affect built in kOps policies in any way.
+External Policy attachments are treated declaratively. Any policies declared will be attached to the role, any policies not specified will be detached _after_ new policies are attached. This does not replace or affect built in kOps policies in any way.
 
-It's important to note that externalPolicies will only handle the attachment and detachment of policies, not creation, modification, or deletion.
+It's important to note that externalPolicies will only handle the attachment and detachment of policies, not creation, modification, or deletion of them.
 
 ## Adding Additional Policies
 
-Sometimes you may need to extend the kOps IAM roles to add additional policies. You can do this
+Sometimes you may need to extend the kOps instance IAM roles to add additional policies. You can do this
 through the `additionalPolicies` spec field. For instance, let's say you want
 to add DynamoDB and Elasticsearch permissions to your nodes.
 
@@ -137,7 +136,7 @@ Now you can run a cluster update to have the changes take effect:
 kops update cluster ${CLUSTER_NAME} --yes
 ```
 
-You can have an additional policy for each kOps role (node, master, bastion). For instance, if you wanted to apply one set of additional permissions to the master instances, and another to the nodes, you could do the following:
+You can have an additional set of policies for each kOps instance role (node, master, bastion). For instance, if you wanted to apply one set of additional permissions to the master instances, and another to the nodes, you could do the following:
 
 ```yaml
 spec:
@@ -165,7 +164,7 @@ spec:
 Rather than having kOps create and manage IAM roles and instance profiles, it is possible to use an existing instance profile. This is useful in organizations where security policies prevent tools from creating their own IAM roles and policies.
 kOps will still output any differences in the IAM Inline Policy for each IAM Role.
 This is convenient for determining policy changes that need to be made when upgrading kOps.
-**Using IAM Managed Policies will not output these differences, it is up to the user to track expected changes to policies.**
+**Using IAM Managed Policies will not output these differences; it is up to the user to track expected changes to policies.**
 
 *NOTE: Currently kOps only supports using existing instance profiles for every instance group in the cluster, not a mix of existing and managed instance profiles.
 This is due to the lifecycle overrides being used to prevent creation of the IAM-related resources.*
@@ -190,7 +189,7 @@ spec:
     profile: arn:aws:iam::1234567890108:instance-profile/kops-custom-node-role
 ```
 
-Now run a cluster update to create the new launch configuration, using [lifecycle overrides](./cli/kops_update_cluster.md#options) to prevent IAM-related resources from being created:
+Now run a cluster update to create the new launch template version, using [lifecycle overrides](./cli/kops_update_cluster.md#options) to prevent IAM-related resources from being created:
 
 ```shell
 kops update cluster ${CLUSTER_NAME} --yes --lifecycle-overrides IAMRole=ExistsAndWarnIfChanges,IAMRolePolicy=ExistsAndWarnIfChanges,IAMInstanceProfileRole=ExistsAndWarnIfChanges
@@ -198,7 +197,7 @@ kops update cluster ${CLUSTER_NAME} --yes --lifecycle-overrides IAMRole=ExistsAn
 
 *Every time `kops update cluster` is run, it must include the above `--lifecycle-overrides` unless a non-`security` phase is specified.*
 
-Finally, perform a rolling update in order to replace EC2 instances in the ASG with the new launch configuration:
+Finally, perform a rolling update in order to replace EC2 instances in the ASG with the new launch template version:
 
 ```shell
 kops rolling-update cluster ${CLUSTER_NAME} --yes
