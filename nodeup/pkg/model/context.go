@@ -36,9 +36,6 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/mount-utils"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/blang/semver/v4"
 )
 
@@ -574,43 +571,13 @@ func EvaluateHostnameOverride(hostnameOverride string) (string, error) {
 		return hostnameOverride, nil
 	}
 
-	// We recognize @aws as meaning "the private DNS name from AWS", to generate this we need to get a few pieces of information
-	azBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/placement/availability-zone")
+	// We recognize @aws as meaning "the private DNS name from AWS"
+	privateDNSBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-hostname")
 	if err != nil {
-		return "", fmt.Errorf("error reading availability zone from AWS metadata: %v", err)
+		return "", fmt.Errorf("error reading local-hostname from AWS metadata: %v", err)
 	}
 
-	instanceIDBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/instance-id")
-	if err != nil {
-		return "", fmt.Errorf("error reading instance-id from AWS metadata: %v", err)
-	}
-	instanceID := string(instanceIDBytes)
-
-	config := aws.NewConfig()
-	config = config.WithCredentialsChainVerboseErrors(true)
-
-	s, err := session.NewSession(config)
-	if err != nil {
-		return "", fmt.Errorf("error starting new AWS session: %v", err)
-	}
-
-	svc := ec2.New(s, config.WithRegion(string(azBytes[:len(azBytes)-1])))
-
-	result, err := svc.DescribeInstances(&ec2.DescribeInstancesInput{
-		InstanceIds: []*string{&instanceID},
-	})
-	if err != nil {
-		return "", fmt.Errorf("error describing instances: %v", err)
-	}
-
-	if len(result.Reservations) != 1 {
-		return "", fmt.Errorf("too many reservations returned for the single instance-id")
-	}
-
-	if len(result.Reservations[0].Instances) != 1 {
-		return "", fmt.Errorf("too many instances returned for the single instance-id")
-	}
-	return *(result.Reservations[0].Instances[0].PrivateDnsName), nil
+	return string(privateDNSBytes), nil
 }
 
 func (b *NodeupModelContext) AddCNIBinAssets(c *fi.ModelBuilderContext, assetNames []string) error {
