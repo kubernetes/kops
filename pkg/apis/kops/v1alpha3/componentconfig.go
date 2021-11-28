@@ -53,8 +53,8 @@ type KubeletConfigSpec struct {
 	LogLevel *int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
 	// config is the path to the config file or directory of files
 	PodManifestPath string `json:"podManifestPath,omitempty" flag:"pod-manifest-path"`
-	// HostnameOverride is the hostname used to identify the kubelet instead of the actual hostname.
-	HostnameOverride string `json:"hostnameOverride,omitempty" flag:"hostname-override"`
+	// HostnameOverride is not admin-configurable.
+	HostnameOverride string `json:"-"`
 	// PodInfraContainerImage is the image whose network/ipc containers in each pod will use.
 	PodInfraContainerImage string `json:"podInfraContainerImage,omitempty" flag:"pod-infra-container-image"`
 	// SeccompProfileRoot is the directory path for seccomp profiles.
@@ -241,10 +241,10 @@ type KubeProxyConfig struct {
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v"`
 	// ClusterCIDR is the CIDR range of the pods in the cluster
 	ClusterCIDR *string `json:"clusterCIDR,omitempty" flag:"cluster-cidr"`
-	// HostnameOverride, if non-empty, will be used as the identity instead of the actual hostname.
-	HostnameOverride string `json:"hostnameOverride,omitempty" flag:"hostname-override"`
-	// BindAddress is IP address for the proxy server to serve on
-	BindAddress string `json:"bindAddress,omitempty" flag:"bind-address"`
+	// HostnameOverride is not admin-configurable.
+	HostnameOverride string `json:"-"`
+	// BindAddress is not admin-configurable.
+	BindAddress string `json:"-"`
 	// Master is the address of the Kubernetes API server (overrides any value in kubeconfig)
 	Master string `json:"master,omitempty" flag:"master"`
 	// MetricsBindAddress is the IP address for the metrics server to serve on
