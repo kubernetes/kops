@@ -24,6 +24,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/klog/v2"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/dns"
@@ -179,7 +180,7 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-  - image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20211124
+  - image: olemarkus/etcd-manager:latest
     name: etcd-manager
     resources:
       requests:
@@ -612,5 +613,4 @@ func PortsForCluster(etcdCluster kops.EtcdClusterSpec) (Ports, error) {
 	default:
 		return Ports{}, fmt.Errorf("unknown etcd cluster key %q", etcdCluster.Name)
 	}
-
 }
