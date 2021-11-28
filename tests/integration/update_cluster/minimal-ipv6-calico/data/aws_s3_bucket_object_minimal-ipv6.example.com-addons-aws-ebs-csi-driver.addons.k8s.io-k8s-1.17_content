@@ -627,8 +627,6 @@ spec:
         - --extra-tags=KubernetesCluster=minimal-ipv6.example.com
         - --v=5
         env:
-        - name: AWS_EC2_ENDPOINT
-          value: https://api.ec2.us-test-1.aws
         - name: AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE
           value: IPv6
         - name: CSI_NODE_NAME
