@@ -461,8 +461,8 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, fieldPath *field.Path) field
 			allErrs = append(allErrs, field.Invalid(fieldPath.Child("egress"), subnet.Egress,
 				"egress must be of type NAT Gateway, NAT Gateway with existing ElasticIP, NAT EC2 Instance, Transit Gateway, or External"))
 		}
-		if subnet.Egress != kops.EgressExternal && subnet.Type != "Private" {
-			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("egress"), "egress can only be specified for private subnets"))
+		if subnet.Egress != kops.EgressExternal && subnet.Type != "Private" && (subnet.IPv6CIDR == "" || subnet.Type != "Public") {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("egress"), "egress can only be specified for private or IPv6-capable public subnets"))
 		}
 	}
 	return allErrs
