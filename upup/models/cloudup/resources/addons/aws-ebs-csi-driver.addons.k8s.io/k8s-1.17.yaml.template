@@ -440,10 +440,6 @@ spec:
             - --v=5
           env:
             {{- if IsIPv6Only }}
-            # TODO: Replace with "AWS_USE_DUALSTACK_ENDPOINT=true" when the relevant PR is merged:
-            # https://github.com/aws/aws-sdk-go/pull/3938
-            - name: AWS_EC2_ENDPOINT
-              value: https://api.ec2.{{ Region }}.aws
             - name: AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE
               value: IPv6
             {{- end }}
