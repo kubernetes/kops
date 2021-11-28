@@ -443,6 +443,10 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 		}
 	}
 
+	if b.IsIPv6Only() {
+		config.ListenAddress = "::"
+	}
+
 	args, err := flagbuilder.BuildFlagsList(config)
 	if err != nil {
 		return nil, err
@@ -555,6 +559,7 @@ type config struct {
 	PKIDir string `flag:"pki-dir"`
 
 	Address               string   `flag:"address"`
+	ListenAddress         string   `flag:"etcd-address"`
 	PeerUrls              string   `flag:"peer-urls"`
 	GrpcPort              int      `flag:"grpc-port"`
 	ClientUrls            string   `flag:"client-urls"`
