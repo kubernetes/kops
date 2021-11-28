@@ -526,11 +526,11 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 		mainEtcdDNSName := "main.etcd." + clusterName
 		eventsEtcdDNSName := "events.etcd." + clusterName
 		for i := range kubeAPIServer.EtcdServers {
-			kubeAPIServer.EtcdServers[i] = strings.ReplaceAll(kubeAPIServer.EtcdServers[i], "127.0.0.1", mainEtcdDNSName)
+			kubeAPIServer.EtcdServers[i] = strings.ReplaceAll(kubeAPIServer.EtcdServers[i], b.Localhost(), mainEtcdDNSName)
 		}
 		for i := range kubeAPIServer.EtcdServersOverrides {
 			if strings.HasPrefix(kubeAPIServer.EtcdServersOverrides[i], "/events") {
-				kubeAPIServer.EtcdServersOverrides[i] = strings.ReplaceAll(kubeAPIServer.EtcdServersOverrides[i], "127.0.0.1", eventsEtcdDNSName)
+				kubeAPIServer.EtcdServersOverrides[i] = strings.ReplaceAll(kubeAPIServer.EtcdServersOverrides[i], b.Localhost(), eventsEtcdDNSName)
 			}
 		}
 	}
@@ -667,7 +667,7 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 		container.Command = []string{"/usr/local/bin/kube-apiserver"}
 		container.Args = append(
 			sortedStrings(flags),
-			"--logtostderr=false", //https://github.com/kubernetes/klog/issues/60
+			"--logtostderr=false", // https://github.com/kubernetes/klog/issues/60
 			"--alsologtostderr",
 			"--log-file=/var/log/kube-apiserver.log")
 	}

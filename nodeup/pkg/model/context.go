@@ -615,3 +615,11 @@ func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
 func (c *NodeupModelContext) RunningOnGCE() bool {
 	return kops.CloudProviderID(c.Cluster.Spec.CloudProvider) == kops.CloudProviderGCE
 }
+
+func (c *NodeupModelContext) Localhost() string {
+	if c.Cluster.Spec.IsIPv6Only() {
+		return "[::1]"
+	} else {
+		return "127.0.0.1"
+	}
+}

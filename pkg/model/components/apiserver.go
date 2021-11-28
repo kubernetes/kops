@@ -18,9 +18,11 @@ package components
 
 import (
 	"fmt"
+	"net"
 	"strings"
 
 	v1 "k8s.io/api/core/v1"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -143,9 +145,9 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	for _, etcdCluster := range clusterSpec.EtcdClusters {
 		switch etcdCluster.Name {
 		case "main":
-			c.EtcdServers = append(c.EtcdServers, "https://127.0.0.1:4001")
+			c.EtcdServers = append(c.EtcdServers, "https://"+net.JoinHostPort(Localhost(clusterSpec), "4001"))
 		case "events":
-			c.EtcdServersOverrides = append(c.EtcdServersOverrides, "/events#https://127.0.0.1:4002")
+			c.EtcdServersOverrides = append(c.EtcdServersOverrides, "/events#https://"+net.JoinHostPort(Localhost(clusterSpec), "4002"))
 		}
 	}
 
