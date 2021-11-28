@@ -91,7 +91,11 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 		nodeLocalDNS.Enabled = fi.Bool(false)
 	}
 	if fi.BoolValue(nodeLocalDNS.Enabled) && nodeLocalDNS.LocalIP == "" {
-		nodeLocalDNS.LocalIP = "169.254.20.10"
+		if clusterSpec.IsIPv6Only() {
+			nodeLocalDNS.LocalIP = "fd00:90de:d95::1"
+		} else {
+			nodeLocalDNS.LocalIP = "169.254.20.10"
+		}
 	}
 	if fi.BoolValue(nodeLocalDNS.Enabled) && nodeLocalDNS.ForwardToKubeDNS == nil {
 		nodeLocalDNS.ForwardToKubeDNS = fi.Bool(false)
