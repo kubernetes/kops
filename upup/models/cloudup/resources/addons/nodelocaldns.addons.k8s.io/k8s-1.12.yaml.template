@@ -54,7 +54,7 @@ data:
           force_tcp
         }
         prometheus :9253
-        health {{ KubeDNS.NodeLocalDNS.LocalIP }}:{{ NodeLocalDNSHealthCheck }}
+        health {{ joinHostPort KubeDNS.NodeLocalDNS.LocalIP NodeLocalDNSHealthCheck }}
     }
     {{- if WithDefaultBool KubeDNS.NodeLocalDNS.ForwardToKubeDNS false }}
     .:53 {
@@ -99,9 +99,6 @@ data:
         bind {{ KubeDNS.NodeLocalDNS.LocalIP }}
         forward . __PILLAR__UPSTREAM__SERVERS__
         prometheus :9253
-        {{- if IsIPv6Only }}
-        dns64
-        {{- end }}
     }
     {{- end }}
 ---
