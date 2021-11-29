@@ -17,9 +17,9 @@ APIServerConfig:
     - NodeRestriction
     - ResourceQuota
     etcdServers:
-    - https://127.0.0.1:4001
+    - https://localhost:4001
     etcdServersOverrides:
-    - /events#https://127.0.0.1:4002
+    - /events#https://localhost:4002
     image: k8s.gcr.io/kube-apiserver:v1.18.15
     kubeletPreferredAddressTypes:
     - InternalIP

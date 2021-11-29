@@ -163,9 +163,9 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     - NodeRestriction
     - ResourceQuota
     etcdServers:
-    - https://127.0.0.1:4001
+    - https://localhost:4001
     etcdServersOverrides:
-    - /events#https://127.0.0.1:4002
+    - /events#https://localhost:4002
     image: k8s.gcr.io/kube-apiserver:v1.21.0
     kubeletPreferredAddressTypes:
     - InternalIP
@@ -244,7 +244,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: EeGX8+HbzbbyYc0gABiQ92QIBDidxYW/t4XOZ15cpNk=
+  NodeupConfigHash: Zkc1c03nsjgGKV5TO06XRGbDM4NoYNC377SOwlwf970=
 
   __EOF_KUBE_ENV
 

@@ -161,9 +161,9 @@ kubeAPIServer:
   - NodeRestriction
   - ResourceQuota
   etcdServers:
-  - https://127.0.0.1:4001
+  - https://localhost:4001
   etcdServersOverrides:
-  - /events#https://127.0.0.1:4002
+  - /events#https://localhost:4002
   image: k8s.gcr.io/kube-apiserver:v1.21.0
   kubeletPreferredAddressTypes:
   - InternalIP
@@ -243,7 +243,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privateciliumadvanced.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: Xq/+JygSB2PNiW4C8Ha2SPqCLWgRtWrWpq4ccQ1UmBY=
+NodeupConfigHash: YPIVgFZo3DeyVioHEeEoGQOh2jBsWAxkF+q1tpcN95k=
 
 __EOF_KUBE_ENV
 

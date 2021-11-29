@@ -168,9 +168,9 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
     - NodeRestriction
     - ResourceQuota
     etcdServers:
-    - https://127.0.0.1:4001
+    - https://localhost:4001
     etcdServersOverrides:
-    - /events#https://127.0.0.1:4002
+    - /events#https://localhost:4002
     image: k8s.gcr.io/kube-apiserver:v1.18.15
     kubeletPreferredAddressTypes:
     - InternalIP
@@ -247,7 +247,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
   ConfigBase: memfs://clusters.example.com/privatecilium.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: 5edQ6jF/LuqWb8kjKQHlm/zJVGCkj/6SwmtSWvkl0EU=
+  NodeupConfigHash: p9p7h0xjVATT2iu24WRyZFat3Vh1fq/iEPl91rLDDwc=
 
   __EOF_KUBE_ENV
 

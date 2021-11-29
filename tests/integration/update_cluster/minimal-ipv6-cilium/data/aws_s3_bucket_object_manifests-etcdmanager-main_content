@@ -11,15 +11,15 @@ spec:
   - command:
     - /bin/sh
     - -c
-    - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
+    - 'mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
       --backup-store=memfs://clusters.example.com/minimal-ipv6.example.com/backups/etcd/main
       --client-urls=https://__name__:4001 --cluster-name=etcd --containerized=true
-      --dns-suffix=.internal.minimal-ipv6.example.com --grpc-port=3996 --peer-urls=https://__name__:2380
-      --quarantine-client-urls=https://__name__:3994 --v=6 --volume-name-tag=k8s.io/etcd/main
-      --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/master=1
-      --volume-tag=kubernetes.io/cluster/minimal-ipv6.example.com=owned > /tmp/pipe
-      2>&1
-    image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20211124
+      --dns-suffix=.internal.minimal-ipv6.example.com --etcd-address=:: --grpc-port=3996
+      --peer-urls=https://__name__:2380 --quarantine-client-urls=https://__name__:3994
+      --v=6 --volume-name-tag=k8s.io/etcd/main --volume-provider=aws --volume-tag=k8s.io/etcd/main
+      --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/minimal-ipv6.example.com=owned
+      > /tmp/pipe 2>&1'
+    image: olemarkus/etcd-manager:latest
     name: etcd-manager
     resources:
       requests:
