@@ -114,7 +114,6 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		"--kubernetes-version", d.KubernetesVersion,
 		"--ssh-public-key", d.SSHPublicKeyPath,
 		"--override", "cluster.spec.nodePortAccess=0.0.0.0/0",
-		"--override", "cluster.spec.nodePortAccess=::/0",
 	}
 	if yes {
 		args = append(args, "--yes")
