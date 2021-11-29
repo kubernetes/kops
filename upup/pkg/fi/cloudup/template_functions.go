@@ -31,6 +31,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net"
 	"os"
 	"path"
 	"sort"
@@ -87,6 +88,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["join"] = func(a []string, sep string) string {
 		return strings.Join(a, sep)
 	}
+	dest["joinHostPort"] = net.JoinHostPort
 
 	sprigTxtFuncMap := sprig.TxtFuncMap()
 	dest["nindent"] = sprigTxtFuncMap["nindent"]
