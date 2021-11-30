@@ -145,7 +145,6 @@ docker:
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
-  hostnameOverride: '@aws'
   image: k8s.gcr.io/kube-proxy:v1.18.15
   logLevel: 2
 kubelet:
@@ -156,7 +155,6 @@ kubelet:
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-  hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
@@ -171,7 +169,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecilium.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: O702lpCgyj/azW36UAmvCtb7qRUsCXabl7BGQ3Ri2xo=
+NodeupConfigHash: FFuyJV2RPI+GoNiGfmdOX+PxaY8TGBx9Ff1H+8DoQ00=
 
 __EOF_KUBE_ENV
 

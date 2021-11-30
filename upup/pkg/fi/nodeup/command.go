@@ -447,35 +447,27 @@ func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.No
 }
 
 func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config) error {
-	var err error
-
-	c.cluster.Spec.Kubelet.HostnameOverride, err = evaluateHostnameOverride(c.cluster.Spec.Kubelet.HostnameOverride)
+	hostnameOverride, err := evaluateHostnameOverride(api.CloudProviderID(c.cluster.Spec.CloudProvider))
 	if err != nil {
 		return err
 	}
 
-	c.cluster.Spec.MasterKubelet.HostnameOverride, err = evaluateHostnameOverride(c.cluster.Spec.MasterKubelet.HostnameOverride)
+	c.cluster.Spec.Kubelet.HostnameOverride = hostnameOverride
+	c.cluster.Spec.MasterKubelet.HostnameOverride = hostnameOverride
+
+	nodeupConfig.KubeletConfig.HostnameOverride = hostnameOverride
+
+	if c.cluster.Spec.KubeProxy == nil {
+		c.cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
+	}
+
+	c.cluster.Spec.KubeProxy.HostnameOverride = hostnameOverride
+	c.cluster.Spec.KubeProxy.BindAddress, err = evaluateBindAddress(c.cluster.Spec.KubeProxy.BindAddress)
 	if err != nil {
 		return err
 	}
 
-	nodeupConfig.KubeletConfig.HostnameOverride, err = evaluateHostnameOverride(nodeupConfig.KubeletConfig.HostnameOverride)
-	if err != nil {
-		return err
-	}
-
-	if c.cluster.Spec.KubeProxy != nil {
-		c.cluster.Spec.KubeProxy.HostnameOverride, err = evaluateHostnameOverride(c.cluster.Spec.KubeProxy.HostnameOverride)
-		if err != nil {
-			return err
-		}
-		c.cluster.Spec.KubeProxy.BindAddress, err = evaluateBindAddress(c.cluster.Spec.KubeProxy.BindAddress)
-		if err != nil {
-			return err
-		}
-	}
-
-	if c.cluster.Spec.Docker != nil {
+	if c.cluster.Spec.ContainerRuntime == "docker" {
 		err = evaluateDockerSpecStorage(c.cluster.Spec.Docker)
 		if err != nil {
 			return err
@@ -485,24 +477,15 @@ func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config) error {
 	return nil
 }
 
-func evaluateHostnameOverride(hostnameOverride string) (string, error) {
-	if hostnameOverride == "" || hostnameOverride == "@hostname" {
-		return "", nil
-	}
-	k := strings.TrimSpace(hostnameOverride)
-	k = strings.ToLower(k)
-
-	if k == "@aws" {
-		// We recognize @aws as meaning "the private DNS name from AWS"
+func evaluateHostnameOverride(cloudProvider api.CloudProviderID) (string, error) {
+	switch cloudProvider {
+	case api.CloudProviderAWS:
 		hostnameBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-hostname")
 		if err != nil {
 			return "", fmt.Errorf("error reading local-hostname from AWS metadata: %v", err)
 		}
 		return string(hostnameBytes), nil
-	}
-
-	if k == "@gce" {
-		// We recognize @gce as meaning the hostname from the GCE metadata service
+	case api.CloudProviderGCE:
 		// This lets us tolerate broken hostnames (i.e. systemd)
 		b, err := vfs.Context.ReadFile("metadata://gce/instance/hostname")
 		if err != nil {
@@ -514,10 +497,7 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 		fullyQualified := string(b)
 		bareHostname := strings.Split(fullyQualified, ".")[0]
 		return bareHostname, nil
-	}
-
-	if k == "@digitalocean" {
-		// @digitalocean means to use the private ipv4 address of a droplet as the hostname override
+	case api.CloudProviderDO:
 		vBytes, err := vfs.Context.ReadFile("metadata://digitalocean/interfaces/private/0/ipv4/address")
 		if err != nil {
 			return "", fmt.Errorf("error reading droplet private IP from DigitalOcean metadata: %v", err)
@@ -529,10 +509,7 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 		}
 
 		return hostname, nil
-	}
-
-	if k == "@alicloud" {
-		// @alicloud means to use the "{az}.{instance-id}" of a instance as the hostname override
+	case api.CloudProviderALI:
 		azBytes, err := vfs.Context.ReadFile("metadata://alicloud/zone-id")
 		if err != nil {
 			return "", fmt.Errorf("error reading zone-id from Alicloud metadata: %v", err)
@@ -548,16 +525,7 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 		return fmt.Sprintf("%s.%s", az, instanceID), nil
 	}
 
-	if k == "@hostname" {
-		// @hostname means kOps will resolve the hostname and override it. This is the default behavior by kubelet, so it should not be needed.
-		hostname, err := os.Hostname()
-		if err != nil {
-			return "", fmt.Errorf("failed to retrieve hostname from OS: %v", err)
-		}
-		return hostname, nil
-	}
-
-	return hostnameOverride, nil
+	return "", nil
 }
 
 func evaluateBindAddress(bindAddress string) (string, error) {
