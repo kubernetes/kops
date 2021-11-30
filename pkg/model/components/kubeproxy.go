@@ -18,6 +18,7 @@ package components
 
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -64,34 +65,6 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 	if config.ClusterCIDR == nil {
 		if b.needsClusterCIDR(clusterSpec) {
 			config.ClusterCIDR = fi.String(clusterSpec.KubeControllerManager.ClusterCIDR)
-		}
-	}
-
-	// Set the kube-proxy hostname-override (actually the NodeName), to avoid #2915 et al
-	cloudProvider := kops.CloudProviderID(clusterSpec.CloudProvider)
-	if cloudProvider == kops.CloudProviderAWS {
-		// Use the hostname from the AWS metadata service
-		// if hostnameOverride is not set.
-		if config.HostnameOverride == "" {
-			config.HostnameOverride = "@aws"
-		}
-	}
-
-	if cloudProvider == kops.CloudProviderDO {
-		if config.HostnameOverride == "" {
-			config.HostnameOverride = "@digitalocean"
-		}
-	}
-
-	if cloudProvider == kops.CloudProviderALI {
-		if config.HostnameOverride == "" {
-			config.HostnameOverride = "@alicloud"
-		}
-	}
-
-	if cloudProvider == kops.CloudProviderAzure {
-		if config.HostnameOverride == "" {
-			config.HostnameOverride = "@azure"
 		}
 	}
 
