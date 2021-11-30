@@ -42,8 +42,8 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 
 	cluster.Spec.KubeProxy = &kops.KubeProxyConfig{}
 	cluster.Spec.KubeProxy.Image = "kube-proxy:1.2"
-	cluster.Spec.KubeProxy.CPURequest = "20m"
-	cluster.Spec.KubeProxy.CPULimit = "30m"
+	cluster.Spec.KubeProxy.CPURequest = resource.NewScaledQuantity(20, resource.Milli)
+	cluster.Spec.KubeProxy.CPULimit = resource.NewScaledQuantity(30, resource.Milli)
 
 	flags, _ := flagbuilder.BuildFlagsList(cluster.Spec.KubeProxy)
 
@@ -86,10 +86,10 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 							Image: "kube-proxy:1.2",
 							Resources: v1.ResourceRequirements{
 								Requests: v1.ResourceList{
-									v1.ResourceCPU: resource.MustParse("20m"),
+									v1.ResourceCPU: *resource.NewScaledQuantity(20, resource.Milli),
 								},
 								Limits: v1.ResourceList{
-									v1.ResourceCPU: resource.MustParse("30m"),
+									v1.ResourceCPU: *resource.NewScaledQuantity(30, resource.Milli),
 								},
 							},
 							Command: exec.WithTee("/usr/local/bin/kube-proxy", sortedStrings(flags), "/var/log/kube-proxy.log"),

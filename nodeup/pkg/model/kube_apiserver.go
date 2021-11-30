@@ -598,37 +598,21 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 	resourceLimits := v1.ResourceList{}
 
 	cpuRequest := resource.MustParse("150m")
-	if kubeAPIServer.CPURequest != "" {
-		var err error
-		cpuRequest, err = resource.ParseQuantity(kubeAPIServer.CPURequest)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing CPURequest=%q", kubeAPIServer.CPURequest)
-		}
+	if kubeAPIServer.CPURequest != nil {
+		cpuRequest = *kubeAPIServer.CPURequest
 	}
 	resourceRequests["cpu"] = cpuRequest
 
-	if kubeAPIServer.CPULimit != "" {
-		cpuLimit, err := resource.ParseQuantity(kubeAPIServer.CPULimit)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing CPULimit=%q", kubeAPIServer.CPULimit)
-		}
-		resourceLimits["cpu"] = cpuLimit
+	if kubeAPIServer.CPULimit != nil {
+		resourceLimits["cpu"] = *kubeAPIServer.CPULimit
 	}
 
-	if kubeAPIServer.MemoryRequest != "" {
-		memoryRequest, err := resource.ParseQuantity(kubeAPIServer.MemoryRequest)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing MemoryRequest=%q", kubeAPIServer.MemoryRequest)
-		}
-		resourceRequests["memory"] = memoryRequest
+	if kubeAPIServer.MemoryRequest != nil {
+		resourceRequests["memory"] = *kubeAPIServer.MemoryRequest
 	}
 
-	if kubeAPIServer.MemoryLimit != "" {
-		memoryLimit, err := resource.ParseQuantity(kubeAPIServer.MemoryLimit)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing MemoryLimit=%q", kubeAPIServer.MemoryLimit)
-		}
-		resourceLimits["memory"] = memoryLimit
+	if kubeAPIServer.MemoryLimit != nil {
+		resourceLimits["memory"] = *kubeAPIServer.MemoryLimit
 	}
 
 	image := kubeAPIServer.Image

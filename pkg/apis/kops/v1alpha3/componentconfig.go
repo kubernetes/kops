@@ -228,15 +228,14 @@ type KubeletConfigSpec struct {
 // KubeProxyConfig defines the configuration for a proxy
 type KubeProxyConfig struct {
 	Image string `json:"image,omitempty"`
-	// TODO: Better type ?
 	// CPURequest, cpu request compute resource for kube proxy e.g. "20m"
-	CPURequest string `json:"cpuRequest,omitempty"`
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 	// CPULimit, cpu limit compute resource for kube proxy e.g. "30m"
-	CPULimit string `json:"cpuLimit,omitempty"`
+	CPULimit *resource.Quantity `json:"cpuLimit,omitempty"`
 	// MemoryRequest, memory request compute resource for kube proxy e.g. "30Mi"
-	MemoryRequest string `json:"memoryRequest,omitempty"`
+	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
 	// MemoryLimit, memory limit compute resource for kube proxy e.g. "30Mi"
-	MemoryLimit string `json:"memoryLimit,omitempty"`
+	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
 	// LogLevel is the logging level of the proxy
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v"`
 	// ClusterCIDR is the CIDR range of the pods in the cluster
@@ -490,13 +489,13 @@ type KubeAPIServerConfig struct {
 	APIAudiences []string `json:"apiAudiences,omitempty" flag:"api-audiences"`
 
 	// CPURequest, cpu request compute resource for api server. Defaults to "150m"
-	CPURequest string `json:"cpuRequest,omitempty"`
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 	// CPULimit, cpu limit compute resource for api server e.g. "500m"
-	CPULimit string `json:"cpuLimit,omitempty"`
+	CPULimit *resource.Quantity `json:"cpuLimit,omitempty"`
 	// MemoryRequest, memory request compute resource for api server e.g. "30Mi"
-	MemoryRequest string `json:"memoryRequest,omitempty"`
+	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
 	// MemoryLimit, memory limit compute resource for api server e.g. "30Mi"
-	MemoryLimit string `json:"memoryLimit,omitempty"`
+	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
 
 	// Amount of time to retain Kubernetes events
 	EventTTL *metav1.Duration `json:"eventTTL,omitempty" flag:"event-ttl"`
