@@ -32,6 +32,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/kms"
+
 	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/nodeup/pkg/model/dns"
 	"k8s.io/kops/nodeup/pkg/model/networking"
@@ -401,7 +402,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 }
 
 func getMachineType() (string, error) {
-
 	config := aws.NewConfig()
 	config = config.WithCredentialsChainVerboseErrors(true)
 
@@ -546,6 +546,15 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 		instanceID := string(instanceIDBytes)
 
 		return fmt.Sprintf("%s.%s", az, instanceID), nil
+	}
+
+	if k == "@hostname" {
+		// @hostname means kOps will resolve the hostname and override it. This is the default behavior by kubelet, so it should not be needed.
+		hostname, err := os.Hostname()
+		if err != nil {
+			return "", fmt.Errorf("failed to retrieve hostname from OS: %v", err)
+		}
+		return hostname, nil
 	}
 
 	return hostnameOverride, nil
