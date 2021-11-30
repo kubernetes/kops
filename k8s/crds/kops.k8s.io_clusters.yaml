@@ -1485,13 +1485,21 @@ spec:
                       type: string
                     type: array
                   cpuLimit:
+                    anyOf:
+                    - type: integer
+                    - type: string
                     description: CPULimit, cpu limit compute resource for api server
                       e.g. "500m"
-                    type: string
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   cpuRequest:
+                    anyOf:
+                    - type: integer
+                    - type: string
                     description: CPURequest, cpu request compute resource for api
                       server. Defaults to "150m"
-                    type: string
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   defaultNotReadyTolerationSeconds:
                     description: DefaultNotReadyTolerationSeconds
                     format: int64
@@ -1625,13 +1633,21 @@ spec:
                     format: int32
                     type: integer
                   memoryLimit:
+                    anyOf:
+                    - type: integer
+                    - type: string
                     description: MemoryLimit, memory limit compute resource for api
                       server e.g. "30Mi"
-                    type: string
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   memoryRequest:
+                    anyOf:
+                    - type: integer
+                    - type: string
                     description: MemoryRequest, memory request compute resource for
                       api server e.g. "30Mi"
-                    type: string
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   minRequestTimeout:
                     description: MinRequestTimeout configures the minimum number of
                       seconds a handler must keep a request open before timing it
@@ -3141,13 +3157,21 @@ spec:
                     format: int32
                     type: integer
                   cpuLimit:
+                    anyOf:
+                    - type: integer
+                    - type: string
                     description: CPULimit, cpu limit compute resource for kube proxy
                       e.g. "30m"
-                    type: string
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   cpuRequest:
-                    description: 'TODO: Better type ? CPURequest, cpu request compute
-                      resource for kube proxy e.g. "20m"'
-                    type: string
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: CPURequest, cpu request compute resource for kube
+                      proxy e.g. "20m"
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   enabled:
                     description: Enabled allows enabling or disabling kube-proxy
                     type: boolean
@@ -3192,13 +3216,21 @@ spec:
                       (overrides any value in kubeconfig)
                     type: string
                   memoryLimit:
+                    anyOf:
+                    - type: integer
+                    - type: string
                     description: MemoryLimit, memory limit compute resource for kube
                       proxy e.g. "30Mi"
-                    type: string
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   memoryRequest:
+                    anyOf:
+                    - type: integer
+                    - type: string
                     description: MemoryRequest, memory request compute resource for
                       kube proxy e.g. "30Mi"
-                    type: string
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   metricsBindAddress:
                     description: MetricsBindAddress is the IP address for the metrics
                       server to serve on
