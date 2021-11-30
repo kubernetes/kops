@@ -24,6 +24,8 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+	"k8s.io/mount-utils"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -34,7 +36,6 @@ import (
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/distributions"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/mount-utils"
 
 	"github.com/blang/semver/v4"
 )
@@ -537,15 +538,10 @@ func (c *NodeupModelContext) BuildLegacyPrivateKeyTask(ctx *fi.ModelBuilderConte
 // NodeName returns the name of the local Node, as it will be created in k8s
 func (c *NodeupModelContext) NodeName() (string, error) {
 	// This mirrors nodeutil.GetHostName
-	hostnameOverride := c.Cluster.Spec.Kubelet.HostnameOverride
+	nodeName := c.Cluster.Spec.Kubelet.HostnameOverride
 
 	if c.IsMaster && c.Cluster.Spec.MasterKubelet.HostnameOverride != "" {
-		hostnameOverride = c.Cluster.Spec.MasterKubelet.HostnameOverride
-	}
-
-	nodeName, err := EvaluateHostnameOverride(hostnameOverride)
-	if err != nil {
-		return "", fmt.Errorf("error evaluating hostname: %v", err)
+		nodeName = c.Cluster.Spec.MasterKubelet.HostnameOverride
 	}
 
 	if nodeName == "" {
@@ -557,27 +553,6 @@ func (c *NodeupModelContext) NodeName() (string, error) {
 	}
 
 	return strings.ToLower(strings.TrimSpace(nodeName)), nil
-}
-
-// EvaluateHostnameOverride returns the hostname after replacing some well-known placeholders
-func EvaluateHostnameOverride(hostnameOverride string) (string, error) {
-	if hostnameOverride == "" || hostnameOverride == "@hostname" {
-		return "", nil
-	}
-	k := strings.TrimSpace(hostnameOverride)
-	k = strings.ToLower(k)
-
-	if k != "@aws" {
-		return hostnameOverride, nil
-	}
-
-	// We recognize @aws as meaning "the private DNS name from AWS"
-	privateDNSBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-hostname")
-	if err != nil {
-		return "", fmt.Errorf("error reading local-hostname from AWS metadata: %v", err)
-	}
-
-	return string(privateDNSBytes), nil
 }
 
 func (b *NodeupModelContext) AddCNIBinAssets(c *fi.ModelBuilderContext, assetNames []string) error {
