@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -44,8 +45,8 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 
 	// Any change here should be accompanied by a proportional change in CPU
 	// requests of other per-node add-ons (e.g. fluentd).
-	if config.CPURequest == "" {
-		config.CPURequest = "100m"
+	if config.CPURequest == nil {
+		config.CPURequest = resource.NewScaledQuantity(100, resource.Milli)
 	}
 
 	image, err := Image("kube-proxy", clusterSpec, b.Context.AssetBuilder)
