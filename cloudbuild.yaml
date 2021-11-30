@@ -35,7 +35,7 @@ steps:
   args:
   - gcs-upload-and-tag
 # Push the manifests
-- name: 'gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20211008-60e346af'
+- name: 'gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20211118-2f2d816b90'
   id: manifests
   waitFor: [images]
   entrypoint: make
