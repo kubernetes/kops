@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
@@ -255,10 +256,10 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 				CloudProvider: "aws",
 			},
 			KubeProxy: &kops.KubeProxyConfig{
-				CPURequest:    "30m",
-				CPULimit:      "30m",
-				MemoryRequest: "30Mi",
-				MemoryLimit:   "30Mi",
+				CPURequest:    resource.NewScaledQuantity(30, resource.Milli),
+				CPULimit:      resource.NewScaledQuantity(30, resource.Milli),
+				MemoryRequest: resource.NewQuantity(30*(1<<20), resource.BinarySI),
+				MemoryLimit:   resource.NewQuantity(30*(1<<20), resource.BinarySI),
 				FeatureGates: map[string]string{
 					"AdvancedAuditing": "true",
 				},
