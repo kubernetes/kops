@@ -258,6 +258,10 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Tags:             tags,
 		}
 
+		if b.Cluster.Spec.ExternalCloudControllerManager != nil && b.Cluster.IsKubernetesGTE("1.23") {
+			subnet.ResourceBasedNaming = fi.Bool(true)
+		}
+
 		if subnetSpec.IPv6CIDR != "" {
 			if !sharedVPC {
 				subnet.AmazonIPv6CIDR = b.LinkToAmazonVPCIPv6CIDR()
