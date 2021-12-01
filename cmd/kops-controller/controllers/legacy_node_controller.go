@@ -162,7 +162,6 @@ func (r *LegacyNodeReconciler) getClusterForNode(node *corev1.Node) (*kops.Clust
 
 // getInstanceLifecycle returns InstanceLifecycle string object
 func (r *LegacyNodeReconciler) getInstanceLifecycle(ctx context.Context, node *corev1.Node) (string, error) {
-
 	identity, err := r.identifier.IdentifyNode(ctx, node)
 	if err != nil {
 		return "", fmt.Errorf("error identifying node %q: %v", node.Name, err)

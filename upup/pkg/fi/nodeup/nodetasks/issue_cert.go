@@ -63,8 +63,10 @@ type IssueCert struct {
 	ca   *fi.TaskDependentResource
 }
 
-var _ fi.Task = &IssueCert{}
-var _ fi.HasName = &IssueCert{}
+var (
+	_ fi.Task    = &IssueCert{}
+	_ fi.HasName = &IssueCert{}
+)
 
 func (i *IssueCert) GetName() *string {
 	return &i.Name

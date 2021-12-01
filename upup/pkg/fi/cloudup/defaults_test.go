@@ -91,5 +91,4 @@ func TestPopulateClusterSpec_Proxy(t *testing.T) {
 	if c.Spec.EgressProxy.ProxyExcludes != expectedExcludes {
 		t.Fatalf("Incorrect proxy excludes set during idempotency check: %v    should have been %v", c.Spec.EgressProxy.ProxyExcludes, expectedExcludes)
 	}
-
 }

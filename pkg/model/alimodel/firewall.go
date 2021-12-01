@@ -33,7 +33,6 @@ type FirewallModelBuilder struct {
 var _ fi.ModelBuilder = &FirewallModelBuilder{}
 
 func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
-
 	// Create nodeInstances security group
 	var nodeSecurityGroup *alitasks.SecurityGroup
 	{
@@ -88,5 +87,4 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	return nil
-
 }

@@ -44,7 +44,6 @@ var _ fi.ModelBuilder = &ServerGroupModelBuilder{}
 var instanceMetadataNotAllowedCharacters = regexp.MustCompile("[^a-zA-Z0-9-_:. ]")
 
 func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *openstacktasks.ServerGroup, ig *kops.InstanceGroup) error {
-
 	sshKeyNameFull, err := b.SSHKeyName()
 	if err != nil {
 		return err

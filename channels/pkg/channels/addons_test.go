@@ -93,7 +93,7 @@ func Test_Replacement(t *testing.T) {
 		New      *ChannelVersion
 		Replaces bool
 	}{
-		//Test ManifestHash Changes
+		// Test ManifestHash Changes
 		{
 			Old:      &ChannelVersion{Id: "a", ManifestHash: hash1},
 			New:      &ChannelVersion{Id: "a", ManifestHash: hash1},
@@ -319,7 +319,6 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 		}
 
 	}
-
 }
 
 func Test_InstallPKI(t *testing.T) {
@@ -348,7 +347,7 @@ func Test_InstallPKI(t *testing.T) {
 		t.Errorf("unexpected error: %v", err)
 	}
 
-	//Two consecutive calls should work since multiple CP nodes can update at the same time
+	// Two consecutive calls should work since multiple CP nodes can update at the same time
 	err = addon.installPKI(ctx, fakek8s, fakecm)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
@@ -358,5 +357,4 @@ func Test_InstallPKI(t *testing.T) {
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
-
 }

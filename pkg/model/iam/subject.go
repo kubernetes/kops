@@ -37,8 +37,7 @@ type Subject interface {
 }
 
 // NodeRoleMaster represents the role of control-plane nodes, and implements Subject.
-type NodeRoleMaster struct {
-}
+type NodeRoleMaster struct{}
 
 // ServiceAccount implements Subject.
 func (_ *NodeRoleMaster) ServiceAccount() (types.NamespacedName, bool) {
@@ -66,8 +65,7 @@ func (_ *NodeRoleNode) ServiceAccount() (types.NamespacedName, bool) {
 }
 
 // NodeRoleNode represents the role of bastion nodes, and implements Subject.
-type NodeRoleBastion struct {
-}
+type NodeRoleBastion struct{}
 
 // ServiceAccount implements Subject.
 func (_ *NodeRoleBastion) ServiceAccount() (types.NamespacedName, bool) {

@@ -42,7 +42,6 @@ func (c *OpenstackModelContext) createCloud() (openstack.OpenstackCloud, error) 
 		c.cloud = osCloud
 	}
 	return c.cloud, nil
-
 }
 
 func (c *OpenstackModelContext) UseVIPACL() bool {

@@ -41,5 +41,4 @@ func New(dnsView *dns.DNSView) (dnsprovider.Interface, error) {
 	p.zones.dnsView = dnsView
 
 	return p, nil
-
 }

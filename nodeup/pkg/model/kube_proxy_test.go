@@ -37,7 +37,7 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 	// https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ClusterSpec
 	// https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#KubeProxyConfig
 
-	var cluster = &kops.Cluster{}
+	cluster := &kops.Cluster{}
 	cluster.Spec.MasterInternalName = "dev-cluster"
 
 	cluster.Spec.KubeProxy = &kops.KubeProxyConfig{}
@@ -50,7 +50,8 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 	flags = append(flags, []string{
 		"--kubeconfig=/var/lib/kube-proxy/kubeconfig",
 		"--oom-score-adj=-998",
-		`--resource-container=""`}...)
+		`--resource-container=""`,
+	}...)
 
 	type fields struct {
 		NodeupModelContext *NodeupModelContext
@@ -133,7 +134,6 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 			// compare pod spec container name
 			if !reflect.DeepEqual(got.Spec.Containers[0].Name, tt.want.Spec.Containers[0].Name) {
 				t.Errorf("KubeProxyBuilder.buildPod() Container Name = %v, want %v", got.Spec.Containers[0].Name, tt.want.Spec.Containers[0].Name)
-
 			}
 			// compare pod spec container Image
 			if !reflect.DeepEqual(got.Spec.Containers[0].Image, tt.want.Spec.Containers[0].Image) {
@@ -144,7 +144,6 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 			if !reflect.DeepEqual(got.Spec.Containers[0].Resources, tt.want.Spec.Containers[0].Resources) {
 				t.Errorf("KubeProxyBuilder.buildPod() Resources = %v, want %v", got.Spec.Containers[0].Resources, tt.want.Spec.Containers[0].Resources)
 			}
-
 		})
 	}
 }

@@ -41,9 +41,7 @@ import (
 	"k8s.io/kubectl/pkg/util/i18n"
 )
 
-var (
-	kubectlAuthShort = i18n.T(`kubectl authentication plugin`)
-)
+var kubectlAuthShort = i18n.T(`kubectl authentication plugin`)
 
 // HelperKubectlAuthOptions holds the options for generating an authentication token
 type HelperKubectlAuthOptions struct {
@@ -144,10 +142,10 @@ func RunKubectlAuthHelper(ctx context.Context, f *util.Factory, out io.Writer, o
 	}
 
 	if !isCached {
-		if err := os.MkdirAll(filepath.Dir(cacheFilePath), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(cacheFilePath), 0o755); err != nil {
 			klog.Warningf("failed to make cache directory for %q: %v", cacheFilePath, err)
 		}
-		if err := os.WriteFile(cacheFilePath, b, 0600); err != nil {
+		if err := os.WriteFile(cacheFilePath, b, 0o600); err != nil {
 			klog.Warningf("failed to write cache file %q: %v", cacheFilePath, err)
 		}
 	}

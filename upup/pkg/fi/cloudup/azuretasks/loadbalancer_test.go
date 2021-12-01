@@ -49,6 +49,7 @@ func newTestLoadBalancer() *LoadBalancer {
 		},
 	}
 }
+
 func TestLoadBalancerRenderAzure(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
 	apiTarget := azure.NewAzureAPITarget(cloud)

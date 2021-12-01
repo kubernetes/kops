@@ -23,8 +23,7 @@ import (
 
 // ServiceAccount represents the service-account used by the AWS Cloud Controller Manager.
 // It implements iam.Subject to get AWS IAM permissions.
-type ServiceAccount struct {
-}
+type ServiceAccount struct{}
 
 var _ iam.Subject = &ServiceAccount{}
 

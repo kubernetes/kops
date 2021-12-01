@@ -41,12 +41,10 @@ type NetworkingSpec struct {
 }
 
 // KubenetNetworkingSpec is the specification for kubenet networking, largely integrated but intended to replace classic
-type KubenetNetworkingSpec struct {
-}
+type KubenetNetworkingSpec struct{}
 
 // ExternalNetworkingSpec is the specification for networking that is implemented by a user-provided Daemonset that uses the Kubenet kubelet networking plugin.
-type ExternalNetworkingSpec struct {
-}
+type ExternalNetworkingSpec struct{}
 
 // CNINetworkingSpec is the specification for networking that is implemented by a user-provided Daemonset, which uses the CNI kubelet networking plugin.
 type CNINetworkingSpec struct {
@@ -54,8 +52,7 @@ type CNINetworkingSpec struct {
 }
 
 // KopeioNetworkingSpec declares that we want Kopeio networking
-type KopeioNetworkingSpec struct {
-}
+type KopeioNetworkingSpec struct{}
 
 // WeaveNetworkingSpec declares that we want Weave networking
 type WeaveNetworkingSpec struct {
@@ -237,8 +234,7 @@ type CanalNetworkingSpec struct {
 }
 
 // KuberouterNetworkingSpec declares that we want Kube-router networking
-type KuberouterNetworkingSpec struct {
-}
+type KuberouterNetworkingSpec struct{}
 
 // AmazonVPCNetworkingSpec declares that we want Amazon VPC CNI networking
 type AmazonVPCNetworkingSpec struct {
@@ -411,5 +407,4 @@ type HubbleSpec struct {
 }
 
 // GCENetworkingSpec is the specification of GCE's native networking mode, using IP aliases
-type GCENetworkingSpec struct {
-}
+type GCENetworkingSpec struct{}

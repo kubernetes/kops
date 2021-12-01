@@ -40,7 +40,6 @@ type ExternalAccessModelBuilder struct {
 var _ fi.ModelBuilder = &FirewallModelBuilder{}
 
 func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
-
 	if len(b.Cluster.Spec.SSHAccess) == 0 {
 		klog.Warningf("SSHAccess is empty")
 	}
@@ -113,5 +112,4 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	return nil
-
 }

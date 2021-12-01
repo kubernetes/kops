@@ -163,6 +163,7 @@ func (m *MockEC2) DescribeEgressOnlyInternetGateways(request *ec2.DescribeEgress
 
 	return response, nil
 }
+
 func (m *MockEC2) DeleteEgressOnlyInternetGateway(request *ec2.DeleteEgressOnlyInternetGatewayInput) (*ec2.DeleteEgressOnlyInternetGatewayOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -182,6 +183,7 @@ func (m *MockEC2) DeleteEgressOnlyInternetGateway(request *ec2.DeleteEgressOnlyI
 func (m *MockEC2) DeleteEgressOnlyInternetGatewayWithContext(aws.Context, *ec2.DeleteEgressOnlyInternetGatewayInput, ...request.Option) (*ec2.DeleteEgressOnlyInternetGatewayOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) DeleteEgressOnlyInternetGatewayRequest(*ec2.DeleteEgressOnlyInternetGatewayInput) (*request.Request, *ec2.DeleteEgressOnlyInternetGatewayOutput) {
 	panic("Not implemented")
 }

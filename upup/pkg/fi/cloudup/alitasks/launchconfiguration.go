@@ -72,8 +72,10 @@ type LaunchConfiguration struct {
 	Tags map[string]string
 }
 
-var _ fi.Task = &LaunchConfiguration{}
-var _ fi.CompareWithID = &LaunchConfiguration{}
+var (
+	_ fi.Task          = &LaunchConfiguration{}
+	_ fi.CompareWithID = &LaunchConfiguration{}
+)
 
 func (l *LaunchConfiguration) CompareWithID() *string {
 	return l.ID
@@ -212,7 +214,7 @@ func (l *LaunchConfiguration) Run(c *fi.Context) error {
 }
 
 func (_ *LaunchConfiguration) CheckChanges(a, e, changes *LaunchConfiguration) error {
-	//Configuration can not be modified, we need to create a new one
+	// Configuration can not be modified, we need to create a new one
 	if e.Name == nil {
 		return fi.RequiredField("Name")
 	}
@@ -286,7 +288,7 @@ func (_ *LaunchConfiguration) RenderALI(t *aliup.ALIAPITarget, a, e, changes *La
 		}
 	}
 
-	//Enable this configuration
+	// Enable this configuration
 	enableScalingGroupArgs := &ess.EnableScalingGroupArgs{
 		ScalingGroupId:               fi.StringValue(e.ScalingGroup.ScalingGroupId),
 		ActiveScalingConfigurationId: fi.StringValue(e.ID),

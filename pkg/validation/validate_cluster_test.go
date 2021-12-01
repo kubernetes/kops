@@ -57,7 +57,7 @@ func BuildMockCloud(t *testing.T, groups map[string]*cloudinstances.CloudInstanc
 func (c *MockCloud) GetCloudGroups(cluster *kopsapi.Cluster, instancegroups []*kopsapi.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	assert.Equal(c.t, c.expectedCluster, cluster, "cluster")
 
-	var igs = make([]kopsapi.InstanceGroup, 0, len(instancegroups))
+	igs := make([]kopsapi.InstanceGroup, 0, len(instancegroups))
 	for _, ig := range instancegroups {
 		igs = append(igs, *ig)
 	}
@@ -848,7 +848,6 @@ func Test_ValidateBastionNodes(t *testing.T) {
 			printDebug(t, v)
 		}
 	})
-
 }
 
 func Test_ValidateDetachedNodesNotValidated(t *testing.T) {

@@ -107,7 +107,7 @@ func toDER(pubkey ssh.PublicKey) ([]byte, error) {
 		rsaPublicKey = pubkeyValue.Convert(targetType).Interface().(*rsa.PublicKey)
 		cryptoKey = rsaPublicKey
 
-	//case "*dsaPublicKey":
+	// case "*dsaPublicKey":
 	//	var dsaPublicKey *dsa.PublicKey
 	//	targetType := reflect.ValueOf(dsaPublicKey).Type()
 	//	dsaPublicKey = pubkeyValue.Convert(targetType).Interface().(*dsa.PublicKey)

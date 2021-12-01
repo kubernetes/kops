@@ -60,7 +60,6 @@ func RunDNSUpdates(target DNSTarget, src *DNSView) {
 
 		lastSnapshot = snapshot
 	}
-
 }
 
 type DNSView struct {
