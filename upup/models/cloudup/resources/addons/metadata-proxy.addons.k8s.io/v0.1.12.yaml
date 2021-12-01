@@ -50,7 +50,23 @@ spec:
           privileged: true
         image: gcr.io/google_containers/k8s-custom-iptables:1.0
         imagePullPolicy: Always
-        command: [ "/bin/sh", "-c", "/sbin/iptables -t nat -I PREROUTING -p tcp --dport 80 -d 169.254.169.254 -j DNAT --to-destination 127.0.0.1:988" ]
+        command:
+        - "/bin/sh"
+        - "-c"
+        # Based on https://github.com/kubernetes/kubernetes/blob/master/cluster/gce/gci/configure-helper.sh#L181-L184
+        - |
+          set -e
+          set -x
+
+          if (ip link show ens4); then
+            PRIMARY_DEV=ens4
+          else
+            PRIMARY_DEV=eth0
+          fi
+
+          ip addr add dev lo 169.254.169.252/32
+          iptables -w -t nat -I PREROUTING -p tcp -d 169.254.169.254 ! -i "${PRIMARY_DEV}" --dport 80 -m comment --comment "metadata-concealment: bridge traffic to metadata server goes to metadata proxy" -j DNAT --to-destination 169.254.169.252:988
+          iptables -w -t nat -I PREROUTING -p tcp -d 169.254.169.254 ! -i "${PRIMARY_DEV}" --dport 8080 -m comment --comment "metadata-concealment: bridge traffic to metadata server goes to metadata proxy" -j DNAT --to-destination 169.254.169.252:987
         volumeMounts:
         - name: host
           mountPath: /host
@@ -64,6 +80,8 @@ spec:
         image: k8s.gcr.io/metadata-proxy:v0.1.12
         securityContext:
           privileged: true
+        args:
+        - -addr=169.254.169.252:988
         # Request and limit resources to get guaranteed QoS.
         resources:
           requests:
