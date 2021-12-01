@@ -26,10 +26,4 @@ if ! command -v gofumpt &> /dev/null; then
 fi
 
 cd "${KOPS_ROOT}" || exit 1
-bad_files=$(git ls-files "*.go" | grep -v vendor | xargs gofumpt -l)
-if [[ -n "${bad_files}" ]]; then
-  echo "FAIL: 'make gofmt' needs to be run on the following files: "
-  echo "${bad_files}"
-  echo "FAIL: please execute make gofmt"
-  exit 1
-fi
+git ls-files "*.go" | grep -v vendor | xargs gofumpt -w -l

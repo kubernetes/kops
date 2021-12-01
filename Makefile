@@ -363,7 +363,7 @@ gomod: bazelisk gomod-prereqs
 
 .PHONY: gofmt
 gofmt:
-	find $(KOPS_ROOT) -name "*.go" | grep -v vendor | xargs ${BAZEL} run @go_sdk//:bin/gofmt -- -w -s
+	hack/update-gofmt.sh
 
 .PHONY: goimports
 goimports:
@@ -389,7 +389,7 @@ verify-boilerplate:
 	hack/verify-boilerplate.sh
 
 .PHONY: verify-gofmt
-verify-gofmt: bazelisk
+verify-gofmt:
 	hack/verify-gofmt.sh
 
 .PHONY: verify-gomod
