@@ -76,6 +76,8 @@ func (t *Tester) setSkipRegexFlag() error {
 		// this test assumes the cluster runs COS but kOps uses Ubuntu by default
 		// ref: https://github.com/kubernetes/test-infra/pull/22190
 		skipRegex += "|should.be.mountable.when.non-attachable"
+		// The in-tree driver and its E2E tests use `topology.kubernetes.io/zone` but the CSI driver uses `topology.gke.io/zone`
+		skipRegex += "|In-tree.Volumes.\\[Driver:.gcepd\\].*topology.should.provision.a.volume.and.schedule.a.pod.with.AllowedTopologies"
 	}
 
 	if cluster.Spec.CloudProvider == "aws" && utils.IsIPv6CIDR(cluster.Spec.NonMasqueradeCIDR) {
