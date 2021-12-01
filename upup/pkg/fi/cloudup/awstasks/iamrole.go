@@ -17,10 +17,8 @@ limitations under the License.
 package awstasks
 
 import (
-	"fmt"
-
 	"encoding/json"
-
+	"fmt"
 	"net/url"
 	"reflect"
 

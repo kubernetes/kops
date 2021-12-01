@@ -138,8 +138,10 @@ func (p *VMScaleSetStorageProfile) GetDependencies(tasks map[string]fi.Task) []f
 	return nil
 }
 
-var _ fi.Task = &VMScaleSet{}
-var _ fi.CompareWithID = &VMScaleSet{}
+var (
+	_ fi.Task          = &VMScaleSet{}
+	_ fi.CompareWithID = &VMScaleSet{}
+)
 
 // CompareWithID returns the Name of the VM Scale Set.
 func (s *VMScaleSet) CompareWithID() *string {

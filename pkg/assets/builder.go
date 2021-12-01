@@ -162,7 +162,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		if strings.Count(normalized, "/") <= 1 && !strings.ContainsAny(strings.Split(normalized, "/")[0], ".:") {
 			normalized = containerProxy + "/" + normalized
 		} else {
-			var re = regexp.MustCompile(`^[^/]+`)
+			re := regexp.MustCompile(`^[^/]+`)
 			normalized = re.ReplaceAllString(normalized, containerProxy)
 		}
 
@@ -265,7 +265,6 @@ func (a *AssetBuilder) RemapFileAndSHAValue(fileURL *url.URL, shaValue string) (
 
 // FindHash returns the hash value of a FileAsset.
 func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
-
 	// If the phase is "assets" we use the CanonicalFileURL,
 	// but during other phases we use the hash from the FileRepository or the base kops path.
 	// We do not want to just test for CanonicalFileURL as it is defined in

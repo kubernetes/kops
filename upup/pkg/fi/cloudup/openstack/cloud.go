@@ -100,7 +100,6 @@ var deleteBackoff = wait.Backoff{
 
 type OpenstackCloud interface {
 	fi.Cloud
-
 	ComputeClient() *gophercloud.ServiceClient
 	BlockStorageClient() *gophercloud.ServiceClient
 	NetworkingClient() *gophercloud.ServiceClient
@@ -119,7 +118,7 @@ type OpenstackCloud interface {
 	// CreateInstance will create an openstack server provided create opts
 	CreateInstance(servers.CreateOptsBuilder, string) (*servers.Server, error)
 
-	//DeleteInstanceWithID will delete instance
+	// DeleteInstanceWithID will delete instance
 	DeleteInstanceWithID(instanceID string) error
 
 	// SetVolumeTags will set the tags for the Cinder volume
@@ -133,43 +132,42 @@ type OpenstackCloud interface {
 
 	// CreateVolume will create a new Cinder Volume
 	CreateVolume(opt cinder.CreateOptsBuilder) (*cinder.Volume, error)
-
 	AttachVolume(serverID string, opt volumeattach.CreateOpts) (*volumeattach.VolumeAttachment, error)
 
-	//DeleteVolume will delete volume
+	// DeleteVolume will delete volume
 	DeleteVolume(volumeID string) error
 
-	//ListSecurityGroups will return the Neutron security groups which match the options
+	// ListSecurityGroups will return the Neutron security groups which match the options
 	ListSecurityGroups(opt sg.ListOpts) ([]sg.SecGroup, error)
 
-	//CreateSecurityGroup will create a new Neutron security group
+	// CreateSecurityGroup will create a new Neutron security group
 	CreateSecurityGroup(opt sg.CreateOptsBuilder) (*sg.SecGroup, error)
 
-	//DeleteSecurityGroup will delete securitygroup
+	// DeleteSecurityGroup will delete securitygroup
 	DeleteSecurityGroup(sgID string) error
 
-	//DeleteSecurityGroupRule will delete securitygrouprule
+	// DeleteSecurityGroupRule will delete securitygrouprule
 	DeleteSecurityGroupRule(ruleID string) error
 
-	//ListSecurityGroupRules will return the Neutron security group rules which match the options
+	// ListSecurityGroupRules will return the Neutron security group rules which match the options
 	ListSecurityGroupRules(opt sgr.ListOpts) ([]sgr.SecGroupRule, error)
 
-	//CreateSecurityGroupRule will create a new Neutron security group rule
+	// CreateSecurityGroupRule will create a new Neutron security group rule
 	CreateSecurityGroupRule(opt sgr.CreateOptsBuilder) (*sgr.SecGroupRule, error)
 
-	//GetNetwork will return the Neutron network which match the id
+	// GetNetwork will return the Neutron network which match the id
 	GetNetwork(networkID string) (*networks.Network, error)
 
-	//FindNetworkBySubnetID will return network
+	// FindNetworkBySubnetID will return network
 	FindNetworkBySubnetID(subnetID string) (*networks.Network, error)
 
-	//GetSubnet returns subnet using subnet id
+	// GetSubnet returns subnet using subnet id
 	GetSubnet(subnetID string) (*subnets.Subnet, error)
 
-	//ListNetworks will return the Neutron networks which match the options
+	// ListNetworks will return the Neutron networks which match the options
 	ListNetworks(opt networks.ListOptsBuilder) ([]networks.Network, error)
 
-	//ListExternalNetworks will return the Neutron networks with the router:external property
+	// ListExternalNetworks will return the Neutron networks with the router:external property
 	GetExternalNetwork() (*networks.Network, error)
 
 	// GetExternalSubnet will return the subnet for floatingip which is used in external router
@@ -178,34 +176,34 @@ type OpenstackCloud interface {
 	// GetLBFloatingSubnet will return the subnet for floatingip which is used in lb
 	GetLBFloatingSubnet() (*subnets.Subnet, error)
 
-	//CreateNetwork will create a new Neutron network
+	// CreateNetwork will create a new Neutron network
 	CreateNetwork(opt networks.CreateOptsBuilder) (*networks.Network, error)
 
-	//DeleteNetwork will delete neutron network
+	// DeleteNetwork will delete neutron network
 	DeleteNetwork(networkID string) error
 
-	//AppendTag appends tag to resource
+	// AppendTag appends tag to resource
 	AppendTag(resource string, id string, tag string) error
 
-	//DeleteTag removes tag from resource
+	// DeleteTag removes tag from resource
 	DeleteTag(resource string, id string, tag string) error
 
-	//ListRouters will return the Neutron routers which match the options
+	// ListRouters will return the Neutron routers which match the options
 	ListRouters(opt routers.ListOpts) ([]routers.Router, error)
 
-	//CreateRouter will create a new Neutron router
+	// CreateRouter will create a new Neutron router
 	CreateRouter(opt routers.CreateOptsBuilder) (*routers.Router, error)
 
-	//DeleteRouter will delete neutron router
+	// DeleteRouter will delete neutron router
 	DeleteRouter(routerID string) error
 
-	//DeleteSubnet will delete neutron subnet
+	// DeleteSubnet will delete neutron subnet
 	DeleteSubnet(subnetID string) error
 
-	//ListSubnets will return the Neutron subnets which match the options
+	// ListSubnets will return the Neutron subnets which match the options
 	ListSubnets(opt subnets.ListOptsBuilder) ([]subnets.Subnet, error)
 
-	//CreateSubnet will create a new Neutron subnet
+	// CreateSubnet will create a new Neutron subnet
 	CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.Subnet, error)
 
 	// GetKeypair will return the Nova keypair
@@ -219,25 +217,24 @@ type OpenstackCloud interface {
 
 	// CreateKeypair will create a new Nova Keypair
 	CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypairs.KeyPair, error)
-
 	CreatePort(opt ports.CreateOptsBuilder) (*ports.Port, error)
 
-	//GetPort will return a Neutron port by ID
+	// GetPort will return a Neutron port by ID
 	GetPort(id string) (*ports.Port, error)
 
-	//UpdatePort will update a Neutron port by ID and options
+	// UpdatePort will update a Neutron port by ID and options
 	UpdatePort(id string, opt ports.UpdateOptsBuilder) (*ports.Port, error)
 
-	//ListPorts will return the Neutron ports which match the options
+	// ListPorts will return the Neutron ports which match the options
 	ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, error)
 
 	// DeletePort will delete a neutron port
 	DeletePort(portID string) error
 
-	//CreateRouterInterface will create a new Neutron router interface
+	// CreateRouterInterface will create a new Neutron router interface
 	CreateRouterInterface(routerID string, opt routers.AddInterfaceOptsBuilder) (*routers.InterfaceInfo, error)
 
-	//DeleteRouterInterface will delete router interface from subnet
+	// DeleteRouterInterface will delete router interface from subnet
 	DeleteRouterInterface(routerID string, opt routers.RemoveInterfaceOptsBuilder) error
 
 	// CreateServerGroup will create a new server group.
@@ -254,11 +251,8 @@ type OpenstackCloud interface {
 
 	// ListDNSRecordsets will list the DNS recordsets for the given zone id
 	ListDNSRecordsets(zoneID string, opt recordsets.ListOptsBuilder) ([]recordsets.RecordSet, error)
-
 	GetLB(loadbalancerID string) (*loadbalancers.LoadBalancer, error)
-
 	CreateLB(opt loadbalancers.CreateOptsBuilder) (*loadbalancers.LoadBalancer, error)
-
 	ListLBs(opt loadbalancers.ListOptsBuilder) ([]loadbalancers.LoadBalancer, error)
 
 	// DeleteLB will delete loadbalancer
@@ -269,13 +263,9 @@ type OpenstackCloud interface {
 
 	// Returns the availability zones for the service client passed (compute, volume, network)
 	ListAvailabilityZones(serviceClient *gophercloud.ServiceClient) ([]az.AvailabilityZone, error)
-
 	AssociateToPool(server *servers.Server, poolID string, opts v2pools.CreateMemberOpts) (*v2pools.Member, error)
-
 	CreatePool(opts v2pools.CreateOpts) (*v2pools.Pool, error)
-
 	GetPool(poolID string, memberID string) (*v2pools.Member, error)
-
 	ListPools(v2pools.ListOpts) ([]v2pools.Pool, error)
 
 	// ListMonitors will list HealthMonitors matching the provided options
@@ -286,29 +276,20 @@ type OpenstackCloud interface {
 
 	// DeletePool will delete loadbalancer pool
 	DeletePool(poolID string) error
-
 	ListListeners(opts listeners.ListOpts) ([]listeners.Listener, error)
-
 	CreateListener(opts listeners.CreateOpts) (*listeners.Listener, error)
 
 	// DeleteListener will delete loadbalancer listener
 	DeleteListener(listenerID string) error
-
 	GetStorageAZFromCompute(azName string) (*az.AvailabilityZone, error)
-
 	GetL3FloatingIP(id string) (fip *l3floatingip.FloatingIP, err error)
-
 	GetImage(name string) (i *images.Image, err error)
-
 	GetFlavor(name string) (f *flavors.Flavor, err error)
-
 	ListServerFloatingIPs(id string) ([]*string, error)
-
 	ListL3FloatingIPs(opts l3floatingip.ListOpts) (fips []l3floatingip.FloatingIP, err error)
 	CreateL3FloatingIP(opts l3floatingip.CreateOpts) (fip *l3floatingip.FloatingIP, err error)
 	DeleteFloatingIP(id string) error
 	DeleteL3FloatingIP(id string) error
-
 	UseLoadBalancerVIPACL() (bool, error)
 }
 
@@ -335,7 +316,6 @@ var _ fi.Cloud = &openstackCloud{}
 var openstackCloudInstances map[string]OpenstackCloud = make(map[string]OpenstackCloud)
 
 func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent string) (OpenstackCloud, error) {
-
 	config := vfs.OpenstackConfig{}
 
 	region, err := config.GetRegion()
@@ -414,7 +394,7 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 
 	var dnsClient *gophercloud.ServiceClient
 	if !dns.IsGossipHostname(tags[TagClusterName]) {
-		//TODO: This should be replaced with the environment variable methods as done above
+		// TODO: This should be replaced with the environment variable methods as done above
 		endpointOpt, err := config.GetServiceConfig("Designate")
 		if err != nil {
 			return nil, err

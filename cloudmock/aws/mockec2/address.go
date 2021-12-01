@@ -173,9 +173,11 @@ func (m *MockEC2) DescribeAddresses(request *ec2.DescribeAddressesInput) (*ec2.D
 func (m *MockEC2) ReleaseAddressRequest(*ec2.ReleaseAddressInput) (*request.Request, *ec2.ReleaseAddressOutput) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) ReleaseAddressWithContext(aws.Context, *ec2.ReleaseAddressInput, ...request.Option) (*ec2.ReleaseAddressOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) ReleaseAddress(request *ec2.ReleaseAddressInput) (*ec2.ReleaseAddressOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()

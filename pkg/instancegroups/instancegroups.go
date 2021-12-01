@@ -392,11 +392,8 @@ func (c *RollingUpdateCluster) drainTerminateAndWait(u *cloudinstances.CloudInst
 	if isBastion {
 		// We don't want to validate for bastions - they aren't part of the cluster
 	} else if c.CloudOnly {
-
 		klog.Warning("Not draining cluster nodes as 'cloudonly' flag is set.")
-
 	} else {
-
 		if u.Node != nil {
 			klog.Infof("Draining the node: %q.", nodeName)
 
@@ -462,13 +459,11 @@ func (c *RollingUpdateCluster) reconcileInstanceGroup() error {
 	}
 
 	return applyCmd.Run(c.Ctx)
-
 }
 
 func (c *RollingUpdateCluster) maybeValidate(operation string, validateCount int, group *cloudinstances.CloudInstanceGroup) error {
 	if c.CloudOnly {
 		klog.Warningf("Not validating cluster as cloudonly flag is set.")
-
 	} else {
 		klog.Info("Validating the cluster.")
 
@@ -685,7 +680,6 @@ func (c *RollingUpdateCluster) UpdateSingleInstance(cloudMember *cloudinstances.
 	if detach {
 		if cloudMember.CloudInstanceGroup.InstanceGroup.IsMaster() {
 			klog.Warning("cannot detach master instances. Assuming --surge=false")
-
 		} else {
 			err := c.detachInstance(cloudMember)
 			if err != nil {

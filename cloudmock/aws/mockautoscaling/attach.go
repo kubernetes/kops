@@ -46,6 +46,7 @@ func (m *MockAutoscaling) AttachLoadBalancersWithContext(aws.Context, *autoscali
 	klog.Fatalf("Not implemented")
 	return nil, nil
 }
+
 func (m *MockAutoscaling) AttachLoadBalancersRequest(*autoscaling.AttachLoadBalancersInput) (*request.Request, *autoscaling.AttachLoadBalancersOutput) {
 	klog.Fatalf("Not implemented")
 	return nil, nil

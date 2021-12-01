@@ -30,7 +30,6 @@ type OpenStackOptionsBulder struct {
 var _ loader.OptionsBuilder = &OpenStackOptionsBulder{}
 
 func (b *OpenStackOptionsBulder) BuildOptions(o interface{}) error {
-
 	clusterSpec := o.(*kops.ClusterSpec)
 
 	if kops.CloudProviderID(clusterSpec.CloudProvider) != kops.CloudProviderOpenstack {
@@ -63,5 +62,4 @@ func (b *OpenStackOptionsBulder) BuildOptions(o interface{}) error {
 		clusterSpec.ExternalCloudControllerManager = &kops.CloudControllerManagerConfig{}
 	}
 	return nil
-
 }

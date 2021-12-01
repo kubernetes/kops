@@ -130,7 +130,7 @@ func runTest(t *testing.T, in string, expected string) {
 		"c": {},
 	}
 
-	if err := os.WriteFile(p, []byte(in), 0755); err != nil {
+	if err := os.WriteFile(p, []byte(in), 0o755); err != nil {
 		t.Fatalf("error writing hosts file: %v", err)
 	}
 

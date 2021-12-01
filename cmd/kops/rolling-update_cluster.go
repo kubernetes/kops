@@ -157,7 +157,6 @@ func (o *RollingUpdateOptions) InitDefaults() {
 }
 
 func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
-
 	var options RollingUpdateOptions
 	options.InitDefaults()
 
@@ -213,7 +212,6 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, options *RollingUpdateOptions) error {
-
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err

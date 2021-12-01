@@ -74,7 +74,7 @@ func DumpManagedInstance(op *resources.DumpOperation, r *resources.Resource) err
 	op.Dump.Instances = append(op.Dump.Instances, i)
 
 	// Unclear if we should include the instance details in the dump - assume YAGNI until someone needs it
-	//dump.Resources = append(dump.Resources, instanceDetails)
+	// dump.Resources = append(dump.Resources, instanceDetails)
 
 	return nil
 }

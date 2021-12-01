@@ -18,7 +18,6 @@ package awstasks
 
 import (
 	"fmt"
-
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -102,7 +101,6 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 
 		return found == nil
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("error listing DNS ResourceRecords: %v", err)
 	}
@@ -132,7 +130,7 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 }
 
 func findDNSTarget(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dnsName string, targetDNSName *string) (DNSTarget, error) {
-	//TODO: I would like to search dnsName for presence of ".elb" or ".nlb" to simply searching, however both nlb and elb have .elb. in the name at present
+	// TODO: I would like to search dnsName for presence of ".elb" or ".nlb" to simply searching, however both nlb and elb have .elb. in the name at present
 	if ELB, err := findDNSTargetELB(cloud, aliasTarget, dnsName, targetDNSName); err != nil {
 		return nil, err
 	} else if ELB != nil {
@@ -154,8 +152,8 @@ func findDNSTargetNLB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dn
 		return nil, fmt.Errorf("error mapping DNSName %q to LoadBalancer: %v", dnsName, err)
 	}
 	if lb != nil {
-		loadBalancerName := aws.StringValue(lb.LoadBalancerName) //TOOD: can we keep these on object
-		loadBalancerArn := aws.StringValue(lb.LoadBalancerArn)   //TODO: can we keep these on object
+		loadBalancerName := aws.StringValue(lb.LoadBalancerName) // TODO: can we keep these on object
+		loadBalancerArn := aws.StringValue(lb.LoadBalancerArn)   // TODO: can we keep these on object
 		tagMap, err := cloud.DescribeELBV2Tags([]string{loadBalancerArn})
 		if err != nil {
 			return nil, err

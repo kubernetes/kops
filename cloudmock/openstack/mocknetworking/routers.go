@@ -75,7 +75,6 @@ func (m *MockClient) mockRouters() {
 }
 
 func (m *MockClient) listRouters(w http.ResponseWriter, vals url.Values) {
-
 	w.WriteHeader(http.StatusOK)
 
 	routers := make([]routers.Router, 0)

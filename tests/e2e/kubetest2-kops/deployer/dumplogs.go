@@ -104,9 +104,11 @@ func (d *deployer) dumpClusterInfo() error {
 		}
 	}
 
-	resourceTypes := []string{"csinodes", "csidrivers", "storageclasses", "persistentvolumes",
-		"mutatingwebhookconfigurations", "validatingwebhookconfigurations"}
-	if err := os.MkdirAll(path.Join(d.ArtifactsDir, "cluster-info"), 0755); err != nil {
+	resourceTypes := []string{
+		"csinodes", "csidrivers", "storageclasses", "persistentvolumes",
+		"mutatingwebhookconfigurations", "validatingwebhookconfigurations",
+	}
+	if err := os.MkdirAll(path.Join(d.ArtifactsDir, "cluster-info"), 0o755); err != nil {
 		return err
 	}
 	for _, resType := range resourceTypes {
@@ -142,7 +144,7 @@ func (d *deployer) dumpClusterInfo() error {
 	namespacedResourceTypes := []string{"configmaps", "endpoints", "endpointslices", "leases", "persistentvolumeclaims"}
 	for _, namespace := range namespaces {
 		namespace = strings.TrimSpace(namespace)
-		if err := os.MkdirAll(path.Join(d.ArtifactsDir, "cluster-info", namespace), 0755); err != nil {
+		if err := os.MkdirAll(path.Join(d.ArtifactsDir, "cluster-info", namespace), 0o755); err != nil {
 			return err
 		}
 		for _, resType := range namespacedResourceTypes {

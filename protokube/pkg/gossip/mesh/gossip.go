@@ -40,11 +40,10 @@ type MeshGossiper struct {
 	router *mesh.Router
 	peer   *peer
 
-	//version uint64
+	// version uint64
 }
 
 func NewMeshGossiper(listen string, channelName string, nodeName string, password []byte, seeds gossip.SeedProvider) (*MeshGossiper, error) {
-
 	connLimit := 0 // 0 means no limit
 	gossipDnsConnLimit := os.Getenv("GOSSIP_DNS_CONN_LIMIT")
 	if gossipDnsConnLimit != "" {
@@ -64,7 +63,7 @@ func NewMeshGossiper(listen string, channelName string, nodeName string, passwor
 		Password:           password,
 		ConnLimit:          connLimit,
 		PeerDiscovery:      true,
-		//TrustedSubnets:     []*net.IPNet{},
+		// TrustedSubnets:     []*net.IPNet{},
 	}
 
 	{
@@ -108,7 +107,7 @@ func NewMeshGossiper(listen string, channelName string, nodeName string, passwor
 }
 
 func (g *MeshGossiper) Start() error {
-	//klog.Infof("mesh router starting (%s)", *meshListen)
+	// klog.Infof("mesh router starting (%s)", *meshListen)
 	g.router.Start()
 
 	defer func() {

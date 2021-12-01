@@ -85,10 +85,8 @@ const (
 	OldestRecommendedKubernetesVersion = "1.20.0"
 )
 
-var (
-	// TerraformCloudProviders is the list of cloud providers with terraform target support
-	TerraformCloudProviders = []kops.CloudProviderID{kops.CloudProviderAWS, kops.CloudProviderGCE, kops.CloudProviderALI}
-)
+// TerraformCloudProviders is the list of cloud providers with terraform target support
+var TerraformCloudProviders = []kops.CloudProviderID{kops.CloudProviderAWS, kops.CloudProviderGCE, kops.CloudProviderALI}
 
 type ApplyClusterCmd struct {
 	Cloud   fi.Cloud
@@ -415,7 +413,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			if len(sshPublicKeys) == 0 && (c.Cluster.Spec.SSHKeyName == nil || *c.Cluster.Spec.SSHKeyName == "") {
 				return fmt.Errorf("SSH public key must be specified when running with DigitalOcean (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
-
 		}
 	case kops.CloudProviderAWS:
 		{
@@ -797,7 +794,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	err = target.Finish(c.TaskMap) //This will finish the apply, and print the changes
+	err = target.Finish(c.TaskMap) // This will finish the apply, and print the changes
 	if err != nil {
 		return fmt.Errorf("error closing target: %v", err)
 	}
@@ -1014,7 +1011,6 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 
 // addFileAssets adds the file assets within the assetBuilder
 func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error {
-
 	var baseURL string
 	if components.IsBaseURL(c.Cluster.Spec.KubernetesVersion) {
 		baseURL = c.Cluster.Spec.KubernetesVersion

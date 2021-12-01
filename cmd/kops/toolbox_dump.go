@@ -102,7 +102,6 @@ func NewCmdToolboxDump(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options *ToolboxDumpOptions) error {
-
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err

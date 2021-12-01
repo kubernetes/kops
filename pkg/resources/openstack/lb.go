@@ -83,7 +83,7 @@ func (os *clusterDiscoveryOS) DeleteSubnetLBs(subnet subnets.Subnet) ([]*resourc
 			continue
 		}
 
-		//Identify pools associated to this LB
+		// Identify pools associated to this LB
 		for _, pool := range lb.Pools {
 
 			monitorList, err := os.cloud.(openstack.OpenstackCloud).ListMonitors(monitors.ListOpts{
@@ -115,7 +115,7 @@ func (os *clusterDiscoveryOS) DeleteSubnetLBs(subnet subnets.Subnet) ([]*resourc
 			resourceTrackers = append(resourceTrackers, resourceTracker)
 		}
 
-		//Identify listeners associated to this LB
+		// Identify listeners associated to this LB
 		for _, listener := range lb.Listeners {
 			resourceTracker := &resources.Resource{
 				Name: listener.Name,

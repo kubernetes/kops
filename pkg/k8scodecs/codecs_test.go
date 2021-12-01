@@ -79,5 +79,4 @@ func TestToVersionedYaml(t *testing.T) {
 			continue
 		}
 	}
-
 }

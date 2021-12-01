@@ -151,7 +151,6 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 }
 
 func (i *nodeIdentifier) getInstanceGroup(instanceID int) (string, error) {
-
 	ctx := context.TODO()
 	droplet, _, err := i.doClient.Droplets.Get(ctx, instanceID)
 	if err != nil {

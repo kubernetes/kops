@@ -104,7 +104,6 @@ func defaultInstanceType(c OpenstackCloud, cluster *kops.Cluster, ig *kops.Insta
 
 func GetServerFixedIP(server *servers.Server, interfaceName string) (poolAddress string, err error) {
 	if localAddr, ok := server.Addresses[interfaceName]; ok {
-
 		if localAddresses, ok := localAddr.([]interface{}); ok {
 			for _, addr := range localAddresses {
 				addrMap := addr.(map[string]interface{})

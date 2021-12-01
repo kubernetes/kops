@@ -406,7 +406,6 @@ iptables -w -t nat -A IP-MASQ -m comment --comment "ip-masq: outbound traffic is
 
 // buildCNIConfigTemplateFile is responsible for creating a special template for setups using Kubenet
 func (b *ContainerdBuilder) buildCNIConfigTemplateFile(c *fi.ModelBuilderContext) {
-
 	// Based on https://github.com/kubernetes/kubernetes/blob/15a8a8ec4a3275a33b7f8eb3d4d98db2abad55b7/cluster/gce/gci/configure-helper.sh#L2911-L2937
 
 	contents := `{
@@ -475,7 +474,6 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 }
 
 func appendNvidiaGPURuntimeConfig(config *toml.Tree) error {
-
 	gpuConfig, err := toml.TreeFromMap(
 		map[string]interface{}{
 			"privileged_without_host_devices": false,

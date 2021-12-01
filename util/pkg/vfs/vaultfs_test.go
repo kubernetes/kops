@@ -45,7 +45,6 @@ func createClient(t *testing.T) *vault.Client {
 func Test_newVaultPath(t *testing.T) {
 	client := createClient(t)
 	vaultPath, err := newVaultPath(client, "http://", "/secret/foo/bar")
-
 	if err != nil {
 		t.Errorf("Failed to create vault path: %v", err)
 	}
@@ -88,7 +87,6 @@ func Test_newVaultPathHostOnly(t *testing.T) {
 }
 
 func Test_WriteFileReadFile(t *testing.T) {
-
 	client := createClient(t)
 
 	p, _ := newVaultPath(client, "http://", "/secret/createfiletest")
@@ -107,8 +105,8 @@ func Test_WriteFileReadFile(t *testing.T) {
 		t.Errorf("Failed to read file. Got %v, expected %v", fileBytes, secret)
 	}
 }
-func Test_WriteFileDeleteFile(t *testing.T) {
 
+func Test_WriteFileDeleteFile(t *testing.T) {
 	client := createClient(t)
 
 	p, _ := newVaultPath(client, "http://", "/secret/createfiletestdelete")
@@ -180,7 +178,6 @@ func Test_Join(t *testing.T) {
 }
 
 func Test_VaultReadDirList(t *testing.T) {
-
 	tests := []struct {
 		path     string
 		subpaths []string
@@ -231,7 +228,6 @@ func Test_VaultReadDirList(t *testing.T) {
 			t.Errorf("Expected sub-paths %v, got %v", expected, paths)
 		}
 	}
-
 }
 
 func Test_ReadDir(t *testing.T) {

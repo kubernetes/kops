@@ -174,12 +174,12 @@ func (m *MockEC2) AttachInternetGateway(request *ec2.AttachInternetGatewayInput)
 	}
 
 	return nil, fmt.Errorf("InternetGateway not found")
-
 }
 
 func (m *MockEC2) AttachInternetGatewayWithContext(aws.Context, *ec2.AttachInternetGatewayInput, ...request.Option) (*ec2.AttachInternetGatewayOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) AttachInternetGatewayRequest(*ec2.AttachInternetGatewayInput) (*request.Request, *ec2.AttachInternetGatewayOutput) {
 	panic("Not implemented")
 }
@@ -215,6 +215,7 @@ func (m *MockEC2) DetachInternetGateway(request *ec2.DetachInternetGatewayInput)
 func (m *MockEC2) DetachInternetGatewayWithContext(aws.Context, *ec2.DetachInternetGatewayInput, ...request.Option) (*ec2.DetachInternetGatewayOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) DetachInternetGatewayRequest(*ec2.DetachInternetGatewayInput) (*request.Request, *ec2.DetachInternetGatewayOutput) {
 	panic("Not implemented")
 }
@@ -238,6 +239,7 @@ func (m *MockEC2) DeleteInternetGateway(request *ec2.DeleteInternetGatewayInput)
 func (m *MockEC2) DeleteInternetGatewayWithContext(aws.Context, *ec2.DeleteInternetGatewayInput, ...request.Option) (*ec2.DeleteInternetGatewayOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) DeleteInternetGatewayRequest(*ec2.DeleteInternetGatewayInput) (*request.Request, *ec2.DeleteInternetGatewayOutput) {
 	panic("Not implemented")
 }

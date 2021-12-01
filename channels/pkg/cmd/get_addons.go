@@ -45,8 +45,7 @@ import (
 	"k8s.io/kops/util/pkg/tables"
 )
 
-type GetAddonsOptions struct {
-}
+type GetAddonsOptions struct{}
 
 func NewCmdGetAddons(f Factory, out io.Writer) *cobra.Command {
 	var options GetAddonsOptions

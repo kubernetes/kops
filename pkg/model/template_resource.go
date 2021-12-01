@@ -55,8 +55,8 @@ func NewTemplateResource(key string, definition string, functions template.FuncM
 	r.parsed = t
 
 	return r, nil
-
 }
+
 func (r *templateResource) Open() (io.Reader, error) {
 	buffer := &bytes.Buffer{}
 

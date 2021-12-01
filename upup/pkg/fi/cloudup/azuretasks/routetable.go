@@ -36,8 +36,10 @@ type RouteTable struct {
 	Shared        *bool
 }
 
-var _ fi.Task = &RouteTable{}
-var _ fi.CompareWithID = &RouteTable{}
+var (
+	_ fi.Task          = &RouteTable{}
+	_ fi.CompareWithID = &RouteTable{}
+)
 
 // CompareWithID returns the Name of the VM Scale Set.
 func (r *RouteTable) CompareWithID() *string {

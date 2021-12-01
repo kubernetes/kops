@@ -167,9 +167,7 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer, o
 		return nil
 	}
 
-	var (
-		editor = editor.NewDefaultEditor(commandutils.EditorEnvs)
-	)
+	editor := editor.NewDefaultEditor(commandutils.EditorEnvs)
 
 	ext := "yaml"
 	raw, err := kopscodecs.ToVersionedYaml(oldGroup)

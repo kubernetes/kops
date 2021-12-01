@@ -209,9 +209,11 @@ type TaskDependentResource struct {
 	Task     Task     `json:"task,omitempty"`
 }
 
-var _ Resource = &TaskDependentResource{}
-var _ HasDependencies = &TaskDependentResource{}
-var _ HasIsReady = &TaskDependentResource{}
+var (
+	_ Resource        = &TaskDependentResource{}
+	_ HasDependencies = &TaskDependentResource{}
+	_ HasIsReady      = &TaskDependentResource{}
+)
 
 func (r *TaskDependentResource) Open() (io.Reader, error) {
 	if r.Resource == nil {

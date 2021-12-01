@@ -30,7 +30,7 @@ func StringValue(s *string) string {
 	return *s
 }
 
-//StringSliceValue takes a slice of string pointers and returns a slice of strings
+// StringSliceValue takes a slice of string pointers and returns a slice of strings
 func StringSliceValue(stringSlice []*string) []string {
 	var newSlice []string
 	for _, value := range stringSlice {

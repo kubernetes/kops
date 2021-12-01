@@ -24,7 +24,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-//configserverSecretStore is a SecretStore backed by the config server.
+// configserverSecretStore is a SecretStore backed by the config server.
 type configserverSecretStore struct {
 	nodeConfig *nodeup.NodeConfig
 }

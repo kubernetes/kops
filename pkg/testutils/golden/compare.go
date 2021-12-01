@@ -47,7 +47,7 @@ func AssertMatchesFile(t *testing.T, actual string, p string) {
 	}
 	expected := strings.TrimSpace(string(expectedBytes))
 
-	//on windows, with git set to autocrlf, the reference files on disk have windows line endings
+	// on windows, with git set to autocrlf, the reference files on disk have windows line endings
 	expected = strings.Replace(expected, "\r\n", "\n", -1)
 	actual = strings.Replace(actual, "\r\n", "\n", -1)
 
@@ -60,10 +60,10 @@ func AssertMatchesFile(t *testing.T, actual string, p string) {
 
 		// Keep git happy with a trailing newline
 		actual += "\n"
-		if err := os.MkdirAll(path.Dir(p), 0755); err != nil {
+		if err := os.MkdirAll(path.Dir(p), 0o755); err != nil {
 			t.Errorf("error creating directory %s: %v", path.Dir(p), err)
 		}
-		if err := os.WriteFile(p, []byte(actual), 0644); err != nil {
+		if err := os.WriteFile(p, []byte(actual), 0o644); err != nil {
 			t.Errorf("error writing expected output %s: %v", p, err)
 		}
 

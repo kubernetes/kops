@@ -63,7 +63,6 @@ func getTestSetupOS(t *testing.T) (*RollingUpdateCluster, *openstack.MockCloud) 
 	basePath, _ := vfs.Context.BuildVfsPath(inCluster.Spec.ConfigBase)
 	clientset := vfsclientset.NewVFSClientset(basePath)
 	cluster, err := cloudup.PopulateClusterSpec(clientset, inCluster, mockcloud, assetBuilder)
-
 	if err != nil {
 		t.Fatalf("Failed to populate cluster spec: %v", err)
 	}
@@ -206,7 +205,6 @@ func getGroupsAllNeedUpdateOS(t *testing.T, c *RollingUpdateCluster) (map[string
 }
 
 func assertGroupInstanceCountOS(t *testing.T, cloud *openstack.MockCloud, groupName string, expected int) {
-
 	groups, _ := cloud.ListServerGroups(servergroups.ListOpts{})
 	for _, g := range groups {
 		if g.Name == groupName {

@@ -24,9 +24,7 @@ import (
 	"k8s.io/kubectl/pkg/util/i18n"
 )
 
-var (
-	toolboxShort = i18n.T(`Miscellaneous, infrequently used commands.`)
-)
+var toolboxShort = i18n.T(`Miscellaneous, infrequently used commands.`)
 
 func NewCmdToolbox(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{

@@ -19,7 +19,6 @@ package cmd
 import (
 	goflag "flag"
 	"fmt"
-
 	"io"
 
 	"github.com/spf13/cobra"

@@ -31,8 +31,7 @@ func New(ne *nsenter.Nsenter) *Mounter {
 }
 
 // Mounter implements mount.Interface for unsupported platforms
-type Mounter struct {
-}
+type Mounter struct{}
 
 var errUnsupported = errors.New("util/mount on this platform is not supported")
 

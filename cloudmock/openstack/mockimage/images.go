@@ -64,7 +64,6 @@ func (m *MockClient) mockImages() {
 }
 
 func (m *MockClient) listImages(w http.ResponseWriter) {
-
 	w.WriteHeader(http.StatusOK)
 
 	images := make([]images.Image, 0)

@@ -58,7 +58,6 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 		}
 		return true
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("error querying for EC2 instances: %v", err)
 	}

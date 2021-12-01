@@ -200,7 +200,6 @@ func (o *SecurityGroupRule) GetName() *string {
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString
 func (o *SecurityGroupRule) String() string {
-
 	var dst string
 	if o.RemoteGroup != nil {
 		dst = fi.StringValue(o.RemoteGroup.Name)

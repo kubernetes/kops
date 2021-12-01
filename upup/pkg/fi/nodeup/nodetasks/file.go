@@ -54,9 +54,11 @@ type File struct {
 	Type            string      `json:"type"`
 }
 
-var _ fi.Task = &File{}
-var _ fi.HasDependencies = &File{}
-var _ fi.HasName = &File{}
+var (
+	_ fi.Task            = &File{}
+	_ fi.HasDependencies = &File{}
+	_ fi.HasName         = &File{}
+)
 
 // GetDependencies implements HasDependencies::GetDependencies
 func (e *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
@@ -193,8 +195,8 @@ func (s *File) CheckChanges(a, e, changes *File) error {
 }
 
 func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
-	dirMode := os.FileMode(0755)
-	fileMode, err := fi.ParseFileMode(fi.StringValue(e.Mode), 0644)
+	dirMode := os.FileMode(0o755)
+	fileMode, err := fi.ParseFileMode(fi.StringValue(e.Mode), 0o644)
 	if err != nil {
 		return fmt.Errorf("invalid file mode for %q: %q", e.Path, fi.StringValue(e.Mode))
 	}
@@ -278,8 +280,8 @@ func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
 }
 
 func (_ *File) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *File) error {
-	dirMode := os.FileMode(0755)
-	fileMode, err := fi.ParseFileMode(fi.StringValue(e.Mode), 0644)
+	dirMode := os.FileMode(0o755)
+	fileMode, err := fi.ParseFileMode(fi.StringValue(e.Mode), 0o644)
 	if err != nil {
 		return fmt.Errorf("invalid file mode for %s: %q", e.Path, *e.Mode)
 	}
@@ -305,7 +307,7 @@ func (_ *File) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *File
 
 	if e.OnChangeExecute != nil {
 		return fmt.Errorf("OnChangeExecute not supported with CloudInit")
-		//t.AddCommand(cloudinit.Always, e.OnChangeExecute...)
+		// t.AddCommand(cloudinit.Always, e.OnChangeExecute...)
 	}
 
 	return nil

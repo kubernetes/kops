@@ -195,7 +195,6 @@ func TestPolicyGeneration(t *testing.T) {
 }
 
 func TestEmptyPolicy(t *testing.T) {
-
 	role := &GenericServiceAccount{
 		NamespacedName: types.NamespacedName{
 			Name:      "myaccount",
@@ -222,5 +221,4 @@ func TestEmptyPolicy(t *testing.T) {
 	if policy != "" {
 		t.Errorf("empty policy should result in empty string, but was %q", policy)
 	}
-
 }

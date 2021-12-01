@@ -109,7 +109,6 @@ type warmPoolBeforeJoinedNodesTest struct {
 }
 
 func (t *warmPoolBeforeJoinedNodesTest) TerminateInstances(input *ec2.TerminateInstancesInput) (*ec2.TerminateInstancesOutput, error) {
-
 	t.numTerminations++
 
 	return t.EC2API.TerminateInstances(input)

@@ -135,7 +135,6 @@ func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
 		default:
 			return fmt.Errorf("the %q path does not support public ACL", p.Path())
 		}
-
 	} else {
 
 		acl, err = acls.GetACL(p, c.Cluster)

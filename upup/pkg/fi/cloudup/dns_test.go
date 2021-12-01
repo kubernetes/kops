@@ -26,7 +26,6 @@ import (
 )
 
 func TestPrecreateDNSNames(t *testing.T) {
-
 	grid := []struct {
 		cluster  *kops.Cluster
 		expected []recordKey

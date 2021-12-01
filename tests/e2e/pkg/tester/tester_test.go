@@ -38,7 +38,6 @@ func TestFlagParsing(t *testing.T) {
 	if tester.Parallel != 25 {
 		t.Errorf("unexpected value for Parallel; got %d, want %d", tester.Parallel, 25)
 	}
-
 }
 
 func TestHasFlag(t *testing.T) {

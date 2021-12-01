@@ -152,6 +152,7 @@ func TestWriteLiteral(t *testing.T) {
 		})
 	}
 }
+
 func TestWriteLiteralList(t *testing.T) {
 	cases := []struct {
 		name     string
@@ -304,7 +305,6 @@ metadata = {
 					t.Errorf("unexpected error %v", err)
 				}
 				literalVal, err := gocty.ToCtyValue(v, literalType)
-
 				if err != nil {
 					t.Errorf("unexpected error %v", err)
 				}

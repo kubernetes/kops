@@ -24,9 +24,7 @@ import (
 	"k8s.io/kubectl/pkg/util/i18n"
 )
 
-var (
-	distrustShort = i18n.T("Distrust keypairs.")
-)
+var distrustShort = i18n.T("Distrust keypairs.")
 
 func NewCmdDistrust(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
