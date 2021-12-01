@@ -23,8 +23,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
-type visitorBase struct {
-}
+type visitorBase struct{}
 
 func (m *visitorBase) VisitString(path []string, v string, mutator func(string)) error {
 	klog.V(10).Infof("string value at %s: %s", strings.Join(path, "."), v)

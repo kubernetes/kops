@@ -25,13 +25,11 @@ import (
 
 // FindRegion determines the region from the zones specified in the cluster
 func FindRegion(cluster *kops.Cluster) (string, error) {
-
 	zones := []string{}
 	for _, subnet := range cluster.Spec.Subnets {
 		zones = append(zones, subnet.Zone)
 	}
 	return getRegionByZones(zones)
-
 }
 
 func getRegionByZones(zones []string) (string, error) {

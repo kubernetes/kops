@@ -33,7 +33,6 @@ func TestSSHCredentialStoreOnConfigBase(t *testing.T) {
 	}
 
 	p, err := pkiPath(cluster)
-
 	if err != nil {
 		t.Errorf("Failed to create ssh path: %v", err)
 	}
@@ -58,7 +57,6 @@ func TestSSHCredentialStoreOnOwnCFS(t *testing.T) {
 	}
 
 	p, err := pkiPath(cluster)
-
 	if err != nil {
 		t.Errorf("Failed to create ssh path: %v", err)
 	}

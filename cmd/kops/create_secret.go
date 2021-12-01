@@ -24,9 +24,7 @@ import (
 	"k8s.io/kubectl/pkg/util/i18n"
 )
 
-var (
-	createSecretShort = i18n.T(`Create a secret.`)
-)
+var createSecretShort = i18n.T(`Create a secret.`)
 
 func NewCmdCreateSecret(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{

@@ -18,7 +18,6 @@ package configbuilder
 
 import (
 	"fmt"
-
 	"reflect"
 	"strconv"
 	"strings"
@@ -75,7 +74,6 @@ func BuildConfigYaml(options *kops.KubeSchedulerConfig, target interface{}) ([]b
 		}
 
 		return reflectutils.SkipReflection
-
 	}
 
 	err := reflectutils.ReflectRecursive(reflect.ValueOf(options), walker, &reflectutils.ReflectOptions{DeprecatedDoubleVisit: true})

@@ -129,7 +129,6 @@ func (e *VPC) Run(c *fi.Context) error {
 }
 
 func (_ *VPC) RenderALI(t *aliup.ALIAPITarget, a, e, changes *VPC) error {
-
 	if fi.BoolValue(e.Shared) && a == nil {
 		return fmt.Errorf("VPC with id %q not found", fi.StringValue(e.ID))
 	}

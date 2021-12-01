@@ -30,6 +30,7 @@ import (
 func s(v string) *string {
 	return fi.String(v)
 }
+
 func TestValidateInstanceProfile(t *testing.T) {
 	grid := []struct {
 		Input          *kops.IAMProfileSpec
@@ -179,11 +180,9 @@ func TestValidMasterInstanceGroup(t *testing.T) {
 			t.Error(g.Description)
 		}
 	}
-
 }
 
 func TestValidBootDevice(t *testing.T) {
-
 	cluster := &kops.Cluster{
 		Spec: kops.ClusterSpec{
 			CloudProvider: "aws",
@@ -234,7 +233,6 @@ func TestValidBootDevice(t *testing.T) {
 }
 
 func TestValidNodeLabels(t *testing.T) {
-
 	grid := []struct {
 		label    string
 		expected []string
@@ -271,12 +269,10 @@ func TestValidNodeLabels(t *testing.T) {
 }
 
 func TestValidateIGCloudLabels(t *testing.T) {
-
 	grid := []struct {
 		label    string
 		expected []string
 	}{
-
 		{
 			label: "k8s.io/cluster-autoscaler/test.example.com",
 		},
@@ -309,7 +305,6 @@ func TestValidateIGCloudLabels(t *testing.T) {
 }
 
 func TestIGCloudLabelIsIGName(t *testing.T) {
-
 	grid := []struct {
 		label    string
 		expected []string
@@ -392,7 +387,6 @@ func TestValidInstanceGroup(t *testing.T) {
 		Description    string
 	}{
 		{
-
 			IG: &kops.InstanceGroup{
 				ObjectMeta: v1.ObjectMeta{
 					Name: "eu-central-1a",
@@ -430,7 +424,8 @@ func TestValidInstanceGroup(t *testing.T) {
 			},
 			ExpectedErrors: 0,
 			Description:    "Valid node instance group failed to validate",
-		}, {
+		},
+		{
 			IG: &kops.InstanceGroup{
 				ObjectMeta: v1.ObjectMeta{
 					Name: "eu-central-1a",

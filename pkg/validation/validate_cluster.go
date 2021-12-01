@@ -254,7 +254,6 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 				Message:       fmt.Sprintf("%s pod %q is not ready (%s)", priority, pod.Name, strings.Join(notready, ",")),
 				InstanceGroup: podNode,
 			})
-
 		}
 		return nil
 	})

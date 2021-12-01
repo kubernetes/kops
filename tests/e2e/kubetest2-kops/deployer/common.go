@@ -99,7 +99,6 @@ func (d *deployer) initialize() error {
 				5*time.Minute,
 				d.boskosHeartbeatClose,
 			)
-
 			if err != nil {
 				return fmt.Errorf("init failed to get project from boskos: %s", err)
 			}

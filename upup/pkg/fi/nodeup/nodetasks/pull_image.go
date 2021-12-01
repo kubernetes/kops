@@ -31,8 +31,10 @@ type PullImageTask struct {
 	Runtime string
 }
 
-var _ fi.Task = &PullImageTask{}
-var _ fi.HasDependencies = &PullImageTask{}
+var (
+	_ fi.Task            = &PullImageTask{}
+	_ fi.HasDependencies = &PullImageTask{}
+)
 
 func (t *PullImageTask) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	// ImagePullTask depends on the container runtime service to ensure we

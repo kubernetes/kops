@@ -34,5 +34,4 @@ func NewMockChannel(sourcePath string) (*kops.Channel, error) {
 		return nil, fmt.Errorf("failed to parse channel: %v", err)
 	}
 	return channel, nil
-
 }

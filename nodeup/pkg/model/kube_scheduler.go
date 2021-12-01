@@ -263,7 +263,7 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 		container.Command = []string{"/usr/local/bin/kube-scheduler"}
 		container.Args = append(
 			sortedStrings(flags),
-			"--logtostderr=false", //https://github.com/kubernetes/klog/issues/60
+			"--logtostderr=false", // https://github.com/kubernetes/klog/issues/60
 			"--alsologtostderr",
 			"--log-file=/var/log/kube-scheduler.log")
 	}

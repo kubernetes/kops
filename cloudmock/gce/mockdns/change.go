@@ -21,8 +21,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
-type changeClient struct {
-}
+type changeClient struct{}
 
 var _ gce.ChangeClient = &changeClient{}
 

@@ -108,7 +108,7 @@ func (t *Tester) extractBinaries(downloadPath string) (string, error) {
 			}
 			defer outFile.Close()
 
-			if err := outFile.Chmod(0700); err != nil {
+			if err := outFile.Chmod(0o700); err != nil {
 				return "", fmt.Errorf("failed to make %s executable: %s", kubectlPath, err)
 			}
 

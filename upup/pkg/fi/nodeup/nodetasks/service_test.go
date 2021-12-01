@@ -37,12 +37,12 @@ func TestServiceTask_Deps(t *testing.T) {
 	}
 }
 
-type FakeTask struct {
-}
+type FakeTask struct{}
 
 func (t *FakeTask) Run(*fi.Context) error {
 	panic("not implemented")
 }
+
 func TestServiceTask_UnknownTypes(t *testing.T) {
 	s := &Service{}
 

@@ -294,7 +294,7 @@ func associateToPool(c OpenstackCloud, server *servers.Server, poolID string, op
 			}
 			return true, nil
 		}
-		//NOOP
+		// NOOP
 		return true, nil
 	})
 	if !done {

@@ -77,5 +77,4 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	return nil
-
 }

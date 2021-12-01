@@ -40,6 +40,7 @@ func newTestPublicIPAddress() *PublicIPAddress {
 		},
 	}
 }
+
 func TestPublicIPAddressRenderAzure(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
 	apiTarget := azure.NewAzureAPITarget(cloud)

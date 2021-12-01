@@ -78,7 +78,6 @@ func (_ *UpdatePackages) RenderLocal(t *local.LocalTarget, a, e, changes *Update
 	var args []string
 	if d.IsDebianFamily() {
 		args = []string{"apt-get", "update"}
-
 	} else if d.IsRHELFamily() {
 		// Probably not technically needed
 		args = []string{"/usr/bin/yum", "check-update"}

@@ -200,8 +200,8 @@ func DetachInstance(cloud Cloud, instance *cloudinstances.CloudInstance) error {
 
 // GetCloudGroups returns a list of InstanceGroups as CloudInstanceGroup objects.
 func GetCloudGroups(cloud Cloud, cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup,
-	warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-
+	warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error,
+) {
 	cloudInstanceGroups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
 
@@ -242,8 +242,8 @@ func GetCloudGroups(cloud Cloud, cluster *kops.Cluster, instanceGroups []*kops.I
 
 func buildCloudInstanceGroupFromResource(cloud Cloud, cluster *kops.Cluster,
 	instanceGroups []*kops.InstanceGroup, resource *resources.Resource,
-	nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
-
+	nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error,
+) {
 	// Find corresponding instance group.
 	ig, err := findInstanceGroupFromResource(cluster, instanceGroups, resource)
 	if err != nil {
@@ -273,8 +273,8 @@ func buildCloudInstanceGroupFromResource(cloud Cloud, cluster *kops.Cluster,
 }
 
 func buildCloudInstanceGroupFromInstanceGroup(cloud Cloud, ig *kops.InstanceGroup, group InstanceGroup,
-	nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
-
+	nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error,
+) {
 	instanceGroup := &cloudinstances.CloudInstanceGroup{
 		HumanName:     group.Name(),
 		InstanceGroup: ig,
@@ -312,8 +312,8 @@ func buildCloudInstanceGroupFromInstanceGroup(cloud Cloud, ig *kops.InstanceGrou
 var fetchOceanInstances sync.Once
 
 func buildCloudInstanceGroupFromLaunchSpec(cloud Cloud, ig *kops.InstanceGroup, spec LaunchSpec,
-	nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
-
+	nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error,
+) {
 	instanceGroup := &cloudinstances.CloudInstanceGroup{
 		HumanName:     spec.Name(),
 		InstanceGroup: ig,
@@ -342,7 +342,6 @@ func buildCloudInstanceGroupFromLaunchSpec(cloud Cloud, ig *kops.InstanceGroup, 
 
 func registerCloudInstances(instanceGroup *cloudinstances.CloudInstanceGroup, nodeMap map[string]*v1.Node,
 	instances []Instance, currentInstanceGroupName string, instanceGroupUpdatedAt time.Time) error {
-
 	// The instance registration below registers all active instances with
 	// their instance group. In addition, it looks for outdated instances by
 	// comparing each instance creation timestamp against the modification
@@ -392,8 +391,8 @@ func registerCloudInstances(instanceGroup *cloudinstances.CloudInstanceGroup, no
 }
 
 func findInstanceGroupFromResource(cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup,
-	resource *resources.Resource) (*kops.InstanceGroup, error) {
-
+	resource *resources.Resource) (*kops.InstanceGroup, error,
+) {
 	var instanceGroup *kops.InstanceGroup
 	for _, ig := range instanceGroups {
 		name := getGroupNameByRole(cluster, ig)

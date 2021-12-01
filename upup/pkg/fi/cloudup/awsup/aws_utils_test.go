@@ -65,7 +65,6 @@ func TestFindRegion(t *testing.T) {
 			t.Fatalf("unexpected region for zone: %q vs %q", expected, region)
 		}
 	}
-
 }
 
 func TestEC2TagSpecification(t *testing.T) {

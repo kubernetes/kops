@@ -166,7 +166,6 @@ func (v *VSwitchSNAT) CheckChanges(a, e, changes *VSwitchSNAT) error {
 }
 
 func (_ *VSwitchSNAT) RenderALI(t *aliup.ALIAPITarget, a, e, changes *VSwitchSNAT) error {
-
 	if a == nil {
 		createSnatEntryArgs := &ecs.CreateSnatEntryArgs{
 			RegionId:        common.Region(t.Cloud.Region()),

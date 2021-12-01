@@ -470,7 +470,6 @@ func hasKubecfg(contextName string) (bool, error) {
 
 func completeUpdateClusterTarget(f commandutils.Factory, options *UpdateClusterOptions) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-
 		commandutils.ConfigureKlogForCompletion()
 		ctx := context.TODO()
 

@@ -200,9 +200,9 @@ type KubeletConfigSpec struct {
 	CpuManagerPolicy string `json:"cpuManagerPolicy,omitempty" flag:"cpu-manager-policy"`
 	// RegistryPullQPS if > 0, limit registry pull QPS to this value.  If 0, unlimited. (default 5)
 	RegistryPullQPS *int32 `json:"registryPullQPS,omitempty" flag:"registry-qps"`
-	//RegistryBurst Maximum size of a bursty pulls, temporarily allows pulls to burst to this number, while still not exceeding registry-qps. Only used if --registry-qps > 0 (default 10)
+	// RegistryBurst Maximum size of a bursty pulls, temporarily allows pulls to burst to this number, while still not exceeding registry-qps. Only used if --registry-qps > 0 (default 10)
 	RegistryBurst *int32 `json:"registryBurst,omitempty" flag:"registry-burst"`
-	//TopologyManagerPolicy determines the allocation policy for the topology manager.
+	// TopologyManagerPolicy determines the allocation policy for the topology manager.
 	TopologyManagerPolicy string `json:"topologyManagerPolicy,omitempty" flag:"topology-manager-policy"`
 	// rotateCertificates enables client certificate rotation.
 	RotateCertificates *bool `json:"rotateCertificates,omitempty" flag:"rotate-certificates"`
@@ -441,7 +441,7 @@ type KubeAPIServerConfig struct {
 	RequestheaderGroupHeaders []string `json:"requestheaderGroupHeaders,omitempty" flag:"requestheader-group-headers"`
 	// List of request header prefixes to inspect. X-Remote-Extra- is suggested.
 	RequestheaderExtraHeaderPrefixes []string `json:"requestheaderExtraHeaderPrefixes,omitempty" flag:"requestheader-extra-headers-prefix"`
-	//Root certificate bundle to use to verify client certificates on incoming requests before trusting usernames in headers specified by --requestheader-username-headers
+	// Root certificate bundle to use to verify client certificates on incoming requests before trusting usernames in headers specified by --requestheader-username-headers
 	RequestheaderClientCAFile string `json:"requestheaderClientCAFile,omitempty" flag:"requestheader-client-ca-file"`
 	// List of client certificate common names to allow to provide usernames in headers specified by --requestheader-username-headers. If empty, any client certificate validated by the authorities in --requestheader-client-ca-file is allowed.
 	RequestheaderAllowedNames []string `json:"requestheaderAllowedNames,omitempty" flag:"requestheader-allowed-names"`
@@ -894,9 +894,9 @@ type AWSEBSCSIDriver struct {
 
 // SnapshotControllerConfig is the config for the CSI Snapshot Controller
 type SnapshotControllerConfig struct {
-	//Enabled enables the CSI Snapshot Controller
+	// Enabled enables the CSI Snapshot Controller
 	Enabled *bool `json:"enabled,omitempty"`
-	//InstallDefaultClass will install the default VolumeSnapshotClass
+	// InstallDefaultClass will install the default VolumeSnapshotClass
 	InstallDefaultClass bool `json:"installDefaultClass,omitempty"`
 }
 

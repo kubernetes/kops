@@ -63,7 +63,7 @@ type DOVolumes struct {
 var _ Volumes = &DOVolumes{}
 
 func GetClusterID() (string, error) {
-	var clusterID = ""
+	clusterID := ""
 
 	dropletTags, err := getMetadataDropletTags()
 	if err != nil {
@@ -234,7 +234,6 @@ func getAllVolumesByRegion(godoClient *godo.Client, region string) ([]godo.Volum
 			Region:      region,
 			ListOptions: opt,
 		})
-
 		if err != nil {
 			return nil, err
 		}
@@ -254,7 +253,6 @@ func getAllVolumesByRegion(godoClient *godo.Client, region string) ([]godo.Volum
 	}
 
 	return allVolumes, nil
-
 }
 
 func (d *DOVolumes) FindMountedVolume(volume *Volume) (string, error) {
@@ -275,7 +273,6 @@ func (d *DOVolumes) FindMountedVolume(volume *Volume) (string, error) {
 func (d *DOVolumes) getVolumeByID(id string) (*godo.Volume, error) {
 	vol, _, err := d.godoClient.Storage.GetVolume(context.TODO(), id)
 	return vol, err
-
 }
 
 // getEtcdClusterSpec returns etcd.EtcdClusterSpec which holds
@@ -345,7 +342,6 @@ func getMetadataDropletID() (string, error) {
 }
 
 func getMetadataDropletTags() ([]string, error) {
-
 	tagString, err := getMetadata(dropletIDMetadataTags)
 	return strings.Split(tagString, "\n"), err
 }

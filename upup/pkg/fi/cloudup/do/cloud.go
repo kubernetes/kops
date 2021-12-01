@@ -39,12 +39,14 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-const TagKubernetesClusterIndex = "k8s-index"
-const TagNameEtcdClusterPrefix = "etcdCluster-"
-const TagNameRolePrefix = "k8s.io/role/"
-const TagKubernetesClusterNamePrefix = "KubernetesCluster"
-const TagKubernetesClusterMasterPrefix = "KubernetesCluster-Master"
-const TagKubernetesInstanceGroup = "kops-instancegroup"
+const (
+	TagKubernetesClusterIndex        = "k8s-index"
+	TagNameEtcdClusterPrefix         = "etcdCluster-"
+	TagNameRolePrefix                = "k8s.io/role/"
+	TagKubernetesClusterNamePrefix   = "KubernetesCluster"
+	TagKubernetesClusterMasterPrefix = "KubernetesCluster-Master"
+	TagKubernetesInstanceGroup       = "kops-instancegroup"
+)
 
 type DOInstanceGroup struct {
 	ClusterName       string
@@ -291,7 +293,6 @@ func (c *doCloudImplementation) FindClusterStatus(cluster *kops.Cluster) (*kops.
 func findEtcdStatus(c *doCloudImplementation, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, error) {
 	statusMap := make(map[string]*kops.EtcdClusterStatus)
 	volumes, err := c.GetAllVolumesByRegion()
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all volumes by region from %s: %v", c.Region(), err)
 	}
@@ -400,7 +401,6 @@ func getCloudGroups(c *doCloudImplementation, cluster *kops.Cluster, instancegro
 
 	klog.V(8).Infof("Cloud Instance Group Info = %v", groups)
 	return groups, nil
-
 }
 
 // findInstanceGroups finds instance groups matching the specified tags
@@ -562,7 +562,6 @@ func (c *doCloudImplementation) GetAllVolumesByRegion() ([]godo.Volume, error) {
 			Region:      c.Region(),
 			ListOptions: opt,
 		})
-
 		if err != nil {
 			return nil, err
 		}

@@ -108,7 +108,6 @@ func (c *InstanceGroupVFS) Create(ctx context.Context, g *kopsapi.InstanceGroup,
 }
 
 func (c *InstanceGroupVFS) Update(ctx context.Context, g *kopsapi.InstanceGroup, opts metav1.UpdateOptions) (*kopsapi.InstanceGroup, error) {
-
 	old, err := c.Get(ctx, g.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err

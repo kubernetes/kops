@@ -137,6 +137,7 @@ func (m *MockEC2) CreateRouteTableWithId(request *ec2.CreateRouteTableInput, id 
 func (m *MockEC2) CreateRouteTableWithContext(aws.Context, *ec2.CreateRouteTableInput, ...request.Option) (*ec2.CreateRouteTableOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) CreateRouteTableRequest(*ec2.CreateRouteTableInput) (*request.Request, *ec2.CreateRouteTableOutput) {
 	panic("Not implemented")
 }
@@ -171,9 +172,11 @@ func (m *MockEC2) CreateRoute(request *ec2.CreateRouteInput) (*ec2.CreateRouteOu
 	rt.Routes = append(rt.Routes, r)
 	return &ec2.CreateRouteOutput{Return: aws.Bool(true)}, nil
 }
+
 func (m *MockEC2) CreateRouteWithContext(aws.Context, *ec2.CreateRouteInput, ...request.Option) (*ec2.CreateRouteOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) CreateRouteRequest(*ec2.CreateRouteInput) (*request.Request, *ec2.CreateRouteOutput) {
 	panic("Not implemented")
 }
@@ -193,9 +196,11 @@ func (m *MockEC2) DeleteRouteTable(request *ec2.DeleteRouteTableInput) (*ec2.Del
 
 	return &ec2.DeleteRouteTableOutput{}, nil
 }
+
 func (m *MockEC2) DeleteRouteTableWithContext(aws.Context, *ec2.DeleteRouteTableInput, ...request.Option) (*ec2.DeleteRouteTableOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) DeleteRouteTableRequest(*ec2.DeleteRouteTableInput) (*request.Request, *ec2.DeleteRouteTableOutput) {
 	panic("Not implemented")
 }

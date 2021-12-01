@@ -44,8 +44,10 @@ type VFSCAStore struct {
 	cachedCA *Keyset
 }
 
-var _ CAStore = &VFSCAStore{}
-var _ SSHCredentialStore = &VFSCAStore{}
+var (
+	_ CAStore            = &VFSCAStore{}
+	_ SSHCredentialStore = &VFSCAStore{}
+)
 
 func NewVFSCAStore(cluster *kops.Cluster, basedir vfs.Path) *VFSCAStore {
 	c := &VFSCAStore{

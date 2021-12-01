@@ -67,7 +67,6 @@ func (m *MockClient) mockPorts() {
 		case http.MethodPut:
 			parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 			if len(parts) == 4 && parts[2] == "tags" {
-
 				m.tagPort(w, r)
 			} else if len(parts) == 2 {
 				m.updatePort(w, r)
@@ -85,7 +84,6 @@ func (m *MockClient) mockPorts() {
 }
 
 func (m *MockClient) listPorts(w http.ResponseWriter, vals url.Values) {
-
 	w.WriteHeader(http.StatusOK)
 
 	ports := make([]ports.Port, 0)
@@ -245,5 +243,4 @@ func (m *MockClient) updatePort(w http.ResponseWriter, r *http.Request) {
 	m.ports[portID] = port
 
 	w.WriteHeader(http.StatusOK)
-
 }

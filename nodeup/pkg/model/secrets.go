@@ -65,11 +65,9 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 func getInstanceAddress() (string, error) {
-
 	addrBytes, err := vfs.Context.ReadFile("metadata://openstack/local-ipv4")
 	if err != nil {
 		return "", nil
 	}
 	return string(addrBytes), nil
-
 }

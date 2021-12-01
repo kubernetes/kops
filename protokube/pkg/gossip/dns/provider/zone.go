@@ -185,7 +185,7 @@ func (r *resourceRecordSets) New(name string, rrdatas []string, ttl int64, rrsty
 	data := dns.DNSRecord{
 		Name:    name,
 		Rrdatas: rrdatas,
-		//Ttl:     int(ttl),
+		// Ttl:     int(ttl),
 		RrsType: string(rrstype),
 	}
 	return &resourceRecordSet{data: data}

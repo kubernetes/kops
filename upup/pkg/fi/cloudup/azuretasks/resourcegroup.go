@@ -38,8 +38,10 @@ type ResourceGroup struct {
 	Shared *bool
 }
 
-var _ fi.Task = &ResourceGroup{}
-var _ fi.CompareWithID = &ResourceGroup{}
+var (
+	_ fi.Task          = &ResourceGroup{}
+	_ fi.CompareWithID = &ResourceGroup{}
+)
 
 // CompareWithID returns the Name of the VM Scale Set.
 func (r *ResourceGroup) CompareWithID() *string {

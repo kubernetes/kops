@@ -37,7 +37,6 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 	var seeds []string
 
 	droplets, _, err := p.godoClient.Droplets.List(context.TODO(), nil)
-
 	if err != nil {
 		return nil, fmt.Errorf("Droplets.ListByTag returned error: %v", err)
 	}

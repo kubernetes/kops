@@ -51,7 +51,6 @@ func (s *LBPool) CompareWithID() *string {
 }
 
 func NewLBPoolTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, pool *v2pools.Pool, find *LBPool) (*LBPool, error) {
-
 	if len(pool.Loadbalancers) > 1 {
 		return nil, fmt.Errorf("Openstack cloud pools with multiple loadbalancers not yet supported!")
 	}

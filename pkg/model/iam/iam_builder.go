@@ -568,11 +568,9 @@ func (b *PolicyBuilder) buildS3WriteStatements(p *Policy, iamS3Path string) {
 			fmt.Sprintf("arn:%v:s3:::%v/*", b.Partition, iamS3Path),
 		),
 	})
-
 }
 
 func (b *PolicyBuilder) buildS3GetStatements(p *Policy, iamS3Path string) error {
-
 	resources, err := ReadableStatePaths(b.Cluster, b.Role)
 	if err != nil {
 		return err
@@ -674,8 +672,10 @@ type PolicyResource struct {
 	DNSZone *awstasks.DNSZone
 }
 
-var _ fi.Resource = &PolicyResource{}
-var _ fi.HasDependencies = &PolicyResource{}
+var (
+	_ fi.Resource        = &PolicyResource{}
+	_ fi.HasDependencies = &PolicyResource{}
+)
 
 // GetDependencies adds the DNSZone task to the list of dependencies if set
 func (b *PolicyResource) GetDependencies(tasks map[string]fi.Task) []fi.Task {
@@ -792,7 +792,6 @@ func addEtcdManagerPermissions(p *Policy) {
 			},
 		},
 	)
-
 }
 
 func AddLegacyCCMPermissions(p *Policy) {
@@ -923,7 +922,6 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy) {
 		"elasticloadbalancing:AddTags",
 		"elasticloadbalancing:RemoveTags",
 	)
-
 }
 
 func AddClusterAutoscalerPermissions(p *Policy) {
@@ -941,7 +939,6 @@ func AddClusterAutoscalerPermissions(p *Policy) {
 
 // AddAWSEBSCSIDriverPermissions appens policy statements that the AWS EBS CSI Driver needs to operate.
 func AddAWSEBSCSIDriverPermissions(p *Policy, partition string, appendSnapshotPermissions bool) {
-
 	if appendSnapshotPermissions {
 		addSnapshotPersmissions(p)
 	}
@@ -1132,7 +1129,8 @@ func addAmazonVPCCNIPermissions(p *Policy, partition string) {
 			}),
 			Resource: stringorslice.Slice([]string{
 				strings.Join([]string{"arn:", partition, ":ec2:*:*:network-interface/*"}, ""),
-			})},
+			}),
+		},
 	)
 }
 
@@ -1148,5 +1146,4 @@ func AddNodeTerminationHandlerSQSPermissions(p *Policy) {
 	p.clusterTaggedAction.Insert(
 		"autoscaling:CompleteLifecycleAction",
 	)
-
 }

@@ -42,8 +42,10 @@ type IAMModelBuilder struct {
 	Cluster   *kops.Cluster
 }
 
-var _ fi.ModelBuilder = &IAMModelBuilder{}
-var _ fi.HasDeletions = &IAMModelBuilder{}
+var (
+	_ fi.ModelBuilder = &IAMModelBuilder{}
+	_ fi.HasDeletions = &IAMModelBuilder{}
+)
 
 const NodeRolePolicyTemplate = `{
   "Version": "2012-10-17",
@@ -163,7 +165,6 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				})
 			}
 		}
-
 	}
 
 	return nil

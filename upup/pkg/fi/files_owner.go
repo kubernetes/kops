@@ -39,7 +39,7 @@ func EnsureFileOwner(destPath string, owner string, groupName string) (bool, err
 	actualUserID := int(stat.Sys().(*syscall.Stat_t).Uid)
 	userID := actualUserID
 	if owner != "" {
-		user, err := LookupUser(owner) //user.Lookup(owner)
+		user, err := LookupUser(owner) // user.Lookup(owner)
 		if err != nil {
 			return changed, fmt.Errorf("error looking up user %q: %v", owner, err)
 		}

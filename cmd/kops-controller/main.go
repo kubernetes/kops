@@ -52,7 +52,6 @@ var (
 )
 
 func init() {
-
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -61,7 +60,7 @@ func main() {
 
 	// Disable metrics by default (avoid port conflicts, also risky because we are host network)
 	metricsAddress := ":0"
-	//flag.StringVar(&metricsAddr, "metrics-addr", metricsAddress, "The address the metric endpoint binds to.")
+	// flag.StringVar(&metricsAddr, "metrics-addr", metricsAddress, "The address the metric endpoint binds to.")
 
 	configPath := "/etc/kubernetes/kops-controller/config.yaml"
 	flag.StringVar(&configPath, "conf", configPath, "Location of yaml configuration file")

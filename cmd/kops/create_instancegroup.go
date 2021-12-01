@@ -231,9 +231,7 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 	}
 
 	if options.Edit {
-		var (
-			edit = editor.NewDefaultEditor(commandutils.EditorEnvs)
-		)
+		edit := editor.NewDefaultEditor(commandutils.EditorEnvs)
 
 		raw, err := kopscodecs.ToVersionedYaml(ig)
 		if err != nil {

@@ -19,14 +19,13 @@ package dns
 import (
 	"context"
 	"fmt"
-	"time"
-
-	"k8s.io/klog/v2"
-
 	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
+
+	"k8s.io/klog/v2"
 
 	"k8s.io/kops/dns-controller/pkg/util"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -35,8 +34,10 @@ import (
 
 var zoneListCacheValidity = time.Minute * 15
 
-const DefaultTTL = time.Minute
-const MaxFailures = 5
+const (
+	DefaultTTL  = time.Minute
+	MaxFailures = 5
+)
 
 // DNSController applies the desired DNS state to the DNS backend
 type DNSController struct {

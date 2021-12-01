@@ -373,7 +373,8 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			p := request.MixedInstancesPolicy.LaunchTemplate
 			for _, x := range e.MixedInstanceOverrides {
 				p.Overrides = append(p.Overrides, &autoscaling.LaunchTemplateOverrides{
-					InstanceType: fi.String(x)},
+					InstanceType: fi.String(x),
+				},
 				)
 			}
 		} else if e.LaunchTemplate != nil {

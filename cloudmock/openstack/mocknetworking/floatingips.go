@@ -55,7 +55,6 @@ func (m *MockClient) mockFloatingIPs() {
 }
 
 func (m *MockClient) listFloatingIPs(w http.ResponseWriter, vals url.Values) {
-
 	w.WriteHeader(http.StatusOK)
 
 	floatingips := make([]floatingips.FloatingIP, 0)

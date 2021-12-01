@@ -103,7 +103,6 @@ func (c *openstackCloud) ListServerFloatingIPs(instanceID string) ([]*string, er
 }
 
 func listServerFloatingIPs(c OpenstackCloud, instanceID string, floatingEnabled bool) ([]*string, error) {
-
 	var result []*string
 	_, err := vfs.RetryWithBackoff(floatingBackoff, func() (bool, error) {
 		server, err := c.GetInstance(instanceID)
@@ -257,5 +256,4 @@ func getFlavor(c OpenstackCloud, name string) (*flavors.Flavor, error) {
 	}
 
 	return nil, fmt.Errorf("could not find flavor with name %v", name)
-
 }

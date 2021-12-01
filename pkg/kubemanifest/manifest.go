@@ -64,7 +64,7 @@ func LoadObjectsFrom(contents []byte) (ObjectList, error) {
 		}
 
 		obj := &Object{
-			//bytes: section,
+			// bytes: section,
 			data: data,
 		}
 		objects = append(objects, obj)
@@ -88,7 +88,7 @@ func hasYAMLContent(yamlData []byte) bool {
 
 // ToYAML serializes a list of objects back to bytes; it is the opposite of LoadObjectsFrom
 func (l ObjectList) ToYAML() ([]byte, error) {
-	var yamlSeparator = []byte("\n---\n\n")
+	yamlSeparator := []byte("\n---\n\n")
 	var yamls [][]byte
 	for _, object := range l {
 		// Don't serialize empty objects - they confuse yaml parsers

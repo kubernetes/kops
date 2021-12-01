@@ -323,7 +323,7 @@ func buildChangeList(a, e, changes Task) ([]change, error) {
 			if fieldValE.CanInterface() {
 
 				switch fieldValE.Interface().(type) {
-				//case SimpleUnit:
+				// case SimpleUnit:
 				//	ignored = true
 				case Resource:
 					resA, okA := tryResourceAsString(fieldValA)
