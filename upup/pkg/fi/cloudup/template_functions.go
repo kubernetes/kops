@@ -585,6 +585,10 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 				Region:     tf.Region,
 			}
 
+			if cluster.Spec.ExternalCloudControllerManager != nil && cluster.IsKubernetesGTE("1.23") {
+				config.Server.UseInstanceIDForNodeName = true
+			}
+
 		case kops.CloudProviderGCE:
 			c := tf.cloud.(gce.GCECloud)
 
@@ -599,7 +603,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		}
 	}
 
-	if tf.Cluster.Spec.IsKopsControllerIPAM() {
+	if cluster.Spec.IsKopsControllerIPAM() {
 		config.EnableCloudIPAM = true
 	}
 
