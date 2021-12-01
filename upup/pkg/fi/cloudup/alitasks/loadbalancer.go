@@ -43,8 +43,10 @@ type LoadBalancer struct {
 	ForAPIServer        bool
 }
 
-var _ fi.CompareWithID = &LoadBalancer{}
-var _ fi.HasAddress = &LoadBalancer{}
+var (
+	_ fi.CompareWithID = &LoadBalancer{}
+	_ fi.HasAddress    = &LoadBalancer{}
+)
 
 func (l *LoadBalancer) CompareWithID() *string {
 	return l.LoadbalancerId
@@ -167,7 +169,7 @@ func (_ *LoadBalancer) CheckChanges(a, e, changes *LoadBalancer) error {
 	return nil
 }
 
-//LoadBalancer can only modify tags.
+// LoadBalancer can only modify tags.
 func (_ *LoadBalancer) RenderALI(t *aliup.ALIAPITarget, a, e, changes *LoadBalancer) error {
 	if a == nil {
 		klog.V(2).Infof("Creating LoadBalancer with Name:%q", fi.StringValue(e.Name))

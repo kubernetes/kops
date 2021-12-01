@@ -107,7 +107,7 @@ func LookupUserByID(uid int) (*User, error) {
 type Group struct {
 	Name string
 	Gid  int
-	//Members []string
+	// Members []string
 }
 
 func parseGroups() (map[string]*Group, error) {

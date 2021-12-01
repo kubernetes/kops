@@ -207,9 +207,11 @@ func (m *MockEC2) DescribeTags(request *ec2.DescribeTagsInput) (*ec2.DescribeTag
 
 	return response, nil
 }
+
 func (m *MockEC2) DescribeTagsPages(*ec2.DescribeTagsInput, func(*ec2.DescribeTagsOutput, bool) bool) error {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) DescribeTagsPagesWithContext(aws.Context, *ec2.DescribeTagsInput, func(*ec2.DescribeTagsOutput, bool) bool, ...request.Option) error {
 	panic("Not implemented")
 }

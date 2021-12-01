@@ -353,8 +353,7 @@ func (s *AuthenticationSpec) IsEmpty() bool {
 	return s.Kopeio == nil && s.Aws == nil
 }
 
-type KopeioAuthenticationSpec struct {
-}
+type KopeioAuthenticationSpec struct{}
 
 type AwsAuthenticationSpec struct {
 	// Image is the AWS IAM Authenticator docker image to use
@@ -382,11 +381,9 @@ func (s *AuthorizationSpec) IsEmpty() bool {
 	return s.RBAC == nil && s.AlwaysAllow == nil
 }
 
-type RBACAuthorizationSpec struct {
-}
+type RBACAuthorizationSpec struct{}
 
-type AlwaysAllowAuthorizationSpec struct {
-}
+type AlwaysAllowAuthorizationSpec struct{}
 
 // AccessSpec provides configuration details related to kubeapi dns and ELB access
 type AccessSpec struct {
@@ -396,8 +393,7 @@ type AccessSpec struct {
 	LoadBalancer *LoadBalancerAccessSpec `json:"loadBalancer,omitempty"`
 }
 
-type DNSAccessSpec struct {
-}
+type DNSAccessSpec struct{}
 
 // LoadBalancerType string describes LoadBalancer types (public, internal)
 type LoadBalancerType string

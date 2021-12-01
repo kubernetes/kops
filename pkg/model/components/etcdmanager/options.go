@@ -60,7 +60,6 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
 				klog.Warningf("unsupported etcd version %q detected; please update etcd version.  Use export KOPS_FEATURE_FLAGS=SkipEtcdVersionCheck to override this check", etcdCluster.Version)
 				return fmt.Errorf("etcd version %q is not supported with etcd-manager, please specify a supported version or remove the value to use the default version.  Supported versions: %s", etcdCluster.Version, strings.Join(supportedEtcdVersions, ", "))
 			}
-
 		}
 	}
 

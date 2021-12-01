@@ -357,7 +357,6 @@ func TestSetClusterFields(t *testing.T) {
 }
 
 func TestSetCiliumFields(t *testing.T) {
-
 	grid := []struct {
 		Fields []string
 		Input  kops.Cluster

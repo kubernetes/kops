@@ -44,8 +44,10 @@ type Droplet struct {
 	UserData fi.Resource
 }
 
-var _ fi.Task = &Droplet{}
-var _ fi.CompareWithID = &Droplet{}
+var (
+	_ fi.Task          = &Droplet{}
+	_ fi.CompareWithID = &Droplet{}
+)
 
 func (d *Droplet) CompareWithID() *string {
 	return d.Name

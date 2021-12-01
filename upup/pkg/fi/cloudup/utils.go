@@ -255,8 +255,8 @@ func FindDNSHostedZone(dns dnsprovider.Interface, clusterDNSName string, dnsType
 		// We make this an error because you have to set up DNS delegation anyway
 		tokens := strings.Split(clusterDNSName, ".")
 		suffix := strings.Join(tokens[len(tokens)-2:], ".")
-		//klog.Warningf("No matching hosted zones found; will created %q", suffix)
-		//return suffix, nil
+		// klog.Warningf("No matching hosted zones found; will created %q", suffix)
+		// return suffix, nil
 		return "", fmt.Errorf("No matching hosted zones found for %q; please create one (e.g. %q) first", clusterDNSName, suffix)
 	}
 

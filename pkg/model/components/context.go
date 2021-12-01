@@ -71,7 +71,6 @@ func UsesKubenet(networking *kops.NetworkingSpec) bool {
 	}
 
 	return false
-
 }
 
 // UsesCNI returns true if the networking provider is a CNI plugin
@@ -173,7 +172,7 @@ func GCETagForRole(clusterName string, role kops.InstanceGroupRole) string {
 	return gce.SafeClusterName(clusterName) + "-" + gce.GceLabelNameRolePrefix + strings.ToLower(string(role))
 }
 
-//IsCertManagerEnabled returns true if the cluster has the capability to handle cert-manager PKI
+// IsCertManagerEnabled returns true if the cluster has the capability to handle cert-manager PKI
 func IsCertManagerEnabled(cluster *kops.Cluster) bool {
 	return cluster.Spec.CertManager != nil && fi.BoolValue(cluster.Spec.CertManager.Enabled)
 }

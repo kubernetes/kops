@@ -48,8 +48,10 @@ type SecurityGroup struct {
 	Tags map[string]string
 }
 
-var _ fi.CompareWithID = &SecurityGroup{}
-var _ fi.ProducesDeletions = &SecurityGroup{}
+var (
+	_ fi.CompareWithID     = &SecurityGroup{}
+	_ fi.ProducesDeletions = &SecurityGroup{}
+)
 
 func (e *SecurityGroup) CompareWithID() *string {
 	return e.ID
@@ -102,7 +104,6 @@ func (e *SecurityGroup) findEc2(c *fi.Context) (*ec2.SecurityGroup, error) {
 	if fi.StringValue(e.ID) != "" {
 		// Find by ID.
 		request.GroupIds = []*string{e.ID}
-
 	} else if fi.StringValue(e.Name) != "" && e.VPC != nil && e.VPC.ID != nil {
 		// Find by filters (name and VPC ID).
 		filters := cloud.BuildFilters(e.Name)
@@ -328,8 +329,8 @@ func (d *deleteSecurityGroupRule) Item() string {
 	for _, r := range p.Ipv6Ranges {
 		s += fmt.Sprintf(" ipv6=%s", aws.StringValue(r.CidrIpv6))
 	}
-	//permissionString := fi.DebugAsJsonString(d.permission)
-	//s += permissionString
+	// permissionString := fi.DebugAsJsonString(d.permission)
+	// s += permissionString
 
 	return s
 }

@@ -75,7 +75,6 @@ func (c *CloudInstanceGroup) Status() string {
 }
 
 func (group *CloudInstanceGroup) AdjustNeedUpdate() {
-
 	if group.Ready != nil {
 		var newReady []*CloudInstance
 		for _, member := range group.Ready {

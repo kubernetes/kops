@@ -430,16 +430,13 @@ func TestDiscoveryFeatureGate(t *testing.T) {
 		withOIDCDiscovery().
 		withKubeDNS().
 		runTestTerraformAWS(t)
-
 }
 
 func TestVFSServiceAccountIssuerDiscovery(t *testing.T) {
-
 	newIntegrationTest("minimal.example.com", "vfs-said").
 		withAddons(dnsControllerAddon).
 		withOIDCDiscovery().
 		runTestTerraformAWS(t)
-
 }
 
 // TestAWSLBController runs a simple configuration, but with AWS LB controller and UseServiceAccountExternalPermissions enabled
@@ -764,8 +761,7 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 		expectedDataPath := path.Join(i.srcDir, "data")
 		{
 			for _, dataFileName := range expectedDataFilenames {
-				actualDataContent, err :=
-					ioutil.ReadFile(path.Join(actualDataPath, dataFileName))
+				actualDataContent, err := ioutil.ReadFile(path.Join(actualDataPath, dataFileName))
 				if err != nil {
 					t.Fatalf("failed to read actual data file: %v", err)
 				}
@@ -1248,7 +1244,7 @@ func MakeSSHKeyPair(publicKeyPath string, privateKeyPath string) error {
 	if err := pem.Encode(&privateKeyBytes, privateKeyPEM); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(privateKeyPath, privateKeyBytes.Bytes(), os.FileMode(0700)); err != nil {
+	if err := ioutil.WriteFile(privateKeyPath, privateKeyBytes.Bytes(), os.FileMode(0o700)); err != nil {
 		return err
 	}
 
@@ -1257,7 +1253,7 @@ func MakeSSHKeyPair(publicKeyPath string, privateKeyPath string) error {
 		return err
 	}
 	publicKeyBytes := ssh.MarshalAuthorizedKey(publicKey)
-	if err := ioutil.WriteFile(publicKeyPath, publicKeyBytes, os.FileMode(0744)); err != nil {
+	if err := ioutil.WriteFile(publicKeyPath, publicKeyBytes, os.FileMode(0o744)); err != nil {
 		return err
 	}
 

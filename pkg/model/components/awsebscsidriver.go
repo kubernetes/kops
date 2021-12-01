@@ -53,5 +53,4 @@ func (b *AWSEBSCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	return nil
-
 }

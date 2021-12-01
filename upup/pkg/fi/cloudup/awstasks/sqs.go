@@ -126,7 +126,7 @@ func (q *SQS) Find(c *fi.Context) (*SQS, error) {
 		Tags:                   intersectSQSTags(tags.Tags, q.Tags),
 	}
 
-	//Avoid flapping
+	// Avoid flapping
 	q.Name = actual.Name
 
 	return actual, nil

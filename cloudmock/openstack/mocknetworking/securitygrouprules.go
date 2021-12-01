@@ -71,7 +71,6 @@ func (m *MockClient) mockSecurityGroupRules() {
 }
 
 func (m *MockClient) listSecurityGroupRules(w http.ResponseWriter, vals url.Values) {
-
 	w.WriteHeader(http.StatusOK)
 
 	sgrs := filterRules(m.securityGroupRules, vals)

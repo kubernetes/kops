@@ -43,7 +43,6 @@ var _ loader.OptionsBuilder = &KubeControllerManagerOptionsBuilder{}
 
 // BuildOptions generates the configurations used to create kubernetes controller manager manifest
 func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error {
-
 	clusterSpec := o.(*kops.ClusterSpec)
 	if clusterSpec.KubeControllerManager == nil {
 		clusterSpec.KubeControllerManager = &kops.KubeControllerManagerConfig{}

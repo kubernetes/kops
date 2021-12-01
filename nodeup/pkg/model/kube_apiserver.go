@@ -682,7 +682,7 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 	container.Command = []string{"/usr/local/bin/kube-apiserver"}
 	container.Args = append(
 		sortedStrings(flags),
-		"--logtostderr=false", //https://github.com/kubernetes/klog/issues/60
+		"--logtostderr=false", // https://github.com/kubernetes/klog/issues/60
 		"--alsologtostderr",
 		"--log-file=/var/log/kube-apiserver.log")
 

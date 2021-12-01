@@ -951,7 +951,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 		cluster.Spec.Topology = &api.TopologySpec{
 			Masters: api.TopologyPublic,
 			Nodes:   api.TopologyPublic,
-			//Bastion: &api.BastionSpec{Enable: c.Bastion},
+			// Bastion: &api.BastionSpec{Enable: c.Bastion},
 		}
 
 		if opt.Bastion {
@@ -1209,7 +1209,6 @@ func createEtcdCluster(etcdCluster string, masters []*api.InstanceGroup, encrypt
 	}
 
 	return etcd
-
 }
 
 func addCiliumNetwork(cluster *api.Cluster) {

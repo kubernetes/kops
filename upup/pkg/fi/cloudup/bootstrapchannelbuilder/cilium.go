@@ -25,7 +25,6 @@ import (
 )
 
 func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) error {
-
 	cilium := b.Cluster.Spec.Networking.Cilium
 	if cilium != nil {
 		ver, err := semver.ParseTolerant(cilium.Version)
@@ -86,5 +85,4 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *api.Addons) error {
 		}
 	}
 	return nil
-
 }

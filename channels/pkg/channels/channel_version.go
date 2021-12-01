@@ -134,7 +134,6 @@ func (c *Channel) GetInstalledVersion(ctx context.Context, k8sClient kubernetes.
 }
 
 func (c *Channel) IsPKIInstalled(ctx context.Context, k8sClient kubernetes.Interface, cmClient certmanager.Interface) (bool, error) {
-
 	_, err := k8sClient.CoreV1().Secrets("kube-system").Get(ctx, c.Name+"-ca", metav1.GetOptions{})
 	if errors.IsNotFound(err) {
 		return false, nil
@@ -152,12 +151,12 @@ func (c *Channel) IsPKIInstalled(ctx context.Context, k8sClient kubernetes.Inter
 	}
 
 	return true, nil
-
 }
 
 type annotationPatch struct {
 	Metadata annotationPatchMetadata `json:"metadata,omitempty"`
 }
+
 type annotationPatchMetadata struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 }

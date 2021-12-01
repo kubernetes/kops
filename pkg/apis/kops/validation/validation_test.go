@@ -348,7 +348,6 @@ func Test_Validate_DockerConfig_Storage(t *testing.T) {
 }
 
 func Test_Validate_Networking_Flannel(t *testing.T) {
-
 	grid := []struct {
 		Input          kops.FlannelNetworkingSpec
 		ExpectedErrors []string
@@ -1159,7 +1158,8 @@ func Test_Validate_CloudConfiguration(t *testing.T) {
 					BlockStorage: &kops.OpenstackBlockStorageConfig{
 						CreateStorageClass: fi.Bool(false),
 					},
-				}},
+				},
+			},
 		},
 		{
 			Description: "os true",
@@ -1168,7 +1168,8 @@ func Test_Validate_CloudConfiguration(t *testing.T) {
 					BlockStorage: &kops.OpenstackBlockStorageConfig{
 						CreateStorageClass: fi.Bool(true),
 					},
-				}},
+				},
+			},
 		},
 		{
 			Description: "all false, os false",
@@ -1178,7 +1179,8 @@ func Test_Validate_CloudConfiguration(t *testing.T) {
 					BlockStorage: &kops.OpenstackBlockStorageConfig{
 						CreateStorageClass: fi.Bool(false),
 					},
-				}},
+				},
+			},
 		},
 		{
 			Description: "all false, os true",
@@ -1188,7 +1190,8 @@ func Test_Validate_CloudConfiguration(t *testing.T) {
 					BlockStorage: &kops.OpenstackBlockStorageConfig{
 						CreateStorageClass: fi.Bool(true),
 					},
-				}},
+				},
+			},
 			ExpectedErrors: []string{"Forbidden::cloudConfig.manageStorageClasses"},
 		},
 		{
@@ -1199,7 +1202,8 @@ func Test_Validate_CloudConfiguration(t *testing.T) {
 					BlockStorage: &kops.OpenstackBlockStorageConfig{
 						CreateStorageClass: fi.Bool(false),
 					},
-				}},
+				},
+			},
 			ExpectedErrors: []string{"Forbidden::cloudConfig.manageStorageClasses"},
 		},
 		{
@@ -1210,7 +1214,8 @@ func Test_Validate_CloudConfiguration(t *testing.T) {
 					BlockStorage: &kops.OpenstackBlockStorageConfig{
 						CreateStorageClass: fi.Bool(true),
 					},
-				}},
+				},
+			},
 		},
 	}
 
@@ -1229,7 +1234,6 @@ func TestValidateSAExternalPermissions(t *testing.T) {
 		Input          []kops.ServiceAccountExternalPermission
 		ExpectedErrors []string
 	}{
-
 		{
 			Description: "Duplicate SA",
 			Input: []kops.ServiceAccountExternalPermission{
@@ -1309,11 +1313,9 @@ func TestValidateSAExternalPermissions(t *testing.T) {
 			testErrors(t, g.Input, errs, g.ExpectedErrors)
 		})
 	}
-
 }
 
 func Test_Validate_Nvdia(t *testing.T) {
-
 	grid := []struct {
 		Input          kops.ClusterSpec
 		ExpectedErrors []string

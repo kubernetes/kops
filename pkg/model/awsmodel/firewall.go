@@ -63,7 +63,6 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) ([]SecurityGroupInfo, error) {
-
 	nodeGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleNode)
 	if err != nil {
 		return nil, err
@@ -230,7 +229,6 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 			}
 		}
 	}
-
 }
 
 func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeGroups []SecurityGroupInfo) ([]SecurityGroupInfo, error) {
@@ -426,17 +424,14 @@ func JoinSuffixes(src SecurityGroupInfo, dest SecurityGroupInfo) string {
 }
 
 func AddDirectionalGroupRule(c *fi.ModelBuilderContext, t *awstasks.SecurityGroupRule) {
-
 	name := generateName(t)
 	t.Name = fi.String(name)
 
 	klog.V(8).Infof("Adding rule %v", name)
 	c.AddTask(t)
-
 }
 
 func generateName(o *awstasks.SecurityGroupRule) string {
-
 	var target, dst, src, direction, proto string
 	if o.SourceGroup != nil {
 		target = fi.StringValue(o.SourceGroup.Name)

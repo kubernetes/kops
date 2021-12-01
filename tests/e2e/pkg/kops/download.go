@@ -48,7 +48,7 @@ func DownloadKops(markerURL, downloadPath string) (string, error) {
 	if err := kopsFile.Close(); err != nil {
 		return "", err
 	}
-	if err := os.Chmod(kopsFile.Name(), 0755); err != nil {
+	if err := os.Chmod(kopsFile.Name(), 0o755); err != nil {
 		return "", err
 	}
 	return kopsBaseURL, nil

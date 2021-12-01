@@ -58,8 +58,10 @@ type VPC struct {
 	AssociateExtraCIDRBlocks []string
 }
 
-var _ fi.CompareWithID = &VPC{}
-var _ fi.ProducesDeletions = &VPC{}
+var (
+	_ fi.CompareWithID     = &VPC{}
+	_ fi.ProducesDeletions = &VPC{}
+)
 
 func (e *VPC) CompareWithID() *string {
 	return e.ID
@@ -373,7 +375,6 @@ type deleteVPCCIDRBlock struct {
 var _ fi.Deletion = &deleteVPCCIDRBlock{}
 
 func (d *deleteVPCCIDRBlock) Delete(t fi.Target) error {
-
 	awsTarget, ok := t.(*awsup.AWSAPITarget)
 	if !ok {
 		return fmt.Errorf("unexpected target type for deletion: %T", t)

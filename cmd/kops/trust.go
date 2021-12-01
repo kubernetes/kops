@@ -24,9 +24,7 @@ import (
 	"k8s.io/kubectl/pkg/util/i18n"
 )
 
-var (
-	trustShort = i18n.T("Trust keypairs.")
-)
+var trustShort = i18n.T("Trust keypairs.")
 
 func NewCmdTrust(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{

@@ -182,7 +182,6 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		networking := clusterSpec.Networking
 		if networking == nil {
 			return fmt.Errorf("no networking mode set")
-
 		}
 		if UsesKubenet(networking) {
 			clusterSpec.Kubelet.NetworkPluginName = "kubenet"

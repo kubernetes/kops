@@ -135,7 +135,6 @@ func (e *FloatingIP) Find(c *fi.Context) (*FloatingIP, error) {
 	cloud := c.Cloud.(openstack.OpenstackCloud)
 	if e.LB != nil && e.LB.PortID != nil {
 		fip, err := findFipByPortID(cloud, fi.StringValue(e.LB.PortID))
-
 		if err != nil {
 			return nil, fmt.Errorf("failed to find floating ip: %v", err)
 		}
@@ -171,18 +170,16 @@ func (e *FloatingIP) Find(c *fi.Context) (*FloatingIP, error) {
 			e.IP = actual.IP
 			return actual, nil
 		}
-
 	}
 
 	if len(fips) == 0 {
-		//If we fail to find an IP address we need to look for IP addresses attached to a port with similar name
-		//TODO: remove this in kops 1.21 where we can expect that the description field has been added
+		// If we fail to find an IP address we need to look for IP addresses attached to a port with similar name
+		// TODO: remove this in kops 1.21 where we can expect that the description field has been added
 		portname := "port-" + strings.TrimPrefix(fipname, "fip-")
 
 		ports, err := cloud.ListPorts(ports.ListOpts{
 			Name: portname,
 		})
-
 		if err != nil {
 			return nil, fmt.Errorf("failed to list ports: %v", err)
 		}
@@ -190,7 +187,6 @@ func (e *FloatingIP) Find(c *fi.Context) (*FloatingIP, error) {
 		if len(ports) == 1 {
 
 			fip, err := findFipByPortID(cloud, ports[0].ID)
-
 			if err != nil {
 				return nil, fmt.Errorf("failed to find floating ip: %v", err)
 			}

@@ -37,7 +37,6 @@ var _ fi.ModelBuilder = &PKIModelBuilder{}
 
 // Build is responsible for generating the various pki assets.
 func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
-
 	// TODO: Only create the CA via this task
 	defaultCA := &fitasks.Keypair{
 		Name:      fi.String(fi.CertificateIDCA),

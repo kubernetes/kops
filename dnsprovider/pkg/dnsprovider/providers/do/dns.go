@@ -149,7 +149,6 @@ func (z *zones) New(name string) (dnsprovider.Zone, error) {
 		name:   name,
 		client: z.client,
 	}, nil
-
 }
 
 // zone implements dnsprovider.Zone
@@ -203,7 +202,6 @@ func (r *resourceRecordSets) List() ([]dnsprovider.ResourceRecordSet, error) {
 	}
 
 	return rrsets, nil
-
 }
 
 // Get returns a list of dnsprovider.ResourceRecordSet that matches the name parameter

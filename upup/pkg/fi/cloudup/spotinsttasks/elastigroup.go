@@ -111,9 +111,11 @@ type AutoScalerResourceLimitsOpts struct {
 	MaxMemory *int
 }
 
-var _ fi.Task = &Elastigroup{}
-var _ fi.CompareWithID = &Elastigroup{}
-var _ fi.HasDependencies = &Elastigroup{}
+var (
+	_ fi.Task            = &Elastigroup{}
+	_ fi.CompareWithID   = &Elastigroup{}
+	_ fi.HasDependencies = &Elastigroup{}
+)
 
 func (e *Elastigroup) CompareWithID() *string {
 	return e.Name
@@ -662,8 +664,7 @@ func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 						group.Compute.LaunchSpecification.LoadBalancersConfig = new(aws.LoadBalancersConfig)
 					}
 
-					group.Compute.LaunchSpecification.LoadBalancersConfig.LoadBalancers =
-						append(group.Compute.LaunchSpecification.LoadBalancersConfig.LoadBalancers, lbs...)
+					group.Compute.LaunchSpecification.LoadBalancersConfig.LoadBalancers = append(group.Compute.LaunchSpecification.LoadBalancersConfig.LoadBalancers, lbs...)
 				}
 			}
 
@@ -676,8 +677,7 @@ func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 						group.Compute.LaunchSpecification.LoadBalancersConfig = new(aws.LoadBalancersConfig)
 					}
 
-					group.Compute.LaunchSpecification.LoadBalancersConfig.LoadBalancers =
-						append(group.Compute.LaunchSpecification.LoadBalancersConfig.LoadBalancers, tgs...)
+					group.Compute.LaunchSpecification.LoadBalancersConfig.LoadBalancers = append(group.Compute.LaunchSpecification.LoadBalancersConfig.LoadBalancers, tgs...)
 				}
 			}
 
@@ -1168,8 +1168,7 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 						group.Compute.LaunchSpecification.LoadBalancersConfig = new(aws.LoadBalancersConfig)
 					}
 
-					group.Compute.LaunchSpecification.LoadBalancersConfig.LoadBalancers =
-						append(group.Compute.LaunchSpecification.LoadBalancersConfig.LoadBalancers, lbs...)
+					group.Compute.LaunchSpecification.LoadBalancersConfig.LoadBalancers = append(group.Compute.LaunchSpecification.LoadBalancersConfig.LoadBalancers, lbs...)
 
 					changes.LoadBalancers = nil
 					changed = true
@@ -1191,8 +1190,7 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 						group.Compute.LaunchSpecification.LoadBalancersConfig = new(aws.LoadBalancersConfig)
 					}
 
-					group.Compute.LaunchSpecification.LoadBalancersConfig.LoadBalancers =
-						append(group.Compute.LaunchSpecification.LoadBalancersConfig.LoadBalancers, tgs...)
+					group.Compute.LaunchSpecification.LoadBalancersConfig.LoadBalancers = append(group.Compute.LaunchSpecification.LoadBalancersConfig.LoadBalancers, tgs...)
 
 					changes.TargetGroups = nil
 					changed = true
@@ -1758,8 +1756,8 @@ func buildEphemeralDevices(cloud awsup.AWSCloud, machineType *string) ([]*awstas
 }
 
 func buildRootDevice(cloud awsup.AWSCloud, volumeOpts *RootVolumeOpts,
-	imageID *string) (*awstasks.BlockDeviceMapping, error) {
-
+	imageID *string) (*awstasks.BlockDeviceMapping, error,
+) {
 	img, err := resolveImage(cloud, fi.StringValue(imageID))
 	if err != nil {
 		return nil, err

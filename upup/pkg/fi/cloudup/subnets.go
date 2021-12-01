@@ -34,9 +34,11 @@ type ByZone []*kops.ClusterSubnetSpec
 func (a ByZone) Len() int {
 	return len(a)
 }
+
 func (a ByZone) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
+
 func (a ByZone) Less(i, j int) bool {
 	return a[i].Zone < a[j].Zone
 }

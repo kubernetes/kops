@@ -37,8 +37,10 @@ type Disk struct {
 	Tags          map[string]*string
 }
 
-var _ fi.Task = &Disk{}
-var _ fi.CompareWithID = &Disk{}
+var (
+	_ fi.Task          = &Disk{}
+	_ fi.CompareWithID = &Disk{}
+)
 
 // CompareWithID returns the Name of the Disk.
 func (d *Disk) CompareWithID() *string {

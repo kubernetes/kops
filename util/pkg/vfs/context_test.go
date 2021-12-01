@@ -71,5 +71,4 @@ func TestBuildVaultPath(t *testing.T) {
 		}
 
 	}
-
 }

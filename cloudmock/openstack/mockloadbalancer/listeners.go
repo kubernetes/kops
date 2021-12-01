@@ -66,7 +66,6 @@ func (m *MockClient) mockListeners() {
 }
 
 func (m *MockClient) listListeners(w http.ResponseWriter, vals url.Values) {
-
 	w.WriteHeader(http.StatusOK)
 
 	listeners := make([]listeners.Listener, 0)

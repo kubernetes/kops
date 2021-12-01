@@ -398,7 +398,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 }
 
 func getMachineType() (string, error) {
-
 	config := aws.NewConfig()
 	config = config.WithCredentialsChainVerboseErrors(true)
 

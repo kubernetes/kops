@@ -153,7 +153,7 @@ func (k *VolumeMountController) safeFormatAndMount(volume *Volume, mountpoint st
 		options := []string{}
 
 		klog.Infof("Creating mount directory %q", pathFor(mountpoint))
-		if err := os.MkdirAll(pathFor(mountpoint), 0750); err != nil {
+		if err := os.MkdirAll(pathFor(mountpoint), 0o750); err != nil {
 			return err
 		}
 
@@ -298,9 +298,11 @@ type ByEtcdClusterName []*Volume
 func (a ByEtcdClusterName) Len() int {
 	return len(a)
 }
+
 func (a ByEtcdClusterName) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
+
 func (a ByEtcdClusterName) Less(i, j int) bool {
 	nameI := ""
 	if len(a[i].Info.EtcdClusters) > 0 {

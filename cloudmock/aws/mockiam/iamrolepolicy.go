@@ -55,9 +55,11 @@ func (m *MockIAM) GetRolePolicy(request *iam.GetRolePolicyInput) (*iam.GetRolePo
 	}
 	return nil, awserr.New(iam.ErrCodeNoSuchEntityException, "No such entity", nil)
 }
+
 func (m *MockIAM) GetRolePolicyWithContext(aws.Context, *iam.GetRolePolicyInput, ...request.Option) (*iam.GetRolePolicyOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockIAM) GetRolePolicyRequest(*iam.GetRolePolicyInput) (*request.Request, *iam.GetRolePolicyOutput) {
 	panic("Not implemented")
 }
@@ -90,9 +92,11 @@ func (m *MockIAM) PutRolePolicy(request *iam.PutRolePolicyInput) (*iam.PutRolePo
 
 	return &iam.PutRolePolicyOutput{}, nil
 }
+
 func (m *MockIAM) PutRolePolicyWithContext(aws.Context, *iam.PutRolePolicyInput, ...request.Option) (*iam.PutRolePolicyOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockIAM) PutRolePolicyRequest(*iam.PutRolePolicyInput) (*request.Request, *iam.PutRolePolicyOutput) {
 	panic("Not implemented")
 }
@@ -171,6 +175,7 @@ func (m *MockIAM) DeleteRolePolicy(request *iam.DeleteRolePolicyInput) (*iam.Del
 func (m *MockIAM) DeleteRolePolicyWithContext(aws.Context, *iam.DeleteRolePolicyInput, ...request.Option) (*iam.DeleteRolePolicyOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockIAM) DeleteRolePolicyRequest(*iam.DeleteRolePolicyInput) (*request.Request, *iam.DeleteRolePolicyOutput) {
 	panic("Not implemented")
 }

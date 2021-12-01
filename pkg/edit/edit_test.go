@@ -27,16 +27,18 @@ import (
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 )
 
-var testTimestamp = metav1.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)}
-var testObj = v1alpha2.Cluster{
-	ObjectMeta: metav1.ObjectMeta{
-		CreationTimestamp: testTimestamp,
-		Name:              "hello",
-	},
-	Spec: v1alpha2.ClusterSpec{
-		KubernetesVersion: "1.2.3",
-	},
-}
+var (
+	testTimestamp = metav1.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)}
+	testObj       = v1alpha2.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			CreationTimestamp: testTimestamp,
+			Name:              "hello",
+		},
+		Spec: v1alpha2.ClusterSpec{
+			KubernetesVersion: "1.2.3",
+		},
+	}
+)
 
 func TestHasExtraFields(t *testing.T) {
 	tests := []struct {

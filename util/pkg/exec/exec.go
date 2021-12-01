@@ -26,7 +26,7 @@ func WithTee(cmd string, args []string, logfile string) []string {
 	// NOTE: tee & mkfifo is in /usr/bin in the kube-proxy image, but /bin in other images
 
 	// Bash supports something like this, but dash and other limited shells don't
-	//shCmd := "exec &> >(/usr/bin/tee -a " + logfile + "); " + execCmd
+	// shCmd := "exec &> >(/usr/bin/tee -a " + logfile + "); " + execCmd
 	// Instead we create the pipe manually and wire up the tee:
 	shCmd := "mkfifo /tmp/pipe; (tee -a " + logfile + " < /tmp/pipe & ) ; " + execCmd + " > /tmp/pipe 2>&1"
 

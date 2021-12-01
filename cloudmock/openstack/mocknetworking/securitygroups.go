@@ -70,7 +70,6 @@ func (m *MockClient) mockSecurityGroups() {
 }
 
 func (m *MockClient) listSecurityGroups(w http.ResponseWriter, vals url.Values) {
-
 	w.WriteHeader(http.StatusOK)
 
 	sgs := make([]groups.SecGroup, 0)

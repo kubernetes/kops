@@ -321,7 +321,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 	} else {
 		klog.Warningf("DNSZone not specified; protokube won't be able to update DNS")
 		// @TODO: Should we permit wildcard updates if zone is not specified?
-		//argv = append(argv, "--zone=*/*")
+		// argv = append(argv, "--zone=*/*")
 	}
 
 	if dns.IsGossipHostname(t.Cluster.Spec.MasterInternalName) {
@@ -404,7 +404,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 }
 
 func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
-	var envVars = make(map[string]string)
+	envVars := make(map[string]string)
 
 	envVars["KUBECONFIG"] = "/var/lib/kops/kubeconfig"
 
@@ -467,7 +467,7 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 		envVars["PATH"] = fmt.Sprintf("/opt/kops/bin:%v", os.Getenv("PATH"))
 	}
 
-	var sysconfig = ""
+	sysconfig := ""
 	for key, value := range envVars {
 		sysconfig += key + "=" + value + "\n"
 	}

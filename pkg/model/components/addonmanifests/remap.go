@@ -134,7 +134,6 @@ func getWellknownServiceAccount(name string) iam.Subject {
 }
 
 func addLabels(addon *addonsapi.AddonSpec, objects kubemanifest.ObjectList) error {
-
 	for _, object := range objects {
 		meta := &metav1.ObjectMeta{}
 		err := object.Reparse(meta, "metadata")

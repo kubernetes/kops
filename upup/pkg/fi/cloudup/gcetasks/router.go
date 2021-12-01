@@ -101,7 +101,6 @@ func (r *Router) Find(c *fi.Context) (*Router, error) {
 		NATIPAllocationOption:         &nat.NatIpAllocateOption,
 		SourceSubnetworkIPRangesToNAT: &nat.SourceSubnetworkIpRangesToNat,
 	}, nil
-
 }
 
 func (r *Router) url(project string) string {

@@ -85,6 +85,7 @@ func (p *SSHPath) newClient() (*sftp.Client, error) {
 
 	return sftp.NewClientPipe(stdout, stdin)
 }
+
 func (p *SSHPath) Path() string {
 	return "ssh://" + p.server + p.path
 }

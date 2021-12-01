@@ -40,7 +40,6 @@ type recordSetsListResponse struct {
 }
 
 func (m *MockClient) mockZones() {
-
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		m.mutex.Lock()
 		defer m.mutex.Unlock()
@@ -85,7 +84,6 @@ func (m *MockClient) mockZones() {
 }
 
 func (m *MockClient) listZones(w http.ResponseWriter) {
-
 	w.WriteHeader(http.StatusOK)
 
 	zones := make([]zones.Zone, 0)

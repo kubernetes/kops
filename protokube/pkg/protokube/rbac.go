@@ -42,7 +42,7 @@ func applyRBAC(ctx context.Context, kubeContext *KubernetesContext) error {
 	if err := createServiceAccounts(ctx, clientset); err != nil {
 		errors = append(errors, fmt.Errorf("error creating service accounts: %v", err))
 	}
-	//Currently all kubeadm specific
+	// Currently all kubeadm specific
 	if err := createClusterRoleBindings(ctx, clientset); err != nil {
 		errors = append(errors, fmt.Errorf("error creating cluster role bindings: %v", err))
 	}
@@ -70,7 +70,7 @@ const (
 	roleKind           = "Role"
 	serviceAccountKind = "ServiceAccount"
 	rbacAPIGroup       = "rbac.authorization.k8s.io"
-	//anonymousUser            = "system:anonymous"
+	// anonymousUser            = "system:anonymous"
 
 	// Constants for what we name our ServiceAccounts with limited access to the cluster in case of RBAC
 	KubeDNSServiceAccountName   = "kube-dns"

@@ -96,7 +96,6 @@ func (d *deployer) Up() error {
 }
 
 func (d *deployer) createCluster(zones []string, adminAccess string) error {
-
 	args := []string{
 		d.KopsBinaryPath, "create", "cluster",
 		"--name", d.ClusterName,

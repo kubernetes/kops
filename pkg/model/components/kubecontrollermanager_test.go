@@ -29,7 +29,6 @@ import (
 )
 
 func buildCluster() *api.Cluster {
-
 	return &api.Cluster{
 		Spec: api.ClusterSpec{
 			CloudProvider:     "aws",
@@ -62,11 +61,9 @@ func Test_Build_KCM_Builder(t *testing.T) {
 			t.Fatalf("AttachDetachReconcileSyncPeriod should be set to 1m - %s, for k8s version %s", c.Spec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration.String(), c.Spec.KubernetesVersion)
 		}
 	}
-
 }
 
 func Test_Build_KCM_Builder_Change_Duration(t *testing.T) {
-
 	c := buildCluster()
 	b := assets.NewAssetBuilder(c, false)
 
@@ -90,7 +87,6 @@ func Test_Build_KCM_Builder_Change_Duration(t *testing.T) {
 	if c.Spec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration != time.Minute*5 {
 		t.Fatalf("AttachDetachReconcileSyncPeriod should be set to 5m - %s, for k8s version %s", c.Spec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration.String(), c.Spec.KubernetesVersion)
 	}
-
 }
 
 func Test_Build_KCM_Builder_CIDR_Mask_Size(t *testing.T) {
@@ -163,5 +159,4 @@ func Test_Build_KCM_Builder_CIDR_Mask_Size(t *testing.T) {
 			assert.Equal(t, tc.ExpectedMaskSize, c.Spec.KubeControllerManager.NodeCIDRMaskSize)
 		})
 	}
-
 }

@@ -56,9 +56,11 @@ type LaunchSpec struct {
 	Ocean *Ocean
 }
 
-var _ fi.Task = &LaunchSpec{}
-var _ fi.CompareWithID = &LaunchSpec{}
-var _ fi.HasDependencies = &LaunchSpec{}
+var (
+	_ fi.Task            = &LaunchSpec{}
+	_ fi.CompareWithID   = &LaunchSpec{}
+	_ fi.HasDependencies = &LaunchSpec{}
+)
 
 func (o *LaunchSpec) CompareWithID() *string {
 	return o.Name

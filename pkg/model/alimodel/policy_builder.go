@@ -77,8 +77,10 @@ type PolicyResource struct {
 	Builder *PolicyBuilder
 }
 
-var _ fi.Resource = &PolicyResource{}
-var _ fi.HasDependencies = &PolicyResource{}
+var (
+	_ fi.Resource        = &PolicyResource{}
+	_ fi.HasDependencies = &PolicyResource{}
+)
 
 // GetDependencies adds the DNSZone task to the list of dependencies if set
 func (b *PolicyResource) GetDependencies(tasks map[string]fi.Task) []fi.Task {
@@ -392,7 +394,6 @@ func addMasterSLBPolicies(p *Policy, resource stringorslice.StringOrSlice) {
 		),
 		Resource: resource,
 	})
-
 }
 
 func addMasterESSPolicies(p *Policy, resource stringorslice.StringOrSlice, clusterName string) {

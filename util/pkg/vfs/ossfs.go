@@ -43,8 +43,10 @@ type OSSPath struct {
 	key    string
 }
 
-var _ Path = &OSSPath{}
-var _ HasHash = &OSSPath{}
+var (
+	_ Path    = &OSSPath{}
+	_ HasHash = &OSSPath{}
+)
 
 // ossReadBackoff is the backoff strategy for Aliyun OSS read retries.
 var ossReadBackoff = wait.Backoff{
@@ -301,7 +303,6 @@ func (p *OSSPath) listPath(opt listOption) ([]Path, error) {
 	b := p.client.Bucket(p.bucket)
 
 	done, err := RetryWithBackoff(ossReadBackoff, func() (bool, error) {
-
 		var paths []Path
 		for {
 			// OSS can return at most 1000 paths(keys + common prefixes) at a time
@@ -360,7 +361,6 @@ func (p *OSSPath) listPath(opt listOption) ([]Path, error) {
 		// Shouldn't happen - we always return a non-nil error with false
 		return nil, wait.ErrWaitTimeout
 	}
-
 }
 
 func isOSSNotFound(err error) bool {

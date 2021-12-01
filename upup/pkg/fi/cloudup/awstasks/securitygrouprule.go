@@ -18,7 +18,6 @@ package awstasks
 
 import (
 	"fmt"
-
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -82,7 +81,7 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 		klog.Fatalf("found multiple security groups for id=%s", *e.SecurityGroup.ID)
 	}
 	sg := response.SecurityGroups[0]
-	//klog.V(2).Info("found existing security group")
+	// klog.V(2).Info("found existing security group")
 
 	var foundRule *ec2.IpPermission
 

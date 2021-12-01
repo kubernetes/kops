@@ -69,21 +69,29 @@ import (
 // backoff along the way.
 const ClientMaxRetries = 13
 
-const DescribeTagsMaxAttempts = 120
-const DescribeTagsRetryInterval = 2 * time.Second
-const DescribeTagsLogInterval = 10 // this is in "retry intervals"
+const (
+	DescribeTagsMaxAttempts   = 120
+	DescribeTagsRetryInterval = 2 * time.Second
+	DescribeTagsLogInterval   = 10 // this is in "retry intervals"
+)
 
-const CreateTagsMaxAttempts = 120
-const CreateTagsRetryInterval = 2 * time.Second
-const CreateTagsLogInterval = 10 // this is in "retry intervals"
+const (
+	CreateTagsMaxAttempts   = 120
+	CreateTagsRetryInterval = 2 * time.Second
+	CreateTagsLogInterval   = 10 // this is in "retry intervals"
+)
 
-const DeleteTagsMaxAttempts = 120
-const DeleteTagsRetryInterval = 2 * time.Second
-const DeleteTagsLogInterval = 10 // this is in "retry intervals"
+const (
+	DeleteTagsMaxAttempts   = 120
+	DeleteTagsRetryInterval = 2 * time.Second
+	DeleteTagsLogInterval   = 10 // this is in "retry intervals"
+)
 
-const TagClusterName = "KubernetesCluster"
-const TagNameRolePrefix = "k8s.io/role/"
-const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
+const (
+	TagClusterName           = "KubernetesCluster"
+	TagNameRolePrefix        = "k8s.io/role/"
+	TagNameEtcdClusterPrefix = "k8s.io/etcd/"
+)
 
 const TagRoleMaster = "master"
 
@@ -109,7 +117,6 @@ const (
 
 type AWSCloud interface {
 	fi.Cloud
-
 	CloudFormation() *cloudformation.CloudFormation
 	EC2() ec2iface.EC2API
 	IAM() iamiface.IAMAPI
@@ -118,7 +125,6 @@ type AWSCloud interface {
 	Autoscaling() autoscalingiface.AutoScalingAPI
 	Route53() route53iface.Route53API
 	Spotinst() spotinst.Cloud
-
 	SQS() sqsiface.SQSAPI
 	EventBridge() eventbridgeiface.EventBridgeAPI
 
@@ -136,7 +142,6 @@ type AWSCloud interface {
 	DeleteTags(resourceId string, tags map[string]string) error
 	// UpdateTags will update tags of the specified resource to match tags, using getTags(), createTags() and deleteTags()
 	UpdateTags(resourceId string, tags map[string]string) error
-
 	AddAWSTags(id string, expected map[string]string) error
 	GetELBTags(loadBalancerName string) (map[string]string, error)
 	GetELBV2Tags(ResourceArn string) (map[string]string, error)
@@ -147,7 +152,6 @@ type AWSCloud interface {
 	// RemoveELBTags will remove tags from the specified loadBalancer, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 	RemoveELBTags(loadBalancerName string, tags map[string]string) error
 	RemoveELBV2Tags(ResourceArn string, tags map[string]string) error
-
 	FindELBByNameTag(findNameTag string) (*elb.LoadBalancerDescription, error)
 	DescribeELBTags(loadBalancerNames []string) (map[string][]*elb.Tag, error)
 	FindELBV2ByNameTag(findNameTag string) (*elbv2.LoadBalancer, error)
@@ -158,7 +162,6 @@ type AWSCloud interface {
 
 	// DescribeVPC is a helper that queries for the specified vpc by id
 	DescribeVPC(vpcID string) (*ec2.Vpc, error)
-
 	DescribeAvailabilityZones() ([]*ec2.AvailabilityZone, error)
 
 	// ResolveImage finds an AMI image based on the given name.
@@ -382,7 +385,6 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 }
 
 func (c *awsCloudImplementation) addHandlers(regionName string, h *request.Handlers) {
-
 	delayer := c.getCrossRequestRetryDelay(regionName)
 	if delayer != nil {
 		h.Sign.PushFrontNamed(request.NamedHandler{
@@ -650,7 +652,6 @@ func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.In
 	}
 
 	return groups, nil
-
 }
 
 // FindAutoscalingGroups finds autoscaling groups matching the specified tags
@@ -715,7 +716,6 @@ func FindAutoscalingGroups(c AWSCloud, tags map[string]string) ([]*autoscaling.G
 				return nil, fmt.Errorf("error listing autoscaling groups: %v", err)
 			}
 		}
-
 	}
 
 	return asgs, nil
@@ -771,7 +771,7 @@ func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscaling.Group) (
 	}
 
 	version := aws.StringValue(launchTemplate.Version)
-	//Correctly Handle Default and Latest Versions
+	// Correctly Handle Default and Latest Versions
 	klog.V(4).Infof("Launch Template Version Specified By ASG: %v", version)
 	if version == "" || version == "$Default" || version == "$Latest" {
 		input := &ec2.DescribeLaunchTemplatesInput{
@@ -949,7 +949,6 @@ func findInstances(c AWSCloud, ig *kops.InstanceGroup) (map[string]*ec2.Instance
 		}
 	}
 	return instances, nil
-
 }
 
 func findDetachedInstances(c AWSCloud, g *autoscaling.Group) ([]*string, error) {
@@ -1316,6 +1315,7 @@ func removeELBTags(c AWSCloud, loadBalancerName string, tags map[string]string) 
 
 	return nil
 }
+
 func (c *awsCloudImplementation) RemoveELBV2Tags(ResourceArn string, tags map[string]string) error {
 	return removeELBV2Tags(c, ResourceArn, tags)
 }
@@ -2073,7 +2073,6 @@ func GetRolesInInstanceProfile(c AWSCloud, profileName string) ([]string, error)
 // GetInstanceCertificateNames returns the instance hostname and addresses that should go into certificates.
 // The first value is the node name and any additional values are IP addresses.
 func GetInstanceCertificateNames(instances *ec2.DescribeInstancesOutput) (addrs []string, err error) {
-
 	if len(instances.Reservations) != 1 {
 		return nil, fmt.Errorf("too many reservations returned for the single instance-id")
 	}

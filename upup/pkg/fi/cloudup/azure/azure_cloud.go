@@ -40,11 +40,8 @@ const (
 // AzureCloud provides clients to make API calls to Azure.
 type AzureCloud interface {
 	fi.Cloud
-
 	AddClusterTags(tags map[string]*string)
-
 	FindVNetInfo(id, resourceGroup string) (*fi.VPCInfo, error)
-
 	SubscriptionID() string
 	ResourceGroup() ResourceGroupsClient
 	VirtualNetwork() VirtualNetworksClient

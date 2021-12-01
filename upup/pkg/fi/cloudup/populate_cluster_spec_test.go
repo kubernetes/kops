@@ -481,5 +481,4 @@ func TestPopulateCluster_KubeController_High_Enough_Version(t *testing.T) {
 	if full.Spec.KubeControllerManager.AttachDetachReconcileSyncPeriod == nil {
 		t.Fatalf("AttachDetachReconcileSyncPeriod not set correctly")
 	}
-
 }

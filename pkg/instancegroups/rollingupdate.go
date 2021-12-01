@@ -155,7 +155,6 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 		for _, k := range sortGroups(masterGroups) {
 			err := c.rollingUpdateInstanceGroup(masterGroups[k], c.MasterInterval)
-
 			// Do not continue update if master(s) failed, cluster is potentially in an unhealthy state
 			if err != nil {
 				return fmt.Errorf("master not healthy after update, stopping rolling-update: %q", err)

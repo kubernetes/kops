@@ -35,8 +35,10 @@ type FSPath struct {
 	location string
 }
 
-var _ Path = &FSPath{}
-var _ HasHash = &FSPath{}
+var (
+	_ Path    = &FSPath{}
+	_ HasHash = &FSPath{}
+)
 
 func NewFSPath(location string) *FSPath {
 	return &FSPath{location: location}
@@ -51,7 +53,7 @@ func (p *FSPath) Join(relativePath ...string) Path {
 
 func (p *FSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 	dir := path.Dir(p.location)
-	err := os.MkdirAll(dir, 0755)
+	err := os.MkdirAll(dir, 0o755)
 	if err != nil {
 		return fmt.Errorf("error creating directories %q: %v", dir, err)
 	}

@@ -77,7 +77,6 @@ func waitLoadbalancerActiveProvisioningStatus(client *gophercloud.ServiceClient,
 			klog.Infof("Waiting for Loadbalancer to be ACTIVE...")
 			return false, nil
 		}
-
 	})
 
 	if err == wait.ErrWaitTimeout {

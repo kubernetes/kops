@@ -234,7 +234,6 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 				allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "warmPool", "maxSize"), *warmPool.MaxSize, "warm pool maxSize cannot be negative"))
 			} else if warmPool.MinSize > *warmPool.MaxSize {
 				allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "warmPool", "maxSize"), *warmPool.MaxSize, "warm pool maxSize cannot be set to lower than minSize"))
-
 			}
 		}
 		if warmPool.MinSize < 0 {
@@ -324,7 +323,6 @@ func validateIGCloudLabels(ig *kops.InstanceGroup, fldPath *field.Path) (allErrs
 
 	for key, value := range labels {
 		if key == aws.CloudTagInstanceGroupName {
-
 			if value != ig.ObjectMeta.Name {
 				allErrs = append(allErrs, field.Invalid(fldPath.Child(aws.CloudTagInstanceGroupName), key, "value must match instance group name"))
 			}

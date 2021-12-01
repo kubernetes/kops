@@ -33,8 +33,7 @@ limitations under the License.
 package vfs
 
 // KubernetesContext is the context for a Kubernetes VFS implementation
-type KubernetesContext struct {
-}
+type KubernetesContext struct{}
 
 // NewKubernetesContext builds a KubernetesContext
 // This will likely take a kubernetes rest client object (or similar) once the implementation is more complete

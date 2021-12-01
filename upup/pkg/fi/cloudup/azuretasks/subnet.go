@@ -37,8 +37,10 @@ type Subnet struct {
 	Shared         *bool
 }
 
-var _ fi.Task = &Subnet{}
-var _ fi.CompareWithID = &Subnet{}
+var (
+	_ fi.Task          = &Subnet{}
+	_ fi.CompareWithID = &Subnet{}
+)
 
 // CompareWithID returns the Name of the VM Scale Set.
 func (s *Subnet) CompareWithID() *string {

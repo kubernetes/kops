@@ -160,7 +160,6 @@ func evaluateSecurityGroups(vpcId string) ([]string, error) {
 			},
 		},
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("error looking up instance security group ids: %v", err)
 	}
@@ -170,5 +169,4 @@ func evaluateSecurityGroups(vpcId string) ([]string, error) {
 	}
 
 	return sgIds, nil
-
 }

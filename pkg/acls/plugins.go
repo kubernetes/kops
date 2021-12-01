@@ -24,8 +24,10 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-var strategies map[string]ACLStrategy
-var strategiesMutex sync.Mutex
+var (
+	strategies      map[string]ACLStrategy
+	strategiesMutex sync.Mutex
+)
 
 // GetACL returns the ACL for the vfs.Path, by consulting all registered strategies
 func GetACL(p vfs.Path, cluster *kops.Cluster) (vfs.ACL, error) {

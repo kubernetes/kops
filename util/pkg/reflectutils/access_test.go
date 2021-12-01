@@ -70,8 +70,7 @@ type fakeObjectResources struct {
 	Requests map[string]int `json:"requests"`
 }
 
-type fakeObjectStatus struct {
-}
+type fakeObjectStatus struct{}
 
 func toJSON(s string) []byte {
 	s = strings.ReplaceAll(s, "'", "\"")
@@ -184,11 +183,9 @@ func TestSet(t *testing.T) {
 		g := g
 
 		t.Run(g.Name, func(t *testing.T) {
-
 			c := &fakeObject{}
 			if err := json.Unmarshal(toJSON(g.Input), c); err != nil {
 				t.Fatalf("failed to unmarshal input: %v", err)
-
 			}
 
 			if err := SetString(c, g.Path, g.Value); err != nil {
@@ -259,11 +256,9 @@ func TestSetInvalidPath(t *testing.T) {
 		g := g
 
 		t.Run(g.Name, func(t *testing.T) {
-
 			c := &fakeObject{}
 			if err := json.Unmarshal(toJSON(g.Input), c); err != nil {
 				t.Fatalf("failed to unmarshal input: %v", err)
-
 			}
 
 			err := SetString(c, g.Path, g.Value)
@@ -351,11 +346,9 @@ func TestUnset(t *testing.T) {
 		g := g
 
 		t.Run(g.Name, func(t *testing.T) {
-
 			c := &fakeObject{}
 			if err := json.Unmarshal(toJSON(g.Input), c); err != nil {
 				t.Fatalf("failed to unmarshal input: %v", err)
-
 			}
 
 			if err := Unset(c, g.Path); err != nil {
@@ -403,11 +396,9 @@ func TestUnsetInvalidPath(t *testing.T) {
 		g := g
 
 		t.Run(g.Name, func(t *testing.T) {
-
 			c := &fakeObject{}
 			if err := json.Unmarshal(toJSON(g.Input), c); err != nil {
 				t.Fatalf("failed to unmarshal input: %v", err)
-
 			}
 
 			err := Unset(c, g.Path)

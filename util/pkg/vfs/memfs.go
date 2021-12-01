@@ -37,8 +37,10 @@ type MemFSPath struct {
 	children map[string]*MemFSPath
 }
 
-var _ Path = &MemFSPath{}
-var _ TerraformPath = &MemFSPath{}
+var (
+	_ Path          = &MemFSPath{}
+	_ TerraformPath = &MemFSPath{}
+)
 
 type MemFSContext struct {
 	clusterReadable bool

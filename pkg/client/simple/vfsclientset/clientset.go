@@ -103,7 +103,6 @@ func (c *VFSClientset) KeyStore(cluster *kops.Cluster) (fi.CAStore, error) {
 	klog.V(8).Infof("Using keystore path: %q", basedir)
 
 	return fi.NewVFSCAStore(cluster, basedir), err
-
 }
 
 func (c *VFSClientset) SSHCredentialStore(cluster *kops.Cluster) (fi.SSHCredentialStore, error) {
@@ -201,6 +200,7 @@ func deleteAllPaths(basePath vfs.Path) error {
 
 	return nil
 }
+
 func (c *VFSClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster) error {
 	if cluster.Spec.ServiceAccountIssuerDiscovery != nil {
 		discoveryStore := cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryStore
