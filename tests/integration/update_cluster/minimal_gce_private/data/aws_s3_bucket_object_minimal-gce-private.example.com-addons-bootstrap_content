@@ -61,7 +61,7 @@ spec:
     version: 9.99.0
   - id: v0.1.12
     manifest: metadata-proxy.addons.k8s.io/v0.1.12.yaml
-    manifestHash: 29c78a908980393b0707da7501f2b00025cd24cc62d2605083f9d77e8f3eb40f
+    manifestHash: 836437191be1c5ee97beef4a52eeb0aaad953f217d4c727c26dc92ff5e6c28cd
     name: metadata-proxy.addons.k8s.io
     selector:
       k8s-addon: metadata-proxy.addons.k8s.io
