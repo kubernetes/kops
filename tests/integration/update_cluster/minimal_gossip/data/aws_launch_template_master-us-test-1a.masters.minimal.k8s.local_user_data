@@ -159,9 +159,9 @@ kubeAPIServer:
   - NodeRestriction
   - ResourceQuota
   etcdServers:
-  - https://localhost:4001
+  - https://127.0.0.1:4001
   etcdServersOverrides:
-  - /events#https://localhost:4002
+  - /events#https://127.0.0.1:4002
   image: k8s.gcr.io/kube-apiserver:v1.21.0
   kubeletPreferredAddressTypes:
   - InternalIP
@@ -240,7 +240,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.k8s.local
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: HQ3ZGWyoKqVg2ilJNYI2WJ3zQ8E3gO/KU4yfR0ncqSg=
+NodeupConfigHash: layXeHSb+OO4klYrGftQF+XS0Pd2C8AV3ZBjHQiQ1cA=
 
 __EOF_KUBE_ENV
 

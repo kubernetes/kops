@@ -19,9 +19,9 @@ APIServerConfig:
     - NodeRestriction
     - ResourceQuota
     etcdServers:
-    - https://localhost:4001
+    - https://127.0.0.1:4001
     etcdServersOverrides:
-    - /events#https://localhost:4002
+    - /events#https://127.0.0.1:4002
     featureGates:
       ServiceAccountIssuerDiscovery: "true"
     image: k8s.gcr.io/kube-apiserver:v1.19.0

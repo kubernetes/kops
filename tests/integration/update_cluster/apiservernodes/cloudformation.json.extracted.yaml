@@ -161,7 +161,7 @@ Resources.AWSEC2LaunchTemplateapiserverapiserversminimalexamplecom.Properties.La
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: apiserver
   InstanceGroupRole: APIServer
-  NodeupConfigHash: FlDWeC/8OS1i5EMoLzry6vuNlDTjPs1+V25/7B3MV3o=
+  NodeupConfigHash: 6jMxCThXoYVW7vXQgpVcKvaE1EKNQRto1h8p6pFGc/I=
 
   __EOF_KUBE_ENV
 
@@ -329,9 +329,9 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     - NodeRestriction
     - ResourceQuota
     etcdServers:
-    - https://localhost:4001
+    - https://127.0.0.1:4001
     etcdServersOverrides:
-    - /events#https://localhost:4002
+    - /events#https://127.0.0.1:4002
     image: k8s.gcr.io/kube-apiserver:v1.21.0
     kubeletPreferredAddressTypes:
     - InternalIP
@@ -410,7 +410,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: 5qABfTEZRXPzZVfnkXwiU8o659KFrAjznzOiu5KVqIQ=
+  NodeupConfigHash: rYy9c0uu3dAVcG5gyWvjmsia1v4d0ttO5HfiiFNfSDw=
 
   __EOF_KUBE_ENV
 
