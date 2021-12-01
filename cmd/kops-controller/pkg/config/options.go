@@ -55,6 +55,9 @@ type ServerOptions struct {
 	SigningCAs []string `json:"signingCAs"`
 	// CertNames is the list of active certificate names.
 	CertNames []string `json:"certNames"`
+
+	// UseInstanceIDForNodeName uses the instance ID instead of the hostname for the node name.
+	UseInstanceIDForNodeName bool `json:"useInstanceIDForNodeName,omitempty"`
 }
 
 type ServerProviderOptions struct {
