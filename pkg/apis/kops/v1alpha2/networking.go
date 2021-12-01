@@ -258,9 +258,9 @@ type RomanaNetworkingSpec struct {
 // AmazonVPCNetworkingSpec declares that we want Amazon VPC CNI networking
 type AmazonVPCNetworkingSpec struct {
 	// ImageName is the container image name to use.
-	ImageName string `json:"imageName,omitempty"`
+	Image string `json:"imageName,omitempty"`
 	// InitImageName is the init container image name to use.
-	InitImageName string `json:"initImageName,omitempty"`
+	InitImage string `json:"initImageName,omitempty"`
 	// Env is a list of environment variables to set in the container.
 	Env []EnvVar `json:"env,omitempty"`
 }
