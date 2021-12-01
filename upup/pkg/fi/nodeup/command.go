@@ -447,7 +447,7 @@ func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.No
 }
 
 func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config) error {
-	hostnameOverride, err := evaluateHostnameOverride(api.CloudProviderID(c.cluster.Spec.CloudProvider))
+	hostnameOverride, err := evaluateHostnameOverride(api.CloudProviderID(c.cluster.Spec.CloudProvider), nodeupConfig.UseInstanceIDForNodeName)
 	if err != nil {
 		return err
 	}
@@ -477,14 +477,19 @@ func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config) error {
 	return nil
 }
 
-func evaluateHostnameOverride(cloudProvider api.CloudProviderID) (string, error) {
+func evaluateHostnameOverride(cloudProvider api.CloudProviderID, useInstanceIDForNodeName bool) (string, error) {
 	switch cloudProvider {
 	case api.CloudProviderAWS:
-		hostnameBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-hostname")
-		if err != nil {
-			return "", fmt.Errorf("error reading local-hostname from AWS metadata: %v", err)
+		source := "local-hostname"
+		if useInstanceIDForNodeName {
+			source = "instance-id"
 		}
-		return string(hostnameBytes), nil
+		nodeNameBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/" + source)
+		if err != nil {
+			return "", fmt.Errorf("error reading %s from AWS metadata: %v", source, err)
+		}
+		return string(nodeNameBytes), nil
+
 	case api.CloudProviderGCE:
 		// This lets us tolerate broken hostnames (i.e. systemd)
 		b, err := vfs.Context.ReadFile("metadata://gce/instance/hostname")
