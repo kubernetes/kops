@@ -190,7 +190,7 @@ spec:
       containers:
       - name: spotinst-kubernetes-cluster-controller
         imagePullPolicy: Always
-        image: gcr.io/spotinst-artifacts/kubernetes-cluster-controller:1.0.79
+        image: gcr.io/spotinst-artifacts/kubernetes-cluster-controller:1.0.80
         livenessProbe:
           httpGet:
             path: /healthcheck
