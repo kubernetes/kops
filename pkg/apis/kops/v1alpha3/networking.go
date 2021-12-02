@@ -238,10 +238,10 @@ type KuberouterNetworkingSpec struct{}
 
 // AmazonVPCNetworkingSpec declares that we want Amazon VPC CNI networking
 type AmazonVPCNetworkingSpec struct {
-	// ImageName is the container image name to use.
-	ImageName string `json:"imageName,omitempty"`
-	// InitImageName is the init container image name to use.
-	InitImageName string `json:"initImageName,omitempty"`
+	// Image is the container image name to use.
+	Image string `json:"image,omitempty"`
+	// InitImage is the init container image name to use.
+	InitImage string `json:"initImage,omitempty"`
 	// Env is a list of environment variables to set in the container.
 	Env []EnvVar `json:"env,omitempty"`
 }
