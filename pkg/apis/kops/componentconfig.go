@@ -874,6 +874,8 @@ type CloudConfiguration struct {
 	Azure *AzureConfiguration `json:"azure,omitempty"`
 	// AWSEBSCSIDriver is the config for the AWS EBS CSI driver
 	AWSEBSCSIDriver *AWSEBSCSIDriver `json:"awsEBSCSIDriver,omitempty"`
+	// GCPPDCSIDriver is the config for the GCP PD CSI driver
+	GCPPDCSIDriver *GCPPDCSIDriver `json:"gcpPDCSIDriver,omitempty"`
 }
 
 // AWSEBSCSIDriver is the config for the AWS EBS CSI driver
@@ -891,6 +893,12 @@ type AWSEBSCSIDriver struct {
 	// If not specified, the value is approximated from the instance type.
 	// Default: -
 	VolumeAttachLimit *int `json:"volumeAttachLimit,omitempty"`
+}
+
+// GCPPDCSIDriver is the config for the GCP PD CSI driver
+type GCPPDCSIDriver struct {
+	// Enabled enables the GCP PD CSI driver
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 // SnapshotControllerConfig is the config for the CSI Snapshot Controller

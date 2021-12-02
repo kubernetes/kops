@@ -10,6 +10,8 @@ spec:
     alwaysAllow: {}
   channel: stable
   cloudConfig:
+    gcpPDCSIDriver:
+      enabled: false
     manageStorageClasses: true
     multizone: true
     nodeTags: minimal-gce-private-example-com-k8s-io-role-node
