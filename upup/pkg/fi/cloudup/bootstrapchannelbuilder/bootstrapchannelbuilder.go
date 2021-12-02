@@ -365,7 +365,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 	}
 
 	if kubeDNS.Provider == "KubeDNS" {
-
 		{
 			key := "kube-dns.addons.k8s.io"
 

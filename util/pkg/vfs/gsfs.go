@@ -44,8 +44,10 @@ type GSPath struct {
 	md5Hash string
 }
 
-var _ Path = &GSPath{}
-var _ HasHash = &GSPath{}
+var (
+	_ Path    = &GSPath{}
+	_ HasHash = &GSPath{}
+)
 
 // gcsReadBackoff is the backoff strategy for GCS read retries
 var gcsReadBackoff = wait.Backoff{

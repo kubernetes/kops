@@ -48,12 +48,12 @@ func (b *BuildOptions) Build() error {
 	// Write some meta files so that other tooling can know e.g. KOPS_BASE_URL
 	metaDir := filepath.Join(b.KopsRoot, ".kubetest2")
 
-	if err := os.MkdirAll(metaDir, 0755); err != nil {
+	if err := os.MkdirAll(metaDir, 0o755); err != nil {
 		return fmt.Errorf("failed to Mkdir(%q): %w", metaDir, err)
 	}
 	p := filepath.Join(metaDir, "kops-base-url")
 	kopsBaseURL := strings.Replace(b.StageLocation, "gs://", "https://storage.googleapis.com/", 1)
-	if err := os.WriteFile(p, []byte(kopsBaseURL), 0644); err != nil {
+	if err := os.WriteFile(p, []byte(kopsBaseURL), 0o644); err != nil {
 		return fmt.Errorf("failed to WriteFile(%q): %w", p, err)
 	}
 

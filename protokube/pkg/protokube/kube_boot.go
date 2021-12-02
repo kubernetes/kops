@@ -26,10 +26,8 @@ import (
 	"k8s.io/klog/v2"
 )
 
-var (
-	// RootFS is the root fs path
-	RootFS = "/"
-)
+// RootFS is the root fs path
+var RootFS = "/"
 
 // KubeBoot is the options for the protokube service
 type KubeBoot struct {

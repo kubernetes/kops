@@ -54,7 +54,6 @@ func Test_ValidateTopology(t *testing.T) {
 			},
 		},
 		{
-
 			Input: kops.ClusterSpec{
 				CloudConfig: &kops.CloudConfiguration{
 					Openstack: &kops.OpenstackConfiguration{},

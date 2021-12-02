@@ -72,9 +72,11 @@ type BootstrapScript struct {
 	nodeupConfig fi.TaskDependentResource
 }
 
-var _ fi.Task = &BootstrapScript{}
-var _ fi.HasName = &BootstrapScript{}
-var _ fi.HasDependencies = &BootstrapScript{}
+var (
+	_ fi.Task            = &BootstrapScript{}
+	_ fi.HasName         = &BootstrapScript{}
+	_ fi.HasDependencies = &BootstrapScript{}
+)
 
 // kubeEnv returns the boot config for the instance group
 func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (string, error) {

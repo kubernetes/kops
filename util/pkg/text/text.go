@@ -22,7 +22,6 @@ import (
 
 // SplitContentToSections splits content of a kops manifest into sections.
 func SplitContentToSections(content []byte) [][]byte {
-
 	// replace windows line endings with unix ones
 	normalized := bytes.Replace(content, []byte("\r\n"), []byte("\n"), -1)
 

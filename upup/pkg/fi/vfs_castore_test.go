@@ -156,7 +156,6 @@ spec:
 }
 
 func TestVFSCAStoreRoundTripWithVault(t *testing.T) {
-
 	token := os.Getenv("VAULT_DEV_ROOT_TOKEN_ID")
 	if token == "" {
 		t.Skip("No vault dev token set")
@@ -165,7 +164,6 @@ func TestVFSCAStoreRoundTripWithVault(t *testing.T) {
 		t.Skip("RoundTrip test needs VAULT_TOKEN == VAULT_DEV_ROOT_TOKEN_ID")
 	}
 	basePath, err := vfs.Context.BuildVfsPath("vault://localhost:8200/secret/clusters/vdscastoretest?tls=false")
-
 	if err != nil {
 		t.Fatalf("error building vfspath: %v", err)
 	}

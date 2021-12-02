@@ -19,7 +19,6 @@ package s3
 import (
 	"fmt"
 	"net/url"
-
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -31,8 +30,7 @@ import (
 
 // s3PublicAclStrategy is the AclStrategy for objects that are written with public read only ACL.
 // This strategy is used by custom file assets.
-type s3PublicAclStrategy struct {
-}
+type s3PublicAclStrategy struct{}
 
 var _ acls.ACLStrategy = &s3PublicAclStrategy{}
 

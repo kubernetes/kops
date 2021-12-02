@@ -56,9 +56,11 @@ type Instance struct {
 	ForAPIServer bool
 }
 
-var _ fi.Task = &Instance{}
-var _ fi.HasAddress = &Instance{}
-var _ fi.HasDependencies = &Instance{}
+var (
+	_ fi.Task            = &Instance{}
+	_ fi.HasAddress      = &Instance{}
+	_ fi.HasDependencies = &Instance{}
+)
 
 // GetDependencies returns the dependencies of the Instance task
 func (e *Instance) GetDependencies(tasks map[string]fi.Task) []fi.Task {
@@ -172,7 +174,6 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	ports, err := cloud.ListPorts(ports.ListOpts{
 		DeviceID: server.ID,
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch port for instance %v: %v", server.ID, err)
 	}
@@ -374,7 +375,6 @@ func associateFloatingIP(t *openstack.OpenstackAPITarget, e *Instance) error {
 	_, err := l3floatingip.Update(client, fi.StringValue(e.FloatingIP.ID), l3floatingip.UpdateOpts{
 		PortID: e.Port.ID,
 	}).Extract()
-
 	if err != nil {
 		return fmt.Errorf("failed to associated floating IP to instance %s: %v", *e.Name, err)
 	}

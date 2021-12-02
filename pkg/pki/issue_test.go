@@ -46,7 +46,6 @@ func (m *mockKeystore) FindPrimaryKeypair(name string) (*Certificate, *PrivateKe
 }
 
 func TestIssueCert(t *testing.T) {
-
 	origSize := os.Getenv("KOPS_RSA_PRIVATE_KEY_SIZE")
 	os.Unsetenv("KOPS_RSA_PRIVATE_KEY_SIZE")
 	defer func() {
@@ -220,5 +219,4 @@ func TestIssueCert(t *testing.T) {
 			assert.LessOrEqual(t, cert.NotAfter.Unix(), maxExpectedValidity, "NotAfter")
 		})
 	}
-
 }

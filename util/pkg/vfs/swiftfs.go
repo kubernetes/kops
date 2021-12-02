@@ -95,8 +95,7 @@ func NewSwiftClient() (*gophercloud.ServiceClient, error) {
 	return client, nil
 }
 
-type OpenstackConfig struct {
-}
+type OpenstackConfig struct{}
 
 func (OpenstackConfig) filename() (string, error) {
 	name := os.Getenv("OPENSTACK_CREDENTIAL_FILE")
@@ -135,7 +134,6 @@ func (oc OpenstackConfig) getSection(name string, items []string) (map[string]st
 }
 
 func (oc OpenstackConfig) GetCredential() (gophercloud.AuthOptions, error) {
-
 	// prioritize environment config
 	env, enverr := openstack.AuthOptionsFromEnv()
 	if enverr != nil {
@@ -149,11 +147,9 @@ func (oc OpenstackConfig) GetCredential() (gophercloud.AuthOptions, error) {
 	}
 	env.AllowReauth = true
 	return env, nil
-
 }
 
 func (oc OpenstackConfig) GetRegion() (string, error) {
-
 	var region string
 	if region = os.Getenv("OS_REGION_NAME"); region != "" {
 		if len(region) > 1 {
@@ -236,8 +232,10 @@ type SwiftPath struct {
 	hash   string
 }
 
-var _ Path = &SwiftPath{}
-var _ HasHash = &SwiftPath{}
+var (
+	_ Path    = &SwiftPath{}
+	_ HasHash = &SwiftPath{}
+)
 
 // swiftReadBackoff is the backoff strategy for Swift read retries.
 var swiftReadBackoff = wait.Backoff{

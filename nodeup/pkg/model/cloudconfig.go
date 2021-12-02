@@ -123,7 +123,7 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 		if osc == nil {
 			break
 		}
-		//Support mapping of older keystone API
+		// Support mapping of older keystone API
 		tenantName := os.Getenv("OS_TENANT_NAME")
 		if tenantName == "" {
 			tenantName = os.Getenv("OS_PROJECT_NAME")
@@ -147,7 +147,6 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 				fmt.Sprintf("application-credential-id=\"%s\"", os.Getenv("OS_APPLICATION_CREDENTIAL_ID")),
 				fmt.Sprintf("application-credential-secret=\"%s\"", os.Getenv("OS_APPLICATION_CREDENTIAL_SECRET")),
 			)
-
 		}
 
 		lines = append(lines,
@@ -184,7 +183,7 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 		}
 
 		if bs := osc.BlockStorage; bs != nil {
-			//Block Storage Config
+			// Block Storage Config
 			lines = append(lines,
 				"[BlockStorage]",
 				fmt.Sprintf("bs-version=%s", fi.StringValue(bs.Version)),

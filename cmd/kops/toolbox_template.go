@@ -223,7 +223,7 @@ func RunToolBoxTemplate(f *util.Factory, out io.Writer, options *ToolboxTemplate
 	iowriter := out
 	// @check if we are writing to a file rather than stdout
 	if options.outputPath != "" {
-		w, err := os.OpenFile(utils.ExpandPath(options.outputPath), os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0660)
+		w, err := os.OpenFile(utils.ExpandPath(options.outputPath), os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0o660)
 		if err != nil {
 			return fmt.Errorf("unable to open file: %s, error: %v", options.outputPath, err)
 		}

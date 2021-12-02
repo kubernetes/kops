@@ -26,8 +26,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/alitasks"
 )
 
-const DefaultVolumeType = "cloud_ssd"
-const DefaultInstanceType = "ecs.n2.medium"
+const (
+	DefaultVolumeType   = "cloud_ssd"
+	DefaultInstanceType = "ecs.n2.medium"
+)
 
 // ScalingGroupModelBuilder configures ScalingGroup objects
 type ScalingGroupModelBuilder struct {
@@ -45,7 +47,7 @@ func (b *ScalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
 		name := b.GetScalingGroupName(ig)
 
-		//Create AutoscalingGroup
+		// Create AutoscalingGroup
 		var scalingGroup *alitasks.ScalingGroup
 		{
 			minSize := 1

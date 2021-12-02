@@ -22,8 +22,7 @@ import (
 )
 
 // glogLogger sends mesh log messages to glog
-type glogLogger struct {
-}
+type glogLogger struct{}
 
 var _ mesh.Logger = &glogLogger{}
 

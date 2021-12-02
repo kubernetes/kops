@@ -31,6 +31,7 @@ func (m *MockEC2) DescribeInstances(*ec2.DescribeInstancesInput) (*ec2.DescribeI
 func (m *MockEC2) DescribeInstancesWithContext(aws.Context, *ec2.DescribeInstancesInput, ...request.Option) (*ec2.DescribeInstancesOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) DescribeInstancesRequest(*ec2.DescribeInstancesInput) (*request.Request, *ec2.DescribeInstancesOutput) {
 	panic("Not implemented")
 }
@@ -46,6 +47,7 @@ func (m *MockEC2) DescribeInstancesPages(request *ec2.DescribeInstancesInput, ca
 
 	return nil
 }
+
 func (m *MockEC2) DescribeInstancesPagesWithContext(aws.Context, *ec2.DescribeInstancesInput, func(*ec2.DescribeInstancesOutput, bool) bool, ...request.Option) error {
 	panic("Not implemented")
 }

@@ -25,7 +25,6 @@ import (
 
 // TestContract verifies the general ResourceRecordChangeset contract
 func TestContract(t *testing.T, rrsets dnsprovider.ResourceRecordSets) {
-
 	{
 		changeset := rrsets.StartChangeset()
 		if !changeset.IsEmpty() {
@@ -64,5 +63,4 @@ func TestContract(t *testing.T, rrsets dnsprovider.ResourceRecordSets) {
 			t.Fatalf("expected changeset not to be empty after upsert")
 		}
 	}
-
 }

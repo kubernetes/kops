@@ -50,5 +50,4 @@ func (p *GossipDnsProvider) RemoveRecordsImmediate(records []k8sdns.Record) erro
 }
 
 func (p *GossipDnsProvider) Run() {
-
 }

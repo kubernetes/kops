@@ -168,7 +168,6 @@ echo "== nodeup node config done =="
 // AWSNodeUpTemplate returns a MIME Multi Part Archive containing the nodeup (bootstrap) script
 // and any additional User Data passed to using AdditionalUserData in the IG Spec
 func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
-
 	userDataTemplate := NodeUpTemplate
 
 	if len(ig.Spec.AdditionalUserData) > 0 {
@@ -211,7 +210,6 @@ func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
 	}
 
 	return userDataTemplate, nil
-
 }
 
 func writeUserDataPart(mimeWriter *multipart.Writer, fileName string, contentType string, content []byte) error {

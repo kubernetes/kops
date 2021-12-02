@@ -66,8 +66,10 @@ func (m *MultiGossipState) Start() error {
 
 type newGossipFunc func(listen, channelName, gossipName string, gossipSecret []byte, gossipSeeds SeedProvider) (GossipState, error)
 
-var gossipMap = make(map[string]newGossipFunc)
-var gossipMapMutex sync.Mutex
+var (
+	gossipMap      = make(map[string]newGossipFunc)
+	gossipMapMutex sync.Mutex
+)
 
 func Register(name string, f newGossipFunc) {
 	gossipMapMutex.Lock()

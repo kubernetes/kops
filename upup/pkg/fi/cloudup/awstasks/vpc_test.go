@@ -220,5 +220,4 @@ func TestSharedVPCAdditionalCIDR(t *testing.T) {
 			t.Fatalf("Unexpected VPC: expected=%v actual=%v", expected, actual)
 		}
 	}
-
 }

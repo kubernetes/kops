@@ -24,12 +24,9 @@ import (
 	"k8s.io/kubectl/pkg/util/i18n"
 )
 
-var (
-	exportShort = i18n.T(`Export configuration.`)
-)
+var exportShort = i18n.T(`Export configuration.`)
 
 func NewCmdExport(f *util.Factory, out io.Writer) *cobra.Command {
-
 	cmd := &cobra.Command{
 		Use:   "export",
 		Short: exportShort,

@@ -209,7 +209,6 @@ type renderTest struct {
 }
 
 func makeRenderTests(t *testing.T, tests []renderTest) {
-
 	sourcePath := "../../../tests/integration/channel/simple/channel.yaml"
 	s, _ := os.Getwd()
 

@@ -70,7 +70,6 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 		}
 		return true, nil
 	})
-
 	if err != nil {
 		return seeds, fmt.Errorf("Failed to list servers while retrieving seeds: %v", err)
 	}

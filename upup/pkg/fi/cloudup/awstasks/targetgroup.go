@@ -66,7 +66,6 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 	}
 
 	response, err := cloud.ELBV2().DescribeTargetGroups(request)
-
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == elbv2.ErrCodeTargetGroupNotFoundException {
 			if !fi.BoolValue(e.Shared) {
@@ -126,7 +125,6 @@ func FindTargetGroupByName(cloud awsup.AWSCloud, findName string) (*elbv2.Target
 	request.PageSize = aws.Int64(20)
 
 	resp, err := cloud.ELBV2().DescribeTargetGroups(request)
-
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == elbv2.ErrCodeTargetGroupNotFoundException {
 			return nil, nil
@@ -165,9 +163,9 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 		return nil
 	}
 
-	//You register targets for your Network Load Balancer with a target group. By default, the load balancer sends requests
-	//to registered targets using the port and protocol that you specified for the target group. You can override this port
-	//when you register each target with the target group.
+	// You register targets for your Network Load Balancer with a target group. By default, the load balancer sends requests
+	// to registered targets using the port and protocol that you specified for the target group. You can override this port
+	// when you register each target with the target group.
 
 	if a == nil {
 		request := &elbv2.CreateTargetGroupInput{

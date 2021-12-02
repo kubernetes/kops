@@ -318,7 +318,6 @@ func TestOrdering(t *testing.T) {
 // TestChannelsSelfConsistent tests the channels have version recommendations that are consistent
 // i.e. we don't recommend 1.5.2 and then recommend upgrading it to 1.5.4
 func TestChannelsSelfConsistent(t *testing.T) {
-
 	grid := []struct {
 		KopsVersion               string
 		Channel                   string

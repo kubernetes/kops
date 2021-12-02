@@ -196,7 +196,6 @@ func TestValidate_ContainerRegistry_and_ContainerProxy_exclusivity(t *testing.T)
 
 	c.Spec.Assets.ContainerRegistry = nil
 	expectNoErrorFromValidate(t, c)
-
 }
 
 func expectErrorFromValidate(t *testing.T, c *api.Cluster, message string) {

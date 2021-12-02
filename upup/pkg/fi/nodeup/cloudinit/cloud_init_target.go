@@ -73,8 +73,8 @@ func (t *CloudInitTarget) ProcessDeletions() bool {
 
 func (t *CloudInitTarget) AddMkdirpCommand(p string, dirMode os.FileMode) {
 	t.AddCommand(Once, "mkdir", "-p", "-m", fi.FileModeToString(dirMode), p)
-
 }
+
 func (t *CloudInitTarget) AddDownloadCommand(addBehaviour AddBehaviour, url string, dest string) {
 	// TODO: Create helper to download reliably and validate hash?
 	// ... but then why not just use cloudup :-)
@@ -98,7 +98,7 @@ func (t *CloudInitTarget) fetch(p *fi.Source, destPath string) {
 		t.fetch(p.Parent, archivePath)
 
 		extractDir := "/tmp/extracted_" + utils.SanitizeString(p.Parent.Key())
-		t.AddMkdirpCommand(extractDir, 0755)
+		t.AddMkdirpCommand(extractDir, 0o755)
 		t.AddCommand(Once, "tar", "zxf", archivePath, "-C", extractDir)
 
 		// Always because this shouldn't happen and we want an indication that it happened

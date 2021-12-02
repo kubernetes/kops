@@ -108,7 +108,7 @@ type ClusterSpec struct {
 	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty"`
 	// PodCIDR is the CIDR from which we allocate IPs for pods
 	PodCIDR string `json:"podCIDR,omitempty"`
-	//MasterIPRange                 string `json:",omitempty"`
+	// MasterIPRange                 string `json:",omitempty"`
 	// NonMasqueradeCIDR is the CIDR for the internal k8s network (on which pods & services live)
 	// It cannot overlap ServiceClusterIPRange
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`
@@ -324,8 +324,7 @@ func (s *AuthenticationSpec) IsEmpty() bool {
 	return s.Kopeio == nil && s.AWS == nil
 }
 
-type KopeioAuthenticationSpec struct {
-}
+type KopeioAuthenticationSpec struct{}
 
 type AWSAuthenticationSpec struct {
 	// Image is the AWS IAM Authenticator docker image to uses
@@ -364,11 +363,9 @@ func (s *AuthorizationSpec) IsEmpty() bool {
 	return s.RBAC == nil && s.AlwaysAllow == nil
 }
 
-type RBACAuthorizationSpec struct {
-}
+type RBACAuthorizationSpec struct{}
 
-type AlwaysAllowAuthorizationSpec struct {
-}
+type AlwaysAllowAuthorizationSpec struct{}
 
 // AccessSpec provides configuration details related to kubeapi dns and ELB access
 type AccessSpec struct {
@@ -382,8 +379,7 @@ func (s *AccessSpec) IsEmpty() bool {
 	return s.DNS == nil && s.LoadBalancer == nil
 }
 
-type DNSAccessSpec struct {
-}
+type DNSAccessSpec struct{}
 
 // LoadBalancerType string describes LoadBalancer types (public, internal)
 type LoadBalancerType string

@@ -612,5 +612,4 @@ func PortsForCluster(etcdCluster kops.EtcdClusterSpec) (Ports, error) {
 	default:
 		return Ports{}, fmt.Errorf("unknown etcd cluster key %q", etcdCluster.Name)
 	}
-
 }

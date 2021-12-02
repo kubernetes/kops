@@ -31,7 +31,7 @@ func SetString(target interface{}, targetPath string, newValue string) error {
 		return fmt.Errorf("cannot parse field path %q: %w", targetPath, err)
 	}
 
-	var fieldSet = false
+	fieldSet := false
 
 	visitor := func(path *FieldPath, field *reflect.StructField, v reflect.Value) error {
 		if !targetFieldPath.HasPrefixMatch(path) {
@@ -182,7 +182,7 @@ func Unset(target interface{}, targetPath string) error {
 		return fmt.Errorf("cannot parse field path %q: %w", targetPath, err)
 	}
 
-	var fieldUnset = false
+	fieldUnset := false
 
 	visitor := func(path *FieldPath, field *reflect.StructField, v reflect.Value) error {
 		if !targetFieldPath.HasPrefixMatch(path) {

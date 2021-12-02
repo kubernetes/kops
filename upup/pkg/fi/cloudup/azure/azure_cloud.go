@@ -40,11 +40,8 @@ const (
 // AzureCloud provides clients to make API calls to Azure.
 type AzureCloud interface {
 	fi.Cloud
-
 	AddClusterTags(tags map[string]*string)
-
 	FindVNetInfo(id, resourceGroup string) (*fi.VPCInfo, error)
-
 	SubscriptionID() string
 	ResourceGroup() ResourceGroupsClient
 	VirtualNetwork() VirtualNetworksClient
@@ -164,7 +161,7 @@ func (c *azureCloudImplementation) AddClusterTags(tags map[string]*string) {
 
 func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	var ingresses []fi.ApiIngressStatus
-	var rg = cluster.AzureResourceGroupName()
+	rg := cluster.AzureResourceGroupName()
 
 	lbSpec := cluster.Spec.API.LoadBalancer
 	if lbSpec != nil {

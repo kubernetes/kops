@@ -121,6 +121,7 @@ func (o *OIDCKeys) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		o.SigningKey,
 	}
 }
+
 func (o *OIDCKeys) Open() (io.Reader, error) {
 	keyset := o.SigningKey.Keyset()
 	var keys []jose.JSONWebKey

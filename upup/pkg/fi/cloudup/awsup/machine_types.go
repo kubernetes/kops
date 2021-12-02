@@ -67,7 +67,6 @@ func (m *AWSMachineTypeInfo) EphemeralDevices() []*EphemeralDevice {
 }
 
 func GetMachineTypeInfo(c AWSCloud, machineType string) (*AWSMachineTypeInfo, error) {
-
 	machineTypeMutex.Lock()
 	defer machineTypeMutex.Unlock()
 	if machineTypeInfo == nil {

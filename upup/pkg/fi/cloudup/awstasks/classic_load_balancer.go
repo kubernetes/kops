@@ -124,7 +124,6 @@ func findLoadBalancerByLoadBalancerName(cloud awsup.AWSCloud, loadBalancerName s
 		klog.Warningf("Got ELB with unexpected name: %q", aws.StringValue(lb.LoadBalancerName))
 		return false
 	})
-
 	if err != nil {
 		if awsError, ok := err.(awserr.Error); ok {
 			if awsError.Code() == "LoadBalancerNotFound" {
@@ -169,7 +168,6 @@ func findLoadBalancerByAlias(cloud awsup.AWSCloud, alias *route53.AliasTarget) (
 		lbDnsName = strings.TrimSuffix(lbDnsName, ".")
 		return lbDnsName == matchDnsName || "dualstack."+lbDnsName == matchDnsName
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("error listing ELBs: %v", err)
 	}
@@ -196,7 +194,6 @@ func describeLoadBalancers(cloud awsup.AWSCloud, request *elb.DescribeLoadBalanc
 
 		return true
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("error listing ELBs: %v", err)
 	}
@@ -738,7 +735,7 @@ func (_ *ClassicLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 		tf.CrossZoneLoadBalancing = e.CrossZoneLoadBalancing.Enabled
 	}
 
-	var tags = cloud.BuildTags(e.Name)
+	tags := cloud.BuildTags(e.Name)
 	for k, v := range e.Tags {
 		tags[k] = v
 	}
@@ -837,7 +834,6 @@ func (_ *ClassicLoadBalancer) RenderCloudformation(t *cloudformation.Cloudformat
 	}
 
 	for loadBalancerPort, listener := range e.Listeners {
-
 		tf.Listener = append(tf.Listener, &cloudformationClassicLoadBalancerListener{
 			InstanceProtocol:     "TCP",
 			InstancePort:         strconv.Itoa(listener.InstancePort),
@@ -882,7 +878,7 @@ func (_ *ClassicLoadBalancer) RenderCloudformation(t *cloudformation.Cloudformat
 		tf.CrossZoneLoadBalancing = e.CrossZoneLoadBalancing.Enabled
 	}
 
-	var tags = cloud.BuildTags(e.Name)
+	tags := cloud.BuildTags(e.Name)
 	for k, v := range e.Tags {
 		tags[k] = v
 	}

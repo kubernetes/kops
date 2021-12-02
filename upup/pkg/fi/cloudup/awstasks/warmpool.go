@@ -84,7 +84,6 @@ func (*WarmPool) CheckChanges(a, e, changes *WarmPool) error {
 }
 
 func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error {
-
 	svc := t.Cloud.Autoscaling()
 	if changes != nil {
 		if fi.BoolValue(e.Enabled) {

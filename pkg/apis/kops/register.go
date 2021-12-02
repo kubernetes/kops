@@ -64,19 +64,22 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&SSHCredential{},
 		&SSHCredentialList{},
 	)
-	//metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
+	// metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
 }
 
 func (obj *Cluster) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
+
 func (obj *InstanceGroup) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
+
 func (obj *Keyset) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
+
 func (obj *SSHCredential) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }

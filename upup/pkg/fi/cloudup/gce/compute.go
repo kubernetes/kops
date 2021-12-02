@@ -27,7 +27,6 @@ type ComputeClient interface {
 	Projects() ProjectClient
 	Regions() RegionClient
 	Zones() ZoneClient
-
 	Networks() NetworkClient
 	Subnetworks() SubnetworkClient
 	Routes() RouteClient
@@ -35,12 +34,10 @@ type ComputeClient interface {
 	Addresses() AddressClient
 	Firewalls() FirewallClient
 	Routers() RouterClient
-
 	Instances() InstanceClient
 	InstanceTemplates() InstanceTemplateClient
 	InstanceGroupManagers() InstanceGroupManagerClient
 	TargetPools() TargetPoolClient
-
 	Disks() DiskClient
 }
 
@@ -406,6 +403,7 @@ func (c *firewallClientImpl) Insert(project string, fw *compute.Firewall) (*comp
 func (c *firewallClientImpl) Delete(project, name string) (*compute.Operation, error) {
 	return c.srv.Delete(project, name).Do()
 }
+
 func (c *firewallClientImpl) Update(project, name string, fw *compute.Firewall) (*compute.Operation, error) {
 	return c.srv.Update(project, name, fw).Do()
 }
@@ -466,7 +464,6 @@ type InstanceClient interface {
 	Get(project, zone, name string) (*compute.Instance, error)
 	List(ctx context.Context, project, zone string) ([]*compute.Instance, error)
 	Delete(project, zone, name string) (*compute.Operation, error)
-
 	SetMetadata(project, zone, name string, metadata *compute.Metadata) (*compute.Operation, error)
 }
 
@@ -540,7 +537,6 @@ type InstanceGroupManagerClient interface {
 	Get(project, zone, name string) (*compute.InstanceGroupManager, error)
 	List(ctx context.Context, project, zone string) ([]*compute.InstanceGroupManager, error)
 	ListManagedInstances(ctx context.Context, project, zone, name string) ([]*compute.ManagedInstance, error)
-
 	RecreateInstances(project, zone, name, id string) (*compute.Operation, error)
 	SetTargetPools(project, zone, name string, targetPools []string) (*compute.Operation, error)
 	SetInstanceTemplate(project, zone, name, instanceTemplateURL string) (*compute.Operation, error)
@@ -656,7 +652,6 @@ type DiskClient interface {
 	Get(project, zone, name string) (*compute.Disk, error)
 	List(ctx context.Context, project, zone string) ([]*compute.Disk, error)
 	AggregatedList(ctx context.Context, project string) ([]compute.DisksScopedList, error)
-
 	SetLabels(project, zone, name string, req *compute.ZoneSetLabelsRequest) error
 }
 

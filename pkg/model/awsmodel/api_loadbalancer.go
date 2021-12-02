@@ -405,7 +405,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
 		for _, cidr := range b.Cluster.Spec.KubernetesAPIAccess {
-
 			for _, masterGroup := range masterGroups {
 				{
 					t := &awstasks.SecurityGroupRule{

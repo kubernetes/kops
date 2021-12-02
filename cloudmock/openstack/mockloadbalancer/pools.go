@@ -71,7 +71,6 @@ func (m *MockClient) mockPools() {
 }
 
 func (m *MockClient) listPools(w http.ResponseWriter, vals url.Values) {
-
 	w.WriteHeader(http.StatusOK)
 
 	pools := make([]pools.Pool, 0)

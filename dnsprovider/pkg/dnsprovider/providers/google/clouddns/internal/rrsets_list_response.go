@@ -34,5 +34,4 @@ func (response *ResourceRecordSetsListResponse) Rrsets() []interfaces.ResourceRe
 		rrsets[i] = &ResourceRecordSet{rrset}
 	}
 	return rrsets
-
 }

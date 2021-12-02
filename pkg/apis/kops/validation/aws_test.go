@@ -330,7 +330,6 @@ func TestMixedInstancePolicies(t *testing.T) {
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
-
 }
 
 func TestInstanceMetadataOptions(t *testing.T) {

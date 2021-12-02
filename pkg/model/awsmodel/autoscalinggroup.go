@@ -374,7 +374,6 @@ func (b *AutoscalingGroupModelBuilder) buildSecurityGroups(c *fi.ModelBuilderCon
 
 // buildAutoscalingGroupTask is responsible for building the autoscaling task into the model
 func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.AutoscalingGroup, error) {
-
 	t := &awstasks.AutoscalingGroup{
 		Name:      fi.String(name),
 		Lifecycle: b.Lifecycle,

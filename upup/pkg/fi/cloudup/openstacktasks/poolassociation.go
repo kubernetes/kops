@@ -179,7 +179,7 @@ func (_ *PoolAssociation) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 		}
 		return nil
 	} else {
-		//TODO: Update Member, this is covered as `a` will always be nil
+		// TODO: Update Member, this is covered as `a` will always be nil
 		klog.V(2).Infof("Openstack task PoolAssociation::RenderOpenstack Update not implemented!")
 	}
 

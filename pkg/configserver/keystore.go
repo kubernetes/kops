@@ -25,7 +25,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-//configserverKeyStore is a KeyStore backed by the config server.
+// configserverKeyStore is a KeyStore backed by the config server.
 type configserverKeyStore struct{}
 
 func NewKeyStore() fi.CAStore {

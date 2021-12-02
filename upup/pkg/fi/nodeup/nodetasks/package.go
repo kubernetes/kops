@@ -290,7 +290,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 
 		if e.Source != nil {
 			// Install a deb or rpm.
-			err := os.MkdirAll(localPackageDir, 0755)
+			err := os.MkdirAll(localPackageDir, 0o755)
 			if err != nil {
 				return fmt.Errorf("error creating directories %q: %v", localPackageDir, err)
 			}
@@ -382,7 +382,7 @@ func (_ *Package) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *P
 	packageName := e.Name
 	if e.Source != nil {
 		localFile := path.Join(localPackageDir, packageName)
-		t.AddMkdirpCommand(localPackageDir, 0755)
+		t.AddMkdirpCommand(localPackageDir, 0o755)
 
 		url := *e.Source
 		t.AddDownloadCommand(cloudinit.Always, url, localFile)

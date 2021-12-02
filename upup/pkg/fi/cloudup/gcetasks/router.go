@@ -105,7 +105,6 @@ func (r *Router) Find(c *fi.Context) (*Router, error) {
 		actual.Subnetworks = append(actual.Subnetworks, &Subnet{Name: &subnetName})
 	}
 	return actual, nil
-
 }
 
 func (r *Router) url(project string) string {
