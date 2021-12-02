@@ -24,8 +24,6 @@ go_library(
         "router_fitask.go",
         "storagebucketacl.go",
         "storagebucketacl_fitask.go",
-        "storagebucketiam.go",
-        "storagebucketiam_fitask.go",
         "storageobjectacl.go",
         "storageobjectacl_fitask.go",
         "subnet.go",
