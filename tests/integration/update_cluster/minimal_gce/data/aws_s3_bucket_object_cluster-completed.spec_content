@@ -10,6 +10,8 @@ spec:
     alwaysAllow: {}
   channel: stable
   cloudConfig:
+    gcpPDCSIDriver:
+      enabled: true
     manageStorageClasses: true
     multizone: true
     nodeTags: minimal-gce-example-com-k8s-io-role-node
@@ -20,7 +22,7 @@ spec:
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.12
+    version: 1.6.0-beta.3
   dnsZone: "1"
   docker:
     skipInstall: true
@@ -31,14 +33,14 @@ spec:
     - instanceGroup: master-us-test1-a
       name: "1"
     name: main
-    version: 3.4.13
+    version: 3.5.1
   - backups:
       backupStore: memfs://tests/minimal-gce.example.com/backups/etcd/events
     etcdMembers:
     - instanceGroup: master-us-test1-a
       name: "1"
     name: events
-    version: 3.4.13
+    version: 3.5.1
   externalDns:
     provider: dns-controller
   iam:
@@ -67,7 +69,7 @@ spec:
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: k8s.gcr.io/kube-apiserver:v1.21.0
+    image: k8s.gcr.io/kube-apiserver:v1.23.0-beta.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -93,7 +95,7 @@ spec:
     clusterCIDR: 100.96.0.0/11
     clusterName: minimal-gce-example-com
     configureCloudRoutes: false
-    image: k8s.gcr.io/kube-controller-manager:v1.21.0
+    image: k8s.gcr.io/kube-controller-manager:v1.23.0-beta.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -116,10 +118,10 @@ spec:
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: k8s.gcr.io/kube-proxy:v1.21.0
+    image: k8s.gcr.io/kube-proxy:v1.23.0-beta.0
     logLevel: 2
   kubeScheduler:
-    image: k8s.gcr.io/kube-scheduler:v1.21.0
+    image: k8s.gcr.io/kube-scheduler:v1.23.0-beta.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -138,9 +140,10 @@ spec:
     networkPluginName: cni
     nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: 1.21.0
+  kubernetesVersion: 1.23.0-beta.0
   masterInternalName: api.internal.minimal-gce.example.com
   masterKubelet:
     anonymousAuth: false
@@ -157,6 +160,7 @@ spec:
     networkPluginName: cni
     nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
     registerSchedulable: false
   masterPublicName: api.minimal-gce.example.com
   networking:
