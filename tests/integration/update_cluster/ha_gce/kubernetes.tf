@@ -539,6 +539,11 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
     source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
     type         = "PERSISTENT"
   }
+  labels = {
+    "k8s-io-cluster-name"   = "ha-gce-example-com"
+    "k8s-io-instance-group" = "master-us-test1-a-ha-gce-example-com"
+    "k8s-io-role-master"    = ""
+  }
   machine_type = "n1-standard-1"
   metadata = {
     "cluster-name"                    = "ha-gce.example.com"
@@ -579,6 +584,11 @@ resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-co
     source       = ""
     source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
     type         = "PERSISTENT"
+  }
+  labels = {
+    "k8s-io-cluster-name"   = "ha-gce-example-com"
+    "k8s-io-instance-group" = "master-us-test1-b-ha-gce-example-com"
+    "k8s-io-role-master"    = ""
   }
   machine_type = "n1-standard-1"
   metadata = {
@@ -621,6 +631,11 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
     source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
     type         = "PERSISTENT"
   }
+  labels = {
+    "k8s-io-cluster-name"   = "ha-gce-example-com"
+    "k8s-io-instance-group" = "master-us-test1-c-ha-gce-example-com"
+    "k8s-io-role-master"    = ""
+  }
   machine_type = "n1-standard-1"
   metadata = {
     "cluster-name"                    = "ha-gce.example.com"
@@ -661,6 +676,11 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
     source       = ""
     source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
     type         = "PERSISTENT"
+  }
+  labels = {
+    "k8s-io-cluster-name"   = "ha-gce-example-com"
+    "k8s-io-instance-group" = "nodes-ha-gce-example-com"
+    "k8s-io-role-node"      = ""
   }
   machine_type = "n1-standard-2"
   metadata = {
