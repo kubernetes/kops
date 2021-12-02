@@ -192,6 +192,12 @@ func (s *Subnet) CheckChanges(a, e, changes *Subnet) error {
 		if changes.IPv6CIDR != nil && a.IPv6CIDR != nil {
 			errors = append(errors, fi.FieldIsImmutable(e.IPv6CIDR, a.IPv6CIDR, fieldPath.Child("IPv6CIDR")))
 		}
+
+		if fi.BoolValue(e.Shared) {
+			if changes.IPv6CIDR != nil && a.IPv6CIDR == nil {
+				errors = append(errors, field.Forbidden(fieldPath.Child("IPv6CIDR"), "field cannot be set on shared subnet"))
+			}
+		}
 	}
 
 	if len(errors) != 0 {
@@ -206,7 +212,7 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 	if shared {
 		// Verify the subnet was found
 		if a == nil {
-			return fmt.Errorf("Subnet with id %q not found", fi.StringValue(e.ID))
+			return fmt.Errorf("subnet with id %q not found", fi.StringValue(e.ID))
 		}
 	}
 
