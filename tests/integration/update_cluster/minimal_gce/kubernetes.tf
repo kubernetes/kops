@@ -435,6 +435,11 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-examp
     source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
     type         = "PERSISTENT"
   }
+  labels = {
+    "k8s-io-cluster-name"   = "minimal-gce-example-com"
+    "k8s-io-instance-group" = "master-us-test1-a-minimal-gce-example-com"
+    "k8s-io-role-master"    = ""
+  }
   machine_type = "n1-standard-1"
   metadata = {
     "cluster-name"                    = "minimal-gce.example.com"
@@ -475,6 +480,11 @@ resource "google_compute_instance_template" "nodes-minimal-gce-example-com" {
     source       = ""
     source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
     type         = "PERSISTENT"
+  }
+  labels = {
+    "k8s-io-cluster-name"   = "minimal-gce-example-com"
+    "k8s-io-instance-group" = "nodes-minimal-gce-example-com"
+    "k8s-io-role-node"      = ""
   }
   machine_type = "n1-standard-2"
   metadata = {
