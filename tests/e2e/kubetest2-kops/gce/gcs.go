@@ -80,10 +80,9 @@ func EnsureGCSBucket(bucketPath, projectID string) error {
 
 func DeleteGCSBucket(bucketPath, projectID string) error {
 	rmArgs := []string{
-		"gsutil", "rm", "-r", bucketPath,
-	}
-	if projectID != "" {
-		rmArgs = append(rmArgs, "-p", projectID)
+		"gsutil",
+		"-u", projectID,
+		"rm", "-r", bucketPath,
 	}
 
 	klog.Info(strings.Join(rmArgs, " "))
