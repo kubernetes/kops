@@ -44,7 +44,6 @@ type terraformNetworkLoadBalancerAccessLog struct {
 }
 
 func findNetworkLoadBalancerAttributes(cloud awsup.AWSCloud, LoadBalancerArn string) ([]*elbv2.LoadBalancerAttribute, error) {
-
 	request := &elbv2.DescribeLoadBalancerAttributesInput{
 		LoadBalancerArn: aws.String(LoadBalancerArn),
 	}
@@ -57,7 +56,7 @@ func findNetworkLoadBalancerAttributes(cloud awsup.AWSCloud, LoadBalancerArn str
 		return nil, nil
 	}
 
-	//we get back an array of attributes
+	// we get back an array of attributes
 
 	/*
 	   Key *string `type:"string"`

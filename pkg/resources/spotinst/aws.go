@@ -91,7 +91,6 @@ func (x *awsElastigroupService) Update(ctx context.Context, group InstanceGroup)
 
 	_, err := x.svc.Update(ctx, input)
 	return err
-
 }
 
 // Delete deletes an existing InstanceGroup by ID.
@@ -191,7 +190,6 @@ func (x *awsOceanService) Update(ctx context.Context, group InstanceGroup) error
 
 	_, err := x.svc.UpdateCluster(ctx, input)
 	return err
-
 }
 
 // Delete deletes an existing InstanceGroup by ID.
@@ -295,7 +293,6 @@ func (x *awsOceanLaunchSpecService) Update(ctx context.Context, spec LaunchSpec)
 
 	_, err := x.svc.UpdateLaunchSpec(ctx, input)
 	return err
-
 }
 
 // Delete deletes an existing LaunchSpec by ID.

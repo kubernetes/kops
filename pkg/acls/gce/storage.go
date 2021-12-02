@@ -29,8 +29,7 @@ import (
 )
 
 // gcsAclStrategy is the AclStrategy for objects written to google cloud storage
-type gcsAclStrategy struct {
-}
+type gcsAclStrategy struct{}
 
 var _ acls.ACLStrategy = &gcsAclStrategy{}
 

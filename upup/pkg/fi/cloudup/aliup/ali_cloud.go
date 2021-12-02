@@ -64,7 +64,6 @@ type ALICloud interface {
 	RamClient() *ram.RamClient
 	EssClient() *ess.Client
 	VpcClient() *ecs.Client
-
 	AddClusterTags(tags map[string]string)
 	GetTags(resourceId string, resourceType string) (map[string]string, error)
 	CreateTags(resourceId string, resourceType string, tags map[string]string) error
@@ -90,7 +89,6 @@ var _ fi.Cloud = &aliCloudImplementation{}
 // NewALICloud returns a Cloud, expecting the env vars ALIYUN_ACCESS_KEY_ID && ALIYUN_ACCESS_KEY_SECRET
 // NewALICloud will return an err if env vars are not defined
 func NewALICloud(region string, tags map[string]string) (ALICloud, error) {
-
 	c := &aliCloudImplementation{region: region}
 
 	accessKeyID := os.Getenv("ALIYUN_ACCESS_KEY_ID")
@@ -244,7 +242,6 @@ func (c *aliCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	}
 
 	return vpcInfo, nil
-
 }
 
 // GetTags will get the specified resource's tags.
@@ -256,7 +253,7 @@ func (c *aliCloudImplementation) GetTags(resourceId string, resourceType string)
 
 	request := &ecs.DescribeTagsArgs{
 		RegionId:     common.Region(c.Region()),
-		ResourceType: ecs.TagResourceType(resourceType), //image, instance, snapshot or disk
+		ResourceType: ecs.TagResourceType(resourceType), // image, instance, snapshot or disk
 		ResourceId:   resourceId,
 	}
 	responseTags, _, err := c.EcsClient().DescribeTags(request)
@@ -268,12 +265,10 @@ func (c *aliCloudImplementation) GetTags(resourceId string, resourceType string)
 		tags[tag.TagKey] = tag.TagValue
 	}
 	return tags, nil
-
 }
 
 // AddClusterTags will add ClusterTags to resources (in ALI, only disk, instance, snapshot or image can be tagged )
 func (c *aliCloudImplementation) AddClusterTags(tags map[string]string) {
-
 	if c.tags != nil && len(c.tags) != 0 && tags != nil {
 		for k, v := range c.tags {
 			tags[k] = v
@@ -297,7 +292,7 @@ func (c *aliCloudImplementation) CreateTags(resourceId string, resourceType stri
 
 	request := &ecs.AddTagsArgs{
 		ResourceId:   resourceId,
-		ResourceType: ecs.TagResourceType(resourceType), //image, instance, snapshot or disk
+		ResourceType: ecs.TagResourceType(resourceType), // image, instance, snapshot or disk
 		RegionId:     common.Region(c.Region()),
 		Tag:          tags,
 	}
@@ -323,7 +318,7 @@ func (c *aliCloudImplementation) RemoveTags(resourceId string, resourceType stri
 
 	request := &ecs.RemoveTagsArgs{
 		ResourceId:   resourceId,
-		ResourceType: ecs.TagResourceType(resourceType), //image, instance, snapshot or disk
+		ResourceType: ecs.TagResourceType(resourceType), // image, instance, snapshot or disk
 		RegionId:     common.Region(c.Region()),
 		Tag:          tags,
 	}

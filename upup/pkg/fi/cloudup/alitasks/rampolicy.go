@@ -87,7 +87,6 @@ func (r *RAMPolicy) Run(c *fi.Context) error {
 }
 
 func (_ *RAMPolicy) CheckChanges(a, e, changes *RAMPolicy) error {
-
 	if e.PolicyDocument == nil {
 		return fi.RequiredField("PolicyDocument")
 	}
@@ -131,7 +130,6 @@ func (_ *RAMPolicy) RenderALI(t *aliup.ALIAPITarget, a, e, changes *RAMPolicy) e
 	}
 
 	return nil
-
 }
 
 func (r *RAMPolicy) policyDocumentString() (string, error) {

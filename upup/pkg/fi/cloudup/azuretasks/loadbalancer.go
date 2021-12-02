@@ -42,8 +42,10 @@ type LoadBalancer struct {
 	ForAPIServer bool
 }
 
-var _ fi.Task = &LoadBalancer{}
-var _ fi.CompareWithID = &LoadBalancer{}
+var (
+	_ fi.Task          = &LoadBalancer{}
+	_ fi.CompareWithID = &LoadBalancer{}
+)
 
 // CompareWithID returns the Name of the LoadBalancer
 func (lb *LoadBalancer) CompareWithID() *string {

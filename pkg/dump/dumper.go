@@ -338,7 +338,7 @@ func (n *logDumperNode) listSystemdUnits(ctx context.Context) ([]string, error) 
 
 // shellToFile executes a command and copies the output to a file
 func (n *logDumperNode) shellToFile(ctx context.Context, command string, destPath string) error {
-	if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(destPath), 0o755); err != nil {
 		log.Printf("unable to mkdir on %q: %v", filepath.Dir(destPath), err)
 	}
 

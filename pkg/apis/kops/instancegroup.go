@@ -79,10 +79,8 @@ const (
 	XFSFilesystem = "xfs"
 )
 
-var (
-	// SupportedFilesystems is a list of supported filesystems to format as
-	SupportedFilesystems = []string{BtfsFilesystem, Ext4Filesystem, XFSFilesystem}
-)
+// SupportedFilesystems is a list of supported filesystems to format as
+var SupportedFilesystems = []string{BtfsFilesystem, Ext4Filesystem, XFSFilesystem}
 
 // InstanceGroupSpec is the specification for an InstanceGroup
 type InstanceGroupSpec struct {

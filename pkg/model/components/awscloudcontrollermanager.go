@@ -33,7 +33,6 @@ var _ loader.OptionsBuilder = &AWSCloudControllerManagerOptionsBuilder{}
 
 // BuildOptions generates the configurations used for the AWS cloud controller manager manifest
 func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) error {
-
 	clusterSpec := o.(*kops.ClusterSpec)
 
 	if kops.CloudProviderID(clusterSpec.CloudProvider) != kops.CloudProviderAWS {

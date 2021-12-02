@@ -24,9 +24,7 @@ import (
 	"k8s.io/kubectl/pkg/util/i18n"
 )
 
-var (
-	updateShort = i18n.T("Update a cluster.")
-)
+var updateShort = i18n.T("Update a cluster.")
 
 func NewCmdUpdate(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{

@@ -52,8 +52,10 @@ type RoleAssignment struct {
 	RoleDefID     *string
 }
 
-var _ fi.Task = &RoleAssignment{}
-var _ fi.CompareWithID = &RoleAssignment{}
+var (
+	_ fi.Task          = &RoleAssignment{}
+	_ fi.CompareWithID = &RoleAssignment{}
+)
 
 // CompareWithID returns the Name of the VM Scale Set.
 func (r *RoleAssignment) CompareWithID() *string {

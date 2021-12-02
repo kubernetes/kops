@@ -18,7 +18,6 @@ package awstasks
 
 import (
 	"fmt"
-
 	"math/rand"
 	"reflect"
 	"strconv"

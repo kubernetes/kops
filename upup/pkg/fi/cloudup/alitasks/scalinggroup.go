@@ -158,7 +158,7 @@ func (_ *ScalingGroup) RenderALI(t *aliup.ALIAPITarget, a, e, changes *ScalingGr
 		e.Active = fi.Bool(false)
 
 	} else {
-		//only support to update size
+		// only support to update size
 		if changes.MinSize != nil || changes.MaxSize != nil {
 			klog.V(2).Infof("Modifying AutoscalingGroup with Name:%q", fi.StringValue(e.Name))
 

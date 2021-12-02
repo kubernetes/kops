@@ -106,7 +106,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		return nil, fmt.Errorf("providerID %q not recognized for node %s", providerID, node.Name)
 	}
 
-	//zone := tokens[1]
+	// zone := tokens[1]
 	instanceID := tokens[2]
 
 	// If caching is enabled try pulling nodeidentity.Info from cache before

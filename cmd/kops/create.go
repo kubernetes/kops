@@ -100,8 +100,8 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 		return err
 	}
 
-	var clusterName = ""
-	//var cSpec = false
+	clusterName := ""
+	// var cSpec = false
 	var sb bytes.Buffer
 	fmt.Fprintf(&sb, "\n")
 	for _, f := range c.Filenames {
@@ -146,7 +146,7 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 					return fmt.Errorf("error creating cluster: %v", err)
 				}
 				fmt.Fprintf(&sb, "Created cluster/%s\n", v.ObjectMeta.Name)
-				//cSpec = true
+				// cSpec = true
 
 			case *kopsapi.InstanceGroup:
 				clusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]

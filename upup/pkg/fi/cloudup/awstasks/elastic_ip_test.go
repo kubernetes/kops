@@ -144,5 +144,4 @@ func checkNoChanges(t *testing.T, cloud fi.Cloud, allTasks map[string]fi.Task) {
 		}
 		t.Fatalf("Target had changes after executing: %v", b.String())
 	}
-
 }

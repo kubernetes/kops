@@ -71,12 +71,15 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 func (obj *Cluster) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
+
 func (obj *InstanceGroup) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
+
 func (obj *Keyset) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
+
 func (obj *SSHCredential) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }

@@ -44,7 +44,6 @@ func (r *Templater) templateFuncsMap(tm *template.Template) template.FuncMap {
 	}
 
 	funcs["ChannelRecommendedKubernetesUpgradeVersion"] = func(version string) string {
-
 		parsed, err := util.ParseKubernetesVersion(version)
 		if err != nil {
 			panic(err.Error())
@@ -56,12 +55,10 @@ func (r *Templater) templateFuncsMap(tm *template.Template) template.FuncMap {
 			panic(err.Error())
 		}
 		return recommended.String()
-
 	}
 
 	funcs["ChannelRecommendedKopsKubernetesVersion"] = func() string {
 		return kopsapi.RecommendedKubernetesVersion(r.channel, kops.Version).String()
-
 	}
 
 	funcs["ChannelRecommendedImage"] = func(cloud, k8sVersion string, architecture string) string {

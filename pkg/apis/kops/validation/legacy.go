@@ -463,7 +463,5 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, cl
 }
 
 func isExperimentalClusterDNS(k *kops.KubeletConfigSpec, dns *kops.KubeDNSConfig) bool {
-
 	return k != nil && k.ClusterDNS != dns.ServerIP && dns.NodeLocalDNS != nil && k.ClusterDNS != dns.NodeLocalDNS.LocalIP
-
 }

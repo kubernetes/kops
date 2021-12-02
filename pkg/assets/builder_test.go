@@ -156,7 +156,6 @@ func TestValidate_RemapImage_ContainerRegistry_MappingMultipleTimesConverges(t *
 			t.Errorf("Error remapping image (Expecting: %s, got %s, iteration: %d)", expected, remapped, i)
 		}
 	}
-
 }
 
 func TestRemapEmptySection(t *testing.T) {

@@ -150,7 +150,6 @@ type terraformSSHKey struct {
 }
 
 func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SSHKey) error {
-
 	keyString, err := fi.ResourceAsString(e.PublicKey)
 	if err != nil {
 		return fmt.Errorf("error rendering SSHKey PublicKey: %v", err)

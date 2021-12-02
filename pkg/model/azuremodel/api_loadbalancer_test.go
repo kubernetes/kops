@@ -72,5 +72,4 @@ func TestSubnetForLoadbalancer(t *testing.T) {
 	if !reflect.DeepEqual(actual, expected) {
 		t.Errorf("expected subnet %+v, but got %+v", expected, actual)
 	}
-
 }

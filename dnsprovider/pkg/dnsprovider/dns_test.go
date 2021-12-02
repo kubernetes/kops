@@ -55,32 +55,38 @@ var testData = []struct {
 	{
 		[2]record{
 			{"foo", []string{"1.2.3.4", "5,6,7,8"}, 180, "A"}, // Identical
-			{"foo", []string{"1.2.3.4", "5,6,7,8"}, 180, "A"}}, true,
+			{"foo", []string{"1.2.3.4", "5,6,7,8"}, 180, "A"},
+		}, true,
 	},
 	{
 		[2]record{
 			{"foo", []string{"1.2.3.4", "5,6,7,8"}, 180, "A"}, // Identical except Name
-			{"bar", []string{"1.2.3.4", "5,6,7,8"}, 180, "A"}}, false,
+			{"bar", []string{"1.2.3.4", "5,6,7,8"}, 180, "A"},
+		}, false,
 	},
 	{
 		[2]record{
 			{"foo", []string{"1.2.3.4", "5,6,7,8"}, 180, "A"}, // Identical except Rrdata
-			{"foo", []string{"1.2.3.4", "5,6,7,9"}, 180, "A"}}, false,
+			{"foo", []string{"1.2.3.4", "5,6,7,9"}, 180, "A"},
+		}, false,
 	},
 	{
 		[2]record{
 			{"foo", []string{"1.2.3.4", "5,6,7,8"}, 180, "A"}, // Identical except Rrdata ordering reversed
-			{"foo", []string{"5,6,7,8", "1.2.3.4"}, 180, "A"}}, false,
+			{"foo", []string{"5,6,7,8", "1.2.3.4"}, 180, "A"},
+		}, false,
 	},
 	{
 		[2]record{
 			{"foo", []string{"1.2.3.4", "5,6,7,8"}, 180, "A"}, // Identical except TTL
-			{"foo", []string{"1.2.3.4", "5,6,7,8"}, 150, "A"}}, false,
+			{"foo", []string{"1.2.3.4", "5,6,7,8"}, 150, "A"},
+		}, false,
 	},
 	{
 		[2]record{
 			{"foo", []string{"1.2.3.4", "5,6,7,8"}, 180, "A"}, // Identical except Type
-			{"foo", []string{"1.2.3.4", "5,6,7,8"}, 180, "CNAME"}}, false,
+			{"foo", []string{"1.2.3.4", "5,6,7,8"}, 180, "CNAME"},
+		}, false,
 	},
 }
 

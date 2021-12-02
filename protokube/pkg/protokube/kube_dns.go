@@ -30,7 +30,6 @@ type DNSProvider interface {
 
 	// RemoveRecordsImmediate deletes the specified DNS records, without batching etc
 	RemoveRecordsImmediate(records []dns.Record) error
-
 	Run()
 }
 

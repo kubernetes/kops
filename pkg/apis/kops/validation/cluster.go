@@ -144,7 +144,6 @@ func validateCloudLabels(labels map[string]string, fldPath *field.Path) (allErrs
 		for label := range labels {
 			if strings.HasPrefix(label, reservedPrefix) {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child(label), fmt.Sprintf("%q is a reserved label prefix and cannot be used as a custom label", reservedPrefix)))
-
 			}
 		}
 	}
