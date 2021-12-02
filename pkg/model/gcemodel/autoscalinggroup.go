@@ -137,6 +137,12 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 			case kops.InstanceGroupRoleNode:
 				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleNode))
 			}
+			roleLabel := gce.GceLabelNameRolePrefix + gce.EncodeGCELabel(strings.ToLower(string(ig.Spec.Role)))
+			t.Labels = map[string]string{
+				gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(b.ClusterName()),
+				roleLabel:                         "",
+				gce.GceLabelNameInstanceGroup:     name,
+			}
 
 			if gce.UsesIPAliases(b.Cluster) {
 				t.CanIPForward = fi.Bool(false)
