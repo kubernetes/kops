@@ -26,7 +26,7 @@ import (
 const (
 	// The tag name we use to differentiate multiple logically independent clusters running in the same region
 	GceLabelNameKubernetesCluster = "k8s-io-cluster-name"
-
+	GceLabelNameInstanceGroup     = "k8s-io-instance-group"
 	GceLabelNameRolePrefix        = "k8s-io-role-"
 	GceLabelNameEtcdClusterPrefix = "k8s-io-etcd-"
 )
