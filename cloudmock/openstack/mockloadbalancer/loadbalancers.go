@@ -73,7 +73,6 @@ func (m *MockClient) mockLoadBalancers() {
 }
 
 func (m *MockClient) listLoadBalancers(w http.ResponseWriter, vals url.Values) {
-
 	w.WriteHeader(http.StatusOK)
 
 	loadbalancers := make([]loadbalancers.LoadBalancer, 0)

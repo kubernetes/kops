@@ -416,7 +416,6 @@ func TestUnsetClusterFields(t *testing.T) {
 }
 
 func TestUnsetCiliumFields(t *testing.T) {
-
 	grid := []struct {
 		Fields []string
 		Input  kops.Cluster

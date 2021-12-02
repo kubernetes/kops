@@ -65,5 +65,4 @@ func TestConfirmation(t *testing.T) {
 	if answer != true {
 		t.Fatal("Confirmation should have been approved.")
 	}
-
 }

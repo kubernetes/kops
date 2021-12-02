@@ -51,7 +51,6 @@ func TestAzureBlobPathBase(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestAzureBlobPathPath(t *testing.T) {

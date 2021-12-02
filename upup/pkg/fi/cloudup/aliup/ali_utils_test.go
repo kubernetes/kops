@@ -40,5 +40,4 @@ func TestFindRegion(t *testing.T) {
 			t.Fatalf("unexpected region for zone: %q vs %q", expected, region)
 		}
 	}
-
 }

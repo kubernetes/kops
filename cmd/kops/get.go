@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-
 	"os"
 
 	"github.com/spf13/cobra"
@@ -99,7 +98,6 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunGet(ctx context.Context, f commandutils.Factory, out io.Writer, options *GetOptions) error {
-
 	client, err := f.Clientset()
 	if err != nil {
 		return err

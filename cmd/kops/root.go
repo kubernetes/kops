@@ -109,10 +109,9 @@ func init() {
 }
 
 func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
-
 	cmd := rootCommand.cobraCommand
 
-	//cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
+	// cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
 	goflag.CommandLine.VisitAll(func(goflag *goflag.Flag) {
 		switch goflag.Name {
 		case "cloud-provider-gce-lb-src-cidrs":
@@ -330,7 +329,6 @@ func GetClusterNameForCompletionNoKubeconfig(clusterArgs []string) (clusterName 
 	}
 
 	return "", []string{"--name"}, cobra.ShellCompDirectiveNoFileComp
-
 }
 
 func GetClusterForCompletion(ctx context.Context, factory commandutils.Factory, clusterArgs []string) (cluster *kopsapi.Cluster, clientSet simple.Clientset, completions []string, directive cobra.ShellCompDirective) {

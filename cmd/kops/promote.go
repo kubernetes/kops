@@ -24,9 +24,7 @@ import (
 	"k8s.io/kubectl/pkg/util/i18n"
 )
 
-var (
-	promoteShort = i18n.T(`Promote a resource.`)
-)
+var promoteShort = i18n.T(`Promote a resource.`)
 
 func NewCmdPromote(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{

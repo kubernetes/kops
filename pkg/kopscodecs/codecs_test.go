@@ -73,7 +73,6 @@ func TestToVersionedYaml(t *testing.T) {
 			continue
 		}
 	}
-
 }
 
 func TestToVersionedJSON(t *testing.T) {

@@ -123,7 +123,6 @@ func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, option
 	var cloudInstances []*cloudinstances.CloudInstance
 
 	cloudGroups, err := cloud.GetCloudGroups(cluster, instanceGroups, false, nodeList.Items)
-
 	if err != nil {
 		return err
 	}
@@ -211,7 +210,6 @@ func createK8sClient(cluster *kops.Cluster) (*kubernetes.Clientset, error) {
 		return nil, fmt.Errorf("cannot build kubernetes api client for %q: %v", contextName, err)
 	}
 	return k8sClient, nil
-
 }
 
 func asRenderable(instances []*cloudinstances.CloudInstance) []*renderableCloudInstance {

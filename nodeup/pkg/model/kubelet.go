@@ -59,7 +59,6 @@ var _ fi.ModelBuilder = &KubeletBuilder{}
 
 // Build is responsible for building the kubelet configuration
 func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
-
 	err := b.buildKubeletServingCertificate(c)
 	if err != nil {
 		return fmt.Errorf("error building kubelet server cert: %v", err)
@@ -311,7 +310,6 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	service.InitDefaults()
 
 	if b.ConfigurationMode == "Warming" {
-
 		service.Running = fi.Bool(false)
 	}
 
@@ -558,7 +556,6 @@ func (b *KubeletBuilder) buildMasterKubeletKubeconfig(c *fi.ModelBuilderContext)
 }
 
 func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.ModelBuilderContext) error {
-
 	if b.UseKopsControllerForNodeBootstrap() {
 		name := "kubelet-server"
 		dir := b.PathSrvKubernetes()
@@ -606,7 +603,6 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.ModelBuilderContex
 		}
 	}
 	return nil
-
 }
 
 func (b *KubeletBuilder) kubeletNames() ([]string, error) {

@@ -63,9 +63,11 @@ type Ocean struct {
 	AutoScalerOpts           *AutoScalerOpts
 }
 
-var _ fi.Task = &Ocean{}
-var _ fi.CompareWithID = &Ocean{}
-var _ fi.HasDependencies = &Ocean{}
+var (
+	_ fi.Task            = &Ocean{}
+	_ fi.CompareWithID   = &Ocean{}
+	_ fi.HasDependencies = &Ocean{}
+)
 
 func (o *Ocean) CompareWithID() *string {
 	return o.Name

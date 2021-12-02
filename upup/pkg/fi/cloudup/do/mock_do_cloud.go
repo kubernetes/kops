@@ -122,6 +122,7 @@ func (c *doCloudMockImplementation) GetAllLoadBalancers() ([]godo.LoadBalancer, 
 func (c *doCloudMockImplementation) GetAllDropletsByTag(tag string) ([]godo.Droplet, error) {
 	return nil, nil
 }
+
 func (c *doCloudMockImplementation) GetAllVolumesByRegion() ([]godo.Volume, error) {
 	return nil, nil
 }

@@ -40,8 +40,10 @@ type VirtualNetwork struct {
 	Shared        *bool
 }
 
-var _ fi.Task = &VirtualNetwork{}
-var _ fi.CompareWithID = &VirtualNetwork{}
+var (
+	_ fi.Task          = &VirtualNetwork{}
+	_ fi.CompareWithID = &VirtualNetwork{}
+)
 
 // CompareWithID returns the Name of the VM Scale Set.
 func (n *VirtualNetwork) CompareWithID() *string {

@@ -62,7 +62,6 @@ func awsValidateExternalCloudControllerManager(cluster *kops.Cluster) (allErrs f
 			"AWS external CCM cannot be used without enabling spec.cloudConfig.AWSEBSCSIDriver."))
 	}
 	return allErrs
-
 }
 
 func awsValidateInstanceGroup(ig *kops.InstanceGroup, cloud awsup.AWSCloud) field.ErrorList {

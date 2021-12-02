@@ -57,7 +57,6 @@ func Test_VolumeSort_ByEtcdClusterName(t *testing.T) {
 	if getIDs(volumes) != "3,2,1" {
 		t.Fatalf("Fail at sort 3: %v", getIDs(volumes))
 	}
-
 }
 
 func Test_Mount_Volumes(t *testing.T) {
@@ -96,5 +95,4 @@ func Test_Mount_Volumes(t *testing.T) {
 			t.Fatalf("volume mount should not have mounted: %s, description: %s", g.volume.LocalDevice, g.description)
 		}
 	}
-
 }

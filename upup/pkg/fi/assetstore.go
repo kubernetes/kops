@@ -77,8 +77,10 @@ type assetResource struct {
 	Asset *asset
 }
 
-var _ Resource = &assetResource{}
-var _ HasSource = &assetResource{}
+var (
+	_ Resource  = &assetResource{}
+	_ HasSource = &assetResource{}
+)
 
 func (r *assetResource) Open() (io.Reader, error) {
 	return r.Asset.resource.Open()
@@ -290,7 +292,7 @@ func (a *AssetStore) addArchive(archiveSource *Source, archiveFile string) error
 		// We extract to a temporary dir which we then rename so this is atomic
 		// (untarring can be slow, and we might crash / be interrupted half-way through)
 		extractedTemp := extracted + ".tmp-" + strconv.FormatInt(time.Now().UnixNano(), 10)
-		err := os.MkdirAll(extractedTemp, 0755)
+		err := os.MkdirAll(extractedTemp, 0o755)
 		if err != nil {
 			return fmt.Errorf("error creating directories %q: %v", path.Dir(extractedTemp), err)
 		}
@@ -346,5 +348,4 @@ func (a *AssetStore) addArchive(archiveSource *Source, archiveFile string) error
 		return fmt.Errorf("error adding expanded asset files in %q: %v", extracted, err)
 	}
 	return nil
-
 }

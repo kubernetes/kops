@@ -105,7 +105,6 @@ func (_ *EIP) CheckChanges(a, e, changes *EIP) error {
 }
 
 func (_ *EIP) RenderALI(t *aliup.ALIAPITarget, a, e, changes *EIP) error {
-
 	if a == nil {
 		klog.V(2).Infof("Creating new EIP for NatGateway:%q", fi.StringValue(e.NatGateway.Name))
 
@@ -138,8 +137,7 @@ func (_ *EIP) RenderALI(t *aliup.ALIAPITarget, a, e, changes *EIP) error {
 	return nil
 }
 
-type terraformEip struct {
-}
+type terraformEip struct{}
 
 type terraformEipAssociation struct {
 	InstanceID   *terraformWriter.Literal `json:"instance_id,omitempty" cty:"instance_id"`

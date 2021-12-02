@@ -34,5 +34,4 @@ func TestUpdateServiceBuilderExternal(t *testing.T) {
 		builder := UpdateServiceBuilder{NodeupModelContext: nodeupModelContext}
 		return builder.Build(target)
 	})
-
 }

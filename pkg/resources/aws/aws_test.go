@@ -94,7 +94,7 @@ func TestAddUntaggedRouteTables(t *testing.T) {
 
 func TestListRouteTables(t *testing.T) {
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
-	//resources := make(map[string]*Resource)
+	// resources := make(map[string]*Resource)
 	clusterName := "me.example.com"
 	ownershipTagKey := "kubernetes.io/cluster/" + clusterName
 

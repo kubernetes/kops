@@ -118,7 +118,6 @@ func (s *SecurityGroupRule) Run(c *fi.Context) error {
 }
 
 func (_ *SecurityGroupRule) CheckChanges(a, e, changes *SecurityGroupRule) error {
-
 	if a == nil {
 		if e.Name == nil {
 			return fi.RequiredField("Name")
@@ -138,7 +137,6 @@ func (_ *SecurityGroupRule) CheckChanges(a, e, changes *SecurityGroupRule) error
 }
 
 func (_ *SecurityGroupRule) RenderALI(t *aliup.ALIAPITarget, a, e, changes *SecurityGroupRule) error {
-
 	if a == nil {
 		if fi.BoolValue(e.In) {
 			klog.V(2).Infof("Creating SecurityGroupRule of SecurityGroup:%q", fi.StringValue(e.SecurityGroup.SecurityGroupId))
@@ -191,7 +189,6 @@ type terraformSecurityGroupRole struct {
 }
 
 func (_ *SecurityGroupRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroupRule) error {
-
 	tf := &terraformSecurityGroupRole{
 		Name:            e.Name,
 		IpProtocol:      e.IpProtocol,

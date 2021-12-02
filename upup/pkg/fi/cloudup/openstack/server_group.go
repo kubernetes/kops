@@ -58,6 +58,7 @@ func createServerGroup(c OpenstackCloud, opt servergroups.CreateOptsBuilder) (*s
 func (c *openstackCloud) ListServerGroups(opts servergroups.ListOptsBuilder) ([]servergroups.ServerGroup, error) {
 	return listServerGroups(c, opts)
 }
+
 func listServerGroups(c OpenstackCloud, opts servergroups.ListOptsBuilder) ([]servergroups.ServerGroup, error) {
 	var sgs []servergroups.ServerGroup
 

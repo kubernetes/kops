@@ -58,7 +58,7 @@ func (l *LoadBalancerListener) Find(c *fi.Context) (*LoadBalancerListener, error
 	loadBalancerId := fi.StringValue(l.LoadBalancer.LoadbalancerId)
 	listenerPort := fi.IntValue(l.ListenerPort)
 
-	//TODO: should sort errors?
+	// TODO: should sort errors?
 	response, err := cloud.SlbClient().DescribeLoadBalancerTCPListenerAttribute(loadBalancerId, listenerPort)
 	if err != nil {
 		return nil, nil
@@ -104,7 +104,7 @@ func (_ *LoadBalancerListener) CheckChanges(a, e, changes *LoadBalancerListener)
 	return nil
 }
 
-//LoadBalancer can only modify tags.
+// LoadBalancer can only modify tags.
 func (_ *LoadBalancerListener) RenderALI(t *aliup.ALIAPITarget, a, e, changes *LoadBalancerListener) error {
 	loadBalancerId := fi.StringValue(e.LoadBalancer.LoadbalancerId)
 	listenerPort := fi.IntValue(e.ListenerPort)

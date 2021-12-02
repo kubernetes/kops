@@ -83,7 +83,6 @@ func (a *GCEVolumes) InternalIP() net.IP {
 }
 
 func (a *GCEVolumes) discoverTags() error {
-
 	// Cluster Name
 	{
 		clusterName, err := metadata.InstanceAttributeValue("cluster-name")
@@ -334,7 +333,7 @@ func (v *GCEVolumes) AttachVolume(volume *Volume) error {
 	attachedDisk := &compute.AttachedDisk{
 		DeviceName: volumeName,
 		// TODO: The k8s GCE provider sets Kind, but this seems wrong.  Open an issue?
-		//Kind:       disk.Kind,
+		// Kind:       disk.Kind,
 		Mode:   "READ_WRITE",
 		Source: volumeURL.BuildURL(),
 		Type:   "PERSISTENT",

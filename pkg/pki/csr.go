@@ -85,7 +85,7 @@ func signNewCertificate(privateKey *PrivateKey, template *x509.Certificate, sign
 	if template.ExtKeyUsage == nil && !template.IsCA {
 		template.ExtKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth}
 	}
-	//c.SignatureAlgorithm  = do we want to override?
+	// c.SignatureAlgorithm  = do we want to override?
 
 	certificateData, err := x509.CreateCertificate(crypto_rand.Reader, template, parent, template.PublicKey, signerPrivateKey.Key)
 	if err != nil {

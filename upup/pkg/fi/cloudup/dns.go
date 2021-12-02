@@ -168,7 +168,7 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 
 	recordsMap := make(map[string]dnsprovider.ResourceRecordSet)
 	// TODO: We should change the filter to be a suffix match instead
-	//records, err := rrs.List("", "")
+	// records, err := rrs.List("", "")
 	records, err := rrs.List()
 	if err != nil {
 		return fmt.Errorf("error listing DNS resource records for %q: %v", zone.Name(), err)
@@ -219,7 +219,6 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 				changeset.Add(rrs.New(dnsHostname, []string{PlaceholderIP}, PlaceholderTTLDigitialOcean, rrstype.A))
 			} else {
 				changeset.Add(rrs.New(dnsHostname, []string{PlaceholderIP}, PlaceholderTTL, rrstype.A))
-
 			}
 		}
 		if !foundTXT {

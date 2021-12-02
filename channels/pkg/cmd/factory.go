@@ -50,7 +50,6 @@ func loadConfig() (*rest.Config, error) {
 
 	kubeConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides)
 	return kubeConfig.ClientConfig()
-
 }
 
 func (f *DefaultFactory) KubernetesClient() (kubernetes.Interface, error) {

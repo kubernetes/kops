@@ -283,6 +283,7 @@ func (m *MockAutoscaling) DescribeAutoScalingGroupsWithContext(aws.Context, *aut
 	klog.Fatalf("Not implemented")
 	return nil, nil
 }
+
 func (m *MockAutoscaling) DescribeAutoScalingGroupsRequest(*autoscaling.DescribeAutoScalingGroupsInput) (*request.Request, *autoscaling.DescribeAutoScalingGroupsOutput) {
 	klog.Fatalf("Not implemented")
 	return nil, nil
@@ -332,6 +333,7 @@ func (m *MockAutoscaling) DeleteAutoScalingGroupWithContext(aws.Context, *autosc
 	klog.Fatalf("Not implemented")
 	return nil, nil
 }
+
 func (m *MockAutoscaling) DeleteAutoScalingGroupRequest(*autoscaling.DeleteAutoScalingGroupInput) (*request.Request, *autoscaling.DeleteAutoScalingGroupOutput) {
 	klog.Fatalf("Not implemented")
 	return nil, nil

@@ -36,7 +36,6 @@ const (
 
 func buildMinimalCluster() *kops.Cluster {
 	return testutils.BuildMinimalCluster("testcluster.test.com")
-
 }
 
 func buildNodeInstanceGroup(subnets ...string) *kops.InstanceGroup {

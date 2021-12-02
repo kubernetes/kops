@@ -219,7 +219,6 @@ func (b *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 				tags[k] = v
 			}
 		}
-
 	}
 	return tags
 }
@@ -415,7 +414,6 @@ func (b *KopsModelContext) NodePortRange() (utilnet.PortRange, error) {
 
 // UseServiceAccountExternalPermissions returns true if we are using service-account bound IAM roles.
 func (b *KopsModelContext) UseServiceAccountExternalPermissions() bool {
-
 	return b.Cluster.Spec.IAM != nil &&
 		fi.BoolValue(b.Cluster.Spec.IAM.UseServiceAccountExternalPermissions)
 }

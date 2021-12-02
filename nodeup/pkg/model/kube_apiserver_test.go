@@ -120,7 +120,6 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 		},
 		{
 			kops.KubeAPIServerConfig{
-
 				AuditDynamicConfiguration: &[]bool{true}[0],
 			},
 			"--audit-dynamic-configuration=true --insecure-port=0 --secure-port=0",

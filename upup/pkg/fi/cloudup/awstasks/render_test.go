@@ -96,7 +96,7 @@ func doRenderTests(t *testing.T, method string, cases []*renderTest) {
 					diffString := diff.FormatDiff(c.Expected, string(content))
 					t.Logf("diff:\n%s\n", diffString)
 					t.Errorf("case %d, expected: %s\n,got: %s\n", i, c.Expected, string(content))
-					//assert.Equal(t, "", string(content))
+					// assert.Equal(t, "", string(content))
 				}
 			}
 

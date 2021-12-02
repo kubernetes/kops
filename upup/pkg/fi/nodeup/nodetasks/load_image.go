@@ -41,8 +41,10 @@ type LoadImageTask struct {
 	Runtime string
 }
 
-var _ fi.Task = &LoadImageTask{}
-var _ fi.HasDependencies = &LoadImageTask{}
+var (
+	_ fi.Task            = &LoadImageTask{}
+	_ fi.HasDependencies = &LoadImageTask{}
+)
 
 func (t *LoadImageTask) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	// LoadImageTask depends on the docker service to ensure we

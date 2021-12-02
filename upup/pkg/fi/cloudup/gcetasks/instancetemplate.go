@@ -53,7 +53,7 @@ type InstanceTemplate struct {
 
 	Network *Network
 	Tags    []string
-	//Labels      map[string]string
+	// Labels      map[string]string
 	Preemptible *bool
 
 	BootDiskImage  *string
@@ -77,8 +77,10 @@ type InstanceTemplate struct {
 	ID *string
 }
 
-var _ fi.Task = &InstanceTemplate{}
-var _ fi.CompareWithID = &InstanceTemplate{}
+var (
+	_ fi.Task          = &InstanceTemplate{}
+	_ fi.CompareWithID = &InstanceTemplate{}
+)
 
 func (e *InstanceTemplate) CompareWithID() *string {
 	return e.ID
@@ -558,6 +560,7 @@ func addServiceAccounts(serviceAccounts []*compute.ServiceAccount) *terraformSer
 	// }
 	return tsa
 }
+
 func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InstanceTemplate) error {
 	project := t.Project
 
@@ -574,7 +577,7 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 
 	tf.CanIPForward = i.Properties.CanIpForward
 	tf.MachineType = lastComponent(i.Properties.MachineType)
-	//tf.Zone = i.Properties.Zone
+	// tf.Zone = i.Properties.Zone
 	tf.Tags = i.Properties.Tags.Items
 
 	tf.ServiceAccount = addServiceAccounts(i.Properties.ServiceAccounts)

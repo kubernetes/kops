@@ -30,7 +30,6 @@ import (
 
 // BuildEtcdManifest creates the pod spec, based on the etcd cluster
 func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
-
 	pod := &v1.Pod{}
 	pod.APIVersion = "v1"
 	pod.Kind = "Pod"
@@ -190,7 +189,8 @@ func buildEtcdEnvironmentOptions(c *EtcdCluster) []v1.EnvVar {
 		{Name: "ETCD_ADVERTISE_CLIENT_URLS", Value: fmt.Sprintf("%s://%s:%d", scheme, c.Me.InternalName, c.ClientPort)},
 		{Name: "ETCD_INITIAL_ADVERTISE_PEER_URLS", Value: fmt.Sprintf("%s://%s:%d", scheme, c.Me.InternalName, c.PeerPort)},
 		{Name: "ETCD_INITIAL_CLUSTER_STATE", Value: "new"},
-		{Name: "ETCD_INITIAL_CLUSTER_TOKEN", Value: c.ClusterToken}}...)
+		{Name: "ETCD_INITIAL_CLUSTER_TOKEN", Value: c.ClusterToken},
+	}...)
 
 	// add timeout/hearbeat settings
 	if notEmpty(c.ElectionTimeout) {
@@ -203,7 +203,8 @@ func buildEtcdEnvironmentOptions(c *EtcdCluster) []v1.EnvVar {
 	// @check if we are using peer certificates
 	if notEmpty(c.PeerCA) {
 		options = append(options, []v1.EnvVar{
-			{Name: "ETCD_PEER_TRUSTED_CA_FILE", Value: c.PeerCA}}...)
+			{Name: "ETCD_PEER_TRUSTED_CA_FILE", Value: c.PeerCA},
+		}...)
 	}
 	if notEmpty(c.PeerCert) {
 		options = append(options, v1.EnvVar{Name: "ETCD_PEER_CERT_FILE", Value: c.PeerCert})

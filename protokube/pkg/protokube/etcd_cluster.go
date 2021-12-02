@@ -96,8 +96,8 @@ type EtcdNode struct {
 // EtcdController defines the etcd controller
 type EtcdController struct {
 	kubeBoot *KubeBoot
-	//volume     *Volume
-	//volumeSpec *etcd.EtcdClusterSpec
+	// volume     *Volume
+	// volumeSpec *etcd.EtcdClusterSpec
 	cluster *EtcdCluster
 }
 
@@ -307,12 +307,12 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 			return fmt.Errorf("error removing etcd manifest symlink (for strict creation) %q: %v", manifestSource, err)
 		}
 
-		err = os.MkdirAll(pathFor(manifestTargetDir), 0755)
+		err = os.MkdirAll(pathFor(manifestTargetDir), 0o755)
 		if err != nil {
 			return fmt.Errorf("error creating directories for etcd manifest %q: %v", manifestTargetDir, err)
 		}
 
-		err = ioutil.WriteFile(pathFor(manifestTarget), manifest, 0644)
+		err = ioutil.WriteFile(pathFor(manifestTarget), manifest, 0o644)
 		if err != nil {
 			return fmt.Errorf("error writing etcd manifest %q: %v", manifestTarget, err)
 		}

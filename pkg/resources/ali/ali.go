@@ -59,7 +59,6 @@ type clusterDiscoveryALI struct {
 }
 
 func ListResourcesALI(aliCloud aliup.ALICloud, clusterName string, region string) (map[string]*resources.Resource, error) {
-
 	resources := make(map[string]*resources.Resource)
 
 	d := clusterDiscoveryALI{
@@ -130,7 +129,6 @@ func (d *clusterDiscoveryALI) ListScalingGroups() ([]*resources.Resource, error)
 			},
 		}
 		groups, _, err := d.aliCloud.EssClient().DescribeScalingGroups(describeScalingGroupsArgs)
-
 		if err != nil {
 			return nil, fmt.Errorf("error listing ScalingGroup: %v", err)
 		}
@@ -412,7 +410,6 @@ func (d *clusterDiscoveryALI) ListRam() ([]*resources.Resource, error) {
 	response, err := d.aliCloud.RamClient().ListRoles()
 	if err != nil {
 		return nil, fmt.Errorf("err listing RamRole:%v", err)
-
 	}
 
 	if len(response.Roles.Role) != 0 {
@@ -581,7 +578,7 @@ func (d *clusterDiscoveryALI) ListVPC() ([]*resources.Resource, error) {
 			}
 			resourceTracker.Blocks = append(resourceTracker.Blocks, typeVPC+":"+vpcTracker.ID)
 
-			//Waiting for all autoScalingGroups to be deleted.
+			// Waiting for all autoScalingGroups to be deleted.
 			for _, scalingGroupId := range d.scalingGroup {
 				resourceTracker.Blocked = append(resourceTracker.Blocked, typeScalingGroup+":"+scalingGroupId)
 			}
@@ -669,7 +666,6 @@ func (d *clusterDiscoveryALI) ListVolume() ([]*resources.Resource, error) {
 	}
 
 	return resourceTrackers, nil
-
 }
 
 func DeleteVolume(cloud fi.Cloud, r *resources.Resource) error {
@@ -684,7 +680,6 @@ func DeleteVolume(cloud fi.Cloud, r *resources.Resource) error {
 }
 
 func ListNatGateway(d *clusterDiscoveryALI, vpcID string, resourceTrackers *[]*resources.Resource) error {
-
 	// Delete NateGateway with specified name. All of the EIPs will be deleted.
 	// We think the NateGateway which owns the designated name is owned.
 	natGatewaysToDelete := []string{}

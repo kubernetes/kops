@@ -44,7 +44,6 @@ var _ fi.ModelBuilder = &KubeProxyBuilder{}
 // Build is responsible for building the kube-proxy manifest
 // @TODO we should probably change this to a daemonset in the future and follow the kubeadm path
 func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
-
 	if b.Cluster.Spec.KubeProxy.Enabled != nil && !*b.Cluster.Spec.KubeProxy.Enabled {
 		klog.V(2).Infof("Kube-proxy is disabled, will not create configuration for it.")
 		return nil
@@ -176,7 +175,8 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 
 	flags = append(flags, []string{
 		"--kubeconfig=/var/lib/kube-proxy/kubeconfig",
-		"--oom-score-adj=-998"}...)
+		"--oom-score-adj=-998",
+	}...)
 
 	image := kubeProxyImage(b.NodeupModelContext)
 	container := &v1.Container{
@@ -213,7 +213,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	container.Command = []string{"/usr/local/bin/kube-proxy"}
 	container.Args = append(
 		sortedStrings(flags),
-		"--logtostderr=false", //https://github.com/kubernetes/klog/issues/60
+		"--logtostderr=false", // https://github.com/kubernetes/klog/issues/60
 		"--alsologtostderr",
 		"--log-file=/var/log/kube-proxy.log")
 
@@ -248,7 +248,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 
 	// Note that e.g. kubeadm has this as a daemonset, but this doesn't have a lot of test coverage AFAICT
-	//ServiceAccountName: "kube-proxy",
+	// ServiceAccountName: "kube-proxy",
 
 	//d := &v1beta1.DaemonSet{
 	//	ObjectMeta: metav1.ObjectMeta{

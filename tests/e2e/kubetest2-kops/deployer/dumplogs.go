@@ -27,7 +27,6 @@ import (
 )
 
 func (d *deployer) DumpClusterLogs() error {
-
 	args := []string{
 		d.KopsBinaryPath, "toolbox", "dump",
 		"--name", d.ClusterName,

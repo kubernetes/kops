@@ -26,7 +26,6 @@ import (
 )
 
 func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
-
 	desiredCNIVersion := "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-TEST-VERSION.tar.gz"
 	desiredCNIVersionHash := "sha256:0000000000000000000000000000000000000000000000000000000000000000"
 
@@ -42,7 +41,6 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
 	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
-
 	if err != nil {
 		t.Errorf("Unable to parse CNI version %s", err)
 	}
@@ -57,7 +55,6 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 }
 
 func Test_FindCNIAssetFromDefaults118(t *testing.T) {
-
 	desiredCNIVersionURL := "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz"
 	desiredCNIVersionHash := "sha256:977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8"
 
@@ -66,7 +63,6 @@ func Test_FindCNIAssetFromDefaults118(t *testing.T) {
 
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
 	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
-
 	if err != nil {
 		t.Errorf("Unable to parse CNI version %s", err)
 	}
@@ -81,7 +77,6 @@ func Test_FindCNIAssetFromDefaults118(t *testing.T) {
 }
 
 func Test_FindCNIAssetFromDefaults122(t *testing.T) {
-
 	desiredCNIVersionURL := "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz"
 	desiredCNIVersionHash := "sha256:962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7"
 
@@ -90,7 +85,6 @@ func Test_FindCNIAssetFromDefaults122(t *testing.T) {
 
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
 	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
-
 	if err != nil {
 		t.Errorf("Unable to parse CNI version %s", err)
 	}
@@ -105,7 +99,6 @@ func Test_FindCNIAssetFromDefaults122(t *testing.T) {
 }
 
 func Test_FindLyftAssetFromEnvironmentVariable(t *testing.T) {
-
 	desiredLyftVersion := "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/TEST-VERSION/cni-TEST-VERSION.tar.gz"
 	desiredLyftVersionHash := "sha256:0000000000000000000000000000000000000000000000000000000000000000"
 
@@ -121,7 +114,6 @@ func Test_FindLyftAssetFromEnvironmentVariable(t *testing.T) {
 
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
 	lyftAsset, lyftAssetHash, err := findLyftVPCAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
-
 	if err != nil {
 		t.Errorf("Unable to parse Lyft version %s", err)
 	}
@@ -136,7 +128,6 @@ func Test_FindLyftAssetFromEnvironmentVariable(t *testing.T) {
 }
 
 func Test_FindLyftAssetFromDefaults(t *testing.T) {
-
 	desiredLyftVersion := "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.6.0/cni-ipvlan-vpc-k8s-amd64-v0.6.0.tar.gz"
 	desiredLyftVersionHash := "sha256:871757d381035f64020a523e7a3e139b6177b98eb7a61b547813ff25957fc566"
 
@@ -145,7 +136,6 @@ func Test_FindLyftAssetFromDefaults(t *testing.T) {
 
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
 	lyftAsset, lyftAssetHash, err := findLyftVPCAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
-
 	if err != nil {
 		t.Errorf("Unable to parse Lyft version %s", err)
 	}

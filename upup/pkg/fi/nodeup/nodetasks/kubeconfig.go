@@ -34,9 +34,11 @@ type KubeConfig struct {
 	config *fi.TaskDependentResource
 }
 
-var _ fi.Task = &KubeConfig{}
-var _ fi.HasName = &KubeConfig{}
-var _ fi.HasDependencies = &KubeConfig{}
+var (
+	_ fi.Task            = &KubeConfig{}
+	_ fi.HasName         = &KubeConfig{}
+	_ fi.HasDependencies = &KubeConfig{}
+)
 
 func (k *KubeConfig) GetName() *string {
 	return &k.Name

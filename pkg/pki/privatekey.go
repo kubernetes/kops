@@ -50,7 +50,7 @@ func ParsePEMPrivateKey(data []byte) (*PrivateKey, error) {
 }
 
 func GeneratePrivateKey() (*PrivateKey, error) {
-	var rsaKeySize = DefaultPrivateKeySize
+	rsaKeySize := DefaultPrivateKeySize
 
 	if os.Getenv("KOPS_RSA_PRIVATE_KEY_SIZE") != "" {
 		s := os.Getenv("KOPS_RSA_PRIVATE_KEY_SIZE")

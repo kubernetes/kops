@@ -83,7 +83,6 @@ func (m *MockClient) mockNetworks() {
 }
 
 func (m *MockClient) listNetworks(w http.ResponseWriter, vals url.Values) {
-
 	w.WriteHeader(http.StatusOK)
 
 	networks := make([]externalNetwork, 0)

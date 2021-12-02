@@ -128,7 +128,7 @@ func (os *clusterDiscoveryOS) ListNetwork() ([]*resources.Resource, error) {
 					resourceTrackers = append(resourceTrackers, resourceTracker)
 				}
 			}
-			//associated load balancers
+			// associated load balancers
 			lbTrackers, err := os.DeleteSubnetLBs(subnet)
 			if err != nil {
 				return resourceTrackers, err

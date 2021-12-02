@@ -39,7 +39,7 @@ func (n *Router) CompareWithID() *string {
 	return n.ID
 }
 
-//NewRouterTaskFromCloud initializes and returns a new Router
+// NewRouterTaskFromCloud initializes and returns a new Router
 func NewRouterTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, router *routers.Router, find *Router) (*Router, error) {
 	actual := &Router{
 		ID:                    fi.String(router.ID),

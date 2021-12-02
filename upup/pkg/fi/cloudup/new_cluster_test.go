@@ -80,7 +80,6 @@ func TestCreateEtcdCluster(t *testing.T) {
 	if name != etcd.Name {
 		t.Errorf("Expected: %v, Got: %v", name, etcd.Name)
 	}
-
 }
 
 func TestSetupNetworking(t *testing.T) {

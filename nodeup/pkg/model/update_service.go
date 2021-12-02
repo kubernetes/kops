@@ -31,14 +31,15 @@ type UpdateServiceBuilder struct {
 	*NodeupModelContext
 }
 
-const flatcarServiceName = "update-service"
-const debianPackageName = "unattended-upgrades"
+const (
+	flatcarServiceName = "update-service"
+	debianPackageName  = "unattended-upgrades"
+)
 
 var _ fi.ModelBuilder = &UpdateServiceBuilder{}
 
 // Build is responsible for configuring automatic updates based on the OS.
 func (b *UpdateServiceBuilder) Build(c *fi.ModelBuilderContext) error {
-
 	if b.Distribution == distributions.DistributionFlatcar {
 		b.buildFlatcarSystemdService(c)
 	} else if b.Distribution.IsDebianFamily() {
@@ -107,5 +108,4 @@ APT::Periodic::AutocleanInterval "7";
 		Contents: fi.NewStringResource(contents),
 		Type:     nodetasks.FileType_File,
 	})
-
 }

@@ -51,8 +51,8 @@ func TestWriteFile(t *testing.T) {
 		{
 			path:     path.Join(tempDir, "SubDir", "test1.tmp"),
 			data:     []byte("test data\nline 1\r\nline 2"),
-			fileMode: 0644,
-			dirMode:  0755,
+			fileMode: 0o644,
+			dirMode:  0o755,
 		},
 	}
 	for _, test := range tests {

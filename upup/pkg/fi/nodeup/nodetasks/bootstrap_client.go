@@ -55,9 +55,11 @@ type BootstrapCert struct {
 	Key  *fi.TaskDependentResource
 }
 
-var _ fi.Task = &BootstrapClientTask{}
-var _ fi.HasName = &BootstrapClientTask{}
-var _ fi.HasDependencies = &BootstrapClientTask{}
+var (
+	_ fi.Task            = &BootstrapClientTask{}
+	_ fi.HasName         = &BootstrapClientTask{}
+	_ fi.HasDependencies = &BootstrapClientTask{}
+)
 
 func (b *BootstrapClientTask) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	// BootstrapClient depends on the protokube service to ensure gossip DNS

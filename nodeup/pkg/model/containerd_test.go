@@ -211,7 +211,6 @@ func TestContainerdConfig(t *testing.T) {
 	if config == "" {
 		t.Errorf("got unexpected empty containerd config")
 	}
-
 }
 
 func TestAppendGPURuntimeContainerdConfig(t *testing.T) {
@@ -271,5 +270,4 @@ func TestAppendGPURuntimeContainerdConfig(t *testing.T) {
 		fmt.Println(diff.FormatDiff(expectedNewConfig, newConfig))
 		t.Error("new config did not match expected new config")
 	}
-
 }

@@ -25,7 +25,7 @@ import (
 )
 
 func TestIAMServiceEC2(t *testing.T) {
-	var expectations = map[string]string{
+	expectations := map[string]string{
 		"us-east-1":      "ec2.amazonaws.com",
 		"randomunknown":  "ec2.amazonaws.com",
 		"us-gov-east-1":  "ec2.amazonaws.com",

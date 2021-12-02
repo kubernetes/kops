@@ -79,7 +79,6 @@ type NodeTerminationHandlerBuilder struct {
 }
 
 func (b *NodeTerminationHandlerBuilder) Build(c *fi.ModelBuilderContext) error {
-
 	for _, ig := range b.InstanceGroups {
 		err := b.configureASG(c, ig)
 		if err != nil {

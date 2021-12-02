@@ -55,5 +55,4 @@ func TestCloudTagsForInstanceGroup(t *testing.T) {
 	if !reflect.DeepEqual(actual, expected) {
 		t.Errorf("expected tags %+v, but got %+v", expected, actual)
 	}
-
 }

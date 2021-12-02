@@ -177,7 +177,6 @@ func FindLatestKubernetesVersion() (string, error) {
 }
 
 func assignProxy(cluster *kops.Cluster) (*kops.EgressProxySpec, error) {
-
 	egressProxy := cluster.Spec.EgressProxy
 	// Add default no_proxy values if we are using a http proxy
 	if egressProxy != nil {

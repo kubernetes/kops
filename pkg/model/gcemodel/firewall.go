@@ -147,7 +147,6 @@ func (b *GCEModelContext) AddFirewallRulesTasks(c *fi.ModelBuilderContext, name 
 			ipv4SourceRanges = append(ipv4SourceRanges, sourceRange)
 		} else {
 			ipv6SourceRanges = append(ipv6SourceRanges, sourceRange)
-
 		}
 	}
 
