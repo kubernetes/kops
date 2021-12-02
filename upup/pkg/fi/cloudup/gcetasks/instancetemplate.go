@@ -51,9 +51,9 @@ type InstanceTemplate struct {
 
 	Lifecycle fi.Lifecycle
 
-	Network *Network
-	Tags    []string
-	// Labels      map[string]string
+	Network     *Network
+	Tags        []string
+	Labels      map[string]string
 	Preemptible *bool
 
 	BootDiskImage  *string
@@ -116,6 +116,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		p := r.Properties
 
 		actual.Tags = append(actual.Tags, p.Tags.Items...)
+		actual.Labels = p.Labels
 		actual.MachineType = fi.String(lastComponent(p.MachineType))
 		actual.CanIPForward = &p.CanIpForward
 
@@ -357,7 +358,8 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 
 			ServiceAccounts: serviceAccounts,
 
-			Tags: tags,
+			Labels: e.Labels,
+			Tags:   tags,
 		},
 	}
 
@@ -455,6 +457,7 @@ type terraformInstanceTemplate struct {
 	ServiceAccount        *terraformServiceAccount                 `json:"service_account,omitempty" cty:"service_account"`
 	Scheduling            *terraformScheduling                     `json:"scheduling,omitempty" cty:"scheduling"`
 	Disks                 []*terraformInstanceTemplateAttachedDisk `json:"disk,omitempty" cty:"disk"`
+	Labels                map[string]string                        `json:"labels,omitempty" cty:"labels"`
 	NetworkInterfaces     []*terraformNetworkInterface             `json:"network_interface,omitempty" cty:"network_interface"`
 	Metadata              map[string]*terraformWriter.Literal      `json:"metadata,omitempty" cty:"metadata"`
 	MetadataStartupScript *terraformWriter.Literal                 `json:"metadata_startup_script,omitempty" cty:"metadata_startup_script"`
@@ -577,7 +580,7 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 
 	tf.CanIPForward = i.Properties.CanIpForward
 	tf.MachineType = lastComponent(i.Properties.MachineType)
-	// tf.Zone = i.Properties.Zone
+	tf.Labels = i.Properties.Labels
 	tf.Tags = i.Properties.Tags.Items
 
 	tf.ServiceAccount = addServiceAccounts(i.Properties.ServiceAccounts)
