@@ -144,7 +144,6 @@ func (a *AWSVolumes) describeInstance() (*ec2.Instance, error) {
 		}
 		return true
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("error querying for EC2 instance %q: %v", a.instanceId, err)
 	}
@@ -206,7 +205,7 @@ func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, 
 					{
 						// Ignore
 					}
-				//case TagNameMasterId:
+				// case TagNameMasterId:
 				//	id, err := strconv.Atoi(v)
 				//	if err != nil {
 				//		klog.Warningf("error parsing master-id tag on volume %q %s=%s; skipping volume", volumeID, k, v)
@@ -240,7 +239,6 @@ func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, 
 		}
 		return true
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("error querying for EC2 volumes: %v", err)
 	}

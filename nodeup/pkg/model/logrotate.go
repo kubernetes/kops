@@ -37,7 +37,6 @@ var _ fi.ModelBuilder = &LogrotateBuilder{}
 
 // Build is responsible for configuring logrotate
 func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
-
 	switch b.Distribution {
 	case distributions.DistributionContainerOS:
 		klog.Infof("Detected ContainerOS; won't install logrotate")

@@ -83,8 +83,8 @@ func NewStdLogger() log.Logger {
 
 // NewInstanceGroups returns an InstanceGroup wrapper for the specified cloud provider.
 func NewInstanceGroup(cloudProviderID kops.CloudProviderID,
-	instanceGroupType InstanceGroupType, obj interface{}) (InstanceGroup, error) {
-
+	instanceGroupType InstanceGroupType, obj interface{}) (InstanceGroup, error,
+) {
 	switch cloudProviderID {
 	case kops.CloudProviderAWS:
 		{
@@ -104,8 +104,8 @@ func NewInstanceGroup(cloudProviderID kops.CloudProviderID,
 
 // NewElastigroup returns an Elastigroup wrapper for the specified cloud provider.
 func NewElastigroup(cloudProviderID kops.CloudProviderID,
-	obj interface{}) (InstanceGroup, error) {
-
+	obj interface{}) (InstanceGroup, error,
+) {
 	return NewInstanceGroup(
 		cloudProviderID,
 		InstanceGroupElastigroup,
@@ -114,8 +114,8 @@ func NewElastigroup(cloudProviderID kops.CloudProviderID,
 
 // NewOcean returns an Ocean wrapper for the specified cloud provider.
 func NewOcean(cloudProviderID kops.CloudProviderID,
-	obj interface{}) (InstanceGroup, error) {
-
+	obj interface{}) (InstanceGroup, error,
+) {
 	return NewInstanceGroup(
 		cloudProviderID,
 		InstanceGroupOcean,

@@ -29,7 +29,6 @@ type SpecBuilder struct {
 }
 
 func (l *SpecBuilder) BuildCompleteSpec(clusterSpec *kopsapi.ClusterSpec) (*kopsapi.ClusterSpec, error) {
-
 	loaded, err := l.OptionsLoader.Build(clusterSpec)
 	if err != nil {
 		return nil, err

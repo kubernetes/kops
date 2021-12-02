@@ -42,7 +42,7 @@ func Apply(data []byte) error {
 	}()
 
 	localManifestFile := path.Join(tmpDir, "manifest.yaml")
-	if err := os.WriteFile(localManifestFile, data, 0600); err != nil {
+	if err := os.WriteFile(localManifestFile, data, 0o600); err != nil {
 		return fmt.Errorf("error writing temp file: %v", err)
 	}
 

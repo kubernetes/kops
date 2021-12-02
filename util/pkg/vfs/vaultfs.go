@@ -51,7 +51,6 @@ func newVaultPath(client *vault.Client, scheme string, path string) (*VaultPath,
 
 	if client == nil {
 		return nil, fmt.Errorf("vault path needs to have a vault client")
-
 	}
 
 	return &VaultPath{
@@ -234,7 +233,6 @@ func (p *VaultPath) String() string {
 }
 
 func (p VaultPath) destroy() error {
-
 	data := map[string][]string{
 		"versions": {"1"},
 	}
@@ -250,11 +248,9 @@ func (p VaultPath) destroy() error {
 	}
 
 	return err
-
 }
 
 func (p VaultPath) deleteMetadata() error {
-
 	r := p.vaultClient.NewRequest("DELETE", "/v1/"+p.mountPoint+"/metadata/"+p.path)
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
@@ -265,7 +261,6 @@ func (p VaultPath) deleteMetadata() error {
 	}
 
 	return err
-
 }
 
 func (p VaultPath) SetClientToken(token string) {

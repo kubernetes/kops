@@ -39,7 +39,7 @@ func (d *deployer) renderTemplate(values map[string]interface{}) error {
 		return err
 	}
 	valuesPath := path.Join(dir, "values.yaml")
-	err = os.WriteFile(valuesPath, valuesBytes, 0644)
+	err = os.WriteFile(valuesPath, valuesBytes, 0o644)
 	if err != nil {
 		return err
 	}

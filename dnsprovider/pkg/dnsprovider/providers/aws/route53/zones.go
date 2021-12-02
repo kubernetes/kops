@@ -66,6 +66,7 @@ func (zones Zones) Remove(zone dnsprovider.Zone) error {
 	}
 	return nil
 }
+
 func (zones Zones) New(name string) (dnsprovider.Zone, error) {
 	id := string(uuid.NewUUID())
 	managedZone := route53.HostedZone{Id: &id, Name: &name}

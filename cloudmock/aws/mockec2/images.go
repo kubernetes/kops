@@ -29,15 +29,19 @@ import (
 func (m *MockEC2) DescribeImageAttributeRequest(*ec2.DescribeImageAttributeInput) (*request.Request, *ec2.DescribeImageAttributeOutput) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) DescribeImageAttributeWithContext(aws.Context, *ec2.DescribeImageAttributeInput, ...request.Option) (*ec2.DescribeImageAttributeOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) DescribeImageAttribute(*ec2.DescribeImageAttributeInput) (*ec2.DescribeImageAttributeOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) DescribeImagesRequest(*ec2.DescribeImagesInput) (*request.Request, *ec2.DescribeImagesOutput) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) DescribeImagesWithContext(aws.Context, *ec2.DescribeImagesInput, ...request.Option) (*ec2.DescribeImagesOutput, error) {
 	panic("Not implemented")
 }
@@ -70,12 +74,15 @@ func (m *MockEC2) DescribeImages(request *ec2.DescribeImagesInput) (*ec2.Describ
 
 	return response, nil
 }
+
 func (m *MockEC2) DescribeImportImageTasksRequest(*ec2.DescribeImportImageTasksInput) (*request.Request, *ec2.DescribeImportImageTasksOutput) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) DescribeImportImageTasksWithContext(aws.Context, *ec2.DescribeImportImageTasksInput, ...request.Option) (*ec2.DescribeImportImageTasksOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) DescribeImportImageTasks(*ec2.DescribeImportImageTasksInput) (*ec2.DescribeImportImageTasksOutput, error) {
 	panic("Not implemented")
 }

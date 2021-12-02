@@ -29,7 +29,6 @@ import (
 )
 
 func TestPodController(t *testing.T) {
-
 	ctx := context.Background()
 	pspec := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{

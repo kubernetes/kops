@@ -172,7 +172,6 @@ func getCloudGroups(c ALICloud, cluster *kops.Cluster, instancegroups []*kops.In
 	}
 
 	return groups, nil
-
 }
 
 // FindAutoscalingGroups finds autoscaling groups matching the specified tags

@@ -56,7 +56,6 @@ func (*AptSource) CheckChanges(a, e, changes *AptSource) error {
 }
 
 func (f *AptSource) RenderLocal(t *local.LocalTarget, a, e, changes *AptSource) error {
-
 	tmpDir, err := os.MkdirTemp("", "aptsource")
 	if err != nil {
 		return fmt.Errorf("error creating temp dir: %v", err)

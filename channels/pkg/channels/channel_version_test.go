@@ -76,5 +76,4 @@ func Test_IsPKIInstalled(t *testing.T) {
 	if !isInstalled {
 		t.Error("claims PKI is not installed when it is")
 	}
-
 }

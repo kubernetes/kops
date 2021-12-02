@@ -46,7 +46,6 @@ func TestGetStructVal(t *testing.T) {
 	if inStruct != str {
 		t.Errorf("unexpected value: %s, %s, expected: %s", inStruct, err, str)
 	}
-
 }
 
 func TestWrongStructField(t *testing.T) {
@@ -63,5 +62,4 @@ func TestWrongStructField(t *testing.T) {
 	if v.IsValid() {
 		t.Errorf("unexpected Valid value from non-existent field lookup")
 	}
-
 }

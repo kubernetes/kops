@@ -79,6 +79,7 @@ func (m *MockIAM) CreateRole(request *iam.CreateRoleInput) (*iam.CreateRoleOutpu
 func (m *MockIAM) CreateRoleWithContext(aws.Context, *iam.CreateRoleInput, ...request.Option) (*iam.CreateRoleOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockIAM) CreateRoleRequest(*iam.CreateRoleInput) (*request.Request, *iam.CreateRoleOutput) {
 	panic("Not implemented")
 }
@@ -110,6 +111,7 @@ func (m *MockIAM) ListRoles(request *iam.ListRolesInput) (*iam.ListRolesOutput, 
 func (m *MockIAM) ListRolesWithContext(aws.Context, *iam.ListRolesInput, ...request.Option) (*iam.ListRolesOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockIAM) ListRolesRequest(*iam.ListRolesInput) (*request.Request, *iam.ListRolesOutput) {
 	panic("Not implemented")
 }

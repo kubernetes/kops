@@ -121,7 +121,6 @@ func (c *Context) Render(a, e, changes Task) error {
 
 	if lifecycle != "" {
 		if reflect.ValueOf(a).IsNil() {
-
 			switch lifecycle {
 			case LifecycleExistsAndValidates:
 				return fmt.Errorf("lifecycle set to ExistsAndValidates, but object was not found")

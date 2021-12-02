@@ -71,9 +71,11 @@ type funcSorter struct {
 func (f *funcSorter) Len() int {
 	return f.len
 }
+
 func (f *funcSorter) Less(i, j int) bool {
 	return f.less(i, j)
 }
+
 func (f *funcSorter) Swap(i, j int) {
 	f.swap(i, j)
 }

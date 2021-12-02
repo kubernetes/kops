@@ -42,7 +42,6 @@ func Test_Strategy(t *testing.T) {
 
 	s := &s3PublicAclStrategy{}
 	acl, err := s.GetACL(path, cluster)
-
 	if err != nil {
 		t.Errorf("error getting ACL: %v", err)
 	}
@@ -70,7 +69,6 @@ func Test_In_StateStore(t *testing.T) {
 
 	s := &s3PublicAclStrategy{}
 	acl, err := s.GetACL(stateStore, cluster)
-
 	if err != nil {
 		t.Errorf("error getting ACL: %v", err)
 	}

@@ -35,7 +35,6 @@ const (
 )
 
 func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
-
 	if b.Cluster.Spec.ServiceAccountIssuerDiscovery == nil ||
 		!b.Cluster.Spec.ServiceAccountIssuerDiscovery.EnableAWSOIDCProvider {
 		return nil
@@ -67,11 +66,9 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 func getFingerprints() []string {
-
-	//These strings are the sha1 of the two possible S3 root CAs.
+	// These strings are the sha1 of the two possible S3 root CAs.
 	return []string{
 		"9e99a48a9960b14926bb7f3b02e22da2b0ab7280",
 		"a9d53002e97e00e043244f3d170d6f4c414104fd",
 	}
-
 }

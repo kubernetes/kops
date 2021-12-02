@@ -42,11 +42,9 @@ type GCECloud interface {
 	Storage() *storage.Service
 	IAM() *iam.Service
 	CloudDNS() DNSClient
-
 	Project() string
 	WaitForOp(op *compute.Operation) error
 	Labels() map[string]string
-
 	Zones() ([]string, error)
 
 	// ServiceAccount returns the email for the service account that the instances will run under

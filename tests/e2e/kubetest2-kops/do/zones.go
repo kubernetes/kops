@@ -42,7 +42,6 @@ var ErrMoreThanOneZone = errors.New("More than 1 zone is chosen. DO only works w
 
 // RandomZones returns a random set of availability zones within a region
 func RandomZones(count int) ([]string, error) {
-
 	if count > 1 {
 		return nil, ErrMoreThanOneZone
 	}

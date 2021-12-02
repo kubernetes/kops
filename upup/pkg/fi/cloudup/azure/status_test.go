@@ -37,7 +37,6 @@ var _ VMScaleSetsClient = &mockVMScaleSetsClient{}
 
 // CreateOrUpdate creates or updates a VM Scale Set.
 func (c *mockVMScaleSetsClient) CreateOrUpdate(ctx context.Context, resourceGroupName, vmScaleSetName string, parameters compute.VirtualMachineScaleSet) (*compute.VirtualMachineScaleSet, error) {
-
 	return nil, fmt.Errorf("unimplemented")
 }
 

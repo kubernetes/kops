@@ -30,7 +30,6 @@ func (c *openstackCloud) GetL3FloatingIP(id string) (fip *l3floatingip.FloatingI
 
 func getL3FloatingIP(c OpenstackCloud, id string) (fip *l3floatingip.FloatingIP, err error) {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-
 		fip, err = l3floatingip.Get(c.NetworkingClient(), id).Extract()
 		if err != nil {
 			return false, fmt.Errorf("GetFloatingIP: fetching floating IP (%s) failed: %v", id, err)
@@ -52,7 +51,6 @@ func (c *openstackCloud) CreateL3FloatingIP(opts l3floatingip.CreateOpts) (fip *
 
 func createL3FloatingIP(c OpenstackCloud, opts l3floatingip.CreateOpts) (fip *l3floatingip.FloatingIP, err error) {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-
 		fip, err = l3floatingip.Create(c.NetworkingClient(), opts).Extract()
 		if err != nil {
 			return false, fmt.Errorf("CreateL3FloatingIP: create L3 floating IP failed: %v", err)
@@ -73,7 +71,6 @@ func (c *openstackCloud) ListL3FloatingIPs(opts l3floatingip.ListOpts) (fips []l
 }
 
 func listL3FloatingIPs(c OpenstackCloud, opts l3floatingip.ListOpts) (fips []l3floatingip.FloatingIP, err error) {
-
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
 		page, err := l3floatingip.List(c.NetworkingClient(), opts).AllPages()
 		if err != nil {
@@ -120,7 +117,6 @@ func (c *openstackCloud) DeleteL3FloatingIP(id string) (err error) {
 }
 
 func deleteL3FloatingIP(c OpenstackCloud, id string) (err error) {
-
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		err = l3floatingip.Delete(c.NetworkingClient(), id).ExtractErr()
 		if err != nil && !isNotFound(err) {

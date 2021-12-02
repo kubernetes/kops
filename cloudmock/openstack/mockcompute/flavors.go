@@ -69,7 +69,6 @@ func (m *MockClient) mockFlavors() {
 }
 
 func (m *MockClient) listFlavors(w http.ResponseWriter) {
-
 	w.WriteHeader(http.StatusOK)
 
 	flavors := make([]flavors.Flavor, 0)

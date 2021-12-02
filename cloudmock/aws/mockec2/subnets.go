@@ -217,9 +217,11 @@ func (m *MockEC2) AssociateRouteTable(request *ec2.AssociateRouteTableInput) (*e
 	}
 	return response, nil
 }
+
 func (m *MockEC2) AssociateRouteTableWithContext(aws.Context, *ec2.AssociateRouteTableInput, ...request.Option) (*ec2.AssociateRouteTableOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) AssociateRouteTableRequest(*ec2.AssociateRouteTableInput) (*request.Request, *ec2.AssociateRouteTableOutput) {
 	panic("Not implemented")
 }
@@ -243,6 +245,7 @@ func (m *MockEC2) DeleteSubnet(request *ec2.DeleteSubnetInput) (*ec2.DeleteSubne
 func (m *MockEC2) DeleteSubnetWithContext(aws.Context, *ec2.DeleteSubnetInput, ...request.Option) (*ec2.DeleteSubnetOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockEC2) DeleteSubnetRequest(*ec2.DeleteSubnetInput) (*request.Request, *ec2.DeleteSubnetOutput) {
 	panic("Not implemented")
 }

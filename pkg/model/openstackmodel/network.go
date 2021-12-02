@@ -54,7 +54,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	needRouter := true
-	//Do not need router if there is no external network
+	// Do not need router if there is no external network
 	if osSpec.Router == nil || osSpec.Router.ExternalNetwork == nil {
 		needRouter = false
 	}

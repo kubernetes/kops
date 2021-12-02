@@ -154,12 +154,12 @@ func (t *CloudformationTarget) Finish(taskMap map[string]fi.Task) error {
 	for relativePath, contents := range files {
 		p := path.Join(t.outDir, relativePath)
 
-		err = os.MkdirAll(path.Dir(p), os.FileMode(0755))
+		err = os.MkdirAll(path.Dir(p), os.FileMode(0o755))
 		if err != nil {
 			return fmt.Errorf("error creating output directory %q: %v", path.Dir(p), err)
 		}
 
-		err = os.WriteFile(p, contents, os.FileMode(0644))
+		err = os.WriteFile(p, contents, os.FileMode(0o644))
 		if err != nil {
 			return fmt.Errorf("error writing cloudformation data to output file %q: %v", p, err)
 		}

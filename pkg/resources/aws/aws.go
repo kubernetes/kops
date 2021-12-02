@@ -56,10 +56,8 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 	// These are the functions that are used for looking up
 	// cluster resources by their tags.
 	listFunctions := []listFn{
-
 		// CloudFormation
-		//ListCloudFormationStacks,
-
+		// ListCloudFormationStacks,
 		// EC2
 		ListAutoScalingGroups,
 		ListInstances,
@@ -603,7 +601,7 @@ func ListVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 		}
 
 		var blocks []string
-		//blocks = append(blocks, "vpc:" + aws.StringValue(rt.VpcId))
+		// blocks = append(blocks, "vpc:" + aws.StringValue(rt.VpcId))
 
 		resourceTracker.Blocks = blocks
 

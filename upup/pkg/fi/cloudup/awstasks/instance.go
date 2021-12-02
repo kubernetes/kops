@@ -17,9 +17,8 @@ limitations under the License.
 package awstasks
 
 import (
-	"fmt"
-
 	"encoding/base64"
+	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"

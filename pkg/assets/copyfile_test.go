@@ -21,7 +21,6 @@ import (
 )
 
 func Test_BuildVFSPath(t *testing.T) {
-
 	grid := []struct {
 		target  string
 		vfsPath string
@@ -80,5 +79,4 @@ func Test_BuildVFSPath(t *testing.T) {
 			t.Errorf("incorrect url parsed %q", path)
 		}
 	}
-
 }

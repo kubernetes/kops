@@ -89,7 +89,6 @@ func (d *Disk) Find(c *fi.Context) (*Disk, error) {
 	}
 
 	tags, err := cloud.GetTags(fi.StringValue(actual.DiskId), DiskResource)
-
 	if err != nil {
 		klog.V(4).Infof("Error getting tags on resourceId:%q", *actual.DiskId)
 	}
@@ -125,7 +124,7 @@ func (_ *Disk) CheckChanges(a, e, changes *Disk) error {
 	return nil
 }
 
-//Disk can only modify tags.
+// Disk can only modify tags.
 func (_ *Disk) RenderALI(t *aliup.ALIAPITarget, a, e, changes *Disk) error {
 	if a == nil {
 		klog.V(2).Infof("Creating Disk with Name:%q", fi.StringValue(e.Name))

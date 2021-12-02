@@ -36,8 +36,10 @@ type PublicIPAddress struct {
 	Tags map[string]*string
 }
 
-var _ fi.Task = &PublicIPAddress{}
-var _ fi.CompareWithID = &PublicIPAddress{}
+var (
+	_ fi.Task          = &PublicIPAddress{}
+	_ fi.CompareWithID = &PublicIPAddress{}
+)
 
 // CompareWithID returns the Name of the Public IP Address
 func (p *PublicIPAddress) CompareWithID() *string {

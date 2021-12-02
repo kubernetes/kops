@@ -121,7 +121,6 @@ func (t *Tester) getKopsCluster() (*api.Cluster, error) {
 	t.kopsCluster = cluster
 
 	return cluster, nil
-
 }
 
 func (t *Tester) getKopsInstanceGroups() ([]*api.InstanceGroup, error) {
@@ -141,8 +140,8 @@ func (t *Tester) getKopsInstanceGroups() ([]*api.InstanceGroup, error) {
 	t.kopsInstanceGroups = igs
 
 	return igs, nil
-
 }
+
 func (t *Tester) addProviderFlag() error {
 	if hasFlag(t.TestArgs, "provider") {
 		return nil

@@ -106,7 +106,6 @@ func (d *deployer) Up() error {
 }
 
 func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) error {
-
 	args := []string{
 		d.KopsBinaryPath, "create", "cluster",
 		"--name", d.ClusterName,
@@ -173,7 +172,6 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 }
 
 func (d *deployer) updateCluster(yes bool) error {
-
 	args := []string{
 		d.KopsBinaryPath, "update", "cluster",
 		"--name", d.ClusterName,

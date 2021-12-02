@@ -120,7 +120,6 @@ func (s *SecurityGroup) Run(c *fi.Context) error {
 }
 
 func (_ *SecurityGroup) CheckChanges(a, e, changes *SecurityGroup) error {
-
 	if a == nil {
 		if e.Name == nil {
 			return fi.RequiredField("Name")
@@ -135,7 +134,6 @@ func (_ *SecurityGroup) CheckChanges(a, e, changes *SecurityGroup) error {
 }
 
 func (_ *SecurityGroup) RenderALI(t *aliup.ALIAPITarget, a, e, changes *SecurityGroup) error {
-
 	if a == nil {
 		klog.V(2).Infof("Creating SecurityGroup with Name:%q", fi.StringValue(e.Name))
 

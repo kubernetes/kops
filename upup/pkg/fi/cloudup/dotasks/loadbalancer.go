@@ -51,8 +51,10 @@ var readBackoff = wait.Backoff{
 	Steps:    10,
 }
 
-var _ fi.CompareWithID = &LoadBalancer{}
-var _ fi.HasAddress = &LoadBalancer{}
+var (
+	_ fi.CompareWithID = &LoadBalancer{}
+	_ fi.HasAddress    = &LoadBalancer{}
+)
 
 func (lb *LoadBalancer) CompareWithID() *string {
 	return lb.ID
@@ -68,7 +70,6 @@ func (lb *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	cloud := c.Cloud.(do.DOCloud)
 	lbService := cloud.LoadBalancersService()
 	loadbalancer, _, err := lbService.Get(context.TODO(), fi.StringValue(lb.ID))
-
 	if err != nil {
 		return nil, fmt.Errorf("load balancer service get request returned error %v", err)
 	}
@@ -139,7 +140,6 @@ func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) 
 
 	// check if load balancer exist.
 	loadBalancers, err := t.Cloud.GetAllLoadBalancers()
-
 	if err != nil {
 		return fmt.Errorf("LoadBalancers.List returned error: %v", err)
 	}
@@ -162,7 +162,6 @@ func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) 
 		ForwardingRules: Rules,
 		HealthCheck:     HealthCheck,
 	})
-
 	if err != nil {
 		klog.Errorf("Error creating load balancer with Name=%s, Error=%v", fi.StringValue(e.Name), err)
 		return err
@@ -216,7 +215,6 @@ func (lb *LoadBalancer) FindIPAddress(c *fi.Context) (*string, error) {
 }
 
 func isIPv4(host string) bool {
-
 	ip := net.ParseIP(host)
 	if ip == nil {
 		return false

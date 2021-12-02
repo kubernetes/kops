@@ -76,7 +76,6 @@ func (m *MockClient) mockVolumes() {
 }
 
 func (m *MockClient) listVolumes(w http.ResponseWriter, vals url.Values) {
-
 	w.WriteHeader(http.StatusOK)
 
 	vols := filterVolumes(m.volumes, vals)

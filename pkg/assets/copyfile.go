@@ -98,7 +98,6 @@ func (e *CopyFile) Run() error {
 // transferFile downloads a file from the source location, validates the file matches the SHA,
 // and uploads the file to the target location.
 func transferFile(cluster *kops.Cluster, source string, target string, sha string) error {
-
 	// TODO drop file to disk, as vfs reads file into memory.  We load kubelet into memory for instance.
 	// TODO in s3 can we do a copy file ... would need to test
 
@@ -161,7 +160,6 @@ func transferFile(cluster *kops.Cluster, source string, target string, sha strin
 }
 
 func writeFile(cluster *kops.Cluster, p vfs.Path, data []byte) error {
-
 	acl, err := acls.GetACL(p, cluster)
 	if err != nil {
 		return err

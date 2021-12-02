@@ -37,5 +37,4 @@ func TestLoadImageTask_Deps(t *testing.T) {
 	if !reflect.DeepEqual(expected, deps) {
 		t.Fatalf("unexpected deps.  expected=%v, actual=%v", expected, deps)
 	}
-
 }

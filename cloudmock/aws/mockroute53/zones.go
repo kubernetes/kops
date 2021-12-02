@@ -61,9 +61,11 @@ func (m *MockRoute53) GetHostedZone(request *route53.GetHostedZoneInput) (*route
 func (m *MockRoute53) GetHostedZoneCountRequest(*route53.GetHostedZoneCountInput) (*request.Request, *route53.GetHostedZoneCountOutput) {
 	panic("MockRoute53 GetHostedZoneCountRequest not implemented")
 }
+
 func (m *MockRoute53) GetHostedZoneCountWithContext(aws.Context, *route53.GetHostedZoneCountInput, ...request.Option) (*route53.GetHostedZoneCountOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockRoute53) GetHostedZoneCount(*route53.GetHostedZoneCountInput) (*route53.GetHostedZoneCountOutput, error) {
 	panic("MockRoute53 GetHostedZoneCount not implemented")
 }

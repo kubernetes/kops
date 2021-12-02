@@ -45,6 +45,7 @@ func (m *MockIAM) ListOpenIDConnectProviders(request *iam.ListOpenIDConnectProvi
 func (m *MockIAM) ListOpenIDConnectProvidersWithContext(aws.Context, *iam.ListOpenIDConnectProvidersInput, ...request.Option) (*iam.ListOpenIDConnectProvidersOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockIAM) ListOpenIDConnectProvidersRequest(*iam.ListOpenIDConnectProvidersInput) (*request.Request, *iam.ListOpenIDConnectProvidersOutput) {
 	panic("Not implemented")
 }
@@ -104,6 +105,7 @@ func (m *MockIAM) CreateOpenIDConnectProvider(request *iam.CreateOpenIDConnectPr
 func (m *MockIAM) CreateOpenIDConnectProviderWithContext(aws.Context, *iam.CreateOpenIDConnectProviderInput, ...request.Option) (*iam.CreateOpenIDConnectProviderOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockIAM) CreateOpenIDConnectProviderRequest(*iam.CreateOpenIDConnectProviderInput) (*request.Request, *iam.CreateOpenIDConnectProviderOutput) {
 	panic("Not implemented")
 }
@@ -135,9 +137,11 @@ func (m *MockIAM) DeleteOpenIDConnectProviderRequest(*iam.DeleteOpenIDConnectPro
 func (m *MockIAM) UpdateOpenIDConnectProviderThumbprint(*iam.UpdateOpenIDConnectProviderThumbprintInput) (*iam.UpdateOpenIDConnectProviderThumbprintOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockIAM) UpdateOpenIDConnectProviderThumbprintWithContext(aws.Context, *iam.UpdateOpenIDConnectProviderThumbprintInput, ...request.Option) (*iam.UpdateOpenIDConnectProviderThumbprintOutput, error) {
 	panic("Not implemented")
 }
+
 func (m *MockIAM) UpdateOpenIDConnectProviderThumbprintRequest(*iam.UpdateOpenIDConnectProviderThumbprintInput) (*request.Request, *iam.UpdateOpenIDConnectProviderThumbprintOutput) {
 	panic("Not implemented")
 }

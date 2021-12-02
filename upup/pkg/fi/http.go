@@ -43,7 +43,7 @@ func DownloadURL(url string, dest string, hash *hashing.Hash) (*hashing.Hash, er
 		}
 	}
 
-	dirMode := os.FileMode(0755)
+	dirMode := os.FileMode(0o755)
 	err := downloadURLAlways(url, dest, dirMode)
 	if err != nil {
 		return nil, err

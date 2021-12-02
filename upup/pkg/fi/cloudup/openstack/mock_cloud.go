@@ -176,9 +176,11 @@ func (c *MockCloud) CreateInstance(opt servers.CreateOptsBuilder, portID string)
 func (c *MockCloud) CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypairs.KeyPair, error) {
 	return createKeypair(c, opt)
 }
+
 func (c *MockCloud) CreateL3FloatingIP(opts l3floatingip.CreateOpts) (fip *l3floatingip.FloatingIP, err error) {
 	return createL3FloatingIP(c, opts)
 }
+
 func (c *MockCloud) CreateLB(opt loadbalancers.CreateOptsBuilder) (*loadbalancers.LoadBalancer, error) {
 	return createLB(c, opt)
 }
@@ -234,9 +236,11 @@ func (c *MockCloud) DefaultInstanceType(cluster *kops.Cluster, ig *kops.Instance
 func (c *MockCloud) DeleteFloatingIP(id string) (err error) {
 	return deleteFloatingIP(c, id)
 }
+
 func (c *MockCloud) DeleteInstanceWithID(instanceID string) error {
 	return deleteInstanceWithID(c, instanceID)
 }
+
 func (c *MockCloud) DeleteKeyPair(name string) error {
 	return deleteKeyPair(c, name)
 }
@@ -256,9 +260,11 @@ func (c *MockCloud) DeleteListener(listenerID string) error {
 func (c *MockCloud) DeleteMonitor(monitorID string) error {
 	return deleteMonitor(c, monitorID)
 }
+
 func (c *MockCloud) DeleteNetwork(networkID string) error {
 	return deleteNetwork(c, networkID)
 }
+
 func (c *MockCloud) DeletePool(poolID string) error {
 	return deletePool(c, poolID)
 }
@@ -274,9 +280,11 @@ func (c *MockCloud) DeleteRouter(routerID string) error {
 func (c *MockCloud) DeleteSecurityGroup(sgID string) error {
 	return deleteSecurityGroup(c, sgID)
 }
+
 func (c *MockCloud) DeleteSecurityGroupRule(ruleID string) error {
 	return deleteSecurityGroupRule(c, ruleID)
 }
+
 func (c *MockCloud) DeleteRouterInterface(routerID string, opt routers.RemoveInterfaceOptsBuilder) error {
 	return deleteRouterInterface(c, routerID, opt)
 }
@@ -292,6 +300,7 @@ func (c *MockCloud) DeleteSubnet(subnetID string) error {
 func (c *MockCloud) DeleteTag(resource string, id string, tag string) error {
 	return deleteTag(c, resource, id, tag)
 }
+
 func (c *MockCloud) DeleteVolume(volumeID string) error {
 	return deleteVolume(c, volumeID)
 }
@@ -303,15 +312,19 @@ func (c *MockCloud) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatu
 func (c *MockCloud) FindNetworkBySubnetID(subnetID string) (*networks.Network, error) {
 	return findNetworkBySubnetID(c, subnetID)
 }
+
 func (c *MockCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	return getApiIngressStatus(c, cluster)
 }
+
 func (c *MockCloud) GetCloudTags() map[string]string {
 	return c.tags
 }
+
 func (c *MockCloud) GetExternalNetwork() (net *networks.Network, err error) {
 	return getExternalNetwork(c, *c.extNetworkName)
 }
+
 func (c *MockCloud) GetExternalSubnet() (subnet *subnets.Subnet, err error) {
 	return getExternalSubnet(c, c.extSubnetName)
 }
@@ -339,6 +352,7 @@ func (c *MockCloud) GetKeypair(name string) (*keypairs.KeyPair, error) {
 func (c *MockCloud) GetLB(loadbalancerID string) (lb *loadbalancers.LoadBalancer, err error) {
 	return getLB(c, loadbalancerID)
 }
+
 func (c *MockCloud) GetNetwork(id string) (*networks.Network, error) {
 	return getNetwork(c, id)
 }
@@ -370,9 +384,11 @@ func (c *MockCloud) GetSubnet(subnetID string) (*subnets.Subnet, error) {
 func (c *MockCloud) ListAvailabilityZones(serviceClient *gophercloud.ServiceClient) (azList []az.AvailabilityZone, err error) {
 	return listAvailabilityZones(c, serviceClient)
 }
+
 func (c *MockCloud) ListDNSZones(opt zones.ListOptsBuilder) ([]zones.Zone, error) {
 	return listDNSZones(c, opt)
 }
+
 func (c *MockCloud) ListDNSRecordsets(zoneID string, opt recordsets.ListOptsBuilder) ([]recordsets.RecordSet, error) {
 	return listDNSRecordsets(c, zoneID, opt)
 }
@@ -380,9 +396,11 @@ func (c *MockCloud) ListDNSRecordsets(zoneID string, opt recordsets.ListOptsBuil
 func (c *MockCloud) ListInstances(opt servers.ListOptsBuilder) ([]servers.Server, error) {
 	return listInstances(c, opt)
 }
+
 func (c *MockCloud) ListKeypairs() ([]keypairs.KeyPair, error) {
 	return listKeypairs(c)
 }
+
 func (c *MockCloud) ListL3FloatingIPs(opts l3floatingip.ListOpts) (fips []l3floatingip.FloatingIP, err error) {
 	return listL3FloatingIPs(c, opts)
 }
@@ -390,9 +408,11 @@ func (c *MockCloud) ListL3FloatingIPs(opts l3floatingip.ListOpts) (fips []l3floa
 func (c *MockCloud) ListLBs(opt loadbalancers.ListOptsBuilder) (lbs []loadbalancers.LoadBalancer, err error) {
 	return listLBs(c, opt)
 }
+
 func (c *MockCloud) ListListeners(opts listeners.ListOpts) (listenerList []listeners.Listener, err error) {
 	return listListeners(c, opts)
 }
+
 func (c *MockCloud) ListMonitors(opts monitors.ListOpts) (monitorList []monitors.Monitor, err error) {
 	return listMonitors(c, opts)
 }
@@ -400,6 +420,7 @@ func (c *MockCloud) ListMonitors(opts monitors.ListOpts) (monitorList []monitors
 func (c *MockCloud) ListNetworks(opt networks.ListOptsBuilder) ([]networks.Network, error) {
 	return listNetworks(c, opt)
 }
+
 func (c *MockCloud) ListPools(opts v2pools.ListOpts) (poolList []v2pools.Pool, err error) {
 	return listPools(c, opts)
 }
@@ -423,9 +444,11 @@ func (c *MockCloud) ListSecurityGroupRules(opt sgr.ListOpts) ([]sgr.SecGroupRule
 func (c *MockCloud) ListServerFloatingIPs(instanceID string) ([]*string, error) {
 	return listServerFloatingIPs(c, instanceID, true)
 }
+
 func (c *MockCloud) ListServerGroups(opts servergroups.ListOptsBuilder) ([]servergroups.ServerGroup, error) {
 	return listServerGroups(c, opts)
 }
+
 func (c *MockCloud) ListSubnets(opt subnets.ListOptsBuilder) ([]subnets.Subnet, error) {
 	return listSubnets(c, opt)
 }
@@ -445,6 +468,7 @@ func (c *MockCloud) SetExternalSubnet(name *string) {
 func (c *MockCloud) SetLBFloatingSubnet(name *string) {
 	c.floatingSubnet = name
 }
+
 func (c *MockCloud) SetVolumeTags(id string, tags map[string]string) error {
 	return setVolumeTags(c, id, tags)
 }

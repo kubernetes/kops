@@ -97,7 +97,7 @@ func (i *Installation) Build(c *fi.ModelBuilderContext) {
 }
 
 func (i *Installation) buildEnvFile() *nodetasks.File {
-	var envVars = make(map[string]string)
+	envVars := make(map[string]string)
 
 	if os.Getenv("AWS_REGION") != "" {
 		envVars["AWS_REGION"] = os.Getenv("AWS_REGION")
@@ -149,7 +149,7 @@ func (i *Installation) buildEnvFile() *nodetasks.File {
 		envVars["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
 	}
 
-	var sysconfig = ""
+	sysconfig := ""
 	for key, value := range envVars {
 		sysconfig += key + "=" + value + "\n"
 	}

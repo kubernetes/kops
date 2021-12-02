@@ -19,10 +19,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"io"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -122,7 +121,6 @@ func NewCmdDeleteInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 
 // RunDeleteInstanceGroup runs the deletion of an instance group
 func RunDeleteInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer, options *DeleteInstanceGroupOptions) error {
-
 	// TODO make this drain and validate the ig?
 	// TODO implement drain and validate logic
 	groupName := options.GroupName
