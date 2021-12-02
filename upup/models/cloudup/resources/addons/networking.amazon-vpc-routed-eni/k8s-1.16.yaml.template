@@ -109,7 +109,7 @@ spec:
       hostNetwork: true
       initContainers:
       - name: aws-vpc-cni-init
-        image: "{{- or .Networking.AmazonVPC.InitImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.10.1" }}"
+        image: "{{- or .Networking.AmazonVPC.InitImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.10.1" }}"
         imagePullPolicy: Always
         env:
           - name: DISABLE_TCP_EARLY_DEMUX
@@ -131,7 +131,7 @@ spec:
         {}
       containers:
         - name: aws-node
-          image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.10.1" }}"
+          image: "{{- or .Networking.AmazonVPC.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.10.1" }}"
           imagePullPolicy: Always
           ports:
             - containerPort: 61678
