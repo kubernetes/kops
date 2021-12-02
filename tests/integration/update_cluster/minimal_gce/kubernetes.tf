@@ -114,6 +114,14 @@ resource "aws_s3_bucket_object" "minimal-gce-example-com-addons-dns-controller-a
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_bucket_object" "minimal-gce-example-com-addons-gcp-pd-csi-driver-addons-k8s-io-k8s-1-23" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_minimal-gce.example.com-addons-gcp-pd-csi-driver.addons.k8s.io-k8s-1.23_content")
+  key                    = "tests/minimal-gce.example.com/addons/gcp-pd-csi-driver.addons.k8s.io/k8s-1.23.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_bucket_object" "minimal-gce-example-com-addons-kops-controller-addons-k8s-io-k8s-1-16" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_minimal-gce.example.com-addons-kops-controller.addons.k8s.io-k8s-1.16_content")
@@ -142,14 +150,6 @@ resource "aws_s3_bucket_object" "minimal-gce-example-com-addons-metadata-proxy-a
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_minimal-gce.example.com-addons-metadata-proxy.addons.k8s.io-v0.1.12_content")
   key                    = "tests/minimal-gce.example.com/addons/metadata-proxy.addons.k8s.io/v0.1.12.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_bucket_object" "minimal-gce-example-com-addons-rbac-addons-k8s-io-k8s-1-8" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_minimal-gce.example.com-addons-rbac.addons.k8s.io-k8s-1.8_content")
-  key                    = "tests/minimal-gce.example.com/addons/rbac.addons.k8s.io/k8s-1.8.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }

@@ -749,6 +749,20 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 				Id:       id,
 			})
 		}
+
+		if b.Cluster.Spec.CloudConfig != nil && b.Cluster.Spec.CloudConfig.GCPPDCSIDriver != nil && fi.BoolValue(b.Cluster.Spec.CloudConfig.GCPPDCSIDriver.Enabled) {
+			key := "gcp-pd-csi-driver.addons.k8s.io"
+			{
+				id := "k8s-1.23"
+				location := key + "/" + id + ".yaml"
+				addons.Add(&channelsapi.AddonSpec{
+					Name:     fi.String(key),
+					Manifest: fi.String(location),
+					Selector: map[string]string{"k8s-addon": key},
+					Id:       id,
+				})
+			}
+		}
 	}
 
 	if featureflag.Spotinst.Enabled() && featureflag.SpotinstController.Enabled() {
