@@ -625,7 +625,7 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 		Image: image,
 		Env:   proxy.GetProxyEnvVars(b.Cluster.Spec.EgressProxy),
 		LivenessProbe: &v1.Probe{
-			Handler: v1.Handler{
+			ProbeHandler: v1.ProbeHandler{
 				HTTPGet: probeAction,
 			},
 			InitialDelaySeconds: 45,

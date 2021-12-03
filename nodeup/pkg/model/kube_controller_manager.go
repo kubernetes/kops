@@ -216,7 +216,7 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 		Image: image,
 		Env:   proxy.GetProxyEnvVars(b.Cluster.Spec.EgressProxy),
 		LivenessProbe: &v1.Probe{
-			Handler: v1.Handler{
+			ProbeHandler: v1.ProbeHandler{
 				HTTPGet: &v1.HTTPGetAction{
 					Host:   "127.0.0.1",
 					Path:   "/healthz",
