@@ -477,32 +477,25 @@ spec:
                     description: Spotinst cloud-config specs
                     type: string
                   vSphereCoreDNSServer:
-                    description: VSphereCoreDNSServer is deprecated and will be removed
-                      in a later version
+                    description: VSphereCoreDNSServer is unused.
                     type: string
                   vSphereDatacenter:
-                    description: VShpereDatacenter is deprecated and will be removed
-                      in a later version
+                    description: VShpereDatacenter is unused.
                     type: string
                   vSphereDatastore:
-                    description: VSphereDatastore is deprecated and will be removed
-                      in a later version
+                    description: VSphereDatastore is unused.
                     type: string
                   vSpherePassword:
-                    description: VSpherePassword is deprecated and will be removed
-                      in a later version
+                    description: VSpherePassword is unused.
                     type: string
                   vSphereResourcePool:
-                    description: VSphereResourcePool is deprecated and will be removed
-                      in a later version
+                    description: VSphereResourcePool is unused.
                     type: string
                   vSphereServer:
-                    description: VSphereServer is deprecated and will be removed in
-                      a later version
+                    description: VSphereServer is unused.
                     type: string
                   vSphereUsername:
-                    description: VSphereUsername is deprecated and will be removed
-                      in a later version
+                    description: VSphereUsername is unused.
                     type: string
                 type: object
               cloudControllerManager:
@@ -3018,8 +3011,7 @@ spec:
                       the CoreFile.
                     type: string
                   image:
-                    description: Image is the name of the docker image to run - @deprecated
-                      as this is now in the addon
+                    description: Image is unused.
                     type: string
                   memoryLimit:
                     anyOf:
@@ -3080,8 +3072,7 @@ spec:
                       be the default service discovery.
                     type: string
                   replicas:
-                    description: Replicas is the number of pod replicas - @deprecated
-                      as this is now in the addon, and controlled by autoscaler
+                    description: Replicas is unused.
                     type: integer
                   serverIP:
                     description: ServerIP is the server ip

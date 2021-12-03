@@ -850,19 +850,26 @@ type CloudConfiguration struct {
 	// AWS cloud-config options
 	DisableSecurityGroupIngress *bool   `json:"disableSecurityGroupIngress,omitempty"`
 	ElbSecurityGroup            *string `json:"elbSecurityGroup,omitempty"`
-	// VSphereUsername is deprecated and will be removed in a later version
+	// VSphereUsername is unused.
+	// +k8s:conversion-gen=false
 	VSphereUsername *string `json:"vSphereUsername,omitempty"`
-	// VSpherePassword is deprecated and will be removed in a later version
+	// VSpherePassword is unused.
+	// +k8s:conversion-gen=false
 	VSpherePassword *string `json:"vSpherePassword,omitempty"`
-	// VSphereServer is deprecated and will be removed in a later version
+	// VSphereServer is unused.
+	// +k8s:conversion-gen=false
 	VSphereServer *string `json:"vSphereServer,omitempty"`
-	// VShpereDatacenter is deprecated and will be removed in a later version
+	// VShpereDatacenter is unused.
+	// +k8s:conversion-gen=false
 	VSphereDatacenter *string `json:"vSphereDatacenter,omitempty"`
-	// VSphereResourcePool is deprecated and will be removed in a later version
+	// VSphereResourcePool is unused.
+	// +k8s:conversion-gen=false
 	VSphereResourcePool *string `json:"vSphereResourcePool,omitempty"`
-	// VSphereDatastore is deprecated and will be removed in a later version
+	// VSphereDatastore is unused.
+	// +k8s:conversion-gen=false
 	VSphereDatastore *string `json:"vSphereDatastore,omitempty"`
-	// VSphereCoreDNSServer is deprecated and will be removed in a later version
+	// VSphereCoreDNSServer is unused.
+	// +k8s:conversion-gen=false
 	VSphereCoreDNSServer *string `json:"vSphereCoreDNSServer,omitempty"`
 	// Spotinst cloud-config specs
 	SpotinstProduct     *string `json:"spotinstProduct,omitempty"`

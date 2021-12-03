@@ -637,41 +637,6 @@ func (in *CloudConfiguration) DeepCopyInto(out *CloudConfiguration) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.VSphereUsername != nil {
-		in, out := &in.VSphereUsername, &out.VSphereUsername
-		*out = new(string)
-		**out = **in
-	}
-	if in.VSpherePassword != nil {
-		in, out := &in.VSpherePassword, &out.VSpherePassword
-		*out = new(string)
-		**out = **in
-	}
-	if in.VSphereServer != nil {
-		in, out := &in.VSphereServer, &out.VSphereServer
-		*out = new(string)
-		**out = **in
-	}
-	if in.VSphereDatacenter != nil {
-		in, out := &in.VSphereDatacenter, &out.VSphereDatacenter
-		*out = new(string)
-		**out = **in
-	}
-	if in.VSphereResourcePool != nil {
-		in, out := &in.VSphereResourcePool, &out.VSphereResourcePool
-		*out = new(string)
-		**out = **in
-	}
-	if in.VSphereDatastore != nil {
-		in, out := &in.VSphereDatastore, &out.VSphereDatastore
-		*out = new(string)
-		**out = **in
-	}
-	if in.VSphereCoreDNSServer != nil {
-		in, out := &in.VSphereCoreDNSServer, &out.VSphereCoreDNSServer
-		*out = new(string)
-		**out = **in
-	}
 	if in.SpotinstProduct != nil {
 		in, out := &in.SpotinstProduct, &out.SpotinstProduct
 		*out = new(string)
