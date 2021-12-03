@@ -51,7 +51,6 @@ var (
 	DistributionRhel7        = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel7", version: 7}
 	DistributionCentos7      = Distribution{packageFormat: "rpm", project: "centos", id: "centos7", version: 7}
 	DistributionRhel8        = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel8", version: 8}
-	DistributionCentos8      = Distribution{packageFormat: "rpm", project: "centos", id: "centos8", version: 8}
 	DistributionFlatcar      = Distribution{packageFormat: "", project: "flatcar", id: "flatcar", version: 0}
 	DistributionContainerOS  = Distribution{packageFormat: "", project: "containeros", id: "containeros", version: 0}
 )
