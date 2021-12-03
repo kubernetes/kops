@@ -272,7 +272,7 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 		}
 	}
 
-	if changes.DNS64 != nil {
+	if !shared && changes.DNS64 != nil {
 		request := &ec2.ModifySubnetAttributeInput{
 			SubnetId:    e.ID,
 			EnableDns64: &ec2.AttributeBooleanValue{Value: e.DNS64},
@@ -283,7 +283,7 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 		}
 	}
 
-	if changes.ResourceBasedNaming != nil {
+	if !shared && changes.ResourceBasedNaming != nil {
 		request := &ec2.ModifySubnetAttributeInput{
 			SubnetId:                                e.ID,
 			EnableResourceNameDnsAAAARecordOnLaunch: &ec2.AttributeBooleanValue{Value: e.ResourceBasedNaming},
