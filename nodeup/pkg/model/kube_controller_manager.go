@@ -211,6 +211,11 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 		image = strings.Replace(image, "-amd64", "-"+string(b.Architecture), 1)
 	}
 
+	localhost := "127.0.0.1"
+	if b.Cluster.Spec.IsIPv6Only() {
+		localhost = "::1"
+	}
+
 	container := &v1.Container{
 		Name:  "kube-controller-manager",
 		Image: image,
@@ -218,7 +223,7 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{
 				HTTPGet: &v1.HTTPGetAction{
-					Host:   "127.0.0.1",
+					Host:   localhost,
 					Path:   "/healthz",
 					Port:   intstr.FromInt(10257),
 					Scheme: "HTTPS",

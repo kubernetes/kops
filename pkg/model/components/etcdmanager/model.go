@@ -24,6 +24,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/klog/v2"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/dns"
@@ -383,6 +384,10 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 			}
 			config.VolumeNameTag = awsup.TagNameEtcdClusterPrefix + etcdCluster.Name
 
+			if b.IsIPv6Only() {
+				config.ListenAddress = "::"
+			}
+
 		case kops.CloudProviderALI:
 			config.VolumeProvider = "alicloud"
 
@@ -554,6 +559,7 @@ type config struct {
 	PKIDir string `flag:"pki-dir"`
 
 	Address               string   `flag:"address"`
+	ListenAddress         string   `flag:"etcd-address"`
 	PeerUrls              string   `flag:"peer-urls"`
 	GrpcPort              int      `flag:"grpc-port"`
 	ClientUrls            string   `flag:"client-urls"`

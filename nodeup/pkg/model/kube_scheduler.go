@@ -221,7 +221,7 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 	}
 
 	healthAction := &v1.HTTPGetAction{
-		Host: "127.0.0.1",
+		Host: "localhost",
 		Path: "/healthz",
 		Port: intstr.FromInt(10251),
 	}

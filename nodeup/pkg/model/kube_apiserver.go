@@ -213,9 +213,13 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 		return nil
 	}
 
+	localhost := "127.0.0.1"
+	if b.Cluster.Spec.IsIPv6Only() {
+		localhost = "::1"
+	}
 	if b.Cluster.Spec.Authentication.Kopeio != nil {
 		cluster := kubeconfig.KubectlCluster{
-			Server: "http://127.0.0.1:9001/hooks/authn",
+			Server: "http://" + localhost + ":9001/hooks/authn",
 		}
 		context := kubeconfig.KubectlContext{
 			Cluster: "webhook",
@@ -259,7 +263,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 
 		{
 			cluster := kubeconfig.KubectlCluster{
-				Server:                   "https://127.0.0.1:21362/authenticate",
+				Server:                   "https://" + localhost + ":21362/authenticate",
 				CertificateAuthorityData: []byte(b.NodeupConfig.CAs[fi.CertificateIDCA]),
 			}
 			context := kubeconfig.KubectlContext{
@@ -316,6 +320,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 				AlternateNames: []string{
 					"localhost",
 					"127.0.0.1",
+					"::1",
 				},
 			}
 			c.AddTask(issueCert)
@@ -376,7 +381,7 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.ModelBuilderContext,
 		}
 
 		// We also want to be able to reference it locally via https://127.0.0.1
-		alternateNames = append(alternateNames, "127.0.0.1")
+		alternateNames = append(alternateNames, "127.0.0.1", "::1")
 
 		if b.Cluster.Spec.CloudProvider == "openstack" {
 			if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Masters == kops.TopologyPrivate {
@@ -521,16 +526,20 @@ func (b *KubeAPIServerBuilder) allAuthTokens() (map[string]string, error) {
 func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig) (*v1.Pod, error) {
 	// we need to replace 127.0.0.1 for etcd urls with the dns names in case this apiserver is not
 	// running on master nodes
+	localhost := "127.0.0.1"
+	if b.Cluster.Spec.IsIPv6Only() {
+		localhost = "::1"
+	}
 	if !b.IsMaster {
 		clusterName := b.Cluster.ObjectMeta.Name
 		mainEtcdDNSName := "main.etcd." + clusterName
 		eventsEtcdDNSName := "events.etcd." + clusterName
 		for i := range kubeAPIServer.EtcdServers {
-			kubeAPIServer.EtcdServers[i] = strings.ReplaceAll(kubeAPIServer.EtcdServers[i], "127.0.0.1", mainEtcdDNSName)
+			kubeAPIServer.EtcdServers[i] = strings.ReplaceAll(kubeAPIServer.EtcdServers[i], localhost, mainEtcdDNSName)
 		}
 		for i := range kubeAPIServer.EtcdServersOverrides {
 			if strings.HasPrefix(kubeAPIServer.EtcdServersOverrides[i], "/events") {
-				kubeAPIServer.EtcdServersOverrides[i] = strings.ReplaceAll(kubeAPIServer.EtcdServersOverrides[i], "127.0.0.1", eventsEtcdDNSName)
+				kubeAPIServer.EtcdServersOverrides[i] = strings.ReplaceAll(kubeAPIServer.EtcdServersOverrides[i], localhost, eventsEtcdDNSName)
 			}
 		}
 	}
@@ -581,7 +590,7 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 	useHealthcheckProxy := b.findHealthcheckManifest() != nil
 
 	probeAction := &v1.HTTPGetAction{
-		Host: "127.0.0.1",
+		Host: localhost,
 		Path: "/healthz",
 		Port: intstr.FromInt(wellknownports.KubeAPIServerHealthCheck),
 	}
