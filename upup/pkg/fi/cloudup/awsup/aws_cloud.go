@@ -2100,7 +2100,9 @@ func GetInstanceCertificateNames(instances *ec2.DescribeInstancesOutput) (addrs 
 		if *iface.Attachment.DeviceIndex != 0 {
 			continue
 		}
-		addrs = append(addrs, *iface.PrivateIpAddress)
+		if iface.PrivateIpAddress != nil {
+			addrs = append(addrs, *iface.PrivateIpAddress)
+		}
 		if iface.Ipv6Addresses != nil && len(iface.Ipv6Addresses) > 0 {
 			addrs = append(addrs, *iface.Ipv6Addresses[0].Ipv6Address)
 		}
