@@ -50,8 +50,6 @@ func FindDistribution(rootfs string) (Distribution, error) {
 	switch distro {
 	case "amzn-2":
 		return DistributionAmazonLinux2, nil
-	case "centos-7":
-		return DistributionCentos7, nil
 	case "debian-10":
 		return DistributionDebian10, nil
 	case "debian-11":
@@ -74,9 +72,6 @@ func FindDistribution(rootfs string) (Distribution, error) {
 	}
 	if strings.HasPrefix(distro, "flatcar-") {
 		return DistributionFlatcar, nil
-	}
-	if strings.HasPrefix(distro, "rhel-7.") {
-		return DistributionRhel7, nil
 	}
 	if strings.HasPrefix(distro, "rhel-8.") {
 		return DistributionRhel8, nil
