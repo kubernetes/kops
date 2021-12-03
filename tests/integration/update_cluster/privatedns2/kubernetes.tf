@@ -316,7 +316,9 @@ resource "aws_eip" "us-test-1a-privatedns2-example-com" {
 }
 
 resource "aws_elb" "api-privatedns2-example-com" {
-  cross_zone_load_balancing = false
+  connection_draining         = true
+  connection_draining_timeout = 300
+  cross_zone_load_balancing   = false
   health_check {
     healthy_threshold   = 2
     interval            = 10
