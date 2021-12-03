@@ -1606,7 +1606,7 @@ func Convert_kops_BastionLoadBalancerSpec_To_v1alpha3_BastionLoadBalancerSpec(in
 }
 
 func autoConvert_v1alpha3_BastionSpec_To_kops_BastionSpec(in *BastionSpec, out *kops.BastionSpec, s conversion.Scope) error {
-	out.BastionPublicName = in.BastionPublicName
+	out.PublicName = in.PublicName
 	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
 	if in.LoadBalancer != nil {
 		in, out := &in.LoadBalancer, &out.LoadBalancer
@@ -1626,7 +1626,7 @@ func Convert_v1alpha3_BastionSpec_To_kops_BastionSpec(in *BastionSpec, out *kops
 }
 
 func autoConvert_kops_BastionSpec_To_v1alpha3_BastionSpec(in *kops.BastionSpec, out *BastionSpec, s conversion.Scope) error {
-	out.BastionPublicName = in.BastionPublicName
+	out.PublicName = in.PublicName
 	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
 	if in.LoadBalancer != nil {
 		in, out := &in.LoadBalancer, &out.LoadBalancer
