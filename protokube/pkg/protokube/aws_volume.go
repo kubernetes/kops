@@ -31,7 +31,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
-
 	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipaws "k8s.io/kops/protokube/pkg/gossip/aws"
@@ -126,11 +125,7 @@ func (a *AWSVolumes) discoverTags() error {
 
 	a.clusterTag = clusterID
 
-	if *instance.PrivateDnsNameOptions.HostnameType == ec2.HostnameTypeResourceName {
-		a.internalIP = net.ParseIP(aws.StringValue(instance.Ipv6Address))
-	} else {
-		a.internalIP = net.ParseIP(aws.StringValue(instance.PrivateIpAddress))
-	}
+	a.internalIP = net.ParseIP(aws.StringValue(instance.PrivateIpAddress))
 	if a.internalIP == nil {
 		return fmt.Errorf("Internal IP not found on this instance (%q)", a.instanceId)
 	}
