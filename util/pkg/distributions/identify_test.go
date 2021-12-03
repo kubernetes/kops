@@ -36,8 +36,8 @@ func TestFindDistribution(t *testing.T) {
 		},
 		{
 			rootfs:   "centos7",
-			err:      nil,
-			expected: DistributionCentos7,
+			err:      fmt.Errorf("unsupported distro: centos-7"),
+			expected: Distribution{},
 		},
 		{
 			rootfs:   "centos8",
@@ -81,8 +81,8 @@ func TestFindDistribution(t *testing.T) {
 		},
 		{
 			rootfs:   "rhel7",
-			err:      nil,
-			expected: DistributionRhel7,
+			err:      fmt.Errorf("unsupported distro: rhel-7.8"),
+			expected: Distribution{},
 		},
 		{
 			rootfs:   "rhel8",
