@@ -52,8 +52,6 @@ func FindDistribution(rootfs string) (Distribution, error) {
 		return DistributionAmazonLinux2, nil
 	case "centos-7":
 		return DistributionCentos7, nil
-	case "debian-9":
-		return DistributionDebian9, nil
 	case "debian-10":
 		return DistributionDebian10, nil
 	case "debian-11":
