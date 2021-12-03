@@ -260,6 +260,7 @@ contents:
     - api.internal.minimal.example.com
     - 100.64.0.1
     - 127.0.0.1
+    - ::1
     includeRootCertificate: true
     keypairID: "3"
     signer: kubernetes-ca
@@ -282,6 +283,7 @@ contents:
     - api.internal.minimal.example.com
     - 100.64.0.1
     - 127.0.0.1
+    - ::1
     includeRootCertificate: true
     keypairID: "3"
     signer: kubernetes-ca
@@ -342,6 +344,7 @@ alternateNames:
 - api.internal.minimal.example.com
 - 100.64.0.1
 - 127.0.0.1
+- ::1
 includeRootCertificate: true
 keypairID: "3"
 signer: kubernetes-ca

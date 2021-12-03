@@ -196,6 +196,7 @@ contents:
     alternateNames:
     - localhost
     - 127.0.0.1
+    - ::1
     keypairID: "3"
     signer: kubernetes-ca
     subject:
@@ -213,6 +214,7 @@ contents:
     alternateNames:
     - localhost
     - 127.0.0.1
+    - ::1
     keypairID: "3"
     signer: kubernetes-ca
     subject:
@@ -322,6 +324,7 @@ contents:
     - api.internal.minimal.example.com
     - 100.64.0.1
     - 127.0.0.1
+    - ::1
     includeRootCertificate: true
     keypairID: "3"
     signer: kubernetes-ca
@@ -344,6 +347,7 @@ contents:
     - api.internal.minimal.example.com
     - 100.64.0.1
     - 127.0.0.1
+    - ::1
     includeRootCertificate: true
     keypairID: "3"
     signer: kubernetes-ca
@@ -384,6 +388,7 @@ Name: aws-iam-authenticator
 alternateNames:
 - localhost
 - 127.0.0.1
+- ::1
 keypairID: "3"
 signer: kubernetes-ca
 subject:
@@ -414,6 +419,7 @@ alternateNames:
 - api.internal.minimal.example.com
 - 100.64.0.1
 - 127.0.0.1
+- ::1
 includeRootCertificate: true
 keypairID: "3"
 signer: kubernetes-ca

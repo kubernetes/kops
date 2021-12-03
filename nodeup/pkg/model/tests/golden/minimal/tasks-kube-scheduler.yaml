@@ -24,7 +24,7 @@ contents: |
       image: k8s.gcr.io/kube-scheduler:v1.23.0
       livenessProbe:
         httpGet:
-          host: 127.0.0.1
+          host: localhost
           path: /healthz
           port: 10259
           scheme: HTTPS
