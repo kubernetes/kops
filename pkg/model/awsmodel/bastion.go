@@ -332,19 +332,19 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(elb)
 	}
 
-	bastionPublicName := ""
+	publicName := ""
 	if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil {
-		bastionPublicName = b.Cluster.Spec.Topology.Bastion.BastionPublicName
+		publicName = b.Cluster.Spec.Topology.Bastion.PublicName
 	}
-	if bastionPublicName != "" {
+	if publicName != "" {
 		// Here we implement the bastion CNAME logic
 		// By default bastions will create a CNAME that follows the `bastion-$clustername` formula
 		t := &awstasks.DNSName{
-			Name:      fi.String(bastionPublicName),
+			Name:      fi.String(publicName),
 			Lifecycle: b.Lifecycle,
 
 			Zone:               b.LinkToDNSZone(),
-			ResourceName:       fi.String(bastionPublicName),
+			ResourceName:       fi.String(publicName),
 			ResourceType:       fi.String("A"),
 			TargetLoadBalancer: elb,
 		}
