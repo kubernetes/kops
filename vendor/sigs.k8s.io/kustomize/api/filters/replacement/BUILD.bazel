@@ -11,6 +11,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/sigs.k8s.io/kustomize/api/internal/utils:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/api/resource:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/api/types:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/resid:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",

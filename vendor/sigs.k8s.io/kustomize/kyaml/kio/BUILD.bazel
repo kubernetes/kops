@@ -18,7 +18,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/monochromegane/go-gitignore:go_default_library",
-        "//vendor/github.com/stretchr/testify/assert:go_default_library",
+        "//vendor/github.com/stretchr/testify/require:go_default_library",
         "//vendor/github.com/xlab/treeprint:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/errors:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/ext:go_default_library",
