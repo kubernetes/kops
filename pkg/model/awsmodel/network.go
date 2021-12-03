@@ -255,7 +255,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			AvailabilityZone: fi.String(subnetSpec.Zone),
 			Shared:           fi.Bool(sharedSubnet),
 			Tags:             tags,
-			DNS64:            fi.Bool(false),
+			DNS64:            fi.Bool(true),
 		}
 		if subnetSpec.CIDR != "" {
 			subnet.CIDR = fi.String(subnetSpec.CIDR)
@@ -267,7 +267,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 			subnet.IPv6CIDR = fi.String(subnetSpec.IPv6CIDR)
 			// TODO: set this to true once NAT64 is in place
-			subnet.DNS64 = fi.Bool(false)
+			subnet.DNS64 = fi.Bool(true)
 			subnet.ResourceBasedNaming = fi.Bool(true)
 		}
 		if subnetSpec.ProviderID != "" {
