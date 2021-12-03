@@ -61,8 +61,8 @@ func TestFindDistribution(t *testing.T) {
 		},
 		{
 			rootfs:   "debian9",
-			err:      nil,
-			expected: DistributionDebian9,
+			err:      fmt.Errorf("unsupported distro: debian-9"),
+			expected: Distribution{},
 		},
 		{
 			rootfs:   "debian10",
