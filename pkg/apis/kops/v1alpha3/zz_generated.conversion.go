@@ -1606,7 +1606,7 @@ func Convert_kops_BastionLoadBalancerSpec_To_v1alpha3_BastionLoadBalancerSpec(in
 }
 
 func autoConvert_v1alpha3_BastionSpec_To_kops_BastionSpec(in *BastionSpec, out *kops.BastionSpec, s conversion.Scope) error {
-	out.BastionPublicName = in.BastionPublicName
+	out.PublicName = in.PublicName
 	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
 	if in.LoadBalancer != nil {
 		in, out := &in.LoadBalancer, &out.LoadBalancer
@@ -1626,7 +1626,7 @@ func Convert_v1alpha3_BastionSpec_To_kops_BastionSpec(in *BastionSpec, out *kops
 }
 
 func autoConvert_kops_BastionSpec_To_v1alpha3_BastionSpec(in *kops.BastionSpec, out *BastionSpec, s conversion.Scope) error {
-	out.BastionPublicName = in.BastionPublicName
+	out.PublicName = in.PublicName
 	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
 	if in.LoadBalancer != nil {
 		in, out := &in.LoadBalancer, &out.LoadBalancer
@@ -1938,13 +1938,6 @@ func autoConvert_v1alpha3_CloudConfiguration_To_kops_CloudConfiguration(in *Clou
 	out.GCEServiceAccount = in.GCEServiceAccount
 	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
 	out.ElbSecurityGroup = in.ElbSecurityGroup
-	out.VSphereUsername = in.VSphereUsername
-	out.VSpherePassword = in.VSpherePassword
-	out.VSphereServer = in.VSphereServer
-	out.VSphereDatacenter = in.VSphereDatacenter
-	out.VSphereResourcePool = in.VSphereResourcePool
-	out.VSphereDatastore = in.VSphereDatastore
-	out.VSphereCoreDNSServer = in.VSphereCoreDNSServer
 	out.SpotinstProduct = in.SpotinstProduct
 	out.SpotinstOrientation = in.SpotinstOrientation
 	if in.Openstack != nil {
@@ -2000,13 +1993,6 @@ func autoConvert_kops_CloudConfiguration_To_v1alpha3_CloudConfiguration(in *kops
 	out.GCEServiceAccount = in.GCEServiceAccount
 	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
 	out.ElbSecurityGroup = in.ElbSecurityGroup
-	out.VSphereUsername = in.VSphereUsername
-	out.VSpherePassword = in.VSpherePassword
-	out.VSphereServer = in.VSphereServer
-	out.VSphereDatacenter = in.VSphereDatacenter
-	out.VSphereResourcePool = in.VSphereResourcePool
-	out.VSphereDatastore = in.VSphereDatastore
-	out.VSphereCoreDNSServer = in.VSphereCoreDNSServer
 	out.SpotinstProduct = in.SpotinstProduct
 	out.SpotinstOrientation = in.SpotinstOrientation
 	if in.Openstack != nil {
@@ -4962,8 +4948,6 @@ func autoConvert_v1alpha3_KubeDNSConfig_To_kops_KubeDNSConfig(in *KubeDNSConfig,
 	out.CPAImage = in.CPAImage
 	out.Domain = in.Domain
 	out.ExternalCoreFile = in.ExternalCoreFile
-	out.Image = in.Image
-	out.Replicas = in.Replicas
 	out.Provider = in.Provider
 	out.ServerIP = in.ServerIP
 	out.StubDomains = in.StubDomains
@@ -4997,8 +4981,6 @@ func autoConvert_kops_KubeDNSConfig_To_v1alpha3_KubeDNSConfig(in *kops.KubeDNSCo
 	out.CPAImage = in.CPAImage
 	out.Domain = in.Domain
 	out.ExternalCoreFile = in.ExternalCoreFile
-	out.Image = in.Image
-	out.Replicas = in.Replicas
 	out.Provider = in.Provider
 	out.ServerIP = in.ServerIP
 	out.StubDomains = in.StubDomains
