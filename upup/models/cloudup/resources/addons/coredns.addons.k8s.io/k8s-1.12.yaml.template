@@ -90,9 +90,6 @@ data:
         loop
         reload
         loadbalance
-        {{- if IsIPv6Only }}
-        dns64
-        {{- end }}
     }
   {{- end }}
 ---
