@@ -39,8 +39,6 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.KubeDNS = &kops.KubeDNSConfig{}
 	}
 
-	clusterSpec.KubeDNS.Replicas = 2
-
 	if clusterSpec.KubeDNS.CacheMaxSize == 0 {
 		clusterSpec.KubeDNS.CacheMaxSize = 1000
 	}
