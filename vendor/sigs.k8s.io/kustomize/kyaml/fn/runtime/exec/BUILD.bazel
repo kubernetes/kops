@@ -10,6 +10,7 @@ go_library(
     importpath = "sigs.k8s.io/kustomize/kyaml/fn/runtime/exec",
     visibility = ["//visibility:public"],
     deps = [
+        "//vendor/sigs.k8s.io/kustomize/kyaml/errors:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/fn/runtime/runtimeutil:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",
     ],

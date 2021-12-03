@@ -9,6 +9,7 @@ go_library(
     deps = [
         "//vendor/k8s.io/client-go/informers/flowcontrol/v1alpha1:go_default_library",
         "//vendor/k8s.io/client-go/informers/flowcontrol/v1beta1:go_default_library",
+        "//vendor/k8s.io/client-go/informers/flowcontrol/v1beta2:go_default_library",
         "//vendor/k8s.io/client-go/informers/internalinterfaces:go_default_library",
     ],
 )

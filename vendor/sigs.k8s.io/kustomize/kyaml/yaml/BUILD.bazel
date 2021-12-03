@@ -16,6 +16,7 @@ go_library(
         "order.go",
         "rnode.go",
         "types.go",
+        "util.go",
     ],
     importmap = "k8s.io/kops/vendor/sigs.k8s.io/kustomize/kyaml/yaml",
     importpath = "sigs.k8s.io/kustomize/kyaml/yaml",
@@ -27,6 +28,7 @@ go_library(
         "//vendor/sigs.k8s.io/kustomize/kyaml/errors:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/internal/forked/github.com/go-yaml/yaml:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/sets:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/sliceutil:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/yaml/internal/k8sgen/pkg/labels:go_default_library",
     ],
 )
