@@ -57,7 +57,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 		},
 		PrivateDnsNameOptions: &ec2.LaunchTemplatePrivateDnsNameOptionsRequest{
 			EnableResourceNameDnsAAAARecord: fi.Bool(*t.IPv6AddressCount > 0),
-			EnableResourceNameDnsARecord:    fi.Bool(true),
+			EnableResourceNameDnsARecord:    fi.Bool(false),
 			HostnameType:                    t.HostnameType,
 		},
 	}
