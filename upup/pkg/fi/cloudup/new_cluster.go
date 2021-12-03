@@ -1052,7 +1052,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 
 			if !dns.IsGossipHostname(cluster.Name) {
 				cluster.Spec.Topology.Bastion = &api.BastionSpec{
-					BastionPublicName: "bastion." + cluster.Name,
+					PublicName: "bastion." + cluster.Name,
 				}
 			}
 			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
