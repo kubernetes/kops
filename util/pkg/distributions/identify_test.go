@@ -41,8 +41,8 @@ func TestFindDistribution(t *testing.T) {
 		},
 		{
 			rootfs:   "centos8",
-			err:      nil,
-			expected: DistributionCentos8,
+			err:      fmt.Errorf("unsupported distro: centos-8"),
+			expected: Distribution{},
 		},
 		{
 			rootfs:   "coreos",
