@@ -127,7 +127,6 @@ spec:
       image: k8s.gcr.io/dns/k8s-dns-node-cache:1.21.1
       memoryRequest: 5Mi
     provider: CoreDNS
-    replicas: 2
     serverIP: fd00:5e4f:ce::a
     upstreamNameservers:
     - fd00:ec2::253

@@ -110,7 +110,6 @@ spec:
       image: k8s.gcr.io/dns/k8s-dns-node-cache:1.21.1
       memoryRequest: 5Mi
     provider: CoreDNS
-    replicas: 2
     serverIP: 100.64.0.10
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
