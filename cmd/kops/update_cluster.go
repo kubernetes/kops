@@ -449,7 +449,7 @@ func findBastionPublicName(c *kops.Cluster) string {
 	if bastion == nil {
 		return ""
 	}
-	return bastion.BastionPublicName
+	return bastion.PublicName
 }
 
 func hasKubecfg(contextName string) (bool, error) {

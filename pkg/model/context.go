@@ -240,7 +240,7 @@ func (b *KopsModelContext) UseBootstrapTokens() bool {
 
 // UsesBastionDns checks if we should use a specific name for the bastion dns
 func (b *KopsModelContext) UsesBastionDns() bool {
-	if b.Cluster.Spec.Topology.Bastion != nil && b.Cluster.Spec.Topology.Bastion.BastionPublicName != "" {
+	if b.Cluster.Spec.Topology.Bastion != nil && b.Cluster.Spec.Topology.Bastion.PublicName != "" {
 		return true
 	}
 	return false
