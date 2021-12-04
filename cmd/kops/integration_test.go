@@ -135,6 +135,16 @@ func (i *integrationTest) withCiliumEtcd() *integrationTest {
 	return i
 }
 
+func (i *integrationTest) withDedicatedAPIServer() *integrationTest {
+	i.expectTerraformFilenames = append(i.expectTerraformFilenames,
+		"aws_iam_role_apiservers."+i.clusterName+"_policy",
+		"aws_iam_role_policy_apiservers."+i.clusterName+"_policy",
+		"aws_launch_template_apiserver.apiservers."+i.clusterName+"_user_data",
+		"aws_s3_bucket_object_nodeupconfig-apiserver_content",
+	)
+	return i
+}
+
 func (i *integrationTest) withNTH() *integrationTest {
 	i.nth = true
 	return i
@@ -673,6 +683,10 @@ func TestAPIServerNodes(t *testing.T) {
 
 	newIntegrationTest("minimal.example.com", "apiservernodes").
 		runTestCloudformation(t)
+	newIntegrationTest("minimal.example.com", "apiservernodes").
+		withAddons(dnsControllerAddon, awsEBSCSIAddon).
+		withDedicatedAPIServer().
+		runTestTerraformAWS(t)
 }
 
 // TestNTHQueueProcessor tests the output for resources required by NTH Queue Processor mode
