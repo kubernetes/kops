@@ -16,6 +16,7 @@ go_library(
         "//vendor/k8s.io/client-go/kubernetes/scheme:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/certwatcher:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/healthz:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/internal/httpserver:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/internal/log:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/runtime/inject:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/webhook/admission:go_default_library",
