@@ -740,6 +740,7 @@ func (d *clusterDiscoveryGCE) listSubnets() ([]*resources.Resource, error) {
 			Type:    typeSubnet,
 			Deleter: deleteSubnet,
 			Obj:     o,
+			Dumper:  DumpSubnetwork,
 		}
 
 		resourceTracker.Blocks = append(resourceTracker.Blocks, typeNetwork+":"+gce.LastComponent(o.Network))
@@ -868,6 +869,7 @@ func (d *clusterDiscoveryGCE) listNetworks() ([]*resources.Resource, error) {
 			Type:    typeNetwork,
 			Deleter: deleteNetwork,
 			Obj:     o,
+			Dumper:  DumpNetwork,
 		}
 
 		klog.V(4).Infof("found resource: %s", o.SelfLink)
