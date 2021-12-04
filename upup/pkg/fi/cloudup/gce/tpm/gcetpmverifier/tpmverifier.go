@@ -37,6 +37,7 @@ import (
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/nodeidentity/gce"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcemetadata"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
 )
 
@@ -136,7 +137,7 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, authToken string, body []
 		switch item.Key {
 		case gce.MetadataKeyInstanceGroupName:
 			instanceGroupName = fi.StringValue(item.Value)
-		case "cluster-name":
+		case gcemetadata.MetadataKeyClusterName:
 			clusterName = fi.StringValue(item.Value)
 		}
 	}
