@@ -27,10 +27,10 @@ import (
 	"github.com/octago/sflags/gen/gpflag"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
-	"sigs.k8s.io/kubetest2/pkg/testers/ginkgo"
-
+	unversioned "k8s.io/kops/pkg/apis/kops"
 	api "k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/tests/e2e/pkg/kops"
+	"sigs.k8s.io/kubetest2/pkg/testers/ginkgo"
 )
 
 // Tester wraps kubetest2's ginkgo tester with additional functionality
@@ -172,7 +172,8 @@ func (t *Tester) addZoneFlag() error {
 		return nil
 	}
 
-	zoneNames, err := t.getZones()
+	// The zone flag is used to provision volumes, and we try to attach that volume to a (normal) pod
+	zoneNames, err := t.getSchedulableZones()
 	if err != nil {
 		return err
 	}
@@ -192,7 +193,7 @@ func (t *Tester) addMultiZoneFlag() error {
 		return nil
 	}
 
-	zoneNames, err := t.getZones()
+	zoneNames, err := t.getAllZones()
 	if err != nil {
 		return err
 	}
@@ -268,35 +269,86 @@ func (t *Tester) addProjectFlag() error {
 	return nil
 }
 
-func (t *Tester) getZones() ([]string, error) {
+func (t *Tester) getZonesForInstanceGroups(igs []*api.InstanceGroup) ([]string, error) {
 	cluster, err := t.getKopsCluster()
 	if err != nil {
 		return nil, err
 	}
 
+	clusterSubnets := make(map[string]*api.ClusterSubnetSpec)
+	for i := range cluster.Spec.Subnets {
+		subnet := &cluster.Spec.Subnets[i]
+		clusterSubnets[subnet.Name] = subnet
+	}
+
+	zones := sets.NewString()
+	for _, ig := range igs {
+		// Gather zones on GCE
+		for _, zone := range ig.Spec.Zones {
+			zones.Insert(zone)
+		}
+
+		// Gather zones on AWS
+		for _, subnetName := range ig.Spec.Subnets {
+			subnet := clusterSubnets[subnetName]
+			if subnet == nil {
+				return nil, fmt.Errorf("instanceGroup %q specified subnet %q, but was not found in cluster", ig.Name, subnetName)
+			}
+			if subnet.Zone != "" {
+				zones.Insert(subnet.Zone)
+			}
+		}
+	}
+
+	zoneNames := zones.List()
+	if len(zoneNames) == 0 {
+		return nil, nil
+	}
+	return zoneNames, nil
+}
+
+func (t *Tester) getAllZones() ([]string, error) {
 	igs, err := t.getKopsInstanceGroups()
 	if err != nil {
 		return nil, err
 	}
 
-	zones := sets.NewString()
-	// Gather zones on AWS
-	for _, subnet := range cluster.Spec.Subnets {
-		if subnet.Zone != "" {
-			zones.Insert(subnet.Zone)
-		}
+	zoneNames, err := t.getZonesForInstanceGroups(igs)
+	if err != nil {
+		return nil, err
 	}
-	// Gather zones on GCE
-	for _, ig := range igs {
-		for _, zone := range ig.Spec.Zones {
-			zones.Insert(zone)
-		}
-	}
-	zoneNames := zones.List()
 
 	if len(zoneNames) == 0 {
 		klog.Warningf("no zones found in instance groups")
-		return nil, nil
+	}
+	return zoneNames, nil
+}
+
+func (t *Tester) getSchedulableZones() ([]string, error) {
+	igs, err := t.getKopsInstanceGroups()
+	if err != nil {
+		return nil, err
+	}
+
+	var schedulable []*api.InstanceGroup
+	for _, ig := range igs {
+		if unversioned.InstanceGroupRole(ig.Spec.Role) == unversioned.InstanceGroupRoleMaster {
+			continue
+		}
+		if unversioned.InstanceGroupRole(ig.Spec.Role) == unversioned.InstanceGroupRoleAPIServer {
+			continue
+		}
+
+		schedulable = append(schedulable, ig)
+	}
+
+	zoneNames, err := t.getZonesForInstanceGroups(schedulable)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(zoneNames) == 0 {
+		klog.Warningf("no zones found in schedulable instance groups")
 	}
 	return zoneNames, nil
 }
