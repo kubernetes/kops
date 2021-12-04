@@ -5,6 +5,8 @@ go_library(
     srcs = [
         "dump.go",
         "gce.go",
+        "network.go",
+        "subnet.go",
     ],
     importpath = "k8s.io/kops/pkg/resources/gce",
     visibility = ["//visibility:public"],
