@@ -37,19 +37,14 @@ type Distribution struct {
 }
 
 var (
-	DistributionDebian9      = Distribution{packageFormat: "deb", project: "debian", id: "stretch", version: 9}
 	DistributionDebian10     = Distribution{packageFormat: "deb", project: "debian", id: "buster", version: 10}
 	DistributionDebian11     = Distribution{packageFormat: "deb", project: "debian", id: "bullseye", version: 11}
-	DistributionUbuntu1604   = Distribution{packageFormat: "deb", project: "ubuntu", id: "xenial", version: 16.04}
-	DistributionUbuntu1804   = Distribution{packageFormat: "deb", project: "ubuntu", id: "bionic", version: 18.04}
 	DistributionUbuntu2004   = Distribution{packageFormat: "deb", project: "ubuntu", id: "focal", version: 20.04}
 	DistributionUbuntu2010   = Distribution{packageFormat: "deb", project: "ubuntu", id: "groovy", version: 20.10}
 	DistributionUbuntu2104   = Distribution{packageFormat: "deb", project: "ubuntu", id: "hirsute", version: 21.04}
 	DistributionUbuntu2110   = Distribution{packageFormat: "deb", project: "ubuntu", id: "impish", version: 21.10}
 	DistributionUbuntu2204   = Distribution{packageFormat: "deb", project: "ubuntu", id: "jammy", version: 22.04}
 	DistributionAmazonLinux2 = Distribution{packageFormat: "rpm", project: "amazonlinux2", id: "amazonlinux2", version: 0}
-	DistributionRhel7        = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel7", version: 7}
-	DistributionCentos7      = Distribution{packageFormat: "rpm", project: "centos", id: "centos7", version: 7}
 	DistributionRhel8        = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel8", version: 8}
 	DistributionFlatcar      = Distribution{packageFormat: "", project: "flatcar", id: "flatcar", version: 0}
 	DistributionContainerOS  = Distribution{packageFormat: "", project: "containeros", id: "containeros", version: 0}

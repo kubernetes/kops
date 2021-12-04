@@ -143,7 +143,7 @@ func runDockerBuilderTest(t *testing.T, key string) {
 		return
 	}
 
-	nodeUpModelContext.Distribution = distributions.DistributionUbuntu1604
+	nodeUpModelContext.Distribution = distributions.DistributionUbuntu2004
 
 	if nodeUpModelContext.Cluster.Spec.Docker.SkipInstall == false {
 		if nodeUpModelContext.Cluster == nil || nodeUpModelContext.Cluster.Spec.Docker == nil || nodeUpModelContext.Cluster.Spec.Docker.Version == nil {

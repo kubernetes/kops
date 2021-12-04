@@ -131,15 +131,6 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 		if proxyMode == "" {
 			proxyMode = "iptables"
 		}
-
-		if proxyMode == "iptables" && (b.Distribution == distributions.DistributionCentos7 || b.Distribution == distributions.DistributionRhel7) {
-			sysctls = append(sysctls,
-				"# Flannel settings on CentOS 7",
-				"# Issue https://github.com/coreos/flannel/issues/902",
-				"net.bridge.bridge-nf-call-ip6tables=1",
-				"net.bridge.bridge-nf-call-iptables=1",
-				"")
-		}
 	}
 
 	if b.Cluster.Spec.CloudProvider == string(kops.CloudProviderAWS) {
