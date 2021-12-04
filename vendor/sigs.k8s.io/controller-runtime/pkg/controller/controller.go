@@ -104,7 +104,7 @@ func NewUnmanaged(name string, mgr manager.Manager, options Options) (Controller
 		return nil, fmt.Errorf("must specify Name for Controller")
 	}
 
-	if options.Log == nil {
+	if options.Log.GetSink() == nil {
 		options.Log = mgr.GetLogger()
 	}
 
