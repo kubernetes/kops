@@ -233,6 +233,10 @@ spec:
                 description: InstanceInterruptionBehavior defines if a spot instance
                   should be terminated, hibernated, or stopped after interruption
                 type: string
+              instanceManager:
+                description: InstanceManager determines what is managing the node
+                  lifecycle
+                type: string
               instanceMetadata:
                 description: InstanceMetadata defines the EC2 instance metadata service
                   options (AWS Only)

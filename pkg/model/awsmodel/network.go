@@ -21,11 +21,12 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+	"k8s.io/legacy-cloud-providers/aws"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/legacy-cloud-providers/aws"
 )
 
 // NetworkModelBuilder configures network objects
@@ -242,6 +243,15 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			default:
 				klog.V(2).Infof("unable to properly tag subnet %q because it has unknown type %q. Load balancers may be created in incorrect subnets", subnetSpec.Name, subnetSpec.Type)
+			}
+			for _, ig := range b.InstanceGroups {
+				if ig.Spec.InstanceManager == kops.InstanceManagerKarpenter {
+					for _, igSubnet := range ig.Spec.Subnets {
+						if igSubnet == subnetSpec.Name {
+							tags["kops.k8s.io/karpenter/"+ig.Name] = "1"
+						}
+					}
+				}
 			}
 		} else {
 			klog.V(2).Infof("skipping subnet tags. Ensure these are maintained externally.")

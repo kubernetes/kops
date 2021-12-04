@@ -49,8 +49,12 @@ type InstanceGroupList struct {
 // InstanceGroupRole string describes the roles of the nodes in this InstanceGroup (master or nodes)
 type InstanceGroupRole string
 
+type InstanceManager string
+
 // InstanceGroupSpec is the specification for an InstanceGroup
 type InstanceGroupSpec struct {
+	// InstanceManager determines what is managing the node lifecycle
+	InstanceManager InstanceManager `json:"instanceManager,omitempty"`
 	// Type determines the role of instances in this instance group: masters or nodes
 	Role InstanceGroupRole `json:"role,omitempty"`
 	// Image is the instance (ami etc) we should use
