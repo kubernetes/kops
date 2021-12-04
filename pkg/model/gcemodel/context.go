@@ -19,7 +19,6 @@ package gcemodel
 import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 )
@@ -67,8 +66,9 @@ func (c *GCEModelContext) SafeClusterName() string {
 	return gce.SafeClusterName(c.Cluster.ObjectMeta.Name)
 }
 
+// GCETagForRole returns the (network) tag for GCE instances in the given instance group role.
 func (c *GCEModelContext) GCETagForRole(role kops.InstanceGroupRole) string {
-	return components.GCETagForRole(c.Cluster.ObjectMeta.Name, role)
+	return gce.TagForRole(c.Cluster.ObjectMeta.Name, role)
 }
 
 func (c *GCEModelContext) LinkToTargetPool(id string) *gcetasks.TargetPool {

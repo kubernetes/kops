@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -141,7 +142,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 			clusterSpec.CloudConfig = &kops.CloudConfiguration{}
 		}
 		clusterSpec.CloudConfig.Multizone = fi.Bool(true)
-		clusterSpec.CloudConfig.NodeTags = fi.String(GCETagForRole(b.ClusterName, kops.InstanceGroupRoleNode))
+		clusterSpec.CloudConfig.NodeTags = fi.String(gce.TagForRole(b.ClusterName, kops.InstanceGroupRoleNode))
 
 	}
 

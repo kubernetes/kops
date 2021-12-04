@@ -28,13 +28,14 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/protokube/pkg/gossip"
-	gossipgce "k8s.io/kops/protokube/pkg/gossip/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
 )
 
 // GCEVolumes is the Volumes implementation for GCE
 type GCEVolumes struct {
-	compute *compute.Service
+	compute   *compute.Service
+	discovery *gcediscovery.Discovery
 
 	project      string
 	zone         string
@@ -48,15 +49,14 @@ var _ Volumes = &GCEVolumes{}
 
 // NewGCEVolumes builds a GCEVolumes
 func NewGCEVolumes() (*GCEVolumes, error) {
-	ctx := context.Background()
-
-	computeService, err := compute.NewService(ctx)
+	discovery, err := gcediscovery.New()
 	if err != nil {
-		return nil, fmt.Errorf("error building compute API client: %v", err)
+		return nil, err
 	}
 
 	a := &GCEVolumes{
-		compute: computeService,
+		discovery: discovery,
+		compute:   discovery.Compute(),
 	}
 
 	err = a.discoverTags()
@@ -85,24 +85,15 @@ func (a *GCEVolumes) InternalIP() net.IP {
 func (a *GCEVolumes) discoverTags() error {
 	// Cluster Name
 	{
-		clusterName, err := metadata.InstanceAttributeValue("cluster-name")
-		if err != nil {
-			return fmt.Errorf("error reading cluster-name attribute from GCE: %v", err)
-		}
-		a.clusterName = strings.TrimSpace(string(clusterName))
+		a.clusterName = a.discovery.ClusterName()
 		if a.clusterName == "" {
 			return fmt.Errorf("cluster-name metadata was empty")
 		}
-		klog.Infof("Found cluster-name=%q", a.clusterName)
 	}
 
 	// Project ID
 	{
-		project, err := metadata.ProjectID()
-		if err != nil {
-			return fmt.Errorf("error reading project from GCE: %v", err)
-		}
-		a.project = strings.TrimSpace(project)
+		a.project = a.discovery.ProjectID()
 		if a.project == "" {
 			return fmt.Errorf("project metadata was empty")
 		}
@@ -111,21 +102,13 @@ func (a *GCEVolumes) discoverTags() error {
 
 	// Zone
 	{
-		zone, err := metadata.Zone()
-		if err != nil {
-			return fmt.Errorf("error reading zone from GCE: %v", err)
-		}
-		a.zone = strings.TrimSpace(zone)
+		a.zone = a.discovery.Zone()
 		if a.zone == "" {
 			return fmt.Errorf("zone metadata was empty")
 		}
 		klog.Infof("Found zone=%q", a.zone)
 
-		region, err := regionFromZone(zone)
-		if err != nil {
-			return fmt.Errorf("error determining region from zone %q: %v", zone, err)
-		}
-		a.region = region
+		a.region = a.discovery.Region()
 		klog.Infof("Found region=%q", a.region)
 	}
 
@@ -359,21 +342,9 @@ func (v *GCEVolumes) AttachVolume(volume *Volume) error {
 }
 
 func (g *GCEVolumes) GossipSeeds() (gossip.SeedProvider, error) {
-	return gossipgce.NewSeedProvider(g.compute, g.region, g.project)
+	return g.discovery, nil
 }
 
 func (g *GCEVolumes) InstanceName() string {
 	return g.instanceName
-}
-
-// regionFromZone returns region of the gce zone. Zone names
-// are of the form: ${region-name}-${ix}.
-// For example, "us-central1-b" has a region of "us-central1".
-// So we look for the last '-' and trim to just before that.
-func regionFromZone(zone string) (string, error) {
-	ix := strings.LastIndex(zone, "-")
-	if ix == -1 {
-		return "", fmt.Errorf("unexpected zone: %s", zone)
-	}
-	return zone[:ix], nil
 }
