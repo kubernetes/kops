@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
@@ -35,6 +36,7 @@ import (
 	"k8s.io/kops/pkg/model/components/addonmanifests/clusterautoscaler"
 	"k8s.io/kops/pkg/model/components/addonmanifests/dnscontroller"
 	"k8s.io/kops/pkg/model/components/addonmanifests/externaldns"
+	"k8s.io/kops/pkg/model/components/addonmanifests/karpenter"
 	"k8s.io/kops/pkg/model/components/addonmanifests/nodeterminationhandler"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/templates"
@@ -1056,6 +1058,24 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 				NeedsPKI: true,
 				Id:       id,
 			})
+		}
+	}
+	if b.Cluster.Spec.Karpenter != nil && fi.BoolValue(&b.Cluster.Spec.Karpenter.Enabled) {
+		key := "karpenter.sh"
+
+		{
+			id := "k8s-1.19"
+			location := key + "/" + id + ".yaml"
+			addons.Add(&channelsapi.AddonSpec{
+				Name:     fi.String(key),
+				Manifest: fi.String(location),
+				Selector: map[string]string{"k8s-addon": key},
+				NeedsPKI: true,
+				Id:       id,
+			})
+			if b.UseServiceAccountExternalPermissions() {
+				serviceAccountRoles = append(serviceAccountRoles, &karpenter.ServiceAccount{})
+			}
 		}
 	}
 

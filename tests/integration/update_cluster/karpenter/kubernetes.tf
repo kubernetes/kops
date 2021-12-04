@@ -1,23 +1,53 @@
 locals {
-  cluster_name                 = "minimal.example.com"
-  master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-minimal-example-com.id]
-  master_security_group_ids    = [aws_security_group.masters-minimal-example-com.id]
-  masters_role_arn             = aws_iam_role.masters-minimal-example-com.arn
-  masters_role_name            = aws_iam_role.masters-minimal-example-com.name
-  node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-minimal-example-com.id]
-  node_security_group_ids      = [aws_security_group.nodes-minimal-example-com.id]
-  node_subnet_ids              = [aws_subnet.us-test-1a-minimal-example-com.id]
-  nodes_role_arn               = aws_iam_role.nodes-minimal-example-com.arn
-  nodes_role_name              = aws_iam_role.nodes-minimal-example-com.name
-  region                       = "us-test-1"
-  route_table_public_id        = aws_route_table.minimal-example-com.id
-  subnet_us-test-1a_id         = aws_subnet.us-test-1a-minimal-example-com.id
-  vpc_cidr_block               = aws_vpc.minimal-example-com.cidr_block
-  vpc_id                       = aws_vpc.minimal-example-com.id
+  cluster_name                         = "minimal.example.com"
+  iam_openid_connect_provider_arn      = aws_iam_openid_connect_provider.minimal-example-com.arn
+  iam_openid_connect_provider_issuer   = "discovery.example.com/minimal.example.com"
+  kube-system-dns-controller_role_arn  = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.arn
+  kube-system-dns-controller_role_name = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.name
+  kube-system-karpenter_role_arn       = aws_iam_role.karpenter-kube-system-sa-minimal-example-com.arn
+  kube-system-karpenter_role_name      = aws_iam_role.karpenter-kube-system-sa-minimal-example-com.name
+  master_autoscaling_group_ids         = [aws_autoscaling_group.master-us-test-1a-masters-minimal-example-com.id]
+  master_security_group_ids            = [aws_security_group.masters-minimal-example-com.id]
+  masters_role_arn                     = aws_iam_role.masters-minimal-example-com.arn
+  masters_role_name                    = aws_iam_role.masters-minimal-example-com.name
+  node_autoscaling_group_ids           = [aws_autoscaling_group.karpenter-nodes-minimal-example-com.id, aws_autoscaling_group.nodes-minimal-example-com.id]
+  node_security_group_ids              = [aws_security_group.nodes-minimal-example-com.id]
+  node_subnet_ids                      = [aws_subnet.us-test-1a-minimal-example-com.id]
+  nodes_role_arn                       = aws_iam_role.nodes-minimal-example-com.arn
+  nodes_role_name                      = aws_iam_role.nodes-minimal-example-com.name
+  region                               = "us-test-1"
+  route_table_public_id                = aws_route_table.minimal-example-com.id
+  subnet_us-test-1a_id                 = aws_subnet.us-test-1a-minimal-example-com.id
+  vpc_cidr_block                       = aws_vpc.minimal-example-com.cidr_block
+  vpc_id                               = aws_vpc.minimal-example-com.id
 }
 
 output "cluster_name" {
   value = "minimal.example.com"
+}
+
+output "iam_openid_connect_provider_arn" {
+  value = aws_iam_openid_connect_provider.minimal-example-com.arn
+}
+
+output "iam_openid_connect_provider_issuer" {
+  value = "discovery.example.com/minimal.example.com"
+}
+
+output "kube-system-dns-controller_role_arn" {
+  value = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.arn
+}
+
+output "kube-system-dns-controller_role_name" {
+  value = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.name
+}
+
+output "kube-system-karpenter_role_arn" {
+  value = aws_iam_role.karpenter-kube-system-sa-minimal-example-com.arn
+}
+
+output "kube-system-karpenter_role_name" {
+  value = aws_iam_role.karpenter-kube-system-sa-minimal-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -37,7 +67,7 @@ output "masters_role_name" {
 }
 
 output "node_autoscaling_group_ids" {
-  value = [aws_autoscaling_group.nodes-minimal-example-com.id]
+  value = [aws_autoscaling_group.karpenter-nodes-minimal-example-com.id, aws_autoscaling_group.nodes-minimal-example-com.id]
 }
 
 output "node_security_group_ids" {
@@ -83,6 +113,55 @@ provider "aws" {
 provider "aws" {
   alias  = "files"
   region = "us-test-1"
+}
+
+resource "aws_autoscaling_group" "karpenter-nodes-minimal-example-com" {
+  enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_template {
+    id      = aws_launch_template.karpenter-nodes-minimal-example-com.id
+    version = aws_launch_template.karpenter-nodes-minimal-example-com.latest_version
+  }
+  max_size              = 2
+  metrics_granularity   = "1Minute"
+  min_size              = 2
+  name                  = "karpenter-nodes.minimal.example.com"
+  protect_from_scale_in = false
+  tag {
+    key                 = "KubernetesCluster"
+    propagate_at_launch = true
+    value               = "minimal.example.com"
+  }
+  tag {
+    key                 = "Name"
+    propagate_at_launch = true
+    value               = "karpenter-nodes.minimal.example.com"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "node"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
+    key                 = "k8s.io/role/node"
+    propagate_at_launch = true
+    value               = "1"
+  }
+  tag {
+    key                 = "kops.k8s.io/instancegroup"
+    propagate_at_launch = true
+    value               = "karpenter-nodes"
+  }
+  tag {
+    key                 = "kubernetes.io/cluster/minimal.example.com"
+    propagate_at_launch = true
+    value               = "owned"
+  }
+  vpc_zone_identifier = [aws_subnet.us-test-1a-minimal-example-com.id]
 }
 
 resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-example-com" {
@@ -250,6 +329,37 @@ resource "aws_iam_instance_profile" "nodes-minimal-example-com" {
   }
 }
 
+resource "aws_iam_openid_connect_provider" "minimal-example-com" {
+  client_id_list = ["amazonaws.com"]
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
+  thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280", "a9d53002e97e00e043244f3d170d6f4c414104fd"]
+  url             = "https://discovery.example.com/minimal.example.com"
+}
+
+resource "aws_iam_role" "dns-controller-kube-system-sa-minimal-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_dns-controller.kube-system.sa.minimal.example.com_policy")
+  name               = "dns-controller.kube-system.sa.minimal.example.com"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "dns-controller.kube-system.sa.minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
+}
+
+resource "aws_iam_role" "karpenter-kube-system-sa-minimal-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_karpenter.kube-system.sa.minimal.example.com_policy")
+  name               = "karpenter.kube-system.sa.minimal.example.com"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "karpenter.kube-system.sa.minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
+}
+
 resource "aws_iam_role" "masters-minimal-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.minimal.example.com_policy")
   name               = "masters.minimal.example.com"
@@ -268,6 +378,18 @@ resource "aws_iam_role" "nodes-minimal-example-com" {
     "Name"                                      = "nodes.minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "dns-controller-kube-system-sa-minimal-example-com" {
+  name   = "dns-controller.kube-system.sa.minimal.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_dns-controller.kube-system.sa.minimal.example.com_policy")
+  role   = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.name
+}
+
+resource "aws_iam_role_policy" "karpenter-kube-system-sa-minimal-example-com" {
+  name   = "karpenter.kube-system.sa.minimal.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_karpenter.kube-system.sa.minimal.example.com_policy")
+  role   = aws_iam_role.karpenter-kube-system-sa-minimal-example-com.name
 }
 
 resource "aws_iam_role_policy" "masters-minimal-example-com" {
@@ -299,6 +421,79 @@ resource "aws_key_pair" "kubernetes-minimal-example-com-c4a6ed9aa889b9e2c39cd663
     "Name"                                      = "minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
   }
+}
+
+resource "aws_launch_template" "karpenter-nodes-minimal-example-com" {
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      delete_on_termination = true
+      encrypted             = true
+      iops                  = 3000
+      throughput            = 125
+      volume_size           = 128
+      volume_type           = "gp3"
+    }
+  }
+  iam_instance_profile {
+    name = aws_iam_instance_profile.nodes-minimal-example-com.id
+  }
+  image_id      = "ami-12345678"
+  instance_type = "t2.medium"
+  key_name      = aws_key_pair.kubernetes-minimal-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
+  lifecycle {
+    create_before_destroy = true
+  }
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_protocol_ipv6          = "disabled"
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
+  }
+  monitoring {
+    enabled = false
+  }
+  name = "karpenter-nodes.minimal.example.com"
+  network_interfaces {
+    associate_public_ip_address = true
+    delete_on_termination       = true
+    ipv6_address_count          = 0
+    security_groups             = [aws_security_group.nodes-minimal-example-com.id]
+  }
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      "KubernetesCluster"                                                          = "minimal.example.com"
+      "Name"                                                                       = "karpenter-nodes.minimal.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "karpenter-nodes"
+      "kubernetes.io/cluster/minimal.example.com"                                  = "owned"
+    }
+  }
+  tag_specifications {
+    resource_type = "volume"
+    tags = {
+      "KubernetesCluster"                                                          = "minimal.example.com"
+      "Name"                                                                       = "karpenter-nodes.minimal.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "karpenter-nodes"
+      "kubernetes.io/cluster/minimal.example.com"                                  = "owned"
+    }
+  }
+  tags = {
+    "KubernetesCluster"                                                          = "minimal.example.com"
+    "Name"                                                                       = "karpenter-nodes.minimal.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+    "k8s.io/role/node"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                  = "karpenter-nodes"
+    "kubernetes.io/cluster/minimal.example.com"                                  = "owned"
+  }
+  user_data = filebase64("${path.module}/data/aws_launch_template_karpenter-nodes.minimal.example.com_user_data")
 }
 
 resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
@@ -495,6 +690,14 @@ resource "aws_s3_bucket_object" "cluster-completed-spec" {
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_bucket_object" "discovery-json" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_discovery.json_content")
+  key                    = "discovery.example.com/minimal.example.com/.well-known/openid-configuration"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_bucket_object" "etcd-cluster-spec-events" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_etcd-cluster-spec-events_content")
@@ -507,6 +710,14 @@ resource "aws_s3_bucket_object" "etcd-cluster-spec-main" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_etcd-cluster-spec-main_content")
   key                    = "clusters.example.com/minimal.example.com/backups/etcd/main/control/etcd-cluster-spec"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_bucket_object" "keys-json" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_keys.json_content")
+  key                    = "discovery.example.com/minimal.example.com/openid/v1/jwks"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -575,6 +786,14 @@ resource "aws_s3_bucket_object" "minimal-example-com-addons-dns-controller-addon
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_bucket_object" "minimal-example-com-addons-karpenter-sh-k8s-1-19" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_minimal.example.com-addons-karpenter.sh-k8s-1.19_content")
+  key                    = "clusters.example.com/minimal.example.com/addons/karpenter.sh/k8s-1.19.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_bucket_object" "minimal-example-com-addons-kops-controller-addons-k8s-io-k8s-1-16" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_minimal.example.com-addons-kops-controller.addons.k8s.io-k8s-1.16_content")
@@ -603,6 +822,14 @@ resource "aws_s3_bucket_object" "minimal-example-com-addons-storage-aws-addons-k
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_minimal.example.com-addons-storage-aws.addons.k8s.io-v1.15.0_content")
   key                    = "clusters.example.com/minimal.example.com/addons/storage-aws.addons.k8s.io/v1.15.0.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_bucket_object" "nodeupconfig-karpenter-nodes" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_nodeupconfig-karpenter-nodes_content")
+  key                    = "clusters.example.com/minimal.example.com/igconfig/node/karpenter-nodes/nodeupconfig.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
