@@ -16,6 +16,7 @@ go_library(
         "//vendor/sigs.k8s.io/kustomize/kyaml/errors:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/kio:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/kio/kioutil:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/kyaml/order:go_default_library",
         "//vendor/sigs.k8s.io/kustomize/kyaml/yaml:go_default_library",
     ],
 )

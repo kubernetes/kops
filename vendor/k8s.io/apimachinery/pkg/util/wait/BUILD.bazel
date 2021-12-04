@@ -10,7 +10,7 @@ go_library(
     importpath = "k8s.io/apimachinery/pkg/util/wait",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/k8s.io/apimachinery/pkg/util/clock:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/runtime:go_default_library",
+        "//vendor/k8s.io/utils/clock:go_default_library",
     ],
 )

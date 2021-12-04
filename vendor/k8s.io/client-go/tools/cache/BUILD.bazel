@@ -36,7 +36,6 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/cache:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/clock:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/naming:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/net:go_default_library",
@@ -48,6 +47,7 @@ go_library(
         "//vendor/k8s.io/client-go/tools/pager:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
         "//vendor/k8s.io/utils/buffer:go_default_library",
+        "//vendor/k8s.io/utils/clock:go_default_library",
         "//vendor/k8s.io/utils/trace:go_default_library",
     ],
 )
