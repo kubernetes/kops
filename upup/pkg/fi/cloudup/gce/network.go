@@ -39,6 +39,11 @@ func UsesIPAliases(c *kops.Cluster) bool {
 // PerformNetworkAssignments assigns suitable pod and service assignments for GCE,
 // in particular for IP alias support.
 func PerformNetworkAssignments(ctx context.Context, c *kops.Cluster, cloudObj fi.Cloud) error {
+	if c.Spec.NetworkCIDR == "" {
+		// CIDRs should be in the RFC1918 range, but otherwise we have no constraints
+		c.Spec.NetworkCIDR = "10.0.0.0/8"
+	}
+
 	if UsesIPAliases(c) {
 		return performNetworkAssignmentsIPAliases(ctx, c, cloudObj)
 	} else {
@@ -129,8 +134,7 @@ func performNetworkAssignmentsIPAliases(ctx context.Context, c *kops.Cluster, cl
 		return err
 	}
 
-	// CIDRs should be in the RFC1918 range, but otherwise we have no constraints
-	networkCIDR := "10.0.0.0/8"
+	networkCIDR := c.Spec.NetworkCIDR
 
 	podCIDR, err := used.Allocate(networkCIDR, net.CIDRMask(14, 32))
 	if err != nil {
@@ -177,8 +181,7 @@ func performSubnetAssignments(ctx context.Context, c *kops.Cluster, cloudObj fi.
 		return err
 	}
 
-	// CIDRs should be in the RFC1918 range, but otherwise we have no constraints
-	networkCIDR := "10.0.0.0/8"
+	networkCIDR := c.Spec.NetworkCIDR
 
 	for i := range c.Spec.Subnets {
 		subnet := &c.Spec.Subnets[i]
