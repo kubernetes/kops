@@ -34,6 +34,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilvalidation "k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model/components"
@@ -859,8 +860,8 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Could not parse as semantic version"))
 		}
 
-		if !(version.Minor >= 8 && version.Minor <= 10) {
-			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only versions 1.8 through 1.10 are supported"))
+		if !(version.Minor >= 8 && version.Minor <= 11) {
+			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only versions 1.8 through 1.11 are supported"))
 		}
 
 		if version.Minor < 10 && c.IsIPv6Only() {

@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/blang/semver/v4"
+
 	"k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -63,7 +64,7 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 				}
 				addons.Add(addon)
 			}
-		} else if ver.Minor == 10 {
+		} else if ver.Minor == 10 || ver.Minor == 11 {
 			{
 				id := "k8s-1.16"
 				location := key + "/" + id + "-v1.10.yaml"
