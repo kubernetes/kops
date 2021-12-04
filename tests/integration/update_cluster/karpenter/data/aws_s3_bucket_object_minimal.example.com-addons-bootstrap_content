@@ -40,7 +40,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 158ef7d0836127e699c62529da8cb601f4aca8135c8126416dcd2c70086963af
+    manifestHash: 595f7ea5bff4f4668b9fdac3cb76ffce2fef68e3ae08e1781d657474a46b8df9
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
@@ -51,4 +51,12 @@ spec:
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
+    version: 9.99.0
+  - id: k8s-1.19
+    manifest: karpenter.sh/k8s-1.19.yaml
+    manifestHash: c0a94c541234427f6ff9f07d4b83cb6ba042a2430373058c168ad249827d610b
+    name: karpenter.sh
+    needsPKI: true
+    selector:
+      k8s-addon: karpenter.sh
     version: 9.99.0
