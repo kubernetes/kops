@@ -10,6 +10,8 @@ go_library(
         "gce_pd.go",
         "in_tree_volume.go",
         "openstack_cinder.go",
+        "portworx.go",
+        "rbd.go",
         "vsphere_volume.go",
     ],
     importmap = "k8s.io/kops/vendor/k8s.io/csi-translation-lib/plugins",

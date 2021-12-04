@@ -26,7 +26,6 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/serializer/streaming:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/clock:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/net:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
@@ -40,5 +39,6 @@ go_library(
         "//vendor/k8s.io/client-go/util/cert:go_default_library",
         "//vendor/k8s.io/client-go/util/flowcontrol:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
+        "//vendor/k8s.io/utils/clock:go_default_library",
     ],
 )

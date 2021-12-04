@@ -31,6 +31,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/cluster"
@@ -365,8 +366,14 @@ func New(config *rest.Config, options Options) (Manager, error) {
 		return nil, err
 	}
 
+	errChan := make(chan error)
+	runnables := newRunnables(errChan)
+
 	return &controllerManager{
+		stopProcedureEngaged:          pointer.Int64(0),
 		cluster:                       cluster,
+		runnables:                     runnables,
+		errChan:                       errChan,
 		recorderProvider:              recorderProvider,
 		resourceLock:                  resourceLock,
 		metricsListener:               metricsListener,
@@ -571,7 +578,7 @@ func setOptionsDefaults(options Options) Options {
 		options.GracefulShutdownTimeout = &gracefulShutdownTimeout
 	}
 
-	if options.Logger == nil {
+	if options.Logger.GetSink() == nil {
 		options.Logger = log.Log
 	}
 

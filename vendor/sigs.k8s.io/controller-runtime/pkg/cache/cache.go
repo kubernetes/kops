@@ -86,8 +86,11 @@ type Informer interface {
 	HasSynced() bool
 }
 
+// ObjectSelector is an alias name of internal.Selector.
+type ObjectSelector internal.Selector
+
 // SelectorsByObject associate a client.Object's GVK to a field/label selector.
-type SelectorsByObject map[client.Object]internal.Selector
+type SelectorsByObject map[client.Object]ObjectSelector
 
 // Options are the optional arguments for creating a new InformersMap object.
 type Options struct {
@@ -198,7 +201,7 @@ func convertToSelectorsByGVK(selectorsByObject SelectorsByObject, scheme *runtim
 		if err != nil {
 			return nil, err
 		}
-		selectorsByGVK[gvk] = selector
+		selectorsByGVK[gvk] = internal.Selector(selector)
 	}
 	return selectorsByGVK, nil
 }

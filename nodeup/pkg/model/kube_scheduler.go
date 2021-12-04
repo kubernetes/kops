@@ -235,7 +235,7 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 		Image: image,
 		Env:   proxy.GetProxyEnvVars(b.Cluster.Spec.EgressProxy),
 		LivenessProbe: &v1.Probe{
-			Handler:             v1.Handler{HTTPGet: healthAction},
+			ProbeHandler:        v1.ProbeHandler{HTTPGet: healthAction},
 			InitialDelaySeconds: 15,
 			TimeoutSeconds:      15,
 		},

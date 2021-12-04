@@ -161,10 +161,10 @@ func (ks *Kind) Start(ctx context.Context, handler handler.EventHandler, queue w
 }
 
 func (ks *Kind) String() string {
-	if ks.Type != nil && ks.Type.GetObjectKind() != nil {
-		return fmt.Sprintf("kind source: %v", ks.Type.GetObjectKind().GroupVersionKind().String())
+	if ks.Type != nil {
+		return fmt.Sprintf("kind source: %T", ks.Type)
 	}
-	return "kind source: unknown GVK"
+	return "kind source: unknown type"
 }
 
 // WaitForSync implements SyncingSource to allow controllers to wait with starting
