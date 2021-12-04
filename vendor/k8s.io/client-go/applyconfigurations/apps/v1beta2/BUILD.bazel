@@ -24,6 +24,7 @@ go_library(
         "scale.go",
         "statefulset.go",
         "statefulsetcondition.go",
+        "statefulsetpersistentvolumeclaimretentionpolicy.go",
         "statefulsetspec.go",
         "statefulsetstatus.go",
         "statefulsetupdatestrategy.go",

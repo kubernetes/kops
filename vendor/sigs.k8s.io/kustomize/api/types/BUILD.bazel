@@ -10,7 +10,6 @@ go_library(
         "errunabletofind.go",
         "fieldspec.go",
         "fix.go",
-        "genargs.go",
         "generationbehavior.go",
         "generatorargs.go",
         "generatoroptions.go",

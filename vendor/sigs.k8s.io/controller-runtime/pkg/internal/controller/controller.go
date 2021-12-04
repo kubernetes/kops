@@ -175,7 +175,7 @@ func (c *Controller) Start(ctx context.Context) error {
 		// caches to sync so that they have a chance to register their intendeded
 		// caches.
 		for _, watch := range c.startWatches {
-			c.Log.Info("Starting EventSource", "source", watch.src)
+			c.Log.Info("Starting EventSource", "source", fmt.Sprintf("%s", watch.src))
 
 			if err := watch.src.Start(ctx, watch.handler, c.Queue, watch.predicates...); err != nil {
 				return err
