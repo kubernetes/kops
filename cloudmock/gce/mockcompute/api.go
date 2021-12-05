@@ -27,13 +27,14 @@ type MockClient struct {
 	projectClient *projectClient
 	zoneClient    *zoneClient
 
-	networkClient        *networkClient
-	subnetworkClient     *subnetworkClient
-	routeClient          *routeClient
-	forwardingRuleClient *forwardingRuleClient
-	addressClient        *addressClient
-	firewallClient       *firewallClient
-	routerClient         *routerClient
+	networkClient          *networkClient
+	subnetworkClient       *subnetworkClient
+	routeClient            *routeClient
+	forwardingRuleClient   *forwardingRuleClient
+	httpHealthChecksClient *httpHealthChecksClient
+	addressClient          *addressClient
+	firewallClient         *firewallClient
+	routerClient           *routerClient
 
 	instanceTemplateClient     *instanceTemplateClient
 	instanceGroupManagerClient *instanceGroupManagerClient
@@ -50,13 +51,14 @@ func NewMockClient(project string) *MockClient {
 		projectClient: newProjectClient(project),
 		zoneClient:    newZoneClient(project),
 
-		networkClient:        newNetworkClient(),
-		subnetworkClient:     newSubnetworkClient(),
-		routeClient:          newRouteClient(),
-		forwardingRuleClient: newForwardingRuleClient(),
-		addressClient:        newAddressClient(),
-		firewallClient:       newFirewallClient(),
-		routerClient:         newRouterClient(),
+		networkClient:          newNetworkClient(),
+		subnetworkClient:       newSubnetworkClient(),
+		routeClient:            newRouteClient(),
+		forwardingRuleClient:   newForwardingRuleClient(),
+		httpHealthChecksClient: newHttpHealthChecksClient(),
+		addressClient:          newAddressClient(),
+		firewallClient:         newFirewallClient(),
+		routerClient:           newRouterClient(),
 
 		instanceTemplateClient:     newInstanceTemplateClient(),
 		instanceGroupManagerClient: newInstanceGroupManagerClient(),
@@ -77,6 +79,7 @@ func (c *MockClient) AllResources() map[string]interface{} {
 		c.subnetworkClient.All,
 		c.routeClient.All,
 		c.forwardingRuleClient.All,
+		c.httpHealthChecksClient.All,
 		c.addressClient.All,
 		c.firewallClient.All,
 		c.routerClient.All,
@@ -122,6 +125,10 @@ func (c *MockClient) Routes() gce.RouteClient {
 
 func (c *MockClient) ForwardingRules() gce.ForwardingRuleClient {
 	return c.forwardingRuleClient
+}
+
+func (c *MockClient) HTTPHealthChecks() gce.HttpHealthChecksClient {
+	return c.httpHealthChecksClient
 }
 
 func (c *MockClient) Addresses() gce.AddressClient {

@@ -40,6 +40,7 @@ const (
 	typeTargetPool           = "TargetPool"
 	typeFirewallRule         = "FirewallRule"
 	typeForwardingRule       = "ForwardingRule"
+	typeHTTPHealthcheck      = "HTTP HealthCheck"
 	typeAddress              = "Address"
 	typeRoute                = "Route"
 	typeNetwork              = "Network"
@@ -503,7 +504,7 @@ func (d *clusterDiscoveryGCE) listFirewallRules() ([]*resources.Resource, error)
 	}
 
 	for _, fr := range frs {
-		if !d.matchesClusterNameMultipart(fr.Name, maxPrefixTokens) {
+		if !d.matchesClusterNameMultipart(fr.Name, maxPrefixTokens) && !strings.HasPrefix(fr.Name, "k8s-") {
 			continue
 		}
 
@@ -515,7 +516,59 @@ func (d *clusterDiscoveryGCE) listFirewallRules() ([]*resources.Resource, error)
 			}
 		}
 		if !foundMatchingTarget {
-			break
+			continue
+		}
+
+		// find the Kubernetes LoadBalancer
+		if strings.HasPrefix(fr.Name, "k8s-fw-") {
+			name := strings.ReplaceAll(fr.Name, "k8s-fw-", "")
+			fr, err := c.Compute().ForwardingRules().Get(c.Project(), c.Region(), name)
+			if err != nil {
+				return nil, fmt.Errorf("error get ForwardingRule: %v", err)
+			}
+
+			frResourceTracker := &resources.Resource{
+				Name:    fr.Name,
+				ID:      fr.Name,
+				Type:    typeForwardingRule,
+				Deleter: deleteForwardingRule,
+				Obj:     fr,
+			}
+			if fr.Target != "" {
+				frResourceTracker.Blocks = append(frResourceTracker.Blocks, typeTargetPool+":"+gce.LastComponent(fr.Target))
+			}
+			resourceTrackers = append(resourceTrackers, frResourceTracker)
+
+			tp, err := c.Compute().TargetPools().Get(c.Project(), c.Region(), name)
+			if err != nil {
+				return nil, fmt.Errorf("error get TargetPool: %v", err)
+			}
+
+			tpResourceTracker := &resources.Resource{
+				Name:    tp.Name,
+				ID:      tp.Name,
+				Type:    typeTargetPool,
+				Deleter: deleteTargetPool,
+				Obj:     tp,
+			}
+			resourceTrackers = append(resourceTrackers, tpResourceTracker)
+
+		}
+		// l4 level healthchecks
+		if strings.HasPrefix(fr.Name, "k8s-") && strings.HasSuffix(fr.Name, "-http-hc") {
+			name := strings.ReplaceAll(strings.ReplaceAll(fr.Name, "k8s-", ""), "-http-hc", "")
+			hc, err := c.Compute().HTTPHealthChecks().Get(c.Project(), name)
+			if err != nil {
+				return nil, fmt.Errorf("error get HTTPHealthCheck: %v", err)
+			}
+			hcResourceTracker := &resources.Resource{
+				Name:    hc.Name,
+				ID:      hc.Name,
+				Type:    typeHTTPHealthcheck,
+				Deleter: deleteHTTPHealthCheck,
+				Obj:     hc,
+			}
+			resourceTrackers = append(resourceTrackers, hcResourceTracker)
 		}
 
 		resourceTracker := &resources.Resource{
@@ -531,6 +584,29 @@ func (d *clusterDiscoveryGCE) listFirewallRules() ([]*resources.Resource, error)
 	}
 
 	return resourceTrackers, nil
+}
+
+// deleteHTTPHealthCheck is the helper function to delete a Resource for a HTTP health check object
+func deleteHTTPHealthCheck(cloud fi.Cloud, r *resources.Resource) error {
+	c := cloud.(gce.GCECloud)
+	t := r.Obj.(*compute.HttpHealthCheck)
+
+	klog.V(2).Infof("Deleting GCE HTTP HealthCheck %s", t.SelfLink)
+	u, err := gce.ParseGoogleCloudURL(t.SelfLink)
+	if err != nil {
+		return err
+	}
+
+	op, err := c.Compute().HTTPHealthChecks().Delete(u.Project, u.Name)
+	if err != nil {
+		if gce.IsNotFound(err) {
+			klog.Infof("HTTP HealthCheck not found, assuming deleted: %q", t.SelfLink)
+			return nil
+		}
+		return fmt.Errorf("error deleting HTTP HealthCheck %s: %v", t.SelfLink, err)
+	}
+
+	return c.WaitForOp(op)
 }
 
 // deleteFirewallRule is the helper function to delete a Resource for a Firewall object
