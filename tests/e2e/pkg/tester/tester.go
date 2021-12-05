@@ -377,6 +377,7 @@ func (t *Tester) execute() error {
 	if err := t.setSkipRegexFlag(); err != nil {
 		return err
 	}
+	t.FocusRegex = "load-balancer"
 
 	if err := t.addNodeOSArchFlag(); err != nil {
 		return err

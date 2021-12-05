@@ -19,8 +19,6 @@ package tester
 import (
 	"regexp"
 	"strings"
-
-	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 const (
@@ -80,11 +78,11 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|In-tree.Volumes.\\[Driver:.gcepd\\].*topology.should.provision.a.volume.and.schedule.a.pod.with.AllowedTopologies"
 	}
 
-	if cluster.Spec.CloudProvider == "aws" && utils.IsIPv6CIDR(cluster.Spec.NonMasqueradeCIDR) {
-		// AWS VPC Classic ELBs are IPv4 only
-		// ref: https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-internet-facing-load-balancers.html#internet-facing-ip-addresses
-		skipRegex += "|should.not.disrupt.a.cloud.load-balancer.s.connectivity.during.rollout"
-	}
+	//if cluster.Spec.CloudProvider == "aws" && utils.IsIPv6CIDR(cluster.Spec.NonMasqueradeCIDR) {
+	//	// AWS VPC Classic ELBs are IPv4 only
+	//	// ref: https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-internet-facing-load-balancers.html#internet-facing-ip-addresses
+	//	skipRegex += "|should.not.disrupt.a.cloud.load-balancer.s.connectivity.during.rollout"
+	//}
 
 	// Ensure it is valid regex
 	if _, err := regexp.Compile(skipRegex); err != nil {
