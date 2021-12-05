@@ -40,7 +40,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.19
     manifest: external-dns.addons.k8s.io/k8s-1.19.yaml
-    manifestHash: becbb20d8a89e33c89132134fe9c61d8893e4e8aad035832ae5974bf8200dcdc
+    manifestHash: 2da83fc2af2aa81afe4ff384ee46d17f072f4ae857f2c2fc898e5db5b5b47a32
     name: external-dns.addons.k8s.io
     selector:
       k8s-addon: external-dns.addons.k8s.io
