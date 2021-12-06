@@ -3367,6 +3367,9 @@ func autoConvert_v1alpha2_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.LogDriver = in.LogDriver
 	out.LogLevel = in.LogLevel
 	out.LogOpt = in.LogOpt
+	out.MaxConcurrentDownloads = in.MaxConcurrentDownloads
+	out.MaxConcurrentUploads = in.MaxConcurrentUploads
+	out.MaxDownloadAttempts = in.MaxDownloadAttempts
 	out.MetricsAddress = in.MetricsAddress
 	out.MTU = in.MTU
 	if in.Packages != nil {
@@ -3415,6 +3418,9 @@ func autoConvert_kops_DockerConfig_To_v1alpha2_DockerConfig(in *kops.DockerConfi
 	out.LogDriver = in.LogDriver
 	out.LogLevel = in.LogLevel
 	out.LogOpt = in.LogOpt
+	out.MaxConcurrentDownloads = in.MaxConcurrentDownloads
+	out.MaxConcurrentUploads = in.MaxConcurrentUploads
+	out.MaxDownloadAttempts = in.MaxDownloadAttempts
 	out.MetricsAddress = in.MetricsAddress
 	out.MTU = in.MTU
 	if in.Packages != nil {
