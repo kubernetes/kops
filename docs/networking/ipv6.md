@@ -45,9 +45,6 @@ Running IPv6 with Calico requires a Debian 11-based AMI. As of the writing of th
 
 ## Future work
 
-* The AWS Cloud Controller Manager does not, as of the writing of this document, [support Resource Based Names](https://github.com/kubernetes/cloud-provider-aws/pull/286).
-This blocks supporting IPv6-only subnets.
-
 * NodeLocalDNS does not, as of the writing of this document, [support DNS64](https://github.com/kubernetes/dns/pull/489).
 
 * External-DNS does not, as of the writing of this document, support registering AAAA records.
