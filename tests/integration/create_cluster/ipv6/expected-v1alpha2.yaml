@@ -67,6 +67,7 @@ metadata:
   name: master-us-test-1a
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
+  instanceManager: CloudGroup
   instanceMetadata:
     httpPutResponseHopLimit: 3
     httpTokens: required
@@ -90,6 +91,7 @@ metadata:
   name: nodes-us-test-1a
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
+  instanceManager: CloudGroup
   instanceMetadata:
     httpPutResponseHopLimit: 1
     httpTokens: required

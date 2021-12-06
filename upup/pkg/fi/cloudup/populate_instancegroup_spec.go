@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/blang/semver/v4"
 	"k8s.io/klog/v2"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
@@ -172,6 +173,10 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 				ig.Spec.Taints = append(ig.Spec.Taints, "nvidia.com/gpu:NoSchedule")
 			}
 		}
+	}
+
+	if ig.Spec.InstanceManager == "" {
+		ig.Spec.InstanceManager = kops.InstanceManagerCloudGroup
 	}
 	return ig, nil
 }
