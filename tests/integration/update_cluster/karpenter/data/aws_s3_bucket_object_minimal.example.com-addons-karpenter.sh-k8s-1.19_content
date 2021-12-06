@@ -864,7 +864,7 @@ spec:
       cpu: 1000
   provider:
     instanceProfile: nodes.minimal.example.com
-    launchTemplate: karpenter-nodes
+    launchTemplate: karpenter-nodes.minimal.example.com
     securityGroupSelector:
       Name: nodes.minimal.example.com
     subnetSelector:

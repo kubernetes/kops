@@ -65,6 +65,7 @@ metadata:
   name: master-us-test1-a
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
+  instanceManager: CloudGroup
   machineType: n1-standard-1
   maxSize: 1
   minSize: 1
@@ -88,6 +89,7 @@ metadata:
   name: nodes-us-test1-a
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
+  instanceManager: CloudGroup
   machineType: n1-standard-2
   maxSize: 1
   minSize: 1

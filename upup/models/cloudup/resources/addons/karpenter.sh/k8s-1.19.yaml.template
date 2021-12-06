@@ -667,7 +667,7 @@ spec:
       cpu: 1000
   provider:
     instanceProfile: nodes.{{ ClusterName }}
-    launchTemplate: {{ $name }}
+    launchTemplate: {{ $name }}.{{ ClusterName }}
     securityGroupSelector:
       Name: nodes.{{ ClusterName }}
     subnetSelector:
