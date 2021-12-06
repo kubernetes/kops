@@ -594,6 +594,12 @@ func TestExternalDNSIRSA(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+func TestKarpenter(t *testing.T) {
+	newIntegrationTest("minimal.example.com", "karpenter").
+		withAddons(dnsControllerAddon).
+		runTestTerraformAWS(t)
+}
+
 // TestSharedSubnet runs the test on a configuration with a shared subnet (and VPC)
 func TestSharedSubnet(t *testing.T) {
 	newIntegrationTest("sharedsubnet.example.com", "shared_subnet").
