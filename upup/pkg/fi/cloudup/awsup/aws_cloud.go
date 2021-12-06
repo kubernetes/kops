@@ -582,7 +582,7 @@ func deregisterInstanceFromClassicLoadBalancer(c AWSCloud, i *cloudinstances.Clo
 		return nil
 	}
 
-	// there will always be only one loadBalancer in the response.
+	// there will always be only one ASG in the DescribeAutoScalingGroups response.
 	loadBalancerNames := asgDetails.AutoScalingGroups[0].LoadBalancerNames
 
 	for {
