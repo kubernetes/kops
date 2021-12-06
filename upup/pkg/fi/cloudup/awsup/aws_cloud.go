@@ -578,6 +578,10 @@ func deregisterInstanceFromClassicLoadBalancer(c AWSCloud, i *cloudinstances.Clo
 		return fmt.Errorf("error describing autoScalingGroups: %v", err)
 	}
 
+	if len(asgDetails.AutoScalingGroups) == 0 {
+		return nil
+	}
+
 	// there will always be only one loadBalancer in the response.
 	loadBalancerNames := asgDetails.AutoScalingGroups[0].LoadBalancerNames
 
@@ -607,7 +611,7 @@ func deregisterInstanceFromClassicLoadBalancer(c AWSCloud, i *cloudinstances.Clo
 			break
 		}
 
-		time.Sleep(30 * time.Second)
+		time.Sleep(5 * time.Second)
 	}
 
 	return nil
