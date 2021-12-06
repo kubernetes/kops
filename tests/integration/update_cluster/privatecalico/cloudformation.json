@@ -1491,6 +1491,10 @@
           "Interval": "10",
           "Timeout": "5"
         },
+        "ConnectionDrainingPolicy": {
+          "Enabled": true,
+          "Timeout": 300
+        },
         "ConnectionSettings": {
           "IdleTimeout": 300
         },
