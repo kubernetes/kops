@@ -213,6 +213,11 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				IdleTimeout: fi.Int64(int64(idleTimeout.Seconds())),
 			},
 
+			ConnectionDraining: &awstasks.ClassicLoadBalancerConnectionDraining{
+				Enabled: fi.Bool(true),
+				Timeout: fi.Int64(300),
+			},
+
 			Tags: tags,
 		}
 
