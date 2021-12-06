@@ -165,6 +165,9 @@ func (_ *ClassicLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget
 	if e.AccessLog != nil && e.AccessLog.S3BucketPrefix != nil {
 		request.LoadBalancerAttributes.AccessLog.S3BucketPrefix = e.AccessLog.S3BucketPrefix
 	}
+	if e.ConnectionDraining != nil && e.ConnectionDraining.Enabled != nil {
+		request.LoadBalancerAttributes.ConnectionDraining.Enabled = e.ConnectionDraining.Enabled
+	}
 	if e.ConnectionDraining != nil && e.ConnectionDraining.Timeout != nil {
 		request.LoadBalancerAttributes.ConnectionDraining.Timeout = e.ConnectionDraining.Timeout
 	}
