@@ -568,28 +568,37 @@ func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstance) error {
 // deregisterInstanceFromClassicLoadBalancer ensures that connectionDraining completes for the associated loadBalancer to ensure no dropped connections.
 // if instance is associated with an NLB, this method no-ops.
 func deregisterInstanceFromClassicLoadBalancer(c AWSCloud, i *cloudinstances.CloudInstance) error {
+	asg := i.CloudInstanceGroup.Raw.(*autoscaling.Group)
+
+	asgDetails, err := c.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: []*string{asg.AutoScalingGroupName},
+	})
+
+	if err != nil {
+		return fmt.Errorf("error describing autoScalingGroups: %v", err)
+	}
+
+	// there will always be only one loadBalancer in the response.
+	loadBalancerNames := asgDetails.AutoScalingGroups[0].LoadBalancerNames
+
 	for {
 		instanceDraining := false
-		for _, lb := range i.CloudInstanceGroup.InstanceGroup.Spec.ExternalLoadBalancers {
-			if lb.LoadBalancerName != nil {
-				response, err := c.ELB().DescribeLoadBalancers(&elb.DescribeLoadBalancersInput{
-					LoadBalancerNames: []*string{lb.LoadBalancerName},
-				})
+		response, err := c.ELB().DescribeLoadBalancers(&elb.DescribeLoadBalancersInput{
+			LoadBalancerNames: loadBalancerNames,
+		})
 
-				if err != nil {
-					return fmt.Errorf("error describing load balancer %q: %v", *lb.LoadBalancerName, err)
-				}
+		if err != nil {
+			return fmt.Errorf("error describing load balancers %v: %v", loadBalancerNames, err)
+		}
 
-				for _, awsLb := range response.LoadBalancerDescriptions {
-					for _, instance := range awsLb.Instances {
-						if aws.StringValue(instance.InstanceId) == i.ID {
-							c.ELB().DeregisterInstancesFromLoadBalancer(&elb.DeregisterInstancesFromLoadBalancerInput{
-								LoadBalancerName: lb.LoadBalancerName,
-								Instances:        []*elb.Instance{instance},
-							})
-							instanceDraining = true
-						}
-					}
+		for _, awsLb := range response.LoadBalancerDescriptions {
+			for _, instance := range awsLb.Instances {
+				if aws.StringValue(instance.InstanceId) == i.ID {
+					c.ELB().DeregisterInstancesFromLoadBalancer(&elb.DeregisterInstancesFromLoadBalancerInput{
+						LoadBalancerName: awsLb.LoadBalancerName,
+						Instances:        []*elb.Instance{instance},
+					})
+					instanceDraining = true
 				}
 			}
 		}
