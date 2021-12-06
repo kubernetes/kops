@@ -870,6 +870,21 @@ spec:
                     items:
                       type: string
                     type: array
+                  maxConcurrentDownloads:
+                    description: MaxConcurrentDownloads sets the max concurrent downloads
+                      for each pull
+                    format: int32
+                    type: integer
+                  maxConcurrentUploads:
+                    description: MaxConcurrentUploads sets the max concurrent uploads
+                      for each push
+                    format: int32
+                    type: integer
+                  maxDownloadAttempts:
+                    description: MaxDownloadAttempts sets the max download attempts
+                      for each pull
+                    format: int32
+                    type: integer
                   metricsAddress:
                     description: Metrics address is the endpoint to serve with Prometheus
                       format metrics

@@ -58,6 +58,12 @@ type DockerConfig struct {
 	LogLevel *string `json:"logLevel,omitempty" flag:"log-level"`
 	// Logopt is a series of options given to the log driver options for containers
 	LogOpt []string `json:"logOpt,omitempty" flag:"log-opt,repeat"`
+	// MaxConcurrentDownloads sets the max concurrent downloads for each pull
+	MaxConcurrentDownloads *int32 `json:"maxConcurrentDownloads,omitempty" flag:"max-concurrent-downloads"`
+	// MaxConcurrentUploads sets the max concurrent uploads for each push
+	MaxConcurrentUploads *int32 `json:"maxConcurrentUploads,omitempty" flag:"max-concurrent-uploads"`
+	// MaxDownloadAttempts sets the max download attempts for each pull
+	MaxDownloadAttempts *int32 `json:"maxDownloadAttempts,omitempty" flag:"max-download-attempts"`
 	// Metrics address is the endpoint to serve with Prometheus format metrics
 	MetricsAddress *string `json:"metricsAddress,omitempty" flag:"metrics-addr"`
 	// MTU is the containers network MTU
