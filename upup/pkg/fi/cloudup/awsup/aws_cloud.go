@@ -543,6 +543,11 @@ func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstance) error {
 		return fmt.Errorf("id was not set on CloudInstance: %v", i)
 	}
 
+	err := deregisterInstanceFromClassicLoadBalancer(c, i)
+	if err != nil {
+		return fmt.Errorf("failed to deregister instance from loadBalancer before terminating: %v", err)
+	}
+
 	request := &ec2.TerminateInstancesInput{
 		InstanceIds: []*string{aws.String(id)},
 	}
@@ -556,6 +561,45 @@ func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstance) error {
 	}
 
 	klog.V(8).Infof("deleted aws ec2 instance %q", id)
+
+	return nil
+}
+
+// deregisterInstanceFromClassicLoadBalancer ensures that connectionDraining completes for the associated loadBalancer to ensure no dropped connections.
+// if instance is associated with an NLB, this method no-ops.
+func deregisterInstanceFromClassicLoadBalancer(c AWSCloud, i *cloudinstances.CloudInstance) error {
+	for {
+		instanceDraining := false
+		for _, lb := range i.CloudInstanceGroup.InstanceGroup.Spec.ExternalLoadBalancers {
+			if lb.LoadBalancerName != nil {
+				response, err := c.ELB().DescribeLoadBalancers(&elb.DescribeLoadBalancersInput{
+					LoadBalancerNames: []*string{lb.LoadBalancerName},
+				})
+
+				if err != nil {
+					return fmt.Errorf("error describing load balancer %q: %v", *lb.LoadBalancerName, err)
+				}
+
+				for _, awsLb := range response.LoadBalancerDescriptions {
+					for _, instance := range awsLb.Instances {
+						if aws.StringValue(instance.InstanceId) == i.ID {
+							c.ELB().DeregisterInstancesFromLoadBalancer(&elb.DeregisterInstancesFromLoadBalancerInput{
+								LoadBalancerName: lb.LoadBalancerName,
+								Instances:        []*elb.Instance{instance},
+							})
+							instanceDraining = true
+						}
+					}
+				}
+			}
+		}
+
+		if !instanceDraining {
+			break
+		}
+
+		time.Sleep(30 * time.Second)
+	}
 
 	return nil
 }
