@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
@@ -79,12 +80,14 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(task)
 
 		// @step: now lets build the autoscaling group task
-		tsk, err := b.buildAutoScalingGroupTask(c, name, ig)
-		if err != nil {
-			return err
+		if ig.Spec.InstanceManager != "Karpenter" {
+			tsk, err := b.buildAutoScalingGroupTask(c, name, ig)
+			if err != nil {
+				return err
+			}
+			tsk.LaunchTemplate = task
+			c.AddTask(tsk)
 		}
-		tsk.LaunchTemplate = task
-		c.AddTask(tsk)
 
 		warmPool := b.Cluster.Spec.WarmPool.ResolveDefaults(ig)
 		{

@@ -93,6 +93,7 @@ metadata:
   name: master-us-test-1a-1
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
+  instanceManager: CloudGroup
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -113,6 +114,7 @@ metadata:
   name: master-us-test-1a-2
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
+  instanceManager: CloudGroup
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -133,6 +135,7 @@ metadata:
   name: master-us-test-1a-3
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
+  instanceManager: CloudGroup
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -153,6 +156,7 @@ metadata:
   name: master-us-test-1b-1
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
+  instanceManager: CloudGroup
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -173,6 +177,7 @@ metadata:
   name: master-us-test-1b-2
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
+  instanceManager: CloudGroup
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -193,6 +198,7 @@ metadata:
   name: nodes-us-test-1a
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
+  instanceManager: CloudGroup
   machineType: t2.medium
   maxSize: 1
   minSize: 1
@@ -213,6 +219,7 @@ metadata:
   name: nodes-us-test-1b
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
+  instanceManager: CloudGroup
   machineType: t2.medium
   maxSize: 1
   minSize: 1

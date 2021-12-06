@@ -10,7 +10,7 @@ locals {
   master_security_group_ids            = [aws_security_group.masters-minimal-example-com.id]
   masters_role_arn                     = aws_iam_role.masters-minimal-example-com.arn
   masters_role_name                    = aws_iam_role.masters-minimal-example-com.name
-  node_autoscaling_group_ids           = [aws_autoscaling_group.karpenter-nodes-minimal-example-com.id, aws_autoscaling_group.nodes-minimal-example-com.id]
+  node_autoscaling_group_ids           = [aws_autoscaling_group.nodes-minimal-example-com.id]
   node_security_group_ids              = [aws_security_group.nodes-minimal-example-com.id]
   node_subnet_ids                      = [aws_subnet.us-test-1a-minimal-example-com.id]
   nodes_role_arn                       = aws_iam_role.nodes-minimal-example-com.arn
@@ -67,7 +67,7 @@ output "masters_role_name" {
 }
 
 output "node_autoscaling_group_ids" {
-  value = [aws_autoscaling_group.karpenter-nodes-minimal-example-com.id, aws_autoscaling_group.nodes-minimal-example-com.id]
+  value = [aws_autoscaling_group.nodes-minimal-example-com.id]
 }
 
 output "node_security_group_ids" {
@@ -113,55 +113,6 @@ provider "aws" {
 provider "aws" {
   alias  = "files"
   region = "us-test-1"
-}
-
-resource "aws_autoscaling_group" "karpenter-nodes-minimal-example-com" {
-  enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_template {
-    id      = aws_launch_template.karpenter-nodes-minimal-example-com.id
-    version = aws_launch_template.karpenter-nodes-minimal-example-com.latest_version
-  }
-  max_size              = 2
-  metrics_granularity   = "1Minute"
-  min_size              = 2
-  name                  = "karpenter-nodes.minimal.example.com"
-  protect_from_scale_in = false
-  tag {
-    key                 = "KubernetesCluster"
-    propagate_at_launch = true
-    value               = "minimal.example.com"
-  }
-  tag {
-    key                 = "Name"
-    propagate_at_launch = true
-    value               = "karpenter-nodes.minimal.example.com"
-  }
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
-    propagate_at_launch = true
-    value               = "node"
-  }
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
-    propagate_at_launch = true
-    value               = ""
-  }
-  tag {
-    key                 = "k8s.io/role/node"
-    propagate_at_launch = true
-    value               = "1"
-  }
-  tag {
-    key                 = "kops.k8s.io/instancegroup"
-    propagate_at_launch = true
-    value               = "karpenter-nodes"
-  }
-  tag {
-    key                 = "kubernetes.io/cluster/minimal.example.com"
-    propagate_at_launch = true
-    value               = "owned"
-  }
-  vpc_zone_identifier = [aws_subnet.us-test-1a-minimal-example-com.id]
 }
 
 resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-example-com" {
