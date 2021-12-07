@@ -595,6 +595,12 @@ func TestExternalDNSIRSA(t *testing.T) {
 }
 
 func TestKarpenter(t *testing.T) {
+	featureflag.ParseFlags("+Karpenter")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-Karpenter")
+	}
+	defer unsetFeatureFlags()
+
 	test := newIntegrationTest("minimal.example.com", "karpenter").
 		withOIDCDiscovery().
 		withAddons(dnsControllerAddon).

@@ -1005,6 +1005,7 @@ resource "aws_subnet" "us-test-1a-minimal-example-com" {
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "us-test-1a.minimal.example.com"
     "SubnetType"                                = "Public"
+    "kops.k8s.io/karpenter/karpenter-nodes"     = "1"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
     "kubernetes.io/role/elb"                    = "1"
     "kubernetes.io/role/internal-elb"           = "1"
