@@ -414,35 +414,38 @@ resource "aws_launch_template" "karpenter-nodes-minimal-example-com" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                                                          = "minimal.example.com"
-      "Name"                                                                       = "karpenter-nodes.minimal.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
-      "k8s.io/role/node"                                                           = "1"
-      "kops.k8s.io/instancegroup"                                                  = "karpenter-nodes"
-      "kubernetes.io/cluster/minimal.example.com"                                  = "owned"
+      "KubernetesCluster"                                                           = "minimal.example.com"
+      "Name"                                                                        = "karpenter-nodes.minimal.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"            = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
+      "k8s.io/role/node"                                                            = "1"
+      "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes"
+      "kubernetes.io/cluster/minimal.example.com"                                   = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                                                          = "minimal.example.com"
-      "Name"                                                                       = "karpenter-nodes.minimal.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
-      "k8s.io/role/node"                                                           = "1"
-      "kops.k8s.io/instancegroup"                                                  = "karpenter-nodes"
-      "kubernetes.io/cluster/minimal.example.com"                                  = "owned"
+      "KubernetesCluster"                                                           = "minimal.example.com"
+      "Name"                                                                        = "karpenter-nodes.minimal.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"            = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
+      "k8s.io/role/node"                                                            = "1"
+      "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes"
+      "kubernetes.io/cluster/minimal.example.com"                                   = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                                                          = "minimal.example.com"
-    "Name"                                                                       = "karpenter-nodes.minimal.example.com"
-    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
-    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
-    "k8s.io/role/node"                                                           = "1"
-    "kops.k8s.io/instancegroup"                                                  = "karpenter-nodes"
-    "kubernetes.io/cluster/minimal.example.com"                                  = "owned"
+    "KubernetesCluster"                                                           = "minimal.example.com"
+    "Name"                                                                        = "karpenter-nodes.minimal.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"            = "node"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
+    "k8s.io/role/node"                                                            = "1"
+    "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes"
+    "kubernetes.io/cluster/minimal.example.com"                                   = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_karpenter-nodes.minimal.example.com_user_data")
 }
