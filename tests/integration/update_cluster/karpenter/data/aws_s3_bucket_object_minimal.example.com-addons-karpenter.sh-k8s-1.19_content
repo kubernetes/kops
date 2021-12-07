@@ -846,3 +846,40 @@ webhooks:
     matchLabels:
       app.kubernetes.io/part-of: karpenter
   sideEffects: None
+
+---
+
+apiVersion: karpenter.sh/v1alpha5
+kind: Provisioner
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: karpenter.sh
+  name: karpenter-nodes
+spec:
+  limits:
+    resources:
+      cpu: 1000
+  provider:
+    instanceProfile: nodes.minimal.example.com
+    launchTemplate: karpenter-nodes
+    securityGroupSelector:
+      Name: nodes.minimal.example.com
+    subnetSelector:
+      kops.k8s.io/karpenter/karpenter-nodes: '*'
+  requirements:
+  - key: karpenter.sh/capacity-type
+    operator: In
+    values:
+    - spot
+  - key: kubernetes.io/arch
+    operator: In
+    values:
+    - amd64
+  - key: node.kubernetes.io/instance-type
+    operator: In
+    values:
+    - t2.medium
+  ttlSecondsAfterEmpty: 30
