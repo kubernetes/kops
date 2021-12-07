@@ -83,7 +83,7 @@ kind: Service
 metadata:
   labels:
     k8s-addon: external-dns.addons.k8s.io
-  name: kops:external-dns
+  name: external-dns
 spec:
   type: ClusterIP
   selector:
