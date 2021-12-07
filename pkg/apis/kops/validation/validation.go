@@ -37,6 +37,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
@@ -262,6 +263,12 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 				allErrs = append(allErrs, field.Forbidden(fieldPath.Child("iam", "serviceAccountExternalPermissions"), "serviceAccountExternalPermissions requires AWS OIDC Provider to be enabled"))
 			}
 			allErrs = append(allErrs, validateSAExternalPermissions(spec.IAM.ServiceAccountExternalPermissions, fieldPath.Child("iam", "serviceAccountExternalPermissions"))...)
+		}
+	}
+
+	if spec.Karpenter != nil && spec.Karpenter.Enabled {
+		if !featureflag.Karpenter.Enabled() {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("karpenter", "enabled"), "karpenter requires the Karpenter feature flag"))
 		}
 	}
 
