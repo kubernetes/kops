@@ -6,7 +6,7 @@ metadata:
   name: system::leader-locking-migration
   namespace: kube-system
 rules:
-  apiGroups:
+- apiGroups:
   - coordination.k8s.io
   resources:
   - leases
