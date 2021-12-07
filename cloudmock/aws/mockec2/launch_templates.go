@@ -155,17 +155,26 @@ func (m *MockEC2) CreateLaunchTemplateVersion(request *ec2.CreateLaunchTemplateV
 
 	name := request.LaunchTemplateName
 	found := false
-	for _, ltInfo := range m.LaunchTemplates {
+	var ltVersion int
+	var ltID string
+	for id, ltInfo := range m.LaunchTemplates {
 		if aws.StringValue(ltInfo.name) == aws.StringValue(name) {
 			found = true
 			ltInfo.data = responseLaunchTemplateData(request.LaunchTemplateData)
 			ltInfo.version++
+			ltVersion = ltInfo.version
+			ltID = id
 		}
 	}
 	if !found {
 		return nil, nil // TODO: error
 	}
-	return &ec2.CreateLaunchTemplateVersionOutput{}, nil
+	return &ec2.CreateLaunchTemplateVersionOutput{
+		LaunchTemplateVersion: &ec2.LaunchTemplateVersion{
+			VersionNumber:    aws.Int64(int64(ltVersion)),
+			LaunchTemplateId: &ltID,
+		},
+	}, nil
 }
 
 // DeleteLaunchTemplate mocks the deletion of a launch template
@@ -187,6 +196,10 @@ func (m *MockEC2) DeleteLaunchTemplate(request *ec2.DeleteLaunchTemplateInput) (
 	}
 
 	return o, nil
+}
+
+func (m *MockEC2) ModifyLaunchTemplate(*ec2.ModifyLaunchTemplateInput) (*ec2.ModifyLaunchTemplateOutput, error) {
+	return &ec2.ModifyLaunchTemplateOutput{}, nil
 }
 
 func responseLaunchTemplateData(req *ec2.RequestLaunchTemplateData) *ec2.ResponseLaunchTemplateData {
