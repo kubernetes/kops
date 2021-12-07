@@ -31,6 +31,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	expirationcache "k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
+
 	"k8s.io/kops/pkg/nodeidentity"
 )
 
@@ -41,7 +42,8 @@ const (
 	// ClusterAutoscalerNodeTemplateLabel is the prefix used on node labels when copying to cloud tags.
 	ClusterAutoscalerNodeTemplateLabel = "k8s.io/cluster-autoscaler/node-template/label/"
 	// The expiration time of nodeidentity.Info cache.
-	cacheTTL = 60 * time.Minute
+	cacheTTL           = 60 * time.Minute
+	KarpenterNodeLabel = "karpenter.sh/"
 )
 
 // nodeIdentifier identifies a node from EC2
@@ -145,10 +147,18 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		Labels:     labels,
 	}
 
+	isKarpenterManaged := false
 	for _, tag := range instance.Tags {
-		if strings.HasPrefix(aws.StringValue(tag.Key), ClusterAutoscalerNodeTemplateLabel) {
+		key := aws.StringValue(tag.Key)
+		if strings.HasPrefix(key, ClusterAutoscalerNodeTemplateLabel) {
 			info.Labels[strings.TrimPrefix(aws.StringValue(tag.Key), ClusterAutoscalerNodeTemplateLabel)] = aws.StringValue(tag.Value)
 		}
+		if strings.HasPrefix(key, KarpenterNodeLabel) {
+			isKarpenterManaged = true
+		}
+	}
+	if isKarpenterManaged {
+		info.Labels["karpenter.sh/provisioner-name"] = info.Labels[CloudTagInstanceGroupName]
 	}
 
 	// If caching is enabled add the nodeidentity.Info to cache.
