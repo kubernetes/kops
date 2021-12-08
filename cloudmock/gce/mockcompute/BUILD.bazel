@@ -8,6 +8,7 @@ go_library(
         "disk.go",
         "firewall.go",
         "forwarding_rule.go",
+        "http_healthcheck.go",
         "instance_group_manager.go",
         "instance_template.go",
         "network.go",
