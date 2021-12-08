@@ -115,6 +115,8 @@ const (
 	WellKnownAccountUbuntu       = "099720109477"
 )
 
+const instanceInServiceState = "InService"
+
 // AWSErrCodeInvalidAction is returned in AWS partitions that don't support certain actions
 const AWSErrCodeInvalidAction = "InvalidAction"
 
@@ -585,25 +587,36 @@ func deregisterInstanceFromClassicLoadBalancer(c AWSCloud, i *cloudinstances.Clo
 	// there will always be only one ASG in the DescribeAutoScalingGroups response.
 	loadBalancerNames := asgDetails.AutoScalingGroups[0].LoadBalancerNames
 
+	klog.Infof("Deregistering instance from classic loadBalancers: %v", aws.StringValueSlice(loadBalancerNames))
+
 	for {
 		instanceDraining := false
-		response, err := c.ELB().DescribeLoadBalancers(&elb.DescribeLoadBalancersInput{
-			LoadBalancerNames: loadBalancerNames,
-		})
+		for _, loadBalancerName := range loadBalancerNames {
+			response, err := c.ELB().DescribeInstanceHealth(&elb.DescribeInstanceHealthInput{
+				LoadBalancerName: loadBalancerName,
+				Instances: []*elb.Instance{{
+					InstanceId: aws.String(i.ID),
+				}},
+			})
 
-		if err != nil {
-			return fmt.Errorf("error describing load balancers %v: %v", loadBalancerNames, err)
-		}
+			if err != nil {
+				return fmt.Errorf("error describing instance health: %v", err)
+			}
 
-		for _, awsLb := range response.LoadBalancerDescriptions {
-			for _, instance := range awsLb.Instances {
-				if aws.StringValue(instance.InstanceId) == i.ID {
-					c.ELB().DeregisterInstancesFromLoadBalancer(&elb.DeregisterInstancesFromLoadBalancerInput{
-						LoadBalancerName: awsLb.LoadBalancerName,
-						Instances:        []*elb.Instance{instance},
-					})
-					instanceDraining = true
-				}
+			// describeInstanceHealth can return an empty list if the instance was already terminated.
+			if len(response.InstanceStates) == 0 {
+				continue
+			}
+
+			// there will be only one instance in the DescribeInstanceHealth response.
+			if aws.StringValue(response.InstanceStates[0].State) == instanceInServiceState {
+				c.ELB().DeregisterInstancesFromLoadBalancer(&elb.DeregisterInstancesFromLoadBalancerInput{
+					LoadBalancerName: loadBalancerName,
+					Instances: []*elb.Instance{{
+						InstanceId: aws.String(i.ID),
+					}},
+				})
+				instanceDraining = true
 			}
 		}
 
