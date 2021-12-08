@@ -120,6 +120,7 @@ const instanceInServiceState = "InService"
 // AWSErrCodeInvalidAction is returned in AWS partitions that don't support certain actions
 const AWSErrCodeInvalidAction = "InvalidAction"
 
+
 type AWSCloud interface {
 	fi.Cloud
 	CloudFormation() *cloudformation.CloudFormation
