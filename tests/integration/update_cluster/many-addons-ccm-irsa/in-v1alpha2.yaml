@@ -33,7 +33,7 @@ spec:
     useServiceAccountExternalPermissions: true
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.21.0
+  kubernetesVersion: v1.23.0
   masterInternalName: api.internal.minimal.example.com
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
