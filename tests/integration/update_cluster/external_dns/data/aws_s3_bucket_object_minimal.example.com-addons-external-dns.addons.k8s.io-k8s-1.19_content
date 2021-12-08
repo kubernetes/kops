@@ -96,7 +96,7 @@ metadata:
     addon.kops.k8s.io/name: external-dns.addons.k8s.io
     app.kubernetes.io/managed-by: kops
     k8s-addon: external-dns.addons.k8s.io
-  name: kops:external-dns
+  name: external-dns
 spec:
   ports:
   - name: http
