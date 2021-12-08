@@ -31,6 +31,7 @@ type ComputeClient interface {
 	Subnetworks() SubnetworkClient
 	Routes() RouteClient
 	ForwardingRules() ForwardingRuleClient
+	HTTPHealthChecks() HttpHealthChecksClient
 	Addresses() AddressClient
 	Firewalls() FirewallClient
 	Routers() RouterClient
@@ -96,6 +97,12 @@ func (c *computeClientImpl) Routes() RouteClient {
 func (c *computeClientImpl) ForwardingRules() ForwardingRuleClient {
 	return &forwardingRuleClientImpl{
 		srv: c.srv.ForwardingRules,
+	}
+}
+
+func (c *computeClientImpl) HTTPHealthChecks() HttpHealthChecksClient {
+	return &httpHealthCheckClientImpl{
+		srv: c.srv.HttpHealthChecks,
 	}
 }
 
@@ -335,6 +342,42 @@ func (c *forwardingRuleClientImpl) List(ctx context.Context, project, region str
 		return nil, err
 	}
 	return frs, nil
+}
+
+type HttpHealthChecksClient interface {
+	Insert(project string, fr *compute.HttpHealthCheck) (*compute.Operation, error)
+	Delete(project, name string) (*compute.Operation, error)
+	Get(project, name string) (*compute.HttpHealthCheck, error)
+	List(ctx context.Context, project string) ([]*compute.HttpHealthCheck, error)
+}
+
+type httpHealthCheckClientImpl struct {
+	srv *compute.HttpHealthChecksService
+}
+
+var _ HttpHealthChecksClient = &httpHealthCheckClientImpl{}
+
+func (c *httpHealthCheckClientImpl) Insert(project string, fr *compute.HttpHealthCheck) (*compute.Operation, error) {
+	return c.srv.Insert(project, fr).Do()
+}
+
+func (c *httpHealthCheckClientImpl) Delete(project, name string) (*compute.Operation, error) {
+	return c.srv.Delete(project, name).Do()
+}
+
+func (c *httpHealthCheckClientImpl) Get(project, name string) (*compute.HttpHealthCheck, error) {
+	return c.srv.Get(project, name).Do()
+}
+
+func (c *httpHealthCheckClientImpl) List(ctx context.Context, project string) ([]*compute.HttpHealthCheck, error) {
+	var hcs []*compute.HttpHealthCheck
+	if err := c.srv.List(project).Pages(ctx, func(p *compute.HttpHealthCheckList) error {
+		hcs = append(hcs, p.Items...)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	return hcs, nil
 }
 
 type AddressClient interface {
