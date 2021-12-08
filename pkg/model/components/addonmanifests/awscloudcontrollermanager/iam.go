@@ -18,6 +18,7 @@ package awscloudcontrollermanager
 
 import (
 	"k8s.io/apimachinery/pkg/types"
+
 	"k8s.io/kops/pkg/model/iam"
 )
 
@@ -32,7 +33,9 @@ func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, erro
 	clusterName := b.Cluster.ObjectMeta.Name
 	p := iam.NewPolicy(clusterName)
 	iam.AddCCMPermissions(p, b.Partition, b.Cluster.Spec.Networking.Kubenet != nil)
-	iam.AddLegacyCCMPermissions(p)
+	if b.Cluster.IsKubernetesLT("1.23") {
+		iam.AddLegacyCCMPermissions(p)
+	}
 	return p, nil
 }
 

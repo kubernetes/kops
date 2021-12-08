@@ -98,16 +98,33 @@
       "Action": "ec2:CreateTags",
       "Condition": {
         "StringEquals": {
+          "aws:RequestTag/KubernetesCluster": "minimal.example.com",
           "ec2:CreateAction": [
-            "CreateVolume",
-            "CreateSnapshot"
+            "CreateSecurityGroup"
           ]
         }
       },
       "Effect": "Allow",
       "Resource": [
-        "arn:aws-test:ec2:*:*:volume/*",
-        "arn:aws-test:ec2:*:*:snapshot/*"
+        "arn:aws-test:ec2:*:*:securitygroups/*"
+      ]
+    },
+    {
+      "Action": [
+        "ec2:CreateTags",
+        "ec2:DeleteTags"
+      ],
+      "Condition": {
+        "Null": {
+          "aws:RequestTag/KubernetesCluster": "true"
+        },
+        "StringEquals": {
+          "aws:ResourceTag/KubernetesCluster": "minimal.example.com"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws-test:ec2:*:*:securitygroups/*"
       ]
     },
     {
@@ -115,8 +132,13 @@
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeTags",
+        "ec2:AttachVolume",
+        "ec2:AuthorizeSecurityGroupIngress",
         "ec2:CreateSecurityGroup",
         "ec2:CreateTags",
+        "ec2:DeleteRoute",
+        "ec2:DeleteSecurityGroup",
+        "ec2:DeleteVolume",
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeInstances",
         "ec2:DescribeRegions",
@@ -125,6 +147,9 @@
         "ec2:DescribeSubnets",
         "ec2:DescribeVolumes",
         "ec2:DescribeVpcs",
+        "ec2:DetachVolume",
+        "ec2:ModifyInstanceAttribute",
+        "ec2:ModifyVolume",
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:CreateListener",
         "elasticloadbalancing:CreateTargetGroup",
@@ -147,14 +172,9 @@
     },
     {
       "Action": [
-        "ec2:AttachVolume",
         "ec2:AuthorizeSecurityGroupIngress",
-        "ec2:DeleteRoute",
         "ec2:DeleteSecurityGroup",
-        "ec2:DeleteVolume",
-        "ec2:DetachVolume",
         "ec2:ModifyInstanceAttribute",
-        "ec2:ModifyVolume",
         "ec2:RevokeSecurityGroupIngress",
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
@@ -186,7 +206,6 @@
     {
       "Action": [
         "ec2:CreateSecurityGroup",
-        "ec2:CreateVolume",
         "elasticloadbalancing:CreateListener",
         "elasticloadbalancing:CreateLoadBalancer",
         "elasticloadbalancing:CreateTargetGroup"

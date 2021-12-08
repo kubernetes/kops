@@ -406,7 +406,10 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
 			AddCCMPermissions(p, b.Partition, b.Cluster.Spec.Networking.Kubenet != nil)
-			AddLegacyCCMPermissions(p)
+
+			if b.Cluster.IsKubernetesLT("1.23") {
+				AddLegacyCCMPermissions(p)
+			}
 		}
 
 		if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
@@ -856,10 +859,25 @@ func AddLegacyCCMPermissions(p *Policy) {
 		"elasticloadbalancing:CreateListener",
 		"elasticloadbalancing:DeleteListener",
 		"elasticloadbalancing:ModifyListener",
+		"ec2:DescribeVolumes",
+		"ec2:ModifyInstanceAttribute",
+		"ec2:ModifyVolume",
+		"ec2:AttachVolume",
+		"ec2:AuthorizeSecurityGroupIngress",
+		"ec2:DeleteRoute",
+		"ec2:DeleteSecurityGroup",
+		"ec2:DeleteVolume",
+		"ec2:DetachVolume",
 	)
 }
 
 func AddCCMPermissions(p *Policy, partition string, cloudRoutes bool) {
+	// legacy permissions we want to get rid of
+
+	p.unconditionalAction.Insert(
+		"ec2:CreateTags",
+	)
+
 	p.unconditionalAction.Insert(
 		"autoscaling:DescribeAutoScalingGroups",
 		"autoscaling:DescribeTags",
@@ -868,7 +886,6 @@ func AddCCMPermissions(p *Policy, partition string, cloudRoutes bool) {
 		"ec2:DescribeRouteTables",
 		"ec2:DescribeSecurityGroups",
 		"ec2:DescribeSubnets",
-		"ec2:DescribeVolumes",
 		"ec2:DescribeVpcs",
 		"elasticloadbalancing:DescribeLoadBalancers",
 		"elasticloadbalancing:DescribeLoadBalancerAttributes",
@@ -881,15 +898,9 @@ func AddCCMPermissions(p *Policy, partition string, cloudRoutes bool) {
 
 	p.clusterTaggedAction.Insert(
 		"ec2:ModifyInstanceAttribute",
-		"ec2:ModifyVolume",
-		"ec2:AttachVolume",
 		"ec2:AuthorizeSecurityGroupIngress",
-		"ec2:DeleteRoute",
 		"ec2:DeleteSecurityGroup",
-		"ec2:DeleteVolume",
-		"ec2:DetachVolume",
 		"ec2:RevokeSecurityGroupIngress",
-		"elasticloadbalancing:AddTags",
 		"elasticloadbalancing:AttachLoadBalancerToSubnets",
 		"elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
 		"elasticloadbalancing:CreateLoadBalancerListeners",
@@ -912,34 +923,20 @@ func AddCCMPermissions(p *Policy, partition string, cloudRoutes bool) {
 
 	p.clusterTaggedCreateAction.Insert(
 		"elasticloadbalancing:CreateLoadBalancer",
-		"ec2:CreateSecurityGroup",
-		"ec2:CreateVolume",
 		"elasticloadbalancing:CreateListener",
 		"elasticloadbalancing:CreateTargetGroup",
 	)
 
-	p.Statement = append(p.Statement,
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Of(
-				"ec2:CreateTags",
-			),
-			Resource: stringorslice.Slice(
-				[]string{
-					fmt.Sprintf("arn:%v:ec2:*:*:volume/*", partition),
-					fmt.Sprintf("arn:%v:ec2:*:*:snapshot/*", partition),
-				},
-			),
-			Condition: Condition{
-				"StringEquals": map[string]interface{}{
-					"ec2:CreateAction": []string{
-						"CreateVolume",
-						"CreateSnapshot",
-					},
-				},
-			},
+	p.AddEC2CreateAction(
+		[]string{
+			"CreateSecurityGroup",
 		},
+		[]string{
+			"securitygroups",
+		},
+		partition,
 	)
+
 	if cloudRoutes {
 		p.clusterTaggedAction.Insert(
 			"ec2:CreateRoute",

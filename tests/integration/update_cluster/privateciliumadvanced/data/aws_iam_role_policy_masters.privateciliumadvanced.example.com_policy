@@ -108,16 +108,33 @@
       "Action": "ec2:CreateTags",
       "Condition": {
         "StringEquals": {
+          "aws:RequestTag/KubernetesCluster": "privateciliumadvanced.example.com",
           "ec2:CreateAction": [
-            "CreateVolume",
-            "CreateSnapshot"
+            "CreateSecurityGroup"
           ]
         }
       },
       "Effect": "Allow",
       "Resource": [
-        "arn:aws-test:ec2:*:*:volume/*",
-        "arn:aws-test:ec2:*:*:snapshot/*"
+        "arn:aws-test:ec2:*:*:securitygroups/*"
+      ]
+    },
+    {
+      "Action": [
+        "ec2:CreateTags",
+        "ec2:DeleteTags"
+      ],
+      "Condition": {
+        "Null": {
+          "aws:RequestTag/KubernetesCluster": "true"
+        },
+        "StringEquals": {
+          "aws:ResourceTag/KubernetesCluster": "privateciliumadvanced.example.com"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws-test:ec2:*:*:securitygroups/*"
       ]
     },
     {
@@ -164,10 +181,15 @@
         "autoscaling:DescribeTags",
         "ec2:AssignPrivateIpAddresses",
         "ec2:AttachNetworkInterface",
+        "ec2:AttachVolume",
+        "ec2:AuthorizeSecurityGroupIngress",
         "ec2:CreateNetworkInterface",
         "ec2:CreateSecurityGroup",
         "ec2:CreateTags",
         "ec2:DeleteNetworkInterface",
+        "ec2:DeleteRoute",
+        "ec2:DeleteSecurityGroup",
+        "ec2:DeleteVolume",
         "ec2:DescribeAccountAttributes",
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeInstances",
@@ -183,7 +205,10 @@
         "ec2:DescribeVpcPeeringConnections",
         "ec2:DescribeVpcs",
         "ec2:DetachNetworkInterface",
+        "ec2:DetachVolume",
+        "ec2:ModifyInstanceAttribute",
         "ec2:ModifyNetworkInterfaceAttribute",
+        "ec2:ModifyVolume",
         "ec2:UnassignPrivateIpAddresses",
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:CreateListener",
@@ -211,7 +236,6 @@
         "autoscaling:TerminateInstanceInAutoScalingGroup",
         "ec2:AttachVolume",
         "ec2:AuthorizeSecurityGroupIngress",
-        "ec2:DeleteRoute",
         "ec2:DeleteSecurityGroup",
         "ec2:DeleteVolume",
         "ec2:DetachVolume",
