@@ -53,6 +53,7 @@ data:
   enable-l7-proxy: "true"
   enable-node-port: "true"
   enable-remote-node-identity: "true"
+  enable-service-topology: "false"
   etcd-config: |-
     ---
     endpoints:

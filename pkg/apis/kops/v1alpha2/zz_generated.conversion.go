@@ -1955,6 +1955,7 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	// INFO: in.NodeInitBootstrapFile opted out of conversion generation
 	// INFO: in.CniBinPath opted out of conversion generation
 	out.DisableCNPStatusUpdates = in.DisableCNPStatusUpdates
+	out.EnableServiceTopology = in.EnableServiceTopology
 	return nil
 }
 
@@ -2010,6 +2011,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 		out.Hubble = nil
 	}
 	out.DisableCNPStatusUpdates = in.DisableCNPStatusUpdates
+	out.EnableServiceTopology = in.EnableServiceTopology
 	return nil
 }
 
