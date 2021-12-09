@@ -18,6 +18,7 @@ package v1alpha3
 
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
+
 	"k8s.io/kops/pkg/apis/kops"
 )
 
@@ -394,6 +395,9 @@ type CiliumNetworkingSpec struct {
 
 	// DisableCNPStatusUpdates determines if CNP NodeStatus updates will be sent to the Kubernetes api-server.
 	DisableCNPStatusUpdates *bool `json:"disableCNPStatusUpdates,omitempty"`
+
+	// EnableServiceTopology determine if cilium should use topology aware hints.
+	EnableServiceTopology bool `json:"enableServiceTopology,omitempty"`
 }
 
 // HubbleSpec configures the Hubble service on the Cilium agent.
