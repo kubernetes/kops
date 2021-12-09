@@ -254,7 +254,7 @@ metadata:
   name: kube-dns
   namespace: kube-system
 spec:
-  minAvailable: 1
+  maxUnavailable: 50%
   selector:
     matchLabels:
       k8s-app: kube-dns
