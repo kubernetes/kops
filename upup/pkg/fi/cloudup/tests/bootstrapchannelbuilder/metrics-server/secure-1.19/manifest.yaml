@@ -20,7 +20,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: kube-dns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 0325578894a58aa80552729f3f2077360f8211b64e650c6603efbf0a8b8fddfd
+    manifestHash: 86f35e6bc4ffa375038449e4fba4b7c9c7d7aa731d3713b7103389d08661a72c
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
