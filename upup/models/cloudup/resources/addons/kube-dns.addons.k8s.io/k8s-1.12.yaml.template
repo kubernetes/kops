@@ -337,4 +337,4 @@ spec:
   selector:
     matchLabels:
       k8s-app: kube-dns
-  minAvailable: 1
+  maxUnavailable: 50%
