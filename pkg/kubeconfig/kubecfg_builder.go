@@ -127,14 +127,18 @@ func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) er
 			authInfo = clientcmdapi.NewAuthInfo()
 		}
 
-		if b.KubeUser != "" && b.KubePassword != "" {
+		// If we are using the auth plugin, we want to clear the password & client-key,
+		// otherwise the auth plugin won't be used
+
+		usingAuthPlugin := len(b.AuthenticationExec) != 0
+		if (b.KubeUser != "" && b.KubePassword != "") || usingAuthPlugin {
 			authInfo.Username = b.KubeUser
 			authInfo.Password = b.KubePassword
 
 			haveUserInfo = true
 		}
 
-		if b.ClientCert != nil && b.ClientKey != nil {
+		if (b.ClientCert != nil && b.ClientKey != nil) || usingAuthPlugin {
 			authInfo.ClientCertificate = ""
 			authInfo.ClientCertificateData = b.ClientCert
 			authInfo.ClientKey = ""
@@ -143,7 +147,7 @@ func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) er
 			haveUserInfo = true
 		}
 
-		if len(b.AuthenticationExec) != 0 {
+		if usingAuthPlugin {
 			authInfo.Exec = &clientcmdapi.ExecConfig{
 				APIVersion: "client.authentication.k8s.io/v1beta1",
 				Command:    b.AuthenticationExec[0],
