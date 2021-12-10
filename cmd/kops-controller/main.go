@@ -32,6 +32,7 @@ import (
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/cmd/kops-controller/pkg/server"
 	"k8s.io/kops/pkg/bootstrap"
+	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
 	"k8s.io/kops/pkg/nodeidentity"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	nodeidentityazure "k8s.io/kops/pkg/nodeidentity/azure"
@@ -105,23 +106,40 @@ func main() {
 	}
 
 	if opt.Server != nil {
-		var verifier bootstrap.Verifier
+		var verifiers []bootstrap.Verifier
 		var err error
 		if opt.Server.Provider.AWS != nil {
-			verifier, err = awsup.NewAWSVerifier(opt.Server.Provider.AWS)
+			verifier, err := awsup.NewAWSVerifier(opt.Server.Provider.AWS)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
 			}
-		} else if opt.Server.Provider.GCE != nil {
-			verifier, err = gcetpmverifier.NewTPMVerifier(opt.Server.Provider.GCE)
-			if err != nil {
-				setupLog.Error(err, "unable to create verifier")
-				os.Exit(1)
-			}
-		} else {
-			klog.Fatalf("server cloud provider config not provided")
+			verifiers = append(verifiers, verifier)
 		}
+		if opt.Server.Provider.GCE != nil {
+			verifier, err := gcetpmverifier.NewTPMVerifier(opt.Server.Provider.GCE)
+			if err != nil {
+				setupLog.Error(err, "unable to create verifier")
+				os.Exit(1)
+			}
+			verifiers = append(verifiers, verifier)
+		}
+
+		pkiOptions := &pkibootstrap.Options{MaxTimeSkew: 300}
+		if pkiOptions != nil { //opt.Server.Provider.PKI != nil {
+			verifier, err := pkibootstrap.NewVerifier(pkiOptions)
+			if err != nil {
+				setupLog.Error(err, "unable to create verifier")
+				os.Exit(1)
+			}
+			verifiers = append(verifiers, verifier)
+		}
+
+		if len(verifiers) == 0 {
+			klog.Fatalf("server verifiers not provided")
+		}
+
+		verifier := bootstrap.NewChainVerifier(verifiers...)
 
 		srv, err := server.NewServer(&opt, verifier)
 		if err != nil {

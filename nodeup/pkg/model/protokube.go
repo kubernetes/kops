@@ -55,6 +55,11 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
+	if t.CloudProvider == "metal" {
+		klog.V(2).Infof("skipping the provisioning of protokube for metal")
+		return nil
+	}
+
 	{
 		name, res, err := t.Assets.FindMatch(regexp.MustCompile("protokube$"))
 		if err != nil {

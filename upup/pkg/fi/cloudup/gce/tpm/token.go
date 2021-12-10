@@ -37,6 +37,9 @@ type AuthTokenData struct {
 	// Instance is the name/id of the instance we are claiming
 	Instance string `json:"instance,omitempty"`
 
+	// KeyID is the identifier of the public key we are signing with, if we're using a fixed key.
+	KeyID string `json:"keyID,omitempty"`
+
 	// RequestHash is the hash of the request
 	RequestHash []byte `json:"requestHash,omitempty"`
 

@@ -126,7 +126,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 			// which would mean that DNS can't rely on API to come up
 			c.Master = "https://127.0.0.1"
 		} else {
-			c.Master = "https://" + b.Cluster.Spec.MasterInternalName
+			c.Master = "https://" + b.APIServerHostname()
 		}
 	}
 

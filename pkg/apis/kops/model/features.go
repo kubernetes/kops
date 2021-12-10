@@ -27,6 +27,8 @@ func UseKopsControllerForNodeBootstrap(cluster *kops.Cluster) bool {
 		return true
 	case kops.CloudProviderGCE:
 		return cluster.IsKubernetesGTE("1.22")
+	case "metal":
+		return true
 	default:
 		return false
 	}

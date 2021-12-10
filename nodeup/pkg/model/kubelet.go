@@ -530,6 +530,11 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		c.BootstrapKubeconfig = ""
 	}
 
+	if b.CloudControlPlane() && !isMaster {
+		// TODO: Clean this up
+		c.CloudProvider = ""
+	}
+
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
 		sess := session.Must(session.NewSession())
 		metadata := ec2metadata.New(sess)

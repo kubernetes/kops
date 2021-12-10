@@ -18,13 +18,11 @@ package model
 
 import (
 	"fmt"
-	"net"
 	"net/url"
-	"strconv"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/bootstrap"
-	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
@@ -45,30 +43,42 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 	var err error
 	switch b.CloudProvider {
 	case kops.CloudProviderAWS:
-		authenticator, err = awsup.NewAWSAuthenticator(b.Cloud.Region())
+		a, err := awsup.NewAWSAuthenticator(b.Cloud.Region())
+		if err != nil {
+			return err
+		}
+		authenticator = a
+
 	case kops.CloudProviderGCE:
-		authenticator, err = gcetpmsigner.NewTPMAuthenticator()
+		a, err := gcetpmsigner.NewTPMAuthenticator()
+		if err != nil {
+			return err
+		}
+		authenticator = a
+
 		// We don't use the custom resolver here in gossip mode (though we could);
 		// instead we use this as a check that protokube has now started.
+
+	case "metal":
+		a, err := pkibootstrap.NewAuthenticatorFromFile("/etc/kubernetes/kops/pki/machine/private.pem")
+		if err != nil {
+			return err
+		}
+		authenticator = a
 
 	default:
 		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.CloudProvider)
 	}
 
+	baseURL, err := url.Parse(b.BootConfig.ConfigServer.Server)
 	if err != nil {
-		return err
-	}
-
-	baseURL := url.URL{
-		Scheme: "https",
-		Host:   net.JoinHostPort("kops-controller.internal."+b.Cluster.ObjectMeta.Name, strconv.Itoa(wellknownports.KopsControllerPort)),
-		Path:   "/",
+		return fmt.Errorf("error parsing bootConfig.configServer.server %q: %w", b.BootConfig.ConfigServer.Server, err)
 	}
 
 	bootstrapClient := &nodetasks.KopsBootstrapClient{
 		Authenticator: authenticator,
 		CAs:           []byte(b.NodeupConfig.CAs[fi.CertificateIDCA]),
-		BaseURL:       baseURL,
+		BaseURL:       *baseURL,
 	}
 
 	bootstrapClientTask := &nodetasks.BootstrapClientTask{

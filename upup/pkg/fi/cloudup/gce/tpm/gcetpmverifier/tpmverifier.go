@@ -64,43 +64,52 @@ func NewTPMVerifier(opt *gcetpm.TPMVerifierOptions) (bootstrap.Verifier, error) 
 
 var _ bootstrap.Verifier = &tpmVerifier{}
 
-func (v *tpmVerifier) VerifyToken(ctx context.Context, authToken string, body []byte, useInstanceIDForNodeName bool) (*bootstrap.VerifyResult, error) {
-	// Reminder: we shouldn't trust any data we get from the client until we've checked the signature (and even then...)
-	// Thankfully the GCE SDK does seem to escape the parameters correctly, for example.
-
-	if !strings.HasPrefix(authToken, gcetpm.GCETPMAuthenticationTokenPrefix) {
-		return nil, fmt.Errorf("incorrect authorization type")
+func (v *tpmVerifier) parseTokenData(tokenPrefix string, authToken string, body []byte) (*gcetpm.AuthToken, *gcetpm.AuthTokenData, error) {
+	if !strings.HasPrefix(authToken, tokenPrefix) {
+		return nil, nil, fmt.Errorf("incorrect authorization type")
 	}
-	authToken = strings.TrimPrefix(authToken, gcetpm.GCETPMAuthenticationTokenPrefix)
+	authToken = strings.TrimPrefix(authToken, tokenPrefix)
 
 	tokenBytes, err := base64.StdEncoding.DecodeString(authToken)
 	if err != nil {
-		return nil, fmt.Errorf("decoding authorization token: %w", err)
+		return nil, nil, fmt.Errorf("decoding authorization token: %w", err)
 	}
 
 	token := &gcetpm.AuthToken{}
 	if err = json.Unmarshal(tokenBytes, token); err != nil {
-		return nil, fmt.Errorf("unmarshalling authorization token: %w", err)
+		return nil, nil, fmt.Errorf("unmarshalling authorization token: %w", err)
 	}
 
-	tokenData := gcetpm.AuthTokenData{}
-	if err := json.Unmarshal(token.Data, &tokenData); err != nil {
-		return nil, fmt.Errorf("unmarshalling authorization token data: %w", err)
+	tokenData := &gcetpm.AuthTokenData{}
+	if err := json.Unmarshal(token.Data, tokenData); err != nil {
+		return nil, nil, fmt.Errorf("unmarshalling authorization token data: %w", err)
 	}
 
 	// Guard against replay attacks
 	if tokenData.Audience != gcetpm.AudienceNodeAuthentication {
-		return nil, fmt.Errorf("incorrect Audience")
+		return nil, nil, fmt.Errorf("incorrect Audience")
 	}
 	timeSkew := math.Abs(time.Since(time.Unix(tokenData.Timestamp, 0)).Seconds())
 	if timeSkew > float64(v.opt.MaxTimeSkew) {
-		return nil, fmt.Errorf("incorrect Timestamp %v", tokenData.Timestamp)
+		return nil, nil, fmt.Errorf("incorrect Timestamp %v", tokenData.Timestamp)
 	}
 
 	// Verify the token has signed the body content.
 	requestHash := sha256.Sum256(body)
 	if !bytes.Equal(requestHash[:], tokenData.RequestHash) {
-		return nil, fmt.Errorf("incorrect RequestHash")
+		return nil, nil, fmt.Errorf("incorrect RequestHash")
+	}
+
+	return token, tokenData, nil
+}
+
+func (v *tpmVerifier) VerifyToken(ctx context.Context, authToken string, body []byte, useInstanceIDForNodeName bool) (*bootstrap.VerifyResult, error) {
+	// Reminder: we shouldn't trust any data we get from the client until we've checked the signature (and even then...)
+	// Thankfully the GCE SDK does seem to escape the parameters correctly, for example.
+
+	token, tokenData, err := v.parseTokenData(gcetpm.GCETPMAuthenticationTokenPrefix, authToken, body)
+	if err != nil {
+		return nil, err
 	}
 
 	// Some basic validation to avoid requesting invalid instances.
@@ -156,7 +165,7 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, authToken string, body []
 	// Verify the token has a valid GCE TPM signature.
 	{
 		// Note - we might be able to avoid this call by including the attestation certificate (signed by GCE) in the claim.
-		tpmSigningKey, err := v.getTPMSigningKey(ctx, &tokenData)
+		tpmSigningKey, err := v.getTPMSigningKey(ctx, tokenData)
 		if err != nil {
 			return nil, err
 		}
@@ -166,7 +175,7 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, authToken string, body []
 		}
 	}
 
-	sans, err := GetInstanceCertificateAlternateNames(instance)
+	sans, err := v.GetInstanceCertificateAlternateNames(instance)
 	if err != nil {
 		return nil, err
 	}
@@ -207,7 +216,7 @@ func (v *tpmVerifier) getTPMSigningKey(ctx context.Context, data *gcetpm.AuthTok
 
 // GetInstanceCertificateAlternateNames returns the instance hostname and addresses that should go into certificates.
 // The first value is the node name and any additional values are IP addresses.
-func GetInstanceCertificateAlternateNames(instance *compute.Instance) ([]string, error) {
+func (v *tpmVerifier) GetInstanceCertificateAlternateNames(instance *compute.Instance) ([]string, error) {
 	var sans []string
 
 	for _, iface := range instance.NetworkInterfaces {

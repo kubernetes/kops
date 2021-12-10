@@ -62,6 +62,9 @@ func (b *KopsControllerBuilder) Build(c *fi.ModelBuilderContext) error {
 		Subject:        nodetasks.PKIXName{CommonName: "kops-controller"},
 		AlternateNames: []string{"kops-controller.internal." + b.Cluster.ObjectMeta.Name},
 	}
+	if b.CloudControlPlane() {
+		issueCert.AlternateNames = append(issueCert.AlternateNames, "kops-controller."+b.Cluster.ObjectMeta.Name)
+	}
 	c.AddTask(issueCert)
 
 	certResource, keyResource, _ := issueCert.GetResources()

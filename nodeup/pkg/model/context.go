@@ -49,7 +49,8 @@ const (
 
 // NodeupModelContext is the context supplied the nodeup tasks
 type NodeupModelContext struct {
-	Cloud        fi.Cloud
+	Cloud fi.Cloud
+
 	Architecture architectures.Architecture
 	GPUVendor    architectures.GPUVendor
 	Assets       *fi.AssetStore
@@ -278,7 +279,7 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Model
 			// @note: use https even for local connections, so we can turn off the insecure port
 			kubeConfig.ServerURL = "https://127.0.0.1"
 		} else {
-			kubeConfig.ServerURL = "https://" + c.Cluster.Spec.MasterInternalName
+			kubeConfig.ServerURL = "https://" + c.APIServerHostname()
 		}
 
 		err = ctx.EnsureTask(kubeConfig)
@@ -684,4 +685,15 @@ func (c *NodeupModelContext) findFileAsset(path string) *kops.FileAssetSpec {
 		}
 	}
 	return nil
+}
+
+func (c *NodeupModelContext) CloudControlPlane() bool {
+	return true // TODO: only metal
+}
+
+func (c *NodeupModelContext) APIServerHostname() string {
+	if c.CloudControlPlane() {
+		return c.Cluster.Spec.MasterPublicName
+	}
+	return c.Cluster.Spec.MasterInternalName
 }

@@ -77,6 +77,17 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) error 
 
 	c.AddTask(forwardingRule)
 
+	forwardingRuleKopsController := &gcetasks.ForwardingRule{
+		Name:       s(b.NameForForwardingRule("kops-controller")),
+		Lifecycle:  b.Lifecycle,
+		PortRange:  s(fmt.Sprintf("%d-%d", wellknownports.KopsControllerPort, wellknownports.KopsControllerPort)),
+		TargetPool: targetPool,
+		IPAddress:  ipAddress,
+		IPProtocol: "TCP",
+	}
+	// TODO: Health check
+	c.AddTask(forwardingRuleKopsController)
+
 	{
 		// Ensure the IP address is included in our certificate
 		ipAddress.ForAPIServer = true
@@ -94,6 +105,16 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) error 
 			SourceRanges: b.Cluster.Spec.KubernetesAPIAccess,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:      []string{"tcp:443"},
+		})
+	}
+
+	{
+		b.AddFirewallRulesTasks(c, "kops-controller", &gcetasks.FirewallRule{
+			Lifecycle:    b.Lifecycle,
+			Network:      network,
+			SourceRanges: b.Cluster.Spec.KubernetesAPIAccess,
+			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
+			Allowed:      []string{fmt.Sprintf("tcp:%d", wellknownports.KopsControllerPort)},
 		})
 	}
 	return nil

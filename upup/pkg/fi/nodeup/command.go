@@ -45,6 +45,7 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/bootstrap"
+	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
 	"k8s.io/kops/pkg/configserver"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/resolver"
@@ -177,7 +178,11 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	if want, got := bootConfig.NodeupConfigHash, base64.StdEncoding.EncodeToString(nodeupConfigHash[:]); got != want {
-		return fmt.Errorf("nodeup config hash mismatch (was %q, expected %q)", got, want)
+		if want == "" {
+			klog.Warning("not checking nodeup config hash, as expected hash not provided (was %q)", got)
+		} else {
+			return fmt.Errorf("nodeup config hash mismatch (was %q, expected %q)", got, want)
+		}
 	}
 
 	cloudProvider := api.CloudProviderID(bootConfig.CloudProvider)
@@ -757,6 +762,18 @@ func getNodeConfigFromServer(ctx context.Context, bootConfig *nodeup.BootConfig,
 			return nil, err
 		}
 		resolver = discovery
+	case "metal":
+		a, err := pkibootstrap.NewAuthenticatorFromFile("/etc/kubernetes/kops/pki/machine/private.pem")
+		if err != nil {
+			return nil, err
+		}
+		authenticator = a
+
+		// r, err := staticresolver.New()
+		// if err != nil {
+		// 	return nil, err
+		// }
+		// resolver = r
 	default:
 		return nil, fmt.Errorf("unsupported cloud provider for node configuration %s", bootConfig.CloudProvider)
 	}

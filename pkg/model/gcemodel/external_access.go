@@ -17,8 +17,11 @@ limitations under the License.
 package gcemodel
 
 import (
+	"fmt"
+
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 )
@@ -95,9 +98,8 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if !b.UseLoadBalancerForAPI() {
-		// Configuration for the master, when not using a Loadbalancer (ELB)
+		// Configuration for the master, when not using a Loadbalancer (forwarding rule)
 		// We expect that either the IP address is published, or DNS is set up to point to the IPs
-		// We need to open security groups directly to the master nodes (instead of via the ELB)
 
 		// HTTPS to the master is allowed (for API access)
 
@@ -109,6 +111,14 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle:    b.Lifecycle,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:      []string{"tcp:443"},
+			SourceRanges: b.Cluster.Spec.KubernetesAPIAccess,
+			Network:      network,
+		})
+
+		b.AddFirewallRulesTasks(c, "kops-controller", &gcetasks.FirewallRule{
+			Lifecycle:    b.Lifecycle,
+			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
+			Allowed:      []string{fmt.Sprintf("tcp:%d", wellknownports.KopsControllerPort)},
 			SourceRanges: b.Cluster.Spec.KubernetesAPIAccess,
 			Network:      network,
 		})

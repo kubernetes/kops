@@ -62,7 +62,7 @@ func (b *VolumesBuilder) Build(c *fi.ModelBuilderContext) error {
 			continue
 		}
 
-		klog.Infof("Attempting to format and mount device: %s, path: %s", x.Device, x.Path)
+		klog.Infof("Attempting to format and mount device %q, path: %s", x.Device, x.Path)
 
 		if err := m.FormatAndMount(x.Device, x.Path, x.Filesystem, x.MountOptions); err != nil {
 			klog.Errorf("failed to mount the device: %s on: %s, error: %s", x.Device, x.Path, err)

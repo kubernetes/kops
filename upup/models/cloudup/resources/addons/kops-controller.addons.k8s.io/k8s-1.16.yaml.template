@@ -35,6 +35,7 @@ spec:
 {{ if UseKopsControllerForNodeBootstrap }}
       annotations:
         dns.alpha.kubernetes.io/internal: kops-controller.internal.{{ ClusterName }}
+        dns.alpha.kubernetes.io/external: kops-controller.{{ ClusterName }}
 {{ end }}
     spec:
       affinity:

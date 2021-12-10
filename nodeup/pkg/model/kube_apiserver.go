@@ -34,7 +34,9 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/proxy"
+	"k8s.io/kops/util/pkg/vfs"
 
+	gcemetadata "cloud.google.com/go/compute/metadata"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -71,6 +73,36 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		if localIP != "" {
 			kubeAPIServer.AdvertiseAddress = localIP
+		}
+	}
+
+	if b.CloudControlPlane() {
+		// TODO: move to fi.Cloud (or a similar helper?)
+		switch b.CloudProvider {
+		case kops.CloudProviderAWS:
+			b, err := vfs.Context.ReadFile("metadata://aws/meta-data/public-ipv4")
+			if err != nil {
+				return fmt.Errorf("error reading public IP from AWS metadata: %w", err)
+			}
+
+			// The local-ipv4 gets it's IP from the AWS.
+			// For now just choose the first one.
+			ips := strings.Fields(string(b))
+			if len(ips) == 0 {
+				return fmt.Errorf("public-ipv4 from AWS metadata service was empty")
+			}
+
+			kubeAPIServer.AdvertiseAddress = ips[0]
+
+		case kops.CloudProviderGCE:
+			ip, err := gcemetadata.ExternalIP()
+			if err != nil {
+				return fmt.Errorf("error getting external ip from metadata: %w", err)
+			}
+			kubeAPIServer.AdvertiseAddress = ip
+
+		default:
+			return fmt.Errorf("cloud control plane not supported with cloud %v", b.CloudProvider)
 		}
 	}
 
