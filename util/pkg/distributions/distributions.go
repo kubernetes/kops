@@ -95,6 +95,11 @@ func (d *Distribution) HasLoopbackEtcResolvConf() bool {
 		// Ubuntu > 16.04 has it
 		return d.version > 16.04
 	}
+	// TODO: Should we read /etc/resolv.conf??
+	if d.IsDebianFamily() {
+		// Bullseye has it
+		return d.version >= 11.0
+	}
 	return false
 }
 
