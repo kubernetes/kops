@@ -253,8 +253,9 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 	}
 
 	nodeupModelContext := &NodeupModelContext{
-		Architecture: "amd64",
-		BootConfig:   &nodeup.BootConfig{},
+		Architecture:  "amd64",
+		BootConfig:    &nodeup.BootConfig{},
+		CloudProvider: kops.CloudProviderID(model.Cluster.Spec.CloudProvider),
 		NodeupConfig: &nodeup.Config{
 			CAs:        map[string]string{},
 			KeypairIDs: map[string]string{},

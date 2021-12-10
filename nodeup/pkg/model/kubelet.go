@@ -599,7 +599,7 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.ModelBuilderContex
 }
 
 func (b *KubeletBuilder) kubeletNames() ([]string, error) {
-	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) != kops.CloudProviderAWS {
+	if b.CloudProvider != kops.CloudProviderAWS {
 		name, err := os.Hostname()
 		if err != nil {
 			return nil, err
