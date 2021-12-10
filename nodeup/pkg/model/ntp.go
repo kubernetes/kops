@@ -18,6 +18,7 @@ package model
 
 import (
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
@@ -49,10 +50,10 @@ func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	var ntpHost string
-	switch b.Cluster.Spec.CloudProvider {
-	case "aws":
+	switch b.CloudProvider {
+	case kops.CloudProviderAWS:
 		ntpHost = "169.254.169.123"
-	case "gce":
+	case kops.CloudProviderGCE:
 		ntpHost = "time.google.com"
 	default:
 		ntpHost = ""

@@ -30,7 +30,7 @@ var _ fi.ModelBuilder = &WarmPoolBuilder{}
 
 func (b *WarmPoolBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Check if the cloud provider is AWS
-	if b.Cluster == nil || b.Cluster.Spec.CloudProvider != string(kops.CloudProviderAWS) {
+	if b.CloudProvider != kops.CloudProviderAWS {
 		return nil
 	}
 

@@ -133,7 +133,7 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if b.Cluster.Spec.CloudProvider == string(kops.CloudProviderAWS) {
+	if b.CloudProvider == kops.CloudProviderAWS {
 		sysctls = append(sysctls,
 			"# AWS settings",
 			"",

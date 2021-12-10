@@ -231,11 +231,11 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		f.DNSInternalSuffix = fi.String(internalSuffix)
 	}
 
-	if t.Cluster.Spec.CloudProvider != "" {
-		f.Cloud = fi.String(t.Cluster.Spec.CloudProvider)
+	if t.CloudProvider != "" {
+		f.Cloud = fi.String(string(t.CloudProvider))
 
 		if f.DNSProvider == nil {
-			switch kops.CloudProviderID(t.Cluster.Spec.CloudProvider) {
+			switch t.CloudProvider {
 			case kops.CloudProviderAWS:
 				f.DNSProvider = fi.String("aws-route53")
 			case kops.CloudProviderDO:
@@ -243,7 +243,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 			case kops.CloudProviderGCE:
 				f.DNSProvider = fi.String("google-clouddns")
 			default:
-				klog.Warningf("Unknown cloudprovider %q; won't set DNS provider", t.Cluster.Spec.CloudProvider)
+				klog.Warningf("Unknown cloudprovider %q; won't set DNS provider", t.CloudProvider)
 			}
 		}
 	}
@@ -327,7 +327,7 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 		}
 	}
 
-	if kops.CloudProviderID(t.Cluster.Spec.CloudProvider) == kops.CloudProviderDO && os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
+	if t.CloudProvider == kops.CloudProviderDO && os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
 		envVars["DIGITALOCEAN_ACCESS_TOKEN"] = os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 	}
 
