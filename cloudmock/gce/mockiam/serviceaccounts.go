@@ -37,6 +37,14 @@ func (s *serviceAccounts) Init() {
 	s.serviceAccountsByEmail = make(map[string]*iam.ServiceAccount)
 }
 
+func errorResponse(statusCode int) (*http.Response, error) {
+	r := &http.Response{
+		Status:     http.StatusText(statusCode),
+		StatusCode: statusCode,
+	}
+	return r, nil
+}
+
 func (s *serviceAccounts) Get(projectID string, serviceAccount string, request *http.Request) (*http.Response, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
