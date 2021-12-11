@@ -70,7 +70,7 @@ func TestBuildAzure(t *testing.T) {
 		Tasks: map[string]fi.Task{},
 	}
 	if err := b.Build(ctx); err != nil {
-		t.Fatalf("unexpected error: %s", err)
+		t.Fatalf("unexpected error from Build(): %v", err)
 	}
 	var task *nodetasks.File
 	for _, v := range ctx.Tasks {
@@ -84,15 +84,15 @@ func TestBuildAzure(t *testing.T) {
 	}
 	r, err := task.Contents.Open()
 	if err != nil {
-		t.Fatalf("unexpected error: %s", err)
+		t.Fatalf("unexpected error from task.Contents.Open(): %v", err)
 	}
 	data, err := io.ReadAll(r)
 	if err != nil {
-		t.Fatalf("unexpected error: %s", err)
+		t.Fatalf("unexpected error from io.ReadAll(): %v", err)
 	}
 	var actual azureCloudConfig
 	if err := json.Unmarshal(data, &actual); err != nil {
-		t.Fatalf("unexpected error: %s", err)
+		t.Fatalf("unexpected error from json.Unmarshal(%q): %v", string(data), err)
 	}
 	expected := azureCloudConfig{
 		CloudConfigType:             "file",
@@ -138,7 +138,7 @@ func TestBuildAWSCustomNodeIPFamilies(t *testing.T) {
 		Tasks: map[string]fi.Task{},
 	}
 	if err := b.Build(ctx); err != nil {
-		t.Fatalf("unexpected error: %s", err)
+		t.Fatalf("unexpected error from Build(): %v", err)
 	}
 	var task *nodetasks.File
 	for _, v := range ctx.Tasks {
@@ -152,11 +152,11 @@ func TestBuildAWSCustomNodeIPFamilies(t *testing.T) {
 	}
 	r, err := task.Contents.Open()
 	if err != nil {
-		t.Fatalf("unexpected error: %s", err)
+		t.Fatalf("unexpected error from task.Contents.Open(): %v", err)
 	}
 	awsCloudConfig, err := io.ReadAll(r)
 	if err != nil {
-		t.Fatalf("unexpected error: %s", err)
+		t.Fatalf("unexpected error from ReadAll(): %v", err)
 	}
 
 	actual := string(awsCloudConfig)
