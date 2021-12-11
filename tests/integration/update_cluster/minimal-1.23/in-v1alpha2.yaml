@@ -34,7 +34,7 @@ spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   - ::/0
-  kubernetesVersion: v1.23.0-alpha.4
+  kubernetesVersion: v1.23.0
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:

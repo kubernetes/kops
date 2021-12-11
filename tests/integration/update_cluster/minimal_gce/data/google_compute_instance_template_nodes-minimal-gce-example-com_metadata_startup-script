@@ -138,7 +138,7 @@ docker:
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
-  image: k8s.gcr.io/kube-proxy:v1.23.0-beta.0
+  image: k8s.gcr.io/kube-proxy:v1.23.0
   logLevel: 2
 kubelet:
   anonymousAuth: false
@@ -164,7 +164,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: wA8c8cXlpoByRxg51FgmfZUul6dIWQv53F5Evi6RbAc=
+NodeupConfigHash: 4CND72IJ99Un9iP3PVwEZaNxoPar9+uUTsY8hYTZHOQ=
 
 __EOF_KUBE_ENV
 
