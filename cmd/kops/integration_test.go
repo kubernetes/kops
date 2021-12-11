@@ -36,6 +36,8 @@ import (
 	"time"
 
 	"golang.org/x/crypto/ssh"
+	"sigs.k8s.io/yaml"
+
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/diff"
@@ -48,7 +50,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
-	"sigs.k8s.io/yaml"
 )
 
 // updateClusterTestBase is added automatically to the srcDir on all
@@ -177,9 +178,10 @@ func (i *integrationTest) withAddons(addons ...string) *integrationTest {
 }
 
 const (
-	dnsControllerAddon = "dns-controller.addons.k8s.io-k8s-1.12"
-	awsCCMAddon        = "aws-cloud-controller.addons.k8s.io-k8s-1.18"
-	awsEBSCSIAddon     = "aws-ebs-csi-driver.addons.k8s.io-k8s-1.17"
+	dnsControllerAddon  = "dns-controller.addons.k8s.io-k8s-1.12"
+	awsCCMAddon         = "aws-cloud-controller.addons.k8s.io-k8s-1.18"
+	awsEBSCSIAddon      = "aws-ebs-csi-driver.addons.k8s.io-k8s-1.17"
+	leaderElectionAddon = "leader-migration.rbac.addons.k8s.io-k8s-1.23"
 )
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -196,7 +198,20 @@ func TestMinimal_v1_23(t *testing.T) {
 		withAddons(
 			awsEBSCSIAddon,
 			dnsControllerAddon,
-			"leader-migration.rbac.addons.k8s.io-k8s-1.23",
+			leaderElectionAddon,
+		).
+		runTestTerraformAWS(t)
+	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
+}
+
+// TestMinimal runs the test on a minimum configuration
+func TestMinimal_v1_24(t *testing.T) {
+	newIntegrationTest("minimal.example.com", "minimal-1.24").
+		withAddons(
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+			awsCCMAddon,
+			leaderElectionAddon,
 		).
 		runTestTerraformAWS(t)
 	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
