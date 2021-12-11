@@ -34,6 +34,8 @@ var _ fi.ModelBuilder = &ServiceAccountsBuilder{}
 
 func (b *ServiceAccountsBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.Cluster.Spec.CloudConfig.GCEServiceAccount != "" {
+		klog.Warningf("using legacy spec.cloudConfig.gceServiceAccount=%q setting", b.Cluster.Spec.CloudConfig.GCEServiceAccount)
+
 		serviceAccount := &gcetasks.ServiceAccount{
 			Name:      s("shared"),
 			Email:     &b.Cluster.Spec.CloudConfig.GCEServiceAccount,
