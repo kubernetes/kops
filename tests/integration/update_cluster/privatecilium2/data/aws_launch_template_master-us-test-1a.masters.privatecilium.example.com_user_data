@@ -170,6 +170,7 @@ kubeAPIServer:
   etcdServersOverrides:
   - /events#https://127.0.0.1:4002
   image: k8s.gcr.io/kube-apiserver:v1.19.0
+  insecurePort: 0
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -245,7 +246,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecilium.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: QPowcTb0hx70EXW2JRFnx/GxS21gMl3ieV5HVprH+dw=
+NodeupConfigHash: aDr+qFdNzpb6s4sB9AX086uhZx03QpucbLBJjuR2Wys=
 
 __EOF_KUBE_ENV
 

@@ -2549,6 +2549,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.InsecurePort != nil {
+		in, out := &in.InsecurePort, &out.InsecurePort
+		*out = new(int32)
+		**out = **in
+	}
 	if in.EnableBootstrapAuthToken != nil {
 		in, out := &in.EnableBootstrapAuthToken, &out.EnableBootstrapAuthToken
 		*out = new(bool)

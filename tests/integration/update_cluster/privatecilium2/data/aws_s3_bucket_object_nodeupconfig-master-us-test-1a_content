@@ -21,6 +21,7 @@ APIServerConfig:
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
     image: k8s.gcr.io/kube-apiserver:v1.19.0
+    insecurePort: 0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
