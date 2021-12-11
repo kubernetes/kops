@@ -287,7 +287,7 @@ type KubeAPIServerConfig struct {
 	// SecurePort is the port the kube runs on
 	SecurePort int32 `json:"securePort,omitempty" flag:"secure-port"`
 	// InsecurePort is the port the insecure api runs
-	InsecurePort int32 `json:"insecurePort,omitempty" flag:"insecure-port"`
+	InsecurePort *int32 `json:"insecurePort,omitempty" flag:"insecure-port"`
 	// Address is the binding address for the kube api: Deprecated - use insecure-bind-address and bind-address
 	Address string `json:"address,omitempty" flag:"address"`
 	// BindAddress is the binding address for the secure kubernetes API

@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	v1 "k8s.io/api/core/v1"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -173,7 +174,11 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	// We query via the kube-apiserver-healthcheck proxy, which listens on port 3990
 	c.InsecureBindAddress = ""
-	c.InsecurePort = 0
+	if b.IsKubernetesGTE("1.20") {
+		c.InsecurePort = nil
+	} else {
+		c.InsecurePort = fi.Int32(0)
+	}
 
 	return nil
 }
