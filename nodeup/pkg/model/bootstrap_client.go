@@ -43,7 +43,7 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	var authenticator bootstrap.Authenticator
 	var err error
-	switch kops.CloudProviderID(b.Cluster.Spec.CloudProvider) {
+	switch b.CloudProvider {
 	case kops.CloudProviderAWS:
 		authenticator, err = awsup.NewAWSAuthenticator(b.Cloud.Region())
 	case kops.CloudProviderGCE:
@@ -52,7 +52,7 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 		// instead we use this as a check that protokube has now started.
 
 	default:
-		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.Cluster.Spec.CloudProvider)
+		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.CloudProvider)
 	}
 
 	if err != nil {

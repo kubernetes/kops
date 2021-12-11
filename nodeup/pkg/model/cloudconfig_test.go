@@ -63,7 +63,8 @@ func TestBuildAzure(t *testing.T) {
 
 	b := &CloudConfigBuilder{
 		NodeupModelContext: &NodeupModelContext{
-			Cluster: cluster,
+			CloudProvider: kops.CloudProviderAzure,
+			Cluster:       cluster,
 		},
 	}
 	ctx := &fi.ModelBuilderContext{
@@ -131,7 +132,8 @@ func TestBuildAWSCustomNodeIPFamilies(t *testing.T) {
 
 	b := &CloudConfigBuilder{
 		NodeupModelContext: &NodeupModelContext{
-			Cluster: cluster,
+			CloudProvider: kops.CloudProviderAWS,
+			Cluster:       cluster,
 		},
 	}
 	ctx := &fi.ModelBuilderContext{
