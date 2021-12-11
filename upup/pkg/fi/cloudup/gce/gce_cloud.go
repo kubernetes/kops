@@ -226,8 +226,8 @@ func (c *gceCloudImplementation) Project() string {
 	return c.project
 }
 
-// ServiceAccount returns the email address for the service account that the instances will run under.
-func (c *gceCloudImplementation) ServiceAccount() (string, error) {
+// DefaultServiceAccount returns the email address for the service account that the instances will run under.
+func (c *gceCloudImplementation) DefaultServiceAccount() (string, error) {
 	if c.projectInfo == nil {
 		// Find the project info from the compute API, which includes the default service account
 		klog.V(2).Infof("fetching project %q from compute API", c.project)

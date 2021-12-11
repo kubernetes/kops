@@ -160,7 +160,7 @@ func (c *MockGCECloud) Project() string {
 }
 
 // ServiceAccount implements GCECloud::ServiceAccount
-func (c *MockGCECloud) ServiceAccount() (string, error) {
+func (c *MockGCECloud) DefaultServiceAccount() (string, error) {
 	return "12345678-compute@developer.gserviceaccount.com", nil
 }
 
