@@ -118,12 +118,24 @@ func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAM
 
 		request := &iam.CreateInstanceProfileInput{
 			InstanceProfileName: e.Name,
-			Tags:                mapToIAMTags(e.Tags),
 		}
 
 		response, err := t.Cloud.IAM().CreateInstanceProfile(request)
 		if err != nil {
 			return fmt.Errorf("error creating IAMInstanceProfile: %v", err)
+		}
+
+		tagRequest := &iam.TagInstanceProfileInput{
+			InstanceProfileName: e.Name,
+			Tags:                mapToIAMTags(e.Tags),
+		}
+		_, err = t.Cloud.IAM().TagInstanceProfile(tagRequest)
+		if err != nil {
+			if awsup.AWSErrorCode(err) == awsup.AWSErrCodeInvalidAction {
+				klog.Warningf("Ignoring unsupported IAMInstanceProfile tagging %v", *a.Name)
+			} else {
+				return fmt.Errorf("error tagging IAMInstanceProfile: %v", err)
+			}
 		}
 
 		e.ID = response.InstanceProfile.InstanceProfileId
@@ -151,14 +163,17 @@ func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAM
 				}
 				_, err := t.Cloud.IAM().TagInstanceProfile(tagRequest)
 				if err != nil {
-					return fmt.Errorf("error tagging IAMInstanceProfile: %v", err)
+					if awsup.AWSErrorCode(err) == awsup.AWSErrCodeInvalidAction {
+						klog.Warningf("Ignoring unsupported IAMInstanceProfile tagging %v", *a.Name)
+					} else {
+						return fmt.Errorf("error tagging IAMInstanceProfile: %v", err)
+					}
 				}
 			}
 		}
 	}
 
-	// TODO: Should we use path as our tag?
-	return nil // No tags in IAM
+	return nil
 }
 
 func (_ *IAMInstanceProfile) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMInstanceProfile) error {
