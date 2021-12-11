@@ -84,16 +84,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	} else if clusterSpec.Authorization.AlwaysAllow != nil {
 		clusterSpec.KubeAPIServer.AuthorizationMode = fi.String("AlwaysAllow")
 	} else if clusterSpec.Authorization.RBAC != nil {
-		var modes []string
-
-		if b.IsKubernetesGTE("1.19") || fi.BoolValue(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) {
-			// Enable the Node authorizer, used for special per-node RBAC policies
-			// Enable by default from 1.19 - it's an important part of limiting blast radius
-			modes = append(modes, "Node")
-		}
-		modes = append(modes, "RBAC")
-
-		clusterSpec.KubeAPIServer.AuthorizationMode = fi.String(strings.Join(modes, ","))
+		clusterSpec.KubeAPIServer.AuthorizationMode = fi.String("Node,RBAC")
 	}
 
 	if err := b.configureAggregation(clusterSpec); err != nil {

@@ -443,28 +443,6 @@ func (b *KubeAPIServerBuilder) writeKubeletAPICertificate(c *fi.ModelBuilderCont
 func (b *KubeAPIServerBuilder) writeStaticCredentials(c *fi.ModelBuilderContext, kubeAPIServer *kops.KubeAPIServerConfig) error {
 	pathSrvKAPI := filepath.Join(b.PathSrvKubernetes(), "kube-apiserver")
 
-	// Support for basic auth was deprecated 1.16 and removed in 1.19
-	// https://github.com/kubernetes/kubernetes/pull/89069
-	if b.IsKubernetesLT("1.19") && b.SecretStore != nil {
-		key := "kube"
-		token, err := b.SecretStore.FindSecret(key)
-		if err != nil {
-			return err
-		}
-		if token == nil {
-			return fmt.Errorf("token not found: %q", key)
-		}
-		csv := string(token.Data) + "," + adminUser + "," + adminUser + "," + adminGroup
-
-		t := &nodetasks.File{
-			Path:     filepath.Join(pathSrvKAPI, "basic_auth.csv"),
-			Contents: fi.NewStringResource(csv),
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0600"),
-		}
-		c.AddTask(t)
-	}
-
 	if b.SecretStore != nil {
 		allTokens, err := b.allAuthTokens()
 		if err != nil {
@@ -487,14 +465,6 @@ func (b *KubeAPIServerBuilder) writeStaticCredentials(c *fi.ModelBuilderContext,
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0600"),
 		})
-	}
-
-	// Support for basic auth was deprecated 1.16 and removed in 1.19
-	// https://github.com/kubernetes/kubernetes/pull/89069
-	if b.IsKubernetesLT("1.19") {
-		if kubeAPIServer.DisableBasicAuth != nil && !*kubeAPIServer.DisableBasicAuth {
-			kubeAPIServer.BasicAuthFile = filepath.Join(pathSrvKAPI, "basic_auth.csv")
-		}
 	}
 
 	return nil
