@@ -583,6 +583,16 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("logFormat"), &v.LogFormat, []string{"text", "json"})...)
 	}
 
+	if v.InsecurePort != nil {
+		insecurePort := *v.InsecurePort
+		if c.IsKubernetesGTE("1.20") && insecurePort != 0 {
+			field.Forbidden(fldPath.Child("insecurePort"), "insecurePort can only be 0 as of Kubernetes 1.20")
+		}
+		if c.IsKubernetesGTE("1.24") {
+			field.Forbidden(fldPath.Child("insecurePort"), "insecurePort must not be set as of Kubernetes 1.24")
+		}
+	}
+
 	return allErrs
 }
 

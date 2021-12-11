@@ -585,10 +585,12 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 		Path: "/healthz",
 		Port: intstr.FromInt(wellknownports.KubeAPIServerHealthCheck),
 	}
+
+	insecurePort := fi.Int32Value(kubeAPIServer.InsecurePort)
 	if useHealthcheckProxy {
 		// kube-apiserver-healthcheck sidecar container runs on port 3990
-	} else if kubeAPIServer.InsecurePort != 0 {
-		probeAction.Port = intstr.FromInt(int(kubeAPIServer.InsecurePort))
+	} else if insecurePort != 0 {
+		probeAction.Port = intstr.FromInt(int(insecurePort))
 	} else if kubeAPIServer.SecurePort != 0 {
 		probeAction.Port = intstr.FromInt(int(kubeAPIServer.SecurePort))
 		probeAction.Scheme = v1.URISchemeHTTPS
@@ -644,11 +646,11 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 		},
 	}
 
-	if kubeAPIServer.InsecurePort != 0 {
+	if insecurePort != 0 {
 		container.Ports = append(container.Ports, v1.ContainerPort{
 			Name:          "local",
-			ContainerPort: kubeAPIServer.InsecurePort,
-			HostPort:      kubeAPIServer.InsecurePort,
+			ContainerPort: insecurePort,
+			HostPort:      insecurePort,
 		})
 	}
 
