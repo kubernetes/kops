@@ -519,11 +519,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 				location := key + "/k8s-1.19.yaml"
 				id := "k8s-1.19"
 
-				if b.IsKubernetesLT("1.19") {
-					location = key + "/k8s-1.12.yaml"
-					id = "k8s-1.12"
-				}
-
 				addons.Add(&channelsapi.AddonSpec{
 					Name:     fi.String(key),
 					Selector: map[string]string{"k8s-addon": key},
