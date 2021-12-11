@@ -589,6 +589,7 @@ nextFirewallRule:
 			if err != nil {
 				return nil, fmt.Errorf("error getting TargetPool %q: %w", targetPoolName, err)
 			}
+			resourceTrackers = append(resourceTrackers, forwardingRuleResource)
 
 			targetPoolResource := &resources.Resource{
 				Name:    targetPool.Name,
