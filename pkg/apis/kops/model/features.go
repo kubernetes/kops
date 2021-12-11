@@ -24,7 +24,7 @@ import (
 func UseKopsControllerForNodeBootstrap(cluster *kops.Cluster) bool {
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 	case kops.CloudProviderAWS:
-		return cluster.IsKubernetesGTE("1.19")
+		return true
 	case kops.CloudProviderGCE:
 		return cluster.IsKubernetesGTE("1.22")
 	default:
