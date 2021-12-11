@@ -22,7 +22,7 @@ contents: |
       - --log-file=/var/log/kube-scheduler.log
       command:
       - /usr/local/bin/kube-scheduler
-      image: k8s.gcr.io/kube-scheduler-amd64:v1.18.0
+      image: k8s.gcr.io/kube-scheduler-amd64:v1.22.0
       livenessProbe:
         httpGet:
           host: 127.0.0.1
@@ -95,7 +95,7 @@ path: /srv/kubernetes/kube-scheduler/server.key
 type: file
 ---
 contents: |
-  apiVersion: kubescheduler.config.k8s.io/v1alpha2
+  apiVersion: kubescheduler.config.k8s.io/v1beta2
   clientConnection:
     kubeconfig: /var/lib/kube-scheduler/kubeconfig
   kind: KubeSchedulerConfiguration
