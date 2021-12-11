@@ -1,12 +1,12 @@
 Assets:
   amd64:
-  - 2d079bc9f7ac2c2d1f86df842df55f2ec8e74e01edc347994ccf1a054b9e6077@https://storage.googleapis.com/kubernetes-release/release/v1.18.15/bin/linux/amd64/kubelet
-  - eb5a5dd0a72795942ab81d1e4331625e80a90002c8bb39b2cb15aa707a3812c6@https://storage.googleapis.com/kubernetes-release/release/v1.18.15/bin/linux/amd64/kubectl
+  - 3f03e5c160a8b658d30b34824a1c00abadbac96e62c4d01bf5c9271a2debc3ab@https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/amd64/kubelet
+  - 79bb0d2f05487ff533999a639c075043c70a0a1ba25c1629eb1eef6ebe3ba70f@https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/amd64/kubectl
   - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
   - 5504d190eef37355231325c176686d51ade6e0cabe2da526d561a38d8611506f@https://download.docker.com/linux/static/stable/x86_64/docker-19.03.15.tgz
   arm64:
-  - c74f46e87aae7b9bb590319632fcb106b5efd998046dd47634c89bbb875d9fb6@https://storage.googleapis.com/kubernetes-release/release/v1.18.15/bin/linux/arm64/kubelet
-  - 6b4a63df325cdb523f16ffd8799745a8fdf979ef89e228c309a715671b6aa984@https://storage.googleapis.com/kubernetes-release/release/v1.18.15/bin/linux/arm64/kubectl
+  - d8fa5a9739ecc387dfcc55afa91ac6f4b0ccd01f1423c423dbd312d787bbb6bf@https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/arm64/kubelet
+  - d4adf1b6b97252025cb2f7febf55daa3f42dc305822e3da133f77fd33071ec2f@https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/arm64/kubectl
   - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
   - 264f3396630507606a8646fda6a28a98d3ced8927df84be8ee9a74ab73cc1566@https://download.docker.com/linux/static/stable/aarch64/docker-19.03.15.tgz
 CAs:
@@ -36,8 +36,6 @@ Hooks:
 - null
 - null
 KeypairIDs:
-  kube-proxy: "6986354184403674830529235586"
-  kubelet: "6986354184404014133128804066"
   kubernetes-ca: "6982820025135291416230495506"
 KubeletConfig:
   anonymousAuth: false
