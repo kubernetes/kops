@@ -45,6 +45,6 @@ export KOPS_STATE_STORE
 gsutil ls "${KOPS_STATE_STORE}" || gsutil mb "${KOPS_STATE_STORE}" || return
 
 # Set feature flags needed on GCE
-export KOPS_FEATURE_FLAGS=AlphaAllowGCE
+export KOPS_FEATURE_FLAGS=AlphaAllowGCE,KopsControllerStateStore
 
 echo "SUCCESS"
