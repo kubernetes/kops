@@ -72,7 +72,6 @@ func (e *ServiceAccount) Find(c *fi.Context) (*ServiceAccount, error) {
 	ctx := context.TODO()
 
 	email := fi.StringValue(e.Email)
-
 	if email == "default" {
 		// Special case - the default serviceaccount always exists
 		return e, nil
