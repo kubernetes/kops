@@ -164,6 +164,10 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 			"--cluster=" + clusterName,
 			"--state=" + kopsStateStore,
 		}
+
+		// If there's an existing client-cert / client-key, we need to clear it so it won't be used
+		b.ClientCert = nil
+		b.ClientKey = nil
 	}
 
 	b.Server = server
