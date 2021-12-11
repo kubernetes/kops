@@ -43,24 +43,26 @@ type GCECloud interface {
 	Compute() ComputeClient
 	Storage() *storage.Service
 	IAM() *iam.Service
+	CloudResourceManager() *cloudresourcemanager.Service
 	CloudDNS() DNSClient
 	Project() string
 	WaitForOp(op *compute.Operation) error
 	Labels() map[string]string
 	Zones() ([]string, error)
 
-	// ServiceAccount returns the email for the service account that the instances will run under
-	ServiceAccount() (string, error)
-
 	// CloudResourceManager returns the client for the cloudresourcemanager API
 	CloudResourceManager() *cloudresourcemanager.Service
+
+	// DefaultServiceAccount returns the email for the default GCE service account
+	DefaultServiceAccount() (string, error)
 }
 
 type gceCloudImplementation struct {
-	compute *computeClientImpl
-	storage *storage.Service
-	iam     *iam.Service
-	dns     *dnsClientImpl
+	compute              *computeClientImpl
+	storage              *storage.Service
+	iam                  *iam.Service
+	dns                  *dnsClientImpl
+	cloudResourceManager *cloudresourcemanager.Service
 
 	// cloudResourceManager is the client for the cloudresourcemanager API
 	cloudResourceManager *cloudresourcemanager.Service
