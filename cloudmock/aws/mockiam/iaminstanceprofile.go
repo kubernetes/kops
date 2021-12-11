@@ -92,6 +92,34 @@ func (m *MockIAM) CreateInstanceProfileRequest(*iam.CreateInstanceProfileInput) 
 	panic("Not implemented")
 }
 
+func (m *MockIAM) TagInstanceProfile(request *iam.TagInstanceProfileInput) (*iam.TagInstanceProfileOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	klog.Infof("CreateInstanceProfile: %v", request)
+
+	ip := m.InstanceProfiles[aws.StringValue(request.InstanceProfileName)]
+	if ip == nil {
+		return nil, fmt.Errorf("InstanceProfile not found")
+	}
+
+	for _, tag := range request.Tags {
+		key := *tag.Key
+		overwritten := false
+		for _, existingTag := range ip.Tags {
+			if *existingTag.Key == key {
+				existingTag.Value = tag.Value
+				overwritten = true
+				break
+			}
+		}
+		if !overwritten {
+			ip.Tags = append(ip.Tags, tag)
+		}
+	}
+	return &iam.TagInstanceProfileOutput{}, nil
+}
+
 func (m *MockIAM) AddRoleToInstanceProfile(request *iam.AddRoleToInstanceProfileInput) (*iam.AddRoleToInstanceProfileOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
