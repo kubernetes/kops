@@ -42,14 +42,14 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: main
-    version: 3.4.3
+    version: 3.4.13
   - backups:
       backupStore: memfs://clusters.example.com/privatecilium.example.com/backups/etcd/events
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-    version: 3.4.3
+    version: 3.4.13
   externalDns:
     provider: dns-controller
   iam:
@@ -76,7 +76,7 @@ spec:
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: k8s.gcr.io/kube-apiserver:v1.18.15
+    image: k8s.gcr.io/kube-apiserver:v1.19.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -100,7 +100,7 @@ spec:
     clusterCIDR: 100.96.0.0/11
     clusterName: privatecilium.example.com
     configureCloudRoutes: false
-    image: k8s.gcr.io/kube-controller-manager:v1.18.15
+    image: k8s.gcr.io/kube-controller-manager:v1.19.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -122,10 +122,10 @@ spec:
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: k8s.gcr.io/kube-proxy:v1.18.15
+    image: k8s.gcr.io/kube-proxy:v1.19.0
     logLevel: 2
   kubeScheduler:
-    image: k8s.gcr.io/kube-scheduler:v1.18.15
+    image: k8s.gcr.io/kube-scheduler:v1.19.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -145,7 +145,7 @@ spec:
     podManifestPath: /etc/kubernetes/manifests
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: 1.18.15
+  kubernetesVersion: 1.19.0
   masterInternalName: api.internal.privatecilium.example.com
   masterKubelet:
     anonymousAuth: false
