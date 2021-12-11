@@ -178,8 +178,8 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("no instance group defined in nodeup config")
 	}
 
-	if bootConfig.NodeupConfigHash != base64.StdEncoding.EncodeToString(nodeupConfigHash[:]) {
-		return fmt.Errorf("nodeup config hash mismatch")
+	if want, got := bootConfig.NodeupConfigHash, base64.StdEncoding.EncodeToString(nodeupConfigHash[:]); got != want {
+		return fmt.Errorf("nodeup config hash mismatch (was %q, expected %q)", got, want)
 	}
 
 	cloudProvider := api.CloudProviderID(bootConfig.CloudProvider)
