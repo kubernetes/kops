@@ -147,9 +147,9 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
   encryptionConfig: null
   etcdClusters:
     events:
-      version: 3.4.3
+      version: 3.4.13
     main:
-      version: 3.4.3
+      version: 3.4.13
   kubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false
@@ -171,7 +171,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: k8s.gcr.io/kube-apiserver:v1.18.15
+    image: k8s.gcr.io/kube-apiserver:v1.19.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -195,7 +195,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
     clusterCIDR: 100.96.0.0/11
     clusterName: privatecilium.example.com
     configureCloudRoutes: false
-    image: k8s.gcr.io/kube-controller-manager:v1.18.15
+    image: k8s.gcr.io/kube-controller-manager:v1.19.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -203,10 +203,10 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: k8s.gcr.io/kube-proxy:v1.18.15
+    image: k8s.gcr.io/kube-proxy:v1.19.0
     logLevel: 2
   kubeScheduler:
-    image: k8s.gcr.io/kube-scheduler:v1.18.15
+    image: k8s.gcr.io/kube-scheduler:v1.19.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -247,7 +247,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
   ConfigBase: memfs://clusters.example.com/privatecilium.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: 5edQ6jF/LuqWb8kjKQHlm/zJVGCkj/6SwmtSWvkl0EU=
+  NodeupConfigHash: QPowcTb0hx70EXW2JRFnx/GxS21gMl3ieV5HVprH+dw=
 
   __EOF_KUBE_ENV
 
@@ -401,7 +401,7 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumexamplecom.Properties.LaunchTemp
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: k8s.gcr.io/kube-proxy:v1.18.15
+    image: k8s.gcr.io/kube-proxy:v1.19.0
     logLevel: 2
   kubelet:
     anonymousAuth: false
@@ -425,7 +425,7 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumexamplecom.Properties.LaunchTemp
   ConfigBase: memfs://clusters.example.com/privatecilium.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: FFuyJV2RPI+GoNiGfmdOX+PxaY8TGBx9Ff1H+8DoQ00=
+  NodeupConfigHash: mY9XBw10xSvvQf5RXnHs97ub5hcTK1WFJi2EODnKmiY=
 
   __EOF_KUBE_ENV
 

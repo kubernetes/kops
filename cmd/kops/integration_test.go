@@ -401,7 +401,7 @@ func TestPrivateCilium(t *testing.T) {
 func TestPrivateCilium2(t *testing.T) {
 	newIntegrationTest("privatecilium.example.com", "privatecilium2").
 		withPrivate().
-		withAddons("networking.cilium.io-k8s-1.12", "rbac.addons.k8s.io-k8s-1.8", dnsControllerAddon).
+		withAddons("networking.cilium.io-k8s-1.12", dnsControllerAddon).
 		withKubeDNS().
 		runTestTerraformAWS(t)
 	newIntegrationTest("privatecilium.example.com", "privatecilium2").
