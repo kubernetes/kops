@@ -906,14 +906,6 @@ resource "aws_s3_bucket_object" "privatecilium-example-com-addons-networking-cil
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "privatecilium-example-com-addons-rbac-addons-k8s-io-k8s-1-8" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_privatecilium.example.com-addons-rbac.addons.k8s.io-k8s-1.8_content")
-  key                    = "clusters.example.com/privatecilium.example.com/addons/rbac.addons.k8s.io/k8s-1.8.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
 resource "aws_s3_bucket_object" "privatecilium-example-com-addons-storage-aws-addons-k8s-io-v1-15-0" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_privatecilium.example.com-addons-storage-aws.addons.k8s.io-v1.15.0_content")
