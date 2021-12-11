@@ -22,6 +22,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -170,61 +171,61 @@ func TestBuildAPIServerFlags(t *testing.T) {
 	}{
 		{
 			Config:   &kops.KubeAPIServerConfig{},
-			Expected: "--insecure-port=0 --secure-port=0",
+			Expected: "--secure-port=0",
 		},
 		{
 			Config: &kops.KubeAPIServerConfig{
 				AuditWebhookBatchThrottleQps: resourceValue("3.14"),
 			},
-			Expected: "--audit-webhook-batch-throttle-qps=3.14 --insecure-port=0 --secure-port=0",
+			Expected: "--audit-webhook-batch-throttle-qps=3.14 --secure-port=0",
 		},
 		{
 			Config: &kops.KubeAPIServerConfig{
 				AuditWebhookBatchThrottleEnable: fi.Bool(true),
 			},
-			Expected: "--audit-webhook-batch-throttle-enable=true --insecure-port=0 --secure-port=0",
+			Expected: "--audit-webhook-batch-throttle-enable=true --secure-port=0",
 		},
 		{
 			Config: &kops.KubeAPIServerConfig{
 				AuditWebhookBatchThrottleEnable: fi.Bool(false),
 			},
-			Expected: "--audit-webhook-batch-throttle-enable=false --insecure-port=0 --secure-port=0",
+			Expected: "--audit-webhook-batch-throttle-enable=false --secure-port=0",
 		},
 		{
 			Config: &kops.KubeAPIServerConfig{
 				AuditWebhookInitialBackoff: &metav1.Duration{Duration: 120 * time.Second},
 			},
-			Expected: "--audit-webhook-initial-backoff=2m0s --insecure-port=0 --secure-port=0",
+			Expected: "--audit-webhook-initial-backoff=2m0s --secure-port=0",
 		},
 		{
 			Config: &kops.KubeAPIServerConfig{
 				AuditWebhookBatchMaxSize: fi.Int32(1000),
 			},
-			Expected: "--audit-webhook-batch-max-size=1000 --insecure-port=0 --secure-port=0",
+			Expected: "--audit-webhook-batch-max-size=1000 --secure-port=0",
 		},
 		{
 			Config: &kops.KubeAPIServerConfig{
 				AuthorizationWebhookConfigFile: fi.String("/authorization.yaml"),
 			},
-			Expected: "--authorization-webhook-config-file=/authorization.yaml --insecure-port=0 --secure-port=0",
+			Expected: "--authorization-webhook-config-file=/authorization.yaml --secure-port=0",
 		},
 		{
 			Config: &kops.KubeAPIServerConfig{
 				AuthorizationWebhookCacheAuthorizedTTL: &metav1.Duration{Duration: 100 * time.Second},
 			},
-			Expected: "--authorization-webhook-cache-authorized-ttl=1m40s --insecure-port=0 --secure-port=0",
+			Expected: "--authorization-webhook-cache-authorized-ttl=1m40s --secure-port=0",
 		},
 		{
 			Config: &kops.KubeAPIServerConfig{
 				AuthorizationWebhookCacheUnauthorizedTTL: &metav1.Duration{Duration: 10 * time.Second},
 			},
-			Expected: "--authorization-webhook-cache-unauthorized-ttl=10s --insecure-port=0 --secure-port=0",
+			Expected: "--authorization-webhook-cache-unauthorized-ttl=10s --secure-port=0",
 		},
 		{
 			Config: &kops.KubeAPIServerConfig{
 				EventTTL: &metav1.Duration{Duration: 3 * time.Hour},
 			},
-			Expected: "--event-ttl=3h0m0s --insecure-port=0 --secure-port=0",
+			Expected: "--event-ttl=3h0m0s --secure-port=0",
 		},
 	}
 
