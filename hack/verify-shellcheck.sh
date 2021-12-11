@@ -74,7 +74,7 @@ cd "${KOPS_ROOT}"
 all_shell_scripts=()
 while IFS=$'\n' read -r script;
   do git check-ignore -q "$script" || all_shell_scripts+=("$script");
-done < <(find . -name "*.sh" \
+done < <(find . -type f -name "*.sh" \
   -not \( \
     -path ./_\*      -o \
     -path ./.git\*   -o \
