@@ -182,7 +182,12 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("nodeup config hash mismatch")
 	}
 
-	err = evaluateSpec(c, &nodeupConfig)
+	cloudProvider := api.CloudProviderID(bootConfig.CloudProvider)
+	if cloudProvider == "" {
+		cloudProvider = api.CloudProviderID(c.cluster.Spec.CloudProvider)
+	}
+
+	err = evaluateSpec(c, &nodeupConfig, cloudProvider)
 	if err != nil {
 		return err
 	}
@@ -208,7 +213,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	var cloud fi.Cloud
 
-	if api.CloudProviderID(c.cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+	if cloudProvider == api.CloudProviderAWS {
 		awsCloud, err := awsup.NewAWSCloud(region, nil)
 		if err != nil {
 			return err
@@ -217,14 +222,15 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	modelContext := &model.NodeupModelContext{
-		Cloud:        cloud,
-		Architecture: architecture,
-		Assets:       assetStore,
-		Cluster:      c.cluster,
-		ConfigBase:   configBase,
-		Distribution: distribution,
-		BootConfig:   &bootConfig,
-		NodeupConfig: &nodeupConfig,
+		Cloud:         cloud,
+		CloudProvider: cloudProvider,
+		Architecture:  architecture,
+		Assets:        assetStore,
+		Cluster:       c.cluster,
+		ConfigBase:    configBase,
+		Distribution:  distribution,
+		BootConfig:    &bootConfig,
+		NodeupConfig:  &nodeupConfig,
 	}
 
 	var secretStore fi.SecretStore
@@ -263,7 +269,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return err
 	}
 
-	if api.CloudProviderID(c.cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+	if cloudProvider == api.CloudProviderAWS {
 		instanceIDBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/instance-id")
 		if err != nil {
 			return fmt.Errorf("error reading instance-id from AWS metadata: %v", err)
@@ -394,7 +400,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	if nodeupConfig.EnableLifecycleHook {
-		if api.CloudProviderID(c.cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+		if cloudProvider == api.CloudProviderAWS {
 			err := completeWarmingLifecycleAction(cloud.(awsup.AWSCloud), modelContext)
 			if err != nil {
 				return fmt.Errorf("failed to complete lifecylce action: %w", err)
@@ -449,8 +455,8 @@ func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.No
 	return nil
 }
 
-func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config) error {
-	hostnameOverride, err := evaluateHostnameOverride(api.CloudProviderID(c.cluster.Spec.CloudProvider), nodeupConfig.UseInstanceIDForNodeName)
+func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config, cloudProvider api.CloudProviderID) error {
+	hostnameOverride, err := evaluateHostnameOverride(cloudProvider, nodeupConfig.UseInstanceIDForNodeName)
 	if err != nil {
 		return err
 	}

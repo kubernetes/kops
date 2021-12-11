@@ -72,6 +72,8 @@ type NodeupModelContext struct {
 	ConfigurationMode string
 	InstanceID        string
 	MachineType       string
+
+	CloudProvider kops.CloudProviderID
 }
 
 // Init completes initialization of the object, for example pre-parsing the kubernetes version
@@ -613,5 +615,5 @@ func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
 
 // RunningOnGCE returns true if we are running on GCE
 func (c *NodeupModelContext) RunningOnGCE() bool {
-	return kops.CloudProviderID(c.Cluster.Spec.CloudProvider) == kops.CloudProviderGCE
+	return c.CloudProvider == kops.CloudProviderGCE
 }

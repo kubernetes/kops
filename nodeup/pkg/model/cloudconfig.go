@@ -86,7 +86,7 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 	// Add cloud config file if needed
 	var lines []string
 
-	cloudProvider := b.Cluster.Spec.CloudProvider
+	cloudProvider := b.CloudProvider
 	cloudConfig := b.Cluster.Spec.CloudConfig
 
 	if cloudConfig == nil {
