@@ -20,10 +20,12 @@ import (
 	"encoding/base64"
 	"fmt"
 	"sort"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
+
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -164,8 +166,17 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 			LaunchTemplateName: t.Name,
 			LaunchTemplateData: data,
 		}
-		if _, err = c.Cloud.EC2().CreateLaunchTemplateVersion(input); err != nil {
+		if version, err := c.Cloud.EC2().CreateLaunchTemplateVersion(input); err != nil {
 			return fmt.Errorf("error creating LaunchTemplateVersion: %v", err)
+		} else {
+			newDefault := strconv.FormatInt(*version.LaunchTemplateVersion.VersionNumber, 10)
+			input := &ec2.ModifyLaunchTemplateInput{
+				DefaultVersion:   &newDefault,
+				LaunchTemplateId: version.LaunchTemplateVersion.LaunchTemplateId,
+			}
+			if _, err := c.Cloud.EC2().ModifyLaunchTemplate(input); err != nil {
+				return fmt.Errorf("error updating launch template version: %w", err)
+			}
 		}
 		if changes.Tags != nil {
 			err = c.UpdateTags(fi.StringValue(a.ID), e.Tags)
@@ -174,6 +185,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 			}
 		}
 		e.ID = a.ID
+
 	}
 
 	return nil
