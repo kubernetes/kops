@@ -60,7 +60,7 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 		}
 	}
 
-	setNetworkCIDR := (cloud.ProviderID() == kops.CloudProviderAWS) || (cloud.ProviderID() == kops.CloudProviderALI) || (cloud.ProviderID() == kops.CloudProviderAzure)
+	setNetworkCIDR := (cloud.ProviderID() == kops.CloudProviderAWS) || (cloud.ProviderID() == kops.CloudProviderAzure)
 	if setNetworkCIDR && c.Spec.NetworkCIDR == "" {
 		if c.SharedVPC() {
 			var vpcInfo *fi.VPCInfo
@@ -90,8 +90,6 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 			if cloud.ProviderID() == kops.CloudProviderAWS {
 				// TODO: Choose non-overlapping networking CIDRs for VPCs, using vpcInfo
 				c.Spec.NetworkCIDR = "172.20.0.0/16"
-			} else if cloud.ProviderID() == kops.CloudProviderALI {
-				c.Spec.NetworkCIDR = "192.168.0.0/16"
 			}
 		}
 
@@ -114,9 +112,9 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 		c.Spec.MasterPublicName = "api." + c.ObjectMeta.Name
 	}
 
-	// We only assign subnet CIDRs on AWS, OpenStack, Ali, and Azure.
+	// We only assign subnet CIDRs on AWS, OpenStack, and Azure.
 	pd := cloud.ProviderID()
-	if pd == kops.CloudProviderAWS || pd == kops.CloudProviderOpenstack || pd == kops.CloudProviderALI || pd == kops.CloudProviderAzure {
+	if pd == kops.CloudProviderAWS || pd == kops.CloudProviderOpenstack || pd == kops.CloudProviderAzure {
 		// TODO: Use vpcInfo
 		err := assignCIDRsToSubnets(c, cloud)
 		if err != nil {

@@ -106,8 +106,6 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		c.CloudProvider = "external"
 	case kops.CloudProviderOpenstack:
 		c.CloudProvider = "openstack"
-	case kops.CloudProviderALI:
-		c.CloudProvider = "alicloud"
 	case kops.CloudProviderAzure:
 		c.CloudProvider = "azure"
 	default:
