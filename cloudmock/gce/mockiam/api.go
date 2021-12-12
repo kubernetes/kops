@@ -32,6 +32,7 @@ type mockIAMService struct {
 	svc *iam.Service
 
 	serviceAccounts serviceAccounts
+	roles           roles
 }
 
 // New creates a new mock IAM client.
@@ -41,6 +42,7 @@ func New(project string) *iam.Service {
 	s := &mockIAMService{}
 
 	s.serviceAccounts.Init()
+	s.roles.Init()
 
 	httpClient := &http.Client{Transport: s}
 	svc, err := iam.NewService(ctx, option.WithHTTPClient(httpClient))
@@ -70,6 +72,17 @@ func (s *mockIAMService) RoundTrip(request *http.Request) (*http.Response, error
 
 			if len(pathTokens) == 4 && pathTokens[3] == "serviceAccounts" && request.Method == "POST" {
 				return s.serviceAccounts.Create(projectID, request)
+			}
+
+			if len(pathTokens) >= 5 && pathTokens[3] == "roles" {
+				roleID := pathTokens[4]
+				if len(pathTokens) == 5 && request.Method == "GET" {
+					return s.roles.Get(projectID, roleID, request)
+				}
+			}
+
+			if len(pathTokens) == 4 && pathTokens[3] == "roles" && request.Method == "POST" {
+				return s.roles.Create(projectID, request)
 			}
 		}
 	}
