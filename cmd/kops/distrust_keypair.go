@@ -50,10 +50,10 @@ var (
 
 	distrustKeypairExample = templates.Examples(i18n.T(`
 	# Distrust all cluster CA keypairs older than the primary.
-	kops distrust keypair ca
+	kops distrust keypair kubernetes-ca
 
 	# Distrust a particular keypair.
-	kops distrust keypair ca 6977545226837259959403993899
+	kops distrust keypair kubernetes-ca 6977545226837259959403993899
 
 	# Distrust all rotatable keypairs older than their respective primaries.
 	kops distrust keypair all
