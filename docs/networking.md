@@ -25,7 +25,7 @@ The following table provides the support status for various networking providers
 | Kubenet | 1.5 | 1.5 | - | - |
 | Lyft VPC | 1.11 | - | 1.22 | 1.23 |
 | Romana | 1.8 | - | 1.18 | 1.19 |
-| Weave | 1.5 | - | - | - |
+| Weave | 1.5 | - | 1.23 | Kubernetes 1.23 |
 
 ### Which networking provider should you use?
 
