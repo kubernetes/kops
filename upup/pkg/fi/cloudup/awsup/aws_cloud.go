@@ -641,7 +641,7 @@ func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceg
 func getKarpenterGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	cloudGroups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	for _, ig := range instancegroups {
-		if ig.Spec.InstanceManager == kops.InstanceManagerKarpenter {
+		if ig.Spec.Manager == kops.InstanceManagerKarpenter {
 			group, err := buildKarpenterGroup(c, cluster, ig, nodes)
 			if err != nil {
 				return nil, err

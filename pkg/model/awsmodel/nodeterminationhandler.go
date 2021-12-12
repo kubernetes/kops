@@ -81,7 +81,7 @@ type NodeTerminationHandlerBuilder struct {
 
 func (b *NodeTerminationHandlerBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
-		if ig.Spec.InstanceManager == kops.InstanceManagerCloudGroup {
+		if ig.Spec.Manager == kops.InstanceManagerCloudGroup {
 			err := b.configureASG(c, ig)
 			if err != nil {
 				return err

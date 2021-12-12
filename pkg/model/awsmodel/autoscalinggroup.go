@@ -80,7 +80,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(task)
 
 		// @step: now lets build the autoscaling group task
-		if ig.Spec.InstanceManager != "Karpenter" {
+		if ig.Spec.Manager != "Karpenter" {
 			tsk, err := b.buildAutoScalingGroupTask(c, name, ig)
 			if err != nil {
 				return err

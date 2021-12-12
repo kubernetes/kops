@@ -72,8 +72,8 @@ metadata:
   name: bastions
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
-  instanceManager: CloudGroup
   machineType: f1-micro
+  manager: CloudGroup
   maxSize: 1
   minSize: 1
   nodeLabels:
@@ -99,8 +99,8 @@ spec:
   - sg-exampleid3
   - sg-exampleid4
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
-  instanceManager: CloudGroup
   machineType: n1-standard-1
+  manager: CloudGroup
   maxSize: 1
   minSize: 1
   nodeLabels:
@@ -126,8 +126,8 @@ spec:
   - sg-exampleid
   - sg-exampleid2
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
-  instanceManager: CloudGroup
   machineType: n1-standard-2
+  manager: CloudGroup
   maxSize: 1
   minSize: 1
   nodeLabels:
