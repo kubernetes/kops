@@ -1,5 +1,7 @@
 ### Weave
 
+&#9888; The Weave CNI is not supported for Kubernetes 1.23 or later.
+
 #### Installation
 
 To use the Weave, specify the following in the cluster spec.
