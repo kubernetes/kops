@@ -256,6 +256,8 @@ data:
 
   disable-cnp-status-updates: "{{ .DisableCNPStatusUpdates }}"
 
+  enable-service-topology: "{{ .EnableServiceTopology }}"
+
   {{ if WithDefaultBool .Hubble.Enabled false }}
   # Enable Hubble gRPC service.
   enable-hubble: "true"

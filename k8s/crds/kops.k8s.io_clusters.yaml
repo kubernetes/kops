@@ -4698,6 +4698,10 @@ spec:
                         description: 'EnableRemoteNodeIdentity enables the remote-node-identity.
                           Default: true'
                         type: boolean
+                      enableServiceTopology:
+                        description: EnableServiceTopology determine if cilium should
+                          use topology aware hints.
+                        type: boolean
                       enableTracing:
                         description: EnableTracing is unused.
                         type: boolean
