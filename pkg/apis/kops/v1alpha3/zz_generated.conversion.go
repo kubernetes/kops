@@ -4088,7 +4088,7 @@ func Convert_kops_InstanceGroupList_To_v1alpha3_InstanceGroupList(in *kops.Insta
 }
 
 func autoConvert_v1alpha3_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *InstanceGroupSpec, out *kops.InstanceGroupSpec, s conversion.Scope) error {
-	out.InstanceManager = kops.InstanceManager(in.InstanceManager)
+	out.Manager = kops.InstanceManager(in.Manager)
 	out.Role = kops.InstanceGroupRole(in.Role)
 	out.Image = in.Image
 	out.MinSize = in.MinSize
@@ -4250,7 +4250,7 @@ func Convert_v1alpha3_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *InstanceGr
 }
 
 func autoConvert_kops_InstanceGroupSpec_To_v1alpha3_InstanceGroupSpec(in *kops.InstanceGroupSpec, out *InstanceGroupSpec, s conversion.Scope) error {
-	out.InstanceManager = InstanceManager(in.InstanceManager)
+	out.Manager = InstanceManager(in.Manager)
 	out.Role = InstanceGroupRole(in.Role)
 	out.Image = in.Image
 	out.MinSize = in.MinSize

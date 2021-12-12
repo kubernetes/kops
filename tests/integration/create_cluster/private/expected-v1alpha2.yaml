@@ -77,8 +77,8 @@ metadata:
   name: bastions
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
-  instanceManager: CloudGroup
   machineType: t2.micro
+  manager: CloudGroup
   maxSize: 1
   minSize: 1
   nodeLabels:
@@ -101,8 +101,8 @@ spec:
   - sg-exampleid3
   - sg-exampleid4
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
-  instanceManager: CloudGroup
   machineType: m3.medium
+  manager: CloudGroup
   maxSize: 1
   minSize: 1
   nodeLabels:
@@ -125,8 +125,8 @@ spec:
   - sg-exampleid
   - sg-exampleid2
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
-  instanceManager: CloudGroup
   machineType: t2.medium
+  manager: CloudGroup
   maxSize: 1
   minSize: 1
   nodeLabels:

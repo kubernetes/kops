@@ -622,7 +622,7 @@ webhooks:
       app.kubernetes.io/part-of: karpenter
 
 {{ range $name, $spec := GetNodeInstanceGroups }}
-{{ if eq $spec.InstanceManager "Karpenter" }}
+{{ if eq $spec.Manager "Karpenter" }}
 ---
 apiVersion: karpenter.sh/v1alpha5
 kind: Provisioner

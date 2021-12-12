@@ -92,7 +92,7 @@ func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) m
 		nodeLabels[k] = v
 	}
 
-	if instanceGroup.Spec.InstanceManager == kops.InstanceManagerKarpenter {
+	if instanceGroup.Spec.Manager == kops.InstanceManagerKarpenter {
 		nodeLabels["karpenter.sh/provisioner-name"] = instanceGroup.ObjectMeta.Name
 	}
 
