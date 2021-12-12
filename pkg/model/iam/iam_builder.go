@@ -50,26 +50,30 @@ const PolicyDefaultVersion = "2012-10-17"
 // Policy Struct is a collection of fields that form a valid AWS policy document
 type Policy struct {
 	clusterName               string
-	UnconditionalAction       sets.String `json:"-"`
-	ClusterTaggedAction       sets.String `json:"-"`
-	ClusterTaggedCreateAction sets.String `json:"-"`
+	unconditionalAction       sets.String
+	clusterTaggedAction       sets.String
+	clusterTaggedCreateAction sets.String
 	Statement                 []*Statement
 	Version                   string
 }
 
+func (p *Policy) AddUnconditionalActions(actions ...string) {
+	p.unconditionalAction.Insert(actions...)
+}
+
 // AsJSON converts the policy document to JSON format (parsable by AWS)
 func (p *Policy) AsJSON() (string, error) {
-	if len(p.UnconditionalAction) > 0 {
+	if len(p.unconditionalAction) > 0 {
 		p.Statement = append(p.Statement, &Statement{
 			Effect:   StatementEffectAllow,
-			Action:   stringorslice.Of(p.UnconditionalAction.List()...),
+			Action:   stringorslice.Of(p.unconditionalAction.List()...),
 			Resource: stringorslice.String("*"),
 		})
 	}
-	if len(p.ClusterTaggedAction) > 0 {
+	if len(p.clusterTaggedAction) > 0 {
 		p.Statement = append(p.Statement, &Statement{
 			Effect:   StatementEffectAllow,
-			Action:   stringorslice.Of(p.ClusterTaggedAction.List()...),
+			Action:   stringorslice.Of(p.clusterTaggedAction.List()...),
 			Resource: stringorslice.String("*"),
 			Condition: Condition{
 				"StringEquals": map[string]string{
@@ -78,10 +82,10 @@ func (p *Policy) AsJSON() (string, error) {
 			},
 		})
 	}
-	if len(p.ClusterTaggedCreateAction) > 0 {
+	if len(p.clusterTaggedCreateAction) > 0 {
 		p.Statement = append(p.Statement, &Statement{
 			Effect:   StatementEffectAllow,
-			Action:   stringorslice.Of(p.ClusterTaggedCreateAction.List()...),
+			Action:   stringorslice.Of(p.clusterTaggedCreateAction.List()...),
 			Resource: stringorslice.String("*"),
 			Condition: Condition{
 				"StringEquals": map[string]string{
@@ -277,9 +281,9 @@ func NewPolicy(clusterName string) *Policy {
 	p := &Policy{
 		Version:                   PolicyDefaultVersion,
 		clusterName:               clusterName,
-		UnconditionalAction:       sets.NewString(),
-		ClusterTaggedAction:       sets.NewString(),
-		ClusterTaggedCreateAction: sets.NewString(),
+		unconditionalAction:       sets.NewString(),
+		clusterTaggedAction:       sets.NewString(),
+		clusterTaggedCreateAction: sets.NewString(),
 	}
 	return p
 }
@@ -421,7 +425,7 @@ func (r *NodeRoleBastion) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 	// Bastion hosts currently don't require any specific permissions.
 	// A trivial permission is granted, because empty policies are not allowed.
-	p.UnconditionalAction.Insert("ec2:DescribeRegions")
+	p.unconditionalAction.Insert("ec2:DescribeRegions")
 
 	return p, nil
 }
@@ -733,7 +737,7 @@ func addECRPermissions(p *Policy) {
 	// We shouldn't be running lots of pods on the master, but it is perfectly reasonable to run
 	// a private logging pod or similar.
 	// At this point we allow all regions with ECR, since ECR is region specific.
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"ecr:GetAuthorizationToken",
 		"ecr:BatchCheckLayerAvailability",
 		"ecr:GetDownloadUrlForLayer",
@@ -745,7 +749,7 @@ func addECRPermissions(p *Policy) {
 }
 
 func addCalicoSrcDstCheckPermissions(p *Policy) {
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"ec2:DescribeInstances",
 		"ec2:ModifyNetworkInterfaceAttribute",
 	)
@@ -755,26 +759,26 @@ func (b *PolicyBuilder) addNodeupPermissions(p *Policy, enableHookSupport bool) 
 	addCertIAMPolicies(p)
 	addKMSGenerateRandomPolicies(p)
 	addASLifecyclePolicies(p, enableHookSupport)
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"ec2:DescribeInstances", // aws.go
 		"ec2:DescribeInstanceTypes",
 	)
 
 	if b.Cluster.Spec.IsKopsControllerIPAM() {
-		p.UnconditionalAction.Insert(
+		p.unconditionalAction.Insert(
 			"ec2:AssignIpv6Addresses",
 		)
 	}
 }
 
 func addKopsControllerIPAMPermissions(p *Policy) {
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"ec2:DescribeNetworkInterfaces",
 	)
 }
 
 func addEtcdManagerPermissions(p *Policy) {
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"ec2:DescribeVolumes", // aws.go
 	)
 
@@ -796,7 +800,7 @@ func addEtcdManagerPermissions(p *Policy) {
 }
 
 func AddLegacyCCMPermissions(p *Policy) {
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"ec2:CreateSecurityGroup",
 		"ec2:CreateTags",
 		"elasticloadbalancing:CreateTargetGroup",
@@ -807,7 +811,7 @@ func AddLegacyCCMPermissions(p *Policy) {
 }
 
 func AddCCMPermissions(p *Policy, partition string, cloudRoutes bool) {
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"autoscaling:DescribeAutoScalingGroups",
 		"autoscaling:DescribeTags",
 		"ec2:DescribeInstances",
@@ -826,7 +830,7 @@ func AddCCMPermissions(p *Policy, partition string, cloudRoutes bool) {
 		"kms:DescribeKey",
 	)
 
-	p.ClusterTaggedAction.Insert(
+	p.clusterTaggedAction.Insert(
 		"ec2:ModifyInstanceAttribute",
 		"ec2:ModifyVolume",
 		"ec2:AttachVolume",
@@ -859,7 +863,7 @@ func AddCCMPermissions(p *Policy, partition string, cloudRoutes bool) {
 		"elasticloadbalancing:SetLoadBalancerPoliciesOfListener",
 	)
 
-	p.ClusterTaggedCreateAction.Insert(
+	p.clusterTaggedCreateAction.Insert(
 		"elasticloadbalancing:CreateLoadBalancer",
 		"ec2:CreateSecurityGroup",
 		"ec2:CreateVolume",
@@ -890,7 +894,7 @@ func AddCCMPermissions(p *Policy, partition string, cloudRoutes bool) {
 		},
 	)
 	if cloudRoutes {
-		p.ClusterTaggedAction.Insert(
+		p.clusterTaggedAction.Insert(
 			"ec2:CreateRoute",
 			"ec2:DeleteRoute",
 		)
@@ -899,7 +903,7 @@ func AddCCMPermissions(p *Policy, partition string, cloudRoutes bool) {
 
 // AddAWSLoadbalancerControllerPermissions adds the permissions needed for the aws load balancer controller to the givnen policy
 func AddAWSLoadbalancerControllerPermissions(p *Policy) {
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"ec2:DescribeAvailabilityZones",
 		"ec2:DescribeNetworkInterfaces",
 		"elasticloadbalancing:DescribeTags",
@@ -911,7 +915,7 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy) {
 		"acm:ListCertificates",
 		"acm:DescribeCertificate",
 	)
-	p.ClusterTaggedAction.Insert(
+	p.clusterTaggedAction.Insert(
 		"ec2:AuthorizeSecurityGroupIngress", // aws.go
 		"ec2:DeleteSecurityGroup",           // aws.go
 		"ec2:RevokeSecurityGroupIngress",    // aws.go
@@ -926,11 +930,11 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy) {
 }
 
 func AddClusterAutoscalerPermissions(p *Policy) {
-	p.ClusterTaggedAction.Insert(
+	p.clusterTaggedAction.Insert(
 		"autoscaling:SetDesiredCapacity",
 		"autoscaling:TerminateInstanceInAutoScalingGroup",
 	)
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"autoscaling:DescribeAutoScalingGroups",
 		"autoscaling:DescribeAutoScalingInstances",
 		"autoscaling:DescribeLaunchConfigurations",
@@ -944,21 +948,21 @@ func AddAWSEBSCSIDriverPermissions(p *Policy, partition string, appendSnapshotPe
 		addSnapshotPersmissions(p)
 	}
 
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"ec2:DescribeAccountAttributes",    // aws.go
 		"ec2:DescribeInstances",            // aws.go
 		"ec2:DescribeVolumes",              // aws.go
 		"ec2:DescribeVolumesModifications", // aws.go
 		"ec2:DescribeTags",                 // aws.go
 	)
-	p.ClusterTaggedAction.Insert(
+	p.clusterTaggedAction.Insert(
 		"ec2:ModifyVolume",            // aws.go
 		"ec2:ModifyInstanceAttribute", // aws.go
 		"ec2:AttachVolume",            // aws.go
 		"ec2:DeleteVolume",            // aws.go
 		"ec2:DetachVolume",            // aws.go
 	)
-	p.ClusterTaggedCreateAction.Insert(
+	p.clusterTaggedCreateAction.Insert(
 		"ec2:CreateVolume", // aws.go
 	)
 
@@ -1005,12 +1009,12 @@ func AddAWSEBSCSIDriverPermissions(p *Policy, partition string, appendSnapshotPe
 }
 
 func addSnapshotPersmissions(p *Policy) {
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"ec2:CreateSnapshot",
 		"ec2:DescribeAvailabilityZones",
 		"ec2:DescribeSnapshots",
 	)
-	p.ClusterTaggedAction.Insert(
+	p.clusterTaggedAction.Insert(
 		"ec2:DeleteSnapshot",
 	)
 }
@@ -1052,7 +1056,7 @@ func AddDNSControllerPermissions(b *PolicyBuilder, p *Policy) {
 
 func addKMSIAMPolicies(p *Policy, resource stringorslice.StringOrSlice) {
 	// TODO could use "kms:ViaService" Condition Key here?
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"kms:CreateGrant",
 		"kms:Decrypt",
 		"kms:DescribeKey",
@@ -1064,35 +1068,35 @@ func addKMSIAMPolicies(p *Policy, resource stringorslice.StringOrSlice) {
 
 func addKMSGenerateRandomPolicies(p *Policy) {
 	// For nodeup to seed the instance's random number generator.
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"kms:GenerateRandom",
 	)
 }
 
 func addASLifecyclePolicies(p *Policy, enableHookSupport bool) {
 	if enableHookSupport {
-		p.ClusterTaggedAction.Insert(
+		p.clusterTaggedAction.Insert(
 			"autoscaling:CompleteLifecycleAction", // aws_manager.go
 		)
-		p.UnconditionalAction.Insert(
+		p.unconditionalAction.Insert(
 			"autoscaling:DescribeLifecycleHooks",
 		)
 	}
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"autoscaling:DescribeAutoScalingInstances",
 	)
 }
 
 func addCertIAMPolicies(p *Policy) {
 	// TODO: Make optional only if using IAM SSL Certs on ELBs
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"iam:ListServerCertificates",
 		"iam:GetServerCertificate",
 	)
 }
 
 func addCiliumEniPermissions(p *Policy) {
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"ec2:DescribeSubnets",
 		"ec2:AttachNetworkInterface",
 		"ec2:AssignPrivateIpAddresses",
@@ -1109,7 +1113,7 @@ func addCiliumEniPermissions(p *Policy) {
 }
 
 func addAmazonVPCCNIPermissions(p *Policy, partition string) {
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"ec2:AssignPrivateIpAddresses",
 		"ec2:AttachNetworkInterface",
 		"ec2:CreateNetworkInterface",
@@ -1136,7 +1140,7 @@ func addAmazonVPCCNIPermissions(p *Policy, partition string) {
 }
 
 func AddNodeTerminationHandlerSQSPermissions(p *Policy) {
-	p.UnconditionalAction.Insert(
+	p.unconditionalAction.Insert(
 		"autoscaling:DescribeAutoScalingInstances",
 		"autoscaling:DescribeTags",
 		"ec2:DescribeInstances",
@@ -1144,7 +1148,7 @@ func AddNodeTerminationHandlerSQSPermissions(p *Policy) {
 		"sqs:DeleteMessage",
 		"sqs:ReceiveMessage",
 	)
-	p.ClusterTaggedAction.Insert(
+	p.clusterTaggedAction.Insert(
 		"autoscaling:CompleteLifecycleAction",
 	)
 }

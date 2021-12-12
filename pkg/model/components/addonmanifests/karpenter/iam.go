@@ -47,7 +47,7 @@ func (r *ServiceAccount) ServiceAccount() (types.NamespacedName, bool) {
 }
 
 func addKarpenterPermissions(p *iam.Policy) {
-	p.UnconditionalAction.Insert(
+	p.AddUnconditionalActions(
 		//		"ec2:CreateLaunchTemplate",
 		"ec2:CreateFleet",
 		"ec2:RunInstances",
