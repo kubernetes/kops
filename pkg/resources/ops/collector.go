@@ -21,14 +21,12 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
-	"k8s.io/kops/pkg/resources/ali"
 	"k8s.io/kops/pkg/resources/aws"
 	"k8s.io/kops/pkg/resources/azure"
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/pkg/resources/gce"
 	"k8s.io/kops/pkg/resources/openstack"
 	"k8s.io/kops/upup/pkg/fi"
-	cloudali "k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	cloudazure "k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	clouddo "k8s.io/kops/upup/pkg/fi/cloudup/do"
@@ -48,8 +46,6 @@ func ListResources(cloud fi.Cloud, cluster *kops.Cluster, region string) (map[st
 		return gce.ListResourcesGCE(cloud.(cloudgce.GCECloud), clusterName, region)
 	case kops.CloudProviderOpenstack:
 		return openstack.ListResources(cloud.(cloudopenstack.OpenstackCloud), clusterName)
-	case kops.CloudProviderALI:
-		return ali.ListResourcesALI(cloud.(cloudali.ALICloud), clusterName, region)
 	case kops.CloudProviderAzure:
 		return azure.ListResourcesAzure(cloud.(cloudazure.AzureCloud), cluster)
 	default:

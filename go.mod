@@ -40,12 +40,10 @@ require (
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/Masterminds/sprig/v3 v3.2.2
-	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1059
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.0.2
 	github.com/aws/aws-sdk-go v1.42.11
 	github.com/blang/semver/v4 v4.0.0
-	github.com/denverdino/aliyungo v0.0.0-20210425065611-55bee4942cba
 	github.com/digitalocean/godo v1.65.0
 	github.com/go-ini/ini v1.62.0
 	github.com/go-logr/logr v1.2.0

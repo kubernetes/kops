@@ -37,20 +37,16 @@ import (
 const (
 	defaultNodeMachineTypeGCE   = "n1-standard-2"
 	defaultNodeMachineTypeDO    = "s-2vcpu-4gb"
-	defaultNodeMachineTypeALI   = "ecs.n2.medium"
 	defaultNodeMachineTypeAzure = "Standard_B2ms"
 
 	defaultBastionMachineTypeGCE   = "f1-micro"
-	defaultBastionMachineTypeALI   = "ecs.n2.small"
 	defaultBastionMachineTypeAzure = "Standard_B2ms"
 
 	defaultMasterMachineTypeGCE   = "n1-standard-1"
 	defaultMasterMachineTypeDO    = "s-2vcpu-4gb"
-	defaultMasterMachineTypeALI   = "ecs.n2.medium"
 	defaultMasterMachineTypeAzure = "Standard_B2ms"
 
-	defaultDONodeImage  = "ubuntu-20-04-x64"
-	defaultALINodeImage = "centos_7_04_64_20G_alibase_201701015.vhd"
+	defaultDONodeImage = "ubuntu-20-04-x64"
 )
 
 // TODO: this hardcoded list can be replaced with DescribeInstanceTypes' DedicatedHostsSupported field
@@ -220,18 +216,6 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 		}
 		return instanceType, nil
 
-	case kops.CloudProviderALI:
-		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleMaster:
-			return defaultMasterMachineTypeALI, nil
-
-		case kops.InstanceGroupRoleNode:
-			return defaultNodeMachineTypeALI, nil
-
-		case kops.InstanceGroupRoleBastion:
-			return defaultBastionMachineTypeALI, nil
-		}
-
 	case kops.CloudProviderAzure:
 		switch ig.Spec.Role {
 		case kops.InstanceGroupRoleMaster:
@@ -271,8 +255,6 @@ func defaultImage(cluster *kops.Cluster, channel *kops.Channel, architecture arc
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 	case kops.CloudProviderDO:
 		return defaultDONodeImage
-	case kops.CloudProviderALI:
-		return defaultALINodeImage
 	}
 	klog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.CloudProvider)
 	return ""

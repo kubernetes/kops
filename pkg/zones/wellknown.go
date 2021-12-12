@@ -290,41 +290,6 @@ var doZones = []string{
 	"blr1",
 }
 
-var aliZones = []string{
-	"cn-qingdao-b",
-	"cn-qingdao-c",
-
-	"cn-beijing-a",
-	"cn-beijing-b",
-	"cn-beijing-c",
-	"cn-beijing-d",
-	"cn-beijing-e",
-
-	"cn-zhangjiakou-a",
-
-	"cn-huhehaote-a",
-
-	"cn-hangzhou-b",
-	"cn-hangzhou-c",
-	"cn-hangzhou-d",
-	"cn-hangzhou-e",
-	"cn-hangzhou-f",
-	"cn-hangzhou-g",
-
-	"cn-shanghai-a",
-	"cn-shanghai-b",
-	"cn-shanghai-c",
-	"cn-shanghai-d",
-
-	"cn-shenzhen-a",
-	"cn-shenzhen-b",
-	"cn-shenzhen-c",
-
-	"cn-hongkong-a",
-	"cn-hongkong-b",
-	"cn-hongkong-c",
-}
-
 var azureZones = []string{
 	"asia",
 	"asiapacific",
@@ -418,8 +383,6 @@ func GuessCloudForZone(zone string) (kops.CloudProviderID, bool) {
 
 func WellKnownZonesForCloud(matchCloud kops.CloudProviderID) []string {
 	switch matchCloud {
-	case kops.CloudProviderALI:
-		return aliZones
 	case kops.CloudProviderAWS:
 		return awsZones
 	case kops.CloudProviderAzure:

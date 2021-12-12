@@ -187,23 +187,6 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 		}
 	}
 
-	if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderALI {
-		region := os.Getenv("OSS_REGION")
-		if region != "" {
-			env["OSS_REGION"] = os.Getenv("OSS_REGION")
-		}
-
-		aliID := os.Getenv("ALIYUN_ACCESS_KEY_ID")
-		if aliID != "" {
-			env["ALIYUN_ACCESS_KEY_ID"] = os.Getenv("ALIYUN_ACCESS_KEY_ID")
-		}
-
-		aliSecret := os.Getenv("ALIYUN_ACCESS_KEY_SECRET")
-		if aliSecret != "" {
-			env["ALIYUN_ACCESS_KEY_SECRET"] = os.Getenv("ALIYUN_ACCESS_KEY_SECRET")
-		}
-	}
-
 	if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderAzure {
 		env["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
 		azureEnv := os.Getenv("AZURE_ENVIRONMENT")
