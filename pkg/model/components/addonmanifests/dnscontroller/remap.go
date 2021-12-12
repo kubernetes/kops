@@ -19,7 +19,6 @@ package dnscontroller
 import (
 	"fmt"
 
-	"github.com/blang/semver/v4"
 	corev1 "k8s.io/api/core/v1"
 	addonsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/kubemanifest"
@@ -31,18 +30,6 @@ import (
 func Remap(context *model.KopsModelContext, addon *addonsapi.AddonSpec, objects []*kubemanifest.Object) error {
 	if !context.UseServiceAccountExternalPermissions() {
 		return nil
-	}
-
-	if addon.KubernetesVersion != "" {
-		versionRange, err := semver.ParseRange(addon.KubernetesVersion)
-		if err != nil {
-			return fmt.Errorf("cannot parse KubernetesVersion=%q", addon.KubernetesVersion)
-		}
-
-		if !kubernetesRangesIntersect(versionRange, semver.MustParseRange(">= 1.19.0")) {
-			// Skip; this is an older manifest
-			return nil
-		}
 	}
 
 	var deployments []*kubemanifest.Object
@@ -79,18 +66,4 @@ func Remap(context *model.KopsModelContext, addon *addonsapi.AddonSpec, objects 
 	}
 
 	return nil
-}
-
-// kubernetesRangesIntersect returns true if the two semver ranges overlap
-// Sadly there's no actual function to do this.
-// Instead we restrict to kubernetes versions, and just probe with 1.1, 1.2, 1.3 etc.
-// This will therefore be inaccurate if there's a patch specifier
-func kubernetesRangesIntersect(r1, r2 semver.Range) bool {
-	for minor := 1; minor < 99; minor++ {
-		v := semver.Version{Major: 1, Minor: uint64(minor), Patch: 0}
-		if r1(v) && r2(v) {
-			return true
-		}
-	}
-	return false
 }
