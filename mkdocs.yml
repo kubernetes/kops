@@ -83,7 +83,6 @@ nav:
     - Cluster Templating: "operations/cluster_template.md"
     - GPU setup: "gpu.md"
     - Label management: "labels.md"
-    - Secret management: "secrets.md"
     - Rotate Secrets: "operations/rotate-secrets.md"
     - Service Account Token Volume: "operations/service_account_token_volumes.md"
     - Moving from a Single Master to Multiple HA Masters: "single-to-multi-master.md"
