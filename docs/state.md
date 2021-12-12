@@ -17,7 +17,6 @@ As of now the following state stores are supported:
 * Google Cloud (`gs://`)
 * Kubernetes (`k8s://`)
 * OpenStack Swift (`swift://`)
-* AliCloud (`oss://`)
 
 The state store is just files; you can copy the files down and put them into git (or your preferred version control system).
 
@@ -141,15 +140,6 @@ Note that any user/role with full S3 access will be able to delete any cluster f
 ## Digital Ocean (do://)
 
 DigitalOcean storage is configured as a flavor of a S3 store.
-
-## AliCloud (oss://)
-
-The alicloud oss store can be configured by the following environment variables:
-
-- `OSS_REGION`: the region to use
-- `ALIYUN_ACCESS_KEY_ID`: your access key
-- `ALIYUN_ACCESS_KEY_SECRET`: your secret key
-- `ALIYUN_OSS_INTERNAL`: whether the OSS store is internally
 
 ## OpenStack Swift (swift://)
 

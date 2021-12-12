@@ -267,7 +267,6 @@ func FindKopsVersionSpec(versions []KopsVersionSpec, version semver.Version) *Ko
 type CloudProviderID string
 
 const (
-	CloudProviderALI       CloudProviderID = "alicloud"
 	CloudProviderAWS       CloudProviderID = "aws"
 	CloudProviderDO        CloudProviderID = "digitalocean"
 	CloudProviderGCE       CloudProviderID = "gce"

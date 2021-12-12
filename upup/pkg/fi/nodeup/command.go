@@ -523,20 +523,6 @@ func evaluateHostnameOverride(cloudProvider api.CloudProviderID, useInstanceIDFo
 		}
 
 		return hostname, nil
-	case api.CloudProviderALI:
-		azBytes, err := vfs.Context.ReadFile("metadata://alicloud/zone-id")
-		if err != nil {
-			return "", fmt.Errorf("error reading zone-id from Alicloud metadata: %v", err)
-		}
-		az := string(azBytes)
-
-		instanceIDBytes, err := vfs.Context.ReadFile("metadata://alicloud/instance-id")
-		if err != nil {
-			return "", fmt.Errorf("error reading instance-id from Alicloud metadata: %v", err)
-		}
-		instanceID := string(instanceIDBytes)
-
-		return fmt.Sprintf("%s.%s", az, instanceID), nil
 	}
 
 	return "", nil
