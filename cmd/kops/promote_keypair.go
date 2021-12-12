@@ -44,8 +44,8 @@ var (
     `))
 
 	promoteKeypairExample = templates.Examples(i18n.T(`
-	# Promote the newest ca keypair to be the primary.
-	kops promote keypair ca \
+	# Promote the newest kubernetes-ca keypair to be the primary.
+	kops promote keypair kubernetes-ca \
 		--name k8s-cluster.example.com --state s3://my-state-store
 
     # Promote a specific service-account keypair to be the primary.

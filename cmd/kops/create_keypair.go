@@ -63,7 +63,7 @@ var (
 
 	createKeypairExample = templates.Examples(i18n.T(`
 	# Add a CA certificate and private key to a keyset.
-	kops create keypair ca \
+	kops create keypair kubernetes-ca \
 		--cert ~/ca.pem --key ~/ca-key.pem \
 		--name k8s-cluster.example.com --state s3://my-state-store
 
