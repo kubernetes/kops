@@ -175,8 +175,8 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		}
 	}
 
-	if ig.Spec.InstanceManager == "" {
-		ig.Spec.InstanceManager = kops.InstanceManagerCloudGroup
+	if ig.Spec.Manager == "" {
+		ig.Spec.Manager = kops.InstanceManagerCloudGroup
 	}
 	return ig, nil
 }
