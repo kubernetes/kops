@@ -45,7 +45,6 @@ import (
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/pkg/model/alimodel"
 	"k8s.io/kops/pkg/model/awsmodel"
 	"k8s.io/kops/pkg/model/azuremodel"
 	"k8s.io/kops/pkg/model/components"
@@ -59,7 +58,6 @@ import (
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/bootstrapchannelbuilder"
@@ -86,7 +84,7 @@ const (
 )
 
 // TerraformCloudProviders is the list of cloud providers with terraform target support
-var TerraformCloudProviders = []kops.CloudProviderID{kops.CloudProviderAWS, kops.CloudProviderGCE, kops.CloudProviderALI}
+var TerraformCloudProviders = []kops.CloudProviderID{kops.CloudProviderAWS, kops.CloudProviderGCE}
 
 type ApplyClusterCmd struct {
 	Cloud   fi.Cloud
@@ -430,24 +428,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 		}
 
-	case kops.CloudProviderALI:
-		{
-			fmt.Println("")
-			fmt.Println("aliyun support has been deprecated due to lack of maintainers. It may be removed in a future version of kOps.")
-			fmt.Println("")
-
-			if !featureflag.AlphaAllowALI.Enabled() {
-				return fmt.Errorf("aliyun support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowALI")
-			}
-
-			if len(sshPublicKeys) == 0 {
-				return fmt.Errorf("SSH public key must be specified when running with ALICloud (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
-			}
-
-			if len(sshPublicKeys) != 1 {
-				return fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with ALICloud; please delete a key using `kops delete secret`")
-			}
-		}
 	case kops.CloudProviderAzure:
 		{
 			if !featureflag.Azure.Enabled() {
@@ -627,20 +607,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				&gcemodel.StorageAclBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: storageACLLifecycle},
 				&gcemodel.AutoscalingGroupModelBuilder{GCEModelContext: gceModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 			)
-		case kops.CloudProviderALI:
-			aliModelContext := &alimodel.ALIModelContext{
-				KopsModelContext: modelContext,
-			}
-			l.Builders = append(l.Builders,
-				&alimodel.APILoadBalancerModelBuilder{ALIModelContext: aliModelContext, Lifecycle: clusterLifecycle},
-				&alimodel.NetworkModelBuilder{ALIModelContext: aliModelContext, Lifecycle: clusterLifecycle},
-				&alimodel.RAMModelBuilder{ALIModelContext: aliModelContext, Lifecycle: clusterLifecycle},
-				&alimodel.SSHKeyModelBuilder{ALIModelContext: aliModelContext, Lifecycle: clusterLifecycle},
-				&alimodel.FirewallModelBuilder{ALIModelContext: aliModelContext, Lifecycle: clusterLifecycle},
-				&alimodel.ExternalAccessModelBuilder{ALIModelContext: aliModelContext, Lifecycle: clusterLifecycle},
-				&alimodel.ScalingGroupModelBuilder{ALIModelContext: aliModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
-			)
-
 		case kops.CloudProviderAzure:
 			azureModelContext := &azuremodel.AzureModelContext{
 				KopsModelContext: modelContext,
@@ -687,8 +653,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			target = do.NewDOAPITarget(cloud.(do.DOCloud))
 		case kops.CloudProviderOpenstack:
 			target = openstack.NewOpenstackAPITarget(cloud.(openstack.OpenstackCloud))
-		case kops.CloudProviderALI:
-			target = aliup.NewALIAPITarget(cloud.(aliup.ALICloud))
 		case kops.CloudProviderAzure:
 			target = azure.NewAzureAPITarget(cloud.(azure.AzureCloud))
 		default:
