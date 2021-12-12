@@ -830,6 +830,22 @@ spec:
 
 **Note:** If you are upgrading to CoreDNS, kube-dns will be left in place and must be removed manually (you can scale the kube-dns and kube-dns-autoscaler deployments in the `kube-system` namespace to 0 as a starting point). The `kube-dns` Service itself should be left in place, as this retains the ClusterIP and eliminates the possibility of DNS outages in your cluster. If you would like to continue autoscaling, update the `kube-dns-autoscaler` Deployment container command for `--target=Deployment/kube-dns` to be `--target=Deployment/coredns`.
 
+For larger clusters you may need to set custom resource requests and limits. For the CoreDNS provider you can set
+
+- memoryLimit
+- cpuRequest
+- memoryRequest
+
+This will override the default limit value for memory of 170Mi and default request values for memory and cpu of 70Mi and 100m.
+
+Example:
+```
+  kubeDNS:
+    memoryLimit: 2Gi
+    cpuRequest: 300m
+    memoryRequest: 700Mi
+```
+
 ## kubeControllerManager
 This block contains configurations for the `controller-manager`.
 
