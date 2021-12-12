@@ -39,7 +39,7 @@ import (
 var (
 	getKeypairExample = templates.Examples(i18n.T(`
 	# List the cluster CA keypairs.
-	kops get keypairs ca
+	kops get keypairs kubernetes-ca
 
 	# List the service-account keypairs, including distrusted ones.
 	kops get keypairs service-account --distrusted`))
