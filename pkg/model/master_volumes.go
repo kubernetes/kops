@@ -26,8 +26,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/alitasks"
-	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -47,7 +45,6 @@ const (
 	DefaultAWSEtcdVolumeGp3Iops       = 3000
 	DefaultAWSEtcdVolumeGp3Throughput = 125
 	DefaultGCEEtcdVolumeType          = "pd-ssd"
-	DefaultALIEtcdVolumeType          = "cloud_ssd"
 )
 
 // MasterVolumeBuilder builds master EBS volumes
@@ -111,8 +108,6 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 				if err != nil {
 					return err
 				}
-			case kops.CloudProviderALI:
-				b.addALIVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 			case kops.CloudProviderAzure:
 				b.addAzureVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 			default:
@@ -318,44 +313,6 @@ func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.ModelBuilderContext, name
 	c.AddTask(t)
 
 	return nil
-}
-
-func (b *MasterVolumeBuilder) addALIVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) {
-	// Alicloud does not support volumeName starts with number
-	name = "v" + name
-	volumeType := fi.StringValue(m.VolumeType)
-	if volumeType == "" {
-		volumeType = DefaultALIEtcdVolumeType
-	}
-
-	// The tags are how protokube knows to mount the volume and use it for etcd
-	tags := make(map[string]string)
-
-	// Apply all user defined labels on the volumes
-	for k, v := range b.Cluster.Spec.CloudLabels {
-		tags[k] = v
-	}
-
-	// This is the configuration of the etcd cluster
-	tags[aliup.TagNameEtcdClusterPrefix+etcd.Name] = m.Name + "/" + strings.Join(allMembers, ",")
-	// This says "only mount on a master"
-	tags[aliup.TagNameRolePrefix+"master"] = "1"
-	// We always add an owned tags (these can't be shared)
-	tags["kubernetes.io/cluster/"+b.Cluster.ObjectMeta.Name] = "owned"
-
-	encrypted := fi.BoolValue(m.EncryptedVolume)
-
-	t := &alitasks.Disk{
-		Lifecycle:    b.Lifecycle,
-		Name:         fi.String(name),
-		ZoneId:       fi.String(zone),
-		SizeGB:       fi.Int(int(volumeSize)),
-		DiskCategory: fi.String(volumeType),
-		Encrypted:    fi.Bool(encrypted),
-		Tags:         tags,
-	}
-
-	c.AddTask(t)
 }
 
 func (b *MasterVolumeBuilder) addAzureVolume(

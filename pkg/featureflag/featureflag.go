@@ -56,8 +56,6 @@ var (
 	ExperimentalClusterDNS = new("ExperimentalClusterDNS", Bool(false))
 	// GoogleCloudBucketACL means the ACL will be set on a bucket when using GCS
 	GoogleCloudBucketACL = new("GoogleCloudBucketAcl", Bool(false))
-	// KeepLaunchConfigurations can be set to prevent garbage collection of old launch configurations
-	KeepLaunchConfigurations = new("KeepLaunchConfigurations", Bool(false))
 	// SpecOverrideFlag allows setting spec values on create
 	SpecOverrideFlag = new("SpecOverrideFlag", Bool(false))
 	// Spotinst toggles the use of Spotinst integration.
@@ -92,8 +90,6 @@ var (
 	TerraformManagedFiles = new("TerraformManagedFiles", Bool(true))
 	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha.
 	AlphaAllowGCE = new("AlphaAllowGCE", Bool(false))
-	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha.
-	AlphaAllowALI = new("AlphaAllowALI", Bool(false))
 )
 
 // FeatureFlag defines a feature flag

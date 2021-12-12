@@ -35,7 +35,6 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/zones"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -512,14 +511,6 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 		}
 		zoneToSubnetMap[region] = subnet
 		return zoneToSubnetMap, nil
-
-	case api.CloudProviderALI:
-		if len(opt.Zones) > 0 && len(opt.SubnetIDs) > 0 {
-			zoneToSubnetProviderID, err = aliup.ZoneToVSwitchID(cluster.Spec.NetworkID, opt.Zones, opt.SubnetIDs)
-			if err != nil {
-				return nil, err
-			}
-		}
 
 	case api.CloudProviderAzure:
 		// On Azure, subnets are regional - we create one per region, not per zone

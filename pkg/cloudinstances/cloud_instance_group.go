@@ -113,16 +113,9 @@ func GetNodeMap(nodes []v1.Node, cluster *kopsapi.Cluster) map[string]*v1.Node {
 		return nodeMap
 	}
 
-	delimiter := "/"
-	// Alicloud CCM uses the "{region}.{instance-id}" of a instance as ProviderID.
-	// We need to set delimiter to "." for Alicloud.
-	if kopsapi.CloudProviderID(cluster.Spec.CloudProvider) == kopsapi.CloudProviderALI {
-		delimiter = "."
-	}
-
 	for i := range nodes {
 		node := &nodes[i]
-		providerIDs := strings.Split(node.Spec.ProviderID, delimiter)
+		providerIDs := strings.Split(node.Spec.ProviderID, "/")
 		instanceID := providerIDs[len(providerIDs)-1]
 		nodeMap[instanceID] = node
 	}

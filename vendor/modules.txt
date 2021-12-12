@@ -79,19 +79,6 @@ github.com/PuerkitoBio/urlesc
 # github.com/agext/levenshtein v1.2.1
 ## explicit
 github.com/agext/levenshtein
-# github.com/aliyun/alibaba-cloud-sdk-go v1.61.1059
-## explicit; go 1.13
-github.com/aliyun/alibaba-cloud-sdk-go/sdk
-github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth
-github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials
-github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials/provider
-github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/signers
-github.com/aliyun/alibaba-cloud-sdk-go/sdk/endpoints
-github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors
-github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests
-github.com/aliyun/alibaba-cloud-sdk-go/sdk/responses
-github.com/aliyun/alibaba-cloud-sdk-go/sdk/utils
-github.com/aliyun/alibaba-cloud-sdk-go/services/slb
 # github.com/apparentlymart/go-cidr v1.1.0
 ## explicit
 github.com/apparentlymart/go-cidr/cidr
@@ -222,16 +209,6 @@ github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/denverdino/aliyungo v0.0.0-20210425065611-55bee4942cba
-## explicit
-github.com/denverdino/aliyungo/common
-github.com/denverdino/aliyungo/ecs
-github.com/denverdino/aliyungo/ess
-github.com/denverdino/aliyungo/metadata
-github.com/denverdino/aliyungo/oss
-github.com/denverdino/aliyungo/ram
-github.com/denverdino/aliyungo/slb
-github.com/denverdino/aliyungo/util
 # github.com/digitalocean/godo v1.65.0
 ## explicit; go 1.14
 github.com/digitalocean/godo
