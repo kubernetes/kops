@@ -12,7 +12,6 @@ The following experimental features are currently available:
 * `+SpecOverrideFlag` - Allow setting spec values on `kops create`.
 * `+ExperimentalClusterDNS` - Turns off validation of the kubelet cluster dns flag.
 * `+GoogleCloudBucketAcl` - Enables setting the ACL on the state store bucket when using GCS
-* `+KeepLaunchConfigurations` - Prevents garbage collection of old launch configurations
 * `+Spotinst` - Enables the use of the Spot integration
 * `+SpotinstOcean` - Enables the use of the Spot Ocean integration
 * `+SpotinstHybrid` - Toggles between hybrid and full instance group implementations

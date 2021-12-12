@@ -162,19 +162,6 @@ func run() error {
 		if clusterID == "" {
 			clusterID = osVolumes.ClusterID()
 		}
-	} else if cloud == "alicloud" {
-		klog.Info("Initializing AliCloud volumes")
-		aliVolumes, err := protokube.NewALIVolumes()
-		if err != nil {
-			klog.Errorf("Error initializing Aliyun: %q", err)
-			os.Exit(1)
-		}
-		volumes = aliVolumes
-		internalIP = aliVolumes.InternalIP()
-
-		if clusterID == "" {
-			clusterID = aliVolumes.ClusterID()
-		}
 	} else if cloud == "azure" {
 		klog.Info("Initializing Azure volumes")
 		azureVolumes, err := protokube.NewAzureVolumes()
@@ -249,12 +236,6 @@ func run() error {
 				return err
 			}
 			gossipName = volumes.(*protokube.OpenstackVolumes).InstanceName()
-		} else if cloud == "alicloud" {
-			gossipSeeds, err = volumes.(*protokube.ALIVolumes).GossipSeeds()
-			if err != nil {
-				return err
-			}
-			gossipName = volumes.(*protokube.ALIVolumes).InstanceID()
 		} else if cloud == "digitalocean" {
 			gossipSeeds, err = volumes.(*protokube.DOVolumes).GossipSeeds()
 			if err != nil {

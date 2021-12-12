@@ -27,9 +27,6 @@ func SupportedClouds() []kops.CloudProviderID {
 		kops.CloudProviderDO,
 		kops.CloudProviderOpenstack,
 	}
-	if featureflag.AlphaAllowALI.Enabled() {
-		clouds = append(clouds, kops.CloudProviderALI)
-	}
 	if featureflag.Azure.Enabled() {
 		clouds = append(clouds, kops.CloudProviderAzure)
 	}
