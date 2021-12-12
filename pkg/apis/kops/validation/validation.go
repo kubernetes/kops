@@ -889,6 +889,12 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 		if version.Minor < 10 && v.EncryptionType == kops.CiliumEncryptionTypeWireguard {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("encryptionType"), "Cilium EncryptionType=WireGuard is not available for Cilium version < 1.10.0."))
 		}
+
+		if version.Minor < 11 {
+			if v.EnableServiceTopology {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableServiceTopology"), "Service topology requires Cilium 1.11"))
+			}
+		}
 	}
 
 	if v.EnableNodePort && c.KubeProxy != nil && (c.KubeProxy.Enabled == nil || *c.KubeProxy.Enabled) {
