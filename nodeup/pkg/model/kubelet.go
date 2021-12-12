@@ -120,14 +120,7 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		if b.HasAPIServer || !b.UseBootstrapTokens() {
 			var kubeconfig fi.Resource
 			if b.HasAPIServer {
-				if b.IsKubernetesGTE("1.19") || b.UseBootstrapTokens() {
-					kubeconfig, err = b.buildMasterKubeletKubeconfig(c)
-				} else {
-					kubeconfig = b.BuildIssuedKubeconfig("kubelet", nodetasks.PKIXName{
-						CommonName:   "kubelet",
-						Organization: []string{rbac.NodesGroup},
-					}, c)
-				}
+				kubeconfig, err = b.buildMasterKubeletKubeconfig(c)
 			} else {
 				kubeconfig, err = b.BuildBootstrapKubeconfig("kubelet", c)
 			}
@@ -523,11 +516,11 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	// For bootstrapping reasons, protokube sets the critical labels for kops-controller to run.
 	c.NodeLabels = nil
 
-	if c.AuthorizationMode == "" && b.Cluster.IsKubernetesGTE("1.19") {
+	if c.AuthorizationMode == "" {
 		c.AuthorizationMode = "Webhook"
 	}
 
-	if c.AuthenticationTokenWebhook == nil && b.Cluster.IsKubernetesGTE("1.19") {
+	if c.AuthenticationTokenWebhook == nil {
 		c.AuthenticationTokenWebhook = fi.Bool(true)
 	}
 

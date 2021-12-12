@@ -16,6 +16,7 @@ contents: |
     - args:
       - --allow-privileged=true
       - --anonymous-auth=false
+      - --api-audiences=kubernetes.svc.default
       - --apiserver-count=1
       - --authorization-mode=AlwaysAllow
       - --bind-address=0.0.0.0
@@ -28,7 +29,6 @@ contents: |
       - --etcd-keyfile=/srv/kubernetes/kube-apiserver/etcd-client.key
       - --etcd-servers-overrides=/events#https://127.0.0.1:4002
       - --etcd-servers=https://127.0.0.1:4001
-      - --insecure-port=0
       - --kubelet-client-certificate=/srv/kubernetes/kube-apiserver/kubelet-api.crt
       - --kubelet-client-key=/srv/kubernetes/kube-apiserver/kubelet-api.key
       - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
@@ -40,7 +40,10 @@ contents: |
       - --requestheader-group-headers=X-Remote-Group
       - --requestheader-username-headers=X-Remote-User
       - --secure-port=443
+      - --service-account-issuer=https://api.internal.minimal.example.com
+      - --service-account-jwks-uri=https://api.internal.minimal.example.com/openid/v1/jwks
       - --service-account-key-file=/srv/kubernetes/kube-apiserver/service-account.pub
+      - --service-account-signing-key-file=/srv/kubernetes/kube-apiserver/service-account.key
       - --service-cluster-ip-range=100.64.0.0/13
       - --storage-backend=etcd3
       - --tls-cert-file=/srv/kubernetes/kube-apiserver/server.crt
@@ -51,7 +54,7 @@ contents: |
       - --log-file=/var/log/kube-apiserver.log
       command:
       - /usr/local/bin/kube-apiserver
-      image: k8s.gcr.io/kube-apiserver-amd64:v1.18.0
+      image: k8s.gcr.io/kube-apiserver-amd64:v1.22.0
       livenessProbe:
         httpGet:
           host: 127.0.0.1
@@ -290,6 +293,20 @@ contents:
     type: server
 mode: "0600"
 path: /srv/kubernetes/kube-apiserver/server.key
+type: file
+---
+contents: |
+  -----BEGIN RSA PRIVATE KEY-----
+  MIIBPQIBAAJBANiW3hfHTcKnxCig+uWhpVbOfH1pANKmXVSysPKgE80QSU4tZ6m4
+  9pAEeIMsvwvDMaLsb2v6JvXe0qvCmueU+/sCAwEAAQJBAKt/gmpHqP3qA3u8RA5R
+  2W6L360Z2Mnza1FmkI/9StCCkJGjuE5yDhxU4JcVnFyX/nMxm2ockEEQDqRSu7Oo
+  xTECIQD2QsUsgFL4FnXWzTclySJ6ajE4Cte3gSDOIvyMNMireQIhAOEnsV8UaSI+
+  ZyL7NMLzMPLCgtsrPnlamr8gdrEHf9ITAiEAxCCLbpTI/4LL2QZZrINTLVGT34Fr
+  Kl/yI5pjrrp/M2kCIQDfOktQyRuzJ8t5kzWsUxCkntS+FxHJn1rtQ3Jp8dV4oQIh
+  AOyiVWDyLZJvg7Y24Ycmp86BZjM9Wk/BfWpBXKnl9iDY
+  -----END RSA PRIVATE KEY-----
+mode: "0600"
+path: /srv/kubernetes/kube-apiserver/service-account.key
 type: file
 ---
 contents: |
