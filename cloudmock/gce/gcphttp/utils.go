@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package mockiam
+package gcphttp
 
 import (
 	"bytes"
@@ -35,8 +35,8 @@ type errorInfo struct {
 	Status  string `json:"status,omitempty"`
 }
 
-// errorNotFound builds a NOT_FOUND error response
-func errorNotFound(message string, args ...interface{}) (*http.Response, error) {
+// ErrorNotFound builds a NOT_FOUND error response
+func ErrorNotFound(message string, args ...interface{}) (*http.Response, error) {
 	statusCode := http.StatusNotFound
 
 	e := errorResponseData{
@@ -50,8 +50,8 @@ func errorNotFound(message string, args ...interface{}) (*http.Response, error) 
 	return buildJSONResponse(statusCode, e)
 }
 
-// errorBadRequest builds a BAD_REQUEST error response
-func errorBadRequest(message string, args ...interface{}) (*http.Response, error) {
+// ErrorBadRequest builds a BAD_REQUEST error response
+func ErrorBadRequest(message string, args ...interface{}) (*http.Response, error) {
 	statusCode := http.StatusBadRequest
 
 	// TODO: What does this actually look like?
@@ -67,8 +67,8 @@ func errorBadRequest(message string, args ...interface{}) (*http.Response, error
 	return buildJSONResponse(statusCode, e)
 }
 
-// errorAlreadyExists builds an ALREADY_EXISTS error response
-func errorAlreadyExists(message string, args ...interface{}) (*http.Response, error) {
+// ErrorAlreadyExists builds an ALREADY_EXISTS error response
+func ErrorAlreadyExists(message string, args ...interface{}) (*http.Response, error) {
 	statusCode := http.StatusConflict
 
 	e := errorResponseData{
@@ -82,8 +82,8 @@ func errorAlreadyExists(message string, args ...interface{}) (*http.Response, er
 	return buildJSONResponse(statusCode, e)
 }
 
-// okResponse builds an response encoding the provided data.
-func okResponse(obj interface{}) (*http.Response, error) {
+// OKResponse builds an response encoding the provided data.
+func OKResponse(obj interface{}) (*http.Response, error) {
 	return buildJSONResponse(http.StatusOK, obj)
 }
 

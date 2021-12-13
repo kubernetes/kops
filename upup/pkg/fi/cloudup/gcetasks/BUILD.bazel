@@ -26,6 +26,8 @@ go_library(
         "serviceaccount_fitask.go",
         "storagebucketacl.go",
         "storagebucketacl_fitask.go",
+        "storagebucketiam.go",
+        "storagebucketiam_fitask.go",
         "storageobjectacl.go",
         "storageobjectacl_fitask.go",
         "subnet.go",
@@ -50,7 +52,10 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = ["serviceaccount_test.go"],
+    srcs = [
+        "serviceaccount_test.go",
+        "storagebucketiam_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
         "//cloudmock/gce:go_default_library",
