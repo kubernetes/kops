@@ -644,15 +644,15 @@ spec:
             port: 8081
         resources:
           limits:
-            cpu: "1"
             memory: 1Gi
           requests:
-            cpu: "1"
+            cpu: 500m
             memory: 1Gi
         volumeMounts:
         - mountPath: /var/run/secrets/amazonaws.com/
           name: token-amazonaws-com
           readOnly: true
+      dnsPolicy: Default
       priorityClassName: system-cluster-critical
       securityContext:
         fsGroup: 10001
