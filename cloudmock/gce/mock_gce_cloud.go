@@ -19,11 +19,13 @@ package gce
 import (
 	"fmt"
 
+	"google.golang.org/api/cloudresourcemanager/v1"
 	compute "google.golang.org/api/compute/v1"
 	"google.golang.org/api/iam/v1"
 	"google.golang.org/api/storage/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/cloudmock/gce/mockcloudresourcemanager"
 	mockcompute "k8s.io/kops/cloudmock/gce/mockcompute"
 	"k8s.io/kops/cloudmock/gce/mockdns"
 	"k8s.io/kops/cloudmock/gce/mockiam"
@@ -42,10 +44,11 @@ type MockGCECloud struct {
 	region  string
 	labels  map[string]string
 
-	computeClient *mockcompute.MockClient
-	dnsClient     *mockdns.MockClient
-	iamClient     *iam.Service
-	storageClient *storage.Service
+	computeClient              *mockcompute.MockClient
+	dnsClient                  *mockdns.MockClient
+	iamClient                  *iam.Service
+	storageClient              *storage.Service
+	cloudResourceManagerClient *cloudresourcemanager.Service
 }
 
 var _ gce.GCECloud = &MockGCECloud{}
@@ -53,12 +56,13 @@ var _ gce.GCECloud = &MockGCECloud{}
 // InstallMockGCECloud registers a MockGCECloud implementation for the specified region & project
 func InstallMockGCECloud(region string, project string) *MockGCECloud {
 	c := &MockGCECloud{
-		project:       project,
-		region:        region,
-		computeClient: mockcompute.NewMockClient(project),
-		dnsClient:     mockdns.NewMockClient(),
-		iamClient:     mockiam.New(project),
-		storageClient: mockstorage.New(),
+		project:                    project,
+		region:                     region,
+		computeClient:              mockcompute.NewMockClient(project),
+		dnsClient:                  mockdns.NewMockClient(),
+		iamClient:                  mockiam.New(project),
+		storageClient:              mockstorage.New(),
+		cloudResourceManagerClient: mockcloudresourcemanager.New(),
 	}
 	gce.CacheGCECloudInstance(region, project, c)
 	return c
@@ -115,6 +119,11 @@ func (c *MockGCECloud) Storage() *storage.Service {
 // IAM returns the IAM client
 func (c *MockGCECloud) IAM() *iam.Service {
 	return c.iamClient
+}
+
+// CloudResourceManager returns the client for the cloudresourcemanager API
+func (c *MockGCECloud) CloudResourceManager() *cloudresourcemanager.Service {
+	return c.cloudResourceManagerClient
 }
 
 // CloudDNS returns the DNS client
