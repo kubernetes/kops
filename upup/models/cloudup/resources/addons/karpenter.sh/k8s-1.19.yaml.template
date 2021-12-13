@@ -635,7 +635,7 @@ spec:
       values: ["spot"]
     - key: kubernetes.io/arch
       operator: In
-      values: ["{{ SupportedArchitecture $spec.Image }}"]
+      values: ["{{ ArchitectureOfAMI $spec.Image }}"]
     - key: "node.kubernetes.io/instance-type"
       operator: In
       values:

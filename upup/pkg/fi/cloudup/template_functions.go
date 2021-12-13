@@ -281,7 +281,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		dest["EnableSQSTerminationDraining"] = func() bool { return *cluster.Spec.NodeTerminationHandler.EnableSQSTerminationDraining }
 	}
 
-	dest["SupportedArchitecture"] = tf.SupportedArchitecture
+	dest["ArchitectureOfAMI"] = tf.architectureOfAMI
 
 	dest["ParseTaint"] = parseTaint
 
@@ -741,7 +741,7 @@ func (tf *TemplateFunctions) GetNodeInstanceGroups() map[string]kops.InstanceGro
 	return nodegroups
 }
 
-func (tf *TemplateFunctions) SupportedArchitecture(amiID string) string {
+func (tf *TemplateFunctions) architectureOfAMI(amiID string) string {
 	image, _ := tf.cloud.(awsup.AWSCloud).ResolveImage(amiID)
 	switch *image.Architecture {
 	case "x86_64":
