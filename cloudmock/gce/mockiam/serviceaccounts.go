@@ -23,6 +23,7 @@ import (
 	"sync"
 
 	"google.golang.org/api/iam/v1"
+	"k8s.io/kops/cloudmock/gce/gcphttp"
 )
 
 // serviceAccounts manages the ServiceAccount resources.
@@ -42,25 +43,25 @@ func (s *serviceAccounts) Get(projectID string, serviceAccount string, request *
 
 	sa := s.serviceAccountsByEmail[serviceAccount]
 	if sa == nil {
-		return errorNotFound("Unknown service account")
+		return gcphttp.ErrorNotFound("Unknown service account")
 	}
 
-	return okResponse(sa)
+	return gcphttp.OKResponse(sa)
 }
 
 func (s *serviceAccounts) Create(projectID string, request *http.Request) (*http.Response, error) {
 	b, err := io.ReadAll(request.Body)
 	if err != nil {
-		return errorBadRequest("")
+		return gcphttp.ErrorBadRequest("")
 	}
 
 	req := &iam.CreateServiceAccountRequest{}
 	if err := json.Unmarshal(b, &req); err != nil {
-		return errorBadRequest("")
+		return gcphttp.ErrorBadRequest("")
 	}
 
 	if req.AccountId == "" {
-		return errorBadRequest("")
+		return gcphttp.ErrorBadRequest("")
 	}
 
 	sa := &iam.ServiceAccount{
@@ -81,10 +82,10 @@ func (s *serviceAccounts) Create(projectID string, request *http.Request) (*http
 		//     "resourceName": "projects/testproject/serviceAccounts/testaccount@testproject.iam.gserviceaccount.com"
 		//   }
 
-		return errorAlreadyExists("Service account %s already exists within project projects/%s.", req.AccountId, projectID)
+		return gcphttp.ErrorAlreadyExists("Service account %s already exists within project projects/%s.", req.AccountId, projectID)
 	}
 
 	s.serviceAccountsByEmail[sa.Email] = sa
 
-	return okResponse(sa)
+	return gcphttp.OKResponse(sa)
 }
