@@ -488,6 +488,12 @@ spec:
                 - linux
               - key: karpenter.sh/provisioner-name
                 operator: DoesNotExist
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+
 ---
 # Source: karpenter/templates/webhook/deployment.yaml
 apiVersion: apps/v1
@@ -554,6 +560,15 @@ spec:
                 - linux
               - key: karpenter.sh/provisioner-name
                 operator: DoesNotExist
+      tolerations:
+      - key: node.cloudprovider.kubernetes.io/uninitialized
+        operator: Exists
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
 ---
 # Source: karpenter/templates/webhook/webhooks.yaml
 apiVersion: admissionregistration.k8s.io/v1
