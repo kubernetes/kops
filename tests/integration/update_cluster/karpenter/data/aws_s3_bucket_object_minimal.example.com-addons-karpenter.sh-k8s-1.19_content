@@ -653,10 +653,15 @@ spec:
           name: token-amazonaws-com
           readOnly: true
       dnsPolicy: Default
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
       securityContext:
         fsGroup: 10001
       serviceAccountName: karpenter
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
       volumes:
       - name: token-amazonaws-com
         projected:
@@ -744,10 +749,19 @@ spec:
         - mountPath: /var/run/secrets/amazonaws.com/
           name: token-amazonaws-com
           readOnly: true
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
       securityContext:
         fsGroup: 10001
       serviceAccountName: karpenter
+      tolerations:
+      - key: node.cloudprovider.kubernetes.io/uninitialized
+        operator: Exists
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+      - key: node-role.kubernetes.io/master
+        operator: Exists
       volumes:
       - name: token-amazonaws-com
         projected:
