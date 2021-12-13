@@ -63,6 +63,10 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 		return nil, fmt.Errorf("error getting custom IAM role %q: %w", fqn, err)
 	}
 
+	if role.Deleted {
+		return nil, nil
+	}
+
 	actual := &IAMRole{}
 	actual.Project = e.Project
 	actual.RoleID = e.RoleID

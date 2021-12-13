@@ -116,6 +116,25 @@ func (b *ServiceAccountsBuilder) addInstanceGroupServiceAccountPermissions(c *fi
 		//  * compute.instances.list (for discovery; we don't need in the case of a load balancer or DNS)
 
 		// We use the GCE viewer role
+		// roleID := b.SafeObjectName("nodes")
+
+		// // roleIDs follow different rules:
+		// // A role ID may contain alphanumeric characters, underscores (_), and periods (.). It must contain a minimum of 3 characters and a maximum of 64 characters.
+		// roleID = strings.ReplaceAll(roleID, "-", ".")
+
+		// c.AddTask(&gcetasks.IAMRole{
+		// 	Name:      s("nodes"),
+		// 	Lifecycle: b.Lifecycle,
+
+		// 	Project: s(b.ProjectID),
+		// 	RoleID:  s(roleID),
+		// 	Permissions: []string{
+		// 		"compute.zones.list",
+		// 		"compute.instances.list",
+		// 	},
+		// })
+
+		// We could also use  Role: s("roles/compute.viewer"),
 
 		c.AddTask(&gcetasks.ProjectIAMBinding{
 			Name:      s("serviceaccount-nodes"),
@@ -124,6 +143,8 @@ func (b *ServiceAccountsBuilder) addInstanceGroupServiceAccountPermissions(c *fi
 			Project: s(b.ProjectID),
 			Member:  s(member),
 			Role:    s("roles/compute.viewer"),
+			// Role:    s("projects/" + b.ProjectID + "/roles/" + roleID),
+			Role: s("roles/compute.viewer"),
 		})
 	}
 	return nil
