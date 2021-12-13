@@ -80,9 +80,8 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|In-tree.Volumes.\\[Driver:.gcepd\\].*topology.should.provision.a.volume.and.schedule.a.pod.with.AllowedTopologies"
 	}
 
-	if cluster.Spec.CloudProvider == "aws" && utils.IsIPv6CIDR(cluster.Spec.NonMasqueradeCIDR) {
-		// AWS VPC Classic ELBs are IPv4 only
-		// ref: https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-internet-facing-load-balancers.html#internet-facing-ip-addresses
+	if strings.Contains(cluster.Spec.KubernetesVersion, "v1.23.") && cluster.Spec.CloudProvider == "aws" && utils.IsIPv6CIDR(cluster.Spec.NonMasqueradeCIDR) {
+		// ref: https://github.com/kubernetes/kubernetes/pull/106992
 		skipRegex += "|should.not.disrupt.a.cloud.load-balancer.s.connectivity.during.rollout"
 	}
 
