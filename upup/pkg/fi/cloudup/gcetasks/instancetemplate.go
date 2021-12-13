@@ -454,7 +454,7 @@ type terraformInstanceTemplate struct {
 	NamePrefix            string                                   `json:"name_prefix" cty:"name_prefix"`
 	CanIPForward          bool                                     `json:"can_ip_forward" cty:"can_ip_forward"`
 	MachineType           string                                   `json:"machine_type,omitempty" cty:"machine_type"`
-	ServiceAccount        *terraformServiceAccount                 `json:"service_account,omitempty" cty:"service_account"`
+	ServiceAccount        *terraformTemplateServiceAccount         `json:"service_account,omitempty" cty:"service_account"`
 	Scheduling            *terraformScheduling                     `json:"scheduling,omitempty" cty:"scheduling"`
 	Disks                 []*terraformInstanceTemplateAttachedDisk `json:"disk,omitempty" cty:"disk"`
 	Labels                map[string]string                        `json:"labels,omitempty" cty:"labels"`
@@ -464,7 +464,7 @@ type terraformInstanceTemplate struct {
 	Tags                  []string                                 `json:"tags,omitempty" cty:"tags"`
 }
 
-type terraformServiceAccount struct {
+type terraformTemplateServiceAccount struct {
 	Email  string   `json:"email" cty:"email"`
 	Scopes []string `json:"scopes" cty:"scopes"`
 }
@@ -546,7 +546,7 @@ func addMetadata(target *terraform.TerraformTarget, name string, metadata *compu
 	return m, nil
 }
 
-func addServiceAccounts(serviceAccounts []*compute.ServiceAccount) *terraformServiceAccount {
+func addServiceAccounts(serviceAccounts []*compute.ServiceAccount) *terraformTemplateServiceAccount {
 	// there's an inconsistency here- GCP only lets you have one service account per VM
 	// terraform gets it right, but the golang api doesn't. womp womp :(
 	if len(serviceAccounts) != 1 {
@@ -554,7 +554,7 @@ func addServiceAccounts(serviceAccounts []*compute.ServiceAccount) *terraformSer
 	}
 	klog.Infof("adding csa: %v", serviceAccounts[0].Email)
 	csa := serviceAccounts[0]
-	tsa := &terraformServiceAccount{
+	tsa := &terraformTemplateServiceAccount{
 		Email:  csa.Email,
 		Scopes: csa.Scopes,
 	}
