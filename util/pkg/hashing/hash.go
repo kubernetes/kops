@@ -71,7 +71,7 @@ func (ha HashAlgorithm) NewHasher() hash.Hash {
 }
 
 func (ha HashAlgorithm) FromString(s string) (*Hash, error) {
-	l := -1
+	var l int
 	switch ha {
 	case HashAlgorithmMD5:
 		l = 32
