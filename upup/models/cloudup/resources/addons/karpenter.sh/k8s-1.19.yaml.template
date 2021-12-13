@@ -671,7 +671,7 @@ spec:
     securityGroupSelector:
       Name: nodes.{{ ClusterName }}
     subnetSelector:
-      kops.k8s.io/karpenter/{{ $name }}: "*"
+      kubernetes.io/role/internal-elb: 1
   ttlSecondsAfterEmpty: 30
 {{ end }}
 {{ end }}
