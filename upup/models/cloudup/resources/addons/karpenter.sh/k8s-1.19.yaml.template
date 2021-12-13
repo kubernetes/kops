@@ -439,15 +439,15 @@ spec:
     spec:
       priorityClassName: system-cluster-critical
       serviceAccountName: karpenter
+      dnsPolicy: Default
       containers:
         - name: manager
           image: public.ecr.aws/karpenter/controller:v0.5.3
           resources: 
             limits:
-              cpu: 1
               memory: 1Gi
             requests:
-              cpu: 1
+              cpu: 500m
               memory: 1Gi
           ports:
             - name: metrics
