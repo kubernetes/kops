@@ -244,15 +244,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			default:
 				klog.V(2).Infof("unable to properly tag subnet %q because it has unknown type %q. Load balancers may be created in incorrect subnets", subnetSpec.Name, subnetSpec.Type)
 			}
-			for _, ig := range b.InstanceGroups {
-				if ig.Spec.Manager == kops.InstanceManagerKarpenter {
-					for _, igSubnet := range ig.Spec.Subnets {
-						if igSubnet == subnetSpec.Name {
-							tags["kops.k8s.io/karpenter/"+ig.Name] = "1"
-						}
-					}
-				}
-			}
 		} else {
 			klog.V(2).Infof("skipping subnet tags. Ensure these are maintained externally.")
 		}
