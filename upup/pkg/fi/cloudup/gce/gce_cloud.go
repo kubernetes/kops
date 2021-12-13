@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"golang.org/x/oauth2/google"
+	"google.golang.org/api/cloudresourcemanager/v1"
 	compute "google.golang.org/api/compute/v1"
 	"google.golang.org/api/iam/v1"
 	oauth2 "google.golang.org/api/oauth2/v2"
@@ -50,6 +51,9 @@ type GCECloud interface {
 
 	// ServiceAccount returns the email for the service account that the instances will run under
 	ServiceAccount() (string, error)
+
+	// CloudResourceManager returns the client for the cloudresourcemanager API
+	CloudResourceManager() *cloudresourcemanager.Service
 }
 
 type gceCloudImplementation struct {
@@ -57,6 +61,9 @@ type gceCloudImplementation struct {
 	storage *storage.Service
 	iam     *iam.Service
 	dns     *dnsClientImpl
+
+	// cloudResourceManager is the client for the cloudresourcemanager API
+	cloudResourceManager *cloudresourcemanager.Service
 
 	region  string
 	project string
@@ -144,6 +151,12 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 	}
 	c.dns = dnsClient
 
+	cloudResourceManager, err := cloudresourcemanager.NewService(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error building cloudresourcemanager API client: %w", err)
+	}
+	c.cloudResourceManager = cloudResourceManager
+
 	CacheGCECloudInstance(region, project, c)
 
 	{
@@ -193,9 +206,14 @@ func (c *gceCloudImplementation) IAM() *iam.Service {
 	return c.iam
 }
 
-// NameService returns the DNS client
+// CloudDNS returns the DNS client
 func (c *gceCloudImplementation) CloudDNS() DNSClient {
 	return c.dns
+}
+
+// CloudResourceManager returns the client for the cloudresourcemanager API
+func (c *gceCloudImplementation) CloudResourceManager() *cloudresourcemanager.Service {
+	return c.cloudResourceManager
 }
 
 // Region returns private struct element region.

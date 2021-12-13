@@ -882,6 +882,7 @@ golang.org/x/xerrors/internal
 gomodules.xyz/jsonpatch/v2
 # google.golang.org/api v0.57.0
 ## explicit; go 1.11
+google.golang.org/api/cloudresourcemanager/v1
 google.golang.org/api/compute/v0.alpha
 google.golang.org/api/compute/v0.beta
 google.golang.org/api/compute/v1
