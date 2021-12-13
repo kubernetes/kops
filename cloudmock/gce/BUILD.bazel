@@ -9,6 +9,7 @@ go_library(
         "//cloudmock/gce/mockcompute:go_default_library",
         "//cloudmock/gce/mockdns:go_default_library",
         "//cloudmock/gce/mockiam:go_default_library",
+        "//cloudmock/gce/mockstorage:go_default_library",
         "//dnsprovider/pkg/dnsprovider:go_default_library",
         "//dnsprovider/pkg/dnsprovider/providers/google/clouddns:go_default_library",
         "//pkg/apis/kops:go_default_library",
