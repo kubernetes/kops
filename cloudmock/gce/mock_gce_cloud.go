@@ -26,6 +26,7 @@ import (
 	"k8s.io/klog/v2"
 	mockcompute "k8s.io/kops/cloudmock/gce/mockcompute"
 	"k8s.io/kops/cloudmock/gce/mockdns"
+	"k8s.io/kops/cloudmock/gce/mockiam"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	dnsproviderclouddns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
 	"k8s.io/kops/pkg/apis/kops"
@@ -42,6 +43,7 @@ type MockGCECloud struct {
 
 	computeClient *mockcompute.MockClient
 	dnsClient     *mockdns.MockClient
+	iamClient     *iam.Service
 }
 
 var _ gce.GCECloud = &MockGCECloud{}
@@ -53,6 +55,7 @@ func InstallMockGCECloud(region string, project string) *MockGCECloud {
 		region:        region,
 		computeClient: mockcompute.NewMockClient(project),
 		dnsClient:     mockdns.NewMockClient(),
+		iamClient:     mockiam.New(project),
 	}
 	gce.CacheGCECloudInstance(region, project, c)
 	return c
@@ -109,8 +112,7 @@ func (c *MockGCECloud) Storage() *storage.Service {
 
 // IAM returns the IAM client
 func (c *MockGCECloud) IAM() *iam.Service {
-	klog.Fatalf("MockGCECloud::IAM not implemented")
-	return nil
+	return c.iamClient
 }
 
 // CloudDNS returns the DNS client
