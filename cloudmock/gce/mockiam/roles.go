@@ -17,8 +17,11 @@ limitations under the License.
 package mockiam
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"sync"
 
@@ -70,7 +73,44 @@ func (s *roles) Create(projectID string, request *http.Request) (*http.Response,
 		return errorResponse(http.StatusConflict)
 	}
 
+	if existing.Deleted {
+		return failedPrecondition("You can't create a role with role_id (%s) where there is an existing role with that role_id in a deleted state.", req.RoleId)
+	}
 	s.roles[req.RoleId] = req.Role
 
 	return jsonResponse(req.Role)
+}
+
+type errorResponseData struct {
+	Error errorInfo `json:"error"`
+}
+
+type errorInfo struct {
+	Code    int    `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
+	Status  string `json:"status,omitempty"`
+}
+
+func failedPrecondition(message string, args ...interface{}) (*http.Response, error) {
+	statusCode := http.StatusBadRequest
+
+	e := errorResponseData{
+		Error: errorInfo{
+			Code:    statusCode,
+			Message: fmt.Sprintf(message, args...),
+			Status:  "FAILED_PRECONDITION",
+		},
+	}
+
+	b, err := json.Marshal(e)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build error response: %w", err)
+	}
+	r := &http.Response{
+		Status:     http.StatusText(statusCode),
+		StatusCode: statusCode,
+	}
+	r.Header.Add("Content-Type", "application/json; charset=UTF-8")
+	r.Body = ioutil.NopCloser(bytes.NewReader(b))
+	return r, nil
 }
