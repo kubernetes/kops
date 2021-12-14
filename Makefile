@@ -417,6 +417,10 @@ verify-gendocs: ${KOPS}
 verify-bazel:
 	hack/verify-bazel.sh
 
+.PHONY: verify-golangci-lint
+verify-golangci-lint:
+	hack/verify-golangci-lint.sh
+
 .PHONY: verify-staticcheck
 verify-staticcheck:
 	hack/verify-staticcheck.sh
