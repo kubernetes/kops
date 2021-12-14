@@ -1087,8 +1087,6 @@ spec:
       serviceAccount: hubble-relay
       serviceAccountName: hubble-relay
       terminationGracePeriodSeconds: 0
-      tolerations:
-      - operator: Exists
       volumes:
       - hostPath:
           path: /var/run/cilium
