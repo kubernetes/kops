@@ -661,6 +661,9 @@ spec:
               machineType:
                 description: MachineType is the instance class
                 type: string
+              manager:
+                description: Manager determines what is managing the node lifecycle
+                type: string
               maxPrice:
                 description: MaxPrice indicates this is a spot-pricing group, with
                   the specified value as our max-price bid

@@ -21,11 +21,12 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+	"k8s.io/legacy-cloud-providers/aws"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/legacy-cloud-providers/aws"
 )
 
 // NetworkModelBuilder configures network objects

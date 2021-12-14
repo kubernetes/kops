@@ -43,6 +43,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/yaml"
+
 	kopscontrollerconfig "k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/kops"
 	apiModel "k8s.io/kops/pkg/apis/kops/model"
@@ -59,7 +61,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
 	"k8s.io/kops/util/pkg/env"
-	"sigs.k8s.io/yaml"
 )
 
 // TemplateFunctions provides a collection of methods used throughout the templates
@@ -279,6 +280,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 		dest["EnableSQSTerminationDraining"] = func() bool { return *cluster.Spec.NodeTerminationHandler.EnableSQSTerminationDraining }
 	}
+
+	dest["ArchitectureOfAMI"] = tf.architectureOfAMI
+
+	dest["ParseTaint"] = parseTaint
 
 	return nil
 }
@@ -734,4 +739,49 @@ func (tf *TemplateFunctions) GetNodeInstanceGroups() map[string]kops.InstanceGro
 		}
 	}
 	return nodegroups
+}
+
+func (tf *TemplateFunctions) architectureOfAMI(amiID string) string {
+	image, _ := tf.cloud.(awsup.AWSCloud).ResolveImage(amiID)
+	switch *image.Architecture {
+	case "x86_64":
+		return "amd64"
+	}
+	return "arm64"
+}
+
+// parseTaint takes a string and returns a map of its value
+// it mimics the function from https://github.com/kubernetes/kubernetes/blob/master/pkg/util/taints/taints.go
+// but returns a map instead of a v1.Taint
+func parseTaint(st string) (map[string]string, error) {
+	taint := make(map[string]string)
+
+	var key string
+	var value string
+	var effect string
+
+	parts := strings.Split(st, ":")
+	switch len(parts) {
+	case 1:
+		key = parts[0]
+	case 2:
+		effect = parts[1]
+
+		partsKV := strings.Split(parts[0], "=")
+		if len(partsKV) > 2 {
+			return taint, fmt.Errorf("invalid taint spec: %v", st)
+		}
+		key = partsKV[0]
+		if len(partsKV) == 2 {
+			value = partsKV[1]
+		}
+	default:
+		return taint, fmt.Errorf("invalid taint spec: %v", st)
+	}
+
+	taint["key"] = key
+	taint["value"] = value
+	taint["effect"] = effect
+
+	return taint, nil
 }

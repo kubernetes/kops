@@ -1319,6 +1319,12 @@ spec:
                   kube-proxy on the master  * enable debugging handlers on the master,
                   so kubectl logs works'
                 type: boolean
+              karpenter:
+                description: Karpenter defines the Karpenter configuration.
+                properties:
+                  enabled:
+                    type: boolean
+                type: object
               keyStore:
                 description: KeyStore is the VFS path to where SSL keys and certificates
                   are stored

@@ -18,6 +18,7 @@ package instancegroups
 
 import (
 	"k8s.io/apimachinery/pkg/util/intstr"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
@@ -47,7 +48,7 @@ func resolveSettings(cluster *kops.Cluster, group *kops.InstanceGroup, numInstan
 
 	if rollingUpdate.MaxSurge == nil {
 		val := intstr.FromInt(0)
-		if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderAWS && !featureflag.Spotinst.Enabled() {
+		if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderAWS && !featureflag.Spotinst.Enabled() && group.Spec.Manager != kops.InstanceManagerKarpenter {
 			val = intstr.FromInt(1)
 		}
 		rollingUpdate.MaxSurge = &val

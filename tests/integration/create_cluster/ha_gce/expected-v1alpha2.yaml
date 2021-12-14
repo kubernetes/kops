@@ -74,6 +74,7 @@ metadata:
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
   machineType: n1-standard-1
+  manager: CloudGroup
   maxSize: 1
   minSize: 1
   nodeLabels:
@@ -97,6 +98,7 @@ metadata:
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
   machineType: n1-standard-1
+  manager: CloudGroup
   maxSize: 1
   minSize: 1
   nodeLabels:
@@ -120,6 +122,7 @@ metadata:
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
   machineType: n1-standard-1
+  manager: CloudGroup
   maxSize: 1
   minSize: 1
   nodeLabels:
@@ -143,6 +146,7 @@ metadata:
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
   machineType: n1-standard-2
+  manager: CloudGroup
   maxSize: 1
   minSize: 1
   nodeLabels:
@@ -166,6 +170,7 @@ metadata:
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
   machineType: n1-standard-2
+  manager: CloudGroup
   maxSize: 1
   minSize: 1
   nodeLabels:
@@ -189,6 +194,7 @@ metadata:
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
   machineType: n1-standard-2
+  manager: CloudGroup
   maxSize: 1
   minSize: 1
   nodeLabels:

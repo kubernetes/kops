@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
@@ -213,6 +214,12 @@ type ClusterSpec struct {
 	ServiceAccountIssuerDiscovery *ServiceAccountIssuerDiscoveryConfig `json:"serviceAccountIssuerDiscovery,omitempty"`
 	// SnapshotController defines the CSI Snapshot Controller configuration.
 	SnapshotController *SnapshotControllerConfig `json:"snapshotController,omitempty"`
+	// Karpenter defines the Karpenter configuration.
+	Karpenter *KarpenterConfig `json:"karpenter,omitempty"`
+}
+
+type KarpenterConfig struct {
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 // ServiceAccountIssuerDiscoveryConfig configures an OIDC Issuer.

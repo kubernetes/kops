@@ -35,6 +35,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/util/stringorslice"
@@ -54,6 +55,10 @@ type Policy struct {
 	clusterTaggedCreateAction sets.String
 	Statement                 []*Statement
 	Version                   string
+}
+
+func (p *Policy) AddUnconditionalActions(actions ...string) {
+	p.unconditionalAction.Insert(actions...)
 }
 
 // AsJSON converts the policy document to JSON format (parsable by AWS)
