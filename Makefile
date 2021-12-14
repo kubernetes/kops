@@ -421,10 +421,6 @@ verify-bazel:
 verify-golangci-lint:
 	hack/verify-golangci-lint.sh
 
-.PHONY: verify-staticcheck
-verify-staticcheck:
-	hack/verify-staticcheck.sh
-
 .PHONY: verify-shellcheck
 verify-shellcheck:
 	hack/verify-shellcheck.sh
@@ -444,7 +440,7 @@ verify-hashes:
 # ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
 .PHONY: ci
-ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerplate verify-bazel verify-versions verify-misspelling verify-shellcheck verify-staticcheck verify-terraform nodeup examples test | verify-gendocs verify-apimachinery verify-codegen
+ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerplate verify-bazel verify-versions verify-misspelling verify-shellcheck verify-golangci-lint verify-terraform nodeup examples test | verify-gendocs verify-apimachinery verify-codegen
 	echo "Done!"
 
 # we skip tasks that rely on bazel and are covered by other jobs
