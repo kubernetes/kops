@@ -125,14 +125,6 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 		)
 	}
 
-	// Running Flannel on CentOS7 / rhel7 needs custom settings
-	if b.Cluster.Spec.Networking.Flannel != nil {
-		proxyMode := b.Cluster.Spec.KubeProxy.ProxyMode
-		if proxyMode == "" {
-			proxyMode = "iptables"
-		}
-	}
-
 	if b.CloudProvider == kops.CloudProviderAWS {
 		sysctls = append(sysctls,
 			"# AWS settings",
