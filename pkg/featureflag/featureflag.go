@@ -90,6 +90,8 @@ var (
 	TerraformManagedFiles = new("TerraformManagedFiles", Bool(true))
 	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha.
 	AlphaAllowGCE = new("AlphaAllowGCE", Bool(false))
+	// Karpenter enables karpenter-managed Instance Groups
+	Karpenter = new("Karpenter", Bool(false))
 )
 
 // FeatureFlag defines a feature flag

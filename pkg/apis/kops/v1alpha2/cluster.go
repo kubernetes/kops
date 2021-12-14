@@ -211,6 +211,12 @@ type ClusterSpec struct {
 	ServiceAccountIssuerDiscovery *ServiceAccountIssuerDiscoveryConfig `json:"serviceAccountIssuerDiscovery,omitempty"`
 	// SnapshotController defines the CSI Snapshot Controller configuration.
 	SnapshotController *SnapshotControllerConfig `json:"snapshotController,omitempty"`
+	// Karpenter defines the Karpenter configuration.
+	Karpenter *KarpenterConfig `json:"karpenter,omitempty"`
+}
+
+type KarpenterConfig struct {
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 // ServiceAccountIssuerDiscoveryConfig configures an OIDC Issuer.
