@@ -69,6 +69,7 @@ spec:
     httpPutResponseHopLimit: 3
     httpTokens: required
   machineType: m3.medium
+  manager: CloudGroup
   maxSize: 1
   minSize: 1
   nodeLabels:
@@ -92,6 +93,7 @@ spec:
     httpPutResponseHopLimit: 1
     httpTokens: required
   machineType: t2.medium
+  manager: CloudGroup
   maxSize: 1
   minSize: 1
   nodeLabels:

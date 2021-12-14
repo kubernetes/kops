@@ -594,6 +594,26 @@ func TestExternalDNSIRSA(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+func TestKarpenter(t *testing.T) {
+	featureflag.ParseFlags("+Karpenter")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-Karpenter")
+	}
+	defer unsetFeatureFlags()
+
+	test := newIntegrationTest("minimal.example.com", "karpenter").
+		withOIDCDiscovery().
+		withAddons(dnsControllerAddon).
+		withServiceAccountRole("dns-controller.kube-system", true).
+		withAddons("karpenter.sh-k8s-1.19").
+		withServiceAccountRole("karpenter.kube-system", true)
+	test.expectTerraformFilenames = append(test.expectTerraformFilenames,
+		"aws_launch_template_karpenter-nodes.minimal.example.com_user_data",
+		"aws_s3_bucket_object_nodeupconfig-karpenter-nodes_content",
+	)
+	test.runTestTerraformAWS(t)
+}
+
 // TestSharedSubnet runs the test on a configuration with a shared subnet (and VPC)
 func TestSharedSubnet(t *testing.T) {
 	newIntegrationTest("sharedsubnet.example.com", "shared_subnet").

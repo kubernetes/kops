@@ -51,6 +51,8 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	k8s_aws "k8s.io/legacy-cloud-providers/aws"
+
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	dnsproviderroute53 "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
 	"k8s.io/kops/pkg/apis/kops"
@@ -60,7 +62,6 @@ import (
 	identity_aws "k8s.io/kops/pkg/nodeidentity/aws"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
-	k8s_aws "k8s.io/legacy-cloud-providers/aws"
 )
 
 // By default, aws-sdk-go only retries 3 times, which doesn't give
@@ -692,7 +693,125 @@ func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceg
 		return sgroups, nil
 	}
 
-	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
+	cloudGroups, err := getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
+	if err != nil {
+		return nil, err
+	}
+	karpenterGroups, err := getKarpenterGroups(c, cluster, instancegroups, nodes)
+	if err != nil {
+		return nil, err
+	}
+
+	for name, group := range karpenterGroups {
+		cloudGroups[name] = group
+	}
+	return cloudGroups, nil
+}
+
+func getKarpenterGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	cloudGroups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	for _, ig := range instancegroups {
+		if ig.Spec.Manager == kops.InstanceManagerKarpenter {
+			group, err := buildKarpenterGroup(c, cluster, ig, nodes)
+			if err != nil {
+				return nil, err
+			}
+			cloudGroups[ig.ObjectMeta.Name] = group
+		}
+	}
+	return cloudGroups, nil
+}
+
+func buildKarpenterGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.InstanceGroup, nodes []v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
+	instances := make(map[string]*ec2.Instance)
+	updatedInstances := make(map[string]*ec2.Instance)
+	clusterName := c.Tags()[TagClusterName]
+	var version string
+
+	{
+		result, err := c.EC2().DescribeLaunchTemplates(&ec2.DescribeLaunchTemplatesInput{
+			Filters: []*ec2.Filter{
+				NewEC2Filter("tag:"+identity_aws.CloudTagInstanceGroupName, ig.ObjectMeta.Name),
+				NewEC2Filter("tag:"+TagClusterName, clusterName),
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		lt := result.LaunchTemplates[0]
+		versionNumber := *lt.LatestVersionNumber
+		version = strconv.Itoa(int(versionNumber))
+
+	}
+
+	karpenterGroup := &cloudinstances.CloudInstanceGroup{
+		InstanceGroup: ig,
+		HumanName:     ig.ObjectMeta.Name,
+	}
+	{
+		req := &ec2.DescribeInstancesInput{
+			Filters: []*ec2.Filter{
+				NewEC2Filter("tag:"+identity_aws.CloudTagInstanceGroupName, ig.ObjectMeta.Name),
+				NewEC2Filter("tag:"+TagClusterName, clusterName),
+				NewEC2Filter("instance-state-name", "pending", "running", "stopping", "stopped"),
+			},
+		}
+
+		result, err := c.EC2().DescribeInstances(req)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, r := range result.Reservations {
+			for _, i := range r.Instances {
+				id := aws.StringValue(i.InstanceId)
+				instances[id] = i
+			}
+		}
+	}
+
+	klog.Infof("found %d karpenter instances", len(instances))
+
+	{
+		req := &ec2.DescribeInstancesInput{
+			Filters: []*ec2.Filter{
+				NewEC2Filter("tag:"+identity_aws.CloudTagInstanceGroupName, ig.ObjectMeta.Name),
+				NewEC2Filter("tag:"+TagClusterName, clusterName),
+				NewEC2Filter("instance-state-name", "pending", "running", "stopping", "stopped"),
+				NewEC2Filter("tag:aws:ec2launchtemplate:version", version),
+			},
+		}
+
+		result, err := c.EC2().DescribeInstances(req)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, r := range result.Reservations {
+			for _, i := range r.Instances {
+				id := aws.StringValue(i.InstanceId)
+				updatedInstances[id] = i
+			}
+		}
+	}
+	klog.Infof("found %d updated instances", len(updatedInstances))
+
+	{
+		for _, instance := range instances {
+			id := *instance.InstanceId
+			_, ready := updatedInstances[id]
+			var status string
+			if ready {
+				status = cloudinstances.CloudInstanceStatusUpToDate
+			} else {
+				status = cloudinstances.CloudInstanceStatusNeedsUpdate
+			}
+			cloudInstance, _ := karpenterGroup.NewCloudInstance(id, status, nodeMap[id])
+			addCloudInstanceData(cloudInstance, instance)
+		}
+	}
+	return karpenterGroup, nil
 }
 
 func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
