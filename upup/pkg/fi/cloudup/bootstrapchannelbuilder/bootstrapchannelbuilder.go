@@ -1070,7 +1070,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 				Name:     fi.String(key),
 				Manifest: fi.String(location),
 				Selector: map[string]string{"k8s-addon": key},
-				NeedsPKI: true,
 				Id:       id,
 			})
 			if b.UseServiceAccountExternalPermissions() {
