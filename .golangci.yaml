@@ -29,11 +29,16 @@ linters-settings: # please keep this alphabetized
     go: "1.17"
     checks: [
       "all",
-      "-S1*",    # TODO(fix) Omit code simplifications for now.
-      "-ST1*",   # Mostly stylistic, redundant w/ golint
-      "-SA5011", # TODO(fix) Possible nil pointer dereference
-      "-SA1019", # TODO(fix) Using a deprecated function, variable, constant or field
-      "-SA2002"  # TODO(fix) Called testing.T.FailNow or SkipNow in a goroutine, which isn’t allowed
+      "-ST1000",  # Incorrect or missing package comment
+      "-ST1003",  # Poorly chosen identifier
+      "-ST1005",  # Incorrectly formatted error string
+      "-ST1006",  # Poorly chosen receiver name
+      "-ST1012",  # Poorly chosen name for error variable
+      "-ST1016",  # Use consistent method receiver names
+      "-ST1020",  # Comment on exported method should be of the form ...
+      "-ST1021",  # Comment on exported type should be of the form ...
+      "-ST1022",  # Comment on exported const should be of the form ...
+      "-SA5011"   # TODO(fix) Possible nil pointer dereference
     ]
   unused:
     go: "1.17"
