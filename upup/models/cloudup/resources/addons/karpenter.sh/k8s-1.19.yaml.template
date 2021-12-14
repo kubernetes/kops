@@ -672,6 +672,7 @@ spec:
       Name: nodes.{{ ClusterName }}
     subnetSelector:
       kubernetes.io/role/internal-elb: "1"
+      KubernetesCluster: {{ ClusterName }}
   ttlSecondsAfterEmpty: 30
 {{ end }}
 {{ end }}
