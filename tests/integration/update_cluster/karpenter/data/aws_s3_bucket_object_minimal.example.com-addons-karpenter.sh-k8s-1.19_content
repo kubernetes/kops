@@ -868,6 +868,7 @@ spec:
     securityGroupSelector:
       Name: nodes.minimal.example.com
     subnetSelector:
+      KubernetesCluster: minimal.example.com
       kubernetes.io/role/internal-elb: "1"
   requirements:
   - key: karpenter.sh/capacity-type
