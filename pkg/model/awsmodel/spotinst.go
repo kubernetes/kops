@@ -680,7 +680,7 @@ func (b *SpotInstanceGroupModelBuilder) buildPublicIpOpts(ig *kops.InstanceGroup
 		subnetType = subnet.Type
 	}
 
-	associatePublicIP := true
+	var associatePublicIP bool
 	switch subnetType {
 	case kops.SubnetTypePublic, kops.SubnetTypeUtility:
 		associatePublicIP = true
