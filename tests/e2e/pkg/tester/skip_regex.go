@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	skipRegexBase = "\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[Driver:.nfs\\]|Gluster|RuntimeClass|RuntimeHandler"
+	skipRegexBase = "\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[Driver:.nfs\\]|Gluster"
 )
 
 func (t *Tester) setSkipRegexFlag() error {
@@ -71,6 +71,10 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|Firewall"
 		// kube-dns tests are not skipped automatically if a cluster uses CoreDNS instead
 		skipRegex += "|kube-dns"
+		// this tests assumes a custom config for containerd:
+		// https://github.com/kubernetes/test-infra/blob/578d86a7be187214be6ccd60e6ea7317b51aeb15/jobs/e2e_node/containerd/config.toml#L19-L21
+		// ref: https://github.com/kubernetes/kubernetes/pull/104803
+		skipRegex += "|RuntimeClass.should.run"
 		// this test assumes the cluster runs COS but kOps uses Ubuntu by default
 		// ref: https://github.com/kubernetes/test-infra/pull/22190
 		skipRegex += "|should.be.mountable.when.non-attachable"
