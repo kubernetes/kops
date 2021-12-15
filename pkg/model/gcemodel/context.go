@@ -17,8 +17,10 @@ limitations under the License.
 package gcemodel
 
 import (
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 )
@@ -97,4 +99,15 @@ func (c *GCEModelContext) NetworkingIsIPAlias() bool {
 
 func (c *GCEModelContext) NetworkingIsGCERoutes() bool {
 	return c.Cluster.Spec.Networking != nil && c.Cluster.Spec.Networking.Kubenet != nil
+}
+
+// LinkToServiceAccount returns a link to the GCE ServiceAccount object for VMs in the given role
+func (c *GCEModelContext) LinkToServiceAccount(ig *kops.InstanceGroup) *gcetasks.ServiceAccount {
+	// This is a legacy setting because the nodes & control-plane run under the same serviceaccount
+	klog.Warningf("using legacy spec.cloudConfig.gceServiceAccount=%q setting", c.Cluster.Spec.CloudConfig.GCEServiceAccount)
+	return &gcetasks.ServiceAccount{
+		Name:   s("shared"),
+		Email:  &c.Cluster.Spec.CloudConfig.GCEServiceAccount,
+		Shared: fi.Bool(true),
+	}
 }
