@@ -546,9 +546,11 @@ func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstance) error {
 		return fmt.Errorf("id was not set on CloudInstance: %v", i)
 	}
 
-	err := deregisterInstanceFromClassicLoadBalancer(c, i)
-	if err != nil {
-		return fmt.Errorf("failed to deregister instance from loadBalancer before terminating: %v", err)
+	if i.CloudInstanceGroup.InstanceGroup.Spec.Manager != kops.InstanceManagerKarpenter {
+		err := deregisterInstanceFromClassicLoadBalancer(c, i)
+		if err != nil {
+			return fmt.Errorf("failed to deregister instance from loadBalancer before terminating: %v", err)
+		}
 	}
 
 	request := &ec2.TerminateInstancesInput{
@@ -576,7 +578,6 @@ func deregisterInstanceFromClassicLoadBalancer(c AWSCloud, i *cloudinstances.Clo
 	asgDetails, err := c.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{
 		AutoScalingGroupNames: []*string{asg.AutoScalingGroupName},
 	})
-
 	if err != nil {
 		return fmt.Errorf("error describing autoScalingGroups: %v", err)
 	}
@@ -599,7 +600,6 @@ func deregisterInstanceFromClassicLoadBalancer(c AWSCloud, i *cloudinstances.Clo
 					InstanceId: aws.String(i.ID),
 				}},
 			})
-
 			if err != nil {
 				return fmt.Errorf("error describing instance health: %v", err)
 			}
