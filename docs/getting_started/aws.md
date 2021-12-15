@@ -28,6 +28,8 @@ AmazonRoute53FullAccess
 AmazonS3FullAccess
 IAMFullAccess
 AmazonVPCFullAccess
+AmazonSQSFullAccess
+AmazonEventBridgeFullAccess
 ```
 
 You can create the kOps IAM user from the command line using the following:
