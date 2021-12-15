@@ -65,7 +65,7 @@ type InstanceTemplate struct {
 	AliasIPRanges map[string]string
 
 	Scopes          []string
-	ServiceAccounts []string
+	ServiceAccounts []*ServiceAccount
 
 	Metadata    map[string]fi.Resource
 	MachineType *string
@@ -164,7 +164,9 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 			for _, scope := range serviceAccount.Scopes {
 				actual.Scopes = append(actual.Scopes, scopeToShortForm(scope))
 			}
-			actual.ServiceAccounts = append(actual.ServiceAccounts, serviceAccount.Email)
+			actual.ServiceAccounts = append(actual.ServiceAccounts, &ServiceAccount{
+				Email: &serviceAccount.Email,
+			})
 		}
 
 		// When we deal with additional disks (local disks), we'll need to map them like this...
@@ -306,25 +308,14 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 			scopes = append(scopes, s)
 		}
 	}
-	serviceAccounts := []*compute.ServiceAccount{
-		{
-			Email:  e.ServiceAccounts[0],
+
+	var serviceAccounts []*compute.ServiceAccount
+	for _, sa := range e.ServiceAccounts {
+		serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
+			Email:  fi.StringValue(sa.Email),
 			Scopes: scopes,
-		},
+		})
 	}
-	// if e.ServiceAccounts != nil {
-	//	for _, s := range e.ServiceAccounts {
-	//		serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
-	//			Email:  s,
-	//			Scopes: scopes,
-	//		})
-	//	}
-	// } else {
-	//	serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
-	//		Email:  "default",
-	//		Scopes: scopes,
-	//	})
-	// }
 
 	var metadataItems []*compute.MetadataItems
 	for key, r := range e.Metadata {
