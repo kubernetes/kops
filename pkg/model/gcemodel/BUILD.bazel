@@ -10,6 +10,7 @@ go_library(
         "external_access.go",
         "firewall.go",
         "network.go",
+        "service_accounts.go",
         "storageacl.go",
     ],
     importpath = "k8s.io/kops/pkg/model/gcemodel",

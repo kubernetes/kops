@@ -606,6 +606,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
 				&gcemodel.StorageAclBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: storageACLLifecycle},
 				&gcemodel.AutoscalingGroupModelBuilder{GCEModelContext: gceModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
+				&gcemodel.ServiceAccountsBuilder{GCEModelContext: gceModelContext, Lifecycle: clusterLifecycle},
 			)
 		case kops.CloudProviderAzure:
 			azureModelContext := &azuremodel.AzureModelContext{
