@@ -41,7 +41,7 @@ type Instance struct {
 	Preemptible    *bool
 	Image          *string
 	Disks          map[string]*Disk
-	ServiceAccount *string
+	ServiceAccount *ServiceAccount
 
 	CanIPForward *bool
 	IPAddress    *Address
@@ -263,7 +263,7 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*s
 				scopes = append(scopes, s)
 			}
 			serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
-				Email:  fi.StringValue(e.ServiceAccount),
+				Email:  fi.StringValue(e.ServiceAccount.Email),
 				Scopes: scopes,
 			})
 		}
