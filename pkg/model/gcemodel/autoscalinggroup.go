@@ -164,9 +164,8 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				klog.Warning("Use a pre-created Service Account with the flag: --gce-service-account=account@projectname.iam.gserviceaccount.com")
 				b.Cluster.Spec.CloudConfig.GCEServiceAccount = "default"
 			}
+			t.ServiceAccounts = append(t.ServiceAccounts, b.LinkToServiceAccount(ig))
 
-			klog.Infof("gsa: %v", b.Cluster.Spec.CloudConfig.GCEServiceAccount)
-			t.ServiceAccounts = []string{b.Cluster.Spec.CloudConfig.GCEServiceAccount}
 			//labels, err := b.CloudTagsForInstanceGroup(ig)
 			//if err != nil {
 			//	return fmt.Errorf("error building cloud tags: %v", err)
