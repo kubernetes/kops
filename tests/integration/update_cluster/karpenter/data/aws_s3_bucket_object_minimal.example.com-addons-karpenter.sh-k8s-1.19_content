@@ -859,9 +859,6 @@ metadata:
     k8s-addon: karpenter.sh
   name: karpenter-nodes
 spec:
-  limits:
-    resources:
-      cpu: 1000
   provider:
     instanceProfile: nodes.minimal.example.com
     launchTemplate: karpenter-nodes.minimal.example.com
