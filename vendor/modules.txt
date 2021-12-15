@@ -1567,8 +1567,8 @@ oras.land/oras-go/pkg/auth/docker
 oras.land/oras-go/pkg/content
 oras.land/oras-go/pkg/context
 oras.land/oras-go/pkg/oras
-# sigs.k8s.io/controller-runtime v0.11.0-beta.0
-## explicit; go 1.16
+# sigs.k8s.io/controller-runtime v0.11.0
+## explicit; go 1.17
 sigs.k8s.io/controller-runtime
 sigs.k8s.io/controller-runtime/pkg/builder
 sigs.k8s.io/controller-runtime/pkg/cache
