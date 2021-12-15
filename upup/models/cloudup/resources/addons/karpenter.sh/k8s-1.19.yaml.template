@@ -652,19 +652,16 @@ spec:
   - key: {{ $taint.key }}
     effect: {{ $taint.effect }}
     {{ if $taint.value }}
-    value: {{ $taint.value }}
+    value: "{{ $taint.value }}""
     {{ end }}
 {{ end }}
 {{ end }}
 {{ with $spec.NodeLabels }}
   labels:
   {{ range $key, $value := . }}
-    {{ $key }}: {{ $value }}
+    {{ $key }}: "{{ $value }}"
   {{ end }}
 {{ end }}
-  limits:
-    resources:
-      cpu: 1000
   provider:
     instanceProfile: nodes.{{ ClusterName }}
     launchTemplate: {{ $name }}.{{ ClusterName }}
