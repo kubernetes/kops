@@ -96,6 +96,10 @@ func (c *MockAWSCloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
 	return deleteInstance(c, i)
 }
 
+func (c *MockAWSCloud) DeregisterInstance(i *cloudinstances.CloudInstance) error {
+	return nil
+}
+
 func (c *MockAWSCloud) DetachInstance(i *cloudinstances.CloudInstance) error {
 	return detachInstance(c, i)
 }

@@ -131,6 +131,10 @@ func (c *MockAzureCloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
 	return errors.New("DeleteInstance not implemented on azureCloud")
 }
 
+func (c *MockAzureCloud) DeregisterInstance(i *cloudinstances.CloudInstance) error {
+	return nil
+}
+
 // DeleteGroup deletes the group.
 func (c *MockAzureCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 	return errors.New("DeleteGroup not implemented on azureCloud")

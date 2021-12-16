@@ -252,8 +252,11 @@ type OpenstackCloud interface {
 	// ListDNSRecordsets will list the DNS recordsets for the given zone id
 	ListDNSRecordsets(zoneID string, opt recordsets.ListOptsBuilder) ([]recordsets.RecordSet, error)
 	GetLB(loadbalancerID string) (*loadbalancers.LoadBalancer, error)
+	GetLBStats(loadbalancerID string) (*loadbalancers.Stats, error)
 	CreateLB(opt loadbalancers.CreateOptsBuilder) (*loadbalancers.LoadBalancer, error)
 	ListLBs(opt loadbalancers.ListOptsBuilder) ([]loadbalancers.LoadBalancer, error)
+	UpdateMemberInPool(poolID string, memberID string, opts v2pools.UpdateMemberOptsBuilder) (*v2pools.Member, error)
+	ListPoolMembers(poolID string, opts v2pools.ListMembersOpts) ([]v2pools.Member, error)
 
 	// DeleteLB will delete loadbalancer
 	DeleteLB(lbID string, opt loadbalancers.DeleteOpts) error
