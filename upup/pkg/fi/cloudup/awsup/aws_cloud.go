@@ -541,6 +541,12 @@ func (c *awsCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance)
 	return deleteInstance(c, i)
 }
 
+// DeregisterInstance drains a cloud instance and loadbalancers.
+func (c *awsCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInstance) error {
+	klog.V(8).Info("AWS DeregisterInstance not implemented")
+	return nil
+}
+
 func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstance) error {
 	id := i.ID
 	if id == "" {

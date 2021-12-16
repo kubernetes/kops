@@ -51,6 +51,11 @@ func (c *gceCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance)
 	return recreateCloudInstance(c, i)
 }
 
+func (c *gceCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInstance) error {
+	klog.V(8).Info("GCE DeregisterInstance not implemented")
+	return nil
+}
+
 // DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
 func (c *gceCloudImplementation) DetachInstance(i *cloudinstances.CloudInstance) error {
 	klog.V(8).Info("gce cloud provider DetachInstance not implemented yet")

@@ -250,6 +250,31 @@ func listLBs(c OpenstackCloud, opt loadbalancers.ListOptsBuilder) (lbs []loadbal
 	return lbs, nil
 }
 
+func (c *openstackCloud) GetLBStats(loadbalancerID string) (stats *loadbalancers.Stats, err error) {
+	return getLBStats(c, loadbalancerID)
+}
+
+func getLBStats(c OpenstackCloud, loadbalancerID string) (stats *loadbalancers.Stats, err error) {
+	if c.LoadBalancerClient() == nil {
+		return stats, nil
+	}
+
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		stats, err = loadbalancers.GetStats(c.LoadBalancerClient(), loadbalancerID).Extract()
+		if err != nil {
+			return false, fmt.Errorf("Error getting load balancer stats %v", err)
+		}
+		return true, nil
+	})
+	if !done {
+		if err == nil {
+			err = wait.ErrWaitTimeout
+		}
+		return stats, err
+	}
+	return stats, nil
+}
+
 func (c *openstackCloud) GetPool(poolID string, memberID string) (member *v2pools.Member, err error) {
 	return getPool(c, poolID, memberID)
 }
@@ -273,6 +298,31 @@ func getPool(c OpenstackCloud, poolID string, memberID string) (member *v2pools.
 		return member, err
 	}
 	return member, nil
+}
+
+func (c *openstackCloud) UpdateMemberInPool(poolID string, memberID string, opts v2pools.UpdateMemberOptsBuilder) (association *v2pools.Member, err error) {
+	return updateMemberInPool(c, poolID, memberID, opts)
+}
+
+func updateMemberInPool(c OpenstackCloud, poolID string, memberID string, opts v2pools.UpdateMemberOptsBuilder) (association *v2pools.Member, err error) {
+	if c.LoadBalancerClient() == nil {
+		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
+	}
+
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		association, err = v2pools.UpdateMember(c.LoadBalancerClient(), poolID, memberID, opts).Extract()
+		if err != nil {
+			return false, fmt.Errorf("failed to update pool membership: %v", err)
+		}
+		return true, nil
+	})
+	if !done {
+		if err == nil {
+			err = wait.ErrWaitTimeout
+		}
+		return association, err
+	}
+	return association, nil
 }
 
 func (c *openstackCloud) AssociateToPool(server *servers.Server, poolID string, opts v2pools.CreateMemberOpts) (association *v2pools.Member, err error) {
@@ -329,6 +379,35 @@ func createPool(c OpenstackCloud, opts v2pools.CreateOpts) (pool *v2pools.Pool, 
 		return pool, err
 	}
 	return pool, nil
+}
+
+func (c *openstackCloud) ListPoolMembers(poolID string, opts v2pools.ListMembersOpts) (memberList []v2pools.Member, err error) {
+	return listPoolMembers(c, poolID, opts)
+}
+
+func listPoolMembers(c OpenstackCloud, poolID string, opts v2pools.ListMembersOpts) (memberList []v2pools.Member, err error) {
+	if c.LoadBalancerClient() == nil {
+		return memberList, fmt.Errorf("loadbalancer support not available in this deployment")
+	}
+
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		memberPage, err := v2pools.ListMembers(c.LoadBalancerClient(), poolID, opts).AllPages()
+		if err != nil {
+			return false, fmt.Errorf("failed to list members: %v", err)
+		}
+		memberList, err = v2pools.ExtractMembers(memberPage)
+		if err != nil {
+			return false, fmt.Errorf("failed to extract members: %v", err)
+		}
+		return true, nil
+	})
+	if !done {
+		if err == nil {
+			err = wait.ErrWaitTimeout
+		}
+		return memberList, err
+	}
+	return memberList, nil
 }
 
 func (c *openstackCloud) ListPools(opts v2pools.ListOpts) (poolList []v2pools.Pool, err error) {

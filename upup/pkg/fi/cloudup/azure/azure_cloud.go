@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
@@ -142,6 +143,12 @@ func (c *azureCloudImplementation) FindVNetInfo(id, resourceGroup string) (*fi.V
 
 func (c *azureCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance) error {
 	return errors.New("DeleteInstance not implemented on azureCloud")
+}
+
+// DeregisterInstance drains a cloud instance and loadbalancers.
+func (c *azureCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInstance) error {
+	klog.V(8).Info("Azure DeregisterInstance not implemented")
+	return nil
 }
 
 func (c *azureCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
