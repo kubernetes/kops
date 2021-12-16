@@ -445,7 +445,7 @@ type terraformInstanceTemplate struct {
 	NamePrefix            string                                   `json:"name_prefix" cty:"name_prefix"`
 	CanIPForward          bool                                     `json:"can_ip_forward" cty:"can_ip_forward"`
 	MachineType           string                                   `json:"machine_type,omitempty" cty:"machine_type"`
-	ServiceAccount        *terraformTemplateServiceAccount         `json:"service_account,omitempty" cty:"service_account"`
+	ServiceAccounts       []*terraformTemplateServiceAccount       `json:"service_account,omitempty" cty:"service_account"`
 	Scheduling            *terraformScheduling                     `json:"scheduling,omitempty" cty:"scheduling"`
 	Disks                 []*terraformInstanceTemplateAttachedDisk `json:"disk,omitempty" cty:"disk"`
 	Labels                map[string]string                        `json:"labels,omitempty" cty:"labels"`
@@ -537,22 +537,21 @@ func addMetadata(target *terraform.TerraformTarget, name string, metadata *compu
 	return m, nil
 }
 
-func addServiceAccounts(serviceAccounts []*compute.ServiceAccount) *terraformTemplateServiceAccount {
-	// there's an inconsistency here- GCP only lets you have one service account per VM
-	// terraform gets it right, but the golang api doesn't. womp womp :(
-	if len(serviceAccounts) != 1 {
-		klog.Fatal("Instances can only have 1 service account assigned.")
+func mapServiceAccountsToTerraform(serviceAccounts []*compute.ServiceAccount) []*terraformTemplateServiceAccount {
+	// Note that GCE currently only allows one service account per VM,
+	// but the model in both the API and terraform allows more.
+	var out []*terraformTemplateServiceAccount
+	for _, serviceAccount := range serviceAccounts {
+		tsa := &terraformTemplateServiceAccount{
+			Email:  serviceAccount.Email,
+			Scopes: serviceAccount.Scopes,
+		}
+		// for _, scope := range serviceAccount.Scopes {
+		//	tsa.Scopes = append(tsa.Scopes, scope)
+		// }
+		out = append(out, tsa)
 	}
-	klog.Infof("adding csa: %v", serviceAccounts[0].Email)
-	csa := serviceAccounts[0]
-	tsa := &terraformTemplateServiceAccount{
-		Email:  csa.Email,
-		Scopes: csa.Scopes,
-	}
-	// for _, scope := range csa.Scopes {
-	//	tsa.Scopes = append(tsa.Scopes, scope)
-	// }
-	return tsa
+	return out
 }
 
 func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InstanceTemplate) error {
@@ -574,7 +573,7 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	tf.Labels = i.Properties.Labels
 	tf.Tags = i.Properties.Tags.Items
 
-	tf.ServiceAccount = addServiceAccounts(i.Properties.ServiceAccounts)
+	tf.ServiceAccounts = mapServiceAccountsToTerraform(i.Properties.ServiceAccounts)
 
 	for _, d := range i.Properties.Disks {
 		tfd := &terraformInstanceTemplateAttachedDisk{
