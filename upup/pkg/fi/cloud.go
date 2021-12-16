@@ -33,6 +33,9 @@ type Cloud interface {
 	// DeleteInstance deletes a cloud instance.
 	DeleteInstance(instance *cloudinstances.CloudInstance) error
 
+	// // DeregisterInstance drains a cloud instance and loadbalancers.
+	DeregisterInstance(instance *cloudinstances.CloudInstance) error
+
 	// DeleteGroup deletes the cloud resources that make up a CloudInstanceGroup, including the instances.
 	DeleteGroup(group *cloudinstances.CloudInstanceGroup) error
 

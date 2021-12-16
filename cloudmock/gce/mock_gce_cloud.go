@@ -181,6 +181,10 @@ func (c *MockGCECloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
 	//	return recreateCloudInstance(c, i)
 }
 
+func (c *MockGCECloud) DeregisterInstance(i *cloudinstances.CloudInstance) error {
+	return nil
+}
+
 // DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
 func (c *MockGCECloud) DetachInstance(i *cloudinstances.CloudInstance) error {
 	return nil

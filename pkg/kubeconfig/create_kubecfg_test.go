@@ -74,6 +74,10 @@ func (f fakeStatusCloud) DetachInstance(instance *cloudinstances.CloudInstance) 
 	panic("not implemented")
 }
 
+func (f fakeStatusCloud) DeregisterInstance(instance *cloudinstances.CloudInstance) error {
+	panic("not implemented")
+}
+
 func (f fakeStatusCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	panic("not implemented")
 }

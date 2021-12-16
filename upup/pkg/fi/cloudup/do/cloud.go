@@ -136,6 +136,12 @@ func (c *doCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstanceGroup
 	return fmt.Errorf("digital ocean cloud provider does not support deleting cloud groups at this time")
 }
 
+// DeregisterInstance drains a cloud instance and loadbalancers.
+func (c *doCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInstance) error {
+	klog.V(8).Info("DO DeregisterInstance not implemented")
+	return nil
+}
+
 func (c *doCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance) error {
 	dropletID, err := strconv.Atoi(i.ID)
 	if err != nil {

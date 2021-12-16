@@ -17,6 +17,7 @@ limitations under the License.
 package openstack
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -24,8 +25,11 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
+	v2pools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/mitchellh/mapstructure"
+	"golang.org/x/sync/errgroup"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/cloudinstances"
@@ -168,6 +172,99 @@ func deleteInstanceWithID(c OpenstackCloud, instanceID string) error {
 	} else {
 		return wait.ErrWaitTimeout
 	}
+}
+
+// DeregisterInstance drains a cloud instance and loadbalancers.
+func (c *openstackCloud) DeregisterInstance(i *cloudinstances.CloudInstance) error {
+	return deregisterInstance(c, i.ID)
+}
+
+// deregisterInstance will drain all the loadbalancers attached to instance
+func deregisterInstance(c OpenstackCloud, instanceID string) error {
+	instance, err := c.GetInstance(instanceID)
+	if err != nil {
+		return err
+	}
+
+	// Kubernetes creates loadbalancers that member name matches to instance name
+	// However, kOps uses different name format in API LB which is <cluster>-<ig>
+	instanceName := instance.Name
+	kopsName := ""
+	ig, igok := instance.Metadata[TagKopsInstanceGroup]
+	clusterName, clusterok := instance.Metadata[TagClusterName]
+	if igok && clusterok {
+		kopsName = fmt.Sprintf("%s-%s", clusterName, ig)
+	}
+
+	lbs, err := c.ListLBs(loadbalancers.ListOpts{})
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()
+	eg, _ := errgroup.WithContext(ctx)
+	for i := range lbs {
+		func(lb loadbalancers.LoadBalancer) {
+			eg.Go(func() error {
+				return drainSingleLB(c, lb, instanceName, kopsName)
+			})
+		}(lbs[i])
+	}
+
+	if err := eg.Wait(); err != nil {
+		return fmt.Errorf("failed to deregister instance from load balancers: %v", err)
+	}
+
+	return nil
+}
+
+// drainSingleLB will drain single loadbalancer that is attached to instance
+func drainSingleLB(c OpenstackCloud, lb loadbalancers.LoadBalancer, instanceName string, kopsName string) error {
+	oldStats, err := c.GetLBStats(lb.ID)
+	if err != nil {
+		return err
+	}
+
+	draining := false
+	pools, err := c.ListPools(v2pools.ListOpts{
+		LoadbalancerID: lb.ID,
+	})
+	if err != nil {
+		return err
+	}
+	for _, pool := range pools {
+		members, err := c.ListPoolMembers(pool.ID, v2pools.ListMembersOpts{})
+		if err != nil {
+			return err
+		}
+		for _, member := range members {
+			if member.Name == instanceName || (member.Name == kopsName && len(kopsName) > 0) {
+				// https://docs.openstack.org/api-ref/load-balancer/v2/?expanded=update-a-member-detail
+				// Setting the member weight to 0 means that the member will not receive new requests but will finish any existing connections.
+				// This “drains” the backend member of active connections.
+				_, err := c.UpdateMemberInPool(pool.ID, member.ID, v2pools.UpdateMemberOpts{
+					Weight: fi.Int(0),
+				})
+				if err != nil {
+					return err
+				}
+				draining = true
+				break
+			}
+		}
+	}
+
+	if draining {
+		// TODO: should we do somekind of loop here and check that connections are really drained?
+		time.Sleep(20 * time.Second)
+
+		newStats, err := c.GetLBStats(lb.ID)
+		if err != nil {
+			return err
+		}
+
+		klog.Infof("Loadbalancer %s connections before draining %d and after %d", lb.Name, oldStats.ActiveConnections, newStats.ActiveConnections)
+	}
+	return nil
 }
 
 // DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.

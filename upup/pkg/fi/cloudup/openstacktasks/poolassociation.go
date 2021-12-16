@@ -23,7 +23,6 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	v2pools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
-	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/util/pkg/vfs"
@@ -38,6 +37,7 @@ type PoolAssociation struct {
 	ServerGroup   *ServerGroup
 	InterfaceName *string
 	ProtocolPort  *int
+	Weight        *int
 }
 
 // GetDependencies returns the dependencies of the Instance task
@@ -83,20 +83,20 @@ func (p *PoolAssociation) Find(context *fi.Context) (*PoolAssociation, error) {
 
 	a := rs[0]
 	// check is member already created
-	found := false
+	var found *v2pools.Member
 	for _, member := range a.Members {
 		poolMember, err := cloud.GetPool(a.ID, member.ID)
 		if err != nil {
 			return nil, err
 		}
 		if fi.StringValue(p.Name) == poolMember.Name {
-			found = true
+			found = poolMember
 			break
 		}
 	}
 	// if not found it is created by returning nil, nil
 	// this is needed for instance in initial installation
-	if !found {
+	if found == nil {
 		return nil, nil
 	}
 	pool, err := NewLBPoolTaskFromCloud(cloud, p.Lifecycle, &a, nil)
@@ -105,13 +105,14 @@ func (p *PoolAssociation) Find(context *fi.Context) (*PoolAssociation, error) {
 	}
 
 	actual := &PoolAssociation{
-		ID:            p.ID,
-		Name:          p.Name,
+		ID:            fi.String(found.ID),
+		Name:          fi.String(found.Name),
 		Pool:          pool,
 		ServerGroup:   p.ServerGroup,
 		InterfaceName: p.InterfaceName,
 		ProtocolPort:  p.ProtocolPort,
 		Lifecycle:     p.Lifecycle,
+		Weight:        fi.Int(found.Weight),
 	}
 	p.ID = actual.ID
 	return actual, nil
@@ -177,12 +178,13 @@ func (_ *PoolAssociation) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 			}
 			e.ID = fi.String(member.ID)
 		}
-		return nil
 	} else {
-		// TODO: Update Member, this is covered as `a` will always be nil
-		klog.V(2).Infof("Openstack task PoolAssociation::RenderOpenstack Update not implemented!")
+		_, err := t.Cloud.UpdateMemberInPool(fi.StringValue(a.Pool.ID), fi.StringValue(a.ID), v2pools.UpdateMemberOpts{
+			Weight: e.Weight,
+		})
+		if err != nil {
+			return fmt.Errorf("Failed to update member: %v", err)
+		}
 	}
-
-	klog.V(2).Infof("Openstack task PoolAssociation::RenderOpenstack did nothing")
 	return nil
 }
