@@ -43,7 +43,6 @@ type GCECloud interface {
 	Compute() ComputeClient
 	Storage() *storage.Service
 	IAM() *iam.Service
-	CloudResourceManager() *cloudresourcemanager.Service
 	CloudDNS() DNSClient
 	Project() string
 	WaitForOp(op *compute.Operation) error
@@ -58,11 +57,10 @@ type GCECloud interface {
 }
 
 type gceCloudImplementation struct {
-	compute              *computeClientImpl
-	storage              *storage.Service
-	iam                  *iam.Service
-	dns                  *dnsClientImpl
-	cloudResourceManager *cloudresourcemanager.Service
+	compute *computeClientImpl
+	storage *storage.Service
+	iam     *iam.Service
+	dns     *dnsClientImpl
 
 	// cloudResourceManager is the client for the cloudresourcemanager API
 	cloudResourceManager *cloudresourcemanager.Service
