@@ -47,7 +47,10 @@ type Keyset struct {
 	// LegacyFormat instructs a keypair task to convert a Legacy Keyset to the new Keyset API format.
 	LegacyFormat bool
 	Items        map[string]*KeysetItem
-	Primary      *KeysetItem
+
+	// Primary is the KeysetItem that is considered the "active" key.
+	// It is guaranteed to be non-nil, if there are any keypairs.
+	Primary *KeysetItem
 }
 
 // KeysetItem is a certificate/key pair in a Keyset.
