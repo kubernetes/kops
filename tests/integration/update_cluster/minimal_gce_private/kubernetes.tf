@@ -538,13 +538,13 @@ resource "google_compute_subnetwork" "us-test1-minimal-gce-private-example-com" 
 }
 
 resource "google_project_iam_binding" "serviceaccount-control-plane" {
-  member  = "serviceAccount:control-plane-minimal-g-sh4okp@testproject.iam.gserviceaccount.com"
+  members = ["serviceAccount:control-plane-minimal-g-sh4okp@testproject.iam.gserviceaccount.com"]
   project = "testproject"
   role    = "roles/container.serviceAgent"
 }
 
 resource "google_project_iam_binding" "serviceaccount-nodes" {
-  member  = "serviceAccount:node-minimal-gce-privat-sh4okp@testproject.iam.gserviceaccount.com"
+  members = ["serviceAccount:node-minimal-gce-privat-sh4okp@testproject.iam.gserviceaccount.com"]
   project = "testproject"
   role    = "roles/compute.viewer"
 }
