@@ -19,14 +19,21 @@ package resources
 import (
 	"bufio"
 	"bytes"
+	"compress/gzip"
+	"encoding/base64"
 	"fmt"
 	"mime/multipart"
 	"net/textproto"
+	"strings"
+	"text/template"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/mirrors"
 )
 
-var NodeUpTemplate = `#!/bin/bash
+var nodeUpTemplate = `#!/bin/bash
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -164,6 +171,102 @@ __EOF_KUBE_ENV
 download-release
 echo "== nodeup node config done =="
 `
+
+// NodeUpScript is responsible for creating the nodeup script
+type NodeUpScript struct {
+	NodeUpAssets         map[architectures.Architecture]*mirrors.MirroredAsset
+	KubeEnv              string
+	CompressUserData     bool
+	SetSysctls           string
+	ProxyEnv             func() (string, error)
+	EnvironmentVariables func() (string, error)
+	ClusterSpec          func() (string, error)
+}
+
+func funcEmptyString() (string, error) {
+	return "", nil
+}
+
+func (b *NodeUpScript) Build() (fi.Resource, error) {
+	if b.ProxyEnv == nil {
+		b.ProxyEnv = funcEmptyString
+	}
+	if b.EnvironmentVariables == nil {
+		b.EnvironmentVariables = funcEmptyString
+	}
+	if b.ClusterSpec == nil {
+		b.ClusterSpec = funcEmptyString
+	}
+
+	functions := template.FuncMap{
+		"NodeUpSourceAmd64": func() string {
+			if b.NodeUpAssets[architectures.ArchitectureAmd64] != nil {
+				return strings.Join(b.NodeUpAssets[architectures.ArchitectureAmd64].Locations, ",")
+			}
+			return ""
+		},
+		"NodeUpSourceHashAmd64": func() string {
+			if b.NodeUpAssets[architectures.ArchitectureAmd64] != nil {
+				return b.NodeUpAssets[architectures.ArchitectureAmd64].Hash.Hex()
+			}
+			return ""
+		},
+		"NodeUpSourceArm64": func() string {
+			if b.NodeUpAssets[architectures.ArchitectureArm64] != nil {
+				return strings.Join(b.NodeUpAssets[architectures.ArchitectureArm64].Locations, ",")
+			}
+			return ""
+		},
+		"NodeUpSourceHashArm64": func() string {
+			if b.NodeUpAssets[architectures.ArchitectureArm64] != nil {
+				return b.NodeUpAssets[architectures.ArchitectureArm64].Hash.Hex()
+			}
+			return ""
+		},
+
+		"KubeEnv": func() string {
+			return b.KubeEnv
+		},
+
+		"GzipBase64": func(data string) (string, error) {
+			return gzipBase64(data)
+		},
+
+		"CompressUserData": func() bool {
+			return b.CompressUserData
+		},
+
+		"SetSysctls": func() string {
+			return b.SetSysctls
+		},
+
+		"ProxyEnv":             b.ProxyEnv,
+		"EnvironmentVariables": b.EnvironmentVariables,
+		"ClusterSpec":          b.ClusterSpec,
+	}
+
+	return newTemplateResource("nodeup", nodeUpTemplate, functions, nil)
+}
+
+func gzipBase64(data string) (string, error) {
+	var b bytes.Buffer
+	gz := gzip.NewWriter(&b)
+
+	_, err := gz.Write([]byte(data))
+	if err != nil {
+		return "", err
+	}
+
+	if err = gz.Flush(); err != nil {
+		return "", err
+	}
+
+	if err = gz.Close(); err != nil {
+		return "", err
+	}
+
+	return base64.StdEncoding.EncodeToString(b.Bytes()), nil
+}
 
 // AWSMultipartMIME returns a MIME Multi Part Archive containing the nodeup (bootstrap) script
 // and any additional User Data passed to using AdditionalUserData in the IG Spec
