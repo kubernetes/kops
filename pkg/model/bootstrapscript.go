@@ -78,13 +78,13 @@ var (
 )
 
 // kubeEnv returns the boot config for the instance group
-func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (string, error) {
+func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (*nodeup.BootConfig, error) {
 	var alternateNames []string
 
 	for _, hasAddress := range b.alternateNameTasks {
 		addresses, err := hasAddress.FindAddresses(c)
 		if err != nil {
-			return "", fmt.Errorf("error finding address for %v: %v", hasAddress, err)
+			return nil, fmt.Errorf("error finding address for %v: %v", hasAddress, err)
 		}
 		if len(addresses) == 0 {
 			// Such tasks won't have an address in dry-run mode, until the resource is created
@@ -104,29 +104,24 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (string
 		name := *caTask.Name
 		keyset := caTask.Keyset()
 		if keyset == nil {
-			return "", fmt.Errorf("failed to get keyset from %q", name)
+			return nil, fmt.Errorf("failed to get keyset from %q", name)
 		}
 		keysets[name] = keyset
 	}
 	config, bootConfig, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames, keysets)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	configData, err := utils.YamlMarshal(config)
 	if err != nil {
-		return "", fmt.Errorf("error converting nodeup config to yaml: %v", err)
+		return nil, fmt.Errorf("error converting nodeup config to yaml: %v", err)
 	}
 	sum256 := sha256.Sum256(configData)
 	bootConfig.NodeupConfigHash = base64.StdEncoding.EncodeToString(sum256[:])
 	b.nodeupConfig.Resource = fi.NewBytesResource(configData)
 
-	bootConfigData, err := utils.YamlMarshal(bootConfig)
-	if err != nil {
-		return "", fmt.Errorf("error converting boot config to yaml: %v", err)
-	}
-
-	return string(bootConfigData), nil
+	return bootConfig, nil
 }
 
 func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[string]string, error) {
@@ -338,14 +333,14 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 		return nil
 	}
 
-	config, err := b.kubeEnv(b.ig, c)
+	bootConfig, err := b.kubeEnv(b.ig, c)
 	if err != nil {
 		return err
 	}
 
 	var nodeupScript resources.NodeUpScript
 	nodeupScript.NodeUpAssets = b.builder.NodeUpAssets
-	nodeupScript.KubeEnv = config
+	nodeupScript.BootConfig = bootConfig
 
 	{
 		nodeupScript.EnvironmentVariables = func() (string, error) {
