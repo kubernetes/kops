@@ -721,13 +721,13 @@ resource "google_compute_subnetwork" "us-test1-ha-gce-example-com" {
 }
 
 resource "google_project_iam_binding" "serviceaccount-control-plane" {
-  member  = "serviceAccount:control-plane-ha-gce-ex-mr702t@testproject.iam.gserviceaccount.com"
+  members = ["serviceAccount:control-plane-ha-gce-ex-mr702t@testproject.iam.gserviceaccount.com"]
   project = "testproject"
   role    = "roles/container.serviceAgent"
 }
 
 resource "google_project_iam_binding" "serviceaccount-nodes" {
-  member  = "serviceAccount:node-ha-gce-example-com@testproject.iam.gserviceaccount.com"
+  members = ["serviceAccount:node-ha-gce-example-com@testproject.iam.gserviceaccount.com"]
   project = "testproject"
   role    = "roles/compute.viewer"
 }
