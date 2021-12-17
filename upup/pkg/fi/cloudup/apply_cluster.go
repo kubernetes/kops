@@ -496,7 +496,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		cloud:            cloud,
 	}
 
-	configBuilder, err := newNodeUpConfigBuilder(cluster, assetBuilder, c.Assets, encryptionConfigSecretHash)
+	configBuilder, err := NewNodeUpConfigBuilder(cluster, assetBuilder, c.Assets, encryptionConfigSecretHash)
 	if err != nil {
 		return err
 	}
@@ -1143,7 +1143,7 @@ type nodeUpConfigBuilder struct {
 	encryptionConfigSecretHash string
 }
 
-func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBuilder, assets map[architectures.Architecture][]*mirrors.MirroredAsset, encryptionConfigSecretHash string) (model.NodeUpConfigBuilder, error) {
+func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBuilder, assets map[architectures.Architecture][]*mirrors.MirroredAsset, encryptionConfigSecretHash string) (model.NodeUpConfigBuilder, error) {
 	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)

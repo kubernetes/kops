@@ -33,6 +33,7 @@ func NewCmdToolbox(f commandutils.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.AddCommand(NewCmdToolboxDump(f, out))
+	cmd.AddCommand(NewCmdToolboxEnroll(f, out))
 	cmd.AddCommand(NewCmdToolboxTemplate(f, out))
 	cmd.AddCommand(NewCmdToolboxInstanceSelector(f, out))
 
