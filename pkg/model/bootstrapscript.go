@@ -416,17 +416,24 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 		},
 	}
 
-	awsNodeUpTemplate, err := resources.AWSNodeUpTemplate(b.ig)
+	nodeupScriptResource, err := NewTemplateResource("nodeup", resources.NodeUpTemplate, functions, nil)
 	if err != nil {
 		return err
 	}
 
-	templateResource, err := NewTemplateResource("nodeup", awsNodeUpTemplate, functions, nil)
-	if err != nil {
-		return err
-	}
+	b.resource.Resource = fi.FunctionToResource(func() ([]byte, error) {
+		nodeupScript, err := fi.ResourceAsString(nodeupScriptResource)
+		if err != nil {
+			return nil, err
+		}
 
-	b.resource.Resource = templateResource
+		awsUserData, err := resources.AWSMultipartMIME(nodeupScript, b.ig)
+		if err != nil {
+			return nil, err
+		}
+
+		return []byte(awsUserData), nil
+	})
 	return nil
 }
 
