@@ -22,7 +22,7 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/pkg/truncate"
 )
 
 // MaxLengthIAMRoleName defines the max length of an IAMRole name
@@ -54,7 +54,7 @@ func (b *IAMModelContext) IAMNameForServiceAccountRole(role Subject) (string, er
 	}
 
 	name := serviceAccount.Name + "." + strings.ReplaceAll(serviceAccount.Namespace, "*", "wildcard") + ".sa." + b.ClusterName()
-	name = awsup.TruncateString(name, awsup.TruncateStringOptions{MaxLength: MaxLengthIAMRoleName, AlwaysAddHash: false})
+	name = truncate.TruncateString(name, truncate.TruncateStringOptions{MaxLength: MaxLengthIAMRoleName, AlwaysAddHash: false})
 
 	return name, nil
 }
