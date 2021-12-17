@@ -225,3 +225,28 @@ func (r *TaskDependentResource) GetDependencies(tasks map[string]Task) []Task {
 func (r *TaskDependentResource) IsReady() bool {
 	return r.Resource != nil
 }
+
+// FunctionToResource converts a function to a Resource.  The result of executing the function is cached.
+func FunctionToResource(fn func() ([]byte, error)) Resource {
+	return &functionResource{
+		fn: fn,
+	}
+}
+
+type functionResource struct {
+	data []byte
+	fn   func() ([]byte, error)
+}
+
+func (r *functionResource) Open() (io.Reader, error) {
+	b := r.data
+	if b == nil {
+		data, err := r.fn()
+		if err != nil {
+			return nil, err
+		}
+		r.data = data
+		b = data
+	}
+	return bytes.NewReader(b), nil
+}
