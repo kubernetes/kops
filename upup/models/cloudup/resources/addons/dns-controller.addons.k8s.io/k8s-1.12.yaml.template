@@ -41,6 +41,10 @@ spec:
         operator: Exists
       - key: node-role.kubernetes.io/master
         operator: Exists
+      - key: node.kubernetes.io/network-unavailable
+        operator: Exists
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
       dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
       hostNetwork: true
       serviceAccount: dns-controller

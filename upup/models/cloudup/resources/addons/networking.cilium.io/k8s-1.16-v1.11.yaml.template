@@ -607,6 +607,9 @@ spec:
                 operator: In
                 values:
                 - linux
+                # todo
+                - key: node-role.kubernetes.io/control-plane
+                  operator: DoesNotExist
       containers:
       - args:
         - --config-dir=/tmp/cilium/config-map
@@ -681,7 +684,8 @@ spec:
               name: cilium-config
               optional: true
         - name: KUBERNETES_SERVICE_HOST
-          value: "{{ $.MasterInternalName }}"
+          # todo
+          value: "{{ $.MasterPublicName }}"
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
         {{ with .EnablePolicy }}
@@ -947,6 +951,7 @@ spec:
               name: cilium-config
               optional: true
         - name: KUBERNETES_SERVICE_HOST
+          # todo
           value: "{{ $.MasterInternalName }}"
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
