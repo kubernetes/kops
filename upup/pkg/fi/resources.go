@@ -35,11 +35,6 @@ type HasIsReady interface {
 	IsReady() bool
 }
 
-type TemplateResource interface {
-	Resource
-	Curry(args []string) TemplateResource
-}
-
 func ResourcesMatch(a, b Resource) (bool, error) {
 	aReader, err := a.Open()
 	if err != nil {
