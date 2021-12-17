@@ -46,6 +46,36 @@ type NodeUpConfigBuilder interface {
 	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, keysets map[string]*fi.Keyset) (*nodeup.Config, *nodeup.BootConfig, error)
 }
 
+// // KeyInfo holds the certificate information needed to build nodeup scripts
+// type KeyInfo struct {
+// 	Certificates     string
+// 	PrimaryKeypairID string
+// 	PublicKeys       string
+// }
+
+// // KeyInfo extracts the KeyInfo from a Keypair task
+// func KeyInfoFromKeyset(keyset *fitasks.Keypair) (*KeyInfo, error) {
+// 	name := fi.StringValue(task.Name)
+
+// 	certificates, err := fi.ResourceAsString(task.Certificates())
+// 	if err != nil {
+// 		// CA task may not have run yet; we'll retry
+// 		return nil, fmt.Errorf("failed to read certificates for %q: %w", name, err)
+// 	}
+// 	keyset := task.Keyset()
+
+// 	publicKeys, err := keyset.ToPublicKeys()
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to build public keys for %q: %w", name, err)
+// 	}
+// 	keyInfo := &KeyInfo{
+// 		Certificates:     certificates,
+// 		PrimaryKeypairID: task.Keyset().Primary.Id,
+// 		PublicKeys:       publicKeys,
+// 	}
+// 	return keyInfo, nil
+// }
+
 // BootstrapScriptBuilder creates the bootstrap script
 type BootstrapScriptBuilder struct {
 	*KopsModelContext

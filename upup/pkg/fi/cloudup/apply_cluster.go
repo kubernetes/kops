@@ -1368,7 +1368,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 			config.APIServerConfig.EncryptionConfigSecretHash = n.encryptionConfigSecretHash
 			serviceAccountPublicKeys, err := keysets["service-account"].ToPublicKeys()
 			if err != nil {
-				return nil, nil, fmt.Errorf("encoding service-account keys: %w", err)
+				return nil, nil, err
 			}
 			config.APIServerConfig.ServiceAccountPublicKeys = serviceAccountPublicKeys
 		} else {
