@@ -28,7 +28,9 @@ import (
 	"text/template"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/mirrors"
 )
@@ -181,7 +183,7 @@ echo "== nodeup node config done =="
 // NodeUpScript is responsible for creating the nodeup script
 type NodeUpScript struct {
 	NodeUpAssets         map[architectures.Architecture]*mirrors.MirroredAsset
-	KubeEnv              string
+	BootConfig           *nodeup.BootConfig
 	CompressUserData     bool
 	SetSysctls           string
 	CloudProvider        string
@@ -231,8 +233,13 @@ func (b *NodeUpScript) Build() (fi.Resource, error) {
 			return ""
 		},
 
-		"KubeEnv": func() string {
-			return b.KubeEnv
+		"KubeEnv": func() (string, error) {
+			bootConfigData, err := utils.YamlMarshal(b.BootConfig)
+			if err != nil {
+				return "", fmt.Errorf("error converting boot config to yaml: %w", err)
+			}
+
+			return string(bootConfigData), nil
 		},
 
 		"GzipBase64": func(data string) (string, error) {
