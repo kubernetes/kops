@@ -165,10 +165,10 @@ download-release
 echo "== nodeup node config done =="
 `
 
-// AWSNodeUpTemplate returns a MIME Multi Part Archive containing the nodeup (bootstrap) script
+// AWSMultipartMIME returns a MIME Multi Part Archive containing the nodeup (bootstrap) script
 // and any additional User Data passed to using AdditionalUserData in the IG Spec
-func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
-	userDataTemplate := NodeUpTemplate
+func AWSMultipartMIME(bootScript string, ig *kops.InstanceGroup) (string, error) {
+	userData := bootScript
 
 	if len(ig.Spec.AdditionalUserData) > 0 {
 		/* Create a buffer to hold the user-data*/
@@ -188,7 +188,7 @@ func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
 
 		var err error
 		if !ig.IsBastion() {
-			err := writeUserDataPart(mimeWriter, "nodeup.sh", "text/x-shellscript", []byte(userDataTemplate))
+			err := writeUserDataPart(mimeWriter, "nodeup.sh", "text/x-shellscript", []byte(bootScript))
 			if err != nil {
 				return "", err
 			}
@@ -206,10 +206,10 @@ func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
 		writer.Flush()
 		mimeWriter.Close()
 
-		userDataTemplate = buffer.String()
+		userData = buffer.String()
 	}
 
-	return userDataTemplate, nil
+	return userData, nil
 }
 
 func writeUserDataPart(mimeWriter *multipart.Writer, fileName string, contentType string, content []byte) error {
