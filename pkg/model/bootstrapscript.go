@@ -533,6 +533,9 @@ func (b *BootstrapScript) createProxyEnv(ps *kops.EgressProxySpec) (string, erro
 func setSysctls() string {
 	var b bytes.Buffer
 
+	// By setting some sysctls early, we avoid broken configurations that prevent nodeup download.
+	// See https://github.com/kubernetes/kops/issues/10206 for details.
+
 	// Based on https://github.com/kubernetes/kops/issues/10206#issuecomment-766852332
 	b.WriteString("sysctl -w net.core.rmem_max=16777216 || true\n")
 	b.WriteString("sysctl -w net.core.wmem_max=16777216 || true\n")
