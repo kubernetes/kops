@@ -40,6 +40,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+set -x
+
 NODEUP_URL_AMD64={{ NodeUpSourceAmd64 }}
 NODEUP_HASH_AMD64={{ NodeUpSourceHashAmd64 }}
 NODEUP_URL_ARM64={{ NodeUpSourceArm64 }}
@@ -141,10 +143,6 @@ function download-release() {
   download-or-bust nodeup "${NODEUP_HASH}" "${NODEUP_URL}"
 
   chmod +x nodeup
-
-  echo "Running nodeup"
-  # We can't run in the foreground because of https://github.com/docker/docker/issues/23793
-  ( cd ${INSTALL_DIR}/bin; ./nodeup --install-systemd-unit --conf=${INSTALL_DIR}/conf/kube_env.yaml --v=8  )
 }
 
 ####################################################################################
@@ -177,6 +175,12 @@ __EOF_KUBE_ENV
 {{- end }}
 
 download-release
+
+echo "Running nodeup"
+# We can't run in the foreground because of https://github.com/docker/docker/issues/23793
+#( cd ${INSTALL_DIR}/bin; ./nodeup --install-systemd-unit --conf=${INSTALL_DIR}/conf/kube_env.yaml --v=8  )
+( cd ${INSTALL_DIR}/bin; ./nodeup --conf=${INSTALL_DIR}/conf/kube_env.yaml --v=8  )
+
 echo "== nodeup node config done =="
 `
 

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,7 +30,6 @@ import (
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
-	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/mirrors"
 	"k8s.io/kubectl/pkg/util/i18n"
@@ -156,14 +156,12 @@ func RunToolboxEnroll(ctx context.Context, f commandutils.Factory, out io.Writer
 
 	// fmt.Printf("configData: %s\n", string(configData))
 
-	bootConfigData, err := utils.YamlMarshal(bootConfig)
-	if err != nil {
-		return fmt.Errorf("error converting boot config to yaml: %w", err)
-	}
+	bootConfig.CloudProvider = "metal"
+	bootConfig.ConfigServer.Server = strings.ReplaceAll(bootConfig.ConfigServer.Server, ".internal.", ".")
 
 	var script resources.NodeUpScript
 	script.NodeUpAssets = nodeupAssets
-	script.KubeEnv = string(bootConfigData)
+	script.BootConfig = bootConfig
 
 	resource, err := script.Build()
 	if err != nil {
