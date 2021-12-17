@@ -9,8 +9,7 @@ spec:
   authorization:
     rbac: {}
   channel: stable
-  cloudConfig:
-    gceServiceAccount: default
+  cloudConfig: {}
   cloudProvider: gce
   configBase: memfs://tests/ha-gce.example.com
   etcdClusters:

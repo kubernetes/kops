@@ -564,7 +564,7 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
     preemptible         = false
   }
   service_account {
-    email  = "default"
+    email  = "control-plane-ha-gce-ex-mr702t@testproject.iam.gserviceaccount.com"
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
   }
   tags = ["ha-gce-example-com-k8s-io-role-master"]
@@ -610,7 +610,7 @@ resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-co
     preemptible         = false
   }
   service_account {
-    email  = "default"
+    email  = "control-plane-ha-gce-ex-mr702t@testproject.iam.gserviceaccount.com"
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
   }
   tags = ["ha-gce-example-com-k8s-io-role-master"]
@@ -656,7 +656,7 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
     preemptible         = false
   }
   service_account {
-    email  = "default"
+    email  = "control-plane-ha-gce-ex-mr702t@testproject.iam.gserviceaccount.com"
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
   }
   tags = ["ha-gce-example-com-k8s-io-role-master"]
@@ -702,7 +702,7 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
     preemptible         = false
   }
   service_account {
-    email  = "default"
+    email  = "node-ha-gce-example-com@testproject.iam.gserviceaccount.com"
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_only"]
   }
   tags = ["ha-gce-example-com-k8s-io-role-node"]
@@ -718,6 +718,30 @@ resource "google_compute_subnetwork" "us-test1-ha-gce-example-com" {
   name          = "us-test1-ha-gce-example-com"
   network       = google_compute_network.ha-gce-example-com.name
   region        = "us-test1"
+}
+
+resource "google_project_iam_binding" "serviceaccount-control-plane" {
+  member  = "serviceAccount:control-plane-ha-gce-ex-mr702t@testproject.iam.gserviceaccount.com"
+  project = "testproject"
+  role    = "roles/container.serviceAgent"
+}
+
+resource "google_project_iam_binding" "serviceaccount-nodes" {
+  member  = "serviceAccount:node-ha-gce-example-com@testproject.iam.gserviceaccount.com"
+  project = "testproject"
+  role    = "roles/compute.viewer"
+}
+
+resource "google_service_account" "control-plane" {
+  account_id  = "control-plane-ha-gce-ex-mr702t"
+  description = "kubernetes control-plane instances"
+  project     = "testproject"
+}
+
+resource "google_service_account" "node" {
+  account_id  = "node-ha-gce-example-com"
+  description = "kubernetes worker nodes"
+  project     = "testproject"
 }
 
 terraform {
