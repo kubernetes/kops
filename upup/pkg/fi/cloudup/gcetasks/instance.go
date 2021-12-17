@@ -397,7 +397,7 @@ type terraformInstance struct {
 	Name                  string                              `json:"name" cty:"name"`
 	CanIPForward          bool                                `json:"can_ip_forward" cty:"can_ip_forward"`
 	MachineType           string                              `json:"machine_type,omitempty" cty:"machine_type"`
-	ServiceAccounts      []*terraformTemplateServiceAccount    `json:"service_account,omitempty" cty:"service_account"`
+	ServiceAccounts       []*terraformTemplateServiceAccount  `json:"service_account,omitempty" cty:"service_account"`
 	Scheduling            *terraformScheduling                `json:"scheduling,omitempty" cty:"scheduling"`
 	Disks                 []*terraformInstanceAttachedDisk    `json:"disk,omitempty" cty:"disk"`
 	NetworkInterfaces     []*terraformNetworkInterface        `json:"network_interface,omitempty" cty:"network_interface"`
