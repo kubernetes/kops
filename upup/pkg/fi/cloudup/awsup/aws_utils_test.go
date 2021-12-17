@@ -17,7 +17,6 @@ limitations under the License.
 package awsup
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -138,57 +137,5 @@ func Test_GetResourceName32(t *testing.T) {
 		if actual != g.Expected {
 			t.Errorf("unexpected result from %q+%q.  expected %q, got %q", g.Prefix, g.ClusterName, g.Expected, actual)
 		}
-	}
-}
-
-func TestTruncateString(t *testing.T) {
-	grid := []struct {
-		Input         string
-		Expected      string
-		MaxLength     int
-		AlwaysAddHash bool
-	}{
-		{
-			Input:     "foo",
-			Expected:  "foo",
-			MaxLength: 64,
-		},
-		{
-			Input:     "this_string_is_33_characters_long",
-			Expected:  "this_string_is_33_characters_long",
-			MaxLength: 64,
-		},
-		{
-			Input:         "this_string_is_33_characters_long",
-			Expected:      "this_string_is_33_characters_long-t4mk8d",
-			MaxLength:     64,
-			AlwaysAddHash: true,
-		},
-		{
-			Input:     "this_string_is_longer_it_is_46_characters_long",
-			Expected:  "this_string_is_longer_it_-ha2gug",
-			MaxLength: 32,
-		},
-		{
-			Input:         "this_string_is_longer_it_is_46_characters_long",
-			Expected:      "this_string_is_longer_it_-ha2gug",
-			MaxLength:     32,
-			AlwaysAddHash: true,
-		},
-		{
-			Input:     "this_string_is_even_longer_due_to_extreme_verbosity_it_is_in_fact_84_characters_long",
-			Expected:  "this_string_is_even_longer_due_to_extreme_verbosity_it_is-7mc0g6",
-			MaxLength: 64,
-		},
-	}
-
-	for _, g := range grid {
-		t.Run(fmt.Sprintf("input:%s/maxLength:%d/alwaysAddHash:%v", g.Input, g.MaxLength, g.AlwaysAddHash), func(t *testing.T) {
-			opt := TruncateStringOptions{MaxLength: g.MaxLength, AlwaysAddHash: g.AlwaysAddHash}
-			actual := TruncateString(g.Input, opt)
-			if actual != g.Expected {
-				t.Errorf("TruncateString(%q, %+v) => %q, expected %q", g.Input, opt, actual, g.Expected)
-			}
-		})
 	}
 }

@@ -132,7 +132,10 @@ func (c *GCEModelContext) LinkToServiceAccount(ig *kops.InstanceGroup) *gcetasks
 		klog.Fatalf("unknown role %q", role)
 	}
 
-	accountID := c.SafeObjectName(name)
+	accountID, err := gce.ServiceAccountName(name, c.ClusterName())
+	if err != nil {
+		klog.Fatalf("failed to construct serviceaccount name: %w", err)
+	}
 	projectID := c.ProjectID
 
 	email := accountID + "@" + projectID + ".iam.gserviceaccount.com"
