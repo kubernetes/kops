@@ -498,89 +498,153 @@ func (d *clusterDiscoveryGCE) listFirewallRules() ([]*resources.Resource, error)
 
 	ctx := context.Background()
 
-	frs, err := c.Compute().Firewalls().List(ctx, c.Project())
+	firewallRules, err := c.Compute().Firewalls().List(ctx, c.Project())
 	if err != nil {
 		return nil, fmt.Errorf("error listing FirewallRules: %v", err)
 	}
 
-	for _, fr := range frs {
-		if !d.matchesClusterNameMultipart(fr.Name, maxPrefixTokens) && !strings.HasPrefix(fr.Name, "k8s-") {
+nextFirewallRule:
+	for _, firewallRule := range firewallRules {
+		if !d.matchesClusterNameMultipart(firewallRule.Name, maxPrefixTokens) && !strings.HasPrefix(firewallRule.Name, "k8s-") {
 			continue
 		}
 
-		foundMatchingTarget := false
+		// TODO: Check network?  (or other fields?)  No label support currently.
+
+		// We consider only firewall rules that target our cluster tags, which include the cluster name
 		tagPrefix := gce.SafeClusterName(d.clusterName) + "-"
-		for _, target := range fr.TargetTags {
-			if strings.HasPrefix(target, tagPrefix) {
-				foundMatchingTarget = true
+		if len(firewallRule.TargetTags) != 0 {
+			tagMatchCount := 0
+			for _, target := range firewallRule.TargetTags {
+				if strings.HasPrefix(target, tagPrefix) {
+					tagMatchCount++
+				}
+			}
+			if len(firewallRule.TargetTags) != tagMatchCount {
+				continue nextFirewallRule
 			}
 		}
-		if !foundMatchingTarget {
-			continue
+		// We don't have any rules that match only on source tags, but if we did we could check them here
+		if len(firewallRule.TargetTags) == 0 {
+			continue nextFirewallRule
 		}
 
-		// find the Kubernetes LoadBalancer
-		if strings.HasPrefix(fr.Name, "k8s-fw-") {
-			name := strings.ReplaceAll(fr.Name, "k8s-fw-", "")
-			fr, err := c.Compute().ForwardingRules().Get(c.Project(), c.Region(), name)
-			if err != nil {
-				return nil, fmt.Errorf("error get ForwardingRule: %v", err)
-			}
-
-			frResourceTracker := &resources.Resource{
-				Name:    fr.Name,
-				ID:      fr.Name,
-				Type:    typeForwardingRule,
-				Deleter: deleteForwardingRule,
-				Obj:     fr,
-			}
-			if fr.Target != "" {
-				frResourceTracker.Blocks = append(frResourceTracker.Blocks, typeTargetPool+":"+gce.LastComponent(fr.Target))
-			}
-			resourceTrackers = append(resourceTrackers, frResourceTracker)
-
-			tp, err := c.Compute().TargetPools().Get(c.Project(), c.Region(), name)
-			if err != nil {
-				return nil, fmt.Errorf("error get TargetPool: %v", err)
-			}
-
-			tpResourceTracker := &resources.Resource{
-				Name:    tp.Name,
-				ID:      tp.Name,
-				Type:    typeTargetPool,
-				Deleter: deleteTargetPool,
-				Obj:     tp,
-			}
-			resourceTrackers = append(resourceTrackers, tpResourceTracker)
-
-		}
-		// l4 level healthchecks
-		if strings.HasPrefix(fr.Name, "k8s-") && strings.HasSuffix(fr.Name, "-http-hc") {
-			name := strings.ReplaceAll(strings.ReplaceAll(fr.Name, "k8s-", ""), "-http-hc", "")
-			hc, err := c.Compute().HTTPHealthChecks().Get(c.Project(), name)
-			if err != nil {
-				return nil, fmt.Errorf("error get HTTPHealthCheck: %v", err)
-			}
-			hcResourceTracker := &resources.Resource{
-				Name:    hc.Name,
-				ID:      hc.Name,
-				Type:    typeHTTPHealthcheck,
-				Deleter: deleteHTTPHealthCheck,
-				Obj:     hc,
-			}
-			resourceTrackers = append(resourceTrackers, hcResourceTracker)
-		}
-
-		resourceTracker := &resources.Resource{
-			Name:    fr.Name,
-			ID:      fr.Name,
+		firewallRuleResource := &resources.Resource{
+			Name:    firewallRule.Name,
+			ID:      firewallRule.Name,
 			Type:    typeFirewallRule,
 			Deleter: deleteFirewallRule,
-			Obj:     fr,
+			Obj:     firewallRule,
+		}
+		firewallRuleResource.Blocks = append(firewallRuleResource.Blocks, typeNetwork+":"+gce.LastComponent(firewallRule.Network))
+
+		if d.matchesClusterNameMultipart(firewallRule.Name, maxPrefixTokens) {
+			klog.V(4).Infof("Found resource: %s", firewallRule.SelfLink)
+			resourceTrackers = append(resourceTrackers, firewallRuleResource)
 		}
 
-		klog.V(4).Infof("Found resource: %s", fr.SelfLink)
-		resourceTrackers = append(resourceTrackers, resourceTracker)
+		// find the objects if this is a Kubernetes LoadBalancer
+		if strings.HasPrefix(firewallRule.Name, "k8s-fw-") {
+			// We build a list of resources if this is a k8s firewall rule,
+			// but we only add them once all the checks are complete
+			var k8sResources []*resources.Resource
+
+			k8sResources = append(k8sResources, firewallRuleResource)
+
+			// We lookup the forwarding rule by name, but we then validate that it points to one of our resources
+			forwardingRuleName := strings.TrimPrefix(firewallRule.Name, "k8s-fw-")
+			forwardingRule, err := c.Compute().ForwardingRules().Get(c.Project(), c.Region(), forwardingRuleName)
+			if err != nil {
+				if gce.IsNotFound(err) {
+					// We looked it up by name, so an error isn't unlikely
+					klog.Warningf("could not find forwarding rule %q, assuming firewallRule %q is not a k8s rule", forwardingRuleName, firewallRule.Name)
+					continue nextFirewallRule
+				}
+				return nil, fmt.Errorf("error getting ForwardingRule %q: %w", forwardingRuleName, err)
+			}
+
+			forwardingRuleResource := &resources.Resource{
+				Name:    forwardingRule.Name,
+				ID:      forwardingRule.Name,
+				Type:    typeForwardingRule,
+				Deleter: deleteForwardingRule,
+				Obj:     forwardingRule,
+			}
+			if forwardingRule.Target != "" {
+				forwardingRuleResource.Blocks = append(forwardingRuleResource.Blocks, typeTargetPool+":"+gce.LastComponent(forwardingRule.Target))
+			}
+			k8sResources = append(k8sResources, forwardingRuleResource)
+
+			// TODO: Can we get k8s to set labels on the ForwardingRule?
+
+			// TODO: Check description?  It looks like e.g. description: '{"kubernetes.io/service-name":"kube-system/guestbook"}'
+
+			if forwardingRule.Target == "" {
+				klog.Warningf("forwarding rule %q did not have target, assuming firewallRule %q is not a k8s rule", forwardingRuleName, firewallRule.Name)
+				continue nextFirewallRule
+			}
+
+			targetPoolName := gce.LastComponent(forwardingRule.Target)
+			targetPool, err := c.Compute().TargetPools().Get(c.Project(), c.Region(), targetPoolName)
+			if err != nil {
+				return nil, fmt.Errorf("error getting TargetPool %q: %w", targetPoolName, err)
+			}
+
+			targetPoolResource := &resources.Resource{
+				Name:    targetPool.Name,
+				ID:      targetPool.Name,
+				Type:    typeTargetPool,
+				Deleter: deleteTargetPool,
+				Obj:     targetPool,
+			}
+			k8sResources = append(k8sResources, targetPoolResource)
+
+			// TODO: Check description? (looks like description: '{"kubernetes.io/service-name":"k8s-dbb09d49d9780e7e-node"}' )
+
+			// TODO: Check instances?
+
+			for _, healthCheckLink := range targetPool.HealthChecks {
+				// l4 level healthchecks
+
+				healthCheckName := gce.LastComponent(healthCheckLink)
+
+				if !strings.HasPrefix(healthCheckName, "k8s-") || !strings.Contains(healthCheckLink, "/httpHealthChecks/") {
+					klog.Warningf("found non-k8s healthcheck %q in targetPool %q, assuming firewallRule %q is not a k8s rule", healthCheckLink, targetPoolName, firewallRule.Name)
+					continue nextFirewallRule
+				}
+
+				hc, err := c.Compute().HTTPHealthChecks().Get(c.Project(), healthCheckName)
+				if err != nil {
+					return nil, fmt.Errorf("error getting HTTPHealthCheck %q: %w", healthCheckName, err)
+				}
+
+				// TODO: Check description? (looks like description: '{"kubernetes.io/service-name":"k8s-dbb09d49d9780e7e-node"}' )
+
+				healthCheckResource := &resources.Resource{
+					Name:    hc.Name,
+					ID:      hc.Name,
+					Type:    typeHTTPHealthcheck,
+					Deleter: deleteHTTPHealthCheck,
+					Obj:     hc,
+				}
+				healthCheckResource.Blocked = append(healthCheckResource.Blocked, targetPoolResource.Type+":"+targetPoolResource.ID)
+
+				k8sResources = append(k8sResources, healthCheckResource)
+
+			}
+
+			// We now have confidence that this is a k8s LoadBalancer; add the resources
+			resourceTrackers = append(resourceTrackers, k8sResources...)
+		}
+
+		// find the objects if this is a Kubernetes node health check
+		if strings.HasPrefix(firewallRule.Name, "k8s-") && strings.HasSuffix(firewallRule.Name, "-node-http-hc") {
+			// TODO: Check port matches http health check (always 10256?)
+			// TODO: Check description - looks like '{"kubernetes.io/cluster-id":"cb2e931dec561053"}'
+
+			// We already know the target tags match
+			resourceTrackers = append(resourceTrackers, firewallRuleResource)
+		}
 	}
 
 	return resourceTrackers, nil
