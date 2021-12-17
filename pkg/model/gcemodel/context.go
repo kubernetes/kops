@@ -26,6 +26,8 @@ import (
 )
 
 type GCEModelContext struct {
+	ProjectID string
+
 	*model.KopsModelContext
 }
 
@@ -103,11 +105,37 @@ func (c *GCEModelContext) NetworkingIsGCERoutes() bool {
 
 // LinkToServiceAccount returns a link to the GCE ServiceAccount object for VMs in the given role
 func (c *GCEModelContext) LinkToServiceAccount(ig *kops.InstanceGroup) *gcetasks.ServiceAccount {
-	// This is a legacy setting because the nodes & control-plane run under the same serviceaccount
-	klog.Warningf("using legacy spec.cloudConfig.gceServiceAccount=%q setting", c.Cluster.Spec.CloudConfig.GCEServiceAccount)
-	return &gcetasks.ServiceAccount{
-		Name:   s("shared"),
-		Email:  &c.Cluster.Spec.CloudConfig.GCEServiceAccount,
-		Shared: fi.Bool(true),
+	if c.Cluster.Spec.CloudConfig.GCEServiceAccount != "" {
+		// This is a legacy setting because the nodes & control-plane run under the same serviceaccount
+		klog.Warningf("using legacy spec.cloudConfig.gceServiceAccount=%q setting", c.Cluster.Spec.CloudConfig.GCEServiceAccount)
+		return &gcetasks.ServiceAccount{
+			Name:   s("shared"),
+			Email:  &c.Cluster.Spec.CloudConfig.GCEServiceAccount,
+			Shared: fi.Bool(true),
+		}
 	}
+
+	role := ig.Spec.Role
+
+	name := ""
+	switch role {
+	case kops.InstanceGroupRoleAPIServer, kops.InstanceGroupRoleMaster:
+		name = "control-plane"
+
+	case kops.InstanceGroupRoleBastion:
+		name = "bastion"
+
+	case kops.InstanceGroupRoleNode:
+		name = "node"
+
+	default:
+		klog.Fatalf("unknown role %q", role)
+	}
+
+	accountID := c.SafeObjectName(name)
+	projectID := c.ProjectID
+
+	email := accountID + "@" + projectID + ".iam.gserviceaccount.com"
+
+	return &gcetasks.ServiceAccount{Name: s(name), Email: s(email)}
 }
