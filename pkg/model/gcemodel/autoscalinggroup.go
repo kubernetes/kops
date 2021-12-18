@@ -156,14 +156,6 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 			}
 			t.Subnet = b.LinkToSubnet(subnet)
 
-			if b.Cluster.Spec.CloudConfig.GCEServiceAccount != "" {
-				klog.Infof("VMs using Service Account: %v", b.Cluster.Spec.CloudConfig.GCEServiceAccount)
-				// b.Cluster.Spec.GCEServiceAccount = c.GCEServiceAccount
-			} else {
-				klog.Warning("VMs will be configured to use the GCE default compute Service Account! This is an anti-pattern")
-				klog.Warning("Use a pre-created Service Account with the flag: --gce-service-account=account@projectname.iam.gserviceaccount.com")
-				b.Cluster.Spec.CloudConfig.GCEServiceAccount = "default"
-			}
 			t.ServiceAccounts = append(t.ServiceAccounts, b.LinkToServiceAccount(ig))
 
 			//labels, err := b.CloudTagsForInstanceGroup(ig)

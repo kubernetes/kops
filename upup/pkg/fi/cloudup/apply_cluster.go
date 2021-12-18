@@ -589,6 +589,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			)
 		case kops.CloudProviderGCE:
 			gceModelContext := &gcemodel.GCEModelContext{
+				ProjectID:        project,
 				KopsModelContext: modelContext,
 			}
 
