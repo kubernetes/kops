@@ -458,7 +458,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-priva
     preemptible         = false
   }
   service_account {
-    email  = "default"
+    email  = "control-plane-minimal-g-sh4okp@testproject.iam.gserviceaccount.com"
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
   }
   tags = ["minimal-gce-private-example-com-k8s-io-role-master"]
@@ -502,7 +502,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-private-example-c
     preemptible         = false
   }
   service_account {
-    email  = "default"
+    email  = "node-minimal-gce-privat-sh4okp@testproject.iam.gserviceaccount.com"
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_only"]
   }
   tags = ["minimal-gce-private-example-com-k8s-io-role-node"]
@@ -535,6 +535,30 @@ resource "google_compute_subnetwork" "us-test1-minimal-gce-private-example-com" 
   name          = "us-test1-minimal-gce-private-example-com"
   network       = google_compute_network.minimal-gce-private-example-com.name
   region        = "us-test1"
+}
+
+resource "google_project_iam_binding" "serviceaccount-control-plane" {
+  members = ["serviceAccount:control-plane-minimal-g-sh4okp@testproject.iam.gserviceaccount.com"]
+  project = "testproject"
+  role    = "roles/container.serviceAgent"
+}
+
+resource "google_project_iam_binding" "serviceaccount-nodes" {
+  members = ["serviceAccount:node-minimal-gce-privat-sh4okp@testproject.iam.gserviceaccount.com"]
+  project = "testproject"
+  role    = "roles/compute.viewer"
+}
+
+resource "google_service_account" "control-plane" {
+  account_id  = "control-plane-minimal-g-sh4okp"
+  description = "kubernetes control-plane instances"
+  project     = "testproject"
+}
+
+resource "google_service_account" "node" {
+  account_id  = "node-minimal-gce-privat-sh4okp"
+  description = "kubernetes worker nodes"
+  project     = "testproject"
 }
 
 terraform {

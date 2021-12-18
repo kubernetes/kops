@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"google.golang.org/api/googleapi"
+	"k8s.io/kops/pkg/truncate"
 )
 
 func IsNotFound(err error) bool {
@@ -48,6 +49,29 @@ func IsNotReady(err error) bool {
 	return false
 }
 
+// ClusterSuffixedName returns a cluster-suffixed name, with a maxLength
+func ClusterSuffixedName(objectName string, clusterName string, maxLength int) (string, error) {
+	prefix := objectName + "-"
+	suffixLength := maxLength - len(prefix)
+	if suffixLength < 10 {
+		return "", fmt.Errorf("cannot construct a reasonable object name of length %d with a prefix of length %d (%q)", maxLength, len(prefix), prefix)
+	}
+
+	// GCE does not support . in tags / names
+	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
+
+	opt := truncate.TruncateStringOptions{
+		MaxLength:     suffixLength,
+		AlwaysAddHash: false,
+		HashLength:    6,
+	}
+	suffix := truncate.TruncateString(safeClusterName, opt)
+
+	return prefix + suffix, nil
+}
+
+// SafeClusterName returns a cluster-suffixed name
+// deprecated: prefer ClusterSuffixedName
 func SafeClusterName(clusterName string) string {
 	// GCE does not support . in tags / names
 	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
@@ -60,6 +84,11 @@ func SafeObjectName(name string, clusterName string) string {
 
 	// TODO: If the cluster name > some max size (32?) we should curtail it
 	return SafeClusterName(gceName)
+}
+
+// ServiceAccountName returns the cluster-suffixed service-account name
+func ServiceAccountName(name string, clusterName string) (string, error) {
+	return ClusterSuffixedName(name, clusterName, 30)
 }
 
 // LastComponent returns the last component of a URL, i.e. anything after the last slash
