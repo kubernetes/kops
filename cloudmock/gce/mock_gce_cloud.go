@@ -49,7 +49,6 @@ type MockGCECloud struct {
 	iamClient                  *iam.Service
 	storageClient              *storage.Service
 	cloudResourceManagerClient *cloudresourcemanager.Service
-	storageClient              *storage.Service
 }
 
 var _ gce.GCECloud = &MockGCECloud{}
@@ -64,7 +63,6 @@ func InstallMockGCECloud(region string, project string) *MockGCECloud {
 		iamClient:                  mockiam.New(project),
 		storageClient:              mockstorage.New(),
 		cloudResourceManagerClient: mockcloudresourcemanager.New(),
-		storageClient:              mockstorage.New(),
 	}
 	gce.CacheGCECloudInstance(region, project, c)
 	return c
