@@ -18,7 +18,6 @@ package model
 
 import (
 	"bytes"
-	"compress/gzip"
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
@@ -26,7 +25,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"text/template"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops/model"
@@ -227,11 +225,7 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 
 		// Bastions can have AdditionalUserData, but if there isn't any skip this part
 		if len(ig.Spec.AdditionalUserData) == 0 {
-			templateResource, err := NewTemplateResource("nodeup", "", nil, nil)
-			if err != nil {
-				return nil, err
-			}
-			return templateResource, nil
+			return fi.NewStringResource(""), nil
 		}
 	}
 
@@ -295,36 +289,12 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 		return err
 	}
 
-	functions := template.FuncMap{
-		"NodeUpSourceAmd64": func() string {
-			if b.builder.NodeUpAssets[architectures.ArchitectureAmd64] != nil {
-				return strings.Join(b.builder.NodeUpAssets[architectures.ArchitectureAmd64].Locations, ",")
-			}
-			return ""
-		},
-		"NodeUpSourceHashAmd64": func() string {
-			if b.builder.NodeUpAssets[architectures.ArchitectureAmd64] != nil {
-				return b.builder.NodeUpAssets[architectures.ArchitectureAmd64].Hash.Hex()
-			}
-			return ""
-		},
-		"NodeUpSourceArm64": func() string {
-			if b.builder.NodeUpAssets[architectures.ArchitectureArm64] != nil {
-				return strings.Join(b.builder.NodeUpAssets[architectures.ArchitectureArm64].Locations, ",")
-			}
-			return ""
-		},
-		"NodeUpSourceHashArm64": func() string {
-			if b.builder.NodeUpAssets[architectures.ArchitectureArm64] != nil {
-				return b.builder.NodeUpAssets[architectures.ArchitectureArm64].Hash.Hex()
-			}
-			return ""
-		},
-		"KubeEnv": func() string {
-			return config
-		},
+	var nodeupScript resources.NodeUpScript
+	nodeupScript.NodeUpAssets = b.builder.NodeUpAssets
+	nodeupScript.KubeEnv = config
 
-		"EnvironmentVariables": func() (string, error) {
+	{
+		nodeupScript.EnvironmentVariables = func() (string, error) {
 			env, err := b.buildEnvironmentVariables(c.Cluster)
 			if err != nil {
 				return "", err
@@ -342,13 +312,13 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 				b.WriteString(fmt.Sprintf("export %s=%s\n", k, env[k]))
 			}
 			return b.String(), nil
-		},
+		}
 
-		"ProxyEnv": func() string {
+		nodeupScript.ProxyEnv = func() (string, error) {
 			return b.createProxyEnv(c.Cluster.Spec.EgressProxy)
-		},
+		}
 
-		"ClusterSpec": func() (string, error) {
+		nodeupScript.ClusterSpec = func() (string, error) {
 			cs := c.Cluster.Spec
 
 			spec := make(map[string]interface{})
@@ -399,24 +369,16 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 				return "", fmt.Errorf("error converting cluster spec to yaml for inclusion within bootstrap script: %v", err)
 			}
 			return string(content), nil
-		},
-
-		"CompressUserData": func() *bool {
-			return b.ig.Spec.CompressUserData
-		},
-
-		"GzipBase64": func(data string) (string, error) {
-			return gzipBase64(data)
-		},
-
-		"SetSysctls": func() string {
-			// By setting some sysctls early, we avoid broken configurations that prevent nodeup download.
-			// See https://github.com/kubernetes/kops/issues/10206 for details.
-			return setSysctls()
-		},
+		}
 	}
 
-	nodeupScriptResource, err := NewTemplateResource("nodeup", resources.NodeUpTemplate, functions, nil)
+	nodeupScript.CompressUserData = fi.BoolValue(b.ig.Spec.CompressUserData)
+
+	// By setting some sysctls early, we avoid broken configurations that prevent nodeup download.
+	// See https://github.com/kubernetes/kops/issues/10206 for details.
+	nodeupScript.SetSysctls = setSysctls()
+
+	nodeupScriptResource, err := nodeupScript.Build()
 	if err != nil {
 		return err
 	}
@@ -437,7 +399,7 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 	return nil
 }
 
-func (b *BootstrapScript) createProxyEnv(ps *kops.EgressProxySpec) string {
+func (b *BootstrapScript) createProxyEnv(ps *kops.EgressProxySpec) (string, error) {
 	var buffer bytes.Buffer
 
 	if ps != nil && ps.HTTPProxy.Host != "" {
@@ -484,27 +446,7 @@ func (b *BootstrapScript) createProxyEnv(ps *kops.EgressProxySpec) string {
 		buffer.WriteString("systemctl daemon-reload\n")
 		buffer.WriteString("systemctl daemon-reexec\n")
 	}
-	return buffer.String()
-}
-
-func gzipBase64(data string) (string, error) {
-	var b bytes.Buffer
-	gz := gzip.NewWriter(&b)
-
-	_, err := gz.Write([]byte(data))
-	if err != nil {
-		return "", err
-	}
-
-	if err = gz.Flush(); err != nil {
-		return "", err
-	}
-
-	if err = gz.Close(); err != nil {
-		return "", err
-	}
-
-	return base64.StdEncoding.EncodeToString(b.Bytes()), nil
+	return buffer.String(), nil
 }
 
 func setSysctls() string {

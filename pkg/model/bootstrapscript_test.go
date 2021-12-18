@@ -44,8 +44,10 @@ func Test_ProxyFunc(t *testing.T) {
 		},
 	}
 
-	script := b.createProxyEnv(ps)
-
+	script, err := b.createProxyEnv(ps)
+	if err != nil {
+		t.Fatalf("createProxyEnv failed: %v", err)
+	}
 	if script == "" {
 		t.Fatalf("script cannot be empty")
 	}
@@ -56,7 +58,11 @@ func Test_ProxyFunc(t *testing.T) {
 
 	ps.ProxyExcludes = "www.google.com,www.kubernetes.io"
 
-	script = b.createProxyEnv(ps)
+	script, err = b.createProxyEnv(ps)
+	if err != nil {
+		t.Fatalf("createProxyEnv failed: %v", err)
+	}
+
 	if !strings.Contains(script, "no_proxy="+ps.ProxyExcludes) {
 		t.Fatalf("script not setting no_proxy properly")
 	}
