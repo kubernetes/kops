@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package model
+package resources
 
 import (
 	"bytes"
@@ -35,7 +35,7 @@ type templateResource struct {
 
 var _ fi.Resource = &templateResource{}
 
-func NewTemplateResource(key string, definition string, functions template.FuncMap, context interface{}) (*templateResource, error) {
+func newTemplateResource(key string, definition string, functions template.FuncMap, context interface{}) (*templateResource, error) {
 	r := &templateResource{
 		key:        key,
 		definition: definition,

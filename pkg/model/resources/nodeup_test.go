@@ -22,7 +22,7 @@ import (
 )
 
 func Test_NodeUpTabs(t *testing.T) {
-	for i, line := range strings.Split(NodeUpTemplate, "\n") {
+	for i, line := range strings.Split(nodeUpTemplate, "\n") {
 		if strings.Contains(line, "\t") {
 			t.Errorf("NodeUpTemplate contains unexpected character %q on line %d: %q", "\t", i, line)
 		}
