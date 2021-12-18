@@ -268,7 +268,7 @@ func (p *SSHPath) WriteTo(out io.Writer) (int64, error) {
 
 	f, err := sftpClient.Open(p.path)
 	if err != nil {
-		return 0, fmt.Errorf("error opening file %s over sftp: %v", p, err)
+		return 0, fmt.Errorf("error opening file %s over sftp: %w", p, err)
 	}
 	defer f.Close()
 
