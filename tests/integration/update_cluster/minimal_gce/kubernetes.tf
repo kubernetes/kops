@@ -460,7 +460,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-examp
     preemptible         = false
   }
   service_account {
-    email  = "control-plane-minimal-g-fu1mg6@testproject.iam.gserviceaccount.com"
+    email  = google_service_account.control-plane.email
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
   }
   tags = ["minimal-gce-example-com-k8s-io-role-master"]
@@ -506,7 +506,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-example-com" {
     preemptible         = false
   }
   service_account {
-    email  = "node-minimal-gce-example-com@testproject.iam.gserviceaccount.com"
+    email  = google_service_account.node.email
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_only"]
   }
   tags = ["minimal-gce-example-com-k8s-io-role-node"]
