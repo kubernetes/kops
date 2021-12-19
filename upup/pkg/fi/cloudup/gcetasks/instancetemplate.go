@@ -456,8 +456,8 @@ type terraformInstanceTemplate struct {
 }
 
 type terraformTemplateServiceAccount struct {
-	Email  string   `json:"email" cty:"email"`
-	Scopes []string `json:"scopes" cty:"scopes"`
+	Email  *terraformWriter.Literal `json:"email" cty:"email"`
+	Scopes []string                 `json:"scopes" cty:"scopes"`
 }
 
 type terraformScheduling struct {
@@ -537,18 +537,20 @@ func addMetadata(target *terraform.TerraformTarget, name string, metadata *compu
 	return m, nil
 }
 
-func mapServiceAccountsToTerraform(serviceAccounts []*compute.ServiceAccount) []*terraformTemplateServiceAccount {
+func mapServiceAccountsToTerraform(serviceAccounts []*ServiceAccount, saScopes []string) []*terraformTemplateServiceAccount {
+	var scopes []string
+	for _, s := range saScopes {
+		s = scopeToLongForm(s)
+		scopes = append(scopes, s)
+	}
 	// Note that GCE currently only allows one service account per VM,
 	// but the model in both the API and terraform allows more.
 	var out []*terraformTemplateServiceAccount
 	for _, serviceAccount := range serviceAccounts {
 		tsa := &terraformTemplateServiceAccount{
-			Email:  serviceAccount.Email,
-			Scopes: serviceAccount.Scopes,
+			Email:  serviceAccount.TerraformLink(),
+			Scopes: scopes,
 		}
-		// for _, scope := range serviceAccount.Scopes {
-		//	tsa.Scopes = append(tsa.Scopes, scope)
-		// }
 		out = append(out, tsa)
 	}
 	return out
@@ -573,7 +575,7 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	tf.Labels = i.Properties.Labels
 	tf.Tags = i.Properties.Tags.Items
 
-	tf.ServiceAccounts = mapServiceAccountsToTerraform(i.Properties.ServiceAccounts)
+	tf.ServiceAccounts = mapServiceAccountsToTerraform(e.ServiceAccounts, e.Scopes)
 
 	for _, d := range i.Properties.Disks {
 		tfd := &terraformInstanceTemplateAttachedDisk{
