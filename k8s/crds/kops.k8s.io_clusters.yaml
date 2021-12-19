@@ -1347,6 +1347,10 @@ spec:
                     description: AdmissionControlConfigFile is the location of the
                       admission-control-config-file
                     type: string
+                  advertiseAddress:
+                    description: AdvertiseAddress is the IP address on which to advertise
+                      the apiserver to members of the cluster.
+                    type: string
                   allowPrivileged:
                     description: AllowPrivileged indicates if we can run privileged
                       containers
