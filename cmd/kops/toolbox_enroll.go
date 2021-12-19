@@ -33,7 +33,12 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/commands/commandutils"
@@ -196,14 +201,29 @@ func RunToolboxEnroll(ctx context.Context, f commandutils.Factory, out io.Writer
 	}
 
 	if options.Host != "" {
-		if err := enrollHost(ctx, options, string(scriptBytes)); err != nil {
+		// TODO: This is the pattern we use a lot, but should we try to access it directly?
+		contextName := cluster.ObjectMeta.Name
+		clientGetter := genericclioptions.NewConfigFlags(true)
+		clientGetter.Context = &contextName
+
+		restConfig, err := clientGetter.ToRESTConfig()
+		if err != nil {
+			return fmt.Errorf("cannot load kubecfg settings for %q: %w", contextName, err)
+		}
+
+		if err := enrollHost(ctx, options, string(scriptBytes), restConfig); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func enrollHost(ctx context.Context, options *ToolboxEnrollOptions, nodeupScript string) error {
+func enrollHost(ctx context.Context, options *ToolboxEnrollOptions, nodeupScript string, restConfig *rest.Config) error {
+	corev1Client, err := corev1client.NewForConfig(restConfig)
+	if err != nil {
+		return fmt.Errorf("error building corev1 client: %w", err)
+	}
+
 	sudo := true
 
 	host, err := NewSSHHost(ctx, options.Host, options.SSHUser, sudo)
@@ -239,13 +259,37 @@ func enrollHost(ctx context.Context, options *ToolboxEnrollOptions, nodeupScript
 	}
 	klog.Infof("public key is %s", string(publicKeyBytes))
 
+	hostname, err := host.getHostname(ctx)
+	if err != nil {
+		return err
+	}
+
+	if err := createSecret(ctx, options, hostname, publicKeyBytes, corev1Client); err != nil {
+		return err
+	}
+
 	if len(nodeupScript) != 0 {
 		if _, err := host.runScript(ctx, nodeupScript, ExecOptions{Sudo: sudo, Echo: true}); err != nil {
 			return err
 		}
 	}
 	return nil
+}
 
+func createSecret(ctx context.Context, options *ToolboxEnrollOptions, nodeName string, publicKey []byte, client corev1client.CoreV1Interface) error {
+	secret := &corev1.Secret{}
+	secret.Namespace = "kops-system"
+	secret.Name = nodeName
+	secret.Data = map[string][]byte{
+		"instance-group": []byte(options.InstanceGroup),
+		"public-key":     publicKey,
+	}
+
+	if _, err := client.Secrets(secret.Namespace).Create(ctx, secret, metav1.CreateOptions{}); err != nil {
+		return fmt.Errorf("failed to create secret %s/%s: %w", secret.Namespace, secret.Name, err)
+	}
+
+	return nil
 }
 
 const scriptCreateKey = `
@@ -390,4 +434,18 @@ func (s *SSHHost) runCommand(ctx context.Context, command string, options ExecOp
 		return output, fmt.Errorf("error running command %q: %w", command, err)
 	}
 	return output, nil
+}
+
+func (s *SSHHost) getHostname(ctx context.Context) (string, error) {
+	output, err := s.runCommand(ctx, "hostname", ExecOptions{Sudo: false, Echo: true})
+	if err != nil {
+		return "", fmt.Errorf("failed to get hostname: %w", err)
+	}
+
+	hostname := output.Stdout.String()
+	hostname = strings.TrimSpace(hostname)
+	if len(hostname) == 0 {
+		return "", fmt.Errorf("hostname was empty")
+	}
+	return hostname, nil
 }

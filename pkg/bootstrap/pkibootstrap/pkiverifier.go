@@ -13,20 +13,26 @@ import (
 	"strings"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/pki"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type verifier struct {
-	opt Options
+	opt    Options
+	client client.Client
 }
 
 // NewVerifier constructs a new verifier.
-func NewVerifier(opt *Options) (bootstrap.Verifier, error) {
+func NewVerifier(opt *Options, client client.Client) (bootstrap.Verifier, error) {
 	return &verifier{
-		opt: *opt,
+		opt:    *opt,
+		client: client,
 	}, nil
 }
 
@@ -100,13 +106,29 @@ func (v *verifier) VerifyToken(ctx context.Context, authToken string, body []byt
 }
 
 func (v *verifier) getSigningKey(ctx context.Context, tokenData *gcetpm.AuthTokenData, useInstanceIDForNodeName bool) (*bootstrap.VerifyResult, crypto.PublicKey, error) {
-	pubKeyBytes := `
------BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2cAR63T3+r2wIpvc3KH8WnmFLNcN
-kEBX1aWZ3vqlWYT8+NrgssOspKc2tCAd5qXCB+jQH2ZiItVSaC5zygEDEw==
------END PUBLIC KEY-----
-`
+	nodeName := tokenData.Instance
+	id := types.NamespacedName{
+		Namespace: "kops-system",
+		Name:      nodeName,
+	}
+	var secret corev1.Secret
+	if err := v.client.Get(ctx, id, &secret); err != nil {
+		if apierrors.IsNotFound(err) {
+			return nil, nil, fmt.Errorf("secret not found for %v", id)
+		}
+		return nil, nil, fmt.Errorf("error getting secret %v: %w", id, err)
+	}
 
+	// TODO: Check instance-group matches request (does it matter?)
+
+	pubKeyBytes := secret.Data["public-key"]
+	if pubKeyBytes == nil {
+		return nil, nil, fmt.Errorf("secret %v did not have public-key", id)
+	}
+	instanceGroupBytes := secret.Data["instance-group"]
+	if instanceGroupBytes == nil {
+		return nil, nil, fmt.Errorf("secret %v did not have instance-group", id)
+	}
 	pubKey, err := pki.ParsePEMPublicKey([]byte(pubKeyBytes))
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to parse public key: %w", err)
@@ -119,8 +141,8 @@ kEBX1aWZ3vqlWYT8+NrgssOspKc2tCAd5qXCB+jQH2ZiItVSaC5zygEDEw==
 	// }
 
 	result := &bootstrap.VerifyResult{
-		NodeName:          tokenData.Instance,
-		InstanceGroupName: "nodes-us-east4-a",
+		NodeName:          nodeName,
+		InstanceGroupName: string(instanceGroupBytes),
 		CertificateNames:  sans,
 	}
 

@@ -127,7 +127,7 @@ func main() {
 
 		pkiOptions := &pkibootstrap.Options{MaxTimeSkew: 300}
 		if pkiOptions != nil { //opt.Server.Provider.PKI != nil {
-			verifier, err := pkibootstrap.NewVerifier(pkiOptions)
+			verifier, err := pkibootstrap.NewVerifier(pkiOptions, mgr.GetClient())
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
