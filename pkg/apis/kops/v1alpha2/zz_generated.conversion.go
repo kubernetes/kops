@@ -4754,6 +4754,7 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.SecurePort = in.SecurePort
 	out.InsecurePort = in.InsecurePort
 	out.Address = in.Address
+	out.AdvertiseAddress = in.AdvertiseAddress
 	out.BindAddress = in.BindAddress
 	out.InsecureBindAddress = in.InsecureBindAddress
 	out.EnableBootstrapAuthToken = in.EnableBootstrapAuthToken
@@ -4865,6 +4866,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.SecurePort = in.SecurePort
 	out.InsecurePort = in.InsecurePort
 	out.Address = in.Address
+	out.AdvertiseAddress = in.AdvertiseAddress
 	out.BindAddress = in.BindAddress
 	out.InsecureBindAddress = in.InsecureBindAddress
 	out.EnableBootstrapAuthToken = in.EnableBootstrapAuthToken
