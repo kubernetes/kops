@@ -290,6 +290,8 @@ type KubeAPIServerConfig struct {
 	InsecurePort *int32 `json:"insecurePort,omitempty" flag:"insecure-port"`
 	// Address is the binding address for the kube api: Deprecated - use insecure-bind-address and bind-address
 	Address string `json:"address,omitempty" flag:"address"`
+	// AdvertiseAddress is the IP address on which to advertise the apiserver to members of the cluster.
+	AdvertiseAddress string `json:"advertiseAddress,omitempty" flag:"advertise-address"`
 	// BindAddress is the binding address for the secure kubernetes API
 	BindAddress string `json:"bindAddress,omitempty" flag:"bind-address"`
 	// InsecureBindAddress is the binding address for the InsecurePort for the insecure kubernetes API
