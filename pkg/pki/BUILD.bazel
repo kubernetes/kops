@@ -8,6 +8,7 @@ go_library(
         "csr.go",
         "issue.go",
         "privatekey.go",
+        "publickey.go",
         "sshkey.go",
     ],
     importpath = "k8s.io/kops/pkg/pki",
