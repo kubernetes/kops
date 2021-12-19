@@ -4,12 +4,12 @@ package sftp
 
 import "bytes"
 
-type sink struct{}
+type sinkfuzz struct{}
 
-func (*sink) Close() error                { return nil }
-func (*sink) Write(p []byte) (int, error) { return len(p), nil }
+func (*sinkfuzz) Close() error                { return nil }
+func (*sinkfuzz) Write(p []byte) (int, error) { return len(p), nil }
 
-var devnull = &sink{}
+var devnull = &sinkfuzz{}
 
 // To run: go-fuzz-build && go-fuzz
 func Fuzz(data []byte) int {

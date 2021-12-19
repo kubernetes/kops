@@ -5,3 +5,6 @@ server_standalone/server_standalone
 
 examples/*/id_rsa
 examples/*/id_rsa.pub
+
+memprofile.out
+memprofile.svg

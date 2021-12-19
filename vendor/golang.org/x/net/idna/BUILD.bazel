@@ -3,8 +3,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "go118.go",
         "idna10.0.0.go",
         "idna9.0.0.go",
+        "pre_go118.go",
         "punycode.go",
         "tables10.0.0.go",
         "tables11.0.0.go",

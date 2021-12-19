@@ -58,6 +58,6 @@ func (a FileStat) FileMode() os.FileMode {
 // Attributes parses file attributes byte blob and return them in a
 // FileStat object.
 func (r *Request) Attributes() *FileStat {
-	fs, _ := getFileStat(r.Flags, r.Attrs)
+	fs, _ := unmarshalFileStat(r.Flags, r.Attrs)
 	return fs
 }
