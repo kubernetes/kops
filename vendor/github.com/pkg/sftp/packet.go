@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"encoding"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"reflect"
-
-	"github.com/pkg/errors"
 )
 
 var (
@@ -36,6 +35,50 @@ func marshalUint64(b []byte, v uint64) []byte {
 
 func marshalString(b []byte, v string) []byte {
 	return append(marshalUint32(b, uint32(len(v))), v...)
+}
+
+func marshalFileInfo(b []byte, fi os.FileInfo) []byte {
+	// attributes variable struct, and also variable per protocol version
+	// spec version 3 attributes:
+	// uint32   flags
+	// uint64   size           present only if flag SSH_FILEXFER_ATTR_SIZE
+	// uint32   uid            present only if flag SSH_FILEXFER_ATTR_UIDGID
+	// uint32   gid            present only if flag SSH_FILEXFER_ATTR_UIDGID
+	// uint32   permissions    present only if flag SSH_FILEXFER_ATTR_PERMISSIONS
+	// uint32   atime          present only if flag SSH_FILEXFER_ACMODTIME
+	// uint32   mtime          present only if flag SSH_FILEXFER_ACMODTIME
+	// uint32   extended_count present only if flag SSH_FILEXFER_ATTR_EXTENDED
+	// string   extended_type
+	// string   extended_data
+	// ...      more extended data (extended_type - extended_data pairs),
+	// 	   so that number of pairs equals extended_count
+
+	flags, fileStat := fileStatFromInfo(fi)
+
+	b = marshalUint32(b, flags)
+	if flags&sshFileXferAttrSize != 0 {
+		b = marshalUint64(b, fileStat.Size)
+	}
+	if flags&sshFileXferAttrUIDGID != 0 {
+		b = marshalUint32(b, fileStat.UID)
+		b = marshalUint32(b, fileStat.GID)
+	}
+	if flags&sshFileXferAttrPermissions != 0 {
+		b = marshalUint32(b, fileStat.Mode)
+	}
+	if flags&sshFileXferAttrACmodTime != 0 {
+		b = marshalUint32(b, fileStat.Atime)
+		b = marshalUint32(b, fileStat.Mtime)
+	}
+
+	return b
+}
+
+func marshalStatus(b []byte, err StatusError) []byte {
+	b = marshalUint32(b, err.Code)
+	b = marshalString(b, err.msg)
+	b = marshalString(b, err.lang)
+	return b
 }
 
 func marshal(b []byte, v interface{}) []byte {
@@ -116,6 +159,63 @@ func unmarshalStringSafe(b []byte) (string, []byte, error) {
 	return string(b[:n]), b[n:], nil
 }
 
+func unmarshalAttrs(b []byte) (*FileStat, []byte) {
+	flags, b := unmarshalUint32(b)
+	return unmarshalFileStat(flags, b)
+}
+
+func unmarshalFileStat(flags uint32, b []byte) (*FileStat, []byte) {
+	var fs FileStat
+	if flags&sshFileXferAttrSize == sshFileXferAttrSize {
+		fs.Size, b, _ = unmarshalUint64Safe(b)
+	}
+	if flags&sshFileXferAttrUIDGID == sshFileXferAttrUIDGID {
+		fs.UID, b, _ = unmarshalUint32Safe(b)
+	}
+	if flags&sshFileXferAttrUIDGID == sshFileXferAttrUIDGID {
+		fs.GID, b, _ = unmarshalUint32Safe(b)
+	}
+	if flags&sshFileXferAttrPermissions == sshFileXferAttrPermissions {
+		fs.Mode, b, _ = unmarshalUint32Safe(b)
+	}
+	if flags&sshFileXferAttrACmodTime == sshFileXferAttrACmodTime {
+		fs.Atime, b, _ = unmarshalUint32Safe(b)
+		fs.Mtime, b, _ = unmarshalUint32Safe(b)
+	}
+	if flags&sshFileXferAttrExtended == sshFileXferAttrExtended {
+		var count uint32
+		count, b, _ = unmarshalUint32Safe(b)
+		ext := make([]StatExtended, count)
+		for i := uint32(0); i < count; i++ {
+			var typ string
+			var data string
+			typ, b, _ = unmarshalStringSafe(b)
+			data, b, _ = unmarshalStringSafe(b)
+			ext[i] = StatExtended{
+				ExtType: typ,
+				ExtData: data,
+			}
+		}
+		fs.Extended = ext
+	}
+	return &fs, b
+}
+
+func unmarshalStatus(id uint32, data []byte) error {
+	sid, data := unmarshalUint32(data)
+	if sid != id {
+		return &unexpectedIDErr{id, sid}
+	}
+	code, data := unmarshalUint32(data)
+	msg, data, _ := unmarshalStringSafe(data)
+	lang, _, _ := unmarshalStringSafe(data)
+	return &StatusError{
+		Code: code,
+		msg:  msg,
+		lang: lang,
+	}
+}
+
 type packetMarshaler interface {
 	marshalPacket() (header, payload []byte, err error)
 }
@@ -133,7 +233,7 @@ func marshalPacket(m encoding.BinaryMarshaler) (header, payload []byte, err erro
 func sendPacket(w io.Writer, m encoding.BinaryMarshaler) error {
 	header, payload, err := marshalPacket(m)
 	if err != nil {
-		return errors.Errorf("binary marshaller failed: %v", err)
+		return fmt.Errorf("binary marshaller failed: %w", err)
 	}
 
 	length := len(header) + len(payload) - 4 // subtract the uint32(length) from the start
@@ -146,12 +246,12 @@ func sendPacket(w io.Writer, m encoding.BinaryMarshaler) error {
 	binary.BigEndian.PutUint32(header[:4], uint32(length))
 
 	if _, err := w.Write(header); err != nil {
-		return errors.Errorf("failed to send packet: %v", err)
+		return fmt.Errorf("failed to send packet: %w", err)
 	}
 
 	if len(payload) > 0 {
 		if _, err := w.Write(payload); err != nil {
-			return errors.Errorf("failed to send packet payload: %v", err)
+			return fmt.Errorf("failed to send packet payload: %w", err)
 		}
 	}
 
@@ -639,12 +739,17 @@ func (p *sshFxpReadPacket) UnmarshalBinary(b []byte) error {
 const dataHeaderLen = 4 + 1 + 4 + 4
 
 func (p *sshFxpReadPacket) getDataSlice(alloc *allocator, orderID uint32) []byte {
-	dataLen := clamp(p.Len, maxTxPacket)
+	dataLen := p.Len
+	if dataLen > maxTxPacket {
+		dataLen = maxTxPacket
+	}
+
 	if alloc != nil {
 		// GetPage returns a slice with capacity = maxMsgLength this is enough to avoid new allocations in
 		// sshFxpDataPacket.MarshalBinary
 		return alloc.GetPage(orderID)[:dataLen]
 	}
+
 	// allocate with extra space for the header
 	return make([]byte, dataLen, dataLen+dataHeaderLen)
 }
@@ -1017,6 +1122,7 @@ func (p *StatVFS) marshalPacket() ([]byte, []byte, error) {
 	return header, buf.Bytes(), err
 }
 
+// MarshalBinary encodes the StatVFS as an SSH_FXP_EXTENDED_REPLY packet.
 func (p *StatVFS) MarshalBinary() ([]byte, error) {
 	header, payload, err := p.marshalPacket()
 	return append(header, payload...), err
@@ -1086,7 +1192,7 @@ func (p *sshFxpExtendedPacket) UnmarshalBinary(b []byte) error {
 	case "hardlink@openssh.com":
 		p.SpecificPacket = &sshFxpExtendedPacketHardlink{}
 	default:
-		return errors.Wrapf(errUnknownExtendedPacket, "packet type %v", p.SpecificPacket)
+		return fmt.Errorf("packet type %v: %w", p.SpecificPacket, errUnknownExtendedPacket)
 	}
 
 	return p.SpecificPacket.UnmarshalBinary(bOrig)

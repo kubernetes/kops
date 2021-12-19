@@ -464,10 +464,19 @@ func (fs *root) Lstat(r *Request) (ListerAt, error) {
 	return listerat{file}, nil
 }
 
+// implements RealpathFileLister interface
+func (fs *root) Realpath(p string) string {
+	if fs.startDirectory == "" || fs.startDirectory == "/" {
+		return cleanPath(p)
+	}
+	return cleanPathWithBase(fs.startDirectory, p)
+}
+
 // In memory file-system-y thing that the Hanlders live on
 type root struct {
-	rootFile *memFile
-	mockErr  error
+	rootFile       *memFile
+	mockErr        error
+	startDirectory string
 
 	mu    sync.Mutex
 	files map[string]*memFile

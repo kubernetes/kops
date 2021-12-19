@@ -86,6 +86,23 @@ type LstatFileLister interface {
 	Lstat(*Request) (ListerAt, error)
 }
 
+// RealPathFileLister is a FileLister that implements the Realpath method.
+// We use "/" as start directory for relative paths, implementing this
+// interface you can customize the start directory.
+// You have to return an absolute POSIX path.
+type RealPathFileLister interface {
+	FileLister
+	RealPath(string) string
+}
+
+// NameLookupFileLister is a FileLister that implmeents the LookupUsername and LookupGroupName methods.
+// If this interface is implemented, then longname ls formatting will use these to convert usernames and groupnames.
+type NameLookupFileLister interface {
+	FileLister
+	LookupUserName(string) string
+	LookupGroupName(string) string
+}
+
 // ListerAt does for file lists what io.ReaderAt does for files.
 // ListAt should return the number of entries copied and an io.EOF
 // error if at end of list. This is testable by comparing how many you
