@@ -86,6 +86,23 @@ func main() {
 	}
 
 	ctrl.SetLogger(klogr.New())
+
+	if err := buildScheme(); err != nil {
+		setupLog.Error(err, "error building scheme")
+		os.Exit(1)
+	}
+
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+		Scheme:             scheme,
+		MetricsBindAddress: metricsAddress,
+		LeaderElection:     true,
+		LeaderElectionID:   "kops-controller-leader",
+	})
+	if err != nil {
+		setupLog.Error(err, "unable to start manager")
+		os.Exit(1)
+	}
+
 	if opt.Server != nil {
 		var verifier bootstrap.Verifier
 		var err error
@@ -110,27 +127,7 @@ func main() {
 			setupLog.Error(err, "unable to create server")
 			os.Exit(1)
 		}
-		go func() {
-			err := srv.Start()
-			setupLog.Error(err, "unable to start server")
-			os.Exit(1)
-		}()
-	}
-
-	if err := buildScheme(); err != nil {
-		setupLog.Error(err, "error building scheme")
-		os.Exit(1)
-	}
-
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:             scheme,
-		MetricsBindAddress: metricsAddress,
-		LeaderElection:     true,
-		LeaderElectionID:   "kops-controller-leader",
-	})
-	if err != nil {
-		setupLog.Error(err, "unable to start manager")
-		os.Exit(1)
+		mgr.Add(srv)
 	}
 
 	if opt.EnableCloudIPAM {
