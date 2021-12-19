@@ -209,7 +209,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	if spec.ContainerRuntime != "" {
-		allErrs = append(allErrs, validateContainerRuntime(&spec.ContainerRuntime, fieldPath.Child("containerRuntime"))...)
+		allErrs = append(allErrs, validateContainerRuntime(c, spec.ContainerRuntime, fieldPath.Child("containerRuntime"))...)
 	}
 
 	if spec.Containerd != nil {
@@ -1296,11 +1296,15 @@ func validateCalicoEncapsulationMode(mode string, fldPath *field.Path) field.Err
 	return allErrs
 }
 
-func validateContainerRuntime(runtime *string, fldPath *field.Path) field.ErrorList {
+func validateContainerRuntime(c *kops.Cluster, runtime string, fldPath *field.Path) field.ErrorList {
 	valid := []string{"containerd", "docker"}
 
 	allErrs := field.ErrorList{}
-	allErrs = append(allErrs, IsValidValue(fldPath, runtime, valid)...)
+	allErrs = append(allErrs, IsValidValue(fldPath, &runtime, valid)...)
+
+	if runtime == "docker" && c.IsKubernetesGTE("1.24") {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "Docker CRI support was removed in Kubernetes 1.24: https://kubernetes.io/blog/2020/12/02/dockershim-faq"))
+	}
 
 	return allErrs
 }
