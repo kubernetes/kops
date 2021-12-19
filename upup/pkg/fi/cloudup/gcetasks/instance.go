@@ -446,7 +446,7 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 		tf.Zone = *e.Zone
 	}
 
-	tf.ServiceAccounts = mapServiceAccountsToTerraform(i.ServiceAccounts)
+	tf.ServiceAccounts = mapServiceAccountsToTerraform([]*ServiceAccount{e.ServiceAccount}, e.Scopes)
 
 	for _, d := range i.Disks {
 		tfd := &terraformInstanceAttachedDisk{
