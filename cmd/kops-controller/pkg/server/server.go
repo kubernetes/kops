@@ -17,6 +17,7 @@ limitations under the License.
 package server
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -81,12 +82,27 @@ func NewServer(opt *config.Options, verifier bootstrap.Verifier) (*Server, error
 	return s, nil
 }
 
-func (s *Server) Start() error {
+func (s *Server) Start(ctx context.Context) error {
 	var err error
 	s.keystore, s.keypairIDs, err = newKeystore(s.opt.Server.CABasePath, s.opt.Server.SigningCAs)
 	if err != nil {
 		return err
 	}
+
+	go func() {
+		<-ctx.Done()
+
+		shutdownContext, cleanup := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cleanup()
+
+		if err := s.server.Shutdown(shutdownContext); err != nil {
+			klog.Warningf("error during HTTP server shutdown: %v", err)
+		}
+
+		if err := s.server.Close(); err != nil {
+			klog.Warningf("error from HTTP server close: %v", err)
+		}
+	}()
 
 	klog.Infof("kops-controller listening on %s", s.opt.Server.Listen)
 	return s.server.ListenAndServeTLS(s.opt.Server.ServerCertificatePath, s.opt.Server.ServerKeyPath)
