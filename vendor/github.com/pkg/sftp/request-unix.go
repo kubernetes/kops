@@ -21,3 +21,7 @@ func testOsSys(sys interface{}) error {
 	}
 	return nil
 }
+
+func toLocalPath(p string) string {
+	return p
+}
