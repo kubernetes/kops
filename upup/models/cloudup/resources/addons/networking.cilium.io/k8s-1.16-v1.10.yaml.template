@@ -611,15 +611,6 @@ spec:
                 operator: In
                 values:
                 - linux
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: k8s-app
-                operator: In
-                values:
-                - cilium
-            topologyKey: kubernetes.io/hostname
       containers:
       - args:
         - --config-dir=/tmp/cilium/config-map
@@ -908,7 +899,7 @@ metadata:
   name: cilium-operator
   namespace: kube-system
 spec:
-  replicas: 1
+  replicas: {{ ControlPlaneControllerReplicas }}
   selector:
     matchLabels:
       io.cilium/app: operator
@@ -994,6 +985,21 @@ spec:
       serviceAccountName: cilium-operator
       tolerations:
       - operator: Exists
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            io.cilium/app: operator
+            name: cilium-operator
+      - maxSkew: 1
+        topologyKey: "kubernetes.io/hostname"
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            io.cilium/app: operator
+            name: cilium-operator
       volumes:
         # To read the configuration from the config map
       - configMap:
@@ -1040,16 +1046,6 @@ spec:
       labels:
         k8s-app: hubble-relay
     spec:
-      affinity:
-        podAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-                - key: "k8s-app"
-                  operator: In
-                  values:
-                    - cilium
-            topologyKey: "kubernetes.io/hostname"
       containers:
         - name: hubble-relay
           image: "quay.io/cilium/hubble-relay:{{ .Version }}"
