@@ -77,11 +77,12 @@ func TestSubnetCreate(t *testing.T) {
 			Tags:      map[string]string{"Name": "vpc1"},
 		}
 		subnet1 := &Subnet{
-			Name:      s("subnet1"),
-			Lifecycle: fi.LifecycleSync,
-			VPC:       vpc1,
-			CIDR:      s("172.20.1.0/24"),
-			Tags:      map[string]string{"Name": "subnet1"},
+			Name:                s("subnet1"),
+			Lifecycle:           fi.LifecycleSync,
+			VPC:                 vpc1,
+			CIDR:                s("172.20.1.0/24"),
+			ResourceBasedNaming: fi.Bool(true),
+			Tags:                map[string]string{"Name": "subnet1"},
 		}
 
 		return map[string]fi.Task{
@@ -118,8 +119,13 @@ func TestSubnetCreate(t *testing.T) {
 
 		expected := &ec2.Subnet{
 			CidrBlock: aws.String("172.20.1.0/24"),
-			SubnetId:  aws.String("subnet-1"),
-			VpcId:     aws.String("vpc-1"),
+			PrivateDnsNameOptionsOnLaunch: &ec2.PrivateDnsNameOptionsOnLaunch{
+				EnableResourceNameDnsAAAARecord: aws.Bool(false),
+				EnableResourceNameDnsARecord:    aws.Bool(true),
+				HostnameType:                    aws.String(ec2.HostnameTypeResourceName),
+			},
+			SubnetId: aws.String("subnet-1"),
+			VpcId:    aws.String("vpc-1"),
 			Tags: buildTags(map[string]string{
 				"Name": "subnet1",
 			}),
@@ -159,12 +165,13 @@ func TestSubnetCreateIPv6(t *testing.T) {
 			VPC:       vpc1,
 		}
 		subnet1 := &Subnet{
-			Name:      s("subnet1"),
-			Lifecycle: fi.LifecycleSync,
-			VPC:       vpc1,
-			CIDR:      s("172.20.1.0/24"),
-			IPv6CIDR:  s("2001:db8:0:1::/64"),
-			Tags:      map[string]string{"Name": "subnet1"},
+			Name:                s("subnet1"),
+			Lifecycle:           fi.LifecycleSync,
+			VPC:                 vpc1,
+			CIDR:                s("172.20.1.0/24"),
+			IPv6CIDR:            s("2001:db8:0:1::/64"),
+			ResourceBasedNaming: fi.Bool(true),
+			Tags:                map[string]string{"Name": "subnet1"},
 		}
 
 		return map[string]fi.Task{
@@ -210,6 +217,11 @@ func TestSubnetCreateIPv6(t *testing.T) {
 						State: aws.String(ec2.SubnetCidrBlockStateCodeAssociated),
 					},
 				},
+			},
+			PrivateDnsNameOptionsOnLaunch: &ec2.PrivateDnsNameOptionsOnLaunch{
+				EnableResourceNameDnsAAAARecord: aws.Bool(true),
+				EnableResourceNameDnsARecord:    aws.Bool(true),
+				HostnameType:                    aws.String(ec2.HostnameTypeResourceName),
 			},
 			SubnetId: aws.String("subnet-1"),
 			VpcId:    aws.String("vpc-1"),
@@ -303,6 +315,11 @@ func TestSubnetCreateIPv6NetNum(t *testing.T) {
 						State: aws.String(ec2.SubnetCidrBlockStateCodeAssociated),
 					},
 				},
+			},
+			PrivateDnsNameOptionsOnLaunch: &ec2.PrivateDnsNameOptionsOnLaunch{
+				EnableResourceNameDnsAAAARecord: aws.Bool(false),
+				EnableResourceNameDnsARecord:    aws.Bool(false),
+				HostnameType:                    aws.String(ec2.HostnameTypeIpName),
 			},
 			SubnetId: aws.String("subnet-1"),
 			VpcId:    aws.String("vpc-1"),
@@ -426,8 +443,13 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 		}
 		expected := &ec2.Subnet{
 			CidrBlock: aws.String("172.20.1.0/24"),
-			SubnetId:  aws.String("subnet-1"),
-			VpcId:     aws.String("vpc-1"),
+			PrivateDnsNameOptionsOnLaunch: &ec2.PrivateDnsNameOptionsOnLaunch{
+				EnableResourceNameDnsAAAARecord: aws.Bool(false),
+				EnableResourceNameDnsARecord:    aws.Bool(false),
+				HostnameType:                    aws.String(ec2.HostnameTypeIpName),
+			},
+			SubnetId: aws.String("subnet-1"),
+			VpcId:    aws.String("vpc-1"),
 			Tags: buildTags(map[string]string{
 				"Name": "ExistingSubnet",
 				"kubernetes.io/cluster/cluster.example.com": "shared",
