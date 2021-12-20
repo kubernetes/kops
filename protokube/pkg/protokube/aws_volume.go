@@ -126,9 +126,8 @@ func (a *AWSVolumes) discoverTags() error {
 
 	a.clusterTag = clusterID
 
-	if *instance.PrivateDnsNameOptions.HostnameType == ec2.HostnameTypeResourceName {
-		a.internalIP = net.ParseIP(aws.StringValue(instance.Ipv6Address))
-	} else {
+	a.internalIP = net.ParseIP(aws.StringValue(instance.Ipv6Address))
+	if a.internalIP == nil {
 		a.internalIP = net.ParseIP(aws.StringValue(instance.PrivateIpAddress))
 	}
 	if a.internalIP == nil {
