@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
 )
 
@@ -29,6 +30,9 @@ func buildMinimalNodeInstanceGroup(subnets ...string) *kopsapi.InstanceGroup {
 	g := &kopsapi.InstanceGroup{}
 	g.ObjectMeta.Name = "nodes"
 	g.Spec.Role = kopsapi.InstanceGroupRoleNode
+	g.Spec.MinSize = fi.Int32(1)
+	g.Spec.MaxSize = fi.Int32(1)
+	g.Spec.Image = "my-image"
 	g.Spec.Subnets = subnets
 
 	return g
@@ -38,6 +42,9 @@ func buildMinimalMasterInstanceGroup(subnet string) *kopsapi.InstanceGroup {
 	g := &kopsapi.InstanceGroup{}
 	g.ObjectMeta.Name = "master-" + subnet
 	g.Spec.Role = kopsapi.InstanceGroupRoleMaster
+	g.Spec.MinSize = fi.Int32(1)
+	g.Spec.MaxSize = fi.Int32(1)
+	g.Spec.Image = "my-image"
 	g.Spec.Subnets = []string{subnet}
 
 	return g
@@ -61,6 +68,16 @@ func TestPopulateInstanceGroup_Role_Required(t *testing.T) {
 	channel := &kopsapi.Channel{}
 
 	expectErrorFromPopulateInstanceGroup(t, cluster, g, channel, "spec.role")
+}
+
+func TestPopulateInstanceGroup_Image_Required(t *testing.T) {
+	_, cluster := buildMinimalCluster()
+	g := buildMinimalNodeInstanceGroup()
+	g.Spec.Image = ""
+
+	channel := &kopsapi.Channel{}
+
+	expectErrorFromPopulateInstanceGroup(t, cluster, g, channel, "unable to determine default image for InstanceGroup nodes")
 }
 
 func expectErrorFromPopulateInstanceGroup(t *testing.T, cluster *kopsapi.Cluster, g *kopsapi.InstanceGroup, channel *kopsapi.Channel, message string) {
