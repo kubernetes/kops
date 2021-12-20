@@ -991,9 +991,8 @@ func validateExternalPolicies(role string, policies []string, fldPath *field.Pat
 func validateEtcdClusterSpec(spec kops.EtcdClusterSpec, c *kops.Cluster, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if spec.Name == "" {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("name"), "etcdCluster did not have name"))
-	}
+	allErrs = append(allErrs, IsValidValue(fieldPath.Child("name"), &spec.Name, []string{"cilium", "main", "events"})...)
+
 	if spec.Provider != "" {
 		value := string(spec.Provider)
 		allErrs = append(allErrs, IsValidValue(fieldPath.Child("provider"), &value, kops.SupportedEtcdProviderTypes)...)
