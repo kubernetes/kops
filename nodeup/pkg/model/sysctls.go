@@ -169,7 +169,7 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"")
 		for _, param := range params {
 			if !strings.ContainsRune(param, '=') {
-				return fmt.Errorf("Invalid SysctlParameter: expected %q to contain '='", param)
+				return fmt.Errorf("invalid SysctlParameter: expected %q to contain '='", param)
 			}
 			sysctls = append(sysctls, param)
 		}
@@ -181,7 +181,7 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"")
 		for _, param := range params {
 			if !strings.ContainsRune(param, '=') {
-				return fmt.Errorf("Invalid SysctlParameter: expected %q to contain '='", param)
+				return fmt.Errorf("invalid SysctlParameter: expected %q to contain '='", param)
 			}
 			sysctls = append(sysctls, param)
 		}
