@@ -402,6 +402,11 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 		e.LoadBalancerName = actual.LoadBalancerName
 	}
 
+	// An existing internal NLB can't be updated to dualstack.
+	if fi.StringValue(actual.Scheme) == elbv2.LoadBalancerSchemeEnumInternal && fi.StringValue(actual.IpAddressType) == elbv2.IpAddressTypeIpv4 {
+		e.IpAddressType = actual.IpAddressType
+	}
+
 	// We allow for the LoadBalancerName to be wrong:
 	// 1. We don't want to force a rename of the NLB, because that is a destructive operation
 	if fi.StringValue(e.LoadBalancerName) != fi.StringValue(actual.LoadBalancerName) {
