@@ -134,21 +134,24 @@ spec:
         {{- end }}
       nodeSelector:
         kubernetes.io/os: linux
+{{- if .KubeDNS.Affinity }}
       affinity:
-        {{- if .KubeDNS.Affinity }}
 {{ ToYAML .KubeDNS.Affinity | indent 8 }}
-        {{- else }}
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                  - key: k8s-app
-                    operator: In
-                    values: ["kube-dns"]
-              topologyKey: kubernetes.io/hostname
-        {{- end }}
+{{- end }}
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            k8s-app: kube-dns
+      - maxSkew: 1
+        topologyKey: "kubernetes.io/hostname"
+        # Normally we use DoNotSchedule here, but because CoreDNS autoscales, we cannot guarantee this constraint can be satisfied
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            k8s-app: kube-dns
       containers:
       - name: coredns
         image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}k8s.gcr.io/coredns/coredns:v1.8.5{{ end }}
