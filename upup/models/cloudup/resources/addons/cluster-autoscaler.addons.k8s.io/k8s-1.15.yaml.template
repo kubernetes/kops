@@ -243,28 +243,15 @@ spec:
         prometheus.io/port: "8085"
         prometheus.io/scrape: "true"
     spec:
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app
-                operator: In
-                values:
-                - cluster-autoscaler
-            topologyKey: kubernetes.com/hostname
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                  - cluster-autoscaler
-              topologyKey: topology.kubernetes.io/zone
       priorityClassName: system-cluster-critical
       serviceAccountName: cluster-autoscaler
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+      - maxSkew: 1
+        topologyKey: "kubernetes.io/hostname"
+        whenUnsatisfiable: DoNotSchedule
       {{ if not UseServiceAccountExternalPermissions }}
       tolerations:
       - operator: "Exists"
