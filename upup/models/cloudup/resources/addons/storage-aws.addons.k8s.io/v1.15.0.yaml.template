@@ -55,7 +55,7 @@ provisioner: ebs.csi.aws.com
 allowVolumeExpansion: true
 volumeBindingMode: WaitForFirstConsumer
 {{ end }}
-{{ end }}
+
 ---
 
 apiVersion: rbac.authorization.k8s.io/v1
@@ -98,3 +98,5 @@ subjects:
 - kind: ServiceAccount
   name: aws-cloud-provider
   namespace: kube-system
+
+{{ end }}
