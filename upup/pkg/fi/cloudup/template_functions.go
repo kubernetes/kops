@@ -49,6 +49,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	apiModel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
@@ -284,6 +285,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["ArchitectureOfAMI"] = tf.architectureOfAMI
 
 	dest["ParseTaint"] = parseTaint
+
+	dest["UsesInstanceIDForNodeName"] = func() bool {
+		return nodeup.UsesInstanceIDForNodeName(tf.Cluster)
+	}
 
 	return nil
 }
