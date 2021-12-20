@@ -60,6 +60,7 @@ func LoadObjectsFrom(contents []byte) (ObjectList, error) {
 		data := make(map[string]interface{})
 		err := yaml.Unmarshal(section, &data)
 		if err != nil {
+			klog.Infof("invalid YAML section: %s", string(section))
 			return nil, fmt.Errorf("error parsing yaml: %v", err)
 		}
 
