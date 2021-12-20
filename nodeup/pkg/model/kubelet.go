@@ -22,6 +22,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"k8s.io/kops/pkg/model/components"
 
@@ -31,6 +32,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/nodelabels"
@@ -147,6 +149,49 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if err := b.addContainerizedMounter(c); err != nil {
 		return err
+	}
+
+	if kubeletConfig.CgroupDriver == "systemd" && b.Cluster.Spec.ContainerRuntime == "containerd" {
+
+		{
+			cgroup := kubeletConfig.KubeletCgroups
+			if cgroup != "" {
+				c.EnsureTask(b.buildCgroupService(cgroup))
+			}
+
+		}
+		{
+			cgroup := kubeletConfig.RuntimeCgroups
+			if cgroup != "" {
+				c.EnsureTask(b.buildCgroupService(cgroup))
+			}
+
+		}
+		/* Kubelet incorrectly interprets this value when CgroupDriver is systemd
+		See https://github.com/kubernetes/kubernetes/issues/101189
+		{
+			cgroup := kubeletConfig.KubeReservedCgroup
+			if cgroup != "" {
+				c.EnsureTask(b.buildCgroupService(cgroup))
+			}
+		}
+		*/
+
+		{
+			cgroup := kubeletConfig.SystemCgroups
+			if cgroup != "" {
+				c.EnsureTask(b.buildCgroupService(cgroup))
+			}
+		}
+
+		/* This suffers from the same issue as KubeReservedCgroup
+		{
+			cgroup := kubeletConfig.SystemReservedCgroup
+			if cgroup != "" {
+				c.EnsureTask(b.buildCgroupService(cgroup))
+			}
+		}
+		*/
 	}
 
 	c.AddTask(b.buildSystemdService())
@@ -283,6 +328,13 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Service", "MemoryAccounting", "true")
 
 	manifest.Set("Install", "WantedBy", "multi-user.target")
+
+	if b.Cluster.Spec.Kubelet.CgroupDriver == "systemd" && b.Cluster.Spec.ContainerRuntime == "containerd" {
+		cgroup := b.Cluster.Spec.Kubelet.KubeletCgroups
+		if cgroup != "" {
+			manifest.Set("Service", "Slice", strings.Trim(cgroup, "/")+".slice")
+		}
+	}
 
 	manifestString := manifest.Render()
 
@@ -614,4 +666,22 @@ func (b *KubeletBuilder) kubeletNames() ([]string, error) {
 
 	useInstanceIDForNodeName := b.Cluster.Spec.ExternalCloudControllerManager != nil && b.IsKubernetesGTE("1.23")
 	return awsup.GetInstanceCertificateNames(result, useInstanceIDForNodeName)
+}
+
+func (b *KubeletBuilder) buildCgroupService(name string) *nodetasks.Service {
+	name = strings.Trim(name, "/")
+
+	manifest := &systemd.Manifest{}
+	manifest.Set("Unit", "Documentation", "man:systemd.special(7)")
+	manifest.Set("Unit", "Before", "slices.target")
+	manifest.Set("Unit", "DefaultDependencies", "no")
+
+	manifestString := manifest.Render()
+
+	service := &nodetasks.Service{
+		Name:       name + ".slice",
+		Definition: s(manifestString),
+	}
+
+	return service
 }

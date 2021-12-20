@@ -25,6 +25,7 @@ import (
 	"github.com/blang/semver/v4"
 	"github.com/pelletier/go-toml"
 	"k8s.io/klog/v2"
+
 	"k8s.io/kops/nodeup/pkg/model/resources"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
@@ -195,6 +196,13 @@ func (b *ContainerdBuilder) buildSystemdService(sv semver.Version) *nodetasks.Se
 	manifest.Set("Service", "OOMScoreAdjust", "-999")
 
 	manifest.Set("Install", "WantedBy", "multi-user.target")
+
+	if b.Cluster.Spec.Kubelet.CgroupDriver == "systemd" {
+		cgroup := b.Cluster.Spec.Kubelet.RuntimeCgroups
+		if cgroup != "" {
+			manifest.Set("Service", "Slice", strings.Trim(cgroup, "/")+".slice")
+		}
+	}
 
 	manifestString := manifest.Render()
 	klog.V(8).Infof("Built service manifest %q\n%s", "containerd", manifestString)
