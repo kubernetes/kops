@@ -251,7 +251,6 @@ KubeletConfig:
     node-role.kubernetes.io/control-plane: ""
     node-role.kubernetes.io/master: ""
     node.kubernetes.io/exclude-from-external-load-balancers: ""
-  nonMasqueradeCIDR: ::/0
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
 UpdatePolicy: automatic

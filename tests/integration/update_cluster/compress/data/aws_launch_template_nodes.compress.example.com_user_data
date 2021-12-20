@@ -131,9 +131,9 @@ function download-release() {
 echo "== nodeup node config starting =="
 ensure-install-dir
 
-echo "H4sIAAAAAAAA/2SS327bPAzF7/0UvOldP9ku+hWb0Jst2dAASxEkT8BYjCZEJlP9cZa3H6QmzbJdGT6H4qF+1OAlm5nwzlndAOAxfvu6mW0W8+AmCkUCIMatJ6Nhhz5SAzAio6VNkoCWZh5jpKghhUzNIJzQMYV15uRG0vChmKtpSmMv9gdN5DU43kkDMFGITlhDrx5V/9AYGfbvM8S9Oyw4JvT+nLPPW1oF+XUq9uBzTBRmi/laQ9916vOT6lTX9n0xD3lNb5liqt7YALgRLWnYf4rKDkE5aUu7/w6139Srh151NwM+1DxPqTJi4dMoOX7J6ecVymCD5MOZG8RTTDSaD30tkjS0dVjJZhVkcqYU4jFebzB/3bxf4OlRdarv/nBkRMf68qu8DOiby27mtM3WOrYvyMZTuGwDgCY3JCf8gsFoGGmUcFI4ofPl3HPfdUt3z2JoF2/ku4voyjd+D0TP/9/dV3L/lF7Um9oGoEAb6ttaYUHVThha77btmWZ7LfgLNwBTOkrYr3y2jl+xviR2xRBeYnzLFNDQdeWVWNdWZgcxS2S3o5jOwZSGGhaYEsV2PLux+Q0AAP//AQAA//9kT9sbAAMAAA==" | base64 -d | gzip -d > conf/cluster_spec.yaml
+echo "H4sIAAAAAAAA/2SSzW7bMBCE73qKveSWUpKRBi2RS2u3iIEmMOwnWItrdmFq1+WPXL99IcWO6/YkaGY4XH5kF7S4ucqOva0A8Ji+fd3MN8tF5IHiKAGQ4DaQs7DDkKgC6FHQ0yZrRE/zgClRspBjoapTychCcV0kc08W3hV3Nd1YHNT/oIGCBZadVgADxcQqFlrzYNpZ5bTbv82Q9nxYSsoYwnmffdnSKurv02h3oaRMcb5crC20TWM+P5rGNHXbjuahrOlXoZQnr68AuEdPFvafkvFdNKz1WPfhMPUNrZm1prkZcDbtFyhPjETl1GtJX0r+eYXS+ajlcOYG6ZQy9e5dX6tmC/U0rBa3ijqwG4N4TNcTLF43bwd4fDCNaZu/HO2RxV5+TdAOQ3W5mwVti/cs/hnFBYqX2wCggbvMKs8YnYWeeo0ngwNyGNc9tU3zwveijnbpRr67iDx+0/dI9PTx7n4i91/0ot5kK4ARWje9rRWOqOoBYx14W59p1tfAP7gBhPJR434Vimd5xeklCVcAB3UvKLyjlM+tlLupKQplSnV/dlP1BwAA//8BAAD//wGCOA3dAgAA" | base64 -d | gzip -d > conf/cluster_spec.yaml
 
-echo "H4sIAAAAAAAA/1SNMWuEMBhA9/yK7AWtUhACHapI6lBpK9U5Jp9VSPKl+UzP+/fHcZPLG94bXmMxmc+I/5uBKLi6EGvQL9tvrQgEd+AWEnmubaIdImVwKBcsZBpdrtGFCHSSrPO0K69BRkyhVw4E92iAzuEbLQjeowF2RwqP6buiVfBVFqMfbFeXI7RXVw7HLKcxzG9zu2BV/fxN3ddHIZ+et5dXdgMAAP//AQAA//+eWv3rwQAAAA==" | base64 -d | gzip -d > conf/kube_env.yaml
+echo "H4sIAAAAAAAA/1SNsU6FMBRA935FvwAGHbSJQ0WDRtMYmTretBdE297SSwH//uXlTSxnOGc4XaDqvwpts8eiJOwsOkrjPD0Do5IR48iqbV2ovGLhBg+IOWDjKLaOYi7IJyneE6+QHPaFajYQUclEHvkcvimgkoY8iitqvk3fgH+UtPbOTrDMxgylfziWf5vt/rENn3+/+qXb9Ovj4MI9aA32SVwAAAD//wEAAP//iHPV0sEAAAA=" | base64 -d | gzip -d > conf/kube_env.yaml
 
 download-release
 echo "== nodeup node config done =="

@@ -154,7 +154,6 @@ spec:
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: ::/0
     podManifestPath: /etc/kubernetes/manifests
   kubernetesApiAccess:
   - 0.0.0.0/0
@@ -176,7 +175,6 @@ spec:
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: ::/0
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
   masterPublicName: api.minimal-ipv6.example.com

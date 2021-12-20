@@ -149,7 +149,6 @@ kubelet:
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
 
 __EOF_CLUSTER_SPEC
@@ -159,7 +158,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatekopeio.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: 1kBhpsQa2xlLCLM+2105qHhGaX1aCeQM0QQiydP4X5k=
+NodeupConfigHash: eoDs/YFhh4cWmk8NwSPAvi2+ftKDs88v6UadNjnvcsU=
 
 __EOF_KUBE_ENV
 
