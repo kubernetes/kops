@@ -64,7 +64,7 @@ var awsDedicatedInstanceExceptions = map[string]bool{
 // The InstanceGroup is simpler than the cluster spec, so we just populate in place (like the rest of k8s)
 func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup, cloud fi.Cloud, channel *kops.Channel) (*kops.InstanceGroup, error) {
 	var err error
-	err = validation.ValidateInstanceGroup(input, nil).ToAggregate()
+	err = validation.ValidateInstanceGroup(input, nil, false).ToAggregate()
 	if err != nil {
 		return nil, err
 	}

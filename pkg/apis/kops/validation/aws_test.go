@@ -386,7 +386,7 @@ func TestInstanceMetadataOptions(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		errs := ValidateInstanceGroup(test.ig, cloud)
+		errs := ValidateInstanceGroup(test.ig, cloud, true)
 		testErrors(t, test.ig.ObjectMeta.Name, errs, test.expected)
 	}
 }
