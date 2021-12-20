@@ -61,7 +61,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 		allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "tenancy"), &g.Spec.Tenancy, ec2.Tenancy_Values())...)
 	}
 
-	if strict {
+	if strict && g.Spec.Manager == kops.InstanceManagerCloudGroup {
 		if g.Spec.MaxSize == nil {
 			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "maxSize"), "maxSize must be set"))
 		}
