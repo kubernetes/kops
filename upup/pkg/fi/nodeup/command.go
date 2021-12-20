@@ -179,7 +179,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	if want, got := bootConfig.NodeupConfigHash, base64.StdEncoding.EncodeToString(nodeupConfigHash[:]); got != want {
 		if want == "" {
-			klog.Warning("not checking nodeup config hash, as expected hash not provided (was %q)", got)
+			klog.Warningf("not checking nodeup config hash, as expected hash not provided (was %q)", got)
 		} else {
 			return fmt.Errorf("nodeup config hash mismatch (was %q, expected %q)", got, want)
 		}
