@@ -56,6 +56,9 @@ func (b *DockerBuilder) dockerVersion() (string, error) {
 
 // Build is responsible for configuring the docker daemon
 func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
+	if b.Cluster.Spec.ContainerRuntime != "docker" {
+		return nil
+	}
 	if b.skipInstall() {
 		klog.Infof("SkipInstall is set to true; won't install Docker")
 		return nil
