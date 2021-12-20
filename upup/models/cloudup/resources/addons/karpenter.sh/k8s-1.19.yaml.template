@@ -656,7 +656,7 @@ spec:
   - key: {{ $taint.key }}
     effect: {{ $taint.effect }}
     {{ if $taint.value }}
-    value: "{{ $taint.value }}""
+    value: "{{ $taint.value }}"
     {{ end }}
 {{ end }}
 {{ end }}
