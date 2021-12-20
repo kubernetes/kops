@@ -54,7 +54,7 @@ func newInstanceGroupVFS(c *VFSClientset, cluster *kopsapi.Cluster) *InstanceGro
 	}
 	r.init(kind, c.basePath.Join(clusterName, "instancegroup"), StoreVersion)
 	r.validate = func(o runtime.Object) error {
-		return validation.ValidateInstanceGroup(o.(*kopsapi.InstanceGroup), nil).ToAggregate()
+		return validation.ValidateInstanceGroup(o.(*kopsapi.InstanceGroup), nil, true).ToAggregate()
 	}
 	return r
 }
@@ -100,6 +100,7 @@ func (c *InstanceGroupVFS) List(ctx context.Context, options metav1.ListOptions)
 }
 
 func (c *InstanceGroupVFS) Create(ctx context.Context, g *kopsapi.InstanceGroup, opts metav1.CreateOptions) (*kopsapi.InstanceGroup, error) {
+	validation.ValidateInstanceGroup(g, nil, true)
 	err := c.create(ctx, c.cluster, g)
 	if err != nil {
 		return nil, err
@@ -117,6 +118,7 @@ func (c *InstanceGroupVFS) Update(ctx context.Context, g *kopsapi.InstanceGroup,
 		g.SetGeneration(old.GetGeneration() + 1)
 	}
 
+	validation.ValidateInstanceGroup(g, nil, true)
 	err = c.update(ctx, c.cluster, g)
 	if err != nil {
 		return nil, err
