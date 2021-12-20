@@ -22,8 +22,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"k8s.io/klog/v2"
-
 	addonsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/kubemanifest"
@@ -75,8 +73,7 @@ func RemapAddonManifest(addon *addonsapi.AddonSpec, context *model.KopsModelCont
 	{
 		remapped, err := assetBuilder.RemapManifest(manifest)
 		if err != nil {
-			klog.Infof("invalid manifest: %s", string(manifest))
-			return nil, fmt.Errorf("error remapping manifest %s: %v", manifest, err)
+			return nil, fmt.Errorf("error remapping manifest %s: %v", name, err)
 		}
 		manifest = remapped
 	}
