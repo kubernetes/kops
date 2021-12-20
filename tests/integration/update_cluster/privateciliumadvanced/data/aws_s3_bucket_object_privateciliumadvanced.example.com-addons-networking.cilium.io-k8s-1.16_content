@@ -357,15 +357,6 @@ spec:
                 operator: In
                 values:
                 - linux
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: k8s-app
-                operator: In
-                values:
-                - cilium
-            topologyKey: kubernetes.io/hostname
       containers:
       - args:
         - --config-dir=/tmp/cilium/config-map
@@ -672,6 +663,21 @@ spec:
       serviceAccountName: cilium-operator
       tolerations:
       - operator: Exists
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            io.cilium/app: operator
+            name: cilium-operator
+        maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+      - labelSelector:
+          matchLabels:
+            io.cilium/app: operator
+            name: cilium-operator
+        maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
       volumes:
       - configMap:
           name: cilium-config

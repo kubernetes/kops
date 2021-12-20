@@ -271,26 +271,6 @@ spec:
       labels:
         app: cluster-autoscaler
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                  - cluster-autoscaler
-              topologyKey: topology.kubernetes.io/zone
-            weight: 100
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app
-                operator: In
-                values:
-                - cluster-autoscaler
-            topologyKey: kubernetes.com/hostname
       containers:
       - command:
         - ./cluster-autoscaler
@@ -336,3 +316,10 @@ spec:
       tolerations:
       - key: node-role.kubernetes.io/master
         operator: Exists
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
