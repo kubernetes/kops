@@ -34,10 +34,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/klog/v2"
+	"k8s.io/kubectl/pkg/drain"
+
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/validation"
-	"k8s.io/kubectl/pkg/drain"
 )
 
 const rollingUpdateTaintKey = "kops.k8s.io/scheduled-for-update"
@@ -680,7 +681,7 @@ func (c *RollingUpdateCluster) UpdateSingleInstance(cloudMember *cloudinstances.
 	if detach {
 		if cloudMember.CloudInstanceGroup.InstanceGroup.IsMaster() {
 			klog.Warning("cannot detach master instances. Assuming --surge=false")
-		} else {
+		} else if cloudMember.CloudInstanceGroup.InstanceGroup.Spec.Manager != api.InstanceManagerKarpenter {
 			err := c.detachInstance(cloudMember)
 			if err != nil {
 				return fmt.Errorf("failed to detach instance: %v", err)
