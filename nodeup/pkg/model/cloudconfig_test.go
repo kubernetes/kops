@@ -81,7 +81,7 @@ func TestBuildAzure(t *testing.T) {
 		}
 	}
 	if task == nil {
-		t.Errorf("no File task found")
+		t.Fatalf("no File task found")
 	}
 	r, err := task.Contents.Open()
 	if err != nil {
@@ -150,7 +150,7 @@ func TestBuildAWSCustomNodeIPFamilies(t *testing.T) {
 		}
 	}
 	if task == nil {
-		t.Errorf("no File task found")
+		t.Fatalf("no File task found")
 	}
 	r, err := task.Contents.Open()
 	if err != nil {
