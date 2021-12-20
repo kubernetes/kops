@@ -441,7 +441,7 @@ spec:
       serviceAccountName: karpenter
       containers:
         - name: manager
-          image: public.ecr.aws/karpenter/controller:v0.5.2
+          image: public.ecr.aws/karpenter/controller:v0.5.3
           resources: 
             limits:
               cpu: 1
@@ -463,6 +463,10 @@ spec:
               path: /readyz
               port: 8081
           env:
+            {{ if UsesInstanceIDForNodeName }}
+            - name: AWS_NODE_NAME_CONVENTION
+              value: "resouce-name"
+            {{ end }}
             - name: AWS_REGION
               value: {{ Region }}
             - name: CLUSTER_NAME
@@ -507,7 +511,7 @@ spec:
       serviceAccountName: karpenter
       containers:
         - name: webhook
-          image: public.ecr.aws/karpenter/webhook:v0.5.2
+          image: public.ecr.aws/karpenter/webhook:v0.5.3
           args:
             - -port=8443
           resources: 
