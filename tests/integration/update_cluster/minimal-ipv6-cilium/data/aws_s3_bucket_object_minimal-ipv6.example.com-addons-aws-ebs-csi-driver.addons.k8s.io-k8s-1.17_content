@@ -598,26 +598,6 @@ spec:
         app.kubernetes.io/name: aws-ebs-csi-driver
         app.kubernetes.io/version: v1.5.0
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                  - ebs-csi-controller
-              topologyKey: topology.kubernetes.io/zone
-            weight: 100
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app
-                operator: In
-                values:
-                - ebs-csi-controller
-            topologyKey: kubernetes.com/hostname
       containers:
       - args:
         - controller
@@ -730,6 +710,23 @@ spec:
       serviceAccountName: ebs-csi-controller-sa
       tolerations:
       - operator: Exists
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            app: ebs-csi-controller
+            app.kubernetes.io/instance: aws-ebs-csi-driver
+            app.kubernetes.io/name: aws-ebs-csi-driver
+        maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+      - labelSelector:
+          matchLabels:
+            app: ebs-csi-controller
+            app.kubernetes.io/instance: aws-ebs-csi-driver
+            app.kubernetes.io/name: aws-ebs-csi-driver
+        maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
       volumes:
       - emptyDir: {}
         name: socket-dir
