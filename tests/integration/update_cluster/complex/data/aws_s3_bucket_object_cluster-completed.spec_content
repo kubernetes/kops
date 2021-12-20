@@ -160,7 +160,6 @@ spec:
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
   kubernetesApiAccess:
   - 1.1.1.0/24
@@ -178,7 +177,6 @@ spec:
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
   masterPublicName: api.complex.example.com

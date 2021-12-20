@@ -150,7 +150,6 @@ kubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
-  nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
 
 __EOF_CLUSTER_SPEC
@@ -160,7 +159,7 @@ CloudProvider: aws
 ConfigBase: memfs://tests/ha.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: cnGthbxRiDaueP2pCnvx9DgDbD4kdYQX9I3QTjzeloM=
+NodeupConfigHash: rP4VtRQcMJvnc5kkc9nkbimqhaqLpKBBVwNhNMD3Gvs=
 
 __EOF_KUBE_ENV
 

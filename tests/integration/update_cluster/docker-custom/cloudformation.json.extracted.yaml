@@ -232,7 +232,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: 100.64.0.0/10
     podInfraContainerImage: k8s.gcr.io/pause:3.5
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
@@ -247,7 +246,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: 100.64.0.0/10
     podInfraContainerImage: k8s.gcr.io/pause:3.5
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
@@ -259,7 +257,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
   ConfigBase: memfs://clusters.example.com/docker.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: 7ktp4JvhdO/O/XyNdFeUntUFeh7aRgRZtXccWjgjCVc=
+  NodeupConfigHash: lggbDCF+4Odpxm1byE1ZkheFHhrIRdXAh4h/yXbvrgI=
 
   __EOF_KUBE_ENV
 
@@ -434,7 +432,6 @@ Resources.AWSEC2LaunchTemplatenodesdockerexamplecom.Properties.LaunchTemplateDat
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: 100.64.0.0/10
     podInfraContainerImage: k8s.gcr.io/pause:3.5
     podManifestPath: /etc/kubernetes/manifests
 
@@ -445,7 +442,7 @@ Resources.AWSEC2LaunchTemplatenodesdockerexamplecom.Properties.LaunchTemplateDat
   ConfigBase: memfs://clusters.example.com/docker.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: ZJav5qB5z1KCPNs5xEzwJNgIsfndzVeuPgIcku0dA6M=
+  NodeupConfigHash: yWGjuQeaFHCZibkm2Gmgp4lNWapW3eWFHguDUM87fDI=
 
   __EOF_KUBE_ENV
 

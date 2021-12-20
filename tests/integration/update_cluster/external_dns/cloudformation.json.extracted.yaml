@@ -216,7 +216,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     anonymousAuth: false
@@ -230,7 +229,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
 
@@ -241,7 +239,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: LFwTDQ1M/AxVLdvKc8ZPsktDgr836JEsdQRwn2TU+iM=
+  NodeupConfigHash: V4ecF+hHXacXhBY6sFMkXQjKF+snMz/MPw8eeco7lzo=
 
   __EOF_KUBE_ENV
 
@@ -400,7 +398,6 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
 
   __EOF_CLUSTER_SPEC
@@ -410,7 +407,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: ehZK5PooPMXQw0YD3dy5oARwClEXIj8ymh6DR1XYbQ0=
+  NodeupConfigHash: IdYFksCS+2xrqItLrPY8O6GzuGFL3lbUSAu1HlmHto8=
 
   __EOF_KUBE_ENV
 
