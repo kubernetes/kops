@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/do"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
+	"k8s.io/kops/tests/e2e/pkg/kops"
 	"k8s.io/kops/tests/e2e/pkg/util"
 	"k8s.io/kops/tests/e2e/pkg/version"
 	"sigs.k8s.io/kubetest2/pkg/exec"
@@ -162,12 +163,36 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		return err
 	}
 
+	if d.setInstanceGroupOverrides(); err != nil {
+		return err
+	}
+
 	if d.terraform != nil {
 		if err := d.terraform.InitApply(); err != nil {
 			return err
 		}
 	}
 
+	return nil
+}
+
+func (d *deployer) setInstanceGroupOverrides() error {
+	igs, err := kops.GetInstanceGroups(d.ClusterName)
+	if err != nil {
+		return err
+	}
+	for _, ig := range igs {
+		if string(ig.Spec.Role) == "Master" && len(d.ControlPlaneIGOverrides) > 0 {
+			if err := d.setIGOverrides(ig.ObjectMeta.Name, d.ControlPlaneIGOverrides); err != nil {
+				return err
+			}
+		}
+		if string(ig.Spec.Role) == "Node" && len(d.NodeIGOverrides) > 0 {
+			if err := d.setIGOverrides(ig.ObjectMeta.Name, d.NodeIGOverrides); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
@@ -268,4 +293,25 @@ func appendIfUnset(args []string, arg, value string) []string {
 	}
 	args = append(args, arg, value)
 	return args
+}
+
+func (d *deployer) setIGOverrides(igName string, overrides []string) error {
+	args := []string{
+		d.KopsBinaryPath, "edit", "instancegroup",
+		"--name", d.ClusterName,
+		igName,
+	}
+	for _, override := range overrides {
+		args = append(args, "--set", override)
+	}
+	klog.Info(strings.Join(args, " "))
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.SetEnv(d.env()...)
+
+	exec.InheritOutput(cmd)
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
 }
