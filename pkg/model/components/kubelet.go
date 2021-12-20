@@ -59,7 +59,6 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec.Kubelet.PodManifestPath = "/etc/kubernetes/manifests"
 	clusterSpec.Kubelet.LogLevel = fi.Int32(2)
 	clusterSpec.Kubelet.ClusterDomain = clusterSpec.ClusterDNSDomain
-	clusterSpec.Kubelet.NonMasqueradeCIDR = clusterSpec.NonMasqueradeCIDR
 
 	// AllowPrivileged is deprecated and removed in v1.14.
 	// See https://github.com/kubernetes/kubernetes/pull/71835
@@ -165,9 +164,8 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 		if UsesKubenet(networking) {
 			clusterSpec.Kubelet.NetworkPluginName = "kubenet"
-
-			// AWS MTU is 9001
 			clusterSpec.Kubelet.NetworkPluginMTU = fi.Int32(9001)
+			clusterSpec.Kubelet.NonMasqueradeCIDR = clusterSpec.NonMasqueradeCIDR
 		}
 
 		// Specify our pause image
