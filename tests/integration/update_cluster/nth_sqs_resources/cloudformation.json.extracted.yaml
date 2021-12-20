@@ -42,7 +42,7 @@
       if ! validate-hash "${file}" "${hash}"; then
         rm -f "${file}"
       else
-        return
+        return 0
       fi
     fi
 
@@ -65,7 +65,7 @@
             rm -f "${file}"
           else
             echo "== Downloaded ${url} (SHA256 = ${hash}) =="
-            return
+            return 0
           fi
         done
       done
@@ -291,7 +291,7 @@ Resources.AWSEC2LaunchTemplatenodesnthsqsresourceslongclusternameexamplecom.Prop
       if ! validate-hash "${file}" "${hash}"; then
         rm -f "${file}"
       else
-        return
+        return 0
       fi
     fi
 
@@ -314,7 +314,7 @@ Resources.AWSEC2LaunchTemplatenodesnthsqsresourceslongclusternameexamplecom.Prop
             rm -f "${file}"
           else
             echo "== Downloaded ${url} (SHA256 = ${hash}) =="
-            return
+            return 0
           fi
         done
       done
