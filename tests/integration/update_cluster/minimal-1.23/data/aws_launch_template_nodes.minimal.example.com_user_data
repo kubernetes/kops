@@ -154,7 +154,6 @@ kubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
-  nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
 
@@ -165,7 +164,7 @@ CloudProvider: aws
 ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: wsuaTXlV7xscgRfb/1IajFYMrECvSCI617mO99vaGkQ=
+NodeupConfigHash: zUqmK2fm57E3ihGqc963ikaX1OKzYb0C6aOdjcDoJLI=
 
 __EOF_KUBE_ENV
 

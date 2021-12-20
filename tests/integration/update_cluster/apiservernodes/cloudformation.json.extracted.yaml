@@ -155,7 +155,6 @@ Resources.AWSEC2LaunchTemplateapiserverapiserversminimalexamplecom.Properties.La
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
 
@@ -166,7 +165,7 @@ Resources.AWSEC2LaunchTemplateapiserverapiserversminimalexamplecom.Properties.La
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: apiserver
   InstanceGroupRole: APIServer
-  NodeupConfigHash: 9lEYmrPpO6ssrPOflH9XcgwjqVtaAipBiH+stfM0evM=
+  NodeupConfigHash: HHeS5YAGQXjQVnKAFPz+rvdZednKJaLC27ZnxjBkSqc=
 
   __EOF_KUBE_ENV
 
@@ -396,7 +395,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
   masterKubelet:
@@ -414,7 +412,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: false
@@ -426,7 +423,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: HY2aXgH6BbelDgKvYtduzt1iXLhuUrasJiW/2gnqZRI=
+  NodeupConfigHash: tw1EcHOT+CcX9dGUJcVAc99vW9f32gPf179XMBsLblA=
 
   __EOF_KUBE_ENV
 
@@ -589,7 +586,6 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
 
@@ -600,7 +596,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: 1J1jV0qZGRG4aPmsah5C+HiYj/rTHFuOlj4c32C8tsA=
+  NodeupConfigHash: 70li4o70yQBXGTruZPCveo57wl3eefKmIjxt/fK2pd8=
 
   __EOF_KUBE_ENV
 

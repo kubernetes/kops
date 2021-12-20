@@ -217,7 +217,6 @@ kubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
-  nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
 masterKubelet:
   anonymousAuth: false
@@ -232,7 +231,6 @@ masterKubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
-  nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
 
@@ -243,7 +241,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce-private.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: Master
-NodeupConfigHash: 0G4WG7MX1YqHUvq9hrrk+ZWA+znNguO+VUByvXPFrM8=
+NodeupConfigHash: qTL8smpBs/47G6TcXzlMUsFcH+N24tf8FhAj02bBZ+c=
 
 __EOF_KUBE_ENV
 

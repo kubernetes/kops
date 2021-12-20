@@ -215,7 +215,6 @@ kubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
-  nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
 masterKubelet:
   anonymousAuth: false
@@ -229,7 +228,6 @@ masterKubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
-  nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
 
@@ -240,7 +238,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: Z4IU80+07IRL4JdtasAA0cGjl3hQHN6rUgqsA2L/R+E=
+NodeupConfigHash: Pyf0dOwVq9a/R8+X2vKtdXsqDx72c8Fa504RNj6UM40=
 
 __EOF_KUBE_ENV
 
