@@ -24,6 +24,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/utils/net"
 )
 
 // +kops:fitask
@@ -56,12 +57,35 @@ func (s *LBListener) CompareWithID() *string {
 }
 
 func NewLBListenerTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, lb *listeners.Listener, find *LBListener) (*LBListener, error) {
+	loadbalancer, err := cloud.GetLB(lb.ID)
+	if err != nil {
+		return nil, fmt.Errorf("NewLBListenerTaskFromCloud: Failed to get Loadbalancer %s: %v", lb.Name, err)
+	}
+
+	vip := loadbalancer.VipAddress
+	var AllowedCIDRs []string
+
+	// Check if allowed CIDRs matched VIP type
+	if net.IsIPv4String(vip) {
+		for _, CIDR := range lb.AllowedCIDRs {
+			if net.IsIPv4CIDRString(CIDR) {
+				AllowedCIDRs = append(AllowedCIDRs, CIDR)
+			}
+		}
+	} else {
+		for _, CIDR := range lb.AllowedCIDRs {
+			if net.IsIPv6CIDRString(CIDR) {
+				AllowedCIDRs = append(AllowedCIDRs, CIDR)
+			}
+		}
+	}
+
 	// sort for consistent comparison
-	sort.Strings(lb.AllowedCIDRs)
+	sort.Strings(AllowedCIDRs)
 	listenerTask := &LBListener{
 		ID:           fi.String(lb.ID),
 		Name:         fi.String(lb.Name),
-		AllowedCIDRs: lb.AllowedCIDRs,
+		AllowedCIDRs: AllowedCIDRs,
 		Lifecycle:    lifecycle,
 	}
 
@@ -143,8 +167,29 @@ func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 			ProtocolPort:   443,
 		}
 
+		// Check if Allowed CIDRs match VIP Type
+		loadbalancer, err := t.Cloud.GetLB(*e.Pool.Loadbalancer.ID)
+		if err != nil {
+			return fmt.Errorf("RenderOpenstack: Failed to get Loadbalancer %s: %v", *e.Pool.Loadbalancer.Name, err)
+		}
+
+		vip := loadbalancer.VipAddress
+		var AllowedCIDRs []string
 		if useVIPACL {
-			listeneropts.AllowedCIDRs = e.AllowedCIDRs
+			if net.IsIPv4String(vip) {
+				for _, CIDR := range e.AllowedCIDRs {
+					if net.IsIPv4CIDRString(CIDR) {
+						AllowedCIDRs = append(AllowedCIDRs, CIDR)
+					}
+				}
+			} else {
+				for _, CIDR := range e.AllowedCIDRs {
+					if net.IsIPv6CIDRString(CIDR) {
+						AllowedCIDRs = append(AllowedCIDRs, CIDR)
+					}
+				}
+			}
+			listeneropts.AllowedCIDRs = AllowedCIDRs
 		}
 
 		listener, err := t.Cloud.CreateListener(listeneropts)
