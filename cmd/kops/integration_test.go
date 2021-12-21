@@ -237,7 +237,7 @@ func TestMinimalGossip(t *testing.T) {
 // TestMinimalGCE runs tests on a minimal GCE configuration
 func TestMinimalGCE(t *testing.T) {
 	newIntegrationTest("minimal-gce.example.com", "minimal_gce").
-		withAddons(dnsControllerAddon, "gcp-pd-csi-driver.addons.k8s.io-k8s-1.23").
+		withAddons(dnsControllerAddon, leaderElectionAddon, "gcp-pd-csi-driver.addons.k8s.io-k8s-1.23").
 		runTestTerraformGCE(t)
 }
 
