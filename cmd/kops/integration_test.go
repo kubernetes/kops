@@ -177,9 +177,10 @@ func (i *integrationTest) withAddons(addons ...string) *integrationTest {
 }
 
 const (
-	dnsControllerAddon = "dns-controller.addons.k8s.io-k8s-1.12"
-	awsCCMAddon        = "aws-cloud-controller.addons.k8s.io-k8s-1.18"
-	awsEBSCSIAddon     = "aws-ebs-csi-driver.addons.k8s.io-k8s-1.17"
+	dnsControllerAddon  = "dns-controller.addons.k8s.io-k8s-1.12"
+	awsCCMAddon         = "aws-cloud-controller.addons.k8s.io-k8s-1.18"
+	awsEBSCSIAddon      = "aws-ebs-csi-driver.addons.k8s.io-k8s-1.17"
+	leaderElectionAddon = "leader-migration.rbac.addons.k8s.io-k8s-1.23"
 )
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -222,7 +223,7 @@ func TestMinimalGossip(t *testing.T) {
 // TestMinimalGCE runs tests on a minimal GCE configuration
 func TestMinimalGCE(t *testing.T) {
 	newIntegrationTest("minimal-gce.example.com", "minimal_gce").
-		withAddons(dnsControllerAddon, "gcp-pd-csi-driver.addons.k8s.io-k8s-1.23").
+		withAddons(dnsControllerAddon, leaderElectionAddon, "gcp-pd-csi-driver.addons.k8s.io-k8s-1.23").
 		runTestTerraformGCE(t)
 }
 

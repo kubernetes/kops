@@ -138,6 +138,14 @@ resource "aws_s3_bucket_object" "minimal-gce-example-com-addons-kubelet-api-rbac
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_bucket_object" "minimal-gce-example-com-addons-leader-migration-rbac-addons-k8s-io-k8s-1-23" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_minimal-gce.example.com-addons-leader-migration.rbac.addons.k8s.io-k8s-1.23_content")
+  key                    = "tests/minimal-gce.example.com/addons/leader-migration.rbac.addons.k8s.io/k8s-1.23.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_bucket_object" "minimal-gce-example-com-addons-limit-range-addons-k8s-io" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_minimal-gce.example.com-addons-limit-range.addons.k8s.io_content")
