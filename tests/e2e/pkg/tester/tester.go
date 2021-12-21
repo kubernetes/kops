@@ -114,7 +114,7 @@ func (t *Tester) getKopsCluster() (*api.Cluster, error) {
 
 	kopsClusterName := currentContext
 
-	cluster, err := kops.GetCluster(kopsClusterName)
+	cluster, err := kops.GetCluster("kops", kopsClusterName, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func (t *Tester) getKopsInstanceGroups() ([]*api.InstanceGroup, error) {
 		return nil, err
 	}
 
-	igs, err := kops.GetInstanceGroups(cluster.Name)
+	igs, err := kops.GetInstanceGroups("kops", cluster.Name, nil)
 	if err != nil {
 		return nil, err
 	}

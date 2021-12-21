@@ -177,7 +177,7 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 }
 
 func (d *deployer) setInstanceGroupOverrides() error {
-	igs, err := kops.GetInstanceGroups(d.ClusterName)
+	igs, err := kops.GetInstanceGroups(d.KopsBinaryPath, d.ClusterName, d.env())
 	if err != nil {
 		return err
 	}

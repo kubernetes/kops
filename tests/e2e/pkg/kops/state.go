@@ -20,23 +20,24 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"os/exec"
 	"strings"
 
 	"k8s.io/klog/v2"
 	api "k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
 // GetCluster will retrieve the specified Cluster from the state store.
-func GetCluster(clusterName string) (*api.Cluster, error) {
+func GetCluster(kopsBinary, clusterName string, env []string) (*api.Cluster, error) {
 	args := []string{
-		"kops", "get", "cluster", clusterName, "-ojson",
+		kopsBinary, "get", "cluster", clusterName, "-ojson",
 	}
 	c := exec.Command(args[0], args[1:]...)
+	c.SetEnv(env...)
 	var stdout bytes.Buffer
-	c.Stdout = &stdout
+	c.SetStdout(&stdout)
 	var stderr bytes.Buffer
-	c.Stderr = &stderr
+	c.SetStderr(&stderr)
 	if err := c.Run(); err != nil {
 		klog.Warningf("failed to run %s; stderr=%s", strings.Join(args, " "), stderr.String())
 		return nil, fmt.Errorf("error querying cluster from %s: %w", strings.Join(args, " "), err)
@@ -50,15 +51,16 @@ func GetCluster(clusterName string) (*api.Cluster, error) {
 }
 
 // GetInstanceGroups will retrieve the instance groups for the specified Cluster from the state store.
-func GetInstanceGroups(clusterName string) ([]*api.InstanceGroup, error) {
+func GetInstanceGroups(kopsBinary, clusterName string, env []string) ([]*api.InstanceGroup, error) {
 	args := []string{
-		"kops", "get", "instancegroups", "--name", clusterName, "-ojson",
+		kopsBinary, "get", "instancegroups", "--name", clusterName, "-ojson",
 	}
 	c := exec.Command(args[0], args[1:]...)
+	c.SetEnv(env...)
 	var stdout bytes.Buffer
-	c.Stdout = &stdout
+	c.SetStdout(&stdout)
 	var stderr bytes.Buffer
-	c.Stderr = &stderr
+	c.SetStderr(&stderr)
 	if err := c.Run(); err != nil {
 		klog.Warningf("failed to run %s; stderr=%s", strings.Join(args, " "), stderr.String())
 		return nil, fmt.Errorf("error querying instance groups from %s: %w", strings.Join(args, " "), err)
