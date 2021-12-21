@@ -23,6 +23,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/utils/net"
 )
 
 func Int(v int) *int {
@@ -151,10 +152,17 @@ func (*SecurityGroupRule) CheckChanges(a, e, changes *SecurityGroupRule) error {
 func (*SecurityGroupRule) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *SecurityGroupRule) error {
 	if a == nil {
 		klog.V(2).Infof("Creating SecurityGroupRule")
-
+		etherType := fi.StringValue(e.EtherType)
+		if e.RemoteIPPrefix != nil {
+			if net.IsIPv4CIDRString(*e.RemoteIPPrefix) {
+				etherType = "IPv4"
+			} else {
+				etherType = "IPv6"
+			}
+		}
 		opt := sgr.CreateOpts{
 			Direction:      sgr.RuleDirection(fi.StringValue(e.Direction)),
-			EtherType:      sgr.RuleEtherType(fi.StringValue(e.EtherType)),
+			EtherType:      sgr.RuleEtherType(etherType),
 			SecGroupID:     fi.StringValue(e.SecGroup.ID),
 			PortRangeMax:   IntValue(e.PortRangeMax),
 			PortRangeMin:   IntValue(e.PortRangeMin),
