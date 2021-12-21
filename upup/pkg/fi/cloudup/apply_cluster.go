@@ -67,7 +67,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
-	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/mirrors"
@@ -1237,7 +1236,7 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 }
 
 // BuildConfig returns the NodeUp config and auxiliary config.
-func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTasks map[string]*fitasks.Keypair) (*nodeup.Config, *nodeup.BootConfig, error) {
+func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, keysets map[string]*fi.Keyset) (*nodeup.Config, *nodeup.BootConfig, error) {
 	cluster := n.cluster
 
 	if ig == nil {
@@ -1264,63 +1263,63 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	}
 
 	if role != kops.InstanceGroupRoleBastion {
-		if err := getTasksCertificate(caTasks, fi.CertificateIDCA, config, true); err != nil {
+		if err := loadCertificates(keysets, fi.CertificateIDCA, config, true); err != nil {
 			return nil, nil, err
 		}
-		if caTasks["etcd-clients-ca-cilium"] != nil {
-			if err := getTasksCertificate(caTasks, "etcd-clients-ca-cilium", config, hasAPIServer || apiModel.UseKopsControllerForNodeBootstrap(n.cluster)); err != nil {
+		if keysets["etcd-clients-ca-cilium"] != nil {
+			if err := loadCertificates(keysets, "etcd-clients-ca-cilium", config, hasAPIServer || apiModel.UseKopsControllerForNodeBootstrap(n.cluster)); err != nil {
 				return nil, nil, err
 			}
 		}
 
 		if isMaster {
-			if err := getTasksCertificate(caTasks, "etcd-clients-ca", config, true); err != nil {
+			if err := loadCertificates(keysets, "etcd-clients-ca", config, true); err != nil {
 				return nil, nil, err
 			}
 			for _, etcdCluster := range cluster.Spec.EtcdClusters {
 				k := etcdCluster.Name
-				if err := getTasksCertificate(caTasks, "etcd-manager-ca-"+k, config, true); err != nil {
+				if err := loadCertificates(keysets, "etcd-manager-ca-"+k, config, true); err != nil {
 					return nil, nil, err
 				}
-				if err := getTasksCertificate(caTasks, "etcd-peers-ca-"+k, config, true); err != nil {
+				if err := loadCertificates(keysets, "etcd-peers-ca-"+k, config, true); err != nil {
 					return nil, nil, err
 				}
 				if k != "events" && k != "main" {
-					if err := getTasksCertificate(caTasks, "etcd-clients-ca-"+k, config, true); err != nil {
+					if err := loadCertificates(keysets, "etcd-clients-ca-"+k, config, true); err != nil {
 						return nil, nil, err
 					}
 				}
 			}
-			config.KeypairIDs["service-account"] = caTasks["service-account"].Keyset().Primary.Id
+			config.KeypairIDs["service-account"] = keysets["service-account"].Primary.Id
 		} else {
-			if caTasks["etcd-client-cilium"] != nil {
-				config.KeypairIDs["etcd-client-cilium"] = caTasks["etcd-client-cilium"].Keyset().Primary.Id
+			if keysets["etcd-client-cilium"] != nil {
+				config.KeypairIDs["etcd-client-cilium"] = keysets["etcd-client-cilium"].Primary.Id
 			}
 		}
 
 		if hasAPIServer {
-			if err := getTasksCertificate(caTasks, "apiserver-aggregator-ca", config, true); err != nil {
+			if err := loadCertificates(keysets, "apiserver-aggregator-ca", config, true); err != nil {
 				return nil, nil, err
 			}
-			if caTasks["etcd-clients-ca"] != nil {
-				if err := getTasksCertificate(caTasks, "etcd-clients-ca", config, true); err != nil {
+			if keysets["etcd-clients-ca"] != nil {
+				if err := loadCertificates(keysets, "etcd-clients-ca", config, true); err != nil {
 					return nil, nil, err
 				}
 			}
 			if cluster.Spec.KubeAPIServer != nil && fi.StringValue(cluster.Spec.KubeAPIServer.ServiceAccountIssuer) != "" {
-				config.KeypairIDs["service-account"] = caTasks["service-account"].Keyset().Primary.Id
+				config.KeypairIDs["service-account"] = keysets["service-account"].Primary.Id
 			}
 
 			config.APIServerConfig.EncryptionConfigSecretHash = n.encryptionConfigSecretHash
-			var err error
-			config.APIServerConfig.ServiceAccountPublicKeys, err = caTasks["service-account"].Keyset().ToPublicKeys()
+			serviceAccountPublicKeys, err := keysets["service-account"].ToPublicKeys()
 			if err != nil {
 				return nil, nil, fmt.Errorf("encoding service-account keys: %w", err)
 			}
+			config.APIServerConfig.ServiceAccountPublicKeys = serviceAccountPublicKeys
 		} else {
 			for _, key := range []string{"kubelet", "kube-proxy", "kube-router"} {
-				if caTasks[key] != nil {
-					config.KeypairIDs[key] = caTasks[key].Keyset().Primary.Id
+				if keysets[key] != nil {
+					config.KeypairIDs[key] = keysets[key].Primary.Id
 				}
 			}
 		}
@@ -1400,15 +1399,21 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	return config, bootConfig, nil
 }
 
-func getTasksCertificate(caTasks map[string]*fitasks.Keypair, name string, config *nodeup.Config, includeKeypairID bool) error {
-	cas, err := fi.ResourceAsString(caTasks[name].Certificates())
-	if err != nil {
-		// CA task may not have run yet; we'll retry
-		return fmt.Errorf("failed to read %s certificates: %w", name, err)
+func loadCertificates(keysets map[string]*fi.Keyset, name string, config *nodeup.Config, includeKeypairID bool) error {
+	keyset := keysets[name]
+	if keyset == nil {
+		return fmt.Errorf("key %q not found", name)
 	}
-	config.CAs[name] = cas
+	certificates, err := keyset.ToCertificateBytes()
+	if err != nil {
+		return fmt.Errorf("failed to read %q certificates: %w", name, err)
+	}
+	config.CAs[name] = string(certificates)
 	if includeKeypairID {
-		config.KeypairIDs[name] = caTasks[name].Keyset().Primary.Id
+		if keyset.Primary == nil {
+			return fmt.Errorf("key %q did not have primary set", name)
+		}
+		config.KeypairIDs[name] = keyset.Primary.Id
 	}
 	return nil
 }
