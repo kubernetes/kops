@@ -69,7 +69,6 @@ go_library(
         "//upup/pkg/fi/cloudup/openstack:go_default_library",
         "//upup/pkg/fi/cloudup/terraform:go_default_library",
         "//upup/pkg/fi/cloudup/terraformWriter:go_default_library",
-        "//upup/pkg/fi/fitasks:go_default_library",
         "//upup/pkg/fi/loader:go_default_library",
         "//util/pkg/architectures:go_default_library",
         "//util/pkg/env:go_default_library",

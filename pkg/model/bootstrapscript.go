@@ -42,7 +42,7 @@ import (
 )
 
 type NodeUpConfigBuilder interface {
-	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTasks map[string]*fitasks.Keypair) (*nodeup.Config, *nodeup.BootConfig, error)
+	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, keysets map[string]*fi.Keyset) (*nodeup.Config, *nodeup.BootConfig, error)
 }
 
 // BootstrapScriptBuilder creates the bootstrap script
@@ -94,7 +94,17 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (string
 	}
 
 	sort.Strings(alternateNames)
-	config, bootConfig, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames, b.caTasks)
+
+	keysets := make(map[string]*fi.Keyset)
+	for _, caTask := range b.caTasks {
+		name := *caTask.Name
+		keyset := caTask.Keyset()
+		if keyset == nil {
+			return "", fmt.Errorf("failed to get keyset from %q", name)
+		}
+		keysets[name] = keyset
+	}
+	config, bootConfig, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames, keysets)
 	if err != nil {
 		return "", err
 	}

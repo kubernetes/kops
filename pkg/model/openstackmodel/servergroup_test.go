@@ -1060,7 +1060,7 @@ func createBuilderForCluster(cluster *kops.Cluster, instanceGroups []*kops.Insta
 
 type nodeupConfigBuilder struct{}
 
-func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caTasks map[string]*fitasks.Keypair) (*nodeup.Config, *nodeup.BootConfig, error) {
+func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, keysets map[string]*fi.Keyset) (*nodeup.Config, *nodeup.BootConfig, error) {
 	return &nodeup.Config{}, &nodeup.BootConfig{}, nil
 }
 
