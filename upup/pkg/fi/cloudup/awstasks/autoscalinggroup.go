@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"k8s.io/klog/v2"
+
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -60,6 +61,8 @@ type AutoscalingGroup struct {
 	MinSize *int64
 	// MixedInstanceOverrides is a collection of instance types to use with fleet policy
 	MixedInstanceOverrides []string
+	// InstanceRequirements is a list of requirements for any instance type we are willing to run in the EC2 fleet.
+	InstanceRequirements *InstanceRequirements
 	// MixedOnDemandAllocationStrategy is allocation strategy to use for on-demand instances
 	MixedOnDemandAllocationStrategy *string
 	// MixedOnDemandBase is percentage split of On-Demand Instances and Spot Instances for your
@@ -231,6 +234,9 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		}
 	}
 
+	ir, _ := findInstanceRequirements(g)
+	actual.InstanceRequirements = ir
+
 	if subnetSlicesEqualIgnoreOrder(actual.Subnets, e.Subnets) {
 		actual.Subnets = e.Subnets
 	}
@@ -377,6 +383,9 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				},
 				)
 			}
+			if e.InstanceRequirements != nil {
+				p.Overrides = append(p.Overrides, overridesFromInstanceRequirements(e.InstanceRequirements))
+			}
 		} else if e.LaunchTemplate != nil {
 			request.LaunchTemplate = &autoscaling.LaunchTemplateSpecification{
 				LaunchTemplateId: e.LaunchTemplate.ID,
@@ -471,7 +480,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			setup(request).InstancesDistribution.SpotMaxPrice = e.MixedSpotMaxPrice
 			changes.MixedSpotMaxPrice = nil
 		}
-		if changes.MixedInstanceOverrides != nil {
+		if changes.MixedInstanceOverrides != nil || changes.InstanceRequirements != nil {
 			if setup(request).LaunchTemplate == nil {
 				setup(request).LaunchTemplate = &autoscaling.LaunchTemplate{
 					LaunchTemplateSpecification: &autoscaling.LaunchTemplateSpecification{
@@ -481,11 +490,20 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				}
 			}
 
-			p := request.MixedInstancesPolicy.LaunchTemplate
-			for _, x := range changes.MixedInstanceOverrides {
-				p.Overrides = append(p.Overrides, &autoscaling.LaunchTemplateOverrides{InstanceType: fi.String(x)})
+			if changes.MixedInstanceOverrides != nil {
+				p := request.MixedInstancesPolicy.LaunchTemplate
+				for _, x := range changes.MixedInstanceOverrides {
+					p.Overrides = append(p.Overrides, &autoscaling.LaunchTemplateOverrides{InstanceType: fi.String(x)})
+				}
+				changes.MixedInstanceOverrides = nil
 			}
-			changes.MixedInstanceOverrides = nil
+
+			if changes.InstanceRequirements != nil {
+				p := request.MixedInstancesPolicy.LaunchTemplate
+
+				p.Overrides = append(p.Overrides, overridesFromInstanceRequirements(changes.InstanceRequirements))
+				changes.InstanceRequirements = nil
+			}
 		}
 
 		if changes.MinSize != nil {
@@ -668,6 +686,9 @@ func (e *AutoscalingGroup) UseMixedInstancesPolicy() bool {
 		return true
 	}
 	if e.MixedSpotMaxPrice != nil {
+		return true
+	}
+	if e.InstanceRequirements != nil {
 		return true
 	}
 
