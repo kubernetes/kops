@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha2
 
 import (
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -171,6 +172,8 @@ type InstanceMetadataOptions struct {
 type MixedInstancesPolicySpec struct {
 	// Instances is a list of instance types which we are willing to run in the EC2 fleet
 	Instances []string `json:"instances,omitempty"`
+	// InstanceRequirements is a list of requirements for any instance type we are willing to run in the EC2 fleet.
+	InstanceRequirements *InstanceRequirementsSpec `json:"instanceRequirements,omitempty"`
 	// OnDemandAllocationStrategy indicates how to allocate instance types to fulfill On-Demand capacity
 	OnDemandAllocationStrategy *string `json:"onDemandAllocationStrategy,omitempty"`
 	// OnDemandBase is the minimum amount of the Auto Scaling group's capacity that must be
@@ -188,6 +191,17 @@ type MixedInstancesPolicySpec struct {
 	// SpotInstancePools is the number of Spot pools to use to allocate your Spot capacity (defaults to 2)
 	// pools are determined from the different instance types in the Overrides array of LaunchTemplate
 	SpotInstancePools *int64 `json:"spotInstancePools,omitempty"`
+}
+
+// InstanceRequirementsSpec is a list of requirements for any instance type we are willing to run in the EC2 fleet.
+type InstanceRequirementsSpec struct {
+	CPU    *MinMaxSpec `json:"cpu,omitempty"`
+	Memory *MinMaxSpec `json:"memory,omitempty"`
+}
+
+type MinMaxSpec struct {
+	Max *resource.Quantity `json:"max,omitempty"`
+	Min *resource.Quantity `json:"min,omitempty"`
 }
 
 // UserData defines a user-data section
