@@ -1,0 +1,10 @@
+ClusterName: karpenter.example.com
+Zones:
+- us-test-1a
+- us-test-1b
+- us-test-1c
+CloudProvider: aws
+Networking: calico
+KubernetesVersion: v1.23.0
+InstanceManager: karpenter
+DiscoveryStore: memfs://kops-state-store
