@@ -55,7 +55,6 @@ KubeletConfig:
   nodeLabels:
     kubernetes.io/role: node
     node-role.kubernetes.io/node: ""
-  nonMasqueradeCIDR: ::/0
   podManifestPath: /etc/kubernetes/manifests
 UpdatePolicy: automatic
 channels:

@@ -220,7 +220,6 @@ kubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
-  nonMasqueradeCIDR: 100.64.0.0/10
   podInfraContainerImage: k8s.gcr.io/pause:3.5
   podManifestPath: /etc/kubernetes/manifests
 masterKubelet:
@@ -234,7 +233,6 @@ masterKubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
-  nonMasqueradeCIDR: 100.64.0.0/10
   podInfraContainerImage: k8s.gcr.io/pause:3.5
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
@@ -246,7 +244,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecilium.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: aDr+qFdNzpb6s4sB9AX086uhZx03QpucbLBJjuR2Wys=
+NodeupConfigHash: xK3sK8w8X14A3k/t5BqWE5l8ED9rK7R4WYzPkRAdhVk=
 
 __EOF_KUBE_ENV
 

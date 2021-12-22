@@ -53,7 +53,6 @@ KubeletConfig:
     karpenter.sh/provisioner-name: karpenter-nodes
     kubernetes.io/role: node
     node-role.kubernetes.io/node: ""
-  nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
 UpdatePolicy: automatic
 channels:
