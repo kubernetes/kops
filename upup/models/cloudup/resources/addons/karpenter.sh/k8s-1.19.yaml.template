@@ -684,11 +684,8 @@ spec:
     - key: "node.kubernetes.io/instance-type"
       operator: In
       values:
-      - {{ $spec.MachineType }}
-      {{ with $spec.MixedInstancesPolicy }}
-      {{ range $key := .Instances }}
-      - {{ $key }}
-      {{ end }}
+      {{ range $type := KarpenterInstanceTypes $spec }}
+      - {{ $type }}
       {{ end }}
 {{ with $spec.Taints }}
   taints:
