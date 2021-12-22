@@ -141,7 +141,6 @@ spec:
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: 100.64.0.0/10
     podInfraContainerImage: k8s.gcr.io/pause:3.5
     podManifestPath: /etc/kubernetes/manifests
   kubernetesApiAccess:
@@ -159,7 +158,6 @@ spec:
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    nonMasqueradeCIDR: 100.64.0.0/10
     podInfraContainerImage: k8s.gcr.io/pause:3.5
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
