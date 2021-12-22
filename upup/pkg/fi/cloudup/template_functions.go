@@ -40,7 +40,9 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/yaml"
@@ -294,6 +296,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["UsesInstanceIDForNodeName"] = func() bool {
 		return nodeup.UsesInstanceIDForNodeName(tf.Cluster)
+	}
+
+	dest["KarpenterInstanceTypes"] = func(ig kops.InstanceGroupSpec) ([]string, error) {
+		return karpenterInstanceTypes(tf.cloud.(awsup.AWSCloud), ig)
 	}
 
 	return nil
@@ -800,4 +806,75 @@ func parseTaint(st string) (map[string]string, error) {
 	taint["effect"] = effect
 
 	return taint, nil
+}
+
+func karpenterInstanceTypes(cloud awsup.AWSCloud, ig kops.InstanceGroupSpec) ([]string, error) {
+	if ig.MixedInstancesPolicy != nil {
+		if len(ig.MixedInstancesPolicy.Instances) > 0 {
+			return ig.MixedInstancesPolicy.Instances, nil
+		}
+		if ig.MixedInstancesPolicy.InstanceRequirements != nil {
+			instanceRequirements := ig.MixedInstancesPolicy.InstanceRequirements
+			ami, _ := cloud.ResolveImage(ig.Image)
+			arch := ami.Architecture
+			hv := ami.VirtualizationType
+
+			ir := &ec2.InstanceRequirementsRequest{
+				VCpuCount: &ec2.VCpuCountRangeRequest{},
+				MemoryMiB: &ec2.MemoryMiBRequest{},
+			}
+			cpu := instanceRequirements.CPU
+			if cpu != nil {
+				if cpu.Max != nil {
+					cpuMax, _ := instanceRequirements.CPU.Max.AsInt64()
+					ir.VCpuCount.Max = &cpuMax
+				}
+				if cpu.Min != nil {
+					cpuMin, _ := instanceRequirements.CPU.Min.AsInt64()
+					ir.VCpuCount.Min = &cpuMin
+				}
+			} else {
+				ir.VCpuCount.Min = fi.Int64(0)
+			}
+
+			memory := instanceRequirements.Memory
+			if memory != nil {
+				if memory.Max != nil {
+					memoryMax := instanceRequirements.Memory.Max.ScaledValue(resource.Mega)
+					ir.MemoryMiB.Max = &memoryMax
+				}
+				if memory.Min != nil {
+					memoryMin := instanceRequirements.Memory.Min.ScaledValue(resource.Mega)
+					ir.MemoryMiB.Min = &memoryMin
+				}
+			} else {
+				ir.MemoryMiB.Min = fi.Int64(0)
+			}
+
+			ir.AcceleratorCount = &ec2.AcceleratorCountRequest{
+				Min: fi.Int64(0),
+				Max: fi.Int64(0),
+			}
+
+			response, err := cloud.EC2().GetInstanceTypesFromInstanceRequirements(
+				&ec2.GetInstanceTypesFromInstanceRequirementsInput{
+					ArchitectureTypes:    []*string{arch},
+					VirtualizationTypes:  []*string{hv},
+					InstanceRequirements: ir,
+				},
+			)
+			if err != nil {
+				return nil, err
+			}
+			types := []string{}
+			for _, it := range response.InstanceTypes {
+				types = append(types, *it.InstanceType)
+			}
+			if len(types) == 0 {
+				return nil, fmt.Errorf("no instances matched requirements")
+			}
+			return types, nil
+		}
+	}
+	return []string{ig.MachineType}, nil
 }
