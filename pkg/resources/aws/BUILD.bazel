@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "aws.go",
         "elasticip.go",
+        "eni.go",
         "errors.go",
         "eventbridge.go",
         "filters.go",
