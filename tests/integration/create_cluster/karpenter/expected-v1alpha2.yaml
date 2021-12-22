@@ -110,6 +110,12 @@ spec:
   manager: Karpenter
   maxSize: 2
   minSize: 2
+  mixedInstancesPolicy:
+    instanceRequirements:
+      cpu:
+        min: "2"
+      memory:
+        min: 2G
   nodeLabels:
     kops.k8s.io/instancegroup: nodes
   role: Node
