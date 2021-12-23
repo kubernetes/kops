@@ -68,23 +68,23 @@ func DescribeENIs(cloud fi.Cloud, clusterName string) (map[string]*ec2.NetworkIn
 
 	enis := make(map[string]*ec2.NetworkInterface)
 	klog.V(2).Info("Listing ENIs")
-	for _, filters := range buildEC2FiltersForCluster(clusterName) {
-		request := &ec2.DescribeNetworkInterfacesInput{
-			Filters: filters,
-		}
-		response, err := c.EC2().DescribeNetworkInterfaces(request)
-		if err != nil {
-			return nil, fmt.Errorf("error listing ENIs: %v", err)
-		}
-
-		for _, eni := range response.NetworkInterfaces {
-			// Skip ENIs that are attached
-			if eni.Attachment != nil {
-				continue
-			}
-			enis[aws.StringValue(eni.NetworkInterfaceId)] = eni
-		}
+	//	for _, filters := range buildEC2FiltersForCluster(clusterName) {
+	request := &ec2.DescribeNetworkInterfacesInput{
+		//	Filters: filters,
 	}
+	response, err := c.EC2().DescribeNetworkInterfaces(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing ENIs: %v", err)
+	}
+
+	for _, eni := range response.NetworkInterfaces {
+		// Skip ENIs that are attached
+		if eni.Attachment != nil {
+			continue
+		}
+		enis[aws.StringValue(eni.NetworkInterfaceId)] = eni
+	}
+	//	}
 
 	return enis, nil
 }
