@@ -187,6 +187,12 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 				envVars["ENABLE_PREFIX_DELEGATION"] = "true"
 				envVars["WARM_PREFIX_TARGET"] = "1"
 			}
+			envVars["ADDITIONAL_ENI_TAGS"] = fmt.Sprintf(
+				"{\\\"KubernetesCluster\\\":\\\"%s\\\",\\\"kubernetes.io/cluster/%s\\\":\\\"owned\\\"}",
+				tf.ClusterName(),
+				tf.ClusterName(),
+			)
+
 			return envVars
 		}
 	}
