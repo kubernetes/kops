@@ -157,6 +157,8 @@ spec:
                 - fargate
       containers:
       - env:
+        - name: ADDITIONAL_ENI_TAGS
+          value: '{"KubernetesCluster":"minimal.example.com","kubernetes.io/cluster/minimal.example.com":"owned"}'
         - name: AWS_VPC_K8S_CNI_CONFIGURE_RPFILTER
           value: "false"
         - name: ENABLE_IPv4
