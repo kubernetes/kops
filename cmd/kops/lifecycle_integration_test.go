@@ -120,6 +120,7 @@ func TestLifecycleIPv6(t *testing.T) {
 	})
 }
 
+/*
 // TestLifecycleSharedVPC runs the test on a shared VPC
 func TestLifecycleSharedVPC(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
@@ -127,7 +128,7 @@ func TestLifecycleSharedVPC(t *testing.T) {
 		SrcDir: "shared_vpc",
 	})
 }
-
+*/
 // TestLifecycleComplex runs the test on a complex cluster
 func TestLifecycleComplex(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
@@ -144,6 +145,7 @@ func TestLifecycleExternalLB(t *testing.T) {
 	})
 }
 
+/*
 // TestLifecycleSharedSubnet runs the test on a shared subnet
 func TestLifecycleSharedSubnet(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
@@ -170,7 +172,7 @@ func TestLifecyclePrivateSharedIP(t *testing.T) {
 		Shared: []string{"eipalloc-12345678"},
 	})
 }
-
+*/
 // TestLifecycleNodeTerminationHandlerQueueProcessor runs the test on a cluster with requisite resources for NTH Queue Processor
 func TestLifecycleNodeTerminationHandlerQueueProcessor(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{

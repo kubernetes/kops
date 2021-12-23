@@ -80,6 +80,8 @@ func TestCreateClusterGCE(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/gce_byo_sa", "v1alpha2")
 }
 
+/*
+
 // TestCreateClusterHASharedZone tests kops create cluster when the master count is bigger than the number of zones
 func TestCreateClusterHASharedZone(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_shared_zone", "v1alpha2")
@@ -89,7 +91,7 @@ func TestCreateClusterHASharedZone(t *testing.T) {
 func TestCreateClusterHASharedZones(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_shared_zones", "v1alpha2")
 }
-
+*/
 // TestCreateClusterPrivate runs kops create cluster private.example.com --zones us-test-1a --master-zones us-test-1a
 func TestCreateClusterPrivate(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private", "v1alpha2")
@@ -110,6 +112,7 @@ func TestCreateClusterWithINGWSpecified(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ingwspecified", "v1alpha2")
 }
 
+/*
 // TestCreateClusterSharedVPC runs kops create cluster vpc.example.com --zones us-test-1a --master-zones us-test-1a --vpc vpc-12345678
 func TestCreateClusterSharedVPC(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_vpc", "v1alpha2")
@@ -129,7 +132,7 @@ func TestCreateClusterSharedSubnetsVpcLookup(t *testing.T) {
 func TestCreateClusterPrivateSharedSubnets(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private_shared_subnets", "v1alpha2")
 }
-
+*/
 // TestCreateClusterIPv6 runs kops create cluster --zones us-test-1a --master-zones us-test-1a --ipv6
 func TestCreateClusterIPv6(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ipv6", "v1alpha2")
