@@ -93,11 +93,20 @@ func DumpSecurityGroup(op *resources.DumpOperation, r *resources.Resource) error
 }
 
 func ListSecurityGroups(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
-	groups, err := DescribeSecurityGroups(cloud, clusterName)
+	vpcs, err := DescribeVPCs(cloud, clusterName)
 	if err != nil {
 		return nil, err
 	}
-
+	groups := make(map[string]*ec2.SecurityGroup)
+	for vpcID := range vpcs {
+		newGroups, err := DescribeSecurityGroups(cloud, vpcID)
+		if err != nil {
+			return nil, err
+		}
+		for id, group := range newGroups {
+			groups[id] = group
+		}
+	}
 	var resourceTrackers []*resources.Resource
 
 	for id, sg := range groups {
@@ -122,23 +131,25 @@ func ListSecurityGroups(cloud fi.Cloud, clusterName string) ([]*resources.Resour
 	return resourceTrackers, nil
 }
 
-func DescribeSecurityGroups(cloud fi.Cloud, clusterName string) (map[string]*ec2.SecurityGroup, error) {
+func DescribeSecurityGroups(cloud fi.Cloud, vpcID string) (map[string]*ec2.SecurityGroup, error) {
 	c := cloud.(awsup.AWSCloud)
 
 	groups := make(map[string]*ec2.SecurityGroup)
 	klog.V(2).Infof("Listing EC2 SecurityGroups")
-	for _, filters := range buildEC2FiltersForCluster(clusterName) {
-		request := &ec2.DescribeSecurityGroupsInput{
-			Filters: filters,
-		}
-		response, err := c.EC2().DescribeSecurityGroups(request)
-		if err != nil {
-			return nil, fmt.Errorf("error listing SecurityGroups: %v", err)
-		}
+	filter := &ec2.Filter{
+		Name:   aws.String("vpc-id"),
+		Values: []*string{fi.String(vpcID)},
+	}
+	request := &ec2.DescribeSecurityGroupsInput{
+		Filters: []*ec2.Filter{filter},
+	}
+	response, err := c.EC2().DescribeSecurityGroups(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing SecurityGroups: %v", err)
+	}
 
-		for _, group := range response.SecurityGroups {
-			groups[aws.StringValue(group.GroupId)] = group
-		}
+	for _, group := range response.SecurityGroups {
+		groups[aws.StringValue(group.GroupId)] = group
 	}
 
 	return groups, nil
