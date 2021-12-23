@@ -71,6 +71,7 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 		ListRouteTables,
 		ListSubnets,
 		ListVPCs,
+		ListENIs,
 		// ELBs
 		ListELBs,
 		ListELBV2s,
