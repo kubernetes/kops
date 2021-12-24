@@ -24,7 +24,7 @@ spec:
     clusterCIDR: ::/0
     clusterName: minimal-ipv6.example.com
     configureCloudRoutes: false
-    image: k8s.gcr.io/provider-aws/cloud-controller-manager:v1.21.0-alpha.0
+    image: gcr.io/k8s-staging-provider-aws/cloud-controller-manager:latest
   cloudProvider: aws
   clusterDNSDomain: cluster.local
   configBase: memfs://clusters.example.com/minimal-ipv6.example.com
@@ -32,7 +32,7 @@ spec:
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.12
+    version: 1.6.0-beta.4
   dnsZone: Z1AFAKE1ZON3YO
   docker:
     skipInstall: true
@@ -43,14 +43,14 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: main
-    version: 3.4.13
+    version: 3.5.1
   - backups:
       backupStore: memfs://clusters.example.com/minimal-ipv6.example.com/backups/etcd/events
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-    version: 3.4.13
+    version: 3.5.1
   externalDns:
     provider: dns-controller
   iam:
@@ -79,7 +79,7 @@ spec:
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: k8s.gcr.io/kube-apiserver:v1.21.0
+    image: k8s.gcr.io/kube-apiserver:v1.23.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -109,7 +109,7 @@ spec:
     - -nodeipam
     featureGates:
       CSIMigrationAWS: "true"
-    image: k8s.gcr.io/kube-controller-manager:v1.21.0
+    image: k8s.gcr.io/kube-controller-manager:v1.23.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -132,10 +132,10 @@ spec:
     - fd00:ec2::253
   kubeProxy:
     cpuRequest: 100m
-    image: k8s.gcr.io/kube-proxy:v1.21.0
+    image: k8s.gcr.io/kube-proxy:v1.23.0
     logLevel: 2
   kubeScheduler:
-    image: k8s.gcr.io/kube-scheduler:v1.21.0
+    image: k8s.gcr.io/kube-scheduler:v1.23.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -155,10 +155,11 @@ spec:
     logLevel: 2
     networkPluginName: cni
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
   kubernetesApiAccess:
   - 0.0.0.0/0
   - ::/0
-  kubernetesVersion: 1.21.0
+  kubernetesVersion: 1.23.0
   masterInternalName: api.internal.minimal-ipv6.example.com
   masterKubelet:
     anonymousAuth: false
@@ -176,6 +177,7 @@ spec:
     logLevel: 2
     networkPluginName: cni
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
     registerSchedulable: false
   masterPublicName: api.minimal-ipv6.example.com
   networkCIDR: 172.20.0.0/16
