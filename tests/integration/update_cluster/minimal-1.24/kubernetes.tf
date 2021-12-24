@@ -839,8 +839,10 @@ resource "aws_security_group_rule" "from-nodes-minimal-example-com-ingress-udp-1
 }
 
 resource "aws_subnet" "us-test-1a-minimal-example-com" {
-  availability_zone = "us-test-1a"
-  cidr_block        = "172.20.32.0/19"
+  availability_zone                           = "us-test-1a"
+  cidr_block                                  = "172.20.32.0/19"
+  enable_resource_name_dns_a_record_on_launch = true
+  private_dns_hostname_type_on_launch         = "resource-name"
   tags = {
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "us-test-1a.minimal.example.com"
