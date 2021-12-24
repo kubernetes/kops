@@ -355,11 +355,16 @@ func subnetSlicesEqualIgnoreOrder(l, r []*Subnet) bool {
 }
 
 type terraformSubnet struct {
-	VPCID            *terraformWriter.Literal `cty:"vpc_id"`
-	CIDR             *string                  `cty:"cidr_block"`
-	IPv6CIDR         *string                  `cty:"ipv6_cidr_block"`
-	AvailabilityZone *string                  `cty:"availability_zone"`
-	Tags             map[string]string        `cty:"tags"`
+	VPCID                                   *terraformWriter.Literal `cty:"vpc_id"`
+	CIDR                                    *string                  `cty:"cidr_block"`
+	IPv6CIDR                                *string                  `cty:"ipv6_cidr_block"`
+	IPv6Native                              *bool                    `cty:"ipv6_native"`
+	AvailabilityZone                        *string                  `cty:"availability_zone"`
+	EnableDNS64                             *bool                    `cty:"enable_dns64"`
+	EnableResourceNameDNSAAAARecordOnLaunch *bool                    `cty:"enable_resource_name_dns_aaaa_record_on_launch"`
+	EnableResourceNameDNSARecordOnLaunch    *bool                    `cty:"enable_resource_name_dns_a_record_on_launch"`
+	PrivateDNSHostnameTypeOnLaunch          *string                  `cty:"private_dns_hostname_type_on_launch"`
+	Tags                                    map[string]string        `cty:"tags"`
 }
 
 func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
@@ -393,6 +398,23 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 		IPv6CIDR:         e.IPv6CIDR,
 		AvailabilityZone: e.AvailabilityZone,
 		Tags:             e.Tags,
+	}
+	if fi.StringValue(e.CIDR) == "" {
+		tf.EnableDNS64 = fi.Bool(true)
+		tf.IPv6Native = fi.Bool(true)
+	}
+	if e.ResourceBasedNaming != nil {
+		hostnameType := ec2.HostnameTypeIpName
+		if *e.ResourceBasedNaming {
+			hostnameType = ec2.HostnameTypeResourceName
+		}
+		tf.PrivateDNSHostnameTypeOnLaunch = fi.String(hostnameType)
+		if fi.StringValue(e.CIDR) != "" {
+			tf.EnableResourceNameDNSARecordOnLaunch = e.ResourceBasedNaming
+		}
+		if fi.StringValue(e.IPv6CIDR) != "" {
+			tf.EnableResourceNameDNSAAAARecordOnLaunch = e.ResourceBasedNaming
+		}
 	}
 
 	return t.RenderResource("aws_subnet", *e.Name, tf)
