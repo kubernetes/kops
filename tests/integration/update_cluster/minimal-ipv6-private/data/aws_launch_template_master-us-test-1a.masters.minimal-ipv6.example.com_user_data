@@ -134,15 +134,15 @@ cloudConfig:
 containerRuntime: containerd
 containerd:
   logLevel: info
-  version: 1.4.12
+  version: 1.6.0-beta.4
 docker:
   skipInstall: true
 encryptionConfig: null
 etcdClusters:
   events:
-    version: 3.4.13
+    version: 3.5.1
   main:
-    version: 3.4.13
+    version: 3.5.1
 kubeAPIServer:
   allowPrivileged: true
   anonymousAuth: false
@@ -166,7 +166,7 @@ kubeAPIServer:
   - https://127.0.0.1:4001
   etcdServersOverrides:
   - /events#https://127.0.0.1:4002
-  image: k8s.gcr.io/kube-apiserver:v1.21.0
+  image: k8s.gcr.io/kube-apiserver:v1.23.0
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -196,17 +196,17 @@ kubeControllerManager:
   - -nodeipam
   featureGates:
     CSIMigrationAWS: "true"
-  image: k8s.gcr.io/kube-controller-manager:v1.21.0
+  image: k8s.gcr.io/kube-controller-manager:v1.23.0
   leaderElection:
     leaderElect: true
   logLevel: 2
   useServiceAccountCredentials: true
 kubeProxy:
   cpuRequest: 100m
-  image: k8s.gcr.io/kube-proxy:v1.21.0
+  image: k8s.gcr.io/kube-proxy:v1.23.0
   logLevel: 2
 kubeScheduler:
-  image: k8s.gcr.io/kube-scheduler:v1.21.0
+  image: k8s.gcr.io/kube-scheduler:v1.23.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -226,6 +226,7 @@ kubelet:
   logLevel: 2
   networkPluginName: cni
   podManifestPath: /etc/kubernetes/manifests
+  protectKernelDefaults: true
 masterKubelet:
   anonymousAuth: false
   cgroupDriver: systemd
@@ -242,6 +243,7 @@ masterKubelet:
   logLevel: 2
   networkPluginName: cni
   podManifestPath: /etc/kubernetes/manifests
+  protectKernelDefaults: true
   registerSchedulable: false
 
 __EOF_CLUSTER_SPEC
@@ -251,7 +253,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: 125RlQGI9pGb/KE6nPLwc48XGm9VQ4cnTWB2ijOHGtw=
+NodeupConfigHash: lhBGIbUgHvtWo0RjBS5OMF+gfW20GroKLr1lB9zTiK4=
 
 __EOF_KUBE_ENV
 

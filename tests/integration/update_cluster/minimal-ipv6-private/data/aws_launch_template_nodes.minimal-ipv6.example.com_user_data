@@ -134,12 +134,12 @@ cloudConfig:
 containerRuntime: containerd
 containerd:
   logLevel: info
-  version: 1.4.12
+  version: 1.6.0-beta.4
 docker:
   skipInstall: true
 kubeProxy:
   cpuRequest: 100m
-  image: k8s.gcr.io/kube-proxy:v1.21.0
+  image: k8s.gcr.io/kube-proxy:v1.23.0
   logLevel: 2
 kubelet:
   anonymousAuth: false
@@ -157,6 +157,7 @@ kubelet:
   logLevel: 2
   networkPluginName: cni
   podManifestPath: /etc/kubernetes/manifests
+  protectKernelDefaults: true
 
 __EOF_CLUSTER_SPEC
 
@@ -165,7 +166,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: Pyc1ooFcHOEr89bybwfSkbPNXGlCaXmLybVqMYEbaZo=
+NodeupConfigHash: /2OlsRVRArRL6ffpG51ysZBDm3bfGrJv38ryXueFgMk=
 
 __EOF_KUBE_ENV
 
