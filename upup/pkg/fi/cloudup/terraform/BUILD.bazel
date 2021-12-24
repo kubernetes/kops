@@ -7,7 +7,6 @@ go_library(
         "lifecycle.go",
         "target.go",
         "target_hcl2.go",
-        "target_json.go",
     ],
     importpath = "k8s.io/kops/upup/pkg/fi/cloudup/terraform",
     visibility = ["//visibility:public"],
