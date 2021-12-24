@@ -127,9 +127,9 @@ func (eb *EventBridgeRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Event
 }
 
 type terraformEventBridgeRule struct {
-	Name         *string                  `json:"name" cty:"name"`
-	EventPattern *terraformWriter.Literal `json:"event_pattern" cty:"event_pattern"`
-	Tags         map[string]string        `json:"tags,omitempty" cty:"tags"`
+	Name         *string                  `cty:"name"`
+	EventPattern *terraformWriter.Literal `cty:"event_pattern"`
+	Tags         map[string]string        `cty:"tags"`
 }
 
 func (_ *EventBridgeRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EventBridgeRule) error {

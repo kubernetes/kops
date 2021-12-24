@@ -117,8 +117,8 @@ func (_ *StorageBucketAcl) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Storage
 
 // terraformStorageBucketAcl is the model for a terraform google_storage_bucket_acl rule
 type terraformStorageBucketAcl struct {
-	Bucket     string   `json:"bucket,omitempty" cty:"bucket"`
-	RoleEntity []string `json:"role_entity,omitempty" cty:"role_entity"`
+	Bucket     string   `cty:"bucket"`
+	RoleEntity []string `cty:"role_entity"`
 }
 
 func (_ *StorageBucketAcl) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *StorageBucketAcl) error {

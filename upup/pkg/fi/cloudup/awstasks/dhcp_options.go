@@ -171,9 +171,9 @@ func (_ *DHCPOptions) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DHCPOption
 }
 
 type terraformDHCPOptions struct {
-	DomainName        *string           `json:"domain_name,omitempty" cty:"domain_name"`
-	DomainNameServers []string          `json:"domain_name_servers,omitempty" cty:"domain_name_servers"`
-	Tags              map[string]string `json:"tags,omitempty" cty:"tags"`
+	DomainName        *string           `cty:"domain_name"`
+	DomainNameServers []string          `cty:"domain_name_servers"`
+	Tags              map[string]string `cty:"tags"`
 }
 
 func (_ *DHCPOptions) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DHCPOptions) error {

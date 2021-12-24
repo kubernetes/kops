@@ -25,144 +25,144 @@ import (
 
 type terraformLaunchTemplateNetworkInterface struct {
 	// AssociatePublicIPAddress associates a public ip address with the network interface. Boolean value.
-	AssociatePublicIPAddress *bool `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
+	AssociatePublicIPAddress *bool `cty:"associate_public_ip_address"`
 	// DeleteOnTermination indicates whether the network interface should be destroyed on instance termination.
-	DeleteOnTermination *bool `json:"delete_on_termination,omitempty" cty:"delete_on_termination"`
+	DeleteOnTermination *bool `cty:"delete_on_termination"`
 	// Ipv6AddressCount is the number of IPv6 addresses to assign with the primary network interface.
-	Ipv6AddressCount *int64 `json:"ipv6_address_count,omitempty" cty:"ipv6_address_count"`
+	Ipv6AddressCount *int64 `cty:"ipv6_address_count"`
 	// SecurityGroups is a list of security group ids.
-	SecurityGroups []*terraformWriter.Literal `json:"security_groups,omitempty" cty:"security_groups"`
+	SecurityGroups []*terraformWriter.Literal `cty:"security_groups"`
 }
 
 type terraformLaunchTemplateMonitoring struct {
 	// Enabled indicates that monitoring is enabled
-	Enabled *bool `json:"enabled,omitempty" cty:"enabled"`
+	Enabled *bool `cty:"enabled"`
 }
 
 type terraformLaunchTemplatePlacement struct {
 	// Affinity is he affinity setting for an instance on a Dedicated Host.
-	Affinity *string `json:"affinity,omitempty" cty:"affinity"`
+	Affinity *string `cty:"affinity"`
 	// AvailabilityZone is the Availability Zone for the instance.
-	AvailabilityZone *string `json:"availability_zone,omitempty" cty:"availability_zone"`
+	AvailabilityZone *string `cty:"availability_zone"`
 	// GroupName is the name of the placement group for the instance.
-	GroupName *string `json:"group_name,omitempty" cty:"group_name"`
+	GroupName *string `cty:"group_name"`
 	// HostID is the ID of the Dedicated Host for the instance.
-	HostID *string `json:"host_id,omitempty" cty:"host_id"`
+	HostID *string `cty:"host_id"`
 	// SpreadDomain are reserved for future use.
-	SpreadDomain *string `json:"spread_domain,omitempty" cty:"spread_domain"`
+	SpreadDomain *string `cty:"spread_domain"`
 	// Tenancy ist he tenancy of the instance. Can be default, dedicated, or host.
-	Tenancy *string `json:"tenancy,omitempty" cty:"tenancy"`
+	Tenancy *string `cty:"tenancy"`
 }
 
 type terraformLaunchTemplateIAMProfile struct {
 	// Name is the name of the profile
-	Name *terraformWriter.Literal `json:"name,omitempty" cty:"name"`
+	Name *terraformWriter.Literal `cty:"name"`
 }
 
 type terraformLaunchTemplateMarketOptionsSpotOptions struct {
 	// BlockDurationMinutes is required duration in minutes. This value must be a multiple of 60.
-	BlockDurationMinutes *int64 `json:"block_duration_minutes,omitempty" cty:"block_duration_minutes"`
+	BlockDurationMinutes *int64 `cty:"block_duration_minutes"`
 	// InstanceInterruptionBehavior is the behavior when a Spot Instance is interrupted. Can be hibernate, stop, or terminate
-	InstanceInterruptionBehavior *string `json:"instance_interruption_behavior,omitempty" cty:"instance_interruption_behavior"`
+	InstanceInterruptionBehavior *string `cty:"instance_interruption_behavior"`
 	// MaxPrice is the maximum hourly price you're willing to pay for the Spot Instances
-	MaxPrice *string `json:"max_price,omitempty" cty:"max_price"`
+	MaxPrice *string `cty:"max_price"`
 	// SpotInstanceType is the Spot Instance request type. Can be one-time, or persistent
-	SpotInstanceType *string `json:"spot_instance_type,omitempty" cty:"spot_instance_type"`
+	SpotInstanceType *string `cty:"spot_instance_type"`
 	// ValidUntil is the end date of the request
-	ValidUntil *string `json:"valid_until,omitempty" cty:"valid_until"`
+	ValidUntil *string `cty:"valid_until"`
 }
 
 type terraformLaunchTemplateMarketOptions struct {
 	// MarketType is the option type
-	MarketType *string `json:"market_type,omitempty" cty:"market_type"`
+	MarketType *string `cty:"market_type"`
 	// SpotOptions are the set of options
-	SpotOptions []*terraformLaunchTemplateMarketOptionsSpotOptions `json:"spot_options,omitempty" cty:"spot_options"`
+	SpotOptions []*terraformLaunchTemplateMarketOptionsSpotOptions `cty:"spot_options"`
 }
 
 type terraformLaunchTemplateBlockDeviceEBS struct {
 	// VolumeType is the ebs type to use
-	VolumeType *string `json:"volume_type,omitempty" cty:"volume_type"`
+	VolumeType *string `cty:"volume_type"`
 	// VolumeSize is the volume size
-	VolumeSize *int64 `json:"volume_size,omitempty" cty:"volume_size"`
+	VolumeSize *int64 `cty:"volume_size"`
 	// IOPS is the provisioned IOPS
-	IOPS *int64 `json:"iops,omitempty" cty:"iops"`
+	IOPS *int64 `cty:"iops"`
 	// Throughput is the gp3 volume throughput
-	Throughput *int64 `json:"throughput,omitempty" cty:"throughput"`
+	Throughput *int64 `cty:"throughput"`
 	// DeleteOnTermination indicates the volume should die with the instance
-	DeleteOnTermination *bool `json:"delete_on_termination,omitempty" cty:"delete_on_termination"`
+	DeleteOnTermination *bool `cty:"delete_on_termination"`
 	// Encrypted indicates the device should be encrypted
-	Encrypted *bool `json:"encrypted,omitempty" cty:"encrypted"`
+	Encrypted *bool `cty:"encrypted"`
 	// KmsKeyID is the encryption key identifier for the volume
-	KmsKeyID *string `json:"kms_key_id,omitempty" cty:"kms_key_id"`
+	KmsKeyID *string `cty:"kms_key_id"`
 }
 
 type terraformLaunchTemplateBlockDevice struct {
 	// DeviceName is the name of the device
-	DeviceName *string `json:"device_name,omitempty" cty:"device_name"`
+	DeviceName *string `cty:"device_name"`
 	// VirtualName is used for the ephemeral devices
-	VirtualName *string `json:"virtual_name,omitempty" cty:"virtual_name"`
+	VirtualName *string `cty:"virtual_name"`
 	// EBS defines the ebs spec
-	EBS []*terraformLaunchTemplateBlockDeviceEBS `json:"ebs,omitempty" cty:"ebs"`
+	EBS []*terraformLaunchTemplateBlockDeviceEBS `cty:"ebs"`
 }
 
 type terraformLaunchTemplateCreditSpecification struct {
-	CPUCredits *string `json:"cpu_credits,omitempty" cty:"cpu_credits"`
+	CPUCredits *string `cty:"cpu_credits"`
 }
 
 type terraformLaunchTemplateTagSpecification struct {
 	// ResourceType is the type of resource to tag.
-	ResourceType *string `json:"resource_type,omitempty" cty:"resource_type"`
+	ResourceType *string `cty:"resource_type"`
 	// Tags are the tags to apply to the resource.
-	Tags map[string]string `json:"tags,omitempty" cty:"tags"`
+	Tags map[string]string `cty:"tags"`
 }
 
 type terraformLaunchTemplateInstanceMetadata struct {
 	// HTTPEndpoint enables or disables the HTTP metadata endpoint on instances.
-	HTTPEndpoint *string `json:"http_endpoint,omitempty" cty:"http_endpoint"`
+	HTTPEndpoint *string `cty:"http_endpoint"`
 	// HTTPPutResponseHopLimit is the desired HTTP PUT response hop limit for instance metadata requests.
-	HTTPPutResponseHopLimit *int64 `json:"http_put_response_hop_limit,omitempty" cty:"http_put_response_hop_limit"`
+	HTTPPutResponseHopLimit *int64 `cty:"http_put_response_hop_limit"`
 	// HTTPTokens is the state of token usage for your instance metadata requests.
-	HTTPTokens *string `json:"http_tokens,omitempty" cty:"http_tokens"`
+	HTTPTokens *string `cty:"http_tokens"`
 	// HTTPProtocolIPv6 enables the IPv6 instance metadata endpoint
-	HTTPProtocolIPv6 *string `json:"http_protocol_ipv6,omitempty" cty:"http_protocol_ipv6"`
+	HTTPProtocolIPv6 *string `cty:"http_protocol_ipv6"`
 }
 
 type terraformLaunchTemplate struct {
 	// Name is the name of the launch template
-	Name *string `json:"name,omitempty" cty:"name"`
+	Name *string `cty:"name"`
 	// Lifecycle is the terraform lifecycle
-	Lifecycle *terraform.Lifecycle `json:"lifecycle,omitempty" cty:"lifecycle"`
+	Lifecycle *terraform.Lifecycle `cty:"lifecycle"`
 
 	// BlockDeviceMappings is the device mappings
-	BlockDeviceMappings []*terraformLaunchTemplateBlockDevice `json:"block_device_mappings,omitempty" cty:"block_device_mappings"`
+	BlockDeviceMappings []*terraformLaunchTemplateBlockDevice `cty:"block_device_mappings"`
 	// CreditSpecification is the credit option for CPU Usage on some instance types
-	CreditSpecification *terraformLaunchTemplateCreditSpecification `json:"credit_specification,omitempty" cty:"credit_specification"`
+	CreditSpecification *terraformLaunchTemplateCreditSpecification `cty:"credit_specification"`
 	// EBSOptimized indicates if the root device is ebs optimized
-	EBSOptimized *bool `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
+	EBSOptimized *bool `cty:"ebs_optimized"`
 	// IAMInstanceProfile is the IAM profile to assign to the nodes
-	IAMInstanceProfile []*terraformLaunchTemplateIAMProfile `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
+	IAMInstanceProfile []*terraformLaunchTemplateIAMProfile `cty:"iam_instance_profile"`
 	// ImageID is the ami to use for the instances
-	ImageID *string `json:"image_id,omitempty" cty:"image_id"`
+	ImageID *string `cty:"image_id"`
 	// InstanceType is the type of instance
-	InstanceType *string `json:"instance_type,omitempty" cty:"instance_type"`
+	InstanceType *string `cty:"instance_type"`
 	// KeyName is the ssh key to use
-	KeyName *terraformWriter.Literal `json:"key_name,omitempty" cty:"key_name"`
+	KeyName *terraformWriter.Literal `cty:"key_name"`
 	// MarketOptions are the spot pricing options
-	MarketOptions []*terraformLaunchTemplateMarketOptions `json:"instance_market_options,omitempty" cty:"instance_market_options"`
+	MarketOptions []*terraformLaunchTemplateMarketOptions `cty:"instance_market_options"`
 	// MetadataOptions are the instance metadata options.
-	MetadataOptions *terraformLaunchTemplateInstanceMetadata `json:"metadata_options,omitempty" cty:"metadata_options"`
+	MetadataOptions *terraformLaunchTemplateInstanceMetadata `cty:"metadata_options"`
 	// Monitoring are the instance monitoring options
-	Monitoring []*terraformLaunchTemplateMonitoring `json:"monitoring,omitempty" cty:"monitoring"`
+	Monitoring []*terraformLaunchTemplateMonitoring `cty:"monitoring"`
 	// NetworkInterfaces are the networking options
-	NetworkInterfaces []*terraformLaunchTemplateNetworkInterface `json:"network_interfaces,omitempty" cty:"network_interfaces"`
+	NetworkInterfaces []*terraformLaunchTemplateNetworkInterface `cty:"network_interfaces"`
 	// Placement are the tenancy options
-	Placement []*terraformLaunchTemplatePlacement `json:"placement,omitempty" cty:"placement"`
+	Placement []*terraformLaunchTemplatePlacement `cty:"placement"`
 	// Tags is a map of tags applied to the launch template itself
-	Tags map[string]string `json:"tags,omitempty" cty:"tags"`
+	Tags map[string]string `cty:"tags"`
 	// TagSpecifications are the tags to apply to a resource when it is created.
-	TagSpecifications []*terraformLaunchTemplateTagSpecification `json:"tag_specifications,omitempty" cty:"tag_specifications"`
+	TagSpecifications []*terraformLaunchTemplateTagSpecification `cty:"tag_specifications"`
 	// UserData is the user data for the instances
-	UserData *terraformWriter.Literal `json:"user_data,omitempty" cty:"user_data"`
+	UserData *terraformWriter.Literal `cty:"user_data"`
 }
 
 // TerraformLink returns the terraform reference
