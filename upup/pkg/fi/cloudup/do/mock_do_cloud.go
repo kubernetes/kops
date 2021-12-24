@@ -126,3 +126,15 @@ func (c *doCloudMockImplementation) GetAllDropletsByTag(tag string) ([]godo.Drop
 func (c *doCloudMockImplementation) GetAllVolumesByRegion() ([]godo.Volume, error) {
 	return nil, nil
 }
+
+func (c *doCloudMockImplementation) GetVPCUUID(networkCIDR string, vpcName string) (string, error) {
+	return "", nil
+}
+
+func (c *doCloudMockImplementation) GetAllVPCs() ([]*godo.VPC, error) {
+	return nil, nil
+}
+
+func (c *doCloudMockImplementation) VPCsService() godo.VPCsService {
+	return c.Client.VPCs
+}

@@ -18,7 +18,6 @@ package domodel
 
 import (
 	"fmt"
-	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
@@ -56,7 +55,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("unhandled LoadBalancer type %q", lbSpec.Type)
 	}
 
-	clusterName := strings.Replace(b.ClusterName(), ".", "-", -1)
+	clusterName := do.SafeClusterName(b.ClusterName())
 	loadbalancerName := "api-" + clusterName
 	clusterMasterTag := do.TagKubernetesClusterMasterPrefix + ":" + clusterName
 
@@ -67,6 +66,15 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		DropletTag: fi.String(clusterMasterTag),
 		Lifecycle:  b.Lifecycle,
 	}
+
+	if b.Cluster.Spec.NetworkID != "" {
+		loadbalancer.VPCUUID = fi.String(b.Cluster.Spec.NetworkID)
+	} else if b.Cluster.Spec.NetworkCIDR != "" {
+		vpcName := "vpc-" + clusterName
+		loadbalancer.VPCName = fi.String(vpcName)
+		loadbalancer.NetworkCIDR = fi.String(b.Cluster.Spec.NetworkCIDR)
+	}
+
 	c.AddTask(loadbalancer)
 
 	// Temporarily do not know the role of the following function

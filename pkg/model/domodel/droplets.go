@@ -46,8 +46,9 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 	sshKeyFingerPrint := splitSSHKeyName[len(splitSSHKeyName)-1]
 
 	// replace "." with "-" since DO API does not accept "."
-	clusterTag := do.TagKubernetesClusterNamePrefix + ":" + strings.Replace(d.ClusterName(), ".", "-", -1)
-	clusterMasterTag := do.TagKubernetesClusterMasterPrefix + ":" + strings.Replace(d.ClusterName(), ".", "-", -1)
+	clusterName := do.SafeClusterName(d.ClusterName())
+	clusterTag := do.TagKubernetesClusterNamePrefix + ":" + clusterName
+	clusterMasterTag := do.TagKubernetesClusterMasterPrefix + ":" + clusterName
 
 	masterIndexCount := 0
 	// In the future, DigitalOcean will use Machine API to manage groups,
@@ -81,7 +82,13 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		if d.Cluster.Spec.NetworkID != "" {
-			droplet.VPC = fi.String(d.Cluster.Spec.NetworkID)
+			droplet.VPCUUID = fi.String(d.Cluster.Spec.NetworkID)
+		} else if d.Cluster.Spec.NetworkCIDR != "" {
+			// since networkCIDR specified as part of the request, it is made sure that vpc with this cidr exist before
+			// creating the droplet, so you can associate with vpc uuid for this droplet.
+			vpcName := "vpc-" + clusterName
+			droplet.VPCName = fi.String(vpcName)
+			droplet.NetworkCIDR = fi.String(d.Cluster.Spec.NetworkCIDR)
 		}
 
 		userData, err := d.BootstrapScriptBuilder.ResourceNodeUp(c, ig)

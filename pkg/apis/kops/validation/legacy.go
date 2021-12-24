@@ -73,9 +73,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		requiresSubnets = false
 		requiresSubnetCIDR = false
 		requiresNetworkCIDR = false
-		if c.Spec.NetworkCIDR != "" {
-			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networkCIDR"), "networkCIDR should not be set on DigitalOcean"))
-		}
 	case kops.CloudProviderALI:
 		requiresSubnets = false
 		requiresSubnetCIDR = false
@@ -139,6 +136,16 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 			_, networkCIDR, err = net.ParseCIDR(c.Spec.NetworkCIDR)
 			if err != nil {
 				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("networkCIDR"), c.Spec.NetworkCIDR, "Cluster had an invalid networkCIDR"))
+			}
+			if kops.CloudProviderID(c.Spec.CloudProvider) == kops.CloudProviderDO {
+				// verify if the NetworkCIDR is in a private range as per RFC1918
+				if !networkCIDR.IP.IsPrivate() {
+					allErrs = append(allErrs, field.Invalid(fieldSpec.Child("networkCIDR"), c.Spec.NetworkCIDR, "Cluster had a networkCIDR outside the private IP range"))
+				}
+				// verify if networkID is not specified. In case of DO, this is mutually exclusive.
+				if c.Spec.NetworkID != "" {
+					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networkCIDR"), "DO doesn't support specifying both NetworkID and NetworkCIDR together"))
+				}
 			}
 		}
 	}
