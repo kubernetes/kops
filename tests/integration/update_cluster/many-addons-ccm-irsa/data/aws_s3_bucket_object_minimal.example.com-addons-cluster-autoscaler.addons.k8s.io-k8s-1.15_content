@@ -259,7 +259,7 @@ metadata:
   name: cluster-autoscaler
   namespace: kube-system
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: cluster-autoscaler
@@ -322,10 +322,16 @@ spec:
         fsGroup: 10001
       serviceAccountName: cluster-autoscaler
       topologySpreadConstraints:
-      - maxSkew: 1
+      - labelSelector:
+          matchLabels:
+            app: cluster-autoscaler
+        maxSkew: 1
         topologyKey: topology.kubernetes.io/zone
         whenUnsatisfiable: ScheduleAnyway
-      - maxSkew: 1
+      - labelSelector:
+          matchLabels:
+            app: cluster-autoscaler
+        maxSkew: 1
         topologyKey: kubernetes.io/hostname
         whenUnsatisfiable: DoNotSchedule
       volumes:

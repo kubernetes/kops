@@ -47,7 +47,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.15
     manifest: cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml
-    manifestHash: 3490c89ea1997eab8d8641108d8be3e594e29c48b85f9ce140f8fa0e12fb61f3
+    manifestHash: 4701d89481744ce0e3470a13926bd54a3fbe99bc63cec3d63b03608ce95b987c
     name: cluster-autoscaler.addons.k8s.io
     selector:
       k8s-addon: cluster-autoscaler.addons.k8s.io
@@ -103,7 +103,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.9
     manifest: aws-load-balancer-controller.addons.k8s.io/k8s-1.9.yaml
-    manifestHash: d44d9ba3e4b85f7765634cb9a67f3a385df267cb678a8f6d9d8e1fe4e56b22fb
+    manifestHash: 6408751d40ce8e95d26ee7c205c5569bf2132fe50345ce677eb9a93540d7e368
     name: aws-load-balancer-controller.addons.k8s.io
     needsPKI: true
     selector:
@@ -140,7 +140,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.20
     manifest: snapshot-controller.addons.k8s.io/k8s-1.20.yaml
-    manifestHash: c1625843c5dbf647500867b4af18a62c6ded8516800d051f21a75589a3fa5c27
+    manifestHash: fa12755567496c655d045c8b5fb1adc328e771e00c2185009296c5aac63c66c0
     name: snapshot-controller.addons.k8s.io
     needsPKI: true
     selector:
