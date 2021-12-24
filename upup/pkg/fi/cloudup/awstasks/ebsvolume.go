@@ -218,14 +218,14 @@ func (e *EBSVolume) getEBSVolumeTagsToDelete(currentTags map[string]string) map[
 }
 
 type terraformVolume struct {
-	AvailabilityZone *string           `json:"availability_zone,omitempty" cty:"availability_zone"`
-	Size             *int64            `json:"size,omitempty" cty:"size"`
-	Type             *string           `json:"type,omitempty" cty:"type"`
-	Iops             *int64            `json:"iops,omitempty" cty:"iops"`
-	Throughput       *int64            `json:"throughput,omitempty" cty:"throughput"`
-	KmsKeyId         *string           `json:"kms_key_id,omitempty" cty:"kms_key_id"`
-	Encrypted        *bool             `json:"encrypted,omitempty" cty:"encrypted"`
-	Tags             map[string]string `json:"tags,omitempty" cty:"tags"`
+	AvailabilityZone *string           `cty:"availability_zone"`
+	Size             *int64            `cty:"size"`
+	Type             *string           `cty:"type"`
+	Iops             *int64            `cty:"iops"`
+	Throughput       *int64            `cty:"throughput"`
+	KmsKeyId         *string           `cty:"kms_key_id"`
+	Encrypted        *bool             `cty:"encrypted"`
+	Tags             map[string]string `cty:"tags"`
 }
 
 func (_ *EBSVolume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EBSVolume) error {
