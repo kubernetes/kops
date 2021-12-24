@@ -211,14 +211,14 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 			return nil, err
 		}
 
-		// @step: check if we can add an public ip to this subnet
+		// @step: check if we can add a public ip to this subnet
 		switch subnets[0].Type {
 		case kops.SubnetTypePublic, kops.SubnetTypeUtility:
 			lt.AssociatePublicIP = fi.Bool(true)
 			if ig.Spec.AssociatePublicIP != nil {
 				lt.AssociatePublicIP = ig.Spec.AssociatePublicIP
 			}
-		case kops.SubnetTypePrivate:
+		case kops.SubnetTypeDualStack, kops.SubnetTypePrivate:
 			lt.AssociatePublicIP = fi.Bool(false)
 		}
 

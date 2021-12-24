@@ -633,11 +633,17 @@ type EtcdMemberSpec struct {
 type SubnetType string
 
 const (
-	// SubnetTypePublic means the subnet is public
+	// SubnetTypePublic means the subnet has external addresses.
+	// In IPv6 clusters it is typically dual-stack.
 	SubnetTypePublic SubnetType = "Public"
-	// SubnetTypePrivate means the subnet has no public address or is natted
+	// SubnetTypePrivate means the subnet has no public addresses.
+	// In IPv6 clusters it is typically IPv6-only.
 	SubnetTypePrivate SubnetType = "Private"
-	// SubnetTypeUtility mean the subnet is used for utility services, such as the bastion
+	// SubnetTypeDualStack means the subnet has no public addresses but is dual-stack.
+	SubnetTypeDualStack SubnetType = "DualStack"
+	// SubnetTypeUtility mean the subnet has external addresses but is not used for nodes.
+	// It is used for utility services, such as the bastion or load balancers.
+	// In IPv6 clusters it is typically dual-stack.
 	SubnetTypeUtility SubnetType = "Utility"
 )
 

@@ -119,7 +119,7 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 	for i := range c.Spec.Subnets {
 		subnet := &c.Spec.Subnets[i]
 		switch subnet.Type {
-		case kops.SubnetTypePublic, kops.SubnetTypePrivate:
+		case kops.SubnetTypeDualStack, kops.SubnetTypePublic, kops.SubnetTypePrivate:
 			bigSubnets = append(bigSubnets, subnet)
 
 		case kops.SubnetTypeUtility:
@@ -174,8 +174,7 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 		if subnet.CIDR != "" {
 			continue
 		}
-		// TODO: Replace this with a check against type "dualstack" if has IPv6CIDR
-		if subnet.IPv6CIDR != "" && subnet.Name != subnet.Zone {
+		if subnet.IPv6CIDR != "" && subnet.Type == kops.SubnetTypePrivate {
 			continue
 		}
 

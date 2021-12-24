@@ -158,7 +158,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		if !isUnmanaged(subnetSpec) {
 			allSubnetsUnmanaged = false
-			if subnetSpec.Type == kops.SubnetTypePrivate {
+			if subnetSpec.Type == kops.SubnetTypeDualStack || subnetSpec.Type == kops.SubnetTypePrivate {
 				allPrivateSubnetsUnmanaged = false
 			}
 		}
@@ -216,6 +216,13 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	infoByZone := make(map[string]*zoneInfo)
 
+	haveDualStack := map[string]bool{}
+	for _, subnetSpec := range b.Cluster.Spec.Subnets {
+		if subnetSpec.Type == kops.SubnetTypeDualStack {
+			haveDualStack[subnetSpec.Zone] = true
+		}
+	}
+
 	for i := range b.Cluster.Spec.Subnets {
 		subnetSpec := &b.Cluster.Spec.Subnets[i]
 		sharedSubnet := subnetSpec.ProviderID != ""
@@ -238,8 +245,13 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					tags[aws.TagNameSubnetInternalELB] = "1"
 				}
 
-			case kops.SubnetTypePrivate:
+			case kops.SubnetTypeDualStack:
 				tags[aws.TagNameSubnetInternalELB] = "1"
+
+			case kops.SubnetTypePrivate:
+				if !haveDualStack[subnetSpec.Zone] {
+					tags[aws.TagNameSubnetInternalELB] = "1"
+				}
 
 			default:
 				klog.V(2).Infof("unable to properly tag subnet %q because it has unknown type %q. Load balancers may be created in incorrect subnets", subnetSpec.Name, subnetSpec.Type)
@@ -304,7 +316,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				}
 			}
 
-		case kops.SubnetTypePrivate:
+		case kops.SubnetTypeDualStack, kops.SubnetTypePrivate:
 			// Private subnets get a Network Gateway, and their own route table to associate them with the network gateway
 
 			if !sharedSubnet && !isUnmanaged(subnetSpec) {
