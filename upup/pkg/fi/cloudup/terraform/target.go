@@ -17,14 +17,12 @@ limitations under the License.
 package terraform
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 	"k8s.io/kops/util/pkg/vfs"
@@ -94,24 +92,14 @@ func tfGetFilesProviderExtraConfig(c *kops.TargetSpec) map[string]string {
 }
 
 func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
-	var err error
-	if featureflag.TerraformJSON.Enabled() {
-		if featureflag.TerraformManagedFiles.Enabled() {
-			// Terraform's JSON representation doesn't support provider aliases which are required for managed files
-			return errors.New("TerraformJSON cannot be used with TerraformManagedFiles")
-		}
-		err = t.finishJSON()
-	} else {
-		err = t.finishHCL2()
-	}
-	if err != nil {
+	if err := t.finishHCL2(); err != nil {
 		return err
 	}
 
 	for relativePath, contents := range t.Files {
 		p := path.Join(t.outDir, relativePath)
 
-		err = os.MkdirAll(path.Dir(p), os.FileMode(0o755))
+		err := os.MkdirAll(path.Dir(p), os.FileMode(0o755))
 		if err != nil {
 			return fmt.Errorf("error creating output directory %q: %v", path.Dir(p), err)
 		}
