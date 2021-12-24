@@ -27,6 +27,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
+
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
@@ -146,6 +147,9 @@ type NewClusterOptions struct {
 	// APISSLCertificate is the SSL certificate to use for the API loadbalancer.
 	// Currently only supported in AWS.
 	APISSLCertificate string
+
+	// InstanceManager specifies which manager to use for managing instances.
+	InstanceManager string
 }
 
 func (o *NewClusterOptions) InitDefaults() {
@@ -155,6 +159,7 @@ func (o *NewClusterOptions) InitDefaults() {
 	o.Networking = "kubenet"
 	o.Topology = api.TopologyPublic
 	o.DNSType = string(api.DNSTypePublic)
+	o.InstanceManager = "cloudgroups"
 }
 
 type NewClusterResult struct {
@@ -286,9 +291,27 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, err
 	}
 
-	nodes, err := setupNodes(opt, &cluster, zoneToSubnetMap)
-	if err != nil {
-		return nil, err
+	var nodes []*api.InstanceGroup
+
+	switch opt.InstanceManager {
+	case "karpenter":
+		if opt.DiscoveryStore == "" {
+			return nil, fmt.Errorf("karpenter requires --discovery-store")
+		}
+		cluster.Spec.Karpenter = &api.KarpenterConfig{
+			Enabled: true,
+		}
+		nodes, err = setupKarpenterNodes(opt, &cluster, zoneToSubnetMap)
+		if err != nil {
+			return nil, err
+		}
+	case "cloudgroups":
+		nodes, err = setupNodes(opt, &cluster, zoneToSubnetMap)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("invalid value %q for --instance-manager", opt.InstanceManager)
 	}
 
 	apiservers, err := setupAPIServers(opt, &cluster, zoneToSubnetMap)
@@ -840,6 +863,20 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 	}
 
 	return nodes, nil
+}
+
+func setupKarpenterNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap map[string]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
+	g := &api.InstanceGroup{}
+	g.Spec.Role = api.InstanceGroupRoleNode
+	g.Spec.Manager = api.InstanceManagerKarpenter
+	g.ObjectMeta.Name = "nodes"
+
+	g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
+		HTTPPutResponseHopLimit: fi.Int64(1),
+		HTTPTokens:              fi.String("required"),
+	}
+
+	return []*api.InstanceGroup{g}, nil
 }
 
 func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap map[string]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
