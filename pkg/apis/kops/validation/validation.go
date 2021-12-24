@@ -104,7 +104,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	if spec.Topology != nil {
-		allErrs = append(allErrs, validateTopology(spec.Topology, fieldPath.Child("topology"))...)
+		allErrs = append(allErrs, validateTopology(c, spec.Topology, fieldPath.Child("topology"))...)
 	}
 
 	// UpdatePolicy
@@ -360,7 +360,7 @@ func validateIPv6CIDR(cidr string, fieldPath *field.Path) field.ErrorList {
 	return allErrs
 }
 
-func validateTopology(topology *kops.TopologySpec, fieldPath *field.Path) field.ErrorList {
+func validateTopology(c *kops.Cluster, topology *kops.TopologySpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if topology.Masters == "" {
@@ -373,6 +373,10 @@ func validateTopology(topology *kops.TopologySpec, fieldPath *field.Path) field.
 		allErrs = append(allErrs, field.Required(fieldPath.Child("nodes"), ""))
 	} else {
 		allErrs = append(allErrs, IsValidValue(fieldPath.Child("nodes"), &topology.Nodes, kops.SupportedTopologies)...)
+
+		if topology.Nodes == "private" && c.Spec.IsIPv6Only() && c.IsKubernetesLT("1.23") {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("nodes"), "private topology in IPv6 clusters requires Kubernetes 1.23+"))
+		}
 	}
 
 	if topology.Bastion != nil {
