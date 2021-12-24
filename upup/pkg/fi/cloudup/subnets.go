@@ -174,6 +174,10 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 		if subnet.CIDR != "" {
 			continue
 		}
+		// TODO: Replace this with a check against type "dualstack" if has IPv6CIDR
+		if subnet.IPv6CIDR != "" && subnet.Name != subnet.Zone {
+			continue
+		}
 
 		if len(bigCIDRs) == 0 {
 			return fmt.Errorf("insufficient (big) CIDRs remaining for automatic CIDR allocation to subnet %q", subnet.Name)

@@ -254,13 +254,16 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle:        b.Lifecycle,
 			VPC:              b.LinkToVPC(),
 			AvailabilityZone: fi.String(subnetSpec.Zone),
-			CIDR:             fi.String(subnetSpec.CIDR),
 			Shared:           fi.Bool(sharedSubnet),
 			Tags:             tags,
 		}
 
 		if b.Cluster.Spec.ExternalCloudControllerManager != nil && b.Cluster.IsKubernetesGTE("1.23") {
 			subnet.ResourceBasedNaming = fi.Bool(true)
+		}
+
+		if subnetSpec.CIDR != "" {
+			subnet.CIDR = fi.String(subnetSpec.CIDR)
 		}
 
 		if subnetSpec.IPv6CIDR != "" {
