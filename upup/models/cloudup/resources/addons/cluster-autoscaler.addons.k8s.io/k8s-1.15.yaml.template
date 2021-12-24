@@ -231,7 +231,7 @@ metadata:
   labels:
     k8s-app: cluster-autoscaler
 spec:
-  replicas: {{ ControlPlaneControllerReplicas }}
+  replicas: {{ ControlPlaneControllerReplicas true }}
   selector:
     matchLabels:
       app: cluster-autoscaler
@@ -249,9 +249,15 @@ spec:
       - maxSkew: 1
         topologyKey: "topology.kubernetes.io/zone"
         whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: cluster-autoscaler
       - maxSkew: 1
         topologyKey: "kubernetes.io/hostname"
         whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: cluster-autoscaler
       {{ if not UseServiceAccountExternalPermissions }}
       tolerations:
       - operator: "Exists"
