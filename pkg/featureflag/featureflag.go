@@ -72,8 +72,6 @@ var (
 	VPCSkipEnableDNSSupport = new("VPCSkipEnableDNSSupport", Bool(false))
 	// SkipEtcdVersionCheck will bypass the check that etcd-manager is using a supported etcd version
 	SkipEtcdVersionCheck = new("SkipEtcdVersionCheck", Bool(false))
-	// TerraformJSON outputs terraform in JSON instead of hcl output. JSON output can be also parsed by terraform 0.12
-	TerraformJSON = new("TerraformJSON", Bool(false))
 	// ClusterAddons activates experimental cluster-addons support
 	ClusterAddons = new("ClusterAddons", Bool(false))
 	// Azure toggles the Azure support.
