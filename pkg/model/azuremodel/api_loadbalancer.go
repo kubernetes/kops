@@ -99,7 +99,7 @@ func (c *AzureModelContext) subnetForLoadBalancer() (*kops.ClusterSubnetSpec, er
 		if len(subnets) != 1 {
 			return nil, fmt.Errorf("expected exactly one subnet for InstanceGroup %q; subnets was %s", ig.Name, ig.Spec.Subnets)
 		}
-		if subnets[0].Type != kops.SubnetTypePrivate {
+		if subnets[0].Type != kops.SubnetTypeDualStack && subnets[0].Type != kops.SubnetTypePrivate {
 			continue
 		}
 		return subnets[0], nil

@@ -78,6 +78,37 @@ func Test_AssignSubnets(t *testing.T) {
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
+				{Name: "a", Zone: "a", CIDR: "", IPv6CIDR: "/64#0", Type: kops.SubnetTypePublic},
+				{Name: "a", Zone: "a", CIDR: "", IPv6CIDR: "/64#1", Type: kops.SubnetTypeUtility},
+			},
+			expected: []string{"10.32.0.0/11", "10.0.0.0/14"},
+		},
+		{
+			subnets: []kops.ClusterSubnetSpec{
+				{Name: "a", Zone: "a", CIDR: "10.1.0.0/16", Type: kops.SubnetTypePrivate},
+			},
+			expected: []string{"10.1.0.0/16"},
+		},
+		{
+			subnets: []kops.ClusterSubnetSpec{
+				{Name: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypePrivate},
+			},
+			expected: []string{"10.32.0.0/11"},
+		},
+		{
+			subnets: []kops.ClusterSubnetSpec{
+				{Name: "a", Zone: "a", CIDR: "", IPv6CIDR: "/64#0", Type: kops.SubnetTypePrivate},
+			},
+			expected: []string{""},
+		},
+		{
+			subnets: []kops.ClusterSubnetSpec{
+				{Name: "a", Zone: "a", CIDR: "", IPv6CIDR: "/64#0", Type: kops.SubnetTypeDualStack},
+			},
+			expected: []string{"10.32.0.0/11"},
+		},
+		{
+			subnets: []kops.ClusterSubnetSpec{
 				{Name: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
 				{Name: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypeUtility},
 				{Name: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
