@@ -582,7 +582,7 @@ metadata:
   name: ebs-csi-controller
   namespace: kube-system
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: ebs-csi-controller

@@ -761,11 +761,19 @@ spec:
             - "--v=5"
             - "--leader-election=true"
           imagePullPolicy: IfNotPresent
-      nodeSelector:
-        kubernetes.io/os: linux
-        node-role.kubernetes.io/master: ""
-      tolerations:
-      - operator: Exists
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: snapshot-controller
+      - maxSkew: 1
+        topologyKey: "kubernetes.io/hostname"
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: snapshot-controller
 
 ---
 apiVersion: apps/v1
@@ -776,7 +784,7 @@ metadata:
   labels:
     app: snapshot-validation
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: snapshot-validation
@@ -796,6 +804,19 @@ spec:
           - name: snapshot-validation-webhook-certs
             mountPath: /etc/snapshot-validation-webhook/certs
             readOnly: true
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: snapshot-validation
+      - maxSkew: 1
+        topologyKey: "kubernetes.io/hostname"
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: snapshot-validation
       volumes:
         - name: snapshot-validation-webhook-certs
           secret:
