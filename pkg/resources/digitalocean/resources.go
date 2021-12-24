@@ -40,6 +40,7 @@ const (
 	resourceTypeVolume       = "volume"
 	resourceTypeDNSRecord    = "dns-record"
 	resourceTypeLoadBalancer = "loadbalancer"
+	resourceTypeVPC          = "vpc"
 )
 
 type listFn func(fi.Cloud, string) ([]*resources.Resource, error)
@@ -52,6 +53,7 @@ func ListResources(cloud do.DOCloud, clusterName string) (map[string]*resources.
 		listDroplets,
 		listDNS,
 		listLoadBalancers,
+		listVPCs,
 	}
 
 	for _, fn := range listFunctions {
@@ -261,6 +263,16 @@ func deleteDroplet(cloud fi.Cloud, t *resources.Resource) error {
 	return nil
 }
 
+func deleteVPC(cloud fi.Cloud, t *resources.Resource) error {
+	c := cloud.(do.DOCloud)
+	_, err := c.VPCsService().Delete(context.TODO(), t.ID)
+	if err != nil {
+		return fmt.Errorf("failed to delete VPC %s (ID %s): %s", t.Name, t.ID, err)
+	}
+
+	return nil
+}
+
 func deleteVolume(cloud fi.Cloud, t *resources.Resource) error {
 	c := cloud.(do.DOCloud)
 	volume := t.Obj.(godo.Volume)
@@ -369,4 +381,33 @@ func dumpDroplet(op *resources.DumpOperation, r *resources.Resource) error {
 	op.Dump.Instances = append(op.Dump.Instances, i)
 
 	return nil
+}
+
+func listVPCs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	c := cloud.(do.DOCloud)
+	var resourceTrackers []*resources.Resource
+
+	clusterName = do.SafeClusterName(clusterName)
+	vpcName := "vpc-" + clusterName
+
+	vpcs, err := c.GetAllVPCs()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list vpcs: %v", err)
+	}
+
+	for _, vpc := range vpcs {
+		if vpc.Name == vpcName {
+			resourceTracker := &resources.Resource{
+				Name:    vpc.Name,
+				ID:      vpc.ID,
+				Type:    resourceTypeVPC,
+				Deleter: deleteVPC,
+				Obj:     vpc,
+			}
+
+			resourceTrackers = append(resourceTrackers, resourceTracker)
+		}
+	}
+
+	return resourceTrackers, nil
 }
