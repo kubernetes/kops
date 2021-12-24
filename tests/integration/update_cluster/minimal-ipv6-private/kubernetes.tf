@@ -818,6 +818,14 @@ resource "aws_s3_bucket_object" "minimal-ipv6-example-com-addons-kubelet-api-rba
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_bucket_object" "minimal-ipv6-example-com-addons-leader-migration-rbac-addons-k8s-io-k8s-1-23" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_minimal-ipv6.example.com-addons-leader-migration.rbac.addons.k8s.io-k8s-1.23_content")
+  key                    = "clusters.example.com/minimal-ipv6.example.com/addons/leader-migration.rbac.addons.k8s.io/k8s-1.23.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_bucket_object" "minimal-ipv6-example-com-addons-limit-range-addons-k8s-io" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_minimal-ipv6.example.com-addons-limit-range.addons.k8s.io_content")

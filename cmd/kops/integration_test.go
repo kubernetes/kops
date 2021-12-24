@@ -299,7 +299,7 @@ func TestMinimalIPv6(t *testing.T) {
 // TestMinimalIPv6 runs the test on a minimum IPv6 configuration
 func TestMinimalIPv6Private(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-private").
-		withAddons(awsCCMAddon, awsEBSCSIAddon, dnsControllerAddon).
+		withAddons(awsCCMAddon, awsEBSCSIAddon, dnsControllerAddon, leaderElectionAddon).
 		runTestTerraformAWS(t)
 }
 

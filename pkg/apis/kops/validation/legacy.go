@@ -338,7 +338,11 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 			fieldSubnet := fieldSpec.Child("subnets").Index(i)
 			if s.CIDR == "" {
 				if requiresSubnetCIDR && strict {
-					allErrs = append(allErrs, field.Required(fieldSubnet.Child("cidr"), "subnet did not have a cidr set"))
+					if !strings.Contains(c.Spec.NonMasqueradeCIDR, ":") || s.IPv6CIDR == "" {
+						allErrs = append(allErrs, field.Required(fieldSubnet.Child("cidr"), "subnet did not have a cidr set"))
+					} else if c.IsKubernetesLT("1.23") {
+						allErrs = append(allErrs, field.Required(fieldSubnet.Child("cidr"), "IPv6-only subnets require Kubernetes 1.23+"))
+					}
 				}
 			} else {
 				_, subnetCIDR, err := net.ParseCIDR(s.CIDR)
