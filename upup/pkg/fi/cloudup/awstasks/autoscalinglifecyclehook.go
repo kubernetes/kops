@@ -121,11 +121,11 @@ func (*AutoscalingLifecycleHook) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 }
 
 type terraformASGLifecycleHook struct {
-	Name                 *string                  `json:"name" cty:"name"`
-	AutoScalingGroupName *terraformWriter.Literal `json:"autoscaling_group_name" cty:"autoscaling_group_name"`
-	DefaultResult        *string                  `json:"default_result" cty:"default_result"`
-	HeartbeatTimeout     *int64                   `json:"heartbeat_timeout" cty:"heartbeat_timeout"`
-	LifecycleTransition  *string                  `json:"lifecycle_transition" cty:"lifecycle_transition"`
+	Name                 *string                  `cty:"name"`
+	AutoScalingGroupName *terraformWriter.Literal `cty:"autoscaling_group_name"`
+	DefaultResult        *string                  `cty:"default_result"`
+	HeartbeatTimeout     *int64                   `cty:"heartbeat_timeout"`
+	LifecycleTransition  *string                  `cty:"lifecycle_transition"`
 }
 
 func (_ *AutoscalingLifecycleHook) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *AutoscalingLifecycleHook) error {

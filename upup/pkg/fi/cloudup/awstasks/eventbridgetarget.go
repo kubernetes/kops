@@ -128,8 +128,8 @@ func (eb *EventBridgeTarget) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Eve
 }
 
 type terraformEventBridgeTarget struct {
-	RuleName  *terraformWriter.Literal `json:"rule" cty:"rule"`
-	TargetArn *terraformWriter.Literal `json:"arn" cty:"arn"`
+	RuleName  *terraformWriter.Literal `cty:"rule"`
+	TargetArn *terraformWriter.Literal `cty:"arn"`
 }
 
 func (_ *EventBridgeTarget) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EventBridgeTarget) error {

@@ -1352,110 +1352,110 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 }
 
 type terraformElastigroup struct {
-	Name                 *string                                 `json:"name,omitempty" cty:"name"`
-	Description          *string                                 `json:"description,omitempty" cty:"description"`
-	Product              *string                                 `json:"product,omitempty" cty:"product"`
-	Region               *string                                 `json:"region,omitempty" cty:"region"`
-	SubnetIDs            []*terraformWriter.Literal              `json:"subnet_ids,omitempty" cty:"subnet_ids"`
-	LoadBalancers        []*terraformWriter.Literal              `json:"elastic_load_balancers,omitempty" cty:"elastic_load_balancers"`
-	TargetGroups         []*terraformWriter.Literal              `json:"target_group_arns,omitempty" cty:"target_group_arns"`
-	NetworkInterfaces    []*terraformElastigroupNetworkInterface `json:"network_interface,omitempty" cty:"network_interface"`
-	RootBlockDevice      *terraformElastigroupBlockDevice        `json:"ebs_block_device,omitempty" cty:"ebs_block_device"`
-	EphemeralBlockDevice []*terraformElastigroupBlockDevice      `json:"ephemeral_block_device,omitempty" cty:"ephemeral_block_device"`
-	Integration          *terraformElastigroupIntegration        `json:"integration_kubernetes,omitempty" cty:"integration_kubernetes"`
-	Tags                 []*terraformKV                          `json:"tags,omitempty" cty:"tags"`
+	Name                 *string                                 `cty:"name"`
+	Description          *string                                 `cty:"description"`
+	Product              *string                                 `cty:"product"`
+	Region               *string                                 `cty:"region"`
+	SubnetIDs            []*terraformWriter.Literal              `cty:"subnet_ids"`
+	LoadBalancers        []*terraformWriter.Literal              `cty:"elastic_load_balancers"`
+	TargetGroups         []*terraformWriter.Literal              `cty:"target_group_arns"`
+	NetworkInterfaces    []*terraformElastigroupNetworkInterface `cty:"network_interface"`
+	RootBlockDevice      *terraformElastigroupBlockDevice        `cty:"ebs_block_device"`
+	EphemeralBlockDevice []*terraformElastigroupBlockDevice      `cty:"ephemeral_block_device"`
+	Integration          *terraformElastigroupIntegration        `cty:"integration_kubernetes"`
+	Tags                 []*terraformKV                          `cty:"tags"`
 
-	MinSize         *int64  `json:"min_size,omitempty" cty:"min_size"`
-	MaxSize         *int64  `json:"max_size,omitempty" cty:"max_size"`
-	DesiredCapacity *int64  `json:"desired_capacity,omitempty" cty:"desired_capacity"`
-	CapacityUnit    *string `json:"capacity_unit,omitempty" cty:"capacity_unit"`
+	MinSize         *int64  `cty:"min_size"`
+	MaxSize         *int64  `cty:"max_size"`
+	DesiredCapacity *int64  `cty:"desired_capacity"`
+	CapacityUnit    *string `cty:"capacity_unit"`
 
-	SpotPercentage           *float64 `json:"spot_percentage,omitempty" cty:"spot_percentage"`
-	Orientation              *string  `json:"orientation,omitempty" cty:"orientation"`
-	FallbackToOnDemand       *bool    `json:"fallback_to_ondemand,omitempty" cty:"fallback_to_ondemand"`
-	UtilizeReservedInstances *bool    `json:"utilize_reserved_instances,omitempty" cty:"utilize_reserved_instances"`
-	UtilizeCommitments       *bool    `json:"utilize_commitments,omitempty" cty:"utilize_commitments"`
-	DrainingTimeout          *int64   `json:"draining_timeout,omitempty" cty:"draining_timeout"`
+	SpotPercentage           *float64 `cty:"spot_percentage"`
+	Orientation              *string  `cty:"orientation"`
+	FallbackToOnDemand       *bool    `cty:"fallback_to_ondemand"`
+	UtilizeReservedInstances *bool    `cty:"utilize_reserved_instances"`
+	UtilizeCommitments       *bool    `cty:"utilize_commitments"`
+	DrainingTimeout          *int64   `cty:"draining_timeout"`
 
-	OnDemand *string  `json:"instance_types_ondemand,omitempty" cty:"instance_types_ondemand"`
-	Spot     []string `json:"instance_types_spot,omitempty" cty:"instance_types_spot"`
+	OnDemand *string  `cty:"instance_types_ondemand"`
+	Spot     []string `cty:"instance_types_spot"`
 
-	Monitoring         *bool                      `json:"enable_monitoring,omitempty" cty:"enable_monitoring"`
-	EBSOptimized       *bool                      `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
-	ImageID            *string                    `json:"image_id,omitempty" cty:"image_id"`
-	HealthCheckType    *string                    `json:"health_check_type,omitempty" cty:"health_check_type"`
-	SecurityGroups     []*terraformWriter.Literal `json:"security_groups,omitempty" cty:"security_groups"`
-	UserData           *terraformWriter.Literal   `json:"user_data,omitempty" cty:"user_data"`
-	IAMInstanceProfile *terraformWriter.Literal   `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
-	KeyName            *terraformWriter.Literal   `json:"key_name,omitempty" cty:"key_name"`
+	Monitoring         *bool                      `cty:"enable_monitoring"`
+	EBSOptimized       *bool                      `cty:"ebs_optimized"`
+	ImageID            *string                    `cty:"image_id"`
+	HealthCheckType    *string                    `cty:"health_check_type"`
+	SecurityGroups     []*terraformWriter.Literal `cty:"security_groups"`
+	UserData           *terraformWriter.Literal   `cty:"user_data"`
+	IAMInstanceProfile *terraformWriter.Literal   `cty:"iam_instance_profile"`
+	KeyName            *terraformWriter.Literal   `cty:"key_name"`
 }
 
 type terraformElastigroupBlockDevice struct {
-	DeviceName          *string `json:"device_name,omitempty" cty:"device_name"`
-	VirtualName         *string `json:"virtual_name,omitempty" cty:"virtual_name"`
-	VolumeType          *string `json:"volume_type,omitempty" cty:"volume_type"`
-	VolumeSize          *int64  `json:"volume_size,omitempty" cty:"volume_size"`
-	VolumeIOPS          *int64  `json:"iops,omitempty" cty:"iops"`
-	VolumeThroughput    *int64  `json:"throughput,omitempty" cty:"throughput"`
-	DeleteOnTermination *bool   `json:"delete_on_termination,omitempty" cty:"delete_on_termination"`
+	DeviceName          *string `cty:"device_name"`
+	VirtualName         *string `cty:"virtual_name"`
+	VolumeType          *string `cty:"volume_type"`
+	VolumeSize          *int64  `cty:"volume_size"`
+	VolumeIOPS          *int64  `cty:"iops"`
+	VolumeThroughput    *int64  `cty:"throughput"`
+	DeleteOnTermination *bool   `cty:"delete_on_termination"`
 }
 
 type terraformElastigroupNetworkInterface struct {
-	Description              *string `json:"description,omitempty" cty:"description"`
-	DeviceIndex              *int    `json:"device_index,omitempty" cty:"device_index"`
-	AssociatePublicIPAddress *bool   `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
-	DeleteOnTermination      *bool   `json:"delete_on_termination,omitempty" cty:"delete_on_termination"`
+	Description              *string `cty:"description"`
+	DeviceIndex              *int    `cty:"device_index"`
+	AssociatePublicIPAddress *bool   `cty:"associate_public_ip_address"`
+	DeleteOnTermination      *bool   `cty:"delete_on_termination"`
 }
 
 type terraformElastigroupIntegration struct {
-	IntegrationMode   *string `json:"integration_mode,omitempty" cty:"integration_mode"`
-	ClusterIdentifier *string `json:"cluster_identifier,omitempty" cty:"cluster_identifier"`
+	IntegrationMode   *string `cty:"integration_mode"`
+	ClusterIdentifier *string `cty:"cluster_identifier"`
 
-	Enabled    *bool                        `json:"autoscale_is_enabled,omitempty" cty:"autoscale_is_enabled"`
-	AutoConfig *bool                        `json:"autoscale_is_auto_config,omitempty" cty:"autoscale_is_auto_config"`
-	Cooldown   *int                         `json:"autoscale_cooldown,omitempty" cty:"autoscale_cooldown"`
-	Headroom   *terraformAutoScalerHeadroom `json:"autoscale_headroom,omitempty" cty:"autoscale_headroom"`
-	Down       *terraformAutoScalerDown     `json:"autoscale_down,omitempty" cty:"autoscale_down"`
-	Labels     []*terraformKV               `json:"autoscale_labels,omitempty" cty:"autoscale_labels"`
+	Enabled    *bool                        `cty:"autoscale_is_enabled"`
+	AutoConfig *bool                        `cty:"autoscale_is_auto_config"`
+	Cooldown   *int                         `cty:"autoscale_cooldown"`
+	Headroom   *terraformAutoScalerHeadroom `cty:"autoscale_headroom"`
+	Down       *terraformAutoScalerDown     `cty:"autoscale_down"`
+	Labels     []*terraformKV               `cty:"autoscale_labels"`
 }
 
 type terraformAutoScaler struct {
-	Enabled                *bool                              `json:"autoscale_is_enabled,omitempty" cty:"autoscale_is_enabled"`
-	AutoConfig             *bool                              `json:"autoscale_is_auto_config,omitempty" cty:"autoscale_is_auto_config"`
-	AutoHeadroomPercentage *int                               `json:"auto_headroom_percentage,omitempty" cty:"auto_headroom_percentage"`
-	Cooldown               *int                               `json:"autoscale_cooldown,omitempty" cty:"autoscale_cooldown"`
-	Headroom               *terraformAutoScalerHeadroom       `json:"autoscale_headroom,omitempty" cty:"autoscale_headroom"`
-	Down                   *terraformAutoScalerDown           `json:"autoscale_down,omitempty" cty:"autoscale_down"`
-	ResourceLimits         *terraformAutoScalerResourceLimits `json:"resource_limits,omitempty" cty:"resource_limits"`
-	Labels                 []*terraformKV                     `json:"autoscale_labels,omitempty" cty:"autoscale_labels"`
+	Enabled                *bool                              `cty:"autoscale_is_enabled"`
+	AutoConfig             *bool                              `cty:"autoscale_is_auto_config"`
+	AutoHeadroomPercentage *int                               `cty:"auto_headroom_percentage"`
+	Cooldown               *int                               `cty:"autoscale_cooldown"`
+	Headroom               *terraformAutoScalerHeadroom       `cty:"autoscale_headroom"`
+	Down                   *terraformAutoScalerDown           `cty:"autoscale_down"`
+	ResourceLimits         *terraformAutoScalerResourceLimits `cty:"resource_limits"`
+	Labels                 []*terraformKV                     `cty:"autoscale_labels"`
 }
 
 type terraformAutoScalerHeadroom struct {
-	CPUPerUnit *int `json:"cpu_per_unit,omitempty" cty:"cpu_per_unit"`
-	GPUPerUnit *int `json:"gpu_per_unit,omitempty" cty:"gpu_per_unit"`
-	MemPerUnit *int `json:"memory_per_unit,omitempty" cty:"memory_per_unit"`
-	NumOfUnits *int `json:"num_of_units,omitempty" cty:"num_of_units"`
+	CPUPerUnit *int `cty:"cpu_per_unit"`
+	GPUPerUnit *int `cty:"gpu_per_unit"`
+	MemPerUnit *int `cty:"memory_per_unit"`
+	NumOfUnits *int `cty:"num_of_units"`
 }
 
 type terraformAutoScalerDown struct {
-	MaxPercentage     *float64 `json:"max_scale_down_percentage,omitempty" cty:"max_scale_down_percentage"`
-	EvaluationPeriods *int     `json:"evaluation_periods,omitempty" cty:"evaluation_periods"`
+	MaxPercentage     *float64 `cty:"max_scale_down_percentage"`
+	EvaluationPeriods *int     `cty:"evaluation_periods"`
 }
 
 type terraformAutoScalerResourceLimits struct {
-	MaxVCPU   *int `json:"max_vcpu,omitempty" cty:"max_vcpu"`
-	MaxMemory *int `json:"max_memory_gib,omitempty" cty:"max_memory_gib"`
+	MaxVCPU   *int `cty:"max_vcpu"`
+	MaxMemory *int `cty:"max_memory_gib"`
 }
 
 type terraformKV struct {
-	Key   *string `json:"key" cty:"key"`
-	Value *string `json:"value" cty:"value"`
+	Key   *string `cty:"key"`
+	Value *string `cty:"value"`
 }
 
 type terraformTaint struct {
-	Key    *string `json:"key" cty:"key"`
-	Value  *string `json:"value" cty:"value"`
-	Effect *string `json:"effect" cty:"effect"`
+	Key    *string `cty:"key"`
+	Value  *string `cty:"value"`
+	Effect *string `cty:"effect"`
 }
 
 func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Elastigroup) error {

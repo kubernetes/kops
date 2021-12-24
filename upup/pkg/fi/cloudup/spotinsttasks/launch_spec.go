@@ -773,45 +773,45 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 }
 
 type terraformLaunchSpec struct {
-	Name    *string                  `json:"name,omitempty" cty:"name"`
-	OceanID *terraformWriter.Literal `json:"ocean_id,omitempty" cty:"ocean_id"`
+	Name    *string                  `cty:"name"`
+	OceanID *terraformWriter.Literal `cty:"ocean_id"`
 
-	Monitoring               *bool                          `json:"monitoring,omitempty" cty:"monitoring"`
-	EBSOptimized             *bool                          `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
-	ImageID                  *string                        `json:"image_id,omitempty" cty:"image_id"`
-	AssociatePublicIPAddress *bool                          `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
-	RestrictScaleDown        *bool                          `json:"restrict_scale_down,omitempty" cty:"restrict_scale_down"`
-	RootVolumeSize           *int64                         `json:"root_volume_size,omitempty" cty:"root_volume_size"`
-	UserData                 *terraformWriter.Literal       `json:"user_data,omitempty" cty:"user_data"`
-	IAMInstanceProfile       *terraformWriter.Literal       `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
-	KeyName                  *terraformWriter.Literal       `json:"key_name,omitempty" cty:"key_name"`
-	InstanceTypes            []string                       `json:"instance_types,omitempty" cty:"instance_types"`
-	SubnetIDs                []*terraformWriter.Literal     `json:"subnet_ids,omitempty" cty:"subnet_ids"`
-	SecurityGroups           []*terraformWriter.Literal     `json:"security_groups,omitempty" cty:"security_groups"`
-	Taints                   []*terraformTaint              `json:"taints,omitempty" cty:"taints"`
-	Labels                   []*terraformKV                 `json:"labels,omitempty" cty:"labels"`
-	Tags                     []*terraformKV                 `json:"tags,omitempty" cty:"tags"`
-	Headrooms                []*terraformAutoScalerHeadroom `json:"autoscale_headrooms,omitempty" cty:"autoscale_headrooms"`
-	BlockDeviceMappings      []*terraformBlockDeviceMapping `json:"block_device_mappings,omitempty" cty:"block_device_mappings"`
-	Strategy                 *terraformLaunchSpecStrategy   `json:"strategy,omitempty" cty:"strategy"`
+	Monitoring               *bool                          `cty:"monitoring"`
+	EBSOptimized             *bool                          `cty:"ebs_optimized"`
+	ImageID                  *string                        `cty:"image_id"`
+	AssociatePublicIPAddress *bool                          `cty:"associate_public_ip_address"`
+	RestrictScaleDown        *bool                          `cty:"restrict_scale_down"`
+	RootVolumeSize           *int64                         `cty:"root_volume_size"`
+	UserData                 *terraformWriter.Literal       `cty:"user_data"`
+	IAMInstanceProfile       *terraformWriter.Literal       `cty:"iam_instance_profile"`
+	KeyName                  *terraformWriter.Literal       `cty:"key_name"`
+	InstanceTypes            []string                       `cty:"instance_types"`
+	SubnetIDs                []*terraformWriter.Literal     `cty:"subnet_ids"`
+	SecurityGroups           []*terraformWriter.Literal     `cty:"security_groups"`
+	Taints                   []*terraformTaint              `cty:"taints"`
+	Labels                   []*terraformKV                 `cty:"labels"`
+	Tags                     []*terraformKV                 `cty:"tags"`
+	Headrooms                []*terraformAutoScalerHeadroom `cty:"autoscale_headrooms"`
+	BlockDeviceMappings      []*terraformBlockDeviceMapping `cty:"block_device_mappings"`
+	Strategy                 *terraformLaunchSpecStrategy   `cty:"strategy"`
 }
 
 type terraformLaunchSpecStrategy struct {
-	SpotPercentage *int64 `json:"spot_percentage,omitempty" cty:"spot_percentage"`
+	SpotPercentage *int64 `cty:"spot_percentage"`
 }
 
 type terraformBlockDeviceMapping struct {
-	DeviceName *string                         `json:"device_name,omitempty" cty:"device_name"`
-	EBS        *terraformBlockDeviceMappingEBS `json:"ebs,omitempty" cty:"ebs"`
+	DeviceName *string                         `cty:"device_name"`
+	EBS        *terraformBlockDeviceMappingEBS `cty:"ebs"`
 }
 
 type terraformBlockDeviceMappingEBS struct {
-	VirtualName         *string `json:"virtual_name,omitempty" cty:"virtual_name"`
-	VolumeType          *string `json:"volume_type,omitempty" cty:"volume_type"`
-	VolumeSize          *int64  `json:"volume_size,omitempty" cty:"volume_size"`
-	VolumeIOPS          *int64  `json:"iops,omitempty" cty:"iops"`
-	VolumeThroughput    *int64  `json:"throughput,omitempty" cty:"throughput"`
-	DeleteOnTermination *bool   `json:"delete_on_termination,omitempty" cty:"delete_on_termination"`
+	VirtualName         *string `cty:"virtual_name"`
+	VolumeType          *string `cty:"volume_type"`
+	VolumeSize          *int64  `cty:"volume_size"`
+	VolumeIOPS          *int64  `cty:"iops"`
+	VolumeThroughput    *int64  `cty:"throughput"`
+	DeleteOnTermination *bool   `cty:"delete_on_termination"`
 }
 
 func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LaunchSpec) error {

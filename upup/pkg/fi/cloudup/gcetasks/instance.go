@@ -394,29 +394,29 @@ func ShortenImageURL(defaultProject string, imageURL string) (string, error) {
 }
 
 type terraformInstance struct {
-	Name                  string                              `json:"name" cty:"name"`
-	CanIPForward          bool                                `json:"can_ip_forward" cty:"can_ip_forward"`
-	MachineType           string                              `json:"machine_type,omitempty" cty:"machine_type"`
-	ServiceAccounts       []*terraformTemplateServiceAccount  `json:"service_account,omitempty" cty:"service_account"`
-	Scheduling            *terraformScheduling                `json:"scheduling,omitempty" cty:"scheduling"`
-	Disks                 []*terraformInstanceAttachedDisk    `json:"disk,omitempty" cty:"disk"`
-	NetworkInterfaces     []*terraformNetworkInterface        `json:"network_interface,omitempty" cty:"network_interface"`
-	Metadata              map[string]*terraformWriter.Literal `json:"metadata,omitempty" cty:"metadata"`
-	MetadataStartupScript *terraformWriter.Literal            `json:"metadata_startup_script,omitempty" cty:"metadata_startup_script"`
-	Tags                  []string                            `json:"tags,omitempty" cty:"tags"`
-	Zone                  string                              `json:"zone,omitempty" cty:"zone"`
+	Name                  string                              `cty:"name"`
+	CanIPForward          bool                                `cty:"can_ip_forward"`
+	MachineType           string                              `cty:"machine_type"`
+	ServiceAccounts       []*terraformTemplateServiceAccount  `cty:"service_account"`
+	Scheduling            *terraformScheduling                `cty:"scheduling"`
+	Disks                 []*terraformInstanceAttachedDisk    `cty:"disk"`
+	NetworkInterfaces     []*terraformNetworkInterface        `cty:"network_interface"`
+	Metadata              map[string]*terraformWriter.Literal `cty:"metadata"`
+	MetadataStartupScript *terraformWriter.Literal            `cty:"metadata_startup_script"`
+	Tags                  []string                            `cty:"tags"`
+	Zone                  string                              `cty:"zone"`
 }
 
 type terraformInstanceAttachedDisk struct {
-	AutoDelete bool   `json:"auto_delete,omitempty" cty:"auto_delete"`
-	DeviceName string `json:"device_name,omitempty" cty:"device_name"`
+	AutoDelete bool   `cty:"auto_delete"`
+	DeviceName string `cty:"device_name"`
 
 	// 'pd-standard', 'pd-ssd', 'local-ssd' etc
-	Type    string `json:"type,omitempty" cty:"type"`
-	Disk    string `json:"disk,omitempty" cty:"disk"`
-	Image   string `json:"image,omitempty" cty:"image"`
-	Scratch bool   `json:"scratch,omitempty" cty:"scratch"`
-	Size    int64  `json:"size,omitempty" cty:"size"`
+	Type    string `cty:"type"`
+	Disk    string `cty:"disk"`
+	Image   string `cty:"image"`
+	Scratch bool   `cty:"scratch"`
+	Size    int64  `cty:"size"`
 }
 
 func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Instance) error {
