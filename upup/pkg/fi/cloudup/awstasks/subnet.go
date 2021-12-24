@@ -106,7 +106,7 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 
 	actual.ResourceBasedNaming = fi.Bool(aws.StringValue(subnet.PrivateDnsNameOptionsOnLaunch.HostnameType) == ec2.HostnameTypeResourceName)
 	if *actual.ResourceBasedNaming {
-		if !aws.BoolValue(subnet.PrivateDnsNameOptionsOnLaunch.EnableResourceNameDnsARecord) {
+		if fi.StringValue(actual.CIDR) != "" && !aws.BoolValue(subnet.PrivateDnsNameOptionsOnLaunch.EnableResourceNameDnsARecord) {
 			actual.ResourceBasedNaming = nil
 		}
 		if fi.StringValue(actual.IPv6CIDR) != "" && !aws.BoolValue(subnet.PrivateDnsNameOptionsOnLaunch.EnableResourceNameDnsAAAARecord) {
@@ -175,9 +175,8 @@ func (s *Subnet) CheckChanges(a, e, changes *Subnet) error {
 			errors = append(errors, field.Required(fieldPath.Child("VPC"), "must specify a VPC"))
 		}
 
-		if e.CIDR == nil {
-			// TODO: Auto-assign CIDR?
-			errors = append(errors, field.Required(fieldPath.Child("CIDR"), "must specify a CIDR"))
+		if e.CIDR == nil && e.IPv6CIDR == nil {
+			errors = append(errors, field.Required(fieldPath.Child("CIDR"), "must specify a CIDR or IPv6CIDR"))
 		}
 	}
 
@@ -256,7 +255,7 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 	}
 
 	if a == nil {
-		klog.V(2).Infof("Creating Subnet with CIDR: %q", *e.CIDR)
+		klog.V(2).Infof("Creating Subnet with CIDR: %q IPv6CIDR: %q", fi.StringValue(e.CIDR), fi.StringValue(e.IPv6CIDR))
 
 		request := &ec2.CreateSubnetInput{
 			CidrBlock:         e.CIDR,
@@ -264,6 +263,10 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 			AvailabilityZone:  e.AvailabilityZone,
 			VpcId:             e.VPC.ID,
 			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeSubnet, e.Tags),
+		}
+
+		if e.CIDR == nil {
+			request.Ipv6Native = aws.Bool(true)
 		}
 
 		response, err := t.Cloud.EC2().CreateSubnet(request)
@@ -300,13 +303,24 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 			return fmt.Errorf("error modifying hostname type: %w", err)
 		}
 
-		request = &ec2.ModifySubnetAttributeInput{
-			SubnetId:                             e.ID,
-			EnableResourceNameDnsARecordOnLaunch: &ec2.AttributeBooleanValue{Value: changes.ResourceBasedNaming},
-		}
-		_, err = t.Cloud.EC2().ModifySubnetAttribute(request)
-		if err != nil {
-			return fmt.Errorf("error modifying A records: %w", err)
+		if fi.StringValue(e.CIDR) == "" {
+			request = &ec2.ModifySubnetAttributeInput{
+				SubnetId:    e.ID,
+				EnableDns64: &ec2.AttributeBooleanValue{Value: aws.Bool(true)},
+			}
+			_, err = t.Cloud.EC2().ModifySubnetAttribute(request)
+			if err != nil {
+				return fmt.Errorf("error enabling DNS64: %w", err)
+			}
+		} else {
+			request = &ec2.ModifySubnetAttributeInput{
+				SubnetId:                             e.ID,
+				EnableResourceNameDnsARecordOnLaunch: &ec2.AttributeBooleanValue{Value: changes.ResourceBasedNaming},
+			}
+			_, err = t.Cloud.EC2().ModifySubnetAttribute(request)
+			if err != nil {
+				return fmt.Errorf("error modifying A records: %w", err)
+			}
 		}
 
 		if fi.StringValue(e.IPv6CIDR) != "" {
