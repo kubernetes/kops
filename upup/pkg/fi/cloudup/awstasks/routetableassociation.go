@@ -188,8 +188,8 @@ func (_ *RouteTableAssociation) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *
 }
 
 type terraformRouteTableAssociation struct {
-	SubnetID     *terraformWriter.Literal `json:"subnet_id" cty:"subnet_id"`
-	RouteTableID *terraformWriter.Literal `json:"route_table_id" cty:"route_table_id"`
+	SubnetID     *terraformWriter.Literal `cty:"subnet_id"`
+	RouteTableID *terraformWriter.Literal `cty:"route_table_id"`
 }
 
 func (_ *RouteTableAssociation) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *RouteTableAssociation) error {
