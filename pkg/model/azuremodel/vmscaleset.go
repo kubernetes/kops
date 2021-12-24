@@ -130,7 +130,7 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 		if ig.Spec.AssociatePublicIP != nil {
 			t.RequirePublicIP = ig.Spec.AssociatePublicIP
 		}
-	case kops.SubnetTypePrivate:
+	case kops.SubnetTypeDualStack, kops.SubnetTypePrivate:
 		t.RequirePublicIP = fi.Bool(false)
 	default:
 		return nil, fmt.Errorf("unexpected subnet type: for InstanceGroup %q; type was %s", ig.Name, subnet.Type)

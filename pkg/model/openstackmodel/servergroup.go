@@ -263,7 +263,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		var lbSubnetName string
 		var err error
 		for _, sp := range b.Cluster.Spec.Subnets {
-			if sp.Type == kops.SubnetTypePrivate {
+			if sp.Type == kops.SubnetTypeDualStack || sp.Type == kops.SubnetTypePrivate {
 				lbSubnetName, err = b.findSubnetNameByID(sp.ProviderID, sp.Name)
 				if err != nil {
 					return err
