@@ -320,7 +320,12 @@ func (tf *TemplateFunctions) GetInstanceGroup(name string) (*kops.InstanceGroup,
 
 // ControlPlaneControllerReplicas returns the amount of replicas for a controllers that should run in the cluster
 // If the cluster has a highly available control plane, this function will return 2, if it has 1 control plane node, it will return 1
-func (tf *TemplateFunctions) ControlPlaneControllerReplicas() int {
+// deployOnWorkersIfExternalPermissons should be true if a controller runs on worker nodes when external IAM permissions is enabled for the cluster.
+// In this case it is assumed that it can run 2 replicas.
+func (tf *TemplateFunctions) ControlPlaneControllerReplicas(deployOnWorkersIfExternalPermissons bool) int {
+	if deployOnWorkersIfExternalPermissons && fi.BoolValue(tf.Cluster.Spec.IAM.UseServiceAccountExternalPermissions) {
+		return 2
+	}
 	if tf.HasHighlyAvailableControlPlane() {
 		return 2
 	}

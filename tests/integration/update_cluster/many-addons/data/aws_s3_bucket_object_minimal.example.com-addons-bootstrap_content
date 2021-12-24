@@ -47,7 +47,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.15
     manifest: cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml
-    manifestHash: a53d19ef1b5e95d76851351578fb463cde98024b583a6fcf3dbd16a7833ceb4f
+    manifestHash: 8f90239fed34a516fbd182aff2a4b0adfdcb58fcac75f3455c57fcec47314a86
     name: cluster-autoscaler.addons.k8s.io
     selector:
       k8s-addon: cluster-autoscaler.addons.k8s.io
@@ -133,7 +133,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.20
     manifest: snapshot-controller.addons.k8s.io/k8s-1.20.yaml
-    manifestHash: a9781145d51aa191d5bd29bf31c535d17e50157e209ee0765ac20d6a7145eaf5
+    manifestHash: 005afa268578a742ba899964d0c92ce8843cb391c8a134a38a638bbddd711b07
     name: snapshot-controller.addons.k8s.io
     needsPKI: true
     selector:

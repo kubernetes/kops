@@ -292,7 +292,7 @@ metadata:
   name: cluster-autoscaler
   namespace: kube-system
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: cluster-autoscaler
@@ -355,7 +355,6 @@ spec:
         - mountPath: /var/run/secrets/amazonaws.com/
           name: token-amazonaws-com
           readOnly: true
-      dnsPolicy: ClusterFirst
       priorityClassName: system-cluster-critical
       securityContext:
         fsGroup: 10001
