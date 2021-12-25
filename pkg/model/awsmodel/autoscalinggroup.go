@@ -23,6 +23,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/klog/v2"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -494,6 +495,40 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 	// @step: are we using a mixed instance policy
 	if ig.Spec.MixedInstancesPolicy != nil {
 		spec := ig.Spec.MixedInstancesPolicy
+
+		if spec.InstanceRequirements != nil {
+
+			ir := &awstasks.InstanceRequirements{}
+
+			cpu := spec.InstanceRequirements.CPU
+			if cpu != nil {
+				if cpu.Max != nil {
+					cpuMax, _ := spec.InstanceRequirements.CPU.Max.AsInt64()
+					ir.CPUMax = &cpuMax
+				}
+				if cpu.Min != nil {
+					cpuMin, _ := spec.InstanceRequirements.CPU.Min.AsInt64()
+					ir.CPUMin = &cpuMin
+				}
+			} else {
+				ir.CPUMin = fi.Int64(0)
+			}
+
+			memory := spec.InstanceRequirements.Memory
+			if memory != nil {
+				if memory.Max != nil {
+					memoryMax := spec.InstanceRequirements.Memory.Max.ScaledValue(resource.Mega)
+					ir.MemoryMax = &memoryMax
+				}
+				if memory.Min != nil {
+					memoryMin := spec.InstanceRequirements.Memory.Min.ScaledValue(resource.Mega)
+					ir.MemoryMin = &memoryMin
+				}
+			} else {
+				ir.MemoryMin = fi.Int64(0)
+			}
+			t.InstanceRequirements = ir
+		}
 
 		t.MixedInstanceOverrides = spec.Instances
 		t.MixedOnDemandAboveBase = spec.OnDemandAboveBase

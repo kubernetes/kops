@@ -239,6 +239,25 @@ https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstancesDistributi
 Used only when the Spot allocation strategy is lowest-price.
 The number of Spot Instance pools across which to allocate your Spot Instances. The Spot pools are determined from the different instance types in the Overrides array of LaunchTemplate. Default if not set is 2.
 
+### instanceRequirements
+
+{{ kops_feature_table(kops_added_default='1.24') }}
+
+Instead of configuring specific machine types, the InstanceGroup can be configured to use all machine types that satisfy a given set of requirements.
+
+```
+spec:
+  mixedInstancesPolicy:
+    instanceRquirements:
+      cpu:
+        min: "2"
+        max: "16"
+      memory:
+        min: "2G"
+```
+
+Note that burstable instances are always included in the set of eligible instances.
+
 ## warmPool (AWS Only)
 
 {{ kops_feature_table(kops_added_default='1.21') }}
