@@ -43,6 +43,7 @@ go_library(
         "iamrolepolicy_fitask.go",
         "instance.go",
         "instance_fitask.go",
+        "instancerequirements.go",
         "internetgateway.go",
         "internetgateway_fitask.go",
         "launchtemplate.go",
