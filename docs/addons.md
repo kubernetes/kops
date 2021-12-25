@@ -90,6 +90,19 @@ spec:
 
 Read more about cert-manager in the [official documentation](https://cert-manager.io/docs/)
 
+#### Karpenter
+{{ kops_feature_table(kops_added_default='1.24') }}
+
+The Karpenter addon enables Karpenter-managed InstanceGroups. 
+
+```yaml
+spec:
+  karpenter:
+    enabled: true
+```
+
+See more details on how to configure Karpenter in the [kOps Karpenter docs](/operations/karpenter) and the [official documentation](https://karpenter.sh)
+
 #### Metrics server
 {{ kops_feature_table(kops_added_default='1.19') }}
 
