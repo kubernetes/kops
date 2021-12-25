@@ -103,8 +103,8 @@ func (_ *VPCDHCPOptionsAssociation) RenderAWS(t *awsup.AWSAPITarget, a, e, chang
 }
 
 type terraformVPCDHCPOptionsAssociation struct {
-	VPCID         *terraformWriter.Literal `json:"vpc_id" cty:"vpc_id"`
-	DHCPOptionsID *terraformWriter.Literal `json:"dhcp_options_id" cty:"dhcp_options_id"`
+	VPCID         *terraformWriter.Literal `cty:"vpc_id"`
+	DHCPOptionsID *terraformWriter.Literal `cty:"dhcp_options_id"`
 }
 
 func (_ *VPCDHCPOptionsAssociation) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPCDHCPOptionsAssociation) error {

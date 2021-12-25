@@ -206,18 +206,18 @@ func (a OrderTargetGroupsByName) Less(i, j int) bool {
 }
 
 type terraformTargetGroup struct {
-	Name        string                          `json:"name" cty:"name"`
-	Port        int64                           `json:"port" cty:"port"`
-	Protocol    string                          `json:"protocol" cty:"protocol"`
-	VPCID       terraformWriter.Literal         `json:"vpc_id" cty:"vpc_id"`
-	Tags        map[string]string               `json:"tags,omitempty" cty:"tags"`
-	HealthCheck terraformTargetGroupHealthCheck `json:"health_check" cty:"health_check"`
+	Name        string                          `cty:"name"`
+	Port        int64                           `cty:"port"`
+	Protocol    string                          `cty:"protocol"`
+	VPCID       terraformWriter.Literal         `cty:"vpc_id"`
+	Tags        map[string]string               `cty:"tags"`
+	HealthCheck terraformTargetGroupHealthCheck `cty:"health_check"`
 }
 
 type terraformTargetGroupHealthCheck struct {
-	HealthyThreshold   int64  `json:"healthy_threshold" cty:"healthy_threshold"`
-	UnhealthyThreshold int64  `json:"unhealthy_threshold" cty:"unhealthy_threshold"`
-	Protocol           string `json:"protocol" cty:"protocol"`
+	HealthyThreshold   int64  `cty:"healthy_threshold"`
+	UnhealthyThreshold int64  `cty:"unhealthy_threshold"`
+	Protocol           string `cty:"protocol"`
 }
 
 func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *TargetGroup) error {

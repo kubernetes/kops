@@ -694,34 +694,34 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 }
 
 type terraformNetworkLoadBalancer struct {
-	Name                   string                                      `json:"name" cty:"name"`
-	Internal               bool                                        `json:"internal" cty:"internal"`
-	Type                   string                                      `json:"load_balancer_type" cty:"load_balancer_type"`
-	SubnetMappings         []terraformNetworkLoadBalancerSubnetMapping `json:"subnet_mapping" cty:"subnet_mapping"`
-	CrossZoneLoadBalancing bool                                        `json:"enable_cross_zone_load_balancing" cty:"enable_cross_zone_load_balancing"`
-	AccessLog              *terraformNetworkLoadBalancerAccessLog      `json:"access_logs,omitempty" cty:"access_logs"`
+	Name                   string                                      `cty:"name"`
+	Internal               bool                                        `cty:"internal"`
+	Type                   string                                      `cty:"load_balancer_type"`
+	SubnetMappings         []terraformNetworkLoadBalancerSubnetMapping `cty:"subnet_mapping"`
+	CrossZoneLoadBalancing bool                                        `cty:"enable_cross_zone_load_balancing"`
+	AccessLog              *terraformNetworkLoadBalancerAccessLog      `cty:"access_logs"`
 
-	Tags map[string]string `json:"tags" cty:"tags"`
+	Tags map[string]string `cty:"tags"`
 }
 
 type terraformNetworkLoadBalancerSubnetMapping struct {
-	Subnet             *terraformWriter.Literal `json:"subnet_id" cty:"subnet_id"`
-	AllocationID       *string                  `json:"allocation_id,omitempty" cty:"allocation_id"`
-	PrivateIPv4Address *string                  `json:"private_ipv4_address,omitempty" cty:"private_ipv4_address"`
+	Subnet             *terraformWriter.Literal `cty:"subnet_id"`
+	AllocationID       *string                  `cty:"allocation_id"`
+	PrivateIPv4Address *string                  `cty:"private_ipv4_address"`
 }
 
 type terraformNetworkLoadBalancerListener struct {
-	LoadBalancer   *terraformWriter.Literal                     `json:"load_balancer_arn" cty:"load_balancer_arn"`
-	Port           int64                                        `json:"port" cty:"port"`
-	Protocol       string                                       `json:"protocol" cty:"protocol"`
-	CertificateARN *string                                      `json:"certificate_arn,omitempty" cty:"certificate_arn"`
-	SSLPolicy      *string                                      `json:"ssl_policy,omitempty" cty:"ssl_policy"`
-	DefaultAction  []terraformNetworkLoadBalancerListenerAction `json:"default_action" cty:"default_action"`
+	LoadBalancer   *terraformWriter.Literal                     `cty:"load_balancer_arn"`
+	Port           int64                                        `cty:"port"`
+	Protocol       string                                       `cty:"protocol"`
+	CertificateARN *string                                      `cty:"certificate_arn"`
+	SSLPolicy      *string                                      `cty:"ssl_policy"`
+	DefaultAction  []terraformNetworkLoadBalancerListenerAction `cty:"default_action"`
 }
 
 type terraformNetworkLoadBalancerListenerAction struct {
-	Type           string                   `json:"type" cty:"type"`
-	TargetGroupARN *terraformWriter.Literal `json:"target_group_arn,omitempty" cty:"target_group_arn"`
+	Type           string                   `cty:"type"`
+	TargetGroupARN *terraformWriter.Literal `cty:"target_group_arn"`
 }
 
 func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NetworkLoadBalancer) error {

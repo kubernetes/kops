@@ -167,8 +167,8 @@ func (_ *EgressOnlyInternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, chang
 }
 
 type terraformEgressOnlyInternetGateway struct {
-	VPCID *terraformWriter.Literal `json:"vpc_id" cty:"vpc_id"`
-	Tags  map[string]string        `json:"tags,omitempty" cty:"tags"`
+	VPCID *terraformWriter.Literal `cty:"vpc_id"`
+	Tags  map[string]string        `cty:"tags"`
 }
 
 func (_ *EgressOnlyInternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EgressOnlyInternetGateway) error {
