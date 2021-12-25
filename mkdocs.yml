@@ -77,6 +77,7 @@ nav:
     - Using Manifests and Customizing: "manifests_and_customizing_via_api.md"
     - High Availability: "operations/high_availability.md"
     - Scaling: "operations/scaling.md"
+    - Karpenter: "operations/karpenter.md"
     - Local asset repositories: "operations/asset-repository.md"
     - Instancegroup images: "operations/images.md"
     - Cluster configuration management: "changing_configuration.md"
