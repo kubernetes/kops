@@ -213,12 +213,12 @@ func (p *IAMOIDCProvider) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMOID
 }
 
 type terraformIAMOIDCProvider struct {
-	URL            *string   `json:"url" cty:"url"`
-	ClientIDList   []*string `json:"client_id_list" cty:"client_id_list"`
-	ThumbprintList []*string `json:"thumbprint_list" cty:"thumbprint_list"`
+	URL            *string   `cty:"url"`
+	ClientIDList   []*string `cty:"client_id_list"`
+	ThumbprintList []*string `cty:"thumbprint_list"`
 
-	AssumeRolePolicy *terraformWriter.Literal `json:"assume_role_policy" cty:"assume_role_policy"`
-	Tags             map[string]string        `json:"tags,omitempty" cty:"tags"`
+	AssumeRolePolicy *terraformWriter.Literal `cty:"assume_role_policy"`
+	Tags             map[string]string        `cty:"tags"`
 }
 
 func (p *IAMOIDCProvider) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMOIDCProvider) error {

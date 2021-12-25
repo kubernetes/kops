@@ -271,14 +271,14 @@ func checkNotNil(s *string) *string {
 }
 
 type terraformRoute struct {
-	RouteTableID                *terraformWriter.Literal `json:"route_table_id" cty:"route_table_id"`
-	CIDR                        *string                  `json:"destination_cidr_block,omitempty" cty:"destination_cidr_block"`
-	IPv6CIDR                    *string                  `json:"destination_ipv6_cidr_block,omitempty" cty:"destination_ipv6_cidr_block"`
-	EgressOnlyInternetGatewayID *terraformWriter.Literal `json:"egress_onlygateway_id,omitempty" cty:"egress_only_gateway_id"`
-	InternetGatewayID           *terraformWriter.Literal `json:"gateway_id,omitempty" cty:"gateway_id"`
-	NATGatewayID                *terraformWriter.Literal `json:"nat_gateway_id,omitempty" cty:"nat_gateway_id"`
-	TransitGatewayID            *string                  `json:"transit_gateway_id,omitempty" cty:"transit_gateway_id"`
-	InstanceID                  *terraformWriter.Literal `json:"instance_id,omitempty" cty:"instance_id"`
+	RouteTableID                *terraformWriter.Literal `cty:"route_table_id"`
+	CIDR                        *string                  `cty:"destination_cidr_block"`
+	IPv6CIDR                    *string                  `cty:"destination_ipv6_cidr_block"`
+	EgressOnlyInternetGatewayID *terraformWriter.Literal `cty:"egress_only_gateway_id"`
+	InternetGatewayID           *terraformWriter.Literal `cty:"gateway_id"`
+	NATGatewayID                *terraformWriter.Literal `cty:"nat_gateway_id"`
+	TransitGatewayID            *string                  `cty:"transit_gateway_id"`
+	InstanceID                  *terraformWriter.Literal `cty:"instance_id"`
 }
 
 func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Route) error {

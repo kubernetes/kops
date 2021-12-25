@@ -126,9 +126,9 @@ func (_ *StorageBucketIAM) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Storage
 
 // terraformStorageBucketIAM is the model for a terraform google_storage_bucket_iam_member rule
 type terraformStorageBucketIAM struct {
-	Bucket string `json:"bucket,omitempty" cty:"bucket"`
-	Role   string `json:"role,omitempty" cty:"role"`
-	Member string `json:"member,omitempty" cty:"member"`
+	Bucket string `cty:"bucket"`
+	Role   string `cty:"role"`
+	Member string `cty:"member"`
 }
 
 func (_ *StorageBucketIAM) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *StorageBucketIAM) error {

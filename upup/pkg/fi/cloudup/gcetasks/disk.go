@@ -163,11 +163,11 @@ func (_ *Disk) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Disk) error {
 }
 
 type terraformDisk struct {
-	Name       *string           `json:"name" cty:"name"`
-	VolumeType *string           `json:"type" cty:"type"`
-	SizeGB     *int64            `json:"size" cty:"size"`
-	Zone       *string           `json:"zone" cty:"zone"`
-	Labels     map[string]string `json:"labels,omitempty" cty:"labels"`
+	Name       *string           `cty:"name"`
+	VolumeType *string           `cty:"type"`
+	SizeGB     *int64            `cty:"size"`
+	Zone       *string           `cty:"zone"`
+	Labels     map[string]string `cty:"labels"`
 }
 
 func (_ *Disk) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Disk) error {
