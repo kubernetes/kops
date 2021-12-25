@@ -281,11 +281,11 @@ func (e *VPC) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 }
 
 type terraformVPC struct {
-	CIDR               *string           `json:"cidr_block,omitempty" cty:"cidr_block"`
-	EnableDNSHostnames *bool             `json:"enable_dns_hostnames,omitempty" cty:"enable_dns_hostnames"`
-	EnableDNSSupport   *bool             `json:"enable_dns_support,omitempty" cty:"enable_dns_support"`
-	AmazonIPv6         *bool             `json:"assign_generated_ipv6_cidr_block,omitempty" cty:"assign_generated_ipv6_cidr_block"`
-	Tags               map[string]string `json:"tags,omitempty" cty:"tags"`
+	CIDR               *string           `cty:"cidr_block"`
+	EnableDNSHostnames *bool             `cty:"enable_dns_hostnames"`
+	EnableDNSSupport   *bool             `cty:"enable_dns_support"`
+	AmazonIPv6         *bool             `cty:"assign_generated_ipv6_cidr_block"`
+	Tags               map[string]string `cty:"tags"`
 }
 
 func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) error {

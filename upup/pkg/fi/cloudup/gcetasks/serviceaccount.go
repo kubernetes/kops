@@ -182,10 +182,10 @@ func (_ *ServiceAccount) RenderGCE(t *gce.GCEAPITarget, a, e, changes *ServiceAc
 }
 
 type terraformServiceAccount struct {
-	AccountID   *string `json:"account_id" cty:"account_id"`
-	ProjectID   *string `json:"project" cty:"project"`
-	Description *string `json:"description" cty:"description"`
-	DisplayName *string `json:"display_name" cty:"display_name"`
+	AccountID   *string `cty:"account_id"`
+	ProjectID   *string `cty:"project"`
+	Description *string `cty:"description"`
+	DisplayName *string `cty:"display_name"`
 }
 
 func (_ *ServiceAccount) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ServiceAccount) error {

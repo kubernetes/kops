@@ -614,39 +614,39 @@ func (a OrderLoadBalancersByName) Less(i, j int) bool {
 }
 
 type terraformLoadBalancer struct {
-	LoadBalancerName *string                          `json:"name" cty:"name"`
-	Listener         []*terraformLoadBalancerListener `json:"listener" cty:"listener"`
-	SecurityGroups   []*terraformWriter.Literal       `json:"security_groups" cty:"security_groups"`
-	Subnets          []*terraformWriter.Literal       `json:"subnets" cty:"subnets"`
-	Internal         *bool                            `json:"internal,omitempty" cty:"internal"`
+	LoadBalancerName *string                          `cty:"name"`
+	Listener         []*terraformLoadBalancerListener `cty:"listener"`
+	SecurityGroups   []*terraformWriter.Literal       `cty:"security_groups"`
+	Subnets          []*terraformWriter.Literal       `cty:"subnets"`
+	Internal         *bool                            `cty:"internal"`
 
-	HealthCheck *terraformLoadBalancerHealthCheck `json:"health_check,omitempty" cty:"health_check"`
-	AccessLog   *terraformLoadBalancerAccessLog   `json:"access_logs,omitempty" cty:"access_logs"`
+	HealthCheck *terraformLoadBalancerHealthCheck `cty:"health_check"`
+	AccessLog   *terraformLoadBalancerAccessLog   `cty:"access_logs"`
 
-	ConnectionDraining        *bool  `json:"connection_draining,omitempty" cty:"connection_draining"`
-	ConnectionDrainingTimeout *int64 `json:"connection_draining_timeout,omitempty" cty:"connection_draining_timeout"`
+	ConnectionDraining        *bool  `cty:"connection_draining"`
+	ConnectionDrainingTimeout *int64 `cty:"connection_draining_timeout"`
 
-	CrossZoneLoadBalancing *bool `json:"cross_zone_load_balancing,omitempty" cty:"cross_zone_load_balancing"`
+	CrossZoneLoadBalancing *bool `cty:"cross_zone_load_balancing"`
 
-	IdleTimeout *int64 `json:"idle_timeout,omitempty" cty:"idle_timeout"`
+	IdleTimeout *int64 `cty:"idle_timeout"`
 
-	Tags map[string]string `json:"tags,omitempty" cty:"tags"`
+	Tags map[string]string `cty:"tags"`
 }
 
 type terraformLoadBalancerListener struct {
-	InstancePort     int     `json:"instance_port" cty:"instance_port"`
-	InstanceProtocol string  `json:"instance_protocol" cty:"instance_protocol"`
-	LBPort           int64   `json:"lb_port" cty:"lb_port"`
-	LBProtocol       string  `json:"lb_protocol" cty:"lb_protocol"`
-	SSLCertificateID *string `json:"ssl_certificate_id,omitempty" cty:"ssl_certificate_id"`
+	InstancePort     int     `cty:"instance_port"`
+	InstanceProtocol string  `cty:"instance_protocol"`
+	LBPort           int64   `cty:"lb_port"`
+	LBProtocol       string  `cty:"lb_protocol"`
+	SSLCertificateID *string `cty:"ssl_certificate_id"`
 }
 
 type terraformLoadBalancerHealthCheck struct {
-	Target             *string `json:"target" cty:"target"`
-	HealthyThreshold   *int64  `json:"healthy_threshold" cty:"healthy_threshold"`
-	UnhealthyThreshold *int64  `json:"unhealthy_threshold" cty:"unhealthy_threshold"`
-	Interval           *int64  `json:"interval" cty:"interval"`
-	Timeout            *int64  `json:"timeout" cty:"timeout"`
+	Target             *string `cty:"target"`
+	HealthyThreshold   *int64  `cty:"healthy_threshold"`
+	UnhealthyThreshold *int64  `cty:"unhealthy_threshold"`
+	Interval           *int64  `cty:"interval"`
+	Timeout            *int64  `cty:"timeout"`
 }
 
 func (_ *ClassicLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ClassicLoadBalancer) error {

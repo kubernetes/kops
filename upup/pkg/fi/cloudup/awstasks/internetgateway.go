@@ -180,8 +180,8 @@ func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Intern
 }
 
 type terraformInternetGateway struct {
-	VPCID *terraformWriter.Literal `json:"vpc_id" cty:"vpc_id"`
-	Tags  map[string]string        `json:"tags,omitempty" cty:"tags"`
+	VPCID *terraformWriter.Literal `cty:"vpc_id"`
+	Tags  map[string]string        `cty:"tags"`
 }
 
 func (_ *InternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InternetGateway) error {

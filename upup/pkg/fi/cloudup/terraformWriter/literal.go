@@ -27,8 +27,7 @@ import (
 
 // Literal represents a literal in terraform syntax
 type Literal struct {
-	// Value is only used in JSON output via the TerraformJSON feature flag
-	// "${}" interpolation is supported.
+	// Value is used to support Terraform's "${}" interpolation
 	Value string `cty:"value"`
 
 	// Tokens are portions of a literal reference joined by periods.

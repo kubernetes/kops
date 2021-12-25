@@ -127,9 +127,9 @@ func (_ *ProjectIAMBinding) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Projec
 
 // terraformProjectIAMBinding is the model for a terraform google_project_iam_binding rule
 type terraformProjectIAMBinding struct {
-	Project string   `json:"project,omitempty" cty:"project"`
-	Role    string   `json:"role,omitempty" cty:"role"`
-	Members []string `json:"members,omitempty" cty:"members"`
+	Project string   `cty:"project"`
+	Role    string   `cty:"role"`
+	Members []string `cty:"members"`
 }
 
 func (_ *ProjectIAMBinding) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ProjectIAMBinding) error {

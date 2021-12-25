@@ -186,23 +186,23 @@ func (*Router) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Router) error {
 }
 
 type terraformRouterNat struct {
-	Name                          *string                         `json:"name,omitempty" cty:"name"`
-	Region                        *string                         `json:"region,omitempty" cty:"region"`
-	Router                        *terraformWriter.Literal        `json:"router,omitempty" cty:"router"`
-	NATIPAllocateOption           *string                         `json:"nat_ip_allocate_option,omitempty" cty:"nat_ip_allocate_option"`
-	SourceSubnetworkIPRangesToNat *string                         `json:"source_subnetwork_ip_ranges_to_nat,omitempty" cty:"source_subnetwork_ip_ranges_to_nat"`
-	Subnetworks                   []*terraformRouterNatSubnetwork `json:"subnetwork,omitempty" cty:"subnetwork"`
+	Name                          *string                         `cty:"name"`
+	Region                        *string                         `cty:"region"`
+	Router                        *terraformWriter.Literal        `cty:"router"`
+	NATIPAllocateOption           *string                         `cty:"nat_ip_allocate_option"`
+	SourceSubnetworkIPRangesToNat *string                         `cty:"source_subnetwork_ip_ranges_to_nat"`
+	Subnetworks                   []*terraformRouterNatSubnetwork `cty:"subnetwork"`
 }
 
 type terraformRouterNatSubnetwork struct {
-	Name                *terraformWriter.Literal `json:"name,omitempty" cty:"name"`
-	SourceIPRangesToNat []string                 `json:"source_ip_ranges_to_nat,omitempty" cty:"source_ip_ranges_to_nat"`
+	Name                *terraformWriter.Literal `cty:"name"`
+	SourceIPRangesToNat []string                 `cty:"source_ip_ranges_to_nat"`
 }
 
 type terraformRouter struct {
-	Name    *string                  `json:"name,omitempty" cty:"name"`
-	Network *terraformWriter.Literal `json:"network,omitempty" cty:"network"`
-	Region  *string                  `json:"region,omitempty" cty:"region"`
+	Name    *string                  `cty:"name"`
+	Network *terraformWriter.Literal `cty:"network"`
+	Region  *string                  `cty:"region"`
 }
 
 // RenderTerraform renders the Terraform config.

@@ -132,9 +132,9 @@ func (_ *Volume) RenderDO(t *do.DOAPITarget, a, e, changes *Volume) error {
 // terraformVolume represents the digitalocean_volume resource in terraform
 // https://www.terraform.io/docs/providers/do/r/volume.html
 type terraformVolume struct {
-	Name   *string `json:"name" cty:"name"`
-	SizeGB *int64  `json:"size" cty:"size"`
-	Region *string `json:"region" cty:"region"`
+	Name   *string `cty:"name"`
+	SizeGB *int64  `cty:"size"`
+	Region *string `cty:"region"`
 }
 
 func (_ *Volume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Volume) error {
