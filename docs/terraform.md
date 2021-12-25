@@ -9,13 +9,13 @@ The Terraform output should be reasonably stable (i.e. the text files should onl
 Note that if you modify the Terraform files that kOps spits out, it will override your changes with the configuration state defined by its own configs. In other terms, kOps's own state is the ultimate source of truth (as far as kOps is concerned), and Terraform is a representation of that state for your convenience.
 
 ### Terraform Version Compatibility
-| kOps Version | Terraform Version | Feature Flag Notes |
-|--------------|-------------------|--------------------|
-| >= 1.19      | >= 0.12.26, >= 0.13 | HCL2 supported by default <br>`KOPS_FEATURE_FLAGS=Terraform-0.12` is now deprecated |
-| >= 1.18      | >= 0.12             | HCL2 supported by default |
-| >= 1.18      | < 0.12              | `KOPS_FEATURE_FLAGS=-Terraform-0.12` |
-| >= 1.17      | >= 0.12             | `KOPS_FEATURE_FLAGS=TerraformJSON` outputs JSON |
-| <= 1.17      | < 0.12              | Supported by default |
+| kOps Version    | Terraform Version | Feature Flag Notes |
+|-----------------|-------------------|--------------------|
+| >= 1.19         | >= 0.12.26, >= 0.13 | HCL2 supported by default <br>`KOPS_FEATURE_FLAGS=Terraform-0.12` is now deprecated |
+| >= 1.18         | >= 0.12             | HCL2 supported by default |
+| >= 1.18         | < 0.12              | `KOPS_FEATURE_FLAGS=-Terraform-0.12` |
+| >= 1.17, < 1.23 | >= 0.12             | `KOPS_FEATURE_FLAGS=TerraformJSON` outputs JSON |
+| <= 1.17         | < 0.12              | Supported by default |
 
 ### Using Terraform
 
@@ -137,14 +137,3 @@ Ps: You don't have to `kops delete cluster` if you just want to recreate from sc
 Changes made with `kops edit` (like enabling RBAC and / or feature gates) will result in changes to the LaunchTemplate of your cluster nodes. After a `terraform apply`, they won't be applied right away since terraform will not launch new instances as part of that.
 
 To see your changes applied to the cluster you'll also need to run `kops rolling-update` after running `terraform apply`. This will ensure that all nodes' changes have the desired settings configured with `kops edit`.
-
-#### Terraform JSON output
-
-With terraform 0.12 JSON is now officially supported as configuration language. To enable JSON output instead of HCLv2 output you need to enable it through a feature flag.
-
-```
-export KOPS_FEATURE_FLAGS=TerraformJSON
-kops update cluster .....
-```
-
-This is an alternative to of using terraforms own configuration syntax HCL. Be sure to delete the existing kubernetes.tf file. Terraform will otherwise use both and then complain. 
