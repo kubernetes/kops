@@ -662,6 +662,19 @@ spec:
       tolerations:
       - key: node-role.kubernetes.io/master
         operator: Exists
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            karpenter: webhook
+        maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+      - labelSelector:
+          matchLabels:
+            karpenter: webhook
+        maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
       volumes:
       - name: token-amazonaws-com
         projected:
@@ -756,12 +769,21 @@ spec:
         fsGroup: 10001
       serviceAccountName: karpenter
       tolerations:
-      - key: node.cloudprovider.kubernetes.io/uninitialized
-        operator: Exists
-      - key: node.kubernetes.io/not-ready
-        operator: Exists
       - key: node-role.kubernetes.io/master
         operator: Exists
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            karpenter: webhook
+        maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+      - labelSelector:
+          matchLabels:
+            karpenter: webhook
+        maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
       volumes:
       - name: token-amazonaws-com
         projected:
