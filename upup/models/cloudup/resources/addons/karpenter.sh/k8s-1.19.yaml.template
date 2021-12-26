@@ -465,7 +465,7 @@ spec:
           env:
             {{ if UsesInstanceIDForNodeName }}
             - name: AWS_NODE_NAME_CONVENTION
-              value: "resouce-name"
+              value: "resource-name"
             {{ end }}
             - name: AWS_REGION
               value: {{ Region }}
