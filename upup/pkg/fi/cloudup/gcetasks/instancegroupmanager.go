@@ -172,16 +172,16 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 }
 
 type terraformInstanceGroupManager struct {
-	Name             *string                    `json:"name" cty:"name"`
-	Zone             *string                    `json:"zone" cty:"zone"`
-	BaseInstanceName *string                    `json:"base_instance_name" cty:"base_instance_name"`
-	Version          *terraformVersion          `json:"version" cty:"version"`
-	TargetSize       *int64                     `json:"target_size" cty:"target_size"`
-	TargetPools      []*terraformWriter.Literal `json:"target_pools,omitempty" cty:"target_pools"`
+	Name             *string                    `cty:"name"`
+	Zone             *string                    `cty:"zone"`
+	BaseInstanceName *string                    `cty:"base_instance_name"`
+	Version          *terraformVersion          `cty:"version"`
+	TargetSize       *int64                     `cty:"target_size"`
+	TargetPools      []*terraformWriter.Literal `cty:"target_pools"`
 }
 
 type terraformVersion struct {
-	InstanceTemplate *terraformWriter.Literal `json:"instance_template" cty:"instance_template"`
+	InstanceTemplate *terraformWriter.Literal `cty:"instance_template"`
 }
 
 func (_ *InstanceGroupManager) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InstanceGroupManager) error {

@@ -111,9 +111,9 @@ func (_ *IAMInstanceProfileRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 }
 
 type terraformIAMInstanceProfile struct {
-	Name *string                  `json:"name" cty:"name"`
-	Role *terraformWriter.Literal `json:"role" cty:"role"`
-	Tags map[string]string        `json:"tags,omitempty" cty:"tags"`
+	Name *string                  `cty:"name"`
+	Role *terraformWriter.Literal `cty:"role"`
+	Tags map[string]string        `cty:"tags"`
 }
 
 func (_ *IAMInstanceProfileRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMInstanceProfileRole) error {

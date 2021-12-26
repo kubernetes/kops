@@ -154,7 +154,7 @@ func (_ *Address) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Address) error {
 }
 
 type terraformAddress struct {
-	Name *string `json:"name,omitempty" cty:"name"`
+	Name *string `cty:"name"`
 }
 
 func (_ *Address) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Address) error {

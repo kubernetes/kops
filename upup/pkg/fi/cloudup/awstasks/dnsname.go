@@ -251,20 +251,20 @@ func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error
 }
 
 type terraformRoute53Record struct {
-	Name    *string  `json:"name" cty:"name"`
-	Type    *string  `json:"type" cty:"type"`
-	TTL     *string  `json:"ttl,omitempty" cty:"ttl"`
-	Records []string `json:"records,omitempty" cty:"records"`
+	Name    *string  `cty:"name"`
+	Type    *string  `cty:"type"`
+	TTL     *string  `cty:"ttl"`
+	Records []string `cty:"records"`
 
-	Alias  *terraformAlias          `json:"alias,omitempty" cty:"alias"`
-	ZoneID *terraformWriter.Literal `json:"zone_id" cty:"zone_id"`
+	Alias  *terraformAlias          `cty:"alias"`
+	ZoneID *terraformWriter.Literal `cty:"zone_id"`
 }
 
 type terraformAlias struct {
-	Name                 *terraformWriter.Literal `json:"name" cty:"name"`
-	Type                 *terraformWriter.Literal `json:"type" cty:"type"`
-	ZoneID               *terraformWriter.Literal `json:"zone_id" cty:"zone_id"`
-	EvaluateTargetHealth *bool                    `json:"evaluate_target_health" cty:"evaluate_target_health"`
+	Name                 *terraformWriter.Literal `cty:"name"`
+	Type                 *terraformWriter.Literal `cty:"type"`
+	ZoneID               *terraformWriter.Literal `cty:"zone_id"`
+	EvaluateTargetHealth *bool                    `cty:"evaluate_target_health"`
 }
 
 func (_ *DNSName) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DNSName) error {

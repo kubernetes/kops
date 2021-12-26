@@ -451,54 +451,54 @@ func (_ *InstanceTemplate) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instanc
 }
 
 type terraformInstanceTemplate struct {
-	NamePrefix            string                                   `json:"name_prefix" cty:"name_prefix"`
-	CanIPForward          bool                                     `json:"can_ip_forward" cty:"can_ip_forward"`
-	MachineType           string                                   `json:"machine_type,omitempty" cty:"machine_type"`
-	ServiceAccount        *terraformServiceAccount                 `json:"service_account,omitempty" cty:"service_account"`
-	Scheduling            *terraformScheduling                     `json:"scheduling,omitempty" cty:"scheduling"`
-	Disks                 []*terraformInstanceTemplateAttachedDisk `json:"disk,omitempty" cty:"disk"`
-	Labels                map[string]string                        `json:"labels,omitempty" cty:"labels"`
-	NetworkInterfaces     []*terraformNetworkInterface             `json:"network_interface,omitempty" cty:"network_interface"`
-	Metadata              map[string]*terraformWriter.Literal      `json:"metadata,omitempty" cty:"metadata"`
-	MetadataStartupScript *terraformWriter.Literal                 `json:"metadata_startup_script,omitempty" cty:"metadata_startup_script"`
-	Tags                  []string                                 `json:"tags,omitempty" cty:"tags"`
+	NamePrefix            string                                   `cty:"name_prefix"`
+	CanIPForward          bool                                     `cty:"can_ip_forward"`
+	MachineType           string                                   `cty:"machine_type"`
+	ServiceAccount        *terraformServiceAccount                 `cty:"service_account"`
+	Scheduling            *terraformScheduling                     `cty:"scheduling"`
+	Disks                 []*terraformInstanceTemplateAttachedDisk `cty:"disk"`
+	Labels                map[string]string                        `cty:"labels"`
+	NetworkInterfaces     []*terraformNetworkInterface             `cty:"network_interface"`
+	Metadata              map[string]*terraformWriter.Literal      `cty:"metadata"`
+	MetadataStartupScript *terraformWriter.Literal                 `cty:"metadata_startup_script"`
+	Tags                  []string                                 `cty:"tags"`
 }
 
 type terraformServiceAccount struct {
-	Email  string   `json:"email" cty:"email"`
-	Scopes []string `json:"scopes" cty:"scopes"`
+	Email  string   `cty:"email"`
+	Scopes []string `cty:"scopes"`
 }
 
 type terraformScheduling struct {
-	AutomaticRestart  bool   `json:"automatic_restart" cty:"automatic_restart"`
-	OnHostMaintenance string `json:"on_host_maintenance,omitempty" cty:"on_host_maintenance"`
-	Preemptible       bool   `json:"preemptible" cty:"preemptible"`
+	AutomaticRestart  bool   `cty:"automatic_restart"`
+	OnHostMaintenance string `cty:"on_host_maintenance"`
+	Preemptible       bool   `cty:"preemptible"`
 }
 
 type terraformInstanceTemplateAttachedDisk struct {
-	AutoDelete bool   `json:"auto_delete,omitempty" cty:"auto_delete"`
-	DeviceName string `json:"device_name,omitempty" cty:"device_name"`
+	AutoDelete bool   `cty:"auto_delete"`
+	DeviceName string `cty:"device_name"`
 
 	// scratch vs persistent
-	Type        string `json:"type,omitempty" cty:"type"`
-	Boot        bool   `json:"boot,omitempty" cty:"boot"`
-	DiskName    string `json:"disk_name,omitempty" cty:"disk_name"`
-	SourceImage string `json:"source_image,omitempty" cty:"source_image"`
-	Source      string `json:"source,omitempty" cty:"source"`
-	Interface   string `json:"interface,omitempty" cty:"interface"`
-	Mode        string `json:"mode,omitempty" cty:"mode"`
-	DiskType    string `json:"disk_type,omitempty" cty:"disk_type"`
-	DiskSizeGB  int64  `json:"disk_size_gb,omitempty" cty:"disk_size_gb"`
+	Type        string `cty:"type"`
+	Boot        bool   `cty:"boot"`
+	DiskName    string `cty:"disk_name"`
+	SourceImage string `cty:"source_image"`
+	Source      string `cty:"source"`
+	Interface   string `cty:"interface"`
+	Mode        string `cty:"mode"`
+	DiskType    string `cty:"disk_type"`
+	DiskSizeGB  int64  `cty:"disk_size_gb"`
 }
 
 type terraformNetworkInterface struct {
-	Network      *terraformWriter.Literal `json:"network,omitempty" cty:"network"`
-	Subnetwork   *terraformWriter.Literal `json:"subnetwork,omitempty" cty:"subnetwork"`
-	AccessConfig []*terraformAccessConfig `json:"access_config" cty:"access_config"`
+	Network      *terraformWriter.Literal `cty:"network"`
+	Subnetwork   *terraformWriter.Literal `cty:"subnetwork"`
+	AccessConfig []*terraformAccessConfig `cty:"access_config"`
 }
 
 type terraformAccessConfig struct {
-	NatIP *terraformWriter.Literal `json:"nat_ip,omitempty" cty:"nat_ip"`
+	NatIP *terraformWriter.Literal `cty:"nat_ip"`
 }
 
 func addNetworks(network *Network, subnet *Subnet, networkInterfaces []*compute.NetworkInterface) []*terraformNetworkInterface {

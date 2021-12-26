@@ -139,11 +139,11 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 }
 
 type terraformForwardingRule struct {
-	Name       string                   `json:"name" cty:"name"`
-	PortRange  string                   `json:"port_range,omitempty" cty:"port_range"`
-	Target     *terraformWriter.Literal `json:"target,omitempty" cty:"target"`
-	IPAddress  *terraformWriter.Literal `json:"ip_address,omitempty" cty:"ip_address"`
-	IPProtocol string                   `json:"ip_protocol,omitempty" cty:"ip_protocol"`
+	Name       string                   `cty:"name"`
+	PortRange  string                   `cty:"port_range"`
+	Target     *terraformWriter.Literal `cty:"target"`
+	IPAddress  *terraformWriter.Literal `cty:"ip_address"`
+	IPProtocol string                   `cty:"ip_protocol"`
 }
 
 func (_ *ForwardingRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ForwardingRule) error {
