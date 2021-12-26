@@ -426,7 +426,7 @@ metadata:
   name: karpenter-controller
   namespace: kube-system
 spec:
-  replicas: 1
+  replicas: {{ ControlPlaneControllerReplicas false }}
   strategy:
     type: Recreate
   selector:
@@ -465,7 +465,7 @@ spec:
           env:
             {{ if UsesInstanceIDForNodeName }}
             - name: AWS_NODE_NAME_CONVENTION
-              value: "resouce-name"
+              value: "resource-name"
             {{ end }}
             - name: AWS_REGION
               value: {{ Region }}
@@ -491,6 +491,19 @@ spec:
       tolerations:
       - key: node-role.kubernetes.io/master
         operator: Exists
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            karpenter: webhook
+      - maxSkew: 1
+        topologyKey: "kubernetes.io/hostname"
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            karpenter: webhook
       nodeSelector:
         node-role.kubernetes.io/master: ""
 
@@ -502,7 +515,7 @@ metadata:
   name: karpenter-webhook
   namespace: kube-system
 spec:
-  replicas: 1
+  replicas: {{ ControlPlaneControllerReplicas false }}
   strategy:
     type: Recreate
   selector:
@@ -561,12 +574,21 @@ spec:
               - key: karpenter.sh/provisioner-name
                 operator: DoesNotExist
       tolerations:
-      - key: node.cloudprovider.kubernetes.io/uninitialized
-        operator: Exists
-      - key: node.kubernetes.io/not-ready
-        operator: Exists
       - key: node-role.kubernetes.io/master
         operator: Exists
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            karpenter: webhook
+      - maxSkew: 1
+        topologyKey: "kubernetes.io/hostname"
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            karpenter: webhook
       nodeSelector:
         node-role.kubernetes.io/master: ""
 ---
