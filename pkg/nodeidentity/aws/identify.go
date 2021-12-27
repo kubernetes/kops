@@ -133,7 +133,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	if instance.State != nil {
 		instanceState = aws.StringValue(instance.State.Name)
 	}
-	if instanceState != ec2.InstanceStateNameRunning {
+	if instanceState != ec2.InstanceStateNameRunning && instanceState != ec2.InstanceStateNamePending {
 		return nil, fmt.Errorf("found instance %q, but state is %q", instanceID, instanceState)
 	}
 
