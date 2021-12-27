@@ -12,6 +12,7 @@ contents: |
     containers:
     - args:
       - --log-file=/var/log/kube-proxy.log
+      - --also-stdout
       - /usr/local/bin/kube-proxy
       - --cluster-cidr=100.96.0.0/11
       - --conntrack-max-per-core=131072
