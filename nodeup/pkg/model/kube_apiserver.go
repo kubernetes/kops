@@ -632,6 +632,7 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 		container.Command = []string{"/go-runner"}
 		container.Args = []string{
 			"--log-file=/var/log/kube-apiserver.log",
+			"--also-stdout",
 			"/usr/local/bin/kube-apiserver",
 		}
 		container.Args = append(container.Args, sortedStrings(flags)...)

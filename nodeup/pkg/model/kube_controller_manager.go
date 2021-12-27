@@ -242,6 +242,7 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 		container.Command = []string{"/go-runner"}
 		container.Args = []string{
 			"--log-file=/var/log/kube-controller-manager.log",
+			"--also-stdout",
 			"/usr/local/bin/kube-controller-manager",
 		}
 		container.Args = append(container.Args, sortedStrings(flags)...)
