@@ -15,6 +15,7 @@ contents: |
     containers:
     - args:
       - --log-file=/var/log/kube-apiserver.log
+      - --also-stdout
       - /usr/local/bin/kube-apiserver
       - --allow-privileged=true
       - --anonymous-auth=false
