@@ -11,6 +11,7 @@ contents: |
     containers:
     - args:
       - --log-file=/var/log/kube-controller-manager.log
+      - --also-stdout
       - /usr/local/bin/kube-controller-manager
       - --allocate-node-cidrs=true
       - --attach-detach-reconcile-sync-period=1m0s
