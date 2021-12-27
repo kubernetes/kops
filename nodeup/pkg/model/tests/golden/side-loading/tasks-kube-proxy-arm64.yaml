@@ -5,6 +5,7 @@ contents: |
     creationTimestamp: null
     labels:
       k8s-app: kube-proxy
+      kubernetes.io/managed-by: nodeup
       tier: node
     name: kube-proxy
     namespace: kube-system
