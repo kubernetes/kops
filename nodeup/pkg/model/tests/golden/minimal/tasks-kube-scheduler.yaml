@@ -11,6 +11,7 @@ contents: |
     containers:
     - args:
       - --log-file=/var/log/kube-scheduler.log
+      - --also-stdout
       - /usr/local/bin/kube-scheduler
       - --authentication-kubeconfig=/var/lib/kube-scheduler/kubeconfig
       - --authorization-kubeconfig=/var/lib/kube-scheduler/kubeconfig
