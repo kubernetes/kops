@@ -16,6 +16,7 @@ go_library(
         "discovery.go",
         "docker.go",
         "etcd.go",
+        "gcpcloudcontrollermanager.go",
         "gcppdcsidriver.go",
         "kubecontrollermanager.go",
         "kubedns.go",
