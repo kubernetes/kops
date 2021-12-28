@@ -114,6 +114,12 @@ func (b *StorageAclBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
+	if b.Cluster.Spec.CloudConfig.GCEServiceAccount != "" {
+		// We can't set up per-instancegroup permissions if we're using a cluster-level account
+		// Historically, we did not grant the serviceaccount permissions in this case.
+		return nil
+	}
+
 	type serviceAccountRole struct {
 		Email string
 		Role  kops.InstanceGroupRole
