@@ -63,6 +63,8 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("error building kube-proxy manifest: %v", err)
 		}
 
+		pod.ObjectMeta.Labels["kubernetes.io/managed-by"] = "nodeup"
+
 		manifest, err := k8scodecs.ToVersionedYaml(pod)
 		if err != nil {
 			return fmt.Errorf("error marshaling manifest to yaml: %v", err)
