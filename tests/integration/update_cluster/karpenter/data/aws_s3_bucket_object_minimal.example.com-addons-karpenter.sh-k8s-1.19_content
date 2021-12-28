@@ -274,7 +274,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/part-of: karpenter
     k8s-addon: karpenter.sh
-  name: config-logging
+  name: karpenter-config-logging
   namespace: kube-system
 
 ---
@@ -619,6 +619,8 @@ spec:
           value: minimal.example.com
         - name: CLUSTER_ENDPOINT
           value: https://api.internal.minimal.example.com
+        - name: CONFIG_LOGGING_NAME
+          value: karpenter-config-logging
         - name: SYSTEM_NAMESPACE
           valueFrom:
             fieldRef:
@@ -730,6 +732,8 @@ spec:
           value: minimal.example.com
         - name: CLUSTER_ENDPOINT
           value: https://api.internal.minimal.example.com
+        - name: CONFIG_LOGGING_NAME
+          value: karpenter-config-logging
         - name: SYSTEM_NAMESPACE
           valueFrom:
             fieldRef:

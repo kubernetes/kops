@@ -229,7 +229,7 @@ data: {} # Injected by karpenter-webhook
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: config-logging
+  name: karpenter-config-logging
   namespace: kube-system
   labels:
     app.kubernetes.io/part-of: karpenter
@@ -473,6 +473,8 @@ spec:
               value: {{ ClusterName }}
             - name: CLUSTER_ENDPOINT
               value: https://{{ .MasterInternalName }}
+            - name: CONFIG_LOGGING_NAME
+              value: "karpenter-config-logging"
             - name: SYSTEM_NAMESPACE
               valueFrom:
                 fieldRef:
@@ -558,6 +560,8 @@ spec:
               value: {{ ClusterName }}
             - name: CLUSTER_ENDPOINT
               value: https://{{ .MasterInternalName }}
+            - name: CONFIG_LOGGING_NAME
+              value: "karpenter-config-logging"
             - name: SYSTEM_NAMESPACE
               valueFrom:
                 fieldRef:
