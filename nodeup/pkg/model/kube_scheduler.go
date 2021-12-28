@@ -256,6 +256,7 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 		container.Command = []string{"/go-runner"}
 		container.Args = []string{
 			"--log-file=/var/log/kube-scheduler.log",
+			"--also-stdout",
 			"/usr/local/bin/kube-scheduler",
 		}
 		container.Args = append(container.Args, sortedStrings(flags)...)

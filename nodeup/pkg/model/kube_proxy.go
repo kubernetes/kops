@@ -198,6 +198,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		container.Command = []string{"/go-runner"}
 		container.Args = []string{
 			"--log-file=/var/log/kube-proxy.log",
+			"--also-stdout",
 			"/usr/local/bin/kube-proxy",
 		}
 		container.Args = append(container.Args, sortedStrings(flags)...)
