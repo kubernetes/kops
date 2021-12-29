@@ -26,6 +26,9 @@ import (
 
 // buildEphemeralDevices looks up the machine type and discovery any ephemeral device mappings
 func buildEphemeralDevices(cloud awsup.AWSCloud, machineType string) (map[string]*BlockDeviceMapping, error) {
+	if machineType == "" {
+		return nil, nil
+	}
 	mt, err := awsup.GetMachineTypeInfo(cloud, machineType)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find instance type details on: %s, error: %s", machineType, err)

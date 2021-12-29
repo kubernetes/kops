@@ -374,7 +374,7 @@ resource "aws_key_pair" "kubernetes-minimal-example-com-c4a6ed9aa889b9e2c39cd663
   }
 }
 
-resource "aws_launch_template" "karpenter-nodes-minimal-example-com" {
+resource "aws_launch_template" "karpenter-nodes-default-minimal-example-com" {
   block_device_mappings {
     device_name = "/dev/xvda"
     ebs {
@@ -389,9 +389,8 @@ resource "aws_launch_template" "karpenter-nodes-minimal-example-com" {
   iam_instance_profile {
     name = aws_iam_instance_profile.nodes-minimal-example-com.id
   }
-  image_id      = "ami-12345678"
-  instance_type = "t2.medium"
-  key_name      = aws_key_pair.kubernetes-minimal-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
+  image_id = "ami-12345678"
+  key_name = aws_key_pair.kubernetes-minimal-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
   }
@@ -404,7 +403,7 @@ resource "aws_launch_template" "karpenter-nodes-minimal-example-com" {
   monitoring {
     enabled = false
   }
-  name = "karpenter-nodes.minimal.example.com"
+  name = "karpenter-nodes-default.minimal.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -415,12 +414,12 @@ resource "aws_launch_template" "karpenter-nodes-minimal-example-com" {
     resource_type = "instance"
     tags = {
       "KubernetesCluster"                                                           = "minimal.example.com"
-      "Name"                                                                        = "karpenter-nodes.minimal.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes"
+      "Name"                                                                        = "karpenter-nodes-default.minimal.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-default"
       "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"            = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
       "k8s.io/role/node"                                                            = "1"
-      "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes"
+      "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes-default"
       "kubernetes.io/cluster/minimal.example.com"                                   = "owned"
     }
   }
@@ -428,26 +427,101 @@ resource "aws_launch_template" "karpenter-nodes-minimal-example-com" {
     resource_type = "volume"
     tags = {
       "KubernetesCluster"                                                           = "minimal.example.com"
-      "Name"                                                                        = "karpenter-nodes.minimal.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes"
+      "Name"                                                                        = "karpenter-nodes-default.minimal.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-default"
       "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"            = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
       "k8s.io/role/node"                                                            = "1"
-      "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes"
+      "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes-default"
       "kubernetes.io/cluster/minimal.example.com"                                   = "owned"
     }
   }
   tags = {
     "KubernetesCluster"                                                           = "minimal.example.com"
-    "Name"                                                                        = "karpenter-nodes.minimal.example.com"
-    "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes"
+    "Name"                                                                        = "karpenter-nodes-default.minimal.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-default"
     "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"            = "node"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
     "k8s.io/role/node"                                                            = "1"
-    "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes"
+    "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes-default"
     "kubernetes.io/cluster/minimal.example.com"                                   = "owned"
   }
-  user_data = filebase64("${path.module}/data/aws_launch_template_karpenter-nodes.minimal.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_karpenter-nodes-default.minimal.example.com_user_data")
+}
+
+resource "aws_launch_template" "karpenter-nodes-single-machinetype-minimal-example-com" {
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      delete_on_termination = true
+      encrypted             = true
+      iops                  = 3000
+      throughput            = 125
+      volume_size           = 128
+      volume_type           = "gp3"
+    }
+  }
+  iam_instance_profile {
+    name = aws_iam_instance_profile.nodes-minimal-example-com.id
+  }
+  image_id = "ami-12345678"
+  key_name = aws_key_pair.kubernetes-minimal-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
+  lifecycle {
+    create_before_destroy = true
+  }
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_protocol_ipv6          = "disabled"
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
+  }
+  monitoring {
+    enabled = false
+  }
+  name = "karpenter-nodes-single-machinetype.minimal.example.com"
+  network_interfaces {
+    associate_public_ip_address = true
+    delete_on_termination       = true
+    ipv6_address_count          = 0
+    security_groups             = [aws_security_group.nodes-minimal-example-com.id]
+  }
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      "KubernetesCluster"                                                           = "minimal.example.com"
+      "Name"                                                                        = "karpenter-nodes-single-machinetype.minimal.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-single-machinetype"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"            = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
+      "k8s.io/role/node"                                                            = "1"
+      "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes-single-machinetype"
+      "kubernetes.io/cluster/minimal.example.com"                                   = "owned"
+    }
+  }
+  tag_specifications {
+    resource_type = "volume"
+    tags = {
+      "KubernetesCluster"                                                           = "minimal.example.com"
+      "Name"                                                                        = "karpenter-nodes-single-machinetype.minimal.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-single-machinetype"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"            = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
+      "k8s.io/role/node"                                                            = "1"
+      "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes-single-machinetype"
+      "kubernetes.io/cluster/minimal.example.com"                                   = "owned"
+    }
+  }
+  tags = {
+    "KubernetesCluster"                                                           = "minimal.example.com"
+    "Name"                                                                        = "karpenter-nodes-single-machinetype.minimal.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-single-machinetype"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"            = "node"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
+    "k8s.io/role/node"                                                            = "1"
+    "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes-single-machinetype"
+    "kubernetes.io/cluster/minimal.example.com"                                   = "owned"
+  }
+  user_data = filebase64("${path.module}/data/aws_launch_template_karpenter-nodes-single-machinetype.minimal.example.com_user_data")
 }
 
 resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
@@ -780,10 +854,18 @@ resource "aws_s3_bucket_object" "minimal-example-com-addons-storage-aws-addons-k
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "nodeupconfig-karpenter-nodes" {
+resource "aws_s3_bucket_object" "nodeupconfig-karpenter-nodes-default" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_nodeupconfig-karpenter-nodes_content")
-  key                    = "clusters.example.com/minimal.example.com/igconfig/node/karpenter-nodes/nodeupconfig.yaml"
+  content                = file("${path.module}/data/aws_s3_bucket_object_nodeupconfig-karpenter-nodes-default_content")
+  key                    = "clusters.example.com/minimal.example.com/igconfig/node/karpenter-nodes-default/nodeupconfig.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_bucket_object" "nodeupconfig-karpenter-nodes-single-machinetype" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_nodeupconfig-karpenter-nodes-single-machinetype_content")
+  key                    = "clusters.example.com/minimal.example.com/igconfig/node/karpenter-nodes-single-machinetype/nodeupconfig.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
