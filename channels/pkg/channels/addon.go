@@ -90,35 +90,34 @@ func (a *Addon) ChannelVersion() *ChannelVersion {
 }
 
 func (a *Addon) buildChannel() *Channel {
-	namespace := "kube-system"
-	if a.Spec.Namespace != nil {
-		namespace = *a.Spec.Namespace
-	}
-
 	channel := &Channel{
-		Namespace: namespace,
+		Namespace: a.GetNamespace(),
 		Name:      a.Name,
 	}
 	return channel
 }
 
-func (a *Addon) GetRequiredUpdates(ctx context.Context, k8sClient kubernetes.Interface, cmClient certmanager.Interface) (*AddonUpdate, error) {
+func (a *Addon) GetNamespace() string {
+	namespace := "kube-system"
+	if a.Spec.Namespace != nil {
+		namespace = *a.Spec.Namespace
+	}
+	return namespace
+}
+
+func (a *Addon) GetRequiredUpdates(ctx context.Context, k8sClient kubernetes.Interface, cmClient certmanager.Interface, existingVersion *ChannelVersion) (*AddonUpdate, error) {
 	newVersion := a.ChannelVersion()
 
 	channel := a.buildChannel()
 
-	existingVersion, err := channel.GetInstalledVersion(ctx, k8sClient)
-	if err != nil {
-		return nil, err
-	}
-
 	pkiInstalled := true
 
 	if a.Spec.NeedsPKI {
-		pkiInstalled, err = channel.IsPKIInstalled(ctx, k8sClient, cmClient)
+		needsPKI, err := channel.IsPKIInstalled(ctx, k8sClient, cmClient)
 		if err != nil {
 			return nil, err
 		}
+		pkiInstalled = needsPKI
 	}
 
 	if existingVersion != nil && !newVersion.replaces(a.Name, existingVersion) {
@@ -153,8 +152,8 @@ func (a *Addon) GetManifestFullUrl() (*url.URL, error) {
 	return manifestURL, nil
 }
 
-func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interface, cmClient certmanager.Interface, pruner *Pruner) (*AddonUpdate, error) {
-	required, err := a.GetRequiredUpdates(ctx, k8sClient, cmClient)
+func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interface, cmClient certmanager.Interface, pruner *Pruner, existingVersion *ChannelVersion) (*AddonUpdate, error) {
+	required, err := a.GetRequiredUpdates(ctx, k8sClient, cmClient, existingVersion)
 	if err != nil {
 		return nil, err
 	}
