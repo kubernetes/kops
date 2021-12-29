@@ -876,24 +876,6 @@ func setupKarpenterNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSub
 		HTTPTokens:              fi.String("required"),
 	}
 
-	// Karpenter thinks all clusters run VPC CNI and schedules thinking Node Capacity is constrainted by number of ENIs.
-
-	// cpuMin is the reasonable lower limit for a Kubernetes Node
-	// Generally, it also avoids instances Karpenter thinks it can only schedule 4 Pods on.
-	cpuMin := resource.MustParse("2")
-	memoryMin := resource.MustParse(("2G"))
-
-	g.Spec.MixedInstancesPolicy = &api.MixedInstancesPolicySpec{
-		InstanceRequirements: &api.InstanceRequirementsSpec{
-			CPU: &api.MinMaxSpec{
-				Min: &cpuMin,
-			},
-			Memory: &api.MinMaxSpec{
-				Min: &memoryMin,
-			},
-		},
-	}
-
 	return []*api.InstanceGroup{g}, nil
 }
 

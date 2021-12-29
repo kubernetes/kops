@@ -809,13 +809,41 @@ func parseTaint(st string) (map[string]string, error) {
 }
 
 func karpenterInstanceTypes(cloud awsup.AWSCloud, ig kops.InstanceGroupSpec) ([]string, error) {
-	if ig.MixedInstancesPolicy != nil {
-		if len(ig.MixedInstancesPolicy.Instances) > 0 {
-			return ig.MixedInstancesPolicy.Instances, nil
+	var mixedInstancesPolicy *kops.MixedInstancesPolicySpec
+
+	if ig.MachineType == "" && ig.MixedInstancesPolicy == nil {
+		// Karpenter thinks all clusters run VPC CNI and schedules thinking Node Capacity is constrainted by number of ENIs.
+
+		// cpuMin is the reasonable lower limit for a Kubernetes Node
+		// Generally, it also avoids instances Karpenter thinks it can only schedule 4 Pods on.
+		cpuMin := resource.MustParse("2")
+		memoryMin := resource.MustParse(("2G"))
+
+		mixedInstancesPolicy = &kops.MixedInstancesPolicySpec{
+			InstanceRequirements: &kops.InstanceRequirementsSpec{
+				CPU: &kops.MinMaxSpec{
+					Min: &cpuMin,
+				},
+				Memory: &kops.MinMaxSpec{
+					Min: &memoryMin,
+				},
+			},
 		}
-		if ig.MixedInstancesPolicy.InstanceRequirements != nil {
-			instanceRequirements := ig.MixedInstancesPolicy.InstanceRequirements
-			ami, _ := cloud.ResolveImage(ig.Image)
+	}
+	if ig.MixedInstancesPolicy != nil {
+		mixedInstancesPolicy = ig.MixedInstancesPolicy
+	}
+
+	if mixedInstancesPolicy != nil {
+		if len(mixedInstancesPolicy.Instances) > 0 {
+			return mixedInstancesPolicy.Instances, nil
+		}
+		if mixedInstancesPolicy.InstanceRequirements != nil {
+			instanceRequirements := mixedInstancesPolicy.InstanceRequirements
+			ami, err := cloud.ResolveImage(ig.Image)
+			if err != nil {
+				return nil, err
+			}
 			arch := ami.Architecture
 			hv := ami.VirtualizationType
 
@@ -884,5 +912,6 @@ func karpenterInstanceTypes(cloud awsup.AWSCloud, ig kops.InstanceGroupSpec) ([]
 			}
 		}
 	}
+
 	return []string{ig.MachineType}, nil
 }

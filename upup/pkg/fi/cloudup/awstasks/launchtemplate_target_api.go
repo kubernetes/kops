@@ -62,11 +62,11 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 	// @step: add the actual block device mappings
 	rootDevices, err := t.buildRootDevice(c.Cloud)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to build root device: %w", err)
 	}
 	ephemeralDevices, err := buildEphemeralDevices(c.Cloud, fi.StringValue(t.InstanceType))
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to build ephemeral devices: %w", err)
 	}
 	additionalDevices, err := buildAdditionalDevices(t.BlockDeviceMappings)
 	if err != nil {
