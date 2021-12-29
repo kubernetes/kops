@@ -34,7 +34,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.23
     manifest: leader-migration.rbac.addons.k8s.io/k8s-1.23.yaml
-    manifestHash: 6211e71f8175cebcba7812f74c41d175604cbff7bab9ac788f80bac290a7b981
+    manifestHash: b9c91e09c0f28c9b74ff140b8395d611834c627d698846d625c10975a74a48c4
     name: leader-migration.rbac.addons.k8s.io
     selector:
       k8s-addon: leader-migration.rbac.addons.k8s.io

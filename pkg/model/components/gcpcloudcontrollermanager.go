@@ -36,7 +36,12 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface
 		return nil
 	}
 
+	if clusterSpec.ExternalCloudControllerManager == nil && b.IsKubernetesGTE("1.24") {
+		clusterSpec.ExternalCloudControllerManager = &kops.CloudControllerManagerConfig{}
+	}
+
 	ccmConfig := clusterSpec.ExternalCloudControllerManager
+
 	if ccmConfig == nil {
 		return nil
 	}
@@ -51,5 +56,10 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface
 		// TODO: Implement CCM image publishing
 		ccmConfig.Image = "k8scloudprovidergcp/cloud-controller-manager:v1.23.0"
 	}
+
+	if b.IsKubernetesGTE("1.24") && b.IsKubernetesLT("1.25") {
+		ccmConfig.EnableLeaderMigration = fi.Bool(true)
+	}
+
 	return nil
 }
