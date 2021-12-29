@@ -55,9 +55,10 @@ func List(repo name.Repository, options ...Option) ([]string, error) {
 		Scheme: repo.Registry.Scheme(),
 		Host:   repo.Registry.RegistryStr(),
 		Path:   fmt.Sprintf("/v2/%s/tags/list", repo.RepositoryStr()),
-		// ECR returns an error if n > 1000:
-		// https://github.com/google/go-containerregistry/issues/681
-		RawQuery: "n=1000",
+	}
+
+	if o.pageSize > 0 {
+		uri.RawQuery = fmt.Sprintf("n=%d", o.pageSize)
 	}
 
 	client := http.Client{Transport: tr}
