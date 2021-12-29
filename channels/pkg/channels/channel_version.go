@@ -83,7 +83,7 @@ func ParseChannelVersion(s string) (*ChannelVersion, error) {
 	return v, nil
 }
 
-func FindAddons(ns *v1.Namespace) map[string]*ChannelVersion {
+func FindChannelVersions(ns *v1.Namespace) map[string]*ChannelVersion {
 	addons := make(map[string]*ChannelVersion)
 	for k, v := range ns.Annotations {
 		if !strings.HasPrefix(k, AnnotationPrefix) {
