@@ -50,10 +50,9 @@ func stringSliceEqual(a, b []string) bool {
 
 // stringSliceEqualIgnoreOrder compares 2 string slices and returns if their contents are identical, ignoring order
 func stringSliceEqualIgnoreOrder(a, b []string) bool {
-	a1, b1 := a[:], b[:]
-	if a1 != nil && b1 != nil {
-		sort.Strings(a1)
-		sort.Strings(b1)
+	if a != nil && b != nil {
+		sort.Strings(a)
+		sort.Strings(b)
 	}
-	return stringSliceEqual(a1, b1)
+	return stringSliceEqual(a, b)
 }
