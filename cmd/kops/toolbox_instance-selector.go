@@ -239,7 +239,7 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, out io.Wri
 		return err
 	}
 
-	if kops.CloudProviderID(cluster.Spec.CloudProvider) != kops.CloudProviderAWS {
+	if cluster.Spec.GetCloudProvider() != kops.CloudProviderAWS {
 		return fmt.Errorf("cannot select instance types from non-aws cluster")
 	}
 

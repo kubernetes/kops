@@ -31,7 +31,7 @@ var _ loader.OptionsBuilder = &GCPPDCSIDriverOptionsBuilder{}
 
 func (b *GCPPDCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
-	if kops.CloudProviderID(clusterSpec.CloudProvider) != kops.CloudProviderGCE {
+	if clusterSpec.GetCloudProvider() != kops.CloudProviderGCE {
 		return nil
 	}
 

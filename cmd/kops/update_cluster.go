@@ -488,11 +488,11 @@ func completeUpdateClusterTarget(f commandutils.Factory, options *UpdateClusterO
 			cloudup.TargetDryRun,
 		}
 		for _, cp := range cloudup.TerraformCloudProviders {
-			if cluster.Spec.CloudProvider == string(cp) {
+			if cluster.Spec.GetCloudProvider() == cp {
 				completions = append(completions, cloudup.TargetTerraform)
 			}
 		}
-		if cluster.Spec.CloudProvider == string(kops.CloudProviderAWS) {
+		if cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS {
 			completions = append(completions, cloudup.TargetCloudformation)
 		}
 		return completions, cobra.ShellCompDirectiveNoFileComp
