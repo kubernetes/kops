@@ -15,6 +15,7 @@
 package remote
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -91,12 +92,14 @@ func MultiWrite(m map[name.Reference]Taggable, options ...Option) (rerr error) {
 		context:    o.context,
 		updates:    o.updates,
 		lastUpdate: &v1.Update{},
+		backoff:    o.retryBackoff,
+		predicate:  o.retryPredicate,
 	}
 
 	// Collect the total size of blobs and manifests we're about to write.
 	if o.updates != nil {
 		defer close(o.updates)
-		defer func() { sendError(o.updates, rerr) }()
+		defer func() { _ = sendError(o.updates, rerr) }()
 		for _, b := range blobs {
 			size, err := b.Size()
 			if err != nil {
@@ -133,12 +136,13 @@ func MultiWrite(m map[name.Reference]Taggable, options ...Option) (rerr error) {
 
 	// Upload individual blobs and collect any errors.
 	blobChan := make(chan v1.Layer, 2*o.jobs)
-	g, ctx := errgroup.WithContext(o.context)
+	ctx := o.context
+	g, gctx := errgroup.WithContext(o.context)
 	for i := 0; i < o.jobs; i++ {
 		// Start N workers consuming blobs to upload.
 		g.Go(func() error {
 			for b := range blobChan {
-				if err := w.uploadOne(b); err != nil {
+				if err := w.uploadOne(gctx, b); err != nil {
 					return err
 				}
 			}
@@ -150,8 +154,8 @@ func MultiWrite(m map[name.Reference]Taggable, options ...Option) (rerr error) {
 		for _, b := range blobs {
 			select {
 			case blobChan <- b:
-			case <-ctx.Done():
-				return ctx.Err()
+			case <-gctx.Done():
+				return gctx.Err()
 			}
 		}
 		return nil
@@ -160,7 +164,8 @@ func MultiWrite(m map[name.Reference]Taggable, options ...Option) (rerr error) {
 		return err
 	}
 
-	commitMany := func(m map[name.Reference]Taggable) error {
+	commitMany := func(ctx context.Context, m map[name.Reference]Taggable) error {
+		g, ctx := errgroup.WithContext(ctx)
 		// With all of the constituent elements uploaded, upload the manifests
 		// to commit the images and indexes, and collect any errors.
 		type task struct {
@@ -172,7 +177,7 @@ func MultiWrite(m map[name.Reference]Taggable, options ...Option) (rerr error) {
 			// Start N workers consuming tasks to upload manifests.
 			g.Go(func() error {
 				for t := range taskChan {
-					if err := w.commitManifest(t.i, t.ref); err != nil {
+					if err := w.commitManifest(ctx, t.i, t.ref); err != nil {
 						return err
 					}
 				}
@@ -189,19 +194,19 @@ func MultiWrite(m map[name.Reference]Taggable, options ...Option) (rerr error) {
 	}
 	// Push originally requested image manifests. These have no
 	// dependencies.
-	if err := commitMany(images); err != nil {
+	if err := commitMany(ctx, images); err != nil {
 		return err
 	}
 	// Push new manifests from lowest levels up.
 	for i := len(newManifests) - 1; i >= 0; i-- {
-		if err := commitMany(newManifests[i]); err != nil {
+		if err := commitMany(ctx, newManifests[i]); err != nil {
 			return err
 		}
 	}
 	// Push originally requested index manifests, which might depend on
 	// newly discovered manifests.
 
-	return commitMany(indexes)
+	return commitMany(ctx, indexes)
 }
 
 // addIndexBlobs adds blobs to the set of blobs we intend to upload, and
