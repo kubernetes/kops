@@ -290,6 +290,8 @@ resource "aws_iam_role" "external-dns-kube-system-sa-minimal-example-com" {
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "external-dns.kube-system.sa.minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
+    "service-account.kops.k8s.io/name"          = "external-dns"
+    "service-account.kops.k8s.io/namespace"     = "kube-system"
   }
 }
 
