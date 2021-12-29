@@ -125,7 +125,7 @@ func CreateAddons(channel *kops.Channel, kubernetesVersion *semver.Version, clus
 		{
 			operatorKey := "operator.networking.addons.kope.io"
 
-			operatorVersion, err := channel.GetPackageVersion(operatorKey)
+			operatorVersion, err := channel.GetPackageVersion(operatorKey, kubernetesVersion)
 			if err != nil {
 				return nil, err
 			}
@@ -148,7 +148,7 @@ func CreateAddons(channel *kops.Channel, kubernetesVersion *semver.Version, clus
 
 		{
 			key := "networking.addons.kope.io"
-			version, err := channel.GetPackageVersion(key)
+			version, err := channel.GetPackageVersion(key, kubernetesVersion)
 			if err != nil {
 				return nil, err
 			}
@@ -172,7 +172,7 @@ func CreateAddons(channel *kops.Channel, kubernetesVersion *semver.Version, clus
 	{
 		operatorKey := "operator.coredns.addons.x-k8s.io"
 
-		operatorVersion, err := channel.GetPackageVersion(operatorKey)
+		operatorVersion, err := channel.GetPackageVersion(operatorKey, kubernetesVersion)
 		if err != nil {
 			return nil, err
 		}
@@ -195,7 +195,7 @@ func CreateAddons(channel *kops.Channel, kubernetesVersion *semver.Version, clus
 
 	{
 		key := "coredns"
-		version, err := channel.GetPackageVersion(key)
+		version, err := channel.GetPackageVersion(key, kubernetesVersion)
 		if err != nil {
 			return nil, err
 		}
