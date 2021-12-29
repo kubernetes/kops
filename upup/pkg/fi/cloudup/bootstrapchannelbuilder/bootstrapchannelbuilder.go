@@ -796,6 +796,22 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 				Id:       id,
 			})
 		}
+
+		if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderGCE {
+			if b.Cluster.Spec.ExternalCloudControllerManager != nil {
+				key := "gcp-cloud-controller.addons.k8s.io"
+				{
+					id := "k8s-1.23"
+					location := key + "/" + id + ".yaml"
+					addons.Add(&channelsapi.AddonSpec{
+						Name:     fi.String(key),
+						Manifest: fi.String(location),
+						Selector: map[string]string{"k8s-addon": key},
+						Id:       id,
+					})
+				}
+			}
+		}
 	}
 
 	if b.Cluster.Spec.Networking.Kopeio != nil {
