@@ -152,9 +152,6 @@ func (t *LaunchTemplate) CheckChanges(a, e, changes *LaunchTemplate) error {
 	if e.ImageID == nil {
 		return fi.RequiredField("ImageID")
 	}
-	if e.InstanceType == nil {
-		return fi.RequiredField("InstanceType")
-	}
 
 	if a != nil {
 		if e.Name == nil {
