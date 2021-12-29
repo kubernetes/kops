@@ -135,3 +135,8 @@ func ParseVersion(s string) (*Version, error) {
 func (v *Version) String() string {
 	return v.v.String()
 }
+
+// IsInRange checks if we are in the provided semver range
+func (v *Version) IsInRange(semverRange semver.Range) bool {
+	return semverRange(v.v)
+}

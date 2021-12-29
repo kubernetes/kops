@@ -24,6 +24,7 @@ import (
 	"github.com/blang/semver/v4"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
+	kopsbase "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/vfs"
@@ -94,6 +95,12 @@ type PackageVersionSpec struct {
 
 	// Version is the version of the package.
 	Version string `json:"version"`
+
+	// KubernetesVersion specifies that this package only applies to a semver range of kubernetes version
+	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
+
+	// KopsVersion specifies that this package only applies to a semver range of kOps version
+	KopsVersion string `json:"kopsVersion,omitempty"`
 }
 
 // ResolveChannel maps a channel to an absolute URL (possibly a VFS URL)
@@ -365,13 +372,44 @@ func (c *Channel) HasUpstreamImagePrefix(image string) bool {
 }
 
 // GetPackageVersion returns the version for the package, or an error if could not be found.
-func (c *Channel) GetPackageVersion(name string) (*util.Version, error) {
+func (c *Channel) GetPackageVersion(name string, kubernetesVersion *semver.Version) (*util.Version, error) {
 	var matches []*PackageVersionSpec
 
 	for i := range c.Spec.Packages {
 		pkg := &c.Spec.Packages[i]
 		if pkg.Name != name {
 			continue
+		}
+
+		if pkg.KubernetesVersion != "" {
+			versionRange, err := semver.ParseRange(pkg.KubernetesVersion)
+			if err != nil {
+				klog.Warningf("cannot parse KubernetesVersion=%q", pkg.KubernetesVersion)
+				continue
+			}
+
+			if !versionRange(*kubernetesVersion) {
+				klog.V(2).Infof("Kubernetes version %q does not match range: %s", kubernetesVersion, pkg.KubernetesVersion)
+				continue
+			}
+		}
+
+		if pkg.KopsVersion != "" {
+			kopsVersion, err := util.ParseVersion(kopsbase.KOPS_RELEASE_VERSION)
+			if err != nil {
+				return nil, fmt.Errorf("parsing kops version %q: %w", kopsbase.KOPS_RELEASE_VERSION, err)
+			}
+
+			versionRange, err := semver.ParseRange(pkg.KopsVersion)
+			if err != nil {
+				klog.Warningf("cannot parse KopsVersion=%q", pkg.KopsVersion)
+				continue
+			}
+
+			if !kopsVersion.IsInRange(versionRange) {
+				klog.V(2).Infof("kOps version %q does not match range: %s", kopsVersion, pkg.KopsVersion)
+				continue
+			}
 		}
 
 		matches = append(matches, pkg)
