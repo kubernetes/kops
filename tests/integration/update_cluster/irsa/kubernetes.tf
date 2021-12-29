@@ -320,6 +320,8 @@ resource "aws_iam_role" "myotherserviceaccount-myapp-sa-minimal-example-com" {
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "myotherserviceaccount.myapp.sa.minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
+    "service-account.kops.k8s.io/name"          = "myotherserviceaccount"
+    "service-account.kops.k8s.io/namespace"     = "myapp"
   }
 }
 
@@ -330,6 +332,8 @@ resource "aws_iam_role" "myserviceaccount-default-sa-minimal-example-com" {
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "myserviceaccount.default.sa.minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
+    "service-account.kops.k8s.io/name"          = "myserviceaccount"
+    "service-account.kops.k8s.io/namespace"     = "default"
   }
 }
 
@@ -340,6 +344,8 @@ resource "aws_iam_role" "myserviceaccount-test-wildcard-sa-minimal-example-com" 
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "myserviceaccount.test-wildcard.sa.minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
+    "service-account.kops.k8s.io/name"          = "myserviceaccount"
+    "service-account.kops.k8s.io/namespace"     = "test-*"
   }
 }
 
