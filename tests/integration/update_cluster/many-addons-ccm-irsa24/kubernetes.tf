@@ -325,6 +325,8 @@ resource "aws_iam_role" "aws-cloud-controller-manager-kube-system-sa-minimal-exa
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "aws-cloud-controller-manager.kube-system.sa.minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
+    "service-account.kops.k8s.io/name"          = "aws-cloud-controller-manager"
+    "service-account.kops.k8s.io/namespace"     = "kube-system"
   }
 }
 
@@ -335,6 +337,8 @@ resource "aws_iam_role" "aws-load-balancer-controller-kube-system-sa-minimal-exa
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "aws-load-balancer-controller.kube-system.sa.minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
+    "service-account.kops.k8s.io/name"          = "aws-load-balancer-controller"
+    "service-account.kops.k8s.io/namespace"     = "kube-system"
   }
 }
 
@@ -345,6 +349,8 @@ resource "aws_iam_role" "aws-node-termination-handler-kube-system-sa-minimal-exa
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "aws-node-termination-handler.kube-system.sa.minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
+    "service-account.kops.k8s.io/name"          = "aws-node-termination-handler"
+    "service-account.kops.k8s.io/namespace"     = "kube-system"
   }
 }
 
@@ -355,6 +361,8 @@ resource "aws_iam_role" "cluster-autoscaler-kube-system-sa-minimal-example-com" 
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "cluster-autoscaler.kube-system.sa.minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
+    "service-account.kops.k8s.io/name"          = "cluster-autoscaler"
+    "service-account.kops.k8s.io/namespace"     = "kube-system"
   }
 }
 
@@ -365,6 +373,8 @@ resource "aws_iam_role" "dns-controller-kube-system-sa-minimal-example-com" {
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "dns-controller.kube-system.sa.minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
+    "service-account.kops.k8s.io/name"          = "dns-controller"
+    "service-account.kops.k8s.io/namespace"     = "kube-system"
   }
 }
 
@@ -375,6 +385,8 @@ resource "aws_iam_role" "ebs-csi-controller-sa-kube-system-sa-minimal-example-co
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "ebs-csi-controller-sa.kube-system.sa.minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
+    "service-account.kops.k8s.io/name"          = "ebs-csi-controller-sa"
+    "service-account.kops.k8s.io/namespace"     = "kube-system"
   }
 }
 
