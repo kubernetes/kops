@@ -91,9 +91,10 @@ func Catalog(ctx context.Context, target name.Registry, options ...Option) ([]st
 		Scheme: target.Scheme(),
 		Host:   target.RegistryStr(),
 		Path:   "/v2/_catalog",
-		// ECR returns an error if n > 1000:
-		// https://github.com/google/go-containerregistry/issues/1091
-		RawQuery: "n=1000",
+	}
+
+	if o.pageSize > 0 {
+		uri.RawQuery = fmt.Sprintf("n=%d", o.pageSize)
 	}
 
 	client := http.Client{Transport: tr}
