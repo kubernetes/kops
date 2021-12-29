@@ -190,6 +190,7 @@ kubeControllerManager:
   clusterCIDR: 100.96.0.0/11
   clusterName: minimal-gce-example-com
   configureCloudRoutes: false
+  enableLeaderMigration: true
   image: k8s.gcr.io/kube-controller-manager:v1.23.0
   leaderElection:
     leaderElect: true

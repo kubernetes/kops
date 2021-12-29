@@ -450,10 +450,10 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 		}
 	}
 
-	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderAWS &&
-		b.IsKubernetesGTE("1.23") &&
-		b.IsKubernetesLT("1.26") {
-		// AWS KCM-to-CCM leader migration
+	if b.IsKubernetesGTE("1.23") && b.IsKubernetesLT("1.26") &&
+		(kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderAWS ||
+			kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderGCE) {
+		// AWS and GCE KCM-to-CCM leader migration
 		key := "leader-migration.rbac.addons.k8s.io"
 
 		if b.IsKubernetesLT("1.25") {
