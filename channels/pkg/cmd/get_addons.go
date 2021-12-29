@@ -85,7 +85,7 @@ func RunGetAddons(ctx context.Context, f Factory, out io.Writer, options *GetAdd
 
 	for i := range namespaces.Items {
 		ns := &namespaces.Items[i]
-		addons := channels.FindAddons(ns)
+		addons := channels.FindChannelVersions(ns)
 		for name, version := range addons {
 			i := &addonInfo{
 				Name:      name,
