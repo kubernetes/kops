@@ -38,7 +38,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 	region := ""
 	project := ""
 
-	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+	switch cluster.Spec.GetCloudProvider() {
 	case kops.CloudProviderGCE:
 		{
 			for _, subnet := range cluster.Spec.Subnets {
@@ -146,7 +146,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			cloud = azureCloud
 		}
 	default:
-		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
+		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.GetCloudProvider())
 	}
 	return cloud, nil
 }

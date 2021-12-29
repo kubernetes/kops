@@ -55,7 +55,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	requiresSubnets := true
 	requiresNetworkCIDR := true
 	requiresSubnetCIDR := true
-	switch kops.CloudProviderID(c.Spec.CloudProvider) {
+	switch c.Spec.GetCloudProvider() {
 	case "":
 		allErrs = append(allErrs, field.Required(fieldSpec.Child("cloudProvider"), ""))
 		requiresSubnets = false
@@ -133,7 +133,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 			if err != nil {
 				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("networkCIDR"), c.Spec.NetworkCIDR, "Cluster had an invalid networkCIDR"))
 			}
-			if kops.CloudProviderID(c.Spec.CloudProvider) == kops.CloudProviderDO {
+			if c.Spec.GetCloudProvider() == kops.CloudProviderDO {
 				// verify if the NetworkCIDR is in a private range as per RFC1918
 				if !networkCIDR.IP.IsPrivate() {
 					allErrs = append(allErrs, field.Invalid(fieldSpec.Child("networkCIDR"), c.Spec.NetworkCIDR, "Cluster had a networkCIDR outside the private IP range"))
@@ -300,7 +300,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	{
 
 		var k8sCloudProvider string
-		switch kops.CloudProviderID(c.Spec.CloudProvider) {
+		switch c.Spec.GetCloudProvider() {
 		case kops.CloudProviderAWS:
 			k8sCloudProvider = "aws"
 		case kops.CloudProviderGCE:
@@ -369,7 +369,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		if !featureflag.VFSVaultSupport.Enabled() {
 			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("secretStore"), "vault VFS is an experimental feature; set `export KOPS_FEATURE_FLAGS=VFSVaultSupport`"))
 		}
-		if kops.CloudProviderID(c.Spec.CloudProvider) != kops.CloudProviderAWS {
+		if c.Spec.GetCloudProvider() != kops.CloudProviderAWS {
 			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("secretStore"), "Vault secret store is only available on AWS"))
 		}
 	}
@@ -377,7 +377,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		if !featureflag.VFSVaultSupport.Enabled() {
 			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("keyStore"), "vault VFS is an experimental feature; set `export KOPS_FEATURE_FLAGS=VFSVaultSupport`"))
 		}
-		if kops.CloudProviderID(c.Spec.CloudProvider) != kops.CloudProviderAWS {
+		if c.Spec.GetCloudProvider() != kops.CloudProviderAWS {
 			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("keyStore"), "Vault keystore is only available on AWS"))
 		}
 	}
@@ -474,7 +474,7 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, cl
 		errs := CrossValidateInstanceGroup(g, c, cloud, strict)
 
 		// Additional cloud-specific validation rules
-		if kops.CloudProviderID(c.Spec.CloudProvider) != kops.CloudProviderAWS && len(g.Spec.Volumes) > 0 {
+		if c.Spec.GetCloudProvider() != kops.CloudProviderAWS && len(g.Spec.Volumes) > 0 {
 			errs = append(errs, field.Forbidden(field.NewPath("spec", "volumes"), "instancegroup volumes are only available with aws at present"))
 		}
 

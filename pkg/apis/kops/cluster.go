@@ -849,6 +849,10 @@ func (c *ClusterSpec) IsKopsControllerIPAM() bool {
 	return c.IsIPv6Only()
 }
 
+func (c *ClusterSpec) GetCloudProvider() CloudProviderID {
+	return CloudProviderID(c.CloudProvider)
+}
+
 // EnvVar represents an environment variable present in a Container.
 type EnvVar struct {
 	// Name of the environment variable. Must be a C_IDENTIFIER.

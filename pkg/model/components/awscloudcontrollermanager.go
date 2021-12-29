@@ -35,7 +35,7 @@ var _ loader.OptionsBuilder = &AWSCloudControllerManagerOptionsBuilder{}
 func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
-	if kops.CloudProviderID(clusterSpec.CloudProvider) != kops.CloudProviderAWS {
+	if clusterSpec.GetCloudProvider() != kops.CloudProviderAWS {
 		return nil
 	}
 
