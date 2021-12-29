@@ -74,7 +74,7 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.KubeDNS.MemoryLimit = &defaultMemoryLimit
 	}
 
-	if clusterSpec.IsIPv6Only() && kops.CloudProviderID(clusterSpec.CloudProvider) == kops.CloudProviderAWS {
+	if clusterSpec.IsIPv6Only() && clusterSpec.GetCloudProvider() == kops.CloudProviderAWS {
 		if len(clusterSpec.KubeDNS.UpstreamNameservers) == 0 {
 			clusterSpec.KubeDNS.UpstreamNameservers = []string{"fd00:ec2::253"}
 		}

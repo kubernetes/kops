@@ -32,7 +32,7 @@ var _ loader.OptionsBuilder = (*GCPCloudControllerManagerOptionsBuilder)(nil)
 func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface{}) error {
 	clusterSpec := options.(*kops.ClusterSpec)
 
-	if kops.CloudProviderID(clusterSpec.CloudProvider) != kops.CloudProviderGCE {
+	if clusterSpec.GetCloudProvider() != kops.CloudProviderGCE {
 		return nil
 	}
 

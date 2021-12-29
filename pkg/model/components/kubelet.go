@@ -122,7 +122,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.MasterKubelet.HairpinMode = "none"
 	}
 
-	cloudProvider := kops.CloudProviderID(clusterSpec.CloudProvider)
+	cloudProvider := clusterSpec.GetCloudProvider()
 
 	clusterSpec.Kubelet.CgroupRoot = "/"
 

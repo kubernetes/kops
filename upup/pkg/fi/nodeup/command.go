@@ -184,7 +184,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	cloudProvider := api.CloudProviderID(bootConfig.CloudProvider)
 	if cloudProvider == "" {
-		cloudProvider = api.CloudProviderID(c.cluster.Spec.CloudProvider)
+		cloudProvider = c.cluster.Spec.GetCloudProvider()
 	}
 
 	err = evaluateSpec(c, &nodeupConfig, cloudProvider)

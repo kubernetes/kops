@@ -107,7 +107,7 @@ func BuildNodeRoleSubject(igRole kops.InstanceGroupRole, enableLifecycleHookPerm
 
 // AddServiceAccountRole adds the appropriate mounts / env vars to enable a pod to use a service-account role
 func AddServiceAccountRole(context *IAMModelContext, podSpec *corev1.PodSpec, serviceAccountRole Subject) error {
-	cloudProvider := kops.CloudProviderID(context.Cluster.Spec.CloudProvider)
+	cloudProvider := context.Cluster.Spec.GetCloudProvider()
 
 	switch cloudProvider {
 	case kops.CloudProviderAWS:
