@@ -147,6 +147,40 @@ func (r *remoteIndex) Layer(h v1.Hash) (v1.Layer, error) {
 	return nil, fmt.Errorf("layer not found: %s", h)
 }
 
+// Experiment with a better API for v1.ImageIndex. We might want to move this
+// to partial?
+func (r *remoteIndex) Manifests() ([]partial.Describable, error) {
+	m, err := r.IndexManifest()
+	if err != nil {
+		return nil, err
+	}
+	manifests := []partial.Describable{}
+	for _, desc := range m.Manifests {
+		switch {
+		case desc.MediaType.IsImage():
+			img, err := r.Image(desc.Digest)
+			if err != nil {
+				return nil, err
+			}
+			manifests = append(manifests, img)
+		case desc.MediaType.IsIndex():
+			idx, err := r.ImageIndex(desc.Digest)
+			if err != nil {
+				return nil, err
+			}
+			manifests = append(manifests, idx)
+		default:
+			layer, err := r.Layer(desc.Digest)
+			if err != nil {
+				return nil, err
+			}
+			manifests = append(manifests, layer)
+		}
+	}
+
+	return manifests, nil
+}
+
 func (r *remoteIndex) imageByPlatform(platform v1.Platform) (v1.Image, error) {
 	desc, err := r.childByPlatform(platform)
 	if err != nil {
@@ -180,7 +214,7 @@ func (r *remoteIndex) childByPlatform(platform v1.Platform) (*Descriptor, error)
 			return r.childDescriptor(childDesc, platform)
 		}
 	}
-	return nil, fmt.Errorf("no child with platform %s/%s in index %s", platform.OS, platform.Architecture, r.Ref)
+	return nil, fmt.Errorf("no child with platform %+v in index %s", platform, r.Ref)
 }
 
 func (r *remoteIndex) childByHash(h v1.Hash) (*Descriptor, error) {
