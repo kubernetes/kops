@@ -66,10 +66,10 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 			var vpcInfo *fi.VPCInfo
 			var err error
 			if cloud.ProviderID() == kops.CloudProviderAzure {
-				if c.Spec.CloudConfig == nil || c.Spec.CloudConfig.Azure == nil || c.Spec.CloudConfig.Azure.ResourceGroupName == "" {
+				if c.Spec.CloudProvider.Azure == nil || c.Spec.CloudProvider.Azure.ResourceGroupName == "" {
 					return fmt.Errorf("missing required --azure-resource-group-name when specifying Network ID")
 				}
-				vpcInfo, err = cloud.(azure.AzureCloud).FindVNetInfo(c.Spec.NetworkID, c.Spec.CloudConfig.Azure.ResourceGroupName)
+				vpcInfo, err = cloud.(azure.AzureCloud).FindVNetInfo(c.Spec.NetworkID, c.Spec.CloudProvider.Azure.ResourceGroupName)
 				if err != nil {
 					return err
 				}

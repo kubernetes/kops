@@ -43,21 +43,18 @@ func TestBuildAzure(t *testing.T) {
 		},
 		Spec: kops.ClusterSpec{
 			CloudProvider: kops.CloudProviderSpec{
-				Azure: &kops.AzureSpec{},
+				Azure: &kops.AzureSpec{
+					SubscriptionID:    subscriptionID,
+					TenantID:          tenantID,
+					ResourceGroupName: resourceGroupName,
+					RouteTableName:    routeTableName,
+				},
 			},
 			NetworkID: vnetName,
 			Subnets: []kops.ClusterSubnetSpec{
 				{
 					Name:   "test-subnet",
 					Region: "eastus",
-				},
-			},
-			CloudConfig: &kops.CloudConfiguration{
-				Azure: &kops.AzureConfiguration{
-					SubscriptionID:    subscriptionID,
-					TenantID:          tenantID,
-					ResourceGroupName: resourceGroupName,
-					RouteTableName:    routeTableName,
 				},
 			},
 		},
