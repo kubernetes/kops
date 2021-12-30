@@ -31,7 +31,9 @@ import (
 func buildCluster() *api.Cluster {
 	return &api.Cluster{
 		Spec: api.ClusterSpec{
-			CloudProvider:     "aws",
+			CloudProvider: api.CloudProviderSpec{
+				AWS: &api.AWSSpec{},
+			},
 			KubernetesVersion: "v1.20.0",
 			KubeAPIServer:     &api.KubeAPIServerConfig{},
 		},

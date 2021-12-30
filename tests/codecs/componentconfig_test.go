@@ -39,6 +39,7 @@ kind: Cluster
 metadata:
   creationTimestamp: null
 spec:
+  cloudProvider: {}
   kubeControllerManager: {}
   kubelet: {}
 `

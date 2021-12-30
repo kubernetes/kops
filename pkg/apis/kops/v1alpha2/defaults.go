@@ -50,7 +50,7 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		obj.Topology.DNS.Type = DNSTypePublic
 	}
 
-	if obj.CloudProvider != "openstack" {
+	if obj.LegacyCloudProvider != "openstack" {
 		if obj.API == nil {
 			obj.API = &AccessSpec{}
 		}
@@ -74,7 +74,7 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 
 	}
 
-	if obj.API.LoadBalancer != nil && obj.API.LoadBalancer.Class == "" && obj.CloudProvider == "aws" {
+	if obj.API.LoadBalancer != nil && obj.API.LoadBalancer.Class == "" && obj.LegacyCloudProvider == "aws" {
 		obj.API.LoadBalancer.Class = LoadBalancerClassClassic
 	}
 

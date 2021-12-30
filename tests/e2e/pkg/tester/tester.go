@@ -153,9 +153,9 @@ func (t *Tester) addProviderFlag() error {
 	}
 
 	provider := ""
-	switch cluster.Spec.CloudProvider {
+	switch cluster.Spec.LegacyCloudProvider {
 	case "aws", "gce":
-		provider = cluster.Spec.CloudProvider
+		provider = cluster.Spec.LegacyCloudProvider
 	case "digitalocean":
 	default:
 		klog.Warningf("unhandled cluster.spec.cloudProvider %q for determining ginkgo Provider", cluster.Spec.CloudProvider)
@@ -217,7 +217,7 @@ func (t *Tester) addRegionFlag() error {
 
 	// We don't explicitly set the provider's region in the spec so we need to extract it from vairous fields
 	var region string
-	switch cluster.Spec.CloudProvider {
+	switch cluster.Spec.LegacyCloudProvider {
 	case "aws":
 		zone := cluster.Spec.Subnets[0].Zone
 		region = zone[:len(zone)-1]

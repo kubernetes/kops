@@ -244,22 +244,35 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	allZones.Insert(opt.Zones...)
 	allZones.Insert(opt.MasterZones...)
 
-	cluster.Spec.CloudProvider = opt.CloudProvider
-	if cluster.Spec.CloudProvider == "" {
+	if opt.CloudProvider == "" {
 		for _, zone := range allZones.List() {
 			cloud, known := zones.GuessCloudForZone(zone)
 			if known {
 				klog.Infof("Inferred %q cloud provider from zone %q", cloud, zone)
-				cluster.Spec.CloudProvider = string(cloud)
+				opt.CloudProvider = string(cloud)
 				break
 			}
 		}
-		if cluster.Spec.CloudProvider == "" {
+		if opt.CloudProvider == "" {
 			if allZones.Len() == 0 {
 				return nil, fmt.Errorf("must specify --zones or --cloud")
 			}
 			return nil, fmt.Errorf("unable to infer cloud provider from zones. pass in the cloud provider explicitly using --cloud")
 		}
+	}
+	switch api.CloudProviderID(opt.CloudProvider) {
+	case api.CloudProviderAWS:
+		cluster.Spec.CloudProvider.AWS = &api.AWSSpec{}
+	case api.CloudProviderAzure:
+		cluster.Spec.CloudProvider.Azure = &api.AzureSpec{}
+	case api.CloudProviderDO:
+		cluster.Spec.CloudProvider.DO = &api.DOSpec{}
+	case api.CloudProviderGCE:
+		cluster.Spec.CloudProvider.GCE = &api.GCESpec{}
+	case api.CloudProviderOpenstack:
+		cluster.Spec.CloudProvider.Openstack = &api.OpenstackSpec{}
+	default:
+		return nil, fmt.Errorf("unsupported cloud provider %s", opt.CloudProvider)
 	}
 
 	if opt.DiscoveryStore != "" {

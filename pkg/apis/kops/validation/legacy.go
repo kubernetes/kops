@@ -55,39 +55,51 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	requiresSubnets := true
 	requiresNetworkCIDR := true
 	requiresSubnetCIDR := true
-	switch c.Spec.GetCloudProvider() {
-	case "":
+
+	optionTaken := false
+	if c.Spec.CloudProvider.AWS != nil {
+		optionTaken = true
+
+	}
+	if c.Spec.CloudProvider.Azure != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("azure"), "only one cloudProvider option permitted"))
+		}
+		optionTaken = true
+	}
+	if c.Spec.CloudProvider.DO != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("do"), "only one cloudProvider option permitted"))
+		}
+		optionTaken = true
+		requiresSubnets = false
+		requiresSubnetCIDR = false
+		requiresNetworkCIDR = false
+	}
+	if c.Spec.CloudProvider.GCE != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("gce"), "only one cloudProvider option permitted"))
+		}
+		optionTaken = true
+		requiresNetworkCIDR = false
+		requiresSubnetCIDR = false
+		if c.Spec.NetworkCIDR != "" {
+			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networkCIDR"), "networkCIDR should not be set on GCE"))
+		}
+	}
+	if c.Spec.CloudProvider.Openstack != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("openstack"), "only one cloudProvider option permitted"))
+		}
+		optionTaken = true
+		requiresNetworkCIDR = false
+		requiresSubnetCIDR = false
+	}
+	if !optionTaken {
 		allErrs = append(allErrs, field.Required(fieldSpec.Child("cloudProvider"), ""))
 		requiresSubnets = false
 		requiresSubnetCIDR = false
 		requiresNetworkCIDR = false
-
-	case kops.CloudProviderGCE:
-		requiresNetworkCIDR = false
-		if c.Spec.NetworkCIDR != "" {
-			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networkCIDR"), "networkCIDR should not be set on GCE"))
-		}
-		requiresSubnetCIDR = false
-
-	case kops.CloudProviderDO:
-		requiresSubnets = false
-		requiresSubnetCIDR = false
-		requiresNetworkCIDR = false
-
-	case kops.CloudProviderAWS:
-	case kops.CloudProviderAzure:
-	case kops.CloudProviderOpenstack:
-		requiresNetworkCIDR = false
-		requiresSubnetCIDR = false
-
-	default:
-		allErrs = append(allErrs, field.NotSupported(fieldSpec.Child("cloudProvider"), c.Spec.CloudProvider, []string{
-			string(kops.CloudProviderGCE),
-			string(kops.CloudProviderDO),
-			string(kops.CloudProviderAzure),
-			string(kops.CloudProviderAWS),
-			string(kops.CloudProviderOpenstack),
-		}))
 	}
 
 	if requiresSubnets && len(c.Spec.Subnets) == 0 {
