@@ -187,8 +187,10 @@ func TestValidateSubnets(t *testing.T) {
 	}
 	for _, g := range grid {
 		cluster := &kops.ClusterSpec{
-			CloudProvider: "aws",
-			Subnets:       g.Input,
+			CloudProvider: kops.CloudProviderSpec{
+				AWS: &kops.AWSSpec{},
+			},
+			Subnets: g.Input,
 		}
 		errs := validateSubnets(cluster, field.NewPath("subnets"))
 
@@ -251,7 +253,9 @@ func TestValidateKubeAPIServer(t *testing.T) {
 						RBAC: &kops.RBACAuthorizationSpec{},
 					},
 					KubernetesVersion: "1.19.0",
-					CloudProvider:     "aws",
+					CloudProvider: kops.CloudProviderSpec{
+						AWS: &kops.AWSSpec{},
+					},
 				},
 			},
 			ExpectedErrors: []string{
@@ -268,7 +272,9 @@ func TestValidateKubeAPIServer(t *testing.T) {
 						RBAC: &kops.RBACAuthorizationSpec{},
 					},
 					KubernetesVersion: "1.19.0",
-					CloudProvider:     "aws",
+					CloudProvider: kops.CloudProviderSpec{
+						AWS: &kops.AWSSpec{},
+					},
 				},
 			},
 		},
@@ -282,7 +288,9 @@ func TestValidateKubeAPIServer(t *testing.T) {
 						RBAC: &kops.RBACAuthorizationSpec{},
 					},
 					KubernetesVersion: "1.19.0",
-					CloudProvider:     "aws",
+					CloudProvider: kops.CloudProviderSpec{
+						AWS: &kops.AWSSpec{},
+					},
 				},
 			},
 			ExpectedErrors: []string{
@@ -824,7 +832,9 @@ func Test_Validate_Cilium(t *testing.T) {
 				IPAM: "eni",
 			},
 			Spec: kops.ClusterSpec{
-				CloudProvider: "aws",
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{},
+				},
 			},
 		},
 		{
@@ -833,7 +843,9 @@ func Test_Validate_Cilium(t *testing.T) {
 				IPAM:       "eni",
 			},
 			Spec: kops.ClusterSpec{
-				CloudProvider: "aws",
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{},
+				},
 			},
 		},
 		{
@@ -848,7 +860,9 @@ func Test_Validate_Cilium(t *testing.T) {
 				IPAM:       "eni",
 			},
 			Spec: kops.ClusterSpec{
-				CloudProvider: "aws",
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{},
+				},
 			},
 			ExpectedErrors: []string{"Forbidden::cilium.masquerade"},
 		},
@@ -858,7 +872,9 @@ func Test_Validate_Cilium(t *testing.T) {
 				InstallIptablesRules: fi.Bool(false),
 			},
 			Spec: kops.ClusterSpec{
-				CloudProvider: "aws",
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{},
+				},
 			},
 			ExpectedErrors: []string{"Forbidden::cilium.enableL7Proxy"},
 		},
@@ -867,7 +883,9 @@ func Test_Validate_Cilium(t *testing.T) {
 				IPAM: "eni",
 			},
 			Spec: kops.ClusterSpec{
-				CloudProvider: "gce",
+				CloudProvider: kops.CloudProviderSpec{
+					GCE: &kops.GCESpec{},
+				},
 			},
 			ExpectedErrors: []string{"Forbidden::cilium.ipam"},
 		},
@@ -1353,7 +1371,9 @@ func Test_Validate_Nvdia(t *testing.T) {
 						Enabled: fi.Bool(true),
 					},
 				},
-				CloudProvider:    "aws",
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{},
+				},
 				ContainerRuntime: "containerd",
 			},
 		},
@@ -1364,7 +1384,9 @@ func Test_Validate_Nvdia(t *testing.T) {
 						Enabled: fi.Bool(true),
 					},
 				},
-				CloudProvider:    "gce",
+				CloudProvider: kops.CloudProviderSpec{
+					GCE: &kops.GCESpec{},
+				},
 				ContainerRuntime: "containerd",
 			},
 			ExpectedErrors: []string{"Forbidden::containerd.nvidiaGPU"},
@@ -1376,7 +1398,9 @@ func Test_Validate_Nvdia(t *testing.T) {
 						Enabled: fi.Bool(true),
 					},
 				},
-				CloudProvider:    "aws",
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{},
+				},
 				ContainerRuntime: "docker",
 			},
 			ExpectedErrors: []string{"Forbidden::containerd.nvidiaGPU"},

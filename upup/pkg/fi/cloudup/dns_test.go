@@ -89,7 +89,9 @@ func TestPrecreateDNSNames(t *testing.T) {
 		{
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					CloudProvider:     "aws",
+					CloudProvider: kops.CloudProviderSpec{
+						AWS: &kops.AWSSpec{},
+					},
 					KubernetesVersion: "1.22.0",
 				},
 			},
@@ -102,7 +104,9 @@ func TestPrecreateDNSNames(t *testing.T) {
 		{
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					CloudProvider:     "aws",
+					CloudProvider: kops.CloudProviderSpec{
+						AWS: &kops.AWSSpec{},
+					},
 					KubernetesVersion: "1.22.0",
 					NonMasqueradeCIDR: "::/0",
 				},

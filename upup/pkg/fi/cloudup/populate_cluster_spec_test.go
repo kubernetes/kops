@@ -287,7 +287,7 @@ func TestPopulateCluster_NonMasqueradeCIDR_Required(t *testing.T) {
 
 func TestPopulateCluster_CloudProvider_Required(t *testing.T) {
 	cloud, c := buildMinimalCluster()
-	c.Spec.CloudProvider = ""
+	c.Spec.CloudProvider = kopsapi.CloudProviderSpec{}
 
 	expectErrorFromPopulateCluster(t, c, cloud, "cloudProvider")
 }
