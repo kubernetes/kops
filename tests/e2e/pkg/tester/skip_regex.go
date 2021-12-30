@@ -64,7 +64,7 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|Services.*affinity"
 	}
 
-	if cluster.Spec.CloudProvider == "gce" {
+	if cluster.Spec.LegacyCloudProvider == "gce" {
 		// Firewall tests expect a specific format for cluster and control plane host names
 		// which kOps does not match
 		// ref: https://github.com/kubernetes/kubernetes/blob/1bd00776b5d78828a065b5c21e7003accc308a06/test/e2e/framework/providers/gce/firewall.go#L92-L100
@@ -90,7 +90,7 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|RuntimeClass.should.run"
 	}
 
-	if strings.Contains(cluster.Spec.KubernetesVersion, "v1.23.") && cluster.Spec.CloudProvider == "aws" && utils.IsIPv6CIDR(cluster.Spec.NonMasqueradeCIDR) {
+	if strings.Contains(cluster.Spec.KubernetesVersion, "v1.23.") && cluster.Spec.LegacyCloudProvider == "aws" && utils.IsIPv6CIDR(cluster.Spec.NonMasqueradeCIDR) {
 		// ref: https://github.com/kubernetes/kubernetes/pull/106992
 		skipRegex += "|should.not.disrupt.a.cloud.load-balancer.s.connectivity.during.rollout"
 	}

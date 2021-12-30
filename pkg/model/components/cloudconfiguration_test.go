@@ -94,7 +94,9 @@ func TestCloudConfigurationOptionsBuilder(t *testing.T) {
 	} {
 		t.Run(test.description, func(t *testing.T) {
 			spec := kopsapi.ClusterSpec{
-				CloudProvider: string(kopsapi.CloudProviderOpenstack),
+				CloudProvider: kopsapi.CloudProviderSpec{
+					Openstack: &kopsapi.OpenstackSpec{},
+				},
 				CloudConfig: &kopsapi.CloudConfiguration{
 					Openstack: &kopsapi.OpenstackConfiguration{
 						BlockStorage: &kopsapi.OpenstackBlockStorageConfig{},

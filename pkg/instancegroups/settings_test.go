@@ -213,7 +213,9 @@ func TestMaxSurge(t *testing.T) {
 func TestAWSDefault(t *testing.T) {
 	resolved := resolveSettings(&kops.Cluster{
 		Spec: kops.ClusterSpec{
-			CloudProvider: "aws",
+			CloudProvider: kops.CloudProviderSpec{
+				AWS: &kops.AWSSpec{},
+			},
 		},
 	}, &kops.InstanceGroup{}, 1000)
 	assert.Equal(t, intstr.Int, resolved.MaxSurge.Type)
