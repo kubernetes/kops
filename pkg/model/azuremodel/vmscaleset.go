@@ -86,7 +86,7 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 		VirtualNetwork:     b.LinkToVirtualNetwork(),
 		SKUName:            fi.String(ig.Spec.MachineType),
 		ComputerNamePrefix: fi.String(ig.Name),
-		AdminUser:          fi.String(b.Cluster.Spec.CloudConfig.Azure.AdminUser),
+		AdminUser:          fi.String(b.Cluster.Spec.CloudProvider.Azure.AdminUser),
 		Zones:              azNumbers,
 	}
 
