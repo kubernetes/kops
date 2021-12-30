@@ -823,7 +823,7 @@ type OpenstackConfiguration struct {
 // AzureSpec defines Azure specific cluster configuration.
 type AzureSpec struct {
 	// SubscriptionID specifies the subscription used for the cluster installation.
-	SubscriptionID string `json:"subscriptionId,omitempty"`
+	SubscriptionID string `json:"subscriptionID,omitempty"`
 	// TenantID is the ID of the tenant that the cluster is deployed in.
 	TenantID string `json:"tenantID"`
 	// ResourceGroupName specifies the name of the resource group
