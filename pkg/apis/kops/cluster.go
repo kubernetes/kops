@@ -244,10 +244,6 @@ type CloudProviderSpec struct {
 type AWSSpec struct {
 }
 
-// AzureSpec configures the Azure cloud provider.
-type AzureSpec struct {
-}
-
 // DOSpec configures the Digital Ocean cloud provider.
 type DOSpec struct {
 }
@@ -858,12 +854,12 @@ func (c *Cluster) IsKubernetesLT(version string) bool {
 
 // IsSharedAzureResourceGroup returns true if the resource group is shared.
 func (c *Cluster) IsSharedAzureResourceGroup() bool {
-	return c.Spec.CloudConfig.Azure.ResourceGroupName != ""
+	return c.Spec.CloudProvider.Azure.ResourceGroupName != ""
 }
 
 // AzureResourceGroupName returns the name of the resource group where the cluster is built.
 func (c *Cluster) AzureResourceGroupName() string {
-	r := c.Spec.CloudConfig.Azure.ResourceGroupName
+	r := c.Spec.CloudProvider.Azure.ResourceGroupName
 	if r != "" {
 		return r
 	}
@@ -872,7 +868,7 @@ func (c *Cluster) AzureResourceGroupName() string {
 
 // IsSharedAzureRouteTable returns true if the route table is shared.
 func (c *Cluster) IsSharedAzureRouteTable() bool {
-	return c.Spec.CloudConfig.Azure.RouteTableName != ""
+	return c.Spec.CloudProvider.Azure.RouteTableName != ""
 }
 
 func (c *ClusterSpec) IsIPv6Only() bool {

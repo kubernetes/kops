@@ -11,8 +11,14 @@ spec:
   authorization:
     alwaysAllow: {}
   channel: stable
+  cloudConfig: {}
   cloudProvider:
-    azure: {}
+    azure:
+      adminUser: admin-user
+      resourceGroupName: resource-group-name
+      routeTableName: route-table-name
+      subscriptionId: subs-id
+      tenantID: tenant-id
   configBase: memfs://clusters.example.com/minimal.example.com
   etcdClusters:
   - cpuRequest: 200m
