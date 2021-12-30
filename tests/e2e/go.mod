@@ -8,7 +8,7 @@ require (
 	github.com/octago/sflags v0.2.0
 	github.com/spf13/pflag v1.0.5
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/apimachinery v0.22.2
+	k8s.io/apimachinery v0.22.5
 	k8s.io/klog/v2 v2.9.0
 	k8s.io/kops v0.0.0-00010101000000-000000000000
 	sigs.k8s.io/boskos v0.0.0-20200710214748-f5935686c7fc

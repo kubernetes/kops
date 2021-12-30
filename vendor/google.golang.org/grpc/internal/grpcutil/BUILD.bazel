@@ -4,15 +4,13 @@ go_library(
     name = "go_default_library",
     srcs = [
         "encode_duration.go",
+        "grpcutil.go",
         "metadata.go",
         "method.go",
-        "target.go",
+        "regex.go",
     ],
     importmap = "k8s.io/kops/vendor/google.golang.org/grpc/internal/grpcutil",
     importpath = "google.golang.org/grpc/internal/grpcutil",
     visibility = ["//vendor/google.golang.org/grpc:__subpackages__"],
-    deps = [
-        "//vendor/google.golang.org/grpc/metadata:go_default_library",
-        "//vendor/google.golang.org/grpc/resolver:go_default_library",
-    ],
+    deps = ["//vendor/google.golang.org/grpc/metadata:go_default_library"],
 )
