@@ -43,6 +43,11 @@ func TestConversionAWS(t *testing.T) {
 	runTest(t, "aws", "v1alpha3", "v1alpha2")
 }
 
+func TestConversionAzure(t *testing.T) {
+	runTest(t, "azure", "v1alpha2", "v1alpha3")
+	runTest(t, "azure", "v1alpha3", "v1alpha2")
+}
+
 func TestConversionCanal(t *testing.T) {
 	runTest(t, "canal", "v1alpha2", "v1alpha3")
 	runTest(t, "canal", "v1alpha3", "v1alpha2")
@@ -51,6 +56,21 @@ func TestConversionCanal(t *testing.T) {
 func TestConversionCilium(t *testing.T) {
 	runTest(t, "cilium", "v1alpha2", "v1alpha3")
 	runTest(t, "cilium", "v1alpha3", "v1alpha2")
+}
+
+func TestConversionDO(t *testing.T) {
+	runTest(t, "do", "v1alpha2", "v1alpha3")
+	runTest(t, "do", "v1alpha3", "v1alpha2")
+}
+
+func TestConversionGCE(t *testing.T) {
+	runTest(t, "gce", "v1alpha2", "v1alpha3")
+	runTest(t, "gce", "v1alpha3", "v1alpha2")
+}
+
+func TestConversionOpenstack(t *testing.T) {
+	runTest(t, "openstack", "v1alpha2", "v1alpha3")
+	runTest(t, "openstack", "v1alpha3", "v1alpha2")
 }
 
 func runTest(t *testing.T, srcDir string, fromVersion string, toVersion string) {
