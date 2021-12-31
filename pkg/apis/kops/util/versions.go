@@ -116,3 +116,27 @@ func IsKubernetesGTE(version string, k8sVersion semver.Version) bool {
 
 	return k8sVersion.GTE(*parsedVersion)
 }
+
+// Version is our helper type for semver versions.
+type Version struct {
+	v semver.Version
+}
+
+// ParseVersion parses the semver version string into a Version.
+func ParseVersion(s string) (*Version, error) {
+	v, err := semver.Parse(s)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing version %q: %w", s, err)
+	}
+	return &Version{v: v}, nil
+}
+
+// String returns a string representation of the object
+func (v *Version) String() string {
+	return v.v.String()
+}
+
+// IsInRange checks if we are in the provided semver range
+func (v *Version) IsInRange(semverRange semver.Range) bool {
+	return semverRange(v.v)
+}

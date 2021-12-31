@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/util/pkg/text"
 	"sigs.k8s.io/yaml"
@@ -40,6 +41,15 @@ func NewObject(data map[string]interface{}) *Object {
 // ToUnstructured converts the object to an unstructured.Unstructured
 func (o *Object) ToUnstructured() *unstructured.Unstructured {
 	return &unstructured.Unstructured{Object: o.data}
+}
+
+// FromRuntimeObject converts from a runtime.Object.
+func FromRuntimeObject(obj runtime.Object) (*Object, error) {
+	data, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
+	if err != nil {
+		return nil, fmt.Errorf("unable to convert %T to unstructured: %w", obj, err)
+	}
+	return NewObject(data), nil
 }
 
 // ObjectList describes a list of objects, allowing us to add bulk-methods
