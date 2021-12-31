@@ -107,6 +107,8 @@ Additional user-data can be passed to the host provisioning by setting the `addi
 
 Scripts will be run in alphabetical order as documented [here](https://cloudinit.readthedocs.io/en/latest/topics/modules.html#scripts-per-instance).
 
+Note: Passing additionalUserData in Flatcar-OS is not supported, it results in node not coming up.
+
 Example:
 
 ```YAML
