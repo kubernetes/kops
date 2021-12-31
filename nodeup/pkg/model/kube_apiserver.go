@@ -625,7 +625,7 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 	}
 
 	// Log both to docker and to the logfile
-	addHostPathMapping(pod, container, "logfile", "/var/log/kube-apiserver.log").ReadOnly = false
+	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-apiserver.log").WithReadWrite()
 	// We use lighter containers that don't include shells
 	// But they have richer logging support via klog
 	if b.IsKubernetesGTE("1.23") {
@@ -647,22 +647,22 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 
 	for _, path := range b.SSLHostPaths() {
 		name := strings.Replace(path, "/", "", -1)
-		addHostPathMapping(pod, container, name, path)
+		kubemanifest.AddHostPathMapping(pod, container, name, path)
 	}
 
 	// Add cloud config file if needed
 	if b.Cluster.Spec.CloudConfig != nil {
-		addHostPathMapping(pod, container, "cloudconfig", InTreeCloudConfigFilePath)
+		kubemanifest.AddHostPathMapping(pod, container, "cloudconfig", InTreeCloudConfigFilePath)
 	}
 
-	addHostPathMapping(pod, container, "kubernetesca", filepath.Join(b.PathSrvKubernetes(), "ca.crt"))
+	kubemanifest.AddHostPathMapping(pod, container, "kubernetesca", filepath.Join(b.PathSrvKubernetes(), "ca.crt"))
 
 	pathSrvKAPI := filepath.Join(b.PathSrvKubernetes(), "kube-apiserver")
-	addHostPathMapping(pod, container, "srvkapi", pathSrvKAPI)
+	kubemanifest.AddHostPathMapping(pod, container, "srvkapi", pathSrvKAPI)
 
 	pathSrvSshproxy := b.PathSrvSshproxy()
 	if pathSrvSshproxy != "" {
-		addHostPathMapping(pod, container, "srvsshproxy", pathSrvSshproxy)
+		kubemanifest.AddHostPathMapping(pod, container, "srvsshproxy", pathSrvSshproxy)
 	}
 
 	auditLogPath := kubeAPIServer.AuditLogPath
@@ -673,12 +673,12 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 		// Renaming is not possible when the file is mounted as the host path, and will return a
 		// 'Device or resource busy' error
 		auditLogPathDir := filepath.Dir(*auditLogPath)
-		addHostPathMapping(pod, container, "auditlogpathdir", auditLogPathDir).ReadOnly = false
+		kubemanifest.AddHostPathMapping(pod, container, "auditlogpathdir", auditLogPathDir).WithReadWrite()
 	}
 
 	if b.Cluster.Spec.Authentication != nil {
 		if b.Cluster.Spec.Authentication.Kopeio != nil || b.Cluster.Spec.Authentication.AWS != nil {
-			addHostPathMapping(pod, container, "authn-config", PathAuthnConfig)
+			kubemanifest.AddHostPathMapping(pod, container, "authn-config", PathAuthnConfig)
 		}
 	}
 

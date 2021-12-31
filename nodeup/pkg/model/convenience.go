@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"sort"
 
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -49,24 +48,4 @@ func sortedStrings(list []string) []string {
 	sort.Strings(list)
 
 	return list
-}
-
-// addHostPathMapping is shorthand for mapping a host path into a container
-func addHostPathMapping(pod *v1.Pod, container *v1.Container, name, path string) *v1.VolumeMount {
-	pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
-		Name: name,
-		VolumeSource: v1.VolumeSource{
-			HostPath: &v1.HostPathVolumeSource{
-				Path: path,
-			},
-		},
-	})
-
-	container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
-		Name:      name,
-		MountPath: path,
-		ReadOnly:  true,
-	})
-
-	return &container.VolumeMounts[len(container.VolumeMounts)-1]
 }

@@ -235,7 +235,7 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 	}
 
 	// Log both to docker and to the logfile
-	addHostPathMapping(pod, container, "logfile", "/var/log/kube-controller-manager.log").ReadOnly = false
+	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-controller-manager.log").WithReadWrite()
 	// We use lighter containers that don't include shells
 	// But they have richer logging support via klog
 	if b.IsKubernetesGTE("1.23") {
@@ -256,21 +256,21 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 	}
 	for _, path := range b.SSLHostPaths() {
 		name := strings.Replace(path, "/", "", -1)
-		addHostPathMapping(pod, container, name, path)
+		kubemanifest.AddHostPathMapping(pod, container, name, path)
 	}
 
 	// Add cloud config file if needed
 	if b.Cluster.Spec.CloudConfig != nil {
-		addHostPathMapping(pod, container, "cloudconfig", InTreeCloudConfigFilePath)
+		kubemanifest.AddHostPathMapping(pod, container, "cloudconfig", InTreeCloudConfigFilePath)
 	}
 
-	addHostPathMapping(pod, container, "cabundle", filepath.Join(b.PathSrvKubernetes(), "ca.crt"))
+	kubemanifest.AddHostPathMapping(pod, container, "cabundle", filepath.Join(b.PathSrvKubernetes(), "ca.crt"))
 
-	addHostPathMapping(pod, container, "srvkcm", pathSrvKCM)
+	kubemanifest.AddHostPathMapping(pod, container, "srvkcm", pathSrvKCM)
 
-	addHostPathMapping(pod, container, "varlibkcm", "/var/lib/kube-controller-manager")
+	kubemanifest.AddHostPathMapping(pod, container, "varlibkcm", "/var/lib/kube-controller-manager")
 
-	addHostPathMapping(pod, container, "volplugins", volumePluginDir).ReadOnly = false
+	kubemanifest.AddHostPathMapping(pod, container, "volplugins", volumePluginDir).WithReadWrite()
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 
