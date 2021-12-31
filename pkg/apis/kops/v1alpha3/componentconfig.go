@@ -26,9 +26,9 @@ type KubeletConfigSpec struct {
 	// APIServers is not used for clusters version 1.6 and later - flag removed
 	APIServers string `json:"-"`
 	// AnonymousAuth permits you to control auth to the kubelet api
-	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
+	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth" configfile:"authentication.anonymous.enabled"`
 	// AuthorizationMode is the authorization mode the kubelet is running in
-	AuthorizationMode string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
+	AuthorizationMode string `json:"authorizationMode,omitempty" flag:"authorization-mode" configfile:"authorization.mode"`
 	// BootstrapKubeconfig is the path to a kubeconfig file that will be used to get client certificate for kubelet
 	BootstrapKubeconfig string `json:"bootstrapKubeconfig,omitempty" flag:"bootstrap-kubeconfig"`
 	// ClientCAFile is not admin-configurable.
@@ -52,7 +52,7 @@ type KubeletConfigSpec struct {
 	// LogLevel is the logging level of the kubelet
 	LogLevel *int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
 	// config is the path to the config file or directory of files
-	PodManifestPath string `json:"podManifestPath,omitempty" flag:"pod-manifest-path"`
+	PodManifestPath string `json:"podManifestPath,omitempty" flag:"pod-manifest-path" configfile:"staticPodPath"`
 	// HostnameOverride is not admin-configurable.
 	HostnameOverride string `json:"-"`
 	// PodInfraContainerImage is the image whose network/ipc containers in each pod will use.
@@ -187,7 +187,7 @@ type KubeletConfigSpec struct {
 	// RootDir is the directory path for managing kubelet files (volume mounts,etc)
 	RootDir string `json:"rootDir,omitempty" flag:"root-dir"`
 	// AuthenticationTokenWebhook uses the TokenReview API to determine authentication for bearer tokens.
-	AuthenticationTokenWebhook *bool `json:"authenticationTokenWebhook,omitempty" flag:"authentication-token-webhook"`
+	AuthenticationTokenWebhook *bool `json:"authenticationTokenWebhook,omitempty" flag:"authentication-token-webhook" configfile:"authentication.webhook.enabled"`
 	// AuthenticationTokenWebhook sets the duration to cache responses from the webhook token authenticator. Default is 2m. (default 2m0s)
 	AuthenticationTokenWebhookCacheTTL *metav1.Duration `json:"authenticationTokenWebhookCacheTTL,omitempty" flag:"authentication-token-webhook-cache-ttl"`
 	// CPUCFSQuota enables CPU CFS quota enforcement for containers that specify CPU limits
@@ -208,7 +208,7 @@ type KubeletConfigSpec struct {
 	// (DEPRECATED: This parameter should be set via the config file specified by the Kubelet's --config flag.
 	ProtectKernelDefaults *bool `json:"protectKernelDefaults,omitempty" flag:"protect-kernel-defaults"`
 	// CgroupDriver allows the explicit setting of the kubelet cgroup driver. If omitted, defaults to cgroupfs.
-	CgroupDriver string `json:"cgroupDriver,omitempty" flag:"cgroup-driver"`
+	CgroupDriver string `json:"cgroupDriver,omitempty" flag:"cgroup-driver" configfile:"cgroupDriver"`
 	// HousekeepingInterval allows to specify interval between container housekeepings.
 	HousekeepingInterval *metav1.Duration `json:"housekeepingInterval,omitempty" flag:"housekeeping-interval"`
 	// EventQPS if > 0, limit event creations per second to this value.  If 0, unlimited.

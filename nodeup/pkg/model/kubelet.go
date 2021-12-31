@@ -22,9 +22,14 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
+	"strconv"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/kops/pkg/model/components"
+	"sigs.k8s.io/yaml"
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -42,6 +47,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 const (
@@ -71,12 +77,8 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("error building kubelet config: %v", err)
 	}
 
-	{
-		t, err := b.buildSystemdEnvironmentFile(kubeletConfig)
-		if err != nil {
-			return err
-		}
-		c.AddTask(t)
+	if err := b.addFlagTasks(c, kubeletConfig); err != nil {
+		return err
 	}
 
 	{
@@ -221,17 +223,45 @@ func (b *KubeletBuilder) buildManifestDirectory(kubeletConfig *kops.KubeletConfi
 	return directory, nil
 }
 
-// buildSystemdEnvironmentFile renders the environment file for the kubelet
-func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
+// addFlagTasks renders the flags into an environment file, and builds a kubelet config file (on newer kubernetes versions)
+func (b *KubeletBuilder) addFlagTasks(c *fi.ModelBuilderContext, kubeletConfig *kops.KubeletConfigSpec) error {
+	// We deep copy because we remove flags from the configuration as we map them to config
+	kubeletConfig = kubeletConfig.DeepCopy()
+
 	// @step: ensure the masters do not get a bootstrap configuration
 	if b.UseBootstrapTokens() && b.IsMaster {
 		kubeletConfig.BootstrapKubeconfig = ""
 	}
 
+	configFile := ""
+	if b.IsKubernetesGTE("1.22") {
+		u := &unstructured.Unstructured{}
+		u.SetAPIVersion("kubelet.config.k8s.io/v1beta1")
+		u.SetKind("KubeletConfiguration")
+
+		manifest, err := MapToYAML(&kubeletConfig, u)
+		if err != nil {
+			return err
+		}
+
+		configFile = "/etc/kubernetes/kubelet/config.yaml"
+
+		c.AddTask(&nodetasks.File{
+			Path:     configFile,
+			Contents: fi.NewBytesResource(manifest),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0400"),
+		})
+	}
+
 	// TODO: Dump the separate file for flags - just complexity!
 	flags, err := flagbuilder.BuildFlags(kubeletConfig)
 	if err != nil {
-		return nil, fmt.Errorf("error building kubelet flags: %v", err)
+		return fmt.Errorf("error building kubelet flags: %v", err)
+	}
+
+	if configFile != "" {
+		flags += " --config=" + configFile
 	}
 
 	// Add cloud config file if needed
@@ -247,7 +277,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		metadata := ec2metadata.New(sess)
 		localIpv4, err := metadata.GetMetadata("local-ipv4")
 		if err != nil {
-			return nil, fmt.Errorf("error fetching the local-ipv4 address from the ec2 meta-data: %v", err)
+			return fmt.Errorf("error fetching the local-ipv4 address from the ec2 meta-data: %v", err)
 		}
 		flags += " --node-ip=" + localIpv4
 	}
@@ -285,13 +315,13 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	// Makes kubelet read /root/.docker/config.json properly
 	sysconfig = sysconfig + "HOME=\"/root" + "\"\n"
 
-	t := &nodetasks.File{
+	c.AddTask(&nodetasks.File{
 		Path:     "/etc/sysconfig/kubelet",
 		Contents: fi.NewStringResource(sysconfig),
 		Type:     nodetasks.FileType_File,
-	}
+	})
 
-	return t, nil
+	return nil
 }
 
 // buildSystemdService is responsible for generating the kubelet systemd unit
@@ -684,4 +714,90 @@ func (b *KubeletBuilder) buildCgroupService(name string) *nodetasks.Service {
 	}
 
 	return service
+}
+
+// MapToYAML reflects the options interface and extracts the parameters for the config file
+func MapToYAML(options interface{}, target *unstructured.Unstructured) ([]byte, error) {
+	setValue := func(targetPath string, val interface{}) error {
+		tokens := strings.Split(targetPath, ".")
+		parent := target.Object
+		for i := 0; i < len(tokens)-1; i++ {
+			v := parent[tokens[i]]
+			if v == nil {
+				v = make(map[string]interface{})
+				parent[tokens[i]] = v
+			}
+			m, ok := v.(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("value was not a map at position %d in %s", i, targetPath)
+			}
+			parent = m
+		}
+
+		parent[tokens[len(tokens)-1]] = val
+		return nil
+	}
+
+	walker := func(path *reflectutils.FieldPath, field *reflect.StructField, val reflect.Value) error {
+		if field == nil {
+			klog.V(8).Infof("ignoring non-field: %s", path)
+			return nil
+		}
+
+		tag := field.Tag.Get("configfile")
+		if tag == "" {
+			klog.V(4).Infof("not writing field with no configfile tag: %s", path)
+			// We want to descend - it could be a structure containing flags
+			return nil
+		}
+		if tag == "-" {
+			klog.V(4).Infof("skipping field with %q configfile tag: %s", tag, path)
+			return reflectutils.SkipReflection
+		}
+
+		tokens := strings.Split(tag, ",")
+
+		targetPath := tokens[0]
+
+		// We do have to do this, even though the recursive walk will do it for us
+		// because when we descend we won't have `field` set
+		if val.Kind() == reflect.Ptr {
+			if val.IsNil() {
+				return nil
+			}
+		}
+
+		switch v := val.Interface().(type) {
+		case *resource.Quantity:
+			floatVal, err := strconv.ParseFloat(v.AsDec().String(), 64)
+			if err != nil {
+				return fmt.Errorf("unable to convert from Quantity %v to float", v)
+			}
+			if err := setValue(targetPath, floatVal); err != nil {
+				return err
+			}
+			val.Set(reflect.ValueOf(nil))
+		default:
+			if err := setValue(targetPath, val.Interface()); err != nil {
+				return err
+			}
+			empty := reflect.New(val.Type()).Elem()
+			klog.Infof("setting %v, %v, %v -> %v", path, field, val, empty)
+			val.Set(empty)
+		}
+
+		return reflectutils.SkipReflection
+	}
+
+	err := reflectutils.ReflectRecursive(reflect.ValueOf(options), walker, &reflectutils.ReflectOptions{DeprecatedDoubleVisit: true})
+	if err != nil {
+		return nil, fmt.Errorf("BuildFlagsList to reflect value: %s", err)
+	}
+
+	configFile, err := yaml.Marshal(target)
+	if err != nil {
+		return nil, err
+	}
+
+	return configFile, nil
 }

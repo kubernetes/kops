@@ -221,13 +221,6 @@ func runKubeletBuilder(t *testing.T, context *fi.ModelBuilderContext, nodeupMode
 		return
 	}
 
-	fileTask, err := builder.buildSystemdEnvironmentFile(kubeletConfig)
-	if err != nil {
-		t.Fatalf("error from KubeletBuilder buildSystemdEnvironmentFile: %v", err)
-		return
-	}
-	context.AddTask(fileTask)
-
 	{
 		task, err := builder.buildManifestDirectory(kubeletConfig)
 		if err != nil {
@@ -235,6 +228,11 @@ func runKubeletBuilder(t *testing.T, context *fi.ModelBuilderContext, nodeupMode
 			return
 		}
 		context.AddTask(task)
+	}
+
+	if err := builder.addFlagTasks(context, kubeletConfig); err != nil {
+		t.Fatalf("error from KubeletBuilder addFlagTasks: %v", err)
+		return
 	}
 
 	{
