@@ -157,9 +157,9 @@ __EOF_CLUSTER_SPEC
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
-InstanceGroupName: karpenter-nodes
+InstanceGroupName: karpenter-nodes-default
 InstanceGroupRole: Node
-NodeupConfigHash: t+F49agATFa5uzfEBWAy92YyGppKvMwc3MS9nlXVaY4=
+NodeupConfigHash: NtER4w+wD8tSbHFc3vxBJ1EomYSDw8Ie5hpVTurK7hg=
 
 __EOF_KUBE_ENV
 

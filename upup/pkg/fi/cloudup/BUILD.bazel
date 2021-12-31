@@ -114,6 +114,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//:go_default_library",
+        "//cloudmock/aws/mockec2:go_default_library",
         "//dnsprovider/pkg/dnsprovider/rrstype:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/validation:go_default_library",
@@ -136,6 +137,8 @@ go_test(
         "//util/pkg/hashing:go_default_library",
         "//util/pkg/mirrors:go_default_library",
         "//util/pkg/vfs:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
         "//vendor/github.com/stretchr/testify/require:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",

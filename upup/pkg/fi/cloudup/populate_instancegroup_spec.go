@@ -185,6 +185,9 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 	case kops.CloudProviderAWS:
+		if ig.Spec.Manager == kops.InstanceManagerKarpenter {
+			return "", nil
+		}
 
 		instanceType, err := cloud.(awsup.AWSCloud).DefaultInstanceType(cluster, ig)
 		if err != nil {
@@ -266,6 +269,10 @@ func defaultImage(cluster *kops.Cluster, channel *kops.Channel, architecture arc
 }
 
 func MachineArchitecture(cloud fi.Cloud, machineType string) (architectures.Architecture, error) {
+	if machineType == "" {
+		return architectures.ArchitectureAmd64, nil
+	}
+
 	switch cloud.ProviderID() {
 	case kops.CloudProviderAWS:
 		info, err := cloud.(awsup.AWSCloud).DescribeInstanceType(machineType)
