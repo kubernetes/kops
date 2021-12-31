@@ -12,5 +12,7 @@ go_library(
         "//pkg/kubemanifest:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//util/pkg/vfs:go_default_library",
+        "//vendor/github.com/blang/semver/v4:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1/unstructured:go_default_library",
     ],
 )
