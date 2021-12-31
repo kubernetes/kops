@@ -319,6 +319,8 @@ type KubeAPIServerConfig struct {
 	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty" flag:"service-cluster-ip-range"`
 	// Passed as --service-node-port-range to kube-apiserver. Expects 'startPort-endPort' format e.g. 30000-33000
 	ServiceNodePortRange string `json:"serviceNodePortRange,omitempty" flag:"service-node-port-range"`
+	// EgressSelectorConfigFile is the file path with api-server egress selector configuration.
+	EgressSelectorConfigFile string `json:"egressSelectorConfigFile,omitempty" flag:"egress-selector-config-file"`
 	// EtcdServers is a list of the etcd service to connect
 	EtcdServers []string `json:"etcdServers,omitempty" flag:"etcd-servers"`
 	// EtcdServersOverrides is per-resource etcd servers overrides, comma separated. The individual override format: group/resource#servers, where servers are http://ip:port, semicolon separated
