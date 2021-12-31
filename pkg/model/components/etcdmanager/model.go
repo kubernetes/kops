@@ -455,39 +455,10 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 			},
 		}
 
-		// TODO: Use helper function here
-		container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
-			Name:      "varlogetcd",
-			MountPath: "/var/log/etcd.log",
-			ReadOnly:  false,
-		})
-		hostPathFileOrCreate := v1.HostPathFileOrCreate
-		pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
-			Name: "varlogetcd",
-			VolumeSource: v1.VolumeSource{
-				HostPath: &v1.HostPathVolumeSource{
-					Path: logFile,
-					Type: &hostPathFileOrCreate,
-				},
-			},
-		})
+		kubemanifest.AddHostPathMapping(pod, container, "varlogetcd", "/var/log/etcd.log").WithReadWrite().WithType(v1.HostPathFileOrCreate).WithHostPath(logFile)
 
 		if fi.BoolValue(b.Cluster.Spec.UseHostCertificates) {
-			container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
-				Name:      "etc-ssl-certs",
-				MountPath: "/etc/ssl/certs",
-				ReadOnly:  true,
-			})
-			hostPathDirectoryOrCreate := v1.HostPathDirectoryOrCreate
-			pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
-				Name: "etc-ssl-certs",
-				VolumeSource: v1.VolumeSource{
-					HostPath: &v1.HostPathVolumeSource{
-						Path: "/etc/ssl/certs",
-						Type: &hostPathDirectoryOrCreate,
-					},
-				},
-			})
+			kubemanifest.AddHostPathMapping(pod, container, "etc-ssl-certs", "/etc/ssl/certs").WithType(v1.HostPathDirectoryOrCreate)
 		}
 	}
 

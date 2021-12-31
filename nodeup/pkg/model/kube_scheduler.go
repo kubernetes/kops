@@ -243,11 +243,11 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 			},
 		},
 	}
-	addHostPathMapping(pod, container, "varlibkubescheduler", "/var/lib/kube-scheduler")
-	addHostPathMapping(pod, container, "srvscheduler", pathSrvScheduler)
+	kubemanifest.AddHostPathMapping(pod, container, "varlibkubescheduler", "/var/lib/kube-scheduler")
+	kubemanifest.AddHostPathMapping(pod, container, "srvscheduler", pathSrvScheduler)
 
 	// Log both to docker and to the logfile
-	addHostPathMapping(pod, container, "logfile", "/var/log/kube-scheduler.log").ReadOnly = false
+	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-scheduler.log").WithReadWrite()
 	// We use lighter containers that don't include shells
 	// But they have richer logging support via klog
 	if b.IsKubernetesGTE("1.23") {
