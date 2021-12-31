@@ -193,17 +193,8 @@ github.com/containerd/containerd/remotes/errors
 github.com/containerd/containerd/version
 # github.com/cpuguy83/go-md2man/v2 v2.0.1
 github.com/cpuguy83/go-md2man/v2/md2man
-# github.com/cyphar/filepath-securejoin v0.2.2
-github.com/cyphar/filepath-securejoin
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
-# github.com/deislabs/oras v0.11.1
-github.com/deislabs/oras/pkg/artifact
-github.com/deislabs/oras/pkg/auth
-github.com/deislabs/oras/pkg/auth/docker
-github.com/deislabs/oras/pkg/content
-github.com/deislabs/oras/pkg/context
-github.com/deislabs/oras/pkg/oras
 # github.com/denverdino/aliyungo v0.0.0-20210425065611-55bee4942cba
 ## explicit
 github.com/denverdino/aliyungo/common
@@ -271,8 +262,6 @@ github.com/docker/go-units
 github.com/evanphx/json-patch
 # github.com/exponent-io/jsonpath v0.0.0-20151013193312-d6023ce2651d
 github.com/exponent-io/jsonpath
-# github.com/fatih/color v1.7.0
-github.com/fatih/color
 # github.com/form3tech-oss/jwt-go v3.2.3+incompatible
 github.com/form3tech-oss/jwt-go
 # github.com/fsnotify/fsnotify v1.4.9
@@ -400,10 +389,6 @@ github.com/gophercloud/gophercloud/openstack/utils
 github.com/gophercloud/gophercloud/pagination
 # github.com/gorilla/mux v1.8.0
 github.com/gorilla/mux
-# github.com/gosuri/uitable v0.0.4
-github.com/gosuri/uitable
-github.com/gosuri/uitable/util/strutil
-github.com/gosuri/uitable/util/wordwrap
 # github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7
 github.com/gregjones/httpcache
 github.com/gregjones/httpcache/diskcache
@@ -454,7 +439,7 @@ github.com/hashicorp/vault/sdk/helper/hclutil
 github.com/hashicorp/vault/sdk/helper/jsonutil
 github.com/hashicorp/vault/sdk/helper/parseutil
 github.com/hashicorp/vault/sdk/helper/strutil
-# github.com/huandu/xstrings v1.3.1
+# github.com/huandu/xstrings v1.3.2
 github.com/huandu/xstrings
 # github.com/imdario/mergo v0.3.12
 github.com/imdario/mergo
@@ -520,14 +505,8 @@ github.com/magiconair/properties
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
-# github.com/mattn/go-colorable v0.1.4
-github.com/mattn/go-colorable
 # github.com/mattn/go-ieproxy v0.0.1
 github.com/mattn/go-ieproxy
-# github.com/mattn/go-isatty v0.0.10
-github.com/mattn/go-isatty
-# github.com/mattn/go-runewidth v0.0.7
-github.com/mattn/go-runewidth
 # github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/miekg/dns v1.1.35
@@ -660,12 +639,6 @@ github.com/subosito/gotenv
 # github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 ## explicit
 github.com/weaveworks/mesh
-# github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f
-github.com/xeipuuv/gojsonpointer
-# github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415
-github.com/xeipuuv/gojsonreference
-# github.com/xeipuuv/gojsonschema v1.2.0
-github.com/xeipuuv/gojsonschema
 # github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca
 github.com/xlab/treeprint
 # github.com/zclconf/go-cty v1.8.2
@@ -929,13 +902,13 @@ gopkg.in/square/go-jose.v2
 gopkg.in/square/go-jose.v2/cipher
 gopkg.in/square/go-jose.v2/json
 gopkg.in/square/go-jose.v2/jwt
-# gopkg.in/warnings.v0 v0.1.2
+# gopkg.in/warnings.v0 v0.1.1
 gopkg.in/warnings.v0
 # gopkg.in/yaml.v2 v2.4.0
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 gopkg.in/yaml.v3
-# helm.sh/helm/v3 v3.6.1
+# helm.sh/helm/v3 v3.7.2
 ## explicit
 helm.sh/helm/v3/internal/experimental/registry
 helm.sh/helm/v3/internal/ignore
@@ -945,7 +918,6 @@ helm.sh/helm/v3/internal/urlutil
 helm.sh/helm/v3/internal/version
 helm.sh/helm/v3/pkg/chart
 helm.sh/helm/v3/pkg/chart/loader
-helm.sh/helm/v3/pkg/chartutil
 helm.sh/helm/v3/pkg/cli
 helm.sh/helm/v3/pkg/cli/values
 helm.sh/helm/v3/pkg/getter
@@ -1001,9 +973,8 @@ k8s.io/api/scheduling/v1beta1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apiextensions-apiserver v0.21.4 => k8s.io/apiextensions-apiserver v0.22.5
+# k8s.io/apiextensions-apiserver v0.22.4 => k8s.io/apiextensions-apiserver v0.22.5
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
-k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1
 # k8s.io/apimachinery v0.22.5 => k8s.io/apimachinery v0.22.5
 ## explicit
@@ -1426,8 +1397,13 @@ k8s.io/utils/net
 k8s.io/utils/nsenter
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# rsc.io/letsencrypt v0.0.3
-## explicit
+# oras.land/oras-go v0.4.0
+oras.land/oras-go/pkg/artifact
+oras.land/oras-go/pkg/auth
+oras.land/oras-go/pkg/auth/docker
+oras.land/oras-go/pkg/content
+oras.land/oras-go/pkg/context
+oras.land/oras-go/pkg/oras
 # sigs.k8s.io/controller-runtime v0.9.7
 ## explicit
 sigs.k8s.io/controller-runtime

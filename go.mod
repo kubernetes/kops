@@ -87,7 +87,7 @@ require (
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
 	gopkg.in/square/go-jose.v2 v2.5.1
-	helm.sh/helm/v3 v3.6.1
+	helm.sh/helm/v3 v3.7.2
 	k8s.io/api v0.22.5
 	k8s.io/apimachinery v0.22.5
 	k8s.io/cli-runtime v0.22.5
@@ -100,7 +100,6 @@ require (
 	k8s.io/legacy-cloud-providers v0.22.5
 	k8s.io/mount-utils v0.22.5
 	k8s.io/utils v0.0.0-20210819203725-bdf08cb9a70a
-	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/controller-runtime v0.9.7
 	sigs.k8s.io/yaml v1.2.0
 )
