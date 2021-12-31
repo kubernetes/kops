@@ -50,7 +50,7 @@ KubeletConfig:
   logLevel: 2
   networkPluginName: cni
   nodeLabels:
-    karpenter.sh/provisioner-name: karpenter-nodes
+    karpenter.sh/provisioner-name: karpenter-nodes-single-machinetype
     kubernetes.io/role: node
     node-role.kubernetes.io/node: ""
   podManifestPath: /etc/kubernetes/manifests
