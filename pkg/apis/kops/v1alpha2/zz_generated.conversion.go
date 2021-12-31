@@ -4840,6 +4840,7 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.AdmissionControlConfigFile = in.AdmissionControlConfigFile
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
 	out.ServiceNodePortRange = in.ServiceNodePortRange
+	out.EgressSelectorConfigFile = in.EgressSelectorConfigFile
 	out.EtcdServers = in.EtcdServers
 	out.EtcdServersOverrides = in.EtcdServersOverrides
 	out.EtcdCAFile = in.EtcdCAFile
@@ -4952,6 +4953,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.AdmissionControlConfigFile = in.AdmissionControlConfigFile
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
 	out.ServiceNodePortRange = in.ServiceNodePortRange
+	out.EgressSelectorConfigFile = in.EgressSelectorConfigFile
 	out.EtcdServers = in.EtcdServers
 	out.EtcdServersOverrides = in.EtcdServersOverrides
 	out.EtcdCAFile = in.EtcdCAFile
