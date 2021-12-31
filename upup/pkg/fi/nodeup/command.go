@@ -338,6 +338,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.SecretBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.FirewallBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.SysctlBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.KonnectivityServerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeAPIServerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeControllerManagerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeSchedulerBuilder{NodeupModelContext: modelContext})

@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: konnectivity-server
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: konnectivity-server
+  template:
+    metadata:
+      labels:
+        k8s-app: konnectivity-server
+    spec:
+      serviceAccountName: konnectivity-server
+      priorityClassName: system-cluster-critical
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
+      tolerations:
+      - key: node.cloudprovider.kubernetes.io/uninitialized
+        operator: Exists
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+      - key: node.kubernetes.io/network-unavailable
+        operator: Exists
+      hostNetwork: true
+      containers:
+      - name: konnectivity-server-container
+        image: us.gcr.io/k8s-artifacts-prod/kas-network-proxy/proxy-server:v0.0.16
+        command: ["/proxy-server"]
+        args: [
+                "--logtostderr=true",
+                # This needs to be consistent with the value set in egressSelectorConfiguration.
+                "--uds-name=/etc/kubernetes/konnectivity-server/uds/konnectivity-server.socket",
+                # The following two lines assume the Konnectivity server is
+                # deployed on the same machine as the apiserver, and the certs and
+                # key of the API Server are at the specified location.
+                "--cluster-cert=/etc/kubernetes/pki/server.crt",
+                "--cluster-key=/etc/kubernetes/pki/server.key",
+                #"--cluster-cert=/etc/kubernetes/pki/apiserver.crt",
+                #"--cluster-key=/etc/kubernetes/pki/apiserver.key",
+                # This needs to be consistent with the value set in egressSelectorConfiguration.
+                "--mode=grpc",
+                "--server-port=0",
+                "--agent-port=8132",
+                "--admin-port=8133",
+                "--health-port=8134",
+                "--agent-namespace=kube-system",
+                "--agent-service-account=konnectivity-agent",
+                #"--kubeconfig=/etc/kubernetes/konnectivity-server.conf",
+                "--authentication-audience=system:konnectivity-server"
+                ]
+        env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: "127.0.0.1"
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            host: 127.0.0.1
+            port: 8134
+            path: /healthz
+          initialDelaySeconds: 30
+          timeoutSeconds: 60
+        ports:
+        - name: agentport
+          containerPort: 8132
+          hostPort: 8132
+        - name: adminport
+          containerPort: 8133
+          hostPort: 8133
+        - name: healthport
+          containerPort: 8134
+          hostPort: 8134
+        volumeMounts:
+        - name: k8s-certs
+          mountPath: /etc/kubernetes/pki
+          readOnly: true
+        #- name: kubeconfig
+        #  mountPath: /etc/kubernetes/konnectivity-server.conf
+        #  readOnly: true
+        - name: konnectivity-uds
+          mountPath: /etc/kubernetes/konnectivity-server/uds
+          readOnly: false
+      volumes:
+      - name: k8s-certs
+        hostPath:
+          #path: /etc/kubernetes/pki
+          path: /srv/kubernetes/kube-apiserver
+          type: Directory
+      #- name: kubeconfig
+      #  hostPath:
+      #    path: /etc/kubernetes/konnectivity-server.conf
+      #    type: FileOrCreate
+      - name: konnectivity-uds
+        hostPath:
+          path: /etc/kubernetes/konnectivity-server/uds
+          type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: konnectivity-server
+  namespace: kube-system
+  labels:
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: konnectivity-server
+  labels:
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: konnectivity-server
+    namespace: kube-system

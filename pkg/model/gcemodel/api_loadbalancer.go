@@ -37,6 +37,11 @@ var _ fi.ModelBuilder = &APILoadBalancerBuilder{}
 // createPublicLB validates the existence of a target pool with the given name,
 // and creates an IP address and forwarding rule pointing to that target pool.
 func createPublicLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) error {
+	network, err := b.LinkToNetwork()
+	if err != nil {
+		return err
+	}
+
 	// TODO: point target pool to instance group managers, as done in internal LB.
 	targetPool := &gcetasks.TargetPool{
 		Name:      s(b.NameForTargetPool("api")),
@@ -88,6 +93,17 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) error 
 	// TODO: Health check
 	c.AddTask(forwardingRuleKopsController)
 
+	forwardingRuleKonnectivity := &gcetasks.ForwardingRule{
+		Name:       s(b.NameForForwardingRule("konnectivityy")),
+		Lifecycle:  b.Lifecycle,
+		PortRange:  s(fmt.Sprintf("%d-%d", wellknownports.KonnectivityPort, wellknownports.KonnectivityPort)),
+		TargetPool: targetPool,
+		IPAddress:  ipAddress,
+		IPProtocol: "TCP",
+	}
+	// TODO: Health check
+	c.AddTask(forwardingRuleKonnectivity)
+
 	{
 		// Ensure the IP address is included in our certificate
 		ipAddress.ForAPIServer = true
@@ -95,10 +111,7 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) error 
 
 	// Allow traffic into the API (port 443) from KubernetesAPIAccess CIDRs
 	{
-		network, err := b.LinkToNetwork()
-		if err != nil {
-			return err
-		}
+
 		b.AddFirewallRulesTasks(c, "https-api", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
 			Network:      network,
@@ -115,6 +128,16 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) error 
 			SourceRanges: b.Cluster.Spec.KubernetesAPIAccess,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:      []string{fmt.Sprintf("tcp:%d", wellknownports.KopsControllerPort)},
+		})
+	}
+
+	{
+		b.AddFirewallRulesTasks(c, "konnectivity", &gcetasks.FirewallRule{
+			Lifecycle:    b.Lifecycle,
+			Network:      network,
+			SourceRanges: b.Cluster.Spec.KubernetesAPIAccess,
+			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
+			Allowed:      []string{fmt.Sprintf("tcp:%d", wellknownports.KonnectivityPort)},
 		})
 	}
 	return nil

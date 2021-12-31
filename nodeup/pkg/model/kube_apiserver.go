@@ -740,6 +740,12 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 		}
 	}
 
+	if kubeAPIServer.EgressSelectorConfigFile != "" {
+		// Add volume mounts for egress selector config file and konnectivity UDS path
+		konnectivityDir := filepath.Dir(kubeAPIServer.EgressSelectorConfigFile)
+		kubemanifest.AddHostPathMapping(pod, container, "konnectivity", konnectivityDir).WithType(v1.HostPathDirectoryOrCreate)
+	}
+
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 
 	kubemanifest.MarkPodAsCritical(pod)

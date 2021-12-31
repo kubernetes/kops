@@ -69,6 +69,9 @@ const (
 
 	// VxlanUDP is the port used by VXLAN tunneling over UDP
 	VxlanUDP = 8472
+
+	// KonnectivityPort is the port used by the konnectivity (apiserver-network-proxy) service
+	KonnectivityPort = 8132
 )
 
 type PortRange struct {

@@ -697,3 +697,11 @@ func (c *NodeupModelContext) APIServerHostname() string {
 	}
 	return c.Cluster.Spec.MasterInternalName
 }
+
+// UseKonnectivity is true if we should run with konnectivity (kubeapiserver-network-proxy)
+func (c *NodeupModelContext) UseKonnectivity() bool {
+	if c.CloudControlPlane() {
+		return true
+	}
+	return false
+}

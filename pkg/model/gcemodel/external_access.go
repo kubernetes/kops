@@ -122,6 +122,14 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			SourceRanges: b.Cluster.Spec.KubernetesAPIAccess,
 			Network:      network,
 		})
+
+		b.AddFirewallRulesTasks(c, "konnectivity", &gcetasks.FirewallRule{
+			Lifecycle:    b.Lifecycle,
+			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
+			Allowed:      []string{fmt.Sprintf("tcp:%d", wellknownports.KonnectivityPort)},
+			SourceRanges: b.Cluster.Spec.KubernetesAPIAccess,
+			Network:      network,
+		})
 	}
 
 	return nil

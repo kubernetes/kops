@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+# Alternatively, you can deploy the agents as Deployments. It is not necessary
+# to have an agent on each node.
+kind: DaemonSet
+metadata:
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+    k8s-app: konnectivity-agent
+  namespace: kube-system
+  name: konnectivity-agent
+spec:
+  selector:
+    matchLabels:
+      k8s-app: konnectivity-agent
+  template:
+    metadata:
+      labels:
+        k8s-app: konnectivity-agent
+    spec:
+      priorityClassName: system-cluster-critical
+      tolerations:
+        - key: "CriticalAddonsOnly"
+          operator: "Exists"
+      containers:
+        - image: us.gcr.io/k8s-artifacts-prod/kas-network-proxy/proxy-agent:v0.0.16
+          name: konnectivity-agent
+          command: ["/proxy-agent"]
+          args: [
+                  "--logtostderr=true",
+                  "--ca-cert=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
+                  # Since the konnectivity server runs with hostNetwork=true,
+                  # this is the IP address of the master machine.
+                  "--proxy-server-host=$(PROXY_SERVER_HOST)",
+                  "--proxy-server-port=8132",
+                  "--admin-server-port=8133",
+                  "--health-server-port=8134",
+                  "--service-account-token-path=/var/run/secrets/tokens/konnectivity-agent-token"
+                  ]
+          volumeMounts:
+            - mountPath: /var/run/secrets/tokens
+              name: konnectivity-agent-token
+          env:
+          - name: PROXY_SERVER_HOST
+            value: api.duke.kubehouse.com
+          livenessProbe:
+            httpGet:
+              port: 8134
+              path: /healthz
+            initialDelaySeconds: 15
+            timeoutSeconds: 15
+      serviceAccountName: konnectivity-agent
+      volumes:
+        - name: konnectivity-agent-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: konnectivity-agent-token
+                  audience: system:konnectivity-server
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: konnectivity-agent
+  namespace: kube-system
+  labels:
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
