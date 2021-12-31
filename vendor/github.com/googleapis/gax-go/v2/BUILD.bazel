@@ -12,6 +12,7 @@ go_library(
     importpath = "github.com/googleapis/gax-go/v2",
     visibility = ["//visibility:public"],
     deps = [
+        "//vendor/github.com/googleapis/gax-go/v2/apierror:go_default_library",
         "//vendor/google.golang.org/grpc:go_default_library",
         "//vendor/google.golang.org/grpc/codes:go_default_library",
         "//vendor/google.golang.org/grpc/status:go_default_library",
