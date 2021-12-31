@@ -188,7 +188,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		ImageID:                      fi.String(ig.Spec.Image),
 		InstanceInterruptionBehavior: ig.Spec.InstanceInterruptionBehavior,
 		InstanceMonitoring:           fi.Bool(false),
-		InstanceType:                 fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
 		IPv6AddressCount:             fi.Int64(0),
 		RootVolumeIops:               fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIOPS))),
 		RootVolumeOptimization:       ig.Spec.RootVolumeOptimization,
@@ -199,6 +198,10 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		SecurityGroups:               securityGroups,
 		Tags:                         tags,
 		UserData:                     userData,
+	}
+
+	if ig.Spec.Manager == kops.InstanceManagerCloudGroup {
+		lt.InstanceType = fi.String(strings.Split(ig.Spec.MachineType, ",")[0])
 	}
 
 	{
@@ -493,7 +496,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 	sort.Stable(awstasks.OrderTargetGroupsByName(t.TargetGroups))
 
 	// @step: are we using a mixed instance policy
-	if ig.Spec.MixedInstancesPolicy != nil {
+	if ig.Spec.MixedInstancesPolicy != nil && ig.Spec.Manager == kops.InstanceManagerCloudGroup {
 		spec := ig.Spec.MixedInstancesPolicy
 
 		if spec.InstanceRequirements != nil {

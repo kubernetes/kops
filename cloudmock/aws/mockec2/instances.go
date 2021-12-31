@@ -56,3 +56,13 @@ func (m *MockEC2) DescribeInstanceTypes(*ec2.DescribeInstanceTypesInput) (*ec2.D
 	klog.Warningf("MockEc2::DescribeInstanceTypes is stub-implemented")
 	return &ec2.DescribeInstanceTypesOutput{}, nil
 }
+
+func (m *MockEC2) GetInstanceTypesFromInstanceRequirements(input *ec2.GetInstanceTypesFromInstanceRequirementsInput) (*ec2.GetInstanceTypesFromInstanceRequirementsOutput, error) {
+	return &ec2.GetInstanceTypesFromInstanceRequirementsOutput{
+		InstanceTypes: []*ec2.InstanceTypeInfoFromInstanceRequirements{
+			{
+				InstanceType: aws.String("c5.large"),
+			},
+		},
+	}, nil
+}

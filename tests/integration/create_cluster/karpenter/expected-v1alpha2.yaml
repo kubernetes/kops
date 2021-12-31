@@ -106,7 +106,6 @@ spec:
   instanceMetadata:
     httpPutResponseHopLimit: 1
     httpTokens: required
-  machineType: t2.medium
   manager: Karpenter
   maxSize: 2
   minSize: 2

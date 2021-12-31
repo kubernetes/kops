@@ -897,11 +897,46 @@ metadata:
     addon.kops.k8s.io/name: karpenter.sh
     app.kubernetes.io/managed-by: kops
     k8s-addon: karpenter.sh
-  name: karpenter-nodes
+  name: karpenter-nodes-default
 spec:
   provider:
     instanceProfile: nodes.minimal.example.com
-    launchTemplate: karpenter-nodes.minimal.example.com
+    launchTemplate: karpenter-nodes-default.minimal.example.com
+    securityGroupSelector:
+      Name: nodes.minimal.example.com
+    subnetSelector:
+      KubernetesCluster: minimal.example.com
+      kubernetes.io/role/internal-elb: "1"
+  requirements:
+  - key: karpenter.sh/capacity-type
+    operator: In
+    values:
+    - spot
+  - key: kubernetes.io/arch
+    operator: In
+    values:
+    - amd64
+  - key: node.kubernetes.io/instance-type
+    operator: In
+    values:
+    - c5.large
+  ttlSecondsAfterEmpty: 30
+
+---
+
+apiVersion: karpenter.sh/v1alpha5
+kind: Provisioner
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: karpenter.sh
+  name: karpenter-nodes-single-machinetype
+spec:
+  provider:
+    instanceProfile: nodes.minimal.example.com
+    launchTemplate: karpenter-nodes-single-machinetype.minimal.example.com
     securityGroupSelector:
       Name: nodes.minimal.example.com
     subnetSelector:

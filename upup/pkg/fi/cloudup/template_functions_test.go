@@ -21,8 +21,12 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
@@ -215,5 +219,28 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 				t.Errorf("Argv differs: %+v instead of %+v", actual, testCase.expectedArgv)
 			}
 		})
+	}
+}
+
+func Test_KarpenterInstanceTypes(t *testing.T) {
+	amiId := "ami-073c8c0760395aab8"
+	ec2Client := &mockec2.MockEC2{}
+	ec2Client.Images = append(ec2Client.Images, &ec2.Image{
+		CreationDate:   aws.String("2016-10-21T20:07:19.000Z"),
+		ImageId:        &amiId,
+		Name:           aws.String("focal"),
+		OwnerId:        aws.String(awsup.WellKnownAccountUbuntu),
+		RootDeviceName: aws.String("/dev/xvda"),
+		Architecture:   aws.String("x86_64"),
+	})
+	ig := kops.InstanceGroupSpec{
+		Image: amiId,
+	}
+	cloud := &awsup.MockAWSCloud{MockCloud: awsup.MockCloud{
+		MockEC2: ec2Client,
+	}}
+	_, err := karpenterInstanceTypes(cloud, ig)
+	if err != nil {
+		t.Errorf("failed to fetch instance types: %v", err)
 	}
 }
