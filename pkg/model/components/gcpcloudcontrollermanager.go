@@ -54,7 +54,12 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface
 	}
 	if ccmConfig.Image == "" {
 		// TODO: Implement CCM image publishing
-		ccmConfig.Image = "k8scloudprovidergcp/cloud-controller-manager:v1.23.0"
+		switch b.KubernetesVersion.Minor {
+		case 23:
+			ccmConfig.Image = "k8scloudprovidergcp/cloud-controller-manager:v1.23.0"
+		default:
+			ccmConfig.Image = "k8scloudprovidergcp/cloud-controller-manager:latest"
+		}
 	}
 
 	if b.IsKubernetesGTE("1.24") && b.IsKubernetesLT("1.25") {
