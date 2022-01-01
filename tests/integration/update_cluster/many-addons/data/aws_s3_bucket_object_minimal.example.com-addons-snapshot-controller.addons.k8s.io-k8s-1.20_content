@@ -16,6 +16,9 @@ spec:
     kind: VolumeSnapshotClass
     listKind: VolumeSnapshotClassList
     plural: volumesnapshotclasses
+    shortNames:
+    - vsclass
+    - vsclasses
     singular: volumesnapshotclass
   scope: Cluster
   versions:
@@ -167,6 +170,9 @@ spec:
     kind: VolumeSnapshotContent
     listKind: VolumeSnapshotContentList
     plural: volumesnapshotcontents
+    shortNames:
+    - vsc
+    - vscs
     singular: volumesnapshotcontent
   scope: Cluster
   versions:
@@ -198,6 +204,11 @@ spec:
         object is bound.
       jsonPath: .spec.volumeSnapshotRef.name
       name: VolumeSnapshot
+      type: string
+    - description: Namespace of the VolumeSnapshot object to which this VolumeSnapshotContent
+        object is bound.
+      jsonPath: .spec.volumeSnapshotRef.namespace
+      name: VolumeSnapshotNamespace
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: Age
@@ -419,6 +430,11 @@ spec:
       jsonPath: .spec.volumeSnapshotRef.name
       name: VolumeSnapshot
       type: string
+    - description: Namespace of the VolumeSnapshot object to which this VolumeSnapshotContent
+        object is bound.
+      jsonPath: .spec.volumeSnapshotRef.namespace
+      name: VolumeSnapshotNamespace
+      type: string
     - jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
@@ -635,6 +651,8 @@ spec:
     kind: VolumeSnapshot
     listKind: VolumeSnapshotList
     plural: volumesnapshots
+    shortNames:
+    - vs
     singular: volumesnapshot
   scope: Namespaced
   versions:
@@ -1019,6 +1037,31 @@ metadata:
 ---
 
 apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: snapshot-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: snapshot-controller.addons.k8s.io
+  name: snapshot-controller-leaderelection
+  namespace: kube-system
+rules:
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - watch
+  - list
+  - delete
+  - update
+  - create
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   creationTimestamp: null
@@ -1027,7 +1070,6 @@ metadata:
     app.kubernetes.io/managed-by: kops
     k8s-addon: snapshot-controller.addons.k8s.io
   name: snapshot-controller-runner
-  namespace: kube-system
 rules:
 - apiGroups:
   - ""
@@ -1083,6 +1125,13 @@ rules:
   - watch
   - update
   - delete
+  - patch
+- apiGroups:
+  - snapshot.storage.k8s.io
+  resources:
+  - volumesnapshotcontents/status
+  verbs:
+  - patch
 - apiGroups:
   - snapshot.storage.k8s.io
   resources:
@@ -1092,57 +1141,14 @@ rules:
   - list
   - watch
   - update
+  - patch
 - apiGroups:
   - snapshot.storage.k8s.io
   resources:
   - volumesnapshots/status
   verbs:
   - update
-
----
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  creationTimestamp: null
-  labels:
-    addon.kops.k8s.io/name: snapshot-controller.addons.k8s.io
-    app.kubernetes.io/managed-by: kops
-    k8s-addon: snapshot-controller.addons.k8s.io
-  name: snapshot-controller-role
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: snapshot-controller-runner
-subjects:
-- kind: ServiceAccount
-  name: snapshot-controller
-  namespace: kube-system
-
----
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  creationTimestamp: null
-  labels:
-    addon.kops.k8s.io/name: snapshot-controller.addons.k8s.io
-    app.kubernetes.io/managed-by: kops
-    k8s-addon: snapshot-controller.addons.k8s.io
-  name: snapshot-controller-leaderelection
-  namespace: kube-system
-rules:
-- apiGroups:
-  - coordination.k8s.io
-  resources:
-  - leases
-  verbs:
-  - get
-  - watch
-  - list
-  - delete
-  - update
-  - create
+  - patch
 
 ---
 
@@ -1160,6 +1166,25 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: snapshot-controller-leaderelection
+subjects:
+- kind: ServiceAccount
+  name: snapshot-controller
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: snapshot-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: snapshot-controller.addons.k8s.io
+  name: snapshot-controller-role
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: snapshot-controller-runner
 subjects:
 - kind: ServiceAccount
   name: snapshot-controller
@@ -1197,7 +1222,7 @@ spec:
       - args:
         - --v=5
         - --leader-election=true
-        image: k8s.gcr.io/sig-storage/snapshot-controller:v4.2.1
+        image: gcr.io/k8s-staging-sig-storage/snapshot-controller:v5.0.0
         imagePullPolicy: IfNotPresent
         name: snapshot-controller
       serviceAccount: snapshot-controller
@@ -1242,7 +1267,7 @@ spec:
       - args:
         - --tls-cert-file=/etc/snapshot-validation-webhook/certs/tls.crt
         - --tls-private-key-file=/etc/snapshot-validation-webhook/certs/tls.key
-        image: k8s.gcr.io/sig-storage/snapshot-validation-webhook:v4.2.1
+        image: k8s.gcr.io/sig-storage/snapshot-validation-webhook:v5.0.0
         imagePullPolicy: IfNotPresent
         name: snapshot-validation
         ports:
