@@ -442,7 +442,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: manager
-          image: public.ecr.aws/karpenter/controller:v0.5.3
+          image: olemarkus/karpenter
           resources: 
             limits:
               memory: 1Gi
