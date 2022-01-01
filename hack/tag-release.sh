@@ -29,12 +29,6 @@ if [ "$(git tag -l "v${VERSION}")" ]; then
   exit 0
 fi
 
-# TODO remove this when we're comfortable with how it works
-if [[ ! "${VERSION}" =~ -alpha ]]; then
-  echo "Only automatically tagging alpha releases for now"
-  exit 1
-fi
-
 git tag -a -m "Release ${VERSION}" "v${VERSION}"
 git push origin "v${VERSION}"
 
