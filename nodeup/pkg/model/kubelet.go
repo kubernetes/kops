@@ -486,26 +486,32 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		c.BootstrapKubeconfig = ""
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		sess := session.Must(session.NewSession())
-		metadata := ec2metadata.New(sess)
-
-		// Get the actual instance type by querying the EC2 instance metadata service.
-		instanceTypeName, err := metadata.GetMetadata("instance-type")
-		if err != nil {
-			// Otherwise, fall back to the Instance Group spec.
-			instanceTypeName = *b.NodeupConfig.DefaultMachineType
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil && c.MaxPods == nil {
+		prefixDelegation := false
+		for _, env := range b.Cluster.Spec.Networking.AmazonVPC.Env {
+			if env.Name == "ENABLE_PREFIX_DELEGATION" && env.Value == "true" {
+				prefixDelegation = true
+				break
+			}
 		}
+		if !prefixDelegation {
+			sess := session.Must(session.NewSession())
+			metadata := ec2metadata.New(sess)
 
-		awsCloud := b.Cloud.(awsup.AWSCloud)
-		// Get the instance type's detailed information.
-		instanceType, err := awsup.GetMachineTypeInfo(awsCloud, instanceTypeName)
-		if err != nil {
-			return nil, err
-		}
+			// Get the actual instance type by querying the EC2 instance metadata service.
+			instanceTypeName, err := metadata.GetMetadata("instance-type")
+			if err != nil {
+				// Otherwise, fall back to the Instance Group spec.
+				instanceTypeName = *b.NodeupConfig.DefaultMachineType
+			}
 
-		// Respect any MaxPods value the user sets explicitly.
-		if c.MaxPods == nil {
+			awsCloud := b.Cloud.(awsup.AWSCloud)
+			// Get the instance type's detailed information.
+			instanceType, err := awsup.GetMachineTypeInfo(awsCloud, instanceTypeName)
+			if err != nil {
+				return nil, err
+			}
+
 			// Default maximum pods per node defined by KubeletConfiguration
 			maxPods := 110
 
