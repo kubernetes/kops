@@ -1,0 +1,23 @@
+name: tag-release
+
+on:
+  push:
+    branches:
+      - master
+      - 'release-*'
+    paths:
+      - version.go
+
+jobs:
+  tag-release:
+    if: ${{ github.repository == 'kubernetes/kops' }}
+    runs-on: ubuntu-20.04
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v2
+      - run: /usr/bin/git config --global user.email actions@github.com
+      - run: /usr/bin/git config --global user.name 'GitHub Actions Release Tagger'
+      - run: hack/tag-release.sh
