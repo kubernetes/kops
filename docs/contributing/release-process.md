@@ -17,14 +17,14 @@ Generally we don't encourage users to run older kOps versions, or older
 branches, because newer versions of kOps should remain compatible with older
 versions of Kubernetes.
 
-Beta and stable releases should be made from the `release-1.X` branch.
-The tags should be made on the release branches. Alpha releases may be made on
-either `master` or a release branch.
+Beta and stable releases (excepting the first beta of a new minor version) should be made from the `release-1.X` branch.
+Alpha releases may be made on either `master` or a release branch.
 
 ## Creating new release branches
 
 Typically, kOps alpha releases are created off the master branch and beta and stable releases are created off of release branches.
-In order to create a new release branch off of master prior to a beta release, perform the following steps:
+The exception is the first beta release for a new minor version: it is where the release branch for the minor version branches off of master.
+In order to create the first beta release for a new minor version and a new release branch off of master, perform the following steps:
 
 1. Update the periodic E2E Prow jobs for the "next" kOps/Kubernetes minor version.
    * Edit [build_jobs.py](https://github.com/kubernetes/test-infra/tree/master/config/jobs/kubernetes/kops/build_jobs.py)
@@ -38,7 +38,7 @@ In order to create a new release branch off of master prior to a beta release, p
 3. Update [prow's milestone_applier config](https://github.com/kubernetes/test-infra/blob/dc99617c881805981b85189da232d29747f87004/config/prow/plugins.yaml#L309-L313)
    to update master to use the new milestone and add an entry for the new feature branch. 
    Create this as a separate PR as it will require separate review.
-4. Create the new release branch in git and push it to the GitHub repo.
+4. Create the .0-beta.1 release per the instructions in the following section. GitHub Actions will create the release branch when it tags the release.
 5. On the master branch, create a PR to update to the next minor version:
    * Update `OldestSupportedKubernetesVersion` and `OldestRecommendedKubernetesVersion` in
    [apply_cluster.go](https://github.com/kubernetes/kops/tree/master/upup/pkg/fi/cloudup/apply_cluster.go)
@@ -89,28 +89,10 @@ To review someone else's release commit, verify that:
 The "verify-versions" CI task will ensure that the versions have been updated in all the
 expected places.
 
-### Tag the release commit
-
-(TODO: Can we automate this?  Maybe we should have a tags.yaml file)
-
-Check out the release commit.
-Make sure you are not on a newer one! Do not tag the merge commit!
-
-```
-git tag -a -m "Release ${VERSION}" v${VERSION}
-git show v${VERSION}
-```
-
-Double check it is the release commit!
-
-```
-git push git@github.com:kubernetes/kops v${VERSION}
-```
-
-
 ### Wait for CI job to complete
 
-The [staging CI job](https://testgrid.k8s.io/sig-cluster-lifecycle-kops#kops-postsubmit-push-to-staging) should now see the tag, and build it (from the trusted prow cluster, using Google Cloud Build).
+After the PR merges, GitHub Actions will tag the release.
+The [staging CI job](https://testgrid.k8s.io/sig-cluster-lifecycle-kops#kops-postsubmit-push-to-staging) should build from the tag (from the trusted prow cluster, using Google Cloud Build).
 
 It (currently) takes about 30 minutes to run.
 
