@@ -130,6 +130,10 @@ func (c *MockCloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
 	return deleteInstance(c, i)
 }
 
+func (c *MockCloud) DeregisterInstance(i *cloudinstances.CloudInstance) error {
+	return deregisterInstance(c, i.ID)
+}
+
 func (c *MockCloud) DetachInstance(i *cloudinstances.CloudInstance) error {
 	return detachInstance(c, i)
 }
@@ -403,6 +407,18 @@ func (c *MockCloud) ListKeypairs() ([]keypairs.KeyPair, error) {
 
 func (c *MockCloud) ListL3FloatingIPs(opts l3floatingip.ListOpts) (fips []l3floatingip.FloatingIP, err error) {
 	return listL3FloatingIPs(c, opts)
+}
+
+func (c *MockCloud) UpdateMemberInPool(poolID string, memberID string, opts v2pools.UpdateMemberOptsBuilder) (*v2pools.Member, error) {
+	return updateMemberInPool(c, poolID, memberID, opts)
+}
+
+func (c *MockCloud) GetLBStats(loadbalancerID string) (*loadbalancers.Stats, error) {
+	return getLBStats(c, loadbalancerID)
+}
+
+func (c *MockCloud) ListPoolMembers(poolID string, opts v2pools.ListMembersOpts) ([]v2pools.Member, error) {
+	return listPoolMembers(c, poolID, opts)
 }
 
 func (c *MockCloud) ListLBs(opt loadbalancers.ListOptsBuilder) (lbs []loadbalancers.LoadBalancer, err error) {
