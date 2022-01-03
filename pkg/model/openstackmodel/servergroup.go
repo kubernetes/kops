@@ -329,6 +329,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				InterfaceName: fi.String(ifName),
 				ProtocolPort:  fi.Int(443),
 				Lifecycle:     b.Lifecycle,
+				Weight:        fi.Int(1),
 			}
 
 			c.AddTask(associateTask)

@@ -541,17 +541,21 @@ func (c *awsCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance)
 	return deleteInstance(c, i)
 }
 
-func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstance) error {
-	id := i.ID
-	if id == "" {
-		return fmt.Errorf("id was not set on CloudInstance: %v", i)
-	}
-
+// DeregisterInstance drains a cloud instance and loadbalancers.
+func (c *awsCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInstance) error {
 	if i.CloudInstanceGroup.InstanceGroup.Spec.Manager != kops.InstanceManagerKarpenter {
 		err := deregisterInstance(c, i)
 		if err != nil {
 			return fmt.Errorf("failed to deregister instance from loadBalancer before terminating: %v", err)
 		}
+	}
+	return nil
+}
+
+func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstance) error {
+	id := i.ID
+	if id == "" {
+		return fmt.Errorf("id was not set on CloudInstance: %v", i)
 	}
 
 	request := &ec2.TerminateInstancesInput{

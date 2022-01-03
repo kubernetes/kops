@@ -769,6 +769,7 @@ ServerGroup:
   Name: cluster-master-a
   Policies:
   - anti-affinity
+Weight: 1
 ---
 ID: null
 InterfaceName: cluster
@@ -802,6 +803,7 @@ ServerGroup:
   Name: cluster-master-b
   Policies:
   - anti-affinity
+Weight: 1
 ---
 ID: null
 InterfaceName: cluster
@@ -835,6 +837,7 @@ ServerGroup:
   Name: cluster-master-c
   Policies:
   - anti-affinity
+Weight: 1
 ---
 AdditionalSecurityGroups: null
 ID: null
