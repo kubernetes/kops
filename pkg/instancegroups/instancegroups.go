@@ -646,6 +646,10 @@ func (c *RollingUpdateCluster) drainNode(u *cloudinstances.CloudInstance) error 
 		return fmt.Errorf("error excluding node from load balancer: %v", err)
 	}
 
+	if err := c.Cloud.DeregisterInstance(u); err != nil {
+		return fmt.Errorf("error deregistering instance %q, node %q: %v", u.ID, u.Node.Name, err)
+	}
+
 	if err := drain.RunNodeDrain(helper, u.Node.Name); err != nil {
 		if apierrors.IsNotFound(err) {
 			return nil

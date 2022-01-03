@@ -69,6 +69,10 @@ func (c *doCloudMockImplementation) DeleteInstance(instance *cloudinstances.Clou
 	return errors.New("not tested")
 }
 
+func (c *doCloudMockImplementation) DeregisterInstance(i *cloudinstances.CloudInstance) error {
+	return nil
+}
+
 // DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
 func (c *doCloudMockImplementation) DetachInstance(i *cloudinstances.CloudInstance) error {
 	return fmt.Errorf("digital ocean cloud provider does not support surging")
