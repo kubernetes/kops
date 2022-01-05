@@ -978,7 +978,7 @@ type ClusterAutoscalerConfig struct {
 	// Default: false
 	Enabled *bool `json:"enabled,omitempty"`
 	// Expander determines the strategy for which instance group gets expanded.
-	// Supported values: least-waste, most-pods, random.
+	// Supported values: least-waste, most-pods, random, price, priority.
 	// Default: least-waste
 	Expander *string `json:"expander,omitempty"`
 	// BalanceSimilarNodeGroups makes cluster autoscaler treat similar node groups as one.

@@ -1492,7 +1492,7 @@ func validateNodeLocalDNS(spec *kops.ClusterSpec, fldpath *field.Path) field.Err
 }
 
 func validateClusterAutoscaler(cluster *kops.Cluster, spec *kops.ClusterAutoscalerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
-	allErrs = append(allErrs, IsValidValue(fldPath.Child("expander"), spec.Expander, []string{"least-waste", "random", "most-pods"})...)
+	allErrs = append(allErrs, IsValidValue(fldPath.Child("expander"), spec.Expander, []string{"least-waste", "random", "most-pods", "price", "priority"})...)
 
 	if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderOpenstack {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "Cluster autoscaler is not supported on OpenStack"))
