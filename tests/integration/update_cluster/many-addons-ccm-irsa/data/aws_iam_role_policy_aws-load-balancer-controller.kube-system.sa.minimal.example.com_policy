@@ -44,6 +44,7 @@
         "ec2:DescribeNetworkInterfaces",
         "ec2:DescribeSecurityGroups",
         "ec2:DescribeSubnets",
+        "ec2:DescribeVpcPeeringConnections",
         "ec2:DescribeVpcs",
         "elasticloadbalancing:DescribeListenerCertificates",
         "elasticloadbalancing:DescribeListeners",
