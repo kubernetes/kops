@@ -1494,7 +1494,7 @@ func validateNodeLocalDNS(spec *kops.ClusterSpec, fldpath *field.Path) field.Err
 func validateClusterAutoscaler(cluster *kops.Cluster, spec *kops.ClusterAutoscalerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
 	allErrs = append(allErrs, IsValidValue(fldPath.Child("expander"), spec.Expander, []string{"least-waste", "random", "most-pods", "price", "priority"})...)
 
-	if *spec.Expander == "price" && kops.CloudProviderID(cluster.Spec.CloudProvider) != kops.CloudProviderGCE {
+	if spec.Expander != nil && *spec.Expander == "price" && kops.CloudProviderID(cluster.Spec.CloudProvider) != kops.CloudProviderGCE {
 		allErrs = append(allErrs, field.Forbidden(fldPath.Child("expander"), "Cluster autoscaler price expander is only supported on GCE"))
 	}
 
