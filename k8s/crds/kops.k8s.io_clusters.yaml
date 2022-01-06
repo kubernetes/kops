@@ -3261,6 +3261,10 @@ spec:
                   proxyMode:
                     description: 'Which proxy mode to use: (userspace, iptables, ipvs)'
                     type: string
+                  useDaemonSet:
+                    description: UseDaemonSet determines if kube proxy will be installed
+                      as a DaemonSet or as static pods.
+                    type: boolean
                 type: object
               kubeScheduler:
                 description: KubeSchedulerConfig is the configuration for the kube-scheduler

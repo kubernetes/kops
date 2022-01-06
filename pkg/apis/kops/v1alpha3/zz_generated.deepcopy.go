@@ -3319,6 +3319,11 @@ func (in *KubeProxyConfig) DeepCopyInto(out *KubeProxyConfig) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.UseDaemonSet != nil {
+		in, out := &in.UseDaemonSet, &out.UseDaemonSet
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

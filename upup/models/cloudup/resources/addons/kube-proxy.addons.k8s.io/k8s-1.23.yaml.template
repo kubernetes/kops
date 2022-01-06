@@ -1,0 +1,106 @@
+{{ with .KubeProxy }}
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: kube-proxy
+  namespace: kube-system
+  labels:
+    k8s-app: kube-proxy
+    tier: node
+spec:
+  selector:
+    matchLabels:
+      k8s-app: kube-proxy
+      tier: node
+  template:
+    metadata:
+      labels:
+        k8s-app: kube-proxy
+        tier: node
+      namespace: kube-system
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: kubernetes.io/managed-by
+                operator: In
+                values:
+                - nodeup
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - args:
+        - --log-file=/var/log/kube-proxy.log
+        - --also-stdout
+        - /usr/local/bin/kube-proxy
+        {{- range $arg := KubeProxyArgs }}
+        - {{ $arg }}
+        {{- end }}
+        - --kubeconfig=/var/lib/kube-proxy/kubeconfig
+        - --oom-score-adj=-998
+        command:
+        - /go-runner
+        image: {{ .Image }}
+        imagePullPolicy: IfNotPresent
+        name: kube-proxy
+        resources:
+          requests:
+            cpu: 100m
+        securityContext:
+          privileged: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/log/kube-proxy.log
+          name: logfile
+        - mountPath: /var/lib/kube-proxy/kubeconfig
+          name: kubeconfig
+          readOnly: true
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /etc/ssl/certs
+          name: ssl-certs-hosts
+          readOnly: true
+        - mountPath: /run/xtables.lock
+          name: iptableslock
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: true
+      hostNetwork: true
+      preemptionPolicy: PreemptLowerPriority
+      priority: 2000001000
+      priorityClassName: system-node-critical
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+      volumes:
+      - hostPath:
+          path: /var/log/kube-proxy.log
+          type: ""
+        name: logfile
+      - hostPath:
+          path: /var/lib/kube-proxy/kubeconfig
+          type: ""
+        name: kubeconfig
+      - hostPath:
+          path: /lib/modules
+          type: ""
+        name: modules
+      - hostPath:
+          path: /usr/share/ca-certificates
+          type: ""
+        name: ssl-certs-hosts
+      - hostPath:
+          path: /run/xtables.lock
+          type: FileOrCreate
+        name: iptableslock
+{{ end }}

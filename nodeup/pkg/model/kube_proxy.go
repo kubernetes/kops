@@ -57,7 +57,7 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	{
+	if !fi.BoolValue(b.Cluster.Spec.KubeProxy.UseDaemonSet) {
 		pod, err := b.buildPod()
 		if err != nil {
 			return fmt.Errorf("error building kube-proxy manifest: %v", err)
@@ -119,16 +119,15 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		return nil, fmt.Errorf("KubeProxy not configured")
 	}
 
-	if c.Master == "" {
-		if b.IsMaster {
-			// As a special case, if this is the master, we point kube-proxy to the local IP
-			// This prevents a circular dependency where kube-proxy can't come up until DNS comes up,
-			// which would mean that DNS can't rely on API to come up
-			c.Master = "https://127.0.0.1"
-		} else {
-			c.Master = "https://" + b.Cluster.Spec.MasterInternalName
-		}
+	flags, err := flagbuilder.BuildFlagsList(c)
+	if err != nil {
+		return nil, fmt.Errorf("error building kubeproxy flags: %v", err)
 	}
+
+	flags = append(flags, []string{
+		"--kubeconfig=/var/lib/kube-proxy/kubeconfig",
+		"--oom-score-adj=-998",
+	}...)
 
 	resourceRequests := v1.ResourceList{}
 	resourceLimits := v1.ResourceList{}
@@ -147,28 +146,14 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		resourceLimits["memory"] = *c.MemoryLimit
 	}
 
-	if c.ConntrackMaxPerCore == nil {
-		defaultConntrackMaxPerCore := int32(131072)
-		c.ConntrackMaxPerCore = &defaultConntrackMaxPerCore
-	}
-
-	flags, err := flagbuilder.BuildFlagsList(c)
-	if err != nil {
-		return nil, fmt.Errorf("error building kubeproxy flags: %v", err)
-	}
-
-	flags = append(flags, []string{
-		"--kubeconfig=/var/lib/kube-proxy/kubeconfig",
-		"--oom-score-adj=-998",
-	}...)
-
 	image := kubeProxyImage(b.NodeupModelContext)
 	container := &v1.Container{
 		Name:  "kube-proxy",
 		Image: image,
 		Resources: v1.ResourceRequirements{
 			Requests: resourceRequests,
-			Limits:   resourceLimits,
+
+			Limits: resourceLimits,
 		},
 		SecurityContext: &v1.SecurityContext{
 			Privileged: fi.Bool(true),

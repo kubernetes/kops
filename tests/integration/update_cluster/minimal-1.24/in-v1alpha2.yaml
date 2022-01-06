@@ -31,6 +31,8 @@ spec:
     legacy: false
   kubelet:
     anonymousAuth: false
+  kubeProxy:
+    useDaemonSet: true
   kubernetesApiAccess:
   - 0.0.0.0/0
   - ::/0

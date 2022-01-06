@@ -50,22 +50,27 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 		config.CPURequest = resource.NewScaledQuantity(100, resource.Milli)
 	}
 
-	image, err := Image("kube-proxy", clusterSpec, b.Context.AssetBuilder)
-	if err != nil {
-		return err
+	if config.Image == "" && fi.BoolValue(config.UseDaemonSet) {
+		config.Image = "k8s.gcr.io/kube-proxy:" + clusterSpec.KubernetesVersion
+	} else {
+		image, err := Image("kube-proxy", clusterSpec, b.Context.AssetBuilder)
+		if err != nil {
+			return err
+		}
+		config.Image = image
 	}
-	config.Image = image
-
-	// We set the master URL during node configuration, because if we use the internal dns name,
-	// then we get a circular dependency:
-	// * kube-proxy uses DNS for resolution
-	// * dns is set up by dns-controller
-	// * dns-controller talks to the API using the kube-proxy configured kubernetes service
 
 	if config.ClusterCIDR == nil {
 		if b.needsClusterCIDR(clusterSpec) {
 			config.ClusterCIDR = fi.String(clusterSpec.KubeControllerManager.ClusterCIDR)
 		}
+	}
+
+	config.Master = "https://" + clusterSpec.MasterInternalName
+
+	if config.ConntrackMaxPerCore == nil {
+		defaultConntrackMaxPerCore := int32(131072)
+		config.ConntrackMaxPerCore = &defaultConntrackMaxPerCore
 	}
 
 	return nil

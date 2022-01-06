@@ -268,6 +268,8 @@ type KubeProxyConfig struct {
 	ConntrackMaxPerCore *int32 `json:"conntrackMaxPerCore,omitempty" flag:"conntrack-max-per-core"`
 	// Minimum number of conntrack entries to allocate, regardless of conntrack-max-per-core
 	ConntrackMin *int32 `json:"conntrackMin,omitempty" flag:"conntrack-min"`
+	// UseDaemonSet determines if kube proxy will be installed as a DaemonSet or as static pods.
+	UseDaemonSet *bool `json:"useDaemonSet,omitempty"`
 }
 
 // KubeAPIServerConfig defines the configuration for the kube api

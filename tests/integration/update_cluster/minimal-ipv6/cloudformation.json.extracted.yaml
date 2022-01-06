@@ -203,9 +203,11 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom.Propert
     logLevel: 2
     useServiceAccountCredentials: true
   kubeProxy:
+    conntrackMaxPerCore: 131072
     cpuRequest: 100m
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
+    master: https://api.internal.minimal-ipv6.example.com
   kubeScheduler:
     image: k8s.gcr.io/kube-scheduler:v1.21.0
     leaderElection:
@@ -399,9 +401,11 @@ Resources.AWSEC2LaunchTemplatenodesminimalipv6examplecom.Properties.LaunchTempla
   docker:
     skipInstall: true
   kubeProxy:
+    conntrackMaxPerCore: 131072
     cpuRequest: 100m
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
+    master: https://api.internal.minimal-ipv6.example.com
   kubelet:
     anonymousAuth: false
     cgroupDriver: systemd

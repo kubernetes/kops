@@ -130,7 +130,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	if spec.KubeProxy != nil {
-		allErrs = append(allErrs, validateKubeProxy(spec.KubeProxy, fieldPath.Child("kubeProxy"))...)
+		allErrs = append(allErrs, validateKubeProxy(spec.KubeProxy, c, fieldPath.Child("kubeProxy"))...)
 	}
 
 	if spec.Kubelet != nil {
@@ -607,7 +607,7 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath
 	return allErrs
 }
 
-func validateKubeProxy(k *kops.KubeProxyConfig, fldPath *field.Path) field.ErrorList {
+func validateKubeProxy(k *kops.KubeProxyConfig, c *kops.Cluster, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	master := k.Master
@@ -620,6 +620,12 @@ func validateKubeProxy(k *kops.KubeProxyConfig, fldPath *field.Path) field.Error
 
 	if master != "" && !isValidAPIServersURL(master) {
 		allErrs = append(allErrs, field.Invalid(fldPath.Child("master"), master, "Not a valid APIServer URL"))
+	}
+
+	if fi.BoolValue(k.UseDaemonSet) && !(c.Spec.ExternalCloudControllerManager != nil && c.IsKubernetesGTE("1.23")) {
+		allErrs = append(allErrs, field.Forbidden(
+			fldPath.Child("useDaemonset"),
+			"useDaemonSet requires Kubernetes v1.23 or higher and that external cloud controller manager is enabled"))
 	}
 
 	return allErrs

@@ -1092,6 +1092,20 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 			}
 		}
 	}
+	if b.Cluster.Spec.KubeProxy != nil && fi.BoolValue(b.Cluster.Spec.KubeProxy.Enabled) && fi.BoolValue(b.Cluster.Spec.KubeProxy.UseDaemonSet) {
+		key := "kube-proxy.addons.k8s.io"
+
+		{
+			id := "k8s-1.23"
+			location := key + "/" + id + ".yaml"
+			addons.Add(&channelsapi.AddonSpec{
+				Name:     fi.String(key),
+				Manifest: fi.String(location),
+				Selector: map[string]string{"k8s-addon": key},
+				Id:       id,
+			})
+		}
+	}
 
 	if b.Cluster.Spec.KubeScheduler.UsePolicyConfigMap != nil {
 		key := "scheduler.addons.k8s.io"

@@ -54,6 +54,7 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components/kopscontroller"
@@ -300,6 +301,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["KarpenterInstanceTypes"] = func(ig kops.InstanceGroupSpec) ([]string, error) {
 		return karpenterInstanceTypes(tf.cloud.(awsup.AWSCloud), ig)
+	}
+
+	dest["KubeProxyArgs"] = func() ([]string, error) {
+		return flagbuilder.BuildFlagsList(tf.Cluster.Spec.KubeProxy)
 	}
 
 	return nil

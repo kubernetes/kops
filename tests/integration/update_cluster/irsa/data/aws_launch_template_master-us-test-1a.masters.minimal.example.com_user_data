@@ -195,9 +195,11 @@ kubeControllerManager:
   useServiceAccountCredentials: true
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
+  conntrackMaxPerCore: 131072
   cpuRequest: 100m
   image: k8s.gcr.io/kube-proxy:v1.20.0
   logLevel: 2
+  master: https://api.internal.minimal.example.com
 kubeScheduler:
   image: k8s.gcr.io/kube-scheduler:v1.20.0
   leaderElection:

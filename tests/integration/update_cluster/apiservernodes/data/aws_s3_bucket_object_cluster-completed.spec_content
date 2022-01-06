@@ -117,9 +117,11 @@ spec:
     serverIP: 100.64.0.10
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
+    conntrackMaxPerCore: 131072
     cpuRequest: 100m
     image: k8s.gcr.io/kube-proxy:v1.22.0
     logLevel: 2
+    master: https://api.internal.minimal.example.com
   kubeScheduler:
     image: k8s.gcr.io/kube-scheduler:v1.22.0
     leaderElection:

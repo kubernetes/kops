@@ -199,10 +199,12 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumadvancedexamplec
     useServiceAccountCredentials: true
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
+    conntrackMaxPerCore: 131072
     cpuRequest: 100m
     enabled: false
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
+    master: https://api.internal.privateciliumadvanced.example.com
   kubeScheduler:
     image: k8s.gcr.io/kube-scheduler:v1.21.0
     leaderElection:
@@ -387,10 +389,12 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumadvancedexamplecom.Properties.La
     skipInstall: true
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
+    conntrackMaxPerCore: 131072
     cpuRequest: 100m
     enabled: false
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
+    master: https://api.internal.privateciliumadvanced.example.com
   kubelet:
     anonymousAuth: false
     cgroupDriver: systemd

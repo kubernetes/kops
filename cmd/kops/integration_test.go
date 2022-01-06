@@ -217,6 +217,19 @@ func TestMinimal_v1_24(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
 }
 
+// TestMinimalKubeProxyDS runs the test on a minimum configuration with kube proxy as a daemonset
+func TestMinimal_v1_24(t *testing.T) {
+	newIntegrationTest("minimal.example.com", "kube-proxy-ds").
+		withAddons(
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+			awsCCMAddon,
+			leaderElectionAddon,
+		).
+		runTestTerraformAWS(t)
+	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
+}
+
 func TestNvidia(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "nvidia").
 		withAddons(
