@@ -967,6 +967,7 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy, enableWAF, enableWAFv2, 
 		"ec2:DescribeNetworkInterfaces",
 		"ec2:DescribeSubnets",
 		"ec2:DescribeSecurityGroups",
+		"ec2:DescribeVpcPeeringConnections",
 		"ec2:DescribeVpcs",
 		"ec2:DescribeAccountAttributes",
 
