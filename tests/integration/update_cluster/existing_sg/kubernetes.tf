@@ -1547,7 +1547,7 @@ terraform {
     aws = {
       "configuration_aliases" = [aws.files]
       "source"                = "hashicorp/aws"
-      "version"               = ">= 3.59.0"
+      "version"               = ">= 3.71.0"
     }
   }
 }
