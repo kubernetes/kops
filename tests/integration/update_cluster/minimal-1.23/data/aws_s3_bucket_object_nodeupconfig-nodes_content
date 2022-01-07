@@ -3,12 +3,12 @@ Assets:
   - 4756ff345dd80704b749d87efb8eb294a143a1f4a251ec586197d26ad20ea518@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/amd64/kubelet
   - 2d0f5ba6faa787878b642c151ccb2c3390ce4c1e6c8e2b59568b3869ba407c4f@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/amd64/kubectl
   - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
-  - 9a33654970a73bec7ae32b1e7dffd4dd0217291ca2072f6944e241ee1b1d7fe5@https://github.com/containerd/containerd/releases/download/v1.6.0-beta.4/cri-containerd-cni-1.6.0-beta.4-linux-amd64.tar.gz
+  - c1fff27dc9744356feb1dfe1f00e90c0aa8ad640140cf51fbe6c6e54659ef8de@https://github.com/containerd/containerd/releases/download/v1.6.0-beta.5/cri-containerd-cni-1.6.0-beta.5-linux-amd64.tar.gz
   arm64:
   - a546fb7ccce69c4163e4a0b19a31f30ea039b4e4560c23fd6e3016e2b2dfd0d9@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/arm64/kubelet
   - 1d77d6027fc8dfed772609ad9bd68f611b7e4ce73afa949f27084ad3a92b15fe@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/arm64/kubectl
   - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
-  - c84a7600a5d95306be48c85a5966011f714ee78ba990ee4526b25f042d17528d@https://github.com/containerd/containerd/releases/download/v1.6.0-beta.4/cri-containerd-cni-1.6.0-beta.4-linux-arm64.tar.gz
+  - ae7ee45c18e413222a38f5b7984a6e2f22ceb7b0a87ea26351341f2f61d4e51a@https://github.com/containerd/containerd/releases/download/v1.6.0-beta.5/cri-containerd-cni-1.6.0-beta.5-linux-arm64.tar.gz
 CAs:
   kubernetes-ca: |
     -----BEGIN CERTIFICATE-----
@@ -64,4 +64,4 @@ channels:
 - memfs://tests/minimal.example.com/addons/bootstrap-channel.yaml
 containerdConfig:
   logLevel: info
-  version: 1.6.0-beta.4
+  version: 1.6.0-beta.5
