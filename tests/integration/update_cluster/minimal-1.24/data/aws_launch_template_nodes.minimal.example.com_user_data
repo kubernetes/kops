@@ -141,6 +141,7 @@ kubeProxy:
   image: k8s.gcr.io/kube-proxy:v1.24.0-alpha.1
   logLevel: 2
   master: https://api.internal.minimal.example.com
+  useDaemonSet: true
 kubelet:
   anonymousAuth: false
   cgroupDriver: systemd

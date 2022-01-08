@@ -622,7 +622,7 @@ func validateKubeProxy(k *kops.KubeProxyConfig, c *kops.Cluster, fldPath *field.
 		allErrs = append(allErrs, field.Invalid(fldPath.Child("master"), master, "Not a valid APIServer URL"))
 	}
 
-	if fi.BoolValue(k.UseDaemonSet) && !(c.Spec.ExternalCloudControllerManager != nil && c.IsKubernetesGTE("1.23")) {
+	if fi.BoolValue(k.UseDaemonSet) && c.IsKubernetesLT("1.24") && !(c.Spec.ExternalCloudControllerManager != nil && c.IsKubernetesGTE("1.23")) {
 		allErrs = append(allErrs, field.Forbidden(
 			fldPath.Child("useDaemonset"),
 			"useDaemonSet requires Kubernetes v1.23 or higher and that external cloud controller manager is enabled"))
