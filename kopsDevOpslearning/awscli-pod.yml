@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: aws-cli
+  labels:
+    name: aws-cli
+  annotations:
+    iam.amazonaws.com/role: arn:aws:iam::267230788984:role/kub2iam-pokemon-serv
+spec:
+  containers:
+    - image: amazon/aws-cli
+      command:
+        - "aws"
+        - "s3"
+        - "ls"
+        - "pokemon-testserv"
+      name: aws-cli
