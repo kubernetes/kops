@@ -221,11 +221,15 @@ func (b *ContainerdBuilder) buildSystemdService(sv semver.Version) *nodetasks.Se
 // We normally use a different path for clarity, but on some OSes we can't override the path.
 // TODO: Should we just use config.toml everywhere?
 func (b *ContainerdBuilder) containerdConfigFilePath() string {
-	switch b.Distribution {
-	case distributions.DistributionContainerOS:
-		return "/etc/containerd/config.toml"
-	default:
-		return "/etc/containerd/config-kops.toml"
+	if b.NodeupConfig.ContainerdConfig != nil && b.NodeupConfig.ContainerdConfig.ConfigFilePath != nil {
+		return fi.StringValue(b.NodeupConfig.ContainerdConfig.ConfigFilePath)
+	} else {
+		switch b.Distribution {
+		case distributions.DistributionContainerOS:
+			return "/etc/containerd/config.toml"
+		default:
+			return "/etc/containerd/config-kops.toml"
+		}
 	}
 }
 

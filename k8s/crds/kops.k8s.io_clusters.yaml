@@ -691,6 +691,9 @@ spec:
                     description: ConfigOverride is the complete containerd config
                       file provided by the user.
                     type: string
+                  ConfigFilePath:
+                    description: ConfigFilePath Overwrites the containerd config file path by default
+                    type: string
                   logLevel:
                     description: LogLevel controls the logging details [trace, debug,
                       info, warn, error, fatal, panic] (default "info").

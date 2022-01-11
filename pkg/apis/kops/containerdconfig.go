@@ -22,6 +22,8 @@ type ContainerdConfig struct {
 	Address *string `json:"address,omitempty" flag:"address"`
 	// ConfigOverride is the complete containerd config file provided by the user.
 	ConfigOverride *string `json:"configOverride,omitempty"`
+	// ConfigFilePath overwrites config file path (default "/etc/containerd/config-kops.toml").
+	ConfigFilePath *string `json:"configFilePath,omitempty"`
 	// LogLevel controls the logging details [trace, debug, info, warn, error, fatal, panic] (default "info").
 	LogLevel *string `json:"logLevel,omitempty" flag:"log-level"`
 	// Packages overrides the URL and hash for the packages.
