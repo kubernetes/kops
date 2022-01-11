@@ -48,6 +48,11 @@ spec:
 
 Read more about cluster autoscaler in the [official documentation](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler).
 
+##### Expander strategies
+Cluster autoscaler supports several different [expander strategies](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-expanders).
+
+Note that the `priority` expander requires additional configuration through a ConfigMap as described in [its documentation](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/expander/priority/readme.md) - you will need to create this ConfigMap in your cluster before selecting this expander.
+
 ##### Disabling cluster autoscaler for a given instance group
 {{ kops_feature_table(kops_added_default='1.20') }}
 
